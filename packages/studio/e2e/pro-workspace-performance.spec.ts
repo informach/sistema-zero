@@ -118,8 +118,9 @@ test('records real editor input, openings and layout lifecycle with controlled s
   const layouts: number[] = []
   for (let index = 0; index < 30; index++) {
     const start = performance.now()
-    await page.getByRole('button', { name: 'Ampliar código', exact: true }).click()
-    await page.getByRole('button', { name: 'Código e jogo', exact: true }).click()
+    // O segmentado do palco (redesenho de 11/2026): "Só o jogo" e de volta a "Lado a lado".
+    await page.getByRole('button', { name: 'Só o jogo', exact: true }).click()
+    await page.getByRole('button', { name: 'Lado a lado', exact: true }).click()
     layouts.push(performance.now() - start)
   }
   await inspectWorkspaceBuffers(page)

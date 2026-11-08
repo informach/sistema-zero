@@ -26,6 +26,11 @@ Há dez retratos de projeto para entrada e solução das partes. A solução de 
 
 ## Restrição de nível
 
+Os números dos blocos devem ser inteiros sempre que possível e ter no máximo uma casa decimal
+(decisão de 08/11/2026). Isso vale também para a cena que chega pronta: tamanho, posição,
+velocidade, áreas permitidas e destino do barco. Precisão interna dos modelos não é um conteúdo
+para a criança copiar. Conferir os encaixes e as colisões ao simplificar uma configuração.
+
 Tanto A Chave do Farol quanto A Ilha do Farol usam apenas blocos básicos. Na Ilha, a
 preparação do cenário também respeita esse limite: não esconder listas ou uma longa regra de
 coordenadas em um trecho pronto. Usar comandos concretos da extensão para andar, delimitar

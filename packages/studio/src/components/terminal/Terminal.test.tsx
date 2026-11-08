@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 
@@ -19,12 +19,24 @@ if (!(globalThis as Record<string, unknown>).ResizeObserver) {
   }
 }
 
+// O que os "Comandos úteis" mandaram ao shell.
+const written: string[] = []
+let focused = 0
+
 function makeShell() {
   return {
     output: new ReadableStream<string>({ start() {} }),
     // O shell real expõe `input.getWriter()`; o WritableStream do happy-dom não
     // implementa getWriter, então damos um writer-stub direto.
-    input: { getWriter: () => ({ write() {}, releaseLock() {} }) },
+    input: {
+      getWriter: () => ({
+        write(data: string) {
+          written.push(data)
+          return Promise.resolve()
+        },
+        releaseLock() {},
+      }),
+    },
     kill() {},
     resize() {},
   }
@@ -60,6 +72,9 @@ mock.module('@xterm/xterm', () => ({
       return { dispose() {} }
     }
     write(): void {}
+    focus(): void {
+      focused += 1
+    }
     writeln(): void {}
     dispose(): void {}
   },
@@ -101,14 +116,14 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
 
   it('a segunda instância clássica recusa em vez de clobberar o FS da primeira', async () => {
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
+    fireEvent.click(a.getByText('Abrir o terminal'))
     // Primeira instância vira dona e monta o FS (reset chamado 1x).
     await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
     expect(resetCalls).toBe(1)
 
     // Segunda instância clássica na MESMA aba: deve recusar.
     const b = render(<Terminal />)
-    fireEvent.click(b.getByText('Carregar terminal real'))
+    fireEvent.click(b.getByText('Abrir o terminal'))
     await waitFor(() => expect(b.getByText(/já está em uso em outra instância/i)).toBeTruthy())
     // Nenhum reset/mount adicional — o FS da primeira instância ficou intacto.
     expect(resetCalls).toBe(1)
@@ -120,11 +135,25 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
     expect(resetCalls).toBe(2)
   })
 
-  it('mostra a dica de Ctrl-C quando o terminal está pronto', async () => {
+  it('"Comandos úteis": cada botão escreve no shell; o npm install só digita, o Parar manda Ctrl+C', async () => {
+    written.length = 0
+    focused = 0
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
-    await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
-    expect(a.getByText(/interromper o programa/i)).toBeTruthy()
+    // Antes de abrir não há faixa (o shell ainda não existe).
+    expect(a.queryByRole('toolbar', { name: 'Comandos úteis' })).toBeNull()
+    fireEvent.click(a.getByText('Abrir o terminal'))
+    const strip = await a.findByRole('toolbar', { name: 'Comandos úteis' })
+    const click = (name: string) => fireEvent.click(within(strip).getByRole('button', { name }))
+    click('Ver os arquivos')
+    click('Instalar uma biblioteca')
+    click('Parar o que está rodando')
+    expect(written).toEqual(['ls\r', 'npm install ', '\u0003'])
+    expect(focused).toBe(3)
+    // O comando de verdade fica no `title`, e o "Travou?" mora na faixa.
+    expect(within(strip).getByRole('button', { name: 'Ver os arquivos' }).title).toBe('ls')
+    expect(within(strip).getByRole('button', { name: 'Travou? Reiniciar terminal' })).toBeTruthy()
+    // Nada de npm run dev: a prévia já roda o servidor.
+    expect(strip.textContent).not.toContain('npm run dev')
   })
 })
 
@@ -143,7 +172,7 @@ describe('Terminal precheck de cross-origin isolation', () => {
   it('sem isolamento: mostra "indisponível" SEM bootar nem oferecer retry', async () => {
     canBoot = false
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
+    fireEvent.click(a.getByText('Abrir o terminal'))
     await waitFor(() => expect(a.getByText(/não está disponível aqui ainda/i)).toBeTruthy())
     // Curto-circuitou ANTES do reset/mount do FS — nada foi tocado.
     expect(resetCalls).toBe(0)

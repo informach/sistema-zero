@@ -6,7 +6,7 @@ import { type Browser, chromium, expect } from '@playwright/test'
 const base = process.argv[2]!
 let browser: Browser
 async function scenario(name: string) {
-  const response = await fetch(base + '__fixture?scenario=' + name)
+  const response = await fetch(`${base}__fixture?scenario=${name}`)
   if (!response.ok) throw new Error('Unknown fixture scenario')
 }
 before(async () => {

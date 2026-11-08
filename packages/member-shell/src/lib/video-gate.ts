@@ -1,5 +1,6 @@
 import {
   type LessonLearningProgress,
+  type SectionPendingItem,
   VIDEO_WATCH_THRESHOLD,
   videoWatchedFraction,
 } from '@sistemazero/core/learning'
@@ -55,6 +56,55 @@ export function isPlayableVideo(block: { kind: string; content?: unknown }): boo
 
 /** O quanto já foi visto NESTE aparelho, antes de o servidor confirmar (ver `localWatched`). */
 export type LocalWatched = Record<string, { revision: string; fraction: number }>
+
+/**
+ * A porcentagem do vídeo na faixa do rodapé anda junto com o vídeo (08/11/2026).
+ *
+ * Relato dela: a faixa dizia "você já viu 0%" o vídeo inteiro e só no fim pulava para concluído.
+ * A frase vem do members (`pendingItems`), e a página só relê o progresso do servidor quando o
+ * vídeo cruza os 90%: a gravação de 10 em 10 s não atualiza a aula. Aqui a porcentagem da frase
+ * passa a ser a maior entre a guardada e a medida neste aparelho (`localWatched`).
+ *
+ * `videos` são os vídeos OBRIGATÓRIOS da parte, na ordem da aula (a mesma em que o core escreve os
+ * itens). Itens e vídeos casam pela posição; se as contagens não batem (o members junta frases
+ * iguais, e dois vídeos em 0% viram um item só), a faixa fica como veio do servidor.
+ * Sem nada a trocar, devolve a MESMA lista.
+ */
+export function liveVideoPendingItems({
+  items,
+  videos,
+  learningProgress,
+  localWatched,
+}: {
+  items: readonly SectionPendingItem[]
+  videos: readonly { id: string; blockRevision?: string }[]
+  learningProgress: LessonLearningProgress | undefined
+  localWatched: LocalWatched | undefined
+}): readonly SectionPendingItem[] {
+  const posicoes = items.flatMap((item, i) => (item.kind === 'VIDEO_GATE_NOT_WATCHED' ? [i] : []))
+  if (posicoes.length === 0 || posicoes.length !== videos.length) return items
+  let mudou = false
+  const saida = items.slice()
+  posicoes.forEach((posicao, n) => {
+    const video = videos[n]
+    const item = items[posicao]
+    if (!video?.blockRevision || !item) return
+    const saved = learningProgress?.blocks.find(
+      (p) => p.blockId === video.id && p.revision === video.blockRevision,
+    )
+    const local = localWatched?.[video.id]
+    const fraction = Math.max(
+      saved ? videoWatchedFraction(saved.answers) : 0,
+      local && local.revision === video.blockRevision ? local.fraction : 0,
+    )
+    const agora = Math.min(100, Math.floor(fraction * 100))
+    const dito = /(\d+)\s*%/.exec(item.text)
+    if (!dito || agora <= Number(dito[1])) return
+    saida[posicao] = { ...item, text: item.text.replace(dito[0], `${agora}%`) }
+    mudou = true
+  })
+  return mudou ? saida : items
+}
 
 export function videoGateFor({
   blocks,

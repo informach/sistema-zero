@@ -3,6 +3,7 @@ import type { ComponentType, JSX, ReactNode } from 'react'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
+import { isProConfigPath } from '../../components/code/proFileKinds'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { isPythonProject } from '../../core/editableProject'
@@ -12,6 +13,7 @@ import type { MonacoHighlight, MonacoTabsProps } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRunApi } from '../../state/proRun'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
@@ -25,8 +27,9 @@ import {
   reconcileWorkspace,
   remapWorkspace,
 } from './workspace/model'
-import { ProBottomPanel } from './workspace/ProBottomPanel'
 import { ProCodeTools } from './workspace/ProCodeTools'
+import { ProDock } from './workspace/ProDock'
+import { ProEditorStrip, type ProEditorTools } from './workspace/ProEditorStrip'
 import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
 import { ProQuickOpen } from './workspace/ProQuickOpen'
@@ -52,14 +55,18 @@ export function ProWorkspace({
 }): JSX.Element {
   const t = useT()
   const store = useProjectStoreApi()
-  const { projectId, tree, templateId, entrypoint } = useProjectStore(
+  const proRun = useProRunApi()
+  const { projectId, tree, templateId, entrypoint, python } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
       tree: s.project?.tree ?? EMPTY_TREE,
       templateId: s.project?.proMeta?.templateId,
       entrypoint: s.project && isPythonProject(s.project) ? s.project.python.entrypoint : undefined,
+      python: Boolean(s.project && isPythonProject(s.project)),
     })),
   )
+  // O que a criança vê no palco: um JOGO (JavaScript) ou um PROGRAMA (Python).
+  const subject = python ? ('program' as const) : ('game' as const)
   const [editError, setEditError] = useState<string | null>(null)
   const observer = useProjectStore((state) => state.editingAccess === 'observer')
   const studioConfig = useStudioConfig()
@@ -87,6 +94,16 @@ export function ProWorkspace({
   const [languageSession, setLanguageSession] = useState<ProWorkspaceLanguage | null>(null)
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
+  // As janelas do `ProCodeTools`, abertas pela faixa do editor (redesenho de 11/2026).
+  const [tools, setTools] = useState<ProEditorTools | null>(null)
+  // A coluna ao lado do editor onde o "Mapa do arquivo" aparece.
+  const [mapSlot, setMapSlot] = useState<HTMLDivElement | null>(null)
+  // "Mostrar espaços" (ligado por padrão no Python, onde a indentação organiza o código).
+  const [showWhitespace, setShowWhitespace] = useState(python)
+  useEffect(() => {
+    // Desligado = o padrão do Monaco (os espaços aparecem só no trecho selecionado).
+    readyEditor?.updateOptions({ renderWhitespace: showWhitespace ? 'all' : 'selection' })
+  }, [readyEditor, showWhitespace])
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
     [],
   )
@@ -131,7 +148,18 @@ export function ProWorkspace({
     )
   })
   const [searchRequest, setSearchRequest] = useState(0)
+  // "Mostrar na lista de arquivos" (era o clique no nome do arquivo, no breadcrumb que saiu).
   const [revealRequest, setRevealRequest] = useState(0)
+  const revealActiveFile = () => {
+    const active = workspaceState.activeFile
+    if (!active) return
+    changeWorkspace((previous) => ({
+      ...previous,
+      panel: 'files',
+      collapsed: previous.collapsed.filter((path) => !active.startsWith(`${path}/`)),
+    }))
+    setRevealRequest((value) => value + 1)
+  }
   const descriptions = useMemo(() => proFileDescriptions(templateId, tree), [templateId, tree])
   const {
     config: tutorConfig,
@@ -210,12 +238,16 @@ export function ProWorkspace({
     changeWorkspace((previous) => closeWorkspaceFile(previous, name))
   }
 
-  const navigator = (close?: () => void) => (
+  const navigator = (close: () => void, options: { phone: boolean; visible: boolean }) => (
     <ProNavigator
       tree={tree}
+      view={workspaceState.panel}
+      onViewChange={(panel) => changeWorkspace((previous) => ({ ...previous, panel }))}
+      showViewSwitcher={options.phone}
+      visible={options.visible}
       onGuideReference={async (path, name) => {
         handleSelectFile(path)
-        close?.()
+        close()
         if (!operations.language.current)
           throw new Error('Arquivo aberto. Aguarde a análise para localizar o símbolo.')
         const symbols = await operations.language.current.requestForTree(tree, 'symbols', path)
@@ -262,7 +294,7 @@ export function ProWorkspace({
       onCollapsedChange={(collapsed) => changeWorkspace((previous) => ({ ...previous, collapsed }))}
       onSelectFile={(path) => {
         handleSelectFile(path)
-        close?.()
+        close()
       }}
       onPinFile={(path) => changeWorkspace((previous) => openWorkspaceFile(previous, path, true))}
       onResult={(result) => {
@@ -275,14 +307,14 @@ export function ProWorkspace({
           startColumn: result.column,
           nonce: (previous?.nonce ?? 0) + 1,
         }))
-        close?.()
+        close()
       }}
     />
   )
 
   const codeEditor = (
     <section
-      className="flex h-full min-h-0 flex-col"
+      className="relative flex h-full min-h-0 flex-col"
       aria-label="Código do projeto"
       onKeyDownCapture={(event) => {
         // Ctrl+K is a Monaco chord prefix. Keep it intact; this action has its own scoped shortcut.
@@ -323,6 +355,8 @@ export function ProWorkspace({
         search={() => setQuickOpen({ query: '' })}
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
+        onToolsReady={setTools}
+        mapContainer={mapSlot}
         path={activeFile}
         tree={tree}
         language={languageSession}
@@ -369,110 +403,89 @@ export function ProWorkspace({
           </button>
         </p>
       )}
-      {activeFile && (
-        <nav
-          aria-label={t('pro.breadcrumb')}
-          className="flex shrink-0 flex-wrap items-center gap-1 border-b border-sz-border-soft px-3 py-1 text-xs"
-        >
-          {activeFile.split('/').map((part, index, parts) => (
-            <button
-              key={parts.slice(0, index + 1).join('/')}
-              type="button"
-              className="min-h-8 rounded px-1 hover:bg-sz-panel"
-              onClick={() => {
-                if (index < parts.length - 1) {
-                  setQuickOpen({ query: `${parts.slice(0, index + 1).join('/')}/` })
-                  return
-                }
-                setRevealRequest((previous) => previous + 1)
-                changeWorkspace((previous) => ({
-                  ...previous,
-                  collapsed: previous.collapsed.filter(
-                    (path) => !activeFile.startsWith(`${path}/`),
-                  ),
-                }))
-              }}
-            >
-              {index ? '/ ' : ''}
-              {part}
-            </button>
-          ))}
-          {workspaceState.temporaryFile === activeFile && (
-            <button
-              type="button"
-              className="ml-auto min-h-8 rounded px-2 text-sz-accent"
-              onClick={() => changeWorkspace((previous) => pinWorkspaceFile(previous, activeFile))}
-            >
-              {t('pro.pinTab')}
-            </button>
-          )}
-          {openFiles.length > 1 && (
-            <button
-              type="button"
-              className="min-h-8 rounded px-2"
-              onClick={() =>
-                changeWorkspace((previous) => ({
-                  ...previous,
-                  openFiles: [activeFile],
-                  temporaryFile: null,
-                }))
-              }
-            >
-              {t('pro.closeOtherTabs')}
-            </button>
-          )}
-        </nav>
+      {isProConfigPath(activeFile) && (
+        // A faixa amarela dos arquivos de configuração (redesenho de 11/2026).
+        <p role="note" className="sz-pro-config-banner">
+          {t('pro.files.configBanner')}
+        </p>
       )}
-      <div className="min-h-0 flex-1">
-        <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-          <Editor
-            key={projectId}
-            files={filesArray}
-            modelPathPrefix={projectId}
-            activeFile={activeFile}
-            highlight={tutorHighlight}
-            onActiveFileChange={handleSelectFile}
-            onChange={(name, value) => {
-              const state = store.getState()
-              const current = state.project
-              const original = tree[name]
-              if (!current || current.id !== projectId || state.editingAccess === 'observer')
-                return { rejectedValue: original?.kind === 'file' ? original.content : '' }
-              if (isPythonProject(current)) {
-                const accepted = current.kind === 'pro' ? current.tree[name] : undefined
-                const issue = state.setPythonFile(name, value)
-                setEditError(
-                  issue
-                    ? `${issue} A alteração foi recusada; o código anterior foi mantido.`
-                    : null,
-                )
-                if (issue)
-                  return { rejectedValue: accepted?.kind === 'file' ? accepted.content : '' }
-              } else state.setProFileContent(name, value)
-              if (workspaceState.temporaryFile === name)
-                changeWorkspace((previous) => pinWorkspaceFile(previous, name))
-            }}
-            readOnly={observer}
-            onFormatReady={(run) => {
-              formatRef.current = run
-            }}
-            canCloseFile={() => true}
-            onCloseFile={handleCloseFile}
-            temporaryFile={workspaceState.temporaryFile}
-            onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
-            onEditorReady={(editor) => {
-              editorRef.current = editor
-              setReadyEditor(editor)
-            }}
-            onProLanguageReady={(session) => {
-              operations.language.current = session
-              setLanguageSession(session)
-              if (!session) setDiagnostics(null)
-            }}
-            onProDiagnostics={setDiagnostics}
-            onProAnalysis={updateAnalysis}
-          />
-        </Suspense>
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1">
+          <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+            <Editor
+              key={projectId}
+              files={filesArray}
+              modelPathPrefix={projectId}
+              activeFile={activeFile}
+              highlight={tutorHighlight}
+              onActiveFileChange={handleSelectFile}
+              onChange={(name, value) => {
+                const state = store.getState()
+                const current = state.project
+                const original = tree[name]
+                if (!current || current.id !== projectId || state.editingAccess === 'observer')
+                  return { rejectedValue: original?.kind === 'file' ? original.content : '' }
+                if (isPythonProject(current)) {
+                  const accepted = current.kind === 'pro' ? current.tree[name] : undefined
+                  const issue = state.setPythonFile(name, value)
+                  setEditError(
+                    issue
+                      ? `${issue} A alteração foi recusada; o código anterior foi mantido.`
+                      : null,
+                  )
+                  if (issue)
+                    return { rejectedValue: accepted?.kind === 'file' ? accepted.content : '' }
+                } else state.setProFileContent(name, value)
+                if (workspaceState.temporaryFile === name)
+                  changeWorkspace((previous) => pinWorkspaceFile(previous, name))
+              }}
+              readOnly={observer}
+              headerSlot={(ctx) => (
+                <ProEditorStrip
+                  ctx={ctx}
+                  subject={subject}
+                  layout={workspaceState.layout}
+                  entrypoint={entrypoint}
+                  tools={tools}
+                  editor={editorRef}
+                  showWhitespace={showWhitespace}
+                  onToggleWhitespace={() => setShowWhitespace((value) => !value)}
+                  // O mesmo caminho do Rodar: sai de "Só o código", fecha o Zappy e, no
+                  // celular, abre a aba do jogo.
+                  onShowStage={() => proRun.getState().revealStage?.()}
+                  onReveal={revealActiveFile}
+                  onQuickOpen={() => setQuickOpen({ query: '' })}
+                  onCloseOthers={() =>
+                    changeWorkspace((previous) =>
+                      previous.activeFile
+                        ? { ...previous, openFiles: [previous.activeFile], temporaryFile: null }
+                        : previous,
+                    )
+                  }
+                />
+              )}
+              onFormatReady={(run) => {
+                formatRef.current = run
+              }}
+              canCloseFile={() => true}
+              onCloseFile={handleCloseFile}
+              temporaryFile={workspaceState.temporaryFile}
+              onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
+              onEditorReady={(editor) => {
+                editorRef.current = editor
+                setReadyEditor(editor)
+              }}
+              onProLanguageReady={(session) => {
+                operations.language.current = session
+                setLanguageSession(session)
+                if (!session) setDiagnostics(null)
+              }}
+              onProDiagnostics={setDiagnostics}
+              onProAnalysis={updateAnalysis}
+            />
+          </Suspense>
+        </div>
+        <div ref={setMapSlot} className="sz-pro-map-slot" />
       </div>
     </section>
   )
@@ -494,14 +507,16 @@ export function ProWorkspace({
         editor={codeEditor}
         preview={previewAvailable ? preview : null}
         tutor={tutorDock}
+        subject={subject}
         preferences={workspaceState}
         change={changeWorkspace}
         gameRequest={focusNonce}
         searchRequest={searchRequest + revealRequest}
         codeRequest={codeRequest}
-        bottom={
-          <ProBottomPanel
+        dock={
+          <ProDock
             tree={tree}
+            python={python}
             diagnostics={diagnostics}
             analysis={analysis}
             investigate={

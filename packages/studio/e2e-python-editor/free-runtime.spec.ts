@@ -47,12 +47,15 @@ for (const kind of ['classic', 'pro'] as const) {
       .poll(async () => JSON.stringify(await page.evaluate(() => studioFreeProbe.saved())))
       .toContain('free-python')
     await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-    const consoleMenu = page.getByRole('menuitem', { name: 'Console', exact: true })
+    const consoleMenu = page.getByRole('menuitem', {
+      name: kind === 'pro' ? 'Mensagens do programa' : 'Console',
+      exact: true,
+    })
     if ((await consoleMenu.getAttribute('aria-current')) !== 'true') await consoleMenu.click()
     else await page.keyboard.press('Escape')
     if (kind === 'pro') {
-      const consoleTab = page.getByRole('button', { name: 'Console', exact: true })
-      if ((await consoleTab.getAttribute('aria-expanded')) !== 'true') await consoleTab.click()
+      const consoleTab = page.getByRole('tab', { name: 'Mensagens do programa', exact: true })
+      if ((await consoleTab.getAttribute('aria-selected')) !== 'true') await consoleTab.click()
     }
     const clearConsole = page.getByRole('button', { name: 'Limpar', exact: true })
     await expect(clearConsole).toBeVisible()
@@ -65,7 +68,7 @@ for (const kind of ['classic', 'pro'] as const) {
       .elementHandles()
     try {
       // The real host may already have auto-started the previous version.
-      await page.getByRole('button', { name: /^(Executar|Reiniciar)$/ }).click()
+      await page.getByRole('button', { name: /^(Rodar|Rodar de novo)$/ }).click()
       for (const previous of previousFrames)
         await expect
           .poll(() => previous.evaluate((frame) => frame.isConnected).catch(() => false))
@@ -96,7 +99,7 @@ for (const kind of ['classic', 'pro'] as const) {
       .toBe(true)
     await expect(consoleOutput.getByText('free-python', { exact: true })).toBeVisible()
     await expect(
-      page.getByText('Seu código mudou. Clique em Reiniciar para executar a nova versão.'),
+      page.getByText('Seu código mudou. Aperte Rodar de novo para ver a nova versão.'),
     ).toHaveCount(0)
     await testInfo.attach('first-drawing-ms', {
       body: JSON.stringify({
@@ -108,7 +111,7 @@ for (const kind of ['classic', 'pro'] as const) {
     const before = await page.evaluate(() => studioFreeProbe.read())
     expect(before).toBe(editedSource)
     await request.post('/free-probe/revoke')
-    await page.getByRole('button', { name: 'Reiniciar', exact: true }).click()
+    await page.getByRole('button', { name: 'Rodar de novo', exact: true }).click()
     await expect(page.locator('iframe[title="Pré-visualização Python"]')).toHaveCount(0)
     await expect.poll(() => page.evaluate(() => studioFreeProbe.read())).toBe(before)
     const calls = await (await request.get('/free-probe/requests')).json()

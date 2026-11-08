@@ -3,15 +3,16 @@ import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtim
 import type { WebContainerProcess } from '@webcontainer/api'
 import { type JSX, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '#ui'
+import { ProStageState } from '../../components/preview/ProStageState'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
 import { javaScriptProject } from '../../core/editableProject'
 import { updateLegacyProToolchainManifest } from '../../core/proToolchain'
-import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { PRO_APPLICATION_LIMITS } from '../../state/projectStorageCoordinator'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { updateProToolchainBeforeExecution } from '../../state/proToolchainUpdate'
 import { useStudioConfig } from '../../studio/config'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
@@ -22,11 +23,12 @@ import { isProConsoleMessage } from './proConsoleBridge'
 import { RemoteProPreview } from './RemoteProPreview'
 import { useProGameStorage } from './useProGameStorage'
 
-type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
-
-// Espelha o limiar do preview clássico (responsividade POR SEÇÃO, não pela
-// página): abaixo disto o botão da barra vira só ícone.
-const PRO_TOOLBAR_COMPACT_MAX_PX = 400
+/**
+ * `stopped` = a criança apertou Parar (redesenho de 11/2026): a cleanup do efeito matou install e
+ * dev-server, mas a POSSE do FS fica com esta instância (só sai no unmount/troca de projeto), então
+ * o Rodar seguinte é rápido.
+ */
+type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported' | 'stopped'
 
 const PHASE_LABEL: Partial<Record<Phase, string>> = {
   booting: 'Iniciando o ambiente (WebContainer)…',
@@ -220,10 +222,15 @@ function ProToolchainGate({ children, active }: { children: ReactNode; active: b
 
 function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.Element | null {
   const store = useProjectStoreApi()
+  const proRun = useProRunApi()
   const [started, setStarted] = useState(active)
+  // Parar da criança: a volta de `active` (fechar a proposta do construtor) não religa sozinha.
+  const stoppedByUser = useRef(false)
   useEffect(() => {
-    if (active) setStarted(true)
+    if (active && !stoppedByUser.current) setStarted(true)
   }, [active])
+  const startedRef = useRef(started)
+  startedRef.current = started
   const activeRef = useRef(active)
   activeRef.current = active
   const { ensureMounted, error: mountError, state: mountState } = useProWebContainer()
@@ -234,7 +241,6 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   const mountErrorRef = useRef(mountError)
   mountErrorRef.current = mountError
   const projectId = useProjectStore((s) => javaScriptProject(s.project)?.id ?? null)
-  const projectName = useProjectStore((s) => javaScriptProject(s.project)?.name ?? '')
   const devScript = useProjectStore(
     (s) => javaScriptProject(s.project)?.proMeta?.devScript ?? 'dev',
   )
@@ -265,11 +271,6 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   // Origem do dev-server CORRENTE (setada no server-ready): o listener de
   // console só aceita mensagens vindas exatamente dela.
   const previewOriginRef = useRef<string | null>(null)
-  // A barra compacta conforme o PRÓPRIO contêiner (padrão do preview clássico):
-  // em split apertado o botão vira só ícone e o título ganha o espaço.
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const toolbarWidth = useMeasuredWidth(toolbarRef)
-  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PRO_TOOLBAR_COMPACT_MAX_PX
 
   // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
   // (barra do ready) o incrementam para re-disparar o boot/install/dev — a
@@ -499,46 +500,67 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
     return () => window.removeEventListener('message', handler)
   }, [pushLog, active])
 
+  // As ações que a Topbar chama (Rodar / Parar / Atualizar). Estáveis: só leem refs e setters.
+  const actions = useMemo<ProRunActions>(
+    () => ({
+      run: () => {
+        if (startedRef.current) {
+          // Rodando, preparando ou com erro: recomeça o ciclo. NÃO pula o `npm install` de
+          // propósito: morno (node_modules já populado) ele é rápido e é o que garante que uma
+          // dependência recém-adicionada ao package.json entre no ar.
+          setAttempt((a) => a + 1)
+          return
+        }
+        stoppedByUser.current = false
+        setStarted(true)
+      },
+      stop: () => {
+        stoppedByUser.current = true
+        setStarted(false)
+        setUrl(null)
+        setLogTail([])
+        setPhase('stopped')
+      },
+      // Recarrega o APP sem tocar no servidor (a `key` do iframe).
+      reload: () => setReloadNonce((n) => n + 1),
+    }),
+    [],
+  )
+  const runState = useMemo<ProRunState | null>(() => {
+    if (!active) return null
+    if (!started || phase === 'stopped') return { phase: 'idle', canRun: true, canStop: false }
+    switch (phase) {
+      case 'booting':
+      case 'installing':
+      case 'starting':
+        return {
+          phase: 'preparing',
+          step: { index: phase === 'booting' ? 1 : phase === 'installing' ? 2 : 3, total: 3 },
+          canRun: false,
+          canStop: true,
+          detail: PHASE_LABEL[phase],
+        }
+      case 'ready':
+        return { phase: 'running', canRun: true, canStop: true }
+      case 'error':
+        return { phase: 'error', canRun: true, canStop: false, error: error ?? undefined }
+      default:
+        return { phase: 'unsupported', canRun: false, canStop: false }
+    }
+  }, [active, started, phase, error])
+  // Publica para quem fica FORA da prévia (o Rodar/Parar da Topbar, o palco): `null` enquanto a
+  // proposta do construtor está na tela e na saída.
+  useEffect(() => {
+    proRun.getState().publish(runState, runState ? actions : null)
+  }, [proRun, runState, actions])
+  useEffect(() => () => proRun.getState().publish(null, null), [proRun])
+
   // Retain the controller/dev process; only the running game document is removed.
   if (!active) return null
 
-  if (phase === 'ready' && url) {
+  if (phase === 'ready' && url && started) {
     return (
       <div className="flex h-full w-full flex-col bg-sz-bg">
-        <div
-          ref={toolbarRef}
-          className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1"
-        >
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setReloadNonce((n) => n + 1)}
-            title="Recarregar o app (o servidor continua rodando)"
-            aria-label="Atualizar o preview"
-          >
-            {compactToolbar ? '⟳' : '⟳ Atualizar'}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setAttempt((a) => a + 1)}
-            title="Reiniciar o servidor de desenvolvimento (npm install + dev de novo)"
-            aria-label="Reiniciar o servidor"
-          >
-            {compactToolbar ? '⏻' : '⏻ Reiniciar'}
-          </Button>
-          {projectName && (
-            // Nome do PROJETO, não o <title> vivo do app: o iframe do dev-server
-            // é cross-origin — diferente do srcdoc clássico, o título de dentro
-            // não é legível daqui.
-            <span
-              className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
-              title={projectName}
-            >
-              {projectName}
-            </span>
-          )}
-        </div>
         <div className="min-h-0 flex-1 bg-white">
           <iframe
             key={storageName}
@@ -553,61 +575,22 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
     )
   }
 
-  if (phase === 'unsupported') {
-    return (
-      <ProPreviewOverlay>
-        <p className="text-sz-fg-soft">
-          O modo Código roda um servidor de verdade dentro do navegador, e isso precisa de um
-          computador com um navegador compatível (Chrome ou Edge no desktop).
-        </p>
-        <p className="max-w-md text-sz-fg-mute">
-          Abra este projeto no computador para programar no modo Código. No celular ou tablet você
-          ainda pode usar os projetos de blocos.
-        </p>
-      </ProPreviewOverlay>
-    )
-  }
-
-  if (phase === 'error') {
-    return (
-      <ProPreviewOverlay>
-        <p className="text-sz-error">Não foi possível iniciar o preview profissional.</p>
-        {error && (
-          <pre className="max-w-md whitespace-pre-wrap text-xs text-sz-fg-mute">{error}</pre>
-        )}
-        <LogTail lines={logTail} />
-        <Button variant="ghost" size="sm" onClick={() => setAttempt((a) => a + 1)}>
-          Tentar de novo
-        </Button>
-      </ProPreviewOverlay>
-    )
-  }
-
+  // Parado, preparando (os três passos; o texto técnico em "Ver detalhes"), erro e sem suporte:
+  // o cartão compartilhado das prévias Pro. A barra própria ("⟳ Atualizar / ⏻ Reiniciar / nome")
+  // saiu com o redesenho de 11/2026: a Topbar roda, para e atualiza pela store.
   return (
-    <ProPreviewOverlay>
-      <p className="text-sz-fg-soft">{PHASE_LABEL[phase] ?? 'Preparando…'}</p>
+    <ProStageState
+      state={runState ?? { phase: 'idle', canRun: true, canStop: false }}
+      subject="game"
+      flavor="local"
+      onRun={actions.run}
+    >
       <LogTail lines={logTail} />
-      <p className="max-w-md text-sz-fg-mute">
-        O servidor roda dentro do navegador (WebContainer). A primeira carga instala as dependências
-        e pode levar alguns segundos.
-      </p>
-    </ProPreviewOverlay>
-  )
-}
-
-function ProPreviewOverlay({ children }: { children: ReactNode }): JSX.Element {
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-sz-panel p-6 text-center text-xs">
-      {children}
-    </div>
+    </ProStageState>
   )
 }
 
 function LogTail({ lines }: { lines: string[] }): JSX.Element | null {
   if (lines.length === 0) return null
-  return (
-    <pre className="max-h-40 w-full max-w-md overflow-auto rounded bg-sz-bg p-2 text-left font-mono text-[10px] leading-tight text-sz-fg-mute">
-      {lines.join('\n')}
-    </pre>
-  )
+  return <pre className="sz-pro-stage-state__tech">{lines.join('\n')}</pre>
 }

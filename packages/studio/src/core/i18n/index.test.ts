@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { createTranslator, en, type Locale, ptBR, t, translate } from './index'
+import { createSharedTranslator } from './shared'
 
 describe('i18n t()', () => {
   it('substitui placeholders {nome} pelas vars', () => {
@@ -25,6 +26,26 @@ describe('i18n t()', () => {
 
   it('mantém os dicionários com as mesmas chaves', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ptBR).sort())
+  })
+
+  it('preserva os textos compartilhados e reserva o vocabulário Pro para o tradutor completo', () => {
+    for (const [locale, dictionary] of [
+      ['pt-BR', ptBR],
+      ['en', en],
+    ] as const) {
+      const shared = createSharedTranslator(locale)
+      const full = createTranslator(locale)
+      for (const [key, text] of Object.entries(dictionary)) {
+        expect(full(key)).toBe(text)
+        expect(shared(key)).toBe(key.startsWith('pro.') ? key : text)
+      }
+      expect(shared('projects.confirmDelete', { name: 'Meu jogo' })).toBe(
+        full('projects.confirmDelete', { name: 'Meu jogo' }),
+      )
+    }
+    expect(createSharedTranslator('fr' as Locale)('projects.rename')).toBe('Renomear')
+    expect(t('pro.files')).toBe('Arquivos')
+    expect(createTranslator('en')('pro.files')).toBe('Files')
   })
 
   it('nenhuma frase em português tem travessão', () => {

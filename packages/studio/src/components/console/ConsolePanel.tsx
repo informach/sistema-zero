@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { memo, useLayoutEffect, useRef } from 'react'
+import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { glossErrorMessage } from '../../state/errorGloss'
@@ -40,10 +40,26 @@ const KIND_LABEL: Record<LogEntry['kind'], string> = {
   heartbeat: 'heartbeat',
 }
 
-export function ConsolePanel(): JSX.Element {
+type MessageFilter = 'all' | 'warnings' | 'errors'
+const WARNING_KINDS: ReadonlySet<LogEntry['kind']> = new Set(['warn', 'loopStopped'])
+
+/**
+ * O console do Studio. `variant` (redesenho do Pro, 11/2026): `messages` é a aba "Mensagens do
+ * jogo/do programa" da gaveta do Pro (filtros Tudo · Avisos · Erros, sem o campo de comando);
+ * `repl` é "Experimentar comandos" (as mensagens e o campo de Python embaixo). Sem variante,
+ * a aparência de sempre (Blocos, Ponte, Código clássico).
+ */
+export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}): JSX.Element {
   const t = useT()
   const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
-  const entries = useLogsStore((s) => s.entries)
+  const allEntries = useLogsStore((s) => s.entries)
+  const [filter, setFilter] = useState<MessageFilter>('all')
+  const entries =
+    variant !== 'messages' || filter === 'all'
+      ? allEntries
+      : allEntries.filter((entry) =>
+          filter === 'errors' ? ERROR_KINDS.has(entry.kind) : WARNING_KINDS.has(entry.kind),
+        )
   const clear = useLogsStore((s) => s.clear)
   const scrollRef = useRef<HTMLDivElement>(null)
   // Cola no rodapé por padrão; só desgruda quando o aluno rola para cima para
@@ -71,8 +87,25 @@ export function ConsolePanel(): JSX.Element {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-sz-border-soft px-3 py-1.5">
+      <div className="flex items-center justify-between gap-2 border-b border-sz-border-soft px-3 py-1.5">
+        {variant === 'messages' ? (
+          <fieldset className="sz-pro-seg">
+            <legend className="sr-only">{t('console.filter.label')}</legend>
+            {(['all', 'warnings', 'errors'] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                className="sz-pro-seg-btn"
+                aria-pressed={filter === item}
+                onClick={() => setFilter(item)}
+              >
+                {t(`console.filter.${item}`)}
+              </button>
+            ))}
+          </fieldset>
+        ) : null}
         <span className="text-xs text-sz-fg-mute">
+          {/* Conta o que está NA TELA: com o filtro "Erros", 12 mensagens e 2 visíveis diria 12. */}
           {t(entries.length === 1 ? 'console.message' : 'console.messages', {
             count: entries.length,
           })}
@@ -87,12 +120,16 @@ export function ConsolePanel(): JSX.Element {
         className="flex-1 overflow-auto px-3 py-2 font-mono text-xs"
       >
         {entries.length === 0 ? (
-          <p className="text-sz-fg-mute">{t(python ? 'console.emptyPython' : 'console.empty')}</p>
+          <p className="text-sz-fg-mute">
+            {allEntries.length
+              ? t('console.filter.empty')
+              : t(python ? 'console.emptyPython' : 'console.empty')}
+          </p>
         ) : (
           entries.map((e) => <LogEntryItem key={e.id} entry={e} />)
         )}
       </div>
-      <PythonConsoleInput />
+      {variant !== 'messages' ? <PythonConsoleInput /> : null}
     </div>
   )
 }

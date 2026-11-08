@@ -71,6 +71,7 @@ mock.module('./ProWebContainerProvider', () => ({
 }))
 
 const { ProPreview } = await import('./ProPreview')
+const { useProRun } = await import('../../state/proRun')
 const { useProjectStore, useProjectStoreApi } = await import('../../state/projectStore')
 const { useLogsStore } = await import('../../state/logsStore')
 const { resolveStudioConfig, resolvePreviewSecurity, resolveLearning, StudioConfigProvider } =
@@ -305,7 +306,7 @@ describe('ProPreview — install órfão no cancelamento', () => {
     await waitFor(() => expect(mountAttempts).toBe(2))
   })
 
-  it('fase ready: cabeçalho com o nome do projeto + Atualizar que REMONTA o iframe', async () => {
+  it('fase ready: o iframe do dev-server; Atualizar (pela store) REMONTA o iframe', async () => {
     useProjectStore.setState({
       project: {
         id: 'pro-2',
@@ -335,13 +336,14 @@ describe('ProPreview — install órfão no cancelamento', () => {
     await waitFor(() => {
       expect(screen.getByTitle('Pré-visualização (dev-server)')).toBeTruthy()
     })
-    expect(screen.getByText('Meu Jogo Pro')).toBeTruthy()
+    // A prévia publica "rodando" para a Topbar (sem barra própria desde 11/2026).
+    expect(useProRun.getState().state).toMatchObject({ phase: 'running', canStop: true })
 
     // ⟳ Atualizar: o iframe é cross-origin (sem location.reload() de fora) — o
     // reload é por REMONTAGEM (key): o nó antigo sai, um novo entra na mesma URL.
     const before = container.querySelector('iframe')
     expect(before).not.toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Atualizar o preview' }))
+    act(() => useProRun.getState().actions?.reload?.())
     await waitFor(() => {
       const after = container.querySelector('iframe')
       expect(after).not.toBeNull()
@@ -408,7 +410,7 @@ describe('ProPreview — install órfão no cancelamento', () => {
     })
   })
 
-  it('⏻ Reiniciar: mata o dev atual e re-roda o ciclo até um novo server-ready', async () => {
+  it('Rodar de novo mata o dev atual e re-roda o ciclo; Parar mata e deixa o Rodar rápido', async () => {
     useProjectStore.setState({
       project: {
         id: 'pro-3',
@@ -435,12 +437,14 @@ describe('ProPreview — install órfão no cancelamento', () => {
       expect(container.querySelector('iframe')?.getAttribute('src')).toBe('http://fake-um.dev/')
     })
 
-    // Reiniciar: a cleanup do efeito mata o dev-server atual e o ciclo
-    // recomeça — install de novo (morno é rápido e pega deps novas) → dev →
+    // Rodar de novo (a ação publicada na store): a cleanup do efeito mata o dev-server
+    // atual e o ciclo recomeça — install de novo (morno é rápido e pega deps novas) → dev →
     // um NOVO server-ready, possivelmente noutra porta/URL.
     installSpawned = false
     installKill.mockClear()
-    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar o servidor' }))
+    expect(useProRun.getState().state?.phase).toBe('running')
+    act(() => useProRun.getState().actions?.run())
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('preparing'))
 
     await waitFor(() => {
       // O processo antigo (dev) foi morto pela cleanup…
@@ -460,6 +464,24 @@ describe('ProPreview — install órfão no cancelamento', () => {
     await waitFor(() => {
       expect(container.querySelector('iframe')?.getAttribute('src')).toBe('http://fake-dois.dev/')
     })
+
+    // Parar: o dev-server morre, o iframe sai, o cartão "parado" entra e a Topbar vê `idle`;
+    // a posse do FS fica (o container não é remontado), então Rodar religa o ciclo direto.
+    installKill.mockClear()
+    installSpawned = false
+    act(() => useProRun.getState().actions?.stop())
+    await waitFor(() => expect(installKill).toHaveBeenCalled())
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(screen.getByText('Aperte Rodar para ver seu jogo')).toBeTruthy()
+    expect(useProRun.getState().state).toMatchObject({
+      phase: 'idle',
+      canRun: true,
+      canStop: false,
+    })
+    expect(installSpawned).toBe(false)
+    act(() => useProRun.getState().actions?.run())
+    await waitFor(() => expect(installSpawned).toBe(true))
+    expect(mountAttempts).toBe(3)
   })
 
   it('mata o npm install se a instância desmontar antes da corrida resolver', async () => {

@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { type ReactNode, useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useStudioPortalContainer } from '../studio/portal-container'
+import { useStudioSheets } from '../studio/sheet-context'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
@@ -25,6 +26,8 @@ export function Modal({
   const titleId = useId()
   const dialogRef = useRef<HTMLDialogElement | null>(null)
   const portalContainer = useStudioPortalContainer()
+  // No Pro do celular a janela vira folha que sobe de baixo (o mesmo `<dialog>`, só a forma).
+  const sheet = useStudioSheets()
 
   useEffect(() => {
     if (!open) return
@@ -56,7 +59,11 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-black/60 p-4 text-inherit backdrop:bg-transparent backdrop-blur-sm"
+        data-sz-sheet={sheet ? '' : undefined}
+        className={cn(
+          'fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none justify-center border-0 bg-black/60 text-inherit backdrop:bg-transparent backdrop-blur-sm',
+          sheet ? 'items-end p-0' : 'items-center p-4',
+        )}
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose()
         }}
@@ -72,10 +79,15 @@ export function Modal({
         {/* max-h + corpo rolável: conteúdo comprido (ex.: extensões) rola por
             dentro com header/footer fixos — antes transbordava e cortava. */}
         <div
-          className={cn(
-            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-2xl border-2 border-sz-border bg-sz-panel shadow-2xl',
-            className,
-          )}
+          className={
+            // Na folha o `className` de quem chama (larguras de janela) não vale: ela é a tela toda.
+            sheet
+              ? 'sz-sheet sz-sheet--dialog'
+              : cn(
+                  'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-2xl border-2 border-sz-border bg-sz-panel shadow-2xl',
+                  className,
+                )
+          }
           role="document"
         >
           <header

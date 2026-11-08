@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { type LessonLearningProgress, videoCoverageAnswers } from '@sistemazero/core/learning'
 import { createEmptyProject } from '@sistemazero/studio/project'
-import { type GateBlock, isPlayableVideo, videoGateFor } from '../src/lib/video-gate'
+import {
+  type GateBlock,
+  isPlayableVideo,
+  liveVideoPendingItems,
+  videoGateFor,
+} from '../src/lib/video-gate'
 
 /**
  * "Assistir ao vídeo antes da atividade" (03/10/2026): quando a atividade da direita tranca.
@@ -196,5 +201,73 @@ describe('o vídeo que tem player', () => {
     expect(v({ provider: 'vimeo', src: 'https://vimeo.example/nada' })).toBe(false)
     expect(v({ provider: 'file', src: '' })).toBe(false)
     expect(isPlayableVideo({ kind: 'image', content: { src: '/a.png' } })).toBe(false)
+  })
+})
+
+describe('a porcentagem do vídeo no rodapé anda junto com o vídeo', () => {
+  const item = (pct: number) => ({
+    kind: 'VIDEO_GATE_NOT_WATCHED' as const,
+    text: `Veja o vídeo até o fim (você já viu ${pct}%)`,
+  })
+  const outro = { kind: 'STUDIO_GATE_NOT_SUBMITTED' as const, text: 'Envie o seu projeto' }
+  const videos = [{ id: 'video', blockRevision: 'r1' }]
+
+  test('o servidor diz 0% e o player já mediu 45%: a faixa diz 45%', () => {
+    const itens = liveVideoPendingItems({
+      items: [item(0), outro],
+      videos,
+      learningProgress: undefined,
+      localWatched: { video: { revision: 'r1', fraction: 0.45 } },
+    })
+    expect(itens.map((i) => i.text)).toEqual([
+      'Veja o vídeo até o fim (você já viu 45%)',
+      'Envie o seu projeto',
+    ])
+  })
+
+  test('o progresso guardado mais novo que a frase também conta', () => {
+    const itens = liveVideoPendingItems({
+      items: [item(0)],
+      videos,
+      learningProgress: assistido(0.3),
+      localWatched: undefined,
+    })
+    expect(itens[0]?.text).toBe('Veja o vídeo até o fim (você já viu 30%)')
+  })
+
+  test('nunca volta para trás e, sem nada a trocar, devolve a mesma lista', () => {
+    const items = [item(60)]
+    expect(
+      liveVideoPendingItems({
+        items,
+        videos,
+        learningProgress: undefined,
+        localWatched: { video: { revision: 'r1', fraction: 0.2 } },
+      }),
+    ).toBe(items)
+  })
+
+  test('medida de outra revisão do vídeo não vale', () => {
+    const items = [item(0)]
+    expect(
+      liveVideoPendingItems({
+        items,
+        videos,
+        learningProgress: undefined,
+        localWatched: { video: { revision: 'r0', fraction: 0.8 } },
+      }),
+    ).toBe(items)
+  })
+
+  test('itens e vídeos que não casam pela contagem ficam como vieram do servidor', () => {
+    const items = [item(0)]
+    expect(
+      liveVideoPendingItems({
+        items,
+        videos: [...videos, { id: 'video2', blockRevision: 'r1' }],
+        learningProgress: undefined,
+        localWatched: { video: { revision: 'r1', fraction: 0.5 } },
+      }),
+    ).toBe(items)
   })
 })

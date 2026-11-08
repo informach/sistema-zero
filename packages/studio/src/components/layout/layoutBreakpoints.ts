@@ -46,3 +46,23 @@ export const STUDIO_BAR_UNDO_MIN_PX = 720
  * passava 34px por baixo do segmentado (medido no playground com o chrome do host).
  */
 export const STUDIO_BAR_COMPACT_MAX_PX = 520
+
+/**
+ * Os três tamanhos do workspace PRO (redesenho de 11/2026, Canvas "Studio Pro — Redesenho").
+ * São réguas do PRÓPRIO Studio, como as de cima, e valem só para o modo Código do projeto Pro:
+ * o `isNarrow` (1024) e o `isCompact` (440) continuam decidindo a Topbar, o Zappy e o clássico.
+ *
+ * - `wide` (a partir de 1200px): trilho + painel lateral + código + jogo lado a lado.
+ * - `tablet` (720 a 1199px): o painel lateral vira uma gaveta por cima do código.
+ * - `phone` (até 719px): abas no rodapé (Arquivos · Código · Jogo · Saída) e o Rodar flutuando.
+ */
+export const STUDIO_PRO_WIDE_MIN_PX = 1200
+export const STUDIO_PRO_PHONE_MAX_PX = 719
+
+export type ProLayoutTier = 'wide' | 'tablet' | 'phone'
+
+/** A largura medida do root (0 = ainda não medido) vira um dos três tamanhos do Pro. */
+export function proLayoutTier(width: number): ProLayoutTier {
+  if (width <= 0 || width >= STUDIO_PRO_WIDE_MIN_PX) return 'wide'
+  return width <= STUDIO_PRO_PHONE_MAX_PX ? 'phone' : 'tablet'
+}

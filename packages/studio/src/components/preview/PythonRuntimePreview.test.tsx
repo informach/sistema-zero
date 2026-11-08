@@ -16,7 +16,7 @@ import { createStudioStores } from '../../state/studioStores'
 import { StudioExecutionProvider } from '../../studio/observation'
 import { StudioRuntimeEnvironmentProvider } from '../../studio/runtime-environment'
 import { PythonEditorPreview } from './PythonEditorPreview'
-import { PythonRuntimePreview } from './PythonRuntimePreview'
+import { type PythonRunCommands, PythonRuntimePreview } from './PythonRuntimePreview'
 
 afterEach(cleanup)
 
@@ -111,8 +111,8 @@ test.each([
     />
   )
   const view = render(content(true))
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
-  await screen.findByText('Executando')
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
+  await screen.findByText('Rodando')
   expect(f.runMutes).toEqual([true])
   const frame = view.container.querySelector('iframe'),
     preference = f.audioPreferences[0]
@@ -146,7 +146,10 @@ test.each([
     </StudioStoresContext.Provider>
   )
   const view = render(content(true))
-  await screen.findByText('Executando')
+  // No Pro a barra da prévia some (a Topbar manda): o status se lê pelo atributo da raiz.
+  await waitFor(() =>
+    expect(view.container.querySelector('[data-python-status="running"]')).not.toBeNull(),
+  )
   expect(f.runMutes).toEqual([true])
   const preference = f.audioPreferences[0]
   if (!preference) throw new Error('Preference missing')
@@ -164,8 +167,15 @@ test('the real controls run, answer input, distinguish edited source and restart
     </StrictMode>
   )
   const rendered = render(content())
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
-  await screen.findByText('Executando')
+  // A Ponte clássica continua com os alvos na própria barra (lá não há Rodar na Topbar).
+  expect(screen.getByRole('button', { name: 'Rodar' }).getAttribute('data-live-target')).toBe(
+    'studio-run',
+  )
+  expect(screen.getByRole('button', { name: 'Parar' }).getAttribute('data-live-target')).toBe(
+    'studio-stop',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
+  await screen.findByText('Rodando')
   expect(f.runs()).toBe(1)
   expect(rendered.container.querySelectorAll('iframe')).toHaveLength(1)
   const first = f.sessions[0]!
@@ -179,7 +189,7 @@ test('the real controls run, answer input, distinguish edited source and restart
     }),
   )
   fireEvent.change(await screen.findByLabelText('Seu nome?'), { target: { value: 'Ana' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Enviar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
   await waitFor(() => expect(f.inputs).toEqual([{ kind: 'line', text: 'Ana' }]))
   rendered.rerender(content({ ...f.project, name: 'Novo título' }))
   expect(screen.queryByText(/Seu código mudou/)).toBeNull()
@@ -188,7 +198,7 @@ test('the real controls run, answer input, distinguish edited source and restart
   )
   await screen.findByText(/Seu código mudou/)
   expect(f.runs()).toBe(1)
-  fireEvent.click(screen.getByRole('button', { name: 'Reiniciar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar de novo' }))
   await waitFor(() => expect(f.runs()).toBe(2))
   expect(first.disposed).toBe(true)
   expect(f.sessions[1]!.session.identity.revision).not.toBe(first.session.identity.revision)
@@ -198,19 +208,19 @@ test('the real controls run, answer input, distinguish edited source and restart
   await waitFor(() => expect(rendered.container.querySelectorAll('iframe')).toHaveLength(0))
 })
 
-test('audio projects keep autoRun idle until the child clicks Executar', async () => {
+test('audio projects keep autoRun idle until the child clicks Rodar', async () => {
   const f = await fixture()
   f.project.assets = [portableAudioAsset()]
   const rendered = render(
     <PythonRuntimePreview project={f.project} environment={f.environment} canExecute autoRun />,
   )
   await act(async () => {})
-  expect(screen.getByRole('button', { name: 'Executar' }).hasAttribute('disabled')).toBe(false)
-  expect(screen.queryByText('Executando')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Rodar' }).hasAttribute('disabled')).toBe(false)
+  expect(screen.queryByText('Rodando')).toBeNull()
   expect(f.runs()).toBe(0)
   expect(rendered.container.querySelector('iframe')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
-  await screen.findByText('Executando')
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
+  await screen.findByText('Rodando')
   expect(f.runs()).toBe(1)
 })
 
@@ -225,17 +235,17 @@ test('a new writer or observer revokes the mounted execution without an automati
     />
   )
   const rendered = render(content(1))
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
-  await screen.findByText('Executando')
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
+  await screen.findByText('Rodando')
   rendered.rerender(content(2))
   await screen.findByText('Parado')
   expect(f.runs()).toBe(1)
   expect(f.sessions[0]!.disposed).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
   await waitFor(() => expect(f.runs()).toBe(2))
   rendered.rerender(content(2, false))
   await screen.findByText('Parado')
-  expect(screen.getByRole('button', { name: 'Executar' }).hasAttribute('disabled')).toBe(true)
+  expect(screen.getByRole('button', { name: 'Rodar' }).hasAttribute('disabled')).toBe(true)
   await waitFor(() => expect(rendered.container.querySelectorAll('iframe')).toHaveLength(0))
 })
 
@@ -253,7 +263,7 @@ test('Run captures synchronous editor flushes and never falls back to a closed p
       }}
     />,
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
   await screen.findByRole('alert')
   expect(f.runs()).toBe(0)
   expect(rendered.container.querySelectorAll('iframe')).toHaveLength(0)
@@ -262,8 +272,8 @@ test('Run captures synchronous editor flushes and never falls back to a closed p
 test('a rejected input from an old run cannot show an error over the restarted game', async () => {
   const f = await fixture()
   render(<PythonRuntimePreview project={f.project} environment={f.environment} canExecute />)
-  fireEvent.click(screen.getByRole('button', { name: 'Executar' }))
-  await screen.findByText('Executando')
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
+  await screen.findByText('Rodando')
   const first = f.sessions[0]!
   let reject!: (error: Error) => void
   let calls = 0
@@ -283,17 +293,17 @@ test('a rejected input from an old run cannot show an error over the restarted g
       sequence: 2,
     }),
   )
-  fireEvent.click(await screen.findByRole('button', { name: 'Enviar' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Enviar' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Responder' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
   await waitFor(() => expect(calls).toBe(1))
-  fireEvent.click(screen.getByRole('button', { name: 'Reiniciar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Rodar de novo' }))
   await waitFor(() => expect(f.runs()).toBe(2))
   await act(async () => {
     reject(new Error('old input failure'))
     await pending.catch(() => {})
   })
   expect(screen.queryByRole('alert')).toBeNull()
-  expect(screen.getByText('Executando')).toBeTruthy()
+  expect(screen.getByText('Rodando')).toBeTruthy()
 })
 
 test('the editor exposes console omission while preserving the retained output', async () => {
@@ -307,7 +317,7 @@ test('the editor exposes console omission while preserving the retained output',
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  await screen.findByText('Executando')
+  await screen.findByText('Rodando')
   const first = f.sessions[0]!
   const buffer = createPythonConsoleBuffer()
   buffer.append('stdout', 'x'.repeat(100_000))
@@ -329,4 +339,78 @@ test('the editor exposes console omission while preserving the retained output',
       .map((entry) => entry.text)
       .join(''),
   ).toBe('x'.repeat(100_000 - 36_864))
+})
+
+test('Pro: `controls="hidden"` tira a barra, mostra o cartão e entrega Rodar/Parar por `onCommandsReady`', async () => {
+  const f = await fixture('pro')
+  const received: (PythonRunCommands | null)[] = []
+  const rendered = render(
+    <PythonRuntimePreview
+      project={f.project}
+      environment={f.environment}
+      canExecute
+      controls="hidden"
+      onCommandsReady={(commands) => received.push(commands)}
+    />,
+  )
+  await act(async () => {})
+  expect(screen.queryByRole('button', { name: 'Rodar' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Parar' })).toBeNull()
+  // Os alvos do cursor da professora são da Topbar no Pro: a prévia escondida não leva nenhum
+  // (o cursor usa `querySelector`, e um alvo aqui na frente roubaria o da barra).
+  expect(rendered.container.querySelector('[data-live-target]')).toBeNull()
+  expect(screen.getByText('Aperte Rodar para ver seu programa')).toBeTruthy()
+  expect(received).toHaveLength(1)
+  const commands = received[0]
+  if (!commands) throw new Error('Comandos ausentes')
+  act(() => commands.run())
+  await waitFor(() =>
+    expect(rendered.container.querySelector('[data-python-status="running"]')).not.toBeNull(),
+  )
+  expect(f.runs()).toBe(1)
+  expect(screen.queryByText('Aperte Rodar para ver seu programa')).toBeNull()
+  act(() => commands.stop())
+  await waitFor(() =>
+    expect(rendered.container.querySelector('[data-python-status="stopped"]')).not.toBeNull(),
+  )
+  expect(screen.getByText('Aperte Rodar para ver seu programa')).toBeTruthy()
+  rendered.unmount()
+  expect(received.at(-1)).toBeNull()
+})
+
+test('Pro: o editor publica o estado de execução e as ações na store `proRun` da instância', async () => {
+  const f = await fixture('pro')
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.getState().setProject(f.project)
+  const rendered = render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={f.environment}>
+        <PythonEditorPreview />
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>,
+  )
+  await waitFor(() => expect(stores.proRun.getState().state?.phase).toBe('running'))
+  expect(stores.proRun.getState().state).toMatchObject({ canRun: true, canStop: true })
+  const first = f.sessions[0]!
+  act(() =>
+    first.emit({
+      type: 'input-request',
+      requestId: 'name',
+      prompt: 'Seu nome?',
+      identity: first.session.identity,
+      sequence: 2,
+    }),
+  )
+  await waitFor(() => expect(stores.proRun.getState().state?.phase).toBe('waiting'))
+  // A "Conversa com o programa": a pergunta vira o rótulo do campo e Responder manda a linha.
+  fireEvent.change(await screen.findByLabelText('Seu nome?'), { target: { value: 'Ana' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Responder' }))
+  await waitFor(() => expect(f.inputs).toEqual([{ kind: 'line', text: 'Ana' }]))
+  act(() => stores.proRun.getState().actions?.stop())
+  await waitFor(() => expect(stores.proRun.getState().state?.phase).toBe('idle'))
+  act(() => stores.proRun.getState().actions?.run())
+  await waitFor(() => expect(f.runs()).toBe(2))
+  rendered.unmount()
+  expect(stores.proRun.getState().state).toBeNull()
+  expect(stores.proRun.getState().actions).toBeNull()
 })

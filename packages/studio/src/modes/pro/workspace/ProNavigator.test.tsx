@@ -30,15 +30,23 @@ describe('navegação do projeto', () => {
         />
       </StudioStoresContext.Provider>,
     )
-    fireEvent.click(view.getByRole('button', { name: 'Buscar' }))
-    fireEvent.click(view.getByRole('button', { name: 'Conteúdo' }))
+    fireEvent.click(view.getByRole('button', { name: 'Procurar' }))
+    fireEvent.click(view.getByRole('button', { name: 'Dentro do código' }))
     fireEvent.change(view.getByRole('searchbox'), { target: { value: 'score' } })
+    // Resultados agrupados por arquivo: o nome curto em cima, "linha 2" e o trecho embaixo.
+    expect(view.getByRole('list', { name: 'Resultados' }).textContent).toContain('linha 2')
     fireEvent.click(view.getByRole('button', { name: /rules.ts:2/ }))
     expect(opened).toEqual([{ path: 'rules.ts', line: 2, column: 7, text: 'const score = 0' }])
+    fireEvent.click(view.getByRole('button', { name: 'Nome do arquivo' }))
+    fireEvent.change(view.getByRole('searchbox'), { target: { value: 'main' } })
+    fireEvent.click(view.getByRole('button', { name: 'main.ts' }))
+    expect(opened.at(-1)?.path).toBe('main.ts')
     await act(async () => {
       fireEvent.click(view.getByRole('button', { name: 'Materiais' }))
     })
-    fireEvent.click(view.getByRole('button', { name: 'Abrir biblioteca de materiais' }))
+    // "Trazer" abre a janela "Materiais do jogo" na aba de agora.
+    fireEvent.click(await view.findByRole('button', { name: 'Trazer' }))
     expect(stores.ui.getState().showAssets).toBe(true)
+    expect(stores.ui.getState().assetsTab).toBe('images')
   })
 })

@@ -19,6 +19,7 @@ import {
   type StudioLimits,
   useProjectStore,
 } from './projectStore'
+import { createProRunStore } from './proRun'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
@@ -46,6 +47,8 @@ export interface StudioStores {
   pythonConsole: PythonEditorConsole
   /** As pilhas de desfazer dos editores desta instância (os botões da barra). */
   editorHistory: EditorHistory
+  /** O estado de execução do projeto Pro (o Rodar/Parar da barra lê daqui; a prévia publica). */
+  proRun: ReturnType<typeof createProRunStore>
   persistence: PersistenceService
   workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
@@ -84,6 +87,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     runtimeCapture: createStudioRuntimeCapture(),
     pythonConsole: createPythonEditorConsole(),
     editorHistory: createEditorHistory(),
+    proRun: createProRunStore(),
     workspacePreferences:
       options.workspacePreferences ??
       ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),

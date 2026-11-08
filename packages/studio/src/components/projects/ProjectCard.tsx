@@ -5,7 +5,7 @@ import { ConfirmDialog, IconFolderOpen, IconImage } from '#ui'
 import { downloadProjectAsJSON } from '../../export/download'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
-import { useT } from '../../studio/i18n'
+import { useSharedT } from '../../studio/shared-i18n'
 import { StudioThemeScope } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
@@ -68,7 +68,7 @@ export const ProjectCard = memo(function ProjectCard({
   onOpen,
   takenNames,
 }: ProjectCardProps): JSX.Element {
-  const t = useT()
+  const t = useSharedT()
   const [editing, setEditing] = useState(false)
   const [opening, setOpening] = useState(false)
   const [draft, setDraft] = useState(summary.name)

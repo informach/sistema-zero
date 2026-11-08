@@ -7,7 +7,7 @@ import {
 } from '../../core/projectDocumentGuards'
 import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
-import { useT } from '../../studio/i18n'
+import { useSharedT } from '../../studio/shared-i18n'
 import {
   ImportTooBigError,
   importRefusalDetail,
@@ -42,7 +42,7 @@ export function ImportButton({
   authorizePython,
   ref,
 }: ImportButtonProps): JSX.Element {
-  const t = useT()
+  const t = useSharedT()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const authority = useRef({ javascriptAvailable, authorizeJavaScript, authorizePython })
   authority.current = { javascriptAvailable, authorizeJavaScript, authorizePython }

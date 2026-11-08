@@ -11,16 +11,16 @@ for (const fixture of ['portable', 'classic-portable'])
     page,
   }) => {
     await page.evaluate((fixture) => globalThis.pythonPreviewProbe.create(fixture), fixture)
-    await page.getByRole('button', { name: 'Executar', exact: true }).click()
-    await expect(page.getByRole('status')).toHaveText('Programa concluído')
+    await page.getByRole('button', { name: 'Rodar', exact: true }).click()
+    await expect(page.getByRole('status')).toHaveText('Concluído')
     const before = await page.evaluate(() => globalThis.pythonPreviewProbe.events())
     expect(before.some((event) => event.type === 'console' && event.text.includes('ação 🐢'))).toBe(
       true,
     )
     await page.evaluate(() => globalThis.pythonPreviewProbe.source('print("versão nova")\n'))
     await expect(page.getByText(/Seu código mudou/)).toBeVisible()
-    await page.getByRole('button', { name: 'Reiniciar' }).click()
-    await expect(page.getByRole('status')).toHaveText('Programa concluído')
+    await page.getByRole('button', { name: 'Rodar de novo' }).click()
+    await expect(page.getByRole('status')).toHaveText('Concluído')
     const after = await page.evaluate(() => globalThis.pythonPreviewProbe.events())
     const result = after.find(
       (event) => event.type === 'console' && event.text.includes('versão nova'),
@@ -36,24 +36,24 @@ test('Python input uses the visible form and a writer change stops the session',
   page,
 }) => {
   await page.evaluate(() => globalThis.pythonPreviewProbe.create('classic-input'))
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await expect(page.getByRole('textbox')).toBeVisible()
   await page.getByRole('textbox').fill('Ana 🐢')
-  await page.getByRole('button', { name: 'Enviar' }).click()
+  await page.getByRole('button', { name: 'Responder' }).click()
   await page.waitForFunction(() =>
     globalThis.pythonPreviewProbe
       .events()
       .some((event) => event.type === 'input-request' && event.requestId === 'input-2'),
   )
   await expect(page.getByRole('textbox')).toHaveValue('')
-  await page.getByRole('button', { name: 'Enviar' }).click()
+  await page.getByRole('button', { name: 'Responder' }).click()
   await page.waitForFunction(() =>
     globalThis.pythonPreviewProbe
       .events()
       .some((event) => event.type === 'input-request' && event.requestId === 'input-3'),
   )
   await page.getByRole('button', { name: 'Encerrar entrada' }).click()
-  await expect(page.getByRole('status')).toHaveText('Programa concluído')
+  await expect(page.getByRole('status')).toHaveText('Concluído')
   expect(
     await page.evaluate(() =>
       globalThis.pythonPreviewProbe
@@ -68,7 +68,7 @@ test('Python input uses the visible form and a writer change stops the session',
 
 test('Turtle capture uses the presented runtime and rejects changed source', async ({ page }) => {
   await page.evaluate(() => globalThis.pythonPreviewProbe.create('classic-turtleDrawing'))
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await page.waitForFunction(() =>
     globalThis.pythonPreviewProbe
       .events()
@@ -79,6 +79,6 @@ test('Turtle capture uses the presented runtime and rejects changed source', asy
   await page.evaluate(() => globalThis.pythonPreviewProbe.source('print("changed")\n'))
   expect(await page.evaluate(() => globalThis.pythonPreviewProbe.capture())).toBeNull()
   await page.evaluate(() => globalThis.pythonPreviewProbe.allow(false))
-  await expect(page.getByRole('button', { name: 'Executar', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Rodar', exact: true })).toBeDisabled()
   await expect(page.locator('iframe')).toHaveCount(0)
 })

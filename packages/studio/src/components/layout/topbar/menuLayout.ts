@@ -73,6 +73,8 @@ export const STUDIO_MENU_LAYOUT = [
     labelKey: 'topbar.group.studio',
     items: [
       { id: 'theme', labelKey: 'topbar.theme' },
+      // Só no modo Código (o projeto Pro): os atalhos do editor de código.
+      { id: 'shortcuts', labelKey: 'topbar.shortcuts' },
       { id: 'projects', labelKey: 'topbar.projects' },
     ],
   },

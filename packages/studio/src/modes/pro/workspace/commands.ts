@@ -3,7 +3,7 @@ export interface ProCommand {
   label: string
   enabled: boolean
   shortcut?: string
-  keybinding?: 'quickOpen' | 'searchProject' | 'symbols' | 'rename' | 'references'
+  keybinding?: 'quickOpen' | 'searchProject' | 'symbols' | 'rename' | 'references' | 'commands'
   run(): void
 }
 

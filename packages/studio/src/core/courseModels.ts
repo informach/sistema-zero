@@ -26,7 +26,7 @@ const SHA = /^[a-f0-9]{64}$/
 export function courseModelSha(
   asset: Pick<ProjectAsset, 'kind' | 'source' | 'libId'> | null | undefined,
 ): string | null {
-  if (!asset || asset.kind !== 'model3d' || asset.source !== 'library') return null
+  if (asset?.kind !== 'model3d' || asset.source !== 'library') return null
   const id = asset.libId
   if (typeof id !== 'string' || !id.startsWith(COURSE_MODEL_LIB_PREFIX)) return null
   const sha = id.slice(COURSE_MODEL_LIB_PREFIX.length)

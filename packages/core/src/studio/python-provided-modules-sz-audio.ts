@@ -35,7 +35,7 @@ export const SZ_AUDIO_MODULE_DESCRIPTOR = StudioPythonProvidedModuleDescriptorSc
     notes: [
       'Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.',
       'Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.',
-      'Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.',
+      'Clique em Jogar ou Rodar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.',
       'No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.',
       'Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API.',
     ],

@@ -31,7 +31,7 @@ const pack = (await Bun.file(new URL('../assets/manifest.json', import.meta.url)
   }>
 }
 const pngs = await Promise.all(
-  pack.assets.map((asset) => readFile(new URL('../assets/' + asset.file, import.meta.url))),
+  pack.assets.map((asset) => readFile(new URL(`../assets/${asset.file}`, import.meta.url))),
 )
 function projectAssets(): ProjectAsset[] {
   return pack.assets.map((asset, index) => ({
@@ -41,7 +41,7 @@ function projectAssets(): ProjectAsset[] {
     source: 'upload',
     width: asset.width,
     height: asset.height,
-    dataUrl: 'data:image/png;base64,' + pngs[index]!.toString('base64'),
+    dataUrl: `data:image/png;base64,${pngs[index]!.toString('base64')}`,
     sprite: structuredClone(asset.sprite),
   }))
 }
@@ -52,7 +52,7 @@ let base: string
 
 beforeAll(async () => {
   const entries = ['assets.ts', 'model.ts', 'render/canvas.ts'].map((name) =>
-    fileURLToPath(new URL('../src/' + name, import.meta.url)),
+    fileURLToPath(new URL(`../src/${name}`, import.meta.url)),
   )
   const build = await Bun.build({
     entrypoints: entries,
@@ -109,7 +109,7 @@ beforeAll(async () => {
       response.end(modules.get(path))
       return
     }
-    const bytes = served.get('public/' + path)
+    const bytes = served.get(`public/${path}`)
     if (bytes) {
       response.writeHead(200, {
         'content-type': path.endsWith('.json') ? 'application/json' : 'image/png',

@@ -231,7 +231,7 @@ export function createPythonAudioService(options: {
       stop(request.id, voice)
       if (!cancelled) report(request.id)
       if (error instanceof DOMException && error.name === 'NotAllowedError')
-        throw new Error('Clique em Jogar ou Executar para permitir o som e tente novamente.')
+        throw new Error('Clique em Jogar ou Rodar para permitir o som e tente novamente.')
       throw error
     }
   }

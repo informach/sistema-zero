@@ -202,6 +202,121 @@ describe('Topbar × chrome do host', () => {
   })
 })
 
+describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
+  function mountPro(width = 1440) {
+    const stores = createStudioStores({ persistence: 'none' })
+    stores.project.getState().setProject({
+      ...createEmptyProject('01J00000000000000000000PRO', 'Meu jogo Pro'),
+      kind: 'pro',
+      mode: 'code',
+    } as never)
+    const view = mount(width, null, (node) => (
+      <StudioStoresContext.Provider value={stores}>{node}</StudioStoresContext.Provider>
+    ))
+    const header = view.container.querySelector('header') as HTMLElement
+    return { stores, view, header }
+  }
+
+  it('o meio da barra é Rodar / Parar (não o segmentado), desligados até a prévia publicar', () => {
+    const { header } = mountPro()
+    const grupos = Array.from(header.children).map((el) => el.className)
+    expect(grupos).toEqual(['sz-bar__start', 'sz-bar__center', 'sz-bar__end'])
+    const meio = header.children[1] as HTMLElement
+    expect(within(meio).queryByRole('group', { name: 'Modo de edição' })).toBeNull()
+    const rodar = within(meio).getByRole('button', { name: 'Rodar' })
+    const parar = within(meio).getByRole('button', { name: 'Parar' })
+    expect(rodar.getAttribute('data-live-target')).toBe('studio-run')
+    expect(parar.getAttribute('data-live-target')).toBe('studio-stop')
+    expect(rodar.hasAttribute('disabled')).toBe(true)
+    expect(parar.hasAttribute('disabled')).toBe(true)
+    // A barra contribui com UM alvo de cada (o cursor da professora usa `querySelector`). Que
+    // ninguém mais na página desenhe os seus no largo é cobrado onde eles moram:
+    // `ProWorkspaceLayout.test.tsx` (palco e botão flutuante) e `PythonRuntimePreview.test.tsx`
+    // (`controls="hidden"`).
+    expect(header.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(1)
+    expect(header.querySelectorAll('[data-live-target="studio-stop"]')).toHaveLength(1)
+  })
+
+  it('lê a store da instância: Rodar vira "Rodar de novo", chama a ação e traz o palco; Parar para', () => {
+    const { stores, header } = mountPro()
+    const run = mock(() => {})
+    const stop = mock(() => {})
+    const reveal = mock(() => {})
+    act(() => {
+      stores.proRun.getState().setRevealStage(reveal)
+      stores.proRun
+        .getState()
+        .publish({ phase: 'idle', canRun: true, canStop: false }, { run, stop })
+    })
+    const meio = header.children[1] as HTMLElement
+    fireEvent.click(within(meio).getByRole('button', { name: 'Rodar' }))
+    expect(run).toHaveBeenCalledTimes(1)
+    expect(reveal).toHaveBeenCalledTimes(1)
+    act(() => {
+      stores.proRun
+        .getState()
+        .publish({ phase: 'running', canRun: true, canStop: true }, { run, stop })
+    })
+    expect(within(meio).getByRole('button', { name: 'Rodar de novo' })).toBeTruthy()
+    fireEvent.click(within(meio).getByRole('button', { name: 'Parar' }))
+    expect(stop).toHaveBeenCalledTimes(1)
+    // A prévia saiu de cena (a proposta do construtor): tudo desliga de novo.
+    act(() => stores.proRun.getState().publish(null, null))
+    expect(within(meio).getByRole('button', { name: 'Rodar' }).hasAttribute('disabled')).toBe(true)
+  })
+
+  it('no Pro o Compartilhar é amarelo (o azul é do Rodar) e o olho da prévia não existe', () => {
+    const stores = createStudioStores({ persistence: 'none' })
+    stores.project.getState().setProject({
+      ...createEmptyProject('01J00000000000000000000PRO', 'Meu jogo Pro'),
+      kind: 'pro',
+      mode: 'code',
+    } as never)
+    mount(1440, null, (node) => (
+      <StudioStoresContext.Provider value={stores}>
+        <StudioShareProvider value={SHARE}>{node}</StudioShareProvider>
+      </StudioStoresContext.Provider>
+    ))
+    expect(screen.getByRole('button', { name: 'Compartilhar' }).className).toBe(
+      'sz-bar-pill sz-bar-pill--joy',
+    )
+    expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
+  })
+
+  it('menu ⋯ no Pro em JavaScript: "Mensagens do jogo", "Atalhos do teclado" e sem Extensões', async () => {
+    mountPro()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    const ids = screen
+      .getAllByRole('menuitem')
+      .map((item) => item.getAttribute('data-sz-menu-item'))
+    expect(ids).toContain('shortcuts')
+    expect(ids).not.toContain('extensions')
+    expect(screen.getByRole('menuitem', { name: 'Mensagens do jogo' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Atalhos do teclado' }))
+    expect(await screen.findByRole('dialog', { name: 'Atalhos do teclado' })).toBeTruthy()
+  })
+
+  it('no celular (abaixo de 720px) o meio some: o Rodar é o botão flutuante do workspace', () => {
+    const { header } = mountPro(600)
+    expect(Array.from(header.children).map((el) => el.className)).toEqual([
+      'sz-bar__start',
+      'sz-bar__end',
+    ])
+    expect(document.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(0)
+  })
+
+  it('no estreito os dois ficam só no ícone, com o nome acessível de sempre', () => {
+    const { header } = mountPro(800)
+    const meio = header.children[1] as HTMLElement
+    const rodar = within(meio).getByRole('button', { name: 'Rodar' })
+    expect(rodar.className).toContain('sz-bar-pill--icon')
+    expect(rodar.getAttribute('title')).toBe('Rodar')
+    expect(within(meio).getByRole('button', { name: 'Parar' }).className).toContain(
+      'sz-bar-pill--icon',
+    )
+  })
+})
+
 describe('Topbar × a tela-modelo do Estúdio', () => {
   it('três grupos: [voltar, nome, Salvo] · [modos] · [olho, ⋯, Compartilhar]', () => {
     const { container } = mount(1440, null, (node) => (

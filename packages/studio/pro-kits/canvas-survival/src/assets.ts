@@ -450,7 +450,7 @@ export async function loadArenaAssets(
         resources.set(entry.sha256, decoded)
       }
       validateCharacter(binding, entry, decoded.width, decoded.height)
-      const resourceKey = entry.sha256 + ':' + JSON.stringify(entry.sprite ?? null)
+      const resourceKey = `${entry.sha256}:${JSON.stringify(entry.sprite ?? null)}`
       roles[role] = {
         image: decoded.image,
         width: decoded.width,

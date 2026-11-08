@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react'
-import { Modal } from '#ui'
+import { cn, IconFile, Modal } from '#ui'
+import { proFileBaseName, proFileKind } from '../../../components/code/proFileKinds'
 import type { ProjectTree } from '../../../core/proProject'
 import { useT } from '../../../studio/i18n'
 import { searchProFiles } from './search'
@@ -69,7 +70,7 @@ export function ProQuickOpen({
             choose(selected)
           }
         }}
-        className="my-2 min-h-10 w-full rounded border border-sz-border bg-sz-bg px-3"
+        className="my-2 min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3"
       />
       <p className="mb-2 text-xs text-sz-fg-mute">{t('pro.quickOpenHint')}</p>
       <div
@@ -78,20 +79,32 @@ export function ProQuickOpen({
         aria-label={t('pro.files')}
         className="max-h-80 overflow-auto"
       >
-        {paths.map((path, position) => (
-          <button
-            key={path}
-            id={`${id}-${position}`}
-            type="button"
-            role="option"
-            aria-selected={selected === path}
-            tabIndex={-1}
-            onClick={() => choose(path)}
-            className="block min-h-9 w-full break-all rounded px-2 py-1 text-left font-mono text-xs aria-selected:bg-sz-accent/15 hover:bg-sz-bg"
-          >
-            {path}
-          </button>
-        ))}
+        {paths.map((path, position) => {
+          const kind = proFileKind(path)
+          return (
+            <button
+              key={path}
+              id={`${id}-${position}`}
+              type="button"
+              role="option"
+              aria-selected={selected === path}
+              tabIndex={-1}
+              onClick={() => choose(path)}
+              className="flex min-h-11 w-full items-center gap-3 rounded-xl px-2 py-1 text-left aria-selected:bg-sz-accent/15 hover:bg-sz-bg"
+            >
+              <span
+                aria-hidden="true"
+                className={cn('sz-pro-tile sz-pro-tile--sm', `sz-pro-tile--${kind.tone}`)}
+              >
+                {kind.short || <IconFile />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold">{proFileBaseName(path)}</span>
+                <span className="block truncate font-mono text-xs text-sz-fg-soft">{path}</span>
+              </span>
+            </button>
+          )
+        })}
       </div>
       {!paths.length && <p role="status">{t('pro.noFiles')}</p>}
     </Modal>

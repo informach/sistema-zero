@@ -173,6 +173,7 @@ describe('payload do runtime do Jogo 2D', () => {
     // Sem reanalisar o miolo a contagem não é exata, mas qualquer template aparece.
     expect(templates('var a = 1; /* `comentário` */ var b = 2;')).toBe(0)
     expect(templates('var b = `x`;')).toBeGreaterThan(0)
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: a string COM `${}` é o caso contado.
     expect(templates('var c = `y${a}z`;')).toBeGreaterThan(0)
     expect(templates(gameTwoDRuntimeSource)).toBe(0)
   })

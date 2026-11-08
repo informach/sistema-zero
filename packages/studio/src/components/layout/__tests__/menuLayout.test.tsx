@@ -67,7 +67,7 @@ describe('a árvore editorial do menu ⋯', () => {
   /** Monta a barra com TODAS as features do host ligadas e devolve os ids exibidos. */
   function idsExibidos(
     mode: 'blocks' | 'code',
-    opts: { with3D?: boolean } = {},
+    opts: { with3D?: boolean; pro?: boolean } = {},
     width = 390,
   ): StudioMenuItemId[] {
     // Limpa ANTES (e não depois): quem chama dois contextos seguidos teria duas
@@ -79,6 +79,7 @@ describe('a árvore editorial do menu ⋯', () => {
       project: {
         ...project,
         mode,
+        ...(opts.pro ? { kind: 'pro' as const } : {}),
         installedExtensions: opts.with3D
           ? [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
           : project.installedExtensions,
@@ -114,16 +115,22 @@ describe('a árvore editorial do menu ⋯', () => {
 
   it('todo item da árvore é alcançável por ALGUM contexto real (nenhum item morto)', () => {
     // Nenhum contexto sozinho mostra tudo: terminal e IA só existem no modo
-    // Código, os materiais só no básico (o Pro gerencia arquivos na árvore) e a
-    // porta dos modelos 3D pede quem consuma 3D. A UNIÃO dos contextos é que tem
+    // Código, os materiais só no básico (o Pro gerencia arquivos na árvore), a
+    // porta dos modelos 3D pede quem consuma 3D e os atalhos são do editor do Pro. A UNIÃO dos contextos é que tem
     // de cobrir a árvore inteira — um id que nenhum cenário produz é item que a
     // criança nunca vê.
     const cobertos = new Set([
       ...idsExibidos('blocks'),
       ...idsExibidos('blocks', { with3D: true }),
       ...idsExibidos('code'),
+      ...idsExibidos('code', { pro: true }),
     ])
     expect(itens.filter((id) => !cobertos.has(id))).toEqual([])
+  })
+
+  it('"Atalhos do teclado" só no Pro: o Código clássico não tem nenhum daqueles atalhos', () => {
+    expect(idsExibidos('code')).not.toContain('shortcuts')
+    expect(idsExibidos('code', { pro: true })).toContain('shortcuts')
   })
 
   it('os itens saem na ordem da árvore, agrupados como ela manda', () => {

@@ -122,6 +122,7 @@ const gameTwoDEngineSource =
   `
 })();`
 
+// biome-ignore lint/style/useTemplate: o templateGuard.test.ts varre o TEXTO deste arquivo a partir da declaração do motor e conta crases e interpolações; aqui a concatenação é de propósito (sem crase nenhuma, nem neste comentário).
 export const gameTwoDRuntimeSource = buildProjectRunContextRuntime() + '\n' + gameTwoDEngineSource
 
 // The serialized project context may contain a template literal after the host

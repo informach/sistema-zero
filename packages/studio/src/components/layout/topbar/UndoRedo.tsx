@@ -40,7 +40,8 @@ export function useUndoRedo(mode: IDEMode): UndoRedoState | null {
   }
 }
 
-function isApple(): boolean {
+/** Mac e iPad mostram ⌘ no lugar de Ctrl (compartilhado com a janela dos atalhos). */
+export function isApple(): boolean {
   if (typeof navigator === 'undefined') return false
   const hint = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
   return /mac|iphone|ipad|ipod/i.test(hint?.platform ?? navigator.platform ?? '')

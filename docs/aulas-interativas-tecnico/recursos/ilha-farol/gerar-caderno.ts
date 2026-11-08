@@ -8,6 +8,7 @@ import { gameThreeDBlocks } from '../../../../packages/studio/src/official-exten
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 import { ilhaAulas } from '../../qa/ilha-do-farol-conteudo'
+import { ILHA_PREPARO } from '../../qa/ilha-do-farol-projeto'
 
 const root = resolve(import.meta.dirname, '../../../..')
 const out = resolve(root, 'tmp/pdfs/ilha-farol')
@@ -122,14 +123,14 @@ const drawings: Record<string, string> = {
     'sz_frame_start',
     'Ao iniciar',
     prepared('Criar a cena, a câmera e a luz') +
-      model('cenario', 'noite-na-ilha', '140') +
+      model('cenario', 'noite-na-ilha', String(ILHA_PREPARO.cenario.tamanho)) +
       prepared('Colocar o objeto cenario') +
-      model('farol', 'farol-de-pedra', '5.3') +
+      model('farol', 'farol-de-pedra', String(ILHA_PREPARO.farol.tamanho)) +
       prepared('Colocar o objeto farol') +
-      model('barco', 'barco-pirata', '3.1') +
+      model('barco', 'barco-pirata', String(ILHA_PREPARO.barco.tamanho)) +
       prepared('Pedras e posições') +
-      model('personagem', 'pirata', '1.66') +
-      model('chave', 'chave-de-estrela', '1.24') +
+      model('personagem', 'pirata', String(ILHA_PREPARO.personagem.tamanho)) +
+      model('chave', 'chave-de-estrela', String(ILHA_PREPARO.chave.tamanho)) +
       prepared('Outros blocos'),
   ),
   'sem-chave': encounter(

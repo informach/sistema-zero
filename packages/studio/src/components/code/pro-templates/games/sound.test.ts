@@ -141,7 +141,7 @@ test('remote, traversal, invalid channels/volumes and unbounded definitions are 
     expect(() => f.bank.define('a', path, 'music')).toThrow()
   expect(() => f.bank.volume('music', NaN)).toThrow()
   expect(() => f.bank.volume('music', 1.1)).toThrow()
-  for (let n = 0; n < 16; n++) f.bank.define('s-' + n, 'a.wav', 'effects')
+  for (let n = 0; n < 16; n++) f.bank.define(`s-${n}`, 'a.wav', 'effects')
   expect(() => f.bank.define('overflow', 'a.wav', 'effects')).toThrow()
   f.bank.dispose()
 })

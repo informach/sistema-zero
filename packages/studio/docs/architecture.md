@@ -144,6 +144,33 @@ Monaco possui um patch de ciclo de vida global documentado em
 [patches/README.md](../../../patches/README.md). Não substituir essa correção por
 retenção de diffs, aquecimento artificial de menus ou espera antes de F1.
 
+## Redesenho do workspace Pro (08/11/2026)
+
+Proposta aprovada no Canvas "Studio Pro — Redesenho". O workspace segue sendo um só para
+JavaScript e Python; mudaram o lugar e o nome das peças, nenhum recurso saiu.
+
+- **Execução fora da prévia:** `state/proRun.ts` é uma store por instância (`StudioStores.proRun`)
+  com a fase (`idle`, `preparing` com passos, `running`, `waiting`, `done`, `error`,
+  `unsupported`), `stale` e as ações `run`/`stop`/`reload`. Quem publica é a prévia montada
+  (`ProPreview` local, `RemoteProPreview`, `PythonEditorPreview` no Pro); quem lê é o
+  `ProRunControls` no meio da Topbar, o cabeçalho do palco (`ProStage`), o cartão de estado
+  (`ProStageState`) e as abas do celular. `revealStage` é registrado pelo layout.
+- **Três tamanhos do próprio Studio** (`proLayoutTier`): largo ≥1200 (trilho, painel lateral fixo,
+  `[código | palco]`, gaveta), tablet 720–1199 (painel lateral como gaveta), celular <720 (abas
+  Arquivos · Código · Jogo · Saída e o Rodar flutuante). Trocar de tamanho não remonta Monaco
+  nem a prévia: o mesmo DOM só alterna `hidden` e classes.
+- **Faixa única do editor:** `MonacoTabs.headerSlot` deixa o Pro desenhar `ProEditorStrip` (abas
+  com ladrilho, "Arrumar código", "Aa", menu "Mais"); `ProCodeTools` é lógica e janelas, e o
+  "Mapa do arquivo" é uma coluna ao lado do código (não bloqueia a escrita).
+- **Painéis:** `ProRail` escolhe a vista (`preferences.panel`); `ProFileTree` usa
+  `components/code/proFileKinds.ts` (ladrilho, frase de apoio, a gaveta "Configuração"),
+  `ProNewFileDialog` cria arquivos, `ProAssetPaths` é o único lugar dos materiais no código.
+- **Gaveta:** `ProDock` (abas reais; `ConsolePanel variant="messages" | "repl"`).
+- **Preferências:** `ProWorkspacePreferences.sizes` passou a `[código, palco]` (três números antigos
+  migram), com `panel` e `bottom: 'repl'` novos. É tipo público.
+- **`PythonRuntimePreview`** (API pública): `controls="hidden"` e `onCommandsReady`, com padrão
+  igual ao de antes para o Admin e a Ponte.
+
 ## Comandos locais
 
 ```sh

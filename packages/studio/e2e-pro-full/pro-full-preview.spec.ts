@@ -60,8 +60,8 @@ test('Pro project runs, reflects edits, uses the real terminal and reopens with 
   ).toBe(false)
 
   // Terminal real no mesmo WebContainer: npm executa e enxerga os arquivos do projeto.
-  await page.getByRole('button', { name: 'Terminal', exact: true }).click()
-  await page.getByRole('button', { name: 'Carregar terminal real' }).click()
+  await page.getByRole('tab', { name: /^Terminal/ }).click()
+  await page.getByRole('button', { name: 'Abrir o terminal' }).click()
   const rows = page.locator('.xterm-rows')
   await expect(rows).toContainText('Arquivos do projeto montados', { timeout: 120_000 })
   await page.locator('.xterm').click()

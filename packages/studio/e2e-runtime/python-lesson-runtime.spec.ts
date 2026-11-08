@@ -10,7 +10,7 @@ for (const kind of ['classic', 'pro'])
     await expect(page.getByTestId('admission')).toHaveText('ready')
     expect(await page.evaluate(() => globalThis.lessonRuntimeProbe.analyze())).toBe(0)
     await expect(page.getByTestId('analysis')).toHaveText('Module')
-    await page.getByRole('button', { name: 'Executar', exact: true }).click()
+    await page.getByRole('button', { name: 'Rodar', exact: true }).click()
     await page.waitForFunction(() =>
       globalThis.lessonRuntimeProbe
         .read()

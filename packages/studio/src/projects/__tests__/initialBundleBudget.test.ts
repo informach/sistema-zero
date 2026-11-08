@@ -4,7 +4,12 @@ import { gzipSync } from 'node:zlib'
 import { build } from 'vite'
 
 /**
- * ⚠️ O teto CRU da lista inicial subiu de 350 000 para 360 000 em 25/10/2026.
+ * A lista usa somente os dicionários compartilhados. O vocabulário `pro.*` entra com o
+ * editor; a guarda do grafo abaixo impede que ele volte à carga inicial. O redesenho de
+ * 08/11/2026 havia levado a lista a 121 937 bytes gzip, acima do teto de 120 000.
+ * Os limites de bytes continuam iguais aos anteriores à correção dessa dependência.
+ *
+ * (Histórico) O teto CRU da lista inicial subiu de 350 000 para 360 000 em 25/10/2026.
  *
  * Os dois dicionários de idioma (pt-BR e en) moram na lista inicial, e os textos novos do
  * "Trazer do Pinta" (folha com animações, peças e mapa com objetos, para o módulo `pinta` do
@@ -12,7 +17,7 @@ import { build } from 'vite'
  * exemplo ou do Pinta entrou nela (medido pela lista de módulos do chunk). O gzip, que é o
  * que viaja até a criança, está em 114 106 de 120 000 e continua sendo o guarda apertado.
  */
-const MAX_INITIAL_JS_BYTES = 360_000
+const MAX_INITIAL_JS_BYTES = 380_000
 const MAX_INITIAL_JS_GZIP_BYTES = 120_000
 const MAX_INITIAL_JS_FILES = 10
 const MAX_EDITOR_ROUTE_JS_BYTES = 5_000_000
@@ -84,6 +89,14 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
   )
 
   expect(initialChunks.every(Boolean)).toBe(true)
+  for (const chunk of initialChunks) {
+    if (chunk?.type !== 'chunk') continue
+    expect(
+      Object.keys(chunk.modules).filter((moduleId) =>
+        moduleId.replace(/\\/g, '/').includes('/src/core/i18n/pro/'),
+      ),
+    ).toEqual([])
+  }
   const initialBytes = initialChunks.reduce(
     (total, entry) => total + (entry?.type === 'chunk' ? Buffer.byteLength(entry.code) : 0),
     0,

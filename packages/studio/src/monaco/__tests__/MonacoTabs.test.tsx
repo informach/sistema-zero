@@ -931,3 +931,52 @@ describe('MonacoTabs — Formatar', () => {
     await waitFor(() => expect(button.disabled).toBe(false))
   })
 })
+
+describe('MonacoTabs — headerSlot (a faixa única do Pro, 11/2026)', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  it('troca o cabeçalho inteiro pelo do chamador, que recebe abas, formatar e o compacto', () => {
+    const seen: string[] = []
+    render(
+      <MonacoTabs
+        files={[
+          { name: 'a.js', value: '' },
+          { name: 'b.js', value: '' },
+        ]}
+        onChange={() => {}}
+        modelPathPrefix="proj-slot"
+        formatLabel="Formatar"
+        temporaryFile="b.js"
+        canCloseFile={() => true}
+        onCloseFile={(name) => seen.push(`close:${name}`)}
+        onActiveFileChange={(name) => seen.push(`active:${name}`)}
+        headerSlot={(ctx) => (
+          <div data-testid="slot">
+            {ctx.files.map((file) => (
+              <button key={file.name} type="button" onClick={() => ctx.setActive(file.name)}>
+                {file.name}
+                {ctx.temporaryFile === file.name ? ' (temporária)' : ''}
+              </button>
+            ))}
+            <button type="button" onClick={() => ctx.closeFile('b.js')}>
+              fechar b
+            </button>
+            <span>{ctx.canFormat ? 'tem formatador' : 'sem formatador'}</span>
+            <span>{ctx.compact ? 'compacto' : 'largo'}</span>
+          </div>
+        )}
+      />,
+    )
+    // O botão "Formatar" de sempre NÃO existe: o slot substitui o cabeçalho inteiro.
+    expect(screen.queryByRole('button', { name: 'Formatar' })).toBeNull()
+    expect(screen.getByText('tem formatador')).toBeTruthy()
+    expect(screen.getByText('largo')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'b.js (temporária)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'fechar b' }))
+    expect(seen).toEqual(['active:b.js', 'close:b.js'])
+  })
+})

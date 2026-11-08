@@ -18,10 +18,12 @@ async function createProProject(page: Page): Promise<void> {
   await page.getByText('Pro (código)', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
-  // Esconde o preview: no PRO ele bota um WebContainer + npm install em
+  // Esconde o palco: no PRO ele bota um WebContainer + npm install em
   // background — peso/rede que os cenários abaixo não usam e que saturava o
-  // servidor de dev (o último teste da suíte estourava timeout).
-  await page.getByRole('button', { name: 'Ocultar pré-visualização' }).click()
+  // servidor de dev (o último teste da suíte estourava timeout). Desde o redesenho de
+  // 11/2026 o olho da barra não existe no Pro: quem esconde é o segmentado do palco, e o
+  // Parar desliga o servidor.
+  await page.getByRole('button', { name: 'Só o código' }).click()
 }
 
 /** Abre a Ponte, foca o script.js e limpa o conteúdo (pronto p/ digitar). */
@@ -282,7 +284,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Pro standalone não oferece um segundo painel de IA local', async ({ page }) => {
     await createProProject(page)
-    await expect(page.getByRole('button', { name: 'Console', exact: true })).toBeVisible()
+    await expect(page.getByRole('tab', { name: 'Mensagens do jogo' })).toBeVisible()
     await expect(page.getByRole('tab', { name: 'IA' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Configurar IA' })).toHaveCount(0)
   })
@@ -478,24 +480,26 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Modo Código (PRO) permite criar arquivo na árvore', async ({ page }) => {
     await createProProject(page)
-    await page.getByTitle('Novo arquivo na raiz').click()
-    await page.getByLabel('Nome do novo item').fill('helper-smoke.mjs')
-    await page.getByRole('button', { name: 'Criar', exact: true }).click()
-    await expect(page.getByText('helper-smoke.mjs')).toBeVisible()
+    await page.getByRole('button', { name: 'Novo', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Criar um arquivo' })
+    await dialog.getByLabel('Nome do novo item').fill('helper-smoke.mjs')
+    await dialog.getByRole('combobox').selectOption('')
+    await dialog.getByRole('button', { name: 'Criar', exact: true }).click()
+    await expect(page.getByRole('treeitem', { name: 'helper-smoke.mjs' })).toBeVisible()
   })
 
   test('Terminal (PRO) aparece como CTA sem quebrar a IDE', async ({ page }) => {
     // A aba Terminal só existe no modo Código (D2) → projeto profissional.
     await createProProject(page)
-    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Carregar terminal real' })).toBeVisible()
+    await page.getByRole('tab', { name: /^Terminal/ }).click()
+    await expect(page.getByRole('button', { name: 'Abrir o terminal' })).toBeVisible()
   })
 
   test('Terminal real inicializa WebContainer e monta arquivos do projeto', async ({ page }) => {
     test.slow()
     await createProProject(page)
-    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
-    await page.getByRole('button', { name: 'Carregar terminal real' }).click()
+    await page.getByRole('tab', { name: /^Terminal/ }).click()
+    await page.getByRole('button', { name: 'Abrir o terminal' }).click()
 
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 60_000 })
     await expect(page.locator('.xterm-rows')).toContainText('Sistema Zero Studio terminal', {
