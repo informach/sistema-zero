@@ -11,9 +11,12 @@ import { ensureBlocklyInitialized } from '../setup'
 const registry = Blockly.ContextMenuRegistry.registry
 type Action = Exclude<Blockly.ContextMenuRegistry.RegistryItem, { separator: true }>
 const item = (id: string) => registry.getItem(id) as Action | null
-const text = (id: string, scope: Blockly.ContextMenuRegistry.Scope) => {
+// O cenário headless usa Block/Workspace, não as versões Svg que o tipo do escopo pede.
+const text = (id: string, scope: { block?: Blockly.Block; workspace?: Blockly.Workspace }) => {
   const display = item(id)?.displayText
-  return typeof display === 'function' ? display(scope) : display
+  return typeof display === 'function'
+    ? display(scope as Blockly.ContextMenuRegistry.Scope)
+    : display
 }
 
 beforeAll(() => ensureBlocklyInitialized())
@@ -36,20 +39,28 @@ describe('menu do botão direito', () => {
     // O "Arrumar blocos" nativo só sai no espaço do JavaScript (que tem o "Organizar blocos").
     // (Um espaço de mentira com o que a precondição nativa lê: o headless não tem `isMovable`.)
     const other = { isMovable: () => true, getTopBlocks: () => [block, block] }
-    expect(item('cleanWorkspace')?.preconditionFn?.({ workspace: other } as never)).toBe('enabled')
+    expect(
+      item('cleanWorkspace')?.preconditionFn?.({ workspace: other } as never, undefined as never),
+    ).toBe('enabled')
     const studio = { ...other, __szOrganizes: true }
-    expect(item('cleanWorkspace')?.preconditionFn?.({ workspace: studio } as never)).toBe('hidden')
+    expect(
+      item('cleanWorkspace')?.preconditionFn?.({ workspace: studio } as never, undefined as never),
+    ).toBe('hidden')
     workspace.dispose()
   })
 
   it('"Perguntar ao Zappy" só com o abridor do Estúdio, e chama com o bloco', () => {
     const workspace = new Blockly.Workspace()
     const block = workspace.newBlock('controls_if')
-    expect(item('sz_ask_zappy')?.preconditionFn?.({ block } as never)).toBe('hidden')
+    expect(item('sz_ask_zappy')?.preconditionFn?.({ block } as never, undefined as never)).toBe(
+      'hidden',
+    )
     const asked: string[] = []
     ;(workspace as unknown as { __szAskZappy?: (b: Blockly.Block) => void }).__szAskZappy = (b) =>
       asked.push(b.id)
-    expect(item('sz_ask_zappy')?.preconditionFn?.({ block } as never)).toBe('enabled')
+    expect(item('sz_ask_zappy')?.preconditionFn?.({ block } as never, undefined as never)).toBe(
+      'enabled',
+    )
     item('sz_ask_zappy')?.callback?.(
       { block } as never,
       new PointerEvent('pointerdown'),

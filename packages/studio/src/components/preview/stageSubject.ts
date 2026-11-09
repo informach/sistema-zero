@@ -5,7 +5,10 @@ import type { ProStageSubject } from './ProStageState'
  * desenha (uma extensão de jogo ou um canvas), uma PÁGINA quando é só HTML e CSS.
  */
 export function classicStageSubject(
-  project: { installedExtensions?: readonly unknown[]; files?: Record<string, string> } | null,
+  project: {
+    installedExtensions?: readonly unknown[]
+    files?: { readonly 'index.html'?: string; readonly 'script.js'?: string }
+  } | null,
 ): ProStageSubject {
   if (!project) return 'game'
   if ((project.installedExtensions?.length ?? 0) > 0) return 'game'

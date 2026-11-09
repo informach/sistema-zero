@@ -170,7 +170,7 @@ function toolbox(
   palette: PythonPaletteSelection,
   codecs: readonly PythonBlockCodec[],
   search: boolean,
-): Blockly.utils.toolbox.ToolboxDefinition {
+): Blockly.utils.toolbox.ToolboxInfo {
   const registry = new Map(codecs.map((codec) => [codec.id, codec]))
   const groups = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   const categories = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()

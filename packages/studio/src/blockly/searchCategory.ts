@@ -81,9 +81,7 @@ let warnedIncompatible = false
  * Python dependem do estado de cada codec) e mostra o que o resolvedor achou.
  */
 export interface SearchResolverWorkspace {
-  __szSearchItems?: (
-    query: string,
-  ) => Array<{ kind: string; text?: string; type?: string; [key: string]: unknown }>
+  __szSearchItems?: (query: string) => Array<{ kind: string; text?: string; type?: string }>
 }
 
 function searchResolverOf(category: { workspace_?: unknown }) {
