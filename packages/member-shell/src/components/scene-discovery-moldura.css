@@ -1495,7 +1495,7 @@
     opacity: 0.4;
   }
 }
-.sz-discovery-fala-ideia .flex.items-end > div.relative {
+.sz-discovery-fala-ideia .sz-fala-balao {
   border-width: 3px;
   border-radius: 20px;
   box-shadow: 0 5px 0 var(--szd-ouro-escuro, #b07d00);
@@ -1968,10 +1968,6 @@
     grid-template-rows: auto;
     align-items: stretch;
   }
-  /* A fala do Zappy mora na coluna da direita: a faixa "Z" do celular sai. */
-  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-celular {
-    display: none;
-  }
   /* Respiro entre a fala, os controles e as descobertas (pedido dela). */
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions
     > .sz-discovery-descobertas {
@@ -1981,8 +1977,7 @@
 
 /* A fala: o texto e o "Ouvir" lado a lado (a ideia do fim volta ao balão de sempre). */
 .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
-  .flex.items-end
-  > div.relative {
+  .sz-fala-balao {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1990,15 +1985,13 @@
 }
 .sz-discovery-moldura[data-arranjo="faisca"]
   .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
-  .flex.items-end
-  > div.relative
+  .sz-fala-balao
   > p {
   flex: 1;
 }
 .sz-discovery-moldura[data-arranjo="faisca"]
   .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
-  .flex.items-end
-  > div.relative
+  .sz-fala-balao
   > button {
   margin-top: 0;
 }
@@ -2102,8 +2095,14 @@
   min-height: 44px;
   padding-block: 4px;
 }
+/* "Some ao pegar?" sai da tela mas fica no nome do interruptor (o leitor de tela lê a pergunta). */
 .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-interruptor small {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-interruptor strong {
   white-space: nowrap;
@@ -2132,11 +2131,16 @@
   .sz-discovery-modulo-titulo {
   align-self: flex-start;
 }
-.sz-discovery-moldura[data-arranjo="faisca"]
-  .sz-discovery-painel
+/* A dica do andar ("No teclado: setas ou W A S D") sai da tela, mas fica para o leitor de tela. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
   .sz-discovery-movimento
   .sz-discovery-modulo-dica {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .sz-discovery-moldura[data-arranjo="faisca"]
   .sz-discovery-painel
@@ -2172,7 +2176,9 @@
 }
 
 /* ── As descobertas: cartões enxutos, com o "Descobri" inteiro. ── */
-.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions {
+/* O contêiner fica só nas descobertas: na coluna inteira, a contenção prenderia um `position:
+ * fixed` de qualquer coisa que entrasse ali. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-descobertas {
   container: faisca-acoes / inline-size;
 }
 .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartoes {
@@ -2260,7 +2266,7 @@
 
 /* ── Celular (uma coluna): a faixa "Z", as estrelas e a cena no topo; logo abaixo os controles em
  *    três linhas; depois as descobertas e os testes, inteiros. ── */
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   .sz-discovery-moldura[data-arranjo="faisca"] {
     --sz-palco-hmax: calc(100dvh - 26rem);
   }
@@ -2287,17 +2293,7 @@
     padding: 8px 10px;
     gap: 8px;
   }
-  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-celular {
-    display: flex;
-    margin: 0;
-  }
-  /* Durante o jogo a faixa "Z" fala; o balão fica fora da tela, e a voz continua tocando. */
-  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions
-    > .sz-discovery-fala-bloco {
-    display: none;
-  }
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud {
-    flex-wrap: nowrap;
     gap: 6px;
   }
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud .sz-scene-momento {
@@ -2308,10 +2304,6 @@
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-estrela svg {
     width: 16px;
     height: 16px;
-  }
-  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-direita,
-  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-ferramentas {
-    flex-wrap: nowrap;
   }
   .sz-discovery-moldura[data-arranjo="faisca"]
     .sz-discovery-painel
@@ -2379,7 +2371,7 @@
 }
 /* Painel estreito (três linhas): só as peças sem caixa dividem a linha; a câmera e a altura da
  * Ilha, que têm caixa e botões, ocupam a largura toda. */
-@container faisca-painel (max-width: 25.99rem) {
+@container faisca-painel (width < 26rem) {
   .sz-discovery-moldura[data-arranjo="faisca"]
     .sz-discovery-painel
     > .sz-discovery-modulo:not([data-compacto="true"]) {
@@ -2419,7 +2411,7 @@
     grid-column: 2;
   }
 }
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   /* O controle não encolhe; quem quebra linha é o nome. */
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
     > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
@@ -2434,7 +2426,7 @@
     min-width: 0;
   }
 }
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   /* As ferramentas da tela ("Começo") ficam só com o ícone; o nome segue para o leitor de tela. */
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud
     .sz-discovery-redondo[data-com-texto="true"] {
@@ -2448,7 +2440,7 @@
 /* Celular: o painel da Ilha mais enxuto. As dicas dos módulos ficam para o leitor de tela (os
  * controles já dizem o que fazem), e os três números da posição ficam um embaixo do outro, mais
  * juntos (lado a lado, o − e o + não cabiam num celular pequeno). */
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-modulo-dica {
     position: absolute;
     width: 1px;
@@ -2470,7 +2462,7 @@
     padding: 2px 6px;
   }
 }
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   /* O título do ampliado no celular numa letra menor: em duas linhas ele tirava a altura da cena. */
   .sz-scene-workspace--expanded:has(
       .sz-discovery-moldura[data-arranjo="faisca"]
@@ -2480,7 +2472,7 @@
     line-height: 1.2;
   }
 }
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   /* Os módulos com caixa (a câmera e a altura da Ilha) numa linha só: o nome à esquerda, o controle
    * à direita. Com o nome em cima e a dica embaixo, o contato da Ilha não cabia num celular pequeno. */
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
@@ -2503,7 +2495,7 @@
     padding: 2px 8px;
   }
 }
-@container scene-workspace (max-width: 51.99rem) {
+@container scene-workspace (width < 52rem) {
   .sz-discovery-moldura[data-arranjo="faisca"]
     .sz-discovery-painel
     > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
@@ -2535,7 +2527,7 @@
 /* Celular estreito (painel abaixo de 22rem): a cruzeta com teclas de 44px (o mínimo de toque) para
  * caber em meia largura, o caderninho só com a pergunta e a resposta (como no protótipo do celular)
  * e a frase da regra numa letra um pouco menor. */
-@container faisca-painel (max-width: 21.99rem) {
+@container faisca-painel (width < 22rem) {
   .sz-discovery-moldura[data-arranjo="faisca"]
     .sz-discovery-painel
     .sz-discovery-movimento
@@ -2576,7 +2568,7 @@
     padding: 2px 8px;
   }
 }
-@container faisca-painel (max-width: 21.99rem) {
+@container faisca-painel (width < 22rem) {
   /* A cruzeta cabe em meia largura: 3 teclas de 44px, sem a folga em volta, e a coluna dela
    * nunca fica menor que ela (142px). */
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel {
@@ -2600,11 +2592,8 @@
 }
 /* No fim, no celular, a ideia sobe para o topo com o Zappy: letra menor no cartão (como no
  * protótipo), para a cena e os controles continuarem à vista logo abaixo. */
-@container scene-workspace (max-width: 51.99rem) {
-  .sz-discovery-moldura[data-arranjo="faisca"]
-    .sz-discovery-fala-ideia
-    .flex.items-end
-    > div.relative {
+@container scene-workspace (width < 52rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-fala-balao {
     padding: 8px 10px;
   }
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-discovery-ideia-titulo {
@@ -2618,11 +2607,7 @@
     font-size: 0.8rem;
     padding-top: 4px;
   }
-  .sz-discovery-moldura[data-arranjo="faisca"]
-    .sz-discovery-fala-ideia
-    .flex.items-end
-    > div.relative
-    > button {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-fala-balao > button {
     margin-top: 4px;
     min-height: 40px;
   }
@@ -2634,5 +2619,143 @@
   }
   .sz-discovery-moldura[data-arranjo="faisca"][data-fim="true"] .sz-discovery-contagem {
     gap: 0;
+  }
+}
+/* A pergunta grande (a vista da Ilha) mora na caixa do painel, logo abaixo dos controles. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel-caixa > .sz-discovery-painel + * {
+  margin-top: 10px;
+}
+
+/* O balão do Zappy no topo do celular (no lugar da faixa "Z"): enxuto, com o mascote menor, o texto
+ * e o "Ouvir" lado a lado. */
+@container scene-workspace (width < 52rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco
+    .sz-fala-linha {
+    gap: 8px;
+    align-items: center;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco
+    .sz-fala-linha
+    > :first-child {
+    width: 44px;
+    height: 44px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+    .sz-fala-balao {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+    .sz-fala-balao
+    > p {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco
+    .sz-fala-balao
+    > button {
+    min-height: 40px;
+  }
+}
+@container scene-workspace (width < 52rem) {
+  /* A linha das estrelas numa linha só; ela só quebra quando o "Apagar as descobertas? Sim / Não"
+   * abre (sem quebrar, ele passava da borda do console). */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud {
+    flex-wrap: nowrap;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud:has(.sz-discovery-confirma) {
+    flex-wrap: wrap;
+  }
+  /* O piso da cena no celular é menor: num celular pequeno, com a barra de cima, as abas e o
+   * rodapé da aula, sobram ~480px para o Zappy, as estrelas, a cena e os controles (medido no
+   * e2e com as barras do app em 375×667). O piso só vale quando nada mais cabe. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-mundo .sz-discovery-palco {
+    width: min(100%, calc(max(6rem, var(--sz-palco-hmax)) * var(--sz-palco-aspecto, 1.3333) + 8px));
+  }
+}
+@container scene-workspace (width < 52rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-hud:not(:has(.sz-discovery-confirma))
+    .sz-discovery-direita,
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-hud:not(:has(.sz-discovery-confirma))
+    .sz-discovery-ferramentas {
+    flex-wrap: nowrap;
+  }
+  /* O "Ouvir" do balão só com o ícone (o nome fica no botão, para o leitor de tela). */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-visual
+    > .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+    .sz-fala-balao
+    > button {
+    font-size: 0;
+    gap: 0;
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+@container scene-workspace (width < 52rem) {
+  /* A frase da regra numa linha no celular pequeno: menos folga em volta dela. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+    > .sz-discovery-modulo[data-largo="true"] {
+    padding: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-livre-encaixe {
+    padding: 2px 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console {
+    gap: 6px;
+  }
+}
+/* Painel bem estreito: a meia coluna das peças tem ~120px. O caderninho e o "Jogar de novo" quebram
+ * linha em vez de passar da borda do cartão. */
+@container faisca-painel (width < 22rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno {
+    min-width: 0;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-resposta {
+    font-size: 1.15rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-caderno-linha {
+    min-width: 0;
+    gap: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-botao {
+    white-space: normal;
+    line-height: 1.15;
+    text-align: center;
+  }
+}
+@container faisca-painel (width < 22rem) {
+  /* O caderninho na meia coluna: a pergunta em cima, numa letra menor, e a resposta embaixo. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+    .sz-discovery-livre-caderno-linha {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-caderno
+    .sz-discovery-caderno-linha {
+    font-size: 0.74rem;
+    line-height: 1.2;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-resposta {
+    font-size: 1rem;
+    line-height: 1.1;
   }
 }

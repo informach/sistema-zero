@@ -153,9 +153,29 @@ const { contentMinimum, toolMinimum } = resolveLessonSplit({
 
 // O vocabulário da criança, como o `KidsLessonCopy` em volta da área logada do app: sem ele o
 // ensaio montaria a experiência com as palavras do adulto ("Voltar à aula").
+/**
+ * `?barras`: as barras do app de verdade em volta da aula, para o e2e não ser circular. No celular,
+ * a barra de cima (`h-14`, sticky) e a de abas (fixa embaixo); em toda largura, o rodapé fixo da
+ * aula (`.sz-lesson-nav-immersive`, que o CSS do Kids põe acima das abas) e o `--sz-lesson-nav-height`
+ * que o `LessonSections` publica. O `.kids-aula` dá o `--sz-lesson-stage-top` do app.
+ */
+const barras = params.has('barras')
+const RODAPE_PX = 72
+if (barras) document.documentElement.style.setProperty('--sz-lesson-nav-height', `${RODAPE_PX}px`)
+const BARRAS_CSS = `
+.ensaio-topo { position: sticky; top: 0; z-index: 40; height: 3.5rem; background: #18213a; }
+.ensaio-abas { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; height: calc(3.5rem + env(safe-area-inset-bottom)); background: #18213a; }
+@media (min-width: 768px) { .ensaio-topo, .ensaio-abas { display: none; } }
+`
 createRoot(root).render(
   <LessonCopyProvider value={KIDS_LESSON_COPY}>
-    <main className="sz-lesson-sections" style={{ padding: 16 }}>
+    {barras ? (
+      <>
+        <style>{BARRAS_CSS}</style>
+        <div className="ensaio-topo" />
+      </>
+    ) : null}
+    <main className={`sz-lesson-sections${barras ? ' kids-aula' : ''}`} style={{ padding: 16 }}>
       <button type="button">Antes da experiência</button>
       <div style={{ height: 64 }} />
       {params.has('split') ? (
@@ -194,6 +214,12 @@ createRoot(root).render(
         </div>
       )}
       <button type="button">Depois da experiência</button>
+      {barras ? (
+        <nav className="sz-lesson-nav-immersive" style={{ height: RODAPE_PX }}>
+          <button type="button">Próxima parte</button>
+        </nav>
+      ) : null}
     </main>
+    {barras ? <div className="ensaio-abas" /> : null}
   </LessonCopyProvider>,
 )

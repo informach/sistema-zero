@@ -173,9 +173,9 @@ export function DialogueBlockView({
     <ZappyFalaProvider value={falaPropria}>{mascot}</ZappyFalaProvider>
   )
   return (
-    <div className="flex items-end gap-3">
+    <div className="sz-fala-linha flex items-end gap-3">
       {mascote}
-      <div className="relative min-w-0 flex-1 rounded-2xl border-2 border-(--unit,var(--color-border)) bg-card p-4">
+      <div className="sz-fala-balao relative min-w-0 flex-1 rounded-2xl border-2 border-(--unit,var(--color-border)) bg-card p-4">
         {mascot ? (
           <span
             aria-hidden="true"

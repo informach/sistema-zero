@@ -196,7 +196,9 @@ function useAlturaDaCenaNoCelular(ref: RefObject<HTMLDivElement | null>, ativo: 
       return
     }
     let ultima = Number.NaN
+    let quadro = 0
     const medir = () => {
+      quadro = 0
       const caixa = el.querySelector('.sz-scene-console')
       const palco = el.querySelector('.sz-discovery-palco')
       const painel = el.querySelector('.sz-discovery-painel-caixa')
@@ -205,28 +207,51 @@ function useAlturaDaCenaNoCelular(ref: RefObject<HTMLDivElement | null>, ativo: 
       const c = caixa.getBoundingClientRect()
       const p = palco.getBoundingClientRect()
       const fimDoPainel = painel ? painel.getBoundingClientRect().bottom : p.bottom
-      // Onde o console fica "em repouso": no ampliado, abaixo do cabeçalho do cartão (com a
-      // rolagem dele no começo); no normal, a criança rola até ele, então no topo da janela.
+      // Onde o console fica "em repouso" e até onde a janela vai:
+      // - no ampliado, abaixo do cabeçalho do cartão (com a rolagem dele no começo), até o fim da
+      //   janela (o ampliado cobre o rodapé e as abas da aula);
+      // - no normal, a criança rola até ele: o topo é o da cena da aula (`--sz-lesson-stage-top`,
+      //   abaixo da barra de cima do celular), e o fim é o topo do rodapé fixo da aula (que já
+      //   fica acima da barra de abas). Sem rodapé, o fim da janela.
       const cartao = el.closest('.sz-scene-workspace--expanded .sz-scene-workspace-card')
-      const topo = cartao ? c.top + cartao.scrollTop : 0
-      const rodape = px(getComputedStyle(el).getPropertyValue('--sz-lesson-nav-height'), rem)
+      let topo = 0
+      let fimDaJanela = window.innerHeight
+      if (cartao) topo = c.top + cartao.scrollTop
+      else {
+        topo = px(getComputedStyle(el).getPropertyValue('--sz-lesson-stage-top'), rem)
+        const rodape = document.querySelector('.sz-lesson-nav-immersive')
+        if (rodape && getComputedStyle(rodape).position === 'fixed') {
+          const r = rodape.getBoundingClientRect()
+          if (r.height > 0 && r.top < fimDaJanela) fimDaJanela = r.top
+        }
+      }
       const acima = p.top - c.top
       const abaixo = fimDoPainel - p.bottom
-      const sobra = window.innerHeight - rodape - topo - acima - abaixo - 16
-      const altura = Math.max(7 * rem, Math.floor(sobra))
+      const sobra = fimDaJanela - topo - acima - abaixo - 16
+      // O mesmo piso do CSS do celular (`max(6rem, …)`): abaixo dele, quem rola é a página.
+      const altura = Math.max(6 * rem, Math.floor(sobra))
       if (Math.abs(altura - ultima) <= 1) return
       ultima = altura
       el.style.setProperty('--sz-palco-hmax', `${altura}px`)
     }
+    // Fora do aviso de tamanho: mudar a cena dentro dele avisaria de novo no mesmo quadro (o
+    // "ResizeObserver loop" que o navegador reporta como erro).
+    const agendar = () => {
+      if (!quadro) quadro = requestAnimationFrame(medir)
+    }
     medir()
-    const tamanhos = new ResizeObserver(medir)
+    const tamanhos = new ResizeObserver(agendar)
     tamanhos.observe(el)
     for (const parte of el.querySelectorAll('.sz-scene-console-visual, .sz-discovery-painel-caixa'))
       tamanhos.observe(parte)
-    window.addEventListener('resize', medir)
+    // O rodapé da aula cresce com a faixa "o que falta" e o "+N" aberto.
+    const rodape = document.querySelector('.sz-lesson-nav-immersive')
+    if (rodape) tamanhos.observe(rodape)
+    window.addEventListener('resize', agendar)
     return () => {
       tamanhos.disconnect()
-      window.removeEventListener('resize', medir)
+      window.removeEventListener('resize', agendar)
+      if (quadro) cancelAnimationFrame(quadro)
       el.style.removeProperty('--sz-palco-hmax')
     }
   }, [ref, ativo])
@@ -589,23 +614,29 @@ export function Frame({
       >
         <SceneConsole>
           <ConsoleVisual>
-            {/* No celular, no fim, a ideia sobe para o topo (com o Zappy); antes dela, a faixa "Z". */}
-            {estreito && ideiaNoBalao ? fala : faixaDoZappy}
+            {/* No celular (uma coluna), o balão do Zappy fica no topo, acima da cena: com o mascote, o
+                "Ouvir" e o texto para o leitor de tela (a faixa "Z" das outras telas é só visual). No
+                fim ele vira a ideia no mesmo lugar, sem remontar (a voz da ideia toca sozinha). */}
+            {estreito ? fala : null}
             {linhaDeCima}
             {mundo}
             {estreito ? null : testes}
           </ConsoleVisual>
           <ConsoleActions>
-            {estreito && ideiaNoBalao ? null : fala}
-            {movimento || controles ? (
+            {estreito ? null : fala}
+            {movimento || controles || abaixoDoPalco ? (
+              // A pergunta grande também é um controle (a criança responde nela): mora na mesma
+              // caixa, para entrar na conta da altura da cena no celular.
               <div className="sz-discovery-painel-caixa">
-                <div className="sz-discovery-painel">
-                  {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
-                  {controles}
-                </div>
+                {movimento || controles ? (
+                  <div className="sz-discovery-painel">
+                    {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
+                    {controles}
+                  </div>
+                ) : null}
+                {abaixoDoPalco}
               </div>
             ) : null}
-            {abaixoDoPalco}
             {after ? (
               <div className="sz-discovery-evidence" aria-live="polite">
                 {after}
