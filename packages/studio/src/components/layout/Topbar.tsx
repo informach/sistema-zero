@@ -146,6 +146,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
   const setConsoleVisibilityOverride = useUIStore((s) => s.setConsoleVisibilityOverride)
+  const classicDockTab = useUIStore((s) => s.classicDock)
+  const setClassicDock = useUIStore((s) => s.setClassicDock)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
   const config = useStudioConfig()
@@ -376,7 +378,17 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // manual; depois, a preferência desta instância prevalece. As escolhas valem
   // nos dois layouts (no wide a barra inferior some quando tudo é escondido; no
   // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
-  if (config.console) {
+  // Blocos e Ponte do clássico têm a gaveta sempre à vista (redesenho de 11/2026): o item abre e
+  // fecha a aba "Mensagens do jogo" dela. No estreito a gaveta é uma aba fixa, e o item some.
+  const classicDock = projectKind !== 'pro' && projectMode !== 'code'
+  if (config.console && classicDock && !isNarrow) {
+    behaviors.console = {
+      label: t(python ? 'pro.dock.messages.program' : 'pro.dock.messages.game'),
+      icon: <IconMessageSquare />,
+      active: classicDockTab === 'console',
+      onSelect: () => setClassicDock(classicDockTab === 'console' ? 'closed' : 'console'),
+    }
+  } else if (config.console && !classicDock) {
     behaviors.console = {
       // No Pro, a aba que este item mostra se chama "Mensagens do jogo/do programa".
       label:
@@ -500,7 +512,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           {/* A nuvem do host só quando tem o que contar: a frase curta no largo, a bolinha
               abaixo dele. Em repouso a frase dela está na dica do "Salvo". */}
           {hostStatus && hostSealVisible ? (
-            <HostStatusSeal status={hostStatus} dot={iconOnly} />
+            // Com Rodar / Parar e os modos na barra, a frase da nuvem só cabe a partir de 1600px;
+            // abaixo, a bolinha com a frase no nome acessível e na dica.
+            <HostStatusSeal status={hostStatus} dot={zappyIconOnly} />
           ) : null}
         </div>
 

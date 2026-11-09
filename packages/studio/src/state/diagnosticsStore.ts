@@ -23,12 +23,23 @@ export interface SemanticIssue {
   message: string
 }
 
+/**
+ * O erro de digitação da Ponte (o código que não vira blocos): a aba Problemas da gaveta do
+ * clássico mostra (redesenho de 11/2026). `semantic` = o código está certo, mas não cabe nas áreas.
+ */
+export interface CodeIssue {
+  kind: 'syntax' | 'semantic'
+  message: string
+}
+
 interface DiagnosticsStore {
   /** Ids das pilhas soltas — salvas, mas que nunca rodam. */
   draftBlockIds: string[]
   semanticIssues: SemanticIssue[]
+  codeIssue: CodeIssue | null
   setDraftBlockIds: (ids: string[]) => void
   setSemanticIssues: (issues: SemanticIssue[]) => void
+  setCodeIssue: (issue: CodeIssue | null) => void
   reset: () => void
 }
 
@@ -36,9 +47,11 @@ export function createDiagnosticsStore() {
   return createStore<DiagnosticsStore>((set) => ({
     draftBlockIds: [],
     semanticIssues: [],
+    codeIssue: null,
     setDraftBlockIds: (draftBlockIds) => set({ draftBlockIds }),
     setSemanticIssues: (semanticIssues) => set({ semanticIssues }),
-    reset: () => set({ draftBlockIds: [], semanticIssues: [] }),
+    setCodeIssue: (codeIssue) => set({ codeIssue }),
+    reset: () => set({ draftBlockIds: [], semanticIssues: [], codeIssue: null }),
   }))
 }
 

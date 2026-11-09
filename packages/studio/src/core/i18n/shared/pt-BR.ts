@@ -91,6 +91,25 @@ export const ptBR: Record<string, string> = {
   'stage.reloadLabel': 'Atualizar o preview',
   'stage.bigger': 'Jogo maior',
   'stage.smaller': 'Jogo menor',
+  'stage.errorMark': 'O jogo parou neste bloco.',
+  'stage.errorMark.program': 'O programa parou neste bloco.',
+  'stage.error.stopped.game': 'Opa, o jogo parou',
+  'stage.error.stopped.page': 'Opa, a página parou',
+  'stage.error.stopped.program': 'Opa, o programa parou',
+  'stage.error.stopped.hint': 'O sinal vermelho mostra o bloco onde ele parou.',
+  'stage.error.technical': 'O que o computador disse',
+  'stage.showBlock': 'Mostrar o bloco',
+  'stage.seeProblems': 'Ver em Problemas',
+  'dock.problems.none': 'Nenhum problema por aqui. Pode rodar!',
+  'dock.problems.code.syntax': 'O código tem um erro de digitação',
+  'dock.problems.code.semantic': 'Este código não cabe nas áreas dos blocos',
+  'dock.problems.code.hint':
+    'Enquanto o código não estiver certo, os blocos não mudam. Confira a linha que o computador indica.',
+  'dock.problems.block': 'Aviso de um bloco',
+  'dock.problems.drafts': 'Rascunhos',
+  'dock.problems.drafts.one': '1 pedaço está fora das áreas e não roda.',
+  'dock.problems.drafts.many': '{count} pedaços estão fora das áreas e não rodam.',
+  'dock.problems.drafts.show': 'Mostrar o primeiro',
   // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a
   // COISA de que trata, na ordem de uso. "Arquivo"/"Exibição"/"Conta" saíram em
   // 18/09/2026 — o primeiro era o nome do sistema de arquivos, e os outros dois
@@ -119,6 +138,7 @@ export const ptBR: Record<string, string> = {
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',
   'tab.preview': 'Pré-visualização',
+  'tab.messages': 'Mensagens',
   'tab.files': 'Arquivos',
 
   'panel.console': 'Console',

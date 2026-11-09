@@ -10,6 +10,7 @@ import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZI
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
+import { ClassicDock } from '../components/layout/ClassicDock'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
@@ -22,6 +23,7 @@ import { useDebounced } from '../hooks/useDebounced'
 import { extractInlineAssets } from '../parsers/html'
 import { PREVIEW_MESSAGE_SOURCE } from '../preview/types'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
+import { useDiagnosticsStoreApi } from '../state/diagnosticsStore'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
@@ -462,6 +464,18 @@ export function BridgeMode(): JSX.Element {
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
+  // O código que não vira blocos aparece também na aba Problemas da gaveta (redesenho do
+  // clássico, 11/2026); sai quando o código volta a fazer sentido ou a Ponte fecha.
+  const diagnosticsApi = useDiagnosticsStoreApi()
+  const codeIssueMessage = parseError?.message ?? null
+  const codeIssueKind = parseError?.kind === 'semanticError' ? 'semantic' : 'syntax'
+  useEffect(() => {
+    diagnosticsApi
+      .getState()
+      .setCodeIssue(codeIssueMessage ? { kind: codeIssueKind, message: codeIssueMessage } : null)
+  }, [diagnosticsApi, codeIssueMessage, codeIssueKind])
+  useEffect(() => () => diagnosticsApi.getState().setCodeIssue(null), [diagnosticsApi])
+
   // Centraliza erros de parse no Console — evitamos painel próprio para
   // que todo aviso/erro da IDE viva num só lugar.
   useEffect(() => {
@@ -656,8 +670,10 @@ export function BridgeMode(): JSX.Element {
     <ClassicStage
       subject={stageSubject}
       phone={stage.phone}
-      idleCard
+      cards="all"
       onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+      onShowBlock={stage.showBlock}
+      onOpenProblems={stage.openProblems}
     >
       <PreviewIframe />
     </ClassicStage>
@@ -685,6 +701,9 @@ export function BridgeMode(): JSX.Element {
             ]}
             preview={previewAvailable ? stagePreview : undefined}
             previewRequest={stage.previewRequest}
+            dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
+            editorRequest={stage.editorRequest}
+            dockRequest={stage.dockRequest}
           />
         </div>
       </div>

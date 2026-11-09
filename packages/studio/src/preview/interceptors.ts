@@ -129,6 +129,39 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
       return src.slice(-tail.length) === tail;
     } catch (e) { return false; }
   }
+  // O quadro do script.js do ALUNO num stack (a cauda da data URL seguida de ":linha:coluna").
+  // Sem regex de propósito: este texto mora num template literal, e as barras invertidas
+  // sumiriam no caminho.
+  function userFrame(err) {
+    try {
+      var tail = window.__SZ_USER_JS_TAIL;
+      if (!tail) return null;
+      var lines = String((err && err.stack) || '').split(String.fromCharCode(10));
+      for (var i = 0; i < lines.length; i++) {
+        var at = lines[i].indexOf(tail + ':');
+        if (at < 0) continue;
+        var rest = lines[i].slice(at + tail.length + 1).split(':');
+        var line = parseInt(rest[0], 10);
+        var col = parseInt(rest[1], 10);
+        if (line > 0) return { line: line, col: col > 0 ? col : undefined };
+      }
+    } catch (e) {}
+    return null;
+  }
+  // Erro APANHADO por um runtime de extensão (o Jogo 2D para o bloco que falhou e segue): vai
+  // como erro de execução, com a linha do script.js do aluno quando o stack a tem, para o
+  // Estúdio mostrar o "Opa, o jogo parou" e pôr o sinal no bloco (redesenho de 11/2026).
+  window.__szReportCaughtError = function (err, text) {
+    var frame = userFrame(err);
+    var msg = err && err.message ? String(err.message) : String(err);
+    send('runtimeError', [truncateText(String(text || msg))], {
+      message: truncateErrorText(msg),
+      stack: err && err.stack ? truncateErrorText(String(err.stack)) : undefined,
+      line: frame ? frame.line : undefined,
+      col: frame ? frame.col : undefined,
+      userCode: !!frame
+    });
+  };
   var origLog = console.log;
   var origWarn = console.warn;
   var origError = console.error;

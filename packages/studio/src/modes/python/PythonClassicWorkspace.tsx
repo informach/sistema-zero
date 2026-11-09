@@ -5,6 +5,7 @@ import {
   type PythonBlocklyEditorProps,
 } from '../../components/blocks/PythonBlocklyEditor'
 import type { PythonSourceCursorPosition } from '../../components/code/PythonSourceEditor'
+import { ClassicDock } from '../../components/layout/ClassicDock'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
 import { ClassicStage, useClassicStage } from '../../components/preview/ClassicStage'
@@ -173,8 +174,10 @@ function PythonClassicProjectWorkspace({
     <ClassicStage
       subject={pythonStageSubject(project)}
       phone={stage.phone}
-      idleCard={false}
+      cards="error"
       onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+      onShowBlock={stage.showBlock}
+      onOpenProblems={stage.openProblems}
     >
       <PythonEditorPreview />
     </ClassicStage>
@@ -223,6 +226,9 @@ function PythonClassicProjectWorkspace({
             ]}
             preview={config.preview ? preview : undefined}
             previewRequest={stage.previewRequest}
+            dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
+            editorRequest={stage.editorRequest}
+            dockRequest={stage.dockRequest}
           />
         ) : (
           <PanelGroup ref={stage.group} direction="horizontal">

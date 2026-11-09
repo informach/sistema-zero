@@ -138,7 +138,7 @@ describe('Topbar × chrome do host', () => {
     expect(header?.querySelectorAll('.sz-bar-seal')).toHaveLength(1)
   })
 
-  it('wide: quando algo acontece (sem internet) o selo volta a ter a frase curta', () => {
+  it('a partir de 1600px: quando algo acontece (sem internet) o selo volta a ter a frase curta', () => {
     const { chrome } = chromeWith({
       status: {
         tone: 'warn',
@@ -147,7 +147,7 @@ describe('Topbar × chrome do host', () => {
         text: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
       },
     })
-    mount(1440, chrome)
+    mount(1600, chrome)
     const selo = screen.getByRole('status', {
       name: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
     })
@@ -172,7 +172,7 @@ describe('Topbar × chrome do host', () => {
   it('largo apertado, narrow e compact: o selo vira BOLINHA com o texto no aria-label', () => {
     // 1200 = o largo abaixo de `STUDIO_BAR_LABELS_MIN_PX`: a barra não tem wrap, e com a frase o
     // "Salvo" e a nuvem passavam por baixo do segmentado (full review de 11/09/2026).
-    for (const width of [1200, 900, 400]) {
+    for (const width of [1440, 1200, 900, 400]) {
       const { chrome } = chromeWith({
         status: {
           tone: 'warn',

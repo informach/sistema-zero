@@ -3,6 +3,7 @@ import type { ImperativePanelGroupHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { cn, IconColumns, IconMaximize, IconPlay, IconRefresh, IconStop } from '#ui'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
+import { useHighlightStoreApi } from '../../state/highlightStore'
 import { proRunLabelKey, useProRun, useProRunApi } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
@@ -28,17 +29,27 @@ const STAGE_HEAD_COMPACT_MAX_PX = 520
 export function ClassicStage({
   subject,
   phone,
-  idleCard,
+  cards,
   onToggleLarge,
+  onShowBlock,
+  onOpenProblems,
   children,
 }: {
   subject: ProStageSubject
   /** Celular: sem "Jogo maior" e com o par Rodar / Parar embaixo do palco. */
   phone: boolean
-  /** Desenha o cartão "Aperte Rodar…" por cima da prévia parada (a prévia Python já tem o dela). */
-  idleCard: boolean
+  /**
+   * Os cartões por cima da prévia: `all` = "Aperte Rodar…" (parado) e "Opa, o jogo parou" (erro);
+   * `error` = só o do erro (a prévia Python desenha o parado e o preparando, mas o "Opa" com
+   * "Mostrar o bloco" é deste palco, que sabe trazer a aba dos blocos no estreito).
+   */
+  cards: 'all' | 'error'
   /** Presente no largo: alterna o "Jogo maior" (meio a meio). */
   onToggleLarge?: () => void
+  /** "Mostrar o bloco" do cartão de erro (quando o erro tem lugar no código). */
+  onShowBlock?: () => void
+  /** "Ver em Problemas" do cartão de erro (quando o erro não tem lugar no código). */
+  onOpenProblems?: () => void
   children: ReactNode
 }): JSX.Element {
   const t = useT()
@@ -112,14 +123,18 @@ export function ClassicStage({
       </header>
       <div className="relative min-h-0 flex-1">
         {children}
-        {idleCard && state?.phase === 'idle' ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-sz-bg p-4">
+        {state &&
+        ((cards === 'all' && state.phase === 'idle') ||
+          (state.phase === 'error' && state.errorKind === 'runtime')) ? (
+          <div className="absolute inset-0 flex items-center justify-center overflow-auto bg-sz-bg p-4">
             <ProStageState
               state={state}
               subject={subject}
               flavor="classic"
               idleHintKey="pro.stage.idle.hint.blocks"
+              seeProblemKey={state.errorAt ? 'stage.showBlock' : 'stage.seeProblems'}
               onRun={run}
+              onSeeProblem={state.errorAt ? onShowBlock : onOpenProblems}
             />
           </div>
         ) : null}
@@ -168,7 +183,13 @@ export function useClassicStage(
   const setStageLarge = useUIStore((s) => s.setStageLarge)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const api = useProRunApi()
+  const highlight = useHighlightStoreApi()
+  const setClassicDock = useUIStore((s) => s.setClassicDock)
   const [previewRequest, setPreviewRequest] = useState(0)
+  // No estreito blocos, jogo e mensagens são abas: "Mostrar o bloco" traz a aba dos blocos e
+  // "Ver em Problemas" a das mensagens (os pedidos sobem e o `NarrowPanels` troca a aba).
+  const [editorRequest, setEditorRequest] = useState(0)
+  const [dockRequest, setDockRequest] = useState(0)
   const sizesRef = useRef(sizes)
   sizesRef.current = sizes
   useEffect(() => {
@@ -185,7 +206,21 @@ export function useClassicStage(
   return {
     group,
     previewRequest,
+    editorRequest,
+    dockRequest,
     phone: proLayoutTier(width) === 'phone',
     toggleLarge: () => setStageLarge(!stageLarge),
+    /** Depois do pedido ao editor (`revealBlock`), no estreito traz a aba dos blocos. */
+    revealBlocks: () => {
+      if (isNarrow) setEditorRequest((n) => n + 1)
+    },
+    showBlock: () => {
+      highlight.getState().revealBlock({ kind: 'runtime' })
+      if (isNarrow) setEditorRequest((n) => n + 1)
+    },
+    openProblems: () => {
+      setClassicDock('problems')
+      if (isNarrow) setDockRequest((n) => n + 1)
+    },
   }
 }

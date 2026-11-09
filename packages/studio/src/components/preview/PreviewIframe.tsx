@@ -36,12 +36,15 @@ import {
   buildJavaScriptClassicDocument,
   resolveJavaScriptClassicExtensions,
 } from '../../runtime/javascript/classicDocument'
+import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
-import { useLogsStore } from '../../state/logsStore'
+import { useHighlightStoreApi } from '../../state/highlightStore'
+import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
 import {
@@ -119,6 +122,14 @@ export function PreviewIframe(): JSX.Element {
   // Incrementado quando o preview precisa executar/reexecutar o documento atual
   // mesmo que o HTML/CSS/JS gerado seja idêntico.
   const [renderNonce, setRenderNonce] = useState(0)
+  // O erro que parou o jogo da vez (redesenho do clássico, 11/2026): o primeiro erro de execução
+  // do documento atual. Vira a fase `error` no `proRun` (o cartão "Opa" do palco e a aba
+  // Problemas) e o sinal vermelho no bloco. Um documento novo (Rodar, Rodar de novo, edição) zera.
+  const [gameError, setGameError] = useState<{
+    text: string
+    line?: number
+    column?: number
+  } | null>(null)
   const autoStartedProjectId = useRef<string | null>(null)
   const [loadedSrcDoc, setLoadedSrcDoc] = useState<string | null>(null)
   const [renderLargePreviewForInput, setRenderLargePreviewForInput] =
@@ -724,6 +735,12 @@ export function PreviewIframe(): JSX.Element {
         return
       }
       pushLog(ev.data)
+      if (ev.data.kind === 'runtimeError' || ev.data.kind === 'unhandledRejection') {
+        const text = ev.data.parts.join(' ').slice(0, 2_000)
+        const at = previewErrorLocation(ev.data)
+        // O PRIMEIRO erro manda: num laço de jogo o mesmo erro repete a cada quadro.
+        setGameError((current) => current ?? { text, line: at?.line, column: at?.column })
+      }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
@@ -761,6 +778,7 @@ export function PreviewIframe(): JSX.Element {
   )
   const extensionRuntimeFailed =
     extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
+  const gameErrorHint = gameError ? (glossErrorMessage(gameError.text) ?? undefined) : undefined
   const runState = useMemo<ProRunState>(() => {
     if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
     if (extensionRuntimeFailed || courseModelError)
@@ -769,6 +787,19 @@ export function PreviewIframe(): JSX.Element {
         canRun: !observer,
         canStop: !observer,
         error: courseModelError ?? undefined,
+      }
+    if (gameError)
+      return {
+        phase: 'error',
+        canRun: !observer,
+        canStop: !observer,
+        error: gameError.text,
+        errorKind: 'runtime',
+        errorHint: gameErrorHint,
+        errorAt:
+          gameError.line !== undefined
+            ? { file: 'script.js', line: gameError.line, column: gameError.column }
+            : undefined,
       }
     if (extensionRuntimesLoading || !courseModelsReady)
       return { phase: 'preparing', step: { index: 1, total: 1 }, canRun: false, canStop: !observer }
@@ -780,11 +811,37 @@ export function PreviewIframe(): JSX.Element {
     courseModelError,
     extensionRuntimesLoading,
     courseModelsReady,
+    gameError,
+    gameErrorHint,
   ])
   useEffect(() => {
     proRun.getState().publish(runState, runActions)
   }, [proRun, runState, runActions])
   useEffect(() => () => proRun.getState().publish(null, null), [proRun])
+
+  // Um documento novo é um jogo novo: o erro do anterior (e o sinal no bloco) sai. `doc` carrega
+  // o nonce do render, então Rodar, Rodar de novo e cada edição contam.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é só o GATILHO
+  useEffect(() => {
+    setGameError(null)
+  }, [doc])
+  // O sinal vermelho no bloco que parou: o editor de blocos acha o bloco pela linha.
+  const t = useT()
+  const highlight = useHighlightStoreApi()
+  useEffect(() => {
+    if (!gameError || gameError.line === undefined) {
+      if (highlight.getState().runtimeMark?.file === 'script.js')
+        highlight.getState().setRuntimeMark(null)
+      return
+    }
+    highlight.getState().setRuntimeMark({
+      file: 'script.js',
+      line: gameError.line,
+      column: gameError.column ?? null,
+      message: [t('stage.errorMark'), gameErrorHint].filter(Boolean).join(' '),
+    })
+  }, [gameError, gameErrorHint, highlight, t])
+  useEffect(() => () => highlight.getState().setRuntimeMark(null), [highlight])
 
   return (
     <div className="relative flex h-full flex-col bg-sz-bg">

@@ -62,6 +62,8 @@ interface Window {
   /** Ponte opcional do player de aula; ausente no jogo exportado. */
   __szReportGroupClick?: (x: number, y: number) => void
   __szReportGameReady?: () => void
+  /** Ponte do interceptor do Estúdio: o erro apanhado vira erro de execução com a linha. */
+  __szReportCaughtError?: (error: unknown, text: string) => void
   webkitAudioContext?: typeof AudioContext
 }
 `

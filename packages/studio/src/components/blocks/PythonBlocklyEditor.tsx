@@ -2,6 +2,11 @@ import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
+import {
+  revealBlockInWorkspace,
+  runtimeErrorBlockId,
+  setRuntimeErrorBlock,
+} from '../../blockly/runtimeMark'
 import { szGridColourFor, szThemeFor } from '../../blockly/theme'
 import { isPythonProject } from '../../core/editableProject'
 import {
@@ -60,12 +65,13 @@ import {
 } from '../../python/blocks/workspaceState'
 import { createPythonAnalysisController } from '../../python/language/controller'
 import type { PythonAnalysisSession } from '../../python/language/session'
+import { pythonPositionToOffset } from '../../python/language/sourceEdits'
 import type {
   PythonNode,
   PythonParsedDocument,
   PythonSourceRange,
 } from '../../python/language/types'
-import { useHighlightStore } from '../../state/highlightStore'
+import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import {
   useEditorHistory,
@@ -187,6 +193,9 @@ const importsStar = (tree: PythonNode) =>
       statement.fields.names.some((alias) => alias.fields.name === '*'),
   )
 /** The other Python files, in a comparable form: a change there can change a star import. */
+/** O caminho do `diagnostic` do Python pode vir com `./` ou `/` na frente. */
+const samePythonPath = (a: string, b: string) => a.replace(/^\.?\//, '') === b.replace(/^\.?\//, '')
+
 const otherPythonSources = (files: Readonly<Record<string, string>> | undefined, path: string) =>
   Object.entries(files ?? {})
     .filter(([name]) => name !== path && name.endsWith('.py'))
@@ -246,6 +255,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     discard(): void
     retry(): void
     selectCursor(cursor?: PythonBlocklyEditorProps['sourceCursor']): void
+    /** O bloco que gerou a linha (o menor que a contém), para o sinal do erro de execução. */
+    blockAtLine(line: number): string | null
     focusTutor(target: TutorTarget): boolean
     navigate(id?: string): Promise<void>
     scratch(): void
@@ -768,6 +779,18 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         schedule()
       }
     })
+    // O menor bloco cuja origem no código contém o deslocamento (o cursor da Ponte e o erro).
+    const blockAtOffset = (offset: number): string | null => {
+      let best: { id: string; length: number } | undefined
+      for (const [id, node] of origins) {
+        const range = node.range
+        if (!range || range.start > offset || range.end <= offset || !workspace.getBlockById(id))
+          continue
+        const length = range.end - range.start
+        if (!best || length < best.length) best = { id, length }
+      }
+      return best?.id ?? null
+    }
     surface.current = {
       workspace,
       async navigate(id) {
@@ -805,22 +828,28 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           currentProject()?.files[props.path] !== parsed?.source
         )
           return
-        let best: { id: string; length: number } | undefined
-        for (const [id, node] of origins) {
-          const range = node.range
-          if (!range || range.start > offset || range.end <= offset || !workspace.getBlockById(id))
-            continue
-          const length = range.end - range.start
-          if (!best || length < best.length) best = { id, length }
-        }
+        const best = blockAtOffset(offset)
         if (best) {
-          const selected = best.id
+          const selected = best
           // Code selection only highlights. Selecting again would emit a block
           // selection back to Monaco and create a feedback loop in Ponte.
           void navigation.reveal(selected, false).then(() => {
             if (!disposed) workspace.highlightBlock(selected)
           })
         }
+      },
+      blockAtLine(line) {
+        const source = parsed?.source
+        if (source === undefined || currentProject()?.files[props.path] !== source) return null
+        let offset: number
+        try {
+          offset = pythonPositionToOffset(source, line, 1)
+        } catch {
+          return null
+        }
+        // O primeiro caractere de verdade da linha (a indentação não pertence a bloco nenhum).
+        while (source[offset] === ' ' || source[offset] === '\t') offset++
+        return blockAtOffset(offset)
       },
       retry() {
         if (parsed?.tree && loadedSource === parsed.source) {
@@ -958,6 +987,37 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   useEffect(() => {
     surface.current?.selectCursor(props.sourceCursor)
   }, [props.sourceCursor])
+  // O sinal vermelho do erro de execução (redesenho do clássico, 11/2026): a prévia publica o
+  // arquivo e a linha do `diagnostic`; aqui vira o bloco daquela linha neste arquivo.
+  const runtimeMark = useHighlightStore((state) => state.runtimeMark)
+  const revealRequest = useHighlightStore((state) => state.revealRequest)
+  const highlightApi = useHighlightStoreApi()
+  const handledReveal = useRef(highlightApi.getState().revealRequest?.nonce ?? 0)
+  useEffect(() => {
+    const current = surface.current
+    if (!current || view.phase !== 'ready') return
+    const id =
+      runtimeMark && samePythonPath(runtimeMark.file, props.path)
+        ? current.blockAtLine(runtimeMark.line)
+        : null
+    setRuntimeErrorBlock(current.workspace, id, runtimeMark?.message ?? '')
+  }, [runtimeMark, props.path, view.phase])
+  useEffect(() => {
+    const current = surface.current
+    if (!current || !revealRequest || revealRequest.nonce === handledReveal.current) return
+    handledReveal.current = revealRequest.nonce
+    const target = revealRequest.target
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        const id =
+          target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+        if (!id) return
+        Blockly.svgResize(current.workspace)
+        revealBlockInWorkspace(current.workspace, id, true)
+      })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [revealRequest])
   useEffect(() => {
     if (
       highlightSource !== 'tutor' ||

@@ -6,6 +6,7 @@ import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { GENERATED_JS_HEADER } from '#generators'
 import { hasBehaviorStatements, normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
+import { ClassicDock } from '../components/layout/ClassicDock'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
@@ -194,8 +195,10 @@ export function BlocksMode(): JSX.Element {
     <ClassicStage
       subject={stageSubject}
       phone={stage.phone}
-      idleCard
+      cards="all"
       onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+      onShowBlock={stage.showBlock}
+      onOpenProblems={stage.openProblems}
     >
       <PreviewIframe />
     </ClassicStage>
@@ -212,6 +215,9 @@ export function BlocksMode(): JSX.Element {
             ]}
             preview={previewAvailable ? stagePreview : undefined}
             previewRequest={stage.previewRequest}
+            dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
+            editorRequest={stage.editorRequest}
+            dockRequest={stage.dockRequest}
           />
         </div>
       </div>

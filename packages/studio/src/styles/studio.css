@@ -502,6 +502,10 @@
     background: var(--sz-bar-quiet);
     color: var(--color-sz-fg-soft);
   }
+  /* O "Salvo" é curto e é âncora das aulas gravadas: não encolhe (o nome do jogo cede antes). */
+  .sz-bar__start > .sz-bar-seal--ok {
+    flex-shrink: 0;
+  }
 
   /* ── o segmentado dos modos ── */
   /* Um `fieldset` (o grupo com a legenda "Modo de edição" só para o leitor). */
@@ -2016,6 +2020,37 @@
   stroke: #f59e0b;
   stroke-width: 3px;
   stroke-dasharray: 8 5;
+}
+
+/* O bloco onde o jogo parou (redesenho do clássico, 11/2026): o ícone de aviso fica vermelho e
+   o contorno ganha um fio vermelho. Só o erro de execução é vermelho; o rascunho segue amarelo. */
+.sz-runtime-error > .blocklyWarningIcon > .blocklyIconShape {
+  fill: #dc2626;
+}
+.sz-runtime-error > .blocklyPath {
+  stroke: #dc2626;
+  stroke-width: 3px;
+}
+[data-sz-theme="dark"] .sz-runtime-error > .blocklyWarningIcon > .blocklyIconShape {
+  fill: #f87171;
+}
+[data-sz-theme="dark"] .sz-runtime-error > .blocklyPath {
+  stroke: #f87171;
+}
+
+/* A gaveta do clássico fechada é só a faixa das abas (40px, D4); no estreito ela é a aba
+   "Mensagens" inteira. */
+.sz-classic-dock {
+  flex: none;
+}
+.sz-classic-dock[data-variant="tab"] {
+  height: 100%;
+  min-height: 0;
+}
+.sz-classic-dock[data-variant="tab"] > .sz-pro-dock__body {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

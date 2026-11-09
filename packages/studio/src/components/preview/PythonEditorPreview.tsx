@@ -3,6 +3,7 @@ import type {
   PythonExecutionController,
   PythonExecutionView,
 } from '../../runtime/python/controller'
+import { useHighlightStoreApi } from '../../state/highlightStore'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useProRunApi } from '../../state/proRun'
@@ -11,6 +12,7 @@ import {
   usePythonEditorConsole,
   useStudioRuntimeCapture,
 } from '../../state/studioStores'
+import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { type PythonRunCommands, PythonRuntimePreview } from './PythonRuntimePreview'
@@ -63,17 +65,55 @@ export function PythonEditorPreview() {
   const canExecute = execution.editingAccess === 'author'
   const current = view ?? IDLE_VIEW
   const stale = Boolean(python && pythonPreviewIsStale(current, python))
-  const runState = useMemo(
-    () =>
-      editing && commands
-        ? pythonRunState(current, {
-            stale,
-            canRun: canExecute && Boolean(environment) && current.status !== 'loading',
-            canStop: Boolean(current.identity || pythonExecuting(current.status)),
-          })
-        : null,
-    [editing, commands, current, stale, canExecute, environment],
-  )
+  // O erro que parou o programa da vez, com o arquivo e a linha (o evento `diagnostic`). No
+  // clássico (redesenho de 11/2026) ele vira o cartão "Opa, o programa parou", a aba Problemas e
+  // o sinal vermelho no bloco, como no JavaScript. Cada Rodar zera.
+  const [diagnostic, setDiagnostic] = useState<{
+    path: string
+    line: number
+    column: number
+    message: string
+  } | null>(null)
+  const classic = python?.kind !== 'pro'
+  const runState = useMemo(() => {
+    if (!editing || !commands) return null
+    const state = pythonRunState(current, {
+      stale,
+      canRun: canExecute && Boolean(environment) && current.status !== 'loading',
+      canStop: Boolean(current.identity || pythonExecuting(current.status)),
+    })
+    if (!classic || state.phase !== 'error' || !diagnostic) return state
+    return {
+      ...state,
+      errorKind: 'runtime' as const,
+      ...(diagnostic.line > 0
+        ? {
+            errorAt: {
+              file: diagnostic.path,
+              line: diagnostic.line,
+              column: diagnostic.column > 0 ? diagnostic.column : undefined,
+            },
+          }
+        : {}),
+    }
+  }, [editing, commands, current, stale, canExecute, environment, classic, diagnostic])
+  const t = useT()
+  const highlight = useHighlightStoreApi()
+  const markAt = runState?.errorKind === 'runtime' ? runState.errorAt : undefined
+  useEffect(() => {
+    if (!markAt) {
+      if (highlight.getState().runtimeMark?.file.endsWith('.py'))
+        highlight.getState().setRuntimeMark(null)
+      return
+    }
+    highlight.getState().setRuntimeMark({
+      file: markAt.file,
+      line: markAt.line,
+      column: markAt.column ?? null,
+      message: t('stage.errorMark.program'),
+    })
+  }, [markAt, highlight, t])
+  useEffect(() => () => highlight.getState().setRuntimeMark(null), [highlight])
   useEffect(() => {
     if (!editing) return
     proRun.getState().publish(runState, runState ? commands : null)
@@ -101,6 +141,7 @@ export function PythonEditorPreview() {
       beforeRun={() => {
         pending?.flush()
         clearLogs()
+        setDiagnostic(null)
       }}
       onEvent={(event) => {
         if (event.type === 'repl-result' && event.text)
@@ -128,7 +169,16 @@ export function PythonEditorPreview() {
               timestamp: Date.now(),
             })
         }
-        if (event.type === 'diagnostic')
+        if (event.type === 'diagnostic') {
+          setDiagnostic(
+            (previous) =>
+              previous ?? {
+                path: event.path,
+                line: event.line,
+                column: event.column,
+                message: event.message,
+              },
+          )
           pushLog({
             source: 'sz-preview',
             kind: 'runtimeError',
@@ -140,6 +190,7 @@ export function PythonEditorPreview() {
             error: { message: event.message, stack: event.traceback },
             timestamp: Date.now(),
           })
+        }
       }}
     />
   )

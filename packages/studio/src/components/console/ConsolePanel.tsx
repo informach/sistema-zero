@@ -49,10 +49,23 @@ const WARNING_KINDS: ReadonlySet<LogEntry['kind']> = new Set(['warn', 'loopStopp
  * `repl` é "Experimentar comandos" (as mensagens e o campo de Python embaixo). Sem variante,
  * a aparência de sempre (Blocos, Ponte, Código clássico).
  */
-export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}): JSX.Element {
+export function ConsolePanel({
+  variant,
+  omitErrors = false,
+}: {
+  variant?: 'messages' | 'repl'
+  /**
+   * A gaveta do clássico (redesenho de 11/2026): os erros moram na aba Problemas, então as
+   * Mensagens não os repetem (e o filtro "Erros" sai).
+   */
+  omitErrors?: boolean
+} = {}): JSX.Element {
   const t = useT()
   const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
-  const allEntries = useLogsStore((s) => s.entries)
+  const storedEntries = useLogsStore((s) => s.entries)
+  const allEntries = omitErrors
+    ? storedEntries.filter((entry) => !ERROR_KINDS.has(entry.kind))
+    : storedEntries
   const [filter, setFilter] = useState<MessageFilter>('all')
   const entries =
     variant !== 'messages' || filter === 'all'
@@ -60,6 +73,7 @@ export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}
       : allEntries.filter((entry) =>
           filter === 'errors' ? ERROR_KINDS.has(entry.kind) : WARNING_KINDS.has(entry.kind),
         )
+  const filters: MessageFilter[] = omitErrors ? ['all', 'warnings'] : ['all', 'warnings', 'errors']
   const clear = useLogsStore((s) => s.clear)
   const scrollRef = useRef<HTMLDivElement>(null)
   // Cola no rodapé por padrão; só desgruda quando o aluno rola para cima para
@@ -91,7 +105,7 @@ export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}
         {variant === 'messages' ? (
           <fieldset className="sz-pro-seg">
             <legend className="sr-only">{t('console.filter.label')}</legend>
-            {(['all', 'warnings', 'errors'] as const).map((item) => (
+            {filters.map((item) => (
               <button
                 key={item}
                 type="button"

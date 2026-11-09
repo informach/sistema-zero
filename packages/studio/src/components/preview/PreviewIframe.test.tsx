@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject, type Project } from '#core'
+import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
@@ -69,6 +70,40 @@ describe('PreviewIframe', () => {
       expect(doc).not.toBe(PAUSED_PREVIEW_DOC)
       expect(getRenderNonce(doc)).toBeGreaterThan(refreshedNonce)
     })
+  })
+
+  it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(iframe)
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    const contentWindow = iframe.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: {
+            source: 'sz-preview',
+            kind: 'runtimeError',
+            parts: ['TypeError: Cannot read properties of undefined'],
+            timestamp: Date.now(),
+            error: { message: 'x', userCode: true, line: 7, col: 3 },
+          },
+        }),
+      )
+    })
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('error'))
+    const state = useProRun.getState().state
+    expect(state?.errorKind).toBe('runtime')
+    expect(state?.errorAt).toEqual({ file: 'script.js', line: 7, column: 3 })
+    expect(useHighlightStore.getState().runtimeMark).toMatchObject({ file: 'script.js', line: 7 })
+    // Rodar de novo = documento novo: o erro e o sinal saem.
+    act(() => useProRun.getState().actions?.reload?.())
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
+    expect(useHighlightStore.getState().runtimeMark).toBeNull()
   })
 
   it('executa quando o projeto carregado chega depois da montagem do preview', async () => {

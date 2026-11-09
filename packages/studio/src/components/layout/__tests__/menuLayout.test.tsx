@@ -148,7 +148,7 @@ describe('a árvore editorial do menu ⋯', () => {
       'convert',
       'assetsImages',
       'assetsSounds',
-      'console',
+      // Sem 'console': nos blocos do clássico a gaveta é uma aba fixa no estreito (11/2026).
       'exportStudio',
       'download',
       'export',

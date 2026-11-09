@@ -39,6 +39,11 @@ import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
+import {
+  revealBlockInWorkspace,
+  runtimeErrorBlockId,
+  setRuntimeErrorBlock,
+} from '../../blockly/runtimeMark'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
@@ -46,7 +51,7 @@ import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
-import { useHighlightStore } from '../../state/highlightStore'
+import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
@@ -334,6 +339,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const editorCursorColumn = useHighlightStore((s) => s.cursorColumn)
   const editorCursorFile = useHighlightStore((s) => s.cursorFile)
   const highlightSource = useHighlightStore((s) => s.source)
+  const runtimeMark = useHighlightStore((s) => s.runtimeMark)
+  const revealRequest = useHighlightStore((s) => s.revealRequest)
+  const highlightApi = useHighlightStoreApi()
+  // Um pedido de "Mostrar o bloco" feito ANTES de este editor montar não é para ele.
+  const handledRevealRef = useRef(highlightApi.getState().revealRequest?.nonce ?? 0)
   const cross = useCrossHighlight()
 
   // Cobre com um spinner o intervalo entre montar/agendar e o
@@ -911,6 +921,44 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       })
     }
   }, [workspace, editorCursorFile, editorCursorLine, editorCursorColumn, highlightSource, cross])
+
+  // O sinal vermelho no bloco onde o jogo parou (redesenho do clássico, 11/2026): a prévia
+  // publica a linha do erro no script.js e o mapa de origem diz qual bloco a gerou. Sem erro
+  // (jogo novo, edição), o sinal sai.
+  useEffect(() => {
+    if (!workspace) return
+    const id =
+      runtimeMark?.file === 'script.js'
+        ? cross.lookupLine('script.js', runtimeMark.line, runtimeMark.column ?? undefined)
+        : null
+    setRuntimeErrorBlock(workspace as Blockly.WorkspaceSvg, id, runtimeMark?.message ?? '')
+  }, [workspace, runtimeMark, cross])
+
+  // "Mostrar o bloco" (cartão do palco e aba Problemas): rola até o bloco, seleciona e abre o
+  // balão. Dois quadros de espera: no estreito o pedido também troca a aba, e o Blockly só mede
+  // o canvas depois que ele aparece.
+  useEffect(() => {
+    if (!workspace || !revealRequest || revealRequest.nonce === handledRevealRef.current) return
+    handledRevealRef.current = revealRequest.nonce
+    const svgWorkspace = workspace as Blockly.WorkspaceSvg
+    const target = revealRequest.target
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        const id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
+        if (!id) return
+        Blockly.svgResize(svgWorkspace)
+        isSelectingFromEditorRef.current = true
+        try {
+          revealBlockInWorkspace(svgWorkspace, id, true)
+        } finally {
+          queueMicrotask(() => {
+            isSelectingFromEditorRef.current = false
+          })
+        }
+      })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [workspace, revealRequest])
 
   // Chip do Zappy: centraliza uma instância existente; sem instância, abre a
   // categoria real preenchida pelo servidor a partir do catálogo (nunca nome livre da IA).

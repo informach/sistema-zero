@@ -103,8 +103,13 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     var key = 'erro:' + kind + ':' + id + ':' + message;
     if (_warnedOnce[key]) return;
     _warnedOnce[key] = true;
+    var text = 'SZGame2D: parei o bloco ' + kind + ' porque aconteceu um erro: ' + message;
     try {
-      console.error('SZGame2D: parei o bloco ' + kind + ' porque aconteceu um erro: ' + message);
+      // No Estúdio o erro vai como erro de execução, com a linha do bloco (o interceptor acha no
+      // stack); fora dele (jogar publicado, testes), o console.error de sempre.
+      if (typeof window !== 'undefined' && typeof window.__szReportCaughtError === 'function')
+        window.__szReportCaughtError(error, text);
+      else console.error(text);
     } catch (ignored) {}
   }
 
