@@ -39,11 +39,11 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 2. O que começa a partida?
 
-**Tarefa:** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-convite → fala-convite → experiencia-convite.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -51,7 +51,7 @@ video-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem jog
 
 **Experiência em exploração livre:** `controls` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/controls.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/controls.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com Só o Enter escolhido, clique em Tocar na tela. Na tela de início, clique em Apertar Enter. Clique em Qualquer tecla ou toque e, na tela de início, em Tocar na tela.
 

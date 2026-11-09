@@ -125,7 +125,7 @@ for (const [index, aula] of cabanaAulas.entries()) {
           // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar na chave ou no
           // emblema é pegar, chegar à porta é a cabana perguntar, e o "e" se troca por "ou".
           instructions:
-            'Vá até a cabana sem nada, com uma peça ou com as duas e troque o "e" pelo "ou". Você escolhe a ordem e pode repetir quando quiser.',
+            'Vá até a cabana sem nada, com uma peça ou com as duas e troque o "e" pelo "ou". O Zappy te mostra o que testar, e você pode repetir quando quiser.',
           hints: [
             'Olhe o caderninho antes de ir à cabana: quais peças o personagem tem?',
             'Compare a cabana sem nenhuma peça, com uma e com as duas. Jogue de novo e pegue as peças na outra ordem.',

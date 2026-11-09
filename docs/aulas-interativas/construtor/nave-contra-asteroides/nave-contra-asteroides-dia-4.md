@@ -28,11 +28,11 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 1. Quando a nave ganha as vidas?
 
-**Tarefa:** Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando a nave precisa ganhar as três vidas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a nave precisa ganhar as três vidas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-vidas-no-comeco-K1: Debinha substitui “E se a nave ganhar as três vidas
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas. Escolha Sempre, em todo quadro, clique em Começar o jogo e observe as vidas e as batidas.
 
@@ -81,11 +81,11 @@ video-batida-e-coracoes-K1: Debinha substitui “Qual pedra o jogo vai tirar?”
 
 ### Seção 4. O tempinho de proteção
 
-**Tarefa:** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.
 
-**Recado na página (não gravar):** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -93,7 +93,7 @@ video-protecao-K1: Debinha substitui “E se esse tempinho for curto, ou longo? 
 
 **Experiência em exploração livre:** `invincibility` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/invincibility.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/invincibility.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas. Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas. Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram.
 

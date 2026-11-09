@@ -27,11 +27,11 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 ### Seção 1. Guardar e mostrar um número
 
-**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-variavel → fala-caixa-de-pontos → experiencia-variavel.
 
-**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -39,7 +39,7 @@ video-variavel-K1: Dedé substitui “E se o número não estiver na tela, ele c
 
 **Experiência em exploração livre:** `variable` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/variable.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/variable.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a caixa pontos com a tela do jogo, com o número mostrado na tela e sem ele, quando a nave acerta um asteroide. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a caixa pontos com a tela do jogo, com o número mostrado na tela e sem ele, quando a nave acerta um asteroide. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo. Com o número fora da tela, clique em Acertar um asteroide e compare a caixa pontos com a tela. Clique em Mostrar o número na tela e compare com a caixa pontos.
 

@@ -254,7 +254,7 @@ const aula1 = {
     video('video-a1-toque', 'Um toque pode chamar uma ação'),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-toque',
@@ -264,7 +264,7 @@ const aula1 = {
         semPerguntaFinal: true,
         title: 'O toque faz o jogo responder',
         instructions:
-          'Toque nos esconderijos com a regra do toque encaixada e sem ela e compare o que aparece. Você escolhe a ordem e pode repetir quando quiser.',
+          'Toque nos esconderijos com a regra do toque encaixada e sem ela e compare o que aparece. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -334,7 +334,7 @@ const aula2 = {
     video('video-a2-variavel', 'Um número que acompanha a busca'),
     dialogue(
       'ponte-a2-variavel',
-      'Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-achados',
@@ -344,7 +344,7 @@ const aula2 = {
         semPerguntaFinal: true,
         title: 'Quantos você já encontrou?',
         instructions:
-          'Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. Você escolhe a ordem e pode repetir quando quiser.',
+          'Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',

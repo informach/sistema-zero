@@ -28,11 +28,11 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 ### Seção 1. Guardar ou mostrar?
 
-**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-guardar-mudar-mostrar → fala-guardar-mudar-mostrar → experiencia-variavel.
 
-**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver
 
 **Experiência em exploração livre:** `variable` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/variable.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo. Com o número fora da tela, clique em Ganhar 1 ponto e compare a caixa pontos com a tela. Clique em Mostrar o número na tela e compare com a caixa pontos.
 
@@ -72,11 +72,11 @@ video-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver
 
 ### Seção 4. Quando o placar cresce?
 
-**Tarefa:** Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando o placar deve crescer. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quando-o-placar-cresce → fala-quando-o-placar-cresce → experiencia-score.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o placar deve crescer. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -84,7 +84,7 @@ video-quando-o-placar-cresce-K1: Debinha substitui “E se o ponto for somado em
 
 **Experiência em exploração livre:** `score` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/score.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/score.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o placar em cada jeito de somar, com e sem a pergunta. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o placar em cada jeito de somar, com e sem a pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em A cada quadro e depois em Passar 1 segundo. Clique em A cada segundo e, com a pergunta desligada e na tela de início, clique em Passar 1 segundo. Depois do teste sem a pergunta na tela de início, clique em Ligar a pergunta e, ainda na tela de início, em Passar 1 segundo. Com a pergunta ligada, clique em Começar a partida e depois em Passar 1 segundo. Depois do teste jogando, com a pergunta ligada, clique em Terminar a partida e depois em Passar 1 segundo.
 

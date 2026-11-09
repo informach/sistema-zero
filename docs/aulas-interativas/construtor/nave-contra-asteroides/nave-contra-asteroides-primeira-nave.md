@@ -48,11 +48,11 @@ Anexar somente `docs/aulas-interativas/construtor/nave-contra-asteroides/passo-a
 
 ### Seção 3. Uma vez ou sempre?
 
-**Tarefa:** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-uma-vez-e-sempre → fala-uma-vez-e-sempre → experiencia-areas.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -60,7 +60,7 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E se a nave andar um pouquinho u
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Uma vez, no começo, clique em Começar o jogo e observe a nave e os quadros. Escolha Sempre, em todo quadro, clique em Começar o jogo e observe a nave e os quadros.
 
@@ -82,15 +82,15 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E se a nave andar um pouquinho u
 
 ### Seção 5. Onde fica a nave?
 
-**Tarefa:** Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue como dois números dizem o lugar da nave na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-coordenadas → fala-coordenadas → experiencia-coordenadas.
 
-**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar da nave na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Experiência em exploração livre:** `coordinates` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/coordinates.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/coordinates.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Aumente só o x e observe para onde a nave vai. Aumente só o y e observe para onde a nave vai. Coloque 0 no x e 0 no y e observe em que canto a nave fica.
 
@@ -98,11 +98,11 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E se a nave andar um pouquinho u
 
 ### Seção 6. Existir e aparecer
 
-**Tarefa:** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-criar-e-mostrar → fala-criar-e-mostrar → experiencia-criar-mostrar.
 
-**Recado na página (não gravar):** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -110,7 +110,7 @@ video-criar-e-mostrar-K1: Debinha substitui “E quando a nave passa a existir, 
 
 **Experiência em exploração livre:** `world` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/world.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/world.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Criar a nave nos bastidores e compare os bastidores com a tela do jogo. Clique em Mostrar a nave na tela e compare os bastidores com a tela do jogo.
 
@@ -135,11 +135,11 @@ video-criar-nave-K1: Debinha substitui “Para que servem todos esses campos?”
 
 ### Seção 8. O desenho de cada quadro
 
-**Tarefa:** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-desenho-por-quadro → fala-desenho-por-quadro → experiencia-quadro.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -147,7 +147,7 @@ video-desenho-por-quadro-K1: Debinha substitui “E se a nave for desenhada em t
 
 **Experiência em exploração livre:** `draw-loop` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/draw-loop.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o que a tela mostra quando a nave é desenhada só no começo ou em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o que a tela mostra quando a nave é desenhada só no começo ou em todo quadro, com e sem apagar a tela antes. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Desenhar só no começo e Não apagar a tela, clique em Avançar 1 quadro e compare a tela com o x da nave. Escolha Desenhar em todo quadro e Não apagar a tela, avance alguns quadros e conte as naves na tela. Escolha Desenhar em todo quadro e Apagar a tela antes de desenhar, avance alguns quadros e conte as naves na tela.
 

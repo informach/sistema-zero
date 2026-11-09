@@ -38,14 +38,14 @@
   "blocks": [
     {
       "key": "video-preenchimento-contorno",
-      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"A sua pedra vai ser desenhada em vetor\", mostrar a experiência na aula, parada, com as duas partes da pedra coloridas. No \"Sabe um livro de colorir\", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com as duas partes coloridas, sem tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"A sua pedra vai ser desenhada em vetor\", mostrar a experiência na aula, parada, com as duas partes da pedra coloridas. No \"Sabe um livro de colorir\", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com as duas partes coloridas, sem tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-preenchimento-contorno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -54,7 +54,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Separe o miolo da borda",
-        "instructions": "Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare no que sobra da pedra a cada clique.",
           "Compare a pedra com o Contorno em Sem cor, com o Preenchimento em Sem cor e com as duas partes com cor.",
@@ -163,7 +163,7 @@
     {
       "key": "preenchimento-contorno",
       "title": "Separe o miolo da borda",
-      "objective": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": [
         "video-preenchimento-contorno",

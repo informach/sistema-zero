@@ -27,11 +27,11 @@ A experiência de aceleração vem antes da mudança da base e do relógio; a r�
 
 ### Seção 1. Até onde a corrida acelera?
 
-**Tarefa:** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-o-que-o-freio-segura → fala-o-que-o-freio-segura → experiencia-aceleracao.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -39,7 +39,7 @@ video-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão n
 
 **Experiência em exploração livre:** `acceleration` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/acceleration.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/acceleration.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Passar 5 segundos algumas vezes e olhe o número embaixo de cada cacto. Com a pergunta ligada, clique em Passar 5 segundos até a base chegar no -9 e mais uma vez. Com a pergunta ligada, continue clicando em Passar 5 segundos e olhe o número de cada cacto novo. Clique em Desligar a pergunta e em Passar 5 segundos algumas vezes.
 

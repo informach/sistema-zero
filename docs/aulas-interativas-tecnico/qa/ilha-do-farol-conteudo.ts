@@ -65,9 +65,9 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar a comparação: uma pessoa na frente tapa a vista de alguém, que pensa em mudar de lugar para olhar, sem mostrar o que está atrás. Depois ampliar a experiência e mostrar a cena parada, na vista de frente, com a pedra escondendo a chave, sem apontar controles nem trocar a vista: o que muda e o que fica igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. Você escolhe a ordem e pode repetir quando quiser.',
+          'Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Olhe a ilha de outro lugar e procure a chave.',
           'Compare duas vistas. Repare na pedra e na chave em cada uma delas.',
@@ -77,7 +77,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           'other-view': 'Troque o lugar da câmera e procure a chave.',
           'same-place': 'Responda o que mudou quando a chave apareceu.',
         },
-        text: '[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar. [engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida. [curious] Se a câmera mudar de lugar, a chave também muda de lugar? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar. [engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida. [curious] Se a câmera mudar de lugar, a chave também muda de lugar? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'movimento',
@@ -133,9 +133,9 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois ampliar a experiência e mostrar a cena parada, com a chave no lugar inicial, sem apontar controles nem mudar nenhum valor: o que cada número muda é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Mude cada um dos três números da chave para mais e para menos e veja para onde ela vai. Você escolhe a ordem e pode repetir quando quiser.',
+          'Mude cada um dos três números da chave para mais e para menos e veja para onde ela vai. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Escolha um dos três números da chave e observe para onde ela vai.',
           'Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.',
@@ -146,7 +146,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           'axis-y': 'Mude o y para mais e para menos e observe a chave.',
           'axis-z': 'Mude o z para mais e para menos e observe a chave.',
         },
-        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z. [curious] E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z. [curious] E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'posicao',
@@ -173,9 +173,9 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar duas mãos batendo palmas, desenho nosso com o Zappy. Depois ampliar a experiência e mostrar a cena parada, na vista de cima, com a chave alta parecendo estar sobre o personagem, sem apontar controles nem testar: o resultado é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'De cima, o personagem e a chave parecem juntos: olhe de outro lugar e descubra quando eles se encostam de verdade. Você escolhe a ordem e pode repetir quando quiser.',
+          'De cima, o personagem e a chave parecem juntos: olhe de outro lugar e descubra quando eles se encostam de verdade. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Antes de olhar de outro lugar, pense: a chave e o personagem estão encostando?',
           'Olhe o resultado do encontro na cena e compare a câmera de cima com a de lado.',
@@ -192,7 +192,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
             pedido: 'Baixe a chave até ela encostar no personagem.',
           },
         },
-        text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'recolher',
@@ -309,9 +309,9 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: duas lojas lado a lado, uma com a plaquinha Pode entrar e outra com a plaquinha Não pode entrar, com a palavra não destacada, sem mostrar ninguém entrando nem barrado. Depois ampliar a experiência e mostrar a ilha 3D parada, com o personagem longe do farol e a pergunta sem o não, sem apontar controles e sem andar: qual resposta a porta dá em cada situação é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o "não" e sem ele. Você escolhe a ordem e pode repetir quando quiser.',
+          'Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o "não" e sem ele. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Antes de ir ao farol, repare se o personagem tem a chave e qual pergunta a porta faz.',
           'Com a mesma chave, ouça a porta com as duas perguntas e compare as respostas.',
@@ -326,7 +326,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           cenario: 'ilha',
           goals: ['not-flips-with-key', 'not-flips-without-key'],
         },
-        text: '[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não. [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. [engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim. [curious] Com o não na pergunta, o que a porta faz? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não. [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. [engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim. [curious] Com o não na pergunta, o que a porta faz? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'uma-vez',

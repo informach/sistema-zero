@@ -241,7 +241,7 @@ const chapters = aulasNave.map((lesson, i) => {
       continue
     }
     // Exploração livre (02/11/2026): a página da experiência é o objetivo de investigação, sem
-    // resultado nem sequência. Fica só a instrução (o que comparar e "Você escolhe a ordem"), no
+    // resultado nem sequência. Fica só a instrução (o que comparar e o que o Zappy mostra), no
     // molde do Cadê; os pedidos de cada meta são gestos em ordem e ficam com o Zappy, dentro da
     // experiência. As montagens usam a fala do Mapa (`mapa`): sem "Olha aqui", "Olha só", "Repare"
     // e "Tá vendo?", que apontam para um gesto do vídeo que o PDF não tem (revisão independente de

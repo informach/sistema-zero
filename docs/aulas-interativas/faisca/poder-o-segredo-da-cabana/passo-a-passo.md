@@ -14,7 +14,7 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 - Compare começando pela chave e começando pelo emblema.
 - Troque o "e" pelo "ou" na pergunta da cabana e teste com uma peça só.
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy sugere o que observar.
+Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.
 
 ## Aula 1 · Jogo 2D: Duas peças para abrir
 

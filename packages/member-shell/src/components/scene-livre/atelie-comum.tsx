@@ -43,7 +43,8 @@ export function IdeiaDoAtelie({ titulo, casos }: { titulo: string; casos: CasoDo
 export function DicaLivre() {
   return (
     <p className="sz-discovery-free-hint">
-      Experimente à vontade. Os destaques sugerem um próximo teste; você escolhe a ordem.
+      Experimente à vontade. Os destaques mostram o próximo teste, e você pode repetir quando
+      quiser.
     </p>
   )
 }

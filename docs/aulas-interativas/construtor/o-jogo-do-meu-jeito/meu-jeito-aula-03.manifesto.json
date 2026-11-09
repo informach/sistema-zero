@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-quadros",
-      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Um desenho animado é feito de muitos desenhos\", mostrar a experiência na aula, com a Prévia parada. No \"Já viu aqueles livrinhos\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com a Prévia parada, sem tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e”.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Um desenho animado é feito de muitos desenhos\", mostrar a experiência na aula, com a Prévia parada. No \"Já viu aqueles livrinhos\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com a Prévia parada, sem tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e”.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-quadros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare dois desenhos e uma animação",
-        "instructions": "Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare no fogo da nave a cada teste: o que muda e o que fica igual.",
           "Compare a Prévia rápida, a Prévia devagar e a Prévia parada. Depois compare com os dois quadros iguais.",
@@ -102,14 +102,14 @@
     },
     {
       "key": "video-fantasma",
-      "plannedVideo": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No quadro 2, o fogo da sua nave\", mostrar a experiência na aula, parada no quadro 1. No \"Sabe quando você quer desenhar uma coisa\", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando um balão ao lado de outro [na edição: meme dos dois balões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada no quadro 1, sem mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele”.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Desenhe olhando o quadro anterior\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No quadro 2, o fogo da sua nave\", mostrar a experiência na aula, parada no quadro 1. No \"Sabe quando você quer desenhar uma coisa\", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando um balão ao lado de outro [na edição: meme dos dois balões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada no quadro 1, sem mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele”.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-fantasma",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -118,7 +118,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Desenhe olhando o quadro anterior",
-        "instructions": "Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare no que dá para comparar quando o Fantasma está desligado e quando está ligado.",
           "Com o Fantasma ligado, compare a ponta do fogo 2 com a ponta do fogo tracejado.",
@@ -280,7 +280,7 @@
     {
       "key": "quadros",
       "title": "Compare dois desenhos e uma animação",
-      "objective": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-quadros", "fala-quadros", "experiencia-quadros"],
       "workspaceKey": null,
@@ -308,7 +308,7 @@
     {
       "key": "fantasma",
       "title": "Desenhe olhando o quadro anterior",
-      "objective": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-fantasma", "fala-fantasma", "experiencia-fantasma"],
       "workspaceKey": null,

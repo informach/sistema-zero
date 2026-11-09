@@ -39,14 +39,14 @@
     },
     {
       "key": "video-convite",
-      "plannedVideo": "Título: O que começa a partida?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando chega visita\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O que começa a partida?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando chega visita\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-convite",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -54,7 +54,7 @@
       "content": {
         "kind": "interactive",
         "title": "O que começa a partida?",
-        "instructions": "Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Toque na tela de início e observe se a partida começa.",
           "Compare os dois jeitos de escutar: só o Enter, ou qualquer tecla ou toque.",
@@ -748,7 +748,7 @@
       "key": "convite",
       "title": "O que começa a partida?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-convite", "fala-convite", "experiencia-convite"],
       "workspaceKey": null,
       "externalTool": null,

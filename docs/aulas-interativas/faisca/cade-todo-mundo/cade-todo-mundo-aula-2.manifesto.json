@@ -26,7 +26,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -36,7 +36,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quantos você já encontrou?",
-        "instructions": "Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",

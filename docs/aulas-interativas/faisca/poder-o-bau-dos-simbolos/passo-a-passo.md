@@ -15,7 +15,7 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 - Depois de errar, siga a placa de novo sem jogar de novo.
 - Troque a peça para "só quantos foram tocados", toque fora da ordem e compare.
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada toque, observe o caderninho do jogo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a ordem responder. O Zappy sugere o que observar.
+Antes e depois de cada toque, observe o caderninho do jogo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a ordem responder. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.
 
 ## Aula 1 · Jogo 2D: Na ordem certa
 

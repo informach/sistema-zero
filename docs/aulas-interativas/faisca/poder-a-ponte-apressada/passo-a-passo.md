@@ -15,7 +15,7 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 - Quando a ponte subir sozinha, saia e volte à alavanca.
 - Troque a peça do relógio para "quando a partida começa" e compare.
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio. O Zappy sugere o que observar.
+Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.
 
 ## Aula 1 · Jogo 2D: Aberta por um tempo
 

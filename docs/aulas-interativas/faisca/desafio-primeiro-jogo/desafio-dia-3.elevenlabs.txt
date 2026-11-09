@@ -10,7 +10,7 @@
 
 [engaging, energetic, conversational voice] O que você acha que a porta faz? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -268,7 +268,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando o x e o y aumentam e quando diminuem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

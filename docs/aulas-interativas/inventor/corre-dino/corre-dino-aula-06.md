@@ -27,11 +27,11 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 ### Seção 1. Para onde vai o cacto que sai da tela?
 
-**Tarefa:** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-visivel-guardado → fala-visivel-guardado → experiencia-visivel-guardado.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -39,7 +39,7 @@ video-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele
 
 **Experiência em exploração livre:** `cleanup` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/cleanup.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois cactos saírem da tela e observe o grupo. Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois cactos saírem. Compare o grupo.
 

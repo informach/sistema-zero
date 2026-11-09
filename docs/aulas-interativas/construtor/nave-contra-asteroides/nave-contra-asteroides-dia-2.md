@@ -29,11 +29,11 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 ### Seção 1. Quando sai o tiro?
 
-**Tarefa:** Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que momento o tiro sai em cada jeito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tecla-e-repeticao → fala-tecla-e-repeticao → experiencia-tres-areas.
 
-**Recado na página (não gravar):** Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o tiro sai em cada jeito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -41,7 +41,7 @@ video-tecla-e-repeticao-K1: Debinha substitui “E se o tiro sair sempre, em tod
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros. Com Na hora em que algo acontece escolhido, clique em Apertar a tecla durante o jogo e observe os tiros. Escolha Sempre, em todo quadro, clique em Começar o jogo e observe os tiros.
 
@@ -62,11 +62,11 @@ video-tecla-e-repeticao-K1: Debinha substitui “E se o tiro sair sempre, em tod
 
 ### Seção 3. Onde o tiro nasce?
 
-**Tarefa:** Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-escrito-e-lido → fala-escrito-e-lido → experiencia-escrito-e-lido.
 
-**Recado na página (não gravar):** Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -74,7 +74,7 @@ video-escrito-e-lido-K1: Debinha substitui “E se a nave mudar de lugar, o tiro
 
 **Experiência em exploração livre:** `fixed-vs-read` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/fixed-vs-read.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/fixed-vs-read.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Número escrito: 400, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas. Escolha Número lido da nave, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas. Com o número lido, clique em Mostrar as marcas da nave e atire. Observe de onde o tiro sai.
 
@@ -82,11 +82,11 @@ video-escrito-e-lido-K1: Debinha substitui “E se a nave mudar de lugar, o tiro
 
 ### Seção 4. Para que lado o tiro anda?
 
-**Tarefa:** Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-direcao-do-tiro → fala-direcao-do-tiro → experiencia-direcao.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -94,7 +94,7 @@ video-direcao-do-tiro-K1: Debinha substitui “E com um número negativo, o tiro
 
 **Experiência em exploração livre:** `velocity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/velocity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/velocity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha um número negativo, como −9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y. Escolha um número positivo, como 9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y.
 
@@ -134,11 +134,11 @@ video-tiro-da-nave-K1: Debinha substitui “E a altura de onde sai o tiro?”. A
 
 ### Seção 7. O tiro saiu da tela. E do jogo?
 
-**Tarefa:** Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tiro-fora-da-tela → fala-tiro-que-sai-da-tela → experiencia-faxina.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -146,7 +146,7 @@ video-tiro-fora-da-tela-K1: Debinha substitui “E quando o tiro some da tela, e
 
 **Experiência em exploração livre:** `cleanup` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/cleanup.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/cleanup.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois tiros saírem da tela e observe o grupo. Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois tiros saírem. Compare o grupo.
 

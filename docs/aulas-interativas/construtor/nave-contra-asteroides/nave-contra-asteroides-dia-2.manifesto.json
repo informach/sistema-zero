@@ -38,14 +38,14 @@
   "blocks": [
     {
       "key": "video-tecla-e-repeticao",
-      "plannedVideo": "Título: Quando sai o tiro?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-tecla-e-repeticao-K1: Debinha substitui “E se o tiro sair sempre, em todo quadro?”. Antes: “e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que momento o tiro sai em cada um”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando sai o tiro?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-tecla-e-repeticao-K1: Debinha substitui “E se o tiro sair sempre, em todo quadro?”. Antes: “e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que momento o tiro sai em cada um”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tecla-e-repeticao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue em que momento o tiro sai em cada jeito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -54,7 +54,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quando sai o tiro?",
-        "instructions": "Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe quantos tiros saem e em que momento cada um aparece.",
           "Compare o jeito Na hora em que algo acontece, com a tecla e sem a tecla, com o jeito Sempre, em todo quadro.",
@@ -136,14 +136,14 @@
     },
     {
       "key": "video-escrito-e-lido",
-      "plannedVideo": "Título: Onde o tiro nasce?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Tem dois jeitos de dizer onde você está\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-escrito-e-lido-K1: Debinha substitui “E se a nave mudar de lugar, o tiro vai junto?”. Antes: “que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde o tiro nasce quando a nave muda de”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde o tiro nasce?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Tem dois jeitos de dizer onde você está\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-escrito-e-lido-K1: Debinha substitui “E se a nave mudar de lugar, o tiro vai junto?”. Antes: “que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde o tiro nasce quando a nave muda de”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-escrito-e-lido",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -152,7 +152,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Onde o tiro nasce?",
-        "instructions": "Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Compare as marcas dos tiros depois de mudar a nave de lugar.",
           "Faça o mesmo teste com o número escrito e com o número lido da nave.",
@@ -186,14 +186,14 @@
     },
     {
       "key": "video-direcao-do-tiro",
-      "plannedVideo": "Título: Para que lado o tiro anda?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-direcao-do-tiro-K1: Debinha substitui “E com um número negativo, o tiro vai para onde?”. Antes: “cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o tiro anda, e o que”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Para que lado o tiro anda?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-direcao-do-tiro-K1: Debinha substitui “E com um número negativo, o tiro vai para onde?”. Antes: “cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o tiro anda, e o que”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-direcao-do-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -202,7 +202,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Para que lado o tiro anda?",
-        "instructions": "Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe o número do y em cada quadro.",
           "Compare o tiro e o y com um número negativo e com um número positivo.",
@@ -278,14 +278,14 @@
     },
     {
       "key": "video-tiro-fora-da-tela",
-      "plannedVideo": "Título: O tiro saiu da tela. E do jogo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-tiro-fora-da-tela-K1: Debinha substitui “E quando o tiro some da tela, ele sai do grupo também?”. Antes: “é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o grupo de tiros quando o jogo tira do”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O tiro saiu da tela. E do jogo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-tiro-fora-da-tela-K1: Debinha substitui “E quando o tiro some da tela, ele sai do grupo também?”. Antes: “é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o grupo de tiros quando o jogo tira do”.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tiro-que-sai-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -294,7 +294,7 @@
         "kind": "interactive",
         "required": true,
         "title": "O tiro saiu da tela. E do jogo?",
-        "instructions": "Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe a tela, os bastidores e o número de tiros no grupo.",
           "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
@@ -670,7 +670,7 @@
       "key": "tecla-e-repeticao",
       "title": "Quando sai o tiro?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue em que momento o tiro sai em cada jeito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-tecla-e-repeticao", "fala-tecla-e-repeticao", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -730,7 +730,7 @@
       "key": "escrito-e-lido",
       "title": "Onde o tiro nasce?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-escrito-e-lido", "fala-escrito-e-lido", "experiencia-escrito-e-lido"],
       "workspaceKey": null,
       "externalTool": null,
@@ -744,7 +744,7 @@
       "key": "direcao-do-tiro",
       "title": "Para que lado o tiro anda?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-direcao-do-tiro", "fala-direcao-do-tiro", "experiencia-direcao"],
       "workspaceKey": null,
       "externalTool": null,
@@ -937,7 +937,7 @@
       "key": "tiro-que-sai-da-tela",
       "title": "O tiro saiu da tela. E do jogo?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-tiro-fora-da-tela", "fala-tiro-que-sai-da-tela", "experiencia-faxina"],
       "workspaceKey": null,
       "externalTool": null,

@@ -55,7 +55,7 @@
       {
         "key": "aparencia-e-regras",
         "title": "Troque a história do jogo",
-        "bridge": "Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-aparencia-e-regras",
         "speech": [
@@ -63,14 +63,14 @@
           "A aparência é o que você vê na tela, como a nave, as pedras e o fundo. O que o jogo faz é o que acontece quando você joga: as setas movem, a tecla solta um tiro, as pedras caem e, quando uma encosta, você perde vida.",
           "Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda no jogo quando você troca só a aparência e quando muda o que o jogo faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda no jogo quando você troca só a aparência e quando muda o que o jogo faz. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"a aparência e o que o jogo faz\", mostrar a experiência na aula, parada na Nave no espaço. No \"Sabe o uniforme de um time de futebol\", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico com dois uniformes [na edição: meme dos uniformes]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a cena parada na Nave no espaço, sem trocar a história nem desligar o tiro: o que muda em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"a aparência e o que o jogo faz\", mostrar a experiência na aula, parada na Nave no espaço. No \"Sabe o uniforme de um time de futebol\", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico com dois uniformes [na edição: meme dos uniformes]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a cena parada na Nave no espaço, sem trocar a história nem desligar o tiro: o que muda em cada caso é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Troque a história do jogo",
-          "instructions": "Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare na tela e na lista O que o jogo faz a cada teste.",
             "Compare o jogo trocando só a história e, depois, com o tiro desligado.",
@@ -113,7 +113,7 @@
       {
         "key": "copias",
         "title": "Veja o que uma cópia guarda",
-        "bridge": "Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-copias",
         "speech": [
@@ -121,14 +121,14 @@
           "Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. No seu jogo, o original fica na plataforma, e a cópia vai para o seu Estúdio.",
           "Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que a cópia guarda do jogo da aula e o que acontece quando você muda só um dos lados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que a cópia guarda do jogo da aula e o que acontece quando você muda só um dos lados. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Para criar do seu jeito\", mostrar a experiência na aula, parada, ainda sem arquivo. No \"Sabe quando você copia o desenho de um gibi\", mostrar o meme ilustrado (2 a 3 s) do Zappy copiando a nave de um gibi numa folha [na edição: meme do gibi]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o jogo da aula e o Estúdio parados, ainda sem arquivo, sem baixar, importar nem pintar: o que acontece em cada lado é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Para criar do seu jeito\", mostrar a experiência na aula, parada, ainda sem arquivo. No \"Sabe quando você copia o desenho de um gibi\", mostrar o meme ilustrado (2 a 3 s) do Zappy copiando a nave de um gibi numa folha [na edição: meme do gibi]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o jogo da aula e o Estúdio parados, ainda sem arquivo, sem baixar, importar nem pintar: o que acontece em cada lado é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Veja o que uma cópia guarda",
-          "instructions": "Compare o jogo da aula com a cópia no Estúdio, antes e depois de mudar um dos lados. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o jogo da aula com a cópia no Estúdio, antes e depois de mudar um dos lados. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Depois de cada botão, compare o jogo da aula com o Estúdio.",
             "Depois de importar, pinte a nave de um lado só e olhe o outro lado.",
@@ -335,7 +335,7 @@
       {
         "key": "bordas",
         "title": "Aproxime duas formas de desenhar",
-        "bridge": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-bordas",
         "speech": [
@@ -343,14 +343,14 @@
           "O desenho em pixel é feito de quadradinhos pintados, um do lado do outro. O desenho em vetor é feito de pontos ligados por linhas.",
           "Imagina um desenho montado com pecinhas quadradas de brinquedo. Ele é como o desenho em pixel: cada pecinha é um quadradinho.",
           "Pense numa pedra em pixel e numa pedra em vetor, com a mesma forma, vistas bem de perto, como numa lupa. Será que as bordas continuam parecidas? O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar a borda de cada pedra, de perto e de longe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar a borda de cada pedra, de perto e de longe. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"No Pinta, existem dois jeitos de desenhar\", mostrar a experiência na aula, parada, com as duas pedras de longe. No \"Imagina um desenho montado com pecinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as duas pedras paradas, de longe, sem aproximar: o que acontece com cada borda é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"No Pinta, existem dois jeitos de desenhar\", mostrar a experiência na aula, parada, com as duas pedras de longe. No \"Imagina um desenho montado com pecinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as duas pedras paradas, de longe, sem aproximar: o que acontece com cada borda é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Aproxime duas formas de desenhar",
-          "instructions": "Compare a borda das duas pedras de perto e de longe. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a borda das duas pedras de perto e de longe. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe só a borda das pedras, de perto e de longe.",
             "Compare a borda da pedra de pixel com a da pedra de vetor quando a Lupa está bem perto.",
@@ -410,7 +410,7 @@
       {
         "key": "espelho",
         "title": "Descubra o que o espelho repete",
-        "bridge": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-espelho",
         "speech": [
@@ -418,14 +418,14 @@
           "O espelho repete o seu traço do outro lado de uma linha do meio. O Pinta tem dois espelhos, cada um com a sua própria linha do meio, e tem o Balde de tinta, que pinta uma parte inteira de uma vez.",
           "Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar onde a tinta aparece com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar onde a tinta aparece com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"o Pinta tem o espelho\", mostrar a experiência na aula, parada, com o papel em branco. No \"Sabe quando você pinga tinta numa folha\", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com o papel em branco, sem pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"o Pinta tem o espelho\", mostrar a experiência na aula, parada, com o papel em branco. No \"Sabe quando você pinga tinta numa folha\", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com o papel em branco, sem pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Descubra o que o espelho repete",
-          "instructions": "Compare onde a tinta aparece na asa com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare onde a tinta aparece na asa com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Depois de cada traço, repare onde a tinta apareceu na grade.",
             "Compare o mesmo traço com cada espelho ligado e, depois, o Balde de tinta com o Espelho lado a lado.",
@@ -512,7 +512,7 @@
       {
         "key": "luz",
         "title": "Mude o lado da luz",
-        "bridge": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-luz",
         "speech": [
@@ -520,14 +520,14 @@
           "Para isso, quem desenha usa luz e sombra: um tom mais claro e um tom mais escuro da mesma cor.",
           "Imagina uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que a sombra, a luz e o lado do sol fazem com a forma da bola. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que a sombra, a luz e o lado do sol fazem com a forma da bola. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Agora falta ela parecer redonda\", mostrar a experiência na aula, parada, com a bola de um tom só. No \"Imagina uma bola deixada no quintal\", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a bola parada, com um tom só, sem ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Agora falta ela parecer redonda\", mostrar a experiência na aula, parada, com a bola de um tom só. No \"Imagina uma bola deixada no quintal\", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a bola parada, com um tom só, sem ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Mude o lado da luz",
-          "instructions": "Compare a forma da bola e os tons de azul com a sombra e a luz ligadas e desligadas e com o sol de cada lado. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a forma da bola e os tons de azul com a sombra e a luz ligadas e desligadas e com o sol de cada lado. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare na forma da bola e nos tons de azul a cada teste.",
             "Compare a bola com e sem a sombra e a luz e, depois, com o sol de cada lado.",
@@ -676,7 +676,7 @@
       {
         "key": "quadros",
         "title": "Compare dois desenhos e uma animação",
-        "bridge": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-quadros",
         "speech": [
@@ -684,14 +684,14 @@
           "No Pinta, cada desenho da animação se chama quadro. A sua nave vai ter dois quadros: no quadro 1, o fogo do motor é pequeno, e no quadro 2, ele é maior. E dá para escolher quantos quadros passam por segundo.",
           "Já viu aqueles livrinhos com um desenho em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quando o fogo da nave parece se mexer e quando ele fica parado. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Um desenho animado é feito de muitos desenhos\", mostrar a experiência na aula, com a Prévia parada. No \"Já viu aqueles livrinhos\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com a Prévia parada, sem tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Um desenho animado é feito de muitos desenhos\", mostrar a experiência na aula, com a Prévia parada. No \"Já viu aqueles livrinhos\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com a Prévia parada, sem tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare dois desenhos e uma animação",
-          "instructions": "Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare no fogo da nave a cada teste: o que muda e o que fica igual.",
             "Compare a Prévia rápida, a Prévia devagar e a Prévia parada. Depois compare com os dois quadros iguais.",
@@ -757,7 +757,7 @@
       {
         "key": "fantasma",
         "title": "Desenhe olhando o quadro anterior",
-        "bridge": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-fantasma",
         "speech": [
@@ -765,14 +765,14 @@
           "Sabe quando você quer desenhar uma coisa só um pouco maior que outra? Fica mais fácil quando as duas estão à vista.",
           "O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que o Fantasma mostra e como ele ajuda a deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que o Fantasma mostra e como ele ajuda a deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"No quadro 2, o fogo da sua nave\", mostrar a experiência na aula, parada no quadro 1. No \"Sabe quando você quer desenhar uma coisa\", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando um balão ao lado de outro [na edição: meme dos dois balões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada no quadro 1, sem mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"No quadro 2, o fogo da sua nave\", mostrar a experiência na aula, parada no quadro 1. No \"Sabe quando você quer desenhar uma coisa\", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando um balão ao lado de outro [na edição: meme dos dois balões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada no quadro 1, sem mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Desenhe olhando o quadro anterior",
-          "instructions": "Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare no que dá para comparar quando o Fantasma está desligado e quando está ligado.",
             "Com o Fantasma ligado, compare a ponta do fogo 2 com a ponta do fogo tracejado.",
@@ -1006,7 +1006,7 @@
       {
         "key": "preenchimento-contorno",
         "title": "Separe o miolo da borda",
-        "bridge": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-preenchimento-contorno",
         "speech": [
@@ -1014,14 +1014,14 @@
           "O Preenchimento é a cor de dentro da forma. O Contorno é a linha da borda. No Pinta, cada uma dessas partes tem a sua cor, e cada uma pode ficar em Sem cor.",
           "Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que sobra da pedra quando o Preenchimento ou o Contorno fica em Sem cor. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que sobra da pedra quando o Preenchimento ou o Contorno fica em Sem cor. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"A sua pedra vai ser desenhada em vetor\", mostrar a experiência na aula, parada, com as duas partes da pedra coloridas. No \"Sabe um livro de colorir\", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com as duas partes coloridas, sem tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"A sua pedra vai ser desenhada em vetor\", mostrar a experiência na aula, parada, com as duas partes da pedra coloridas. No \"Sabe um livro de colorir\", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com as duas partes coloridas, sem tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Separe o miolo da borda",
-          "instructions": "Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare no que sobra da pedra a cada clique.",
             "Compare a pedra com o Contorno em Sem cor, com o Preenchimento em Sem cor e com as duas partes com cor.",
@@ -1227,7 +1227,7 @@
       {
         "key": "camadas",
         "title": "Troque o que fica na frente",
-        "bridge": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-camadas",
         "speech": [
@@ -1235,14 +1235,14 @@
           "No Pinta, a lista Camadas mostra a ordem das formas. Cada forma ocupa uma linha da lista.",
           "Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda no desenho quando a pedra sobe e desce na lista Camadas. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"No seu asteroide\", mostrar a experiência na aula, parada, com a chama na frente da pedra. No \"Sabe quando você empilha figurinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"No seu asteroide\", mostrar a experiência na aula, parada, com a chama na frente da pedra. No \"Sabe quando você empilha figurinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Troque o que fica na frente",
-          "instructions": "Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare na ordem da lista Camadas e no que aparece na frente no desenho.",
             "Compare o desenho com a pedra em cima na lista e com a pedra embaixo.",
@@ -1343,21 +1343,21 @@
       {
         "key": "mudanca-pequena",
         "title": "Compare mudanças entre quadros",
-        "bridge": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-mudanca-pequena",
         "speech": [
           "A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2. Dá para mudar só um pedaço da pedra, como a cratera, ou mudar a pedra inteira de lugar.",
           "Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quanto a pedra pode mudar do quadro 1 para o quadro 2, mexendo só na cratera ou na pedra inteira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quanto a pedra pode mudar do quadro 1 para o quadro 2, mexendo só na cratera ou na pedra inteira. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"A sua pedra também vai ganhar dois quadros\", mostrar a experiência na aula, com a Prévia parada. No \"Sabe aqueles livrinhos de folhear\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"A sua pedra também vai ganhar dois quadros\", mostrar a experiência na aula, com a Prévia parada. No \"Sabe aqueles livrinhos de folhear\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare mudanças entre quadros",
-          "instructions": "Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Repare se o corpo da pedra fica no lugar ou muda de lugar na Prévia.",
             "Compare a Prévia com os dois números em 0, com só a cratera andando um pouco e com a pedra inteira andando muito.",
@@ -1590,7 +1590,7 @@
       {
         "key": "nomes",
         "title": "Separe os nomes que os blocos procuram",
-        "bridge": "Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-nomes",
         "speech": [
@@ -1598,14 +1598,14 @@
           "No Estúdio, um bloco cria a nave com o nome nave, e outro bloco cria a folha, também com um nome. Outros blocos procuram o nome nave para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.",
           "Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que acontece com os blocos quando o nome nave falta ou aparece duas vezes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que acontece com os blocos quando o nome nave falta ou aparece duas vezes. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Nesta aula, a sua nave animada\", mostrar a experiência na aula, parada, com o bloco de cima no lugar. No \"Imagina um time com duas pessoas\", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar os blocos e a prévia parados, sem tirar o bloco nem trocar nomes: o que cada aviso diz é a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Nesta aula, a sua nave animada\", mostrar a experiência na aula, parada, com o bloco de cima no lugar. No \"Imagina um time com duas pessoas\", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar os blocos e a prévia parados, sem tirar o bloco nem trocar nomes: o que cada aviso diz é a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Separe os nomes que os blocos procuram",
-          "instructions": "Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Depois de cada teste, olhe os avisos dos três blocos e a prévia.",
             "Compare a prévia sem o bloco de cima, com dois blocos chamados nave e com a folha chamada folha-nave.",
@@ -1671,7 +1671,7 @@
       {
         "key": "recorte",
         "title": "Separe o quadro do tamanho no jogo",
-        "bridge": "Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-recorte",
         "speech": [
@@ -1680,14 +1680,14 @@
           "Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele pedaço da cartela.",
           "Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar qual recorte mostra uma nave inteira e o que o tamanho da nave no jogo muda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar qual recorte mostra uma nave inteira e o que o tamanho da nave no jogo muda. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Lembra da folha?\", mostrar a experiência na aula, parada, sem recorte. No \"Sabe uma cartela de adesivos\", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a folha e o jogo parados, sem escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Lembra da folha?\", mostrar a experiência na aula, parada, sem recorte. No \"Sabe uma cartela de adesivos\", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a folha e o jogo parados, sem escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Separe o quadro do tamanho no jogo",
-          "instructions": "Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "A cada recorte, compare o que aparece no jogo com o pedaço marcado na folha.",
             "Procure o recorte do tamanho de um quadro da folha. Depois mude só o tamanho no jogo e olhe a folha.",
@@ -1934,21 +1934,21 @@
       {
         "key": "dois-relogios",
         "title": "Compare nascer e animar",
-        "bridge": "Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que cada relógio muda nas pedras. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-dois-relogios",
         "speech": [
           "Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira. Por isso, o jogo tem dois relógios: um conta quadros do jogo, que são as vezes em que o jogo se desenha de novo, e o outro conta desenhos por segundo.",
           "Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que cada relógio muda nas pedras, e se mexer num muda o que o outro faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que cada relógio muda nas pedras, e se mexer num muda o que o outro faz. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Nas pedras, duas coisas acontecem\", mostrar a experiência na aula, parada no começo. No \"Pense numa máquina que solta piões\", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as pedras paradas no começo, sem passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Nas pedras, duas coisas acontecem\", mostrar a experiência na aula, parada no começo. No \"Pense numa máquina que solta piões\", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as pedras paradas no começo, sem passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare nascer e animar",
-          "instructions": "Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Mude um relógio de cada vez e compare as pedras desde o começo.",
             "Compare o relógio de nascer em 20 quadros com o giro em 16 desenhos por segundo, sempre voltando ao começo antes.",
@@ -2255,21 +2255,21 @@
       {
         "key": "copia-publicada",
         "title": "Compare projeto e versão publicada",
-        "bridge": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "bridge": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-copia-publicada",
         "speech": [
           "Mais adiante, você vai poder publicar o seu jogo no Mural, para outras pessoas jogarem. Antes, vale entender o que vai para lá quando você publica.",
           "Sabe quando você tira uma foto de um desenho e manda para alguém da família?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que o Mural guarda quando você publica e quando você muda o projeto depois. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que o Mural guarda quando você publica e quando você muda o projeto depois. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "No \"Mais adiante, você vai poder publicar\", mostrar a experiência na aula, parada, com o Mural vazio. No \"Sabe quando você tira uma foto de um desenho\", mostrar o meme ilustrado (2 a 3 s) do Zappy fotografando o desenho da nave [na edição: meme da foto]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o projeto e o Mural vazio parados, sem publicar nem trocar a cor: o que o Mural guarda é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "No \"Mais adiante, você vai poder publicar\", mostrar a experiência na aula, parada, com o Mural vazio. No \"Sabe quando você tira uma foto de um desenho\", mostrar o meme ilustrado (2 a 3 s) do Zappy fotografando o desenho da nave [na edição: meme da foto]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o projeto e o Mural vazio parados, sem publicar nem trocar a cor: o que o Mural guarda é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare projeto e versão publicada",
-          "instructions": "Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "A cada teste, compare a nave do projeto com a nave do Mural.",
             "Compare o Mural depois de mudar a cor no projeto e depois de publicar de novo.",

@@ -6,7 +6,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d2-contexto`
 
-**Na tela:** A experiência aparece no tamanho da aula, com a chave no chão. No "Sabe quando você anota um recado", mostrar o meme ilustrado (2 a 3 s) do Zappy anotando um recado num papelzinho [na edição: meme do papelzinho]. No "essa variável vai se chamar", mostrar o nome temChave com as duas respostas: verdadeiro quer dizer sim e falso quer dizer não [na edição: temChave, verdadeiro e falso]. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não encostar na chave nem mexer nos controles da experiência: o que acontece em cada caso é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, ações nem comandos: a experiência trabalha só a ideia, e os blocos ficam para as partes seguintes (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
+**Na tela:** A experiência aparece no tamanho da aula, com a chave no chão. No "Sabe quando você anota um recado", mostrar o meme ilustrado (2 a 3 s) do Zappy anotando um recado num papelzinho [na edição: meme do papelzinho]. No "essa variável vai se chamar", mostrar o nome temChave com as duas respostas: verdadeiro quer dizer sim e falso quer dizer não [na edição: temChave, verdadeiro e falso]. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não encostar na chave nem mexer nos controles da experiência: o que acontece em cada caso é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, ações nem comandos: a experiência trabalha só a ideia, e os blocos ficam para as partes seguintes (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -23,7 +23,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -36,7 +36,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Recolha a chave
 

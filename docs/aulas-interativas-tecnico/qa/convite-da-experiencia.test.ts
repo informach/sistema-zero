@@ -92,7 +92,7 @@ describe('o vídeo da experiência explica o conceito e convida a investigar', (
     expect(c.fala).not.toMatch(
       /\bnas duas vezes\b|\bdepois,? teste\b|\bteste mais (uma|duas|tr[eê]s)\b/i,
     )
-    expect(c.fala).toContain('Você escolhe por onde começar')
+    expect(c.fala).toContain('O Zappy vai te mostrando o que testar')
     // Na tela o vídeo só amplia a experiência: nenhum gesto num controle dela (os mesmos gestos
     // que video-experiencia.test.ts reprova) e nenhum "Olha aqui".
     expect(c.tela).not.toMatch(GESTO_NA_TELA)

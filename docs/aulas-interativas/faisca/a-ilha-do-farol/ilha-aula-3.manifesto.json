@@ -37,7 +37,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -46,7 +46,7 @@
         "kind": "interactive",
         "title": "O que muda com o não?",
         "required": true,
-        "instructions": "Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o \"não\" e sem ele. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o \"não\" e sem ele. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Antes de ir ao farol, repare se o personagem tem a chave e qual pergunta a porta faz.",
           "Com a mesma chave, ouça a porta com as duas perguntas e compare as respostas.",

@@ -28,11 +28,11 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 1. Quando o jogo marca a batida?
 
-**Tarefa:** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-contato → fala-contato → experiencia-contato.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenho
 
 **Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Aproximar o cacto, um toque de cada vez, até aparecer BATEU. Compare os desenhos com as áreas.
 
@@ -94,11 +94,11 @@ video-batida-sentida-K1: Debinha substitui “O som vem antes de mostrar a tela 
 
 ### Seção 5. Voltar ou começar tudo de novo?
 
-**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-trocar-nao-limpa → fala-trocar-nao-limpa → experiencia-restart.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -106,7 +106,7 @@ video-trocar-nao-limpa-K1: Debinha substitui “E a partida nova começa igual n
 
 **Experiência em exploração livre:** `restart` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/restart.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/restart.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Só voltar para a tela de início. Clique em Tocar na tela, deixe o tempo passar até um cacto bater e clique em Tocar na tela até começar outra partida. Observe os cactos. Escolha Começar tudo de novo. Clique em Tocar na tela, deixe o tempo passar até um cacto bater e clique em Tocar na tela até começar outra partida. Observe a pista.
 

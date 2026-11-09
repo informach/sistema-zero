@@ -15,7 +15,7 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 - Leve ao baú menos de 5 moedas.
 - Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número de moedas, as moedas do caminho e o baú. O Zappy sugere o que observar.
+Antes e depois de cada teste, observe o número de moedas, as moedas do caminho e o baú. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.
 
 ## Aula 1 · Jogo 2D: Cada moeda conta
 

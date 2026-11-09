@@ -29,11 +29,11 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 1. A meta do jogo
 
-**Tarefa:** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-meta-do-jogo → fala-meta-do-jogo → experiencia-meta-do-jogo.
 
-**Recado na página (não gravar):** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -41,7 +41,7 @@ video-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a
 
 **Experiência em exploração livre:** `score-goal` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/score-goal.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/score-goal.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória. Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória. Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.
 
@@ -101,11 +101,11 @@ video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. A
 
 ### Seção 5. Jogar outra vez
 
-**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -113,7 +113,7 @@ video-reiniciar-K1: Debinha substitui “E a partida nova começa igual nos dois
 
 **Experiência em exploração livre:** `restart` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/restart.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/restart.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela. Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início.
 

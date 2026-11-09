@@ -1696,7 +1696,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1705,7 +1705,7 @@
         "kind": "interactive",
         "title": "O que aparece quando você muda de lugar?",
         "required": true,
-        "instructions": "Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe a ilha de outro lugar e procure a chave.",
           "Compare duas vistas. Repare na pedra e na chave em cada uma delas.",

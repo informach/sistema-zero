@@ -56,7 +56,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-toque`
 
-**Na tela:** Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e a edição troca esse trecho pela explicação de ação e reação, com as cócegas e a risada [na edição: ação e reação, com as cócegas e a risada]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem tocar nos esconderijos nem mexer nos controles: o que acontece em cada caso é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. No "ajuda a observar", mostrar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima", clicar em **Próxima parte** [próxima parte].
+**Na tela:** Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e a edição troca esse trecho pela explicação de ação e reação, com as cócegas e a risada [na edição: ação e reação, com as cócegas e a risada]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem tocar nos esconderijos nem mexer nos controles: o que acontece em cada caso é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. No "vai te mostrando", mostrar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -67,13 +67,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] No seu jogo, o toque é a ação. A reação que a gente quer é um esconderijo ficar invisível, para aparecer quem está atrás dele. Essa reação precisa estar ligada ao toque para acontecer.
 
-[upbeat, encouraging voice] Agora você vai investigar o que um toque faz no jardim quando a reação está ligada a ele e quando não está. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que um toque faz no jardim quando a reação está ligada a ele e quando não está. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 
 **Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/discovery-guidance.ts`, exportada em `zappy-etapas.json`. Uma fala por estado; texto, botão principal e voz devem corresponder à mesma etapa. Os controles e os retornos são apresentados durante a interação, sem reproduzir uma sequência de cliques no vídeo.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça alguém aparecer
 

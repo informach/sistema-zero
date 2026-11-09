@@ -160,7 +160,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       })
       expect(experience.content.semPerguntaFinal).toBe(true)
       expect(experience.content.instructions).toBe(
-        'Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. Você escolhe a ordem e pode repetir quando quiser.',
+        'Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
       )
       expect(experience.content.prediction).toBeUndefined()
       expect(blockPrediction(experience.content)).toBeUndefined()

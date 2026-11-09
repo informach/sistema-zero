@@ -82,7 +82,7 @@ vizinhos e as diferenças entre celular e computador. No Kids, o rótulo é **Pr
 
 Aplicar [Conceito, investigação e construção](DESCOBERTA-GUIADA.md), direção de 25/10/2026. O vídeo explica o conceito com uma situação concreta, uma analogia curta e a ligação com o jogo. Termina com um convite que diga o que observar. Os testes, os controles e o jeito de usar a experiência ficam com a própria atividade e com o Zappy.
 
-**O vídeo não explica a experiência (decisão de 09/11/2026, vale para todos os cursos).** A fala explica só o conceito e convida a explorá-lo na experiência da aula ("Agora você vai investigar …", com o fecho comum). Não descreve a tela da experiência, não nomeia nem aponta controles e não dita testes. Nas outras partes, quem lembra a experiência lembra o conceito ou o que se observou ("Lembra da experiência? Cada personagem encontrado somava um em Achados."), nunca um botão ou um interruptor dela. Motivo: a experiência pode mudar de visual e de nome de controle sem obrigar a gerar voz nova nem regravar o vídeo. Os testes `qa/convite-da-experiencia.test.ts` e `qa/video-experiencia.test.ts` conferem a parte da experiência.
+**O vídeo não explica a experiência (decisão de 09/11/2026, vale para todos os cursos).** A fala explica só o conceito e convida a explorá-lo na experiência da aula ("Agora você vai investigar …", com o fecho comum "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."). O fecho diz o que a experiência faz: a fala do Zappy segue o primeiro teste que falta, então ele conduz passo a passo, mesmo com os controles livres; desde 09/11/2026 o vídeo e a página não prometem mais "você escolhe por onde começar". Não descreve a tela da experiência, não nomeia nem aponta controles e não dita testes. Nas outras partes, quem lembra a experiência lembra o conceito ou o que se observou ("Lembra da experiência? Cada personagem encontrado somava um em Achados."), nunca um botão ou um interruptor dela. Motivo: a experiência pode mudar de visual e de nome de controle sem obrigar a gerar voz nova nem regravar o vídeo. Os testes `qa/convite-da-experiencia.test.ts` e `qa/video-experiencia.test.ts` conferem a parte da experiência.
 
 Nas notas de tela, registrar a ilustração e os elementos que tornam a ideia concreta. Preservar cócegas/risada e futebol no Cadê. Não mostrar a resolução das descobertas nem narrar uma sequência de cliques para a pessoa reproduzir.
 
@@ -299,7 +299,7 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
   ("Zappy" vira "Zap"), "num" vira "no", "zero" vira "0". Números escritos de um jeito ou de outro
   valem igual, e numa citação de quatro palavras ou mais uma em cada quatro pode ter sido ouvida
   diferente, menos a última. Evite citar só um nome próprio; cite as palavras comuns em volta
-  (`No "ajuda a observar"`). A citação que a voz não tem é avisada no **Gerar plano do roteiro**, e
+  (`No "vai te mostrando"`). A citação que a voz não tem é avisada no **Gerar plano do roteiro**, e
   o gesto dela vem logo depois do anterior.
 - Cada gesto de mão (apontar, clicar, tocar, arrastar) leva cerca de 2 segundos: o mouse viaja,
   para em cima do alvo e age. O segundo colchete da mesma frase vem 2 segundos depois do primeiro,
@@ -476,7 +476,7 @@ No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela ch
 **Experiência**
 
 ```
-No "Isso você vai testar na experiência", ampliar a experiência e deixar a cena parada [ampliar experiência]. No "O Zappy ajuda a observar", mostrar o Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+No "Isso você vai testar na experiência", ampliar a experiência e deixar a cena parada [ampliar experiência]. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
 ```
 
 Na experiência, só ampliar e mostrar o Zappy: nada de apontar controles nem fazer a investigação no

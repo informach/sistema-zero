@@ -126,7 +126,7 @@ for (const [index, aula] of moedasAulas.entries()) {
           // sair de perto é se afastar e chegar ao baú é ele perguntar; o sumiço é um interruptor e o
           // que o baú pergunta é uma peça que se troca.
           instructions:
-            'Pegue moedas pelo caminho, olhe o número que o jogo guarda e troque o que o baú pergunta. Você escolhe a ordem e pode repetir quando quiser.',
+            'Pegue moedas pelo caminho, olhe o número que o jogo guarda e troque o que o baú pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
           hints: [
             'Olhe o número de moedas antes e depois de cada moeda: quando ele muda e quando continua igual?',
             'Compare passar de novo onde já pegou uma moeda, com o sumiço ligado e desligado. Leve ao baú menos de 5 moedas e mais de 5, nas duas perguntas.',
