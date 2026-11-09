@@ -444,7 +444,11 @@ export function SceneActivityView({
       (t) => falasFixasDoZappy.find((fala) => fala.visibleText === textoFalado(t))?.speechText ?? t,
     )
     const pose = opcoes.pose ?? 'speaking'
-    const mascot = secao?.temDialogo ? undefined : player?.renderInstruction ? (
+    // ⚠️ O balão da experiência livre SEMPRE tem o Zappy (pedido dela, 09/11/2026), mesmo com um
+    // diálogo na parte: ele fala de dentro do jogo (cada gesto muda a fala e, no fim, ele festeja a
+    // ideia), não repete a orientação da esquerda. O `temDialogo` vale só para a instrução das telas
+    // guiadas (`renderDialogue`).
+    const mascot = player?.renderInstruction ? (
       <ZappyAnimated expression={pose} className="size-16 sm:size-20" />
     ) : (
       player?.dialogueMascot?.(pose)

@@ -370,6 +370,7 @@ export function ControlesDoAndar({
   mao,
   pedeVelocidade,
   extra,
+  so,
 }: {
   ritmo: ReturnType<typeof useRitmoDosQuadros>
   escolha: Ritmo
@@ -378,36 +379,50 @@ export function ControlesDoAndar({
   mao: boolean
   pedeVelocidade?: Ritmo | null
   extra?: ReactNode
+  /**
+   * No arranjo do Faísca a tecla de seta é o `movimento` e o resto são os `controles`: a mesma peça
+   * entra duas vezes, uma com `so="andar"` e outra com `so="resto"`. Sem `so`, tudo junto (a Nave).
+   */
+  so?: 'andar' | 'resto'
 }) {
   const { state, dispatch } = useDiscovery()
   const quem = useQuemAnda()
-  return (
+  const andar = (
+    <Modulo
+      titulo="Andar"
+      icone="🎮"
+      dica={
+        <>
+          Segure a tecla.
+          <span className="sz-discovery-so-teclado"> No teclado: → ou D</span>
+        </>
+      }
+    >
+      <TeclaDeSeta
+        direcao="direita"
+        rotulo={`Seta para a direita: segure para ${quem.nome} andar`}
+        apertada={state.walk.arrow}
+        mao={mao}
+        raiz={raiz}
+        segurar={() => {
+          if (!ritmo.rodando) ritmo.rodar(escolha)
+          dispatch({ type: 'hold-arrow', held: true })
+        }}
+        soltar={() => dispatch({ type: 'hold-arrow', held: false })}
+      />
+    </Modulo>
+  )
+  const resto = (
     <>
-      <Modulo
-        titulo="Andar"
-        icone="🎮"
-        dica={
-          <>
-            Segure a tecla.
-            <span className="sz-discovery-so-teclado"> No teclado: → ou D</span>
-          </>
-        }
-      >
-        <TeclaDeSeta
-          direcao="direita"
-          rotulo={`Seta para a direita: segure para ${quem.nome} andar`}
-          apertada={state.walk.arrow}
-          mao={mao}
-          raiz={raiz}
-          segurar={() => {
-            if (!ritmo.rodando) ritmo.rodar(escolha)
-            dispatch({ type: 'hold-arrow', held: true })
-          }}
-          soltar={() => dispatch({ type: 'hold-arrow', held: false })}
-        />
-      </Modulo>
       {extra}
-      <Modulo titulo="Velocidade" icone="⏱️" dica="Devagar mostra cada quadro.">
+      {/* No arranjo do Faísca a velocidade é compacta (sem caixa, nome e dica para o leitor de
+          tela), como o sumiço das moedas: assim cabe ao lado do andar no celular. */}
+      <Modulo
+        compacto={so !== undefined}
+        titulo="Velocidade"
+        icone="⏱️"
+        dica="Devagar mostra cada quadro."
+      >
         <Velocidade
           valor={escolha}
           pulsar={pedeVelocidade}
@@ -417,6 +432,14 @@ export function ControlesDoAndar({
           }}
         />
       </Modulo>
+    </>
+  )
+  if (so === 'andar') return andar
+  if (so === 'resto') return resto
+  return (
+    <>
+      {andar}
+      {resto}
     </>
   )
 }
@@ -463,8 +486,32 @@ export function WalkEmCameraLenta() {
   const raiz = useRef<HTMLDivElement>(null)
   const devagar = useTiqueDoQuadro(ritmo)
   const cenario = p.activity.cenario
+  const controles = (so?: 'andar' | 'resto') => (
+    <ControlesDoAndar
+      so={so}
+      ritmo={ritmo}
+      escolha={escolha}
+      setEscolha={setEscolha}
+      raiz={raiz}
+      mao={w.frame === 0 && !f('moves-each-frame')}
+      pedeVelocidade={
+        f('stopped-after-release') && !f('walked-real-speed')
+          ? 'real'
+          : !f('stopped-after-release') && escolha === 'real'
+            ? 'lenta'
+            : null
+      }
+    />
+  )
+  const filme = (
+    <Filme info={<SeloSimples />}>
+      <TiraDeQuadros />
+    </Filme>
+  )
   return (
     <Frame
+      // O Farol (Faísca) usa o arranjo de uma tela só; a Nave (Construtor) segue como era.
+      arranjo={quem.nave ? undefined : 'faisca'}
       raiz={raiz}
       title="O jogo em câmera lenta"
       kind="quadro"
@@ -481,28 +528,11 @@ export function WalkEmCameraLenta() {
       ponte={semNoSeuJogo(discoverySpeech('slow-bridge', cenario))}
       // ⚠️ A Nave segue com o palco dela (a janela que acompanha a nave no espaço).
       stage={quem.nave ? <PalcoEmCameraLenta /> : <PalcoDoAndar piscar={devagar} />}
-      abaixoDoPalco={
-        <Filme info={<SeloSimples />}>
-          <TiraDeQuadros />
-        </Filme>
-      }
+      abaixoDoPalco={quem.nave ? filme : undefined}
+      registro={quem.nave ? undefined : filme}
       ferramentas={<FerramentasDoAndar ritmo={ritmo} />}
-      controles={
-        <ControlesDoAndar
-          ritmo={ritmo}
-          escolha={escolha}
-          setEscolha={setEscolha}
-          raiz={raiz}
-          mao={w.frame === 0 && !f('moves-each-frame')}
-          pedeVelocidade={
-            f('stopped-after-release') && !f('walked-real-speed')
-              ? 'real'
-              : !f('stopped-after-release') && escolha === 'real'
-                ? 'lenta'
-                : null
-          }
-        />
-      }
+      movimento={quem.nave ? undefined : controles('andar')}
+      controles={quem.nave ? controles() : controles('resto')}
     />
   )
 }

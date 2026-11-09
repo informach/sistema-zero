@@ -7,6 +7,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import type { ReactElement, ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { Door, Memory, Position } from '../src/components/scene-discovery-controls'
 import {
   type Cartao,
   DiscoveryContext,
@@ -14,7 +15,10 @@ import {
   Frame,
   Modulo,
 } from '../src/components/scene-discovery-frame'
+import { ProposedGarden } from '../src/components/scene-discovery-garden'
 import { MoedasLivre } from '../src/components/scene-poder-moedas'
+import { WalkNaBeirada } from '../src/components/scene-walk-beirada'
+import { WalkEmCameraLenta } from '../src/components/scene-walk-camera-lenta'
 
 /**
  * "Experiências numa tela só" (09/11/2026, Canvas aprovado por ela): com `arranjo="faisca"`, à
@@ -32,11 +36,15 @@ const start: SceneStart = { scene: 'coin-counter', setup: activity.setup }
 const inicio = openScene(start)
 
 const falas: Array<{ text: string; opcoes?: FalaDaDescoberta }> = []
-const tela = (state: SceneState, view: ReactElement) =>
+const tela = (
+  state: SceneState,
+  view: ReactElement,
+  atividade: ExperimentationActivity = activity,
+) =>
   renderToStaticMarkup(
     <DiscoveryContext.Provider
       value={{
-        activity,
+        activity: atividade,
         state,
         dispatch: () => {},
         running: false,
@@ -235,5 +243,99 @@ describe('As telas do Faísca usam o arranjo', () => {
     const { direita } = colunas(html)
     expect(direita).toContain('sz-discovery-painel')
     expect((direita.match(/data-compacto="true"/g) ?? []).length).toBe(3)
+  })
+})
+
+/**
+ * As outras 7 experiências dos cursos do Faísca (09/11/2026: "pedi para aplicar em TODAS as
+ * experiências do Faísca"): a Chave do Farol (o andar em câmera lenta, a beirada, a memória, a porta
+ * e a posição) e o Cadê (o toque e os achados). Nada fica em cima da cena e os controles moram à
+ * direita. A Nave (Construtor) usa as mesmas telas do andar e continua como era.
+ */
+const atividadeDe = (
+  scene: ExperimentationActivity['scene'],
+  cenario: ExperimentationActivity['cenario'],
+  goals?: string[],
+): ExperimentationActivity => ({
+  type: 'experimentation',
+  scene,
+  cenario,
+  setup: { freeExploration: true, ...(goals ? { goals } : {}) },
+})
+const telaDa = (a: ExperimentationActivity, view: ReactElement) =>
+  tela(openScene({ scene: a.scene, setup: a.setup }), view, a)
+
+describe('As 7 telas do Farol e do Cadê também usam o arranjo', () => {
+  const casos: Array<[string, ExperimentationActivity, () => ReactElement]> = [
+    [
+      'o toque do Cadê',
+      atividadeDe('touch-response', 'jardim'),
+      () => <ProposedGarden part="touch" />,
+    ],
+    [
+      'os achados do Cadê',
+      atividadeDe('found-counter', 'jardim'),
+      () => <ProposedGarden part="count" />,
+    ],
+    [
+      'o andar em câmera lenta',
+      atividadeDe('lighthouse-walk', 'farol', ['moves-each-frame', 'walked-real-speed']),
+      () => <WalkEmCameraLenta />,
+    ],
+    [
+      'a beirada',
+      atividadeDe('lighthouse-walk', 'farol', ['left-the-screen', 'came-back-inside']),
+      () => <WalkNaBeirada />,
+    ],
+    ['a memória', atividadeDe('collect-and-remember', 'farol'), () => <Memory />],
+    ['a porta', atividadeDe('lighthouse-key', 'farol'), () => <Door />],
+    ['a posição', atividadeDe('lighthouse-position', 'farol'), () => <Position />],
+  ]
+  for (const [nome, a, view] of casos)
+    test(`${nome}: arranjo do Faísca, nada por cima da cena e o painel à direita`, () => {
+      const html = telaDa(a, view())
+      expect(html).toContain('data-arranjo="faisca"')
+      expect(html).not.toContain('sz-discovery-sobre')
+      const { esquerda, direita } = colunas(html)
+      expect(esquerda).not.toContain('sz-discovery-painel')
+      expect(direita).toContain('sz-discovery-painel')
+      expect(direita.indexOf('sz-discovery-painel')).toBeGreaterThan(
+        direita.indexOf('sz-discovery-fala-bloco'),
+      )
+    })
+
+  test('a regra do toque mora no painel da direita, não em cima do jardim', () => {
+    const { esquerda, direita } = colunas(
+      telaDa(atividadeDe('touch-response', 'jardim'), <ProposedGarden part="touch" />),
+    )
+    expect(esquerda).not.toContain('Encaixar a regra do toque')
+    expect(direita).toContain('Encaixar a regra do toque')
+  })
+
+  test('o andar do Farol: a seta é o movimento, a tira de quadros fica embaixo da cena', () => {
+    const { esquerda, direita } = colunas(
+      telaDa(
+        atividadeDe('lighthouse-walk', 'farol', ['left-the-screen', 'came-back-inside']),
+        <WalkNaBeirada />,
+      ),
+    )
+    expect(direita).toContain('sz-discovery-movimento')
+    expect(direita).toContain('Velocidade dos quadros')
+    expect(direita).toContain('Cerca desligada')
+    expect(esquerda.indexOf('sz-discovery-filme')).toBeGreaterThan(
+      esquerda.indexOf('sz-discovery-palco'),
+    )
+    expect(direita).not.toContain('sz-discovery-filme')
+  })
+
+  test('a Nave (Construtor) usa as mesmas telas do andar e continua como era', () => {
+    const html = telaDa(
+      atividadeDe('lighthouse-walk', 'nave', ['moves-each-frame', 'walked-real-speed']),
+      <WalkEmCameraLenta />,
+    )
+    expect(html).not.toContain('data-arranjo')
+    const { esquerda } = colunas(html)
+    expect(esquerda).toContain('sz-discovery-deck')
+    expect(esquerda).toContain('sz-discovery-filme')
   })
 })

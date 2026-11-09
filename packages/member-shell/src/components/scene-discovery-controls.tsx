@@ -456,6 +456,7 @@ export function Memory() {
   const gesto = proximoGestoDaMemoria(discoveryGuidance(p.activity, p.state)?.id, c)
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="O jogo guarda que pegou a chave"
       kind="memoria"
@@ -482,26 +483,24 @@ export function Memory() {
           aviso={c.keyPresent ? AVISOS_DO_FAROL.inicio : AVISOS_DO_FAROL.coleta}
         />
       }
+      movimento={
+        <ModuloAndarLivre raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
       controles={
         <>
-          <ModuloAndarLivre
-            raiz={raiz}
-            andar={andar}
-            mao={p.fotos.length === 0 && !andar.andando}
-          />
-          <Modulo titulo="O jogo guarda" icone="📓" dica="Com o lápis ligado, o jogo anota.">
-            <div className="sz-discovery-coluna">
-              <Caderninho sim={c.hasKey} lapis={c.remember} />
-              <Interruptor
-                ligado={c.remember}
-                rotulo="✏️ O jogo anota?"
-                estado={(on) => (on ? 'Lápis ligado' : 'Lápis desligado')}
-                pulsar={gesto === 'memoria'}
-                onClick={() => dispatch({ type: 'remember-collection', enabled: !c.remember })}
-              />
-            </div>
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="O caderninho do jogo.">
+            <Caderninho sim={c.hasKey} lapis={c.remember} />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄">
+          <Modulo compacto titulo="O lápis" icone="✏️" dica="Com o lápis ligado, o jogo anota.">
+            <Interruptor
+              ligado={c.remember}
+              rotulo="✏️ O jogo anota?"
+              estado={(on) => (on ? 'Lápis ligado' : 'Lápis desligado')}
+              pulsar={gesto === 'memoria'}
+              onClick={() => dispatch({ type: 'remember-collection', enabled: !c.remember })}
+            />
+          </Modulo>
+          <Modulo compacto titulo="Partida" icone="🔄" dica="A chave volta para o chão.">
             <BotaoGrande pulsar={gesto === 'recomecar'} onClick={jogarDeNovo}>
               <span aria-hidden>🔄</span> Jogar de novo
             </BotaoGrande>
@@ -599,6 +598,7 @@ export function Door() {
       : null
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="A porta do farol"
       kind="porta"
@@ -626,17 +626,15 @@ export function Door() {
           aviso={avisoDaPorta(l)}
         />
       }
+      movimento={
+        <ModuloAndarLivre raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
       controles={
         <>
-          <ModuloAndarLivre
-            raiz={raiz}
-            andar={andar}
-            mao={p.fotos.length === 0 && !andar.andando}
-          />
-          <Modulo titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
             <Caderninho sim={l.hasKey} />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="A chave volta para o chão.">
+          <Modulo compacto titulo="Partida" icone="🔄" dica="A chave volta para o chão.">
             <BotaoGrande
               pulsar={testou && l.door === 'open' && !f('locked-without-key')}
               onClick={jogarDeNovo}
@@ -830,6 +828,7 @@ export function Position() {
   )
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="Onde a chave aparece"
       kind="posicao"

@@ -2,8 +2,9 @@
 /**
  * ⭐⭐ As experiências do Cadê Todo Mundo? (08/11/2026, proposta aprovada no Canvas).
  *
- * O TOQUE: a regra é uma PEÇA que a criança encaixa num slot desenhado em cima do jardim ("Quando
- * tocar → mostrar"); sem ela, tocar não faz nada. "Esconder de novo" esconde todo mundo e mantém a
+ * O TOQUE: a regra é uma PEÇA que a criança encaixa num slot ("Quando tocar → mostrar"); sem ela,
+ * tocar não faz nada. Desde 09/11/2026 ("Experiências numa tela só", arranjo do Faísca) o slot mora
+ * no painel da direita, embaixo da fala do Zappy, e não mais em cima do jardim. "Esconder de novo" esconde todo mundo e mantém a
  * peça. OS ACHADOS: o número "achados" no placar, com o "+1" ou "continua N" pulando embaixo dele a
  * cada toque, e "Nova busca" no painel.
  *
@@ -12,6 +13,7 @@
  */
 import { discoverySpeech } from '@sistemazero/core/learning/scene'
 import { JARDIM_PARES, jardimSpriteRect } from '@sistemazero/studio/arte'
+import { EyeOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SONS } from '../lib/scene-sons'
 import { SceneCenarioProvider } from './scene-cenario-context'
@@ -25,6 +27,7 @@ import {
   semNoSeuJogo,
   useFotinhos,
 } from './scene-discovery-frame'
+import { Encaixe } from './scene-faisca-livre'
 import { FoundCounterStage } from './scene-found-counter'
 import { TwoHidingPlaces } from './scene-two-hiding-places'
 
@@ -66,14 +69,12 @@ const fotoToque: FotoDe = (antes, depois, acao) => {
   }
 }
 
-function Peca() {
-  return (
-    <span className="sz-discovery-peca">
-      <span aria-hidden>👆</span> Quando tocar <span aria-hidden>→</span>{' '}
-      <span aria-hidden>👀</span> mostrar
-    </span>
-  )
-}
+const PECA = (
+  <>
+    <span aria-hidden>👆</span> Quando tocar <span aria-hidden>→</span> <span aria-hidden>👀</span>{' '}
+    mostrar
+  </>
+)
 
 function Toque() {
   const p = useFotinhos({ fotoDe: fotoToque })
@@ -94,6 +95,8 @@ function Toque() {
   const pulsarPeca = f('no-response') && !m.touch && !f('responds')
   return (
     <Frame
+      arranjo="faisca"
+      aspectoDoPalco={560 / 300}
       title="O toque faz o jogo responder"
       kind="toque"
       activity={p.activity}
@@ -119,31 +122,21 @@ function Toque() {
           <TwoHidingPlaces state={p.state} dispatch={p.dispatch} />
         </SceneCenarioProvider>
       }
-      sobrePalco={
-        <button
-          type="button"
-          className="sz-discovery-encaixe"
-          aria-pressed={m.touch}
-          aria-label={m.touch ? 'Tirar a regra do toque' : 'Encaixar a regra do toque'}
-          data-pulsar={pulsarPeca}
-          onClick={() => {
-            SONS.encaixe()
-            p.dispatch({ type: 'connect', port: 'touch', enabled: !m.touch })
-          }}
-        >
-          <span className="sz-discovery-encaixe-rotulo">Regra do toque</span>
-          <span className="sz-discovery-encaixe-linha">
-            <span className="sz-discovery-slot">{m.touch ? <Peca /> : 'encaixe aqui'}</span>
-            {m.touch ? null : (
-              <span className="sz-discovery-peca-solta">
-                <Peca />
-              </span>
-            )}
-          </span>
-          <span className="sz-discovery-encaixe-estado">
-            {m.touch ? 'Encaixada. Toque para tirar.' : 'Toque na peça para encaixar.'}
-          </span>
-        </button>
+      controles={
+        <Modulo titulo="A regra do toque" icone="🧩" largo>
+          <Encaixe
+            rotulo="Regra do toque"
+            peca={PECA}
+            encaixada={m.touch}
+            estado={m.touch ? 'Encaixada. Toque para tirar.' : 'Toque na peça para encaixar.'}
+            pulsar={pulsarPeca}
+            aria={m.touch ? 'Tirar a regra do toque' : 'Encaixar a regra do toque'}
+            onClick={() => {
+              SONS.encaixe()
+              p.dispatch({ type: 'connect', port: 'touch', enabled: !m.touch })
+            }}
+          />
+        </Modulo>
       }
       ferramentas={
         <Redondo
@@ -151,7 +144,8 @@ function Toque() {
           texto="Esconder de novo"
           onClick={() => p.dispatch({ type: 'restart-hiding-places' })}
         >
-          <span aria-hidden>🙈</span>
+          {/* Ícone desenhado, não emoji: no celular o botão fica só com o ícone (a letra vai a 0). */}
+          <EyeOff size={16} aria-hidden />
         </Redondo>
       }
     />
@@ -235,6 +229,8 @@ function Achados() {
   const arbusto = jardimSpriteRect(par.esconderijo, par.centroX)
   return (
     <Frame
+      arranjo="faisca"
+      aspectoDoPalco={560 / 300}
       title="O jogo guarda os achados"
       kind="achados"
       activity={p.activity}
@@ -278,7 +274,12 @@ function Achados() {
               Ache os bichinhos escondidos no jardim.
             </span>
           </Modulo>
-          <Modulo titulo="Partida" icone="🧺">
+          <Modulo
+            compacto
+            titulo="Partida"
+            icone="🧺"
+            dica="Os bichinhos se escondem e achados volta a 0."
+          >
             <BotaoGrande
               pulsar={f('second-find') && f('no-find') && f('repeat') && !f('back-to-zero')}
               onClick={() => p.dispatch({ type: 'restart-search' })}

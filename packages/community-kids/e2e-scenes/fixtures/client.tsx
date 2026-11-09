@@ -1,5 +1,6 @@
 import { isInteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
 import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
+import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
 import { LessonSectionProvider } from '@sistemazero/member-shell/components/lesson-section-context'
 import { SceneActivityView } from '@sistemazero/member-shell/components/scene-activity'
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
@@ -12,6 +13,8 @@ import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-con
 import ilha1 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json'
 import ilha2 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json'
 import ilha3 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
+import cade1 from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
+import cade2 from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json'
 import farolDia1 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
 import farolDia3 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
@@ -68,12 +71,18 @@ const curso = params.get('course') ?? ''
 const blocks: BlocoDoManifesto[] =
   curso === 'farol'
     ? ([...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks] as BlocoDoManifesto[])
-    : curso === 'dino'
-      ? DINO
-      : curso === 'ilha'
-        ? ([...ilha1.blocks, ...ilha2.blocks, ...ilha3.blocks] as BlocoDoManifesto[])
-        : (PODERES[curso] ??
-          ([...navePrimeira.blocks, ...naveDia1.blocks, ...naveDia5.blocks] as BlocoDoManifesto[]))
+    : curso === 'cade'
+      ? ([...cade1.blocks, ...cade2.blocks] as BlocoDoManifesto[])
+      : curso === 'dino'
+        ? DINO
+        : curso === 'ilha'
+          ? ([...ilha1.blocks, ...ilha2.blocks, ...ilha3.blocks] as BlocoDoManifesto[])
+          : (PODERES[curso] ??
+            ([
+              ...navePrimeira.blocks,
+              ...naveDia1.blocks,
+              ...naveDia5.blocks,
+            ] as BlocoDoManifesto[]))
 const source = blocks.find(
   (block) =>
     block.key === (params.get('block') ?? (PODERES[curso] ? 'experiencia' : 'experiencia-areas')),
@@ -131,17 +140,49 @@ if (content.activity.type !== 'experimentation') throw new Error('Bloco não é 
 const root = document.getElementById('root')
 if (!root) throw new Error('Raiz ausente')
 
+/**
+ * `?zappy`: a experiência como na aula de verdade, dentro de uma parte que JÁ TEM um bloco de fala
+ * do Zappy (a orientação da esquerda) e com o mascote do app. Foi assim que ela viu o balão da
+ * experiência sem o Zappy (09/11/2026): o ensaio sem a parte desenhava o mascote e escondia o caso.
+ */
+const zappy = params.has('zappy')
+const cena = (
+  <SceneActivityView
+    block={{ id: source.key, kind: 'interactive', sortOrder: 0, content }}
+    content={content}
+    activity={content.activity}
+    previewContent={original}
+  />
+)
 const experience = (
   <div className="sz-lesson-block">
     <LessonSectionProvider
-      value={params.has('repeated-title') ? { titulo: content.title, temDialogo: false } : null}
+      value={
+        zappy
+          ? { titulo: 'Parte da aula', temDialogo: true }
+          : params.has('repeated-title')
+            ? { titulo: content.title, temDialogo: false }
+            : null
+      }
     >
-      <SceneActivityView
-        block={{ id: source.key, kind: 'interactive', sortOrder: 0, content }}
-        content={content}
-        activity={content.activity}
-        previewContent={original}
-      />
+      {zappy ? (
+        <LessonPlayerProvider
+          value={{
+            lessonId: 'aula',
+            courseSlug: curso,
+            viewerId: null,
+            viewerWatermark: null,
+            initialPositionSeconds: null,
+            // O tamanho vem por CLASSE, como o `size-16` do Zappy do app: o CSS do celular o reduz
+            // a 44px (com estilo na própria peça, ele não reduziria e o teste mediria outra tela).
+            dialogueMascot: () => <span data-zappy aria-hidden className="ensaio-zappy" />,
+          }}
+        >
+          {cena}
+        </LessonPlayerProvider>
+      ) : (
+        cena
+      )}
     </LessonSectionProvider>
   </div>
 )
@@ -167,8 +208,12 @@ const BARRAS_CSS = `
 .ensaio-abas { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; height: calc(3.5rem + env(safe-area-inset-bottom)); background: #18213a; }
 @media (min-width: 768px) { .ensaio-topo, .ensaio-abas { display: none; } }
 `
+const ZAPPY_CSS = `
+.ensaio-zappy { display: block; flex: none; width: 64px; height: 64px; border-radius: 999px; background: #fbbf24; }
+`
 createRoot(root).render(
   <LessonCopyProvider value={KIDS_LESSON_COPY}>
+    {zappy ? <style>{ZAPPY_CSS}</style> : null}
     {barras ? (
       <>
         <style>{BARRAS_CSS}</style>

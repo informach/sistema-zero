@@ -6,8 +6,14 @@ Pedido dela: a criança rolava para baixo para apertar um botão e subia para ve
 ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/artifact/8d9ZNWrd2AzMZ1vfWDzSDL
 (versão 4; protótipo fora do git em `community-kids/tmp/proposta-uma-tela/`).
 
-- **`Frame` com `arranjo="faisca"`** (só as 8 telas do Faísca: `scene-island-discovery`,
-  `scene-door-not` e os 4 `scene-poder-*`; as ~60 outras telas livres ficam como eram):
+- **`Frame` com `arranjo="faisca"`** em TODAS as 15 experiências dos cursos do Faísca (a lista
+  sai de `docs/aulas-interativas/faisca/`): a Ilha (`scene-island-discovery`, `scene-door-not`), os
+  4 `scene-poder-*` e, desde a segunda rodada do mesmo dia, a Chave do Farol (`WalkEmCameraLenta`,
+  `WalkNaBeirada`, `Memory`, `Door`, `Position`) e o Cadê (`ProposedGarden`, o toque e os achados).
+  ⚠️ Ela tinha pedido "todas as experiências do Faísca" e a primeira rodada converteu só 8: confira
+  pelos manifestos, não pela memória. As ~50 outras telas livres ficam como eram, e a **Nave
+  (Construtor)**, que usa as mesmas telas do andar, também (`arranjo={quem.nave ? undefined :
+  'faisca'}`):
   - **à esquerda, o JOGO** (`ConsoleVisual`): no celular, o balão do Zappy; as estrelas, a cena NO TOPO
     (nunca centralizada na altura) e "Seus testes" (as 3 fotinhos mais novas, 2 no celular);
   - **à direita, a CRIANÇA** (`ConsoleActions`): a fala do Zappy (texto e "Ouvir" lado a lado), o
@@ -25,7 +31,24 @@ ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/a
     `compacto` dividem a linha; a câmera e a altura da Ilha ocupam a largura toda. Com só duas
     peças (ponte, símbolos, cabana, porta), elas empilham ao lado do andar.
 - **`Modulo compacto`**: sem caixa e com o nome e a dica em `sr-only` (o caderninho, o sumiço, o
-  "Jogar de novo", as caixas do encontro). `data-compacto`.
+  "Jogar de novo", as caixas do encontro, o lápis da memória, a cerca e a velocidade do andar).
+  `data-compacto`.
+- ⚠️ **Nada da regra em cima da cena:** a peça "Quando tocar → mostrar" do Cadê era `sobrePalco` e
+  virou um `Modulo largo` com `Encaixe` no painel. O andar das telas do Farol é o `movimento`
+  (`ModuloAndarLivre`, e no andar de uma tecla `ControlesDoAndar so="andar"`; o resto com
+  `so="resto"`). No arranjo a `Velocidade` vira coluna (Devagar embaixo de Rápido); a câmera da
+  Ilha, que usa a mesma classe, fica de fora (`:not(.sz-discovery-livre-camera)`).
+- **`registro`** (prop nova): o retrato do jogo que acompanha a cena, a tira de quadros do andar.
+  No arranjo fica embaixo da cena (é do jogo, como "Seus testes"); no celular, depois do painel,
+  fora da conta da altura da cena. Sem o arranjo, no lugar do `abaixoDoPalco`.
+- ⭐ **O balão da experiência livre SEMPRE tem o Zappy** (`renderFalaDaDescoberta` no
+  `scene-activity`, pedido dela de 09/11/2026): o `temDialogo` da parte (a orientação da esquerda
+  já com o Zappy) tirava o mascote do balão, e na aula de verdade ela via a fala sem ele. A regra de
+  não repetir vale só para a instrução das telas guiadas (`renderDialogue`).
+- ⚠️ O CSS do mascote no celular mira `.sz-fala-linha > :not(.sz-fala-balao)`, nunca
+  `:first-child`: sem mascote (app sem `dialogueMascot`) o primeiro filho é o BALÃO, que encolhia
+  para 44px e a ideia do fim cobria o "Pausar" (o e2e `lighthouse-walk` pegou). No celular
+  estreito (< 26rem) o mascote tem 36px e a letra do balão 0,84rem.
 - **`aspectoDoPalco`** (padrão 4/3; a Ilha passa 1.1) vira `--sz-palco-aspecto`. A cena tem largura
   `min(100%, --sz-palco-hmax × aspecto)`: no largo, `--sz-palco-hmax` vem do CSS (a janela menos o
   cabeçalho e as estrelas; o encaixe por JS do ampliado fica desligado); no estreito, ela é MEDIDA
@@ -49,9 +72,12 @@ ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/a
 - No ampliado o cabeçalho fica numa linha (no celular, o "Voltar" só com o ícone).
 - Testes: `tests/scene-discovery-faisca-arranjo.test.tsx` (onde mora cada coisa, o `compacto`, o
   fim e as telas sem arranjo) e o e2e `community-kids/e2e-scenes/faisca-uma-tela.spec.ts`. O e2e
-  roda as 8 experiências em 1366×768, 1024×768, 920×768, 390×844 e 375×667, no normal e no
+  roda as 15 experiências em 1366×768, 1024×768, 920×768, 390×844 e 375×667, no normal e no
   ampliado, com as barras do app de verdade (a fixture `?barras`: a barra de cima fixa, as abas do
-  celular e o rodapé `.sz-lesson-nav-immersive` de 72px). Ele confere, entre a barra e o rodapé:
+  celular e o rodapé `.sz-lesson-nav-immersive` de 72px) e com `?zappy` (a parte com a fala do
+  Zappy e o mascote do app por CLASSE, como o `size-16`: com estilo na própria peça o CSS do
+  celular não o reduziria); os cursos da fixture são `farol`, `cade`, os Poderes e `ilha`.
+  Ele confere, entre a barra e o rodapé, também o Zappy no balão e nada em `.sz-discovery-sobre`:
   - a cena, a fala e cada controle inteiros na janela;
   - os botões dentro do seu controle e sem outro por cima;
   - a cena logo abaixo das estrelas;

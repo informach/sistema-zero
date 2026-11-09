@@ -303,6 +303,7 @@ export function Frame({
   noPalco,
   sobrePalco,
   abaixoDoPalco,
+  registro,
   movimento,
   controles,
   ferramentas,
@@ -343,6 +344,12 @@ export function Frame({
   /** O que muda a regra, desenhado no canto de cima do palco. */
   sobrePalco?: ReactNode
   abaixoDoPalco?: ReactNode
+  /**
+   * O retrato do jogo que acompanha a cena (a tira de quadros do andar do Farol). Sem o arranjo, no
+   * mesmo lugar do `abaixoDoPalco`; no arranjo do Faísca, embaixo da cena (ele é do jogo, como "Seus
+   * testes") e, no celular, depois dos controles (a cena e os controles vêm antes).
+   */
+  registro?: ReactNode
   /** Controles essenciais junto ao palco, antes das regras e dos registros. */
   movimento?: ReactNode
   /** Os módulos do painel embaixo da cena (`Modulo`). */
@@ -620,6 +627,7 @@ export function Frame({
             {estreito ? fala : null}
             {linhaDeCima}
             {mundo}
+            {estreito ? null : registro}
             {estreito ? null : testes}
           </ConsoleVisual>
           <ConsoleActions>
@@ -643,6 +651,7 @@ export function Frame({
               </div>
             ) : null}
             {children ? <ConsolePrancha>{children}</ConsolePrancha> : null}
+            {estreito ? registro : null}
             {descobertas}
             {estreito ? testes : null}
             {cartoes ? context.continuar : context.tools}
@@ -671,6 +680,7 @@ export function Frame({
           {mundo}
           {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
           {abaixoDoPalco}
+          {registro}
           {after ? (
             <div className="sz-discovery-evidence" aria-live="polite">
               {after}
