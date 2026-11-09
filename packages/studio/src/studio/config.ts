@@ -49,6 +49,12 @@ export interface StudioFeatures {
    * padrão, mas pode ser desligado quando o host fornece um `proRuntime` remoto.
    */
   professional?: boolean
+  /**
+   * O passeio de primeiros passos no primeiro jogo de blocos (redesenho do clássico, 11/2026,
+   * D6). Default: false — o `StudioEditor` (o Estúdio livre) liga; a aula nunca (o robô de
+   * gravação e a fala da aula guiam ali).
+   */
+  firstStepsTour?: boolean
 }
 
 /** Timeout default de processos não-interativos do terminal/dev-server (ms). */
@@ -142,6 +148,8 @@ export interface ResolvedStudioConfig {
   ai: boolean
   /** Modo profissional ligado (dev-server WebContainer). */
   professional: boolean
+  /** O passeio de primeiros passos (ver `StudioFeatures.firstStepsTour`). */
+  firstStepsTour: boolean
   aiConfig: { provider?: AIProvider; model?: string; allowUserKey: boolean }
   allowedModes: readonly IDEMode[]
   previewSecurity: PreviewSecurityPolicy
@@ -183,6 +191,7 @@ export function resolveStudioConfig(
     terminal: professional ? (features?.terminal ?? true) : (features?.terminal ?? false),
     ai: ai !== false,
     professional,
+    firstStepsTour: features?.firstStepsTour ?? false,
     aiConfig: {
       provider: aiObject.provider,
       model: aiObject.model,
@@ -203,6 +212,7 @@ export const STANDALONE_CONFIG: ResolvedStudioConfig = {
   terminal: true,
   ai: true,
   professional: false,
+  firstStepsTour: false,
   aiConfig: { allowUserKey: true },
   allowedModes: IDE_MODES,
   previewSecurity: DEFAULT_PREVIEW_SECURITY,

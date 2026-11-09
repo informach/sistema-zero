@@ -16,6 +16,7 @@ import type { StudioEditorProps } from './types'
  * DESLIGADO — a jornada é o portão estrito do Estúdio Completo.
  * Renderizar SOMENTE no client (Monaco/Blockly/IndexedDB).
  */
-export function StudioEditor({ tutor, ...props }: StudioEditorProps): JSX.Element {
-  return <StudioCore {...props} tutor={tutor} />
+export function StudioEditor({ tutor, features, ...props }: StudioEditorProps): JSX.Element {
+  // O Estúdio livre tem o passeio de primeiros passos (D6); o host ainda pode desligar.
+  return <StudioCore {...props} features={{ firstStepsTour: true, ...features }} tutor={tutor} />
 }

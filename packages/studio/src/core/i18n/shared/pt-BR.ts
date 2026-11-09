@@ -94,6 +94,18 @@ export const ptBR: Record<string, string> = {
   'stage.errorMark': 'O jogo parou neste bloco.',
   'blocks.dropToDelete': 'Solte aqui para apagar',
   'blocks.moreBlocks': 'Mais blocos',
+  'tour.title': 'Primeiros passos',
+  'tour.step': '{n} de {total}',
+  'tour.skip': 'Pular',
+  'tour.next': 'Próximo',
+  'tour.done': 'Começar!',
+  'tour.palette':
+    'Os blocos moram aqui. Abra uma categoria e arraste um bloco para a área de montagem.',
+  'tour.areas':
+    'Cada área roda de um jeito: Ao iniciar roda uma vez, Quando acontecer espera, Enquanto estiver rodando repete sem parar.',
+  'tour.run': 'Aperte Rodar para ver seu jogo. Rodar de novo recomeça do zero.',
+  'tour.problems':
+    'Se o jogo parar, o bloco ganha um sinal vermelho e a aba Problemas mostra onde.',
   'assets.processing': 'Processando…',
   'assets.uploadFromComputer': 'Enviar do computador',
   'assets.images.empty': 'Nenhuma imagem ainda. Traga um desenho do Pinta ou envie do computador.',

@@ -18,6 +18,7 @@ import { useVisibleBottomTabs } from './bottomTabs'
 import { ClassicDock } from './ClassicDock'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
+import { FirstStepsTour } from './FirstStepsTour'
 import { proLayoutTier } from './layoutBreakpoints'
 import { ModeArea } from './ModeArea'
 import { NarrowLayout } from './NarrowLayout'
@@ -190,6 +191,8 @@ export function Shell({
                 </ErrorBoundary>
               )}
               <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
+              {/* O passeio de primeiros passos (D6): só no Estúdio livre, no clássico. */}
+              {!isPro ? <FirstStepsTour /> : null}
               <DrawingSyncWatcher />
               {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}
