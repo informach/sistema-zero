@@ -85,7 +85,7 @@ function advanced3DKit(page: Page) {
 async function installAdvanced3D(page: Page): Promise<void> {
   await openMenuItem(page, 'Mais blocos')
   await advanced3DKit(page).getByRole('button', { name: 'Pôr no meu jogo', exact: true }).click()
-  await expect(advanced3DKit(page).getByText('Instalada', { exact: true })).toBeVisible()
+  await expect(advanced3DKit(page).getByText('No meu jogo', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
 }
 
@@ -251,6 +251,6 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) =>
 
   await page.reload()
   await openMenuItem(page, 'Mais blocos')
-  await expect(advanced3DKit(page).getByText('Instalada', { exact: true })).toBeVisible()
+  await expect(advanced3DKit(page).getByText('No meu jogo', { exact: true })).toBeVisible()
   expect(errors).toEqual([])
 })

@@ -4,7 +4,7 @@ import { ErrorBoundary, IconChevronDown, IconChevronUp, IconRefresh } from '#ui'
 import { isPythonProject } from '../../core/editableProject'
 import { useDiagnosticsStore } from '../../state/diagnosticsStore'
 import { useHighlightStoreApi } from '../../state/highlightStore'
-import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
+import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun, useProRunApi } from '../../state/proRun'
 import { type ClassicDockTab, useUIStore } from '../../state/uiStore'
@@ -47,7 +47,12 @@ export function ClassicDock({
   // No Python as Mensagens são também o "Experimentar comandos": o erro de um comando digitado
   // tem de aparecer ali, então só o JavaScript tira os erros das Mensagens.
   const messageCount = useLogsStore(
-    (s) => s.entries.filter((entry) => python || !ERROR_LOG_KINDS.has(entry.kind)).length,
+    // Conta o que as Mensagens mostram: no JavaScript, tudo menos o erro que parou o jogo (que
+    // mora em Problemas); o `console.error` do aluno continua contando aqui.
+    (s) =>
+      s.entries.filter(
+        (entry) => python || (entry.kind !== 'runtimeError' && entry.kind !== 'unhandledRejection'),
+      ).length,
   )
   const runError = useProRun(
     useShallow((s) =>
@@ -56,6 +61,7 @@ export function ClassicDock({
             hint: s.state.errorHint ?? null,
             technical: s.state.error ?? null,
             located: Boolean(s.state.errorAt),
+            canRun: Boolean(s.actions && s.state.canRun),
           }
         : null,
     ),
@@ -173,7 +179,13 @@ export function ClassicDock({
                 <button
                   type="button"
                   className="sz-pro-btn sz-pro-btn--sm"
-                  onClick={() => proRun.getState().actions?.run()}
+                  disabled={!runError.canRun}
+                  onClick={() => {
+                    // Como a barra: roda e traz o jogo à vista (no estreito, a aba do jogo).
+                    const { actions, revealStage } = proRun.getState()
+                    actions?.run()
+                    revealStage?.()
+                  }}
                 >
                   <IconRefresh />
                   {t('run.runAgain')}

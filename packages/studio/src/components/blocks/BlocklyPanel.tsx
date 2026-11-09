@@ -30,7 +30,7 @@ import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
-import type { ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
+import type { OrganizerWorkspace, ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
 import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
@@ -953,10 +953,13 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // O "Mais blocos" da paleta abre a janela das extensões desta instância.
   useEffect(() => {
     if (!workspace) return
-    const target = workspace as unknown as MoreBlocksWorkspace
+    const target = workspace as unknown as MoreBlocksWorkspace & OrganizerWorkspace
     target.__szOpenExtensions = () => setShowExtensions(true)
+    // Só aqui o "Arrumar blocos" nativo sai do menu (fica o "Organizar blocos" pelas áreas).
+    target.__szOrganizes = true
     return () => {
       target.__szOpenExtensions = undefined
+      target.__szOrganizes = undefined
     }
   }, [workspace, setShowExtensions])
 
@@ -999,6 +1002,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         : null
     setRuntimeErrorBlock(workspace as Blockly.WorkspaceSvg, id, runtimeMark?.message ?? '')
   }, [workspace, runtimeMark, cross])
+  const markLookupRef = useRef({ runtimeMark, cross })
+  markLookupRef.current = { runtimeMark, cross }
 
   // "Mostrar o bloco" (cartão do palco e aba Problemas): rola até o bloco, seleciona e abre o
   // balão. Dois quadros de espera: no estreito o pedido também troca a aba, e o Blockly só mede
@@ -1010,7 +1015,14 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const target = revealRequest.target
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
-        const id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
+        let id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
+        const { runtimeMark: mark, cross: map } = markLookupRef.current
+        if (!id && target.kind === 'runtime' && mark?.file === 'script.js') {
+          // O erro chegou antes de os blocos terminarem de carregar: marca agora pela linha.
+          const found = map.lookupLine('script.js', mark.line, mark.column ?? undefined)
+          setRuntimeErrorBlock(svgWorkspace, found, mark.message)
+          id = runtimeErrorBlockId(svgWorkspace)
+        }
         if (!id) return
         Blockly.svgResize(svgWorkspace)
         isSelectingFromEditorRef.current = true

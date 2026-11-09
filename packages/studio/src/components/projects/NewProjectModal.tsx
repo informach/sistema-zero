@@ -166,6 +166,10 @@ export function NewProjectModal({
   // mudam de REFERÊNCIA a cada render do pai (default `[]`, lista recarregada);
   // com eles nas deps, o efeito re-disparava a cada tecla e engolia a digitação.
   const openedRef = useRef(false)
+  const jsPreset = () =>
+    Object.keys(JS_STARTING_POINTS).find(
+      (id) => defaultStartingExtensions.includes(id) && javascriptStartingExtensions.includes(id),
+    ) ?? 'blank'
   useEffect(() => {
     if (open && !openedRef.current) {
       setName(defaultName)
@@ -179,10 +183,7 @@ export function NewProjectModal({
       setLanguage(only)
       const pythonClassic = pythonEnvironments.some(({ kind }) => kind === 'classic')
       setWay(only === 'python' && !pythonClassic && professionalAvailable ? 'code' : 'blocks')
-      const preset = Object.keys(JS_STARTING_POINTS).find(
-        (id) => defaultStartingExtensions.includes(id) && javascriptStartingExtensions.includes(id),
-      )
-      setStart(only === 'javascript' && preset ? preset : 'blank')
+      setStart(only === 'javascript' ? jsPreset() : 'blank')
       setTemplateId(templates[0]?.id ?? '')
       setCreationError(null)
       setCategory('all')
@@ -207,7 +208,16 @@ export function NewProjectModal({
   ]
   const pythonKind = way === 'code' ? 'pro' : 'classic'
   const pythonEnvironment = pythonEnvironments.find(({ kind }) => kind === pythonKind)
-  const pythonPoints = pythonKind === 'classic' ? PYTHON_STARTING_POINTS : [BLANK]
+  // Turtle e Pygame Zero só aparecem com a extensão liberada no nível (as concessões vêm com o
+  // ambiente); sem ela o pedido cairia em silêncio e o projeto nasceria em branco.
+  const pythonGrants = pythonEnvironment?.context.grantedExtensionIds
+  const pythonPoints =
+    pythonKind === 'classic'
+      ? PYTHON_STARTING_POINTS.filter(
+          (item) =>
+            !item.extensionIds[0] || !pythonGrants || pythonGrants.includes(item.extensionIds[0]),
+        )
+      : [BLANK]
   const points = language === 'python' ? pythonPoints : jsPoints
   const point = points.find((item) => item.id === start) ?? BLANK
   const codeOffered =
@@ -281,7 +291,8 @@ export function NewProjectModal({
   }
   const chooseLanguage = (next: Language) => {
     setLanguage(next)
-    setStart('blank')
+    // O padrão do host (ex.: Jogo 2D) vale também quando a criança escolhe o JavaScript.
+    setStart(next === 'javascript' ? jsPreset() : 'blank')
     setWay(
       next === 'python' &&
         !pythonEnvironments.some(({ kind }) => kind === 'classic') &&

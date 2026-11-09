@@ -332,7 +332,7 @@ export async function runPythonLessonAdmin() {
       await page.getByLabel('Nível', { exact: true }).selectOption('3')
     }
     await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Extensões', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos', exact: true }).click()
     const extensions = page.getByRole('dialog', { name: 'Extensões Python', exact: true })
     await extensions
       .locator('li')

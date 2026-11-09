@@ -5,6 +5,8 @@ export interface TutorToolboxItem {
   getContents?: () => unknown
   getChildToolboxItems?: () => TutorToolboxItem[]
   setExpanded?: (expanded: boolean) => void
+  /** A categoria "Procurar um bloco" (o conteúdo dela é o resultado da última busca). */
+  szSearch?: boolean
 }
 
 export interface TutorToolbox {
@@ -32,6 +34,8 @@ function contentsIncludeBlockType(contents: unknown, blockType: string): boolean
 
 function findBlockOwner(items: TutorToolboxItem[], blockType: string): TutorToolboxItem | null {
   for (const item of items) {
+    // A busca guarda o resultado da última procura: abri-la mostraria "Escreva para achar".
+    if (item.szSearch) continue
     // A parent's serialized contents include every child. Prefer the actual leaf.
     const found = findBlockOwner(item.getChildToolboxItems?.() ?? [], blockType)
     if (found) {

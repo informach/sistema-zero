@@ -265,6 +265,11 @@ export function registerPtSearchCategory(): void {
   if (!isSearchCategoryCtor(Base) || !supportsSearchCategoryOverrides(Base)) return
 
   class PtSearchCategory extends Base {
+    /**
+     * Marca para o Zappy (`tutorCategory`): o conteúdo desta categoria é o resultado da última
+     * busca, não uma gaveta — ele nunca deve abrir a busca para mostrar um bloco.
+     */
+    readonly szSearch = true
     // O plugin registra um atalho GLOBAL ("startSearch") no ShortcutRegistry e
     // LANÇA se ele já existir — a 2ª instância de <Studio> com o modo Blocos
     // aberto derrubava o painel inteiro. Desregistra o anterior antes de

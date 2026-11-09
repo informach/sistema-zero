@@ -41,6 +41,11 @@ const KIND_LABEL: Record<LogEntry['kind'], string> = {
 }
 
 type MessageFilter = 'all' | 'warnings' | 'errors'
+/** O erro que parou o jogo: no clássico ele vai para a aba Problemas (ver `omitErrors`). */
+const STOPPED_GAME_KINDS: ReadonlySet<LogEntry['kind']> = new Set([
+  'runtimeError',
+  'unhandledRejection',
+])
 const WARNING_KINDS: ReadonlySet<LogEntry['kind']> = new Set(['warn', 'loopStopped'])
 
 /**
@@ -55,8 +60,9 @@ export function ConsolePanel({
 }: {
   variant?: 'messages' | 'repl'
   /**
-   * A gaveta do clássico (redesenho de 11/2026): os erros moram na aba Problemas, então as
-   * Mensagens não os repetem (e o filtro "Erros" sai).
+   * A gaveta do clássico (redesenho de 11/2026): o erro que PAROU o jogo mora na aba Problemas,
+   * então as Mensagens não o repetem. O `console.error` do próprio aluno e os avisos do Estúdio
+   * (`error`) continuam aqui — a aba Problemas não os mostra.
    */
   omitErrors?: boolean
 } = {}): JSX.Element {
@@ -64,7 +70,7 @@ export function ConsolePanel({
   const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
   const storedEntries = useLogsStore((s) => s.entries)
   const allEntries = omitErrors
-    ? storedEntries.filter((entry) => !ERROR_KINDS.has(entry.kind))
+    ? storedEntries.filter((entry) => !STOPPED_GAME_KINDS.has(entry.kind))
     : storedEntries
   const [filter, setFilter] = useState<MessageFilter>('all')
   const entries =
@@ -73,7 +79,6 @@ export function ConsolePanel({
       : allEntries.filter((entry) =>
           filter === 'errors' ? ERROR_KINDS.has(entry.kind) : WARNING_KINDS.has(entry.kind),
         )
-  const filters: MessageFilter[] = omitErrors ? ['all', 'warnings'] : ['all', 'warnings', 'errors']
   const clear = useLogsStore((s) => s.clear)
   const scrollRef = useRef<HTMLDivElement>(null)
   // Cola no rodapé por padrão; só desgruda quando o aluno rola para cima para
@@ -105,7 +110,7 @@ export function ConsolePanel({
         {variant === 'messages' ? (
           <fieldset className="sz-pro-seg">
             <legend className="sr-only">{t('console.filter.label')}</legend>
-            {filters.map((item) => (
+            {(['all', 'warnings', 'errors'] as const).map((item) => (
               <button
                 key={item}
                 type="button"

@@ -25,7 +25,7 @@ async function recordScripts(page: Page) {
 async function openNewProject(page: Page, pro: boolean) {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  if (pro) await page.getByText('Pro (código)', { exact: true }).click()
+  if (pro) await page.getByRole('dialog').getByText('Com código', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // The Pro preview keeps downloading the WebContainer; the editor is the settled UI here.

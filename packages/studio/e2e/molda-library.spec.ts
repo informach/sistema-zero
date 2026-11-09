@@ -16,7 +16,7 @@ test('traz os três formatos do Molda para o projeto escolhido e preserva o vín
     .getByRole('listitem')
     .filter({ has: page.getByText('Jogo 3D Avançado', { exact: true }) })
   await kit.getByRole('button', { name: 'Pôr no meu jogo', exact: true }).click()
-  await expect(kit.getByText('Instalada', { exact: true })).toBeVisible()
+  await expect(kit.getByText('No meu jogo', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
   // A porta dos modelos 3D: desde 18/09/2026 cada tipo de material tem a sua no
   // menu ⋯, e é ela que abre a janela já na aba do Molda.

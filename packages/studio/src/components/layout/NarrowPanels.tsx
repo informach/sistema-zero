@@ -39,7 +39,7 @@ export interface NarrowPanelsProps {
   dockRequest?: number
   /** Avisa qual aba está à vista (o palco do clássico decide onde ficam os alvos ao vivo). */
   onActiveChange?: (id: string) => void
-  /** Desenhado por cima das abas de EDITOR (o Rodar flutuante do celular). */
+  /** Desenhado por cima das abas fora a do jogo (o Rodar flutuante do celular). */
   editorOverlay?: ReactNode
   /**
    * Árvore/explorador de arquivos. Quando presente, mostra um botão "Arquivos"
@@ -187,7 +187,16 @@ export function NarrowPanels({
           ) : undefined
         }
       />
-      {editorOverlay && editorIds.has(effectiveActive) ? editorOverlay : null}
+      {/* O Rodar flutuante vale fora da aba do jogo (blocos, código e mensagens): na aba do jogo
+          quem roda é o par embaixo do palco. Assim há sempre UM Rodar à vista. */}
+      {editorOverlay && effectiveActive !== 'preview' ? (
+        <div
+          className="contents"
+          data-sz-overlay-tab={effectiveActive === 'messages' ? 'messages' : 'editor'}
+        >
+          {editorOverlay}
+        </div>
+      ) : null}
       {filesDrawer && drawerOpen && (
         <div className="absolute inset-0 z-40 flex">
           {/* Fundo clicável que fecha a gaveta. */}

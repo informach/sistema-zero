@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {
   asset3DManifest,
@@ -132,6 +132,8 @@ export function PreviewIframe(): JSX.Element {
   } | null>(null)
   const autoStartedProjectId = useRef<string | null>(null)
   const [loadedSrcDoc, setLoadedSrcDoc] = useState<string | null>(null)
+  // Quando o documento da vez entrou (ver o filtro dos erros no ouvinte de mensagens).
+  const docStartedAtRef = useRef(0)
   const [renderLargePreviewForInput, setRenderLargePreviewForInput] =
     useState<PreviewBudgetInput | null>(null)
   // Mirror em memória do `localStorage` persistido do projeto (blocos
@@ -735,7 +737,13 @@ export function PreviewIframe(): JSX.Element {
         return
       }
       pushLog(ev.data)
-      if (ev.data.kind === 'runtimeError' || ev.data.kind === 'unhandledRejection') {
+      if (
+        (ev.data.kind === 'runtimeError' || ev.data.kind === 'unhandledRejection') &&
+        // O iframe guarda a mesma janela entre um `srcDoc` e outro: o erro que o documento
+        // ANTERIOR mandou (num laço de jogo, um por quadro) ainda chega depois da troca e
+        // marcaria o jogo novo com a linha velha. Só conta o que nasceu depois da troca.
+        ev.data.timestamp >= docStartedAtRef.current
+      ) {
         const text = ev.data.parts.join(' ').slice(0, 2_000)
         const at = previewErrorLocation(ev.data)
         // O PRIMEIRO erro manda: num laço de jogo o mesmo erro repete a cada quadro.
@@ -821,6 +829,11 @@ export function PreviewIframe(): JSX.Element {
 
   // Um documento novo é um jogo novo: o erro do anterior (e o sinal no bloco) sai. `doc` carrega
   // o nonce do render, então Rodar, Rodar de novo e cada edição contam.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é só o GATILHO
+  useLayoutEffect(() => {
+    // Na mesma passada em que o `srcdoc` novo entra no DOM, antes de o documento novo rodar.
+    docStartedAtRef.current = Date.now()
+  }, [doc])
   // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é só o GATILHO
   useEffect(() => {
     setGameError(null)

@@ -51,8 +51,9 @@ export interface StudioFeatures {
   professional?: boolean
   /**
    * O passeio de primeiros passos no primeiro jogo de blocos (redesenho do clássico, 11/2026,
-   * D6). Default: false — o `StudioEditor` (o Estúdio livre) liga; a aula nunca (o robô de
-   * gravação e a fala da aula guiam ali).
+   * D6). Default: false — só o host do Estúdio livre liga (`studio-full-editor` do member-shell);
+   * a aula, a oficina ao vivo e a demonstração da professora nunca (o robô de gravação e a fala
+   * da aula guiam ali; o balão roubaria a tela compartilhada).
    */
   firstStepsTour?: boolean
 }

@@ -14,6 +14,28 @@ function category(name: string, blockType: string): TutorToolboxItem {
 }
 
 describe('openTutorCategory', () => {
+  it('pula a busca mesmo quando o resultado da última procura tem o bloco', () => {
+    const search: TutorToolboxItem = {
+      ...category('Procurar um bloco', 'sz_py_text'),
+      szSearch: true,
+    }
+    const text = category('Textos', 'sz_py_text')
+    const selected: TutorToolboxItem[] = []
+    expect(
+      openTutorCategory(
+        {
+          getToolbox: () => ({
+            getToolboxItems: () => [search, text],
+            setSelectedItem: (item: TutorToolboxItem) => selected.push(item),
+          }),
+        },
+        'sz_py_text',
+        'Programação',
+        'Textos',
+      ),
+    ).toBe(true)
+    expect(selected).toEqual([text])
+  })
   it('abre a folha real e expande ancestrais quando os conteúdos do pai incluem os blocos filhos', () => {
     const text = category('Textos', 'sz_py_text')
     const selected: TutorToolboxItem[] = []

@@ -28,8 +28,17 @@ describe('menu do botão direito', () => {
     block.setDisabledReason(true, 'manually_disabled')
     expect(text('blockDisable', { block })).toBe('Ligar o bloco')
     expect(text('sz_copy_blocks', { block })).toBe('Copiar')
+    expect(text('blockComment', { block })).toBe('Escrever um recado')
+    // Um recado vazio ainda é um recado: o clique nativo o tira, então o rótulo diz "Tirar".
+    block.setCommentText('')
+    expect(text('blockComment', { block })).toBe('Tirar o recado')
     expect(text('sz_organize', { workspace })).toBe('Organizar blocos')
-    expect(item('cleanWorkspace')?.preconditionFn?.({ workspace } as never)).toBe('hidden')
+    // O "Arrumar blocos" nativo só sai no espaço do JavaScript (que tem o "Organizar blocos").
+    // (Um espaço de mentira com o que a precondição nativa lê: o headless não tem `isMovable`.)
+    const other = { isMovable: () => true, getTopBlocks: () => [block, block] }
+    expect(item('cleanWorkspace')?.preconditionFn?.({ workspace: other } as never)).toBe('enabled')
+    const studio = { ...other, __szOrganizes: true }
+    expect(item('cleanWorkspace')?.preconditionFn?.({ workspace: studio } as never)).toBe('hidden')
     workspace.dispose()
   })
 

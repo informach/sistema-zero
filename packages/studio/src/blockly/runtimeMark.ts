@@ -39,9 +39,15 @@ export function setRuntimeErrorBlock(
   markedBlock.set(workspace, blockId)
 }
 
-/** O bloco que está com o sinal agora (para o "Mostrar o bloco"). */
+/**
+ * O bloco que está com o sinal agora (para o "Mostrar o bloco"). Um bloco que já saiu do espaço
+ * (os blocos foram refeitos depois de uma edição) não conta: quem pede marca de novo pela linha.
+ */
 export function runtimeErrorBlockId(workspace: Blockly.Workspace): string | null {
-  return markedBlock.get(workspace) ?? null
+  const id = markedBlock.get(workspace)
+  if (!id) return null
+  const block = liveBlock(workspace, id)
+  return block?.getSvgRoot?.()?.classList.contains(RUNTIME_ERROR_CLASS) ? id : null
 }
 
 /**

@@ -8,7 +8,8 @@ import { useT } from '../../studio/i18n'
 /**
  * O passeio de primeiros passos (D6 do redesenho do clássico, 11/2026): quatro balões no
  * primeiro jogo de blocos — a paleta, as áreas, o Rodar e o caminho do erro — com "Pular".
- * Só no Estúdio livre (`firstStepsTour`; a aula nunca, o robô de gravação opera ali), só para
+ * Só no Estúdio livre (`firstStepsTour`, que só o host do Estúdio livre liga; a aula e a oficina
+ * ao vivo nunca, o robô de gravação opera ali), só para
  * quem edita, e uma vez por perfil (a chave leva o namespace do perfil; neste navegador).
  */
 const STEPS = [
@@ -68,7 +69,12 @@ export function FirstStepsTour(): JSX.Element | null {
   const bubble = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!enabled || !eligible || tourDone()) return
+    // Deixou de valer no meio (foi para o código, outro projeto): o balão sai sem marcar.
+    if (!enabled || !eligible) {
+      setStep(null)
+      return
+    }
+    if (tourDone()) return
     // Um respiro para o editor desenhar a paleta e as áreas antes do primeiro balão.
     const timer = setTimeout(() => setStep(0), 1200)
     return () => clearTimeout(timer)
@@ -154,8 +160,8 @@ export function FirstStepsTour(): JSX.Element | null {
         <Button
           variant="primary"
           size="sm"
-          // biome-ignore lint/a11y/noAutofocus: o balão aparece sozinho e o botão é a ação dele.
-          autoFocus
+          // Sem autoFocus: o balão aparece sozinho e não pode roubar o foco de quem já está
+          // arrastando um bloco ou escrevendo.
           onClick={() => (last ? finish() : setStep(step + 1))}
         >
           {last ? t('tour.done') : t('tour.next')}

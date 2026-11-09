@@ -4,8 +4,10 @@ import { useShallow } from 'zustand/react/shallow'
 import { cn, IconColumns, IconMaximize, IconPlay, IconRefresh, IconStop } from '#ui'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useHighlightStoreApi } from '../../state/highlightStore'
-import { proRunLabelKey, useProRun, useProRunApi } from '../../state/proRun'
+import { useProjectStore } from '../../state/projectStore'
+import { type ProRunActions, proRunLabelKey, useProRun, useProRunApi } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { proLayoutTier } from '../layout/layoutBreakpoints'
@@ -64,9 +66,10 @@ export function ClassicStage({
   const width = useMeasuredWidth(card)
   const compact = phone || (width > 0 && width < STAGE_HEAD_COMPACT_MAX_PX)
   const stageLarge = useUIStore((s) => s.stageLarge)
-  const { state, canRun, canStop, canReload } = useProRun(
+  const { state, canRun, canStop, hasReload, canReload } = useProRun(
     useShallow((s) => ({
       state: s.state,
+      hasReload: Boolean(s.actions?.reload),
       canRun: Boolean(s.actions && s.state?.canRun),
       canStop: Boolean(s.actions && s.state?.canStop),
       canReload: Boolean(s.actions?.reload && s.state?.canRun),
@@ -90,10 +93,13 @@ export function ClassicStage({
           </span>
         ) : null}
         <span className="flex-1" />
-        {canReload ? (
+        {/* Fica SEMPRE à vista com a prévia do JavaScript (âncora das aulas gravadas): enquanto
+            o jogo prepara, ou para quem só observa, aparece desligado em vez de sumir. */}
+        {hasReload ? (
           <button
             type="button"
             className={cn('sz-pro-btn sz-pro-btn--sm', compact && 'sz-pro-btn--icon')}
+            disabled={!canReload}
             aria-label={t('stage.reloadLabel')}
             title={reloadText}
             onClick={() => api.getState().actions?.reload?.()}
@@ -212,6 +218,27 @@ export function useClassicStage(
     })
     return () => api.getState().setRevealStage(null)
   }, [api, isNarrow, setShowPreview])
+  // Jogo escondido no largo (⋯ → "Mostrar o jogo" desligado): a prévia sai de cena e leva o
+  // Rodar dela junto. O palco publica no lugar um Rodar que traz o jogo de volta já rodando,
+  // senão a barra ficaria com Rodar e Parar apagados sem dizer por quê. A prévia, ao voltar,
+  // publica o dela por cima (a limpeza daqui só apaga o que ainda for daqui).
+  const previewConfigured = useStudioConfig().preview
+  const observer = useProjectStore((s) => s.editingAccess === 'observer')
+  const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
+  useEffect(() => {
+    if (showPreview || isNarrow || !previewConfigured) return
+    const actions: ProRunActions = {
+      run: () => {
+        setPreviewRunning(true)
+        setShowPreview(true)
+      },
+      stop: () => {},
+    }
+    api.getState().publish({ phase: 'idle', canRun: !observer, canStop: false }, actions)
+    return () => {
+      if (api.getState().actions === actions) api.getState().publish(null, null)
+    }
+  }, [showPreview, isNarrow, previewConfigured, observer, api, setPreviewRunning, setShowPreview])
   const phone = proLayoutTier(width) === 'phone'
   return {
     group,

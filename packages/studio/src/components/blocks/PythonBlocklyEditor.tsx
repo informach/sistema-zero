@@ -360,8 +360,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     registerPtSearchCategory()
     registerMoreBlocksItem()
     // Paleta em COLUNA no computador, como no JavaScript (pedido dela, 11/2026: as categorias
-    // em faixa no computador eram estranhas); faixa só no celular, pela largura do editor.
-    const horizontal = element.clientWidth > 0 && element.clientWidth < STUDIO_COMPACT_MAX_PX
+    // em faixa no computador eram estranhas); faixa só no celular, pela largura do editor. Numa
+    // aba escondida do estreito o editor mede 0: aí vale a largura da janela.
+    const width = element.clientWidth || window.innerWidth
+    const horizontal = width < STUDIO_COMPACT_MAX_PX
     element.parentElement?.setAttribute(
       'data-sz-toolbox-layout',
       horizontal ? 'horizontal' : 'vertical',
@@ -1113,20 +1115,40 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         : null
     setRuntimeErrorBlock(current.workspace, id, runtimeMark?.message ?? '')
   }, [runtimeMark, props.path, view.phase])
+  const filesRef = useRef(props.files)
+  filesRef.current = props.files
+  const changeFileRef = useRef(props.onChangeFile)
+  changeFileRef.current = props.onChangeFile
   useEffect(() => {
-    const current = surface.current
-    if (!current || !revealRequest || revealRequest.nonce === handledReveal.current) return
-    handledReveal.current = revealRequest.nonce
+    if (!revealRequest || revealRequest.nonce === handledReveal.current) return
     const target = revealRequest.target
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => {
-        const id =
-          target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+    if (target.kind === 'runtime' && runtimeMark && !samePythonPath(runtimeMark.file, props.path)) {
+      // O erro está em outro .py: abre aquele arquivo e o pedido espera o editor dele ficar
+      // pronto (este efeito roda de novo com o `path` e a fase novos).
+      const file = filesRef.current?.find((item) => samePythonPath(item, runtimeMark.file))
+      if (file && changeFileRef.current) changeFileRef.current(file)
+      else handledReveal.current = revealRequest.nonce
+      return
+    }
+    const current = surface.current
+    // Editor ainda montando ou recarregando: o pedido fica para quando ele estiver pronto.
+    if (!current || view.phase !== 'ready') return
+    handledReveal.current = revealRequest.nonce
+    // Sem cancelar na limpeza: as dependências mudam à toa e o pedido já foi dado por atendido.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (surface.current !== current) return
+        let id = target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+        if (!id && target.kind === 'runtime' && runtimeMark) {
+          // Os blocos foram refeitos depois da marca (uma edição na Ponte): marca de novo pela
+          // linha antes de mostrar.
+          id = current.blockAtLine(runtimeMark.line)
+          setRuntimeErrorBlock(current.workspace, id, runtimeMark.message)
+        }
         if (id) void current.reveal(id)
       })
     })
-    return () => cancelAnimationFrame(frame)
-  }, [revealRequest])
+  }, [revealRequest, runtimeMark, props.path, view.phase])
   useEffect(() => {
     if (
       highlightSource !== 'tutor' ||

@@ -17,10 +17,21 @@ export interface ZappyOpenerWorkspace {
   __szAskZappy?: (block: Blockly.Block) => void
 }
 
+/**
+ * O editor de blocos do JavaScript marca o próprio espaço: só ali o "Arrumar blocos" nativo sai
+ * (o "Organizar blocos" do Estúdio arruma pelas áreas do projeto JS). O Python e a Rotina dos
+ * Lumis, que dividem o registro global do Blockly, ficam com o item nativo.
+ */
+export interface OrganizerWorkspace {
+  __szOrganizes?: boolean
+}
+
 export const BLOCK_MENU_WORDS: Readonly<Record<string, (scope: Scope) => string>> = {
   blockDuplicate: () => 'Duplicar',
+  // Como o item nativo decide: pelo ÍCONE do recado (um recado vazio ainda é um recado e o
+  // clique o tira); pelo texto, o rótulo dizia "Escrever" e o clique apagava.
   blockComment: (scope) =>
-    scope.block?.getCommentText() ? 'Tirar o recado' : 'Escrever um recado',
+    scope.block?.hasIcon(Blockly.icons.IconType.COMMENT) ? 'Tirar o recado' : 'Escrever um recado',
   blockInline: (scope) =>
     scope.block?.getInputsInline() ? 'Encaixes um embaixo do outro' : 'Encaixes na mesma linha',
   blockCollapseExpand: (scope) => (scope.block?.isCollapsed() ? 'Abrir o bloco' : 'Fechar o bloco'),
@@ -45,7 +56,14 @@ export function patchContextMenuWords(): void {
   const clean = registry.getItem('cleanWorkspace')
   if (clean && 'callback' in clean) {
     registry.unregister('cleanWorkspace')
-    registry.register({ ...(clean as ActionRegistryItem), preconditionFn: () => 'hidden' })
+    const native = clean as ActionRegistryItem
+    registry.register({
+      ...native,
+      preconditionFn: (scope, event) =>
+        (scope.workspace as OrganizerWorkspace | undefined)?.__szOrganizes
+          ? 'hidden'
+          : (native.preconditionFn?.(scope, event) ?? 'enabled'),
+    })
   }
   if (!registry.getItem('sz_ask_zappy'))
     registry.register({

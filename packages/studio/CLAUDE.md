@@ -37,8 +37,14 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
   que rodam com eventos desligados), abas da Ponte só `.py`.
 - **Criar**: `NewProjectModal` em 3 estados; "Em branco" sem áreas nem extensão; Turtle/Pygame
   Zero instalados ao abrir (`python/extensions/startingExtension.ts`).
-- **Passeio** `FirstStepsTour`: só com `features.firstStepsTour` (o `StudioEditor` liga; a aula
-  nunca), uma vez por perfil.
+- **Passeio** `FirstStepsTour`: só com `features.firstStepsTour`, que SÓ o host do Estúdio livre
+  liga (`studio-full-editor` do member-shell). O `StudioEditor` NÃO liga sozinho: ele também monta
+  a oficina ao vivo e a demonstração da professora (o balão roubaria a tela compartilhada), e o
+  playground dos e2e. Uma vez por perfil, sem roubar o foco.
+- **Jogo escondido** (⋯ → "Mostrar o jogo" desligado, no largo): a prévia sai de cena; o
+  `useClassicStage` publica no `proRun` um Rodar que traz o jogo de volta já rodando.
+- **Erro do documento anterior**: o iframe guarda a mesma janela entre `srcDoc`s; a `PreviewIframe`
+  só aceita `runtimeError` com `timestamp` depois da troca do documento (ref num layout effect).
 
 ## O redesenho do Studio Pro (08/11/2026)
 

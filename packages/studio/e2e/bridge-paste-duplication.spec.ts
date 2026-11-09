@@ -100,7 +100,7 @@ test.describe('Ponte — colar por cima do defineShape vazio (workspace vivo)', 
       .getByRole('button', { name: 'Pôr no meu jogo', exact: true })
       .first()
       .click()
-    await expect(page.getByText('Instalada').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('No meu jogo').first()).toBeVisible({ timeout: 10_000 })
     await page.keyboard.press('Escape')
 
     await page.getByRole('button', { name: 'Ponte' }).click()

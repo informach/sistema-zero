@@ -36,7 +36,7 @@ it('Python-only creation never offers JavaScript and blocks a revoked JavaScript
     pythonEnvironments: environments,
   }
   const view = render(<NewProjectModal {...props} javascriptAvailable={false} />)
-  expect(screen.queryByRole('radio', { name: 'JavaScript (padrão)' }) === null).toBe(true)
+  expect(screen.queryByRole('radio', { name: /^JavaScript/ }) === null).toBe(true)
   await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
   expect(created).toEqual([
     { programmingLanguage: 'python', kind: 'classic', environmentKey: environments[0]!.key },
@@ -334,6 +334,36 @@ it('ponto de partida (D5): só instala a extensão; o padrão do host vem marcad
     kind: 'classic',
     startingExtensionId: 'python-turtle',
   })
+  view.unmount()
+})
+
+it('Python só oferece o ponto de partida da extensão liberada no nível', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const view = render(
+    <NewProjectModal
+      open
+      defaultName="Meu jogo"
+      onClose={noop}
+      onCreate={noop}
+      javascriptAvailable={false}
+      pythonEnvironments={[
+        {
+          kind: 'classic',
+          key: fixture.project.runtime.manifestSha256,
+          label: 'Python',
+          context: {
+            catalog: fixture.environment.catalog,
+            runtime: fixture.project.runtime,
+            releaseStatus: 'active',
+            grantedExtensionIds: ['python-turtle'],
+          },
+        },
+      ]}
+    />,
+  )
+  expect(screen.getByRole('radio', { name: /^Em branco/ })).toBeTruthy()
+  expect(screen.getByRole('radio', { name: /^Desenho com a tartaruga/ })).toBeTruthy()
+  expect(screen.queryByRole('radio', { name: /^Jogo com Pygame Zero/ })).toBeNull()
   view.unmount()
 })
 

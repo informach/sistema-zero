@@ -31,7 +31,7 @@ test('Pro project runs, reflects edits, uses the real terminal and reopens with 
 
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  await page.getByText('Pro (código)', { exact: true }).click()
+  await page.getByRole('dialog').getByText('Com código', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   const editorUrl = page.url()
