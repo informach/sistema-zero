@@ -27,20 +27,24 @@ export function SavePill({
   tone,
   label,
   error,
+  hint = null,
   dot,
 }: {
   tone: SaveTone
   label: string
   /** A mensagem do erro de gravação, quando houver (vira o `title`). */
   error: string | null
+  /** A frase da nuvem do host em repouso ("Guardado na sua conta"), que vai junto na dica. */
+  hint?: string | null
   dot: boolean
 }): JSX.Element {
+  const title = error ?? (hint ? `${label} · ${hint}` : label)
   if (dot) {
     return (
       <span
         role="status"
         aria-label={label}
-        title={error ?? label}
+        title={title}
         className={cn('inline-block h-2.5 w-2.5 shrink-0 rounded-full', SAVE_DOT_CLASS[tone])}
       />
     )
@@ -49,7 +53,7 @@ export function SavePill({
   return (
     // O `title` leva a frase inteira: sem espaço, o texto encolhe com reticências (a barra não
     // quebra linha) e quem passa o mouse ainda lê "Alterações não salvas" por completo.
-    <span className={`sz-bar-seal sz-bar-seal--${tone}`} title={error ?? label}>
+    <span className={`sz-bar-seal sz-bar-seal--${tone}`} title={title}>
       <Icon />
       <span className="sz-bar-seal__text">{label}</span>
     </span>

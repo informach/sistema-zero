@@ -34,6 +34,7 @@ import { ProjectCard } from '../components/projects/ProjectCard'
 import type { PythonProjectCreationEnvironment } from '../core/freeProjectOptions'
 import { perfMeasure, perfSpanAsync } from '../core/perf'
 import type { StudioProjectFactoryContext } from '../core/projectFactory'
+import { requestPythonStartingExtension } from '../python/extensions/startingExtension'
 import {
   listAllProjects,
   loadProjectSummariesByIds,
@@ -131,6 +132,9 @@ export interface ProjectListSection {
   action?: { label: string; href: string; onNavigate?: () => void }
 }
 
+/** As extensões de jogo que viram ponto de partida no "Criar um jogo novo" (D5, 11/2026). */
+const JS_STARTING_EXTENSIONS = ['game-2d', 'game-3d'] as const
+
 /** Um comparador por módulo (o `localeCompare(.., 'pt-BR')` criava um Collator por comparação). */
 const COLLATOR = new Intl.Collator('pt-BR')
 
@@ -190,6 +194,8 @@ export function ProjectList({
   // Filtro de modo (Blocos × Código): junto da busca, é o que mantém a lista navegável
   // sem teto de quantidade de projetos.
   const [modeFilter, setModeFilter] = useState<ProjectModeFilter>('all')
+  // Linguagem (redesenho de 11/2026): "Meus jogos" junta JavaScript e Python.
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'javascript' | 'python'>('all')
   const [modalOpen, setModalOpen] = useState(false)
   // Vitrine de kits: aberta por padrão só no primeiro uso (lista vazia).
   const [kitsOpen, setKitsOpen] = useState(false)
@@ -329,13 +335,15 @@ export function ProjectList({
     const base = searchIndex
       .filter(
         ({ p, text }) =>
-          matchesProjectMode(p.mode, modeFilter) && matchesNormalizedName(text, searchTerms),
+          matchesProjectMode(p.mode, modeFilter) &&
+          (languageFilter === 'all' || p.programmingLanguage === languageFilter) &&
+          matchesNormalizedName(text, searchTerms),
       )
       .map(({ p }) => p)
     if (projectSort === 'name') base.sort((a, b) => COLLATOR.compare(a.name, b.name))
     else base.sort((a, b) => b.updatedAt - a.updatedAt)
     return base
-  }, [projects, searchIndex, searchTerms, modeFilter, projectSort])
+  }, [projects, searchIndex, searchTerms, modeFilter, languageFilter, projectSort])
   // As seções do host: cada projeto vai para a primeira seção que o aceitar; o resto fica na grade
   // principal. Seção sem projeto (depois do filtro) não aparece.
   const grouped = useMemo(() => {
@@ -352,11 +360,17 @@ export function ProjectList({
   }, [filtered, sections])
   // Filtro ATIVO = há termos de busca de verdade (só símbolos, "!!!", normalizam para nada e
   // casam tudo — não é filtro) ou um modo escolhido.
-  const filtering = searchTerms.length > 0 || modeFilter !== 'all'
+  const filtering = searchTerms.length > 0 || modeFilter !== 'all' || languageFilter !== 'all'
   const clearFilters = () => {
     setSearch('')
     setModeFilter('all')
+    setLanguageFilter('all')
   }
+  // O filtro de linguagem só aparece quando faz sentido: jogos nas duas, ou o Python liberado.
+  const showLanguageFilter =
+    Boolean(pythonCreation) ||
+    (projects?.some((p) => p.programmingLanguage === 'python') === true &&
+      projects.some((p) => p.programmingLanguage === 'javascript'))
 
   const defaultName = useMemo(() => {
     const base = 'Meu projeto'
@@ -444,8 +458,16 @@ export function ProjectList({
           ? await createPythonProject(name, python.kind, environment, { isCurrent: current })
           : opts && 'templateId' in opts
             ? await createProProject(name, opts.templateId, { isCurrent: current })
-            : await createProject(name, initialExtensions)
+            : // O ponto de partida manda (D5: "Em branco" = nenhuma extensão); sem ele, o padrão
+              // do host de antes.
+              await createProject(
+                name,
+                opts && 'extensionIds' in opts ? opts.extensionIds : initialExtensions,
+              )
       if (!current()) return
+      // Turtle / Pygame Zero: o editor do Python instala ao abrir (precisa do ambiente).
+      if (python?.startingExtensionId)
+        requestPythonStartingExtension(created.id, python.startingExtensionId)
       setModalOpen(false)
       onOpenProject(created.id)
     } catch (error) {
@@ -603,6 +625,26 @@ export function ProjectList({
                           >
                             {option.icon ? <option.icon /> : null}
                             {t(option.label)}
+                          </button>
+                        ))}
+                      </fieldset>
+                    ) : null}
+                    {hasProjects && showLanguageFilter ? (
+                      <fieldset className="sz-tool-chips">
+                        <legend className="sr-only">{t('projects.filterLanguage')}</legend>
+                        {(['all', 'javascript', 'python'] as const).map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={value === languageFilter}
+                            onClick={() => setLanguageFilter(value)}
+                            className="sz-tool-chip"
+                          >
+                            {value === 'all'
+                              ? t('projects.filterLanguageAll')
+                              : value === 'python'
+                                ? 'Python'
+                                : 'JavaScript'}
                           </button>
                         ))}
                       </fieldset>
@@ -881,6 +923,10 @@ export function ProjectList({
               pythonDiscovery={pythonDiscovery}
               templates={templates}
               existingNames={existingNames}
+              javascriptStartingExtensions={JS_STARTING_EXTENSIONS.filter(
+                (id) => !allowedExtensions || allowedExtensions.includes(id),
+              )}
+              defaultStartingExtensions={initialExtensions}
             />
           </Suspense>
         ) : null}

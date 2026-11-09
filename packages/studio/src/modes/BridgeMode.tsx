@@ -10,16 +10,20 @@ import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZI
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
+import { ClassicDock } from '../components/layout/ClassicDock'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
+import { ClassicRunFab, ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { classicStageSubject } from '../components/preview/stageSubject'
 import { javaScriptProject } from '../core/editableProject'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
 import { extractInlineAssets } from '../parsers/html'
 import { PREVIEW_MESSAGE_SOURCE } from '../preview/types'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
+import { useDiagnosticsStoreApi } from '../state/diagnosticsStore'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
@@ -107,6 +111,8 @@ export function BridgeMode(): JSX.Element {
   // para trazer de volta. A aba existe sempre que o host oferece preview.
   const previewAvailable = studioConfig.preview
   const { isNarrow } = useStudioLayout()
+  const stage = useClassicStage({ normal: [35, 35, 30], large: [25, 25, 50] }, showPreview)
+  const stageSubject = useProjectStore((s) => classicStageSubject(javaScriptProject(s.project)))
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const editorHistory = useEditorHistory()
@@ -458,6 +464,18 @@ export function BridgeMode(): JSX.Element {
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
+  // O código que não vira blocos aparece também na aba Problemas da gaveta (redesenho do
+  // clássico, 11/2026); sai quando o código volta a fazer sentido ou a Ponte fecha.
+  const diagnosticsApi = useDiagnosticsStoreApi()
+  const codeIssueMessage = parseError?.message ?? null
+  const codeIssueKind = parseError?.kind === 'semanticError' ? 'semantic' : 'syntax'
+  useEffect(() => {
+    diagnosticsApi
+      .getState()
+      .setCodeIssue(codeIssueMessage ? { kind: codeIssueKind, message: codeIssueMessage } : null)
+  }, [diagnosticsApi, codeIssueMessage, codeIssueKind])
+  useEffect(() => () => diagnosticsApi.getState().setCodeIssue(null), [diagnosticsApi])
+
   // Centraliza erros de parse no Console — evitamos painel próprio para
   // que todo aviso/erro da IDE viva num só lugar.
   useEffect(() => {
@@ -648,6 +666,20 @@ export function BridgeMode(): JSX.Element {
     </Suspense>
   )
 
+  const stagePreview = (
+    <ClassicStage
+      subject={stageSubject}
+      phone={stage.phone}
+      cards="all"
+      onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+      onShowBlock={stage.showBlock}
+      onOpenProblems={stage.openProblems}
+      liveTargets={stage.stageLiveTargets}
+    >
+      <PreviewIframe />
+    </ClassicStage>
+  )
+
   if (isNarrow) {
     return (
       <div className="flex h-full w-full min-h-0 flex-col">
@@ -668,7 +700,13 @@ export function BridgeMode(): JSX.Element {
                 onSelect: () => editorHistory?.markActive('code'),
               },
             ]}
-            preview={previewAvailable ? <PreviewIframe /> : undefined}
+            preview={previewAvailable ? stagePreview : undefined}
+            previewRequest={stage.previewRequest}
+            dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
+            editorRequest={stage.editorRequest}
+            dockRequest={stage.dockRequest}
+            onActiveChange={stage.setNarrowTab}
+            editorOverlay={stage.phone && previewAvailable ? <ClassicRunFab /> : undefined}
           />
         </div>
       </div>
@@ -678,7 +716,7 @@ export function BridgeMode(): JSX.Element {
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
-      <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
+      <PanelGroup ref={stage.group} direction="horizontal" className="min-h-0 w-full flex-1">
         <Panel id="bridge-blocks" order={1} defaultSize={35} minSize={20}>
           <BlocklyPanel />
         </Panel>
@@ -690,7 +728,7 @@ export function BridgeMode(): JSX.Element {
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
             <Panel id="bridge-preview" order={3} defaultSize={30} minSize={15}>
-              <PreviewIframe />
+              {stagePreview}
             </Panel>
           </>
         )}

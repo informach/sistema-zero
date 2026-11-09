@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test'
 
 // Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
 // editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
-// "Pro (código)" no modal "+ Novo projeto") expõe só Código (árvore Vite +
+// "Com código" no modal "+ Novo projeto") expõe só Código (árvore Vite +
 // WebContainer). Nenhum projeto mostra os 3 modos ao mesmo tempo.
 
 async function createProject(page: Page, initialPath = '/'): Promise<void> {
@@ -15,7 +15,7 @@ async function createProject(page: Page, initialPath = '/'): Promise<void> {
 async function createProProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  await page.getByText('Pro (código)', { exact: true }).click()
+  await page.getByRole('dialog').getByText('Com código', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // Esconde o palco: no PRO ele bota um WebContainer + npm install em
@@ -193,10 +193,12 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await createProject(page)
     // Extensões vive no menu ⋯ da Topbar (seção Exibição).
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Extensões' }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos' }).click()
     const game2dCard = page.getByRole('listitem').filter({ hasText: 'Jogo 2D' }).first()
     await expect(game2dCard.getByText('Jogo 2D', { exact: true })).toBeVisible()
-    await expect(game2dCard.getByRole('button', { name: 'Instalar', exact: true })).toBeVisible()
+    await expect(
+      game2dCard.getByRole('button', { name: 'Pôr no meu jogo', exact: true }),
+    ).toBeVisible()
   })
 
   test('Menu do projeto fica acima do card e exclusão usa modal própria', async ({ page }) => {
@@ -399,7 +401,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page).toHaveURL(/\/editor\//)
     // Reabrir é uma montagem intencional; a identidade acima só vale para a sessão aberta.
     await page.getByRole('button', { name: 'Ponte', exact: true }).click()
-    await page.getByRole('button', { name: 'script.js', exact: true }).first().click()
+    await page.getByRole('button', { name: 'Programa · script.js', exact: true }).first().click()
     await expect(codigo).toContainText(marker)
     await expect.poll(savedScript).toBe(source + marker)
     await page.screenshot({ path: testInfo.outputPath('pensa-editor-source-preserved.png') })

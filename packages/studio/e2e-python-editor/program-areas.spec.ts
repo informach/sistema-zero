@@ -1,5 +1,28 @@
+import type { Page } from '@playwright/test'
 import type {} from './fixtures/bridge'
 import { expect, test } from './fixtures/pythonLanguageSessions'
+
+// O cabeçalho dos blocos do Python desde o redesenho de 11/2026: "Ir para" abre uma lista com a
+// busca de função dentro (era um campo e um seletor), "Fechar as funções" (era "Recolher
+// funções") e "Rascunhos N" com a frase na dica.
+const jumpButton = (page: Page) => page.getByRole('button', { name: /^Ir para:/ })
+const jumpList = (page: Page) => page.getByRole('dialog', { name: 'Ir para' })
+async function goTo(page: Page, label: string) {
+  if (!(await jumpList(page).isVisible())) await jumpButton(page).click()
+  await jumpList(page).getByRole('button', { name: label, exact: true }).click()
+}
+async function entryId(page: Page, label: string) {
+  await jumpButton(page).click()
+  const id = await jumpList(page)
+    .getByRole('button', { name: label, exact: true })
+    .getAttribute('data-entry-id')
+  await page.keyboard.press('Escape')
+  return id
+}
+const drafts = (page: Page, count: number) =>
+  page.getByRole('button', { name: new RegExp(`^Rascunhos ${count}\\.`) })
+const closeFunctions = (page: Page) =>
+  page.getByRole('button', { name: 'Fechar as funções', exact: true })
 
 test('program scratch survives Monaco edits and source undo with its identity and fields intact', async ({
   page,
@@ -19,7 +42,7 @@ test('program scratch survives Monaco edits and source undo with its identity an
   const source = await page.evaluate(() => pythonBridgeProbe.state().source!)
   await page.evaluate(() => pythonBridgeProbe.replaceSource('# placar\nx = 4\nprint(x)\n'))
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^4$/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled()
+  await expect(drafts(page, 1)).toBeEnabled()
   await expect(page.locator(`[data-id="${id}"]`)).toContainText('3')
   const point = await page.evaluate(() => pythonBridgeProbe.cursorPoint(2, 3))
   await page.mouse.click(point.x, point.y)
@@ -41,12 +64,8 @@ test('program index opens a secondary scratch class and nested functions without
       'x = 3\nclass Nave:\n    def mover(self):\n        def passo():\n            return 73\n        return passo()\n',
     ),
   )
-  const picker = page.getByRole('combobox', { name: 'Função ou classe', exact: true })
-  await expect(picker).toBeVisible({ timeout: 20_000 })
-  const classId = await picker
-    .locator('option')
-    .filter({ hasText: /^Classe Nave$/ })
-    .getAttribute('value')
+  await expect(jumpButton(page)).toBeVisible({ timeout: 20_000 })
+  const classId = await entryId(page, 'Classe Nave')
   await page
     .locator('.sz_py_assign')
     .first()
@@ -59,19 +78,20 @@ test('program index opens a secondary scratch class and nested functions without
   await page.getByRole('menuitem', { name: 'Mover este bloco para Rascunhos', exact: true }).click()
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().pending)).toBe(false)
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().source?.trim())).toBe('')
-  await page.getByRole('button', { name: 'Programa · main.py', exact: true }).click()
-  await page.getByRole('button', { name: 'Rascunhos · 2', exact: true }).click()
-  await expect(picker).toBeVisible()
-  await page.getByRole('searchbox', { name: 'Buscar função ou classe' }).fill('passo')
-  await picker.selectOption({ label: '↳ ↳ Rascunho · Função passo' })
+  await goTo(page, 'Programa inteiro')
+  await drafts(page, 2).click()
+  await expect(jumpButton(page)).toBeVisible()
+  await jumpButton(page).click()
+  await page.getByRole('searchbox', { name: 'Procurar uma função ou classe' }).fill('passo')
+  await goTo(page, 'Rascunho · Função passo')
   const literal = page.locator('.blocklyTextInputField').filter({ hasText: /^73$/ })
   await expect(literal).toBeVisible()
   await literal.dblclick()
   await page.locator('.blocklyHtmlInput').fill('74')
   await page.locator('.blocklyHtmlInput').press('Enter')
-  await page.getByRole('button', { name: 'Programa · main.py', exact: true }).click()
+  await goTo(page, 'Programa inteiro')
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^74$/ })).toHaveCount(0)
-  await picker.selectOption({ label: '↳ ↳ Rascunho · Função passo' })
+  await goTo(page, 'Rascunho · Função passo')
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^74$/ })).toBeVisible()
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().scratchIds.length)).toBe(2)
   expect(await page.evaluate(() => pythonBridgeProbe.state().source?.trim())).toBe('')
@@ -92,9 +112,7 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
     .getByRole('button')
     .filter({ has: page.getByText('Pac-Man (Blocos)', { exact: true }) })
     .click()
-  await expect(page.getByRole('combobox', { name: 'Função ou classe', exact: true })).toBeVisible({
-    timeout: 45_000,
-  })
+  await expect(jumpButton(page)).toBeVisible({ timeout: 45_000 })
   const state = () => page.evaluate(() => studioFreeProbe.workspace())
   await expect.poll(async () => (await state()).mounted).toBeLessThan(300)
   const overview = (await state()).mounted
@@ -126,10 +144,11 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await expect(page.locator(`[data-id="${legacyRoot}"]`)).toBeVisible({ timeout: 45_000 })
   await expect.poll(async () => (await state()).mounted).toBe(overview)
   await expect.poll(source).toBe(original)
-  await page.getByRole('searchbox', { name: 'Buscar função ou classe' }).fill('atualizar')
-  const picker = page.getByRole('combobox', { name: 'Função ou classe', exact: true })
-  await expect(picker.locator('option')).toHaveCount(2)
-  await picker.selectOption({ label: 'Função atualizar(tempo)' })
+  await jumpButton(page).click()
+  await page.getByRole('searchbox', { name: 'Procurar uma função ou classe' }).fill('atualizar')
+  // "Programa inteiro" fica sempre na lista; a busca deixa só a função que casa.
+  await expect(jumpList(page).getByRole('button')).toHaveCount(2)
+  await goTo(page, 'Função atualizar(tempo)')
   await expect.poll(async () => (await state()).mounted).toBeGreaterThan(overview)
   const target = await page.evaluate(() =>
     studioFreeProbe.focusAssignmentField('velocidade', 'NUMBER'),
@@ -138,7 +157,7 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await page.locator('.blocklyHtmlInput').fill('5')
   await page.locator('.blocklyHtmlInput').press('Enter')
   await expect.poll(source).toContain('velocidade = (5)')
-  await page.getByRole('button', { name: 'Recolher funções', exact: true }).click()
+  await closeFunctions(page).click()
   await expect.poll(async () => (await state()).mounted).toBe(overview)
   // Presentation navigation never consumes the semantic undo step.
   await page
@@ -162,19 +181,19 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await page.getByRole('menuitem', { name: 'Duplicar', exact: true }).click()
   await page.mouse.move(position.x + 100, position.y + 70)
   await page.mouse.click(position.x + 100, position.y + 70)
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled()
+  await expect(drafts(page, 1)).toBeEnabled()
   await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Salvar', exact: true }).click()
   await expect.poll(source).toBe(undone)
   const total = (await state()).count
   await page.getByTitle('Voltar à lista de projetos', { exact: true }).click()
   await page.getByRole('button', { name: 'Abrir projeto Pac-Man (Blocos)', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled({
+  await expect(drafts(page, 1)).toBeEnabled({
     timeout: 45_000,
   })
   expect((await state()).count).toBe(total)
   await expect.poll(source).toBe(undone)
-  await page.getByRole('button', { name: 'Rascunhos · 1', exact: true }).click()
+  await drafts(page, 1).click()
   await expect(page.locator('.blocklySelected')).toContainText('INTERVALO')
   const scratchIds = (await savedProgram())!.scratchIds
   expect(scratchIds).toHaveLength(1)
@@ -186,10 +205,10 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await expect
     .poll(savedProgram, { timeout: 20_000 })
     .toMatchObject({ baseSource: edited, scratchIds })
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled()
+  await expect(drafts(page, 1)).toBeEnabled()
   await page.getByTitle('Voltar à lista de projetos', { exact: true }).click()
   await page.getByRole('button', { name: 'Abrir projeto Pac-Man (Blocos)', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled({
+  await expect(drafts(page, 1)).toBeEnabled({
     timeout: 45_000,
   })
   await expect.poll(source).toBe(edited)
@@ -210,18 +229,18 @@ test('program statements move to scratch and back with undo and redo', async ({ 
   await assignment.click({ button: 'right', position: { x: 8, y: 10 } })
   await page.getByRole('menuitem', { name: 'Mover este bloco para Rascunhos', exact: true }).click()
   await expect.poll(source).toBe('print(x)\n')
-  await expect(page.getByRole('button', { name: 'Rascunhos · 1', exact: true })).toBeEnabled()
+  await expect(drafts(page, 1)).toBeEnabled()
   await page.keyboard.press('Control+z')
   await expect.poll(source).toBe('x = 7\nprint(x)\n')
   await page.keyboard.press('Control+Shift+z')
   await expect.poll(source).toBe('print(x)\n')
-  await page.getByRole('button', { name: 'Rascunhos · 1', exact: true }).click()
+  await drafts(page, 1).click()
   await assignment.click({ button: 'right', position: { x: 8, y: 10 } })
   await page
     .getByRole('menuitem', { name: 'Inserir pilha no final do Programa', exact: true })
     .click()
   await expect.poll(source).toBe('print(x)\nx = 7\n')
-  await expect(page.getByRole('button', { name: 'Rascunhos · 0', exact: true })).toBeDisabled()
+  await expect(drafts(page, 0)).toBeDisabled()
 })
 
 test('program navigation and Ponte reveal nested class and function bodies without changing source', async ({
@@ -233,42 +252,40 @@ test('program navigation and Ponte reveal nested class and function bodies witho
   const source =
     'class Nave:\n    def mover(self):\n        def passo():\n            return 73\n        return passo()\n\nprint(Nave().mover())\n'
   await page.evaluate((source) => pythonBridgeProbe.replaceSavedSource(source), source)
-  const picker = page.getByRole('combobox', { name: 'Função ou classe', exact: true })
-  await expect(picker).toBeVisible({ timeout: 20_000 })
-  await expect(picker.locator('option')).toHaveCount(4)
+  await expect(jumpButton(page)).toBeVisible({ timeout: 20_000 })
+  await jumpButton(page).click()
+  await expect(jumpList(page).getByRole('button')).toHaveCount(4)
+  await page.keyboard.press('Escape')
   const literal = page.locator('.blocklyTextInputField').filter({ hasText: /^73$/ })
   await expect(literal).toHaveCount(0)
-  await picker.selectOption({ label: '↳ ↳ Função passo' })
+  await goTo(page, 'Função passo')
   await expect(literal).toBeVisible()
-  await page.getByRole('button', { name: 'Recolher funções', exact: true }).click()
+  await closeFunctions(page).click()
   await expect(literal).toHaveCount(0)
   const point = await page.evaluate(() => pythonBridgeProbe.cursorPoint(4, 20))
   await page.mouse.click(point.x, point.y)
   await expect(literal).toBeVisible()
-  await expect(picker.locator('option:checked')).toHaveText('↳ ↳ Função passo')
+  await expect(page.getByRole('button', { name: 'Ir para: Função passo' })).toBeVisible()
   await expect(page.locator('.blocklyHighlighted')).toHaveCount(1)
   expect(await page.evaluate(() => pythonBridgeProbe.state().source)).toBe(source)
-  await page.getByRole('button', { name: 'Recolher funções', exact: true }).click()
-  const classId = await picker
-    .locator('option')
-    .filter({ hasText: /^Classe Nave$/ })
-    .getAttribute('value')
+  await closeFunctions(page).click()
+  const classId = await entryId(page, 'Classe Nave')
   await page
     .locator(`[data-id="${classId}"]`)
     .click({ button: 'right', position: { x: 16, y: 12 } })
   await page.getByRole('menuitem', { name: /^Deletar \d+ blocos$/ }).click()
-  await expect(picker).toHaveCount(0)
+  await expect(jumpButton(page)).toHaveCount(0)
   await page.keyboard.press('Control+z')
-  await expect(picker).toBeVisible()
-  await picker.selectOption({ label: '↳ ↳ Função passo' })
+  await expect(jumpButton(page)).toBeVisible()
+  await goTo(page, 'Função passo')
   // Undo recreates blocks with the old IDs and new SVG nodes.
   await expect(literal).toBeVisible()
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().source)).toBe(source)
   await page.setViewportSize({ width: 640, height: 850 })
   await page.evaluate(() => pythonBridgeProbe.layout(true))
   await page.getByRole('tab', { name: 'Blocos', exact: true }).click()
-  await expect(picker).toBeVisible()
-  const header = page.getByRole('group', { name: 'Áreas do arquivo Python' })
+  await expect(jumpButton(page)).toBeVisible()
+  const header = page.getByRole('group', { name: 'Arquivo e partes do programa' })
   expect(await header.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('nested-program-narrow.png') })
 })

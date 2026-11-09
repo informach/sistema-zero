@@ -15,11 +15,15 @@ import { useT } from '../../../studio/i18n'
 export function ProjectNameField({
   name,
   onRename,
-  showPencil,
+  iconOnly,
 }: {
   name: string
   onRename: (name: string) => void
-  showPencil: boolean
+  /**
+   * Barra compacta (celular): só o lápis, com o nome no nome acessível e na dica. Antes o nome
+   * encolhia até sumir da barra, e a criança perdia o caminho para renomear (proposta de 11/2026).
+   */
+  iconOnly: boolean
 }): JSX.Element {
   const t = useT()
   const [editing, setEditing] = useState(false)
@@ -83,11 +87,12 @@ export function ProjectNameField({
         setDraft(name)
         setEditing(true)
       }}
-      className="sz-bar-name"
-      title={t('topbar.rename')}
+      className={iconOnly ? 'sz-bar-name sz-bar-name--icon' : 'sz-bar-name'}
+      aria-label={iconOnly ? name : undefined}
+      title={iconOnly ? `${t('topbar.rename')}: ${name}` : t('topbar.rename')}
     >
-      <span className="sz-bar-name__text">{name}</span>
-      {showPencil ? <IconPencil /> : null}
+      {iconOnly ? null : <span className="sz-bar-name__text">{name}</span>}
+      <IconPencil />
     </button>
   )
 }

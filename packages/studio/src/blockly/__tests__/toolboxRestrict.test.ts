@@ -8,6 +8,7 @@ import {
 import { projectBlockTypes } from '../../core/projectDocument'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { BLOCK_CATALOG } from '../blockCatalog'
+import { categoryKey } from '../categoryNames'
 import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import { buildCoreToolbox, type ToolboxCategory } from '../toolbox'
 
@@ -25,7 +26,8 @@ function allBlockTypes(contents: readonly unknown[], out: string[] = []): string
 function categoryNames(contents: readonly unknown[], out: string[] = []): string[] {
   for (const c of contents) {
     const node = c as { kind?: string; name?: string; contents?: readonly unknown[] }
-    if (node.kind === 'category' && node.name) out.push(node.name)
+    // Pela CHAVE ("HTML"), não pelo nome de exibição ("Página · HTML", D3 de 11/2026).
+    if (node.kind === 'category' && node.name) out.push(categoryKey(node.name))
     if (Array.isArray(node.contents)) categoryNames(node.contents, out)
   }
   return out

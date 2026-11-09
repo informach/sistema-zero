@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {
   asset3DManifest,
@@ -30,18 +30,21 @@ import { javaScriptProject } from '../../core/editableProject'
 import { resolveCoverAsset } from '../../cover/coverAsset'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
-import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { loadGameUiFont } from '../../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../../official-extensions/gameUiFonts/resolve'
 import {
   buildJavaScriptClassicDocument,
   resolveJavaScriptClassicExtensions,
 } from '../../runtime/javascript/classicDocument'
+import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
-import { useLogsStore } from '../../state/logsStore'
+import { useHighlightStoreApi } from '../../state/highlightStore'
+import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
+import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
 import {
@@ -60,14 +63,6 @@ import {
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const EMPTY_ASSETS: ProjectAsset[] = []
-
-/**
- * Abaixo desta largura do PRÓPRIO painel de preview, a barra de ferramentas
- * compacta: os botões viram só ícone (▶/⏹/⟳) e o "Executando/Parado" some.
- * Medida por `ResizeObserver`, então reage ao arraste do split do `PanelGroup`,
- * não ao tamanho da página.
- */
-const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 /** Espera antes da 1ª foto: o jogo precisa desenhar antes de valer a pena. */
 const SNAPSHOT_FIRST_DELAY_MS = 2_500
@@ -89,41 +84,25 @@ export function chosenCoverPausesSnapshots(
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
   const fullProject = useProjectStore((s) => javaScriptProject(s.project))
-  const {
-    projectId,
-    html,
-    css,
-    js,
-    ir,
-    projectName,
-    installedExtensions,
-    extraFiles,
-    assets,
-    hasChosenCover,
-  } = useProjectStore(
-    useShallow((s) => ({
-      projectId: javaScriptProject(s.project)?.id ?? null,
-      hasChosenCover: chosenCoverPausesSnapshots(javaScriptProject(s.project)),
-      html: javaScriptProject(s.project)?.files['index.html'] ?? '',
-      css: javaScriptProject(s.project)?.files['style.css'] ?? '',
-      js: javaScriptProject(s.project)?.files['script.js'] ?? '',
-      ir: javaScriptProject(s.project)?.ir ?? null,
-      projectName: javaScriptProject(s.project)?.name ?? '',
-      installedExtensions:
-        javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-      extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
-      assets: javaScriptProject(s.project)?.assets ?? EMPTY_ASSETS,
-    })),
-  )
+  const { projectId, html, css, js, ir, installedExtensions, extraFiles, assets, hasChosenCover } =
+    useProjectStore(
+      useShallow((s) => ({
+        projectId: javaScriptProject(s.project)?.id ?? null,
+        hasChosenCover: chosenCoverPausesSnapshots(javaScriptProject(s.project)),
+        html: javaScriptProject(s.project)?.files['index.html'] ?? '',
+        css: javaScriptProject(s.project)?.files['style.css'] ?? '',
+        js: javaScriptProject(s.project)?.files['script.js'] ?? '',
+        ir: javaScriptProject(s.project)?.ir ?? null,
+        installedExtensions:
+          javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
+        assets: javaScriptProject(s.project)?.assets ?? EMPTY_ASSETS,
+      })),
+    )
   const pushLog = useLogsStore((s) => s.push)
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
-  // A barra do preview compacta conforme o PRÓPRIO contêiner (não o Studio): o
-  // painel encolhe ao arrastar o split, então medimos a largura real aqui.
-  const rootRef = useRef<HTMLDivElement>(null)
-  const toolbarWidth = useMeasuredWidth(rootRef)
-  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const touchInput = useTouchInput()
   const usesKeyboardControls = useMemo(() => projectUsesKeyboardControls(ir), [ir])
@@ -143,8 +122,18 @@ export function PreviewIframe(): JSX.Element {
   // Incrementado quando o preview precisa executar/reexecutar o documento atual
   // mesmo que o HTML/CSS/JS gerado seja idêntico.
   const [renderNonce, setRenderNonce] = useState(0)
+  // O erro que parou o jogo da vez (redesenho do clássico, 11/2026): o primeiro erro de execução
+  // do documento atual. Vira a fase `error` no `proRun` (o cartão "Opa" do palco e a aba
+  // Problemas) e o sinal vermelho no bloco. Um documento novo (Rodar, Rodar de novo, edição) zera.
+  const [gameError, setGameError] = useState<{
+    text: string
+    line?: number
+    column?: number
+  } | null>(null)
   const autoStartedProjectId = useRef<string | null>(null)
   const [loadedSrcDoc, setLoadedSrcDoc] = useState<string | null>(null)
+  // Quando o documento da vez entrou (ver o filtro dos erros no ouvinte de mensagens).
+  const docStartedAtRef = useRef(0)
   const [renderLargePreviewForInput, setRenderLargePreviewForInput] =
     useState<PreviewBudgetInput | null>(null)
   // Mirror em memória do `localStorage` persistido do projeto (blocos
@@ -287,22 +276,6 @@ export function PreviewIframe(): JSX.Element {
   const debouncedJs = useDebounced(js, 800)
   const debouncedIds = useDebounced(installedIds, 800)
   const debouncedExtraFiles = useDebounced(extraFiles, 800)
-
-  // Título do documento (tag <title> do index.html), exibido no cabeçalho do
-  // preview — é o mesmo nome que apareceria na guia do navegador. Cai para o
-  // nome do projeto quando o HTML não tem <title>.
-  //
-  // Antes montávamos um DOCUMENTO inteiro com `DOMParser` só para ler uma tag —
-  // o `doc` (build do preview) e a Ponte já parseiam o MESMO HTML, mas nenhum
-  // desses parses é acessível daqui (BridgeMode/`buildPreviewDoc` ficam em outros
-  // módulos). Em vez de uma 3ª árvore de DOM completa por mudança de HTML, isolamos
-  // o miolo do `<title>` por regex e DECODIFICAMOS as entidades (&amp; etc.) num
-  // único `<textarea>` descartável — mesma saída de `textContent`, sem construir o
-  // documento todo. `extractDocumentTitle` é pura e testável.
-  const documentTitle = useMemo(
-    () => extractDocumentTitle(debouncedHtml) ?? projectName,
-    [debouncedHtml, projectName],
-  )
 
   const [runtimeAttempt, setRuntimeAttempt] = useState(0)
   const [extensionRuntimeState, setExtensionRuntimeState] = useState<{
@@ -764,6 +737,18 @@ export function PreviewIframe(): JSX.Element {
         return
       }
       pushLog(ev.data)
+      if (
+        (ev.data.kind === 'runtimeError' || ev.data.kind === 'unhandledRejection') &&
+        // O iframe guarda a mesma janela entre um `srcDoc` e outro: o erro que o documento
+        // ANTERIOR mandou (num laço de jogo, um por quadro) ainda chega depois da troca e
+        // marcaria o jogo novo com a linha velha. Só conta o que nasceu depois da troca.
+        ev.data.timestamp >= docStartedAtRef.current
+      ) {
+        const text = ev.data.parts.join(' ').slice(0, 2_000)
+        const at = previewErrorLocation(ev.data)
+        // O PRIMEIRO erro manda: num laço de jogo o mesmo erro repete a cada quadro.
+        setGameError((current) => current ?? { text, line: at?.line, column: at?.column })
+      }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
@@ -778,48 +763,101 @@ export function PreviewIframe(): JSX.Element {
     return () => window.removeEventListener('pagehide', flush)
   }, [processStorageNow])
 
+  // Rodar / Parar / Atualizar moram FORA da prévia desde o redesenho do clássico (11/2026): na
+  // barra de cima (`ProRunControls`) e no cabeçalho do palco (`ClassicStage`). A prévia publica
+  // a fase e as ações no `proRun` da instância, como as prévias do Pro. As ações leem os
+  // handlers do render mais recente pelo ref (eles fecham sobre o estado do momento).
+  const proRun = useProRunApi()
+  const observer = execution.editingAccess === 'observer'
+  const handlersRef = useRef({ toggle: handleTogglePreviewRunning, refresh: handleRefresh })
+  handlersRef.current = { toggle: handleTogglePreviewRunning, refresh: handleRefresh }
+  const runningRef = useRef(previewRunning)
+  runningRef.current = previewRunning
+  const runActions = useMemo<ProRunActions>(
+    () => ({
+      run: () =>
+        runningRef.current ? handlersRef.current.refresh() : handlersRef.current.toggle(),
+      stop: () => {
+        if (runningRef.current) handlersRef.current.toggle()
+      },
+      reload: () => handlersRef.current.refresh(),
+    }),
+    [],
+  )
+  const extensionRuntimeFailed =
+    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
+  const gameErrorHint = gameError ? (glossErrorMessage(gameError.text) ?? undefined) : undefined
+  const runState = useMemo<ProRunState>(() => {
+    if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
+    if (extensionRuntimeFailed || courseModelError)
+      return {
+        phase: 'error',
+        canRun: !observer,
+        canStop: !observer,
+        error: courseModelError ?? undefined,
+      }
+    if (gameError)
+      return {
+        phase: 'error',
+        canRun: !observer,
+        canStop: !observer,
+        error: gameError.text,
+        errorKind: 'runtime',
+        errorHint: gameErrorHint,
+        errorAt:
+          gameError.line !== undefined
+            ? { file: 'script.js', line: gameError.line, column: gameError.column }
+            : undefined,
+      }
+    if (extensionRuntimesLoading || !courseModelsReady)
+      return { phase: 'preparing', step: { index: 1, total: 1 }, canRun: false, canStop: !observer }
+    return { phase: 'running', canRun: !observer, canStop: !observer }
+  }, [
+    previewRunning,
+    observer,
+    extensionRuntimeFailed,
+    courseModelError,
+    extensionRuntimesLoading,
+    courseModelsReady,
+    gameError,
+    gameErrorHint,
+  ])
+  useEffect(() => {
+    proRun.getState().publish(runState, runActions)
+  }, [proRun, runState, runActions])
+  useEffect(() => () => proRun.getState().publish(null, null), [proRun])
+
+  // Um documento novo é um jogo novo: o erro do anterior (e o sinal no bloco) sai. `doc` carrega
+  // o nonce do render, então Rodar, Rodar de novo e cada edição contam.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é só o GATILHO
+  useLayoutEffect(() => {
+    // Na mesma passada em que o `srcdoc` novo entra no DOM, antes de o documento novo rodar.
+    docStartedAtRef.current = Date.now()
+  }, [doc])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é só o GATILHO
+  useEffect(() => {
+    setGameError(null)
+  }, [doc])
+  // O sinal vermelho no bloco que parou: o editor de blocos acha o bloco pela linha.
+  const t = useT()
+  const highlight = useHighlightStoreApi()
+  useEffect(() => {
+    if (!gameError || gameError.line === undefined) {
+      if (highlight.getState().runtimeMark?.file === 'script.js')
+        highlight.getState().setRuntimeMark(null)
+      return
+    }
+    highlight.getState().setRuntimeMark({
+      file: 'script.js',
+      line: gameError.line,
+      column: gameError.column ?? null,
+      message: [t('stage.errorMark'), gameErrorHint].filter(Boolean).join(' '),
+    })
+  }, [gameError, gameErrorHint, highlight, t])
+  useEffect(() => () => highlight.getState().setRuntimeMark(null), [highlight])
+
   return (
-    <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg">
-      <div className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
-        <Button
-          data-live-target={previewRunning ? 'studio-stop' : 'studio-run'}
-          size="sm"
-          variant={previewRunning ? 'ghost' : 'primary'}
-          onClick={handleTogglePreviewRunning}
-          title={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
-          aria-label={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
-        >
-          {previewRunning
-            ? compactToolbar
-              ? '⏹'
-              : '⏹ Parar'
-            : compactToolbar
-              ? '▶'
-              : '▶ Reproduzir'}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleRefresh}
-          title="Re-executar o código atual"
-          aria-label="Atualizar o preview"
-        >
-          {compactToolbar ? '⟳' : '⟳ Atualizar'}
-        </Button>
-        {documentTitle && (
-          <span
-            className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
-            title={documentTitle}
-          >
-            {documentTitle}
-          </span>
-        )}
-        {!compactToolbar && (
-          <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
-            {previewRunning ? (extensionRuntimesLoading ? 'Carregando' : 'Executando') : 'Parado'}
-          </span>
-        )}
-      </div>
+    <div className="relative flex h-full flex-col bg-sz-bg">
       <iframe
         ref={iframeRef}
         title="Pré-visualização"

@@ -1,5 +1,51 @@
 # @sistemazero/studio
 
+## O redesenho do Estúdio clássico (08/11/2026)
+
+Blocos e Ponte, JavaScript e Python, com as peças do Pro (proposta "Estúdio Clássico —
+Redesenho", `docs/plans/2026-11-08-estudio-classico-redesenho-proposta.md`). Vale para todos os
+hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
+
+- **Rodar/Parar na barra**: `PreviewIframe` e `PythonEditorPreview` publicam fase + ações no
+  `proRun` (sem barra própria); `ProRunControls` no meio da Topbar (fora do celular). O olhinho
+  virou "Mostrar o jogo" no ⋯. `ClassicStage` (`components/preview/`) é o palco: título
+  Jogo/Página/Programa, pílula, **Atualizar** (nome acessível "Atualizar o preview" — âncora das
+  aulas gravadas, não renomear), Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
+  parou". `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
+- **Âncoras das aulas gravadas** (robô `palco-gravacao`): "Atualizar o preview", selo "Salvo"
+  (único; a frase da nuvem do host vai na dica, e a nuvem só aparece com aviso/erro), rótulos do
+  Compartilhar, `iframe[title="Pré-visualização"]`, "Organizar blocos", o TEXTO dos rótulos das
+  categorias (ícones vêm por classe/`::before`, nunca no texto), `.blocklyTrash`, um
+  `studio-run` e um `studio-stop` visíveis.
+- **Gaveta** `ClassicDock` (sempre à vista, fechada com contadores; no estreito vira a aba
+  "Mensagens"): Mensagens do jogo (sem os erros, no JS) e Problemas (erro do jogo, código da
+  Ponte que não vira blocos via `diagnosticsStore.codeIssue`, avisos de bloco, rascunhos).
+- **Erro num caminho só**: a prévia guarda o 1º erro do documento (`errorKind: 'runtime'`,
+  `errorAt`) e põe `highlightStore.runtimeMark`; `BlocklyPanel`/`PythonBlocklyEditor` marcam o
+  bloco (`blockly/runtimeMark.ts`, `setWarningText` com id próprio + classe `sz-runtime-error`).
+  "Mostrar o bloco" = `highlightStore.revealBlock` (centraliza só no bloco: `centerOnBlock(id,
+  true)`). O Jogo 2D avisa o erro apanhado por `window.__szReportCaughtError` (o interceptor
+  acha a linha do script do aluno no stack). Python: o `diagnostic` traz arquivo e linha.
+- **Blockly**: `blockly/cornerSpacer.ts` (lixeira e zoom mais altos por um componente
+  posicionável invisível); zoom 1,0 e blocos no alto na 1ª carga; `blockly/categoryNames.ts`
+  (D3, nomes de exibição — a curadoria segue pela chave); `contextMenuWords.ts` (palavras de
+  criança + "Perguntar ao Zappy", o "Arrumar blocos" nativo sai); `moreBlocksItem.ts` ("Mais
+  blocos" no pé da paleta); a busca (`searchCategory.ts`) aceita um resolvedor por workspace
+  (`__szSearchItems`, usado pelo Python).
+- **Python**: `PythonBlocksHeader` (uma linha), paleta em coluna no computador,
+  `literalTint.ts` (valores com o tom do bloco de extensão; aplicado também depois das cargas,
+  que rodam com eventos desligados), abas da Ponte só `.py`.
+- **Criar**: `NewProjectModal` em 3 estados; "Em branco" sem áreas nem extensão; Turtle/Pygame
+  Zero instalados ao abrir (`python/extensions/startingExtension.ts`).
+- **Passeio** `FirstStepsTour`: só com `features.firstStepsTour`, que SÓ o host do Estúdio livre
+  liga (`studio-full-editor` do member-shell). O `StudioEditor` NÃO liga sozinho: ele também monta
+  a oficina ao vivo e a demonstração da professora (o balão roubaria a tela compartilhada), e o
+  playground dos e2e. Uma vez por perfil, sem roubar o foco.
+- **Jogo escondido** (⋯ → "Mostrar o jogo" desligado, no largo): a prévia sai de cena; o
+  `useClassicStage` publica no `proRun` um Rodar que traz o jogo de volta já rodando.
+- **Erro do documento anterior**: o iframe guarda a mesma janela entre `srcDoc`s; a `PreviewIframe`
+  só aceita `runtimeError` com `timestamp` depois da troca do documento (ref num layout effect).
+
 ## O redesenho do Studio Pro (08/11/2026)
 
 Pedido dela: o Pro (JavaScript e Python) bonito, intuitivo e fácil para uma criança, no tema da

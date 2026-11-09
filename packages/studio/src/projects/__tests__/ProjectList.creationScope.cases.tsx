@@ -236,7 +236,7 @@ async function openCreation(onOpenProject: (id: string) => void, pro = true) {
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
   const dialog = await screen.findByRole('dialog', { name: t('projects.newModal.title') })
-  if (pro) fireEvent.click(within(dialog).getByRole('radio', { name: /Pro \(código\)/ }))
+  if (pro) fireEvent.click(within(dialog).getByRole('radio', { name: /^Com código/ }))
   return view
 }
 
@@ -377,7 +377,7 @@ it('offers the complete Pro catalog without host release configuration', async (
   render(<ProjectList professional onOpenProject={() => {}} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /^Com código/ }))
   expect(
     within(screen.getByRole('dialog'))
       .getAllByRole('option')
@@ -420,7 +420,7 @@ it('revoking Pro access during a factory prevents persistence and navigation', a
   const view = render(<ProjectList professional onOpenProject={onOpen} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /^Com código/ }))
   fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
   await loader.started.promise
   view.rerender(<ProjectList professional={false} onOpenProject={onOpen} theme="light" />)
@@ -468,8 +468,9 @@ for (const change of ['profile', 'environment', 'pro-access'] as const) {
     )
     await screen.findByText(t('projects.empty'))
     fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-    fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /^Python$/ }))
+    // Estado 1 do "Criar um jogo novo" (11/2026): primeiro a linguagem, depois o jeito.
+    fireEvent.click(screen.getByRole('radio', { name: /^Python/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /^Com código/ }))
     fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
     await started.promise
     if (change === 'profile') {

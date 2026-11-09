@@ -71,7 +71,7 @@ export const ptBR: Record<string, string> = {
   'topbar.downloadFailed': 'Não foi possível baixar a fonte',
   'topbar.downloadWarnings': 'Fonte baixada: confira estes avisos',
   'topbar.closeDownloadNotice': 'Voltar ao editor',
-  'topbar.extensions': 'Extensões',
+  'topbar.extensions': 'Mais blocos',
   // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
   // termina num download). "Publicar na internet" prometia o ato e competia com o
   // Compartilhar, que é o único que de fato põe o jogo no ar.
@@ -87,6 +87,70 @@ export const ptBR: Record<string, string> = {
   'topbar.shortcuts': 'Atalhos do teclado',
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
+  'topbar.showStage': 'Mostrar o jogo',
+  'stage.reloadLabel': 'Atualizar o preview',
+  'stage.bigger': 'Jogo maior',
+  'stage.smaller': 'Jogo menor',
+  'stage.errorMark': 'O jogo parou neste bloco.',
+  'blocks.dropToDelete': 'Solte aqui para apagar',
+  'blocks.moreBlocks': 'Mais blocos',
+  'tour.title': 'Primeiros passos',
+  'tour.step': '{n} de {total}',
+  'tour.skip': 'Pular',
+  'tour.next': 'Próximo',
+  'tour.done': 'Começar!',
+  'tour.palette':
+    'Os blocos moram aqui. Abra uma categoria e arraste um bloco para a área de montagem.',
+  'tour.areas':
+    'Cada área roda de um jeito: Ao iniciar roda uma vez, Quando acontecer espera, Enquanto estiver rodando repete sem parar.',
+  'tour.run': 'Aperte Rodar para ver seu jogo. Rodar de novo recomeça do zero.',
+  'tour.problems':
+    'Se o jogo parar, o bloco ganha um sinal vermelho e a aba Problemas mostra onde.',
+  'assets.processing': 'Processando…',
+  'assets.uploadFromComputer': 'Enviar do computador',
+  'assets.images.empty': 'Nenhuma imagem ainda. Traga um desenho do Pinta ou envie do computador.',
+  'projects.tag.blocks': 'Com blocos',
+  'projects.tag.code': 'Com código',
+  'projects.filterLanguage': 'Linguagem',
+  'projects.filterLanguageAll': 'Todas',
+  'projects.newModal.shuffle': 'Sortear um nome',
+  'projects.newModal.language': 'Em que linguagem?',
+  'projects.newModal.language.js': 'Blocos que viram JavaScript: jogos 2D, 3D e páginas.',
+  'projects.newModal.language.python': 'Blocos que viram Python: desenhos com a tartaruga e jogos.',
+  'projects.newModal.way': 'Como você quer criar?',
+  'projects.newModal.way.blocks': 'Com blocos',
+  'projects.newModal.way.blocks.hint': 'Monte com blocos e veja o código que eles viram.',
+  'projects.newModal.way.code': 'Com código',
+  'projects.newModal.way.code.hint': 'Escreva o código, com arquivos, materiais e o Zappy.',
+  'projects.newModal.start': 'Ponto de partida',
+  'pyblocks.header': 'Arquivo e partes do programa',
+  'pyblocks.file': 'Arquivo Python',
+  'pyblocks.goTo': 'Ir para',
+  'pyblocks.wholeProgram': 'Programa inteiro',
+  'pyblocks.findFunction': 'Procurar uma função ou classe',
+  'pyblocks.noFunction': 'Nenhuma com esse nome',
+  'pyblocks.closeFunctions': 'Fechar as funções',
+  'pyblocks.drafts': 'Rascunhos',
+  'pyblocks.drafts.hint':
+    'Peças fora do Programa são rascunhos e não rodam. Clique para ver a primeira.',
+  'stage.errorMark.program': 'O programa parou neste bloco.',
+  'stage.error.stopped.game': 'Opa, o jogo parou',
+  'stage.error.stopped.page': 'Opa, a página parou',
+  'stage.error.stopped.program': 'Opa, o programa parou',
+  'stage.error.stopped.hint': 'O sinal vermelho mostra o bloco onde ele parou.',
+  'stage.error.technical': 'O que o computador disse',
+  'stage.showBlock': 'Mostrar o bloco',
+  'stage.seeProblems': 'Ver em Problemas',
+  'dock.problems.none': 'Nenhum problema por aqui. Pode rodar!',
+  'dock.problems.code.syntax': 'O código tem um erro de digitação',
+  'dock.problems.code.semantic': 'Este código não cabe nas áreas dos blocos',
+  'dock.problems.code.hint':
+    'Enquanto o código não estiver certo, os blocos não mudam. Confira a linha que o computador indica.',
+  'dock.problems.block': 'Aviso de um bloco',
+  'dock.problems.drafts': 'Rascunhos',
+  'dock.problems.drafts.one': '1 pedaço está fora das áreas e não roda.',
+  'dock.problems.drafts.many': '{count} pedaços estão fora das áreas e não rodam.',
+  'dock.problems.drafts.show': 'Mostrar o primeiro',
   // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a
   // COISA de que trata, na ordem de uso. "Arquivo"/"Exibição"/"Conta" saíram em
   // 18/09/2026 — o primeiro era o nome do sistema de arquivos, e os outros dois
@@ -114,14 +178,15 @@ export const ptBR: Record<string, string> = {
 
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',
-  'tab.preview': 'Pré-visualização',
+  'tab.preview': 'Jogo',
+  'tab.messages': 'Mensagens',
   'tab.files': 'Arquivos',
 
   'panel.console': 'Console',
   'panel.terminal': 'Terminal',
   'panel.ai': 'Zappy',
   'panel.preview': 'Pré-visualização',
-  'panel.extensions': 'Extensões oficiais',
+  'panel.extensions': 'Mais blocos',
 
   // A janela dos materiais e as três abas (18/09/2026). Os nomes das abas são a
   // MESMA palavra das três portas do menu ⋯ — é o que liga a porta ao que ela abre.
@@ -145,9 +210,9 @@ export const ptBR: Record<string, string> = {
   'assets.cover.failed':
     'Não consegui usar essa imagem como capa. A capa continua a de antes. Tente outra imagem.',
 
-  'extensions.install': 'Instalar',
-  'extensions.remove': 'Remover',
-  'extensions.installed': 'Instalada',
+  'extensions.install': 'Pôr no meu jogo',
+  'extensions.remove': 'Tirar do jogo',
+  'extensions.installed': 'No meu jogo',
   'extensions.available': 'Disponível',
   'extensions.loadExample': 'Carregar exemplo',
   'extensions.examplesLoading': 'Carregando exemplos…',
@@ -161,11 +226,12 @@ export const ptBR: Record<string, string> = {
   'extensions.docsRetry': 'Tentar novamente',
   'extensions.removeWarning':
     'Existem {count} blocos desta extensão em uso. Removê-la apagará esses blocos.',
-  'extensions.confirmRemove': 'Confirmar remoção',
+  'extensions.confirmRemove': 'Tirar do jogo',
   'extensions.cancel': 'Cancelar',
-  'extensions.empty': 'Este projeto ainda não tem extensões. Instale uma para ganhar blocos novos!',
+  'extensions.empty':
+    'Este jogo ainda não tem blocos a mais. Escolha um conjunto para ganhar blocos novos!',
   'extensions.officialOnly':
-    'Aqui só entram extensões oficiais do Sistema Zero, revisadas com carinho pela nossa equipe.',
+    'Aqui só entram conjuntos de blocos oficiais do Sistema Zero, revisados com carinho pela nossa equipe.',
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
@@ -427,7 +493,10 @@ export const ptBR: Record<string, string> = {
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
   'editor.fontSize.reset': 'Restaurar tamanho padrão',
-  'editor.format': 'Formatar código',
+  'editor.format': 'Arrumar código',
+  'editor.tab.page': 'Página',
+  'editor.tab.style': 'Estilo',
+  'editor.tab.program': 'Programa',
   'editor.formatIssue.noProvider':
     'Formatar: o formatador desta linguagem ainda não terminou de carregar. Tente de novo em instantes.',
   'editor.formatIssue.failed': 'Formatar: não deu para formatar este arquivo agora.',

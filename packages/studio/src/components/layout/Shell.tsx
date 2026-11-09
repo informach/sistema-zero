@@ -15,8 +15,10 @@ import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
+import { ClassicDock } from './ClassicDock'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
+import { FirstStepsTour } from './FirstStepsTour'
 import { proLayoutTier } from './layoutBreakpoints'
 import { ModeArea } from './ModeArea'
 import { NarrowLayout } from './NarrowLayout'
@@ -65,6 +67,9 @@ export function Shell({
   // features do host cruzadas com o contexto de modo e com as preferências de
   // mostrar/esconder do aluno. Some por completo quando o aluno esconde tudo.
   const hasBottomPanel = useVisibleBottomTabs().length > 0
+  // Blocos e Ponte do clássico (JavaScript e Python) têm a gaveta nova, sempre à vista embaixo
+  // (redesenho de 11/2026, D4); o modo Código clássico segue com o painel de baixo de sempre.
+  const classicDock = !isPro && projectMode !== 'code'
   // `autoSaveId` POR INSTÂNCIA: o react-resizable-panels persiste o layout no
   // localStorage com essa chave; um id fixo fazia instâncias no mesmo origin
   // sobrescreverem o layout uma da outra. `useId` é estável e único por
@@ -117,6 +122,13 @@ export function Shell({
                 </ProTutorDockContext.Provider>
               ) : layout.isNarrow ? (
                 <NarrowLayout projectMode={projectMode} projectId={projectId} />
+              ) : classicDock ? (
+                <main className="flex min-h-0 flex-1 flex-col">
+                  <div key={projectId} className="min-h-0 w-full flex-1">
+                    <ModeArea projectMode={projectMode} projectId={projectId} />
+                  </div>
+                  <ClassicDock />
+                </main>
               ) : (
                 <main className="flex min-h-0 flex-1 flex-col">
                   <PanelGroup
@@ -179,6 +191,8 @@ export function Shell({
                 </ErrorBoundary>
               )}
               <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
+              {/* O passeio de primeiros passos (D6): só no Estúdio livre, no clássico. */}
+              {!isPro ? <FirstStepsTour /> : null}
               <DrawingSyncWatcher />
               {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}

@@ -154,13 +154,20 @@ test('restore cannot replace a newer draft offered by another owner', async ({ p
   expect(await page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(true)
 })
 
-test('search can return no blocks and recover its curated toolbox', async ({ page }) => {
+test('search can return no blocks and keeps the curated toolbox', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.getByRole('searchbox', { name: 'Buscar blocos' }).fill('zzzz-não-existe')
-  await expect(page.getByRole('treeitem', { name: 'Nenhum bloco encontrado' })).toBeVisible()
-  await page.getByRole('searchbox', { name: 'Buscar blocos' }).fill('')
-  await expect(page.getByRole('treeitem', { name: 'Nenhum bloco encontrado' })).toHaveCount(0)
+  // "Procurar um bloco" mora na paleta (redesenho de 11/2026) e não troca as categorias.
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Procurar um bloco' }).click()
+  const search = page.getByRole('searchbox', { name: 'Pesquisar blocos' })
+  await search.fill('zzzz-não-existe')
+  await expect(
+    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Nada encontrado' }),
+  ).toBeVisible()
+  await search.fill('')
+  await expect(
+    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Escreva para achar' }),
+  ).toBeVisible()
   await expect(page.getByRole('treeitem').first()).toBeVisible()
   expect(errors).toEqual([])
   expect(await page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(

@@ -31,6 +31,16 @@ export interface NarrowPanelsProps {
   preview?: ReactNode
   /** Explicit request to reveal the existing preview panel without remounting editors. */
   previewRequest?: number
+  /** A gaveta do clássico (Mensagens do jogo + Problemas), que vira a aba "Mensagens". */
+  dock?: ReactNode
+  /** Sobe a cada "Mostrar o bloco": traz a primeira aba de editor. */
+  editorRequest?: number
+  /** Sobe a cada "Ver em Problemas": traz a aba "Mensagens". */
+  dockRequest?: number
+  /** Avisa qual aba está à vista (o palco do clássico decide onde ficam os alvos ao vivo). */
+  onActiveChange?: (id: string) => void
+  /** Desenhado por cima das abas fora a do jogo (o Rodar flutuante do celular). */
+  editorOverlay?: ReactNode
   /**
    * Árvore/explorador de arquivos. Quando presente, mostra um botão "Arquivos"
    * que abre uma gaveta sobreposta. Recebe `close` para fechar a gaveta (e focar
@@ -57,15 +67,25 @@ export function NarrowPanels({
   editorPanes,
   preview,
   previewRequest = 0,
+  dock,
+  editorRequest = 0,
+  dockRequest = 0,
+  onActiveChange,
+  editorOverlay,
   filesDrawer,
 }: NarrowPanelsProps): JSX.Element {
   const t = useT()
   const setBottomTab = useUIStore((s) => s.setBottomTab)
-  const bottomTabs = useVisibleBottomTabs()
+  const visibleBottomTabs = useVisibleBottomTabs()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const firstEditorId = editorPanes[0]?.id ?? ''
   const editorIds = new Set(editorPanes.map((p) => p.id))
+  // A gaveta do clássico vira UMA aba "Mensagens" (com Mensagens do jogo e Problemas dentro),
+  // no lugar das abas soltas do console.
+  const bottomTabs: TabItem[] = dock
+    ? [{ id: 'messages', label: t('tab.messages') }]
+    : visibleBottomTabs
 
   const items: TabItem[] = [
     ...editorPanes.map((p) => ({ id: p.id, label: p.label })),
@@ -81,11 +101,28 @@ export function NarrowPanels({
       setDrawerOpen(false)
     }
   }, [previewRequest, hasPreview])
+  // "Mostrar o bloco" traz a aba do editor; "Ver em Problemas", a das mensagens.
+  useEffect(() => {
+    if (editorRequest > 0 && firstEditorId) {
+      setActive(firstEditorId)
+      setDrawerOpen(false)
+    }
+  }, [editorRequest, firstEditorId])
+  const hasDock = Boolean(dock)
+  useEffect(() => {
+    if (dockRequest > 0 && hasDock) {
+      setActive('messages')
+      setDrawerOpen(false)
+    }
+  }, [dockRequest, hasDock])
   // Aba EFETIVA: se a `active` escolhida some (o aluno escondeu aquele painel ou
   // mudou o contexto), cai para a primeira aba — derivado no render, sem efeito
   // nem estado intermediário. Reexibir o painel devolve o foco a ele (mostrar um
   // painel é uma ação explícita de focá-lo).
   const effectiveActive = items.some((i) => i.id === active) ? active : (items[0]?.id ?? '')
+  useEffect(() => {
+    onActiveChange?.(effectiveActive)
+  }, [effectiveActive, onActiveChange])
 
   const handleSelect = (id: string) => {
     setActive(id)
@@ -113,6 +150,7 @@ export function NarrowPanels({
 
   const renderPanel = (id: string): ReactNode => {
     if (id === 'preview') return preview
+    if (id === 'messages' && dock) return dock
     if (editorIds.has(id)) return editorPanes.find((p) => p.id === id)?.content
     return renderBottomPanel(id as BottomTab)
   }
@@ -149,6 +187,16 @@ export function NarrowPanels({
           ) : undefined
         }
       />
+      {/* O Rodar flutuante vale fora da aba do jogo (blocos, código e mensagens): na aba do jogo
+          quem roda é o par embaixo do palco. Assim há sempre UM Rodar à vista. */}
+      {editorOverlay && effectiveActive !== 'preview' ? (
+        <div
+          className="contents"
+          data-sz-overlay-tab={effectiveActive === 'messages' ? 'messages' : 'editor'}
+        >
+          {editorOverlay}
+        </div>
+      ) : null}
       {filesDrawer && drawerOpen && (
         <div className="absolute inset-0 z-40 flex">
           {/* Fundo clicável que fecha a gaveta. */}

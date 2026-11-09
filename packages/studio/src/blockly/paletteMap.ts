@@ -17,6 +17,7 @@ import { SOM_BLOCKS, SOM_GROUPS } from './blocks/som'
 import { SVG_BLOCKS, SVG_GROUPS } from './blocks/svg'
 import type { BlockDefinition } from './blocks/types'
 import { VALUE_BLOCKS } from './blocks/values'
+import { CATEGORY_DISPLAY_NAMES } from './categoryNames'
 import {
   isEventProgrammingDefinition,
   PROGRAMMING_CONDITION_VALUE_TYPES,
@@ -53,7 +54,10 @@ const paths = new Map<string, PalettePath>()
 
 /** Primeira atribuição vence — é a que a criança encontra descendo a paleta. */
 function assign(type: string, path: PalettePath): void {
-  if (!paths.has(type)) paths.set(type, path)
+  if (paths.has(type)) return
+  // A categoria de cima com o nome que a paleta MOSTRA ("Página · HTML", D3 de 11/2026).
+  const [top, ...rest] = path
+  paths.set(type, top !== undefined ? [CATEGORY_DISPLAY_NAMES[top] ?? top, ...rest] : path)
 }
 
 /** Bloco legado (`hidden`) segue registrado p/ abrir projeto antigo, mas some da paleta. */

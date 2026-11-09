@@ -63,34 +63,37 @@ export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_console_log_text',
     placement: 'command',
-    message0: 'Mostrar texto no console %1',
+    // D7 (redesenho de 11/2026): "nas mensagens", o nome da aba que a criança vê. A dica guarda
+    // a palavra "console" (a busca da paleta também lê a dica).
+    message0: 'Mostrar texto nas mensagens %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Mostra uma mensagem na área de console para acompanhar o que o programa está fazendo.',
+      'Mostra uma mensagem na aba Mensagens do jogo (o console) para acompanhar o que o programa está fazendo.',
   },
   {
     type: 'sz_js_console_log_var',
     placement: 'command',
-    message0: 'Mostrar valor da variável %1 no console',
+    message0: 'Mostrar valor da variável %1 nas mensagens',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Mostra no console o valor guardado em uma variável.',
+    tooltip: 'Mostra nas Mensagens do jogo (o console) o valor guardado em uma variável.',
   },
   {
     type: 'sz_js_console_log_value',
     placement: 'command',
-    message0: 'Mostrar no console %1',
+    message0: 'Mostrar nas mensagens %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Mostra qualquer valor no console, como um texto montado, um objeto ou uma conta.',
+    tooltip:
+      'Mostra qualquer valor nas Mensagens do jogo (o console), como um texto montado, um objeto ou uma conta.',
   },
   {
     type: 'sz_js_alert_text',

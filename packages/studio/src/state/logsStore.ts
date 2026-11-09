@@ -72,6 +72,18 @@ function sanitizeLineNumber(value: unknown): number | undefined {
   return n >= 1 && n <= 10_000_000 ? n : undefined
 }
 
+/**
+ * O lugar de um erro do jogo no script.js do ALUNO (só quando o interceptor confirmou
+ * `userCode`), com a mesma régua do console: a gaveta e o cartão "Opa" do clássico usam para o
+ * "Mostrar o bloco".
+ */
+export function previewErrorLocation(m: PreviewMessage): { line: number; column?: number } | null {
+  if (m.error?.userCode !== true) return null
+  const line = sanitizeLineNumber(m.error.line)
+  if (line === undefined) return null
+  return { line, column: sanitizeLineNumber(m.error.col) }
+}
+
 export function createLogsStore(): StoreApi<LogsStore> {
   // Contadores no CLOSURE da factory (eram variáveis de módulo): cada
   // instância do <Studio> tem o próprio rate-limit, e montagens novas nascem

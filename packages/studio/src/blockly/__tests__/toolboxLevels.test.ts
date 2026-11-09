@@ -4,6 +4,7 @@ import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/block
 import { gameThreeDToolboxCategory } from '../../official-extensions/game-3d/blocks'
 import { gameKit3DToolboxCategory } from '../../official-extensions/game-3d-advanced/blocks'
 import { world3DToolboxCategory } from '../../official-extensions/world-3d/blocks'
+import { categoryKey } from '../categoryNames'
 import { buildCoreToolbox } from '../toolbox'
 
 /** Nomes de TODAS as categorias, em qualquer profundidade. */
@@ -11,7 +12,8 @@ function collectNames(contents: readonly unknown[], out: string[] = []): string[
   for (const c of contents) {
     if (c && typeof c === 'object' && (c as { kind?: string }).kind === 'category') {
       const cat = c as { name?: string; contents?: readonly unknown[] }
-      if (cat.name) out.push(cat.name)
+      // Pela CHAVE ("HTML"): o nome de exibição ("Página · HTML") tem o seu caso abaixo.
+      if (cat.name) out.push(categoryKey(cat.name))
       if (Array.isArray(cat.contents)) collectNames(cat.contents, out)
     }
   }
@@ -37,7 +39,7 @@ type Cat = { kind?: string; name?: string; contents?: readonly unknown[] }
 function findCategory(contents: readonly unknown[], name: string): Cat | null {
   for (const c of contents) {
     const cat = c as Cat
-    if (cat?.kind === 'category' && cat.name === name) return cat
+    if (cat?.kind === 'category' && cat.name && categoryKey(cat.name) === name) return cat
     if (Array.isArray(cat?.contents)) {
       const found = findCategory(cat.contents, name)
       if (found) return found
@@ -373,5 +375,24 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     expect(types.has('sz_g3k_setup')).toBe(false) // Jogo 3D Avançado também é av-3d
     expect(types.has('sz_t3d_import')).toBe(false)
     expect(types.has('sz_t3d_scene_create')).toBe(false)
+  })
+})
+
+describe('buildCoreToolbox — nomes e ícones das categorias de cima (D3, 11/2026)', () => {
+  it('as linguagens da web aparecem em português com a sigla, e o ícone vem por classe', () => {
+    const top = buildCoreToolbox([], undefined).contents as {
+      kind?: string
+      name?: string
+      cssconfig?: { label?: string }
+    }[]
+    const byName = new Map(top.map((entry) => [entry.name, entry]))
+    for (const shown of ['Página · HTML', 'Estilo · CSS', 'Figuras · SVG', 'Pintura · Canvas'])
+      expect(byName.has(shown)).toBe(true)
+    // O texto do rótulo de Programação NÃO muda (o robô das aulas acha a categoria por ele): o
+    // ícone é classe, e a classe padrão do rótulo continua junto.
+    const programacao = byName.get('Programação')
+    expect(programacao?.cssconfig?.label).toContain('blocklyToolboxCategoryLabel')
+    expect(programacao?.cssconfig?.label).toContain('sz-cat-icon--brain')
+    expect(byName.get('Página · HTML')?.cssconfig?.label).toContain('sz-cat-icon--page')
   })
 })

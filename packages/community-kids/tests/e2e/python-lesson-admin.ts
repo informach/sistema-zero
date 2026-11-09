@@ -85,7 +85,7 @@ export async function runPythonLessonPreview(
       .getByRole('button', { name: /^(Jogo|Ampliar jogo)$/ })
       .click()
   } else {
-    const previewTab = page.getByRole('tab', { name: 'Pré-visualização', exact: true })
+    const previewTab = page.getByRole('tab', { name: 'Jogo', exact: true })
     if (await previewTab.count()) await previewTab.click()
     const showPreview = page.getByRole('button', { name: 'Mostrar pré-visualização', exact: true })
     if (await showPreview.count()) await showPreview.click()
@@ -332,7 +332,7 @@ export async function runPythonLessonAdmin() {
       await page.getByLabel('Nível', { exact: true }).selectOption('3')
     }
     await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Extensões', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos', exact: true }).click()
     const extensions = page.getByRole('dialog', { name: 'Extensões Python', exact: true })
     await extensions
       .locator('li')

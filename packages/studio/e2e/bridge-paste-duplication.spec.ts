@@ -94,13 +94,13 @@ test.describe('Ponte — colar por cima do defineShape vazio (workspace vivo)', 
 
     // Estado da usuária: Jogo 2D instalado ANTES (menu ⋯ → Extensões → Instalar).
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Extensões' }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos' }).click()
     await page
       .locator('div', { hasText: 'Jogo 2D' })
-      .getByRole('button', { name: 'Instalar', exact: true })
+      .getByRole('button', { name: 'Pôr no meu jogo', exact: true })
       .first()
       .click()
-    await expect(page.getByText('Instalada').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('No meu jogo').first()).toBeVisible({ timeout: 10_000 })
     await page.keyboard.press('Escape')
 
     await page.getByRole('button', { name: 'Ponte' }).click()

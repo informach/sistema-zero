@@ -238,7 +238,7 @@ afterEach(() => {
 describe('painel de materiais: o botão "Trazer da equipe"', () => {
   it('sem o adapter (jogo fora do Pensa, plano solo, aula): nenhum botão', async () => {
     renderPanel(null)
-    await screen.findByText('Enviar imagem')
+    await screen.findByText('Enviar do computador')
     expect(screen.queryByRole('button', { name: /Trazer da equipe/ })).toBeNull()
   })
 

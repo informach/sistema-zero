@@ -32,6 +32,23 @@ interface HighlightStore {
     /** Subcategoria da paleta (nó folha) — preferida no fallback por rótulo. */
     subcategory?: string
   } | null
+  /**
+   * O erro de execução do jogo, na linha do código gerado (redesenho do clássico, 11/2026). O
+   * editor de blocos acha o bloco daquela linha e põe nele o sinal vermelho
+   * (`setWarningText(…, 'sz-runtime-error')`); `null` tira o sinal. Quem marca e desmarca é a
+   * prévia: a cada jogo novo (Rodar, Rodar de novo ou uma edição) o sinal sai.
+   */
+  runtimeMark: RuntimeMark | null
+  /**
+   * "Mostrar o bloco": o editor rola até o bloco, seleciona e abre o balão. O nonce sobe a cada
+   * pedido (apertar duas vezes mostra de novo). `runtime` = o bloco do `runtimeMark`.
+   */
+  revealRequest: {
+    target: { kind: 'runtime' } | { kind: 'block'; blockId: string }
+    nonce: number
+  } | null
+  setRuntimeMark: (mark: RuntimeMark | null) => void
+  revealBlock: (target: { kind: 'runtime' } | { kind: 'block'; blockId: string }) => void
   selectBlock: (id: string | null) => void
   setCursor: (file: SourceMappedFile, line: number, column?: number) => void
   focusTutorReference: (target: {
@@ -43,8 +60,22 @@ interface HighlightStore {
   reset: () => void
 }
 
+export interface RuntimeMark {
+  /** O arquivo gerado (JavaScript: `script.js`; Python: o caminho do `.py`). */
+  file: string
+  line: number
+  column: number | null
+  /** A frase do balão, já em português para a criança. */
+  message: string
+}
+
 export function createHighlightStore(): StoreApi<HighlightStore> {
   return createStore<HighlightStore>((set) => ({
+    runtimeMark: null,
+    revealRequest: null,
+    setRuntimeMark: (runtimeMark) => set({ runtimeMark }),
+    revealBlock: (target) =>
+      set((s) => ({ revealRequest: { target, nonce: (s.revealRequest?.nonce ?? 0) + 1 } })),
     selectedBlockId: null,
     selectionNonce: 0,
     cursorFile: null,
@@ -71,6 +102,8 @@ export function createHighlightStore(): StoreApi<HighlightStore> {
         cursorColumn: null,
         source: null,
         tutorTarget: null,
+        runtimeMark: null,
+        revealRequest: null,
       }),
   }))
 }
@@ -88,3 +121,8 @@ export const useHighlightStore: BoundUseHighlightStore = Object.assign(
   },
   defaultHighlightStore,
 )
+
+export function useHighlightStoreApi(): StoreApi<HighlightStore> {
+  const stores = useContext(StudioStoresContext)
+  return stores?.highlight ?? defaultHighlightStore
+}

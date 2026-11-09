@@ -5,11 +5,15 @@ import {
   type PythonBlocklyEditorProps,
 } from '../../components/blocks/PythonBlocklyEditor'
 import type { PythonSourceCursorPosition } from '../../components/code/PythonSourceEditor'
+import { ClassicDock } from '../../components/layout/ClassicDock'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
+import { ClassicRunFab, ClassicStage, useClassicStage } from '../../components/preview/ClassicStage'
 import { PythonEditorPreview } from '../../components/preview/PythonEditorPreview'
+import { pythonStageSubject } from '../../components/preview/stageSubject'
 import { isPythonProject } from '../../core/editableProject'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
+import { usePythonStartingExtension } from '../../python/extensions/useStartingExtension'
 import {
   pythonModelPositionToOffset,
   pythonOffsetToPosition,
@@ -66,11 +70,20 @@ function PythonClassicProjectWorkspace({
     nonce: number
   }>()
   const nonce = useRef(0)
+  const stage = useClassicStage(
+    mode === 'bridge'
+      ? { normal: [35, 35, 30], large: [25, 25, 50] }
+      : { normal: [65, 35], large: [50, 50] },
+    showPreview,
+  )
+  // O ponto de partida escolhido no "Criar um jogo novo" (Turtle, Pygame Zero) entra aqui.
+  usePythonStartingExtension()
   if (!project || !isPythonProject(project) || project.kind !== 'classic') return null
   const path =
     selected &&
     project.files[selected] !== undefined &&
-    (mode === 'bridge' || (!blockly && sourceFallback) || selected.endsWith('.py'))
+    // Com blocos, só .py (a Ponte também só tem abas .py); o código de recuperação abre tudo.
+    ((!blockly && (mode === 'bridge' || sourceFallback)) || selected.endsWith('.py'))
       ? selected
       : project.python.entrypoint
   const changeFile = (file: string) => {
@@ -130,11 +143,17 @@ function PythonClassicProjectWorkspace({
       nonce: ++nonce.current,
     })
   }
+  // Os .py do projeto: o cabeçalho dos blocos troca de arquivo por eles (a linha "Arquivo" de
+  // antes saiu, redesenho de 11/2026).
+  const pythonFiles = Object.keys(project.files).filter((file) => file.endsWith('.py'))
   const source = (
     <Suspense fallback={<EditorSkeleton message="Carregando o código Python…" />}>
       <SourceEditor
         activeFile={path}
         onActiveFileChange={changeFile}
+        // Ponte com blocos: abas só com os .py (README e NOTICE não têm blocos, redesenho de
+        // 11/2026). Sem blocos (o código de recuperação), todos os arquivos continuam abríveis.
+        openFiles={blockly ? pythonFiles : undefined}
         highlight={
           highlight && project.files[highlight.value.file] === highlight.source
             ? highlight.value
@@ -153,6 +172,8 @@ function PythonClassicProjectWorkspace({
     <PythonBlocklyEditor
       {...blockly}
       path={path}
+      files={pythonFiles}
+      onChangeFile={changeFile}
       onSelectRange={selectRange}
       sourceCursor={cursor?.path === path ? cursor : undefined}
     />
@@ -161,28 +182,21 @@ function PythonClassicProjectWorkspace({
       Este arquivo é editado no modo fonte. Selecione um arquivo .py para ver seus blocos.
     </p>
   )
-  const preview = <PythonEditorPreview />
+  const preview = (
+    <ClassicStage
+      subject={pythonStageSubject(project)}
+      phone={stage.phone}
+      cards="error"
+      onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+      onShowBlock={stage.showBlock}
+      onOpenProblems={stage.openProblems}
+      liveTargets={stage.stageLiveTargets}
+    >
+      <PythonEditorPreview />
+    </ClassicStage>
+  )
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {mode === 'blocks' && (
-        <label className="flex items-center gap-2 border-b border-sz-border px-3 py-2 text-sm">
-          Arquivo
-          <select
-            aria-label="Arquivo Python"
-            value={path}
-            onChange={(event) => changeFile(event.target.value)}
-            className="min-w-0 flex-1 rounded border border-sz-border bg-sz-panel px-2 py-1"
-          >
-            {Object.keys(project.files)
-              .filter((file) => file.endsWith('.py'))
-              .map((file) => (
-                <option key={file} value={file}>
-                  {file}
-                </option>
-              ))}
-          </select>
-        </label>
-      )}
       <div className="min-h-0 flex-1">
         {isNarrow ? (
           <NarrowPanels
@@ -205,9 +219,15 @@ function PythonClassicProjectWorkspace({
                 : []),
             ]}
             preview={config.preview ? preview : undefined}
+            previewRequest={stage.previewRequest}
+            dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
+            editorRequest={stage.editorRequest}
+            dockRequest={stage.dockRequest}
+            onActiveChange={stage.setNarrowTab}
+            editorOverlay={stage.phone && config.preview ? <ClassicRunFab /> : undefined}
           />
         ) : (
-          <PanelGroup direction="horizontal">
+          <PanelGroup ref={stage.group} direction="horizontal">
             <Panel
               id="python-blocks"
               order={1}

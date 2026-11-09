@@ -317,7 +317,9 @@ test('the editor exposes console omission while preserving the retained output',
       </StudioRuntimeEnvironmentProvider>
     </StudioStoresContext.Provider>,
   )
-  await screen.findByText('Rodando')
+  // A prévia do editor não tem barra própria desde o redesenho do clássico (11/2026): o estado
+  // "rodando" chega pela store `proRun`, que a barra de cima e o palco leem.
+  await waitFor(() => expect(stores.proRun.getState().state?.phase).toBe('running'))
   const first = f.sessions[0]!
   const buffer = createPythonConsoleBuffer()
   buffer.append('stdout', 'x'.repeat(100_000))

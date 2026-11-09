@@ -11,23 +11,14 @@ import {
   IconWindow,
 } from '#ui'
 import type { ProLayoutTier } from '../../../components/layout/layoutBreakpoints'
+import { STAGE_PILL as PILL } from '../../../components/preview/stagePill'
 import { useMeasuredWidth } from '../../../hooks/useMeasuredWidth'
-import { type ProRunPhase, proRunLabelKey, useProRun, useProRunApi } from '../../../state/proRun'
+import { proRunLabelKey, useProRun, useProRunApi } from '../../../state/proRun'
 import { useT } from '../../../studio/i18n'
 import type { ProWorkspacePreferences } from './model'
 
 export type ProStageSubject = 'game' | 'program'
 type Layout = ProWorkspacePreferences['layout']
-
-const PILL: Record<ProRunPhase, { tone: string; key: string }> = {
-  idle: { tone: 'sz-pro-pill--quiet', key: 'run.status.idle' },
-  preparing: { tone: 'sz-pro-pill--prep', key: 'run.status.preparing' },
-  running: { tone: 'sz-pro-pill--run', key: 'run.status.running' },
-  waiting: { tone: 'sz-pro-pill--wait', key: 'run.status.waiting' },
-  done: { tone: 'sz-pro-pill--done', key: 'run.status.done' },
-  error: { tone: 'sz-pro-pill--error', key: 'run.status.error' },
-  unsupported: { tone: 'sz-pro-pill--error', key: 'run.status.unsupported' },
-}
 
 /**
  * O palco do workspace Pro (redesenho de 11/2026): o cabeçalho [Jogo/Programa] [pílula de

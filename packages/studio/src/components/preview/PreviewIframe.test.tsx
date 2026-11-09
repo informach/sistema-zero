@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject, type Project } from '#core'
+import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore } from '../../state/projectStore'
+import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
@@ -19,6 +21,8 @@ describe('PreviewIframe', () => {
     useUIStore.setState({ previewRunning: true })
   })
 
+  // Desde o redesenho de 11/2026 a prévia não tem barra própria: Rodar, Parar e Atualizar moram
+  // na barra de cima e no palco (`ClassicStage`), que chamam as ações que ela publica no `proRun`.
   it('executa ao montar, reexecuta ao atualizar e volta a executar ao sair de parado', async () => {
     useProjectStore.setState({
       project: createPreviewProject(),
@@ -39,7 +43,8 @@ describe('PreviewIframe', () => {
     })
     const initialNonce = getRenderNonce(initialDoc)
 
-    fireEvent.click(screen.getByRole('button', { name: /Atualizar/ }))
+    expect(useProRun.getState().state?.phase).toBe('running')
+    act(() => useProRun.getState().actions?.reload?.())
 
     const refreshedDoc = await waitFor(() => {
       const doc = getPreviewSrcDoc()
@@ -50,13 +55,14 @@ describe('PreviewIframe', () => {
     })
     const refreshedNonce = getRenderNonce(refreshedDoc)
 
-    fireEvent.click(screen.getByRole('button', { name: /Parar/ }))
+    act(() => useProRun.getState().actions?.stop())
 
     await waitFor(() => {
       expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Reproduzir/ }))
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('idle'))
+    act(() => useProRun.getState().actions?.run())
 
     await waitFor(() => {
       const doc = getPreviewSrcDoc()
@@ -64,6 +70,40 @@ describe('PreviewIframe', () => {
       expect(doc).not.toBe(PAUSED_PREVIEW_DOC)
       expect(getRenderNonce(doc)).toBeGreaterThan(refreshedNonce)
     })
+  })
+
+  it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(iframe)
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    const contentWindow = iframe.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: {
+            source: 'sz-preview',
+            kind: 'runtimeError',
+            parts: ['TypeError: Cannot read properties of undefined'],
+            timestamp: Date.now(),
+            error: { message: 'x', userCode: true, line: 7, col: 3 },
+          },
+        }),
+      )
+    })
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('error'))
+    const state = useProRun.getState().state
+    expect(state?.errorKind).toBe('runtime')
+    expect(state?.errorAt).toEqual({ file: 'script.js', line: 7, column: 3 })
+    expect(useHighlightStore.getState().runtimeMark).toMatchObject({ file: 'script.js', line: 7 })
+    // Rodar de novo = documento novo: o erro e o sinal saem.
+    act(() => useProRun.getState().actions?.reload?.())
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
+    expect(useHighlightStore.getState().runtimeMark).toBeNull()
   })
 
   it('executa quando o projeto carregado chega depois da montagem do preview', async () => {
