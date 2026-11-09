@@ -18,6 +18,9 @@ import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
  * página dizem o que comparar, sem sequência.
  */
 const AULAS = [
+  'cade-todo-mundo-aula-1',
+  'cade-todo-mundo-aula-2',
+  'desafio-dia-1',
   'desafio-dia-2',
   'desafio-dia-3',
   'ilha-aula-1',

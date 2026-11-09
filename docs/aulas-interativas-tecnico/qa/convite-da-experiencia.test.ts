@@ -8,10 +8,12 @@ import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
  * responsável, 02/11/2026; regra nas DIRETRIZES, "Exploração livre"). A investigação é da criança e
  * quem acompanha cada teste é o Zappy, dentro da experiência: o vídeo não aponta os controles, não
  * dita a sequência de testes e termina no convite com o fecho combinado.
- * ⚠️ Fora daqui, de propósito: a aula 1 do Desafio e o Cadê, já gravados antes desta regra.
+ * Desde 09/11/2026 vale também para o Cadê e para a aula 1 do Desafio, que serão gravados de novo
+ * (antes ficavam de fora por já estarem gravados).
  */
 const RAIZ = resolve(import.meta.dir, '../../aulas-interativas')
 const CURSOS = [
+  'faisca/cade-todo-mundo',
   'faisca/desafio-primeiro-jogo',
   'faisca/a-ilha-do-farol',
   'faisca/poder-a-ponte-apressada',
@@ -22,7 +24,6 @@ const CURSOS = [
   'construtor/o-jogo-do-meu-jeito',
   'inventor/corre-dino',
 ]
-const JA_GRAVADAS = new Set(['desafio-dia-1'])
 
 interface Bloco {
   key: string
@@ -49,7 +50,6 @@ for (const curso of CURSOS) {
     const manifesto = JSON.parse(readFileSync(resolve(pasta, arquivo), 'utf8')) as Manifesto
     // ⚠️ O nome do arquivo, não o `lessonSlug` (que é curto: "dia-2", "aula-03").
     const aula = arquivo.replace('.manifesto.json', '')
-    if (JA_GRAVADAS.has(aula)) continue
     const caminho = resolve(pasta, `${aula}.roteiro.md`)
     if (!existsSync(caminho)) continue
     const roteiro = readFileSync(caminho, 'utf8')
