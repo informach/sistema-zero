@@ -1455,9 +1455,9 @@
         "kind": "practice",
         "videoKey": "video-comando-de-pulo",
         "bridge": "Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
-        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
+        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Rodar de novo e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Clique em Atualizar, a seta circular no alto da prévia, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.",
+          "Clique em Rodar de novo, no alto do Estúdio, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.",
           "Lembra da experiência da parte anterior? Mais impulso deixava o pulo mais alto. Agora a gente vai dar os controles ao seu Dino!",
           "Em todo quadro, a gravidade puxa o Dino para baixo, o controle move o Dino e confere o pulo, e só depois o Dino é desenhado no lugar novo. Por isso, o controle fica entre a gravidade e o desenho.",
           "Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite.",
@@ -1465,7 +1465,7 @@
           "É este bloco que faz o Dino pular quando alguém toca na tecla ou na tela, e pousar na grama.",
           "Repare: o bloco já chega com o nome dino. Mantenha esse nome.",
           "Clique no 15 da força do pulo e troque por 14. A força do pulo é o impulso da experiência.",
-          "Agora teste! Clique em Atualizar e, sem clicar no jogo, toque e solte a barra de espaço. Olha só: o Dino pula e volta para o chão!",
+          "Agora teste! Clique em Rodar de novo e, sem clicar no jogo, toque e solte a barra de espaço. Olha só: o Dino pula e volta para o chão!",
           "Depois que ele pousar, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.",
           "Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.",
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino e força do pulo 14. Depois de corrigir, teste de novo."
@@ -1892,9 +1892,9 @@
         "kind": "practice",
         "videoKey": "video-som-no-pulo",
         "bridge": "Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
-        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
+        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Rodar de novo e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.",
+          "Clique em Rodar de novo e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.",
           "Lembra da experiência da parte anterior? Com o som ligado ao pulo, cada pulo teve o seu som. Agora a gente vai fazer isso no seu jogo!",
           "Um pulo é um evento, que é algo que acontece no jogo. O que fica dentro de um evento só acontece na hora em que ele acontece.",
           "Os eventos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso você vai criar uma.",
@@ -1907,7 +1907,7 @@
           "Agora deixe à vista o espaço vazio dentro de Quando o sprite pular.",
           "Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.",
           "É este bloco que toca o som do pulo.",
-          "Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.",
+          "Agora teste! Clique em Rodar de novo e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.",
           "Por último, toque duas vezes na barra de espaço com o Dino no ar. Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.",
           "Confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer. Se os blocos estiverem certos e o jogo continuar mudo, clique uma vez na área do jogo, porque o navegador só libera o som depois de um clique ou de uma tecla. Depois de corrigir, teste de novo."
         ],
@@ -3926,7 +3926,7 @@
         "kind": "practice",
         "videoKey": "video-entrada-ampla",
         "bridge": "Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
-        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
+        "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Rodar de novo e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Aqui no seu jogo, toque na abertura. Tá vendo? Nada acontece, porque nenhum evento muda o estado.",
           "Lembra da experiência da parte anterior? Escutando qualquer tecla ou toque, a partida começava dos dois jeitos. Agora a gente vai fazer o seu jogo escutar os dois!",
@@ -3941,9 +3941,9 @@
           "Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então.",
           "Ele chega com inicio: clique em inicio e troque por jogando.",
           "É este bloco que começa a partida: ele muda o estado para jogando.",
-          "Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. Olha só: a abertura some, e o Dino aparece!",
+          "Agora clique em Rodar de novo, no alto do Estúdio, e, sem clicar no jogo, toque na barra de espaço. Olha só: a abertura some, e o Dino aparece!",
           "Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.",
-          "Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.",
+          "Para testar o toque desde a abertura, clique em Rodar de novo mais uma vez e, desta vez, toque na abertura para começar.",
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo."
         ],
         "checks": [
@@ -4039,7 +4039,7 @@
         "bridge": "Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura.",
+          "Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Rodar de novo, no alto do Estúdio, e use a tecla sem clicar no jogo. Para começar por toque, clique em Rodar de novo mais uma vez e toque na abertura.",
           "Depois de começar, teste o pulo e espere os cactos entrarem. Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada."
         ],
         "checks": [
@@ -4670,7 +4670,7 @@
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Agora o seu jogo tem um ciclo completo: começo, partida, batida e recomeço! Antes de enviar o seu projeto, comece uma partida, pule um cacto, deixe uma batida acontecer e confira os efeitos e a tela de fim.",
-          "Depois, toque para voltar à abertura e comece outra partida. Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Atualizar e, sem clicar no jogo, use uma tecla para começar."
+          "Depois, toque para voltar à abertura e comece outra partida. Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Rodar de novo e, sem clicar no jogo, use uma tecla para começar."
         ],
         "checks": [
           {
@@ -7046,7 +7046,7 @@
         "bridge": "Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar projeto e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir aula.",
         "screen": "Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida! Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Atualizar e use a tecla sem clicar no jogo.",
+          "Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida! Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Rodar de novo e use a tecla sem clicar no jogo.",
           "O limite segura só a base: o sorteio ainda pode tirar mais 1 e deixar um cacto um pouco mais rápido.",
           "Depois de uma derrota, confira o recomeço: os pontos voltam a zero, a base volta a -5 e a abertura aparece. Comece outra partida e confira os três controles.",
           "Pronto: você programou o pulo, os cactos, a batida, os pontos e a corrida que acelera, tudo funcionando junto!"

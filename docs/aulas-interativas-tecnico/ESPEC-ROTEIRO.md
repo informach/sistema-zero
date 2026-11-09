@@ -116,7 +116,8 @@ A Pré-visualização do Estúdio acompanha as mudanças automaticamente. Pedir 
 "Toque em um esconderijo", "clique no jogo e segure a seta". Para botões, "clique em"; no jogo,
 "toque", "pressione/aperte a tecla" ou "segure a tecla", sempre nomeando a entrada. No teclado de teste, explicar a simulação; esses verbos nunca significam adicionar um bloco (Diretrizes, seção 6). Não inventar um botão de início nem
 mandar recarregar a página como passo genérico. Um reinício necessário ao teste deve usar o
-controle real e ser conferido antes da gravação.
+controle real (no Estúdio, o **Rodar de novo** da barra de cima; seção 9.5) e ser conferido antes
+da gravação.
 
 A ação de saída precisa corresponder à seção: **Próxima parte** entre as partes da fase,
 **Concluir aula** na última parte. Se há envio, incluir **Enviar meu projeto** (no Pinta da fase,
@@ -148,7 +149,7 @@ A tela da gravação precisa ser a tela que a criança vai ver. Lições da grav
 (10 e 11/10/2026), para registrar no cabeçalho de produção de cada roteiro:
 
 - abrir a fase numa aba nova depois do último deploy; uma aba aberta antes pode recarregar a
-  página no meio da tomada ou mostrar um segundo **Atualizar** no cabeçalho do Estúdio;
+  página no meio da tomada ou mostrar controles antigos no cabeçalho do Estúdio;
 - gravar cada experiência numa sessão sem progresso naquele bloco: quem já fez abre a revisita,
   em "Você descobriu", e um controle deixado ligado no ensaio volta ligado;
 - gravar o envio numa sessão sem envio anterior na fase, confirmando em **Enviar** sem preencher
@@ -388,6 +389,15 @@ Desde 09/11/2026 o vídeo não aponta nem toca controles da experiência (seçã
 | `[verificar projeto]` | clica em **Verificar projeto** e espera a resposta, acelerada |
 | `[enviar projeto]` | clica em **Enviar meu projeto** (ou **Enviar de novo**) e confirma em **Enviar**; no palco nada é enviado |
 | `[compartilhar]` | abre o **Compartilhar** do Estúdio; no palco nada vai para o Mural |
+| `[rodar de novo]` | clica no **Rodar de novo** (ou no **Rodar**, com o jogo parado) do meio da barra de cima do Estúdio: recomeça o jogo do zero e dá o foco ao jogo |
+
+**Recomeçar o jogo no Estúdio (09/11/2026).** O botão do Estúdio que recomeça o jogo é o
+**Rodar de novo**, no meio da barra de cima (com o jogo parado ele diz **Rodar**, com o ícone
+de play). Não existe mais o Atualizar logo acima do jogo: nenhuma fala, nota de tela ou
+material o usa como âncora. A fala diz "clique em Rodar de novo, no alto do Estúdio" e, na
+segunda vez, "clique em Rodar de novo mais uma vez" (nunca "Rodar de novo de novo"). Como o
+Rodar de novo dá o foco ao jogo, as setas e a barra de espaço funcionam sem clicar no jogo. No
+Na tela, o gesto é `[rodar de novo]`, e não `[clicar "Atualizar o preview"]`.
 
 **Verbos do EdiAula, para qualquer página.** Servem para um botão ou campo que não tem tag
 própria; o nome é o que a pessoa lê na tela ou o nome acessível do botão:

@@ -2,6 +2,8 @@
 
 Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Autoria](../aulas-interativas/faisca/a-ilha-do-farol/README.md) e [decisões](../aulas-interativas/faisca/a-ilha-do-farol/proposta.md).
 
+**Rodar de novo no lugar do Atualizar, 09/11/2026 (decisão da responsável):** o Estúdio clássico não tem mais o botão Atualizar logo acima do jogo. Para recomeçar a partida, a criança clica em **Rodar de novo**, no meio da barra de cima do Estúdio (com o jogo parado, o mesmo botão diz **Rodar**). Ele recomeça o jogo do zero e dá o foco ao jogo, como o Atualizar fazia: as setas e a barra de espaço funcionam sem clicar no jogo. Falas, notas de tela e passos do Passo a passo do projeto pedem Rodar de novo, e "logo acima do jogo" virou "no alto do Estúdio". As três aulas precisam de voz nova nos trechos alterados. O PDF do Passo a passo ainda não foi gerado de novo: a captura 3D da ilha não fica pronta no navegador sem janela.
+
 ## Fontes
 
 - `qa/ilha-do-farol-conteudo.ts`: fala integral, notas de tela e passos do caderno.

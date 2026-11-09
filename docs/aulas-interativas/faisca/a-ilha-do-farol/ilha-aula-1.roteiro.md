@@ -68,12 +68,12 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-movimento`
 
-**Na tela:** Projeto inicio da revisão de números simples: usar os exemplos atuais, com no máximo uma casa decimal também nos blocos de preparação. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.
+**Na tela:** Projeto inicio da revisão de números simples: usar os exemplos atuais, com no máximo uma casa decimal também nos blocos de preparação. Começar pela retomada: clicar em Rodar de novo e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar, logo acima do jogo. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
 
 [engaging, energetic, conversational voice] Na experiência da parte anterior, quem mudava de lugar era a câmera. Agora quem vai sair do lugar é o personagem!
 
@@ -93,7 +93,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [engaging, energetic, conversational voice] O número do bloco é a velocidade: quanto maior, mais rápido o personagem anda. Clique no 3 e troque por 4.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
 
 [interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta.
 

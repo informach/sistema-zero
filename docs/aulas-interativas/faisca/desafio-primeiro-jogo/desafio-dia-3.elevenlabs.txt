@@ -88,7 +88,7 @@
 
 [engaging, energetic, conversational voice] O espaço do então fica vazio por enquanto. Você completa a resposta do sim na próxima parte.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar, o botão com uma seta redonda, logo acima do jogo, para começar uma partida nova.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo, no alto do Estúdio, para começar uma partida nova.
 
 [engaging, energetic, conversational voice] Vá até a porta do farol sem pegar a chave. [interested, animated voice] Olha só: a luz continua apagada, e o aviso diz que falta a chave. É a resposta do senão funcionando!
 
@@ -100,7 +100,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar, pegue a chave e vá até a porta do farol. Tá vendo? A luz não acende, porque o espaço do então, o da resposta do sim, ainda está vazio.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, pegue a chave e vá até a porta do farol. Tá vendo? A luz não acende, porque o espaço do então, o da resposta do sim, ainda está vazio.
 
 [engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a chave, a resposta era sim, e a porta acendia o farol. Agora a gente vai pôr essa resposta no então do seu jogo!
 
@@ -152,13 +152,13 @@
 
 [confident, clear, unhurried voice] Clique em Olá, apague e escreva: Você acendeu o farol! Olhe o barco chegando.
 
-[upbeat, encouraging voice] Agora vamos testar o jogo inteiro! Clique em Atualizar e vá até a porta do farol sem pegar a chave. A luz continua apagada, e o aviso diz que falta a chave.
+[upbeat, encouraging voice] Agora vamos testar o jogo inteiro! Clique em Rodar de novo e vá até a porta do farol sem pegar a chave. A luz continua apagada, e o aviso diz que falta a chave.
 
 [engaging, energetic, conversational voice] Agora, sem recomeçar a partida, busque a chave e volte até a porta do farol, lá na base da torre. [interested, animated voice] Olha só: a luz acende, o aviso muda, e o barco vem chegando perto do farol!
 
 [curious] Acendeu! E se eu quiser jogar de novo?
 
-[confident, clear, unhurried voice] É só clicar em Atualizar de novo. [confident, clear, unhurried voice] Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem está outra vez sem a chave.
+[confident, clear, unhurried voice] É só clicar em Rodar de novo. [confident, clear, unhurried voice] Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem está outra vez sem a chave.
 
 [confident, clear, unhurried voice] Vá direto até a porta do farol, sem pegar a chave. O farol tem que avisar outra vez que falta a chave.
 
@@ -212,7 +212,7 @@
 
 [interested, animated voice] Olha só: a ponte e o mar continuam no mesmo lugar, e o caminho até o farol não muda.
 
-[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Atualizar e vá até a porta do farol sem a chave. Ele continua apagado.
+[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Rodar de novo e vá até a porta do farol sem a chave. Ele continua apagado.
 
 [engaging, energetic, conversational voice] Depois busque a chave e volte até a porta, na mesma partida. [interested, animated voice] Olha só: o farol de pedra acende, e o barco pirata vem chegando!
 
@@ -246,7 +246,7 @@
 
 [confident, clear, unhurried voice] Mude só os textos. Os nomes aviso, temChave e ganhou ficam como estão, porque os outros blocos usam esses nomes.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar. [interested, animated voice] Olha só: o aviso do começo já é o seu.
+[upbeat, encouraging voice] Agora teste! Clique em Rodar de novo. [interested, animated voice] Olha só: o aviso do começo já é o seu.
 
 [engaging, energetic, conversational voice] Vá até a porta do farol sem a chave e leia o aviso de quando falta a chave.
 
@@ -298,9 +298,9 @@
 
 [confident, clear, unhurried voice] Repare se a chave aparece inteira. Se ela ficar atrás do farol ou da faixa do aviso, quem joga não vai achar. Se ficar em cima do personagem, ele já começa com a chave. Nesses casos, escolha um dos três lugares do Passo a passo do projeto.
 
-[upbeat, encouraging voice] Agora teste o novo caminho. Clique em Atualizar, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar.
+[upbeat, encouraging voice] Agora teste o novo caminho. Clique em Rodar de novo, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar.
 
-[confident, clear, unhurried voice] Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu.
+[confident, clear, unhurried voice] Clique em Rodar de novo mais uma vez: a chave deve voltar ao lugar que você escolheu.
 
 [pleased, lively voice] Agora o jogo está do seu jeito! Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 

@@ -112,7 +112,7 @@
 
 [long pause]
 
-[interested, animated voice] Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida! Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Atualizar e use a tecla sem clicar no jogo.
+[interested, animated voice] Olha só: o seu Corre, Dino! já tem começo, pulo com som, cactos, pontos, derrota, recomeço e uma corrida que fica mais rápida! Antes de enviar, teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu. Para começar por tecla, clique em Rodar de novo e use a tecla sem clicar no jogo.
 
 [engaging, energetic, conversational voice] O limite segura só a base: o sorteio ainda pode tirar mais 1 e deixar um cacto um pouco mais rápido.
 

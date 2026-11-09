@@ -303,7 +303,7 @@ for (const [li, a] of ilhaAulas.entries()) {
           `<div class="blocks"><h3>Esquema dos encaixes</h3>${drawings[t.key]}<p class="diagram-note">As cores são as mesmas dos blocos no Estúdio. Os espaços cinza representam a preparação que já vem no projeto.</p></div>` +
           box(
             'Teste antes de seguir',
-            t.steps?.at(-1) ?? 'Clique em Atualizar e confira o resultado no jogo.',
+            t.steps?.at(-1) ?? 'Clique em Rodar de novo e confira o resultado no jogo.',
           ),
       })
   }

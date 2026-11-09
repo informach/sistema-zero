@@ -27,6 +27,10 @@ Decisão da responsável: o vídeo da parte 1 guiava a criança passo a passo (o
 
 Decisão da responsável: quem lembra a experiência lembra o que se observou, não um controle dela (a memória da chave virou o lápis do caderninho em 08/11/2026). Na parte 3, a retomada diz que a chave podia sair do chão sem o jogo guardar que ela foi pega, no lugar de "Com a memória da chave desligada… temChave continuava falso"; o seu jogo "está assim agora", no lugar de "igual à memória desligada"; o anúncio é "ensinar o seu jogo a lembrar da chave", e o bloco Alterar temChave para verdadeiro "faz o jogo lembrar da chave", no lugar de "liga a memória da chave". O Na tela da parte 1 não cita mais a memória da chave, e o subtítulo da página do Passo a passo da parte 3 acompanhou a fala. A parte 3 precisa de voz nova.
 
+## Rodar de novo no lugar do Atualizar, 09/11/2026
+
+Decisão da responsável: o Estúdio clássico não tem mais o botão Atualizar logo acima do jogo. Para recomeçar a partida, a criança clica em **Rodar de novo**, no meio da barra de cima do Estúdio, que recomeça o jogo do zero e dá o foco ao jogo, como o Atualizar fazia. Nas partes 2 e 4, "clique em Atualizar, o botão com uma seta redonda, logo acima do jogo" virou "clique em Rodar de novo, no alto do Estúdio"; o Na tela usa `[rodar de novo]`. Âncora de `video-d2-recolher-K2` recalculada. As partes 2 e 4 precisam de voz nova, e o Passo a passo do projeto foi gerado de novo.
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 1, com quatro direções e bordas. A retomada preparada só serve quando não há envio anterior.
@@ -123,7 +127,7 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 
 **Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Faça o aviso mudar quando o personagem pegar a chave. Teste no jogo e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
-Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Agora clique em Atualizar, o botão com uma seta redonda, logo acima do jogo. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol."). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar projeto → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir aula**. Entre o envio e **Concluir aula**, reconhecer a conquista com "Pronto, você programou o que acontece quando o personagem pega a chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando o curso começou? Ela está quase aqui! Na próxima aula você vai descobrir o que é.").
+Testar coleta, mudança do aviso e reinício por Rodar de novo, que a fala pede ("Agora clique em Rodar de novo, no alto do Estúdio. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol."). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar projeto → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir aula**. Entre o envio e **Concluir aula**, reconhecer a conquista com "Pronto, você programou o que acontece quando o personagem pega a chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando o curso começou? Ela está quase aqui! Na próxima aula você vai descobrir o que é.").
 
 ## Experiências e demonstrações desta aula
 
