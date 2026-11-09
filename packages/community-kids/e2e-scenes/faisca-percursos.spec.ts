@@ -119,7 +119,7 @@ test.describe('Faísca: percursos completos e escolhas fora da ordem', () => {
     await abrir(page, 'moedas', 'experiencia')
     await andar2d(page, [312, 134], [80, 134], [80, 40], [80, 134])
     await page.getByRole('switch').click()
-    await expect(page.locator('.sz-discovery-fala-celular')).toContainText(
+    await expect(page.locator('.sz-discovery-fala-bloco')).toContainText(
       'As moedas acabaram. Jogue de novo',
     )
     const antes = await feitas(page).count()

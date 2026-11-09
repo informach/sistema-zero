@@ -77,7 +77,7 @@ const comDescobertas = (ids: string[]): SceneState => ({
   ...inicio,
   evidence: { ...inicio.evidence, discoveries: ids },
 })
-const moldura = (state: SceneState, arranjo?: 'faisca') =>
+const moldura = (state: SceneState, arranjo?: 'faisca', extras: Record<string, ReactNode> = {}) =>
   tela(
     state,
     <Frame
@@ -104,6 +104,7 @@ const moldura = (state: SceneState, arranjo?: 'faisca') =>
         </>
       }
       arranjo={arranjo}
+      {...extras}
     />,
   )
 
@@ -128,6 +129,23 @@ describe('O arranjo do Faísca: a cena à esquerda, a criança à direita', () =
     expect(esquerda).toContain('Seus testes')
     expect(esquerda.indexOf('Seus testes')).toBeGreaterThan(esquerda.indexOf('data-palco'))
     expect(direita).not.toContain('Seus testes')
+  })
+
+  test('a faixa "Z" só visual não existe no arranjo (o balão do Zappy é a fala, com o "Ouvir")', () => {
+    expect(moldura(inicio, 'faisca')).not.toContain('sz-discovery-fala-celular')
+    expect(moldura(inicio)).toContain('sz-discovery-fala-celular')
+  })
+
+  test('a pergunta grande mora na caixa do painel (entra na conta da altura no celular)', () => {
+    const { direita } = colunas(
+      moldura(inicio, 'faisca', { abaixoDoPalco: <div data-pergunta>O que mudou?</div> }),
+    )
+    const caixa = direita.indexOf('sz-discovery-painel-caixa')
+    expect(caixa).toBeGreaterThan(-1)
+    expect(direita.indexOf('data-pergunta')).toBeGreaterThan(direita.indexOf('data-regra'))
+    expect(direita.indexOf('data-pergunta')).toBeLessThan(
+      direita.indexOf('sz-discovery-descobertas'),
+    )
   })
 
   test('a moldura diz o arranjo e a proporção do palco (o CSS dimensiona a cena por elas)', () => {
@@ -163,6 +181,22 @@ describe('Sem o arranjo, as outras telas livres ficam como eram', () => {
     expect(direita).toContain('Seus testes')
     expect(moldura(inicio)).not.toContain('data-arranjo')
     expect(moldura(inicio)).toMatch(/<small>Ainda não testado<\/small>/)
+  })
+
+  test('abaixo do palco, a evidência e os controles antigos ficam onde estavam', () => {
+    const { esquerda, direita } = colunas(
+      moldura(inicio, undefined, {
+        abaixoDoPalco: <div data-abaixo />,
+        after: <div data-depois />,
+        children: <div data-antigos />,
+      }),
+    )
+    const ordem = ['data-palco', 'data-andar', 'data-abaixo', 'data-depois', 'data-regra']
+    const posicoes = ordem.map((m) => esquerda.indexOf(m))
+    expect(posicoes.every((p) => p > -1)).toBe(true)
+    expect([...posicoes].sort((a, b) => a - b)).toEqual(posicoes)
+    expect(direita.indexOf('data-antigos')).toBeGreaterThan(direita.indexOf('data-fala'))
+    expect(direita.indexOf('data-antigos')).toBeLessThan(direita.indexOf('Suas descobertas'))
   })
 })
 

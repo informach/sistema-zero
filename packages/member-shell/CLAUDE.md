@@ -8,7 +8,7 @@ ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/a
 
 - **`Frame` com `arranjo="faisca"`** (só as 8 telas do Faísca: `scene-island-discovery`,
   `scene-door-not` e os 4 `scene-poder-*`; as ~60 outras telas livres ficam como eram):
-  - **à esquerda, o JOGO** (`ConsoleVisual`): a faixa "Z" do celular, as estrelas, a cena NO TOPO
+  - **à esquerda, o JOGO** (`ConsoleVisual`): no celular, o balão do Zappy; as estrelas, a cena NO TOPO
     (nunca centralizada na altura) e "Seus testes" (as 3 fotinhos mais novas, 2 no celular);
   - **à direita, a CRIANÇA** (`ConsoleActions`): a fala do Zappy (texto e "Ouvir" lado a lado), o
     `div.sz-discovery-painel` com o `movimento` e os `controles`, o `abaixoDoPalco`, as
@@ -29,18 +29,29 @@ ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/a
 - **`aspectoDoPalco`** (padrão 4/3; a Ilha passa 1.1) vira `--sz-palco-aspecto`. A cena tem largura
   `min(100%, --sz-palco-hmax × aspecto)`: no largo, `--sz-palco-hmax` vem do CSS (a janela menos o
   cabeçalho e as estrelas; o encaixe por JS do ampliado fica desligado); no estreito, ela é MEDIDA
-  (`useAlturaDaCenaNoCelular`): a janela menos o que fica acima da cena e o painel abaixo dela, com
-  piso de 7rem. Valor fixo no CSS não servia: cada tela tem um painel de altura diferente.
+  (`useAlturaDaCenaNoCelular`): do topo útil (abaixo da barra do app, `--sz-lesson-stage-top`; no
+  ampliado, o topo do cartão) até o topo do rodapé fixo `.sz-lesson-nav-immersive` (no ampliado, o
+  fim da janela), menos o que fica acima da cena e o painel abaixo dela, com piso de 6rem (o mesmo
+  `max(6rem, …)` do CSS; no largo o piso é 9rem). Mede num rAF e observa a moldura, o visual, a
+  caixa do painel e o rodapé. Valor fixo no CSS não servia: cada tela tem um painel de altura
+  diferente. ⚠️ Em 375×667 no modo normal (barra do app + rodapé) a cena pode ficar com só 96px:
+  é o preço de a fala e os controles ficarem à vista.
 - **Estreito** (`useEstreito`): o conteúdo do `.sz-scene-workspace-card` abaixo de 52rem (a mesma
-  régua do `scene.css`), por `ResizeObserver`; sem medida conta como largo. No estreito e no fim
-  (`ideiaNoBalao`), a fala do Zappy (com o mascote e a ideia) sobe para o topo do `ConsoleVisual`
-  no lugar da faixa "Z"; durante o jogo, o balão da coluna da direita fica escondido e a faixa "Z"
-  fala. A moldura expõe `data-arranjo`, `data-estreito` e `data-fim`.
+  régua do `scene.css`), por `ResizeObserver`; sem medida conta como largo. No estreito, o balão
+  do Zappy de verdade (mascote, texto e "Ouvir" só com o ícone) mora no topo do `ConsoleVisual`
+  o tempo todo, então a ideia do fim entra no MESMO balão sem remontar. A faixa "Z" (só visual)
+  não existe no arranjo: ela tirava a fala e o "Ouvir" do leitor de tela. A moldura expõe
+  `data-arranjo`, `data-estreito` e `data-fim`.
+- ⚠️ O CSS do balão usa os ganchos estáveis da `DialogueBlockView` (`sz-fala-linha`, a linha do
+  mascote com o balão, e `sz-fala-balao`), nunca as classes do Tailwind dela.
+- A dica do Andar e o nome do interruptor ficam `sr-only` (não `display: none`): o leitor de tela
+  os lê. A linha das estrelas fica numa linha só, menos com o "Apagar as descobertas?" aberto.
 - No ampliado o cabeçalho fica numa linha (no celular, o "Voltar" só com o ícone).
 - Testes: `tests/scene-discovery-faisca-arranjo.test.tsx` (onde mora cada coisa, o `compacto`, o
   fim e as telas sem arranjo) e o e2e `community-kids/e2e-scenes/faisca-uma-tela.spec.ts`. O e2e
   roda as 8 experiências em 1366×768, 1024×768, 920×768, 390×844 e 375×667, no normal e no
-  ampliado. Ele confere:
+  ampliado, com as barras do app de verdade (a fixture `?barras`: a barra de cima fixa, as abas do
+  celular e o rodapé `.sz-lesson-nav-immersive` de 72px). Ele confere, entre a barra e o rodapé:
   - a cena, a fala e cada controle inteiros na janela;
   - os botões dentro do seu controle e sem outro por cima;
   - a cena logo abaixo das estrelas;

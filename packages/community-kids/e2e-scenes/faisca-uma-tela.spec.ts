@@ -6,6 +6,9 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
  * normal (com a experiência rolada até o console) e no ampliado. Rolar pode, mas só para chegar às
  * descobertas e aos testes. Na tela larga, os dois cartões ficam metade/metade, e a cena fica no
  * topo, logo abaixo da linha das estrelas.
+ *
+ * A página leva as barras do app de verdade (`?barras`): no celular a barra de cima e a de abas, e
+ * em toda largura o rodapé fixo da aula. "À vista" é entre elas, e nada pode estar por cima.
  */
 const EXPERIENCIAS = [
   ['ponte', 'experiencia'],
@@ -26,17 +29,33 @@ const TELAS = [
   { width: 375, height: 667 },
 ] as const
 
-/** O retângulo inteiro dentro da janela (com 1px de folga para o arredondamento). */
-async function inteiroNaJanela(page: Page, alvo: Locator, nome: string) {
+type Faixa = { topo: number; fim: number }
+
+/**
+ * A parte da janela que a criança vê: abaixo da barra de cima do celular e acima do rodapé fixo da
+ * aula (que fica acima das abas). No ampliado, a janela toda (ele cobre as barras).
+ */
+async function faixaVisivel(page: Page, ampliado: boolean): Promise<Faixa> {
+  return page.evaluate((ampliado) => {
+    if (ampliado) return { topo: 0, fim: innerHeight }
+    const topo = document.querySelector('.ensaio-topo')?.getBoundingClientRect()
+    const rodape = document.querySelector('.sz-lesson-nav-immersive')?.getBoundingClientRect()
+    return {
+      topo: topo && topo.height > 0 ? topo.bottom : 0,
+      fim: rodape && rodape.height > 0 ? rodape.top : innerHeight,
+    }
+  }, ampliado)
+}
+
+/** O retângulo inteiro dentro da faixa visível (com 1px de folga para o arredondamento). */
+async function inteiroNaJanela(page: Page, faixa: Faixa, alvo: Locator, nome: string) {
   const box = await alvo.boundingBox()
   if (!box) throw new Error(`${nome} não apareceu`)
   const janela = page.viewportSize()
   if (!janela) throw new Error('janela sem tamanho')
-  expect(box.y, `${nome} começa acima da janela`).toBeGreaterThanOrEqual(-1)
+  expect(box.y, `${nome} começa embaixo da barra de cima`).toBeGreaterThanOrEqual(faixa.topo - 1)
   expect(box.x, `${nome} começa antes da janela`).toBeGreaterThanOrEqual(-1)
-  expect(box.y + box.height, `${nome} passa do fim da janela`).toBeLessThanOrEqual(
-    janela.height + 1,
-  )
+  expect(box.y + box.height, `${nome} passa para trás do rodapé`).toBeLessThanOrEqual(faixa.fim + 1)
   expect(box.x + box.width, `${nome} passa da direita da janela`).toBeLessThanOrEqual(
     janela.width + 1,
   )
@@ -50,7 +69,7 @@ for (const tela of TELAS) {
       test(`${curso} ${bloco}: cena, fala e controles à vista sem rolar`, async ({
         page,
       }, info) => {
-        await page.goto(`/?course=${curso}&block=${bloco}&width=900`)
+        await page.goto(`/?course=${curso}&block=${bloco}&width=900&barras`)
         await page.addStyleTag({
           content: ':root { --font-baloo: "Baloo 2"; --font-nunito: Nunito; }',
         })
@@ -69,28 +88,75 @@ for (const tela of TELAS) {
             await page.getByRole('button', { name: 'Ampliar experiência' }).click()
             await expect(page.locator('.sz-scene-workspace--expanded')).toBeVisible()
           } else {
-            // No normal, a criança rola até a experiência: o topo do console no topo da janela.
+            // No normal, a criança rola até a experiência: o topo do console logo abaixo da
+            // barra de cima (no computador, no topo da janela).
             await page.evaluate(() => {
               const console = document.querySelector('.sz-scene-console')
-              if (console) window.scrollTo(0, console.getBoundingClientRect().top + window.scrollY)
+              const topo = document.querySelector('.ensaio-topo')?.getBoundingClientRect()
+              const barra = topo && topo.height > 0 ? topo.height : 0
+              if (console)
+                window.scrollTo(0, console.getBoundingClientRect().top + window.scrollY - barra)
             })
           }
           await page.waitForTimeout(400)
           const estreito = (await moldura.getAttribute('data-estreito')) === 'true'
           // A foto vem antes das conferências: quando uma falha, a foto mostra o porquê.
           await page.screenshot({ path: info.outputPath(ampliado ? 'ampliado.png' : 'normal.png') })
-          await inteiroNaJanela(page, palco, 'a cena')
+          const faixa = await faixaVisivel(page, ampliado)
+          await inteiroNaJanela(page, faixa, palco, 'a cena')
+          // A fala do Zappy: no celular, o balão no topo (com o "Ouvir"); no largo, à direita.
+          const fala = estreito
+            ? page.locator('.sz-scene-console-visual > .sz-discovery-fala-bloco')
+            : page.locator('.sz-scene-console-actions > .sz-discovery-fala-bloco')
+          await inteiroNaJanela(page, faixa, fala, 'a fala do Zappy')
           await inteiroNaJanela(
             page,
-            estreito
-              ? page.locator('.sz-discovery-fala-celular')
-              : page.locator('.sz-scene-console-actions > .sz-discovery-fala-bloco'),
-            'a fala do Zappy',
+            faixa,
+            fala.getByRole('button', { name: /Ouvir/ }),
+            'o "Ouvir" do Zappy',
           )
           const n = await modulos.count()
           expect(n, 'o painel tem controles').toBeGreaterThan(0)
           for (let i = 0; i < n; i++)
-            await inteiroNaJanela(page, modulos.nth(i), `o controle ${i + 1}`)
+            await inteiroNaJanela(page, faixa, modulos.nth(i), `o controle ${i + 1}`)
+          // E nada por cima deles (rodapé, abas, barra de cima): o ponto do meio de cada um é dele.
+          const cobertos = await page.evaluate(() =>
+            [
+              ...document.querySelectorAll(
+                '.sz-discovery-palco, .sz-discovery-painel > .sz-discovery-movimento, .sz-discovery-painel > .sz-discovery-modulo',
+              ),
+            ]
+              .map((el, i) => {
+                const r = el.getBoundingClientRect()
+                const no = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+                return no && el.contains(no)
+                  ? null
+                  : `item ${i} coberto por ${no?.className ?? 'nada'}`
+              })
+              .filter(Boolean),
+          )
+          expect(cobertos, 'nada por cima da cena e dos controles').toEqual([])
+          // Cada controle dentro do cartão da direita (não passa da borda dele).
+          const vazados = await page.evaluate(() => {
+            const cartao = document
+              .querySelector('.sz-scene-console-actions')
+              ?.getBoundingClientRect()
+            if (!cartao) return ['sem o cartão da direita']
+            return [
+              ...document.querySelectorAll(
+                '.sz-discovery-painel > .sz-discovery-movimento, .sz-discovery-painel > .sz-discovery-modulo, .sz-discovery-painel button, .sz-discovery-painel .sz-discovery-caderno',
+              ),
+            ]
+              .map((el, i) => {
+                const r = el.getBoundingClientRect()
+                if (r.width === 0) return null
+                return r.left >= cartao.left - 1 && r.right <= cartao.right + 1
+                  ? null
+                  : `item ${i} (${el.textContent?.trim().slice(0, 20)}) passa da borda do cartão`
+              })
+              .filter(Boolean)
+          })
+          expect(vazados, 'controles dentro do cartão').toEqual([])
           // Caber na janela não basta: cada botão do painel (as teclas, as peças, o "Jogar de
           // novo") aparece inteiro, dentro do seu módulo e sem outro módulo por cima dele.
           const conflitos = await page.evaluate(() => {
