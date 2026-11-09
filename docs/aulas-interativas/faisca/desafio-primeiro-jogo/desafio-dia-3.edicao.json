@@ -57,7 +57,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco vem chegando perto do farol!",
-      "ancoraDepois": "É só clicar em Atualizar de novo. Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem",
+      "ancoraDepois": "É só clicar em Rodar de novo. Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem está",
       "falaPrincipal": "Acendeu! E se eu quiser jogar de novo?",
       "falaPersonagem": "Acendeu! E se eu quiser jogar de novo?",
       "tags": ["[curious]"]

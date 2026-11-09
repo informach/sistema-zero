@@ -142,6 +142,6 @@
 
 [engaging, energetic, conversational voice] Agora o seu jogo tem um ciclo completo: começo, partida, batida e recomeço! Antes de enviar o seu projeto, comece uma partida, pule um cacto, deixe uma batida acontecer e confira os efeitos e a tela de fim.
 
-[engaging, energetic, conversational voice] Depois, toque para voltar à abertura e comece outra partida. [confident, clear, unhurried voice] Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Atualizar e, sem clicar no jogo, use uma tecla para começar.
+[engaging, energetic, conversational voice] Depois, toque para voltar à abertura e comece outra partida. [confident, clear, unhurried voice] Confira que o Dino volta ao lugar do começo e que os cactos antigos não continuam na pista. Teste também a entrada por tecla: clique em Rodar de novo e, sem clicar no jogo, use uma tecla para começar.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

@@ -13,7 +13,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e leve o personagem até o farol, sem passar pela chave. Tá vendo? Nada acontece, porque o farol ainda não confere se o personagem está com a chave.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e leve o personagem até o farol, sem passar pela chave. Tá vendo? Nada acontece, porque o farol ainda não confere se o personagem está com a chave.
 
 [engaging, energetic, conversational voice] Lembra da porta do jogo 2D? Ela fazia uma pergunta: o personagem está com a chave? Para o sim, ela tinha uma resposta, e para o não, outra. Agora a gente vai montar essa pergunta no farol da ilha, começando pela resposta do não!
 
@@ -49,7 +49,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [engaging, energetic, conversational voice] O então fica vazio por enquanto. Ele guarda a resposta do sim, que você monta na próxima parte.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e vá direto ao farol, sem passar pela chave.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo e vá direto ao farol, sem passar pela chave.
 
 [interested, animated voice] Olha só: o farol continua apagado, e o aviso pede a chave. É a resposta do senão funcionando!
 
@@ -69,7 +69,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar, pegue a chave e leve o personagem até o farol. Tá vendo? A luz não acende, porque a resposta do sim, no então, ainda está vazia.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, pegue a chave e leve o personagem até o farol. Tá vendo? A luz não acende, porque a resposta do sim, no então, ainda está vazia.
 
 [engaging, energetic, conversational voice] Agora a gente vai montar essa resposta, para quem chega com a chave!
 
@@ -95,7 +95,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva: Você acendeu o farol! O barco pode chegar.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e visite o farol sem a chave: ele continua apagado.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo e visite o farol sem a chave: ele continua apagado.
 
 [upbeat, encouraging voice] Depois pegue a chave e volte ao farol.
 
@@ -143,7 +143,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Atualizar, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
+[engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Rodar de novo, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
 
 [interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. Isso acontece porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
 
@@ -181,7 +181,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [interested, animated voice] Olha aqui: o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere a chave.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar, pegue a chave e acenda o farol. Ande para trás pelo cais e volte.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo, pegue a chave e acenda o farol. Ande para trás pelo cais e volte.
 
 [interested, animated voice] Olha só: a luz continua acesa, o feixe segue girando e o barco continua chegando.
 
@@ -229,7 +229,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 [interested, animated voice] Olha só: o caminho, a ponte e o lugar do farol continuam os mesmos.
 
-[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Atualizar e vá até o farol sem a chave: ele continua apagado. Depois busque a chave e volte.
+[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Rodar de novo e vá até o farol sem a chave: ele continua apagado. Depois busque a chave e volte.
 
 [interested, animated voice] Olha só: o farol de pedra acende, e o barco pirata vem chegando!
 
@@ -255,7 +255,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 [thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água.
 
-[engaging, energetic, conversational voice] Por isso, clique em Atualizar e vá até o lugar que você escolheu. Confira se a coleta acontece e se dá para voltar ao farol.
+[engaging, energetic, conversational voice] Por isso, clique em Rodar de novo e vá até o lugar que você escolheu. Confira se a coleta acontece e se dá para voltar ao farol.
 
 [reassuring, encouraging voice] Se não conseguir, volte à posição da chave, mude um número de cada vez e teste novamente.
 

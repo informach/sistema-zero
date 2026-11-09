@@ -106,7 +106,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrada-ampla`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Rodar de novo e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
@@ -139,11 +139,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] É este bloco que começa a partida: ele muda o estado para jogando.
 
-[confident, clear, unhurried voice] Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. [interested, animated voice] Olha só: a abertura some, e o Dino aparece!
+[confident, clear, unhurried voice] Agora clique em Rodar de novo, no alto do Estúdio, e, sem clicar no jogo, toque na barra de espaço. [interested, animated voice] Olha só: a abertura some, e o Dino aparece!
 
 [engaging, energetic, conversational voice] Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.
 
-[engaging, energetic, conversational voice] Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.
+[engaging, energetic, conversational voice] Para testar o toque desde a abertura, clique em Rodar de novo mais uma vez e, desta vez, toque na abertura para começar.
 
 [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um único evento de qualquer tecla ou toque, com o Se inicio e, no então, Mudar o estado do jogo para jogando. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -178,7 +178,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Atualizar, a seta circular no alto da prévia do jogo, e use a tecla sem clicar no jogo. Para começar por toque, clique em Atualizar de novo e toque na abertura.
+[engaging, energetic, conversational voice] Agora a sua abertura começa uma partida! Antes de enviar o seu projeto, confira o convite escrito e comece a partida por tecla e também por toque, sempre desde a abertura. Para começar por tecla, clique em Rodar de novo, no alto do Estúdio, e use a tecla sem clicar no jogo. Para começar por toque, clique em Rodar de novo mais uma vez e toque na abertura.
 
 [engaging, energetic, conversational voice] Depois de começar, teste o pulo e espere os cactos entrarem. [confident, clear, unhurried voice] Confira também que a criação dos cactos continua protegida pelo Se jogando, no relógio. Se um cacto bater no Dino, nada acontece ainda, porque a derrota ainda não foi programada.
 

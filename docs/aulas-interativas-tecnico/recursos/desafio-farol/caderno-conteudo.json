@@ -219,7 +219,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Segure uma seta da tela (no computador, também dá para clicar no jogo e usar as setas do teclado) e leve o personagem até a chave: ela deve sair do chão. Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo: a chave volta. Se algo não funcionou, confira o desenho e teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Segure uma seta da tela (no computador, também dá para clicar no jogo e usar as setas do teclado) e leve o personagem até a chave: ela deve sair do chão. Clique em <b>Rodar de novo</b>, no alto do Estúdio: a chave volta. Se algo não funcionou, confira o desenho e teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -281,7 +281,7 @@
       {
         "kind": "step",
         "title": "Teste a chave",
-        "text": "Segure as setas e leve o personagem até a chave: ela deve sair do chão, e o aviso deve mudar para a sua mensagem. Depois clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo: começa uma partida nova, a chave volta para o chão e o aviso diz de novo Encontre a chave e vá ao farol.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro <b>Destruir o sprite chave</b>, depois <b>Alterar temChave para verdadeiro</b> e, por último, <b>Alterar aviso</b> para a sua mensagem. Depois de corrigir, teste de novo."
+        "text": "Segure as setas e leve o personagem até a chave: ela deve sair do chão, e o aviso deve mudar para a sua mensagem. Depois clique em <b>Rodar de novo</b>, no alto do Estúdio: começa uma partida nova, a chave volta para o chão e o aviso diz de novo Encontre a chave e vá ao farol.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro <b>Destruir o sprite chave</b>, depois <b>Alterar temChave para verdadeiro</b> e, por último, <b>Alterar aviso</b> para a sua mensagem. Depois de corrigir, teste de novo."
       },
       {
         "kind": "delivery",
@@ -337,7 +337,7 @@
       {
         "kind": "step",
         "title": "Teste antes de continuar",
-        "text": "Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo, para começar uma partida nova. Vá até a porta do farol, na base da torre, sem pegar a chave: a luz continua apagada, e o aviso diz que falta a chave. Se algo não funcionou, confira o desenho da página {{pagina:sem-chave-blocos}} e teste de novo."
+        "text": "Clique em <b>Rodar de novo</b>, no alto do Estúdio, para começar uma partida nova. Vá até a porta do farol, na base da torre, sem pegar a chave: a luz continua apagada, e o aviso diz que falta a chave. Se algo não funcionou, confira o desenho da página {{pagina:sem-chave-blocos}} e teste de novo."
       }
     ]
   },
@@ -413,7 +413,7 @@
       {
         "kind": "box",
         "title": "Teste 1 · Sem a chave",
-        "text": "Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo, e vá até a porta do farol, na base da torre, sem pegar a chave. A luz deve continuar apagada, e o aviso deve dizer que falta a chave.",
+        "text": "Clique em <b>Rodar de novo</b>, no alto do Estúdio, e vá até a porta do farol, na base da torre, sem pegar a chave. A luz deve continuar apagada, e o aviso deve dizer que falta a chave.",
         "tone": "note"
       },
       {
@@ -425,7 +425,7 @@
       {
         "kind": "box",
         "title": "Teste 3 · Uma nova partida",
-        "text": "Depois da vitória, clique em <b>Atualizar</b> de novo. A chave volta para o chão, porque começou uma partida nova, e o personagem está outra vez sem a chave. Vá direto até a porta do farol, sem pegar a chave: o farol tem que continuar apagado e avisar outra vez que falta a chave.",
+        "text": "Depois da vitória, clique em <b>Rodar de novo</b> mais uma vez. A chave volta para o chão, porque começou uma partida nova, e o personagem está outra vez sem a chave. Vá direto até a porta do farol, sem pegar a chave: o farol tem que continuar apagado e avisar outra vez que falta a chave.",
         "tone": "note"
       },
       {
@@ -470,7 +470,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte, na mesma partida: o mesmo modelo acende e o barco chega. Se algo não funcionou, confira se cada imagem está no bloco do mesmo tipo e se o farol tem o mesmo modelo nos dois blocos. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Rodar de novo</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte, na mesma partida: o mesmo modelo acende e o barco chega. Se algo não funcionou, confira se cada imagem está no bloco do mesmo tipo e se o farol tem o mesmo modelo nos dois blocos. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -566,7 +566,7 @@
       {
         "kind": "step",
         "title": "Teste os avisos",
-        "text": "Clique em <b>Atualizar</b> e leia o aviso do começo. Vá até a porta do farol sem a chave e leia o aviso de quando falta a chave. Depois busque a chave, leia o aviso de quando a chave é pega e volte até a porta do farol para ver a comemoração.<br/>Se algo não funcionou no seu jogo, volte ao bloco daquele aviso: se a frase passou da tela, deixe mais curta; se o aviso não mudou, confira se você escreveu no texto daquele bloco. Depois de corrigir, teste de novo. Quando terminar, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Rodar de novo</b> e leia o aviso do começo. Vá até a porta do farol sem a chave e leia o aviso de quando falta a chave. Depois busque a chave, leia o aviso de quando a chave é pega e volte até a porta do farol para ver a comemoração.<br/>Se algo não funcionou no seu jogo, volte ao bloco daquele aviso: se a frase passou da tela, deixe mais curta; se o aviso não mudou, confira se você escreveu no texto daquele bloco. Depois de corrigir, teste de novo. Quando terminar, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -626,7 +626,7 @@
       {
         "kind": "step",
         "title": "4. Teste o novo caminho",
-        "text": "Clique em <b>Atualizar</b>, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar. Clique em <b>Atualizar</b> outra vez: a chave deve voltar ao lugar escolhido."
+        "text": "Clique em <b>Rodar de novo</b>, busque a chave no lugar escolhido e leve até a porta do farol. A luz deve acender, e o barco deve chegar. Clique em <b>Rodar de novo</b> outra vez: a chave deve voltar ao lugar escolhido."
       },
       {
         "kind": "box",

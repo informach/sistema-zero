@@ -46,7 +46,7 @@
 
 [long pause]
 
-[confident, clear, unhurried voice] Clique em Atualizar, a seta circular no alto da prévia, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
+[confident, clear, unhurried voice] Clique em Rodar de novo, no alto do Estúdio, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Mais impulso deixava o pulo mais alto. Agora a gente vai dar os controles ao seu Dino!
 
@@ -62,7 +62,7 @@
 
 [confident, clear, unhurried voice] Clique no 15 da força do pulo e troque por 14. A força do pulo é o impulso da experiência.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar e, sem clicar no jogo, toque e solte a barra de espaço. [interested, animated voice] Olha só: o Dino pula e volta para o chão!
+[upbeat, encouraging voice] Agora teste! Clique em Rodar de novo e, sem clicar no jogo, toque e solte a barra de espaço. [interested, animated voice] Olha só: o Dino pula e volta para o chão!
 
 [engaging, energetic, conversational voice] Depois que ele pousar, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.
 

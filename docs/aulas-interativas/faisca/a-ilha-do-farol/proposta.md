@@ -67,7 +67,7 @@ ir para mais e para menos naquele número, como o "?" da porta do Farol. Instru�
 de cada experiência moram na fonte editorial (pistas do aberto ao direto, com os botões reais,
 como **Mostrar onde encosta**). O Passo a passo traz objetivos de investigação nas experiências.
 
-Montagens: uma ideia por fala, o porquê antes do como, **Atualizar** no lugar de "execute o jogo",
+Montagens: uma ideia por fala, o porquê antes do como, **Rodar de novo** no lugar de "execute o jogo",
 **toque na tecla R** no lugar de "pressione R", rótulos reais (**Mostrar o objeto**, **verdadeiro**,
 **Alterar variável para**, o segundo sinal de mais para o **senão**), "É este bloco que…" na posição
 e no encontro, `ganhou` explicada antes de ser escolhida e a conferência no formato das Diretrizes.

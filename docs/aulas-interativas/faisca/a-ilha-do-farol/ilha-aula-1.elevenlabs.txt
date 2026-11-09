@@ -28,7 +28,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar, logo acima do jogo. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
 
 [engaging, energetic, conversational voice] Na experiência da parte anterior, quem mudava de lugar era a câmera. Agora quem vai sair do lugar é o personagem!
 
@@ -48,7 +48,7 @@
 
 [engaging, energetic, conversational voice] O número do bloco é a velocidade: quanto maior, mais rápido o personagem anda. Clique no 3 e troque por 4.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
 
 [interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta.
 

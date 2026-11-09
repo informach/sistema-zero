@@ -162,7 +162,7 @@ Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, c
 
 - **Jogo pronto:** atividade project-play com a cópia concluída de A Chave do Farol, `completion: participation` e targets vazio. Deixa jogar por toque ou teclado. Experimentar basta; não exigir vencer. É uma atividade isolada, sem Estúdio de entrega, e não alimenta a cadeia de criação.
 - **Cena `lighthouse-walk`, cenário Farol:** criada em 05/10/2026 para o Dia 1. O personagem anda para a direita no mapa do farol. Desde 01/11/2026 as duas experiências trabalham só a ideia: a câmera lenta (parte 3) e a beirada da tela (parte 5). Desde 08/11/2026, na moldura nova: a tecla de seta (→ ou D), Devagar e Rápido, Pausar, Começo e, na beirada, a cerca (Limite da tela). O personagem começa em x 21 no Farol (`lighthouseWalkOrigin` do motor). Cada uma cobra as metas do seu conceito (`setup.goals`). Não se pedem metas nem controles de comparação de velocidades nem de ordens de blocos.
-- **Montagens:** o projeto é o mesmo nas partes 4 e 6. A prévia atualiza sozinha; Atualizar não é um passo a repetir a cada encaixe.
+- **Montagens:** o projeto é o mesmo nas partes 4 e 6. A prévia atualiza sozinha; Rodar de novo não é um passo a repetir a cada encaixe.
 
 Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela pessoa.
 

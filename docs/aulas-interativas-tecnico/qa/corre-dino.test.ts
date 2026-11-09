@@ -486,7 +486,9 @@ test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
       expect(falas[lembra], id).toMatch(/Agora [^.!?]*\b(?:vai|vamos)\b[^.!?]*!$/)
       expect(texto.match(/\bAgora\b/g)?.length, id).toBe(1)
       expect(texto, id).not.toMatch(/Por isso, vamos|Então, vamos|É como|Na vida/)
-      expect(palavras(texto), id).toBeLessThanOrEqual(50)
+      // O nome do botão conta como uma palavra só: o Rodar de novo (09/11/2026) entrou no lugar do
+      // Atualizar sem alongar a retomada.
+      expect(palavras(texto.replaceAll('Rodar de novo', 'Rodar')), id).toBeLessThanOrEqual(50)
     }
   // 31 desde 02/11/2026: a criação do Dino retoma as duas experiências antes dela ("Lembra das duas
   // experiências"); 11 delas só lembram, porque o efeito ainda não aparece no jogo.

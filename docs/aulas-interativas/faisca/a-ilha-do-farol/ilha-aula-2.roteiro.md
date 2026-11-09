@@ -49,11 +49,11 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3.
 
-[upbeat, encouraging voice] Clique em Atualizar, logo acima do jogo, e observe para onde a chave foi.
+[upbeat, encouraging voice] Clique em Rodar de novo, no alto do Estúdio, e observe para onde a chave foi.
 
 [confident, clear, unhurried voice] Agora mude o z. Clique no menos 3 que fica depois de z e troque por menos 2. Deixe o y em 1.
 
-[upbeat, encouraging voice] Clique em Atualizar de novo. Depois clique dentro do jogo e leve o personagem até perto da chave.
+[upbeat, encouraging voice] Clique em Rodar de novo mais uma vez. Depois clique dentro do jogo e leve o personagem até perto da chave.
 
 [interested, animated voice] Olha só: a chave mudou de lugar no chão e continuou na mesma altura, porque você não mexeu no y.
 
@@ -94,12 +94,12 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-recolher`
 
-**Na tela:** Começar pela retomada: clicar em Atualizar e levar o personagem até a chave, que continua ali no Tá vendo?. Mostrar Quando acontecer com o evento da tecla R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item. O bloco de visibilidade chega como Mostrar o objeto: trocar para Esconder e escolher chave.
+**Na tela:** Começar pela retomada: clicar em Rodar de novo e levar o personagem até a chave, que continua ali no Tá vendo?. Mostrar Quando acontecer com o evento da tecla R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item. O bloco de visibilidade chega como Mostrar o objeto: trocar para Esconder e escolher chave.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e leve o personagem até a chave. Tá vendo? A chave continua ali, porque o jogo ainda não tem nenhuma reação para esse encontro.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e leve o personagem até a chave. Tá vendo? A chave continua ali, porque o jogo ainda não tem nenhuma reação para esse encontro.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Só valia encostar quando o personagem e a chave se encontravam no chão e também na altura. Agora a gente vai fazer o seu jogo perceber esse encontro!
 
@@ -119,7 +119,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Repare que ele chega com Mostrar. Clique em Mostrar e escolha Esconder. Depois clique no nome do objeto e escolha chave.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e caminhe até a chave.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo e caminhe até a chave.
 
 [interested, animated voice] Olha só: ela some quando o personagem encosta.
 
@@ -172,12 +172,12 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-aviso`
 
-**Na tela:** Começar pela retomada: clicar em Atualizar e recolher a chave, com o aviso de sempre no Tá vendo?. Atribuição aviso dentro da coleta; os blocos chegam com contador e 1. HUD existente lê aviso a cada quadro. Envio desta aula.
+**Na tela:** Começar pela retomada: clicar em Rodar de novo e recolher a chave, com o aviso de sempre no Tá vendo?. Atribuição aviso dentro da coleta; os blocos chegam com contador e 1. HUD existente lê aviso a cada quadro. Envio desta aula.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e recolha a chave. Tá vendo? A chave some, mas o aviso continua o mesmo, porque nada muda o aviso no encontro.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e recolha a chave. Tá vendo? A chave some, mas o aviso continua o mesmo, porque nada muda o aviso no encontro.
 
 [engaging, energetic, conversational voice] Agora a gente vai mostrar na tela quando a coleta acontece! Repare no aviso no alto do jogo: ele mostra o texto guardado na variável aviso.
 
@@ -189,7 +189,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva: Você pegou a chave! Agora vá ao farol.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar, recolha a chave e se afaste.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo, recolha a chave e se afaste.
 
 [interested, animated voice] Olha só: a chave some, e o novo aviso continua na tela.
 

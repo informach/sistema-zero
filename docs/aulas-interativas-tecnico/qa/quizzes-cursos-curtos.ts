@@ -173,7 +173,7 @@ export const farol = {
           {
             id: 'b',
             label:
-              'Clicar em Atualizar para começar uma partida nova e ir ao farol sem pegar a chave.',
+              'Clicar em Rodar de novo para começar uma partida nova e ir ao farol sem pegar a chave.',
           },
           {
             id: 'c',
