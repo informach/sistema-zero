@@ -183,8 +183,13 @@ test('Python tutor references select the current block and reopen a filtered cat
     blockId,
   )
   await expect(page.locator('.blocklySelected')).toContainText('3')
-  await page.getByRole('searchbox', { name: 'Buscar blocos' }).fill('categoria inexistente')
-  await expect(page.getByRole('treeitem', { name: 'Nenhum bloco encontrado' })).toBeVisible()
+  // A busca mora na paleta desde o redesenho de 11/2026 ("Procurar um bloco"): ela não filtra
+  // as categorias, então o Zappy acha a categoria certa mesmo com uma busca sem resultado.
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Procurar um bloco' }).click()
+  await page.getByRole('searchbox', { name: 'Pesquisar blocos' }).fill('categoria inexistente')
+  await expect(
+    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Nada encontrado' }),
+  ).toBeVisible()
   // The same ID with another type must not select an unrelated existing block.
   await page.evaluate(
     (blockId) =>
@@ -196,7 +201,6 @@ test('Python tutor references select the current block and reopen a filtered cat
       }),
     blockId,
   )
-  await expect(page.getByRole('searchbox', { name: 'Buscar blocos' })).toHaveValue('')
   await expect(
     page
       .locator('.blocklyFlyout .blocklyText')

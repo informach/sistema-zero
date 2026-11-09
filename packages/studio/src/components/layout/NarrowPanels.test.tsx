@@ -188,17 +188,13 @@ describe('NarrowPanels', () => {
     const editor = view.getByTestId('ed-code'),
       game = view.getByTestId('requested-preview')
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
-    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe(
-      'true',
-    )
+    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe('true')
     expect(view.getByTestId('ed-code')).toBe(editor)
     expect(view.getByTestId('requested-preview')).toBe(game)
     fireEvent.click(view.getByRole('tab', { name: 'Código' }))
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
     expect(view.getByRole('tab', { name: 'Código' }).getAttribute('aria-selected')).toBe('true')
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={2} />)
-    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe(
-      'true',
-    )
+    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe('true')
   })
 })

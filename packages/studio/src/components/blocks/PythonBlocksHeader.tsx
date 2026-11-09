@@ -201,6 +201,7 @@ function ProgramJump({
                 <button
                   type="button"
                   aria-current={entry.id === activeId ? 'true' : undefined}
+                  data-entry-id={entry.id}
                   style={{ paddingInlineStart: `${0.75 + entry.depth * 0.875}rem` }}
                   onClick={() => go(entry.id)}
                 >
