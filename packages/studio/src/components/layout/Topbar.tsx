@@ -61,7 +61,6 @@ import {
 } from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
 import { BackBrand } from './topbar/BackBrand'
-import { BarIconButton } from './topbar/BarIconButton'
 import { HostStatusSeal } from './topbar/HostStatusSeal'
 import { ModeSegment } from './topbar/ModeSegment'
 import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
@@ -388,6 +387,15 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       onSelect: () => setConsoleVisibilityOverride(!showConsole),
     }
   }
+  // "Mostrar o jogo" (era o olhinho da barra): esconde e mostra o palco ao lado dos blocos. No
+  // estreito o jogo é uma aba e no Pro o palco tem o segmentado dele, então o item some.
+  if (config.preview && !isNarrow && projectKind !== 'pro') {
+    behaviors.stage = {
+      icon: showPreview ? <IconEye /> : <IconEyeOff />,
+      active: showPreview,
+      onSelect: () => setShowPreview(!showPreview),
+    }
+  }
   // O terminal é o do WebContainer (JavaScript); o Python não tem.
   if (projectMode === 'code' && config.terminal && !python) {
     behaviors.terminal = {
@@ -481,28 +489,25 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
         </div>
 
-        {/* No projeto Pro o meio da barra é Rodar / Parar (redesenho de 11/2026): o único modo
-            dele é o Código, e o segmentado de um item só não dizia nada. Sem prévia (o host
-            desligou) não há centro: a direita vai à ponta pelo `.sz-bar__start + .sz-bar__end`. */}
-        {projectKind === 'pro' ? (
-          config.preview && proLayoutTier(width) !== 'phone' ? (
-            // No celular o Rodar é o botão flutuante da aba Código e o par embaixo do palco.
-            <div className="sz-bar__center">
-              <ProRunControls iconOnly={iconOnly} />
-            </div>
-          ) : null
-        ) : availableModes.length > 0 ? (
+        {/* O meio da barra é Rodar / Parar, no Pro e no clássico (redesenhos de 11/2026): o único
+            lugar de onde o jogo é posto para rodar. Sem prévia (o host desligou) não há centro: a
+            direita vai à ponta pelo `.sz-bar__start + .sz-bar__end`. No celular o Rodar é o botão
+            flutuante e o par embaixo do palco. */}
+        {config.preview && proLayoutTier(width) !== 'phone' ? (
           <div className="sz-bar__center">
+            <ProRunControls iconOnly={iconOnly} />
+          </div>
+        ) : null}
+
+        <div className="sz-bar__end">
+          {projectKind !== 'pro' && availableModes.length > 0 ? (
             <ModeSegment
               modes={availableModes}
               active={projectMode}
               onSelect={setMode}
               iconOnly={iconOnly}
             />
-          </div>
-        ) : null}
-
-        <div className="sz-bar__end">
+          ) : null}
           {tutor.config ? (
             <button
               type="button"
@@ -517,21 +522,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
             </button>
           ) : null}
           {undoRedo && !undoInMenu ? <UndoRedo state={undoRedo} /> : null}
-          {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
-              teria o que esconder e a criança clicaria achando que o app quebrou.
-              Some. Quem garante que a aba continua lá é o `previewAvailable` dos
-              modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
-          {config.preview && !isNarrow && projectKind !== 'pro' ? (
-            // No Pro quem mostra e esconde o palco é o segmentado do próprio palco (Lado a lado /
-            // Só o código / Só o jogo), e a preferência `showPreview` do clássico não vale lá.
-            <BarIconButton
-              label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
-              pressed={showPreview}
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              {showPreview ? <IconEye /> : <IconEyeOff />}
-            </BarIconButton>
-          ) : null}
           {sections.length > 0 ? (
             <Menu
               trigger={<IconMore size={18} />}
@@ -555,8 +545,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 aria-label={shareDisabledReason ?? t('share.action')}
                 className={cn(
                   'sz-bar-pill',
-                  // No Pro o azul é do Rodar: o Compartilhar ganha o amarelo da alegria.
-                  projectKind === 'pro' ? 'sz-bar-pill--joy' : 'sz-bar-pill--primary',
+                  // O azul é do Rodar: o Compartilhar ganha o amarelo da alegria.
+                  'sz-bar-pill--joy',
                   iconOnly && 'sz-bar-pill--icon',
                 )}
               >

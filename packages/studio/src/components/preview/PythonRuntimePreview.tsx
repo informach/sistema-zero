@@ -38,6 +38,8 @@ export interface PythonRuntimePreviewProps {
    * estado (parado, preparando, erro) por cima da área de execução.
    */
   controls?: 'inline' | 'hidden'
+  /** O que o cartão do palco chama de "seu jogo" ou "seu programa" (padrão: programa). */
+  stageSubject?: 'game' | 'program'
   /** O Rodar/Parar desta prévia, publicados UMA vez por controlador (`null` quando ele sai). */
   onCommandsReady?(commands: PythonRunCommands | null): void
 }
@@ -329,7 +331,12 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
         <div ref={mount} className="flex min-h-0 flex-1 overflow-hidden bg-white" />
         {card && (
           <div className="absolute inset-0">
-            <ProStageState state={runState} subject="program" flavor="python" onRun={run} />
+            <ProStageState
+              state={runState}
+              subject={props.stageSubject ?? 'program'}
+              flavor="python"
+              onRun={run}
+            />
           </div>
         )}
       </div>

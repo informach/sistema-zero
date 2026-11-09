@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject, type Project } from '#core'
 import { useProjectStore } from '../../state/projectStore'
+import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
@@ -19,6 +20,8 @@ describe('PreviewIframe', () => {
     useUIStore.setState({ previewRunning: true })
   })
 
+  // Desde o redesenho de 11/2026 a prévia não tem barra própria: Rodar, Parar e Atualizar moram
+  // na barra de cima e no palco (`ClassicStage`), que chamam as ações que ela publica no `proRun`.
   it('executa ao montar, reexecuta ao atualizar e volta a executar ao sair de parado', async () => {
     useProjectStore.setState({
       project: createPreviewProject(),
@@ -39,7 +42,8 @@ describe('PreviewIframe', () => {
     })
     const initialNonce = getRenderNonce(initialDoc)
 
-    fireEvent.click(screen.getByRole('button', { name: /Atualizar/ }))
+    expect(useProRun.getState().state?.phase).toBe('running')
+    act(() => useProRun.getState().actions?.reload?.())
 
     const refreshedDoc = await waitFor(() => {
       const doc = getPreviewSrcDoc()
@@ -50,13 +54,14 @@ describe('PreviewIframe', () => {
     })
     const refreshedNonce = getRenderNonce(refreshedDoc)
 
-    fireEvent.click(screen.getByRole('button', { name: /Parar/ }))
+    act(() => useProRun.getState().actions?.stop())
 
     await waitFor(() => {
       expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /Reproduzir/ }))
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('idle'))
+    act(() => useProRun.getState().actions?.run())
 
     await waitFor(() => {
       const doc = getPreviewSrcDoc()

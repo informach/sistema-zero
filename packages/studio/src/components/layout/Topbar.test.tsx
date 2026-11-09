@@ -5,6 +5,7 @@ import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
+import { useUIStore } from '../../state/uiStore'
 import { type StudioHostChrome, StudioHostChromeProvider } from '../../studio/host-chrome'
 import { type StudioLayout, StudioLayoutProvider } from '../../studio/layoutContext'
 import {
@@ -88,24 +89,27 @@ afterEach(() => {
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })
 
-describe('Topbar × olhinho do preview', () => {
+describe('Topbar × "Mostrar o jogo" (era o olhinho da barra)', () => {
   /**
-   * No ESTREITO o preview é uma ABA (ver NarrowPanels), não um painel ao lado. O
-   * olhinho não teria o que esconder ali, e pior: ele apagaria a própria aba. A
-   * criança clicaria, o preview sumiria da tira e não haveria botão para trazer de
-   * volta — leitura natural para uma criança: "o app quebrou".
+   * Redesenho de 11/2026: o olhinho saiu da barra (o meio dela é Rodar / Parar) e virou o item
+   * "Mostrar o jogo" do menu ⋯. No ESTREITO o jogo é uma ABA (ver NarrowPanels): o item não teria
+   * o que esconder ali e, pior, apagaria a própria aba — "o app quebrou", para uma criança.
    */
-  it('wide: o olhinho aparece', () => {
+  it('wide: sem olho na barra; "Mostrar o jogo" no menu, marcado e alternando', () => {
     mount(1280, null)
-    const olho = screen.getByRole('button', { name: 'Ocultar pré-visualização' })
-    expect(olho.className).toBe('sz-bar-icon-btn')
-    expect(olho.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    const item = screen.getByRole('menuitem', { name: /Mostrar o jogo/ })
+    expect(item.getAttribute('data-sz-menu-item')).toBe('stage')
+    fireEvent.click(item)
+    expect(useUIStore.getState().showPreview).toBe(false)
+    useUIStore.getState().setShowPreview(true)
   })
 
-  it('narrow: o olhinho NÃO aparece (lá o preview é aba)', () => {
+  it('narrow: o item NÃO aparece (lá o jogo é aba)', () => {
     mount(800, null)
-    expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Mostrar pré-visualização' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    expect(screen.queryByRole('menuitem', { name: /Mostrar o jogo/ })).toBeNull()
   })
 })
 
@@ -318,7 +322,7 @@ describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
 })
 
 describe('Topbar × a tela-modelo do Estúdio', () => {
-  it('três grupos: [voltar, nome, Salvo] · [modos] · [olho, ⋯, Compartilhar]', () => {
+  it('três grupos: [voltar, nome, Salvo] · [Rodar, Parar] · [modos, ⋯, Compartilhar]', () => {
     const { container } = mount(1440, null, (node) => (
       <StudioShareProvider value={SHARE}>{node}</StudioShareProvider>
     ))
@@ -332,11 +336,18 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
       within(inicio as HTMLElement).getByRole('button', { name: 'Sistema Zero Studio' }),
     ).toBeTruthy()
     expect(within(inicio as HTMLElement).getByText('Salvo')).toBeTruthy()
-    expect(within(meio as HTMLElement).getByRole('group', { name: 'Modo de edição' })).toBeTruthy()
+    // O meio é Rodar / Parar, também no clássico (redesenho de 11/2026), com UM alvo de cada.
+    expect(within(meio as HTMLElement).getByRole('button', { name: 'Rodar' })).toBeTruthy()
+    expect(within(meio as HTMLElement).getByRole('button', { name: 'Parar' })).toBeTruthy()
+    expect(header.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(1)
+    expect(header.querySelectorAll('[data-live-target="studio-stop"]')).toHaveLength(1)
+    // Os modos foram para a direita, antes do ⋯ e do Compartilhar.
+    expect(within(fim as HTMLElement).getByRole('group', { name: 'Modo de edição' })).toBeTruthy()
     const nomes = within(fim as HTMLElement)
       .getAllByRole('button')
       .map((b) => b.getAttribute('aria-label') ?? b.textContent)
-    expect(nomes).toEqual(['Ocultar pré-visualização', 'Mais opções', 'Compartilhar'])
+    expect(nomes.slice(-2)).toEqual(['Mais opções', 'Compartilhar'])
+    expect(nomes).not.toContain('Ocultar pré-visualização')
   })
 
   it('o voltar é UM botão (círculo + marca) com o nome e o title de sempre; a 1600 a marca aparece', () => {
@@ -490,19 +501,19 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(screen.getByRole('button', { name: 'Mais opções' }).className).toBe('sz-bar-icon-btn')
   })
 
-  it('Compartilhar: pílula azul com o rótulo no largo, só o ícone abaixo dele', () => {
+  it('Compartilhar: pílula amarela com o rótulo no largo (o azul é do Rodar), só o ícone abaixo', () => {
     const comShare = (node: ReactElement) => (
       <StudioShareProvider value={SHARE}>{node}</StudioShareProvider>
     )
     const { unmount } = mount(1440, null, comShare)
     const largo = screen.getByRole('button', { name: 'Compartilhar' })
-    expect(largo.className).toBe('sz-bar-pill sz-bar-pill--primary')
+    expect(largo.className).toBe('sz-bar-pill sz-bar-pill--joy')
     expect(largo.textContent).toBe('Compartilhar')
     unmount()
 
     mount(900, null, comShare)
     const estreito = screen.getByRole('button', { name: 'Compartilhar' })
-    expect(estreito.className).toBe('sz-bar-pill sz-bar-pill--primary sz-bar-pill--icon')
+    expect(estreito.className).toBe('sz-bar-pill sz-bar-pill--joy sz-bar-pill--icon')
     expect(estreito.textContent).toBe('')
   })
 
@@ -586,7 +597,7 @@ describe('Topbar × desfazer e refazer', () => {
     expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull()
   })
 
-  it('no largo: dois círculos entre o Zappy e o olho, nome fixo e a dica diz onde', () => {
+  it('no largo: dois círculos entre o Zappy e o ⋯, nome fixo e a dica diz onde', () => {
     const { stores } = mountInStudio(1440)
     const blocos = fakeHistory(true, false)
     act(() => {
@@ -599,17 +610,13 @@ describe('Topbar × desfazer e refazer', () => {
     expect(refazer.getAttribute('title')).toBe('Refazer nos blocos (Ctrl+Y)')
     expect((desfazer as HTMLButtonElement).disabled).toBe(false)
     expect((refazer as HTMLButtonElement).disabled).toBe(true)
-    // A ordem da tela-modelo: desfazer e refazer antes do olho, do "⋯" e do Compartilhar.
+    // A ordem da tela-modelo: desfazer e refazer logo antes do "⋯" (o olho saiu da barra).
     const fim = desfazer.closest('.sz-bar__end') as HTMLElement
     const nomes = within(fim)
       .getAllByRole('button')
       .map((b) => b.getAttribute('aria-label'))
-    expect(nomes.slice(0, 4)).toEqual([
-      'Desfazer',
-      'Refazer',
-      'Ocultar pré-visualização',
-      'Mais opções',
-    ])
+    const i = nomes.indexOf('Desfazer')
+    expect(nomes.slice(i, i + 3)).toEqual(['Desfazer', 'Refazer', 'Mais opções'])
 
     fireEvent.click(desfazer)
     expect(blocos.undo).toHaveBeenCalledTimes(1)

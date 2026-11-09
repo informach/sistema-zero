@@ -8,7 +8,9 @@ import { hasBehaviorStatements, normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
+import { ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { classicStageSubject } from '../components/preview/stageSubject'
 import { javaScriptProject } from '../core/editableProject'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
@@ -48,6 +50,8 @@ export function BlocksMode(): JSX.Element {
   const previewAvailable = studioConfig.preview
   const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
+  const stage = useClassicStage({ normal: [65, 35], large: [50, 50] }, showPreview)
+  const stageSubject = useProjectStore((s) => classicStageSubject(javaScriptProject(s.project)))
 
   // Publica o source map canônico também no modo Blocos: o Console o usa para o
   // chip "Ver o bloco" nos erros de execução (linha do script.js → bloco). Na
@@ -186,6 +190,17 @@ export function BlocksMode(): JSX.Element {
     }
   }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, projectStoreApi])
 
+  const stagePreview = (
+    <ClassicStage
+      subject={stageSubject}
+      phone={stage.phone}
+      idleCard
+      onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+    >
+      <PreviewIframe />
+    </ClassicStage>
+  )
+
   if (isNarrow) {
     return (
       <div className="flex h-full w-full min-h-0 flex-col">
@@ -195,7 +210,8 @@ export function BlocksMode(): JSX.Element {
             editorPanes={[
               { id: 'blocks', label: t('tab.blocks'), content: <BlocksWorkspaceEditor /> },
             ]}
-            preview={previewAvailable ? <PreviewIframe /> : undefined}
+            preview={previewAvailable ? stagePreview : undefined}
+            previewRequest={stage.previewRequest}
           />
         </div>
       </div>
@@ -205,7 +221,7 @@ export function BlocksMode(): JSX.Element {
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
-      <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
+      <PanelGroup ref={stage.group} direction="horizontal" className="min-h-0 w-full flex-1">
         <Panel id="blocks-workspace" order={1} defaultSize={showPreview ? 65 : 100} minSize={30}>
           <BlocksWorkspaceEditor />
         </Panel>
@@ -213,7 +229,7 @@ export function BlocksMode(): JSX.Element {
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
             <Panel id="blocks-preview" order={2} defaultSize={35} minSize={20}>
-              <PreviewIframe />
+              {stagePreview}
             </Panel>
           </>
         )}

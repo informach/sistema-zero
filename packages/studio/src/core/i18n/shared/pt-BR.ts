@@ -87,6 +87,10 @@ export const ptBR: Record<string, string> = {
   'topbar.shortcuts': 'Atalhos do teclado',
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
+  'topbar.showStage': 'Mostrar o jogo',
+  'stage.reloadLabel': 'Atualizar o preview',
+  'stage.bigger': 'Jogo maior',
+  'stage.smaller': 'Jogo menor',
   // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a
   // COISA de que trata, na ordem de uso. "Arquivo"/"Exibição"/"Conta" saíram em
   // 18/09/2026 — o primeiro era o nome do sistema de arquivos, e os outros dois

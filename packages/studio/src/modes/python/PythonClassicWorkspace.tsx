@@ -7,7 +7,9 @@ import {
 import type { PythonSourceCursorPosition } from '../../components/code/PythonSourceEditor'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
+import { ClassicStage, useClassicStage } from '../../components/preview/ClassicStage'
 import { PythonEditorPreview } from '../../components/preview/PythonEditorPreview'
+import { pythonStageSubject } from '../../components/preview/stageSubject'
 import { isPythonProject } from '../../core/editableProject'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import {
@@ -66,6 +68,12 @@ function PythonClassicProjectWorkspace({
     nonce: number
   }>()
   const nonce = useRef(0)
+  const stage = useClassicStage(
+    mode === 'bridge'
+      ? { normal: [35, 35, 30], large: [25, 25, 50] }
+      : { normal: [65, 35], large: [50, 50] },
+    showPreview,
+  )
   if (!project || !isPythonProject(project) || project.kind !== 'classic') return null
   const path =
     selected &&
@@ -161,7 +169,16 @@ function PythonClassicProjectWorkspace({
       Este arquivo é editado no modo fonte. Selecione um arquivo .py para ver seus blocos.
     </p>
   )
-  const preview = <PythonEditorPreview />
+  const preview = (
+    <ClassicStage
+      subject={pythonStageSubject(project)}
+      phone={stage.phone}
+      idleCard={false}
+      onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+    >
+      <PythonEditorPreview />
+    </ClassicStage>
+  )
   return (
     <div className="flex h-full min-h-0 flex-col">
       {mode === 'blocks' && (
@@ -205,9 +222,10 @@ function PythonClassicProjectWorkspace({
                 : []),
             ]}
             preview={config.preview ? preview : undefined}
+            previewRequest={stage.previewRequest}
           />
         ) : (
-          <PanelGroup direction="horizontal">
+          <PanelGroup ref={stage.group} direction="horizontal">
             <Panel
               id="python-blocks"
               order={1}

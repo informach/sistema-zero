@@ -21,10 +21,10 @@ const emptySubscribe = () => () => {}
 const noView = () => null
 
 /**
- * A prévia Python do EDITOR (a Ponte clássica e o Pro): liga o controlador ao console da instância,
- * leva print/erros ao `logsStore` e, no projeto Pro (redesenho de 11/2026), publica o estado de
- * execução e o Rodar/Parar na store `proRun`, que a Topbar lê. A barra da própria prévia some no
- * Pro (`controls="hidden"`); na Ponte continua como sempre, com os rótulos unificados.
+ * A prévia Python do EDITOR (blocos, Ponte e Pro): liga o controlador ao console da instância,
+ * leva print/erros ao `logsStore` e publica o estado de execução e o Rodar/Parar na store
+ * `proRun`, que a Topbar lê. A barra da própria prévia some (`controls="hidden"`): desde o
+ * redesenho do clássico (11/2026) o Rodar/Parar mora na barra de cima também nos blocos.
  */
 export function PythonEditorPreview() {
   const project = useProjectStore((state) => state.project)
@@ -59,38 +59,32 @@ export function PythonEditorPreview() {
     noView,
   )
   const python = project && isPythonProject(project) ? project : null
-  const pro = python?.kind === 'pro'
+  const editing = Boolean(python)
   const canExecute = execution.editingAccess === 'author'
   const current = view ?? IDLE_VIEW
   const stale = Boolean(python && pythonPreviewIsStale(current, python))
   const runState = useMemo(
     () =>
-      pro && commands
+      editing && commands
         ? pythonRunState(current, {
             stale,
             canRun: canExecute && Boolean(environment) && current.status !== 'loading',
             canStop: Boolean(current.identity || pythonExecuting(current.status)),
           })
         : null,
-    [pro, commands, current, stale, canExecute, environment],
+    [editing, commands, current, stale, canExecute, environment],
   )
   useEffect(() => {
-    if (!pro) return
+    if (!editing) return
     proRun.getState().publish(runState, runState ? commands : null)
-  }, [pro, proRun, runState, commands])
-  const proRef = useRef(pro)
-  proRef.current = pro
-  useEffect(
-    () => () => {
-      if (proRef.current) proRun.getState().publish(null, null)
-    },
-    [proRun],
-  )
+  }, [editing, proRun, runState, commands])
+  useEffect(() => () => proRun.getState().publish(null, null), [proRun])
   if (!python) return null
   return (
     <PythonRuntimePreview
       project={python}
-      controls={pro ? 'hidden' : 'inline'}
+      controls="hidden"
+      stageSubject={pythonStageSubject(python)}
       onCommandsReady={setCommands}
       currentProject={() => {
         const current = store.getState().project
@@ -152,3 +146,4 @@ export function PythonEditorPreview() {
 }
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { pythonStageSubject } from './stageSubject'

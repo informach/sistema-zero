@@ -4,14 +4,15 @@ import type { ProRunState } from '../../state/proRun'
 import { useT } from '../../studio/i18n'
 
 /** Quem roda: o dev-server local (WebContainer), o compilador remoto (BFF) ou o Python. */
-export type ProStageFlavor = 'local' | 'remote' | 'python'
-/** O que a criança vê: um JOGO (JavaScript) ou um PROGRAMA (Python). */
-export type ProStageSubject = 'game' | 'program'
+export type ProStageFlavor = 'local' | 'remote' | 'python' | 'classic'
+/** O que a criança vê: um JOGO, uma PÁGINA (o clássico sem jogo) ou um PROGRAMA (Python). */
+export type ProStageSubject = 'game' | 'page' | 'program'
 
 const STEP_KEYS: Record<ProStageFlavor, readonly string[]> = {
   local: ['pro.stage.step.engine', 'pro.stage.step.parts', 'pro.stage.step.openGame'],
   remote: ['pro.stage.step.build'],
   python: ['pro.stage.step.python', 'pro.stage.step.program', 'pro.stage.step.openProgram'],
+  classic: ['pro.stage.step.openGame'],
 }
 
 /**
@@ -29,6 +30,7 @@ export function ProStageState({
   flavor,
   onRun,
   onSeeProblem,
+  idleHintKey = 'pro.stage.idle.hint',
   children,
 }: {
   state: ProRunState
@@ -36,6 +38,8 @@ export function ProStageState({
   flavor: ProStageFlavor
   onRun?: () => void
   onSeeProblem?: () => void
+  /** O texto de baixo do parado: "no código" no Pro, "nos blocos" no clássico. */
+  idleHintKey?: string
   children?: ReactNode
 }): JSX.Element | null {
   const t = useT()
@@ -52,7 +56,7 @@ export function ProStageState({
           <IconPlay />
         </button>
         <p className="sz-pro-stage-state__title">{t(`pro.stage.idle.${subject}`)}</p>
-        <p className="sz-pro-stage-state__hint">{t('pro.stage.idle.hint')}</p>
+        <p className="sz-pro-stage-state__hint">{t(idleHintKey)}</p>
       </div>
     )
   }

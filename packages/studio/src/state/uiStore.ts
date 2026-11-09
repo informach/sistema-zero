@@ -51,6 +51,12 @@ interface UIStore {
   setAssetsTab: (tab: AssetsTab) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
+  /**
+   * "Jogo maior" do palco clássico (redesenho de 11/2026): com `true`, blocos e jogo dividem a
+   * tela meio a meio; com `false`, o jogo volta ao tamanho de sempre ao lado dos blocos.
+   */
+  stageLarge: boolean
+  setStageLarge: (b: boolean) => void
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
   // visível). A primeira ação manual grava um boolean que prevalece em qualquer
   // modo/projeto nesta instância. Terminal/IA continuam booleanos porque só
@@ -86,6 +92,8 @@ export function createUIStore(): StoreApi<UIStore> {
     setAssetsTab: (assetsTab) => set({ assetsTab }),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
+    stageLarge: false,
+    setStageLarge: (stageLarge) => set({ stageLarge }),
     consoleVisibilityOverride: null,
     setConsoleVisibilityOverride: (consoleVisibilityOverride) => set({ consoleVisibilityOverride }),
     showTerminal: true,

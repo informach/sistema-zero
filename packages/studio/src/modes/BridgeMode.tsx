@@ -13,7 +13,9 @@ import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
+import { ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { classicStageSubject } from '../components/preview/stageSubject'
 import { javaScriptProject } from '../core/editableProject'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
@@ -107,6 +109,8 @@ export function BridgeMode(): JSX.Element {
   // para trazer de volta. A aba existe sempre que o host oferece preview.
   const previewAvailable = studioConfig.preview
   const { isNarrow } = useStudioLayout()
+  const stage = useClassicStage({ normal: [35, 35, 30], large: [25, 25, 50] }, showPreview)
+  const stageSubject = useProjectStore((s) => classicStageSubject(javaScriptProject(s.project)))
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const editorHistory = useEditorHistory()
@@ -648,6 +652,17 @@ export function BridgeMode(): JSX.Element {
     </Suspense>
   )
 
+  const stagePreview = (
+    <ClassicStage
+      subject={stageSubject}
+      phone={stage.phone}
+      idleCard
+      onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
+    >
+      <PreviewIframe />
+    </ClassicStage>
+  )
+
   if (isNarrow) {
     return (
       <div className="flex h-full w-full min-h-0 flex-col">
@@ -668,7 +683,8 @@ export function BridgeMode(): JSX.Element {
                 onSelect: () => editorHistory?.markActive('code'),
               },
             ]}
-            preview={previewAvailable ? <PreviewIframe /> : undefined}
+            preview={previewAvailable ? stagePreview : undefined}
+            previewRequest={stage.previewRequest}
           />
         </div>
       </div>
@@ -678,7 +694,7 @@ export function BridgeMode(): JSX.Element {
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
-      <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
+      <PanelGroup ref={stage.group} direction="horizontal" className="min-h-0 w-full flex-1">
         <Panel id="bridge-blocks" order={1} defaultSize={35} minSize={20}>
           <BlocklyPanel />
         </Panel>
@@ -690,7 +706,7 @@ export function BridgeMode(): JSX.Element {
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
             <Panel id="bridge-preview" order={3} defaultSize={30} minSize={15}>
-              <PreviewIframe />
+              {stagePreview}
             </Panel>
           </>
         )}
