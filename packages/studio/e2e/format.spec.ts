@@ -33,7 +33,7 @@ test.describe('Formatar código — Monaco na Ponte', () => {
     await expect(lines).toContainText('soma')
 
     // aria-label = formatLabel — resolve o botão também no modo compacto (só ícone).
-    await page.getByRole('button', { name: 'Formatar código' }).click()
+    await page.getByRole('button', { name: 'Arrumar código' }).click()
 
     // Âncoras que SÓ o formatador do TS produz (a ação era no-op na regressão).
     await expect(lines).toContainText('soma(a, b)', { timeout: 10_000 })
@@ -48,7 +48,7 @@ test.describe('Formatar código — Monaco na Ponte', () => {
     const lines = page.locator('.monaco-editor .view-lines').first()
     await expect(lines).toContainText('margin')
 
-    await page.getByRole('button', { name: 'Formatar código' }).click()
+    await page.getByRole('button', { name: 'Arrumar código' }).click()
 
     // "body {" (com espaço) só existe pós-formatação — o texto foi digitado
     // como "body{". O formatador de CSS abre o bloco e quebra as declarações.

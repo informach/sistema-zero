@@ -24,6 +24,11 @@ export default function BridgeCodeEditor(
       theme={theme === 'light' ? 'light' : 'vs-dark'}
       fontSize={fontSize || CODE_FONT_SIZE_DEFAULT}
       formatLabel={t('editor.format')}
+      tabLabels={{
+        'index.html': t('editor.tab.page'),
+        'style.css': t('editor.tab.style'),
+        'script.js': t('editor.tab.program'),
+      }}
       onFormatIssue={onFormatIssue}
       onEditorReady={onEditorReady}
       tabsRightSlot={

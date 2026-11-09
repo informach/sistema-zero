@@ -427,7 +427,10 @@ export const en: Record<string, string> = {
   'editor.fontSize.increase': 'Increase editor font size',
   'editor.fontSize.decrease': 'Decrease editor font size',
   'editor.fontSize.reset': 'Restore default size',
-  'editor.format': 'Format code',
+  'editor.format': 'Tidy code',
+  'editor.tab.page': 'Page',
+  'editor.tab.style': 'Style',
+  'editor.tab.program': 'Program',
   'editor.formatIssue.noProvider':
     'Format: the formatter for this language is still loading. Try again in a moment.',
   'editor.formatIssue.failed': 'Format: this file could not be formatted right now.',

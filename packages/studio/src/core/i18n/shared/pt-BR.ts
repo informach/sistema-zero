@@ -463,7 +463,10 @@ export const ptBR: Record<string, string> = {
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
   'editor.fontSize.reset': 'Restaurar tamanho padrão',
-  'editor.format': 'Formatar código',
+  'editor.format': 'Arrumar código',
+  'editor.tab.page': 'Página',
+  'editor.tab.style': 'Estilo',
+  'editor.tab.program': 'Programa',
   'editor.formatIssue.noProvider':
     'Formatar: o formatador desta linguagem ainda não terminou de carregar. Tente de novo em instantes.',
   'editor.formatIssue.failed': 'Formatar: não deu para formatar este arquivo agora.',
