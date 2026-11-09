@@ -1,5 +1,51 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Experiências numa tela só: o arranjo do Faísca (09/11/2026)
+
+Pedido dela: a criança rolava para baixo para apertar um botão e subia para ver o personagem (no
+ampliado a cena caía para 168px). Canvas jogável aprovado: https://claude.ai/artifact/8d9ZNWrd2AzMZ1vfWDzSDL
+(versão 4; protótipo fora do git em `community-kids/tmp/proposta-uma-tela/`).
+
+- **`Frame` com `arranjo="faisca"`** (só as 8 telas do Faísca: `scene-island-discovery`,
+  `scene-door-not` e os 4 `scene-poder-*`; as ~60 outras telas livres ficam como eram):
+  - **à esquerda, o JOGO** (`ConsoleVisual`): a faixa "Z" do celular, as estrelas, a cena NO TOPO
+    (nunca centralizada na altura) e "Seus testes" (as 3 fotinhos mais novas, 2 no celular);
+  - **à direita, a CRIANÇA** (`ConsoleActions`): a fala do Zappy (texto e "Ouvir" lado a lado), o
+    `div.sz-discovery-painel` com o `movimento` e os `controles`, o `abaixoDoPalco`, as
+    descobertas (cartões enxutos, "Ainda não testado" só para o leitor de tela) e, no estreito, os
+    testes;
+  - **as duas colunas metade/metade**, dois cartões separados como antes (regra dela).
+- ⭐⭐ **A regra dela:** a cena, a fala do Zappy e os controles ficam à vista SEM depender de rolar,
+  no normal e no ampliado. Rolar nas duas colunas pode: as descobertas e os testes ficam abaixo
+  quando não cabem (quem rola é o cartão; a cena nunca rola por dentro).
+- **O painel** (CSS, contêiner `faisca-painel`):
+  - com 26rem ou mais: duas linhas, o andar | as peças empilhadas, metade/metade, e a regra
+    (`Modulo largo`) embaixo, na largura toda;
+  - estreito: três linhas, andar | caderninho; sumiço | "Jogar de novo"; a regra. Só os módulos
+    `compacto` dividem a linha; a câmera e a altura da Ilha ocupam a largura toda. Com só duas
+    peças (ponte, símbolos, cabana, porta), elas empilham ao lado do andar.
+- **`Modulo compacto`**: sem caixa e com o nome e a dica em `sr-only` (o caderninho, o sumiço, o
+  "Jogar de novo", as caixas do encontro). `data-compacto`.
+- **`aspectoDoPalco`** (padrão 4/3; a Ilha passa 1.1) vira `--sz-palco-aspecto`. A cena tem largura
+  `min(100%, --sz-palco-hmax × aspecto)`: no largo, `--sz-palco-hmax` vem do CSS (a janela menos o
+  cabeçalho e as estrelas; o encaixe por JS do ampliado fica desligado); no estreito, ela é MEDIDA
+  (`useAlturaDaCenaNoCelular`): a janela menos o que fica acima da cena e o painel abaixo dela, com
+  piso de 7rem. Valor fixo no CSS não servia: cada tela tem um painel de altura diferente.
+- **Estreito** (`useEstreito`): o conteúdo do `.sz-scene-workspace-card` abaixo de 52rem (a mesma
+  régua do `scene.css`), por `ResizeObserver`; sem medida conta como largo. No estreito e no fim
+  (`ideiaNoBalao`), a fala do Zappy (com o mascote e a ideia) sobe para o topo do `ConsoleVisual`
+  no lugar da faixa "Z"; durante o jogo, o balão da coluna da direita fica escondido e a faixa "Z"
+  fala. A moldura expõe `data-arranjo`, `data-estreito` e `data-fim`.
+- No ampliado o cabeçalho fica numa linha (no celular, o "Voltar" só com o ícone).
+- Testes: `tests/scene-discovery-faisca-arranjo.test.tsx` (onde mora cada coisa, o `compacto`, o
+  fim e as telas sem arranjo) e o e2e `community-kids/e2e-scenes/faisca-uma-tela.spec.ts`. O e2e
+  roda as 8 experiências em 1366×768, 1024×768, 920×768, 390×844 e 375×667, no normal e no
+  ampliado. Ele confere:
+  - a cena, a fala e cada controle inteiros na janela;
+  - os botões dentro do seu controle e sem outro por cima;
+  - a cena logo abaixo das estrelas;
+  - as colunas metade/metade.
+
 ## Correções do review do Faísca (08/11/2026)
 
 - `scene-discovery-context.ts` contém o contexto (reexportado pela moldura). O contrato opcional
@@ -9,7 +55,7 @@
 - `scene-movement.ts` centraliza direções, delta limitado, RAF e limpeza dos três adaptadores
   `useAndarLivre`, `useMapaLivre` e `useAndar3D`. Soltar, perder foco, esconder a aba, recomeçar ou
   desmontar cancela o movimento. Velocidade, colisões e projeção continuam nos adaptadores.
-- `Frame.movimento` coloca uma única cruzeta imediatamente depois do palco. Os módulos de regras
+- Sem `arranjo` (as outras telas livres), `Frame.movimento` coloca uma única cruzeta imediatamente depois do palco. Com `arranjo="faisca"`, ver a seção "Experiências numa tela só" acima. Os módulos de regras
   e memória vêm depois. Na tela estreita, a faixa se adapta à largura e o palco 3D não herda o
   mínimo de 22rem da bancada. Testar com toque e palco/setas simultaneamente visíveis, incluindo
   modo ampliado; ausência de overflow horizontal sozinha não prova usabilidade.
