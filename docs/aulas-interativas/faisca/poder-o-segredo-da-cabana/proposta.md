@@ -1,5 +1,10 @@
 # O segredo da cabana: proposta do Poder do Faísca
 
+> ⭐ **08/11/2026:** a experiência da aula 1 passou à moldura nova (proposta "Experiências do
+> Faísca", aprovada): o personagem anda até as coisas e as regras são peças que se trocam. Os
+> botões de gesto citados abaixo ("Encostar…", "Pegar…", "Afastar", "Esperar 1 segundo") saíram;
+> o README do curso descreve a tela de hoje.
+
 29/10/2026 · Proposta aprovada, com o nome do curso trocado de "Duas peças para abrir" para
 **O segredo da cabana** (a aprovação pediu um nome mais criativo). A aula 1 segue "Duas peças
 para abrir", que é a regra dela. Define a autoria; não declara curso implementado, mídia

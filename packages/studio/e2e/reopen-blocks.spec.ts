@@ -29,7 +29,7 @@ async function pasteBlocks(
     .locator('.blocklySvg')
     .first()
     .click({ button: 'right', position: { x: 420, y: 280 } })
-  await page.getByText('Colar blocos', { exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Colar', exact: true }).click()
 }
 
 /** Espera o badge de autosave confirmar a gravação. */

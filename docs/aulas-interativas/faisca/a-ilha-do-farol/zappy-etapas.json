@@ -4,117 +4,121 @@
     "experiencia-ponto-de-vista": [
       {
         "id": "island-view-start",
-        "text": "A pedra esconde a chave deste lado. Olhe a ilha de outro lugar e procure a chave. O que você vê agora?"
+        "text": "A chave está atrás da pedra. Mude a câmera!"
       },
       {
         "id": "island-view-compare",
-        "text": "Você olhou de outro lugar. Compare as vistas e responda: o que mudou quando a chave apareceu?"
+        "text": "Apareceu! O que mudou: a câmera ou a chave?"
+      },
+      {
+        "id": "island-view-wrong",
+        "text": "Volte para a frente: a chave saiu do lugar?"
+      },
+      {
+        "id": "island-view-idea",
+        "text": "No 3D, a câmera é o lugar de onde a gente olha. Mudar a câmera muda a imagem, mas as coisas continuam no mesmo lugar."
+      },
+      {
+        "id": "island-view-bridge",
+        "text": "No seu jogo: a câmera já está pronta; o que você vai mudar é o lugar das coisas."
       },
       {
         "id": "island-view-complete",
-        "text": "Isso mesmo! A chave continuou atrás da mesma pedra. O que mudou foi o lugar de onde você olha: a câmera. Você pode continuar comparando as vistas."
+        "text": "Mudou a câmera. A chave ficou no mesmo lugar."
       }
     ],
     "experiencia-posicao-3d": [
       {
         "id": "island-position-start",
-        "text": "A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde a chave vai. Você escolhe por qual começar."
+        "text": "A chave tem três números. Mude um para mais e para menos!"
       },
       {
-        "id": "island-position-x-plus",
-        "text": "Aumente o x e observe a chave. Para onde ela foi?"
+        "id": "island-position-other-side",
+        "text": "Agora o mesmo número para o outro lado."
       },
       {
-        "id": "island-position-x-minus",
-        "text": "Agora diminua o x e compare com o que aconteceu antes. A marca dourada guarda o lugar do começo."
+        "id": "island-position-next",
+        "text": "E os outros números? Teste um de cada vez."
       },
       {
-        "id": "island-position-z-plus",
-        "text": "Aumente o z e observe a chave. Para onde ela foi?"
+        "id": "island-position-idea",
+        "text": "No 3D, o lugar tem três números: x e z andam pelo chão, e o y é a altura."
       },
       {
-        "id": "island-position-z-minus",
-        "text": "Agora diminua o z e compare os dois sentidos. Você pode repetir quando quiser."
-      },
-      {
-        "id": "island-position-y-plus",
-        "text": "Aumente o y e observe a chave. Se ficar difícil de ver, troque a vista."
-      },
-      {
-        "id": "island-position-y-minus",
-        "text": "Agora diminua o y e compare com o que aconteceu antes. Repare no pontilhado embaixo da chave."
-      },
-      {
-        "id": "island-position-x-found",
-        "text": "Viu? O x leva a chave pelo chão, para um lado e para o outro, e a altura não muda. Agora investigue outro número."
-      },
-      {
-        "id": "island-position-z-found",
-        "text": "Viu? O z também leva a chave pelo chão, mas na outra direção: para a frente e para trás. A altura não muda. Agora investigue outro número."
-      },
-      {
-        "id": "island-position-y-found",
-        "text": "Viu? O y muda a altura: a chave sobe e desce, e o lugar no chão continua o mesmo. No jogo 2D, o y tinha outro papel. Agora investigue outro número."
+        "id": "island-position-bridge",
+        "text": "No seu jogo: você vai escolher os três números do lugar das coisas."
       },
       {
         "id": "island-position-complete",
-        "text": "Você investigou os três números: o x e o z levam a chave pelo chão, e o y muda a altura. Continue explorando quando quiser."
+        "text": "x e z andam no chão. O y é a altura."
       }
     ],
     "experiencia-contato-3d": [
       {
         "id": "island-contact-start",
-        "text": "De cima, a chave parece estar em cima do personagem. Será que eles estão encostando? Teste o encontro e compare com o que você vê de lado."
+        "text": "De cima, parece junto. Será que encostou? Olhe de lado!"
       },
       {
-        "id": "island-contact-other",
-        "text": "Eles não encostaram, mesmo parecendo juntos de cima. Olhando de lado, dá para ver o espaço entre a chave e o personagem. Mude um dos dois de lugar e teste de novo: dá para fazer os dois se encontrarem?"
+        "id": "island-contact-top",
+        "text": "Não encostou! Olhe de lado: por quê?"
       },
       {
-        "id": "island-contact-touch-first",
-        "text": "Desta vez eles encostaram. Agora mude a altura da chave ou o lugar no chão e teste de novo: quando eles ficam separados?"
+        "id": "island-contact-space",
+        "text": "Tem um espaço! Baixe a chave até encostar."
+      },
+      {
+        "id": "island-contact-idea",
+        "text": "A imagem pode enganar: de cima, parece junto. O jogo só conta o encontro quando os dois se tocam de verdade, inclusive na altura."
+      },
+      {
+        "id": "island-contact-bridge",
+        "text": "No seu jogo: o encontro do personagem com a chave vai acontecer só quando eles encostarem."
       },
       {
         "id": "island-contact-complete",
-        "text": "Você comparou os dois casos. A imagem pode enganar: para encostar, os dois precisam se encontrar no chão e também na altura. Continue testando quando quiser."
+        "text": "Parecer junto não basta: precisa encostar."
       }
     ],
     "experiencia-pergunta-com-nao": [
       {
         "id": "door-not-start",
-        "text": "Sem a chave, a porta está trancada. Com a chave, ela fica destrancada. A porta obedece à resposta da pergunta: com a resposta sim, ela abre; com a resposta não, ela fica fechada. Repare na pergunta que a porta faz agora. O que você acha que ela vai responder? Clique em Testar a porta e observe a resposta e a porta."
+        "text": "A porta do farol faz uma pergunta. Ande até ela!"
       },
       {
-        "id": "door-not-try",
-        "text": "A situação mudou. O que você acha que a porta vai responder agora? Clique em Testar a porta e compare com o que você já viu."
+        "id": "door-not-go",
+        "text": "Ande até o farol e ouça a resposta."
       },
       {
-        "id": "door-not-plain-with",
-        "text": "A pergunta era: a porta está trancada? Com a chave, ela não está. A resposta foi não, e a porta obedece ao não: ficou fechada, mesmo destrancada. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta."
+        "id": "door-not-opened",
+        "text": "Abriu sem a chave! Encaixe o \"não\" e veja."
       },
       {
-        "id": "door-not-plain-without",
-        "text": "A pergunta era: a porta está trancada? Sem a chave, ela está. A resposta foi sim, e a porta obedece ao sim: abriu, mesmo trancada. É por isso que a pergunta precisa mudar. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta."
+        "id": "door-not-closed",
+        "text": "Fechada com a chave! Encaixe o \"não\" e veja."
       },
       {
-        "id": "door-not-not-with",
-        "text": "A pergunta era: a porta não está trancada? Com a chave, ela não está. A resposta foi sim, e a porta obedece ao sim: abriu. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta."
+        "id": "door-not-remove",
+        "text": "Tire o \"não\" ali embaixo e veja a resposta."
       },
       {
-        "id": "door-not-not-without",
-        "text": "A pergunta era: a porta não está trancada? Sem a chave, ela está. A resposta foi não, e a porta obedece ao não: ficou fechada. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta."
+        "id": "door-not-with",
+        "text": "E com a chave? Pegue a chave e compare."
       },
       {
-        "id": "door-not-other-with",
-        "text": "Sem a chave, o não trocou a resposta: o que era sim virou não. E com a chave, o que acontece com as duas perguntas? Clique em Dar a chave ao personagem e teste a porta com e sem o não."
+        "id": "door-not-without",
+        "text": "E sem a chave? Toque em Jogar de novo."
       },
       {
-        "id": "door-not-other-without",
-        "text": "Com a chave, o não trocou a resposta: o que era não virou sim. E sem a chave, o que acontece com as duas perguntas? Clique em Tirar a chave do personagem e teste a porta com e sem o não."
+        "id": "door-not-idea",
+        "text": "A porta obedece à resposta da pergunta. Pôr o \"não\" na pergunta troca a resposta: o que era sim vira não."
+      },
+      {
+        "id": "door-not-bridge",
+        "text": "No seu jogo: a pergunta da porta do farol vai usar o \"não\" para trocar a resposta."
       },
       {
         "id": "door-not-complete",
-        "text": "Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando ela não está trancada, a pergunta precisa do não. Pode testar quantas vezes quiser."
+        "text": "O \"não\" troca a resposta: o sim vira não."
       }
     ]
   }

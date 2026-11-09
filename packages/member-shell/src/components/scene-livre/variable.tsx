@@ -160,7 +160,8 @@ export function LivreVariable() {
           : 'Primeiro guarde um número: sem número guardado, o acerto não tem o que mudar.'}
       </p>
       <p className="sz-discovery-free-hint">
-        Experimente à vontade. Os destaques sugerem um próximo teste; você escolhe a ordem.
+        Experimente à vontade. Os destaques mostram o próximo teste, e você pode repetir quando
+        quiser.
       </p>
     </Frame>
   )

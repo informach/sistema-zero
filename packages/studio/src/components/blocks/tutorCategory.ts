@@ -1,8 +1,12 @@
+import { CATEGORY_DISPLAY_NAMES } from '../../blockly/categoryNames'
+
 export interface TutorToolboxItem {
   getName?: () => string
   getContents?: () => unknown
   getChildToolboxItems?: () => TutorToolboxItem[]
   setExpanded?: (expanded: boolean) => void
+  /** A categoria "Procurar um bloco" (o conteúdo dela é o resultado da última busca). */
+  szSearch?: boolean
 }
 
 export interface TutorToolbox {
@@ -30,6 +34,8 @@ function contentsIncludeBlockType(contents: unknown, blockType: string): boolean
 
 function findBlockOwner(items: TutorToolboxItem[], blockType: string): TutorToolboxItem | null {
   for (const item of items) {
+    // A busca guarda o resultado da última procura: abri-la mostraria "Escreva para achar".
+    if (item.szSearch) continue
     // A parent's serialized contents include every child. Prefer the actual leaf.
     const found = findBlockOwner(item.getChildToolboxItems?.() ?? [], blockType)
     if (found) {
@@ -47,8 +53,11 @@ function findBlockOwner(items: TutorToolboxItem[], blockType: string): TutorTool
 
 function findExactCategory(items: TutorToolboxItem[], category: string): TutorToolboxItem | null {
   const wanted = normalized(category)
+  // O catálogo fala o nome-chave ("HTML"); a paleta mostra o de exibição ("Página · HTML").
+  const shown = normalized(CATEGORY_DISPLAY_NAMES[category] ?? category)
   for (const item of items) {
-    if (normalized(item.getName?.() ?? '') === wanted) return item
+    const name = normalized(item.getName?.() ?? '')
+    if (name === wanted || name === shown) return item
     const found = findExactCategory(item.getChildToolboxItems?.() ?? [], category)
     if (found) {
       item.setExpanded?.(true)

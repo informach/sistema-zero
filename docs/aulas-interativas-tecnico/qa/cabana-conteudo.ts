@@ -27,21 +27,21 @@ const verificar =
 /**
  * O que a experiência investiga (Faísca, 02/11/2026), no formato da Ponte: a lista de descobertas
  * da tela, o recado, o Passo a passo e o caderno dizem o que comparar, sem contar o resultado.
- * ⚠️ `goals` tem a mesma ordem e o mesmo texto de `CABANA_DESCOBERTAS` (member-shell,
- * `scene-poder-cabana.tsx`).
+ * ⚠️ `goals` segue a ordem dos cartões da tela livre (member-shell, `scene-poder-cabana.tsx`), na língua
+ * dela (08/11/2026): o personagem anda até as coisas, e as regras são peças que se trocam.
  */
 export const cabanaExperiencia = {
   title: 'A experiência: a porta com duas peças',
-  idea: 'O jogo guarda em temChave e em temEmblema se o personagem já pegou cada peça, e a cabana faz uma pergunta quando ele encosta nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.',
+  idea: 'O jogo anota num caderninho se o personagem já pegou cada peça (na montagem, as variáveis temChave e temEmblema), e a cabana faz uma pergunta quando ele chega nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.',
   goals: [
-    'Encoste na cabana sem nenhuma peça e observe.',
-    'Encoste na cabana com uma peça só e observe.',
-    'Encoste na cabana com as duas peças e observe.',
+    'Vá até a cabana sem nenhuma peça e observe.',
+    'Vá até a cabana com uma peça só e observe.',
+    'Vá até a cabana com as duas peças e observe.',
     'Compare começando pela chave e começando pelo emblema.',
-    'Faça a cabana pedir uma das peças e teste com uma peça só.',
+    'Troque o "e" pelo "ou" na pergunta da cabana e teste com uma peça só.',
   ],
   observe:
-    'Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe temChave, temEmblema, a porta e o aviso. O Zappy sugere o que observar.',
+    'Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.',
 }
 
 export const cabanaAulas: {
@@ -80,10 +80,10 @@ export const cabanaAulas: {
         title: 'A porta com duas peças',
         kind: 'experience',
         screen:
-          'Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy na porta de casa, pensativo, com um balão de pensamento mostrando um casaco e uma garrafinha, sem mostrar ele saindo. No convite, ampliar a experiência e mostrar a cena parada: a cabana fechada, as duas peças no chão, temChave e temEmblema em falso e a pergunta da cabana com as duas respostas ainda em "?", sem apontar controles. Não encostar na cabana: o que ela faz em cada caso, em cada jeito de perguntar, e se a ordem das peças importa, é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
+          'Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy na porta de casa, pensativo, com um balão de pensamento mostrando um casaco e uma garrafinha, sem mostrar ele saindo. No convite, ampliar a experiência e mostrar a cena parada: a cabana fechada, as duas peças no chão, o caderninho do jogo com NÃO nas duas linhas e a pergunta da cabana inteira, sem apontar controles. Não encostar na cabana: o que ela faz em cada caso, em cada jeito de perguntar, e se a ordem das peças importa, é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
-        text: '[engaging, energetic, conversational voice] Às vezes, o jogo precisa conferir duas coisas antes de decidir o que acontece. Para decidir, ele faz uma pergunta, e uma pergunta que ajuda o jogo a decidir se chama condição. [curious] Sabe quando alguém pergunta antes de você sair: pegou o casaco? Pegou a garrafinha? A pergunta fala de duas coisas. [engaging, energetic, conversational voice] No seu jogo, a pergunta da cabana do faroleiro fala de duas peças: a chave e o emblema. [engaging, energetic, conversational voice] Para saber o que o personagem já pegou, o jogo guarda duas informações em duas variáveis: temChave e temEmblema. Cada uma vale verdadeiro ou falso. [engaging, energetic, conversational voice] E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças. [curious] E a ordem em que ele pega as peças importa? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] Às vezes, o jogo precisa conferir duas coisas antes de decidir o que acontece. Para decidir, ele faz uma pergunta, e uma pergunta que ajuda o jogo a decidir se chama condição. [curious] Sabe quando alguém pergunta antes de você sair: pegou o casaco? Pegou a garrafinha? A pergunta fala de duas coisas. [engaging, energetic, conversational voice] No seu jogo, a pergunta da cabana do faroleiro fala de duas peças: a chave e o emblema. [engaging, energetic, conversational voice] Para saber o que o personagem já pegou, o jogo guarda duas informações em duas variáveis: temChave e temEmblema. Cada uma vale verdadeiro ou falso. [engaging, energetic, conversational voice] E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças. [curious] E a ordem em que ele pega as peças importa? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'emblema',

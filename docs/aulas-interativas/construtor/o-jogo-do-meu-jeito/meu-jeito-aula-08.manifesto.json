@@ -28,14 +28,14 @@
   "blocks": [
     {
       "key": "video-copia-publicada",
-      "plannedVideo": "Título: Compare projeto e versão publicada\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Mais adiante, você vai poder publicar\", mostrar a experiência na aula, parada, com o Mural vazio. No \"Sabe quando você tira uma foto de um desenho\", mostrar o meme ilustrado (2 a 3 s) do Zappy fotografando o desenho da nave [na edição: meme da foto]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o projeto e o Mural vazio parados, sem publicar nem trocar a cor: o que o Mural guarda é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.\n\nFala completa em meu-jeito-aula-08.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare projeto e versão publicada\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Mais adiante, você vai poder publicar\", mostrar a experiência na aula, parada, com o Mural vazio. No \"Sabe quando você tira uma foto de um desenho\", mostrar o meme ilustrado (2 a 3 s) do Zappy fotografando o desenho da nave [na edição: meme da foto]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o projeto e o Mural vazio parados, sem publicar nem trocar a cor: o que o Mural guarda é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “o que vai para lá quando você publica. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.\n\nFala completa em meu-jeito-aula-08.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-copia-publicada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -44,7 +44,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare projeto e versão publicada",
-        "instructions": "Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "A cada teste, compare a nave do projeto com a nave do Mural.",
           "Compare o Mural depois de mudar a cor no projeto e depois de publicar de novo.",
@@ -251,7 +251,7 @@
     {
       "key": "copia-publicada",
       "title": "Compare projeto e versão publicada",
-      "objective": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-copia-publicada", "fala-copia-publicada", "experimento-copia-publicada"],
       "workspaceKey": null,

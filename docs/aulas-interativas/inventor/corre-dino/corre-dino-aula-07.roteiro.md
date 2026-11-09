@@ -10,7 +10,7 @@
 
 **Clipe:** `video-condicao`
 
-**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "O seu jogo vai ganhar", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "O seu jogo vai ganhar", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -25,14 +25,14 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quantos cactos nascem com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos cactos nascem sem a pergunta e com a pergunta, na tela de início e depois de a partida começar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-condicao-K1 | Debinha | 1 | cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou? | E na tela de início, os cactos nascem? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos cactos nascem com a pergunta | [curious] |
+| video-condicao-K1 | Debinha | 1 | cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou? | E na tela de início, os cactos nascem? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos cactos nascem sem a pergunta e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -43,7 +43,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/game-state.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Guarde em que momento o jogo está
 
@@ -60,7 +60,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? A corrida começa sozinha, porque o jogo não sabe em que momento está.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a pergunta ligada, a tela de início esperava. Agora a gente vai guardar em que momento o seu jogo está!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a pergunta, a tela de início esperava. Agora a gente vai guardar em que momento o seu jogo está!
 
 [engaging, energetic, conversational voice] O jogo vai ter momentos, cada um com um nome: inicio, antes de a partida começar, e jogando, a partida. Esse momento se chama estado do jogo.
 
@@ -111,7 +111,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? O Dino e os cactos continuam correndo, porque nada pergunta pelo estado.
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, a tela de início esperava a partida. Agora a gente vai pôr essa pergunta no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta, a tela de início esperava a partida. Agora a gente vai pôr essa pergunta no seu jogo!
 
 [engaging, energetic, conversational voice] Antes de pegar cada bloco, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 
@@ -156,7 +156,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, nenhum cacto nascia na tela de início. Agora o relógio do seu jogo vai aprender a esperar também!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta, nenhum cacto nascia na tela de início. Agora o relógio do seu jogo vai aprender a esperar também!
 
 [engaging, energetic, conversational voice] O relógio dos cactos não fica dentro de A cada quadro do jogo: ele tem o próprio ritmo. Por isso, a pergunta que você acabou de montar não vale para ele, e ele continua criando cactos na tela de início. Você não vê esses cactos, porque o desenho deles agora espera a partida, mas eles vão sendo guardados no grupo.
 

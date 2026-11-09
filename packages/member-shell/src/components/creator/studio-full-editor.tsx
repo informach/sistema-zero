@@ -290,7 +290,8 @@ export function StudioFullEditor({
             runtimeEnvironment={pythonUnavailable ? undefined : runtime.environment}
             allowedModes={tier.allowedModes}
             allowLevelReveal={tier.allowLevelReveal}
-            features={{ professional }}
+            // O passeio de primeiros passos (D6) é só daqui, do Estúdio livre: aula e oficina não.
+            features={{ professional, firstStepsTour: true }}
             onPromoteToPro={handlePromoteToPro}
             // Só com posse do Pinta e do Molda (produtos vendidos à parte): sem o adapter, sem botão.
             // Antes o "Editar o desenho" ia sempre e levava quem não tem o Pinta a uma tela bloqueada.

@@ -28,11 +28,11 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 ### Seção 1. Quando nasce uma pedra nova?
 
-**Tarefa:** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-intervalo-das-pedras → fala-intervalo-das-pedras → experiencia-relogio.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo 
 
 **Experiência em exploração livre:** `spawn` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/spawn.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/spawn.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram. Escolha De 40 em 40 quadros e deixe o tempo passar até nascerem duas pedras. Observe onde cada uma aparece.
 
@@ -66,11 +66,11 @@ video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”.
 
 ### Seção 3. Onde nasce cada pedra?
 
-**Tarefa:** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-posicao-sorteada → fala-posicao-sorteada → experiencia-sorteio.
 
-**Recado na página (não gravar):** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -78,7 +78,7 @@ video-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no m
 
 **Experiência em exploração livre:** `random` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/random.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/random.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua. Clique em Passar 1 segundo e observe de onde a pedra entra na tela.
 

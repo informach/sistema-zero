@@ -97,7 +97,7 @@ test('CI and deployment budgets preserve individual proofs and other job deadlin
     'studio-python-extensions': 15,
     'studio-storage-macos': 15,
     'desktop-windows': 20,
-    'community-kids-e2e': 20,
+    'community-kids-e2e': 45,
     'studio-e2e-chromium': 30,
     'studio-e2e-firefox': 20,
     'studio-e2e-webkit': 20,

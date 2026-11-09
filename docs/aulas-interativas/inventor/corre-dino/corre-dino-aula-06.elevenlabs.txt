@@ -2,13 +2,13 @@
 
 [engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.
 
 [curious] E quando o cacto some da tela, ele sai do grupo também?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

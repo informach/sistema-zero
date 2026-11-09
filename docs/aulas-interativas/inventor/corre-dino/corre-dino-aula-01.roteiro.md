@@ -56,7 +56,7 @@
 
 **Clipe:** `video-uma-vez-e-sempre`
 
-**Na tela:** No "como os desenhos de um desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para correr", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "como os desenhos de um desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para correr", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -71,7 +71,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -89,7 +89,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Qual é o tamanho da tela?
 
@@ -99,7 +99,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-limite-da-tela`
 
-**Na tela:** No "Sabe quando você escolhe o tamanho da folha", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você escolhe o tamanho da folha", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -114,7 +114,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -132,7 +132,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/stage-size.ts`, na tela `packages/member-shell/src/components/scene-livre/stage-size.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Prepare a tela do jogo
 
@@ -200,7 +200,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Não tem nenhum contorno, porque o jogo ainda não mostra a borda.
 
-[engaging, energetic, conversational voice] Lembra da experiência do tamanho da tela, na quarta parte desta aula? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência do tamanho da tela, na quarta parte desta aula? A borda mostrava onde a tela acaba. Agora a gente vai colocar a borda no seu jogo!
 
 [engaging, energetic, conversational voice] A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, ela vai logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar.
 
@@ -240,11 +240,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-coordenadas` · Onde fica o Dino?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-coordenadas`
 
-**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -259,7 +259,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -277,7 +277,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/coordinates.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar do Dino na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 8. Existir e aparecer
 
@@ -287,7 +287,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-criar-e-mostrar`
 
-**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -302,7 +302,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -320,7 +320,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/world.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 9. Crie o Dino nos bastidores
 

@@ -173,6 +173,11 @@ export interface MonacoTabsProps {
    */
   formatLabel?: string
   /**
+   * O nome que a aba MOSTRA para cada arquivo (redesenho do clássico, 11/2026: "Página",
+   * "Estilo", "Programa"). O nome do arquivo segue na dica e no nome acessível.
+   */
+  tabLabels?: Readonly<Record<string, string>>
+  /**
    * Chamado quando uma formatação pedida NÃO acontece (serviços falharam,
    * provider ausente após a espera, ação indisponível ou erro ao rodar). Os
    * modos usam para avisar o aluno no Console da IDE — sem isto a falha só
@@ -337,6 +342,7 @@ export function MonacoTabs({
   headerSlot,
   hiddenAreas,
   formatLabel,
+  tabLabels,
   onFormatIssue,
   onFormatReady,
   canCloseFile,
@@ -995,13 +1001,16 @@ export function MonacoTabs({
                     onClick={() => setActive(f.name)}
                     onDoubleClick={() => onPinFile?.(f.name)}
                     title={f.name}
+                    aria-label={
+                      tabLabels?.[f.name] ? `${tabLabels[f.name]} · ${f.name}` : undefined
+                    }
                     className={[
                       'py-2 pl-3 text-xs font-medium',
                       temporaryFile === f.name ? 'italic' : '',
                       closable ? 'pr-1' : 'pr-3',
                     ].join(' ')}
                   >
-                    {f.name}
+                    {tabLabels?.[f.name] ?? f.name}
                   </button>
                   {closable && (
                     <button

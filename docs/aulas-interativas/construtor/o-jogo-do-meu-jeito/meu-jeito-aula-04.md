@@ -28,7 +28,7 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 ### Seção 1. Separe o miolo da borda
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
 
@@ -36,7 +36,7 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 video-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o”.
 
-**Experiência em exploração livre:** `fill-stroke`, com `setup.freeExploration`. Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `fill-stroke`, com `setup.freeExploration`. Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare o desenho em vetor
 

@@ -67,6 +67,7 @@ const NOME_DO_CENARIO: Record<SceneCenarioId, string> = {
   nave: 'Desafio do Primeiro Jogo (espaço)',
   jardim: 'Cadê Todo Mundo? (jardim)',
   farol: 'Desafio do Primeiro Jogo (farol)',
+  ilha: 'A Ilha do Farol (3D)',
   gorilas: 'Batalha de Gorilas (cidade)',
   'meu-jeito': 'O Jogo do Meu Jeito (espaço)',
 }

@@ -122,17 +122,15 @@ for (const [index, aula] of moedasAulas.entries()) {
           required: true,
           title: 'O contador de moedas',
           semPerguntaFinal: true,
-          // Faísca, 02/11/2026: só a ideia (o cofrinho, o sumiço da moeda e a pergunta do baú) e o
-          // convite à investigação. As pistas e os pedidos do modelo citam "A moeda some" e "Igual a
-          // 5", da bancada antiga: aqui vão do aberto ao direto com os botões desta tela. A meta
-          // "Sem sumir, a mesma moeda contou de novo" entra na lista: é a comparação que explica por
-          // que a montagem tira a moeda do jogo.
+          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar numa moeda é pegar,
+          // sair de perto é se afastar e chegar ao baú é ele perguntar; o sumiço é um interruptor e o
+          // que o baú pergunta é uma peça que se troca.
           instructions:
-            'Compare quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe a ordem e pode repetir quando quiser.',
+            'Pegue moedas pelo caminho, olhe o número que o jogo guarda e troque o que o baú pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
           hints: [
-            'Olhe o número moedas antes e depois de cada encontro: quando ele muda e quando continua igual?',
-            'Compare voltar a uma moeda já pega com o sumiço ligado e desligado. Depois tente o baú com poucas moedas e com mais de cinco, nas duas perguntas.',
-            'Clique nas moedas 1 e 2, em Afastar, na moeda 1 de novo e em Encostar no baú. Depois clique em Desligar o sumiço da moeda e nas moedas 3, 4 e 3 de novo. Depois clique em Recomeçar a partida, pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Exatamente 5.',
+            'Olhe o número de moedas antes e depois de cada moeda: quando ele muda e quando continua igual?',
+            'Compare passar de novo onde já pegou uma moeda, com o sumiço ligado e desligado. Leve ao baú menos de 5 moedas e mais de 5, nas duas perguntas.',
+            'Pegue duas moedas, afaste-se e passe de novo na primeira. Desligue o sumiço e passe duas vezes na mesma moeda. Leve menos de 5 moedas ao baú. Junte mais de 5, vá ao baú e troque "pelo menos" por "exatamente".',
           ],
           activity: {
             type: 'experimentation',
@@ -150,23 +148,16 @@ for (const [index, aula] of moedasAulas.entries()) {
               ],
               // O "Ainda falta" e o relatório da equipe com os botões desta tela.
               goalCopy: {
-                'each-adds': { pedido: 'Encoste em duas moedas diferentes e observe moedas.' },
+                'each-adds': { pedido: 'Pegue duas moedas diferentes e olhe o número.' },
                 'no-double': {
-                  pedido:
-                    'Com o sumiço da moeda ligado, pegue uma moeda, encoste em outra e volte à primeira.',
+                  pedido: 'Com o sumiço ligado, passe de novo onde já pegou uma moeda.',
                 },
-                'counts-again': {
-                  pedido:
-                    'Clique em Desligar o sumiço da moeda, pegue uma moeda, encoste em outra e volte à primeira.',
-                },
-                kept: { pedido: 'Depois de pegar uma moeda, clique em Afastar e observe moedas.' },
-                'below-goal': {
-                  pedido: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
-                },
+                'counts-again': { pedido: 'Desligue o sumiço e passe de novo na mesma moeda.' },
+                kept: { pedido: 'Depois de pegar uma moeda, afaste-se e olhe o número.' },
+                'below-goal': { pedido: 'Leve de uma a quatro moedas até o baú.' },
                 'compare-rules': {
                   label: 'Com mais de 5 moedas, "pelo menos 5" abriu e "exatamente 5" não',
-                  pedido:
-                    'Junte mais de 5 moedas e clique em Encostar no baú com Pelo menos 5 e depois com Exatamente 5.',
+                  pedido: 'Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".',
                 },
               },
             },

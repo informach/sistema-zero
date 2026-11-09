@@ -151,6 +151,7 @@ export const en: Record<string, string> = {
   // ── The Pro workspace (11/2026 redesign): screen layout, editor strip, dialogs ──
   'pro.stage.title.game': 'Game',
   'pro.stage.title.program': 'Program',
+  'pro.stage.title.page': 'Page',
   'pro.stage.stale': 'Code changed',
   'pro.layout.label': 'Screen layout',
   'pro.layout.split': 'Side by side',
@@ -195,9 +196,12 @@ export const en: Record<string, string> = {
   // ── The Pro stage: the game/program states (idle, preparing, error, unsupported) ──
   'pro.stage.idle.game': 'Press Run to see your game',
   'pro.stage.idle.program': 'Press Run to see your program',
+  'pro.stage.idle.page': 'Press Run to see your page',
   'pro.stage.idle.hint': 'Everything you changed in the code is already saved.',
+  'pro.stage.idle.hint.blocks': 'Everything you changed in the blocks is already saved.',
   'pro.stage.idle.action.game': 'Run the game',
   'pro.stage.idle.action.program': 'Run the program',
+  'pro.stage.idle.action.page': 'Run the page',
   'pro.stage.preparing': 'Setting up the workshop',
   'pro.stage.preparingHint': 'The first time takes a little longer.',
   'pro.stage.step.engine': 'Starting the engine',
@@ -212,6 +216,7 @@ export const en: Record<string, string> = {
   'pro.stage.details': 'See details',
   'pro.stage.error.game': 'Oops, the game could not open',
   'pro.stage.error.program': 'Oops, the program could not run',
+  'pro.stage.error.page': 'Oops, the page could not open',
   'pro.stage.error.hint': 'Take a look at what happened and try again.',
   'pro.stage.retry': 'Try again',
   'pro.stage.seeProblem': 'See what happened',

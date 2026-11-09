@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
-  discoveryGuidance,
+  discoverySpeech,
   type ExperimentationActivity,
   openScene,
   type SceneAction,
@@ -8,24 +8,18 @@ import {
   type SceneState,
   stepScene,
 } from '@sistemazero/core/learning/scene'
-import type { ReactElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DiscoveryContext } from '../src/components/scene-discovery-frame'
-import {
-  CabanaLivre,
-  type GestoDaCabana,
-  proximoGestoDaCabana,
-} from '../src/components/scene-poder-cabana'
-import {
-  type GestoDosSimbolos,
-  proximoGestoDosSimbolos,
-  SimbolosLivre,
-} from '../src/components/scene-poder-simbolos'
+import { cartoesDaAtividade } from '../src/components/scene-faisca-livre'
+import { CabanaLivre } from '../src/components/scene-poder-cabana'
+import { SimbolosLivre } from '../src/components/scene-poder-simbolos'
 
 /**
- * Os Poderes "O baú dos símbolos" e "O segredo da cabana" (Faísca, 02/11/2026): só a IDEIA na
- * tela. Nada de bloco, regra, Se, então nem senão; a lista diz o que comparar; o que cada resposta
- * faz só aparece depois do teste daquele caso; o botão em destaque é o gesto que o Zappy pede.
+ * As telas livres dos Poderes "O baú dos símbolos" e "O segredo da cabana" (08/11/2026, proposta
+ * "Experiências do Faísca" aprovada): o personagem ANDA até as pedras, as peças e a porta (os botões
+ * de gesto saíram), como o baú decide e o "e"/"ou" da cabana são peças que se trocam, e o caderninho
+ * fala do jeito da criança (sem `passo`, `temChave` nem `temEmblema`).
  */
 const caso = (scene: 'symbol-sequence' | 'two-pieces') => {
   const activity: ExperimentationActivity = {
@@ -39,6 +33,7 @@ const caso = (scene: 'symbol-sequence' | 'two-pieces') => {
     actions.reduce((s, a) => stepScene(start, s, a), openScene(start))
   return { activity, play }
 }
+const falas: string[] = []
 const tela = (activity: ExperimentationActivity, state: SceneState, view: ReactElement) =>
   renderToStaticMarkup(
     <DiscoveryContext.Provider
@@ -49,224 +44,88 @@ const tela = (activity: ExperimentationActivity, state: SceneState, view: ReactE
         running: false,
         setRunning: () => {},
         tick: () => {},
-        instruction: 'Fala do Zappy',
-        dialogue: (text) => <p>{text}</p>,
+        instruction: '',
+        dialogue: (text: string): ReactNode => {
+          falas.push(text)
+          return <p data-fala>{text}</p>
+        },
         tools: null,
+        continuar: null,
       }}
     >
       {view}
     </DiscoveryContext.Provider>,
   )
-const texto = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
-const SO_A_IDEIA =
-  /\b[Rr]egra\b|\b[Bb]loco|\b[Ee]ntão\b|\b[Ss]enão\b|\bSe\b|Quando o\b|Na ordem\b|Só contando|"e"|"ou"/
-/** O botão com o tom de gesto (o destaque), pelo texto dele. */
-const destaque = (html: string) =>
-  [...html.matchAll(/<button[^>]*data-tom="gesto"[^>]*>([^<]*)</g)].map((m) => m[1])
-
+const texto = (html: string) =>
+  html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+const BOTOES_ANTIGOS =
+  /Tocar o sol|Tocar a lua|Tocar a estrela|Pegar a chave|Pegar o emblema|Encostar na cabana|O baú confere a vez|O baú só conta|temChave|temEmblema|\bbloco|\bentão\b|\bsenão\b/
 const tocar = (symbol: 'sol' | 'lua' | 'estrela'): SceneAction => ({ type: 'touch-symbol', symbol })
 
-describe('O baú dos símbolos: a tela', () => {
+describe('Símbolos: a tela livre', () => {
   const { activity, play } = caso('symbol-sequence')
 
-  test('rótulos sem bloco nem regra, nos dois baús', () => {
-    for (const s of [
-      play([]),
-      play([tocar('sol')]),
-      play([tocar('lua')]),
-      play([{ type: 'sequence-mode', mode: 'count' }, tocar('estrela')]),
-    ]) {
-      const lido = texto(tela(activity, s, <SimbolosLivre />))
-      expect(lido).not.toMatch(SO_A_IDEIA)
-      expect(lido).toContain('O baú confere a vez')
-      expect(lido).toContain('O baú só conta')
-      expect(lido).toContain('Toque o sol e depois a lua e observe passo.')
-    }
+  test('concluir a ordem mostra três de três sem mudar o passo da regra', () => {
+    const s = play([tocar('sol'), tocar('lua'), tocar('estrela')])
+    expect(s.sequence.passo).toBe(2)
+    expect(texto(tela(activity, s, <SimbolosLivre />))).toContain('Em que passo da placa? 3 de 3')
   })
 
-  test('o que cada resposta faz só aparece depois do teste daquele caso', () => {
-    const antes = texto(tela(activity, play([]), <SimbolosLivre />))
-    expect(antes).toContain('É a minha vez?')
-    expect(antes).not.toContain('passo anda')
-    expect(antes).not.toContain('passo volta a 0')
-    expect(antes.match(/Teste para descobrir/g)?.length).toBe(2)
+  test('sem os botões de gesto nem o nome da variável', () => {
+    for (const s of [play([]), play([tocar('sol')]), play([tocar('lua')])])
+      expect(texto(tela(activity, s, <SimbolosLivre />))).not.toMatch(BOTOES_ANTIGOS)
+  })
 
-    const sol = texto(tela(activity, play([tocar('sol')]), <SimbolosLivre />))
-    expect(sol).toContain('O símbolo acende, e passo anda')
-    expect(sol).not.toContain('passo volta a 0')
-
-    const meio = texto(tela(activity, play([tocar('lua')]), <SimbolosLivre />))
-    expect(meio).toContain('passo volta a 0, e tudo apaga')
-    expect(meio).not.toContain('passo anda')
-
-    const conta = texto(
-      tela(activity, play([{ type: 'sequence-mode', mode: 'count' }]), <SimbolosLivre />),
+  test('a peça de como o baú decide se troca; o caderninho diz o passo da placa', () => {
+    const inicio = texto(tela(activity, play([]), <SimbolosLivre />))
+    expect(inicio).toContain('O baú confere a ordem dos símbolos')
+    expect(inicio).toContain('Em que passo da placa? 0 de 3')
+    expect(texto(tela(activity, play([tocar('sol')]), <SimbolosLivre />))).toContain(
+      'Em que passo da placa? 1 de 3',
     )
-    expect(conta).not.toContain('O baú abre')
+    const contando = play([{ type: 'sequence-mode', mode: 'count' }, tocar('lua')])
+    const html = texto(tela(activity, contando, <SimbolosLivre />))
+    expect(html).toContain('O baú confere só quantos foram tocados')
+    expect(html).toContain('Quantos símbolos tocados? 1 de 3')
   })
 
-  test('o botão em destaque é o gesto que o Zappy pede', () => {
-    const rotulo: Record<Exclude<GestoDosSimbolos, null>, string> = {
-      sol: 'Tocar o sol',
-      lua: 'Tocar a lua',
-      estrela: 'Tocar a estrela',
-      recomecar: 'Recomeçar a partida',
-      ordem: 'O baú confere a vez',
-      contar: 'O baú só conta',
-    }
-    const casos: [SceneAction[], Exclude<GestoDosSimbolos, null>][] = [
-      [[], 'sol'],
-      [[tocar('sol')], 'lua'],
-      [[tocar('sol'), tocar('lua')], 'estrela'],
-      [[tocar('sol'), tocar('lua'), tocar('estrela')], 'recomecar'],
-      [[tocar('sol'), tocar('lua'), tocar('estrela'), { type: 'restart-symbols' }], 'sol'],
-      [
-        [tocar('sol'), tocar('lua'), tocar('estrela'), { type: 'restart-symbols' }, tocar('sol')],
-        'estrela',
-      ],
-      [[{ type: 'sequence-mode', mode: 'count' }], 'ordem'],
-    ]
-    for (const [acoes, esperado] of casos) {
-      const s = play(acoes)
-      const fala = discoveryGuidance(activity, s)?.id
-      expect([fala, proximoGestoDosSimbolos(fala, s.sequence)]).toEqual([fala, esperado])
-      expect(destaque(tela(activity, s, <SimbolosLivre />))).toEqual([rotulo[esperado]])
-    }
-  })
-
-  test('com o baú aberto, os símbolos ficam indisponíveis e recomeçar é o caminho', () => {
-    const html = tela(
-      activity,
-      play([tocar('sol'), tocar('lua'), tocar('estrela')]),
-      <SimbolosLivre />,
-    )
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Tocar o sol/)
-    expect(texto(html)).toContain('Recomeçar a partida fecha o baú')
-  })
-
-  test('o aviso do palco não diz "na ordem certa" quando o baú que só conta abre', () => {
-    const contando = play([
-      tocar('lua'),
-      { type: 'sequence-mode', mode: 'count' },
-      tocar('estrela'),
-      tocar('lua'),
-      tocar('sol'),
-    ])
-    expect(contando.sequence.chest).toBe('open')
-    const lido = texto(tela(activity, contando, <SimbolosLivre />))
-    expect(lido).toContain('O baú abriu!')
-    expect(lido).not.toContain('Na ordem certa')
-    expect(
-      texto(
-        tela(activity, play([tocar('sol'), tocar('lua'), tocar('estrela')]), <SimbolosLivre />),
-      ),
-    ).toContain('Na ordem certa! O baú abriu.')
-  })
-
-  test('a figura da ideia mora embaixo do palco, fora da coluna dos botões', () => {
-    const html = tela(activity, play([]), <SimbolosLivre />)
-    expect(html.indexOf('A pergunta de cada símbolo')).toBeLessThan(html.indexOf('Tocar o sol'))
-    expect(html).toMatch(/sz-discovery-evidence[^>]*>\s*<figure/)
+  test('a fala é a do motor', () => {
+    falas.length = 0
+    tela(activity, play([]), <SimbolosLivre />)
+    expect(falas).toContain(discoverySpeech('symbols-start'))
   })
 })
 
-const pegar = (piece: 'key' | 'emblem'): SceneAction => ({ type: 'take-piece', piece })
-const encostar: SceneAction = { type: 'try-cabin' }
-
-describe('O segredo da cabana: a tela', () => {
+describe('Cabana: a tela livre', () => {
   const { activity, play } = caso('two-pieces')
+  const pegar = (piece: 'key' | 'emblem'): SceneAction => ({ type: 'take-piece', piece })
 
-  test('rótulos sem bloco nem regra: a cabana pede as duas peças ou uma das peças', () => {
-    for (const s of [
-      play([]),
-      play([encostar]),
-      play([pegar('key'), pegar('emblem'), encostar]),
-      play([{ type: 'cabin-rule', rule: 'or' }]),
-    ]) {
-      const lido = texto(tela(activity, s, <CabanaLivre />))
-      expect(lido).not.toMatch(SO_A_IDEIA)
-      expect(lido).toContain('A cabana pede as duas peças')
-      expect(lido).toContain('A cabana pede uma das peças')
-      expect(lido).toContain('Encoste na cabana sem nenhuma peça e observe.')
-    }
+  test('sem os botões de gesto nem os nomes das variáveis', () => {
+    for (const s of [play([]), play([pegar('key')]), play([pegar('key'), { type: 'try-cabin' }])])
+      expect(texto(tela(activity, s, <CabanaLivre />))).not.toMatch(BOTOES_ANTIGOS)
   })
 
-  test('o que cada resposta faz só aparece depois do teste daquele caso', () => {
-    const antes = texto(tela(activity, play([]), <CabanaLivre />))
-    expect(antes).not.toContain('Abrir a cabana')
-    expect(antes).not.toContain('Avisar o que a cabana pede')
-    expect(antes.match(/Teste para descobrir/g)?.length).toBe(2)
-    // Pegar uma peça prepara o teste: ainda não responde nada.
-    expect(texto(tela(activity, play([pegar('key')]), <CabanaLivre />))).not.toContain(
-      'Avisar o que a cabana pede',
-    )
-
-    const fechada = texto(tela(activity, play([encostar]), <CabanaLivre />))
-    expect(fechada).toContain('Avisar o que a cabana pede')
-    expect(fechada).not.toContain('Abrir a cabana')
-
-    const aberta = texto(
-      tela(activity, play([encostar, pegar('key'), pegar('emblem'), encostar]), <CabanaLivre />),
-    )
-    expect(aberta).toContain('Abrir a cabana')
-    expect(aberta).toContain('Avisar o que a cabana pede')
+  test('a pergunta da cabana aparece inteira, com o "e" que se troca por "ou"', () => {
+    const inicio = texto(tela(activity, play([]), <CabanaLivre />))
+    expect(inicio).toContain('Tem a chave e ⇄ tem o emblema?')
+    expect(inicio).toContain('Tem a chave? NÃO')
+    expect(inicio).toContain('Tem o emblema? NÃO')
+    const ou = play([{ type: 'cabin-rule', rule: 'or' }, pegar('key')])
+    const html = texto(tela(activity, ou, <CabanaLivre />))
+    expect(html).toContain('Tem a chave ou ⇄ tem o emblema?')
+    expect(html).toContain('Tem a chave? SIM')
   })
+})
 
-  test('o botão em destaque é o gesto que o Zappy pede', () => {
-    const rotulo: Record<Exclude<GestoDaCabana, null>, string> = {
-      chave: 'Pegar a chave',
-      emblema: 'Pegar o emblema',
-      encostar: 'Encostar na cabana',
-      recomecar: 'Recomeçar a partida',
-      duas: 'A cabana pede as duas peças',
-      uma: 'A cabana pede uma das peças',
-    }
-    const abriu = [encostar, pegar('key'), encostar, pegar('emblem'), encostar]
-    const casos: [SceneAction[], Exclude<GestoDaCabana, null>][] = [
-      [[], 'encostar'],
-      [[encostar], 'chave'],
-      [[encostar, pegar('key')], 'encostar'],
-      [[encostar, pegar('key'), encostar], 'emblema'],
-      [abriu, 'recomecar'],
-      [[...abriu, { type: 'restart-cabin' }], 'emblema'],
-      [[...abriu, { type: 'restart-cabin' }, pegar('emblem'), pegar('key'), encostar], 'uma'],
-      [[{ type: 'cabin-rule', rule: 'or' }, pegar('key'), encostar], 'duas'],
-    ]
-    for (const [acoes, esperado] of casos) {
-      const s = play(acoes)
-      const fala = discoveryGuidance(activity, s)?.id
-      expect([fala, proximoGestoDaCabana(fala, s.pieces)]).toEqual([fala, esperado])
-      expect(destaque(tela(activity, s, <CabanaLivre />))).toEqual([rotulo[esperado]])
-    }
-  })
-
-  test('trocar o pedido com o personagem na porta não mostra a resposta antiga', () => {
-    const html = texto(
-      tela(activity, play([encostar, { type: 'cabin-rule', rule: 'or' }]), <CabanaLivre />),
-    )
-    expect(html).toContain('A cabana pede uma das peças. O personagem tem pelo menos uma?')
-    expect(html).not.toContain('resposta deste teste')
-    // O encontro seguinte responde a pergunta nova.
-    const nova = texto(
-      tela(
-        activity,
-        play([encostar, { type: 'cabin-rule', rule: 'or' }, pegar('key'), encostar]),
-        <CabanaLivre />,
-      ),
-    )
-    expect(nova).toContain('resposta deste teste')
-  })
-
-  test('os avisos do palco acompanham o que a cabana pede', () => {
-    const uma: SceneAction = { type: 'cabin-rule', rule: 'or' }
-    const fechada = texto(tela(activity, play([uma, encostar]), <CabanaLivre />))
-    expect(fechada).toContain('A cabana pede a chave ou o emblema.')
-    expect(fechada).not.toContain('A cabana pede a chave e o emblema.')
-    const aberta = texto(tela(activity, play([uma, pegar('key'), encostar]), <CabanaLivre />))
-    expect(aberta).toContain('A cabana abriu!')
-    expect(aberta).not.toContain('Você tinha as duas peças')
-    expect(texto(tela(activity, play([encostar]), <CabanaLivre />))).toContain(
-      'A cabana pede a chave e o emblema.',
-    )
+describe('as metas da atividade decidem os cartões', () => {
+  test('sem metas no caso, todos; com metas, só as do caso, na ordem da tela', () => {
+    const cartoes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+    expect(cartoesDaAtividade(cartoes, { setup: { freeExploration: true } })).toEqual(cartoes)
+    expect(
+      cartoesDaAtividade(cartoes, { setup: { freeExploration: true, goals: ['c', 'a'] } }),
+    ).toEqual([{ id: 'a' }, { id: 'c' }])
   })
 })

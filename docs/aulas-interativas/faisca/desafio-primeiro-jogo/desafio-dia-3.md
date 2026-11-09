@@ -12,6 +12,10 @@ A versão vigente segue [exploração orientada por objetivos](../../../aulas-in
 
 Decisão da responsável: os vídeos das partes 1 e 6 deixaram de apontar os controles ("Olha aqui: nesta experiência…", a marca de início, Mostrar um alvo) e de dizer a ordem dos testes. Cada um tem o conceito (condição; o lugar com dois números), a analogia (a pergunta "está chovendo?", que decide o guarda-chuva, no lugar da porta de casa, que já dava os dois resultados; o mapa do tesouro), o nome no jogo dela (temChave é verdadeiro?; x e y), uma pergunta da Debinha devolvida com "Isso você vai testar na experiência." e um convite com o fecho comum. Na parte 6, a pergunta da Debinha passou a ser a que convida ("Mas, quando o y aumenta, a chave sobe ou desce?"), e o y é apresentado antes dela. O Na tela só amplia a experiência e mostra a cena parada. As instruções, os recados e as páginas do Passo a passo dizem o que comparar, sem sequência; o alvo opcional continua na própria cena e no Passo a passo. Âncoras de `video-d3-condicao-K1` e `video-d3-posicao-K1` recalculadas. O guarda é `qa/video-experiencia.test.ts`.
 
+## Retomada sem os controles da experiência, 09/11/2026
+
+Decisão da responsável: quem lembra a experiência lembra o que se observou. Na parte 2, a retomada diz que a porta "perguntava se o personagem tinha a chave", porque a experiência mostra a pergunta "Você tem a chave?" e o caderninho, não temChave; temChave continua nas falas sobre o jogo da criança e na montagem. A parte 2 precisa de voz nova.
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.
@@ -86,7 +90,7 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 
 Preparar com ou sem chave em qualquer ordem. Desde 08/11/2026 o personagem anda livre: pegar a chave é andar até ela, e chegar à porta é o teste (o balão da cena pergunta "Você tem a chave?" e responde "Sem a chave, não abro." ou "Tem a chave! Pode entrar."); **Jogar de novo** devolve a chave ao chão. Exibir a pergunta, as duas respostas (sim e não) e a resposta escolhida; o que cada resposta faz aparece depois do primeiro teste daquele caso. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
 
-**Convite da experiência:** Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência mostra "A pergunta da porta" com as respostas **Sim** e **Não**, sem regra, então nem senão (os nomes do bloco Se ficam para a montagem, que diz "é este bloco que faz a pergunta da porta" e liga o senão à resposta do não e o então à do sim). O que cada resposta faz só aparece depois de a criança testar aquele caso ("Teste para descobrir"). O vídeo devolve a pergunta da Debinha ("O que você acha que a porta faz? Isso você vai testar na experiência."). O Zappy pergunta antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais.
 
@@ -155,7 +159,7 @@ Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com 
 
 Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 60 em 60 no x e de 40 em 40 no y, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
 
-**Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. (Desde 08/11/2026, com as quatro descobertas aparece o **Desafio** com **Mostrar o alvo**; os números têm − e +, e no teclado as setas, WASD, + e −.)
+**Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. (Desde 08/11/2026, com as quatro descobertas aparece o **Desafio** com **Mostrar o alvo**; os números têm − e +, e no teclado as setas, WASD, + e −.)
 
 **Convite à investigação, 02/11/2026:** o vídeo usa a analogia do mapa do tesouro, diz qual número cuida de cada direção e deixa para a criança descobrir para que lado cada um leva a chave quando aumenta (a pergunta da Debinha vira teste). O Zappy explica depois de cada eixo, inclusive por que um y maior leva para baixo, e a retomada da parte 7 repete essa explicação. Sem pistas escritas: a missão restrita pede a meta que falta.
 
@@ -187,7 +191,7 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 - **Situação:** cena existente, ampliada com informação, pergunta e respostas visíveis.
 - **Elenco/cenário:** farol, personagem e chave, com `cenario: farol`.
 - **Metas:** `locked-without-key` e `opened-with-key`.
-- **Instrução:** "Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser." (02/11/2026). Desde 08/11/2026 a instrução é "Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. Você escolhe a ordem e pode repetir quando quiser.", sem botões de dar a chave nem de testar a porta: o personagem anda livre e a porta pergunta quando ele chega.
+- **Instrução:** "Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. O Zappy te mostra o que testar, e você pode repetir quando quiser." (02/11/2026). Desde 08/11/2026 a instrução é "Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser.", sem botões de dar a chave nem de testar a porta: o personagem anda livre e a porta pergunta quando ele chega.
 - **Observação:** trocar o estado da chave sozinho não conclui. Sem palpite obrigatório ou pergunta final redundante; semPerguntaFinal fica no bloco interativo.
 
 ## Vídeos

@@ -48,7 +48,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 **Clipe:** `video-experiencia`
 
-**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo, sem mostrar o cadeado abrindo. No convite, ampliar a experiência e mostrar a cena parada: as três pedras, a placa, o baú, o número passo e a pergunta "É a minha vez?" com as duas respostas ainda em "?", sem apontar controles. Não tocar nenhum símbolo: o que passo faz a cada toque, o que acontece fora da vez e o que muda em cada jeito de o baú conferir é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
+**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo, sem mostrar o cadeado abrindo. No convite, ampliar a experiência e mostrar a cena parada: as três pedras, a placa, o baú e o caderninho do jogo em 0 de 3, sem apontar controles. Não tocar nenhum símbolo: o que passo faz a cada toque, o que acontece fora da vez e o que muda em cada jeito de o baú conferir é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -67,12 +67,12 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. O sol começa
 

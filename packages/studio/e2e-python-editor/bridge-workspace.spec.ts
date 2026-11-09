@@ -123,13 +123,13 @@ test('Ponte connects real pointer selection in both editors and exposes programm
   await page.mouse.click(point.x, point.y)
   await expect(page.locator('.blocklyHighlighted')).toHaveCount(1)
   await expect(page.locator('.blocklyHighlighted')).toContainText('x')
-  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
-  await expect(page.getByRole('treeitem', { name: 'Textos', exact: true })).toBeVisible()
-  await page.getByRole('treeitem', { name: 'Textos', exact: true }).click()
+  await page.getByRole('treeitem', { name: /Programação$/ }).click()
+  await expect(page.getByRole('treeitem', { name: /Textos$/ })).toBeVisible()
+  await page.getByRole('treeitem', { name: /Textos$/ }).click()
   await expect(
     page
       .locator('.blocklyFlyout .blocklyText')
-      .filter({ hasText: /^texto$/ })
+      .filter({ hasText: /^Olá!$/ })
       .first(),
   ).toBeVisible()
 })
@@ -183,8 +183,13 @@ test('Python tutor references select the current block and reopen a filtered cat
     blockId,
   )
   await expect(page.locator('.blocklySelected')).toContainText('3')
-  await page.getByRole('searchbox', { name: 'Buscar blocos' }).fill('categoria inexistente')
-  await expect(page.getByRole('treeitem', { name: 'Nenhum bloco encontrado' })).toBeVisible()
+  // A busca mora na paleta desde o redesenho de 11/2026 ("Procurar um bloco"): ela não filtra
+  // as categorias, então o Zappy acha a categoria certa mesmo com uma busca sem resultado.
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Procurar um bloco' }).click()
+  await page.getByRole('searchbox', { name: 'Pesquisar blocos' }).fill('categoria inexistente')
+  await expect(
+    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Nada encontrado' }),
+  ).toBeVisible()
   // The same ID with another type must not select an unrelated existing block.
   await page.evaluate(
     (blockId) =>
@@ -196,11 +201,10 @@ test('Python tutor references select the current block and reopen a filtered cat
       }),
     blockId,
   )
-  await expect(page.getByRole('searchbox', { name: 'Buscar blocos' })).toHaveValue('')
   await expect(
     page
       .locator('.blocklyFlyout .blocklyText')
-      .filter({ hasText: /^texto$/ })
+      .filter({ hasText: /^Olá!$/ })
       .first(),
   ).toBeVisible()
   expect(await page.evaluate(() => pythonBridgeProbe.state().source)).toBe(source)
@@ -211,8 +215,8 @@ test('a historical Python tutor reference cannot reveal a category removed by cu
 }) => {
   const source = await page.evaluate(() => pythonBridgeProbe.state().source)
   await page.evaluate(() => pythonBridgeProbe.learning({ allowBlocks: ['sz_py_print'] }))
-  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
-  await expect(page.getByRole('treeitem', { name: 'Repetições', exact: true })).toHaveCount(0)
+  await page.getByRole('treeitem', { name: /Programação$/ }).click()
+  await expect(page.getByRole('treeitem', { name: /Repetições$/ })).toHaveCount(0)
   await page.evaluate(() =>
     pythonBridgeProbe.focusTutor({
       blockType: 'sz_py_for',
@@ -220,7 +224,7 @@ test('a historical Python tutor reference cannot reveal a category removed by cu
       subcategory: 'Repetições',
     }),
   )
-  await expect(page.getByRole('treeitem', { name: 'Repetições', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('treeitem', { name: /Repetições$/ })).toHaveCount(0)
   await expect(
     page.locator('.blocklyFlyout .blocklyText').filter({ hasText: /^para cada$/ }),
   ).toHaveCount(0)
@@ -245,11 +249,11 @@ test('mode routing honors Python curation and a revoked authoring approval witho
   page,
 }) => {
   const source = await page.evaluate(() => pythonBridgeProbe.state().source)
-  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
-  await expect(page.getByRole('treeitem', { name: 'Repetições', exact: true })).toBeVisible()
+  await page.getByRole('treeitem', { name: /Programação$/ }).click()
+  await expect(page.getByRole('treeitem', { name: /Repetições$/ })).toBeVisible()
   await page.evaluate(() => pythonBridgeProbe.learning({ allowBlocks: ['sz_py_print'] }))
-  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
-  await expect(page.getByRole('treeitem', { name: 'Repetições', exact: true })).toHaveCount(0)
+  await page.getByRole('treeitem', { name: /Programação$/ }).click()
+  await expect(page.getByRole('treeitem', { name: /Repetições$/ })).toHaveCount(0)
   await page.evaluate(() => pythonBridgeProbe.approveBlocks(false))
   await expect(
     page.getByRole('alert').filter({ hasText: 'Os blocos Python deste projeto' }),

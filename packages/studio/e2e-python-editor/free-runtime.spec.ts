@@ -17,9 +17,10 @@ for (const kind of ['classic', 'pro'] as const) {
     await page.waitForFunction(() => !!globalThis.studioFreeProbe)
     await page.evaluate(() => studioFreeProbe.create())
     await page.getByRole('button', { name: '+ Novo projeto' }).click()
-    await expect(page.getByRole('radio', { name: 'JavaScript (padrão)' })).toBeChecked()
-    if (kind === 'pro') await page.getByRole('radio', { name: /Pro \(código\)/ }).click()
-    await page.getByRole('radio', { name: 'Python', exact: true }).click()
+    // Com as duas linguagens, "Criar um jogo novo" abre sem nenhuma escolhida (11/2026).
+    await expect(page.getByRole('radio', { name: /^JavaScript/ })).not.toBeChecked()
+    await page.getByRole('radio', { name: /^Python/ }).click()
+    if (kind === 'pro') await page.getByRole('radio', { name: /^Com código/ }).click()
     await page.getByRole('button', { name: 'Criar e abrir', exact: true }).click()
     await expect
       .poll(() => page.evaluate(() => studioFreeProbe.saved()))
@@ -30,7 +31,7 @@ for (const kind of ['classic', 'pro'] as const) {
     }
     await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
     await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Extensões', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos', exact: true }).click()
     const extensions = page.getByRole('dialog', { name: 'Extensões Python' })
     await expect(extensions.getByText('Turtle', { exact: true })).toBeVisible()
     await extensions.getByRole('button', { name: 'Instalar', exact: true }).click()
@@ -134,7 +135,7 @@ test('a transient free discovery failure can recover without closing or clearing
     .getByRole('dialog')
     .getByRole('button', { name: 'Tentar novamente', exact: true })
     .click()
-  await expect(page.getByRole('radio', { name: 'Python', exact: true })).toBeVisible()
+  await expect(page.getByRole('radio', { name: /^Python/ })).toBeVisible()
   await expect(page.getByRole('textbox')).toHaveValue('Meu nome preservado')
   await page.evaluate(() => studioFreeProbe.close())
 })

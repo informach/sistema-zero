@@ -7,9 +7,10 @@ import { initialExperiment, stepExperiment } from './session'
 import type { SceneStart, SceneState } from './state'
 
 /**
- * Os Poderes "O baú dos símbolos" e "O segredo da cabana" (Faísca, 02/11/2026): só a IDEIA e o
- * convite à investigação. Nada de bloco, regra, evento, Se, então nem senão nas falas; antes do
- * teste, o Zappy pergunta e diz o que observar, e o resultado só vem na fala de depois.
+ * Os Poderes "O baú dos símbolos" e "O segredo da cabana" (Faísca). Desde 08/11/2026 (proposta
+ * "Experiências do Faísca", aprovada) o personagem ANDA até as pedras, as peças e a porta, e o
+ * Zappy fala curto, uma coisa por vez. O "e" e o "ou" são peças que se trocam na pergunta da
+ * cabana, por isso aparecem entre aspas, como a criança os vê.
  */
 const falas = new Map(
   (['symbol-sequence', 'two-pieces'] as const).flatMap((cena) =>
@@ -17,7 +18,7 @@ const falas = new Map(
   ),
 )
 const SO_A_IDEIA =
-  /\b[Rr]egra|\b[Bb]loco|\b[Ee]vento|\b[Ee]ntão\b|\b[Ss]enão\b|\b[Ss]e\b passo|Quando o\b|Quando acontecer|Ao iniciar|\b[Cc]omando|\b[Cc]ódigo|\bVerdadeiro\b/
+  /\b[Rr]egra|\b[Bb]loco|\b[Ee]vento|\b[Ee]ntão\b|\b[Ss]enão\b|Quando o\b|Quando acontecer|Ao iniciar|\b[Cc]omando|\b[Cc]ódigo|\bVerdadeiro\b|temChave|temEmblema|[Cc]lique em|Tocar o|Encostar|[−+]/
 
 const caso = (scene: 'symbol-sequence' | 'two-pieces') => {
   const activity: ExperimentationActivity = {
@@ -33,45 +34,19 @@ const caso = (scene: 'symbol-sequence' | 'two-pieces') => {
   return { activity, play, fala }
 }
 
-describe('Poderes da Faísca: o Zappy fala da ideia', () => {
-  test('as duas cenas têm falas próprias', () => {
-    expect([...falas.keys()].filter((id) => id.startsWith('symbols-')).length).toBeGreaterThan(5)
-    expect([...falas.keys()].filter((id) => id.startsWith('cabin-')).length).toBeGreaterThan(5)
+describe('Poderes da Faísca: o Zappy fala curto, só da ideia', () => {
+  test('as duas cenas têm falas próprias, com a ideia e o "No seu jogo"', () => {
+    for (const p of ['symbols', 'cabin']) {
+      expect(falas.get(`${p}-idea`)).toBeString()
+      expect(falas.get(`${p}-bridge`)).toStartWith('No seu jogo: ')
+      expect(falas.get(`${p}-complete`)).toBeString()
+    }
   })
 
-  test.each([...falas.keys()])('%s não fala de bloco, regra, evento, Se, então nem senão', (id) => {
-    expect(falas.get(id)).not.toMatch(SO_A_IDEIA)
-    // O "e" e o "ou" entram como ideia ("pede as duas peças", "uma das peças"), nunca entre aspas.
-    expect(falas.get(id)).not.toMatch(
-      /"e"|"ou"|\bou\b no lugar|Só contando|Na ordem\b(?! da placa)/,
-    )
-  })
-
-  const ANTES: [string, RegExp][] = [
-    ['symbols-start', /passo (vai|fica|vira|vale)|acende|1|2|abre/i],
-    ['symbols-sun', /era a vez da lua|foi para 2|lua acendeu/i],
-    ['symbols-moon', /baú abriu|abre o baú|abriu/i],
-    ['symbols-opened', /voltou|volta a 0|apag/i],
-    ['symbols-middle', /continuou 0|nada acendeu/i],
-    ['symbols-again', /abriu o baú do mesmo jeito|recomeça pelo sol/i],
-    ['symbols-count', /qualquer ordem|abriu mesmo|também abr/i],
-    ['symbols-retry', /abriu/i],
-    ['symbols-sun-again', /foi para 2|lua acendeu|baú abr/i],
-    ['symbols-again-err', /abriu o baú do mesmo jeito|recomeça pelo sol/i],
-    ['symbols-count-early', /abriu|qualquer ordem/i],
-    ['symbols-count-try', /qualquer ordem|abriu|também abr/i],
-    ['cabin-start', /abriu|fechada|avisou|abre/i],
-    ['cabin-none', /abriu|fechada|avisou/i],
-    ['cabin-one', /abriu|fechada|avisou|não basta/i],
-    ['cabin-two', /abriu|fechada|avisou/i],
-    ['cabin-opened', /do mesmo jeito|não importa|qualquer ordem/i],
-    ['cabin-order-try', /do mesmo jeito|não importa|abriu/i],
-    ['cabin-or', /já abriu|basta|uma só abre/i],
-    ['cabin-or-try', /abriu|basta|fica fechada|continua fechada/i],
-  ]
-  test.each(ANTES)('%s não conta o resultado antes do teste', (id, resultado) => {
-    expect(falas.get(id)).toBeString()
-    expect(falas.get(id)).not.toMatch(resultado)
+  test.each([...falas.keys()])('%s é curta e não fala de bloco, botão nem variável', (id) => {
+    const texto = falas.get(id) ?? ''
+    if (!/-(?:idea|bridge)$/.test(id)) expect(texto.split(/\s+/).length).toBeLessThanOrEqual(12)
+    expect(texto).not.toMatch(SO_A_IDEIA)
   })
 })
 
@@ -105,59 +80,61 @@ describe('O baú dos símbolos em exploração livre', () => {
     expect(fala(caminho)).toBe('symbols-complete')
   })
 
-  test('a fala acompanha cada passo da escada', () => {
+  test('a fala acompanha a escada que a criança escolheu', () => {
     expect(fala([])).toBe('symbols-start')
     expect(fala([tocar('sol')])).toBe('symbols-sun')
-    expect(fala([tocar('sol'), tocar('lua')])).toBe('symbols-moon')
+    expect(fala([tocar('sol'), tocar('lua')])).toBe('symbols-follow')
     const aberto = [tocar('sol'), tocar('lua'), tocar('estrela')]
-    expect(fala(aberto)).toBe('symbols-opened')
+    // Com o baú aberto, tocar não faz nada: a fala pede para jogar de novo (full review 08/11/2026).
+    expect(fala(aberto)).toBe('symbols-skip-restart')
+    expect(fala([...aberto, recomecar])).toBe('symbols-skip')
     const pulou = [...aberto, recomecar, tocar('sol'), tocar('estrela')]
     expect(fala(pulou)).toBe('symbols-middle')
     const meio = [...pulou, tocar('lua')]
-    expect(fala(meio)).toBe('symbols-again')
+    expect(fala(meio)).toBe('symbols-retry')
     const deNovo = [...meio, tocar('sol'), tocar('lua'), tocar('estrela')]
-    expect(fala(deNovo)).toBe('symbols-count')
+    expect(fala(deNovo)).toBe('symbols-place')
   })
 
-  test('quem começa pelo meio ouve o recomeço e volta ao sol', () => {
-    expect(fala([tocar('lua')])).toBe('symbols-retry')
+  test('quem começa pelo meio volta ao sol', () => {
     expect(play([tocar('lua')]).evidence.discoveries).toContain('middle-start')
+    expect(fala([tocar('lua')])).toBe('symbols-start')
     expect(fala([tocar('lua'), tocar('sol')])).toBe('symbols-sun')
-    // Errou antes e abriu depois: a ordem certa e o recomeço caem juntos; falta pular a lua.
-    const errouAntes = [tocar('lua'), tocar('sol'), tocar('lua'), tocar('estrela')]
-    expect(play(errouAntes).evidence.discoveries).toEqual(
-      expect.arrayContaining(['middle-start', 'right-order', 'restart-works']),
-    )
-    expect(fala(errouAntes)).toBe('symbols-opened')
   })
 
-  test('o baú que só conta: a comparação pede antes o baú que confere a vez (full review)', () => {
+  test('o "sem recomeçar" só vale depois de errar, com o baú fechado (full review 08/11/2026)', () => {
+    // Sem erro nesta partida e com o baú aberto, seguir a placa não faz nada.
+    const semErro = [
+      tocar('lua'),
+      recomecar,
+      tocar('sol'),
+      tocar('estrela'),
+      recomecar,
+      tocar('sol'),
+      tocar('lua'),
+      tocar('estrela'),
+    ]
+    expect(play(semErro).sequence.chest).toBe('open')
+    expect(fala(semErro)).toBe('symbols-retry-restart')
+    expect(fala([...semErro, recomecar])).toBe('symbols-retry-restart')
+    expect(fala([...semErro, recomecar, tocar('lua')])).toBe('symbols-retry')
+  })
+
+  test('o baú que só conta: a comparação pede o baú que confere a vez antes', () => {
+    // Sem ter visto o baú da ordem responder, a fala manda testar ele primeiro (full review).
     expect(fala([contar])).toBe('symbols-count-early')
+    expect(fala([tocar('lua'), contar])).toBe('symbols-count')
+    // Com o baú já aberto em ordem, tocar não faz nada: jogar de novo.
+    const abriuEmOrdem = [tocar('lua'), contar, tocar('sol'), tocar('lua'), tocar('estrela')]
+    expect(fala(abriuEmOrdem)).toBe('symbols-count-restart')
     // Sem o primeiro termo, a ordem errada abrindo o baú que só conta ainda não é comparação.
     const semPrimeiroTermo = [contar, tocar('estrela'), tocar('lua'), tocar('sol')]
     expect(play(semPrimeiroTermo).evidence.discoveries).not.toContain('count-vs-order')
-    expect(fala(semPrimeiroTermo)).toBe('symbols-count-early')
-    expect(fala([...semPrimeiroTermo, ordem])).toBe('symbols-start')
     // Visto o baú da vez responder (aqui, começando pelo meio), a comparação vale fora da ordem.
-    const viuAVez = [tocar('lua'), contar]
-    expect(fala(viuAVez)).toBe('symbols-count-try')
-    const comparou = [...viuAVez, tocar('estrela'), tocar('lua'), tocar('sol')]
+    const comparou = [tocar('lua'), contar, tocar('estrela'), tocar('lua'), tocar('sol')]
     expect(play(comparou).evidence.discoveries).toContain('count-vs-order')
     expect(fala(comparou)).toBe('symbols-count-back')
     expect(fala([...comparou, ordem])).toBe('symbols-start')
-  })
-
-  test('tocar o sol de novo com a lua acesa não diz "de 0 para 1"', () => {
-    expect(play([tocar('sol'), tocar('lua'), tocar('sol')]).sequence.lit).toContain('lua')
-    expect(fala([tocar('sol'), tocar('lua'), tocar('sol')])).toBe('symbols-sun-again')
-  })
-
-  test('depois de começar pelo meio, a fala pede a ordem da placa só quando já houve erro', () => {
-    const aberto = [tocar('sol'), tocar('lua'), tocar('estrela')]
-    const meio = [...aberto, recomecar, tocar('sol'), tocar('estrela'), tocar('lua')]
-    expect(fala(meio)).toBe('symbols-again')
-    // Recomeçou: ainda não errou nesta partida, então o pedido é errar primeiro.
-    expect(fala([...meio, recomecar])).toBe('symbols-again-err')
   })
 
   test('desfazer restaura as descobertas e a fala daquela tentativa', () => {
@@ -195,6 +172,16 @@ const duas: SceneAction = { type: 'cabin-rule', rule: 'and' }
 describe('O segredo da cabana em exploração livre', () => {
   const { play, fala } = caso('two-pieces')
 
+  test('trocar ou por e com uma peça fecha a porta no novo teste', () => {
+    const abriu = [uma, pegar('key'), encostar]
+    expect(play(abriu).pieces.door).toBe('open')
+    const fechou = play([...abriu, duas, encostar])
+    expect(fechou.pieces).toMatchObject({ door: 'closed', at: 'door', temEmblema: false })
+    expect(fechou.caption).toContain('continua fechada')
+    expect(fechou.evidence.discoveries).toContain('one-closed')
+    expect(play([...abriu, duas, encostar, uma, encostar]).pieces.door).toBe('open')
+  })
+
   test('o caminho da escada fecha todas as metas e o Zappy conclui', () => {
     const caminho: SceneAction[] = [
       encostar,
@@ -215,36 +202,33 @@ describe('O segredo da cabana em exploração livre', () => {
     expect(fala(caminho)).toBe('cabin-complete')
   })
 
-  test('a fala acompanha cada passo da escada', () => {
+  test('a fala acompanha a escada que a criança escolheu', () => {
     expect(fala([])).toBe('cabin-start')
-    expect(fala([encostar])).toBe('cabin-after-none')
+    expect(fala([encostar])).toBe('cabin-one-take')
     expect(fala([encostar, pegar('key')])).toBe('cabin-one')
-    expect(fala([encostar, pegar('key'), encostar])).toBe('cabin-after-closed')
+    expect(fala([encostar, pegar('key'), encostar])).toBe('cabin-both')
+    // Com as duas na mão, vá até a cabana; sem nenhuma (jogou de novo), pegue as duas.
+    expect(fala([encostar, pegar('key'), encostar, pegar('emblem')])).toBe('cabin-two')
+    expect(fala([encostar, pegar('key'), encostar, nova])).toBe('cabin-both-take')
     const abriu = [encostar, pegar('key'), encostar, pegar('emblem'), encostar]
-    expect(fala(abriu)).toBe('cabin-opened')
-    expect(fala([...abriu, nova, pegar('emblem'), pegar('key')])).toBe('cabin-order-try')
+    expect(fala(abriu)).toBe('cabin-order')
     const outraOrdem = [...abriu, nova, pegar('emblem'), pegar('key'), encostar]
-    expect(fala(outraOrdem)).toBe('cabin-or')
-    expect(fala([...outraOrdem, uma])).toBe('cabin-or-try')
+    expect(fala(outraOrdem)).toBe('cabin-rule')
+    expect(fala([...outraOrdem, uma])).toBe('cabin-or')
   })
 
-  test('quem pega as duas peças primeiro testa as duas e depois é chamado aos casos sem elas', () => {
-    expect(fala([pegar('emblem')])).toBe('cabin-one')
-    expect(fala([pegar('emblem'), pegar('key')])).toBe('cabin-two')
-    const abriu = [pegar('emblem'), pegar('key'), encostar]
-    expect(fala(abriu)).toBe('cabin-opened-closed')
-    expect(fala([...abriu, nova])).toBe('cabin-none')
-    expect(fala([pegar('key'), encostar])).toBe('cabin-after-one')
+  test('quem pega uma peça antes de testar sem nada é chamado a jogar de novo', () => {
+    expect(fala([pegar('emblem')])).toBe('cabin-start-restart')
+    expect(fala([pegar('key'), encostar])).toBe('cabin-start-restart')
+    expect(fala([encostar, pegar('key'), pegar('emblem')])).toBe('cabin-one-restart')
   })
 
   test('quem começa pedindo uma das peças é chamado de volta depois de testar', () => {
-    expect(fala([uma])).toBe('cabin-or-try')
+    expect(fala([uma])).toBe('cabin-or')
     const abriuComUma = [uma, pegar('key'), encostar]
     expect(play(abriuComUma).evidence.discoveries).toContain('and-vs-or')
-    expect(fala(abriuComUma)).toBe('cabin-back-and')
-    // De volta às duas peças com a cabana aberta: só uma partida nova a fecha.
-    expect(fala([...abriuComUma, duas])).toBe('cabin-restart')
-    expect(fala([...abriuComUma, duas, nova])).toBe('cabin-none')
+    expect(fala(abriuComUma)).toBe('cabin-or-back')
+    expect(fala([...abriuComUma, duas, nova])).toBe('cabin-start')
   })
 
   test('trocar o pedido com o personagem na porta tira a resposta antiga (full review)', () => {
@@ -253,7 +237,9 @@ describe('O segredo da cabana em exploração livre', () => {
     const trocou = play([encostar, uma])
     expect(trocou.pieces.at).toBeNull()
     expect(trocou.pieces.rule).toBe('or')
-    // A resposta nova só vem do próximo encontro.
+    // A resposta nova só vem do próximo encontro. Na tela, o personagem continua parado na porta,
+    // e a cabana pergunta de novo na hora: é esse o próximo encontro.
+    expect(play([encostar, uma, encostar]).pieces.at).toBe('door')
     expect(play([encostar, uma, pegar('key'), encostar]).evidence.discoveries).toContain(
       'and-vs-or',
     )
@@ -269,7 +255,7 @@ describe('O segredo da cabana em exploração livre', () => {
     }
     let s = initialExperiment(start)
     s = stepExperiment(start, s, encostar).session
-    expect(discoveryGuidance(activity, s.state)?.id).toBe('cabin-after-none')
+    expect(discoveryGuidance(activity, s.state)?.id).toBe('cabin-one-take')
     s = stepExperiment(start, s, { type: 'undo' }).session
     expect(s.state.evidence.discoveries).not.toContain('none-closed')
     expect(discoveryGuidance(activity, s.state)?.id).toBe('cabin-start')

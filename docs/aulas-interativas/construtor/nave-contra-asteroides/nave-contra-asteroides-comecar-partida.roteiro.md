@@ -10,7 +10,7 @@
 
 **Clipe:** `video-estado-do-jogo`
 
-**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -23,14 +23,14 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quantos asteroides o jogo cria, com a pergunta ligada e desligada, na tela de início e com a partida já começada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos asteroides o jogo cria, com e sem a pergunta, na tela de início e com a partida já começada. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-estado-do-jogo-K1 | Dedé | 1 | que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou? | E na tela de início, as pedras nascem? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a | [curious] |
+| video-estado-do-jogo-K1 | Dedé | 1 | que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou? | E na tela de início, as pedras nascem? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -41,7 +41,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/game-state.ts`, na tela `packages/member-shell/src/components/scene-livre/game-state.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Faça a partida esperar
 
@@ -58,7 +58,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Olhe o seu jogo logo que ele abre. Tá vendo? As pedras já caem, porque o jogo ainda não pergunta se a partida começou.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a pergunta ligada, a tela de início esperava, e nada nascia. Agora a gente vai pôr essa pergunta no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a pergunta, a tela de início esperava, e nada nascia. Agora a gente vai pôr essa pergunta no seu jogo!
 
 [engaging, energetic, conversational voice] O jogo vai ter dois momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.
 
@@ -174,7 +174,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Com a abertura no seu jogo, toque na barra de espaço. Tá vendo? Nenhum tiro aparece, mas o som toca, porque a tecla não espera a partida.
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, nada nascia antes da partida. Agora a gente vai pôr a pergunta no seu jogo também!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta, nada nascia antes da partida. Agora a gente vai pôr a pergunta no seu jogo também!
 
 [engaging, energetic, conversational voice] No seu jogo, ela vai em dois lugares: no bloco A cada 40 quadros, que cria as pedras, e na barra de espaço, que cria os tiros.
 

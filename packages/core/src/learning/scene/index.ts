@@ -416,3 +416,5 @@ export {
   discoverySpeechSteps,
   lighthouseWalkStrideCase,
 } from './discovery-guidance'
+// A ponte precisa do relógio da TELA (ele começa no primeiro passo): a tela pergunta direto.
+export { ponteGuidance } from './guidance-ponte'

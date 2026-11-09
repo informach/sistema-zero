@@ -13,6 +13,11 @@ import {
 import { pythonShadowState } from './paletteBlocks'
 import { pythonCategoryColour } from './paletteGroups'
 import { pythonPlaceholderNode as placeholder } from './placeholders'
+import {
+  pythonProgramArea,
+  pythonProgramContextMenu,
+  registerPythonProgramArea,
+} from './programArea'
 import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
 import { pythonDecodeContextFromExtra } from './resolverOptions'
@@ -259,6 +264,7 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
 export function registerPythonBlocks(
   codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
 ) {
+  registerPythonProgramArea()
   for (const codec of codecs) {
     if (Blockly.Blocks[codec.id]) continue
     Blockly.Blocks[codec.id] = {
@@ -377,6 +383,7 @@ export function registerPythonBlocks(
         options: Blockly.ContextMenuRegistry.ContextMenuOption[],
       ) {
         if (!this.isEditable()) return
+        pythonProgramContextMenu(this, options)
         for (const control of codec.controls ?? []) {
           const current = this.pythonState.layout.extra?.[control.key]
           const choose = (value: number | boolean) => {
@@ -581,13 +588,21 @@ export function pythonWorkspaceToVisual(
     }
     return result
   }
-  const body = rootIds.flatMap((id) => {
-    const block = workspace.getBlockById(id)
-    if (!block || block.getParent())
-      throw new Error('A ordem dos comandos Python precisa ser atualizada.')
-    return readChain(block)
-  })
-  if (workspace.getAllBlocks(false).some((block) => !visited.has(block.id)))
+  const area = pythonProgramArea(workspace)
+  if (area && (rootIds.length !== 1 || rootIds[0] !== area.id))
+    throw new Error('A ordem dos comandos Python precisa ser atualizada.')
+  const first = area?.getInputTargetBlock('BODY')
+  const body = area
+    ? first
+      ? readChain(first)
+      : []
+    : rootIds.flatMap((id) => {
+        const block = workspace.getBlockById(id)
+        if (!block || block.getParent())
+          throw new Error('A ordem dos comandos Python precisa ser atualizada.')
+        return readChain(block)
+      })
+  if (!area && workspace.getAllBlocks(false).some((block) => !visited.has(block.id)))
     throw new Error('Há blocos soltos. Conecte ou remova esses blocos antes de gerar Python.')
   return { body, typeIgnores }
 }

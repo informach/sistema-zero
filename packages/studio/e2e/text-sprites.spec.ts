@@ -202,7 +202,7 @@ test('quiz da galeria preserva blocos na Ponte e ao reabrir; respostas e reiníc
   const canvas = preview.locator('canvas').first()
   await expect(hud).toContainText('Quanto é 3 + 5?', { timeout: 30_000 })
   await page.getByRole('button', { name: 'Ponte', exact: true }).click()
-  await page.getByRole('button', { name: 'script.js', exact: true }).first().click()
+  await page.getByRole('button', { name: 'Programa · script.js', exact: true }).first().click()
   await expect(page.locator('.monaco-editor').first()).toBeVisible()
   await page.getByRole('button', { name: 'Blocos', exact: true }).click()
   await page.reload()

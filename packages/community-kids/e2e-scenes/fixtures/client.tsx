@@ -9,6 +9,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import naveDia1 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json'
 import naveDia5 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
 import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
+import ilha1 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json'
+import ilha2 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json'
 import ilha3 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
 import farolDia1 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
@@ -44,7 +46,8 @@ const PODERES: Record<string, BlocoDoManifesto[]> = {
   simbolos: simbolos.blocks as BlocoDoManifesto[],
   cabana: cabana.blocks as BlocoDoManifesto[],
 }
-// O Corre Dino inteiro (`?course=dino`) e a aula 3 da Ilha (`?course=ilha`), em exploração livre desde
+// O Corre Dino inteiro (`?course=dino`) e as três aulas da Ilha (`?course=ilha`, as quatro experiências
+// 3D desde 08/11/2026), em exploração livre desde
 // 02/11/2026; o Dia 5 da Nave entra depois dos outros (a meta do jogo), sem tomar chave de ninguém.
 const DINO = [
   dino01,
@@ -68,7 +71,7 @@ const blocks: BlocoDoManifesto[] =
     : curso === 'dino'
       ? DINO
       : curso === 'ilha'
-        ? (ilha3.blocks as BlocoDoManifesto[])
+        ? ([...ilha1.blocks, ...ilha2.blocks, ...ilha3.blocks] as BlocoDoManifesto[])
         : (PODERES[curso] ??
           ([...navePrimeira.blocks, ...naveDia1.blocks, ...naveDia5.blocks] as BlocoDoManifesto[]))
 const source = blocks.find(
@@ -150,9 +153,29 @@ const { contentMinimum, toolMinimum } = resolveLessonSplit({
 
 // O vocabulário da criança, como o `KidsLessonCopy` em volta da área logada do app: sem ele o
 // ensaio montaria a experiência com as palavras do adulto ("Voltar à aula").
+/**
+ * `?barras`: as barras do app de verdade em volta da aula, para o e2e não ser circular. No celular,
+ * a barra de cima (`h-14`, sticky) e a de abas (fixa embaixo); em toda largura, o rodapé fixo da
+ * aula (`.sz-lesson-nav-immersive`, que o CSS do Kids põe acima das abas) e o `--sz-lesson-nav-height`
+ * que o `LessonSections` publica. O `.kids-aula` dá o `--sz-lesson-stage-top` do app.
+ */
+const barras = params.has('barras')
+const RODAPE_PX = 72
+if (barras) document.documentElement.style.setProperty('--sz-lesson-nav-height', `${RODAPE_PX}px`)
+const BARRAS_CSS = `
+.ensaio-topo { position: sticky; top: 0; z-index: 40; height: 3.5rem; background: #18213a; }
+.ensaio-abas { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; height: calc(3.5rem + env(safe-area-inset-bottom)); background: #18213a; }
+@media (min-width: 768px) { .ensaio-topo, .ensaio-abas { display: none; } }
+`
 createRoot(root).render(
   <LessonCopyProvider value={KIDS_LESSON_COPY}>
-    <main className="sz-lesson-sections" style={{ padding: 16 }}>
+    {barras ? (
+      <>
+        <style>{BARRAS_CSS}</style>
+        <div className="ensaio-topo" />
+      </>
+    ) : null}
+    <main className={`sz-lesson-sections${barras ? ' kids-aula' : ''}`} style={{ padding: 16 }}>
       <button type="button">Antes da experiência</button>
       <div style={{ height: 64 }} />
       {params.has('split') ? (
@@ -191,6 +214,12 @@ createRoot(root).render(
         </div>
       )}
       <button type="button">Depois da experiência</button>
+      {barras ? (
+        <nav className="sz-lesson-nav-immersive" style={{ height: RODAPE_PX }}>
+          <button type="button">Próxima parte</button>
+        </nav>
+      ) : null}
     </main>
+    {barras ? <div className="ensaio-abas" /> : null}
   </LessonCopyProvider>,
 )

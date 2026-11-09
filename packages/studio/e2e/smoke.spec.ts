@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test'
 
 // Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
 // editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
-// "Pro (código)" no modal "+ Novo projeto") expõe só Código (árvore Vite +
+// "Com código" no modal "+ Novo projeto") expõe só Código (árvore Vite +
 // WebContainer). Nenhum projeto mostra os 3 modos ao mesmo tempo.
 
 async function createProject(page: Page, initialPath = '/'): Promise<void> {
@@ -15,7 +15,7 @@ async function createProject(page: Page, initialPath = '/'): Promise<void> {
 async function createProProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  await page.getByText('Pro (código)', { exact: true }).click()
+  await page.getByRole('dialog').getByText('Com código', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // Esconde o palco: no PRO ele bota um WebContainer + npm install em
@@ -103,45 +103,51 @@ test.describe('Sistema Zero Studio — smoke', () => {
     })
 
     await createProject(page)
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Abrir a gaveta' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
     await expect(page.locator('main')).toBeVisible()
     expect(layoutWarnings).toEqual([])
   })
 
-  test('Console começa oculto em Blocos e respeita a escolha manual entre modos', async ({
+  test('Mensagens começam recolhidas em Blocos e respeitam a escolha manual entre modos', async ({
     page,
   }) => {
     await createProject(page)
     // Básico = Blocos + Ponte; o modo Código NÃO existe no clássico (D2).
-    await expect(page.getByRole('button', { name: 'Blocos' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Blocos', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Ponte' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Código', exact: true })).toHaveCount(0)
     // Categorias da toolbox no modo Blocos (default).
-    await expect(page.getByText('HTML', { exact: true })).toBeVisible()
-    await expect(page.getByText('CSS', { exact: true })).toBeVisible()
-    await expect(page.getByText('Canvas', { exact: true })).toBeVisible()
+    await expect(page.getByRole('treeitem', { name: 'Página · HTML', exact: true })).toBeVisible()
+    await expect(page.getByRole('treeitem', { name: 'Estilo · CSS', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('treeitem', { name: 'Pintura · Canvas', exact: true }),
+    ).toBeVisible()
     // Em Blocos, o Console começa oculto, mas continua acessível pelo menu.
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    const messages = page.getByRole('tab', { name: 'Mensagens do jogo' })
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    const consoleItem = page.getByRole('menuitem', { name: 'Console' })
+    const consoleItem = page.getByRole('menuitem', { name: 'Mensagens do jogo' })
     await expect(consoleItem).not.toHaveAttribute('aria-current', 'true')
     await consoleItem.click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await expect(messages).toHaveAttribute('aria-selected', 'true')
 
     // A primeira escolha manual prevalece ao trocar para Ponte.
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await expect(messages).toHaveAttribute('aria-selected', 'true')
 
     // O mesmo item oculta novamente e a escolha continua valendo em Blocos.
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await expect(page.getByRole('menuitem', { name: 'Console' })).toHaveAttribute(
+    await expect(page.getByRole('menuitem', { name: 'Mensagens do jogo' })).toHaveAttribute(
       'aria-current',
       'true',
     )
-    await page.getByRole('menuitem', { name: 'Console' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
-    await page.getByRole('button', { name: 'Blocos' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
   })
 
   test('toolbox: folha abre flyout (e permanece); categoria-pai expande', async ({ page }) => {
@@ -193,10 +199,12 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await createProject(page)
     // Extensões vive no menu ⋯ da Topbar (seção Exibição).
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Extensões' }).click()
+    await page.getByRole('menuitem', { name: 'Mais blocos' }).click()
     const game2dCard = page.getByRole('listitem').filter({ hasText: 'Jogo 2D' }).first()
     await expect(game2dCard.getByText('Jogo 2D', { exact: true })).toBeVisible()
-    await expect(game2dCard.getByRole('button', { name: 'Instalar', exact: true })).toBeVisible()
+    await expect(
+      game2dCard.getByRole('button', { name: 'Pôr no meu jogo', exact: true }),
+    ).toBeVisible()
   })
 
   test('Menu do projeto fica acima do card e exclusão usa modal própria', async ({ page }) => {
@@ -233,7 +241,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Projeto novo começa sem logs no console', async ({ page }) => {
     await createProject(page)
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
     await expect(
       page.getByText('Sem mensagens. Use console.log para registrar algo.'),
     ).toBeVisible()
@@ -254,12 +262,17 @@ test.describe('Sistema Zero Studio — smoke', () => {
         .frameLocator('iframe[title="Pré-visualização"]')
         .getByRole('heading', { name: 'Executou oculto' }),
     ).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: /Mensagens do jogo/ })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    )
 
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
     await expect(
-      page.getByLabel('Console', { exact: true }).getByText('log oculto retido', { exact: true }),
+      page
+        .getByRole('tabpanel', { name: /Mensagens do jogo/ })
+        .getByText('log oculto retido', { exact: true }),
     ).toBeVisible()
   })
 
@@ -292,7 +305,10 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Modo Ponte tem blocos + Monaco + preview', async ({ page }) => {
     await createProject(page)
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: 'Mensagens do jogo' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    )
     await expect(page.getByRole('button', { name: 'index.html' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
   })
@@ -399,7 +415,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page).toHaveURL(/\/editor\//)
     // Reabrir é uma montagem intencional; a identidade acima só vale para a sessão aberta.
     await page.getByRole('button', { name: 'Ponte', exact: true }).click()
-    await page.getByRole('button', { name: 'script.js', exact: true }).first().click()
+    await page.getByRole('button', { name: 'Programa · script.js', exact: true }).first().click()
     await expect(codigo).toContainText(marker)
     await expect.poll(savedScript).toBe(source + marker)
     await page.screenshot({ path: testInfo.outputPath('pensa-editor-source-preserved.png') })
@@ -414,7 +430,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     // morre com a Ponte): a regressão regenerava os arquivos a partir dos
     // blocos VELHOS e perdia o código digitado. Com as épocas de sincronização,
     // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(
       page
         .frameLocator('iframe[title="Pré-visualização"]')

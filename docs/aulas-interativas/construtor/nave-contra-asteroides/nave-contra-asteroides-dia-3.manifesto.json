@@ -60,14 +60,14 @@
   "blocks": [
     {
       "key": "video-apelidos",
-      "plannedVideo": "Título: Quem sai do jogo na trombada?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o jogo de queimada\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quem sai do jogo na trombada?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o jogo de queimada\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-trombada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -76,7 +76,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quem sai do jogo na trombada?",
-        "instructions": "Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe os dois contadores e as pedras que não encostaram em nada.",
           "Compare tirar os grupos inteiros com tirar só o tiro e a pedra que encostaram.",
@@ -881,7 +881,7 @@
       "key": "trombada",
       "title": "Quem sai do jogo na trombada?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-apelidos", "fala-trombada", "experiencia-trombada"],
       "workspaceKey": null,
       "externalTool": null,

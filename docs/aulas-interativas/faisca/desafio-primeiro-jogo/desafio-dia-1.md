@@ -12,6 +12,10 @@ A versão vigente segue [exploração orientada por objetivos](../../../aulas-in
 **Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
 
 
+## O vídeo da experiência explica o conceito e convida, 09/11/2026
+
+Decisão da responsável: as aulas em vídeo não explicam a experiência, porque a moldura nova (08/11/2026) mudou o visual e o nome dos controles (Devagar, o filme, a cerca). As partes 3 e 5 seguem o molde do Cadê, como os Dias 2 e 3: o conceito, a analogia (o bloquinho de folhear; a janela), a pergunta da Debinha devolvida com "Isso você vai testar na experiência." e um convite só, com o fecho comum. Saíram o "Olha aqui: nesta experiência…" (Devagar e o filme dos quadros; a cerca e a faixa fora da tela) e a lista do que comparar ("no Devagar e no Rápido", "inclusive com ele já fora da tela"); na parte 5, o "Primeiro," da explicação do limite também saiu, para a fala não soar como sequência de testes. O Na tela das duas partes só amplia a experiência e mostra o Zappy, sem apontar controles. A âncora posterior da troca da Debinha na parte 5 acompanhou a fala nova; a frase dela não mudou. Instruções, recados da página e Passo a passo continuam iguais. As duas partes precisam de voz nova e de gravação nova.
+
 ## Resumo
 
 - Estado de entrada: primeiro contato com o curso. No projeto, cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.
@@ -41,7 +45,7 @@ O vídeo do Passo a passo do projeto continua só com a professora. As participa
 | --- | --- |
 | F1P1-D01 | “E como eu levo o personagem até a chave?” |
 | F1P3-D01 | “E como o jogo sabe quando ele tem que andar?” |
-| F1P5-D01 | “E se eu ligar o limite com ele já fora da tela?” |
+| F1P5-D01 | “E se ele já estiver fora da tela, o que o limite faz com ele?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
 As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-R02.
@@ -104,7 +108,7 @@ Anexar somente `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-pass
 
 Na tela (moldura nova, 08/11/2026): a TELA DO JOGO do Farol (a praia inteira, o farol e a chave nos lugares do jogo), com o personagem começando onde começa no jogo (x 21) e uma pegada a cada passinho; no Devagar, cada quadro faz um tique e a tela pisca. Embaixo, o filme **Os quadros do jogo** ("passinho" ou "parado" em cada quadro, e o selo **Quadro N · seta apertada/solta**). Os controles têm a forma do que imitam: a **tecla de seta** igual à do teclado (dedo, mouse, a seta → ou o D do teclado afundam a mesma tecla) e a **Velocidade** com **Devagar** e **Rápido**; **Pausar** e **Começo** ficam na linha de cima. Três cartões de pergunta, só de leitura, em qualquer ordem. No fim, a ideia e o "No seu jogo" no balão do Zappy. Não apresentar x/y nem número de velocidade. Todos os controles continuam disponíveis depois da conclusão.
 
-**Convite da experiência:** Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** o vídeo, a instrução, a ponte, a lista de descobertas, o Zappy e o Passo a passo dizem o que comparar e o que observar, sem sequência de cliques e sem contar o resultado antes do teste. O vídeo explica que em cada quadro o jogo olha a seta e deixa o caso da seta solta para a criança prever e testar; a gravação aponta a tira ainda vazia, sem rodar quadros. Na beirada, o Zappy leva o personagem até lá na velocidade de verdade e só pede a câmera lenta perto da beirada (em câmera lenta, do meio da tela até lá, seriam uns 40 s), e o botão em destaque acompanha. As pistas vão do aberto (o que observar) ao direto (a sequência).
 
@@ -139,9 +143,9 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 
 Na tela (moldura nova, 08/11/2026): a mesma tela do jogo com a faixa **fora da tela** à direita; com o limite ligado aparece uma **cerca** na beirada, e o 👀 do jogo conferindo a cada passinho. O módulo **Limite da tela** é um interruptor (**Cerca desligada / Cerca ligada**) ao lado da tecla de seta e da Velocidade (abre no **Rápido**). Três descobertas, em qualquer ordem: sem o limite, ele sai da tela; ligando a cerca com ele fora, ele volta; com a cerca, segurando a seta na beirada, ele fica. Sem o limite, sair inteiro pausa os quadros (**Começo**); com a cerca ligada, rodar de novo o traz de volta. Não mostrar coordenadas.
 
-**Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
-**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se eu ligar o limite com ele já fora da tela?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
+**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se ele já estiver fora da tela, o que o limite faz com ele?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
 
 ### Seção 6. Mantenha o personagem na tela
 
@@ -168,9 +172,9 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 | --- | --- | --- | --- | --- |
 | `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar (se houver mídia antiga no Admin, substituir) |
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |
-| `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para a câmera lenta | Câmera lenta | 80 a 100 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para investigar, sem explicar a experiência | Câmera lenta | 70 a 85 s | Gravar (convite de 09/11/2026) |
 | `video-d1-andar` | Controles e movimento ligados à ideia do passinho, teste e verificação | Projeto inicial | 5 a 6 min | Gravar (revisão de 01/11/2026) |
-| `video-d1-limite` | A janela, o limite da tela depois do passinho, sem blocos, e o convite para a beirada | Beirada da tela | 75 a 95 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-limite` | A janela, o limite da tela depois do passinho, sem blocos, e o convite para investigar, sem explicar a experiência | Beirada da tela | 60 a 80 s | Gravar (convite de 09/11/2026) |
 | `video-d1-borda` | Borda no jogo, o limite ligado à conferência da beirada, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (revisão de 01/11/2026) |
 
 ## Continuidade

@@ -206,7 +206,7 @@ describe('groupDrawersByFamily', () => {
     )
     expect(groups).toHaveLength(2)
     expect(groups.find((group) => group.family === 'Programação')?.blockCount).toBe(2)
-    expect(groups.find((group) => group.family === 'HTML')?.blockCount).toBe(1)
+    expect(groups.find((group) => group.family === 'Página · HTML')?.blockCount).toBe(1)
   })
 
   test('a família mais cheia vem primeiro (é a que abre por padrão no perfil)', () => {

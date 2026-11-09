@@ -5,6 +5,11 @@ import type { IDEMode } from '#core'
 import { StudioStoresContext } from './storesContext'
 
 export type BottomTab = 'console' | 'terminal' | 'ai'
+/**
+ * A gaveta do clássico (blocos e Ponte, redesenho de 11/2026): sempre à vista embaixo, fechada
+ * só com as abas e os contadores, ou aberta numa das duas abas.
+ */
+export type ClassicDockTab = 'closed' | 'console' | 'problems'
 /** As três abas da janela "Materiais do jogo" — e as três portas dela no menu ⋯. */
 /** `fonts` só aparece nos projetos Raylib (TTF/OTF), e não tem porta no menu ⋯. */
 export type AssetsTab = 'images' | 'sounds' | 'models3d' | 'fonts'
@@ -51,6 +56,15 @@ interface UIStore {
   setAssetsTab: (tab: AssetsTab) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
+  /**
+   * "Jogo maior" do palco clássico (redesenho de 11/2026): com `true`, blocos e jogo dividem a
+   * tela meio a meio; com `false`, o jogo volta ao tamanho de sempre ao lado dos blocos.
+   */
+  stageLarge: boolean
+  setStageLarge: (b: boolean) => void
+  /** A gaveta do clássico: começa fechada (D4 da proposta); a criança abre pela aba. */
+  classicDock: ClassicDockTab
+  setClassicDock: (tab: ClassicDockTab) => void
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
   // visível). A primeira ação manual grava um boolean que prevalece em qualquer
   // modo/projeto nesta instância. Terminal/IA continuam booleanos porque só
@@ -86,6 +100,10 @@ export function createUIStore(): StoreApi<UIStore> {
     setAssetsTab: (assetsTab) => set({ assetsTab }),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
+    stageLarge: false,
+    setStageLarge: (stageLarge) => set({ stageLarge }),
+    classicDock: 'closed',
+    setClassicDock: (classicDock) => set({ classicDock }),
     consoleVisibilityOverride: null,
     setConsoleVisibilityOverride: (consoleVisibilityOverride) => set({ consoleVisibilityOverride }),
     showTerminal: true,

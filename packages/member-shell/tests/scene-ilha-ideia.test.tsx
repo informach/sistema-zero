@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  discoverySpeech,
   type ExperimentationActivity,
   openScene,
   type SceneAction,
@@ -7,14 +8,16 @@ import {
   type SceneState,
   stepScene,
 } from '@sistemazero/core/learning/scene'
+import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DiscoveryContext } from '../src/components/scene-discovery-frame'
-import { IslandDiscovery } from '../src/components/scene-island-discovery'
+import { IslandDiscovery, passoDaSeta } from '../src/components/scene-island-discovery'
 
 /**
- * A Ilha do Farol (02/11/2026): o papel de cada número da posição (chão ou altura) é a descoberta
- * da experiência. O rótulo de um eixo só aparece depois de a criança ir para mais e para menos
- * nele, como o "?" da porta do Farol; antes, a tela mostra só o nome do número.
+ * As três experiências 3D da Ilha do Farol, desde 08/11/2026 (proposta "Experiências do Faísca"
+ * aprovada): a câmera é um controle com três lugares (Frente, Lado, Cima); cada número tem − e + na
+ * cor do eixo do Estúdio 3D, e o papel dele só aparece depois de a criança ir para os dois lados;
+ * no contato, o jogo confere o encontro o tempo todo e o resultado fica na cena.
  */
 const caso = (goals: string[]) => {
   const activity: ExperimentationActivity = {
@@ -27,6 +30,7 @@ const caso = (goals: string[]) => {
     actions.reduce((s, a) => stepScene(start, s, a), openScene(start))
   return { activity, play }
 }
+const falas: string[] = []
 const tela = (activity: ExperimentationActivity, state: SceneState) =>
   renderToStaticMarkup(
     <DiscoveryContext.Provider
@@ -37,9 +41,13 @@ const tela = (activity: ExperimentationActivity, state: SceneState) =>
         running: false,
         setRunning: () => {},
         tick: () => {},
-        instruction: 'Fala do Zappy',
-        dialogue: (text) => <p>{text}</p>,
+        instruction: '',
+        dialogue: (text: string): ReactNode => {
+          falas.push(text)
+          return <p data-fala>{text}</p>
+        },
         tools: null,
+        continuar: null,
       }}
     >
       <IslandDiscovery />
@@ -51,53 +59,79 @@ const eixo = (axis: 'x' | 'y' | 'z', value: number): SceneAction => ({
   axis,
   value,
 })
-const PAPEL = /Altura|direção do chão|no chão|na altura/
+const SEM_BOTOES_ANTIGOS = /Ver de frente|Ver de lado|Ver de cima|Testar o encontro|X−|X\+|Z−|Z\+/
 
-describe('Ilha: os rótulos dos eixos esperam a investigação', () => {
+describe('Ilha: o ponto de vista', () => {
+  const { activity, play } = caso(['other-view', 'same-place'])
+
+  test('a câmera é um controle com três lugares, e a pergunta grande só vem depois', () => {
+    const inicio = tela(activity, play([]))
+    expect(inicio).toContain('aria-label="Onde fica a câmera"')
+    expect(texto(inicio)).not.toMatch(SEM_BOTOES_ANTIGOS)
+    expect(inicio).not.toContain('sz-discovery-palpite-grande')
+    const lado = tela(activity, play([{ type: 'island-view', view: 'side' }]))
+    expect(lado).toContain('sz-discovery-palpite-grande')
+    expect(texto(lado)).toContain('O lugar da câmera')
+  })
+
+  test('a fala é a do motor', () => {
+    falas.length = 0
+    tela(activity, play([]))
+    expect(falas).toContain(discoverySpeech('island-view-start'))
+  })
+})
+
+describe('Ilha: os três números', () => {
   const { activity, play } = caso(['axis-x', 'axis-y', 'axis-z'])
 
-  test('antes de explorar, nenhum número diz se é chão ou altura', () => {
-    const lido = texto(tela(activity, play([])))
-    expect(lido).not.toMatch(PAPEL)
-    expect(lido).toContain('Três números para o lugar da chave')
-    // Ir só para um lado ainda não revela o papel.
-    expect(texto(tela(activity, play([eixo('y', 3)])))).not.toMatch(PAPEL)
+  test('cada número tem − e +, e o papel só aparece depois dos dois lados', () => {
+    const inicio = texto(tela(activity, play([])))
+    expect(inicio).not.toMatch(SEM_BOTOES_ANTIGOS)
+    expect(inicio).not.toContain('anda no chão')
+    expect(inicio).not.toContain('é a altura')
+    const umLado = texto(tela(activity, play([eixo('y', 2)])))
+    expect(umLado).not.toContain('é a altura')
+    const doisLados = texto(tela(activity, play([eixo('y', 2), eixo('y', 0)])))
+    expect(doisLados).toContain('é a altura')
+    expect(doisLados).not.toContain('anda no chão')
   })
 
-  test('depois de ir para mais e para menos num número, só o rótulo dele aparece', () => {
-    const lido = texto(tela(activity, play([eixo('y', 3), eixo('y', 0)])))
-    expect(lido).toContain('Y · Altura')
-    expect(lido).not.toMatch(/direção do chão/)
-    expect(lido).toContain('Três números para o lugar da chave')
+  test('os botões dizem o número e o lado', () => {
+    const html = tela(activity, play([]))
+    for (const e of ['x', 'y', 'z']) {
+      expect(html).toContain(`aria-label="${e} mais meio"`)
+      expect(html).toContain(`aria-label="${e} menos meio"`)
+    }
+  })
+})
+
+describe('Ilha: o contato', () => {
+  const { activity, play } = caso(['contact-apart', 'contact-touch'])
+
+  test('o resultado do encontro fica na cena desde o começo, como no jogo', () => {
+    const inicio = texto(tela(activity, play([])))
+    expect(inicio).not.toMatch(SEM_BOTOES_ANTIGOS)
+    expect(inicio).toContain('Não encostou')
+    // A chave começa em y 3: em y 2 ela encosta no personagem.
+    expect(texto(tela(activity, play([eixo('y', 2)])))).toContain('Encostou!')
   })
 
-  test('com os três investigados, a tela resume o que a criança descobriu', () => {
-    const lido = texto(
-      tela(
-        activity,
-        play([
-          eixo('x', 4),
-          eixo('x', -4),
-          eixo('z', 4),
-          eixo('z', -4),
-          eixo('y', 3),
-          eixo('y', 0),
-        ]),
-      ),
-    )
-    expect(lido).toContain('X · Uma direção do chão')
-    expect(lido).toContain('Z · Outra direção do chão')
-    expect(lido).toContain('x e z no chão · y na altura')
+  test('as setas seguem a câmera: de lado, → é a direita da tela (o z menor)', () => {
+    expect(passoDaSeta('top', 'direita')).toEqual({ eixo: 'x', sinal: 1 })
+    expect(passoDaSeta('front', 'cima')).toEqual({ eixo: 'z', sinal: -1 })
+    expect(passoDaSeta('side', 'direita')).toEqual({ eixo: 'z', sinal: -1 })
+    expect(passoDaSeta('side', 'cima')).toEqual({ eixo: 'x', sinal: -1 })
+    expect(passoDaSeta('side', 'baixo')).toEqual({ eixo: 'x', sinal: 1 })
   })
 
-  test('no contato, que vem depois da posição, os rótulos ficam à vista', () => {
-    const contato = caso(['contact-apart', 'contact-touch'])
-    expect(texto(tela(contato.activity, contato.play([])))).toContain('Y · Altura')
-  })
-
-  test('a troca de vista pede para observar, sem afirmar que os objetos ficaram no lugar', () => {
-    const vista = caso(['other-view', 'same-place'])
-    const lido = texto(tela(vista.activity, vista.play([{ type: 'island-view', view: 'side' }])))
-    expect(lido).not.toMatch(/continuam no mesmo lugar/)
+  test('andar fica junto do palco, antes dos ajustes de câmera e altura', () => {
+    const html = texto(tela(activity, play([])))
+    const camera = html.indexOf('A câmera')
+    const altura = html.indexOf('Altura da chave')
+    const andar = html.indexOf('Andar')
+    expect(camera).toBeGreaterThan(-1)
+    expect(andar).toBeGreaterThan(-1)
+    expect(andar).toBeLessThan(camera)
+    expect(camera).toBeLessThan(altura)
   })
 })

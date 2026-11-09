@@ -73,6 +73,8 @@ const NO_JOGO: Record<
   // O primeiro personagem do jardim começa atrás do arbusto no projeto preparado.
   jardim: { tela: { w: 640, h: 360 }, x: 110, y: 181, caixa: { w: 54, h: 87, centro: 0 } },
   farol: { tela: { w: 640, h: 360 }, x: 170, y: 130, caixa: { w: 40, h: 48, centro: 0 } },
+  // A Ilha do Farol é 3D; num palco 2D ela usa a reserva do Farol (o mesmo personagem).
+  ilha: { tela: { w: 640, h: 360 }, x: 170, y: 130, caixa: { w: 40, h: 48, centro: 0 } },
 }
 
 export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {

@@ -13,7 +13,10 @@ import { ModeArea } from '../../src/components/layout/ModeArea'
 import { isPythonProject } from '../../src/core/editableProject'
 import { createCodeObservationRegistry } from '../../src/monaco/codeObservation'
 import { PYTHON_PROGRAMMING_CODECS } from '../../src/python/blocks/catalog'
-import { readPythonWorkspaceDraft } from '../../src/python/blocks/workspaceDraft'
+import {
+  readPythonScratchWorkspace,
+  readPythonWorkspaceDraft,
+} from '../../src/python/blocks/workspaceDraft'
 import { createPythonLanguageHttpProvider } from '../../src/python/language/httpProvider'
 import type { StudioRuntimeEnvironment } from '../../src/runtime/environment'
 import { createPythonRuntimeProvider } from '../../src/runtime/python/provider'
@@ -214,9 +217,15 @@ export function createBridgeProbe(root: Root) {
       const project = stores.project.getState().project
       if (!project || !isPythonProject(project) || project.kind !== 'classic')
         throw new Error('No project')
+      const scratch = readPythonScratchWorkspace(project, 'main.py') as
+        | ReturnType<typeof Blockly.serialization.workspaces.save>
+        | undefined
       return {
         source: project.files['main.py'],
         pending: readPythonWorkspaceDraft(project)?.pending ?? false,
+        scratchIds:
+          scratch?.blocks?.blocks?.map((block: Blockly.serialization.blocks.State) => block.id) ??
+          [],
         logs: stores.logs.getState().entries,
       }
     },

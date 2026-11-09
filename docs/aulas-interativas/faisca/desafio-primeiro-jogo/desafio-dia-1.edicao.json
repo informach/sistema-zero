@@ -44,9 +44,9 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.",
-      "ancoraDepois": "O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta cerca liga e",
-      "falaPrincipal": "E se eu ligar o limite com ele já fora da tela?",
-      "falaPersonagem": "E se eu ligar o limite com ele já fora da tela?",
+      "ancoraDepois": "O que você acha que acontece? Isso você vai testar na experiência. Agora você vai investigar o que o jogo faz na beirada",
+      "falaPrincipal": "E se ele já estiver fora da tela, o que o limite faz com ele?",
+      "falaPersonagem": "E se ele já estiver fora da tela, o que o limite faz com ele?",
       "tags": ["[curious]"]
     },
     {
@@ -54,7 +54,7 @@
       "clipe": "video-d1-borda",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!",
+      "ancoraAntes": "da tela, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!",
       "ancoraDepois": "O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda",
       "falaPrincipal": "E onde eu coloco esse limite?",
       "falaPersonagem": "E onde eu coloco esse limite?",

@@ -63,7 +63,7 @@
 
 **Clipe:** `video-convite`
 
-**Na tela:** No "Sabe quando chega visita", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando chega visita", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -78,7 +78,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -96,7 +96,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/controls.ts`, na tela `packages/member-shell/src/components/scene-livre/controls.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Ligue a entrada ao início da partida
 

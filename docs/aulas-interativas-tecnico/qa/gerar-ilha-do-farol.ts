@@ -48,6 +48,16 @@ const visit = (v: unknown) => {
   for (const c of Object.values(v)) visit(c)
 }
 visit(projects.personalizar.blocksState)
+/**
+ * O `goalCopy` do manifesto: o pedido de cada descoberta, na língua da tela livre (e o rótulo,
+ * quando o do catálogo fala de outra tela).
+ */
+const pedidosDaExperiencia = (
+  pedidos: Record<string, string | { label: string; pedido: string }>,
+) =>
+  Object.fromEntries(
+    Object.entries(pedidos).map(([meta, p]) => [meta, typeof p === 'string' ? { pedido: p } : p]),
+  )
 const goals: Record<string, string[]> = {
   'ponto-de-vista': ['other-view', 'same-place'],
   'posicao-3d': ['axis-x', 'axis-y', 'axis-z'],
@@ -149,18 +159,28 @@ for (const [i, aula] of ilhaAulas.entries()) {
             'Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.',
           hints: t.pistas ?? [],
           semPerguntaFinal: true,
-          // A pergunta com o não (aula 3, 02/11/2026) usa a porta do Farol; as outras, a ilha 3D.
+          // A pergunta com o não (aula 3) usa a porta do farol, na ilha 3D do jogo do curso
+          // (cenário `ilha`, 08/11/2026); as outras, a cena 3D de posição. Os pedidos de cada
+          // descoberta falam a língua da tela livre (sem os botões de antes).
           activity: t.cena
             ? {
                 type: 'experimentation',
                 scene: t.cena.scene,
                 cenario: t.cena.cenario,
-                setup: { goals: t.cena.goals, freeExploration: true },
+                setup: {
+                  goals: t.cena.goals,
+                  freeExploration: true,
+                  ...(t.pedidos ? { goalCopy: pedidosDaExperiencia(t.pedidos) } : {}),
+                },
               }
             : {
                 type: 'experimentation',
                 scene: 'island-3d',
-                setup: { goals: goals[t.key], freeExploration: true },
+                setup: {
+                  goals: goals[t.key],
+                  freeExploration: true,
+                  ...(t.pedidos ? { goalCopy: pedidosDaExperiencia(t.pedidos) } : {}),
+                },
               },
         },
       })

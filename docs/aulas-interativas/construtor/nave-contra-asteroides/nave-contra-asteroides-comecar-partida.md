@@ -28,19 +28,19 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 1. A partida já começou?
 
-**Tarefa:** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-estado-do-jogo → fala-estado-do-jogo → experiencia-estado.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a”.
+video-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com e”.
 
 **Experiência em exploração livre:** `game-state` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/game-state.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/game-state.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador. Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador. Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador.
 

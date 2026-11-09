@@ -63,10 +63,17 @@ const FALADO: Record<SequenceSymbol, string> = { sol: 'o sol', lua: 'a lua', est
  * O palco é o JOGO: a praia do Farol, a placa da ordem, as três pedras (acesas ou apagadas), o
  * baú, o personagem e o aviso. O número que o baú consulta (passo, ou a contagem) fica à vista.
  */
-export function SymbolSequenceStage({ state }: { state: SceneState }) {
+export function SymbolSequenceStage({
+  state,
+  heroi,
+}: {
+  state: SceneState
+  /** O lugar do personagem no andar livre (a tela livre); sem ele, o lugar do motor, como antes. */
+  heroi?: { x: number; y: number; esquerda?: boolean }
+}) {
   const q = state.sequence
   const hero = FAROL_LAYOUT.personagem
-  const lugar = lugarDoPersonagem(q.at)
+  const lugar = heroi ?? lugarDoPersonagem(q.at)
   const aviso = avisoDosSimbolos(q)
   const naOrdem = q.mode === 'order'
   const numero = naOrdem ? `passo: ${q.passo}` : `contados: ${q.lit.length} de 3`
@@ -76,7 +83,9 @@ export function SymbolSequenceStage({ state }: { state: SceneState }) {
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A ordem dos símbolos"
-      descricao={`${naOrdem ? `passo é ${q.passo}` : `${q.lit.length} de 3 símbolos contados`}. Aceso: ${acesos}. O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${naOrdem ? (heroi ? `Passo ${q.chest === 'open' ? 3 : q.passo} de 3 da placa` : `passo é ${q.passo}`) : `${q.lit.length} de 3 símbolos contados`}. Aceso: ${acesos}. O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"
@@ -123,11 +132,13 @@ export function SymbolSequenceStage({ state }: { state: SceneState }) {
         height={BAU_DA_CENA.h}
       />
       <g
-        className="sz-scene-anda"
+        className={heroi ? undefined : 'sz-scene-anda'}
         data-personagem={q.at ?? 'comeco'}
         style={{ transform: `translate(${lugar.x}px, ${lugar.y}px)` }}
       >
-        <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        <g transform={heroi?.esquerda ? `translate(${hero.w} 0) scale(-1 1)` : undefined}>
+          <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        </g>
       </g>
       <AvisoDoFarol texto={aviso} />
       {/* O número que o baú consulta, num fundo claro (sobre o gramado escuro, o texto sumia). */}

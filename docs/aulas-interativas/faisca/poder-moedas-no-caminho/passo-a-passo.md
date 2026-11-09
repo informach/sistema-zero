@@ -8,14 +8,14 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 
 **O que investigar:**
 
-- Encoste em duas moedas diferentes e observe moedas.
-- Com o sumiço ligado, volte a uma moeda que já pegou e observe moedas.
-- Com o sumiço desligado, volte a uma moeda que já pegou e observe moedas.
-- Afaste o personagem das moedas e observe moedas.
-- Tente o baú com menos de 5 moedas.
-- Com mais de 5 moedas, compare as perguntas Pelo menos 5 e Exatamente 5.
+- Pegue duas moedas diferentes e olhe o número de moedas.
+- Com o sumiço ligado, passe de novo numa moeda que já pegou.
+- Com o sumiço desligado, passe de novo numa moeda que já pegou.
+- Afaste o personagem das moedas e olhe o número.
+- Leve ao baú menos de 5 moedas.
+- Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número moedas, as moedas do caminho e o baú. O Zappy sugere o que observar.
+Antes e depois de cada teste, observe o número de moedas, as moedas do caminho e o baú. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.
 
 ## Aula 1 · Jogo 2D: Cada moeda conta
 
@@ -33,7 +33,7 @@ Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e de
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como na experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 2D → Colisões → Encostar e bloquear. Pegue Quando o sprite começar a encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em jogador e escolha personagem. Clique em moedas e escolha moedasDoCaminho. O último nome já vem moeda; deixe assim.
@@ -89,7 +89,7 @@ Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e de
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como na experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 3D → Encostar. Pegue Quando encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em heroi e escolha personagem. No grupo, clique em estrelas e escolha moedasDoCaminho. No último nome, clique em item e escreva moeda.

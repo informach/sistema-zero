@@ -44,19 +44,19 @@ Anexar `docs/aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-p
 
 ### Seção 3. Troque a história do jogo
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a”.
+video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca só”.
 
-**Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Veja o que uma cópia guarda
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
@@ -64,7 +64,7 @@ video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um c
 
 video-copias-K1: Debinha substitui “Se eu mudar a nave da cópia, a nave do jogo da aula muda também?”. Antes: “o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e”.
 
-**Experiência em exploração livre:** `copy-vs-original`, com `setup.freeExploration`. Compare o jogo da aula com a cópia no Estúdio, antes e depois de mudar um dos lados. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `copy-vs-original`, com `setup.freeExploration`. Compare o jogo da aula com a cópia no Estúdio, antes e depois de mudar um dos lados. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 

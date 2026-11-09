@@ -28,11 +28,11 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 1. Desenhar uma vez ou em todo quadro?
 
-**Tarefa:** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-laco.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-quadros-K1: Dedé substitui “E se o Dino for desenhado em todo quadro, s
 
 **Experiência em exploração livre:** `draw-loop` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o que a tela mostra quando o Dino é desenhado só no começo e em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o que a tela mostra quando o Dino é desenhado só no começo e em todo quadro, com e sem apagar a tela antes. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Desenhar só no começo e Não apagar a tela, clique em Avançar 1 quadro e compare a tela com o x do Dino. Escolha Desenhar em todo quadro e Não apagar a tela, clique em Avançar 1 quadro algumas vezes e conte os Dinos na tela. Escolha Desenhar em todo quadro e Apagar a tela antes de desenhar, clique em Avançar 1 quadro algumas vezes e conte os Dinos na tela.
 
@@ -77,11 +77,11 @@ video-limpeza-K1: Dedé substitui “E como tira essa sombra escura?”. Antes: 
 
 ### Seção 4. Quem fica na frente?
 
-**Tarefa:** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-camadas → fala-camadas → experiencia-camadas.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -89,7 +89,7 @@ video-camadas-K1: Dedé substitui “E se a floresta for desenhada depois do Din
 
 **Experiência em exploração livre:** `layers` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/layers.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Desenhar o Dino por último e observe a tela. Depois, clique em Desenhar a floresta por último e observe o Dino. Clique em Desenhar o Dino por último outra vez, como no jogo, e compare.
 
@@ -129,11 +129,11 @@ video-ordem-certa-K1: Dedé substitui “A floresta já está andando! Dá para 
 
 ### Seção 7. O que o leitor de tela conta?
 
-**Tarefa:** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-descricao → fala-descricao → experiencia-descricao.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -141,7 +141,7 @@ video-descricao-K1: Dedé substitui “E o leitor de tela consegue contar como s
 
 **Experiência em exploração livre:** `screen-reader` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/screen-reader.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/screen-reader.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com o campo vazio, clique em Ouvir a tela. Escreva no campo Descrição do jogo o que se faz no jogo e clique em Ouvir a tela. Escreva também a tecla que se usa no jogo e clique em Ouvir a tela.
 

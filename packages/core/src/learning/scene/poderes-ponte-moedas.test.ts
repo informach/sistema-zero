@@ -1,13 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import type { SceneAction } from './actions'
 import { openScene, stepScene } from './engine'
+import { ponteGuidance } from './guidance-ponte'
 import { discoveryGuidance, discoverySpeechSteps, type ExperimentationActivity } from './index'
 import type { SceneStart } from './state'
 
 /**
- * Os Poderes "A ponte apressada" e "Moedas no caminho" (Faísca, 02/11/2026): a experiência trabalha só
- * a IDEIA e convida à investigação. Antes do teste, o Zappy pergunta e diz o que observar; o resultado
- * só aparece na fala de DEPOIS dele.
+ * Os Poderes "A ponte apressada" e "Moedas no caminho" (Faísca). Desde 08/11/2026 (proposta
+ * "Experiências do Faísca", aprovada) o personagem ANDA até a alavanca, a ponte, as moedas e o baú,
+ * e o Zappy fala curto, uma coisa por vez, na língua da tela nova (sem os botões de antes).
  */
 const falas = new Map(
   (['timed-bridge', 'coin-counter'] as const).flatMap((cena) =>
@@ -42,48 +43,45 @@ const esperar: SceneAction = { type: 'wait-second' }
 const ponte: SceneAction = { type: 'touch-bridge' }
 const recomecar: SceneAction = { type: 'restart-bridge' }
 const quatro: SceneAction[] = [esperar, esperar, esperar, esperar]
+const relogio: SceneAction = { type: 'timer-place', place: 'start' }
 const moeda = (coin: 0 | 1 | 2 | 3 | 4 | 5): SceneAction => ({ type: 'touch-coin', coin })
 const afastar: SceneAction = { type: 'leave-coin' }
 const bau: SceneAction = { type: 'try-chest' }
 
-describe('Ponte e Moedas: o Zappy fala só da ideia', () => {
-  test('as duas cenas têm falas próprias', () => {
-    expect([...falas.keys()].filter((id) => id.startsWith('bridge-')).length).toBeGreaterThan(8)
-    expect([...falas.keys()].filter((id) => id.startsWith('coin-')).length).toBeGreaterThan(8)
-  })
-
-  test.each([
-    ...falas.keys(),
-  ])('%s não fala de regra, bloco, então, senão, grupo, somar nem do bloco que espera', (id) => {
-    expect(falas.get(id)).not.toMatch(
-      /\bregra|\bbloco|\bentão\b|\bsenão\b|\bgrupo|\bsomar\b|"depois de"|depois de \d|\bfazer\b|\bcomando|\bcódigo/i,
-    )
-  })
-
-  const ANTES: [string, RegExp][] = [
-    ['bridge-start', /não atravess|aviso pediu|baixou/i],
-    ['bridge-closed', /baixa|vira verdadeiro|virou verdadeiro/i],
-    ['bridge-lowered', /subiu|sobe sozinha|atravessou/i],
-    ['bridge-rose', /atravessou|sino tocou/i],
-    ['bridge-crossed', /subiu|sobe sozinha|já subiu/i],
-    ['bridge-again', /baixou outra vez|contar de novo|a cada puxada/i],
-    ['bridge-place', /uma vez só|não sobe mais|ficou baixada/i],
-    ['bridge-clock-start', /uma vez só|não sobe mais|ficou baixada/i],
-    ['bridge-closed-last', /não atravess|aviso pediu/i],
-    ['coin-start', /soma|somou|\+ ?1|mais 1|sobe|subiu/i],
-    ['coin-first', /cada moeda/i],
-    ['coin-away', /guardado|não muda|continua igual/i],
-    ['coin-back', /não contou|contou de novo|continuou igual|subiu/i],
-    ['coin-compare-off', /(?<!não )contou de novo|subiu outra vez/i],
-    ['coin-compare-on', /não contou|continuou igual/i],
-    ['coin-chest', /ficou fechado|abriu|avisou/i],
-    ['coin-rules', /abriu|não abre/i],
-    ['coin-rules-equals', /ficou fechado|não abriu/i],
-    ['coin-rules-atleast', /abriu/i],
+test('Moedas: esgotar as moedas pede nova partida antes de comparar o sumiço', () => {
+  const caminho: SceneAction[] = [
+    ...([0, 1, 2, 3, 4, 5] as const).flatMap((i) => [moeda(i), afastar]),
+    moeda(0),
+    { type: 'coin-disappears', enabled: false },
   ]
-  test.each(ANTES)('%s não conta o resultado do próximo teste', (id, resultado) => {
-    expect(falas.get(id)).toBeString()
-    expect(falas.get(id)).not.toMatch(resultado)
+  expect(jogar(MOEDAS, caminho).coins.present.some(Boolean)).toBe(false)
+  expect(fala(MOEDAS, caminho)).toBe('coin-compare-restart')
+  const reinicio = [...caminho, { type: 'restart-coins' } as const]
+  const s = jogar(MOEDAS, reinicio)
+  expect(s.coins.disappear).toBe(false)
+  expect(s.coins.present.every(Boolean)).toBe(true)
+  expect(s.evidence.discoveries).toEqual(jogar(MOEDAS, caminho).evidence.discoveries)
+  expect(fala(MOEDAS, reinicio)).toBe('coin-compare-again')
+  expect(jogar(MOEDAS, [...reinicio, moeda(0), afastar, moeda(0)]).evidence.discoveries).toContain(
+    'counts-again',
+  )
+})
+
+describe('Ponte e Moedas: o Zappy fala curto, só da ideia', () => {
+  test('as duas cenas têm falas próprias, com a ideia e o "No seu jogo"', () => {
+    for (const p of ['bridge', 'coin']) {
+      expect(falas.get(`${p}-idea`)).toBeString()
+      expect(falas.get(`${p}-bridge`)).toStartWith('No seu jogo: ')
+      expect(falas.get(`${p}-complete`)).toBeString()
+    }
+  })
+
+  test.each([...falas.keys()])('%s é curta e não fala de bloco, botão nem variável', (id) => {
+    const texto = falas.get(id) ?? ''
+    if (!/-(?:idea|bridge)$/.test(id)) expect(texto.split(/\s+/).length).toBeLessThanOrEqual(12)
+    expect(texto).not.toMatch(
+      /\bregra|\bbloco|\bentão\b|\bsenão\b|\bgrupo|\bcomando|\bcódigo|ponteAberta|[Cc]lique em|Encostar|Esperar 1 segundo|Afastar|[−+]/,
+    )
   })
 })
 
@@ -98,7 +96,7 @@ describe('Ponte: a exploração livre completa as metas e a fala acompanha a ord
       puxar,
       ...quatro,
       puxar,
-      { type: 'timer-place', place: 'start' },
+      relogio,
       ...quatro,
       puxar,
       ...quatro,
@@ -120,56 +118,43 @@ describe('Ponte: a exploração livre completa as metas e a fala acompanha a ord
     expect(jogar(PONTE, [puxar, ponte]).evidence.discoveries).toContain('in-time')
   })
 
-  test('a fala segue a história e explica só o que já foi testado', () => {
+  test('a fala segue o que a criança já viu', () => {
     expect(fala(PONTE, [])).toBe('bridge-start')
     expect(fala(PONTE, [ponte])).toBe('bridge-closed')
-    expect(fala(PONTE, [ponte, puxar])).toBe('bridge-lowered')
-    expect(fala(PONTE, [ponte, puxar, ...quatro])).toBe('bridge-rose')
+    expect(fala(PONTE, [ponte, puxar])).toBe('bridge-hurry')
     expect(fala(PONTE, [ponte, puxar, ponte])).toBe('bridge-crossed')
-    expect(fala(PONTE, [ponte, puxar, ponte, recomecar, puxar, ...quatro])).toBe('bridge-again')
-    expect(fala(PONTE, [ponte, puxar, ponte, recomecar, puxar, ...quatro, puxar])).toBe(
-      'bridge-place',
-    )
+    // Na pedra a alavanca não responde: a fala manda jogar de novo (full review 08/11/2026).
+    expect(falas.get('bridge-crossed')).toContain('Jogue de novo')
+    expect(fala(PONTE, [ponte, puxar, ...quatro])).toBe('bridge-rose')
+    expect(fala(PONTE, [ponte, puxar, ponte, recomecar, puxar])).toBe('bridge-wait')
+    const subiu = [ponte, puxar, ponte, recomecar, puxar, ...quatro]
+    expect(fala(PONTE, subiu)).toBe('bridge-rose')
+    expect(fala(PONTE, [...subiu, puxar, ponte])).toBe('bridge-crossed-again')
+    expect(fala(PONTE, [...subiu, puxar, ponte, recomecar])).toBe('bridge-place')
   })
 
-  test('quem puxa primeiro testa a ponte fechada no fim', () => {
-    const tudoMenosFechada: SceneAction[] = [
-      puxar,
-      ponte,
-      recomecar,
-      puxar,
-      ...quatro,
-      puxar,
-      { type: 'timer-place', place: 'start' },
-      ...quatro,
-      puxar,
-      ...quatro,
-    ]
-    expect(fala(PONTE, [puxar])).toBe('bridge-lowered')
-    expect(fala(PONTE, tudoMenosFechada)).toBe('bridge-clock-back')
-    expect(fala(PONTE, [...tudoMenosFechada, { type: 'timer-place', place: 'lever' }])).toBe(
-      'bridge-closed-last',
-    )
-    expect(fala(PONTE, [...tudoMenosFechada, { type: 'timer-place', place: 'lever' }, ponte])).toBe(
-      'bridge-complete',
-    )
-  })
-
-  test('quem escolhe o relógio da partida antes da hora é acompanhado nessa comparação', () => {
-    const relogio: SceneAction = { type: 'timer-place', place: 'start' }
+  test('com o relógio da partida, a fala acompanha o relógio que conta', () => {
     expect(fala(PONTE, [relogio])).toBe('bridge-clock-start')
-    // Puxou antes de o relógio da partida chegar a 4: a ponte sobe uma vez, e a comparação continua.
-    expect(fala(PONTE, [relogio, puxar, ...quatro])).toBe('bridge-clock-start')
-    expect(fala(PONTE, [relogio, puxar, ...quatro, puxar, ...quatro])).toBe('bridge-clock-back')
+    expect(fala(PONTE, [relogio, esperar])).toBe('bridge-clock-running')
+    expect(fala(PONTE, [relogio, esperar, puxar])).toBe('bridge-clock-lowered')
+    expect(fala(PONTE, [relogio, ...quatro])).toBe('bridge-clock-again')
+    expect(fala(PONTE, [relogio, ...quatro, puxar])).toBe('bridge-clock-wait')
+    expect(fala(PONTE, [relogio, ...quatro, puxar, ...quatro])).toBe('bridge-clock-back')
+  })
+
+  test('na tela, o relógio da partida corre desde o primeiro passo (antes de 1 segundo)', () => {
+    const s = jogar(PONTE, [relogio])
+    const has = (id: string) => s.evidence.discoveries.includes(id)
+    expect(ponteGuidance(s, has)).toBe('bridge-clock-start')
+    expect(ponteGuidance(s, has, { rodando: true })).toBe('bridge-clock-running')
   })
 })
 
 describe('Moedas: a exploração livre completa as metas e a fala acompanha a ordem', () => {
   const desligar: SceneAction = { type: 'coin-disappears', enabled: false }
-  const ligar: SceneAction = { type: 'coin-disappears', enabled: true }
   const exatamente: SceneAction = { type: 'chest-rule', rule: 'equals' }
 
-  test('o caminho da pista direta completa as seis descobertas', () => {
+  test('o caminho completa as seis descobertas', () => {
     const caminho: SceneAction[] = [
       moeda(0),
       moeda(1),
@@ -196,22 +181,31 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
     expect(fala(MOEDAS, [moeda(0)])).toBe('coin-first')
     expect(fala(MOEDAS, [moeda(0), moeda(1)])).toBe('coin-away')
     expect(fala(MOEDAS, [moeda(0), moeda(1), afastar])).toBe('coin-back')
-    expect(fala(MOEDAS, [moeda(0), moeda(1), afastar, moeda(0)])).toBe('coin-compare-off')
-    expect(fala(MOEDAS, [moeda(0), moeda(1), afastar, moeda(0), desligar, moeda(2)])).toBe(
-      'coin-compare-off',
+    const umaVez = [moeda(0), moeda(1), afastar, moeda(0)]
+    expect(fala(MOEDAS, umaVez)).toBe('coin-compare-off')
+    expect(fala(MOEDAS, [...umaVez, desligar])).toBe('coin-compare-again')
+    // Quatro moedas: o baú com menos de 5.
+    expect(fala(MOEDAS, [...umaVez, desligar, moeda(2), afastar, moeda(2)])).toBe('coin-chest')
+    // Cinco moedas: jogar de novo para levar menos de 5.
+    expect(fala(MOEDAS, [...umaVez, desligar, moeda(2), moeda(3), moeda(2)])).toBe(
+      'coin-chest-restart',
     )
+    // Sem nenhuma moeda (logo depois de jogar de novo), pegar algumas antes (full review).
     expect(
-      fala(MOEDAS, [moeda(0), moeda(1), afastar, moeda(0), desligar, moeda(2), moeda(3), moeda(2)]),
-    ).toBe('coin-chest')
+      fala(MOEDAS, [...umaVez, desligar, moeda(2), afastar, moeda(2), { type: 'restart-coins' }]),
+    ).toBe('coin-chest-take')
   })
 
-  test('quem volta primeiro com o sumiço desligado é convidado a ligá-lo', () => {
-    const semSumir = [desligar, moeda(0), moeda(1), afastar, moeda(0)]
-    expect(fala(MOEDAS, semSumir)).toBe('coin-compare-on')
-    expect(fala(MOEDAS, [...semSumir, ligar, moeda(2), moeda(3), moeda(2)])).toBe('coin-chest')
+  test('com o sumiço desligado desde o começo, a fala pede para religar (full review 08/11/2026)', () => {
+    // A moeda que não some (`no-double`) só aparece com o sumiço ligado: a fala precisa pedir.
+    const semSumico: SceneAction[] = [desligar, moeda(0), moeda(1), afastar, moeda(0)]
+    const s = jogar(MOEDAS, semSumico)
+    expect(s.evidence.discoveries).toContain('counts-again')
+    expect(s.evidence.discoveries).not.toContain('no-double')
+    expect(fala(MOEDAS, semSumico)).toBe('coin-compare-on')
   })
 
-  test('a pergunta do baú testada primeiro é explicada, e a outra é pedida', () => {
+  test('a comparação das perguntas do baú: ir até ele e, parado lá, trocar a peça', () => {
     const base: SceneAction[] = [
       moeda(0),
       moeda(1),
@@ -225,13 +219,11 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
       moeda(4),
       moeda(5),
     ]
-    expect(fala(MOEDAS, base)).toBe('coin-rules')
-    expect(fala(MOEDAS, [...base, bau])).toBe('coin-rules-equals')
-    expect(fala(MOEDAS, [...base, exatamente, bau])).toBe('coin-rules-atleast')
+    expect(fala(MOEDAS, base)).toBe('coin-rules-go')
+    expect(fala(MOEDAS, [...base, bau])).toBe('coin-rules-swap')
   })
 
   test('a fala da comparação não promete 6 moedas quando a criança tem 7', () => {
-    // A pista antiga deixava o sumiço desligado: as moedas repetidas levavam o número a 7.
     const sete: SceneAction[] = [
       moeda(0),
       moeda(1),
@@ -245,13 +237,10 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
       moeda(4),
       moeda(5),
     ]
-    const s = jogar(MOEDAS, sete)
-    expect(s.coins.moedas).toBe(7)
+    expect(jogar(MOEDAS, sete).coins.moedas).toBe(7)
     for (const acoes of [sete, [...sete, bau], [...sete, exatamente, bau]]) {
-      const estado = jogar(MOEDAS, acoes)
-      const texto = discoveryGuidance(MOEDAS, estado)?.text ?? ''
-      expect(texto).not.toMatch(/\b(?:6|seis)\b/)
-      expect(texto).toContain('mais de 5 moedas')
+      const texto = discoveryGuidance(MOEDAS, jogar(MOEDAS, acoes))?.text ?? ''
+      expect(texto).not.toMatch(/\b(?:6|seis)\b/i)
     }
   })
 
@@ -259,12 +248,16 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
     const seis = [moeda(0), moeda(1), moeda(2), moeda(3), moeda(4), moeda(5), bau]
     expect(jogar(MOEDAS, seis).coins).toMatchObject({ at: 'chest', chest: 'open' })
     expect(jogar(MOEDAS, [...seis, exatamente]).coins).toMatchObject({ at: null, chest: 'closed' })
+    // A tela pergunta de novo na hora (o personagem continua parado no baú): é outro teste.
+    const s = jogar(MOEDAS, [...seis, exatamente, bau])
+    expect(s.coins).toMatchObject({ at: 'chest', chest: 'closed' })
+    expect(s.evidence.discoveries).toContain('compare-rules')
   })
 })
 
 describe('Ponte: o relógio da partida não engana o teste', () => {
   test('ir à ponte assim que puxa, com o relógio da partida, não conta como chegar a tempo', () => {
-    const s = jogar(PONTE, [{ type: 'timer-place', place: 'start' }, puxar, ponte])
+    const s = jogar(PONTE, [relogio, puxar, ponte])
     expect(s.evidence.discoveries).not.toContain('in-time')
   })
 })

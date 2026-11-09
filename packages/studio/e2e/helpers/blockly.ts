@@ -25,7 +25,7 @@ async function findEmptyWorkspacePoint(page: Page): Promise<WorkspacePoint | nul
 
 /** Abre o menu somente depois que fundo, hit-test e menu estão prontos. */
 export async function openWorkspaceContextMenu(page: Page): Promise<void> {
-  const pasteItem = page.getByText('Colar blocos', { exact: true })
+  const pasteItem = page.getByRole('menuitem', { name: 'Colar', exact: true })
   await expect
     .poll(
       async () => {
@@ -53,7 +53,7 @@ export async function pasteBlocklyBlocks(
     [JSON.stringify({ version: 1, block, requiredExtensions, copiedAt: Date.now() })],
   )
   await openWorkspaceContextMenu(page)
-  const pasteItem = page.getByText('Colar blocos', { exact: true })
+  const pasteItem = page.getByRole('menuitem', { name: 'Colar', exact: true })
   await pasteItem.click()
   await expect(pasteItem).toBeHidden()
   await expect

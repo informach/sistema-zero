@@ -10,7 +10,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -20,7 +20,7 @@
 
 [confident, clear, unhurried voice] Nos blocos, abra a área Ao iniciar e encontre o bloco Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.
 
-[engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você mudou na experiência.
+[engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você investigou na experiência.
 
 [confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3.
 
@@ -50,7 +50,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -64,7 +64,7 @@
 
 [confident, clear, unhurried voice] Agora abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço.
 
-[engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o Testar o encontro da experiência, ele confere o lugar no chão e a altura.
+[engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o jogo na experiência do contato, ele confere o lugar no chão e a altura.
 
 [confident, clear, unhurried voice] Repare que ele já chega com personagem no primeiro nome e chave no segundo. Se aparecer outro nome, clique nele e escolha o certo.
 

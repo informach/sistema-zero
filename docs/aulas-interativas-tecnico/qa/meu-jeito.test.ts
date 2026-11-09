@@ -302,7 +302,7 @@ for (const m of manifests)
   }
 /** O fim do convite do vídeo da experiência (convite à investigação, 02/11/2026). */
 const CONVITE =
-  'Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.'
+  'O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.'
 /** A pergunta do avatar que anteciparia uma descoberta vira um teste da experiência. */
 const VAI_TESTAR = 'O que você acha? Isso você vai testar na experiência.'
 /**
@@ -395,7 +395,9 @@ test('as experiências convidam a investigar: ideia, controles, sem resultado an
     // A instrução e a ponte convidam; as pistas vão do aberto (o que observar) ao direto (a sequência).
     // A instrução tem o que comparar e a liberdade de ordem, sem cliques nem sequência (02/11/2026).
     expect(
-      atividade.instructions.endsWith(' Você escolhe a ordem e pode repetir quando quiser.'),
+      atividade.instructions.endsWith(
+        ' O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+      ),
       s.key,
     ).toBe(true)
     expect(frases([atividade.instructions]), s.key).toHaveLength(2)
@@ -414,7 +416,7 @@ test('as experiências convidam a investigar: ideia, controles, sem resultado an
     expect(s.bridge.startsWith('Sua vez! Investigue '), s.key).toBe(true)
     expect(
       s.bridge.endsWith(
-        ' Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+        ' O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       ),
       s.key,
     ).toBe(true)

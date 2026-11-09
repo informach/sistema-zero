@@ -100,7 +100,9 @@ export class SearchAwareHorizontalFlyout extends Blockly.HorizontalFlyout {
   protected override layout_(contents: Blockly.FlyoutItem[]): void {
     this.workspace_.scale = this.targetWorkspace.scale
     let cursorX = this.MARGIN + this.tabWidth_
-    const cursorY = this.MARGIN + this.headerHeight(contents)
+    // O campo HTML mantém o tamanho em pixels mesmo quando os blocos estão com zoom.
+    // Converte a faixa para unidades do workspace antes de o SVG aplicar a escala.
+    const cursorY = this.MARGIN + this.headerHeight(contents) / this.workspace_.scale
     const orderedContents = this.RTL ? [...contents].reverse() : contents
 
     for (const item of orderedContents) {
@@ -119,9 +121,11 @@ export class SearchAwareHorizontalFlyout extends Blockly.HorizontalFlyout {
       if (item.getType() === SEARCH_HEADER_KIND) return maximum
       return Math.max(maximum, item.getElement().getBoundingRectangle().getHeight())
     }, 0)
-    const workspaceHeight = contentHeight + this.headerHeight() + this.MARGIN * 1.5
+    const workspaceHeight = contentHeight + this.MARGIN * 1.5
     const flyoutHeight =
-      workspaceHeight * this.workspace_.scale + Blockly.Scrollbar.scrollbarThickness
+      workspaceHeight * this.workspace_.scale +
+      this.headerHeight() +
+      Blockly.Scrollbar.scrollbarThickness
 
     if (this.getHeight() === flyoutHeight) return
 

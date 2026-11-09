@@ -1,285 +1,225 @@
 'use client'
-
+/**
+ * Tela livre do Poder "Moedas no caminho" (08/11/2026, proposta "Experiências do Faísca" aprovada). O personagem ANDA pelo caminho: passar numa
+ * moeda é pegar (sai o "Encostar na moeda 1…6"), sair de perto é afastar e chegar ao baú é tentar
+ * abrir. O sumiço da moeda é um interruptor, e o que o baú pergunta é uma peça que se troca ("pelo
+ * menos 5" × "exatamente 5"). A cada moeda, "+1" pula no placar do jogo.
+ */
+import { COIN_COUNTER, discoveryGuidance, discoverySpeech } from '@sistemazero/core/learning/scene'
+import { FAROL_LAYOUT } from '@sistemazero/studio/arte'
+import { useEffect, useRef, useState } from 'react'
+import { SONS } from '../lib/scene-sons'
+import { CoinCounterStage, MOEDAS_DA_CENA } from './scene-coin-counter'
 import {
-  COIN_COUNTER,
-  type CoinIndex,
-  discoveryGuidance,
-  type SceneState,
-} from '@sistemazero/core/learning/scene'
-import { Coins, MessageCircle, NotebookPen, PackageOpen, Sparkles } from 'lucide-react'
-import { SceneCenarioProvider } from './scene-cenario-context'
-import { CoinCounterStage } from './scene-coin-counter'
-import { Frame, SceneButton, useDiscovery } from './scene-discovery-frame'
+  BotaoGrande,
+  type Cartao,
+  type FotoDe,
+  Frame,
+  Interruptor,
+  Modulo,
+  semNoSeuJogo,
+  useFotinhos,
+} from './scene-discovery-frame'
+import {
+  CaderninhoDe,
+  cartoesDaAtividade,
+  ModuloAndar,
+  Troca,
+  useChegada,
+  useMapaLivre,
+} from './scene-faisca-livre'
 
-/**
- * A experiência do Poder "Moedas no caminho" em exploração livre (Faísca, 02/11/2026): só a IDEIA,
- * no molde de `Door` e `Memory` (`scene-discovery-controls.tsx`). A tela fala do número moedas, que
- * cresce como um cofrinho, do sumiço da moeda e da pergunta do baú ("pelo menos" ou "exatamente");
- * o grupo, o somar, o Se, o então e o senão ficam para a montagem do Estúdio. O que cada coisa faz
- * só aparece depois de a criança testar.
- */
-
-/** As descobertas, na ordem da lista. Os ids são as metas da cena (`catalog.ts`). */
-export const METAS_DAS_MOEDAS = [
-  'each-adds',
-  'no-double',
-  'counts-again',
-  'kept',
-  'below-goal',
-  'compare-rules',
-] as const
-const OBJETIVOS_DAS_MOEDAS = [
-  'Encoste em duas moedas diferentes e observe moedas.',
-  'Com o sumiço ligado, volte a uma moeda que já pegou e observe moedas.',
-  'Com o sumiço desligado, volte a uma moeda que já pegou e observe moedas.',
-  'Afaste o personagem das moedas e observe moedas.',
-  'Tente o baú com menos de 5 moedas.',
-  'Com mais de 5 moedas, compare as perguntas Pelo menos 5 e Exatamente 5.',
+const CARTOES: Cartao[] = [
+  {
+    id: 'each-adds',
+    emoji: '🪙',
+    pergunta: 'O que muda ao pegar uma moeda?',
+    descoberta: 'o número ganha 1.',
+  },
+  {
+    id: 'kept',
+    emoji: '🚶',
+    pergunta: 'Longe das moedas, o número continua?',
+    descoberta: 'continua guardado.',
+  },
+  {
+    id: 'no-double',
+    emoji: '👻',
+    pergunta: 'E passar de novo onde já pegou?',
+    descoberta: 'a moeda sumiu: não conta outra vez.',
+  },
+  {
+    id: 'counts-again',
+    emoji: '✨',
+    pergunta: 'E se a moeda não sumir?',
+    descoberta: 'a mesma moeda conta de novo.',
+  },
+  {
+    id: 'below-goal',
+    emoji: '🔒',
+    pergunta: 'Com menos de 5, o baú abre?',
+    descoberta: 'não: fica fechado.',
+  },
+  {
+    id: 'compare-rules',
+    emoji: '⚖️',
+    pergunta: 'Com 6 moedas, "pelo menos 5" e "exatamente 5" dão igual?',
+    descoberta: '"pelo menos 5" abre; "exatamente 5" não.',
+  },
 ]
-
-/**
- * O botão em destaque é o gesto que a fala do Zappy pede agora (a régua de `proximoGestoDaMemoria`).
- * Quando o gesto é encostar numa moeda, `moeda` diz qual: uma nova para somar, ou uma já pega para
- * voltar ao lugar dela.
- */
-export type GestoDasMoedas =
-  | { gesto: 'moeda'; moeda: number }
-  | { gesto: 'afastar' | 'bau' | 'sumico' | 'regra' | 'recomecar' }
-  | null
-export function proximoGestoDasMoedas(
-  fala: string | undefined,
-  c: SceneState['coins'],
-): GestoDasMoedas {
-  const outra = (cabe: (i: number) => boolean) => {
-    for (let i = 0; i < COIN_COUNTER.coins; i++) if (i !== c.at && cabe(i)) return i
-    return undefined
-  }
-  const nova = outra((i) => !!c.present[i] && !c.counted[i]) ?? outra((i) => !!c.present[i])
-  const moeda = (i: number | undefined): GestoDasMoedas =>
-    i === undefined ? { gesto: 'recomecar' } : { gesto: 'moeda', moeda: i }
-  switch (fala) {
-    case 'coin-start':
-    case 'coin-first':
-      return moeda(nova)
-    case 'coin-away':
-      return c.at === null ? moeda(nova) : { gesto: 'afastar' }
-    case 'coin-back':
-      return moeda(outra((i) => !!c.counted[i]) ?? nova)
-    case 'coin-compare-off':
-      if (c.disappear) return { gesto: 'sumico' }
-      return moeda(outra((i) => !!c.counted[i] && !!c.present[i]) ?? nova)
-    case 'coin-compare-on':
-      if (!c.disappear) return { gesto: 'sumico' }
-      return moeda(outra((i) => !!c.counted[i] && !c.present[i]) ?? nova)
-    case 'coin-chest':
-      if (c.moedas === 0) return moeda(nova)
-      return c.moedas < COIN_COUNTER.goal ? { gesto: 'bau' } : { gesto: 'recomecar' }
-    case 'coin-rules':
-    case 'coin-rules-equals':
-    case 'coin-rules-atleast': {
-      if (c.moedas <= COIN_COUNTER.goal) return moeda(nova)
-      const falta = c.rule === 'at-least' ? !c.compared.atLeast : !c.compared.equals
-      return falta ? { gesto: 'bau' } : { gesto: 'regra' }
+const fotoDe: FotoDe = (antes, depois, acao) => {
+  const a = antes.coins.moedas
+  const d = depois.coins.moedas
+  if (acao.type === 'touch-coin')
+    return d > a
+      ? { titulo: `Moeda ${acao.coin + 1}`, texto: `moedas ${a} → ${d}` }
+      : { titulo: `Moeda ${acao.coin + 1} de novo`, texto: `já tinha sumido: continua ${d}` }
+  if (acao.type === 'try-chest')
+    return {
+      titulo: `Baú com ${d} (${depois.coins.rule === 'at-least' ? 'pelo menos 5' : 'exatamente 5'})`,
+      texto: depois.coins.chest === 'open' ? 'abriu!' : 'ficou fechado',
     }
-    default:
-      return null
-  }
+  return null
 }
 
-/** A ideia das moedas: o encontro, o sumiço e a pergunta do baú, com as respostas reveladas no teste. */
-function IdeiaDasMoedas({
-  c,
-  visto,
-}: {
-  c: SceneState['coins']
-  visto: { soma: boolean; umaVez: boolean; deNovo: boolean; sim: boolean; nao: boolean }
-}) {
-  const resposta = c.at === 'chest' ? c.chest === 'open' : null
-  const estado = (escolhido: boolean) =>
-    resposta === escolhido
-      ? '✓ escolhido'
-      : resposta === !escolhido
-        ? 'Não foi usado'
-        : 'Aguardando teste'
-  const descobrir = 'Teste para descobrir'
-  const sumico = c.disappear
-    ? visto.umaVez
-      ? 'A moeda que sumiu não conta de novo'
-      : descobrir
-    : visto.deNovo
-      ? 'A mesma moeda conta de novo'
-      : descobrir
-  return (
-    <figure className="sz-scene-regra door-rule coin-idea">
-      <figcaption className="sz-scene-regra-titulo">O que acontece com as moedas</figcaption>
-      <div className="memory-actions">
-        <div data-lit={visto.soma}>
-          <Coins size={20} />
-          <span>
-            Encostar numa moeda
-            <small>{visto.soma ? 'moedas soma 1: o número de antes, mais 1' : descobrir}</small>
-          </span>
-        </div>
-        <div data-lit={c.disappear ? visto.umaVez : visto.deNovo}>
-          <Sparkles size={20} />
-          <span>
-            Sumiço da moeda: {c.disappear ? 'ligado' : 'desligado'}
-            <small>{sumico}</small>
-          </span>
-        </div>
-      </div>
-      <div className="door-question">
-        <NotebookPen size={20} />
-        <strong>
-          No baú: moedas é {c.rule === 'at-least' ? 'pelo menos' : 'exatamente'} {COIN_COUNTER.goal}
-          ?
-        </strong>
-      </div>
-      <div className="door-forks">
-        <div data-selected={resposta === true} data-muted={resposta === false}>
-          <span>Sim</span>
-          {visto.sim ? (
-            <PackageOpen size={34} />
-          ) : (
-            <b className="door-fork-unknown" aria-hidden="true">
-              ?
-            </b>
-          )}
-          <strong>{visto.sim ? 'Abrir o baú' : descobrir}</strong>
-          <small>{estado(true)}</small>
-        </div>
-        <div data-selected={resposta === false} data-muted={resposta === true}>
-          <span>Não</span>
-          {visto.nao ? (
-            <MessageCircle size={34} />
-          ) : (
-            <b className="door-fork-unknown" aria-hidden="true">
-              ?
-            </b>
-          )}
-          <strong>{visto.nao ? 'Avisar o que falta' : descobrir}</strong>
-          <small>{estado(false)}</small>
-        </div>
-      </div>
-    </figure>
-  )
-}
+const ALVOS = {
+  ...Object.fromEntries(MOEDAS_DA_CENA.map((m, i) => [`m${i}`, { x: m.x + 12, y: m.y + 12 }])),
+  bau: { x: 52, y: 294 },
+} as Record<string, { x: number; y: number }>
+const INICIO = { x: FAROL_LAYOUT.personagem.x, y: FAROL_LAYOUT.personagem.y }
 
 export function MoedasLivre() {
-  const { activity, state, dispatch, instruction } = useDiscovery()
-  const c = state.coins
-  const has = (id: string) => state.evidence.discoveries.includes(id)
-  const completed = METAS_DAS_MOEDAS.map(has)
-  const g = proximoGestoDasMoedas(discoveryGuidance(activity, state)?.id, c)
-  const tom = (qual: string) => (g?.gesto === qual ? 'gesto' : 'ferramenta')
-  const regra = (rule: 'at-least' | 'equals') => (
-    <SceneButton
-      aria-pressed={c.rule === rule}
-      tom={
-        g?.gesto === 'regra' && c.rule !== rule
-          ? 'gesto'
-          : c.rule === rule
-            ? 'ligado'
-            : 'ferramenta'
-      }
-      onClick={() => dispatch({ type: 'chest-rule', rule })}
-    >
-      {rule === 'at-least' ? 'Pelo menos 5' : 'Exatamente 5'}
-    </SceneButton>
+  const p = useFotinhos({ fotoDe })
+  const c = p.state.coins
+  const f = (id: string) => p.state.evidence.discoveries.includes(id)
+  const raiz = useRef<HTMLDivElement>(null)
+  const andar = useMapaLivre({ inicio: INICIO })
+  const perto = useChegada(
+    andar.pos,
+    ALVOS,
+    26,
+    (alvo) => {
+      if (alvo === 'bau') p.dispatch({ type: 'try-chest' })
+      else p.dispatch({ type: 'touch-coin', coin: Number(alvo.slice(1)) as 0 })
+    },
+    () => p.dispatch({ type: 'leave-coin' }),
   )
+  // O "+1" pula no placar do jogo, e cada coisa tem o seu som.
+  const [salto, setSalto] = useState<{ n: number; mais: boolean } | null>(null)
+  const ultimo = useRef(c.adds)
+  useEffect(() => {
+    if (c.adds > ultimo.current) {
+      SONS.ponto()
+      setSalto({ n: c.adds, mais: true })
+      const t = setTimeout(() => setSalto(null), 1100)
+      ultimo.current = c.adds
+      return () => clearTimeout(t)
+    }
+    ultimo.current = c.adds
+  }, [c.adds])
+  // O baú soa quando o personagem chega nele ou a resposta muda (trocar a peça parado ali), nunca
+  // ao reabrir a tela com o estado guardado.
+  const bau = useRef({ at: c.at, chest: c.chest })
+  useEffect(() => {
+    const antes = bau.current
+    if (c.at === 'chest' && (antes.at !== 'chest' || antes.chest !== c.chest))
+      c.chest === 'open' ? SONS.abre() : SONS.tranca()
+    bau.current = { at: c.at, chest: c.chest }
+  }, [c.at, c.chest])
+  const jogarDeNovo = () => {
+    andar.voltar()
+    p.dispatch({ type: 'restart-coins' })
+  }
+  // A fala vem do motor (as frases que o Admin grava com a voz do Zappy).
+  const fala = discoveryGuidance(p.activity, p.state)?.text ?? ''
   return (
     <Frame
+      arranjo="faisca"
+      raiz={raiz}
       title="O contador de moedas"
       kind="moedas"
-      activity={activity}
-      state={state}
-      text={instruction}
-      goals={OBJETIVOS_DAS_MOEDAS}
-      completed={completed}
-      done={completed.filter(Boolean).length}
-      reset={() => dispatch({ type: 'reset' })}
+      activity={p.activity}
+      state={p.state}
+      text={fala}
+      reset={() => {
+        andar.voltar()
+        p.dispatch({ type: 'reset' })
+      }}
+      cartoes={cartoesDaAtividade(CARTOES, p.activity)}
+      fotos={p.fotos}
+      ideia={discoverySpeech('coin-idea')}
+      ponte={semNoSeuJogo(discoverySpeech('coin-bridge'))}
       stage={
-        <SceneCenarioProvider cenario="farol">
-          <CoinCounterStage state={state} />
-        </SceneCenarioProvider>
+        <CoinCounterStage state={p.state} heroi={{ ...andar.pos, esquerda: andar.esquerda }} />
       }
-      // A figura fica embaixo do palco, como na `Memory`: na coluna dos controles, ela empurrava o
-      // palco fixo para baixo e abria um vão em cima dele (full review de 02/11/2026).
-      after={
-        <IdeiaDasMoedas
-          c={c}
-          visto={{
-            soma: completed[0] ?? false,
-            umaVez: completed[1] ?? false,
-            deNovo: completed[2] ?? false,
-            // Derivado do estado (e não de um estado da tela): o Desfazer volta a revelação junto.
-            sim: c.chest === 'open' || c.compared.atLeast,
-            nao:
-              (completed[4] ?? false) ||
-              c.compared.equals ||
-              (c.at === 'chest' && c.chest === 'closed'),
-          }}
-        />
+      noPalco={
+        salto ? (
+          <span
+            key={salto.n}
+            className="sz-discovery-salto sz-discovery-livre-salto-moeda"
+            data-mais
+          >
+            +1
+          </span>
+        ) : null
       }
-    >
-      <fieldset>
-        <legend className="frame-controls-label">Encostar na moeda</legend>
-        <div className="grid grid-cols-3 gap-2 min-[700px]:grid-cols-6">
-          {Array.from({ length: COIN_COUNTER.coins }, (_, i) => {
-            const n = i + 1
-            const saiu = !c.present[i]
-            return (
-              <SceneButton
-                // biome-ignore lint/suspicious/noArrayIndexKey: as seis moedas são lugares fixos.
-                key={i}
-                tom={g?.gesto === 'moeda' && g.moeda === i ? 'gesto' : 'ferramenta'}
-                aria-label={saiu ? `Moeda ${n}, vazio: voltar ao lugar` : `Encostar na moeda ${n}`}
-                data-ja-saiu={saiu ? '' : undefined}
-                disabled={c.at === i}
-                onClick={() => dispatch({ type: 'touch-coin', coin: i as CoinIndex })}
-              >
-                {saiu ? `${n} · vazio` : n}
-              </SceneButton>
-            )
-          })}
-        </div>
-      </fieldset>
-      <div className="sz-discovery-controls free-controls">
-        <SceneButton
-          tom={tom('afastar')}
-          disabled={c.at === null}
-          onClick={() => dispatch({ type: 'leave-coin' })}
-        >
-          Afastar
-        </SceneButton>
-        <SceneButton tom={tom('bau')} onClick={() => dispatch({ type: 'try-chest' })}>
-          Encostar no baú
-        </SceneButton>
-        <SceneButton tom={tom('recomecar')} onClick={() => dispatch({ type: 'restart-coins' })}>
-          Recomeçar a partida
-        </SceneButton>
-      </div>
-      <div className="sz-discovery-controls free-controls">
-        <SceneButton
-          aria-pressed={c.disappear}
-          tom={tom('sumico')}
-          onClick={() => dispatch({ type: 'coin-disappears', enabled: !c.disappear })}
-        >
-          {c.disappear ? 'Desligar o sumiço da moeda' : 'Ligar o sumiço da moeda'}
-        </SceneButton>
-      </div>
-      <fieldset className="sz-discovery-choices">
-        <legend className="frame-controls-label">O que o baú pergunta?</legend>
-        {regra('at-least')}
-        {regra('equals')}
-      </fieldset>
-      <p className="sz-discovery-small">
-        Mudar o sumiço ou a pergunta do baú vale para o próximo encontro. Recomeçar a partida traz
-        as seis moedas de volta e zera moedas; suas descobertas continuam marcadas.
-      </p>
-      <p className="sz-discovery-free-hint">
-        Experimente à vontade. Os destaques sugerem um próximo teste; você escolhe a ordem.
-      </p>
-    </Frame>
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={c.adds === 0 && p.fotos.length === 0} />
+      }
+      controles={
+        <>
+          <Modulo titulo="A regra do baú" icone="🧩" largo>
+            <Troca
+              rotulo="O baú pergunta"
+              antes="Tem"
+              depois="5 moedas?"
+              opcoes={[
+                { v: 'at-least', peca: <>pelo menos</>, aria: 'Pelo menos 5 moedas' },
+                { v: 'equals', peca: <>exatamente</>, aria: 'Exatamente 5 moedas' },
+              ]}
+              valor={c.rule}
+              pulsar={
+                f('below-goal') && !f('compare-rules') && c.moedas > COIN_COUNTER.goal
+                  ? c.rule === 'at-least'
+                    ? 'equals'
+                    : 'at-least'
+                  : null
+              }
+              onChange={(v) => {
+                SONS.encaixe()
+                p.dispatch({ type: 'chest-rule', rule: v })
+                // Parado no baú, ele pergunta de novo na hora, com a pergunta nova.
+                if (perto === 'bau') p.dispatch({ type: 'try-chest' })
+              }}
+            />
+          </Modulo>
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="O baú olha aqui.">
+            <CaderninhoDe linhas={[{ pergunta: 'Quantas moedas?', resposta: String(c.moedas) }]} />
+          </Modulo>
+          <Modulo
+            compacto
+            titulo="Depois de pegar"
+            icone="✨"
+            dica="Ligado, a moeda some do caminho."
+          >
+            <Interruptor
+              ligado={c.disappear}
+              rotulo="Some ao pegar?"
+              estado={(on) => (on ? 'Sumiço ligado' : 'Sumiço desligado')}
+              pulsar={f('kept') && !f('counts-again') && c.disappear && f('no-double')}
+              onClick={() => p.dispatch({ type: 'coin-disappears', enabled: !c.disappear })}
+            />
+          </Modulo>
+          <Modulo compacto titulo="Partida" icone="🔄" dica="As moedas voltam e o número vai a 0.">
+            <BotaoGrande
+              pulsar={f('kept') && !f('below-goal') && c.moedas >= COIN_COUNTER.goal}
+              onClick={jogarDeNovo}
+            >
+              <span aria-hidden>🔄</span> Jogar de novo
+            </BotaoGrande>
+          </Modulo>
+        </>
+      }
+    />
   )
 }

@@ -33,6 +33,13 @@ export const STUDIO_BRAND_MIN_PX = 1600
 export const STUDIO_BAR_LABELS_MIN_PX = 1400
 
 /**
+ * A partir disto o Zappy escreve o nome ao lado da faísca (redesenho do clássico, 11/2026). Com
+ * Rodar / Parar no meio da barra e os modos na direita, o nome do Zappy é o primeiro rótulo a
+ * ceder: abaixo disto fica só a faísca, com "Abrir Zappy" no nome acessível.
+ */
+export const STUDIO_ZAPPY_LABEL_MIN_PX = 1600
+
+/**
  * Abaixo disto desfazer e refazer saem da barra e vão para a seção "Editar" do "⋯" (antes, só no
  * compacto): no estreito, com os dois círculos, a esquerda passava por baixo do segmentado a
  * partir de 640px (medido: 40px a 640, 120 a 560, 200 a 480).

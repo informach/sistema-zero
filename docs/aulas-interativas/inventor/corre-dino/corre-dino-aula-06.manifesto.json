@@ -50,14 +50,14 @@
   "blocks": [
     {
       "key": "video-visivel-guardado",
-      "plannedVideo": "Título: Para onde vai o cacto que sai da tela?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele sai do grupo também?”. Antes: “num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Para onde vai o cacto que sai da tela?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele sai do grupo também?”. Antes: “jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-visivel-guardado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -66,7 +66,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Para onde vai o cacto que sai da tela?",
-        "instructions": "Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe a tela, os bastidores e o número de cactos no grupo.",
           "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
@@ -685,7 +685,7 @@
       "key": "visivel-guardado",
       "title": "Para onde vai o cacto que sai da tela?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-visivel-guardado",
         "fala-visivel-guardado",

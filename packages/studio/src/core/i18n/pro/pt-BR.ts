@@ -154,6 +154,7 @@ export const ptBR: Record<string, string> = {
   // ── O workspace Pro (redesenho de 11/2026): a arrumação da tela, a faixa do editor, as janelas ──
   'pro.stage.title.game': 'Jogo',
   'pro.stage.title.program': 'Programa',
+  'pro.stage.title.page': 'Página',
   'pro.stage.stale': 'Código mudou',
   'pro.layout.label': 'Arrumação da tela',
   'pro.layout.split': 'Lado a lado',
@@ -198,9 +199,12 @@ export const ptBR: Record<string, string> = {
   // ── O palco do Pro: os estados do jogo/programa (parado, preparando, erro, sem suporte) ──
   'pro.stage.idle.game': 'Aperte Rodar para ver seu jogo',
   'pro.stage.idle.program': 'Aperte Rodar para ver seu programa',
+  'pro.stage.idle.page': 'Aperte Rodar para ver sua página',
   'pro.stage.idle.hint': 'Tudo o que você mudou no código já está guardado.',
+  'pro.stage.idle.hint.blocks': 'Tudo o que você mudou nos blocos já está guardado.',
   'pro.stage.idle.action.game': 'Rodar o jogo',
   'pro.stage.idle.action.program': 'Rodar o programa',
+  'pro.stage.idle.action.page': 'Rodar a página',
   'pro.stage.preparing': 'Preparando a oficina',
   'pro.stage.preparingHint': 'A primeira vez demora um pouco mais.',
   'pro.stage.step.engine': 'Ligando o motor',
@@ -215,6 +219,7 @@ export const ptBR: Record<string, string> = {
   'pro.stage.details': 'Ver detalhes',
   'pro.stage.error.game': 'Opa, o jogo não conseguiu abrir',
   'pro.stage.error.program': 'Opa, o programa não conseguiu rodar',
+  'pro.stage.error.page': 'Opa, a página não conseguiu abrir',
   'pro.stage.error.hint': 'Dá uma olhada no que aconteceu e tenta de novo.',
   'pro.stage.retry': 'Tentar de novo',
   'pro.stage.seeProblem': 'Ver o que aconteceu',

@@ -1,5 +1,34 @@
 # CLAUDE.md — @sistemazero/core
 
+## Respostas em percursos alternativos do Faísca (08/11/2026)
+
+- `try-cabin` recalcula a porta em cada comparação de `freeExploration`: trocar de “ou” para “e”
+  com uma peça fecha a porta no novo teste. A bancada conserva a abertura persistente do jogo.
+- `moedasGuidance` pede nova partida (`coin-compare-restart`) quando faltam moedas disponíveis
+  para comparar o sumiço. O reinício existente conserva descobertas e a escolha de sumiço;
+  alternar a escolha não recria moedas. A fala está sincronizada em `zappy-etapas.json`.
+- Regressões nos testes `poderes-simbolos-cabana` e `poderes-ponte-moedas`.
+
+## Cenário `ilha` e as falas do Faísca (08/11/2026)
+
+Com as telas livres do Faísca (CLAUDE.md do member-shell):
+
+- **Cenário `ilha`** (`scene/cenario.ts`): o jogo 3D da Ilha do Farol. Usa o fundo e as figuras do
+  Farol como reserva de algum palco 2D e vem DEPOIS do `farol` na lista, para o `CENARIO_DA_FIGURA`
+  continuar dando `farol`. `cast.ts`: o `lighthouse-key` aceita `ilha` declarado (o padrão segue
+  `farol`). Os mapas exaustivos (`NOME_DO_CENARIO` do Admin, `NO_JOGO` do member-shell) têm a
+  entrada. O curso da Ilha declara `ilha` na aula 3 (`tests/learning.test.ts`).
+- **Falas novas por id e prefixo da cena** (os slots de voz `discovery:<id>`, o Admin grava):
+  `island-view|position|contact-*` (`island-3d.ts`, `ISLAND_SPEECH` + `islandGuidance`; saíram
+  `islandAxisFocus` e `islandNextAxis`), `door-not-*` (`discovery-guidance.ts`,
+  `portaDoNaoGuidance`), `bridge-*`, `coin-*`, `symbols-*` e `cabin-*` (`guidance-*.ts`). Cada
+  experiência tem `-idea` e `-bridge` ("No seu jogo:"). No máximo 12 palavras.
+- **`ponteGuidance(state, has, tela = {})`** é exportado pelo `scene/index.ts`: com
+  `{rodando}` a tela diz se o relógio corre (os ids `bridge-clock-*`).
+- O catálogo e as ações não mudaram; quem fala com a criança em cada descoberta é o `goalCopy` do
+  manifesto. Testes: `ilha-ideia`, `ilha-porta-do-nao`, `poderes-ponte-moedas`,
+  `poderes-simbolos-cabana` e `cenario.test.ts`.
+
 ## O andar começa onde começa o jogo, e as falas das experiências novas (08/11/2026)
 
 Junto com a moldura nova das experiências livres (CLAUDE.md do member-shell):

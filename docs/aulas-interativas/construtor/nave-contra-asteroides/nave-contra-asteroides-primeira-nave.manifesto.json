@@ -1696,14 +1696,14 @@
     },
     {
       "key": "video-uma-vez-e-sempre",
-      "plannedVideo": "Título: Uma vez ou sempre?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Você já reparou\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para andar de bicicleta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-uma-vez-e-sempre-K1: Debinha substitui “E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?”. Antes: “tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na nave quando ela anda uma”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Uma vez ou sempre?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Você já reparou\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para andar de bicicleta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-uma-vez-e-sempre-K1: Debinha substitui “E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?”. Antes: “tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na nave quando ela anda uma”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1712,7 +1712,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez ou sempre?",
-        "instructions": "Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe quantas vezes a nave anda enquanto os quadros passam.",
           "Compare o que a nave faz depois do primeiro quadro nos dois jeitos.",
@@ -1775,14 +1775,14 @@
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: Onde fica a nave?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde fica a nave?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-coordenadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue como dois números dizem o lugar da nave na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1791,7 +1791,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Onde fica a nave?",
-        "instructions": "Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Mude um número só e compare o lugar novo da nave com o de antes.",
           "Depois de testar o x, faça o mesmo com o y. E onde será que fica o zero dos dois?",
@@ -1843,14 +1843,14 @@
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Existir e aparecer\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-criar-e-mostrar-K1: Debinha substitui “E quando a nave passa a existir, ela já aparece na tela?”. Antes: “no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre a nave existir nos”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Existir e aparecer\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-criar-e-mostrar-K1: Debinha substitui “E quando a nave passa a existir, ela já aparece na tela?”. Antes: “no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre a nave existir nos”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-e-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue se a nave que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1860,7 +1860,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Existir e aparecer",
-        "instructions": "Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe os dois lados, os bastidores e a tela do jogo, depois de cada botão.",
           "Compare a tela antes e depois de mostrar a nave. E se a nave sair da tela, ela continua nos bastidores?",
@@ -1907,14 +1907,14 @@
     },
     {
       "key": "video-desenho-por-quadro",
-      "plannedVideo": "Título: O desenho de cada quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-desenho-por-quadro-K1: Debinha substitui “E se a nave for desenhada em todo quadro, sem apagar a tela?”. Antes: “na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra quando a nave é”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O desenho de cada quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-desenho-por-quadro-K1: Debinha substitui “E se a nave for desenhada em todo quadro, sem apagar a tela?”. Antes: “na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra quando a nave é”.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-desenho-por-quadro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1923,7 +1923,7 @@
         "kind": "interactive",
         "required": true,
         "title": "O desenho de cada quadro",
-        "instructions": "Compare o que a tela mostra quando a nave é desenhada só no começo ou em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o que a tela mostra quando a nave é desenhada só no começo ou em todo quadro, com e sem apagar a tela antes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Depois de cada quadro, compare a tela com o x da nave.",
           "Conte quantas naves ficam na tela em cada jeito.",
@@ -2072,7 +2072,7 @@
       "key": "uma-vez-e-sempre",
       "title": "Uma vez ou sempre?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-uma-vez-e-sempre", "fala-uma-vez-e-sempre", "experiencia-areas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2133,7 +2133,7 @@
       "key": "coordenadas",
       "title": "Onde fica a nave?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue como dois números dizem o lugar da nave na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2147,7 +2147,7 @@
       "key": "criar-e-mostrar",
       "title": "Existir e aparecer",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue se a nave que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-criar-e-mostrar", "fala-criar-e-mostrar", "experiencia-criar-mostrar"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2243,7 +2243,7 @@
       "key": "desenho-por-quadro",
       "title": "O desenho de cada quadro",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-desenho-por-quadro", "fala-desenho-por-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,

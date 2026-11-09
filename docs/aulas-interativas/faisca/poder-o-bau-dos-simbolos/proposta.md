@@ -1,5 +1,10 @@
 # O baú dos símbolos: proposta do Poder do Faísca
 
+> ⭐ **08/11/2026:** a experiência da aula 1 passou à moldura nova (proposta "Experiências do
+> Faísca", aprovada): o personagem anda até as coisas e as regras são peças que se trocam. Os
+> botões de gesto citados abaixo ("Encostar…", "Pegar…", "Afastar", "Esperar 1 segundo") saíram;
+> o README do curso descreve a tela de hoje.
+
 29/10/2026 · **Proposta aprovada.** Define a autoria; não declara curso implementado, mídia
 produzida ou publicação realizada. Quarto e último dos Poderes do Faísca, no mesmo formato de
 [Moedas no caminho](../poder-moedas-no-caminho/proposta.md),

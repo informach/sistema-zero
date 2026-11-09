@@ -23,6 +23,10 @@ Pedido da responsável: a revisão anterior olhou só as experiências, e o rest
 
 Decisão da responsável: o vídeo da parte 1 guiava a criança passo a passo (o tour pelo botão da memória e por temChave, a ordem dos testes e o que acontece quando o personagem encosta na chave). Agora ele tem só o conceito (por que o jogo precisa lembrar e o que é variável), a analogia do papelzinho, temChave no jogo dela, a pergunta do Dedé ("Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?") devolvida com "Isso você vai testar na experiência." e um convite: investigar quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Na tela só amplia a experiência e mostra a cena parada. A instrução ("Compare temChave com a memória da chave ligada e desligada."), o recado da página e a página do Passo a passo dizem o que investigar, sem sequência; as pistas, os pedidos da lista e as falas do Zappy não mudaram. Âncora de `video-d2-contexto-K1` recalculada. O guarda é `qa/video-experiencia.test.ts`.
 
+## Retomadas sem os controles da experiência, 09/11/2026
+
+Decisão da responsável: quem lembra a experiência lembra o que se observou, não um controle dela (a memória da chave virou o lápis do caderninho em 08/11/2026). Na parte 3, a retomada diz que a chave podia sair do chão sem o jogo guardar que ela foi pega, no lugar de "Com a memória da chave desligada… temChave continuava falso"; o seu jogo "está assim agora", no lugar de "igual à memória desligada"; o anúncio é "ensinar o seu jogo a lembrar da chave", e o bloco Alterar temChave para verdadeiro "faz o jogo lembrar da chave", no lugar de "liga a memória da chave". O Na tela da parte 1 não cita mais a memória da chave, e o subtítulo da página do Passo a passo da parte 3 acompanhou a fala. A parte 3 precisa de voz nova.
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 1, com quatro direções e bordas. A retomada preparada só serve quando não há envio anterior.
@@ -84,7 +88,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 
 Comparar os dois modos em qualquer ordem: recolher sem guardar; recolher guardando; afastar-se depois de guardar; recomeçar uma partida depois de guardar. A memória da chave pode ser ligada ou desligada a qualquer momento. Uma mudança após a coleta vale para o próximo encontro, sem alterar retroativamente o valor guardado. A cena distingue chave retirada, aviso e memória. Recomeçar a partida mantém a memória escolhida e as descobertas; Recomeçar experiência limpa tudo.
 
-**Convite da experiência:** Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência não fala de regra, ação nem bloco. O que liga e desliga é a **memória da chave** (desde 08/11/2026, o **lápis** do **Caderninho do jogo**, que escreve "Tem a chave? SIM/NÃO"; `temChave` só aparece na montagem). O vídeo apresenta as três coisas que podem acontecer no encontro e devolve a pergunta do Dedé ("O que você acha? Isso você vai testar na experiência."). O Zappy pergunta e diz o que observar antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais. Na montagem, cada bloco é ligado à ideia ("É este bloco que tira a chave do chão", "É este bloco que liga a memória da chave", "É este bloco que muda o aviso").
 

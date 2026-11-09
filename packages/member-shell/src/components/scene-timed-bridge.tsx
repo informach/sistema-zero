@@ -55,10 +55,23 @@ const sim = (v: boolean) => (v ? 'verdadeiro' : 'falso')
  * O palco é o JOGO: a praia do Farol, o laguinho, a pedra do sino, a ponte, a alavanca, o
  * personagem e o aviso. O relógio do "depois de" acende uma marquinha por segundo, até 4.
  */
-export function TimedBridgeStage({ state }: { state: SceneState }) {
+export function TimedBridgeStage({
+  state,
+  heroi,
+  livre = heroi !== undefined,
+}: {
+  state: SceneState
+  /** O lugar do personagem no andar livre (a tela livre); sem ele, o lugar do motor, como antes. */
+  heroi?: { x: number; y: number; esquerda?: boolean }
+  /**
+   * A tela livre (o nome da variável fica para a montagem). Vem do `heroi`, mas a ponte atravessada
+   * esconde o personagem do andar e continua sendo a tela livre.
+   */
+  livre?: boolean
+}) {
   const b = state.bridge
   const hero = FAROL_LAYOUT.personagem
-  const lugar = lugarDoPersonagem(b.at)
+  const lugar = heroi ?? lugarDoPersonagem(b.at)
   const aviso = avisoDaPonte(b)
   const contados = segundosContados(b)
   const tocando = b.at === 'stone'
@@ -67,7 +80,9 @@ export function TimedBridgeStage({ state }: { state: SceneState }) {
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A ponte apressada"
-      descricao={`ponteAberta é ${sim(b.ponteAberta)}: a ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${livre ? 'A ponte' : `ponteAberta é ${sim(b.ponteAberta)}: a ponte`} está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"
@@ -114,11 +129,13 @@ export function TimedBridgeStage({ state }: { state: SceneState }) {
         height={ALAVANCA_DA_CENA.h}
       />
       <g
-        className="sz-scene-anda"
+        className={heroi ? undefined : 'sz-scene-anda'}
         data-personagem={b.at}
         style={{ transform: `translate(${lugar.x}px, ${lugar.y}px)` }}
       >
-        <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        <g transform={heroi?.esquerda ? `translate(${hero.w} 0) scale(-1 1)` : undefined}>
+          <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        </g>
       </g>
       <AvisoDoFarol texto={aviso} />
       {/* O relógio do "depois de": uma marquinha acesa por segundo contado. */}

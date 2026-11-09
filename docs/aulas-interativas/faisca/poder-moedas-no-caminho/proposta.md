@@ -1,5 +1,10 @@
 # Moedas no caminho: proposta do Poder do Faísca
 
+> ⭐ **08/11/2026:** a experiência da aula 1 passou à moldura nova (proposta "Experiências do
+> Faísca", aprovada): o personagem anda até as coisas e as regras são peças que se trocam. Os
+> botões de gesto citados abaixo ("Encostar…", "Pegar…", "Afastar", "Esperar 1 segundo") saíram;
+> o README do curso descreve a tela de hoje.
+
 29/10/2026 · Proposta aprovada e aplicada na autoria local (ver o [README](README.md)). Mídia,
 voz e publicação continuam etapas de produção. Primeiro dos quatro Poderes do Faísca e referência de
 qualidade para os outros três (O segredo da cabana, A ponte apressada e A sequência dos

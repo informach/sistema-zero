@@ -208,6 +208,9 @@ export function SceneActivityView({
   const revisita = Boolean(guardado?.passed)
   const [ready, setReady] = useState(!scope)
   const [running, setRunning] = useState(false)
+  const [movimentoPausado, setMovimentoPausado] = useState(false)
+  const pausaDoMovimento = useRef(false)
+  const pedidoDoMovimento = useRef(0)
   const [slow, setSlow] = useState(false)
   const [muted, setMuted] = useState(true)
   /**
@@ -516,6 +519,9 @@ export function SceneActivityView({
     const unregister = registerLessonMedia(
       owner.current,
       () => {
+        pausaDoMovimento.current = true
+        pedidoDoMovimento.current++
+        setMovimentoPausado(true)
         setRunning(false)
         return audio.current?.suspend()
       },
@@ -523,6 +529,7 @@ export function SceneActivityView({
     )
     return () => {
       media.removeEventListener('change', update)
+      pedidoDoMovimento.current++
       unregister()
       void audio.current?.close()
     }
@@ -613,6 +620,21 @@ export function SceneActivityView({
     } catch {
       setError('O som não ligou neste aparelho.')
     }
+  }
+  const movimentoPodeAvancar = () =>
+    ready &&
+    !conflict &&
+    !previsaoPendente &&
+    !pausaDoMovimento.current &&
+    hasLessonMediaFocus(owner.current)
+  const retomarMovimento = async () => {
+    if (!ready || conflict || previsaoPendente) return false
+    const pedido = ++pedidoDoMovimento.current
+    const ok = await requestLessonMediaFocus(owner.current)
+    if (pedido !== pedidoDoMovimento.current) return false
+    pausaDoMovimento.current = !ok
+    setMovimentoPausado(!ok)
+    return ok
   }
   const dispatch = (command: SceneCommand) => {
     // ⚠️ Recusado ANTES de marcar o gesto: um "Recomeçar" que não chega à cena não pode apagar o
@@ -1386,7 +1408,15 @@ export function SceneActivityView({
                       dispatch,
                       running,
                       setRunning,
+                      movimento: {
+                        pausado: movimentoPausado || !ready || conflict || previsaoPendente,
+                        retomar: retomarMovimento,
+                        podeAvancar: movimentoPodeAvancar,
+                      },
                       tick: (seconds) => action.current({ type: 'advance', seconds }),
+                      tempo: (a) => {
+                        if (movimentoPodeAvancar()) action.current(a)
+                      },
                       instruction,
                       dialogue: (text, opcoes) =>
                         opcoes

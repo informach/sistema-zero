@@ -1,158 +1,210 @@
 'use client'
-
-import { discoveryGuidance, lighthouseDoorAnswer } from '@sistemazero/core/learning/scene'
-import { SceneCenarioProvider } from './scene-cenario-context'
-import { Frame, SceneButton, useDiscovery } from './scene-discovery-frame'
-import { LighthouseKeyStage } from './scene-lighthouse-key'
-import { DicaLivre } from './scene-livre/atelie-comum'
-
 /**
- * "A pergunta com o não" (A Ilha do Farol, aula 3, parte 3, 02/11/2026).
+ * Tela livre da Ilha do Farol, aula 3: "O que muda com o não?" (08/11/2026, proposta "Experiências
+ * do Faísca" aprovada).
  *
- * ⭐⭐ Só a IDEIA: a mesma porta do farol, e a pergunta pode ser "a porta está trancada?" ou "a porta
- * não está trancada?". Sem a chave a porta está trancada (o cadeado no palco diz). A porta faz o que a
- * resposta mandar: sim abre, não fica fechada. Nada de bloco, Se, então, senão nem variável: a
- * montagem da parte seguinte liga a ideia ao bloco não ("Se não ganhou").
+ * A experiência acontece na ilha 3D do jogo do curso (`IlhaDoJogo`, `scene-ilha-porta.tsx`): o
+ * personagem ANDA, pega a chave no chão e a porta do farol pergunta quando ele chega nela (saem
+ * "Dar a chave ao personagem" e "Testar a porta"). O "não" é uma PEÇA que encaixa na pergunta da
+ * porta ("A porta [não] está trancada?"). Com o personagem no farol, trocar a peça faz a porta
+ * responder de novo na hora (o motor limpa a tentativa, e a tela pergunta outra vez).
  *
- * A figura embaixo do palco é a tabela das quatro situações (com ou sem a chave, com ou sem o não):
- * cada uma fica com "Teste para descobrir" até a criança testá-la. As falas são as `door-not-*` do
- * `discovery-guidance.ts`; o botão em destaque é o gesto que a fala de agora pede.
+ * A porta OBEDECE à resposta: o balão diz a resposta e o que ela faz por causa dela ("SIM! Então eu
+ * abro."). Sem o "não", ela abre sem a chave, e o Zappy aponta a surpresa.
  */
-const PERGUNTAS = [
-  { not: false, texto: 'A porta está trancada?' },
-  { not: true, texto: 'A porta não está trancada?' },
-] as const
-const CHAVES = [
-  { hasKey: true, chave: 'with-key', rotulo: 'Com a chave (destrancada)' },
-  { hasKey: false, chave: 'without-key', rotulo: 'Sem a chave (trancada)' },
-] as const
+import {
+  discoveryGuidance,
+  discoverySpeech,
+  lighthouseDoorAnswer,
+} from '@sistemazero/core/learning/scene'
+import { useEffect, useRef, useState } from 'react'
+import { SONS } from '../lib/scene-sons'
+import {
+  BotaoGrande,
+  Caderninho,
+  type Cartao,
+  type FotoDe,
+  Frame,
+  Modulo,
+  semNoSeuJogo,
+  useFotinhos,
+} from './scene-discovery-frame'
+import { cartoesDaAtividade, Encaixe, ModuloAndar } from './scene-faisca-livre'
+import {
+  AVISOS,
+  type BalaoDaIlha,
+  CHAVE,
+  dist,
+  ENCOSTA_CHAVE,
+  ENCOSTA_FAROL,
+  FAROL,
+  IlhaDoJogo,
+  INICIO,
+  LONGE_DO_FAROL,
+  PERTO_DO_FAROL,
+  useAndar3D,
+} from './scene-ilha-porta'
+
+const CARTOES: Cartao[] = [
+  {
+    id: 'not-flips-without-key',
+    emoji: '🔒',
+    pergunta: 'Sem a chave: o "não" muda a resposta da porta?',
+    descoberta: 'muda: o que era sim vira não.',
+  },
+  {
+    id: 'not-flips-with-key',
+    emoji: '🔑',
+    pergunta: 'E com a chave?',
+    descoberta: 'também: o "não" troca a resposta de novo.',
+  },
+]
+const sn = (b: boolean) => (b ? 'SIM' : 'NÃO')
+const pergunta = (not: boolean) => `A porta ${not ? 'não ' : ''}está trancada?`
+const fotoDe: FotoDe = (_antes, depois, acao) => {
+  const l = depois.lighthouse
+  if (acao.type !== 'try-lighthouse-door') return null
+  const resposta = lighthouseDoorAnswer(l.hasKey, l.not === true)
+  return {
+    titulo: `${l.hasKey ? 'Com' : 'Sem'} a chave · "${pergunta(l.not === true)}"`,
+    texto: `resposta ${sn(resposta)} → ${l.door === 'open' ? 'o farol acendeu' : 'ficou apagado'}`,
+  }
+}
 
 export function PortaDoNao() {
-  const context = useDiscovery()
-  const { state, dispatch, activity } = context
-  const l = state.lighthouse
+  const andar3d = useAndar3D(INICIO)
+  // Antes de a ilha aparecer, o personagem não anda (andaria às cegas e as descobertas cairiam).
+  const [pronto, setPronto] = useState(false)
+  const andar = {
+    ...andar3d,
+    segurar: (d: Parameters<typeof andar3d.segurar>[0]) => {
+      if (pronto) andar3d.segurar(d)
+    },
+  }
+  const p = useFotinhos({ fotoDe })
+  const l = p.state.lighthouse
   const not = l.not === true
-  const seen = new Set(state.evidence.discoveries)
-  const metas = activity.setup?.goals ?? []
-  const casos = CHAVES.filter((c) => metas.length === 0 || metas.includes(`not-flips-${c.chave}`))
-  const completed = casos.map((c) => seen.has(`not-flips-${c.chave}`))
-  const fala = discoveryGuidance(activity, state).id
-  // O botão em destaque é o gesto que a fala `door-not-*` pede.
-  const pedeTestar = fala === 'door-not-start' || fala === 'door-not-try'
-  const pedeNao = /^door-not-(plain|not)-/.test(fala)
-  const pedeChave = fala === 'door-not-other-with' || fala === 'door-not-other-without'
+  const f = (id: string) => p.state.evidence.discoveries.includes(id)
+  const raiz = useRef<HTMLDivElement>(null)
+  const naChave = dist(andar.pos, CHAVE) < ENCOSTA_CHAVE
+  const ateOFarol = dist(andar.pos, FAROL)
+  const naPorta = ateOFarol < ENCOSTA_FAROL
+  const longe = ateOFarol > LONGE_DO_FAROL
+  const testou = typeof l.checkedKey === 'boolean'
+  const { dispatch } = p
+  // Com o farol aceso, a chave fica no chão até jogar de novo (pegar mudaria a pergunta e apagaria o
+  // farol, que fica aceso até a partida nova).
+  useEffect(() => {
+    if (naChave && !l.hasKey && l.door !== 'open') {
+      SONS.pegar()
+      dispatch({ type: 'key-state', hasKey: true })
+    }
+  }, [naChave, l.hasKey, l.door, dispatch])
+  useEffect(() => {
+    if (naPorta && !testou) dispatch({ type: 'try-lighthouse-door' })
+  }, [naPorta, testou, dispatch])
+  // Longe do farol, a porta se prepara para outra pergunta (aceso, fica aceso até jogar de novo).
+  useEffect(() => {
+    if (longe && testou && l.door !== 'open') dispatch({ type: 'key-state', hasKey: l.hasKey })
+  }, [longe, testou, l.hasKey, l.door, dispatch])
+  useEffect(() => {
+    if (!testou) return
+    l.door === 'open' ? SONS.abre() : SONS.tranca()
+  }, [testou, l.door])
+  const jogarDeNovo = () => {
+    andar.voltar()
+    dispatch({ type: 'key-state', hasKey: false })
+  }
+  const resposta = lighthouseDoorAnswer(l.hasKey, not)
+  const balao: BalaoDaIlha | null = testou
+    ? {
+        // A porta diz a resposta e o que faz por causa dela: obedece ao sim, mesmo trancada.
+        texto: `${sn(resposta)}! Então ${l.door === 'open' ? 'eu abro.' : 'fico fechada.'}`,
+        tom: l.door === 'open' ? 'sim' : 'nao',
+      }
+    : ateOFarol < PERTO_DO_FAROL
+      ? { texto: pergunta(not), tom: 'pergunta' }
+      : null
+  const aviso =
+    l.door === 'open'
+      ? AVISOS.acendeu
+      : testou
+        ? l.hasKey
+          ? AVISOS.apagado
+          : AVISOS.falta
+        : l.hasKey
+          ? AVISOS.coleta
+          : AVISOS.inicio
+  const chave = l.hasKey ? 'with-key' : 'without-key'
+  // A fala vem do motor (as frases que o Admin grava com a voz do Zappy).
+  const fala = discoveryGuidance(p.activity, p.state)?.text ?? ''
   return (
     <Frame
-      title="A pergunta com o não"
+      arranjo="faisca"
+      aspectoDoPalco={1.1}
+      raiz={raiz}
+      title="O que muda com o não?"
       kind="porta-do-nao"
-      activity={activity}
-      state={state}
-      text={context.instruction}
-      goals={casos.map((c) =>
-        c.hasKey
-          ? 'Com a chave, compare as duas perguntas.'
-          : 'Sem a chave, compare as duas perguntas.',
-      )}
-      completed={completed}
-      done={completed.filter(Boolean).length}
-      reset={() => dispatch({ type: 'reset' })}
-      // A faixa de sempre da porta diz temChave: aqui a situação é dita com as palavras da ideia.
-      hud={
-        <div className="walk-hud" data-porta-hud="">
-          <strong>{l.hasKey ? '🔓 Porta destrancada' : '🔒 Porta trancada'}</strong>
-          <span>
-            {l.hasKey ? 'O personagem está com a chave' : 'O personagem está sem a chave'}
-          </span>
-        </div>
-      }
+      activity={p.activity}
+      state={p.state}
+      text={fala}
+      reset={() => {
+        andar.voltar()
+        dispatch({ type: 'reset' })
+      }}
+      cartoes={cartoesDaAtividade(CARTOES, p.activity)}
+      fotos={p.fotos}
+      ideia={discoverySpeech('door-not-idea')}
+      ponte={semNoSeuJogo(discoverySpeech('door-not-bridge'))}
       stage={
-        <SceneCenarioProvider cenario="farol">
-          <LighthouseKeyStage state={state} tranca />
-        </SceneCenarioProvider>
+        <IlhaDoJogo
+          heroi={andar.pos}
+          rumo={andar.rumo}
+          chaveNoChao={!l.hasKey}
+          aceso={l.door === 'open'}
+          aviso={aviso}
+          balao={balao}
+          onPronto={setPronto}
+        />
       }
-    >
-      <figure className="sz-scene-regra door-rule" data-porta-do-nao="">
-        <figcaption className="sz-scene-regra-titulo">A pergunta da porta</figcaption>
-        <p className="door-question" aria-live="polite">
-          <strong data-nao={not}>
-            {not ? 'A porta não está trancada?' : 'A porta está trancada?'}
-          </strong>
-        </p>
-        <p className="sz-discovery-small">
-          A resposta sim abre a porta. A resposta não deixa a porta fechada.
-        </p>
-        <table
-          className="w-full table-fixed text-sm [overflow-wrap:anywhere]"
-          data-tabela-do-nao=""
-        >
-          <thead>
-            <tr>
-              <th scope="col">
-                <span className="sr-only">Situação</span>
-              </th>
-              {PERGUNTAS.map((p) => (
-                <th key={p.texto} scope="col">
-                  {p.texto}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {CHAVES.map((c) => (
-              <tr key={c.chave}>
-                <th scope="row">{c.rotulo}</th>
-                {PERGUNTAS.map((p) => {
-                  const visto = seen.has(`asked-${p.not ? 'not-locked' : 'locked'}-${c.chave}`)
-                  // A resposta é a régua do motor: sem o não, sim quando está trancada.
-                  const sim = lighthouseDoorAnswer(c.hasKey, p.not)
-                  const agora = l.hasKey === c.hasKey && not === p.not
-                  return (
-                    <td
-                      key={p.texto}
-                      data-current={agora || undefined}
-                      data-visto={visto}
-                      data-resposta={visto ? (sim ? 'sim' : 'nao') : undefined}
-                    >
-                      {visto
-                        ? sim
-                          ? 'Sim: a porta abriu'
-                          : 'Não: a porta ficou fechada'
-                        : 'Teste para descobrir'}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </figure>
-      <div className="sz-discovery-controls free-controls" role="group" aria-label="A porta">
-        <SceneButton
-          tom={pedeChave ? 'gesto' : 'ferramenta'}
-          aria-pressed={l.hasKey}
-          onClick={() => dispatch({ type: 'key-state', hasKey: !l.hasKey })}
-        >
-          {l.hasKey ? 'Tirar a chave do personagem' : 'Dar a chave ao personagem'}
-        </SceneButton>
-        <SceneButton
-          tom={pedeNao ? 'gesto' : not ? 'ligado' : 'ferramenta'}
-          aria-pressed={not}
-          onClick={() => dispatch({ type: 'door-question', not: !not })}
-        >
-          {not ? 'Tirar o não da pergunta' : 'Pôr o não na pergunta'}
-        </SceneButton>
-        <SceneButton
-          tom={pedeTestar ? 'gesto' : 'ferramenta'}
-          onClick={() => dispatch({ type: 'try-lighthouse-door' })}
-        >
-          Testar a porta
-        </SceneButton>
-      </div>
-      <p className="sz-discovery-small">
-        Dar ou tirar a chave e pôr ou tirar o não preparam uma situação. A resposta da porta só
-        aparece quando você testa a porta.
-      </p>
-      <DicaLivre />
-    </Frame>
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
+      controles={
+        <>
+          <Modulo titulo="A pergunta da porta" icone="🚪" largo>
+            <Encaixe
+              rotulo="A pergunta da porta"
+              antes="A porta"
+              depois="está trancada?"
+              peca={<>não</>}
+              encaixada={not}
+              vazio="···"
+              estado={not ? 'Com o não. Toque para tirar.' : 'Toque no não para encaixar.'}
+              pulsar={testou && !f(`not-flips-${chave}`)}
+              aria={not ? 'Tirar o não da pergunta' : 'Encaixar o não na pergunta'}
+              onClick={() => {
+                if (!pronto) return
+                SONS.encaixe()
+                dispatch({ type: 'door-question', not: !not })
+              }}
+            />
+          </Modulo>
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
+            <Caderninho sim={l.hasKey} />
+          </Modulo>
+          <Modulo
+            compacto
+            titulo="Partida"
+            icone="🔄"
+            dica="A chave volta para o chão e o farol apaga."
+          >
+            <BotaoGrande pulsar={f(`not-flips-${chave}`) && l.hasKey} onClick={jogarDeNovo}>
+              <span aria-hidden>🔄</span> Jogar de novo
+            </BotaoGrande>
+          </Modulo>
+        </>
+      }
+    />
   )
 }

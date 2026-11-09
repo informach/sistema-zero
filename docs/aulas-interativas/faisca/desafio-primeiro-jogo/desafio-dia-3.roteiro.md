@@ -6,7 +6,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d3-condicao`
 
-**Na tela:** A experiência aparece no tamanho da aula, com o personagem sem a chave. Do "Sabe quando você pergunta" até o "leva o guarda-chuva", a tela fica parada, e a edição troca esse trecho por uma criança na porta de casa olhando o céu, com um guarda-chuva fechado ao lado, sem mostrar se chove [na edição: a pergunta da chuva e o guarda-chuva]. No "a porta do farol também faz uma pergunta", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não dar a chave nem testar a porta: qual resposta a porta escolhe é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, então, senão nem comandos: eles ficam para a montagem (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
+**Na tela:** A experiência aparece no tamanho da aula, com o personagem sem a chave. Do "Sabe quando você pergunta" até o "leva o guarda-chuva", a tela fica parada, e a edição troca esse trecho por uma criança na porta de casa olhando o céu, com um guarda-chuva fechado ao lado, sem mostrar se chove [na edição: a pergunta da chuva e o guarda-chuva]. No "a porta do farol também faz uma pergunta", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não dar a chave nem testar a porta: qual resposta a porta escolhe é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, então, senão nem comandos: eles ficam para a montagem (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -23,7 +23,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 [engaging, energetic, conversational voice] O que você acha que a porta faz? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -36,7 +36,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Avise quando faltar a chave
 
@@ -49,7 +49,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, segure as setas e leve o personagem até a porta do farol, lá na base da torre. Tá vendo? Nada acontece, porque o seu jogo ainda não sabe o que fazer quando o personagem chega ao farol.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A porta perguntava se temChave é verdadeiro. Com a resposta não, ela avisava que falta a chave. Agora a gente vai ensinar o farol do seu jogo a fazer essa pergunta, começando por esse aviso!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A porta perguntava se o personagem tinha a chave. Com a resposta não, ela avisava que falta a chave. Agora a gente vai ensinar o farol do seu jogo a fazer essa pergunta, começando por esse aviso!
 
 [engaging, energetic, conversational voice] Primeiro, o jogo precisa perceber quando o personagem chega ao farol. Chegar ao farol é um encontro, como pegar a chave, e os encontros ficam na área Quando acontecer.
 
@@ -343,7 +343,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d3-posicao`
 
-**Na tela:** A experiência aparece no tamanho da aula. Apresentar somente aqui as coordenadas x/y. Do "É como explicar o caminho até um tesouro" até o "para cima ou para baixo", a tela fica parada, e a edição troca esse trecho por um mapa do tesouro com setas para os lados e para cima e para baixo, na mesma arte do jogo [na edição: mapa do tesouro com setas]. No "No jogo, o lugar da chave", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não mover a chave: para que lado cada número leva a chave é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não prescrever números, ordem de eixos nem uma sequência obrigatória. O alvo é opcional e fica na experiência. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
+**Na tela:** A experiência aparece no tamanho da aula. Apresentar somente aqui as coordenadas x/y. Do "É como explicar o caminho até um tesouro" até o "para cima ou para baixo", a tela fica parada, e a edição troca esse trecho por um mapa do tesouro com setas para os lados e para cima e para baixo, na mesma arte do jogo [na edição: mapa do tesouro com setas]. No "No jogo, o lugar da chave", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não mover a chave: para que lado cada número leva a chave é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não prescrever números, ordem de eixos nem uma sequência obrigatória. O alvo é opcional e fica na experiência. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -358,7 +358,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando o x e o y aumentam e quando diminuem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -371,7 +371,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 7. Escolha onde fica a chave
 

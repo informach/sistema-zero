@@ -28,15 +28,15 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 ### Seção 1. Compare projeto e versão publicada
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copia-publicada → fala-copia-publicada → experimento-copia-publicada.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.
+video-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “o que vai para lá quando você publica. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.
 
-**Experiência em exploração livre:** `published-copy`, com `setup.freeExploration`. Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `published-copy`, com `setup.freeExploration`. Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Jogue do começo ao reinício
 

@@ -1,17 +1,18 @@
 import type { JSX, ReactNode } from 'react'
-import { IconPlay } from '#ui'
+import { IconPlay, IconRefresh } from '#ui'
 import type { ProRunState } from '../../state/proRun'
 import { useT } from '../../studio/i18n'
 
 /** Quem roda: o dev-server local (WebContainer), o compilador remoto (BFF) ou o Python. */
-export type ProStageFlavor = 'local' | 'remote' | 'python'
-/** O que a criança vê: um JOGO (JavaScript) ou um PROGRAMA (Python). */
-export type ProStageSubject = 'game' | 'program'
+export type ProStageFlavor = 'local' | 'remote' | 'python' | 'classic'
+/** O que a criança vê: um JOGO, uma PÁGINA (o clássico sem jogo) ou um PROGRAMA (Python). */
+export type ProStageSubject = 'game' | 'page' | 'program'
 
 const STEP_KEYS: Record<ProStageFlavor, readonly string[]> = {
   local: ['pro.stage.step.engine', 'pro.stage.step.parts', 'pro.stage.step.openGame'],
   remote: ['pro.stage.step.build'],
   python: ['pro.stage.step.python', 'pro.stage.step.program', 'pro.stage.step.openProgram'],
+  classic: ['pro.stage.step.openGame'],
 }
 
 /**
@@ -29,6 +30,8 @@ export function ProStageState({
   flavor,
   onRun,
   onSeeProblem,
+  idleHintKey = 'pro.stage.idle.hint',
+  seeProblemKey = 'pro.stage.seeProblem',
   children,
 }: {
   state: ProRunState
@@ -36,6 +39,10 @@ export function ProStageState({
   flavor: ProStageFlavor
   onRun?: () => void
   onSeeProblem?: () => void
+  /** O texto de baixo do parado: "no código" no Pro, "nos blocos" no clássico. */
+  idleHintKey?: string
+  /** O botão do problema: "Ver o que aconteceu" no Pro, "Mostrar o bloco" no clássico. */
+  seeProblemKey?: string
   children?: ReactNode
 }): JSX.Element | null {
   const t = useT()
@@ -52,7 +59,7 @@ export function ProStageState({
           <IconPlay />
         </button>
         <p className="sz-pro-stage-state__title">{t(`pro.stage.idle.${subject}`)}</p>
-        <p className="sz-pro-stage-state__hint">{t('pro.stage.idle.hint')}</p>
+        <p className="sz-pro-stage-state__hint">{t(idleHintKey)}</p>
       </div>
     )
   }
@@ -99,10 +106,17 @@ export function ProStageState({
     )
   }
   if (state.phase === 'error') {
+    // O jogo que ABRIU e parou no meio (clássico): "Opa, o jogo parou", a dica do erro em
+    // português e "Rodar de novo". Sem `errorKind`, o cartão de sempre ("não conseguiu abrir").
+    const runtime = state.errorKind === 'runtime'
     return (
       <div role="alert" className="sz-pro-stage-state">
-        <p className="sz-pro-stage-state__title">{t(`pro.stage.error.${subject}`)}</p>
-        <p className="sz-pro-stage-state__hint">{t('pro.stage.error.hint')}</p>
+        <p className="sz-pro-stage-state__title">
+          {t(runtime ? `stage.error.stopped.${subject}` : `pro.stage.error.${subject}`)}
+        </p>
+        <p className="sz-pro-stage-state__hint">
+          {runtime ? (state.errorHint ?? t('stage.error.stopped.hint')) : t('pro.stage.error.hint')}
+        </p>
         <div className="sz-pro-stage-state__actions">
           {onRun ? (
             <button
@@ -111,18 +125,21 @@ export function ProStageState({
               disabled={!state.canRun}
               onClick={onRun}
             >
-              {t('pro.stage.retry')}
+              {runtime ? <IconRefresh /> : null}
+              {t(runtime ? 'run.runAgain' : 'pro.stage.retry')}
             </button>
           ) : null}
           {onSeeProblem ? (
             <button type="button" className="sz-pro-btn" onClick={onSeeProblem}>
-              {t('pro.stage.seeProblem')}
+              {t(seeProblemKey)}
             </button>
           ) : null}
         </div>
         {state.error || children ? (
-          <details className="sz-pro-stage-state__details" open>
-            <summary>{t('pro.stage.details')}</summary>
+          // No clássico o texto técnico ("O que o computador disse") começa fechado: a frase de
+          // cima já diz o que fazer.
+          <details className="sz-pro-stage-state__details" open={!runtime}>
+            <summary>{t(runtime ? 'stage.error.technical' : 'pro.stage.details')}</summary>
             {state.error ? <pre className="sz-pro-stage-state__tech">{state.error}</pre> : null}
             {children}
           </details>

@@ -415,6 +415,13 @@
   .sz-bar--tight .sz-bar-name {
     max-width: 12rem;
   }
+  /* Celular: só o lápis, num círculo do tamanho dos outros botões da barra. */
+  .sz-bar .sz-bar-name--icon {
+    flex: none;
+    justify-content: center;
+    width: var(--sz-bar-hit);
+    padding-inline: 0;
+  }
   .sz-bar--tight .sz-bar-name--editing {
     width: 12rem;
   }
@@ -494,6 +501,10 @@
   .sz-bar-seal--muted {
     background: var(--sz-bar-quiet);
     color: var(--color-sz-fg-soft);
+  }
+  /* O "Salvo" é curto e é âncora das aulas gravadas: não encolhe (o nome do jogo cede antes). */
+  .sz-bar__start > .sz-bar-seal--ok {
+    flex-shrink: 0;
   }
 
   /* ── o segmentado dos modos ── */
@@ -1183,6 +1194,10 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
+  /* Na aba Mensagens do celular o Rodar sobe um pouco: no pé mora o campo de comandos. */
+  [data-sz-overlay-tab="messages"] > .sz-pro-fab {
+    bottom: 4.5rem;
+  }
   /* O cartão de estado do palco (parado, preparando, erro, sem suporte) e a lista de passos. */
   .sz-pro-stage-state {
     display: flex;
@@ -1785,6 +1800,18 @@
 [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer {
   flex: 0 0 auto;
 }
+/* A faixa branca sob as categorias no celular (achado no redesenho de 11/2026) era a barra de
+   rolagem horizontal da paleta somada à margem de baixo das categorias: a faixa continua rolando
+   pelo toque e pela roda, sem a barra e sem a margem. */
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox {
+  scrollbar-width: none;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox::-webkit-scrollbar {
+  display: none;
+}
+[data-sz-theme] [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategory {
+  margin-bottom: 0;
+}
 [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer[aria-expanded="true"] {
   display: flex;
   align-items: flex-start;
@@ -2004,11 +2031,441 @@
   background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
 }
 
+/* ── Dentro do Blockly: o redesenho do clássico (11/2026), só CSS sobre as classes do Blockly ── */
+/* A seta das categorias vira um "›" (o triângulo cheio parecia o Rodar); gira ao abrir. */
+[data-sz-theme] .blocklyToolboxCategoryIconClosed,
+[data-sz-theme] .blocklyToolboxCategoryIconOpen {
+  /* biome-ignore lint/complexity/noImportantStyles: o Blockly põe o triângulo como background inline da folha dele. */
+  background-image: none !important;
+  background-color: currentColor;
+  -webkit-mask: var(--sz-chevron) center / 14px no-repeat;
+  mask: var(--sz-chevron) center / 14px no-repeat;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  --sz-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E");
+}
+[data-sz-theme] .blocklyToolboxCategoryIconOpen {
+  transform: rotate(90deg);
+}
+/* O 3º nível (Jogo 2D › Sprites › Mover) fica mais baixo e menor: a hierarquia se lê de longe. */
+[data-sz-theme]
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategory {
+  min-height: 34px;
+  margin-bottom: 4px;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+[data-sz-theme]
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategoryGroup
+  .blocklyToolboxCategoryLabel {
+  font-size: 14px;
+}
+/* O ícone das categorias de cima (redesenho de 11/2026): desenhado aqui, com texto alternativo
+   vazio, para o TEXTO do rótulo continuar o mesmo (o robô das aulas e os e2e acham por ele). */
+.sz-cat-icon::before {
+  display: inline-block;
+  margin-right: 0.375rem;
+}
+.sz-cat-icon--brain::before {
+  content: "🧠" / "";
+}
+.sz-cat-icon--sound::before {
+  content: "🔊" / "";
+}
+.sz-cat-icon--game::before {
+  content: "🎮" / "";
+}
+.sz-cat-icon--cube::before {
+  content: "🧊" / "";
+}
+.sz-cat-icon--world::before {
+  content: "🌍" / "";
+}
+.sz-cat-icon--page::before {
+  content: "📄" / "";
+}
+.sz-cat-icon--style::before {
+  content: "🎨" / "";
+}
+.sz-cat-icon--shapes::before {
+  content: "🔷" / "";
+}
+.sz-cat-icon--paint::before {
+  content: "🖌️" / "";
+}
+.sz-cat-icon--scene::before {
+  content: "🎬" / "";
+}
+.sz-cat-icon--code::before {
+  content: "⌨️" / "";
+}
+/* "Mais blocos" no pé da paleta: um botão tracejado, diferente das categorias (não abre gaveta,
+   abre a janela de extensões). */
+.sz-more-blocks-row {
+  padding: 6px 6px 8px;
+}
+.sz-more-blocks {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  border: 2px dashed var(--color-sz-border);
+  border-radius: 12px;
+  background: transparent;
+  padding: 7px 12px;
+  color: var(--color-sz-fg);
+  font: 700 15px var(--font-family-display, inherit);
+  cursor: pointer;
+}
+.sz-more-blocks > span {
+  font-size: 18px;
+  line-height: 1;
+}
+.sz-more-blocks:hover {
+  border-color: var(--color-sz-accent);
+  background: color-mix(in oklab, var(--color-sz-accent) 8%, transparent);
+}
+.sz-more-blocks:focus-visible {
+  outline: 2px solid var(--color-sz-accent);
+  outline-offset: 2px;
+}
+[data-sz-toolbox-layout="horizontal"] .sz-more-blocks-row {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+}
+[data-sz-toolbox-layout="horizontal"] .sz-more-blocks {
+  width: auto;
+  white-space: nowrap;
+}
+/* O cabeçalho dos blocos do Python (uma linha, no molde do cabeçalho do palco). */
+.sz-py-head {
+  position: relative;
+  flex-wrap: nowrap;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-sz-border);
+  background: var(--color-sz-panel);
+}
+.sz-py-head__file {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sz-py-head__select {
+  max-width: 12rem;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 9999px;
+  background: var(--color-sz-panel);
+  padding: 0.25rem 0.625rem;
+  color: var(--color-sz-fg);
+  font: inherit;
+  font-weight: 800;
+}
+.sz-py-head__drafts .sz-pro-badge {
+  background: color-mix(in oklab, var(--color-sz-warn) 22%, var(--color-sz-panel));
+  color: var(--color-sz-fg);
+}
+.sz-py-jump {
+  position: relative;
+  min-width: 0;
+}
+.sz-py-jump__current {
+  max-width: 10rem;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sz-py-jump__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  /* Acima da paleta e do flyout do Blockly (z-index 70 e 20 na folha dele). */
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(18rem, 80vw);
+  max-height: 20rem;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 14px;
+  background: var(--color-sz-panel);
+  box-shadow: 0 10px 28px rgb(15 26 51 / 0.18);
+  padding: 8px;
+}
+.sz-py-jump__search {
+  border: 1px solid var(--color-sz-border);
+  border-radius: 10px;
+  background: var(--color-sz-bg);
+  padding: 6px 10px;
+  color: var(--color-sz-fg);
+  font: inherit;
+}
+.sz-py-jump__list {
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+.sz-py-jump__list button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 6px 12px;
+  color: var(--color-sz-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sz-py-jump__list button:hover,
+.sz-py-jump__list button[aria-current="true"] {
+  background: color-mix(in oklab, var(--color-sz-accent) 14%, transparent);
+}
+.sz-py-jump__empty {
+  padding: 6px 12px;
+  color: var(--color-sz-fg-soft);
+}
+/* As etiquetas do cartão de "Meus jogos": linguagem e jeito, no canto da capa. */
+.sz-project-tags {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sz-project-tag {
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-sz-panel) 88%, transparent);
+  padding: 2px 8px;
+  color: var(--color-sz-fg);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.sz-project-tag--javascript {
+  background: #fde68a;
+  color: #3a2a00;
+}
+.sz-project-tag--python {
+  background: #bfdbfe;
+  color: #0f2a5c;
+}
+/* O passeio de primeiros passos: um balão azul-marinho perto da peça que ele apresenta. */
+.sz-tour {
+  position: fixed;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 16px;
+  background: #121a30;
+  box-shadow: 0 12px 32px rgb(15 26 51 / 0.3);
+  padding: 14px 16px;
+  color: #fff;
+}
+.sz-tour__step {
+  margin: 0;
+  color: #cbd4e8;
+  font-size: 12px;
+  font-weight: 800;
+}
+.sz-tour__text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.sz-tour__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.sz-tour .sz-tour__skip {
+  border-color: rgb(255 255 255 / 0.35);
+  background: transparent;
+  color: #fff;
+}
+[data-sz-theme="dark"] .sz-tour .sz-tour__skip {
+  border-color: rgb(15 26 51 / 0.3);
+  color: #0f1a33;
+}
+[data-sz-theme="dark"] .sz-tour {
+  background: #fff;
+  color: #0f1a33;
+}
+[data-sz-theme="dark"] .sz-tour__step {
+  color: #4a5675;
+}
+/* A dica do bloco: azul-marinho opaco com letra branca e um fio claro (era cinza translúcido).
+   Classe dobrada para vencer a folha que o Blockly injeta depois da nossa. */
+.blocklyTooltipDiv.blocklyTooltipDiv {
+  opacity: 1;
+  max-width: 320px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 12px;
+  background: #121a30;
+  box-shadow: 0 6px 20px rgb(15 26 51 / 0.25);
+  padding: 10px 12px;
+  color: #fff;
+  font:
+    600 14px "Nunito",
+    system-ui,
+    sans-serif;
+}
+/* O balão do aviso (o sinal do bloco): azul-marinho com letra branca; branco no escuro. */
+.blocklyTextBubble .blocklyEmboss {
+  filter: none;
+}
+.blocklyTextBubble .blocklyEmboss > path,
+.blocklyTextBubble .blocklyEmboss > rect {
+  fill: #121a30;
+  fill-opacity: 1;
+  stroke: none;
+}
+.blocklyTextBubble .blocklyBubbleText text {
+  fill: #fff;
+}
+[data-sz-theme="dark"] .blocklyTextBubble .blocklyEmboss > path,
+[data-sz-theme="dark"] .blocklyTextBubble .blocklyEmboss > rect {
+  fill: #fff;
+}
+[data-sz-theme="dark"] .blocklyTextBubble .blocklyBubbleText text {
+  fill: #0f1a33;
+}
+/* O rascunho continua amarelo (só o erro de execução é vermelho). */
+.sz-draft-block > .blocklyWarningIcon > .blocklyIconShape {
+  fill: #f59f00;
+}
+.sz-draft-block > .blocklyWarningIcon > .blocklyIconSymbol {
+  fill: #3a2a00;
+}
+/* Arrastando um bloco para a paleta: "Solte aqui para apagar" (a frase vem do Estúdio, no
+   `data-sz-delete-hint` da paleta, para seguir o idioma). Só na paleta em coluna. */
+[data-sz-toolbox-layout="vertical"] .blocklyToolbox.blocklyToolboxDelete {
+  background: #fdecea;
+}
+[data-sz-toolbox-layout="vertical"] .blocklyToolbox.blocklyToolboxDelete::after {
+  content: attr(data-sz-delete-hint);
+  position: absolute;
+  right: 12px;
+  bottom: 16px;
+  left: 12px;
+  border: 2px dashed #e03131;
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+  color: #b42318;
+  font:
+    800 14px "Nunito",
+    sans-serif;
+  text-align: center;
+}
+[data-sz-theme="dark"][data-sz-toolbox-layout="vertical"] .blocklyToolbox.blocklyToolboxDelete,
+[data-sz-theme="dark"] [data-sz-toolbox-layout="vertical"] .blocklyToolbox.blocklyToolboxDelete {
+  background: #3a1d26;
+}
+[data-sz-theme="dark"][data-sz-toolbox-layout="vertical"]
+  .blocklyToolbox.blocklyToolboxDelete::after,
+[data-sz-theme="dark"]
+  [data-sz-toolbox-layout="vertical"]
+  .blocklyToolbox.blocklyToolboxDelete::after {
+  border-color: #ff6b61;
+  background: #121a30;
+  color: #ffb4ad;
+}
+/* Zoom e lixeira bem à vista (o Blockly deixa a 40%, quase sumindo no fundo creme). */
+[data-sz-theme] .blocklyZoom > image,
+[data-sz-theme] .blocklyZoom > svg > image {
+  opacity: 0.8;
+}
+[data-sz-theme] .blocklyZoom > image:hover,
+[data-sz-theme] .blocklyZoom > svg > image:hover {
+  opacity: 1;
+}
+[data-sz-theme] .blocklyTrash {
+  /* biome-ignore lint/complexity/noImportantStyles: o Blockly anima a opacidade da lixeira inline (0,4 parada). */
+  opacity: 0.85 !important;
+}
+/* O Monaco no escuro com o fundo do Estúdio (era o cinza #1e1e1e do vs-dark): as variáveis que
+   o tema do Monaco publica, trocadas pelas cores do host (cada comunidade com as suas). */
+[data-sz-theme="dark"] .monaco-editor {
+  --vscode-editor-background: var(--color-sz-bg);
+  --vscode-editorGutter-background: var(--color-sz-bg);
+  --vscode-editorStickyScroll-background: var(--color-sz-bg);
+  --vscode-minimap-background: var(--color-sz-bg);
+  --vscode-editor-lineHighlightBorder: color-mix(
+    in oklab,
+    var(--color-sz-bg) 70%,
+    var(--color-sz-fg)
+  );
+}
+/* As etiquetas das áreas ("· roda uma vez") um pouco mais claras que o nome da área. */
+.blocklyText.sz-area-hint {
+  fill-opacity: 0.82;
+}
+/* A área amarela ("Quando acontecer", #eab308) com letra escura: branco sobre amarelo dava ~2:1.
+   O tipo do bloco é classe do SVG dele; o `>` pega só o cabeçalho, não os blocos de dentro. */
+.sz_frame_events > .blocklyLabelField > .blocklyText {
+  fill: #3a2a00;
+}
+/* A grade segue o tema também quando ele muda com o editor aberto (a cor da injeção fica). */
+/* O padrão da grade é achado pelo id (`blocklyGridPattern<número>`): não tem classe. */
+[data-sz-theme] pattern[id^="blocklyGridPattern"] line {
+  stroke: color-mix(in oklab, var(--color-sz-bg) 45%, var(--color-sz-border) 55%);
+}
+
 /* Pilhas salvas fora de uma Área do projeto: permanecem editáveis, mas não rodam. */
 .sz-draft-block > .blocklyPath {
   stroke: #f59e0b;
   stroke-width: 3px;
   stroke-dasharray: 8 5;
+}
+
+/* O bloco onde o jogo parou (redesenho do clássico, 11/2026): o ícone de aviso fica vermelho e
+   o contorno ganha um fio vermelho. Só o erro de execução é vermelho; o rascunho segue amarelo. */
+.sz-runtime-error > .blocklyWarningIcon > .blocklyIconShape {
+  fill: #dc2626;
+}
+.sz-runtime-error > .blocklyPath {
+  stroke: #dc2626;
+  stroke-width: 3px;
+}
+[data-sz-theme="dark"] .sz-runtime-error > .blocklyWarningIcon > .blocklyIconShape {
+  fill: #f87171;
+}
+[data-sz-theme="dark"] .sz-runtime-error > .blocklyPath {
+  stroke: #f87171;
+}
+
+/* A gaveta do clássico fechada é só a faixa das abas (40px, D4); no estreito ela é a aba
+   "Mensagens" inteira. */
+.sz-classic-dock {
+  flex: none;
+}
+.sz-classic-dock[data-variant="tab"] {
+  height: 100%;
+  min-height: 0;
+}
+.sz-classic-dock[data-variant="tab"] > .sz-pro-dock__body {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

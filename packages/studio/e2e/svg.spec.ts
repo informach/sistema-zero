@@ -39,7 +39,7 @@ test.describe('SVG — fluxo infantil', () => {
     await expect(preview.locator('#planeta')).toBeVisible({ timeout: 15_000 })
     await expect(preview.locator('title#nome')).toHaveText('Planeta')
 
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await openSvgShapes(page)
     await expect(page.locator('.blocklyToolboxFlyout')).toContainText('Desenhar círculo')
   })
@@ -47,6 +47,6 @@ test.describe('SVG — fluxo infantil', () => {
   test('todas as paletas SVG cabem na largura de um celular', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 })
     await createProject(page)
-    await expectToolboxGroupsToFit(page, 'SVG', SVG_GROUPS)
+    await expectToolboxGroupsToFit(page, 'Figuras · SVG', SVG_GROUPS)
   })
 })

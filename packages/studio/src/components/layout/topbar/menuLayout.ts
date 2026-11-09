@@ -52,6 +52,8 @@ export const STUDIO_MENU_LAYOUT = [
     id: 'show',
     labelKey: 'topbar.group.show',
     items: [
+      // O palco ao lado dos blocos (era o olhinho da barra, redesenho do clássico de 11/2026).
+      { id: 'stage', labelKey: 'topbar.showStage' },
       { id: 'console', labelKey: 'panel.console' },
       { id: 'terminal', labelKey: 'panel.terminal' },
     ],

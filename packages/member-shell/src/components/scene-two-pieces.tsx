@@ -59,18 +59,27 @@ const sim = (v: boolean) => (v ? 'verdadeiro' : 'falso')
  * O palco é o JOGO: a praia do Farol, a chave, o emblema, a cabana, o personagem e o aviso. As
  * peças guardadas aparecem no canto, nas duas casinhas do que o personagem leva.
  */
-export function TwoPiecesStage({ state }: { state: SceneState }) {
+export function TwoPiecesStage({
+  state,
+  heroi,
+}: {
+  state: SceneState
+  /** O lugar do personagem no andar livre (a tela livre); sem ele, o lugar do motor, como antes. */
+  heroi?: { x: number; y: number; esquerda?: boolean }
+}) {
   const p = state.pieces
   const hero = FAROL_LAYOUT.personagem
   const chave = FAROL_LAYOUT.chave
-  const lugar = lugarDoPersonagem(p.at)
+  const lugar = heroi ?? lugarDoPersonagem(p.at)
   const aviso = avisoDaCabana(p)
   return (
     <SceneCanvas
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A porta com duas peças"
-      descricao={`temChave é ${sim(p.temChave)} e temEmblema é ${sim(p.temEmblema)}. A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${heroi ? `Tem a chave: ${p.temChave ? 'sim' : 'não'}. Tem o emblema: ${p.temEmblema ? 'sim' : 'não'}.` : `temChave é ${sim(p.temChave)} e temEmblema é ${sim(p.temEmblema)}.`} A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"
@@ -129,11 +138,13 @@ export function TwoPiecesStage({ state }: { state: SceneState }) {
         />
       </g>
       <g
-        className="sz-scene-anda"
+        className={heroi ? undefined : 'sz-scene-anda'}
         data-personagem={p.at === null ? 'comeco' : p.at === 'door' ? 'cabana' : p.at}
         style={{ transform: `translate(${lugar.x}px, ${lugar.y}px)` }}
       >
-        <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        <g transform={heroi?.esquerda ? `translate(${hero.w} 0) scale(-1 1)` : undefined}>
+          <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        </g>
       </g>
       <AvisoDoFarol texto={aviso} />
       {/* O que o personagem leva: uma casinha por peça, vazia até pegar. */}

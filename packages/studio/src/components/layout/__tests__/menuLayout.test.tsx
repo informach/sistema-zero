@@ -118,9 +118,10 @@ describe('a árvore editorial do menu ⋯', () => {
     // Código, os materiais só no básico (o Pro gerencia arquivos na árvore), a
     // porta dos modelos 3D pede quem consuma 3D e os atalhos são do editor do Pro. A UNIÃO dos contextos é que tem
     // de cobrir a árvore inteira — um id que nenhum cenário produz é item que a
-    // criança nunca vê.
+    // criança nunca vê. "Mostrar o jogo" só existe no LARGO (no estreito o jogo é aba).
     const cobertos = new Set([
       ...idsExibidos('blocks'),
+      ...idsExibidos('blocks', {}, 1440),
       ...idsExibidos('blocks', { with3D: true }),
       ...idsExibidos('code'),
       ...idsExibidos('code', { pro: true }),
@@ -147,7 +148,7 @@ describe('a árvore editorial do menu ⋯', () => {
       'convert',
       'assetsImages',
       'assetsSounds',
-      'console',
+      // Sem 'console': nos blocos do clássico a gaveta é uma aba fixa no estreito (11/2026).
       'exportStudio',
       'download',
       'export',

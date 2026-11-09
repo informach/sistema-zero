@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { cn, IconPlay, IconStop } from '#ui'
+import { cn, IconPlay, IconRefresh, IconStop } from '#ui'
 import { proRunLabelKey, useProRun, useProRunApi } from '../../../state/proRun'
 import { useT } from '../../../studio/i18n'
 
@@ -22,7 +22,8 @@ export function ProRunControls({ iconOnly }: { iconOnly: boolean }): JSX.Element
       canStop: Boolean(s.actions && s.state?.canStop),
     })),
   )
-  const runLabel = t(proRunLabelKey(phase ? { phase } : null))
+  const runKey = proRunLabelKey(phase ? { phase } : null)
+  const runLabel = t(runKey)
   const stopLabel = t('run.stop')
   return (
     <fieldset className="sz-bar-run">
@@ -39,7 +40,8 @@ export function ProRunControls({ iconOnly }: { iconOnly: boolean }): JSX.Element
         }}
         className={cn('sz-bar-pill sz-bar-pill--primary', iconOnly && 'sz-bar-pill--icon')}
       >
-        <IconPlay />
+        {/* Rodar de novo = as setas em círculo; o play fica para o primeiro Rodar. */}
+        {runKey === 'run.runAgain' ? <IconRefresh /> : <IconPlay />}
         <span className={iconOnly ? 'sr-only' : undefined}>{runLabel}</span>
       </button>
       <button

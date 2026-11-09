@@ -39,6 +39,15 @@ export interface ProRunState {
   logTail?: readonly string[]
   /** A mensagem de erro técnica, quando `phase === 'error'`. */
   error?: string
+  /**
+   * Clássico (redesenho de 11/2026): o erro do jogo tem um lugar no código gerado. Com ele, o
+   * cartão "Opa" e a aba Problemas oferecem "Mostrar o bloco".
+   */
+  errorAt?: { file: string; line: number; column?: number }
+  /** A frase do erro em português para a criança (a dica do `errorGloss`), quando houver. */
+  errorHint?: string
+  /** `runtime` = o jogo abriu e parou no meio (o cartão diz "Opa, o jogo parou"). */
+  errorKind?: 'runtime'
 }
 
 export interface ProRunActions {

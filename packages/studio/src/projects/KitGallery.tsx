@@ -474,6 +474,16 @@ function KitCard({
   )
 }
 
+const KIT_LANGUAGE_KEY = 'sz-kit-language'
+
+function readKitLanguage(): 'javascript' | 'python' {
+  try {
+    return localStorage.getItem(KIT_LANGUAGE_KEY) === 'python' ? 'python' : 'javascript'
+  } catch {
+    return 'javascript'
+  }
+}
+
 export function KitGallery({
   onOpenProject,
   pythonCreation,
@@ -493,7 +503,17 @@ export function KitGallery({
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [groups, setGroups] = useState<KitGroup<GalleryEntry>[] | null>(null)
-  const [selectedLanguage, setProgrammingLanguage] = useState<'javascript' | 'python'>('javascript')
+  // Lembra a última linguagem escolhida neste navegador (redesenho de 11/2026): quem só faz
+  // Python não precisa trocar toda vez. Sem armazenamento, começa em JavaScript como sempre.
+  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'python'>(readKitLanguage)
+  const setProgrammingLanguage = (language: 'javascript' | 'python') => {
+    setSelectedLanguage(language)
+    try {
+      localStorage.setItem(KIT_LANGUAGE_KEY, language)
+    } catch {
+      // Armazenamento bloqueado: a escolha vale só nesta visita.
+    }
+  }
   // The host independently supplies each language's creation eligibility.
   const pythonOffered = Boolean(pythonCreation || pythonDiscovery)
   const programmingLanguage = !javascriptAvailable
@@ -503,7 +523,7 @@ export function KitGallery({
       : 'javascript'
   // Se a oferta voltar, a galeria recomeça em JavaScript, não na escolha antiga.
   useEffect(() => {
-    if (!pythonOffered) setProgrammingLanguage('javascript')
+    if (!pythonOffered) setSelectedLanguage('javascript')
   }, [pythonOffered])
   const attempt = useRef<AbortController | null>(null)
   const lifetime = useMemo(

@@ -41,6 +41,11 @@ const KIND_LABEL: Record<LogEntry['kind'], string> = {
 }
 
 type MessageFilter = 'all' | 'warnings' | 'errors'
+/** O erro que parou o jogo: no clássico ele vai para a aba Problemas (ver `omitErrors`). */
+const STOPPED_GAME_KINDS: ReadonlySet<LogEntry['kind']> = new Set([
+  'runtimeError',
+  'unhandledRejection',
+])
 const WARNING_KINDS: ReadonlySet<LogEntry['kind']> = new Set(['warn', 'loopStopped'])
 
 /**
@@ -49,10 +54,24 @@ const WARNING_KINDS: ReadonlySet<LogEntry['kind']> = new Set(['warn', 'loopStopp
  * `repl` é "Experimentar comandos" (as mensagens e o campo de Python embaixo). Sem variante,
  * a aparência de sempre (Blocos, Ponte, Código clássico).
  */
-export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}): JSX.Element {
+export function ConsolePanel({
+  variant,
+  omitErrors = false,
+}: {
+  variant?: 'messages' | 'repl'
+  /**
+   * A gaveta do clássico (redesenho de 11/2026): o erro que PAROU o jogo mora na aba Problemas,
+   * então as Mensagens não o repetem. O `console.error` do próprio aluno e os avisos do Estúdio
+   * (`error`) continuam aqui — a aba Problemas não os mostra.
+   */
+  omitErrors?: boolean
+} = {}): JSX.Element {
   const t = useT()
   const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
-  const allEntries = useLogsStore((s) => s.entries)
+  const storedEntries = useLogsStore((s) => s.entries)
+  const allEntries = omitErrors
+    ? storedEntries.filter((entry) => !STOPPED_GAME_KINDS.has(entry.kind))
+    : storedEntries
   const [filter, setFilter] = useState<MessageFilter>('all')
   const entries =
     variant !== 'messages' || filter === 'all'

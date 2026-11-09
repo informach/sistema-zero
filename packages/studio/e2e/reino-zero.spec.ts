@@ -46,7 +46,7 @@ async function openReinoZeroPro(page: Page): Promise<FrameLocator> {
   })
   await expect(page.getByRole('status', { name: 'Salvo' })).toBeVisible()
 
-  const previewTab = page.getByRole('tab', { name: 'Pré-visualização' })
+  const previewTab = page.getByRole('tab', { name: 'Jogo' })
   await expect(previewTab).toBeVisible()
   await previewTab.click()
   await expect(previewTab).toHaveAttribute('aria-selected', 'true')

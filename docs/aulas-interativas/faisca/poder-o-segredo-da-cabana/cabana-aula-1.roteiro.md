@@ -46,7 +46,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 **Clipe:** `video-experiencia`
 
-**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy na porta de casa, pensativo, com um balão de pensamento mostrando um casaco e uma garrafinha, sem mostrar ele saindo. No convite, ampliar a experiência e mostrar a cena parada: a cabana fechada, as duas peças no chão, temChave e temEmblema em falso e a pergunta da cabana com as duas respostas ainda em "?", sem apontar controles. Não encostar na cabana: o que ela faz em cada caso, em cada jeito de perguntar, e se a ordem das peças importa, é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
+**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy na porta de casa, pensativo, com um balão de pensamento mostrando um casaco e uma garrafinha, sem mostrar ele saindo. No convite, ampliar a experiência e mostrar a cena parada: a cabana fechada, as duas peças no chão, o caderninho do jogo com NÃO nas duas linhas e a pergunta da cabana inteira, sem apontar controles. Não encostar na cabana: o que ela faz em cada caso, em cada jeito de perguntar, e se a ordem das peças importa, é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -65,12 +65,12 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-cabana.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Guarde o emblema
 

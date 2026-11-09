@@ -58,8 +58,9 @@ test.describe('Aprender CSS — resultado visual e Ponte', () => {
         radius: '12px',
       })
 
-    await page.getByRole('button', { name: 'Blocos' }).click()
-    await page.getByRole('button', { name: 'Ocultar pré-visualização' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
     const backgroundBlock = page
       .locator('text.blocklyText', { hasText: 'Pintar o fundo de' })
       .locator('xpath=ancestor::*[contains(@class, "blocklyDraggable")][1]')

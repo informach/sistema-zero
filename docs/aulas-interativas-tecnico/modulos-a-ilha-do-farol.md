@@ -12,11 +12,12 @@ Identidade: `jornada-faisca-base-3d`, Faísca, três aulas, sem certificado. [Au
 - `qa/gerar-ilha-do-farol.ts`: conserva referências compactas nos manifestos e embute as 24 malhas no arquivo final importável. O jogo usa os comandos básicos de Jogo 3D 0.32.0; atualizar o aplicativo antes dos manifestos.
 - `qa/farois-basicos.test.ts`: garante blocos iniciantes em todas as etapas dos dois Faróis, inclusive ao converter JavaScript de volta a blocos, e malhas reais no arquivo portátil.
 - `qa/ilha-do-farol-importacao.mjs`: importa no playground real, simula biblioteca incompatível e confere erro e nova tentativa para uma referência indisponível.
-- `qa/gerar-ilha-artes.ts`: cena das experiências montada com os mesmos modelos e a bancada do Blender (nós `Chave`, `Aventureiro`, `Pedras`, `Bancada`), carregada sob demanda pelo player.
+- `qa/gerar-ilha-artes.ts`: cena das experiências montada com os mesmos modelos e a bancada do Blender (nós `Ilha`, `Farol`, `Veleiro`, `Pedras`, `Aventureiro`, `Chave`, `Bancada`), carregada sob demanda pelo player (`member-shell/components/scene-ilha-glb.ts`).
 - `qa/ilha-do-farol-criterios.ts` e `ilha-do-farol-observacao.ts`: montagem e execução real.
 - `qa/ilha-do-farol-quiz.ts`: perguntas, explicações e gabarito privado.
 - `core/learning/scene/island-3d.ts`: estado, ações, evidências e falas compartilhadas do Zappy.
-- `member-shell/components/scene-island-*`: controles reais e renderização 3D, sem renderização contínua em repouso.
+- `member-shell/components/scene-island-*`: as telas livres das aulas 1 e 2 (a câmera Frente, Lado e Cima; os três números com − e + nas cores dos eixos; o contato com o resultado na cena e as setas que seguem a câmera) e a renderização 3D, sem renderização contínua em repouso.
+- `member-shell/components/scene-door-not.tsx` e `scene-ilha-porta.tsx`: a porta com o não (aula 3) na ilha 3D do jogo do curso (cenário `ilha`, 08/11/2026): o personagem anda pelas áreas do jogo, pega a chave perto das pedras e a porta do farol pergunta num balão; aberta, o farol acende e o barco vem ao cais.
 - `studio-runtime/runtime/check-approach-3d.mjs`: planejamento pelo chão e entrada de teclado, sem mutação de estado do aluno.
 
 ## Regenerar

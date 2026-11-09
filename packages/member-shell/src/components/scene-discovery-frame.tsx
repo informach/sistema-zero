@@ -26,13 +26,13 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { RotateCcw, Sparkles, Star, Volume2, VolumeX } from 'lucide-react'
 import {
-  createContext,
+  type CSSProperties,
   type PointerEvent,
   type ReactNode,
   type RefObject,
   useCallback,
-  useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
@@ -46,43 +46,13 @@ import {
   ConsoleVisual,
   SceneConsole,
 } from './scene-console'
+import { useDiscovery } from './scene-discovery-context'
 import { SceneReadoutBand } from './scene-frame'
+import { type Direcao, useMovimentoContinuo } from './scene-movement'
 
+export { DiscoveryContext, type FalaDaDescoberta, useDiscovery } from './scene-discovery-context'
 export { SceneButton }
 
-/** O jeito de o Zappy falar na moldura nova. Sem opções, a fala de sempre (as telas antigas). */
-export type FalaDaDescoberta = {
-  /** As frases que o "Ouvir" lê em sequência (a ideia e o "No seu jogo:"). */
-  textos?: string[]
-  pose?: 'speaking' | 'celebrating'
-  /** Toca sozinha a cada texto novo (depois do primeiro gesto e com o som ligado). */
-  falarSozinho?: boolean
-  /** O corpo rico do balão no lugar do texto (o cartão da ideia). */
-  corpo?: ReactNode
-}
-
-export const DiscoveryContext = createContext<{
-  activity: SceneActivity
-  state: SceneState
-  dispatch: (a: SceneAction) => void
-  instruction: string
-  running: boolean
-  setRunning: (v: boolean) => void
-  /**
-   * Passa tempo na cena SEM contar como gesto (a câmera lenta do Farol tem o relógio dela). Pelo
-   * `dispatch`, cada tique apagaria o aviso da descoberta que acabou de cair.
-   */
-  tick?: (seconds: number) => void
-  dialogue: (text: string, opcoes?: FalaDaDescoberta) => ReactNode
-  tools: ReactNode
-  /** Só o "Continuar para a pergunta" (as telas da moldura nova não mostram o Desfazer nem a pista). */
-  continuar?: ReactNode
-} | null>(null)
-export function useDiscovery() {
-  const context = useContext(DiscoveryContext)
-  if (!context) throw Error('Discovery context missing')
-  return context
-}
 export function Note({
   label,
   children,
@@ -203,6 +173,115 @@ function useDescobertaNova(ids: readonly string[], discoveries: readonly string[
 
 /* ───────────────────────── a moldura ───────────────────────── */
 
+const px = (valor: string, rem: number) => {
+  const n = Number.parseFloat(valor)
+  if (!Number.isFinite(n)) return 0
+  return valor.trim().endsWith('rem') ? n * rem : n
+}
+
+/**
+ * No celular (uma coluna), a cena tem a altura que SOBRA na janela depois do que precisa estar à
+ * vista junto com ela: a faixa do Zappy e as estrelas em cima, os controles embaixo (regra dela: a
+ * cena e os controles sem depender de rolar). Cada tela tem um painel de altura diferente (a ponte
+ * tem duas linhas de peças, o contato da Ilha tem a câmera e a altura), por isso é medida, e não um
+ * valor fixo no CSS. Escreve `--sz-palco-hmax` na moldura; o CSS faz o resto. Sem laço: a altura
+ * acima da cena e a do painel abaixo dela não dependem do tamanho da cena.
+ */
+function useAlturaDaCenaNoCelular(ref: RefObject<HTMLDivElement | null>, ativo: boolean) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (!ativo || typeof ResizeObserver === 'undefined') {
+      el.style.removeProperty('--sz-palco-hmax')
+      return
+    }
+    let ultima = Number.NaN
+    let quadro = 0
+    const medir = () => {
+      quadro = 0
+      const caixa = el.querySelector('.sz-scene-console')
+      const palco = el.querySelector('.sz-discovery-palco')
+      const painel = el.querySelector('.sz-discovery-painel-caixa')
+      if (!caixa || !palco) return
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      const c = caixa.getBoundingClientRect()
+      const p = palco.getBoundingClientRect()
+      const fimDoPainel = painel ? painel.getBoundingClientRect().bottom : p.bottom
+      // Onde o console fica "em repouso" e até onde a janela vai:
+      // - no ampliado, abaixo do cabeçalho do cartão (com a rolagem dele no começo), até o fim da
+      //   janela (o ampliado cobre o rodapé e as abas da aula);
+      // - no normal, a criança rola até ele: o topo é o da cena da aula (`--sz-lesson-stage-top`,
+      //   abaixo da barra de cima do celular), e o fim é o topo do rodapé fixo da aula (que já
+      //   fica acima da barra de abas). Sem rodapé, o fim da janela.
+      const cartao = el.closest('.sz-scene-workspace--expanded .sz-scene-workspace-card')
+      let topo = 0
+      let fimDaJanela = window.innerHeight
+      if (cartao) topo = c.top + cartao.scrollTop
+      else {
+        topo = px(getComputedStyle(el).getPropertyValue('--sz-lesson-stage-top'), rem)
+        const rodape = document.querySelector('.sz-lesson-nav-immersive')
+        if (rodape && getComputedStyle(rodape).position === 'fixed') {
+          const r = rodape.getBoundingClientRect()
+          if (r.height > 0 && r.top < fimDaJanela) fimDaJanela = r.top
+        }
+      }
+      const acima = p.top - c.top
+      const abaixo = fimDoPainel - p.bottom
+      const sobra = fimDaJanela - topo - acima - abaixo - 16
+      // O mesmo piso do CSS do celular (`max(6rem, …)`): abaixo dele, quem rola é a página.
+      const altura = Math.max(6 * rem, Math.floor(sobra))
+      if (Math.abs(altura - ultima) <= 1) return
+      ultima = altura
+      el.style.setProperty('--sz-palco-hmax', `${altura}px`)
+    }
+    // Fora do aviso de tamanho: mudar a cena dentro dele avisaria de novo no mesmo quadro (o
+    // "ResizeObserver loop" que o navegador reporta como erro).
+    const agendar = () => {
+      if (!quadro) quadro = requestAnimationFrame(medir)
+    }
+    medir()
+    const tamanhos = new ResizeObserver(agendar)
+    tamanhos.observe(el)
+    for (const parte of el.querySelectorAll('.sz-scene-console-visual, .sz-discovery-painel-caixa'))
+      tamanhos.observe(parte)
+    // O rodapé da aula cresce com a faixa "o que falta" e o "+N" aberto.
+    const rodape = document.querySelector('.sz-lesson-nav-immersive')
+    if (rodape) tamanhos.observe(rodape)
+    window.addEventListener('resize', agendar)
+    return () => {
+      tamanhos.disconnect()
+      window.removeEventListener('resize', agendar)
+      if (quadro) cancelAnimationFrame(quadro)
+      el.style.removeProperty('--sz-palco-hmax')
+    }
+  }, [ref, ativo])
+}
+
+/** Abaixo disto o cartão do workspace tem uma coluna só (a mesma régua do `scene.css`). */
+const LARGURA_DAS_DUAS_COLUNAS_REM = 52
+
+/**
+ * O cartão do workspace está numa coluna só? Mede o CONTEÚDO do cartão (`scene-workspace`, o
+ * contêiner das container queries do console), não a janela: a divisória da aula muda o cartão.
+ * Sem medida (happy-dom, primeiro quadro) conta como largo.
+ */
+function useEstreito(ref: RefObject<HTMLDivElement | null>, ativo: boolean) {
+  const [estreito, setEstreito] = useState(false)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!ativo || !el || typeof ResizeObserver === 'undefined') return
+    const alvo = el.closest('.sz-scene-workspace-card') ?? el
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const tamanhos = new ResizeObserver(([entrada]) => {
+      const largura = entrada?.contentRect.width ?? 0
+      if (largura > 0) setEstreito(largura < LARGURA_DAS_DUAS_COLUNAS_REM * rem)
+    })
+    tamanhos.observe(alvo)
+    return () => tamanhos.disconnect()
+  }, [ref, ativo])
+  return estreito
+}
+
 export function Frame({
   activity,
   state,
@@ -224,9 +303,12 @@ export function Frame({
   noPalco,
   sobrePalco,
   abaixoDoPalco,
+  movimento,
   controles,
   ferramentas,
   raiz,
+  arranjo,
+  aspectoDoPalco = 4 / 3,
 }: {
   title: string
   activity: SceneActivity
@@ -261,12 +343,27 @@ export function Frame({
   /** O que muda a regra, desenhado no canto de cima do palco. */
   sobrePalco?: ReactNode
   abaixoDoPalco?: ReactNode
+  /** Controles essenciais junto ao palco, antes das regras e dos registros. */
+  movimento?: ReactNode
   /** Os módulos do painel embaixo da cena (`Modulo`). */
   controles?: ReactNode
   /** Ferramentas da tela na linha de cima, ao lado do som e do Recomeçar. */
   ferramentas?: ReactNode
   raiz?: RefObject<HTMLDivElement | null>
+  /**
+   * ⭐ "Experiências numa tela só" (09/11/2026, Canvas aprovado por ela), só nas telas do Faísca:
+   * à esquerda o JOGO (as estrelas, a cena no topo e "Seus testes"), à direita a CRIANÇA (a fala do
+   * Zappy, o painel com o `movimento` e os `controles`, e as descobertas). A cena, a fala e os
+   * controles ficam à vista sem rolar; as descobertas e os testes podem ficar abaixo.
+   */
+  arranjo?: 'faisca'
+  /** Largura ÷ altura do palco no arranjo do Faísca (o mapa do Farol é 4:3; a ilha 3D, 1,1). */
+  aspectoDoPalco?: number
 }) {
+  const proprio = useRef<HTMLDivElement>(null)
+  const moldura = raiz ?? proprio
+  const estreito = useEstreito(moldura, arranjo === 'faisca')
+  useAlturaDaCenaNoCelular(moldura, arranjo === 'faisca' && estreito)
   const context = useDiscovery()
   const feitas = state.evidence.discoveries
   const metas = sceneTargets(activity)
@@ -318,9 +415,245 @@ export function Frame({
   }
   const cartaoNovo = lista.find((c) => c.id === nova)
 
+  // Os pedaços da tela, montados uma vez e distribuídos pelo arranjo.
+  const faixaDoZappy = (
+    <p className="sz-discovery-fala-celular" aria-hidden>
+      <span className="sz-discovery-fala-celular-z">Z</span>
+      {falaAgora}
+    </p>
+  )
+  const linhaDeCima = (
+    <div className="sz-discovery-hud">
+      <span className="sz-scene-placa sz-scene-momento">
+        {todas ? 'Você descobriu!' : 'Sua vez'}
+      </span>
+      <span className="sz-discovery-contagem">
+        <span className="sr-only">
+          {n} de {lista.length} descobertas
+        </span>
+        {lista.map((c) => (
+          <span
+            key={c.id}
+            className="sz-discovery-estrela"
+            data-feito={c.feito}
+            data-nova={nova === c.id}
+            aria-hidden
+          >
+            <Star size={20} strokeWidth={2.5} />
+          </span>
+        ))}
+      </span>
+      <span className="sz-discovery-direita">
+        <span className="sz-discovery-ferramentas">
+          {ferramentas}
+          <Redondo
+            rotulo={som ? 'Desligar o som e a voz automática' : 'Ligar o som e a voz automática'}
+            onClick={() => {
+              ligarSons(!som)
+              setSom(!som)
+            }}
+            pressionado={som}
+          >
+            {som ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </Redondo>
+          {confirmando ? (
+            <span
+              className="sz-discovery-confirma"
+              role="group"
+              aria-label="Apagar as descobertas?"
+            >
+              Apagar as descobertas?
+              <button type="button" onClick={recomecar}>
+                Sim
+              </button>
+              <button type="button" onClick={() => setConfirmando(false)}>
+                Não
+              </button>
+            </span>
+          ) : (
+            <Redondo
+              rotulo="Recomeçar experiência"
+              onClick={() => (n > 0 ? setConfirmando(true) : recomecar())}
+            >
+              <RotateCcw size={18} />
+            </Redondo>
+          )}
+        </span>
+      </span>
+    </div>
+  )
+  const mundo = (
+    <ConsoleMundo>
+      <div className="sz-discovery-palco">
+        {stage}
+        {pulso ? <span className="sz-discovery-pulso" aria-hidden style={pulso} /> : null}
+        {noPalco}
+        {sobrePalco ? <div className="sz-discovery-sobre">{sobrePalco}</div> : null}
+        {cartaoNovo ? (
+          <div className="sz-discovery-selo" role="status">
+            <span className="sz-discovery-selo-brilho" aria-hidden>
+              ✦ ✧ ✦
+            </span>
+            <Star size={22} fill="currentColor" aria-hidden /> Você descobriu!
+            <Sparkles size={18} aria-hidden />
+          </div>
+        ) : null}
+      </div>
+    </ConsoleMundo>
+  )
+  const fala = (
+    <div className={`sz-discovery-fala-bloco${ideiaNoBalao ? ' sz-discovery-fala-ideia' : ''}`}>
+      <ConsoleFala>
+        {context.dialogue(falaAgora, {
+          textos: ideiaNoBalao ? falasDaIdeia : [falaAgora],
+          pose: todas ? 'celebrating' : 'speaking',
+          falarSozinho: interagiu && som,
+          corpo: ideiaNoBalao ? (
+            <div className="sz-discovery-ideia-balao">
+              <span className="sz-discovery-ideia-titulo">
+                <span aria-hidden>🏆</span> A ideia que você descobriu
+              </span>
+              <p className="sz-discovery-ideia-texto">{ideiaFinal}</p>
+              {ponte ? (
+                <p className="sz-discovery-ideia-ponte">
+                  <strong>No seu jogo:</strong> {ponte}
+                </p>
+              ) : null}
+            </div>
+          ) : undefined,
+        })}
+      </ConsoleFala>
+    </div>
+  )
+  const descobertas = (
+    <>
+      {lista.length ? (
+        <div className="sz-discovery-secao sz-discovery-descobertas">
+          <p className="sz-discovery-rotulo">
+            Suas descobertas{' '}
+            <span>
+              {n} de {lista.length}
+            </span>
+          </p>
+          <ul className="sz-discovery-cartoes">
+            {lista.map((c, i) => (
+              <li
+                key={c.id}
+                data-cor={i % 5}
+                className="sz-discovery-cartao"
+                data-feito={c.feito}
+                data-nova={nova === c.id}
+              >
+                <div className="sz-discovery-cartao-botao">
+                  <span className="sz-discovery-cartao-emoji" aria-hidden>
+                    {c.emoji ?? (c.feito ? '✅' : '❓')}
+                  </span>
+                  <span className="sz-discovery-cartao-texto">
+                    <strong>{c.pergunta}</strong>
+                    {/* No arranjo do Faísca, "Ainda não testado" fica só para o leitor de tela: o
+                        cartão sem estrela já diz isso (e a coluna da direita ganha altura). */}
+                    <small className={!c.feito && arranjo === 'faisca' ? 'sr-only' : undefined}>
+                      {c.feito
+                        ? c.descoberta
+                          ? `Descobri: ${c.descoberta}`
+                          : 'Descobri!'
+                        : 'Ainda não testado'}
+                    </small>
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </>
+  )
+  const testes = (
+    <>
+      {fotos ? (
+        <div className="sz-discovery-secao sz-discovery-testes">
+          <p className="sz-discovery-rotulo">Seus testes</p>
+          {fotos.length ? (
+            <ol className="sz-discovery-fotos">
+              {fotos.map((f) => (
+                <li
+                  key={f.n}
+                  className="sz-discovery-foto"
+                  data-descoberta={f.descoberta === true}
+                  data-lado={f.n % 2}
+                >
+                  <strong>{f.titulo}</strong>
+                  <span>{f.texto}</span>
+                  {f.descoberta ? (
+                    <em>
+                      <Star size={12} fill="currentColor" aria-hidden /> virou descoberta
+                    </em>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="sz-discovery-vazio">Cada teste que você fizer aparece aqui.</p>
+          )}
+        </div>
+      ) : null}
+    </>
+  )
+
+  if (arranjo === 'faisca')
+    return (
+      <div
+        ref={moldura}
+        className="sz-scene-workspace-body sz-discovery-proposed sz-discovery-moldura"
+        data-arranjo="faisca"
+        data-estreito={estreito}
+        data-fim={ideiaNoBalao}
+        style={{ '--sz-palco-aspecto': aspectoDoPalco } as CSSProperties}
+        onPointerDownCapture={marcarGesto}
+        onKeyDownCapture={marcarGesto}
+      >
+        <SceneConsole>
+          <ConsoleVisual>
+            {/* No celular (uma coluna), o balão do Zappy fica no topo, acima da cena: com o mascote, o
+                "Ouvir" e o texto para o leitor de tela (a faixa "Z" das outras telas é só visual). No
+                fim ele vira a ideia no mesmo lugar, sem remontar (a voz da ideia toca sozinha). */}
+            {estreito ? fala : null}
+            {linhaDeCima}
+            {mundo}
+            {estreito ? null : testes}
+          </ConsoleVisual>
+          <ConsoleActions>
+            {estreito ? null : fala}
+            {movimento || controles || abaixoDoPalco ? (
+              // A pergunta grande também é um controle (a criança responde nela): mora na mesma
+              // caixa, para entrar na conta da altura da cena no celular.
+              <div className="sz-discovery-painel-caixa">
+                {movimento || controles ? (
+                  <div className="sz-discovery-painel">
+                    {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
+                    {controles}
+                  </div>
+                ) : null}
+                {abaixoDoPalco}
+              </div>
+            ) : null}
+            {after ? (
+              <div className="sz-discovery-evidence" aria-live="polite">
+                {after}
+              </div>
+            ) : null}
+            {children ? <ConsolePrancha>{children}</ConsolePrancha> : null}
+            {descobertas}
+            {estreito ? testes : null}
+            {cartoes ? context.continuar : context.tools}
+          </ConsoleActions>
+        </SceneConsole>
+      </div>
+    )
+
   return (
     <div
-      ref={raiz}
+      ref={moldura}
       className="sz-scene-workspace-body sz-discovery-proposed sz-discovery-moldura"
       onPointerDownCapture={marcarGesto}
       onKeyDownCapture={marcarGesto}
@@ -328,92 +661,15 @@ export function Frame({
       <SceneConsole>
         <ConsoleVisual>
           {/* No celular a fala vem depois dos controles: uma linha dela fica acima da cena. */}
-          <p className="sz-discovery-fala-celular" aria-hidden>
-            <span className="sz-discovery-fala-celular-z">Z</span>
-            {falaAgora}
-          </p>
-          <div className="sz-discovery-hud">
-            <span className="sz-scene-placa sz-scene-momento">
-              {todas ? 'Você descobriu!' : 'Sua vez'}
-            </span>
-            <span className="sz-discovery-contagem">
-              <span className="sr-only">
-                {n} de {lista.length} descobertas
-              </span>
-              {lista.map((c) => (
-                <span
-                  key={c.id}
-                  className="sz-discovery-estrela"
-                  data-feito={c.feito}
-                  data-nova={nova === c.id}
-                  aria-hidden
-                >
-                  <Star size={20} strokeWidth={2.5} />
-                </span>
-              ))}
-            </span>
-            <span className="sz-discovery-direita">
-              <span className="sz-discovery-ferramentas">
-                {ferramentas}
-                <Redondo
-                  rotulo={
-                    som ? 'Desligar o som e a voz automática' : 'Ligar o som e a voz automática'
-                  }
-                  onClick={() => {
-                    ligarSons(!som)
-                    setSom(!som)
-                  }}
-                  pressionado={som}
-                >
-                  {som ? <Volume2 size={18} /> : <VolumeX size={18} />}
-                </Redondo>
-                {confirmando ? (
-                  <span
-                    className="sz-discovery-confirma"
-                    role="group"
-                    aria-label="Apagar as descobertas?"
-                  >
-                    Apagar as descobertas?
-                    <button type="button" onClick={recomecar}>
-                      Sim
-                    </button>
-                    <button type="button" onClick={() => setConfirmando(false)}>
-                      Não
-                    </button>
-                  </span>
-                ) : (
-                  <Redondo
-                    rotulo="Recomeçar experiência"
-                    onClick={() => (n > 0 ? setConfirmando(true) : recomecar())}
-                  >
-                    <RotateCcw size={18} />
-                  </Redondo>
-                )}
-              </span>
-            </span>
-          </div>
+          {faixaDoZappy}
+          {linhaDeCima}
           {hud ? (
             <div className="sz-discovery-simple-hud">{hud}</div>
           ) : !cartoes ? (
             <SceneReadoutBand activity={activity} state={state} />
           ) : null}
-          <ConsoleMundo>
-            <div className="sz-discovery-palco">
-              {stage}
-              {pulso ? <span className="sz-discovery-pulso" aria-hidden style={pulso} /> : null}
-              {noPalco}
-              {sobrePalco ? <div className="sz-discovery-sobre">{sobrePalco}</div> : null}
-              {cartaoNovo ? (
-                <div className="sz-discovery-selo" role="status">
-                  <span className="sz-discovery-selo-brilho" aria-hidden>
-                    ✦ ✧ ✦
-                  </span>
-                  <Star size={22} fill="currentColor" aria-hidden /> Você descobriu!
-                  <Sparkles size={18} aria-hidden />
-                </div>
-              ) : null}
-            </div>
-          </ConsoleMundo>
+          {mundo}
+          {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
           {abaixoDoPalco}
           {after ? (
             <div className="sz-discovery-evidence" aria-live="polite">
@@ -423,95 +679,12 @@ export function Frame({
           {controles ? <div className="sz-discovery-deck">{controles}</div> : null}
         </ConsoleVisual>
         <ConsoleActions>
-          <div className={ideiaNoBalao ? 'sz-discovery-fala-ideia' : undefined}>
-            <ConsoleFala>
-              {context.dialogue(falaAgora, {
-                textos: ideiaNoBalao ? falasDaIdeia : [falaAgora],
-                pose: todas ? 'celebrating' : 'speaking',
-                falarSozinho: interagiu && som,
-                corpo: ideiaNoBalao ? (
-                  <div className="sz-discovery-ideia-balao">
-                    <span className="sz-discovery-ideia-titulo">
-                      <span aria-hidden>🏆</span> A ideia que você descobriu
-                    </span>
-                    <p className="sz-discovery-ideia-texto">{ideiaFinal}</p>
-                    {ponte ? (
-                      <p className="sz-discovery-ideia-ponte">
-                        <strong>No seu jogo:</strong> {ponte}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : undefined,
-              })}
-            </ConsoleFala>
-          </div>
+          {fala}
           {/* ⚠️ Os controles das telas antigas ficam na coluna das ações, como antes: embaixo da cena
               eles empurravam o palco para fora da tela ampliada (e2e `scene-workspace`). */}
           {children ? <ConsolePrancha>{children}</ConsolePrancha> : null}
-          {lista.length ? (
-            <div className="sz-discovery-secao">
-              <p className="sz-discovery-rotulo">
-                Suas descobertas{' '}
-                <span>
-                  {n} de {lista.length}
-                </span>
-              </p>
-              <ul className="sz-discovery-cartoes">
-                {lista.map((c, i) => (
-                  <li
-                    key={c.id}
-                    data-cor={i % 5}
-                    className="sz-discovery-cartao"
-                    data-feito={c.feito}
-                    data-nova={nova === c.id}
-                  >
-                    <div className="sz-discovery-cartao-botao">
-                      <span className="sz-discovery-cartao-emoji" aria-hidden>
-                        {c.emoji ?? (c.feito ? '✅' : '❓')}
-                      </span>
-                      <span className="sz-discovery-cartao-texto">
-                        <strong>{c.pergunta}</strong>
-                        <small>
-                          {c.feito
-                            ? c.descoberta
-                              ? `Descobri: ${c.descoberta}`
-                              : 'Descobri!'
-                            : 'Ainda não testado'}
-                        </small>
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {fotos ? (
-            <div className="sz-discovery-secao">
-              <p className="sz-discovery-rotulo">Seus testes</p>
-              {fotos.length ? (
-                <ol className="sz-discovery-fotos">
-                  {fotos.map((f) => (
-                    <li
-                      key={f.n}
-                      className="sz-discovery-foto"
-                      data-descoberta={f.descoberta === true}
-                      data-lado={f.n % 2}
-                    >
-                      <strong>{f.titulo}</strong>
-                      <span>{f.texto}</span>
-                      {f.descoberta ? (
-                        <em>
-                          <Star size={12} fill="currentColor" aria-hidden /> virou descoberta
-                        </em>
-                      ) : null}
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="sz-discovery-vazio">Cada teste que você fizer aparece aqui.</p>
-              )}
-            </div>
-          ) : null}
+          {descobertas}
+          {testes}
           {cartoes ? context.continuar : context.tools}
         </ConsoleActions>
       </SceneConsole>
@@ -531,6 +704,7 @@ export function Modulo({
   children,
   largo,
   dica,
+  compacto,
 }: {
   titulo: string
   icone: string
@@ -538,14 +712,26 @@ export function Modulo({
   largo?: boolean
   /** A linha de ajuda do módulo (a do teclado some em tela de toque). */
   dica?: ReactNode
+  /**
+   * Sem caixa e sem o nome na tela (o controle já diz o que é: o caderninho, o interruptor, o
+   * "Jogar de novo"). O nome e a dica continuam para o leitor de tela. Só o arranjo do Faísca usa.
+   */
+  compacto?: boolean
 }) {
   return (
-    <section className="sz-discovery-modulo" data-largo={largo} aria-label={titulo}>
-      <span className="sz-discovery-modulo-titulo">
+    <section
+      className="sz-discovery-modulo"
+      data-largo={largo}
+      data-compacto={compacto || undefined}
+      aria-label={titulo}
+    >
+      <span className={compacto ? 'sr-only' : 'sz-discovery-modulo-titulo'}>
         <span aria-hidden>{icone}</span> {titulo}
       </span>
       <div className="sz-discovery-modulo-corpo">{children}</div>
-      {dica ? <span className="sz-discovery-modulo-dica">{dica}</span> : null}
+      {dica ? (
+        <span className={compacto ? 'sr-only' : 'sz-discovery-modulo-dica'}>{dica}</span>
+      ) : null}
     </section>
   )
 }
@@ -622,7 +808,7 @@ export function casaTecla(e: Pick<KeyboardEvent, 'key' | 'code'>, teclas: readon
   return teclas.includes(e.key) || teclas.includes(e.code)
 }
 
-export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita'
+export type { Direcao } from './scene-movement'
 export const TECLAS: Record<Direcao, { teclas: string[]; letra: string; seta: string }> = {
   cima: { teclas: ['ArrowUp', 'KeyW'], letra: 'W', seta: 'M5 16l7-9 7 9z' },
   baixo: { teclas: ['ArrowDown', 'KeyS'], letra: 'S', seta: 'M5 8l7 9 7-9z' },
@@ -683,13 +869,18 @@ export function TeclaDeSeta({
     const sobe = (e: KeyboardEvent) => {
       if (casaTecla(e, teclas)) subir()
     }
+    const esconder = () => {
+      if (document.hidden) subir()
+    }
     window.addEventListener('keydown', desce)
     window.addEventListener('keyup', sobe)
     window.addEventListener('blur', subir)
+    document.addEventListener('visibilitychange', esconder)
     return () => {
       window.removeEventListener('keydown', desce)
       window.removeEventListener('keyup', sobe)
       window.removeEventListener('blur', subir)
+      document.removeEventListener('visibilitychange', esconder)
       subir()
     }
   }, [teclas, descer, subir, visivel])
@@ -791,58 +982,23 @@ export function useAndarLivre({
   velocidade?: number
 }) {
   const [pos, setPos] = useState(inicio)
-  const [segurando, setSegurando] = useState<ReadonlySet<Direcao>>(new Set())
-  const dirs = useRef(new Set<Direcao>())
-  const quadro = useRef<number | null>(null)
-  const ultimo = useRef(0)
-  const passo = useCallback(
-    (agora: number) => {
-      const dt = Math.min(0.05, (agora - ultimo.current) / 1000)
-      ultimo.current = agora
-      const d = dirs.current
-      const vx = (d.has('direita') ? 1 : 0) - (d.has('esquerda') ? 1 : 0)
-      const vy = (d.has('baixo') ? 1 : 0) - (d.has('cima') ? 1 : 0)
-      const norma = vx && vy ? Math.SQRT1_2 : 1
-      if (vx || vy)
-        setPos((p) => ({
-          x: Math.max(limites.x0, Math.min(limites.x1, p.x + vx * velocidade * norma * dt)),
-          y: Math.max(limites.y0, Math.min(limites.y1, p.y + vy * velocidade * norma * dt)),
-        }))
-      if (d.size) quadro.current = requestAnimationFrame(passo)
-      else quadro.current = null
-    },
-    [limites.x0, limites.x1, limites.y0, limites.y1, velocidade],
-  )
-  const segurar = useCallback(
-    (d: Direcao) => {
-      dirs.current.add(d)
-      setSegurando(new Set(dirs.current))
-      if (quadro.current === null) {
-        ultimo.current = performance.now()
-        quadro.current = requestAnimationFrame(passo)
-      }
-    },
-    [passo],
-  )
-  const soltar = useCallback((d: Direcao) => {
-    dirs.current.delete(d)
-    setSegurando(new Set(dirs.current))
-  }, [])
-  useEffect(
-    () => () => {
-      if (quadro.current !== null) cancelAnimationFrame(quadro.current)
-    },
-    [],
-  )
+  const movimento = useMovimentoContinuo(({ x, y, segundos }) => {
+    setPos((p) => {
+      const nx = Math.max(limites.x0, Math.min(limites.x1, p.x + x * velocidade * segundos))
+      const ny = Math.max(limites.y0, Math.min(limites.y1, p.y + y * velocidade * segundos))
+      return nx === p.x && ny === p.y ? p : { x: nx, y: ny }
+    })
+  })
+  const { parar } = movimento
   const inicioX = inicio.x
   const inicioY = inicio.y
   return {
+    ...movimento,
     pos,
-    andando: segurando.size > 0,
-    segurando,
-    segurar,
-    soltar,
-    voltar: useCallback(() => setPos({ x: inicioX, y: inicioY }), [inicioX, inicioY]),
+    voltar: useCallback(() => {
+      parar()
+      setPos({ x: inicioX, y: inicioY })
+    }, [inicioX, inicioY, parar]),
   }
 }
 

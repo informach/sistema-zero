@@ -15,10 +15,17 @@ export type IlhaTrecho = {
   instrucao?: string
   pistas?: [string, string, string]
   /**
-   * A cena da experiência, quando não é a ilha 3D (02/11/2026): a pergunta com o não usa a porta do
-   * Farol (`lighthouse-key`), ligada ao modo do não pelas metas `not-flips-*`.
+   * O que cada descoberta pede, na língua da tela livre (08/11/2026): vira o `goalCopy` do
+   * manifesto (sem ele, a criança leria os pedidos do catálogo, com os botões de antes).
    */
-  cena?: { scene: 'lighthouse-key'; cenario: 'farol'; goals: string[] }
+  pedidos?: Record<string, string | { label: string; pedido: string }>
+  /**
+   * A cena da experiência, quando não é a experiência 3D de posição (02/11/2026): a pergunta com o
+   * não usa a porta do farol (`lighthouse-key`), ligada ao modo do não pelas metas `not-flips-*`.
+   * ⭐ 08/11/2026: ela acontece na ilha 3D do jogo do curso (cenário `ilha`), não no mapa 2D da
+   * Chave do Farol (pedido dela: a cena é o jogo do curso).
+   */
+  cena?: { scene: 'lighthouse-key'; cenario: 'ilha'; goals: string[] }
 }
 /**
  * A conferência depois do teste, com a lista do que precisa estar lá, e a verificação na fórmula
@@ -58,15 +65,19 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar a comparação: uma pessoa na frente tapa a vista de alguém, que pensa em mudar de lugar para olhar, sem mostrar o que está atrás. Depois ampliar a experiência e mostrar a cena parada, na vista de frente, com a pedra escondendo a chave, sem apontar controles nem trocar a vista: o que muda e o que fica igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Procure a chave olhando a ilha de lugares diferentes e compare o que muda na imagem e o que continua no mesmo lugar. Você escolhe a ordem e pode repetir quando quiser.',
+          'Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Olhe a ilha de outro lugar e procure a chave.',
           'Compare duas vistas. Repare na pedra e na chave em cada uma delas.',
-          'Clique em Ver de lado e procure a chave. Depois clique em Ver de frente e compare. Por fim, responda à pergunta: quando a chave apareceu, o que mudou?',
+          'Na câmera, toque em Lado e procure a chave. Volte para Frente e compare. Então responda: quando a chave apareceu, o que mudou?',
         ],
-        text: '[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar. [engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida. [curious] Se a câmera mudar de lugar, a chave também muda de lugar? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        pedidos: {
+          'other-view': 'Troque o lugar da câmera e procure a chave.',
+          'same-place': 'Responda o que mudou quando a chave apareceu.',
+        },
+        text: '[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar. [engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida. [curious] Se a câmera mudar de lugar, a chave também muda de lugar? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'movimento',
@@ -122,15 +133,20 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois ampliar a experiência e mostrar a cena parada, com a chave no lugar inicial, sem apontar controles nem mudar nenhum valor: o que cada número muda é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Compare para onde a chave vai quando o x, o y e o z aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.',
+          'Mude cada um dos três números da chave para mais e para menos e veja para onde ela vai. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
           'Escolha um dos três números da chave e observe para onde ela vai.',
           'Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.',
-          'Na linha do X, clique no + e depois no −, observando a chave. Faça o mesmo nas linhas do Z e do Y. Para ver melhor, clique em Ver de lado ou em Ver de cima.',
+          'No x, toque no + e no −, observando a chave. Faça o mesmo no z e no y. Para ver melhor, troque a câmera para Lado ou Cima.',
         ],
-        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z. [curious] E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        pedidos: {
+          'axis-x': 'Mude o x para mais e para menos e observe a chave.',
+          'axis-y': 'Mude o y para mais e para menos e observe a chave.',
+          'axis-z': 'Mude o z para mais e para menos e observe a chave.',
+        },
+        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z. [curious] E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'posicao',
@@ -145,7 +161,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           'Clique em Atualizar e leve o personagem até perto da chave.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O x e o z levaram a chave pelo chão, e o y mudou a altura. No jogo 2D era diferente: lá, o y mudava o lugar na tela. [engaging, energetic, conversational voice] Agora você vai escolher um lugar novo para a chave no seu jogo! [confident, clear, unhurried voice] Nos blocos, abra a área Ao iniciar e encontre o bloco Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. [engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você mudou na experiência. [confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3. [upbeat, encouraging voice] Clique em Atualizar, logo acima do jogo, e observe para onde a chave foi. [confident, clear, unhurried voice] Agora mude o z. Clique no menos 3 que fica depois de z e troque por menos 2. Deixe o y em 1. [upbeat, encouraging voice] Clique em Atualizar de novo. Depois clique dentro do jogo e leve o personagem até perto da chave. [interested, animated voice] Olha só: a chave mudou de lugar no chão e continuou na mesma altura, porque você não mexeu no y. [engaging, energetic, conversational voice] Por enquanto, encostar na chave não faz nada. Essa reação vem daqui a pouco, depois da experiência do contato. ' +
+          '[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O x e o z levaram a chave pelo chão, e o y mudou a altura. No jogo 2D era diferente: lá, o y mudava o lugar na tela. [engaging, energetic, conversational voice] Agora você vai escolher um lugar novo para a chave no seu jogo! [confident, clear, unhurried voice] Nos blocos, abra a área Ao iniciar e encontre o bloco Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. [engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você investigou na experiência. [confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3. [upbeat, encouraging voice] Clique em Atualizar, logo acima do jogo, e observe para onde a chave foi. [confident, clear, unhurried voice] Agora mude o z. Clique no menos 3 que fica depois de z e troque por menos 2. Deixe o y em 1. [upbeat, encouraging voice] Clique em Atualizar de novo. Depois clique dentro do jogo e leve o personagem até perto da chave. [interested, animated voice] Olha só: a chave mudou de lugar no chão e continuou na mesma altura, porque você não mexeu no y. [engaging, energetic, conversational voice] Por enquanto, encostar na chave não faz nada. Essa reação vem daqui a pouco, depois da experiência do contato. ' +
           verificar(
             'em Ao iniciar, o bloco Colocar o objeto chave está com x menos 3, y 1 e z menos 2',
           ),
@@ -157,15 +173,26 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         screen:
           'Vídeo conceitual. Ilustrar duas mãos batendo palmas, desenho nosso com o Zappy. Depois ampliar a experiência e mostrar a cena parada, na vista de cima, com a chave alta parecendo estar sobre o personagem, sem apontar controles nem testar: o resultado é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Compare quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem e pode repetir quando quiser.',
+          'De cima, o personagem e a chave parecem juntos: olhe de outro lugar e descubra quando eles se encostam de verdade. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
-          'Antes de testar, pense: a chave e o personagem estão encostando?',
-          'Teste o encontro e compare a vista de cima com a vista de lado.',
-          'Clique em Testar o encontro e depois em Ver de lado. Na linha do Y, clique no − até a chave chegar perto do personagem e clique em Testar o encontro de novo. Se quiser, clique em Mostrar onde encosta.',
+          'Antes de olhar de outro lugar, pense: a chave e o personagem estão encostando?',
+          'Olhe o resultado do encontro na cena e compare a câmera de cima com a de lado.',
+          'Na câmera, toque em Lado. Na altura da chave, toque no − até ela chegar perto do personagem e olhe o resultado do encontro. Se quiser, mostre as caixas do encontro.',
         ],
-        text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        pedidos: {
+          // O rótulo do catálogo fala de "áreas" (as caixas de colisão); aqui é o que a criança vê.
+          'contact-apart': {
+            label: 'Parecer junto não é encostar',
+            pedido: 'Olhe de lado o personagem e a chave que de cima parecem juntos.',
+          },
+          'contact-touch': {
+            label: 'Encostar é se tocar de verdade',
+            pedido: 'Baixe a chave até ela encostar no personagem.',
+          },
+        },
+        text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'recolher',
@@ -181,7 +208,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           'Clique em Atualizar e caminhe até a chave: ela some só no encontro. Toque na tecla R e repita por outro caminho.',
         ],
         text:
-          '[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e leve o personagem até a chave. Tá vendo? A chave continua ali, porque o jogo ainda não tem nenhuma reação para esse encontro. [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Só valia encostar quando o personagem e a chave se encontravam no chão e também na altura. Agora a gente vai fazer o seu jogo perceber esse encontro! [confident, clear, unhurried voice] Os encontros ficam na área Quando acontecer. Encontre essa área nos blocos. Repare: ali já tem o evento da tecla R, que recomeça a partida. [confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo desse evento, fora do fazer dele. [confident, clear, unhurried voice] Agora abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço. [engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o Testar o encontro da experiência, ele confere o lugar no chão e a altura. [confident, clear, unhurried voice] Repare que ele já chega com personagem no primeiro nome e chave no segundo. Se aparecer outro nome, clique nele e escolha o certo. [engaging, energetic, conversational voice] Agora falta a reação: a chave sumir. Deixe à vista o espaço ao lado da palavra fazer, dentro do novo encontro. [confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Aparência. Pegue o bloco Mostrar o objeto e solte dentro desse fazer. [confident, clear, unhurried voice] Repare que ele chega com Mostrar. Clique em Mostrar e escolha Esconder. Depois clique no nome do objeto e escolha chave. [upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e caminhe até a chave. [interested, animated voice] Olha só: ela some quando o personagem encosta. [upbeat, encouraging voice] Toque na tecla R e repita por outro caminho. ' +
+          '[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e leve o personagem até a chave. Tá vendo? A chave continua ali, porque o jogo ainda não tem nenhuma reação para esse encontro. [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Só valia encostar quando o personagem e a chave se encontravam no chão e também na altura. Agora a gente vai fazer o seu jogo perceber esse encontro! [confident, clear, unhurried voice] Os encontros ficam na área Quando acontecer. Encontre essa área nos blocos. Repare: ali já tem o evento da tecla R, que recomeça a partida. [confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo desse evento, fora do fazer dele. [confident, clear, unhurried voice] Agora abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço. [engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o jogo na experiência do contato, ele confere o lugar no chão e a altura. [confident, clear, unhurried voice] Repare que ele já chega com personagem no primeiro nome e chave no segundo. Se aparecer outro nome, clique nele e escolha o certo. [engaging, energetic, conversational voice] Agora falta a reação: a chave sumir. Deixe à vista o espaço ao lado da palavra fazer, dentro do novo encontro. [confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Aparência. Pegue o bloco Mostrar o objeto e solte dentro desse fazer. [confident, clear, unhurried voice] Repare que ele chega com Mostrar. Clique em Mostrar e escolha Esconder. Depois clique no nome do objeto e escolha chave. [upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e caminhe até a chave. [interested, animated voice] Olha só: ela some quando o personagem encosta. [upbeat, encouraging voice] Toque na tecla R e repita por outro caminho. ' +
           verificar(
             'em Quando acontecer, fora do evento da tecla R, está o encontro Quando personagem encostar em chave, e dentro do fazer dele está Esconder o objeto chave',
           ),
@@ -280,22 +307,26 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'O que muda com o não?',
         kind: 'experience',
         screen:
-          'Vídeo conceitual. Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: duas lojas lado a lado, uma com a plaquinha Pode entrar e outra com a plaquinha Não pode entrar, com a palavra não destacada, sem mostrar ninguém entrando nem barrado. Depois ampliar a experiência e mostrar a cena parada, sem a chave e com a pergunta sem o não, sem apontar controles nem a tabela e sem clicar: qual resposta a porta dá em cada situação é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
+          'Vídeo conceitual. Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: duas lojas lado a lado, uma com a plaquinha Pode entrar e outra com a plaquinha Não pode entrar, com a palavra não destacada, sem mostrar ninguém entrando nem barrado. Depois ampliar a experiência e mostrar a ilha 3D parada, com o personagem longe do farol e a pergunta sem o não, sem apontar controles e sem andar: qual resposta a porta dá em cada situação é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Compare a resposta da porta com a pergunta sem o não e com o não, com a chave e sem a chave. Você escolhe a ordem e pode repetir quando quiser.',
+          'Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o "não" e sem ele. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         pistas: [
-          'Antes de testar, repare se a porta está trancada e qual pergunta ela está fazendo.',
-          'Com a mesma chave, teste as duas perguntas e compare as respostas na tabela.',
-          'Clique em Testar a porta. Depois clique em Pôr o não na pergunta e em Testar a porta de novo. Por fim, clique em Dar a chave ao personagem e teste as duas perguntas outra vez.',
+          'Antes de ir ao farol, repare se o personagem tem a chave e qual pergunta a porta faz.',
+          'Com a mesma chave, ouça a porta com as duas perguntas e compare as respostas.',
+          'Leve o personagem até o farol sem a chave. Encaixe o "não" na pergunta e ouça a resposta de novo. Então pegue a chave e compare as duas perguntas outra vez.',
         ],
+        pedidos: {
+          'not-flips-without-key': 'Sem a chave, ouça a porta com o "não" e sem ele.',
+          'not-flips-with-key': 'Com a chave, ouça a porta com o "não" e sem ele.',
+        },
         cena: {
           scene: 'lighthouse-key',
-          cenario: 'farol',
+          cenario: 'ilha',
           goals: ['not-flips-with-key', 'not-flips-without-key'],
         },
-        text: '[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não. [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. [engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Na experiência, a porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim. [curious] Com o não na pergunta, o que a porta faz? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não. [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. [engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim. [curious] Com o não na pergunta, o que a porta faz? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'uma-vez',

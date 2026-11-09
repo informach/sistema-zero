@@ -1,7 +1,23 @@
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
+import {
+  MORE_BLOCKS_KIND,
+  type MoreBlocksWorkspace,
+  registerMoreBlocksItem,
+} from '../../blockly/moreBlocksItem'
+import {
+  revealBlockInWorkspace,
+  runtimeErrorBlockId,
+  setRuntimeErrorBlock,
+} from '../../blockly/runtimeMark'
+import {
+  registerPtSearchCategory,
+  type SearchResolverWorkspace,
+} from '../../blockly/searchCategory'
+import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
 import { szGridColourFor, szThemeFor } from '../../blockly/theme'
 import { isPythonProject } from '../../core/editableProject'
 import {
@@ -11,6 +27,7 @@ import {
 } from '../../python/blocks/blockly'
 import { commitPythonWorkspaceGesture } from '../../python/blocks/commitWorkspace'
 import type { PythonBlockCodec } from '../../python/blocks/contract'
+import { attachPythonLiteralTint, tintPythonLiterals } from '../../python/blocks/literalTint'
 import { nodes } from '../../python/blocks/nodes'
 import { pythonPaletteBlockState } from '../../python/blocks/paletteBlocks'
 import {
@@ -18,6 +35,17 @@ import {
   pythonCategoryColour,
   pythonCategoryLabel,
 } from '../../python/blocks/paletteGroups'
+import {
+  ensurePythonProgramArea,
+  PYTHON_PROGRAM,
+  pythonProgramArea,
+  pythonScratchRoots,
+  registerPythonProgramArea,
+} from '../../python/blocks/programArea'
+import {
+  createPythonProgramNavigation,
+  type PythonProgramNavigationState,
+} from '../../python/blocks/programNavigation'
 import { type PythonBlockProjection, pythonASTToVisual } from '../../python/blocks/projection'
 import { pythonProjectModules } from '../../python/blocks/projectModules'
 import {
@@ -26,11 +54,17 @@ import {
 } from '../../python/blocks/provenance'
 import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
 import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
-import { preparePythonWorkspaceRestore } from '../../python/blocks/restoreWorkspace'
+import {
+  preparePythonScratchRestore,
+  preparePythonWorkspaceRestore,
+} from '../../python/blocks/restoreWorkspace'
 import type { PythonProjectModules } from '../../python/blocks/scope'
 import { type PythonPaletteSelection, searchPythonPalette } from '../../python/blocks/selection'
 import {
+  capturePythonWorkspace,
   type PythonWorkspaceDraft,
+  pendingPythonWorkspaceDraft,
+  readPythonScratchWorkspace,
   readPythonWorkspaceDraft,
   updatePythonWorkspaceDraft,
 } from '../../python/blocks/workspaceDraft'
@@ -38,21 +72,29 @@ import {
   orderPythonWorkspaceRoots,
   updatePythonWorkspacePresentation,
 } from '../../python/blocks/workspacePresentation'
-import { rebasePythonWorkspaceState, savePythonWorkspace } from '../../python/blocks/workspaceState'
+import {
+  rebasePythonWorkspaceState,
+  samePythonWorkspaceProgram,
+  savePythonWorkspace,
+} from '../../python/blocks/workspaceState'
 import { createPythonAnalysisController } from '../../python/language/controller'
 import type { PythonAnalysisSession } from '../../python/language/session'
+import { pythonPositionToOffset } from '../../python/language/sourceEdits'
 import type {
   PythonNode,
   PythonParsedDocument,
   PythonSourceRange,
 } from '../../python/language/types'
-import { useHighlightStore } from '../../state/highlightStore'
+import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import {
   useEditorHistory,
   usePendingEditorEdits,
   useStudioPersistence,
 } from '../../state/studioStores'
+import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioPortalContainer } from '../../studio/portal-container'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
@@ -63,7 +105,9 @@ import {
   useStudioTutor,
 } from '../../studio/tutor'
 import { studioTutorSourceHash } from '../../studio/tutorSafety'
+import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
 import { createBlocklyHistory, forgetBlocklyHistory } from './blocklyHistory'
+import { PythonBlocksHeader } from './PythonBlocksHeader'
 import { openTutorCategory } from './tutorCategory'
 
 type TutorTarget = Pick<
@@ -85,17 +129,52 @@ export interface PythonBlocklyEditorProps {
   sourceCursor?: { source: string; offset: number; nonce: number }
   onSelectRange?: (range: PythonSourceRange) => void
   onWorkspaceReady?: (workspace: Blockly.WorkspaceSvg | null) => void
+  /** Os .py do projeto (o cabeçalho troca de arquivo quando há mais de um). */
+  files?: readonly string[]
+  onChangeFile?: (path: string) => void
+}
+
+/** O bloco de uma entrada da paleta, com o estado que o codec pede (o mesmo na busca). */
+function paletteBlockInfo(
+  entryId: string,
+  registry: ReadonlyMap<string, PythonBlockCodec>,
+  codecs: readonly PythonBlockCodec[],
+): Blockly.utils.toolbox.BlockInfo {
+  const codec = registry.get(entryId)
+  return codec
+    ? (pythonPaletteBlockState(codec, codecs) as Blockly.utils.toolbox.BlockInfo)
+    : { kind: 'block', type: entryId }
+}
+
+/**
+ * Os resultados de "Procurar um bloco", agrupados pelo caminho da paleta (redesenho do clássico,
+ * 11/2026): a categoria de busca do Estúdio chama isto pelo resolvedor do workspace.
+ */
+function pythonSearchItems(
+  palette: PythonPaletteSelection,
+  query: string,
+  codecs: readonly PythonBlockCodec[],
+) {
+  const registry = new Map(codecs.map((codec) => [codec.id, codec]))
+  const groups = new Map<string, Blockly.utils.toolbox.BlockInfo[]>()
+  for (const entry of searchPythonPalette(palette, query)) {
+    const label = [entry.path[0], pythonCategoryLabel(entry.owner, entry.path[1]!)].join(' › ')
+    const list = groups.get(label) ?? []
+    list.push(paletteBlockInfo(entry.id, registry, codecs))
+    groups.set(label, list)
+  }
+  return [...groups].flatMap(([text, blocks]) => [{ kind: 'label', text }, ...blocks])
 }
 
 function toolbox(
   palette: PythonPaletteSelection,
-  query: string,
   codecs: readonly PythonBlockCodec[],
-): Blockly.utils.toolbox.ToolboxDefinition {
+  search: boolean,
+): Blockly.utils.toolbox.ToolboxInfo {
   const registry = new Map(codecs.map((codec) => [codec.id, codec]))
   const groups = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   const categories = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
-  for (const entry of searchPythonPalette(palette, query)) {
+  for (const entry of palette.entries) {
     const groupName = entry.path[0]!
     const category = entry.path[1]!
     let group = groups.get(groupName)
@@ -128,19 +207,14 @@ function toolbox(
       categories.set(key, target)
       group.contents.push(target)
     }
-    const codec = registry.get(entry.id)
-    target.contents.push(
-      codec
-        ? (pythonPaletteBlockState(codec, codecs) as Blockly.utils.toolbox.BlockInfo)
-        : { kind: 'block', type: entry.id },
-    )
+    target.contents.push(paletteBlockInfo(entry.id, registry, codecs))
   }
   // Blockly decides category mode from the entries, even for categoryToolbox.
-  // Keep that mode when search/curation leaves no insertable blocks.
+  // Keep that mode when curation leaves no insertable blocks.
   if (!groups.size)
     groups.set('empty', {
       kind: 'category',
-      name: query ? 'Nenhum bloco encontrado' : 'Nenhum bloco disponível nesta tarefa',
+      name: 'Nenhum bloco disponível nesta tarefa',
       contents: [],
       id: undefined,
       colour: undefined,
@@ -148,7 +222,21 @@ function toolbox(
       cssconfig: undefined,
       hidden: undefined,
     })
-  return { kind: 'categoryToolbox', contents: [...groups.values()] }
+  // Como no JavaScript: "Procurar um bloco" e "Áreas do projeto" no topo. O Programa da área já
+  // existe em todo arquivo (um só), então o bloco da paleta fica desligado: está ali para a
+  // criança ver onde os blocos rodam.
+  const top = [
+    ...(search
+      ? [{ kind: 'search', name: '🔎 Procurar um bloco', contents: [], szSearch: 'external' }]
+      : []),
+    {
+      kind: 'category',
+      name: '🗂️ Áreas do projeto',
+      colour: '#475569',
+      contents: [{ kind: 'block', type: PYTHON_PROGRAM, disabled: true }],
+    },
+  ] as unknown as Blockly.utils.toolbox.StaticCategoryInfo[]
+  return { kind: 'categoryToolbox', contents: [...top, ...groups.values()] }
 }
 
 const COMMIT_DEBOUNCE_MS = 350
@@ -168,6 +256,9 @@ const importsStar = (tree: PythonNode) =>
       statement.fields.names.some((alias) => alias.fields.name === '*'),
   )
 /** The other Python files, in a comparable form: a change there can change a star import. */
+/** O caminho do `diagnostic` do Python pode vir com `./` ou `/` na frente. */
+const samePythonPath = (a: string, b: string) => a.replace(/^\.?\//, '') === b.replace(/^\.?\//, '')
+
 const otherPythonSources = (files: Readonly<Record<string, string>> | undefined, path: string) =>
   Object.entries(files ?? {})
     .filter(([name]) => name !== path && name.endsWith('.py'))
@@ -206,15 +297,27 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   callbacks.current = props
   const initialTheme = useRef(theme)
   initialTheme.current = theme
-  const [query, setQuery] = useState('')
+  const t = useT()
+  const [program, setProgram] = useState<PythonProgramNavigationState>({ entries: [], scratch: 0 })
+  // Reflect the actual open scope, including navigation from Ponte, undo and tutor.
+  const activeDefinition = program.entries.filter((entry) => entry.expanded).at(-1)?.id ?? ''
   const [view, setView] = useState<View>({
     phase: 'loading',
     message: 'Preparando os blocos Python…',
   })
-  const tools = useMemo(
-    () => toolbox(props.palette, query, props.codecs),
-    [props.palette, query, props.codecs],
-  )
+  // "Mais blocos" no pé da paleta, como no JavaScript, onde o host oferece extensões.
+  const moreBlocksText = useStudioConfig().extensions && !observer ? t('blocks.moreBlocks') : null
+  const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const openExtensions = useRef(setShowExtensions)
+  openExtensions.current = setShowExtensions
+  const tools = useMemo(() => {
+    const base = toolbox(props.palette, props.codecs, !observer)
+    if (!moreBlocksText) return base
+    return {
+      ...base,
+      contents: [...base.contents, { kind: MORE_BLOCKS_KIND, text: moreBlocksText }],
+    } as Blockly.utils.toolbox.ToolboxDefinition
+  }, [props.palette, props.codecs, observer, moreBlocksText])
   const currentTools = useRef(tools)
   currentTools.current = tools
   const surface = useRef<{
@@ -223,7 +326,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     discard(): void
     retry(): void
     selectCursor(cursor?: PythonBlocklyEditorProps['sourceCursor']): void
+    /** O bloco que gerou a linha (o menor que a contém), para o sinal do erro de execução. */
+    blockAtLine(line: number): string | null
     focusTutor(target: TutorTarget): boolean
+    navigate(id?: string): Promise<void>
+    scratch(): void
+    /** "Mostrar o bloco": abre a função em que ele mora, rola até ele e abre o balão do aviso. */
+    reveal(id: string): Promise<void>
   } | null>(null)
 
   useEffect(() => {
@@ -246,16 +355,28 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     }
     Blockly.setLocale(PtBr as unknown as Record<string, string>)
     registerPythonBlocks(props.codecs)
+    registerPythonProgramArea()
+    // "Procurar um bloco" é a categoria de busca do Estúdio, com o resolvedor do Python.
+    registerPtSearchCategory()
+    registerMoreBlocksItem()
+    // Paleta em COLUNA no computador, como no JavaScript (pedido dela, 11/2026: as categorias
+    // em faixa no computador eram estranhas); faixa só no celular, pela largura do editor. Numa
+    // aba escondida do estreito o editor mede 0: aí vale a largura da janela.
+    const width = element.clientWidth || window.innerWidth
+    const horizontal = width < STUDIO_COMPACT_MAX_PX
+    element.parentElement?.setAttribute(
+      'data-sz-toolbox-layout',
+      horizontal ? 'horizontal' : 'vertical',
+    )
     const workspace = Blockly.inject(element, {
       toolbox: observer ? undefined : currentTools.current,
       readOnly: observer,
       renderer: 'zelos',
-      // A Ponte gives this pane about a third of the host width. Keep categories
-      // above the canvas so a sidebar cannot consume the block editing area.
-      horizontalLayout: true,
+      horizontalLayout: horizontal,
       toolboxPosition: 'start',
+      plugins: { flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout },
       sounds: false,
-      collapse: true,
+      collapse: false,
       // Execution is described by Python source, never by an invisible workspace flag.
       disable: false,
       theme: szThemeFor(initialTheme.current, element),
@@ -265,10 +386,32 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         colour: szGridColourFor(initialTheme.current, element),
         snap: true,
       },
-      zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
+      zoom: {
+        controls: true,
+        wheel: true,
+        startScale: horizontal ? 0.8 : 1,
+        minScale: 0.4,
+        maxScale: 1.8,
+      },
       move: { scrollbars: true, drag: true, wheel: true },
       trashcan: !observer,
     })
+    ;(workspace as unknown as SearchResolverWorkspace).__szSearchItems = (search) =>
+      pythonSearchItems(callbacks.current.palette, search, callbacks.current.codecs)
+    ;(workspace as unknown as MoreBlocksWorkspace).__szOpenExtensions = () =>
+      openExtensions.current(true)
+    // Lixeira e zoom mais para cima, como no JavaScript (ver `cornerSpacer.ts`).
+    installCornerSpacer(workspace)
+    // A cor dos valores dentro de bloco de extensão (ver `literalTint.ts`): o dono de cada tipo.
+    const ownerByType = new Map(props.codecs.map((codec) => [codec.id, codec.owner]))
+    const literalOwner = (type: string) => ownerByType.get(type)
+    // A apresentação é refeita com os eventos desligados (carga, troca de código): o tom dos
+    // valores vem junto, sempre.
+    const presentWorkspace: typeof updatePythonWorkspacePresentation = (...args) => {
+      const result = updatePythonWorkspacePresentation(...args)
+      tintPythonLiterals(args[0], literalOwner)
+      return result
+    }
     let disposed = false,
       applying = false,
       generation = 0,
@@ -277,6 +420,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let loadedSource: string | undefined
     let origins: PythonWorkspaceOrigins = new Map()
     let rootIds: string[] = []
+    const navigation = createPythonProgramNavigation(workspace, setProgram)
     let offer: PythonWorkspaceDraft | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     // `from settings import *` is understood from the project's own settings.py.
@@ -374,7 +518,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         })
         if (disposed || token !== generation || loadedSource !== source) return
         projectModules = modules
-        updatePythonWorkspacePresentation(
+        presentWorkspace(
           workspace,
           tree,
           origins,
@@ -390,13 +534,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         if (disposed || token !== generation || loadedSource !== source) return
         // Without the other files, a star import of the project proves nothing.
         projectModules = undefined
-        updatePythonWorkspacePresentation(
-          workspace,
-          tree,
-          origins,
-          props.codecs,
-          props.officialModules,
-        )
+        presentWorkspace(workspace, tree, origins, props.codecs, props.officialModules)
       }
     }
     function load(document: PythonParsedDocument, draft?: PythonWorkspaceDraft) {
@@ -404,10 +542,15 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       const restored = draft
         ? preparePythonWorkspaceRestore(draft, document, props.codecs)
         : undefined
+      const restoreScratch = preparePythonScratchRestore(
+        readPythonScratchWorkspace(currentProject()!, props.path),
+        props.codecs,
+      )
       applying = true
       loadedSource = undefined
       Blockly.Events.disable()
       try {
+        navigation.restore()
         workspace.clear()
         if (restored) {
           Blockly.serialization.workspaces.load(restored.state, workspace)
@@ -427,8 +570,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             props.codecs,
           )
         }
+        const hadProgramArea = !!pythonProgramArea(workspace)
+        rootIds = ensurePythonProgramArea(workspace, rootIds, props.path)
+        restoreScratch?.(workspace)
         forgetBlocklyHistory(workspace)
-        updatePythonWorkspacePresentation(
+        presentWorkspace(
           workspace,
           document.tree,
           origins,
@@ -436,8 +582,39 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           props.officialModules,
           projectModules,
         )
-        fingerprint = JSON.stringify(savePythonWorkspace(workspace, origins))
+        // Legacy caches have no area and often save every definition expanded.
+        // Give them the same compact initial view as a freshly projected file.
+        void navigation.initialize(!restored || !hadProgramArea)
+        const saved = savePythonWorkspace(workspace, origins)
+        fingerprint = JSON.stringify(saved)
         loadedSource = document.source
+        // Gallery examples start as Python files. Save their initial Program
+        // area as soon as projection succeeds, without requiring a user gesture.
+        // A recovery offer must remain pending until its source transaction.
+        const project = currentProject()
+        if (
+          (!restored || !hadProgramArea) &&
+          !draft?.pending &&
+          !observer &&
+          store.getState().editingAccess === 'author' &&
+          project?.files[props.path] === document.source
+        ) {
+          const { draft: initial, scratch } = capturePythonWorkspace(
+            project,
+            props.path,
+            saved,
+            rootIds,
+          )
+          initial.pending = false
+          const issue = store
+            .getState()
+            .applyPythonSourceFiles(
+              project,
+              project.files,
+              updatePythonWorkspaceDraft(project, props.path, initial, scratch),
+            )
+          if (issue) throw new Error(issue)
+        }
       } finally {
         Blockly.Events.enable()
         applying = false
@@ -530,6 +707,28 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         const saved = savePythonWorkspace(workspace, origins)
         const nextFingerprint = JSON.stringify(saved)
         if (nextFingerprint === fingerprint) return
+        // Layout, collapsed definitions and scratch pieces do not change source.
+        // Persist them without parsing/projecting the entire file. Pending
+        // semantic edits must finish through the normal source transaction.
+        if (
+          !committing &&
+          !pendingPythonWorkspaceDraft(project) &&
+          fingerprint &&
+          samePythonWorkspaceProgram(JSON.parse(fingerprint), saved)
+        ) {
+          const { draft, scratch } = capturePythonWorkspace(project, props.path, saved, rootIds)
+          draft.pending = false
+          const issue = store
+            .getState()
+            .applyPythonSourceFiles(
+              project,
+              project.files,
+              updatePythonWorkspaceDraft(project, props.path, draft, scratch),
+            )
+          if (issue) throw new Error(issue)
+          fingerprint = nextFingerprint
+          return
+        }
         rootIds = orderPythonWorkspaceRoots(workspace, origins, rootIds)
         let projection: PythonBlockProjection | undefined, issue: unknown
         try {
@@ -567,7 +766,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             parsed = document
             loadedSource = document.source
             origins = bindPythonVisualOrigins(projection!, document.tree!, props.codecs)
-            updatePythonWorkspacePresentation(
+            presentWorkspace(
               workspace,
               document.tree!,
               origins,
@@ -642,6 +841,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     workspace.addChangeListener(changed)
     // "chamar mover com distancia ⟨10⟩": the names follow the def while the child edits.
     const detachCallLabels = attachPythonCallLabels(workspace)
+    const detachLiteralTint = attachPythonLiteralTint(workspace, literalOwner)
     const unregisterFlush = pending?.register(flushNow)
     // A pending gesture is applied before the child acts anywhere else (typing in the code of
     // the Ponte, a button that rewrites the file): once the source changes, the blocks can no
@@ -681,15 +881,45 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         schedule()
       }
     })
+    // O menor bloco cuja origem no código contém o deslocamento (o cursor da Ponte e o erro).
+    // `statement`: só blocos de comando (com encaixe em cima) — o erro marca a LINHA, não o nome
+    // da variável que começa nela.
+    const blockAtOffset = (offset: number, statement = false): string | null => {
+      let best: { id: string; length: number } | undefined
+      for (const [id, node] of origins) {
+        const range = node.range
+        const block = range ? workspace.getBlockById(id) : null
+        if (!range || !block || range.start > offset || range.end <= offset) continue
+        if (statement && !block.previousConnection) continue
+        const length = range.end - range.start
+        if (!best || length < best.length) best = { id, length }
+      }
+      return best?.id ?? null
+    }
     surface.current = {
       workspace,
+      async navigate(id) {
+        if (!parsed || loadedSource !== currentProject()?.files[props.path]) return
+        await navigation.reveal(id)
+        scheduleCommit()
+      },
+      scratch() {
+        const first = pythonScratchRoots(workspace)[0]
+        if (first) void navigation.reveal(first.id)
+      },
+      async reveal(id) {
+        if (!workspace.getBlockById(id)) return
+        await navigation.reveal(id)
+        if (disposed) return
+        Blockly.svgResize(workspace)
+        revealBlockInWorkspace(workspace, id, true)
+      },
       focusTutor(target) {
         // Never select an instance projected from an older version of this file.
         if (!parsed || loadedSource !== currentProject()?.files[props.path]) return false
         const block = target.blockId ? workspace.getBlockById(target.blockId) : null
         if (block?.type === target.blockType) {
-          block.select()
-          workspace.centerOnBlock(block.id, false)
+          void navigation.reveal(block.id)
           const range = origins.get(block.id)?.range
           if (range) callbacks.current.onSelectRange?.(range)
           return true
@@ -710,18 +940,28 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           currentProject()?.files[props.path] !== parsed?.source
         )
           return
-        let best: { id: string; length: number } | undefined
-        for (const [id, node] of origins) {
-          const range = node.range
-          if (!range || range.start > offset || range.end <= offset || !workspace.getBlockById(id))
-            continue
-          const length = range.end - range.start
-          if (!best || length < best.length) best = { id, length }
-        }
+        const best = blockAtOffset(offset)
         if (best) {
-          workspace.highlightBlock(best.id)
-          workspace.centerOnBlock(best.id)
+          const selected = best
+          // Code selection only highlights. Selecting again would emit a block
+          // selection back to Monaco and create a feedback loop in Ponte.
+          void navigation.reveal(selected, false).then(() => {
+            if (!disposed) workspace.highlightBlock(selected)
+          })
         }
+      },
+      blockAtLine(line) {
+        const source = parsed?.source
+        if (source === undefined || currentProject()?.files[props.path] !== source) return null
+        let offset: number
+        try {
+          offset = pythonPositionToOffset(source, line, 1)
+        } catch {
+          return null
+        }
+        // O primeiro caractere de verdade da linha (a indentação não pertence a bloco nenhum).
+        while (source[offset] === ' ' || source[offset] === '\t') offset++
+        return blockAtOffset(offset, true) ?? blockAtOffset(offset)
       },
       retry() {
         if (parsed?.tree && loadedSource === parsed.source) {
@@ -732,7 +972,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           void refresh()
         }
       },
-      restore() {
+      async restore() {
         if (!offer || !parsed || observer) return
         const project = currentProject()
         if (store.getState().editingAccess !== 'author') return
@@ -759,7 +999,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           report('recovery', failure(error))
         }
       },
-      discard() {
+      async discard() {
         const project = currentProject()
         if (
           !offer ||
@@ -825,7 +1065,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       element.removeEventListener('focusin', activate)
       workspace.removeChangeListener(changed)
       detachCallLabels()
+      detachLiteralTint()
       parser.dispose()
+      navigation.dispose()
       workspace.dispose()
       if (classicCapture.current === capture) classicCapture.current = null
       if (surface.current?.workspace === workspace) surface.current = null
@@ -858,6 +1100,55 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   useEffect(() => {
     surface.current?.selectCursor(props.sourceCursor)
   }, [props.sourceCursor])
+  // O sinal vermelho do erro de execução (redesenho do clássico, 11/2026): a prévia publica o
+  // arquivo e a linha do `diagnostic`; aqui vira o bloco daquela linha neste arquivo.
+  const runtimeMark = useHighlightStore((state) => state.runtimeMark)
+  const revealRequest = useHighlightStore((state) => state.revealRequest)
+  const highlightApi = useHighlightStoreApi()
+  const handledReveal = useRef(highlightApi.getState().revealRequest?.nonce ?? 0)
+  useEffect(() => {
+    const current = surface.current
+    if (!current || view.phase !== 'ready') return
+    const id =
+      runtimeMark && samePythonPath(runtimeMark.file, props.path)
+        ? current.blockAtLine(runtimeMark.line)
+        : null
+    setRuntimeErrorBlock(current.workspace, id, runtimeMark?.message ?? '')
+  }, [runtimeMark, props.path, view.phase])
+  const filesRef = useRef(props.files)
+  filesRef.current = props.files
+  const changeFileRef = useRef(props.onChangeFile)
+  changeFileRef.current = props.onChangeFile
+  useEffect(() => {
+    if (!revealRequest || revealRequest.nonce === handledReveal.current) return
+    const target = revealRequest.target
+    if (target.kind === 'runtime' && runtimeMark && !samePythonPath(runtimeMark.file, props.path)) {
+      // O erro está em outro .py: abre aquele arquivo e o pedido espera o editor dele ficar
+      // pronto (este efeito roda de novo com o `path` e a fase novos).
+      const file = filesRef.current?.find((item) => samePythonPath(item, runtimeMark.file))
+      if (file && changeFileRef.current) changeFileRef.current(file)
+      else handledReveal.current = revealRequest.nonce
+      return
+    }
+    const current = surface.current
+    // Editor ainda montando ou recarregando: o pedido fica para quando ele estiver pronto.
+    if (!current || view.phase !== 'ready') return
+    handledReveal.current = revealRequest.nonce
+    // Sem cancelar na limpeza: as dependências mudam à toa e o pedido já foi dado por atendido.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (surface.current !== current) return
+        let id = target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+        if (!id && target.kind === 'runtime' && runtimeMark) {
+          // Os blocos foram refeitos depois da marca (uma edição na Ponte): marca de novo pela
+          // linha antes de mostrar.
+          id = current.blockAtLine(runtimeMark.line)
+          setRuntimeErrorBlock(current.workspace, id, runtimeMark.message)
+        }
+        if (id) void current.reveal(id)
+      })
+    })
+  }, [revealRequest, runtimeMark, props.path, view.phase])
   useEffect(() => {
     if (
       highlightSource !== 'tutor' ||
@@ -866,28 +1157,21 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       focusedTutorNonce.current === selectionNonce
     )
       return
-    // A search filter can hide the category. Update the actual toolbox first.
-    if (query) {
-      setQuery('')
-      return
-    }
     if (surface.current?.focusTutor(tutorTarget)) focusedTutorNonce.current = selectionNonce
-  }, [highlightSource, tutorTarget, selectionNonce, query, view.phase])
+  }, [highlightSource, tutorTarget, selectionNonce, view.phase])
   const locked = !['ready', 'saving'].includes(view.phase)
   return (
-    <div className="flex h-full min-h-0 flex-col" data-sz-toolbox-layout="horizontal">
-      {!observer && (
-        <label className="flex items-center gap-2 px-3 py-2 text-sm">
-          Buscar blocos
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="min-w-0 flex-1 rounded border border-sz-border bg-sz-panel px-2 py-1"
-            placeholder="Nome ou comando Python"
-          />
-        </label>
-      )}
+    <div className="flex h-full min-h-0 flex-col">
+      <PythonBlocksHeader
+        path={props.path}
+        files={props.files ?? [props.path]}
+        onChangeFile={props.onChangeFile}
+        program={program}
+        activeDefinition={activeDefinition}
+        locked={locked}
+        onNavigate={(id) => void surface.current?.navigate(id)}
+        onScratch={() => surface.current?.scratch()}
+      />
       {view.message && (
         <p
           role={view.phase === 'error' || view.phase === 'syntax' ? 'alert' : 'status'}
