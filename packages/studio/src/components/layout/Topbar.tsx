@@ -58,6 +58,7 @@ import {
   STUDIO_BAR_LABELS_MIN_PX,
   STUDIO_BAR_UNDO_MIN_PX,
   STUDIO_BRAND_MIN_PX,
+  STUDIO_ZAPPY_LABEL_MIN_PX,
 } from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
 import { BackBrand } from './topbar/BackBrand'
@@ -469,6 +470,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // O jeito compacto da BARRA começa antes do compacto do Studio (ver `STUDIO_BAR_COMPACT_MAX_PX`).
   const compactBar = isCompact || width < STUDIO_BAR_COMPACT_MAX_PX
   const iconOnly = tight || width < STUDIO_BAR_LABELS_MIN_PX
+  const zappyIconOnly = iconOnly || width < STUDIO_ZAPPY_LABEL_MIN_PX
+  // Um selo só (redesenho do clássico, 11/2026): com a nuvem do host em repouso, o "Salvo" diz
+  // tudo e a frase da conta vira a dica dele. Quando a nuvem tem o que contar (guardando, sem
+  // internet, erro), o selo dela volta a aparecer ao lado.
+  const hostStatus = hostChrome?.status ?? null
+  const hostSealVisible = Boolean(hostStatus && hostStatus.tone !== 'ok')
 
   return (
     <>
@@ -482,11 +489,19 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
             showName={showBrand}
           />
           {showBrand ? <span aria-hidden="true" className="sz-bar-divider" /> : null}
-          <ProjectNameField name={projectName} onRename={rename} showPencil={!compactBar} />
-          <SavePill tone={saveTone} label={saveStatusLabel} error={saveError} dot={compactBar} />
-          {/* "Guardado na sua conta" (host), ao lado do "Salvo" local: só a nuvem em repouso,
-              a frase curta quando algo acontece, a bolinha abaixo do largo. */}
-          {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
+          <ProjectNameField name={projectName} onRename={rename} iconOnly={compactBar} />
+          <SavePill
+            tone={saveTone}
+            label={saveStatusLabel}
+            error={saveError}
+            hint={hostStatus && !hostSealVisible ? hostStatus.text : null}
+            dot={compactBar}
+          />
+          {/* A nuvem do host só quando tem o que contar: a frase curta no largo, a bolinha
+              abaixo dele. Em repouso a frase dela está na dica do "Salvo". */}
+          {hostStatus && hostSealVisible ? (
+            <HostStatusSeal status={hostStatus} dot={iconOnly} />
+          ) : null}
         </div>
 
         {/* O meio da barra é Rodar / Parar, no Pro e no clássico (redesenhos de 11/2026): o único
@@ -515,10 +530,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               aria-expanded={tutor.open}
               aria-controls="sz-zappy-panel"
               onClick={() => tutor.setOpen(!tutor.open)}
-              className={cn('sz-bar-pill sz-bar-pill--soft', iconOnly && 'sz-bar-pill--icon')}
+              title={zappyIconOnly ? 'Zappy' : undefined}
+              className={cn('sz-bar-pill sz-bar-pill--soft', zappyIconOnly && 'sz-bar-pill--icon')}
             >
               <IconSparkles />
-              {!iconOnly ? <span>Zappy</span> : null}
+              {!zappyIconOnly ? <span>Zappy</span> : null}
             </button>
           ) : null}
           {undoRedo && !undoInMenu ? <UndoRedo state={undoRedo} /> : null}

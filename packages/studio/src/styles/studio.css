@@ -415,6 +415,13 @@
   .sz-bar--tight .sz-bar-name {
     max-width: 12rem;
   }
+  /* Celular: só o lápis, num círculo do tamanho dos outros botões da barra. */
+  .sz-bar .sz-bar-name--icon {
+    flex: none;
+    justify-content: center;
+    width: var(--sz-bar-hit);
+    padding-inline: 0;
+  }
   .sz-bar--tight .sz-bar-name--editing {
     width: 12rem;
   }

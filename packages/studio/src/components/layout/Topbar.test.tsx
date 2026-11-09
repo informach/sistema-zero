@@ -114,7 +114,7 @@ describe('Topbar × "Mostrar o jogo" (era o olhinho da barra)', () => {
 })
 
 describe('Topbar × chrome do host', () => {
-  it('wide: o menu é o PRIMEIRO botão da barra (sem title) e, em repouso, o selo é só a nuvem', () => {
+  it('wide: o menu é o PRIMEIRO botão da barra (sem title) e, em repouso, um selo só: "Salvo"', () => {
     const { chrome, onToggle } = chromeWith()
     const { container } = mount(1440, chrome)
     const header = container.querySelector('header')
@@ -129,15 +129,13 @@ describe('Topbar × chrome do host', () => {
     fireEvent.click(primeiro as HTMLButtonElement)
     expect(onToggle).toHaveBeenCalledTimes(1)
 
-    // Em repouso a tela-modelo não tem frase nenhuma: a nuvem na pílula menta, com o nome no
-    // `title` (que também é a dica do mouse).
-    const selo = screen.getByRole('status', { name: 'Guardado na sua conta' })
-    expect(selo.textContent).toBe('')
-    expect(selo.getAttribute('title')).toBe('Guardado na sua conta')
-    expect(selo.className).toContain('sz-bar-seal--icon')
-    expect(selo.className).toContain('sz-bar-seal--ok')
-    // O "Salvo" local continua na barra.
-    expect(screen.getByText('Salvo')).toBeTruthy()
+    // Um selo só (redesenho do clássico, 11/2026): com a nuvem em repouso não há segundo selo; a
+    // frase da conta vai na dica do "Salvo" (que é âncora das aulas gravadas e do smoke).
+    expect(screen.queryByRole('status', { name: 'Guardado na sua conta' })).toBeNull()
+    const salvo = screen.getByText('Salvo').closest('.sz-bar-seal') as HTMLElement
+    expect(salvo.className).toContain('sz-bar-seal--ok')
+    expect(salvo.getAttribute('title')).toBe('Salvo · Guardado na sua conta')
+    expect(header?.querySelectorAll('.sz-bar-seal')).toHaveLength(1)
   })
 
   it('wide: quando algo acontece (sem internet) o selo volta a ter a frase curta', () => {
@@ -491,9 +489,13 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Meu jogo' }))
   })
 
-  it('compacto: o nome fica sem o lápis (cada pixel vai para as letras)', () => {
+  it('compacto: o nome vira só o lápis (antes encolhia até sumir), com o nome no nome acessível', () => {
     mount(390, null)
-    expect(screen.getByRole('button', { name: 'Meu jogo' }).querySelector('svg')).toBeNull()
+    const lapis = screen.getByRole('button', { name: 'Meu jogo' })
+    expect(lapis.className).toBe('sz-bar-name sz-bar-name--icon')
+    expect(lapis.textContent).toBe('')
+    expect(lapis.querySelector('svg')).not.toBeNull()
+    expect(lapis.getAttribute('title')).toBe('Renomear projeto: Meu jogo')
   })
 
   it('o "⋯" é o círculo quieto da barra', () => {
@@ -517,13 +519,13 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(estreito.textContent).toBe('')
   })
 
-  it('Zappy: a pílula suave com o nome no largo, só a faísca abaixo dele; abrir = expandido', () => {
+  it('Zappy: a pílula suave com o nome a partir de 1600px, só a faísca abaixo; abrir = expandido', () => {
     const comZappy = (node: ReactElement) => (
       <StudioTutorProvider value={{ adapter: {} as StudioTutorAdapter }}>
         {node}
       </StudioTutorProvider>
     )
-    const { unmount } = mount(1440, null, comZappy)
+    const { unmount } = mount(1600, null, comZappy)
     const largo = screen.getByRole('button', { name: 'Abrir Zappy' })
     expect(largo.className).toBe('sz-bar-pill sz-bar-pill--soft')
     expect(largo.textContent).toBe('Zappy')
@@ -534,10 +536,15 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     )
     unmount()
 
-    mount(900, null, comZappy)
-    const estreito = screen.getByRole('button', { name: 'Abrir Zappy' })
-    expect(estreito.className).toBe('sz-bar-pill sz-bar-pill--soft sz-bar-pill--icon')
-    expect(estreito.textContent).toBe('')
+    // A 1440 (o notebook) o Zappy já é só a faísca: Rodar / Parar e os modos dividem a barra.
+    for (const width of [1440, 900]) {
+      const { unmount: sai } = mount(width, null, comZappy)
+      const icone = screen.getByRole('button', { name: 'Abrir Zappy' })
+      expect(icone.className).toBe('sz-bar-pill sz-bar-pill--soft sz-bar-pill--icon')
+      expect(icone.textContent).toBe('')
+      expect(icone.getAttribute('title')).toBe('Zappy')
+      sai()
+    }
   })
 
   it('Compartilhar desabilitado: aria-disabled, o motivo no nome e a bolha de dica', () => {
