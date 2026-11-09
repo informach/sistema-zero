@@ -28,7 +28,7 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 1. Compare nascer e animar
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que cada relógio muda nas pedras. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-dois-relogios → fala-dois-relogios → experimento-dois-relogios.
 
@@ -36,7 +36,7 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 video-dois-relogios-K1: Debinha substitui “Se a máquina soltar mais rápido, os piões giram mais rápido também?”. Antes: “desenhos por segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que cada relógio muda nas pedras, e”.
 
-**Experiência em exploração livre:** `two-clocks`, com `setup.freeExploration`. Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `two-clocks`, com `setup.freeExploration`. Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare a folha do asteroide
 

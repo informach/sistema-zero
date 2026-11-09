@@ -454,7 +454,7 @@ describe('progressão inicial de Nave Contra Asteroides', () => {
     expect(bloco.instructions).toMatch(/quando o x muda/)
     expect(bloco.instructions).toMatch(/quando o y muda/)
     expect(bloco.instructions).toMatch(/dois números em zero/)
-    expect(bloco.instructions).toMatch(/Você escolhe a ordem/)
+    expect(bloco.instructions).toMatch(/O Zappy te mostra o que testar/)
     expect(publicInteractiveBlock(bloco).prediction).toBeUndefined()
     expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
     expect(evaluateLearning(bloco, {}).passed).toBe(false)

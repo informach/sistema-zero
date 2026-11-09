@@ -132,7 +132,7 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
 // diz o nome no jogo dela e termina num convite de UMA frase, com o fecho combinado. A investigação é
 // da criança e quem acompanha cada teste é o Zappy, dentro da experiência.
 const FIM_DA_EXPERIENCIA =
-  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+  /^Agora você vai investigar [^.!?]+\. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser\. Quando terminar, clique em Próxima parte\.$/
 // Nada de tour pelos controles: "Olha aqui: nesta experiência", "este botão", "esta régua"...
 const TOUR =
   /Olha aqui|nesta experiência|\baqui você vê\b|\b(?:este|estes|esta|estas) (?:botão|botões|campo|campos|lista|régua|caixa|faixa|tira|contador|controles?|números?)\b/i
@@ -140,7 +140,7 @@ const TOUR =
 const ROTEIRO_DE_TESTES =
   /\bPrimeiro,|\bnas duas vezes\b|\bteste mais (?:uma|duas|três)\b|\bfaça [^.]* e depois\b|\bdepois,? (?:teste|faça|clique|compare)\b|\bRepare em (?:duas|três) coisas\b/i
 const PERGUNTA_DEVOLVIDA = 'O que você acha? Isso você vai testar na experiência.'
-const ESCOLHA_DA_ORDEM = 'Você escolhe a ordem e pode repetir quando quiser.'
+const ESCOLHA_DA_ORDEM = 'O Zappy te mostra o que testar, e você pode repetir quando quiser.'
 // A experiência trabalha só a IDEIA (01/11/2026): nada de bloco, área do Estúdio, regra nem código.
 const ESTUDIO_NA_EXPERIENCIA =
   /\b(?:blocos?|Ao iniciar|Enquanto estiver rodando|Quando acontecer|A cada quadro do jogo|regras?|comandos?|código|Se o estado|então|senão|Estúdio)\b/i
@@ -196,7 +196,7 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
         // A ponte convida à investigação e não repete a instrução.
         expect(s.bridge, id).not.toContain(a.instructions)
         expect(s.bridge, id).toMatch(
-          /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+          /^Sua vez! Investigue [^.!?]+\. O Zappy te mostra o que testar, e você pode repetir quando quiser\. Quando terminar, clique em Próxima parte\.$/,
         )
         // A instrução diz o que comparar, numa frase, e devolve a ordem à criança: sem sequência.
         expect(a.instructions, id).toMatch(/^Compare [^.!?]+\. /)

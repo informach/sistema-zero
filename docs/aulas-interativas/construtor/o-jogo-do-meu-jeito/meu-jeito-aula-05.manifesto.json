@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Troque o que fica na frente\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu asteroide\", mostrar a experiência na aula, parada, com a chama na frente da pedra. No \"Sabe quando você empilha figurinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque o que fica na frente\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu asteroide\", mostrar a experiência na aula, parada, com a chama na frente da pedra. No \"Sabe quando você empilha figurinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Troque o que fica na frente",
-        "instructions": "Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare na ordem da lista Camadas e no que aparece na frente no desenho.",
           "Compare o desenho com a pedra em cima na lista e com a pedra embaixo.",
@@ -117,14 +117,14 @@
     },
     {
       "key": "video-mudanca-pequena",
-      "plannedVideo": "Título: Compare mudanças entre quadros\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"A sua pedra também vai ganhar dois quadros\", mostrar a experiência na aula, com a Prévia parada. No \"Sabe aqueles livrinhos de folhear\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante de um quadro para o outro?”. Antes: “lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare mudanças entre quadros\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"A sua pedra também vai ganhar dois quadros\", mostrar a experiência na aula, com a Prévia parada. No \"Sabe aqueles livrinhos de folhear\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante de um quadro para o outro?”. Antes: “lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-mudanca-pequena",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -133,7 +133,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare mudanças entre quadros",
-        "instructions": "Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare se o corpo da pedra fica no lugar ou muda de lugar na Prévia.",
           "Compare a Prévia com os dois números em 0, com só a cratera andando um pouco e com a pedra inteira andando muito.",
@@ -301,7 +301,7 @@
     {
       "key": "camadas",
       "title": "Troque o que fica na frente",
-      "objective": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-camadas", "fala-camadas", "experimento-camadas"],
       "workspaceKey": null,
@@ -343,7 +343,7 @@
     {
       "key": "mudanca-pequena",
       "title": "Compare mudanças entre quadros",
-      "objective": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-mudanca-pequena", "fala-mudanca-pequena", "experimento-tanto-que-muda"],
       "workspaceKey": null,

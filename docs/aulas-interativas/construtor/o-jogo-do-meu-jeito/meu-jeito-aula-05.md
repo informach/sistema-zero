@@ -28,7 +28,7 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 1. Troque o que fica na frente
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-camadas → fala-camadas → experimento-camadas.
 
@@ -36,7 +36,7 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra”.
 
-**Experiência em exploração livre:** `layers`, com `setup.freeExploration`. Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `layers`, com `setup.freeExploration`. Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe fogo atrás da pedra
 
@@ -64,7 +64,7 @@ video-miolo-fogo-K1: Debinha substitui “Como eu levo o miolo para esse lugar d
 
 ### Seção 4. Compare mudanças entre quadros
 
-**Tarefa / Zappy na página:** Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-mudanca-pequena → fala-mudanca-pequena → experimento-tanto-que-muda.
 
@@ -72,7 +72,7 @@ video-miolo-fogo-K1: Debinha substitui “Como eu levo o miolo para esse lugar d
 
 video-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante de um quadro para o outro?”. Antes: “lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1”.
 
-**Experiência em exploração livre:** `motion-amount`, com `setup.freeExploration`. Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `motion-amount`, com `setup.freeExploration`. Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Mude detalhes no segundo quadro
 

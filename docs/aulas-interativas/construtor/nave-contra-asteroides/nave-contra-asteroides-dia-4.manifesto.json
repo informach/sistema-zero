@@ -58,14 +58,14 @@
   "blocks": [
     {
       "key": "video-vidas-no-comeco",
-      "plannedVideo": "Título: Quando a nave ganha as vidas?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você ganha três fichas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-vidas-no-comeco-K1: Debinha substitui “E se a nave ganhar as três vidas sempre, em todo quadro?”. Antes: “vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas a nave tem depois das”.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando a nave ganha as vidas?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você ganha três fichas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-vidas-no-comeco-K1: Debinha substitui “E se a nave ganhar as três vidas sempre, em todo quadro?”. Antes: “vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas a nave tem depois das”.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-vidas-no-comeco",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando a nave precisa ganhar as três vidas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -74,7 +74,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quando a nave ganha as vidas?",
-        "instructions": "Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe as vidas logo depois de cada batida do asteroide.",
           "Compare as vidas no fim do jogo nos dois jeitos.",
@@ -150,14 +150,14 @@
     },
     {
       "key": "video-protecao",
-      "plannedVideo": "Título: O tempinho de proteção\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-protecao-K1: Debinha substitui “E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?”. Antes: “jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas sobram depois de três”.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O tempinho de proteção\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-protecao-K1: Debinha substitui “E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?”. Antes: “jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas sobram depois de três”.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-respiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -166,7 +166,7 @@
         "kind": "interactive",
         "required": true,
         "title": "O tempinho de proteção",
-        "instructions": "Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe as vidas e os quadros de proteção que ainda restam em cada batida.",
           "Compare as três proteções: Nenhuma, 15 quadros e 45 quadros.",
@@ -1191,7 +1191,7 @@
       "key": "vidas-no-comeco",
       "title": "Quando a nave ganha as vidas?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quando a nave precisa ganhar as três vidas. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-vidas-no-comeco", "fala-vidas-no-comeco", "experiencia-uma-vez"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1320,7 +1320,7 @@
       "key": "respiro",
       "title": "O tempinho de proteção",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-protecao", "fala-respiro", "experiencia-protecao"],
       "workspaceKey": null,
       "externalTool": null,

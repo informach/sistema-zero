@@ -55,8 +55,8 @@
       },
       {
         "kind": "box",
-        "title": "Você escolhe a ordem",
-        "text": "Experimente do jeito que quiser e repita quando quiser. Ao terminar, clique em <b>Próxima parte</b>.",
+        "title": "O Zappy te mostra o que testar",
+        "text": "Siga o Zappy e repita os testes quando quiser. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -190,7 +190,7 @@
       {
         "kind": "box",
         "title": "Você escolhe a ordem",
-        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em <b>Próxima parte</b>.",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
       }
     ]
@@ -308,7 +308,7 @@
       {
         "kind": "box",
         "title": "Da experiência para o seu jogo",
-        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em <b>Próxima parte</b>. Nas próximas partes, você vai ensinar o farol do seu jogo a responder do mesmo jeito que a porta.",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>. Nas próximas partes, você vai ensinar o farol do seu jogo a responder do mesmo jeito que a porta.",
         "tone": "note"
       }
     ]
@@ -591,7 +591,7 @@
       {
         "kind": "box",
         "title": "Você escolhe a ordem",
-        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Se quiser um desafio, a experiência também mostra um alvo para você levar a chave até ele. Quando terminar, clique em <b>Próxima parte</b>.",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Se quiser um desafio, a experiência também mostra um alvo para você levar a chave até ele. Quando terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
       }
     ]

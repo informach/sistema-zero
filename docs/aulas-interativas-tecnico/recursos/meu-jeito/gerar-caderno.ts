@@ -216,7 +216,7 @@ const diagrams: string[][] = [
 function objetivosDaInvestigacao(section: SecaoMeuJeito): string[] {
   return [
     section.activity!.instructions,
-    'O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+    'O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
   ]
 }
 const chapters = aulasMeuJeito.map((lesson, i) => {

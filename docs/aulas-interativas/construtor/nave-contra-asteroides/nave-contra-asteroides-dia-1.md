@@ -29,11 +29,11 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 1. A nave em câmera lenta
 
-**Tarefa:** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-seta-e-velocidade → fala-seta-e-velocidade → experiencia-seta-e-velocidade.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -41,7 +41,7 @@ video-seta-e-velocidade-K1: Dedé substitui “E o que a nave faz num quadro em 
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-camera-lenta.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Devagar, segure a seta e olhe os quadros do jogo. Em Devagar, solte a seta e olhe os próximos quadros. Escolha Rápido, segure a seta por alguns segundos e compare.
 
@@ -49,15 +49,15 @@ video-seta-e-velocidade-K1: Dedé substitui “E o que a nave faz num quadro em 
 
 ### Seção 2. O tamanho do passinho
 
-**Tarefa:** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tamanho-do-passinho → fala-tamanho-do-passinho → experiencia-tamanho-do-passinho.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-passinho.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros. Clique em Passinho grande, clique em Câmera lenta e segure a seta por alguns quadros.
 
@@ -97,11 +97,11 @@ video-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: �
 
 ### Seção 5. A beirada da tela
 
-**Tarefa:** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-limite-da-tela.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -109,7 +109,7 @@ video-limite-da-tela-K1: Dedé substitui “E se a nave já estiver fora da tela
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-beirada.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a nave na beirada com a cerca desligada e com a cerca ligada, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a nave na beirada com a cerca desligada e com a cerca ligada, inclusive com ela já fora da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela. Com a nave fora da tela, ligue a cerca e olhe o próximo quadro. Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros.
 
@@ -134,11 +134,11 @@ video-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?�
 
 ### Seção 7. Quem fica na frente?
 
-**Tarefa:** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-ordem-dos-desenhos → fala-ordem-dos-desenhos → experiencia-camadas.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -146,7 +146,7 @@ video-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for des
 
 **Experiência em exploração livre:** `layers` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/layers.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/layers.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Desenhar a nave por último e observe a tela. Depois, clique em Desenhar o fundo de estrelas por último e observe a nave. Clique em Desenhar a nave por último outra vez, como no jogo, e compare.
 

@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-contato",
-      "plannedVideo": "Título: Quando o jogo marca a batida?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma reunidos antes do pega-pega, combinando a brincadeira, com o Dino ainda longe de todo mundo [na edição: meme do combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as”.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando o jogo marca a batida?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma reunidos antes do pega-pega, combinando a brincadeira, com o Dino ainda longe de todo mundo [na edição: meme do combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as”.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-contato",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quando o jogo marca a batida?",
-        "instructions": "Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe o retângulo pontilhado em volta do Dino e o do cacto.",
           "Aproxime o cacto um toque de cada vez e pare no primeiro BATEU.",
@@ -110,14 +110,14 @@
     },
     {
       "key": "video-trocar-nao-limpa",
-      "plannedVideo": "Título: Voltar ou começar tudo de novo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem jogar. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-nao-limpa-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada”.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Voltar ou começar tudo de novo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem jogar. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-nao-limpa-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada”.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-trocar-nao-limpa",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -125,7 +125,7 @@
       "content": {
         "kind": "interactive",
         "title": "Voltar ou começar tudo de novo?",
-        "instructions": "Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe os cactos que ficam na pista quando uma partida nova começa.",
           "Compare os dois jeitos do toque no fim da partida.",
@@ -977,7 +977,7 @@
       "key": "contato",
       "title": "Quando o jogo marca a batida?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-contato", "fala-contato", "experiencia-contato"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1142,7 +1142,7 @@
       "key": "trocar-nao-limpa",
       "title": "Voltar ou começar tudo de novo?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-trocar-nao-limpa", "fala-trocar-nao-limpa", "experiencia-restart"],
       "workspaceKey": null,
       "externalTool": null,

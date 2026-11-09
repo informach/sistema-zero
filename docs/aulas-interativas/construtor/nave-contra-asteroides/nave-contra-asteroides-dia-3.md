@@ -27,11 +27,11 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 ### Seção 1. Quem sai do jogo na trombada?
 
-**Tarefa:** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-apelidos → fala-trombada → experiencia-trombada.
 
-**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -39,7 +39,7 @@ video-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. A
 
 **Experiência em exploração livre:** `collision-pair` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/collision-pair.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/collision-pair.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores. Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores. Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras.
 

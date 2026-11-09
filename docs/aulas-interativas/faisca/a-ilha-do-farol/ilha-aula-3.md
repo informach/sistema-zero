@@ -67,7 +67,7 @@ O que muda com o não?
 
 
 
-**Zappy na página (não gravar):** Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ### Parte 4. O farol acende uma vez só
 

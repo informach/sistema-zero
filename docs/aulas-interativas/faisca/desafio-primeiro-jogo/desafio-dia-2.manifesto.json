@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -24,7 +24,7 @@
         "required": true,
         "title": "O jogo guardou a chave?",
         "semPerguntaFinal": true,
-        "instructions": "Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe a chave no chão e o caderninho do jogo: são coisas diferentes.",
           "Compare o caderninho depois de pegar a chave com o lápis desligado e com o lápis ligado.",

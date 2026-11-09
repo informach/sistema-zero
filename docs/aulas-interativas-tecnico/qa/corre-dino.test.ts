@@ -232,7 +232,7 @@ const ordemParaQuemAssiste =
 // (o que investigar, "Agora você vai investigar …", como no exemplo aprovado e nos outros cursos) e o
 // fecho comum. A investigação é da criança e quem acompanha cada teste é o Zappy.
 const FIM_DA_EXPERIENCIA =
-  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+  /^Agora você vai investigar [^.!?]+\. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser\. Quando terminar, clique em Próxima parte\.$/
 const DEVOLVE = 'O que você acha? Isso você vai testar na experiência.'
 // Proibido no vídeo da experiência: o tour pelos controles ("Olha aqui: nesta experiência, este
 // botão…", "aqui você vê…"), os nomes dos botões ditos como gesto ("clique em…", "escolha…") e a
@@ -308,14 +308,14 @@ test('experiências: conceito, analogia, o jogo dela e um convite, sem tour nem 
       // A instrução da página: o que comparar (e, no máximo, uma frase de contexto) e o fecho do Cadê,
       // sem sequência de cliques nem "termine com…".
       expect(a.instructions, id).toMatch(
-        /^Compare [^.!?]+\.(?: [^.!?]+\.)? Você escolhe a ordem e pode repetir quando quiser\.$/,
+        /^Compare [^.!?]+\.(?: [^.!?]+\.)? O Zappy te mostra o que testar, e você pode repetir quando quiser\.$/,
       )
       expect(a.instructions, id).not.toMatch(SEQUENCIA_DE_TESTES)
       for (const t of [a.instructions, section.bridge])
         expect(t, id).not.toMatch(/\btermine com\b/i)
       // A ponte: uma frase do que investigar, a ordem livre e o Zappy.
       expect(section.bridge, id).toMatch(
-        /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+        /^Sua vez! Investigue [^.!?]+\. O Zappy te mostra o que testar, e você pode repetir quando quiser\. Quando terminar, clique em Próxima parte\.$/,
       )
       // O Passo a passo imprime só a instrução: a experiência não tem mais passos próprios.
       expect(section.caderno, id).toBeUndefined()

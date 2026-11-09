@@ -321,7 +321,7 @@ const dia1 = {
     video('video-d1-quadro', 'Como o personagem anda', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-quadro',
-      'Sua vez! Investigue o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que acontece em cada quadro, com a seta apertada e com a seta solta. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "O jogo em câmera lenta" (01/11/2026, decisão dela): a experiência trabalha só a IDEIA
     // (quadro, passinho, seta), sem bloco, regra nem código. Os blocos ficam para a parte `andar`.
@@ -330,7 +330,7 @@ const dia1 = {
     experienciaAndar(
       'experiencia-quadro',
       'O jogo em câmera lenta',
-      'Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem e pode repetir quando quiser.',
+      'Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
       ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
         'moves-each-frame': {
@@ -360,14 +360,14 @@ const dia1 = {
     video('video-d1-limite', 'Até onde ele pode ir?', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-limite',
-      'Sua vez! Investigue o que o jogo faz na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que o jogo faz na beirada da tela, com o limite desligado e ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "A beirada da tela" (01/11/2026, decisão dela): só a IDEIA, sem blocos nem a comparação
     // das ordens dos blocos. A ordem aparece dentro de cada quadro (passinho, depois a conferência).
     experienciaAndar(
       'experiencia-limite',
       'A beirada da tela',
-      'Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem e pode repetir quando quiser.',
+      'Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
       ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {
@@ -449,7 +449,7 @@ const dia2 = {
     video('video-d2-contexto', 'O jogo guardou a chave?', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-contexto',
-      'Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-memoria',
@@ -462,7 +462,7 @@ const dia2 = {
         // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
         // Molde do Cadê (02/11/2026): a instrução diz o que comparar, sem sequência de testes.
         instructions:
-          'Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. Você escolhe a ordem e pode repetir quando quiser.',
+          'Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         hints: [
           'Olhe a chave no chão e o caderninho do jogo: são coisas diferentes.',
           'Compare o caderninho depois de pegar a chave com o lápis desligado e com o lápis ligado.',
@@ -562,7 +562,7 @@ const dia3 = {
     video('video-d3-condicao', 'O que a porta precisa?', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-condicao',
-      'Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-porta',
@@ -574,7 +574,7 @@ const dia3 = {
         // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
         // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. Você escolhe a ordem e pode repetir quando quiser.',
+          'Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         hints: [
           'Olhe o caderninho antes de chegar à porta.',
           'Compare a resposta da porta com NÃO e com SIM no caderninho.',
@@ -617,7 +617,7 @@ const dia3 = {
     video('video-d3-posicao', 'Como escolher um lugar para a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-posicao',
-      'Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-posicao',
@@ -630,7 +630,7 @@ const dia3 = {
         // x para menos…"), sem contar para que lado o número leva a chave. O alvo opcional fica na
         // própria cena (molde do Cadê, 02/11/2026: a instrução diz só o que comparar).
         instructions:
-          'Use o − e o + de cada número e compare para onde a chave vai. Você escolhe a ordem e pode repetir quando quiser.',
+          'Use o − e o + de cada número e compare para onde a chave vai. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',

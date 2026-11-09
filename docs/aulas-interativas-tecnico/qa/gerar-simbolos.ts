@@ -125,7 +125,7 @@ for (const [index, aula] of simbolosAulas.entries()) {
           // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
           // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
           instructions:
-            'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. Você escolhe a ordem e pode repetir quando quiser.',
+            'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
           hints: [
             'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
             'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',

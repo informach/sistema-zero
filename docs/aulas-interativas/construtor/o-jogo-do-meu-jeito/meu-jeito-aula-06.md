@@ -28,7 +28,7 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 1. Separe os nomes que os blocos procuram
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
@@ -36,7 +36,7 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 video-nomes-K1: Dedé substitui “E se a nave e a folha tiverem o mesmo nome?”. Antes: “acham cada coisa pelo nome dela. Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com os blocos quando o”.
 
-**Experiência em exploração livre:** `unique-names`, com `setup.freeExploration`. Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `unique-names`, com `setup.freeExploration`. Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Traga seus desenhos para o projeto
 
@@ -52,7 +52,7 @@ video-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão 
 
 ### Seção 3. Separe o quadro do tamanho no jogo
 
-**Tarefa / Zappy na página:** Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
 
@@ -60,7 +60,7 @@ video-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão 
 
 video-recorte-K1: Dedé substitui “E se o recorte for maior ou menor que um desenho?”. Antes: “pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar qual recorte mostra uma nave inteira e”.
 
-**Experiência em exploração livre:** `sheet-vs-sprite`, com `setup.freeExploration`. Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `sheet-vs-sprite`, com `setup.freeExploration`. Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Use sua imagem no criador da nave
 

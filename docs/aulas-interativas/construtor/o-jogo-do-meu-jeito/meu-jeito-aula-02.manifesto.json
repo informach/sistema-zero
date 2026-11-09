@@ -33,14 +33,14 @@
   "blocks": [
     {
       "key": "video-bordas",
-      "plannedVideo": "Título: Aproxime duas formas de desenhar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No Pinta, existem dois jeitos de desenhar\", mostrar a experiência na aula, parada, com as duas pedras de longe. No \"Imagina um desenho montado com pecinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as duas pedras paradas, de longe, sem aproximar: o que acontece com cada borda é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Aproxime duas formas de desenhar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No Pinta, existem dois jeitos de desenhar\", mostrar a experiência na aula, parada, com as duas pedras de longe. No \"Imagina um desenho montado com pecinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar as duas pedras paradas, de longe, sem aproximar: o que acontece com cada borda é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-bordas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -49,7 +49,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Aproxime duas formas de desenhar",
-        "instructions": "Compare a borda das duas pedras de perto e de longe. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare a borda das duas pedras de perto e de longe. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe só a borda das pedras, de perto e de longe.",
           "Compare a borda da pedra de pixel com a da pedra de vetor quando a Lupa está bem perto.",
@@ -95,14 +95,14 @@
     },
     {
       "key": "video-espelho",
-      "plannedVideo": "Título: Descubra o que o espelho repete\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"o Pinta tem o espelho\", mostrar a experiência na aula, parada, com o papel em branco. No \"Sabe quando você pinga tinta numa folha\", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com o papel em branco, sem pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espelho-K1: Dedé substitui “E o Balde de tinta, o espelho copia também?”. Antes: “folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos”.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Descubra o que o espelho repete\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"o Pinta tem o espelho\", mostrar a experiência na aula, parada, com o papel em branco. No \"Sabe quando você pinga tinta numa folha\", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com o papel em branco, sem pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espelho-K1: Dedé substitui “E o Balde de tinta, o espelho copia também?”. Antes: “folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos”.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-espelho",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -111,7 +111,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Descubra o que o espelho repete",
-        "instructions": "Compare onde a tinta aparece na asa com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare onde a tinta aparece na asa com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Depois de cada traço, repare onde a tinta apareceu na grade.",
           "Compare o mesmo traço com cada espelho ligado e, depois, o Balde de tinta com o Espelho lado a lado.",
@@ -173,14 +173,14 @@
     },
     {
       "key": "video-luz",
-      "plannedVideo": "Título: Mude o lado da luz\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Agora falta ela parecer redonda\", mostrar a experiência na aula, parada, com a bola de um tom só. No \"Imagina uma bola deixada no quintal\", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a bola parada, com um tom só, sem ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-luz-K1: Dedé substitui “E se o sol mudar de lado?”. Antes: “uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol”.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Mude o lado da luz\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Agora falta ela parecer redonda\", mostrar a experiência na aula, parada, com a bola de um tom só. No \"Imagina uma bola deixada no quintal\", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a bola parada, com um tom só, sem ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-luz-K1: Dedé substitui “E se o sol mudar de lado?”. Antes: “uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol”.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-luz",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -189,7 +189,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Mude o lado da luz",
-        "instructions": "Compare a forma da bola e os tons de azul com a sombra e a luz ligadas e desligadas e com o sol de cada lado. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare a forma da bola e os tons de azul com a sombra e a luz ligadas e desligadas e com o sol de cada lado. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Repare na forma da bola e nos tons de azul a cada teste.",
           "Compare a bola com e sem a sombra e a luz e, depois, com o sol de cada lado.",
@@ -262,7 +262,7 @@
     {
       "key": "bordas",
       "title": "Aproxime duas formas de desenhar",
-      "objective": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue a borda de cada pedra, de perto e de longe. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-bordas", "fala-bordas", "experimento-bordas"],
       "workspaceKey": null,
@@ -290,7 +290,7 @@
     {
       "key": "espelho",
       "title": "Descubra o que o espelho repete",
-      "objective": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-espelho", "fala-espelho", "experimento-espelho"],
       "workspaceKey": null,
@@ -332,7 +332,7 @@
     {
       "key": "luz",
       "title": "Mude o lado da luz",
-      "objective": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-luz", "fala-luz", "experiencia-luz"],
       "workspaceKey": null,

@@ -34,7 +34,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-variavel`
 
-**Na tela:** Do "Para contar os personagens" até o "já estava guardado", a tela fica parada, e a edição troca esse trecho pela explicação da variável, com o placar de futebol [na edição: a variável achados e o placar de futebol]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem tocar nos esconderijos nem mexer nos controles: quando o número muda e quando continua igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. No "ajuda a observar", mostrar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima", clicar em **Próxima parte** [próxima parte].
+**Na tela:** Do "Para contar os personagens" até o "já estava guardado", a tela fica parada, e a edição troca esse trecho pela explicação da variável, com o placar de futebol [na edição: a variável achados e o placar de futebol]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem tocar nos esconderijos nem mexer nos controles: quando o número muda e quando continua igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. No "vai te mostrando", mostrar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -45,13 +45,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [confident, clear, unhurried voice] No jardim, a variável achados guarda quantos personagens você encontrou. O placar mostra esse valor. Cada novo personagem acrescenta um ao número que já estava guardado.
 
-[upbeat, encouraging voice] Agora você vai investigar quando esse número muda e quando continua igual durante uma busca. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando esse número muda e quando continua igual durante uma busca. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 
 **Falas dentro da experiência:** fonte compartilhada `packages/core/src/learning/scene/discovery-guidance.ts`, exportada em `zappy-etapas.json`. Diferenciar valor atual, última operação e leitura no placar. As falas avançam pelos testes realizados, inclusive vazio, repetição e reinício.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 3. Cada personagem vale um achado
 

@@ -15,7 +15,7 @@ import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
  * você vê"), nomes de botão, a sequência dos testes ("primeiro… depois", "Nas duas vezes", "teste
  * mais duas coisas") e a lista do que vai acontecer ("Repare em três coisas"). O "Na tela" só
  * amplia a experiência e mostra a cena parada, sem apontar controles nem tocar. Apresentar o
- * Zappy ao dizer que ele ajuda a observar é permitido. A instrução e o recado da
+ * Zappy ao dizer que ele mostra o que testar é permitido. A instrução e o recado da
  * página dizem o que comparar, sem sequência.
  */
 const AULAS = [
@@ -34,7 +34,7 @@ const AULAS = [
 ]
 
 const FECHO =
-  'Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.'
+  'O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.'
 const CONVITE = /(?:^|[.!?] )Agora você vai investigar [^.!?]+\. $/
 const TOUR =
   /Olha aqui|\bnesta (?:experiência|atividade)\b|\b(?:este|esta|estes|estas|esse|essa) (?:botão|botões|campo|campos|lista|régua|controle|controles|marca|tabela|deslizante)\b|\baqui (?:você (?:vê|escolhe|muda)|fica)\b|Repare em (?:duas|três|quatro) coisas/i
@@ -61,13 +61,15 @@ function problemasDoConvite({ fala, naTela, instrucao, ponte }: Convite): string
     p.push('no máximo uma pergunta devolvida à criança')
   if (GESTO_NA_TELA.test(naTela) || /Olha aqui/.test(naTela))
     p.push(`gesto dentro da experiência no Na tela: ${naTela.match(GESTO_NA_TELA)?.[0]}`)
-  if (!instrucao.endsWith('Você escolhe a ordem e pode repetir quando quiser.'))
-    p.push('a instrução termina em "Você escolhe a ordem e pode repetir quando quiser."')
+  if (!instrucao.endsWith('O Zappy te mostra o que testar, e você pode repetir quando quiser.'))
+    p.push(
+      'a instrução termina em "O Zappy te mostra o que testar, e você pode repetir quando quiser."',
+    )
   if ((instrucao.match(/[.!?](?:\s|$)/g) ?? []).length > 2) p.push('instrução com mais de 2 frases')
   if (/\bDepois\b|\bPor (?:último|fim)\b|\bclique\b/i.test(instrucao))
     p.push('instrução com sequência ou botão')
   if (
-    !/^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/.test(
+    !/^Sua vez! Investigue [^.!?]+\. O Zappy te mostra o que testar, e você pode repetir quando quiser\. Quando terminar, clique em Próxima parte\.$/.test(
       ponte,
     )
   )
@@ -155,7 +157,9 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
     // Dia 1: câmera lenta e beirada; Cadê: o toque e os achados.
     expect(instrucoes).toHaveLength(4)
     for (const { id, instrucao } of instrucoes) {
-      expect(instrucao, id).toEndWith('Você escolhe a ordem e pode repetir quando quiser.')
+      expect(instrucao, id).toEndWith(
+        'O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+      )
       expect((instrucao.match(/[.!?](?:\s|$)/g) ?? []).length, id).toBeLessThanOrEqual(2)
       expect(instrucao, id).not.toMatch(/\bDepois\b|\bPor (?:último|fim)\b|\bclique\b/i)
     }

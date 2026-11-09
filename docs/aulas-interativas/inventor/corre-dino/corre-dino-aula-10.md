@@ -27,11 +27,11 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 1. E se a área mudar de tamanho?
 
-**Tarefa:** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-caixa-decide → fala-caixa-decide → experiencia-hitbox.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -39,7 +39,7 @@ video-caixa-decide-K1: Dedé substitui “E se a área ficar menor que o desenho
 
 **Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a área em 100%, clique em Aproximar o cacto, um toque de cada vez, até aparecer BATEU. Com o cacto onde apareceu BATEU, clique em 80%. Clique em Aproximar o cacto até o cacto encostar no desenho do Dino e clique em 40%.
 

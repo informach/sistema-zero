@@ -62,20 +62,20 @@
         "title": "Uma vez ou sempre?",
         "kind": "exploration",
         "videoKey": "video-uma-vez-e-sempre",
-        "bridge": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"como os desenhos de um desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para correr\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"como os desenhos de um desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para correr\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Um jogo mostra um quadro atrás do outro, bem rápido. Cada quadro é uma imagem parada, como os desenhos de um desenho animado. E o jogo precisa saber quando fazer cada coisa: uma vez só, no começo, ou sempre, em todo quadro.",
           "É como sair para correr: tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.",
           "No seu jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Uma vez ou sempre?",
-          "instructions": "Compare o Dino quando o passinho acontece uma vez, no começo, e quando acontece sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o Dino quando o passinho acontece uma vez, no começo, e quando acontece sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe quantas vezes o Dino anda enquanto os quadros passam.",
             "Compare o que o Dino faz depois do primeiro quadro nos dois jeitos.",
@@ -138,20 +138,20 @@
         "title": "Qual é o tamanho da tela?",
         "kind": "exploration",
         "videoKey": "video-limite-da-tela",
-        "bridge": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você escolhe o tamanho da folha\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você escolhe o tamanho da folha\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Todo jogo acontece dentro de uma tela, e essa tela tem um tamanho. É o tamanho que diz até onde as coisas do jogo podem ir.",
           "Sabe quando você escolhe o tamanho da folha antes de desenhar? Tudo o que você desenhar vai ter que caber nela.",
           "No seu jogo, a borda é o contorno que mostra onde a tela acaba. O tamanho da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Qual é o tamanho da tela?",
-          "instructions": "Compare a borda quando muda só a largura e quando muda só a altura. A tela do seu jogo tem 480 por 270. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a borda quando muda só a largura e quando muda só a altura. A tela do seu jogo tem 480 por 270. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe o palco antes e depois de ligar a borda: o que aparece?",
             "Com a borda ligada, troque a largura e observe o contorno.",
@@ -308,20 +308,20 @@
         "title": "Onde fica o Dino?",
         "kind": "exploration",
         "videoKey": "video-coordenadas",
-        "bridge": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Para o jogo saber onde desenhar cada coisa, cada uma tem um lugar na tela, dito com números.",
           "Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.",
           "No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Onde fica o Dino?",
-          "instructions": "Compare o lugar do Dino quando muda só o x e quando muda só o y, e descubra onde ele fica com x e y em zero. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o lugar do Dino quando muda só o x e quando muda só o y, e descubra onde ele fica com x e y em zero. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Mude um número só e compare o lugar novo do Dino com o de antes.",
             "Depois de testar o x, faça o mesmo com o y. E onde será que fica o zero dos dois?",
@@ -365,20 +365,20 @@
         "title": "Existir e aparecer",
         "kind": "exploration",
         "videoKey": "video-criar-e-mostrar",
-        "bridge": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Num jogo, uma coisa pode existir e pode aparecer. Existir é o jogo guardar essa coisa, com nome e lugar. Aparecer é ela estar na tela, onde quem joga consegue ver.",
           "Sabe o teatro? Tem o camarim, nos bastidores, onde o ator se arruma, e tem o palco, que a plateia vê.",
           "No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Existir e aparecer",
-          "instructions": "Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe os dois lados, os bastidores e a tela do jogo, depois de cada botão.",
             "Compare a tela antes e depois de mostrar o Dino. E se o Dino sair da tela, continua nos bastidores?",
@@ -698,20 +698,20 @@
         "title": "Desenhar uma vez ou em todo quadro?",
         "kind": "exploration",
         "videoKey": "video-quadros",
-        "bridge": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar quadros. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar quadros. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Num jogo, desenhar o Dino é pintar o Dino na tela.",
           "Lembra do desenho animado, um quadro atrás do outro? Cada quadro é um desenho que aparece na tela.",
           "No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que a tela mostra em cada jeito de desenhar o Dino, com e sem apagar a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que a tela mostra em cada jeito de desenhar o Dino, com e sem apagar a tela antes. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Desenhar uma vez ou em todo quadro?",
-          "instructions": "Compare o que a tela mostra quando o Dino é desenhado só no começo e em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o que a tela mostra quando o Dino é desenhado só no começo e em todo quadro, com e sem apagar a tela antes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Depois de cada quadro, compare a tela com o x do Dino.",
             "Conte quantos Dinos ficam na tela em cada jeito.",
@@ -840,20 +840,20 @@
         "title": "Quem fica na frente?",
         "kind": "exploration",
         "videoKey": "video-camadas",
-        "bridge": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem trocar a ordem. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem trocar a ordem. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Em cada quadro, o jogo monta a tela desenhando uma coisa depois da outra, na mesma tela.",
           "Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.",
           "No seu jogo, vão ser desenhados o Dino e a floresta.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda na tela quando muda a ordem em que o Dino e a floresta são desenhados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na tela quando muda a ordem em que o Dino e a floresta são desenhados. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quem fica na frente?",
-          "instructions": "Compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe quem fica na frente depois de cada troca.",
             "Compare o Dino quando ele é desenhado por último e quando a floresta é desenhada por último.",
@@ -1020,20 +1020,20 @@
         "title": "O que o leitor de tela conta?",
         "kind": "exploration",
         "videoKey": "video-descricao",
-        "bridge": "Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você explica um jogo\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem ouvir a tela: a primeira escuta fica para a criança. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você explica um jogo\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem ouvir a tela: a primeira escuta fica para a criança. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.",
           "Sabe quando você explica um jogo para alguém pelo telefone? A pessoa do outro lado não vê nada, só ouve o que você conta.",
           "No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "O que o leitor de tela conta?",
-          "instructions": "Compare o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Antes de escrever, clique em Ouvir a tela. O que a pessoa ficou sabendo do jogo?",
             "Escreva o que se faz no jogo, como correr e pular os cactos, e ouça de novo.",
@@ -1292,20 +1292,20 @@
         "title": "O que traz o Dino de volta?",
         "kind": "exploration",
         "videoKey": "video-gravidade-modelo",
-        "bridge": "Sua vez! Investigue o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você joga uma bola para cima\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que acontece com o pulo do Dino com e sem gravidade. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você joga uma bola para cima\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "A gravidade é uma força que puxa tudo para baixo, e cada jogo decide se usa essa força.",
           "Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.",
           "No seu jogo, o Dino vai pular. E o jogo pode ter gravidade ou não.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho na altura dele. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho na altura dele. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "O que traz o Dino de volta?",
-          "instructions": "Compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Clique em Pular e olhe o número da altura. Ele para de crescer?",
             "Com o Dino lá no alto, ligue a gravidade e observe o número.",
@@ -1401,20 +1401,20 @@
         "title": "Quanto o Dino sobe?",
         "kind": "exploration",
         "videoKey": "video-impulso-modelo",
-        "bridge": "Sua vez! Investigue o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você pula numa cama elástica\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que o impulso muda no pulo do Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você pula numa cama elástica\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Impulso é a força do começo de um pulo. É ele que diz com quanta força um personagem sai do chão.",
           "Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.",
           "No seu jogo, você escolhe o impulso do Dino. A gravidade continua a mesma em todos os pulos.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que o impulso muda na altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que o impulso muda na altura dos pulos. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quanto o Dino sobe?",
-          "instructions": "Compare as marcas da altura dos pulos com impulsos diferentes. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare as marcas da altura dos pulos com impulsos diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "A marca azul é o salto de antes; a laranja, o deste.",
             "Mude só o impulso. A gravidade fica igual.",
@@ -1755,20 +1755,20 @@
         "title": "Uma vez, sempre ou na hora certa?",
         "kind": "exploration",
         "videoKey": "video-area-que-espera",
-        "bridge": "Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Existe um terceiro jeito: na hora em que algo acontece.",
           "Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo nela.",
           "No seu jogo, você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quando o som do pulo aparece em cada jeito, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quando o som do pulo aparece em cada jeito, com a tecla e sem a tecla. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Uma vez, sempre ou na hora certa?",
-          "instructions": "Compare quando o som do pulo aparece em cada jeito, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare quando o som do pulo aparece em cada jeito, principalmente na hora em que algo acontece, com a tecla e sem a tecla. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe o contador de sons e em que momento o som aparece.",
             "Compare o jeito Na hora em que algo acontece com a tecla e sem a tecla.",
@@ -1834,20 +1834,20 @@
         "title": "Som na tecla ou no pulo?",
         "kind": "exploration",
         "videoKey": "video-dedo-e-pulo",
-        "bridge": "Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o sininho da porta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a linha do tempo vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o sininho da porta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a linha do tempo vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Num jogo, um som pode ficar ligado a um momento: ele aparece toda vez que aquele momento acontece.",
           "Sabe o sininho da porta de uma loja? Ele fica preso na porta e toca quando ela abre.",
           "No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quantos sons e quantos pulos acontecem com o som ligado à tecla e com o som ligado ao pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantos sons e quantos pulos acontecem com o som ligado à tecla e com o som ligado ao pulo. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Som na tecla ou no pulo?",
-          "instructions": "Compare quantos sons e quantos pulos aparecem na linha do tempo com o som ligado à tecla e com o som ligado ao pulo. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare quantos sons e quantos pulos aparecem na linha do tempo com o som ligado à tecla e com o som ligado ao pulo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Em cada jeito, conte os sons e os pulos na linha do tempo.",
             "Com o som ligado à tecla, compare um pulo pela tecla e um pulo pelo toque.",
@@ -2120,20 +2120,20 @@
         "title": "Todo quadro ou de tempos em tempos?",
         "kind": "exploration",
         "videoKey": "video-espaco-e-tempo",
-        "bridge": "Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Um jogo pode criar coisas novas enquanto a partida acontece. E ele decide de quanto em quanto tempo cada coisa nova nasce.",
           "Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.",
           "No seu jogo, os cactos vão nascer na direita e vir na direção do Dino. E o jogo pode criar um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda na fila de cactos quando um cacto novo nasce em todo quadro e quando cada um espera o relógio. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na fila de cactos quando um cacto novo nasce em todo quadro e quando cada um espera o relógio. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Todo quadro ou de tempos em tempos?",
-          "instructions": "Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe quantos cactos nascem e o espaço entre eles.",
             "Compare os cactos que nascem em todo quadro com os que esperam no relógio.",
@@ -2237,20 +2237,20 @@
         "title": "Para que lado anda o cacto?",
         "kind": "exploration",
         "videoKey": "video-numero-negativo",
-        "bridge": "Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Velocidade é quanto uma coisa anda de cada vez, e para que lado.",
           "Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.",
           "No seu jogo, a velocidade do cacto diz quanto ele anda em cada quadro, e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar para que lado o cacto anda e o que acontece com o x com um número positivo, com um negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar para que lado o cacto anda e o que acontece com o x com um número positivo, com um negativo e com zero. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Para que lado anda o cacto?",
-          "instructions": "Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe o número do x em cada quadro.",
             "Compare o cacto e o x com um número positivo, com um negativo e com zero.",
@@ -2721,20 +2721,20 @@
         "title": "Para onde vai o cacto que sai da tela?",
         "kind": "exploration",
         "videoKey": "video-visivel-guardado",
-        "bridge": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Um jogo pode guardar várias coisas parecidas juntas, numa lista que ele move em todo quadro. Essa lista se chama grupo.",
           "Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.",
           "No seu jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Para onde vai o cacto que sai da tela?",
-          "instructions": "Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe a tela, os bastidores e o número de cactos no grupo.",
             "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
@@ -3057,19 +3057,19 @@
         "title": "A partida já começou?",
         "kind": "exploration",
         "videoKey": "video-condicao",
-        "bridge": "Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"O seu jogo vai ganhar\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"O seu jogo vai ganhar\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Antes de fazer alguma coisa, um jogo pode fazer uma pergunta. A resposta, sim ou não, decide o que ele faz.",
           "Sabe a porta de casa, que só abre com a chave? É como se ela perguntasse: a chave está aqui?",
           "O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quantos cactos nascem sem a pergunta e com a pergunta, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantos cactos nascem sem a pergunta e com a pergunta, na tela de início e depois de a partida começar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "A partida já começou?",
-          "instructions": "Compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe o contador de cactos criados enquanto o tempo passa.",
             "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
@@ -3868,19 +3868,19 @@
         "title": "O que começa a partida?",
         "kind": "exploration",
         "videoKey": "video-convite",
-        "bridge": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando chega visita\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando chega visita\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Para a partida começar, o jogo precisa escutar quem joga: pode ser uma tecla, um toque ou os dois.",
           "Sabe quando chega visita? Tem gente que toca a campainha e tem gente que bate na porta.",
           "No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "O que começa a partida?",
-          "instructions": "Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Toque na tela de início e observe se a partida começa.",
             "Compare os dois jeitos de escutar: só o Enter, ou qualquer tecla ou toque.",
@@ -4229,20 +4229,20 @@
         "title": "Quando o jogo marca a batida?",
         "kind": "exploration",
         "videoKey": "video-contato",
-        "bridge": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma reunidos antes do pega-pega, combinando a brincadeira, com o Dino ainda longe de todo mundo [na edição: meme do combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma reunidos antes do pega-pega, combinando a brincadeira, com o Dino ainda longe de todo mundo [na edição: meme do combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Para a corrida acabar, o jogo precisa saber quando o Dino bate num cacto. Esse momento se chama batida.",
           "Sabe quando você brinca de pega-pega? Antes de começar, a turma combina o que vale como pegar.",
           "No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que se encosta, os desenhos ou as áreas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que se encosta, os desenhos ou as áreas, no momento em que o jogo marca a batida. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quando o jogo marca a batida?",
-          "instructions": "Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe o retângulo pontilhado em volta do Dino e o do cacto.",
             "Aproxime o cacto um toque de cada vez e pare no primeiro BATEU.",
@@ -4468,19 +4468,19 @@
         "title": "Voltar ou começar tudo de novo?",
         "kind": "exploration",
         "videoKey": "video-trocar-nao-limpa",
-        "bridge": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem jogar. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem jogar. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Quando uma partida acaba, o jogo precisa saber o que fazer para começar outra.",
           "Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como o tabuleiro ficou.",
           "No seu jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar como começa a partida nova em cada jeito de o toque recomeçar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar como começa a partida nova em cada jeito de o toque recomeçar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Voltar ou começar tudo de novo?",
-          "instructions": "Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Observe os cactos que ficam na pista quando uma partida nova começa.",
             "Compare os dois jeitos do toque no fim da partida.",
@@ -4904,19 +4904,19 @@
         "title": "E se a área mudar de tamanho?",
         "kind": "exploration",
         "videoKey": "video-caixa-decide",
-        "bridge": "Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Lembra do pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma de novo reunidos antes do pega-pega, conversando sobre a brincadeira [na edição: meme do novo combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe e a área em 100%. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Lembra do pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma de novo reunidos antes do pega-pega, conversando sobre a brincadeira [na edição: meme do novo combinado do pega-pega]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe e a área em 100%. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Num jogo, a área da batida não precisa ter o tamanho do desenho: quem faz o jogo pode deixar essa área maior ou menor.",
           "Lembra do pega-pega, em que a turma combina o que vale como pegar? Dá para combinar um jeito mais fácil ou mais difícil de pegar alguém.",
           "No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quando o jogo marca a batida com a área inteira, um pouco menor e bem pequena. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quando o jogo marca a batida com a área inteira, um pouco menor e bem pequena. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "E se a área mudar de tamanho?",
-          "instructions": "Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Quando aparecer BATEU, olhe os desenhos e as áreas pontilhadas.",
             "Deixe o cacto onde bateu e mude só o tamanho da área.",
@@ -5272,19 +5272,19 @@
         "title": "Guardar ou mostrar?",
         "kind": "exploration",
         "videoKey": "video-guardar-mudar-mostrar",
-        "bridge": "Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem clicar em nada. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem clicar em nada. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Para lembrar um número, o jogo usa uma caixa com nome. Uma caixa que guarda um número se chama variável.",
           "Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.",
           "No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que muda na caixa pontos e na tela do jogo quando o número muda e quando ele aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na caixa pontos e na tela do jogo quando o número muda e quando ele aparece na tela. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Guardar ou mostrar?",
-          "instructions": "Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Depois de cada botão, compare a caixa pontos com a tela do jogo.",
             "O número muda mesmo sem aparecer? Ganhe um ponto com o número fora da tela.",
@@ -5442,19 +5442,19 @@
         "title": "Quando o placar cresce?",
         "kind": "exploration",
         "videoKey": "video-quando-o-placar-cresce",
-        "bridge": "Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o cronômetro de uma corrida\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue quando o placar deve crescer. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o cronômetro de uma corrida\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Os pontos de um jogo ficam no placar, e é o jogo que decide quando somar cada ponto.",
           "Sabe o cronômetro de uma corrida? Alguém precisa decidir quando ele conta.",
           "No seu jogo, o ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quando o placar cresce em cada jeito de somar, com e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quando o placar cresce em cada jeito de somar, com e sem a pergunta. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Quando o placar cresce?",
-          "instructions": "Compare o placar em cada jeito de somar, com e sem a pergunta. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o placar em cada jeito de somar, com e sem a pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe o placar a cada segundo que passa, em cada tela.",
             "Compare o ponto a cada quadro e a cada segundo; depois ligue a pergunta e passe pelas três telas.",
@@ -6004,19 +6004,19 @@
         "title": "Onde nasce o próximo cacto?",
         "kind": "exploration",
         "videoKey": "video-sorteio-tira-na-hora",
-        "bridge": "Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem sortear. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem sortear. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sortear é deixar o jogo escolher um valor por acaso. Isso deixa cada partida um pouco diferente.",
           "Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente.",
           "No seu jogo, se todos os cactos nascessem no mesmo lugar, a corrida ficaria sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar onde os cactos nascem e com que velocidade quando o jogo sorteia. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Onde nasce o próximo cacto?",
-          "instructions": "Compare os lugares sorteados na régua e até onde chegam os cactos de cada velocidade nas raias. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os lugares sorteados na régua e até onde chegam os cactos de cada velocidade nas raias. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Compare as marquinhas na régua depois de cada sorteio.",
             "Sorteie uma coisa por vez: o lugar, depois a velocidade.",
@@ -6179,19 +6179,19 @@
         "title": "Qual número é maior?",
         "kind": "exploration",
         "videoKey": "video-regua-negativos",
-        "bridge": "Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o termômetro num dia muito frio\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o marcador no começo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o termômetro num dia muito frio\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o marcador no começo. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Os números com o sinal de menos se chamam negativos. Eles ficam abaixo de zero e cabem numa reta de números, como uma régua.",
           "Sabe o termômetro num dia muito frio? A temperatura pode ficar abaixo de zero, com o sinal de menos: menos cinco graus, menos nove graus.",
           "No seu jogo, as velocidades dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar como os números negativos ficam na reta e quando a pergunta responde sim ou não. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar como os números negativos ficam na reta e quando a pergunta responde sim ou não. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Qual número é maior?",
-          "instructions": "Compare para que lado o marcador anda quando o número diminui e onde a pergunta responde sim ou não. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare para que lado o marcador anda quando o número diminui e onde a pergunta responde sim ou não. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe para que lado o marcador anda a cada -1 e onde cada número mora na reta.",
             "A reta é parecida com um termômetro deitado. Olhe a resposta embaixo dela: ela muda conforme o marcador anda e o sinal muda.",
@@ -6564,19 +6564,19 @@
         "title": "Até onde a corrida acelera?",
         "kind": "exploration",
         "videoKey": "video-o-que-o-freio-segura",
-        "bridge": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o botão de volume\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o botão de volume\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Num jogo, a dificuldade pode crescer aos poucos, enquanto a partida acontece.",
           "Sabe o botão de volume? Cada toque deixa o som um pouco mais forte.",
           "No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta e sem a pergunta. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "title": "Até onde a corrida acelera?",
-          "instructions": "Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
           "hints": [
             "Olhe o número embaixo de cada cacto e o número da base.",
             "Passe 5 segundos até a resposta da pergunta virar não.",

@@ -16,7 +16,7 @@ Para onde vai a chave?
 
 
 
-**Zappy na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ### Parte 2. Coloque a chave na ilha
 
@@ -47,7 +47,7 @@ Parece junto, mas está encostando?
 
 
 
-**Zappy na página (não gravar):** Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ### Parte 4. Recolha a chave
 

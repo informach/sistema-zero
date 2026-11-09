@@ -121,7 +121,7 @@ for (const [index, aula] of ponteAulas.entries()) {
           // alavanca e até a ponte, o relógio do jogo anda sozinho e onde ele começa é uma peça que
           // se troca. A instrução, as pistas e os pedidos falam a língua dessa tela.
           instructions:
-            'Ande até a alavanca e até a ponte, olhe o relógio do jogo e troque onde ele começa. Você escolhe a ordem e pode repetir quando quiser.',
+            'Ande até a alavanca e até a ponte, olhe o relógio do jogo e troque onde ele começa. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
           hints: [
             'Olhe a ponte e o relógio do jogo antes e depois de cada teste.',
             'Compare ir até a ponte antes de puxar a alavanca, logo depois de puxar e quando o relógio já chegou a 4. Compare também o relógio começando com a partida.',

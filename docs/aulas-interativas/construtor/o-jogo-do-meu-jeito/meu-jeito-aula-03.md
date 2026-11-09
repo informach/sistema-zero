@@ -28,7 +28,7 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 1. Compare dois desenhos e uma animação
 
-**Tarefa / Zappy na página:** Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
@@ -36,7 +36,7 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e”.
 
-**Experiência em exploração livre:** `frames`, com `setup.freeExploration`. Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `frames`, com `setup.freeExploration`. Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe o primeiro fogo
 
@@ -48,7 +48,7 @@ video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”
 
 ### Seção 3. Desenhe olhando o quadro anterior
 
-**Tarefa / Zappy na página:** Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
 
@@ -56,7 +56,7 @@ video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”
 
 video-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele”.
 
-**Experiência em exploração livre:** `onion-skin`, com `setup.freeExploration`. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `onion-skin`, com `setup.freeExploration`. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. O Zappy te mostra o que testar, e você pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Mude só o fogo no segundo quadro
 

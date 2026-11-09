@@ -108,7 +108,7 @@ Anexar somente `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-pass
 
 Na tela (moldura nova, 08/11/2026): a TELA DO JOGO do Farol (a praia inteira, o farol e a chave nos lugares do jogo), com o personagem começando onde começa no jogo (x 21) e uma pegada a cada passinho; no Devagar, cada quadro faz um tique e a tela pisca. Embaixo, o filme **Os quadros do jogo** ("passinho" ou "parado" em cada quadro, e o selo **Quadro N · seta apertada/solta**). Os controles têm a forma do que imitam: a **tecla de seta** igual à do teclado (dedo, mouse, a seta → ou o D do teclado afundam a mesma tecla) e a **Velocidade** com **Devagar** e **Rápido**; **Pausar** e **Começo** ficam na linha de cima. Três cartões de pergunta, só de leitura, em qualquer ordem. No fim, a ideia e o "No seu jogo" no balão do Zappy. Não apresentar x/y nem número de velocidade. Todos os controles continuam disponíveis depois da conclusão.
 
-**Convite da experiência:** Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** o vídeo, a instrução, a ponte, a lista de descobertas, o Zappy e o Passo a passo dizem o que comparar e o que observar, sem sequência de cliques e sem contar o resultado antes do teste. O vídeo explica que em cada quadro o jogo olha a seta e deixa o caso da seta solta para a criança prever e testar; a gravação aponta a tira ainda vazia, sem rodar quadros. Na beirada, o Zappy leva o personagem até lá na velocidade de verdade e só pede a câmera lenta perto da beirada (em câmera lenta, do meio da tela até lá, seriam uns 40 s), e o botão em destaque acompanha. As pistas vão do aberto (o que observar) ao direto (a sequência).
 
@@ -143,7 +143,7 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 
 Na tela (moldura nova, 08/11/2026): a mesma tela do jogo com a faixa **fora da tela** à direita; com o limite ligado aparece uma **cerca** na beirada, e o 👀 do jogo conferindo a cada passinho. O módulo **Limite da tela** é um interruptor (**Cerca desligada / Cerca ligada**) ao lado da tecla de seta e da Velocidade (abre no **Rápido**). Três descobertas, em qualquer ordem: sem o limite, ele sai da tela; ligando a cerca com ele fora, ele volta; com a cerca, segurando a seta na beirada, ele fica. Sem o limite, sair inteiro pausa os quadros (**Começo**); com a cerca ligada, rodar de novo o traz de volta. Não mostrar coordenadas.
 
-**Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se ele já estiver fora da tela, o que o limite faz com ele?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
 

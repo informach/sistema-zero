@@ -28,11 +28,11 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 ### Seção 1. Todo quadro ou de tempos em tempos?
 
-**Tarefa:** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -40,7 +40,7 @@ video-espaco-e-tempo-K1: Debinha substitui “E se nascer um cacto em todo quadr
 
 **Experiência em exploração livre:** `spawn` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/spawn.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/spawn.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Em todo quadro, clique em Passar 1 segundo e observe os cactos e quantos nasceram. Escolha A cada 1,4 segundo e clique em Passar 1 segundo até nascerem dois cactos. Observe onde cada um aparece.
 
@@ -65,11 +65,11 @@ video-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto
 
 ### Seção 3. Para que lado anda o cacto?
 
-**Tarefa:** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-numero-negativo → fala-numero-negativo → experiencia-velocidade.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
@@ -77,7 +77,7 @@ video-numero-negativo-K1: Debinha substitui “E com um número negativo, o cact
 
 **Experiência em exploração livre:** `velocity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/velocity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/velocity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. O Zappy te mostra o que testar, e você pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha 5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x. Escolha −5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x. Depois de ver o cacto andar, escolha 0 e clique em Avançar 1 quadro. Observe o x.
 

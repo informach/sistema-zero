@@ -79,7 +79,7 @@ Ao usar notas de 1 a 10, justificar cada nota com o que a pessoa consegue fazer 
 - **No fim, a ideia no balão do Zappy**, com "No seu jogo:" (a ponte para a montagem, sem nome de bloco) e o "Ouvir" lendo as duas frases.
 - **Recomeçar pede confirmação** ("Apagar as descobertas?").
 - Nomes de variável (como `temChave`) só aparecem na montagem.
-- **O convite** (a instrução da experiência) é uma frase com o que comparar, sem sequência nem nome de botão, mais o fecho único "Você escolhe a ordem e pode repetir quando quiser." Vale para todas as experiências livres desde 08/11/2026, inclusive o Dia 1 do Farol e o Cadê (`video-experiencia.test.ts`).
+- **O convite** (a instrução da experiência) é uma frase com o que comparar, sem sequência nem nome de botão, mais o fecho único "O Zappy te mostra o que testar, e você pode repetir quando quiser." Vale para todas as experiências livres desde 08/11/2026, inclusive o Dia 1 do Farol e o Cadê (`video-experiencia.test.ts`).
 
 **No Faísca (08/11/2026, Canvas "Experiências do Faísca", aprovado).** A mesma moldura chegou às oito experiências da Ilha do Farol e dos quatro Poderes:
 

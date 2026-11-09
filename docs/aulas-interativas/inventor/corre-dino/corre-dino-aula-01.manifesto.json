@@ -1468,14 +1468,14 @@
     },
     {
       "key": "video-uma-vez-e-sempre",
-      "plannedVideo": "Título: Uma vez ou sempre?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"como os desenhos de um desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para correr\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-uma-vez-e-sempre-K1: Debinha substitui “E se o Dino der um passinho uma vez só, no começo? Ele continua andando?”. Antes: “jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no Dino quando o passinho”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Uma vez ou sempre?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"como os desenhos de um desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para correr\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-uma-vez-e-sempre-K1: Debinha substitui “E se o Dino der um passinho uma vez só, no começo? Ele continua andando?”. Antes: “jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no Dino quando o passinho”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1484,7 +1484,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez ou sempre?",
-        "instructions": "Compare o Dino quando o passinho acontece uma vez, no começo, e quando acontece sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o Dino quando o passinho acontece uma vez, no começo, e quando acontece sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Observe quantas vezes o Dino anda enquanto os quadros passam.",
           "Compare o que o Dino faz depois do primeiro quadro nos dois jeitos.",
@@ -1537,14 +1537,14 @@
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: Qual é o tamanho da tela?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você escolhe o tamanho da folha\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-tela-K1: Debinha substitui “E se a largura diminuir, a tela fica mais baixa ou mais estreita?”. Antes: “da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na borda quando muda a”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Qual é o tamanho da tela?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você escolhe o tamanho da folha\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-tela-K1: Debinha substitui “E se a largura diminuir, a tela fica mais baixa ou mais estreita?”. Antes: “da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na borda quando muda a”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1553,7 +1553,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Qual é o tamanho da tela?",
-        "instructions": "Compare a borda quando muda só a largura e quando muda só a altura. A tela do seu jogo tem 480 por 270. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare a borda quando muda só a largura e quando muda só a altura. A tela do seu jogo tem 480 por 270. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe o palco antes e depois de ligar a borda: o que aparece?",
           "Com a borda ligada, troque a largura e observe o contorno.",
@@ -1611,14 +1611,14 @@
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: Onde fica o Dino?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-coordenadas-K1: Debinha substitui “E para que lado cada número leva o Dino?”. Antes: “a pessoa acha você. No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde o Dino vai quando o x muda,”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde fica o Dino?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-coordenadas-K1: Debinha substitui “E para que lado cada número leva o Dino?”. Antes: “a pessoa acha você. No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde o Dino vai quando o x muda,”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-coordenadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1627,7 +1627,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Onde fica o Dino?",
-        "instructions": "Compare o lugar do Dino quando muda só o x e quando muda só o y, e descubra onde ele fica com x e y em zero. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare o lugar do Dino quando muda só o x e quando muda só o y, e descubra onde ele fica com x e y em zero. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Mude um número só e compare o lugar novo do Dino com o de antes.",
           "Depois de testar o x, faça o mesmo com o y. E onde será que fica o zero dos dois?",
@@ -1661,14 +1661,14 @@
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Existir e aparecer\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-criar-e-mostrar-K1: Debinha substitui “E quando o Dino passa a existir, ele já aparece na tela?”. Antes: “o palco, que a plateia vê. No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda nos bastidores e na tela do”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Existir e aparecer\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy vai te mostrando\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-criar-e-mostrar-K1: Debinha substitui “E quando o Dino passa a existir, ele já aparece na tela?”. Antes: “o palco, que a plateia vê. No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda nos bastidores e na tela do”.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-e-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1677,7 +1677,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Existir e aparecer",
-        "instructions": "Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
         "hints": [
           "Olhe os dois lados, os bastidores e a tela do jogo, depois de cada botão.",
           "Compare a tela antes e depois de mostrar o Dino. E se o Dino sair da tela, continua nos bastidores?",
@@ -1826,7 +1826,7 @@
       "key": "uma-vez-e-sempre",
       "title": "Uma vez ou sempre?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-uma-vez-e-sempre",
         "fala-uma-vez-e-sempre",
@@ -1844,7 +1844,7 @@
       "key": "limite-da-tela",
       "title": "Qual é o tamanho da tela?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-tela"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1946,7 +1946,7 @@
       "key": "coordenadas",
       "title": "Onde fica o Dino?",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue como dois números dizem o lugar do Dino na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1960,7 +1960,7 @@
       "key": "criar-e-mostrar",
       "title": "Existir e aparecer",
       "intent": "exploration",
-      "objective": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-criar-e-mostrar", "fala-criar-e-mostrar", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
