@@ -11,6 +11,7 @@ import { CANVAS3D_BLOCKS, CANVAS3D_GROUPS } from '../blocks/canvas3d'
 import type { BlockDefinition } from '../blocks/types'
 import { socketInputsFor } from '../blocks/valueSockets'
 import { buildIRFromWorkspace } from '../buildIR'
+import { categoryKey } from '../categoryNames'
 import { categoryShades } from '../colorShades'
 import { COMMON_ADDONS } from '../fields/FieldAddonPicker'
 import { COMMON_CLASSES } from '../fields/FieldClassPicker'
@@ -58,7 +59,7 @@ function collectToolbox(value: unknown, types: Set<string>, names: Set<string>):
   const node = value as { kind?: string; type?: string; name?: string; contents?: unknown }
   if (node.kind === 'block' && node.type) types.add(node.type)
   if (node.kind === 'category' && node.name) {
-    names.add(node.name.replace(/^[^\p{L}\p{N}]+\s*/u, ''))
+    names.add(categoryKey(node.name).replace(/^[^\p{L}\p{N}]+\s*/u, ''))
   }
   if (node.contents) collectToolbox(node.contents, types, names)
 }

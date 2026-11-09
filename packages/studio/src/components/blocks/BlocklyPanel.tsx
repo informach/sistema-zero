@@ -30,6 +30,8 @@ import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
+import type { ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
+import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   attachAnimationNameWatcher,
@@ -39,6 +41,7 @@ import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
+import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
 import {
   revealBlockInWorkspace,
   runtimeErrorBlockId,
@@ -56,9 +59,12 @@ import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../sta
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
+import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useStudioPortalContainer } from '../../studio/portal-container'
 import { useStudioTheme } from '../../studio/theme'
+import { useStudioTutor } from '../../studio/tutor'
 import { Spinner } from '../layout/LoadingViews'
 import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
 import { createBlocklyHistory, forgetBlocklyHistory } from './blocklyHistory'
@@ -78,7 +84,15 @@ function blocklyWorkspaceConfiguration(
     theme: szThemeFor(theme, root),
     renderer: 'zelos',
     grid: { spacing: 24, length: 3, colour: szGridColourFor(theme, root), snap: true },
-    zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
+    // D8 (redesenho de 11/2026): zoom inicial 1,0 no computador, o tamanho em que os blocos foram
+    // desenhados; no celular (a paleta em faixa) um pouco menor, para caber uma linha de bloco.
+    zoom: {
+      controls: true,
+      wheel: true,
+      startScale: horizontalLayout ? 0.8 : 1,
+      minScale: 0.4,
+      maxScale: 1.8,
+    },
     move: { scrollbars: true, drag: true, wheel: true },
     trashcan: true,
     // No celular, a toolbox vira uma faixa horizontal: o flyout passa a usar a
@@ -365,6 +379,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const lastRegeneratedBlocksStateRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
+  const initialViewDoneRef = useRef(false)
+  const t = useT()
   const shouldRegenerateAfterDragRef = useRef(false)
   const shouldPersistLayoutAfterDragRef = useRef(false)
   const regenerationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -426,7 +442,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
 
   // Perfil de aprendizado: o professor fixa o nível (config); o aluno pode
   // revelar o avançado (settings), se o professor permitir.
-  const learning = useStudioConfig().learning
+  const studioConfig = useStudioConfig()
+  const learning = studioConfig.learning
+  // "Mais blocos" no pé da paleta só onde o host oferece extensões (a aula pode não oferecer).
+  const offersMoreBlocks = studioConfig.extensions
+  const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
   const projectTools = useMemo(() => {
     const requested = new Set(projectToolsKey.split('\n'))
@@ -467,8 +487,16 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         isCategoryAllowed(e.blockly.toolboxCategory.name, extensionMinLevel(e), profile),
       )
       .map((e) => e.blockly.toolboxCategory)
-    return buildCoreToolbox(extras, profile, ids)
-  }, [installedIdsKey, profile])
+    const core = buildCoreToolbox(extras, profile, ids)
+    if (!offersMoreBlocks) return core
+    return {
+      ...core,
+      contents: [
+        ...core.contents,
+        { kind: MORE_BLOCKS_KIND, text: t('blocks.moreBlocks') },
+      ] as typeof core.contents,
+    }
+  }, [installedIdsKey, profile, offersMoreBlocks, t])
   initialToolboxRef.current ??= toolbox
 
   // Regenera arquivos/IR a partir dos blocos. Só deve ser chamada para edições
@@ -922,6 +950,44 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     }
   }, [workspace, editorCursorFile, editorCursorLine, editorCursorColumn, highlightSource, cross])
 
+  // O "Mais blocos" da paleta abre a janela das extensões desta instância.
+  useEffect(() => {
+    if (!workspace) return
+    const target = workspace as unknown as MoreBlocksWorkspace
+    target.__szOpenExtensions = () => setShowExtensions(true)
+    return () => {
+      target.__szOpenExtensions = undefined
+    }
+  }, [workspace, setShowExtensions])
+
+  // "Perguntar ao Zappy sobre este bloco" (botão direito): seleciona o bloco, que vira o contexto
+  // da conversa, e abre o Zappy. Sem tutor configurado, o item não aparece.
+  const tutor = useStudioTutor()
+  const tutorConfigured = Boolean(tutor.config)
+  const openTutor = tutor.setOpen
+  useEffect(() => {
+    if (!workspace) return
+    const target = workspace as unknown as ZappyOpenerWorkspace
+    target.__szAskZappy = tutorConfigured
+      ? (block) => {
+          selectBlock(block.id)
+          openTutor(true)
+        }
+      : undefined
+    return () => {
+      target.__szAskZappy = undefined
+    }
+  }, [workspace, tutorConfigured, openTutor, selectBlock])
+
+  // "Solte aqui para apagar": a frase que o CSS mostra na paleta quando um bloco é arrastado
+  // para ela (o CSS lê o atributo, para a frase seguir o idioma do Estúdio).
+  useEffect(() => {
+    const toolbox = (workspace as Blockly.WorkspaceSvg | null)
+      ?.getInjectionDiv()
+      ?.querySelector('.blocklyToolbox')
+    toolbox?.setAttribute('data-sz-delete-hint', t('blocks.dropToDelete'))
+  }, [workspace, t])
+
   // O sinal vermelho no bloco onde o jogo parou (redesenho do clássico, 11/2026): a prévia
   // publica a linha do erro no script.js e o mapa de origem diz qual bloco a gerou. Sem erro
   // (jogo novo, edição), o sinal sai.
@@ -1047,6 +1113,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
         forgetBlocklyHistory(workspace)
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
+        // D8: na PRIMEIRA carga deste editor, os blocos começam no alto (depois do resize).
+        if (!initialViewDoneRef.current && workspace.getTopBlocks(false).length > 0) {
+          initialViewDoneRef.current = true
+          const svgWorkspace = workspace as Blockly.WorkspaceSvg
+          requestAnimationFrame(() => showBlocksFromTop(svgWorkspace))
+        }
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o
         // evento não dispare): também ressincroniza para que o dedup do listener
@@ -1135,6 +1207,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     })
     // Sons de encaixar/desconectar/descartar bloco, servidos pelo host (mesma origem).
     preloadBlockSounds(injected)
+    // Lixeira e zoom mais para cima (ver `cornerSpacer.ts`).
+    installCornerSpacer(injected)
     // Corrida de fonte web: o Blockly mede a geometria dos blocos com a fonte
     // vigente NO RENDER; se Baloo 2/Nunito ainda não aplicaram, o texto mede
     // errado e os blocos saem tortos/colapsados — e o load da fonte NÃO muda o

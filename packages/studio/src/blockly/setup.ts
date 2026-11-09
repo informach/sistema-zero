@@ -4,7 +4,7 @@ import { registerFieldColour } from '@blockly/field-colour'
 import '@blockly/toolbox-search'
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
-import { hasClipboard, runCopyBlocks, runPasteBlocks } from './blockClipboard'
+import { hasClipboard, notifyWorkspace, runCopyBlocks, runPasteBlocks } from './blockClipboard'
 import { registerCoreBlocks } from './blocks'
 import { registerAddonModuleVisibilityExtension } from './blocks/addonModuleExtension'
 import { registerAnimLoopMutator } from './blocks/animLoopMutator'
@@ -18,6 +18,7 @@ import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { registerSafeDomAttributeExtension } from './blocks/safeDomAttributeExtension'
 import { registerSafeDomElementExtensions } from './blocks/safeDomElementExtension'
+import { patchContextMenuWords } from './contextMenuWords'
 import { patchDeleteContextMenus } from './deleteContextMenu'
 import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
@@ -33,6 +34,7 @@ import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
 import { registerFieldSvgPaint } from './fields/FieldSvgPaint'
 import { registerFieldTileGrid } from './fields/FieldTileGrid'
+import { registerMoreBlocksItem } from './moreBlocksItem'
 import { organizeBlocks } from './organize'
 import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
 import { PROJECT_AREA_FRAME_TYPES } from './projectAreas'
@@ -205,9 +207,10 @@ function registerScreenshotContextMenu(): void {
       if (!workspace) return
       void exportWorkspaceImage(workspace).then((result) => {
         if (!result.downloaded) {
-          window.alert(
-            'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.',
-          )
+          const message =
+            'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.'
+          // O aviso no canto do editor; o alerta do navegador só onde não há editor do Estúdio.
+          if (!notifyWorkspace(workspace, message)) window.alert(message)
         }
       })
     },
@@ -333,6 +336,9 @@ export function ensureBlocklyInitialized(): void {
   // soquetes preenchidos, que são blocos-sombra). Só troca o TEXTO dos itens
   // nativos de apagar — ver deleteContextMenu.ts.
   patchDeleteContextMenus()
+  // Depois do copiar/colar do Estúdio: as palavras novas valem também para eles.
+  patchContextMenuWords()
+  registerMoreBlocksItem()
   initialized = true
 }
 

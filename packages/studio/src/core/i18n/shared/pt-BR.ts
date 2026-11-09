@@ -92,6 +92,8 @@ export const ptBR: Record<string, string> = {
   'stage.bigger': 'Jogo maior',
   'stage.smaller': 'Jogo menor',
   'stage.errorMark': 'O jogo parou neste bloco.',
+  'blocks.dropToDelete': 'Solte aqui para apagar',
+  'blocks.moreBlocks': 'Mais blocos',
   'stage.errorMark.program': 'O programa parou neste bloco.',
   'stage.error.stopped.game': 'Opa, o jogo parou',
   'stage.error.stopped.page': 'Opa, a página parou',

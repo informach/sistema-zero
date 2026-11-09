@@ -87,6 +87,8 @@ export const en: Record<string, string> = {
   'stage.bigger': 'Bigger game',
   'stage.smaller': 'Smaller game',
   'stage.errorMark': 'The game stopped at this block.',
+  'blocks.dropToDelete': 'Drop here to delete',
+  'blocks.moreBlocks': 'More blocks',
   'stage.errorMark.program': 'The program stopped at this block.',
   'stage.error.stopped.game': 'Oops, the game stopped',
   'stage.error.stopped.page': 'Oops, the page stopped',

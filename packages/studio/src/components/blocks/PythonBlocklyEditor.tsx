@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   revealBlockInWorkspace,
@@ -301,10 +302,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         colour: szGridColourFor(initialTheme.current, element),
         snap: true,
       },
-      zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
+      zoom: { controls: true, wheel: true, startScale: 1, minScale: 0.4, maxScale: 1.8 },
       move: { scrollbars: true, drag: true, wheel: true },
       trashcan: !observer,
     })
+    // Lixeira e zoom mais para cima, como no JavaScript (ver `cornerSpacer.ts`).
+    installCornerSpacer(workspace)
     let disposed = false,
       applying = false,
       generation = 0,

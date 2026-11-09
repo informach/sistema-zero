@@ -378,6 +378,17 @@ function handlersFor(workspace: Blockly.Workspace | null | undefined): PasteTarg
   return workspace ? (pasteTargets.get(workspace) ?? null) : null
 }
 
+/**
+ * Um aviso no canto do editor (o mesmo do copiar/colar), em vez do `window.alert` que trava a
+ * página. Devolve `false` quando este workspace não tem onde avisar.
+ */
+export function notifyWorkspace(workspace: Blockly.Workspace, message: string): boolean {
+  const handlers = handlersFor(workspace)
+  if (!handlers) return false
+  handlers.notify(message)
+  return true
+}
+
 // ---------------------------------------------------------------------------
 // Ações dos itens de menu (chamadas pelo setup.ts)
 // ---------------------------------------------------------------------------

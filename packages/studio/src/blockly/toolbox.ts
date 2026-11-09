@@ -39,6 +39,7 @@ import {
 } from './blocks'
 import type { BlockDefinition } from './blocks/types'
 import { type SocketShadow, socketInputsFor } from './blocks/valueSockets'
+import { CATEGORY_DISPLAY_NAMES } from './categoryNames'
 import { paletteEntryFor } from './paletteEntries'
 import {
   isEventProgrammingDefinition,
@@ -151,6 +152,51 @@ export interface ToolboxConfiguration {
  * contraste (`e2e/programming-accessibility.spec.ts`).
  */
 const PROGRAMMING_LABEL_CLASSES = 'blocklyToolboxCategoryLabel sz-toolbox-programming-label'
+
+/**
+ * O ícone de cada categoria de cima, desenhado pelo CSS (`.sz-cat-icon--*::before`, decorativo):
+ * o TEXTO do rótulo não muda, e é por ele que o robô das aulas gravadas e os e2e acham a
+ * categoria. As que já têm emoji no nome (Pesquisar, Áreas, Blocos deste jogo) ficam como estão.
+ */
+const CATEGORY_ICONS: Readonly<Record<string, string>> = Object.freeze({
+  Programação: 'brain',
+  Som: 'sound',
+  'Jogo 2D': 'game',
+  'Jogo 2D Avançado': 'game',
+  'Jogo 3D': 'cube',
+  'Jogo 3D Avançado': 'cube',
+  'Mundo 3D': 'world',
+  HTML: 'page',
+  CSS: 'style',
+  SVG: 'shapes',
+  Canvas: 'paint',
+  'Canvas 3D': 'scene',
+  Avançado: 'code',
+})
+
+/** Nome de exibição e ícone das categorias de cima (o resto da árvore fica igual). */
+function decorateTopCategories(contents: readonly unknown[]): unknown[] {
+  return contents.map((entry) => {
+    const category = entry as ToolboxCategory
+    if (category.kind !== 'category') return entry
+    const icon = CATEGORY_ICONS[category.name]
+    const display = CATEGORY_DISPLAY_NAMES[category.name]
+    if (!icon && !display) return entry
+    const label = category.cssconfig?.label ?? 'blocklyToolboxCategoryLabel'
+    return {
+      ...category,
+      ...(display ? { name: display } : {}),
+      ...(icon
+        ? {
+            cssconfig: {
+              ...category.cssconfig,
+              label: `${label} sz-cat-icon sz-cat-icon--${icon}`,
+            },
+          }
+        : {}),
+    }
+  })
+}
 
 function buildEntries(
   blocks: BlockDefinition[],
@@ -691,6 +737,8 @@ export function buildCoreToolbox(
   // categorias/sub-categorias vazias na paleta da aula).
   return {
     kind: 'categoryToolbox',
-    contents: pruneEmptyCategories(contents) as ToolboxConfiguration['contents'],
+    contents: decorateTopCategories(
+      pruneEmptyCategories(contents),
+    ) as ToolboxConfiguration['contents'],
   }
 }
