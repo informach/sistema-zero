@@ -296,6 +296,8 @@ export function IslandDiscovery() {
   }
   return (
     <Frame
+      arranjo="faisca"
+      aspectoDoPalco={1.1}
       raiz={raiz}
       title="A ilha em 3D"
       kind="ilha"
@@ -409,7 +411,7 @@ export function IslandDiscovery() {
               {numero('y', 'y', f('contact-apart') && !f('contact-touch') && s.view !== 'top')}
             </Modulo>
 
-            <Modulo titulo="O encontro" icone="📦" dica="As caixas que o jogo confere.">
+            <Modulo compacto titulo="O encontro" icone="📦" dica="As caixas que o jogo confere.">
               <Interruptor
                 ligado={s.bounds}
                 estado={(on) => (on ? 'Caixas à vista' : 'Caixas escondidas')}

@@ -1895,3 +1895,744 @@
     animation: none;
   }
 }
+
+/* ════════ as telas do Faísca numa tela só (09/11/2026, Canvas aprovado por ela) ════════
+ * `Frame` com `arranjo="faisca"`: à esquerda o JOGO (as estrelas, a cena NO TOPO e "Seus testes"),
+ * à direita a CRIANÇA (a fala do Zappy, o painel dos controles e as descobertas). Regra dela: a
+ * cena, a fala do Zappy e os controles ficam à vista SEM depender de rolar; rolar nas duas colunas
+ * pode (as descobertas e os testes ficam abaixo quando não cabem). Os dois cartões ficam separados,
+ * metade/metade. ⚠️ Este arquivo é importado ANTES das regras do console no `scene.css`: por isso
+ * os seletores daqui levam a moldura e o atributo (especificidade maior que a das regras de lá). */
+.sz-discovery-moldura[data-arranjo="faisca"] {
+  /* A altura que a cena pode ter: a janela menos o rodapé fixo da aula, a linha das estrelas e os
+   * respiros do console (no normal a criança rola até o topo do console). */
+  --sz-palco-hmax: calc(100dvh - var(--sz-lesson-nav-height, 7rem) - 5.5rem);
+}
+.sz-scene-workspace--expanded .sz-discovery-moldura[data-arranjo="faisca"] {
+  /* No ampliado: a janela menos o cabeçalho numa linha, as bordas do cartão e as estrelas. */
+  --sz-palco-hmax: calc(100dvh - 11rem);
+}
+
+/* A cena: no topo, do tamanho que a altura deixa (nunca centralizada na altura). O encaixe por JS
+ * do ampliado fica desligado aqui: ele mede o mundo esticado, e o mundo agora tem a altura da cena. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-visual > .sz-scene-console-mundo {
+  --sz-scene-encaixe-ativo: 0;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-mundo .sz-discovery-palco {
+  width: min(100%, calc(max(9rem, var(--sz-palco-hmax)) * var(--sz-palco-aspecto, 1.3333) + 8px));
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-mundo .sz-scene-frame--fit {
+  width: 100%;
+  margin: 0;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-mundo .sz-island-world {
+  min-height: 0;
+  aspect-ratio: var(--sz-palco-aspecto, 1.1);
+}
+
+/* As duas colunas com a altura do que têm; quem rola é o cartão (a regra de 01/10/2026). */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-visual,
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions {
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+  top: auto;
+  align-self: stretch;
+}
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-body,
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-body
+  > fieldset,
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-body
+  > fieldset
+  > fieldset {
+  flex: 1 0 auto;
+}
+.sz-scene-workspace--expanded .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console {
+  flex: 1 0 auto;
+  min-height: 0;
+  grid-template-rows: auto;
+}
+
+/* Duas colunas, metade/metade, nos dois modos (como os dois cartões de antes). */
+@container scene-workspace (min-width: 52rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto;
+    align-items: stretch;
+  }
+  /* A fala do Zappy mora na coluna da direita: a faixa "Z" do celular sai. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-celular {
+    display: none;
+  }
+  /* Respiro entre a fala, os controles e as descobertas (pedido dela). */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions
+    > .sz-discovery-descobertas {
+    margin-top: 6px;
+  }
+}
+
+/* A fala: o texto e o "Ouvir" lado a lado (a ideia do fim volta ao balão de sempre). */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+  .flex.items-end
+  > div.relative {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+  .flex.items-end
+  > div.relative
+  > p {
+  flex: 1;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+  .flex.items-end
+  > div.relative
+  > button {
+  margin-top: 0;
+}
+
+/* ── O painel dos controles: o andar | as peças, metade/metade; a regra na linha de baixo.
+ *    Abaixo de 26rem (tela pequena, celular), três linhas: andar | caderninho; sumiço | Jogar de
+ *    novo; a regra. ── */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel-caixa {
+  container: faisca-painel / inline-size;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: row dense;
+  gap: 8px 10px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel > .sz-discovery-movimento {
+  grid-column: 1;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  > .sz-discovery-modulo[data-largo="true"] {
+  grid-column: 1 / -1;
+  order: 1;
+}
+/* Sem o andar (a vista e a posição da Ilha), as peças ocupam a largura toda. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel:not(
+    :has(> .sz-discovery-movimento)
+  )
+  > .sz-discovery-modulo {
+  grid-column: 1 / -1;
+}
+@container faisca-painel (min-width: 26rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel > .sz-discovery-movimento {
+    grid-row: 1 / span 3;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel:has(> .sz-discovery-movimento)
+    > .sz-discovery-modulo:not([data-largo="true"]) {
+    grid-column: 2;
+  }
+}
+
+/* Os módulos enxutos. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-modulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  padding: 6px 10px 8px;
+  gap: 4px;
+  box-shadow: 0 3px 0 var(--szd-degrau);
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-modulo-titulo {
+  font-size: 0.74rem;
+  padding: 1px 10px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-modulo-corpo {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0;
+}
+/* Sem caixa: o caderninho, o interruptor e o "Jogar de novo" (o nome fica para o leitor de tela). */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+  .sz-discovery-modulo[data-compacto="true"] {
+  padding: 0;
+  border-width: 0;
+  box-shadow: none;
+  background: transparent;
+  align-self: center;
+  justify-content: center;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  [data-compacto="true"]
+  .sz-discovery-caderno,
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  [data-compacto="true"]
+  .sz-discovery-interruptor,
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  [data-compacto="true"]
+  .sz-discovery-botao {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  justify-content: center;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-botao {
+  min-height: 44px;
+  padding-inline: 12px;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-interruptor {
+  min-height: 44px;
+  padding-block: 4px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-interruptor small {
+  display: none;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-interruptor strong {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno {
+  padding-block: 4px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-titulo {
+  font-size: 0.68rem;
+}
+/* O andar: o nome em cima e a cruzeta no meio; as letras W A S D já estão nas teclas. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+  .sz-discovery-movimento
+  > .sz-discovery-modulo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  .sz-discovery-movimento
+  .sz-discovery-modulo-titulo {
+  align-self: flex-start;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  .sz-discovery-movimento
+  .sz-discovery-modulo-dica {
+  display: none;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  .sz-discovery-movimento
+  .sz-discovery-cruzeta {
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: 48px 48px;
+  padding: 0;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  .sz-discovery-movimento
+  .sz-discovery-tecla {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+}
+/* A regra (o módulo largo): o nome em cima, a frase com a peça na largura toda. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+  > .sz-discovery-modulo[data-largo="true"] {
+  flex-direction: column;
+  align-items: stretch;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-painel
+  > .sz-discovery-modulo[data-largo="true"]
+  .sz-discovery-modulo-titulo {
+  align-self: flex-start;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-livre-encaixe {
+  width: 100%;
+  padding: 4px 10px;
+}
+
+/* ── As descobertas: cartões enxutos, com o "Descobri" inteiro. ── */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions {
+  container: faisca-acoes / inline-size;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 5px;
+}
+@container faisca-acoes (min-width: 34rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartoes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartao {
+  margin: 0;
+  padding: 5px 7px;
+  box-shadow: 0 3px 0 var(--szd-degrau);
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartao-botao {
+  gap: 8px;
+  align-items: center;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartao-emoji {
+  width: 26px;
+  height: 26px;
+  font-size: 0.9rem;
+  flex: 0 0 auto;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartao-texto strong {
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartao-texto small {
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+/* ── Seus testes, embaixo da cena: as três fotinhos mais novas, lado a lado. ── */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-testes {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fotos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 6px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-foto:nth-child(n + 4) {
+  display: none;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-foto {
+  padding: 8px;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+/* ── O cabeçalho do ampliado numa linha só: o selo, o título e o "Voltar". ── */
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+.sz-scene-workspace-header {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+  padding-block: 0;
+}
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-heading
+  > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-heading
+  > div
+  > * {
+  margin: 0 !important;
+}
+.sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+  .sz-scene-workspace-card {
+  gap: 10px;
+}
+
+/* ── Celular (uma coluna): a faixa "Z", as estrelas e a cena no topo; logo abaixo os controles em
+ *    três linhas; depois as descobertas e os testes, inteiros. ── */
+@container scene-workspace (max-width: 51.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] {
+    --sz-palco-hmax: calc(100dvh - 26rem);
+  }
+  .sz-scene-workspace--expanded .sz-discovery-moldura[data-arranjo="faisca"] {
+    --sz-palco-hmax: calc(100dvh - 31rem);
+  }
+  /* No fim a ideia (com o Zappy) sobe para o topo: a cena dá lugar a ela. */
+  .sz-discovery-moldura[data-arranjo="faisca"][data-fim="true"] {
+    --sz-palco-hmax: calc(100dvh - 42.5rem);
+  }
+  .sz-scene-workspace--expanded .sz-discovery-moldura[data-arranjo="faisca"][data-fim="true"] {
+    --sz-palco-hmax: calc(100dvh - 47.5rem);
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-visual {
+    padding: 6px;
+    gap: 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-celular {
+    display: flex;
+    margin: 0;
+  }
+  /* Durante o jogo a faixa "Z" fala; o balão fica fora da tela, e a voz continua tocando. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-scene-console-actions
+    > .sz-discovery-fala-bloco {
+    display: none;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud .sz-scene-momento {
+    white-space: nowrap;
+    font-size: 0.7rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-estrela,
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-estrela svg {
+    width: 16px;
+    height: 16px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-direita,
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-ferramentas {
+    flex-wrap: nowrap;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-movimento
+    .sz-discovery-modulo-titulo {
+    display: none;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-movimento
+    > .sz-discovery-modulo {
+    border-width: 0;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-modulo[data-largo="true"]
+    .sz-discovery-modulo-titulo,
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-encaixe-estado {
+    display: none;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-titulo {
+    white-space: normal;
+    font-size: 0.64rem;
+    line-height: 1.2;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-botao {
+    font-size: 0.88rem;
+    padding-inline: 8px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-interruptor
+    strong {
+    font-size: 0.76rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-cartoes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fotos {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-foto:nth-child(n + 3) {
+    display: none;
+  }
+  /* O cabeçalho do ampliado: o título e o "Voltar" só com o ícone. */
+  .sz-scene-workspace--expanded:has(
+      .sz-discovery-moldura[data-arranjo="faisca"]
+    ) .sz-scene-workspace-heading
+    > div
+    > :first-child:not(:last-child) {
+    display: none;
+  }
+  .sz-scene-workspace--expanded:has(.sz-discovery-moldura[data-arranjo="faisca"])
+    .sz-scene-workspace-actions
+    button {
+    font-size: 0;
+    gap: 0;
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+/* Painel estreito (três linhas): só as peças sem caixa dividem a linha; a câmera e a altura da
+ * Ilha, que têm caixa e botões, ocupam a largura toda. */
+@container faisca-painel (max-width: 25.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]) {
+    grid-column: 1 / -1;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-encaixe
+    .sz-discovery-encaixe-linha {
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+  /* Com duas peças só (a ponte, os símbolos, a cabana, a porta), elas empilham ao lado do andar,
+   * como na tela grande: cabem na altura do andar e sobra uma linha para a cena. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel:has(
+      > .sz-discovery-movimento
+    ):not(
+      :has(
+        > .sz-discovery-modulo:not([data-largo="true"])
+          ~ .sz-discovery-modulo:not([data-largo="true"])
+          ~ .sz-discovery-modulo:not([data-largo="true"])
+      )
+    )
+    > .sz-discovery-movimento {
+    grid-row: 1 / span 2;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel:has(> .sz-discovery-movimento):not(
+      :has(
+        > .sz-discovery-modulo:not([data-largo="true"])
+          ~ .sz-discovery-modulo:not([data-largo="true"])
+          ~ .sz-discovery-modulo:not([data-largo="true"])
+      )
+    )
+    > .sz-discovery-modulo:not([data-largo="true"]) {
+    grid-column: 2;
+  }
+}
+@container scene-workspace (max-width: 51.99rem) {
+  /* O controle não encolhe; quem quebra linha é o nome. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
+    .sz-discovery-modulo-corpo {
+    flex: 0 0 auto;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
+    .sz-discovery-modulo-titulo {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+@container scene-workspace (max-width: 51.99rem) {
+  /* As ferramentas da tela ("Começo") ficam só com o ícone; o nome segue para o leitor de tela. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-hud
+    .sz-discovery-redondo[data-com-texto="true"] {
+    font-size: 0;
+    gap: 0;
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+/* Celular: o painel da Ilha mais enxuto. As dicas dos módulos ficam para o leitor de tela (os
+ * controles já dizem o que fazem), e os três números da posição ficam um embaixo do outro, mais
+ * juntos (lado a lado, o − e o + não cabiam num celular pequeno). */
+@container scene-workspace (max-width: 51.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-modulo-dica {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-livre-eixos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-eixos
+    .sz-discovery-livre-eixo {
+    justify-content: center;
+    padding: 2px 6px;
+  }
+}
+@container scene-workspace (max-width: 51.99rem) {
+  /* O título do ampliado no celular numa letra menor: em duas linhas ele tirava a altura da cena. */
+  .sz-scene-workspace--expanded:has(
+      .sz-discovery-moldura[data-arranjo="faisca"]
+    ) .sz-scene-workspace-heading
+    h3 {
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+}
+@container scene-workspace (max-width: 51.99rem) {
+  /* Os módulos com caixa (a câmera e a altura da Ilha) numa linha só: o nome à esquerda, o controle
+   * à direita. Com o nome em cima e a dica embaixo, o contato da Ilha não cabia num celular pequeno. */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"]) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
+    .sz-discovery-modulo-titulo {
+    align-self: center;
+    max-width: 6.5rem;
+    white-space: normal;
+    font-size: 0.66rem;
+    line-height: 1.15;
+    padding: 2px 8px;
+  }
+}
+@container scene-workspace (max-width: 51.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    > .sz-discovery-modulo:not([data-compacto="true"]):not([data-largo="true"])
+    .sz-discovery-modulo-corpo {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-camera
+    button {
+    padding-inline: 8px;
+    font-size: 0.82rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-passos {
+    gap: 4px;
+    padding: 3px 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-interruptor
+    strong {
+    white-space: normal;
+    line-height: 1.1;
+  }
+}
+/* Celular estreito (painel abaixo de 22rem): a cruzeta com teclas de 44px (o mínimo de toque) para
+ * caber em meia largura, o caderninho só com a pergunta e a resposta (como no protótipo do celular)
+ * e a frase da regra numa letra um pouco menor. */
+@container faisca-painel (max-width: 21.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-movimento
+    .sz-discovery-cruzeta {
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: 44px 44px;
+    gap: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-movimento
+    .sz-discovery-tecla {
+    width: 44px;
+    height: 44px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-titulo {
+    display: none;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno {
+    padding: 4px 8px;
+    font-size: 0.82rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-livre-encaixe {
+    padding: 2px 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-encaixe
+    .sz-discovery-encaixe-linha {
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-encaixe
+    .sz-discovery-peca {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+  }
+}
+@container faisca-painel (max-width: 21.99rem) {
+  /* A cruzeta cabe em meia largura: 3 teclas de 44px, sem a folga em volta, e a coluna dela
+   * nunca fica menor que ela (142px). */
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel {
+    grid-template-columns: minmax(8.875rem, 1fr) minmax(0, 1fr);
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-movimento
+    .sz-discovery-cruzeta {
+    padding: 0;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-botao {
+    font-size: 0.82rem;
+    padding-inline: 6px;
+    gap: 4px;
+  }
+}
+/* O andar com respiro em cima e embaixo: as teclas 3D sobem 2px e não podem encostar na borda. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel > .sz-discovery-movimento {
+  padding-block: 4px;
+}
+/* No fim, no celular, a ideia sobe para o topo com o Zappy: letra menor no cartão (como no
+ * protótipo), para a cena e os controles continuarem à vista logo abaixo. */
+@container scene-workspace (max-width: 51.99rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-fala-ideia
+    .flex.items-end
+    > div.relative {
+    padding: 8px 10px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-discovery-ideia-titulo {
+    font-size: 0.64rem;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-discovery-ideia-texto {
+    font-size: 0.88rem;
+    line-height: 1.3;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-fala-ideia .sz-discovery-ideia-ponte {
+    font-size: 0.8rem;
+    padding-top: 4px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-fala-ideia
+    .flex.items-end
+    > div.relative
+    > button {
+    margin-top: 4px;
+    min-height: 40px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"][data-fim="true"]
+    .sz-discovery-hud
+    .sz-scene-momento {
+    font-size: 0.62rem;
+    padding-inline: 8px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"][data-fim="true"] .sz-discovery-contagem {
+    gap: 0;
+  }
+}
