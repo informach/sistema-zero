@@ -127,10 +127,10 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
     }
   })
 
-  test('Desafio (aulas 2 e 3), Ilha e os quatro Poderes: conceito, analogia e um convite', () => {
+  test('Cadê, Desafio, Ilha e os quatro Poderes: conceito, analogia e um convite', () => {
     const todas = AULAS.flatMap(experiencias)
-    // Desafio 3 (memória, porta, posição), Ilha 4, um por Poder.
-    expect(todas.map((e) => e.id)).toHaveLength(11)
+    // Cadê 2 (toque, achados), Desafio 5 (quadro, limite, memória, porta, posição), Ilha 4, um por Poder.
+    expect(todas.map((e) => e.id)).toHaveLength(15)
     for (const e of todas) expect(problemasDoConvite(e), e.id).toEqual([])
   })
 

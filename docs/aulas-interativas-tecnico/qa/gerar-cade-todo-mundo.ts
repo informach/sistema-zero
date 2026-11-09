@@ -254,7 +254,7 @@ const aula1 = {
     video('video-a1-toque', 'Um toque pode chamar uma ação'),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
+      'Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-toque',
@@ -334,7 +334,7 @@ const aula2 = {
     video('video-a2-variavel', 'Um número que acompanha a busca'),
     dialogue(
       'ponte-a2-variavel',
-      'Sua vez! Acompanhe o valor guardado durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
+      'Sua vez! Investigue quando o valor guardado muda e quando continua igual durante a busca. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-achados',

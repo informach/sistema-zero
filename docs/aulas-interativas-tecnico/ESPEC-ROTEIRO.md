@@ -80,7 +80,9 @@ vizinhos e as diferenças entre celular e computador. No Kids, o rótulo é **Pr
 
 ## 4. Experiências: preparar e acompanhar a investigação
 
-Aplicar [Conceito, investigação e construção](DESCOBERTA-GUIADA.md), direção de 25/10/2026. O vídeo explica o conceito com uma situação concreta, uma analogia curta e a ligação com o jogo. Termina com um convite que diga o que observar. Uma demonstração breve pode ajudar; os testes completos e os nomes dos controles da experiência ficam com a própria atividade.
+Aplicar [Conceito, investigação e construção](DESCOBERTA-GUIADA.md), direção de 25/10/2026. O vídeo explica o conceito com uma situação concreta, uma analogia curta e a ligação com o jogo. Termina com um convite que diga o que observar. Os testes, os controles e o jeito de usar a experiência ficam com a própria atividade e com o Zappy.
+
+**O vídeo não explica a experiência (decisão de 09/11/2026, vale para todos os cursos).** A fala explica só o conceito e convida a explorá-lo na experiência da aula ("Agora você vai investigar …", com o fecho comum). Não descreve a tela da experiência, não nomeia nem aponta controles e não dita testes. Nas outras partes, quem lembra a experiência lembra o conceito ou o que se observou ("Lembra da experiência? Cada personagem encontrado somava um em Achados."), nunca um botão ou um interruptor dela. Motivo: a experiência pode mudar de visual e de nome de controle sem obrigar a gerar voz nova nem regravar o vídeo. Os testes `qa/convite-da-experiencia.test.ts` e `qa/video-experiencia.test.ts` conferem a parte da experiência.
 
 Nas notas de tela, registrar a ilustração e os elementos que tornam a ideia concreta. Preservar cócegas/risada e futebol no Cadê. Não mostrar a resolução de todas as descobertas nem narrar uma sequência de cliques para a pessoa reproduzir.
 
@@ -262,7 +264,7 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
 - **Os colchetes** são os gestos, na ordem em que acontecem. O texto fora deles continua sendo a
   orientação de quem grava à mão.
 - **Aspas dentro de colchetes** nomeiam um botão, um bloco ou um campo, nunca uma frase a
-  esperar: `[apontar "Ligar a reação ao toque"]`.
+  esperar: `[apontar "Verificar projeto"]`.
 - **Frase sem citação** (uma observação, um cuidado) se junta à frase anterior e seus colchetes
   vêm depois dos dela. No começo do **Na tela**, antes de qualquer citação, ela vale do começo da
   fala da parte: é o lugar do `[expandir estúdio]` de uma parte que já começa no Estúdio.
@@ -353,11 +355,9 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 
 | Tag | O que faz |
 | --- | --- |
-| `[tocar "Tocar no arbusto"]` | toca num controle da experiência pelo nome dele |
 | `[apontar zappy]` | aponta o Zappy, ao lado da fala dele |
-| `[apontar selo]` | aponta o selo **Seta apertada?** da experiência do andar (o texto dele muda com a seta) |
-| `[apontar faixa fora da tela]` | aponta a faixa **fora da tela** da experiência do limite |
-| `[apontar "Valor atual de achados"]` | aponta qualquer coisa da página pelo nome (verbo do EdiAula, abaixo) |
+
+Desde 09/11/2026 o vídeo não aponta nem toca controles da experiência (seção 4). O palco ainda entende `[tocar "<nome>"]`, `[apontar selo]` e `[apontar faixa fora da tela]`, mas os roteiros não os usam.
 
 **Estúdio**
 
@@ -476,11 +476,11 @@ No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela ch
 **Experiência**
 
 ```
-No "Agora é a sua vez de investigar", ampliar a experiência [ampliar experiência]. No "Compare o que acontece", mostrar onde a reação liga e desliga [apontar "Ligar a reação ao toque"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
+No "Isso você vai testar na experiência", ampliar a experiência e deixar a cena parada [ampliar experiência]. No "O Zappy ajuda a observar", mostrar o Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
 ```
 
-Na experiência, mostrar onde estão os controles e o Zappy, sem fazer a investigação no lugar da
-criança.
+Na experiência, só ampliar e mostrar o Zappy: nada de apontar controles nem fazer a investigação no
+lugar da criança.
 
 **Montagem no Estúdio**
 

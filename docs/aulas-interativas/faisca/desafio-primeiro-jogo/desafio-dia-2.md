@@ -23,6 +23,10 @@ Pedido da responsável: a revisão anterior olhou só as experiências, e o rest
 
 Decisão da responsável: o vídeo da parte 1 guiava a criança passo a passo (o tour pelo botão da memória e por temChave, a ordem dos testes e o que acontece quando o personagem encosta na chave). Agora ele tem só o conceito (por que o jogo precisa lembrar e o que é variável), a analogia do papelzinho, temChave no jogo dela, a pergunta do Dedé ("Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?") devolvida com "Isso você vai testar na experiência." e um convite: investigar quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. O Na tela só amplia a experiência e mostra a cena parada. A instrução ("Compare temChave com a memória da chave ligada e desligada."), o recado da página e a página do Passo a passo dizem o que investigar, sem sequência; as pistas, os pedidos da lista e as falas do Zappy não mudaram. Âncora de `video-d2-contexto-K1` recalculada. O guarda é `qa/video-experiencia.test.ts`.
 
+## Retomadas sem os controles da experiência, 09/11/2026
+
+Decisão da responsável: quem lembra a experiência lembra o que se observou, não um controle dela (a memória da chave virou o lápis do caderninho em 08/11/2026). Na parte 3, a retomada diz que a chave podia sair do chão sem o jogo guardar que o personagem pegou a chave, no lugar de "Com a memória da chave desligada… temChave continuava falso"; o seu jogo "está assim agora", no lugar de "igual à memória desligada"; o anúncio é "ensinar o seu jogo a lembrar da chave", e o bloco Alterar temChave para verdadeiro "faz o jogo lembrar da chave", no lugar de "liga a memória da chave". O Na tela da parte 1 não cita mais a memória da chave, e o subtítulo da página do Passo a passo da parte 3 acompanhou a fala. A parte 3 precisa de voz nova.
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 1, com quatro direções e bordas. A retomada preparada só serve quando não há envio anterior.

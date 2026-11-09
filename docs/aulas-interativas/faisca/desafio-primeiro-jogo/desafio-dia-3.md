@@ -12,6 +12,10 @@ A versão vigente segue [exploração orientada por objetivos](../../../aulas-in
 
 Decisão da responsável: os vídeos das partes 1 e 6 deixaram de apontar os controles ("Olha aqui: nesta experiência…", a marca de início, Mostrar um alvo) e de dizer a ordem dos testes. Cada um tem o conceito (condição; o lugar com dois números), a analogia (a pergunta "está chovendo?", que decide o guarda-chuva, no lugar da porta de casa, que já dava os dois resultados; o mapa do tesouro), o nome no jogo dela (temChave é verdadeiro?; x e y), uma pergunta da Debinha devolvida com "Isso você vai testar na experiência." e um convite com o fecho comum. Na parte 6, a pergunta da Debinha passou a ser a que convida ("Mas, quando o y aumenta, a chave sobe ou desce?"), e o y é apresentado antes dela. O Na tela só amplia a experiência e mostra a cena parada. As instruções, os recados e as páginas do Passo a passo dizem o que comparar, sem sequência; o alvo opcional continua na própria cena e no Passo a passo. Âncoras de `video-d3-condicao-K1` e `video-d3-posicao-K1` recalculadas. O guarda é `qa/video-experiencia.test.ts`.
 
+## Retomada sem os controles da experiência, 09/11/2026
+
+Decisão da responsável: quem lembra a experiência lembra o que se observou. Na parte 2, a retomada diz que a porta "perguntava se o personagem tem a chave", porque a experiência mostra a pergunta "Você tem a chave?" e o caderninho, não temChave; temChave continua nas falas sobre o jogo da criança e na montagem. A parte 2 precisa de voz nova.
+
 ## Resumo
 
 - Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.

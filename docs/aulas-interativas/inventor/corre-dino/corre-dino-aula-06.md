@@ -35,7 +35,7 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele sai do grupo também?”. Antes: “num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos”.
+video-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele sai do grupo também?”. Antes: “jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos”.
 
 **Experiência em exploração livre:** `cleanup` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/cleanup.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 

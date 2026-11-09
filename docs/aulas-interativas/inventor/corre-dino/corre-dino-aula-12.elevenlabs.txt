@@ -54,7 +54,7 @@
 
 [engaging, energetic, conversational voice] Olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na régua, somar -1 levava de -5 para -6, e, nas raias da primeira parte, o -6 chegava mais longe. Agora a gente vai sortear essa diferença!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na régua, somar -1 levava de -5 para -6, e, na primeira parte, o cacto com -6 chegava mais longe. Agora a gente vai sortear essa diferença!
 
 [engaging, energetic, conversational voice] Tirar 1 é o mesmo que somar -1. Por isso, a velocidade vai ser uma conta: -5 menos um número sorteado, de 0 a 1. Se sair 0, fica -5; se sair 1, fica -6.
 

@@ -20,7 +20,7 @@
 
 [confident, clear, unhurried voice] Nos blocos, abra a área Ao iniciar e encontre o bloco Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.
 
-[engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você mudou na experiência.
+[engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você investigou na experiência.
 
 [confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3.
 

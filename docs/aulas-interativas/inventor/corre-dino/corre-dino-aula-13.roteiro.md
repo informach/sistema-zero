@@ -25,7 +25,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -142,7 +142,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, a base parou no -9. Agora a gente vai programar esse limite!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta, a base parou no -9. Agora a gente vai programar esse limite!
 
 [curious] Agora são duas perguntas, uma dentro da outra: primeiro, a partida já começou? Se sim, a base ainda é maior que -9?
 

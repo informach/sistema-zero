@@ -22,7 +22,7 @@
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e segure uma seta. Tá vendo? A nave fica parada, porque o jogo ainda não olha a seta.
 
-[engaging, energetic, conversational voice] Lembra da experiência da câmera lenta? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
+[engaging, energetic, conversational voice] Lembra da primeira experiência desta aula? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
 
 [engaging, energetic, conversational voice] Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo. E ele vem antes do desenho, para o desenho já mostrar a nave no lugar novo.
 
@@ -76,19 +76,19 @@
 
 [engaging, energetic, conversational voice] Sabe quando você olha por uma janela? Você só vê o que está dentro da moldura.
 
-[engaging, energetic, conversational voice] No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.
+[engaging, energetic, conversational voice] No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e o jogo pode ter esse limite ou não.
 
-[curious] E se o limite for ligado com a nave já fora da tela?
+[curious] E se a nave já estiver fora da tela, o que o limite faz com ela?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que acontece com a nave na beirada, com o limite desligado e ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a nave na beirada, com e sem o limite. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e segure uma seta até a beirada. Tá vendo? A nave passa e vai sumindo, porque o jogo ainda não tem limite.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite ligado, a nave voltava. Agora a gente vai pôr esse limite no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite, a nave voltava. Agora a gente vai pôr esse limite no seu jogo!
 
 [engaging, energetic, conversational voice] O jogo confere a beirada logo depois do passinho e antes do desenho. Por isso, o limite vai entre o movimento e o desenho da nave.
 

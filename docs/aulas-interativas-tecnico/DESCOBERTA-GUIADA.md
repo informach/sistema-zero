@@ -13,7 +13,7 @@ Direção aprovada em 25/10/2026 e ampliada em 26/10/2026 nos cursos Cadê Todo 
 
 ## Vídeo: explicar e convidar a investigar
 
-Apresentar uma ideia por vez. Manter imagens que a tornam concreta: cócegas e risada para ação/reação; futebol para contagem. Uma demonstração curta pode ajudar, sem resolver antecipadamente a sequência da experiência. Evitar leitura dos botões, sucessão de cliques ou “faça os mesmos testes que eu fiz”. O convite precisa dar um propósito observável, como “observe quando esse número muda e quando continua igual”. “Explore” sozinho não oferece esse propósito.
+Apresentar uma ideia por vez. Manter imagens que a tornam concreta: cócegas e risada para ação/reação; futebol para contagem. Desde 09/11/2026 o vídeo não explica a experiência: não mostra nem nomeia os controles dela, não demonstra testes e não dita sucessão de cliques; explica o conceito e convida a explorá-lo na experiência da aula (ESPEC-ROTEIRO, seção 4). O convite precisa dar um propósito observável, como “observe quando esse número muda e quando continua igual”. “Explore” sozinho não oferece esse propósito.
 
 A orientação operacional sai do vídeo somente quando a experiência passa a oferecê-la de forma completa. O ganho de autonomia depende dessa orientação, não de deixar a pessoa adivinhar o próximo controle. Na montagem do Estúdio, continuar ensinando todos os gestos necessários. A retomada liga a descoberta da experiência à regra que será construída, sem repetir a explicação conceitual inteira.
 

@@ -227,7 +227,7 @@
     "id": "guardar-coleta",
     "kicker": "Dia 2 · Parte 3 · Montagem",
     "title": "Guarde que a chave foi encontrada",
-    "subtitle": "O seu jogo está igual à memória desligada: a chave sai do chão, mas o jogo não guarda que ela foi pega.",
+    "subtitle": "O seu jogo está assim agora: a chave sai do chão, mas o jogo não guarda que ela foi pega.",
     "items": [
       {
         "kind": "step",

@@ -35,7 +35,7 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-condicao-K1: Debinha substitui “E na tela de início, os cactos nascem?”. Antes: “cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos cactos nascem com a pergunta”.
+video-condicao-K1: Debinha substitui “E na tela de início, os cactos nascem?”. Antes: “cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos cactos nascem sem a pergunta e”.
 
 **Experiência em exploração livre:** `game-state` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/game-state.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 

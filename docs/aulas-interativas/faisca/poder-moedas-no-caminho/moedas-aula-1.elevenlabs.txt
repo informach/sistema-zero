@@ -50,7 +50,7 @@
 
 [engaging, energetic, conversational voice] Agora faça cada moeda contar. Clique no jogo e leve o personagem até uma moeda. Tá vendo? Ele passa por cima e nada acontece, porque o encontro com as moedas ainda não tem nenhuma reação ligada a ele.
 
-[engaging, energetic, conversational voice] Lembra da experiência da terceira parte desta aula? Cada moeda somava um no cofrinho. E, com o sumiço ligado, a moeda pega sumia e não contava de novo. Agora a gente vai montar isso no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da terceira parte desta aula? Cada moeda somava um no cofrinho. E a moeda que sumia depois de pega não contava de novo. Agora a gente vai montar isso no seu jogo!
 
 [engaging, energetic, conversational voice] As seis moedas estão num grupo. Um grupo junta vários objetos parecidos, para uma regra valer para todos de uma vez. Por isso, o encontro vai ser com alguma moeda do grupo.
 
@@ -62,7 +62,7 @@
 
 [engaging, energetic, conversational voice] O último nome já vem moeda; deixe assim. É por esse nome que os blocos de dentro falam da moeda que o personagem acabou de encostar.
 
-[engaging, energetic, conversational voice] Agora a reação. Primeiro, a moeda some, como com o sumiço ligado da experiência. Deixe à vista o espaço ao lado da palavra fazer, dentro desse encontro.
+[engaging, energetic, conversational voice] Agora a reação. Primeiro, a moeda some. Deixe à vista o espaço ao lado da palavra fazer, dentro desse encontro.
 
 [confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue o bloco Tirar o sprite do grupo e encaixe dentro do fazer. É este bloco que faz a moeda sumir, e por isso ela não conta de novo.
 
@@ -86,7 +86,7 @@
 
 [engaging, energetic, conversational voice] Agora mostre o número das moedas na tela. Clique no jogo e pegue duas moedas. Tá vendo? Elas somem, mas não dá para saber quantas você já pegou, porque o número está guardado em moedas e nada mostra esse valor na tela.
 
-[engaging, energetic, conversational voice] Lembra do número moedas no canto do jogo, na experiência da terceira parte desta aula? Agora a gente vai colocar esse placar no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da terceira parte desta aula? Lá, você via o número moedas mudar durante a partida. Agora a gente vai colocar esse número na tela do seu jogo!
 
 [engaging, energetic, conversational voice] O placar precisa mostrar o número de agora o tempo todo. Por isso, ele vai num lugar que roda a cada quadro do jogo.
 

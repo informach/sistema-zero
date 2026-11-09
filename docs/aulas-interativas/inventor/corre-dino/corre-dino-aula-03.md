@@ -35,7 +35,7 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “para sempre. No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com”.
+video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “bola para cima? Ela não fica lá no alto para sempre. No seu jogo, o Dino vai pular. E o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com”.
 
 **Experiência em exploração livre:** `gravity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/gravity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/gravity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
@@ -68,7 +68,7 @@ video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta pa
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda nas marcas da”.
+video-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “força ou com muita força. No seu jogo, você escolhe o impulso do Dino. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda na altura dos”.
 
 **Experiência em exploração livre:** `impulse` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/impulse.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/impulse.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 

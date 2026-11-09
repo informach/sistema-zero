@@ -10,7 +10,7 @@
 
 [long pause]
 
-[curious] E se o limite for ligado com a nave já fora da tela?
+[curious] E se a nave já estiver fora da tela, o que o limite faz com ela?
 
 [long pause]
 
