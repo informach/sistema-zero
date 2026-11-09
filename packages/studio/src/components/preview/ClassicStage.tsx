@@ -33,6 +33,7 @@ export function ClassicStage({
   onToggleLarge,
   onShowBlock,
   onOpenProblems,
+  liveTargets = true,
   children,
 }: {
   subject: ProStageSubject
@@ -50,6 +51,11 @@ export function ClassicStage({
   onShowBlock?: () => void
   /** "Ver em Problemas" do cartão de erro (quando o erro não tem lugar no código). */
   onOpenProblems?: () => void
+  /**
+   * O par Rodar/Parar do celular leva os alvos do cursor da professora só quando está à vista
+   * (com a aba dos blocos aberta, o alvo do Rodar é o botão flutuante).
+   */
+  liveTargets?: boolean
   children: ReactNode
 }): JSX.Element {
   const t = useT()
@@ -144,7 +150,7 @@ export function ClassicStage({
           <button
             type="button"
             className="sz-pro-btn sz-pro-btn--primary"
-            data-live-target="studio-run"
+            data-live-target={liveTargets ? 'studio-run' : undefined}
             disabled={!canRun}
             onClick={run}
           >
@@ -154,7 +160,7 @@ export function ClassicStage({
           <button
             type="button"
             className="sz-pro-btn"
-            data-live-target="studio-stop"
+            data-live-target={liveTargets ? 'studio-stop' : undefined}
             disabled={!canStop}
             onClick={() => api.getState().actions?.stop()}
           >
@@ -190,6 +196,9 @@ export function useClassicStage(
   // "Ver em Problemas" a das mensagens (os pedidos sobem e o `NarrowPanels` troca a aba).
   const [editorRequest, setEditorRequest] = useState(0)
   const [dockRequest, setDockRequest] = useState(0)
+  // A aba à vista no estreito (o `NarrowPanels` avisa): no celular, o alvo ao vivo do Rodar é o
+  // botão flutuante enquanto a criança está nos blocos, e o par do palco na aba do jogo.
+  const [narrowTab, setNarrowTab] = useState('')
   const sizesRef = useRef(sizes)
   sizesRef.current = sizes
   useEffect(() => {
@@ -203,12 +212,15 @@ export function useClassicStage(
     })
     return () => api.getState().setRevealStage(null)
   }, [api, isNarrow, setShowPreview])
+  const phone = proLayoutTier(width) === 'phone'
   return {
     group,
     previewRequest,
     editorRequest,
     dockRequest,
-    phone: proLayoutTier(width) === 'phone',
+    phone,
+    setNarrowTab,
+    stageLiveTargets: !phone || narrowTab === 'preview',
     toggleLarge: () => setStageLarge(!stageLarge),
     /** Depois do pedido ao editor (`revealBlock`), no estreito traz a aba dos blocos. */
     revealBlocks: () => {
@@ -223,4 +235,36 @@ export function useClassicStage(
       if (isNarrow) setDockRequest((n) => n + 1)
     },
   }
+}
+
+/**
+ * O Rodar flutuando sobre os blocos no celular (como no Pro): a barra de cima não tem o par nesse
+ * tamanho. Rodar também traz a aba do jogo (`revealStage`). Leva o alvo ao vivo do Rodar.
+ */
+export function ClassicRunFab(): JSX.Element {
+  const t = useT()
+  const api = useProRunApi()
+  const { phase, canRun } = useProRun(
+    useShallow((s) => ({
+      phase: s.state?.phase ?? null,
+      canRun: Boolean(s.actions && s.state?.canRun),
+    })),
+  )
+  const key = proRunLabelKey(phase ? { phase } : null)
+  return (
+    <button
+      type="button"
+      className="sz-pro-fab"
+      data-live-target="studio-run"
+      disabled={!canRun}
+      onClick={() => {
+        const { actions, revealStage } = api.getState()
+        actions?.run()
+        revealStage?.()
+      }}
+    >
+      {key === 'run.runAgain' ? <IconRefresh /> : <IconPlay />}
+      <span>{t(key)}</span>
+    </button>
+  )
 }

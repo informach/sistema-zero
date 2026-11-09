@@ -166,7 +166,7 @@ export const ptBR: Record<string, string> = {
 
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',
-  'tab.preview': 'Pré-visualização',
+  'tab.preview': 'Jogo',
   'tab.messages': 'Mensagens',
   'tab.files': 'Arquivos',
 

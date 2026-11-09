@@ -9,7 +9,7 @@ import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEdito
 import { ClassicDock } from '../components/layout/ClassicDock'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
-import { ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
+import { ClassicRunFab, ClassicStage, useClassicStage } from '../components/preview/ClassicStage'
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
 import { classicStageSubject } from '../components/preview/stageSubject'
 import { javaScriptProject } from '../core/editableProject'
@@ -199,6 +199,7 @@ export function BlocksMode(): JSX.Element {
       onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
       onShowBlock={stage.showBlock}
       onOpenProblems={stage.openProblems}
+      liveTargets={stage.stageLiveTargets}
     >
       <PreviewIframe />
     </ClassicStage>
@@ -218,6 +219,8 @@ export function BlocksMode(): JSX.Element {
             dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
             editorRequest={stage.editorRequest}
             dockRequest={stage.dockRequest}
+            onActiveChange={stage.setNarrowTab}
+            editorOverlay={stage.phone && previewAvailable ? <ClassicRunFab /> : undefined}
           />
         </div>
       </div>

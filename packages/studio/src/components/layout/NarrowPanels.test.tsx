@@ -91,7 +91,7 @@ describe('NarrowPanels', () => {
 
   it('troca a aba ativa ao clicar', () => {
     const { getAllByRole } = render(<NarrowPanels editorPanes={oneEditor} preview={<div>p</div>} />)
-    const previewTab = getAllByRole('tab').find((t) => t.textContent?.includes('Pré'))
+    const previewTab = getAllByRole('tab').find((t) => t.textContent === 'Jogo')
     if (!previewTab) throw new Error('aba de preview não encontrada')
     act(() => {
       fireEvent.click(previewTab)
@@ -188,7 +188,7 @@ describe('NarrowPanels', () => {
     const editor = view.getByTestId('ed-code'),
       game = view.getByTestId('requested-preview')
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
-    expect(view.getByRole('tab', { name: 'Pré-visualização' }).getAttribute('aria-selected')).toBe(
+    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe(
       'true',
     )
     expect(view.getByTestId('ed-code')).toBe(editor)
@@ -197,7 +197,7 @@ describe('NarrowPanels', () => {
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
     expect(view.getByRole('tab', { name: 'Código' }).getAttribute('aria-selected')).toBe('true')
     view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={2} />)
-    expect(view.getByRole('tab', { name: 'Pré-visualização' }).getAttribute('aria-selected')).toBe(
+    expect(view.getByRole('tab', { name: 'Jogo' }).getAttribute('aria-selected')).toBe(
       'true',
     )
   })

@@ -1796,6 +1796,18 @@
 [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer {
   flex: 0 0 auto;
 }
+/* A faixa branca sob as categorias no celular (achado no redesenho de 11/2026) era a barra de
+   rolagem horizontal da paleta somada à margem de baixo das categorias: a faixa continua rolando
+   pelo toque e pela roda, sem a barra e sem a margem. */
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox {
+  scrollbar-width: none;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox::-webkit-scrollbar {
+  display: none;
+}
+[data-sz-theme] [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategory {
+  margin-bottom: 0;
+}
 [data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer[aria-expanded="true"] {
   display: flex;
   align-items: flex-start;
@@ -2095,6 +2107,7 @@
   padding: 6px 6px 8px;
 }
 .sz-more-blocks {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2119,6 +2132,11 @@
 .sz-more-blocks:focus-visible {
   outline: 2px solid var(--color-sz-accent);
   outline-offset: 2px;
+}
+[data-sz-toolbox-layout="horizontal"] .sz-more-blocks-row {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
 }
 [data-sz-toolbox-layout="horizontal"] .sz-more-blocks {
   width: auto;

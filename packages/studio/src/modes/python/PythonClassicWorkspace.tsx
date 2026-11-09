@@ -8,7 +8,7 @@ import type { PythonSourceCursorPosition } from '../../components/code/PythonSou
 import { ClassicDock } from '../../components/layout/ClassicDock'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
-import { ClassicStage, useClassicStage } from '../../components/preview/ClassicStage'
+import { ClassicRunFab, ClassicStage, useClassicStage } from '../../components/preview/ClassicStage'
 import { PythonEditorPreview } from '../../components/preview/PythonEditorPreview'
 import { pythonStageSubject } from '../../components/preview/stageSubject'
 import { isPythonProject } from '../../core/editableProject'
@@ -190,6 +190,7 @@ function PythonClassicProjectWorkspace({
       onToggleLarge={isNarrow ? undefined : stage.toggleLarge}
       onShowBlock={stage.showBlock}
       onOpenProblems={stage.openProblems}
+      liveTargets={stage.stageLiveTargets}
     >
       <PythonEditorPreview />
     </ClassicStage>
@@ -222,6 +223,8 @@ function PythonClassicProjectWorkspace({
             dock={<ClassicDock variant="tab" onRevealBlock={stage.revealBlocks} />}
             editorRequest={stage.editorRequest}
             dockRequest={stage.dockRequest}
+            onActiveChange={stage.setNarrowTab}
+            editorOverlay={stage.phone && config.preview ? <ClassicRunFab /> : undefined}
           />
         ) : (
           <PanelGroup ref={stage.group} direction="horizontal">

@@ -37,6 +37,10 @@ export interface NarrowPanelsProps {
   editorRequest?: number
   /** Sobe a cada "Ver em Problemas": traz a aba "Mensagens". */
   dockRequest?: number
+  /** Avisa qual aba está à vista (o palco do clássico decide onde ficam os alvos ao vivo). */
+  onActiveChange?: (id: string) => void
+  /** Desenhado por cima das abas de EDITOR (o Rodar flutuante do celular). */
+  editorOverlay?: ReactNode
   /**
    * Árvore/explorador de arquivos. Quando presente, mostra um botão "Arquivos"
    * que abre uma gaveta sobreposta. Recebe `close` para fechar a gaveta (e focar
@@ -66,6 +70,8 @@ export function NarrowPanels({
   dock,
   editorRequest = 0,
   dockRequest = 0,
+  onActiveChange,
+  editorOverlay,
   filesDrawer,
 }: NarrowPanelsProps): JSX.Element {
   const t = useT()
@@ -114,6 +120,9 @@ export function NarrowPanels({
   // nem estado intermediário. Reexibir o painel devolve o foco a ele (mostrar um
   // painel é uma ação explícita de focá-lo).
   const effectiveActive = items.some((i) => i.id === active) ? active : (items[0]?.id ?? '')
+  useEffect(() => {
+    onActiveChange?.(effectiveActive)
+  }, [effectiveActive, onActiveChange])
 
   const handleSelect = (id: string) => {
     setActive(id)
@@ -178,6 +187,7 @@ export function NarrowPanels({
           ) : undefined
         }
       />
+      {editorOverlay && editorIds.has(effectiveActive) ? editorOverlay : null}
       {filesDrawer && drawerOpen && (
         <div className="absolute inset-0 z-40 flex">
           {/* Fundo clicável que fecha a gaveta. */}

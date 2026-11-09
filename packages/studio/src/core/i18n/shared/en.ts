@@ -154,7 +154,7 @@ export const en: Record<string, string> = {
   'topbar.group.edit': 'Edit',
   'tab.blocks': 'Blocks',
   'tab.code': 'Code',
-  'tab.preview': 'Preview',
+  'tab.preview': 'Game',
   'tab.messages': 'Messages',
   'tab.files': 'Files',
   'panel.console': 'Console',
