@@ -67,6 +67,13 @@ export interface JogoDaAula {
 
 export const VERBOS: Verbo[] = [
   { verbo: 'próxima parte', exemplo: 'próxima parte', descricao: 'Clica em Próxima parte.' },
+  {
+    verbo: 'rodar de novo',
+    exemplo: 'rodar de novo',
+    descricao:
+      'Clica no Rodar (ou Rodar de novo) da barra de cima do Estúdio: recomeça o jogo e dá o foco a ele, como o antigo Atualizar.',
+  },
+  { verbo: 'parar', exemplo: 'parar', descricao: 'Clica no Parar da barra de cima do Estúdio.' },
   { verbo: 'concluir aula', exemplo: 'concluir aula', descricao: 'Clica em Concluir aula.' },
   {
     verbo: 'ampliar',
@@ -280,7 +287,59 @@ export const VERBOS: Verbo[] = [
     exemplo: 'compartilhar',
     descricao: 'Abre o Compartilhar do Estúdio: no palco nada vai para o Mural.',
   },
+  {
+    verbo: 'esconder o jogo',
+    exemplo: 'esconder o jogo',
+    descricao:
+      'Esconde o jogo ao lado dos blocos (o "Mostrar o jogo" do menu ⋯, sem a mão) até o fim da parte ou até "jogo automático".',
+  },
+  {
+    verbo: 'mostrar o jogo',
+    exemplo: 'mostrar o jogo',
+    descricao:
+      'Mostra o jogo ao lado dos blocos, sem a mão, até o fim da parte ou até "jogo automático".',
+  },
+  {
+    verbo: 'jogo automático',
+    exemplo: 'jogo automático',
+    descricao:
+      'Volta à troca sozinha: montar blocos esconde o jogo e aumenta os blocos; tocar ou apontar a prévia mostra o jogo de novo.',
+  },
 ]
+
+/**
+ * O jogo ao lado dos blocos no Estúdio (pedido da Helena, 09/11/2026): enquanto a criança monta,
+ * o jogo sai de cena e os blocos crescem; na hora de testar, o jogo volta. A troca é feita pela
+ * página entre um gesto e outro, sem a mão do robô, como um corte de câmera.
+ */
+export interface JogoNoEstudio {
+  /** `auto`: cada verbo decide (`jogoPara`); os outros dois são o roteiro fixando a tela. */
+  modo: 'auto' | 'mostrar' | 'esconder'
+  /** Os passos de zoom dados ao esconder o jogo, desfeitos ao mostrá-lo. */
+  zoom: number
+}
+
+export const novoJogoNoEstudio = (): JogoNoEstudio => ({ modo: 'auto', zoom: 0 })
+
+/** Quantos passos de zoom (1,2 vez cada, o do Blockly) os blocos ganham com o jogo escondido. */
+export const ZOOM_SEM_JOGO = 1
+
+const MONTAGEM =
+  /^(categoria |abrir categoria |encaixar |soltar |trocar |abrir campo |arrastar at[eé] |apontar (bloco|encaixe|abaixo de|mais de) |apontar lugar sem blocos|apontar paleta$|abrir ["“]|jogar na lixeira |mostrar blocos |organizar blocos$|clicar fora dos blocos$)/i
+const NO_JOGO =
+  /^((tocar|apontar) pr[eé]via\b|segurar seta .* na pr[eé]via|apontar (as )?setas na pr[eé]via|reduzir est[uú]dio$|rodar( de novo)?$)/i
+
+/**
+ * O que a ação pede do jogo ao lado dos blocos: escondido (montar), à vista (testar no jogo, ou
+ * voltar à aula com o Estúdio como ele abre) ou tanto faz (o resto, e os gestos que continuam
+ * outro, como o escolher depois de abrir um campo: trocar ali fecharia a lista aberta).
+ */
+export function jogoPara(acao: string): boolean | null {
+  const texto = acao.replace(/\s+/g, ' ').trim()
+  if (MONTAGEM.test(texto)) return false
+  if (NO_JOGO.test(texto)) return true
+  return null
+}
 
 const fold = (s: string): string =>
   s
@@ -442,6 +501,14 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (f === 'concluir aula') return [{ fazer: 'clicar', alvo: botao('Concluir aula') }]
   if (f === 'voltar a aula') return [{ fazer: 'clicar', alvo: botao('Voltar à aula') }]
   if (f === 'jogar de novo') return [{ fazer: 'clicar', alvo: botao('Jogar de novo') }]
+  // O Rodar da barra muda de nome com a fase do jogo (Rodar, Rodar de novo): o alvo é o botão.
+  if (f === 'rodar de novo' || f === 'rodar')
+    return [{ fazer: 'clicar', alvo: { seletor: '[data-live-target="studio-run"]' } }]
+  if (f === 'parar')
+    return [{ fazer: 'clicar', alvo: { seletor: '[data-live-target="studio-stop"]' } }]
+  // Feitos pela página (`agirNaPagina`): a mão não faz nada.
+  if (f === 'esconder o jogo' || f === 'mostrar o jogo' || f === 'jogo automatico')
+    return [{ fazer: 'esperar', alvo: { seletor: 'body' }, estado: 'aparecer', maximo: 1 }]
   // O Estúdio troca de lugar e de tamanho logo depois do clique: o gesto só termina com o botão
   // do outro estado na tela, e o seguinte mede a prévia e as setas já no lugar novo.
   if (f === 'expandir estudio') return trocarEstudio('Expandir', 'Reduzir')
@@ -916,8 +983,14 @@ export async function agirNaPagina(
   acao: string,
   jogos: readonly JogoDaAula[],
   pagina: PaginaDoPalco,
+  jogo: JogoNoEstudio = novoJogoNoEstudio(),
 ): Promise<Passo[]> {
   const f = fold(acao.replace(/\s+/g, ' ').trim())
+  if (f === 'esconder o jogo') jogo.modo = 'esconder'
+  if (f === 'mostrar o jogo') jogo.modo = 'mostrar'
+  if (f === 'jogo automatico') jogo.modo = 'auto'
+  const querJogo = jogo.modo === 'auto' ? jogoPara(acao) : jogo.modo === 'mostrar'
+  if (querJogo !== null) await ajustarJogo(pagina, querJogo, jogo)
   if (f === 'organizar blocos' && pagina.areaPronta() && !(await pagina.organizar()))
     throw new Error('O menu da área de trabalho não abriu para organizar os blocos.')
   // Logo depois de um bloco cair, o Blockly redesenha a pilha que cresceu e, 250 ms depois,
@@ -943,6 +1016,46 @@ export async function agirNaPagina(
       await new Promise((r) => setTimeout(r, ENTRE_PROCURAS))
     }
   }
+}
+
+/**
+ * Põe o jogo ao lado dos blocos como a ação pede. Escondido, os blocos ganham `ZOOM_SEM_JOGO`
+ * passos de zoom presos no canto de cima à esquerda das pilhas (elas crescem para o espaço que o
+ * jogo deixou); à vista de novo, o zoom é desfeito antes. Sem o Estúdio na tela, ou sem o item
+ * "Mostrar o jogo" no menu dele (o Estúdio estreito, com abas), nada muda.
+ */
+export async function ajustarJogo(
+  pagina: PaginaDoPalco,
+  mostrar: boolean,
+  jogo: JogoNoEstudio,
+): Promise<void> {
+  const aVista = pagina.jogoAVista()
+  if (aVista === null) return
+  // O zoom sai antes de o jogo voltar, e também quando o próprio Estúdio já o trouxe de volta
+  // (o Rodar com o jogo escondido o mostra rodando).
+  if (mostrar && jogo.zoom) {
+    await pagina.zoom(-jogo.zoom)
+    jogo.zoom = 0
+    await assentar(pagina)
+  }
+  if (aVista === mostrar) return
+  if (!(await pagina.alternarJogo())) return
+  await esperarAte(() => pagina.jogoAVista() === mostrar, JOGO_NO_MAXIMO)
+  // O Blockly acompanha o tamanho novo da área um instante depois (o observador de tamanho).
+  await assentar(pagina)
+  if (!mostrar && ZOOM_SEM_JOGO) {
+    await pagina.zoom(ZOOM_SEM_JOGO)
+    jogo.zoom = ZOOM_SEM_JOGO
+    await assentar(pagina)
+  }
+}
+
+/** O teto da espera pelo jogo sair ou voltar depois da troca no menu. */
+const JOGO_NO_MAXIMO = 3000
+
+async function esperarAte(pronto: () => boolean, maximo: number): Promise<void> {
+  for (let passou = 0; passou < maximo && !pronto(); passou += ENTRE_MEDIDAS)
+    await new Promise((r) => setTimeout(r, ENTRE_MEDIDAS))
 }
 
 /** Quantas vezes, e a quantos milissegundos, um bloco ou campo ainda não achado é procurado. */

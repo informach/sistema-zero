@@ -83,7 +83,6 @@ export const en: Record<string, string> = {
   'topbar.showPreview': 'Show preview',
   'topbar.hidePreview': 'Hide preview',
   'topbar.showStage': 'Show the game',
-  'stage.reloadLabel': 'Reload the preview',
   'stage.bigger': 'Bigger game',
   'stage.smaller': 'Smaller game',
   'stage.errorMark': 'The game stopped at this block.',

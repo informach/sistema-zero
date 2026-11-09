@@ -74,6 +74,18 @@ está sendo conferido.
   esperada do mesmo jeito.
 - **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
   encaixado nele, que conta como parte dele.
+- **O jogo sai de cena enquanto a criança monta** (09/11/2026, pedido da Helena): os verbos de
+  montagem (categoria, encaixar, soltar, trocar, abrir campo, apontar bloco, apontar paleta…)
+  escondem o jogo ao lado dos blocos e dão um passo de zoom (1,2 vez) preso no canto das pilhas;
+  os de testar no jogo (`tocar prévia`, `apontar prévia`, setas na prévia, `rodar de novo`,
+  `reduzir estúdio`) desfazem o zoom e trazem o jogo de volta. A troca é o "Mostrar o jogo" do
+  menu ⋯ do Estúdio, feita pela página entre um gesto e outro (`alternarJogo`, com o menu
+  invisível por `html.palco-trocando-jogo`), sem a mão: no vídeo é um corte de câmera, e nada
+  da fala é cortado. O roteiro fixa a tela com `[esconder o jogo]` ou `[mostrar o jogo]` até
+  `[jogo automático]`. Sem o item no menu (Estúdio estreito, com abas), nada muda.
+- **Rodar de novo** (09/11/2026): o Estúdio clássico não tem mais o Atualizar acima do jogo.
+  `[rodar de novo]` clica no Rodar da barra de cima pelo `data-live-target="studio-run"` (o
+  rótulo muda com a fase: Rodar, Rodar de novo), que recomeça o jogo e dá o foco a ele.
 - **Setas da tela do jogo** (03/11/2026, Farol): `segurar seta da direita por 1,5 s` segura a seta
   da tela do jogo pronto, e com `na prévia`, a da pré-visualização do Estúdio; `apontar setas`
   aponta as quatro. As setas são botões de 44 px dentro do iframe do jogo, presos a 8 px do canto

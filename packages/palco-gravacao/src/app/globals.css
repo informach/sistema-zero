@@ -22,3 +22,12 @@
   /* biome-ignore lint/complexity/noImportantStyles: o Blockly mostra a dica com style.display no próprio elemento */
   display: none !important;
 }
+
+/*
+ * A troca do jogo ao lado dos blocos é feita pela página entre um gesto e outro (o "Mostrar o
+ * jogo" do menu ⋯ do Estúdio, ver `alternarJogo`): o menu abre e fecha sem aparecer na tomada.
+ */
+html.palco-trocando-jogo [role="menu"] {
+  /* biome-ignore lint/complexity/noImportantStyles: o menu do Estúdio é posicionado com estilo próprio */
+  visibility: hidden !important;
+}

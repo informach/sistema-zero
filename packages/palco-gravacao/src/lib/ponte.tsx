@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import type { LessonDetailView } from '@/lib/types'
 import { arrumacao } from './arrumacao'
 import { paginaDe, pilhasDaArea } from './pagina'
-import { agirNaPagina, type JogoDaAula, ocupado, VERBOS } from './verbos'
+import { agirNaPagina, type JogoDaAula, novoJogoNoEstudio, ocupado, VERBOS } from './verbos'
 
 /** Os jogos prontos da aula, com o palco e os alvos de cada um (para `achar`). */
 export function jogosDa(lesson: Pick<LessonDetailView, 'blocks'>): JogoDaAula[] {
@@ -28,6 +28,8 @@ export function jogosDa(lesson: Pick<LessonDetailView, 'blocks'>): JogoDaAula[] 
 export function PonteDeGravacao({ lesson }: { lesson: Pick<LessonDetailView, 'blocks'> }) {
   useEffect(() => {
     const jogos = jogosDa(lesson)
+    // O jogo ao lado dos blocos: o roteiro pode fixá-lo, e o zoom dado ao escondê-lo é lembrado.
+    const jogo = novoJogoNoEstudio()
     const arrumar = arrumacao<Element>()
     const vez = setInterval(() => {
       const { area, caixas } = pilhasDaArea(document)
@@ -36,7 +38,7 @@ export function PonteDeGravacao({ lesson }: { lesson: Pick<LessonDetailView, 'bl
     const ponte = {
       versao: 1,
       verbos: () => VERBOS,
-      agir: (acao: string) => agirNaPagina(acao, jogos, paginaDe(document)),
+      agir: (acao: string) => agirNaPagina(acao, jogos, paginaDe(document), jogo),
       ocupado: () => {
         const { area, caixas } = pilhasDaArea(document)
         return ocupado(document) || arrumar.pendente(area, caixas)
