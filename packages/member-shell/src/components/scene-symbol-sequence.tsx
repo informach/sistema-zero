@@ -85,7 +85,7 @@ export function SymbolSequenceStage({
       titulo="A ordem dos símbolos"
       // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
       // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
-      descricao={`${naOrdem ? (heroi ? `Passo ${q.passo} de 3 da placa` : `passo é ${q.passo}`) : `${q.lit.length} de 3 símbolos contados`}. Aceso: ${acesos}. O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
+      descricao={`${naOrdem ? (heroi ? `Passo ${q.chest === 'open' ? 3 : q.passo} de 3 da placa` : `passo é ${q.passo}`) : `${q.lit.length} de 3 símbolos contados`}. Aceso: ${acesos}. O baú está ${q.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"

@@ -134,19 +134,22 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
   test('⭐ o convite de TODA experiência livre termina no mesmo fecho (08/11/2026)', () => {
     // Decisão dela: o Dia 1 do Farol e o Cadê também. Só a instrução: os vídeos deles já foram
     // gravados no molde anterior e não mudam.
-    const instrucoes = ['desafio-dia-1', 'cade-todo-mundo-aula-1', 'cade-todo-mundo-aula-2']
-      .flatMap((aula) => {
-        const m = JSON.parse(readFileSync(caminhoAula(`${aula}.manifesto.json`), 'utf8'))
-        if (!isLearningManifest(m)) throw new Error(aula)
-        return m.blocks.flatMap((b) =>
-          'content' in b &&
-          b.content.kind === 'interactive' &&
-          b.content.activity.type === 'experimentation' &&
-          b.content.activity.setup?.freeExploration
-            ? [{ id: `${aula}/${b.key}`, instrucao: b.content.instructions }]
-            : [],
-        )
-      })
+    const instrucoes = [
+      'desafio-dia-1',
+      'cade-todo-mundo-aula-1',
+      'cade-todo-mundo-aula-2',
+    ].flatMap((aula) => {
+      const m = JSON.parse(readFileSync(caminhoAula(`${aula}.manifesto.json`), 'utf8'))
+      if (!isLearningManifest(m)) throw new Error(aula)
+      return m.blocks.flatMap((b) =>
+        'content' in b &&
+        b.content.kind === 'interactive' &&
+        b.content.activity.type === 'experimentation' &&
+        b.content.activity.setup?.freeExploration
+          ? [{ id: `${aula}/${b.key}`, instrucao: b.content.instructions }]
+          : [],
+      )
+    })
     // Dia 1: câmera lenta e beirada; Cadê: o toque e os achados.
     expect(instrucoes).toHaveLength(4)
     for (const { id, instrucao } of instrucoes) {

@@ -52,7 +52,9 @@ visit(projects.personalizar.blocksState)
  * O `goalCopy` do manifesto: o pedido de cada descoberta, na língua da tela livre (e o rótulo,
  * quando o do catálogo fala de outra tela).
  */
-const pedidosDaExperiencia = (pedidos: Record<string, string | { label: string; pedido: string }>) =>
+const pedidosDaExperiencia = (
+  pedidos: Record<string, string | { label: string; pedido: string }>,
+) =>
   Object.fromEntries(
     Object.entries(pedidos).map(([meta, p]) => [meta, typeof p === 'string' ? { pedido: p } : p]),
   )

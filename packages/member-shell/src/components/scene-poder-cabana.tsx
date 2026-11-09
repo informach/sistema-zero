@@ -121,6 +121,9 @@ export function CabanaLivre() {
       ideia={discoverySpeech('cabin-idea')}
       ponte={semNoSeuJogo(discoverySpeech('cabin-bridge'))}
       stage={<TwoPiecesStage state={p.state} heroi={{ ...andar.pos, esquerda: andar.esquerda }} />}
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
       controles={
         <>
           <Modulo titulo="A pergunta da cabana" icone="🚪" largo>
@@ -142,7 +145,6 @@ export function CabanaLivre() {
               }}
             />
           </Modulo>
-          <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
           <Modulo titulo="O jogo guarda" icone="📓" dica="A cabana olha aqui.">
             <CaderninhoDe
               linhas={[

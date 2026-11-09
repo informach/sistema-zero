@@ -1605,6 +1605,55 @@
 }
 
 /* ════════ as telas livres do Faísca: Ilha do Farol e os quatro Poderes (08/11/2026) ════════ */
+/* Uma única cruzeta, logo depois do palco. Regras e caderninho não separam o olhar do gesto. */
+.sz-discovery-movimento {
+  container-type: inline-size;
+  margin-top: 8px;
+  padding-bottom: 8px;
+}
+.sz-discovery-movimento > .sz-discovery-modulo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  min-width: 0;
+}
+.sz-discovery-movimento .sz-discovery-modulo-corpo {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-height: 0;
+  padding: 0;
+}
+.sz-discovery-movimento .sz-discovery-modulo-dica {
+  grid-column: 1;
+  text-align: left;
+}
+@container (max-width: 420px) {
+  .sz-discovery-movimento > .sz-discovery-modulo {
+    padding: 8px;
+    gap: 4px 8px;
+  }
+  .sz-discovery-movimento .sz-discovery-cruzeta {
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: 48px 48px;
+    padding: 0 0 6px;
+  }
+  .sz-discovery-movimento .sz-discovery-tecla {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+  }
+}
+@container (max-width: 280px) {
+  .sz-discovery-movimento .sz-discovery-modulo-titulo,
+  .sz-discovery-movimento .sz-discovery-modulo-corpo,
+  .sz-discovery-movimento .sz-discovery-modulo-dica {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: center;
+    text-align: center;
+  }
+}
 /* A pergunta inteira com a peça no meio ("A porta [não] está trancada?", "Tem [pelo menos] 5
    moedas?"). Dentro de um módulo, o título do módulo já diz o que é: o rótulo da peça não repete. */
 .sz-discovery-livre-encaixe .sz-discovery-encaixe-linha {
@@ -1828,6 +1877,11 @@
   }
 }
 @media (max-width: 560px) {
+  /* O mínimo de 22rem da bancada criava um palco alto e estreito no celular. */
+  .sz-discovery-moldura .sz-island-world {
+    min-height: 12rem;
+    aspect-ratio: 1.2;
+  }
   .sz-discovery-livre-encontro {
     top: 52px;
     font-size: 0.9rem;

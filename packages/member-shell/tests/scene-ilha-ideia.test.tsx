@@ -124,13 +124,14 @@ describe('Ilha: o contato', () => {
     expect(passoDaSeta('side', 'baixo')).toEqual({ eixo: 'x', sinal: 1 })
   })
 
-  test('os módulos vêm na ordem do que a criança faz: câmera, altura e andar', () => {
+  test('andar fica junto do palco, antes dos ajustes de câmera e altura', () => {
     const html = texto(tela(activity, play([])))
     const camera = html.indexOf('A câmera')
     const altura = html.indexOf('Altura da chave')
     const andar = html.indexOf('Andar')
     expect(camera).toBeGreaterThan(-1)
+    expect(andar).toBeGreaterThan(-1)
+    expect(andar).toBeLessThan(camera)
     expect(camera).toBeLessThan(altura)
-    expect(altura).toBeLessThan(andar)
   })
 })

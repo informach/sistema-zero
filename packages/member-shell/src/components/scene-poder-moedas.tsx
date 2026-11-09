@@ -162,6 +162,9 @@ export function MoedasLivre() {
           </span>
         ) : null
       }
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={c.adds === 0 && p.fotos.length === 0} />
+      }
       controles={
         <>
           <Modulo titulo="A regra do baú" icone="🧩" largo>
@@ -189,7 +192,6 @@ export function MoedasLivre() {
               }}
             />
           </Modulo>
-          <ModuloAndar raiz={raiz} andar={andar} mao={c.adds === 0 && p.fotos.length === 0} />
           <Modulo titulo="Depois de pegar" icone="✨" dica="Ligado, a moeda some do caminho.">
             <Interruptor
               ligado={c.disappear}

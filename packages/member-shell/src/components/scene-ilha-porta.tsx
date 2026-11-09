@@ -17,8 +17,8 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import type * as THREE from 'three'
-import type { Direcao } from './scene-discovery-frame'
 import { carregarIlhaDoJogo } from './scene-ilha-glb'
+import { useMovimentoContinuo } from './scene-movement'
 
 export type Ponto = { x: number; z: number }
 export type BalaoDaIlha = { texto: string; tom: 'pergunta' | 'sim' | 'nao' }
@@ -78,56 +78,23 @@ export function setasNaVista(ix: number, iz: number) {
 export function useAndar3D(inicio: Ponto, velocidade = 4) {
   const [pos, setPos] = useState(inicio)
   const [rumo, setRumo] = useState(Math.PI / 2)
-  const [segurando, setSegurando] = useState<ReadonlySet<Direcao>>(new Set())
-  const dirs = useRef(new Set<Direcao>())
-  const quadro = useRef<number | null>(null)
-  const ultimo = useRef(0)
-  const passo = (agora: number) => {
-    const dt = Math.min(0.05, (agora - ultimo.current) / 1000)
-    ultimo.current = agora
-    const d = dirs.current
-    const ix = (d.has('direita') ? 1 : 0) - (d.has('esquerda') ? 1 : 0)
-    const iz = (d.has('baixo') ? 1 : 0) - (d.has('cima') ? 1 : 0)
+  const movimento = useMovimentoContinuo(({ x: ix, y: iz, segundos }) => {
     const { vx, vz } = setasNaVista(ix, iz)
-    const norma = ix && iz ? Math.SQRT1_2 : 1
-    if (vx || vz) {
-      setRumo(Math.atan2(vx, vz))
-      setPos((p) => {
-        const nx = p.x + vx * velocidade * norma * dt
-        const nz = p.z + vz * velocidade * norma * dt
-        const x = podeAndarNaIlha({ x: nx, z: p.z }) ? nx : p.x
-        const z = podeAndarNaIlha({ x, z: nz }) ? nz : p.z
-        return x === p.x && z === p.z ? p : { x, z }
-      })
-    }
-    quadro.current = d.size ? requestAnimationFrame(passo) : null
-  }
-  const segurar = (d: Direcao) => {
-    dirs.current.add(d)
-    setSegurando(new Set(dirs.current))
-    if (quadro.current === null) {
-      ultimo.current = performance.now()
-      quadro.current = requestAnimationFrame(passo)
-    }
-  }
-  const soltar = (d: Direcao) => {
-    dirs.current.delete(d)
-    setSegurando(new Set(dirs.current))
-  }
-  useEffect(
-    () => () => {
-      if (quadro.current !== null) cancelAnimationFrame(quadro.current)
-    },
-    [],
-  )
+    setRumo(Math.atan2(vx, vz))
+    setPos((p) => {
+      const nx = p.x + vx * velocidade * segundos
+      const nz = p.z + vz * velocidade * segundos
+      const x = podeAndarNaIlha({ x: nx, z: p.z }) ? nx : p.x
+      const z = podeAndarNaIlha({ x, z: nz }) ? nz : p.z
+      return x === p.x && z === p.z ? p : { x, z }
+    })
+  })
   return {
+    ...movimento,
     pos,
     rumo,
-    andando: segurando.size > 0,
-    segurando,
-    segurar,
-    soltar,
     voltar: () => {
+      movimento.parar()
       setPos(inicio)
       setRumo(Math.PI / 2)
     },

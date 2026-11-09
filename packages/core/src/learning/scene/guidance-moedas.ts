@@ -19,6 +19,7 @@ export const MOEDAS_SPEECH = {
   'coin-back': 'Passe de novo onde já pegou uma moeda.',
   'coin-compare-off': 'E se a moeda não sumir? Desligue o sumiço.',
   'coin-compare-again': 'Sem sumiço: passe de novo na mesma moeda.',
+  'coin-compare-restart': 'As moedas acabaram. Jogue de novo para comparar o sumiço.',
   'coin-compare-on': 'E se a moeda sumir? Ligue o sumiço.',
   'coin-chest': 'Com menos de 5, o baú abre? Vá até ele.',
   'coin-chest-restart': 'Jogue de novo e leve menos de 5 ao baú.',
@@ -55,7 +56,10 @@ export function moedasGuidance(
   if (!has('each-adds')) return c.adds === 0 ? 'coin-start' : 'coin-first'
   if (!has('kept')) return 'coin-away'
   if (!has('no-double') && c.disappear) return 'coin-back'
-  if (!has('counts-again')) return c.disappear ? 'coin-compare-off' : 'coin-compare-again'
+  if (!has('counts-again')) {
+    if (!c.present.some(Boolean)) return 'coin-compare-restart'
+    return c.disappear ? 'coin-compare-off' : 'coin-compare-again'
+  }
   // Sem o sumiço, a moeda que não some só aparece religando ele.
   if (!has('no-double')) return 'coin-compare-on'
   if (!has('below-goal'))
