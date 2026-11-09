@@ -1,4 +1,5 @@
 'use client'
+
 import type { SceneActivity } from '@sistemazero/core/learning/scene'
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 /**
@@ -9,6 +10,7 @@ import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'rea
  * pergunta, a peça que se troca, o caderninho de várias linhas e a pergunta grande embaixo da cena.
  */
 import { Cruzeta, type Direcao, Modulo, type useAndarLivre } from './scene-discovery-frame'
+import { useMovimentoContinuo } from './scene-movement'
 
 /** O mapa do Farol (480 × 360) com o personagem 64 × 64, abaixo da faixa do aviso. */
 export const LIMITES_DO_MAPA = { x0: 0, x1: 416, y0: 40, y1: 292 } as const
@@ -304,57 +306,19 @@ export function useMapaLivre({
 }) {
   const L = LIMITES_DO_MAPA
   const [pos, setPos] = useState(inicio)
-  const [segurando, setSegurando] = useState<ReadonlySet<Direcao>>(new Set())
-  const dirs = useRef(new Set<Direcao>())
-  const quadro = useRef<number | null>(null)
-  const ultimo = useRef(0)
-  const podeRef = useRef(pode)
-  podeRef.current = pode
-  const passo = (agora: number) => {
-    const dt = Math.min(0.05, (agora - ultimo.current) / 1000)
-    ultimo.current = agora
-    const d = dirs.current
-    const vx = (d.has('direita') ? 1 : 0) - (d.has('esquerda') ? 1 : 0)
-    const vy = (d.has('baixo') ? 1 : 0) - (d.has('cima') ? 1 : 0)
-    const norma = vx && vy ? Math.SQRT1_2 : 1
-    if (vx || vy)
-      setPos((p) => {
-        const nx = Math.max(L.x0, Math.min(L.x1, p.x + vx * velocidade * norma * dt))
-        const ny = Math.max(L.y0, Math.min(L.y1, p.y + vy * velocidade * norma * dt))
-        const ok = podeRef.current
-        const x = ok({ x: nx, y: p.y }) ? nx : p.x
-        const y = ok({ x, y: ny }) ? ny : p.y
-        return x === p.x && y === p.y ? p : { x, y }
-      })
-    quadro.current = d.size ? requestAnimationFrame(passo) : null
+  const movimento = useMovimentoContinuo(({ x: vx, y: vy, segundos }) => {
+    setPos((p) => {
+      const nx = Math.max(L.x0, Math.min(L.x1, p.x + vx * velocidade * segundos))
+      const ny = Math.max(L.y0, Math.min(L.y1, p.y + vy * velocidade * segundos))
+      const x = pode({ x: nx, y: p.y }) ? nx : p.x
+      const y = pode({ x, y: ny }) ? ny : p.y
+      return x === p.x && y === p.y ? p : { x, y }
+    })
+  })
+  const esquerda = useOlhar(movimento.segurando)
+  const ir = (p: { x: number; y: number }) => {
+    movimento.parar()
+    setPos(p)
   }
-  const segurar = (d: Direcao) => {
-    dirs.current.add(d)
-    setSegurando(new Set(dirs.current))
-    if (quadro.current === null) {
-      ultimo.current = performance.now()
-      quadro.current = requestAnimationFrame(passo)
-    }
-  }
-  const soltar = (d: Direcao) => {
-    dirs.current.delete(d)
-    setSegurando(new Set(dirs.current))
-  }
-  useEffect(
-    () => () => {
-      if (quadro.current !== null) cancelAnimationFrame(quadro.current)
-    },
-    [],
-  )
-  const esquerda = useOlhar(segurando)
-  return {
-    pos,
-    andando: segurando.size > 0,
-    segurando,
-    segurar,
-    soltar,
-    esquerda,
-    voltar: () => setPos(inicio),
-    ir: (p: { x: number; y: number }) => setPos(p),
-  }
+  return { ...movimento, pos, esquerda, voltar: () => ir(inicio), ir }
 }

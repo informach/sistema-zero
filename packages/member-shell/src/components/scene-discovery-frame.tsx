@@ -26,12 +26,10 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { RotateCcw, Sparkles, Star, Volume2, VolumeX } from 'lucide-react'
 import {
-  createContext,
   type PointerEvent,
   type ReactNode,
   type RefObject,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -46,48 +44,13 @@ import {
   ConsoleVisual,
   SceneConsole,
 } from './scene-console'
+import { useDiscovery } from './scene-discovery-context'
 import { SceneReadoutBand } from './scene-frame'
+import { type Direcao, useMovimentoContinuo } from './scene-movement'
 
+export { DiscoveryContext, type FalaDaDescoberta, useDiscovery } from './scene-discovery-context'
 export { SceneButton }
 
-/** O jeito de o Zappy falar na moldura nova. Sem opções, a fala de sempre (as telas antigas). */
-export type FalaDaDescoberta = {
-  /** As frases que o "Ouvir" lê em sequência (a ideia e o "No seu jogo:"). */
-  textos?: string[]
-  pose?: 'speaking' | 'celebrating'
-  /** Toca sozinha a cada texto novo (depois do primeiro gesto e com o som ligado). */
-  falarSozinho?: boolean
-  /** O corpo rico do balão no lugar do texto (o cartão da ideia). */
-  corpo?: ReactNode
-}
-
-export const DiscoveryContext = createContext<{
-  activity: SceneActivity
-  state: SceneState
-  dispatch: (a: SceneAction) => void
-  instruction: string
-  running: boolean
-  setRunning: (v: boolean) => void
-  /**
-   * Passa tempo na cena SEM contar como gesto (a câmera lenta do Farol tem o relógio dela). Pelo
-   * `dispatch`, cada tique apagaria o aviso da descoberta que acabou de cair.
-   */
-  tick?: (seconds: number) => void
-  /**
-   * Um passo do relógio do JOGO que não é gesto da criança (o segundo da ponte, 08/11/2026): como o
-   * `tick`, não apaga o aviso da descoberta nem a frase "Continuamos de onde você parou.".
-   */
-  tempo?: (a: SceneAction) => void
-  dialogue: (text: string, opcoes?: FalaDaDescoberta) => ReactNode
-  tools: ReactNode
-  /** Só o "Continuar para a pergunta" (as telas da moldura nova não mostram o Desfazer nem a pista). */
-  continuar?: ReactNode
-} | null>(null)
-export function useDiscovery() {
-  const context = useContext(DiscoveryContext)
-  if (!context) throw Error('Discovery context missing')
-  return context
-}
 export function Note({
   label,
   children,
@@ -229,6 +192,7 @@ export function Frame({
   noPalco,
   sobrePalco,
   abaixoDoPalco,
+  movimento,
   controles,
   ferramentas,
   raiz,
@@ -266,6 +230,8 @@ export function Frame({
   /** O que muda a regra, desenhado no canto de cima do palco. */
   sobrePalco?: ReactNode
   abaixoDoPalco?: ReactNode
+  /** Controles essenciais junto ao palco, antes das regras e dos registros. */
+  movimento?: ReactNode
   /** Os módulos do painel embaixo da cena (`Modulo`). */
   controles?: ReactNode
   /** Ferramentas da tela na linha de cima, ao lado do som e do Recomeçar. */
@@ -419,6 +385,7 @@ export function Frame({
               ) : null}
             </div>
           </ConsoleMundo>
+          {movimento ? <div className="sz-discovery-movimento">{movimento}</div> : null}
           {abaixoDoPalco}
           {after ? (
             <div className="sz-discovery-evidence" aria-live="polite">
@@ -627,7 +594,7 @@ export function casaTecla(e: Pick<KeyboardEvent, 'key' | 'code'>, teclas: readon
   return teclas.includes(e.key) || teclas.includes(e.code)
 }
 
-export type Direcao = 'cima' | 'baixo' | 'esquerda' | 'direita'
+export type { Direcao } from './scene-movement'
 export const TECLAS: Record<Direcao, { teclas: string[]; letra: string; seta: string }> = {
   cima: { teclas: ['ArrowUp', 'KeyW'], letra: 'W', seta: 'M5 16l7-9 7 9z' },
   baixo: { teclas: ['ArrowDown', 'KeyS'], letra: 'S', seta: 'M5 8l7 9 7-9z' },
@@ -688,13 +655,18 @@ export function TeclaDeSeta({
     const sobe = (e: KeyboardEvent) => {
       if (casaTecla(e, teclas)) subir()
     }
+    const esconder = () => {
+      if (document.hidden) subir()
+    }
     window.addEventListener('keydown', desce)
     window.addEventListener('keyup', sobe)
     window.addEventListener('blur', subir)
+    document.addEventListener('visibilitychange', esconder)
     return () => {
       window.removeEventListener('keydown', desce)
       window.removeEventListener('keyup', sobe)
       window.removeEventListener('blur', subir)
+      document.removeEventListener('visibilitychange', esconder)
       subir()
     }
   }, [teclas, descer, subir, visivel])
@@ -796,58 +768,23 @@ export function useAndarLivre({
   velocidade?: number
 }) {
   const [pos, setPos] = useState(inicio)
-  const [segurando, setSegurando] = useState<ReadonlySet<Direcao>>(new Set())
-  const dirs = useRef(new Set<Direcao>())
-  const quadro = useRef<number | null>(null)
-  const ultimo = useRef(0)
-  const passo = useCallback(
-    (agora: number) => {
-      const dt = Math.min(0.05, (agora - ultimo.current) / 1000)
-      ultimo.current = agora
-      const d = dirs.current
-      const vx = (d.has('direita') ? 1 : 0) - (d.has('esquerda') ? 1 : 0)
-      const vy = (d.has('baixo') ? 1 : 0) - (d.has('cima') ? 1 : 0)
-      const norma = vx && vy ? Math.SQRT1_2 : 1
-      if (vx || vy)
-        setPos((p) => ({
-          x: Math.max(limites.x0, Math.min(limites.x1, p.x + vx * velocidade * norma * dt)),
-          y: Math.max(limites.y0, Math.min(limites.y1, p.y + vy * velocidade * norma * dt)),
-        }))
-      if (d.size) quadro.current = requestAnimationFrame(passo)
-      else quadro.current = null
-    },
-    [limites.x0, limites.x1, limites.y0, limites.y1, velocidade],
-  )
-  const segurar = useCallback(
-    (d: Direcao) => {
-      dirs.current.add(d)
-      setSegurando(new Set(dirs.current))
-      if (quadro.current === null) {
-        ultimo.current = performance.now()
-        quadro.current = requestAnimationFrame(passo)
-      }
-    },
-    [passo],
-  )
-  const soltar = useCallback((d: Direcao) => {
-    dirs.current.delete(d)
-    setSegurando(new Set(dirs.current))
-  }, [])
-  useEffect(
-    () => () => {
-      if (quadro.current !== null) cancelAnimationFrame(quadro.current)
-    },
-    [],
-  )
+  const movimento = useMovimentoContinuo(({ x, y, segundos }) => {
+    setPos((p) => {
+      const nx = Math.max(limites.x0, Math.min(limites.x1, p.x + x * velocidade * segundos))
+      const ny = Math.max(limites.y0, Math.min(limites.y1, p.y + y * velocidade * segundos))
+      return nx === p.x && ny === p.y ? p : { x: nx, y: ny }
+    })
+  })
+  const { parar } = movimento
   const inicioX = inicio.x
   const inicioY = inicio.y
   return {
+    ...movimento,
     pos,
-    andando: segurando.size > 0,
-    segurando,
-    segurar,
-    soltar,
-    voltar: useCallback(() => setPos({ x: inicioX, y: inicioY }), [inicioX, inicioY]),
+    voltar: useCallback(() => {
+      parar()
+      setPos({ x: inicioX, y: inicioY })
+    }, [inicioX, inicioY, parar]),
   }
 }
 

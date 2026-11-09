@@ -68,6 +68,12 @@ const tocar = (symbol: 'sol' | 'lua' | 'estrela'): SceneAction => ({ type: 'touc
 describe('Símbolos: a tela livre', () => {
   const { activity, play } = caso('symbol-sequence')
 
+  test('concluir a ordem mostra três de três sem mudar o passo da regra', () => {
+    const s = play([tocar('sol'), tocar('lua'), tocar('estrela')])
+    expect(s.sequence.passo).toBe(2)
+    expect(texto(tela(activity, s, <SimbolosLivre />))).toContain('Em que passo da placa? 3 de 3')
+  })
+
   test('sem os botões de gesto nem o nome da variável', () => {
     for (const s of [play([]), play([tocar('sol')]), play([tocar('lua')])])
       expect(texto(tela(activity, s, <SimbolosLivre />))).not.toMatch(BOTOES_ANTIGOS)

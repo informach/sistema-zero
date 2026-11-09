@@ -48,6 +48,25 @@ const moeda = (coin: 0 | 1 | 2 | 3 | 4 | 5): SceneAction => ({ type: 'touch-coin
 const afastar: SceneAction = { type: 'leave-coin' }
 const bau: SceneAction = { type: 'try-chest' }
 
+test('Moedas: esgotar as moedas pede nova partida antes de comparar o sumiço', () => {
+  const caminho: SceneAction[] = [
+    ...([0, 1, 2, 3, 4, 5] as const).flatMap((i) => [moeda(i), afastar]),
+    moeda(0),
+    { type: 'coin-disappears', enabled: false },
+  ]
+  expect(jogar(MOEDAS, caminho).coins.present.some(Boolean)).toBe(false)
+  expect(fala(MOEDAS, caminho)).toBe('coin-compare-restart')
+  const reinicio = [...caminho, { type: 'restart-coins' } as const]
+  const s = jogar(MOEDAS, reinicio)
+  expect(s.coins.disappear).toBe(false)
+  expect(s.coins.present.every(Boolean)).toBe(true)
+  expect(s.evidence.discoveries).toEqual(jogar(MOEDAS, caminho).evidence.discoveries)
+  expect(fala(MOEDAS, reinicio)).toBe('coin-compare-again')
+  expect(jogar(MOEDAS, [...reinicio, moeda(0), afastar, moeda(0)]).evidence.discoveries).toContain(
+    'counts-again',
+  )
+})
+
 describe('Ponte e Moedas: o Zappy fala curto, só da ideia', () => {
   test('as duas cenas têm falas próprias, com a ideia e o "No seu jogo"', () => {
     for (const p of ['bridge', 'coin']) {

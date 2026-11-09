@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Correções do review do Faísca (08/11/2026)
+
+- `scene-discovery-context.ts` contém o contexto (reexportado pela moldura). O contrato opcional
+  `movimento` usa o dono de mídia de `scene-activity`: vídeo pausa, fala convive, retomada exige
+  gesto e pedido de foco válido. O `tempo` da Ponte também respeita esse foco. A Ponte oferece
+  “Continuar partida” depois da pausa; andar novamente também retoma, sem reiniciar a partida.
+- `scene-movement.ts` centraliza direções, delta limitado, RAF e limpeza dos três adaptadores
+  `useAndarLivre`, `useMapaLivre` e `useAndar3D`. Soltar, perder foco, esconder a aba, recomeçar ou
+  desmontar cancela o movimento. Velocidade, colisões e projeção continuam nos adaptadores.
+- `Frame.movimento` coloca uma única cruzeta imediatamente depois do palco. Os módulos de regras
+  e memória vêm depois. Na tela estreita, a faixa se adapta à largura e o palco 3D não herda o
+  mínimo de 22rem da bancada. Testar com toque e palco/setas simultaneamente visíveis, incluindo
+  modo ampliado; ausência de overflow horizontal sozinha não prova usabilidade.
+- O progresso dos Símbolos mostra 3 de 3 ao concluir; `sequence.passo` continua em 2, conforme
+  a regra do projeto. Descrição acessível e caderninho apresentam a mesma conclusão.
+- Regressões: `community-kids/tests/lesson-scene-faisca-media.test.tsx`,
+  `lesson-scene-movement.test.tsx`, `e2e-scenes/faisca-percursos.spec.ts` (oito conclusões e
+  alternativas) e `faisca-mobile.spec.ts` (320/390 px, toque, normal/ampliado).
+
 ## As telas livres do Faísca (08/11/2026)
 
 Proposta "Experiências do Faísca" (Canvas aprovado, v3): as oito experiências livres da Ilha do

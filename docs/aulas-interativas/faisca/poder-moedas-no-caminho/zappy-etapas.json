@@ -27,6 +27,10 @@
         "text": "Sem sumiço: passe de novo na mesma moeda."
       },
       {
+        "id": "coin-compare-restart",
+        "text": "As moedas acabaram. Jogue de novo para comparar o sumiço."
+      },
+      {
         "id": "coin-compare-on",
         "text": "E se a moeda sumir? Ligue o sumiço."
       },

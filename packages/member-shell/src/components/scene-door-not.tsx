@@ -165,6 +165,9 @@ export function PortaDoNao() {
           onPronto={setPronto}
         />
       }
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
       controles={
         <>
           <Modulo titulo="A pergunta da porta" icone="🚪" largo>
@@ -185,7 +188,6 @@ export function PortaDoNao() {
               }}
             />
           </Modulo>
-          <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
           <Modulo titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
             <Caderninho sim={l.hasKey} />
           </Modulo>

@@ -107,6 +107,44 @@ function preparar(content: InteractiveBlock) {
   return { gravar, tentar }
 }
 
+test('Cabana: o progresso salvo conserva a resposta nova ao trocar ou por e', async () => {
+  const { gravar } = preparar(blocoDoManifesto('cabana-aula-1.manifesto.json', 'experiencia'))
+  const respostas = await gravar([
+    { type: 'cabin-rule', rule: 'or' },
+    { type: 'take-piece', piece: 'key' },
+    { type: 'try-cabin' },
+    { type: 'cabin-rule', rule: 'and' },
+    { type: 'try-cabin' },
+  ])
+  const s = readExperimentSession('two-pieces', respostas.sceneCheckpoint)?.state
+  expect(s?.pieces).toMatchObject({
+    rule: 'and',
+    door: 'closed',
+    temChave: true,
+    temEmblema: false,
+  })
+  expect(s?.evidence.discoveries).toContain('and-vs-or')
+  expect(s?.evidence.discoveries).toContain('one-closed')
+})
+
+test('Moedas: nova partida conserva descobertas e sumiço desligado no progresso salvo', async () => {
+  const { gravar } = preparar(blocoDoManifesto('moedas-aula-1.manifesto.json', 'experiencia'))
+  const respostas = await gravar([
+    ...[0, 1, 2, 3, 4, 5].flatMap((coin) => [{ type: 'touch-coin', coin }, { type: 'leave-coin' }]),
+    { type: 'touch-coin', coin: 0 },
+    { type: 'coin-disappears', enabled: false },
+    { type: 'restart-coins' },
+    { type: 'touch-coin', coin: 0 },
+    { type: 'leave-coin' },
+    { type: 'touch-coin', coin: 0 },
+  ])
+  const s = readExperimentSession('coin-counter', respostas.sceneCheckpoint)?.state
+  expect(s?.coins).toMatchObject({ disappear: false, moedas: 2 })
+  expect(s?.evidence.discoveries).toEqual(
+    expect.arrayContaining(['each-adds', 'kept', 'no-double', 'counts-again']),
+  )
+})
+
 describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o player', () => {
   const dia1 = () =>
     blocoDoManifesto(

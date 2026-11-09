@@ -130,13 +130,14 @@ export function PonteLivre() {
     b.timers.length > 0 || (b.sincePull !== null && b.sincePull < TIMED_BRIDGE.seconds)
   const passar = useRef(base.tempo ?? base.dispatch)
   passar.current = base.tempo ?? base.dispatch
+  const pausado = base.movimento?.pausado ?? false
   useEffect(() => {
-    if (!rodando || atravessou || !precisaDoTempo) return
+    if (!rodando || pausado || atravessou || !precisaDoTempo) return
     const t = setInterval(() => {
       if (!document.hidden) passar.current({ type: 'wait-second' })
     }, 1000)
     return () => clearInterval(t)
-  }, [rodando, atravessou, precisaDoTempo])
+  }, [rodando, pausado, atravessou, precisaDoTempo])
   const contando = b.timers.length > 0
   // biome-ignore lint/correctness/useExhaustiveDependencies: o tique toca a cada segundo do relógio (`b.clock`).
   useEffect(() => {
@@ -188,6 +189,17 @@ export function PonteLivre() {
       fotos={p.fotos}
       ideia={discoverySpeech('bridge-idea')}
       ponte={semNoSeuJogo(discoverySpeech('bridge-bridge'))}
+      ferramentas={
+        rodando && pausado && !atravessou ? (
+          <BotaoGrande
+            onClick={() => {
+              void base.movimento?.retomar()
+            }}
+          >
+            Continuar partida
+          </BotaoGrande>
+        ) : undefined
+      }
       stage={
         <TimedBridgeStage
           state={p.state}
@@ -195,6 +207,7 @@ export function PonteLivre() {
           livre
         />
       }
+      movimento={<ModuloAndar raiz={raiz} andar={andar} mao={!rodando && p.fotos.length === 0} />}
       controles={
         <>
           <Modulo titulo="A regra do jogo" icone="🧩" largo>
@@ -215,7 +228,6 @@ export function PonteLivre() {
               }}
             />
           </Modulo>
-          <ModuloAndar raiz={raiz} andar={andar} mao={!rodando && p.fotos.length === 0} />
           <Modulo titulo="O jogo guarda" icone="📓" dica="A ponte olha aqui.">
             <CaderninhoDe
               linhas={[

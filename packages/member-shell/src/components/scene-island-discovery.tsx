@@ -352,8 +352,28 @@ export function IslandDiscovery() {
           </Redondo>
         )
       }
-      // No contato, os módulos vão na ordem do que a criança faz: olhar de lado, baixar a chave e,
-      // depois, andar para testar outros lugares.
+      movimento={
+        modo === 'contact' ? (
+          <Modulo
+            titulo="Andar"
+            icone="🎮"
+            dica={
+              <>
+                Segure as setas.
+                <span className="sz-discovery-so-teclado"> No teclado: setas ou W A S D</span>
+              </>
+            }
+          >
+            <Cruzeta
+              raiz={raiz}
+              segurando={segurando}
+              segurar={segurarSeta}
+              soltar={soltarSeta}
+              mao={f('contact-touch') && p.fotos.length < 3}
+            />
+          </Modulo>
+        ) : undefined
+      }
       controles={
         modo === 'view' ? (
           camera
@@ -388,24 +408,7 @@ export function IslandDiscovery() {
             <Modulo titulo="Altura da chave" icone="🟢" dica="O y: quanto mais, mais alto.">
               {numero('y', 'y', f('contact-apart') && !f('contact-touch') && s.view !== 'top')}
             </Modulo>
-            <Modulo
-              titulo="Andar"
-              icone="🎮"
-              dica={
-                <>
-                  O jogo confere o encontro o tempo todo.
-                  <span className="sz-discovery-so-teclado"> No teclado: setas ou W A S D</span>
-                </>
-              }
-            >
-              <Cruzeta
-                raiz={raiz}
-                segurando={segurando}
-                segurar={segurarSeta}
-                soltar={soltarSeta}
-                mao={f('contact-touch') && p.fotos.length < 3}
-              />
-            </Modulo>
+
             <Modulo titulo="O encontro" icone="📦" dica="As caixas que o jogo confere.">
               <Interruptor
                 ligado={s.bounds}

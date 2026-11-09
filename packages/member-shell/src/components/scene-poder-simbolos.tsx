@@ -128,6 +128,9 @@ export function SimbolosLivre() {
       stage={
         <SymbolSequenceStage state={p.state} heroi={{ ...andar.pos, esquerda: andar.esquerda }} />
       }
+      movimento={
+        <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+      }
       controles={
         <>
           <Modulo titulo="A regra do baú" icone="🧩" largo>
@@ -151,12 +154,14 @@ export function SimbolosLivre() {
               }}
             />
           </Modulo>
-          <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
           <Modulo titulo="O jogo guarda" icone="📓" dica="Cada símbolo olha aqui.">
             <CaderninhoDe
               linhas={[
                 q.mode === 'order'
-                  ? { pergunta: 'Em que passo da placa?', resposta: `${q.passo} de 3` }
+                  ? {
+                      pergunta: 'Em que passo da placa?',
+                      resposta: `${q.chest === 'open' ? 3 : q.passo} de 3`,
+                    }
                   : { pergunta: 'Quantos símbolos tocados?', resposta: `${q.lit.length} de 3` },
               ]}
             />

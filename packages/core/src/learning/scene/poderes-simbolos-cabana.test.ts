@@ -172,6 +172,16 @@ const duas: SceneAction = { type: 'cabin-rule', rule: 'and' }
 describe('O segredo da cabana em exploração livre', () => {
   const { play, fala } = caso('two-pieces')
 
+  test('trocar ou por e com uma peça fecha a porta no novo teste', () => {
+    const abriu = [uma, pegar('key'), encostar]
+    expect(play(abriu).pieces.door).toBe('open')
+    const fechou = play([...abriu, duas, encostar])
+    expect(fechou.pieces).toMatchObject({ door: 'closed', at: 'door', temEmblema: false })
+    expect(fechou.caption).toContain('continua fechada')
+    expect(fechou.evidence.discoveries).toContain('one-closed')
+    expect(play([...abriu, duas, encostar, uma, encostar]).pieces.door).toBe('open')
+  })
+
   test('o caminho da escada fecha todas as metas e o Zappy conclui', () => {
     const caminho: SceneAction[] = [
       encostar,

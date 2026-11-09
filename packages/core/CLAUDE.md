@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/core
 
+## Respostas em percursos alternativos do Faísca (08/11/2026)
+
+- `try-cabin` recalcula a porta em cada comparação de `freeExploration`: trocar de “ou” para “e”
+  com uma peça fecha a porta no novo teste. A bancada conserva a abertura persistente do jogo.
+- `moedasGuidance` pede nova partida (`coin-compare-restart`) quando faltam moedas disponíveis
+  para comparar o sumiço. O reinício existente conserva descobertas e a escolha de sumiço;
+  alternar a escolha não recria moedas. A fala está sincronizada em `zappy-etapas.json`.
+- Regressões nos testes `poderes-simbolos-cabana` e `poderes-ponte-moedas`.
+
 ## Cenário `ilha` e as falas do Faísca (08/11/2026)
 
 Com as telas livres do Faísca (CLAUDE.md do member-shell):

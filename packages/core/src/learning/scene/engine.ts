@@ -665,8 +665,10 @@ export function stepScene(
       const pecas = Number(p.temChave) + Number(p.temEmblema)
       const abre = p.rule === 'and' ? pecas === 2 : pecas >= 1
       p.at = 'door'
-      // Como o jogo: a imagem da cabana aberta fica até a nova partida.
-      if (abre) p.door = 'open'
+      // Na exploração, cada comparação mostra a resposta da pergunta atual. Na bancada,
+      // permanece a imagem aberta do jogo até a nova partida.
+      if (start.setup?.freeExploration) p.door = abre ? 'open' : 'closed'
+      else if (abre) p.door = 'open'
       s.caption = abre
         ? 'A cabana abriu!'
         : `A cabana continua fechada: ela pede a chave ${p.rule === 'and' ? 'e' : 'ou'} o emblema.`
