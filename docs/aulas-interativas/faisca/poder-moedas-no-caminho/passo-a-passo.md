@@ -33,7 +33,7 @@ Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e de
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como na experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 2D → Colisões → Encostar e bloquear. Pegue Quando o sprite começar a encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em jogador e escolha personagem. Clique em moedas e escolha moedasDoCaminho. O último nome já vem moeda; deixe assim.
@@ -89,7 +89,7 @@ Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e de
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como na experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 3D → Encostar. Pegue Quando encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em heroi e escolha personagem. No grupo, clique em estrelas e escolha moedasDoCaminho. No último nome, clique em item e escreva moeda.

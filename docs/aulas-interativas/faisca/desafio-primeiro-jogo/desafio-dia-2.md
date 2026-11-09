@@ -25,7 +25,7 @@ Decisão da responsável: o vídeo da parte 1 guiava a criança passo a passo (o
 
 ## Retomadas sem os controles da experiência, 09/11/2026
 
-Decisão da responsável: quem lembra a experiência lembra o que se observou, não um controle dela (a memória da chave virou o lápis do caderninho em 08/11/2026). Na parte 3, a retomada diz que a chave podia sair do chão sem o jogo guardar que o personagem pegou a chave, no lugar de "Com a memória da chave desligada… temChave continuava falso"; o seu jogo "está assim agora", no lugar de "igual à memória desligada"; o anúncio é "ensinar o seu jogo a lembrar da chave", e o bloco Alterar temChave para verdadeiro "faz o jogo lembrar da chave", no lugar de "liga a memória da chave". O Na tela da parte 1 não cita mais a memória da chave, e o subtítulo da página do Passo a passo da parte 3 acompanhou a fala. A parte 3 precisa de voz nova.
+Decisão da responsável: quem lembra a experiência lembra o que se observou, não um controle dela (a memória da chave virou o lápis do caderninho em 08/11/2026). Na parte 3, a retomada diz que a chave podia sair do chão sem o jogo guardar que ela foi pega, no lugar de "Com a memória da chave desligada… temChave continuava falso"; o seu jogo "está assim agora", no lugar de "igual à memória desligada"; o anúncio é "ensinar o seu jogo a lembrar da chave", e o bloco Alterar temChave para verdadeiro "faz o jogo lembrar da chave", no lugar de "liga a memória da chave". O Na tela da parte 1 não cita mais a memória da chave, e o subtítulo da página do Passo a passo da parte 3 acompanhou a fala. A parte 3 precisa de voz nova.
 
 ## Resumo
 

@@ -154,7 +154,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-limite`
 
-**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "O personagem dá o passinho" até o "Isso é o limite da tela", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva o personagem além da beirada e o jogo puxando ele de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando de volta]. Durante a pergunta da Debinha, a tela volta para a experiência, no tamanho da aula e parada. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não rodar a experiência na beirada nem mexer nos controles dela: testar é a vez da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não responder a pergunta da Debinha: a criança descobre na experiência. O vídeo explica o conceito e convida, sem explicar a experiência nem nomear os controles dela (decisão de 09/11/2026).
+**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "O personagem dá o passinho" até o "Isso é o limite da tela", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva o personagem além da beirada e o jogo puxando ele de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando de volta]. No "E se ele já estiver fora da tela", a tela volta para a experiência, no tamanho da aula e parada. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não rodar a experiência na beirada nem mexer nos controles dela: testar é a vez da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não responder a pergunta da Debinha: a criança descobre na experiência. O vídeo explica o conceito e convida, sem explicar a experiência nem nomear os controles dela (decisão de 09/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -163,18 +163,18 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. O personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
 
-[curious] E se eu ligar o limite com ele já fora da tela?
+[curious] E se ele já estiver fora da tela, o que o limite faz com ele?
 
 [engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que o jogo faz na beirada da tela, com o limite desligado e com o limite ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o jogo faz na beirada da tela, com e sem o limite. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | O que você acha que acontece? Isso você vai testar na experiência. Agora você vai investigar o que o jogo faz na beirada | [curious] |
+| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se ele já estiver fora da tela, o que o limite faz com ele? | O que você acha que acontece? Isso você vai testar na experiência. Agora você vai investigar o que o jogo faz na beirada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -193,7 +193,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Tá vendo? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite da tela ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite da tela, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!
 
 [curious] E onde eu coloco esse limite?
 
@@ -224,7 +224,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-borda-K1 | Debinha | 1 | ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo! | E onde eu coloco esse limite? | O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda | [curious] |
+| video-d1-borda-K1 | Debinha | 1 | da tela, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo! | E onde eu coloco esse limite? | O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

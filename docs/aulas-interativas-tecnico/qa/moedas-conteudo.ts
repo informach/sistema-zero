@@ -250,7 +250,7 @@ export function moedasAjuda(d: MoedasDimensao): {
     {
       key: 'coleta',
       title: 'Cada moeda soma um',
-      idea: 'O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.',
+      idea: 'O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como na experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.',
       steps: three
         ? [
             'Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.',

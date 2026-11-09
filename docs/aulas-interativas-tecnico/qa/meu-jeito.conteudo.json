@@ -476,7 +476,7 @@
         "kind": "application",
         "videoKey": "video-contorno",
         "speech": [
-          "Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço apareceu também do outro lado da linha do meio. Por isso, agora a gente vai desenhar só metade do contorno da sua nave.",
+          "Lembra da experiência da parte anterior? Cada traço de um lado apareceu também do outro lado da linha do meio, como num espelho. Por isso, agora a gente vai desenhar só metade do contorno da sua nave.",
           "Abra a sua nave no Pinta. Escolha uma cor escura para o contorno e clique em Espelho lado a lado para ligar.",
           "Escolha a Linha e arraste trechos pequenos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.",
           "Feche a base da nave acima das quatro linhas livres do fogo.",
@@ -819,7 +819,7 @@
         "kind": "application",
         "videoKey": "video-segundo-fogo",
         "speech": [
-          "Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Com o Fantasma ligado, deu para deixar o fogo 2 só um pouco maior que o fogo 1. Agora a gente vai desenhar esse segundo fogo!",
+          "Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Vendo o fogo 1 clarinho por baixo, deu para deixar o fogo 2 só um pouco maior que ele. Agora a gente vai desenhar esse segundo fogo!",
           "Os quadros da animação ficam numa faixa embaixo do desenho, chamada Spritesheet. Nessa faixa, selecione o quadro 1 e clique em Duplicar quadro. Agora a animação tem um quadro 2, igualzinho ao quadro 1.",
           "Selecione o quadro 2 e ligue o Fantasma do quadro anterior. Repare: por enquanto, você não vê diferença, porque o quadro 2 é uma cópia igual e cobre o fantasma.",
           "Só a ponta do fogo muda. Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo.",

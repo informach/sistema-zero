@@ -128,7 +128,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Com o Fantasma ligado, deu para deixar o fogo 2 só um pouco maior que o fogo 1. Agora a gente vai desenhar esse segundo fogo!
+[engaging, energetic, conversational voice] Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Vendo o fogo 1 clarinho por baixo, deu para deixar o fogo 2 só um pouco maior que ele. Agora a gente vai desenhar esse segundo fogo!
 
 [engaging, energetic, conversational voice] Os quadros da animação ficam numa faixa embaixo do desenho, chamada Spritesheet. Nessa faixa, selecione o quadro 1 e clique em Duplicar quadro. Agora a animação tem um quadro 2, igualzinho ao quadro 1.
 
