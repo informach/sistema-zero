@@ -117,7 +117,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? A chave podia sair do chão sem o jogo guardar que o personagem pegou a chave: pegar e guardar eram coisas diferentes.
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? A chave podia sair do chão sem o jogo guardar que ela foi pega: pegar e guardar eram coisas diferentes.
 
 [engaging, energetic, conversational voice] O seu jogo está assim agora: a chave sai do chão, mas o jogo não guarda em lugar nenhum que ela foi pega. Agora a gente vai ensinar o seu jogo a lembrar da chave!
 

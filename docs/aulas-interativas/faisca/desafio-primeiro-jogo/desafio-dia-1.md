@@ -45,7 +45,7 @@ O vídeo do Passo a passo do projeto continua só com a professora. As participa
 | --- | --- |
 | F1P1-D01 | “E como eu levo o personagem até a chave?” |
 | F1P3-D01 | “E como o jogo sabe quando ele tem que andar?” |
-| F1P5-D01 | “E se eu ligar o limite com ele já fora da tela?” |
+| F1P5-D01 | “E se ele já estiver fora da tela, o que o limite faz com ele?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
 As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-R02.
@@ -145,7 +145,7 @@ Na tela (moldura nova, 08/11/2026): a mesma tela do jogo com a faixa **fora da t
 
 **Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
 
-**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se eu ligar o limite com ele já fora da tela?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
+**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se ele já estiver fora da tela, o que o limite faz com ele?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
 
 ### Seção 6. Mantenha o personagem na tela
 

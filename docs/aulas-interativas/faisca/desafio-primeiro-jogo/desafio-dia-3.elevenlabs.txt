@@ -16,7 +16,7 @@
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, segure as setas e leve o personagem até a porta do farol, lá na base da torre. Tá vendo? Nada acontece, porque o seu jogo ainda não sabe o que fazer quando o personagem chega ao farol.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A porta perguntava se o personagem tem a chave. Com a resposta não, ela avisava que falta a chave. Agora a gente vai ensinar o farol do seu jogo a fazer essa pergunta, começando por esse aviso!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A porta perguntava se o personagem tinha a chave. Com a resposta não, ela avisava que falta a chave. Agora a gente vai ensinar o farol do seu jogo a fazer essa pergunta, começando por esse aviso!
 
 [engaging, energetic, conversational voice] Primeiro, o jogo precisa perceber quando o personagem chega ao farol. Chegar ao farol é um encontro, como pegar a chave, e os encontros ficam na área Quando acontecer.
 

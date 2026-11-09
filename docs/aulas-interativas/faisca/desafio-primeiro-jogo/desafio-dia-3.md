@@ -14,7 +14,7 @@ Decisão da responsável: os vídeos das partes 1 e 6 deixaram de apontar os con
 
 ## Retomada sem os controles da experiência, 09/11/2026
 
-Decisão da responsável: quem lembra a experiência lembra o que se observou. Na parte 2, a retomada diz que a porta "perguntava se o personagem tem a chave", porque a experiência mostra a pergunta "Você tem a chave?" e o caderninho, não temChave; temChave continua nas falas sobre o jogo da criança e na montagem. A parte 2 precisa de voz nova.
+Decisão da responsável: quem lembra a experiência lembra o que se observou. Na parte 2, a retomada diz que a porta "perguntava se o personagem tinha a chave", porque a experiência mostra a pergunta "Você tem a chave?" e o caderninho, não temChave; temChave continua nas falas sobre o jogo da criança e na montagem. A parte 2 precisa de voz nova.
 
 ## Resumo
 

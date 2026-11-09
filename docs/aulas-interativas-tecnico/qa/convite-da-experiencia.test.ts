@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { GESTO_NA_TELA } from './gestos-na-tela'
 import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
 
 /**
@@ -92,8 +93,10 @@ describe('o vídeo da experiência explica o conceito e convida a investigar', (
       /\bnas duas vezes\b|\bdepois,? teste\b|\bteste mais (uma|duas|tr[eê]s)\b/i,
     )
     expect(c.fala).toContain('Você escolhe por onde começar')
-    // Na tela o vídeo só amplia a experiência: nada de apontar um controle dela.
-    expect(c.tela).not.toMatch(/\[apontar "/)
+    // Na tela o vídeo só amplia a experiência: nenhum gesto num controle dela (os mesmos gestos
+    // que video-experiencia.test.ts reprova) e nenhum "Olha aqui".
+    expect(c.tela).not.toMatch(GESTO_NA_TELA)
+    expect(c.tela).not.toMatch(/Olha aqui/)
   })
 
   test.each(
@@ -102,5 +105,62 @@ describe('o vídeo da experiência explica o conceito e convida a investigar', (
     const instrucao = c.experiencia.content?.instructions ?? ''
     expect(instrucao).not.toMatch(/\bClique em\b/)
     expect(instrucao.split(/[.!?](?:\s|$)/).filter((f) => f.trim()).length).toBeLessThanOrEqual(3)
+  })
+})
+
+/**
+ * A retomada em outra parte lembra o conceito ou o que se observou, nunca um botão ou um
+ * interruptor da experiência (decisão de 09/11/2026): a experiência pode mudar o nome e o visual
+ * dos controles sem pedir voz nova. "Ligado a"/"ligada ao" é o conceito ("a reação ligada ao
+ * toque", "o som ligado ao pulo") e continua valendo.
+ */
+const INTERRUPTOR = /\bdesligad[oa]s?\b|\bligad[oa]s?\b(?! ao? )/i
+const BOTAO = /\bbot(?:ão|ões)(?![\p{L}\p{N}])/iu
+
+interface Retomada {
+  onde: string
+  trecho: string
+}
+
+const retomadas: Retomada[] = []
+for (const curso of CURSOS) {
+  const pasta = resolve(RAIZ, curso)
+  for (const arquivo of readdirSync(pasta).filter((f) => f.endsWith('.roteiro.md'))) {
+    for (const parte of extrairPartesElevenLabs(readFileSync(resolve(pasta, arquivo), 'utf8'))) {
+      const frases = semTags(parte.texto)
+        .split(/(?<=[.!?])\s+/)
+        .filter((f) => f.trim())
+      frases.forEach((frase, n) => {
+        if (!/Lembra da experiência/i.test(frase)) return
+        retomadas.push({
+          onde: `${arquivo.replace('.roteiro.md', '')}/${parte.clipe}`,
+          trecho: [frase, frases[n + 1] ?? ''].join(' ').trim(),
+        })
+      })
+    }
+  }
+}
+
+describe('a retomada lembra o conceito, não um controle da experiência', () => {
+  test('a varredura encontrou as retomadas dos cursos', () => {
+    expect(retomadas.length).toBeGreaterThan(10)
+  })
+
+  test.each(
+    retomadas.map((r) => [r.onde, r] as const),
+  )('%s: sem botão nem interruptor ligado/desligado', (_nome, r) => {
+    expect(r.trecho).not.toMatch(INTERRUPTOR)
+    expect(r.trecho).not.toMatch(BOTAO)
+  })
+
+  test('a regra reprova o interruptor e aceita o conceito ligado a alguma coisa', () => {
+    expect('Com o limite da tela ligado, o jogo puxava ele.').toMatch(INTERRUPTOR)
+    expect('Com a memória desligada, nada mudava.').toMatch(INTERRUPTOR)
+    expect('Com a pergunta ligada, a porta respondia.').toMatch(INTERRUPTOR)
+    expect('Você apertou o botão da cerca.').toMatch(BOTAO)
+    expect(
+      'O toque só deixava o esconderijo invisível quando a reação estava ligada a ele.',
+    ).not.toMatch(INTERRUPTOR)
+    expect('O som ligado ao pulo tocava em cada salto.').not.toMatch(INTERRUPTOR)
   })
 })

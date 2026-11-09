@@ -84,7 +84,7 @@ Aplicar [Conceito, investigação e construção](DESCOBERTA-GUIADA.md), direç�
 
 **O vídeo não explica a experiência (decisão de 09/11/2026, vale para todos os cursos).** A fala explica só o conceito e convida a explorá-lo na experiência da aula ("Agora você vai investigar …", com o fecho comum). Não descreve a tela da experiência, não nomeia nem aponta controles e não dita testes. Nas outras partes, quem lembra a experiência lembra o conceito ou o que se observou ("Lembra da experiência? Cada personagem encontrado somava um em Achados."), nunca um botão ou um interruptor dela. Motivo: a experiência pode mudar de visual e de nome de controle sem obrigar a gerar voz nova nem regravar o vídeo. Os testes `qa/convite-da-experiencia.test.ts` e `qa/video-experiencia.test.ts` conferem a parte da experiência.
 
-Nas notas de tela, registrar a ilustração e os elementos que tornam a ideia concreta. Preservar cócegas/risada e futebol no Cadê. Não mostrar a resolução de todas as descobertas nem narrar uma sequência de cliques para a pessoa reproduzir.
+Nas notas de tela, registrar a ilustração e os elementos que tornam a ideia concreta. Preservar cócegas/risada e futebol no Cadê. Não mostrar a resolução das descobertas nem narrar uma sequência de cliques para a pessoa reproduzir.
 
 Registrar também as falas internas do Zappy, as condições de cada etapa, a ação principal e os retornos. A fonte deve ser compartilhada com o player; texto, gravação e botão precisam corresponder ao mesmo estado. A ponte da página convida à investigação sem duplicar a primeira instrução. Passos obrigatórios permanecem acessíveis sem abrir pistas.
 

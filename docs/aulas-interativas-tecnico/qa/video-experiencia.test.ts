@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { isLearningManifest } from '../../../packages/core/src/learning'
 import { caminhoAula } from './caminhos'
+import { GESTO_NA_TELA } from './gestos-na-tela'
 import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
 
 /**
@@ -39,8 +40,6 @@ const TOUR =
   /Olha aqui|\bnesta (?:experiência|atividade)\b|\b(?:este|esta|estes|estas|esse|essa) (?:botão|botões|campo|campos|lista|régua|controle|controles|marca|tabela|deslizante)\b|\baqui (?:você (?:vê|escolhe|muda)|fica)\b|Repare em (?:duas|três|quatro) coisas/i
 const SEQUENCIA =
   /\bprimeiro\b|\bdepois (?:clique|teste|faça|compare|mude|pegue|toque|tente|encoste|ligue|desligue)\b|Nas duas vezes|\bteste mais\b|\bPor (?:último|fim)\b|\bFaça [^.]* e depois\b/i
-// Só a indicação exata do mascote é apresentação; outros alvos continuam sendo controles.
-const GESTO_NA_TELA = /\[(?:apontar(?! zappy\])|tocar|clicar|arrastar|encaixar|escolher|trocar)\b/
 
 interface Convite {
   fala: string
@@ -135,8 +134,8 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
   })
 
   test('⭐ o convite de TODA experiência livre termina no mesmo fecho (08/11/2026)', () => {
-    // Decisão dela: o Dia 1 do Farol e o Cadê também. Só a instrução: os vídeos deles já foram
-    // gravados no molde anterior e não mudam.
+    // Decisão dela: o Dia 1 do Farol e o Cadê também. Aqui só a instrução: desde 09/11/2026 os
+    // vídeos deles também estão no teste dos 15 e serão regravados no molde novo.
     const instrucoes = [
       'desafio-dia-1',
       'cade-todo-mundo-aula-1',

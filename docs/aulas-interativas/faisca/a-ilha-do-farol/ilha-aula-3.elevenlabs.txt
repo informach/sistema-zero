@@ -88,7 +88,7 @@
 
 [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
 
-[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Pense na porta do farol. Ela pergunta: a porta está trancada? E abre quando a resposta é sim.
+[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim.
 
 [curious] Com o não na pergunta, o que a porta faz?
 

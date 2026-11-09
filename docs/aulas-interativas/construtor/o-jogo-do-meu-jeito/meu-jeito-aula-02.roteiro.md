@@ -132,7 +132,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço apareceu também do outro lado da linha do meio. Por isso, agora a gente vai desenhar só metade do contorno da sua nave.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada traço de um lado apareceu também do outro lado da linha do meio, como num espelho. Por isso, agora a gente vai desenhar só metade do contorno da sua nave.
 
 [confident, clear, unhurried voice] Abra a sua nave no Pinta. Escolha uma cor escura para o contorno e clique em Espelho lado a lado para ligar.
 

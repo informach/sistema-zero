@@ -6,7 +6,7 @@
 
 [long pause]
 
-[curious] E se eu ligar o limite com ele já fora da tela?
+[curious] E se ele já estiver fora da tela, o que o limite faz com ele?
 
 [long pause]
 
