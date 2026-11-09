@@ -58,7 +58,8 @@ export function revealBlockInWorkspace(
   for (let parent = block.getParent(); parent; parent = parent.getParent()) {
     if (parent.isCollapsed()) parent.setCollapsed(false)
   }
-  workspace.centerOnBlock(block.id)
+  // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
+  workspace.centerOnBlock(block.id, true)
   block.select()
   if (openBubble) {
     void block.getIcon(Blockly.icons.IconType.WARNING)?.setBubbleVisible(true)

@@ -1,4 +1,8 @@
 import * as Blockly from 'blockly/core'
+// O plugin registra a categoria `search` ao ser importado; este módulo a substitui. Importado
+// aqui (e não só no setup.ts) para o editor do Python registrar a busca sem carregar os blocos
+// do JavaScript.
+import '@blockly/toolbox-search'
 import type { LearningProfile } from '#core'
 import { palettePathOf } from './paletteMap'
 import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
@@ -71,6 +75,22 @@ const SEARCH_FIELD_RESERVED_MARGIN =
 let warnedIncompatible = false
 
 /**
+ * Busca de outra linguagem na MESMA categoria (redesenho do clássico, 11/2026): o editor de
+ * blocos do Python pendura no workspace um resolvedor que devolve os itens do flyout prontos
+ * (com os cabeçalhos dos grupos). Com ele, a categoria não indexa nada pelo plugin (os blocos do
+ * Python dependem do estado de cada codec) e mostra o que o resolvedor achou.
+ */
+export interface SearchResolverWorkspace {
+  __szSearchItems?: (
+    query: string,
+  ) => Array<{ kind: string; text?: string; type?: string; [key: string]: unknown }>
+}
+
+function searchResolverOf(category: { workspace_?: unknown }) {
+  return (category.workspace_ as SearchResolverWorkspace | null | undefined)?.__szSearchItems
+}
+
+/**
  * Emite UM ÚNICO `console.warn` por carga do módulo apontando qual interno do
  * Blockly/plugin não casou com a suposição de versão. Evita spam (a categoria de
  * busca recria DOM e roda matchBlocks a cada tecla) e dá um rastro claro de que
@@ -99,6 +119,8 @@ interface SearchCategoryInstance {
   dispose(): void
   searchField?: HTMLInputElement
   flyoutItems_: Array<{ kind: string; text?: string; type?: string; gap?: number }>
+  /** O JSON da categoria; `szSearch: 'external'` = a busca vem de um resolvedor do editor. */
+  toolboxItemDef_?: { szSearch?: string } | null
   // Blockly 12: devolve FlyoutItemInfo prontos (`{ kind: 'block', type, ... }`),
   // não mais `string[]` como no Blockly 11.
   blockSearcher?: {
@@ -343,21 +365,25 @@ export function registerPtSearchCategory(): void {
       // Replica a lógica do plugin controlando o texto em PT-BR diretamente
       // (sem o "flash" em inglês que ocorre ao traduzir depois do super).
       const value = this.searchField?.value ?? ''
+      const resolve = searchResolverOf(this)
       // O `input` (nosso) e o `keyup` (do plugin) chegam os dois a cada tecla —
       // renderizar o flyout duas vezes por tecla pisca e custa caro com dezenas
       // de blocos. A consulta é a identidade do resultado: repetiu, sai.
       if (value === this.lastRenderedQuery) return
       this.lastRenderedQuery = value
       const searcher = this.blockSearcher
-      if (value && typeof searcher?.blockTypesMatching !== 'function') {
+      if (!resolve && value && typeof searcher?.blockTypesMatching !== 'function') {
         warnIncompatibility('blockSearcher.blockTypesMatching ausente')
       }
       // Blockly 12 (@blockly/toolbox-search v3): `blockTypesMatching` já devolve
       // os FlyoutItemInfo prontos (`{ kind: 'block', type, ... }`). Atribuímos
       // direto — o `.map()` antigo (era `string[]` no Blockly 11) embrulhava cada
       // item num `type` = objeto inválido e o flyout não renderizava nada.
-      this.flyoutItems_ =
-        value && typeof searcher?.blockTypesMatching === 'function'
+      this.flyoutItems_ = resolve
+        ? value
+          ? resolve(value)
+          : []
+        : value && typeof searcher?.blockTypesMatching === 'function'
           ? searchWithSynonyms(value, (query) => searcher.blockTypesMatching(query) ?? [])
           : []
       // Respeita o nível do aluno: a busca indexa Funções/Classes GLOBALMENTE (eles
@@ -365,7 +391,7 @@ export function registerPtSearchCategory(): void {
       // vazar blocos acima do perfil deste workspace — o professor pode tê-los
       // ocultado para divulgação progressiva. Espelha o gate da paleta (pushCustom).
       const profile = this.workspace_ ? searchProfiles.get(this.workspace_) : undefined
-      if (profile) {
+      if (profile && !resolve) {
         const blocked = blockedDynamicSearchTypes(profile)
         if (blocked.size > 0) {
           this.flyoutItems_ = this.flyoutItems_.filter(
@@ -373,8 +399,9 @@ export function registerPtSearchCategory(): void {
           )
         }
       }
-      // Cabeçalhos "categoria › subcategoria" entre os resultados (ver a função).
-      this.flyoutItems_ = groupSearchResultsByPalette(this.flyoutItems_)
+      // Cabeçalhos "categoria › subcategoria" entre os resultados (ver a função). O resolvedor
+      // de outra linguagem já devolve os dele.
+      if (!resolve) this.flyoutItems_ = groupSearchResultsByPalette(this.flyoutItems_)
       // Reserva o espaço do CAMPO como parte do layout, e não deslocando o canvas
       // por `transform` (o Blockly o reescreve ao rolar/re-renderizar). No flyout
       // vertical, `sep` empurra Y. No horizontal ele empurraria X, então usamos o
@@ -442,6 +469,9 @@ export function registerPtSearchCategory(): void {
     // dinâmicas (Funções/Classes, via `custom:`) ficavam de fora e seus blocos
     // não apareciam na busca. Indexamos esses tipos também.
     override initBlockSearcher(): void {
+      // Busca de outra linguagem (Python): não há índice do plugin para montar. A marca vem no
+      // JSON da paleta porque o índice nasce na injeção, antes de o editor pendurar o resolvedor.
+      if (this.toolboxItemDef_?.szSearch === 'external' || searchResolverOf(this)) return
       super.initBlockSearcher()
       // `blockSearcher.indexBlocks` é interno do plugin; sem ele só perdemos a
       // indexação extra das categorias dinâmicas (Funções/Classes) — a busca do

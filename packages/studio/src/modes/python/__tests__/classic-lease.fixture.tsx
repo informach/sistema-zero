@@ -25,10 +25,11 @@ mock.module('react-resizable-panels', () => ({
   PanelResizeHandle: () => <div />,
 }))
 mock.module('../../../components/blocks/PythonBlocklyEditor', () => ({
-  PythonBlocklyEditor: ({ palette }: PythonBlocklyEditorProps) => (
+  PythonBlocklyEditor: ({ palette, files }: PythonBlocklyEditorProps) => (
     <div
       data-testid="qualified-blocks"
       data-blocks={palette.entries.map((entry) => entry.id).join(',')}
+      data-files={(files ?? []).join(',')}
     />
   ),
 }))
@@ -198,14 +199,13 @@ test('blocks source recovery opens non-Python files while qualified blocks stay 
   fireEvent.click(view.getByRole('button', { name: 'Abrir configuração' }))
   expect(view.getByLabelText('Arquivo fonte atual').textContent).toBe('config.json')
   await act(async () => view.rerender(content(qualified)))
-  await view.findByTestId('qualified-blocks')
+  const blocks = await view.findByTestId('qualified-blocks')
   expect(view.queryByRole('textbox', { name: 'Fonte da instância' })).toBeNull()
-  expect(view.getByRole('combobox', { name: 'Arquivo Python' }).textContent).not.toContain(
-    'README.txt',
-  )
-  expect(view.getByRole('combobox', { name: 'Arquivo Python' }).textContent).not.toContain(
-    'config.json',
-  )
+  // O seletor de arquivo mora no cabeçalho dos blocos desde 11/2026: só os .py chegam a ele.
+  const files = blocks.getAttribute('data-files') ?? ''
+  expect(files).not.toContain('README.txt')
+  expect(files).not.toContain('config.json')
+  expect(files).toContain('.py')
 })
 
 test('same environment refreshes curation and grants without replacing the source, draft or visual instance', async () => {

@@ -2124,6 +2124,99 @@
   width: auto;
   white-space: nowrap;
 }
+/* O cabeçalho dos blocos do Python (uma linha, no molde do cabeçalho do palco). */
+.sz-py-head {
+  position: relative;
+  flex-wrap: nowrap;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-sz-border);
+  background: var(--color-sz-panel);
+}
+.sz-py-head__file {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sz-py-head__select {
+  max-width: 12rem;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 9999px;
+  background: var(--color-sz-panel);
+  padding: 0.25rem 0.625rem;
+  color: var(--color-sz-fg);
+  font: inherit;
+  font-weight: 800;
+}
+.sz-py-head__drafts .sz-pro-badge {
+  background: color-mix(in oklab, var(--color-sz-warn) 22%, var(--color-sz-panel));
+  color: var(--color-sz-fg);
+}
+.sz-py-jump {
+  position: relative;
+  min-width: 0;
+}
+.sz-py-jump__current {
+  max-width: 10rem;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sz-py-jump__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  /* Acima da paleta e do flyout do Blockly (z-index 70 e 20 na folha dele). */
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(18rem, 80vw);
+  max-height: 20rem;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 14px;
+  background: var(--color-sz-panel);
+  box-shadow: 0 10px 28px rgb(15 26 51 / 0.18);
+  padding: 8px;
+}
+.sz-py-jump__search {
+  border: 1px solid var(--color-sz-border);
+  border-radius: 10px;
+  background: var(--color-sz-bg);
+  padding: 6px 10px;
+  color: var(--color-sz-fg);
+  font: inherit;
+}
+.sz-py-jump__list {
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+.sz-py-jump__list button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 6px 12px;
+  color: var(--color-sz-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sz-py-jump__list button:hover,
+.sz-py-jump__list button[aria-current="true"] {
+  background: color-mix(in oklab, var(--color-sz-accent) 14%, transparent);
+}
+.sz-py-jump__empty {
+  padding: 6px 12px;
+  color: var(--color-sz-fg-soft);
+}
 /* A dica do bloco: azul-marinho opaco com letra branca e um fio claro (era cinza translúcido).
    Classe dobrada para vencer a folha que o Blockly injeta depois da nossa. */
 .blocklyTooltipDiv.blocklyTooltipDiv {

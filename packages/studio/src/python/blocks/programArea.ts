@@ -7,14 +7,20 @@ export function registerPythonProgramArea() {
   if (Blockly.Blocks[PYTHON_PROGRAM]) return
   Blockly.Blocks[PYTHON_PROGRAM] = {
     init(this: Blockly.Block) {
+      // Redesenho do clássico (11/2026): "Programa · roda de cima para baixo" numa linha só,
+      // como as áreas do JavaScript. O nome do arquivo já está no cabeçalho do editor; o campo
+      // FILE continua (a migração o preenche) mas não aparece.
       this.appendDummyInput()
         .appendField('Programa')
         .appendField(new Blockly.FieldLabel(''), 'FILE')
-      this.appendDummyInput().appendField('Executado de cima para baixo')
+        .appendField(new Blockly.FieldLabel('· roda de cima para baixo', 'sz-area-hint'))
+      this.getField('FILE')?.setVisible(false)
       this.appendStatementInput('BODY').setCheck('Python:statement')
       this.setColour('#5169b5')
       this.setDeletable(false)
-      this.setTooltip('Só os blocos dentro do Programa executam. Peças soltas são rascunhos.')
+      this.setTooltip(
+        'Os blocos daqui rodam um depois do outro, de cima para baixo. Peças fora do Programa são rascunhos e não rodam.',
+      )
     },
   }
 }

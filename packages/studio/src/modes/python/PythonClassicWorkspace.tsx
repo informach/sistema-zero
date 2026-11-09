@@ -79,7 +79,8 @@ function PythonClassicProjectWorkspace({
   const path =
     selected &&
     project.files[selected] !== undefined &&
-    (mode === 'bridge' || (!blockly && sourceFallback) || selected.endsWith('.py'))
+    // Com blocos, só .py (a Ponte também só tem abas .py); o código de recuperação abre tudo.
+    ((!blockly && (mode === 'bridge' || sourceFallback)) || selected.endsWith('.py'))
       ? selected
       : project.python.entrypoint
   const changeFile = (file: string) => {
@@ -139,11 +140,17 @@ function PythonClassicProjectWorkspace({
       nonce: ++nonce.current,
     })
   }
+  // Os .py do projeto: o cabeçalho dos blocos troca de arquivo por eles (a linha "Arquivo" de
+  // antes saiu, redesenho de 11/2026).
+  const pythonFiles = Object.keys(project.files).filter((file) => file.endsWith('.py'))
   const source = (
     <Suspense fallback={<EditorSkeleton message="Carregando o código Python…" />}>
       <SourceEditor
         activeFile={path}
         onActiveFileChange={changeFile}
+        // Ponte com blocos: abas só com os .py (README e NOTICE não têm blocos, redesenho de
+        // 11/2026). Sem blocos (o código de recuperação), todos os arquivos continuam abríveis.
+        openFiles={blockly ? pythonFiles : undefined}
         highlight={
           highlight && project.files[highlight.value.file] === highlight.source
             ? highlight.value
@@ -162,6 +169,8 @@ function PythonClassicProjectWorkspace({
     <PythonBlocklyEditor
       {...blockly}
       path={path}
+      files={pythonFiles}
+      onChangeFile={changeFile}
       onSelectRange={selectRange}
       sourceCursor={cursor?.path === path ? cursor : undefined}
     />
@@ -184,25 +193,6 @@ function PythonClassicProjectWorkspace({
   )
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {mode === 'blocks' && (
-        <label className="flex items-center gap-2 border-b border-sz-border px-3 py-2 text-sm">
-          Arquivo
-          <select
-            aria-label="Arquivo Python"
-            value={path}
-            onChange={(event) => changeFile(event.target.value)}
-            className="min-w-0 flex-1 rounded border border-sz-border bg-sz-panel px-2 py-1"
-          >
-            {Object.keys(project.files)
-              .filter((file) => file.endsWith('.py'))
-              .map((file) => (
-                <option key={file} value={file}>
-                  {file}
-                </option>
-              ))}
-          </select>
-        </label>
-      )}
       <div className="min-h-0 flex-1">
         {isNarrow ? (
           <NarrowPanels
