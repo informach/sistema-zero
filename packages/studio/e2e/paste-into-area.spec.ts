@@ -40,11 +40,31 @@ function generatedProgram(doc: string): string {
 async function addArea(page: Page, label: string): Promise<void> {
   // ⚠️ O clique vai na CATEGORIA, não no <span> do rótulo: o div pai intercepta
   // os eventos de ponteiro e o clique no span nunca chega.
-  await page.locator('.blocklyToolboxCategory', { hasText: '🗂️ Áreas do projeto' }).first().click()
-  await page.locator('.blocklyFlyout').getByText(label, { exact: false }).first().click()
+  const flyout = page.locator('.blocklyToolboxFlyout')
+  const source = flyout.getByText(label, { exact: false }).first()
+  if (!(await source.isVisible())) {
+    await page.locator('.blocklyToolboxCategory', { hasText: '🗂️ Áreas do projeto' }).first().click()
+  }
+  await expect(source).toBeVisible()
+  // O flyout do Blockly rola o SVG: scrollIntoView não alcança as áreas abaixo da dobra.
+  await expect
+    .poll(async () => {
+      const bounds = await flyout.boundingBox()
+      const block = await source.boundingBox()
+      if (!bounds || !block) return false
+      const center = block.y + block.height / 2
+      if (center >= bounds.y + 8 && center <= bounds.y + bounds.height - 8) return true
+      await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
+      await page.mouse.wheel(0, center - (bounds.y + bounds.height / 2))
+      return false
+    })
+    .toBe(true)
+  await source.click()
   await expect(
     page.locator('.blocklyBlockCanvas').getByText(label, { exact: false }).first(),
   ).toBeVisible()
+  await expect(page.getByText('Alterações não salvas', { exact: true })).toBeVisible()
+  await expect(page.getByText('Salvo', { exact: true })).toBeVisible()
 }
 
 /** Cola uma subárvore pelo menu de contexto REAL (mesmo caminho da UI). */
@@ -61,7 +81,7 @@ async function pasteBlocks(
     .locator('.blocklySvg')
     .first()
     .click({ button: 'right', position: { x: 620, y: 420 } })
-  await page.getByText('Colar blocos', { exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Colar', exact: true }).click()
 }
 
 /** Arrasta com o MOUSE (gesto real) o bloco `de` até encostar em `para`. */

@@ -291,8 +291,8 @@ async function canvasColorCount(page: Page, canvas: Locator): Promise<number> {
 }
 
 async function openCanvas3DGroup(page: Page, group: string): Promise<void> {
-  const canvas2D = page.getByRole('treeitem', { name: 'Canvas', exact: true })
-  const root = page.getByRole('treeitem', { name: 'Canvas 3D', exact: true })
+  const canvas2D = page.getByRole('treeitem', { name: 'Pintura · Canvas', exact: true })
+  const root = page.getByRole('treeitem', { name: 'Cena 3D', exact: true })
   // O Blockly fecha os filhos depois de escolher um grupo. Trocar para uma
   // categoria irmã permite reabrir a árvore como a criança faria.
   await canvas2D.click()

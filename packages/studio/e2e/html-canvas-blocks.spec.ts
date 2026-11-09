@@ -248,7 +248,7 @@ test.describe('HTML, CSS, SVG e Canvas — blocos reais', () => {
       "canvas?.getContext?.('2d')",
     )
 
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(page.locator('.blocklyBlockCanvas .sz_canvas_setup')).toBeVisible()
     expect(errors).toEqual([])
   })
@@ -264,13 +264,17 @@ test.describe('HTML, CSS, SVG e Canvas — blocos reais', () => {
     const warning = setup.locator('.blocklyWarningIcon')
     await expect(warning).toBeVisible({ timeout: 10_000 })
     await warning.click()
-    await expect(page.getByText(/Não achei uma tela Canvas com o id “tela”/)).toBeVisible()
+    await expect(
+      page
+        .getByRole('tabpanel', { name: 'Editores do projeto' })
+        .getByText(/Não achei uma tela Canvas com o id “tela”/),
+    ).toBeVisible()
   })
 
   for (const [category, groups] of [
-    ['HTML', RESPONSIVE_GROUPS.HTML],
-    ['CSS', RESPONSIVE_GROUPS.CSS],
-    ['Canvas', RESPONSIVE_GROUPS.Canvas],
+    ['Página · HTML', RESPONSIVE_GROUPS.HTML],
+    ['Estilo · CSS', RESPONSIVE_GROUPS.CSS],
+    ['Pintura · Canvas', RESPONSIVE_GROUPS.Canvas],
   ] as const) {
     test(`todos os grupos de ${category} cabem no layout estreito`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 })

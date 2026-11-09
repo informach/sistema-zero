@@ -254,8 +254,11 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       .toEqual([true, true, true])
 
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Console' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
+    await expect(page.getByRole('tab', { name: /Mensagens do jogo/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
     await page.getByRole('button', { name: 'Limpar' }).click()
     await page.getByRole('button', { name: 'Atualizar o preview' }).click()
     await expect
@@ -339,7 +342,10 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
     await composerTab.click()
 
     await page.getByRole('button', { name: 'Distrito', exact: true }).click()
-    await expect(page.getByRole('status')).toHaveText(
+    const composerStatus = page
+      .getByRole('tabpanel', { name: 'Editor de mundo 3D' })
+      .getByRole('status')
+    await expect(composerStatus).toHaveText(
       'Crie a área “⚙️ Ao iniciar” em Áreas do projeto para adicionar ao mundo.',
     )
 
@@ -348,7 +354,7 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
     await composerTab.click()
     await page.getByRole('button', { name: 'Distrito', exact: true }).click()
 
-    await expect(page.getByRole('status')).toHaveCount(0)
+    await expect(composerStatus).toHaveCount(0)
     await expect(
       page
         .getByRole('navigation', { name: 'Objetos do mundo' })

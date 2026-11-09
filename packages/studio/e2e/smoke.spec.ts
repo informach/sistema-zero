@@ -103,45 +103,51 @@ test.describe('Sistema Zero Studio — smoke', () => {
     })
 
     await createProject(page)
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Abrir a gaveta' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
     await expect(page.locator('main')).toBeVisible()
     expect(layoutWarnings).toEqual([])
   })
 
-  test('Console começa oculto em Blocos e respeita a escolha manual entre modos', async ({
+  test('Mensagens começam recolhidas em Blocos e respeitam a escolha manual entre modos', async ({
     page,
   }) => {
     await createProject(page)
     // Básico = Blocos + Ponte; o modo Código NÃO existe no clássico (D2).
-    await expect(page.getByRole('button', { name: 'Blocos' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Blocos', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Ponte' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Código', exact: true })).toHaveCount(0)
     // Categorias da toolbox no modo Blocos (default).
-    await expect(page.getByText('HTML', { exact: true })).toBeVisible()
-    await expect(page.getByText('CSS', { exact: true })).toBeVisible()
-    await expect(page.getByText('Canvas', { exact: true })).toBeVisible()
+    await expect(page.getByRole('treeitem', { name: 'Página · HTML', exact: true })).toBeVisible()
+    await expect(page.getByRole('treeitem', { name: 'Estilo · CSS', exact: true })).toBeVisible()
+    await expect(
+      page.getByRole('treeitem', { name: 'Pintura · Canvas', exact: true }),
+    ).toBeVisible()
     // Em Blocos, o Console começa oculto, mas continua acessível pelo menu.
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    const messages = page.getByRole('tab', { name: 'Mensagens do jogo' })
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    const consoleItem = page.getByRole('menuitem', { name: 'Console' })
+    const consoleItem = page.getByRole('menuitem', { name: 'Mensagens do jogo' })
     await expect(consoleItem).not.toHaveAttribute('aria-current', 'true')
     await consoleItem.click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await expect(messages).toHaveAttribute('aria-selected', 'true')
 
     // A primeira escolha manual prevalece ao trocar para Ponte.
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await expect(messages).toHaveAttribute('aria-selected', 'true')
 
     // O mesmo item oculta novamente e a escolha continua valendo em Blocos.
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await expect(page.getByRole('menuitem', { name: 'Console' })).toHaveAttribute(
+    await expect(page.getByRole('menuitem', { name: 'Mensagens do jogo' })).toHaveAttribute(
       'aria-current',
       'true',
     )
-    await page.getByRole('menuitem', { name: 'Console' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
-    await page.getByRole('button', { name: 'Blocos' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
+    await expect(messages).toHaveAttribute('aria-selected', 'false')
   })
 
   test('toolbox: folha abre flyout (e permanece); categoria-pai expande', async ({ page }) => {
@@ -235,7 +241,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Projeto novo começa sem logs no console', async ({ page }) => {
     await createProject(page)
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
     await expect(
       page.getByText('Sem mensagens. Use console.log para registrar algo.'),
     ).toBeVisible()
@@ -256,12 +262,17 @@ test.describe('Sistema Zero Studio — smoke', () => {
         .frameLocator('iframe[title="Pré-visualização"]')
         .getByRole('heading', { name: 'Executou oculto' }),
     ).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: /Mensagens do jogo/ })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    )
 
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await page.getByRole('menuitem', { name: 'Mensagens do jogo' }).click()
     await expect(
-      page.getByLabel('Console', { exact: true }).getByText('log oculto retido', { exact: true }),
+      page
+        .getByRole('tabpanel', { name: /Mensagens do jogo/ })
+        .getByText('log oculto retido', { exact: true }),
     ).toBeVisible()
   })
 
@@ -294,7 +305,10 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Modo Ponte tem blocos + Monaco + preview', async ({ page }) => {
     await createProject(page)
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: 'Mensagens do jogo' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    )
     await expect(page.getByRole('button', { name: 'index.html' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
   })
@@ -416,7 +430,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
     // morre com a Ponte): a regressão regenerava os arquivos a partir dos
     // blocos VELHOS e perdia o código digitado. Com as épocas de sincronização,
     // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(
       page
         .frameLocator('iframe[title="Pré-visualização"]')

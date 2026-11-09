@@ -592,7 +592,10 @@ jobs:
   community-kids-e2e:
     name: community-kids-e2e
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # A suíte ampliada do Faísca tem 235 cenas: no CI 42675628789, o limite antigo
+    # cortou a cena 184 sem falhas, antes das provas de aula, Pinta e Molda.
+    # O orçamento inclui os builds; os limites de cada teste continuam os mesmos.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
 

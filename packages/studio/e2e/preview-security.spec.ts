@@ -62,7 +62,7 @@ test.describe('segurança do preview', () => {
     const after = preview.locator('#depois')
     await after.click()
     await expect(after).toHaveAttribute('data-executou', 'sim')
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(page.locator('.blocklySvg')).toBeVisible()
   })
 
@@ -87,7 +87,7 @@ test.describe('segurança do preview', () => {
     await expect(body).not.toHaveAttribute('data-dynamic-script', 'executed')
 
     // Uma ação no documento hospedeiro prova que a tentativa não travou a aba.
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(page.locator('.blocklySvg')).toBeVisible()
   })
 
@@ -110,7 +110,7 @@ test.describe('segurança do preview', () => {
       timeout: 15_000,
     })
     await expect(body).not.toHaveAttribute('data-dynamic-external', 'executed')
-    await page.getByRole('button', { name: 'Blocos' }).click()
+    await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await expect(page.locator('.blocklySvg')).toBeVisible()
   })
 })
