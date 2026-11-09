@@ -2217,6 +2217,33 @@
   padding: 6px 12px;
   color: var(--color-sz-fg-soft);
 }
+/* As etiquetas do cartão de "Meus jogos": linguagem e jeito, no canto da capa. */
+.sz-project-tags {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sz-project-tag {
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-sz-panel) 88%, transparent);
+  padding: 2px 8px;
+  color: var(--color-sz-fg);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.sz-project-tag--javascript {
+  background: #fde68a;
+  color: #3a2a00;
+}
+.sz-project-tag--python {
+  background: #bfdbfe;
+  color: #0f2a5c;
+}
 /* A dica do bloco: azul-marinho opaco com letra branca e um fio claro (era cinza translúcido).
    Classe dobrada para vencer a folha que o Blockly injeta depois da nossa. */
 .blocklyTooltipDiv.blocklyTooltipDiv {

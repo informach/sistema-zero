@@ -190,7 +190,7 @@ afterEach(() => {
 describe('AssetsPanel — botão "Trazer do Molda"', () => {
   it('sem o adapter (aula/admin): nem o botão, nem a aba que só ele justificava', async () => {
     renderPanel(null)
-    await screen.findByText('Enviar imagem')
+    await screen.findByText('Enviar do computador')
     expect(screen.queryByRole('button', { name: /Trazer do Molda/ })).toBeNull()
     expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
   })

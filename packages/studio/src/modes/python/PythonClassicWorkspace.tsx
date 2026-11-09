@@ -13,6 +13,7 @@ import { PythonEditorPreview } from '../../components/preview/PythonEditorPrevie
 import { pythonStageSubject } from '../../components/preview/stageSubject'
 import { isPythonProject } from '../../core/editableProject'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
+import { usePythonStartingExtension } from '../../python/extensions/useStartingExtension'
 import {
   pythonModelPositionToOffset,
   pythonOffsetToPosition,
@@ -75,6 +76,8 @@ function PythonClassicProjectWorkspace({
       : { normal: [65, 35], large: [50, 50] },
     showPreview,
   )
+  // O ponto de partida escolhido no "Criar um jogo novo" (Turtle, Pygame Zero) entra aqui.
+  usePythonStartingExtension()
   if (!project || !isPythonProject(project) || project.kind !== 'classic') return null
   const path =
     selected &&

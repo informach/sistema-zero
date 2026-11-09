@@ -66,19 +66,26 @@ export function ImagesTab({
     <div className="flex flex-col gap-4">
       {allowUpload || onOpenPinta || onOpenTeam ? (
         <div className="flex flex-wrap items-center gap-3">
-          {allowUpload ? (
-            <Button variant="primary" size="sm" disabled={busy} onClick={onUpload}>
-              {busy ? 'Processando…' : 'Enviar imagem'}
+          {/* Redesenho de 11/2026: a arte da criança vem do Pinta, então "Trazer do Pinta" é o
+              botão principal; enviar do computador fica ao lado, mais quieto. */}
+          {onOpenPinta ? (
+            <Button variant="primary" size="sm" onClick={onOpenPinta}>
+              {t('pintaImport.button')}
             </Button>
           ) : null}
-          {onOpenPinta ? (
-            <Button variant={allowUpload ? 'subtle' : 'primary'} size="sm" onClick={onOpenPinta}>
-              {t('pintaImport.button')}
+          {allowUpload ? (
+            <Button
+              variant={onOpenPinta ? 'subtle' : 'primary'}
+              size="sm"
+              disabled={busy}
+              onClick={onUpload}
+            >
+              {busy ? t('assets.processing') : t('assets.uploadFromComputer')}
             </Button>
           ) : null}
           {onOpenTeam ? (
             <Button
-              variant={allowUpload || onOpenPinta ? 'subtle' : 'primary'}
+              variant={onOpenPinta || allowUpload ? 'subtle' : 'primary'}
               size="sm"
               className="min-h-11"
               onClick={onOpenTeam}
@@ -94,9 +101,7 @@ export function ImagesTab({
           No projeto
         </h3>
         {images.length === 0 ? (
-          <EmptyHint>
-            Nenhuma imagem ainda. Envie do computador ou escolha uma da biblioteca abaixo.
-          </EmptyHint>
+          <EmptyHint>{t('assets.images.empty')}</EmptyHint>
         ) : (
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {images.map((asset) => {

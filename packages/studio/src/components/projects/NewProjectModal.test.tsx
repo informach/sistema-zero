@@ -50,7 +50,7 @@ it('Python-only creation never offers JavaScript and blocks a revoked JavaScript
   stale.unmount()
 })
 
-it('JavaScript remains default; Python selects an exact environment and its own Pro starter', async () => {
+it('três estados: a linguagem começa sem escolha; JavaScript com blocos, Python com blocos e com código', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
   const environments: PythonProjectCreationEnvironment[] = (['classic', 'pro'] as const).map(
     (kind) => ({
@@ -75,19 +75,24 @@ it('JavaScript remains default; Python selects an exact environment and its own 
     },
   }
   const view = render(<NewProjectModal {...props} pythonEnvironments={environments} />)
-  expect(
-    (screen.getByRole('radio', { name: 'JavaScript (padrão)' }) as HTMLInputElement).checked,
-  ).toBe(true)
+  // Estado 1 (redesenho de 11/2026): nenhuma linguagem marcada e "Criar e abrir" desligado.
+  expect((screen.getByRole('radio', { name: /^JavaScript/ }) as HTMLInputElement).checked).toBe(
+    false,
+  )
+  expect((screen.getByRole('radio', { name: /^Python/ }) as HTMLInputElement).checked).toBe(false)
+  expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.click(screen.getByRole('radio', { name: /^JavaScript/ }))
   await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
-  expect(creations).toEqual([undefined])
-  fireEvent.click(screen.getByRole('radio', { name: /^Python$/ }))
+  // "Em branco" é em branco mesmo: nenhuma extensão.
+  expect(creations).toEqual([{ kind: 'classic', extensionIds: [] }])
+  fireEvent.click(screen.getByRole('radio', { name: /^Python/ }))
   await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
   expect(creations[1]).toEqual({
     programmingLanguage: 'python',
     kind: 'classic',
     environmentKey: environments[0]!.key,
   })
-  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /^Com código/ }))
   expect(screen.queryByText('Escolha um ponto de partida')).toBeNull()
   await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
   expect(creations[2]).toEqual({
@@ -148,7 +153,7 @@ it('Python discovery can be retried inside the dialog while preserving the chose
     />,
   )
   expect(nameInput().value).toBe('Nome inventado')
-  expect(screen.getByRole('radio', { name: /^Python$/ })).toBeTruthy()
+  expect(screen.getByRole('radio', { name: /^Python/ })).toBeTruthy()
   view.unmount()
 })
 
@@ -279,12 +284,72 @@ it('revoking a selected template preserves the name, explains the change and rej
     },
   }
   const view = render(<NewProjectModal {...props} templates={[kit]} />)
-  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /^Com código/ }))
   view.rerender(<NewProjectModal {...props} templates={[]} />)
   expect(nameInput().value).toBe('Minha arena')
   expect(screen.getByRole('status').textContent).toContain('deixou de estar disponível')
   expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(true)
   await act(async () => fireEvent.keyDown(nameInput(), { key: 'Enter' }))
   expect(creations).toBe(0)
+  view.unmount()
+})
+
+it('ponto de partida (D5): só instala a extensão; o padrão do host vem marcado', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const creations: unknown[] = []
+  const view = render(
+    <NewProjectModal
+      open
+      defaultName="Meu jogo"
+      onClose={noop}
+      onCreate={(_name, options) => {
+        creations.push(options)
+      }}
+      javascriptStartingExtensions={['game-2d', 'game-3d']}
+      defaultStartingExtensions={['game-2d']}
+      pythonEnvironments={[
+        {
+          kind: 'classic',
+          key: fixture.project.runtime.manifestSha256,
+          label: 'Python',
+          context: {
+            catalog: fixture.environment.catalog,
+            runtime: fixture.project.runtime,
+            releaseStatus: 'active',
+          },
+        },
+      ]}
+    />,
+  )
+  fireEvent.click(screen.getByRole('radio', { name: /^JavaScript/ }))
+  expect(screen.getByRole('radio', { name: /^Jogo 3D/ })).toBeTruthy()
+  fireEvent.click(screen.getByRole('radio', { name: /^Jogo 2D/ }))
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(creations[0]).toEqual({ kind: 'classic', extensionIds: ['game-2d'] })
+  fireEvent.click(screen.getByRole('radio', { name: /^Python/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /^Desenho com a tartaruga/ }))
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(creations[1]).toMatchObject({
+    programmingLanguage: 'python',
+    kind: 'classic',
+    startingExtensionId: 'python-turtle',
+  })
+  view.unmount()
+})
+
+it('com uma linguagem só, a janela já abre nela e mostra o padrão do host', () => {
+  const view = render(
+    <NewProjectModal
+      open
+      defaultName="Meu jogo"
+      onClose={noop}
+      onCreate={noop}
+      javascriptStartingExtensions={['game-2d']}
+      defaultStartingExtensions={['game-2d']}
+    />,
+  )
+  expect(screen.queryByRole('radio', { name: /^JavaScript/ })).toBeNull()
+  expect((screen.getByRole('radio', { name: /^Jogo 2D/ }) as HTMLInputElement).checked).toBe(true)
+  expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(false)
   view.unmount()
 })

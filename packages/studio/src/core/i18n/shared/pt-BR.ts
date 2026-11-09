@@ -71,7 +71,7 @@ export const ptBR: Record<string, string> = {
   'topbar.downloadFailed': 'Não foi possível baixar a fonte',
   'topbar.downloadWarnings': 'Fonte baixada: confira estes avisos',
   'topbar.closeDownloadNotice': 'Voltar ao editor',
-  'topbar.extensions': 'Extensões',
+  'topbar.extensions': 'Mais blocos',
   // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
   // termina num download). "Publicar na internet" prometia o ato e competia com o
   // Compartilhar, que é o único que de fato põe o jogo no ar.
@@ -94,6 +94,23 @@ export const ptBR: Record<string, string> = {
   'stage.errorMark': 'O jogo parou neste bloco.',
   'blocks.dropToDelete': 'Solte aqui para apagar',
   'blocks.moreBlocks': 'Mais blocos',
+  'assets.processing': 'Processando…',
+  'assets.uploadFromComputer': 'Enviar do computador',
+  'assets.images.empty': 'Nenhuma imagem ainda. Traga um desenho do Pinta ou envie do computador.',
+  'projects.tag.blocks': 'Com blocos',
+  'projects.tag.code': 'Com código',
+  'projects.filterLanguage': 'Linguagem',
+  'projects.filterLanguageAll': 'Todas',
+  'projects.newModal.shuffle': 'Sortear um nome',
+  'projects.newModal.language': 'Em que linguagem?',
+  'projects.newModal.language.js': 'Blocos que viram JavaScript: jogos 2D, 3D e páginas.',
+  'projects.newModal.language.python': 'Blocos que viram Python: desenhos com a tartaruga e jogos.',
+  'projects.newModal.way': 'Como você quer criar?',
+  'projects.newModal.way.blocks': 'Com blocos',
+  'projects.newModal.way.blocks.hint': 'Monte com blocos e veja o código que eles viram.',
+  'projects.newModal.way.code': 'Com código',
+  'projects.newModal.way.code.hint': 'Escreva o código, com arquivos, materiais e o Zappy.',
+  'projects.newModal.start': 'Ponto de partida',
   'pyblocks.header': 'Arquivo e partes do programa',
   'pyblocks.file': 'Arquivo Python',
   'pyblocks.goTo': 'Ir para',
@@ -157,7 +174,7 @@ export const ptBR: Record<string, string> = {
   'panel.terminal': 'Terminal',
   'panel.ai': 'Zappy',
   'panel.preview': 'Pré-visualização',
-  'panel.extensions': 'Extensões oficiais',
+  'panel.extensions': 'Mais blocos',
 
   // A janela dos materiais e as três abas (18/09/2026). Os nomes das abas são a
   // MESMA palavra das três portas do menu ⋯ — é o que liga a porta ao que ela abre.
@@ -181,9 +198,9 @@ export const ptBR: Record<string, string> = {
   'assets.cover.failed':
     'Não consegui usar essa imagem como capa. A capa continua a de antes. Tente outra imagem.',
 
-  'extensions.install': 'Instalar',
-  'extensions.remove': 'Remover',
-  'extensions.installed': 'Instalada',
+  'extensions.install': 'Pôr no meu jogo',
+  'extensions.remove': 'Tirar do jogo',
+  'extensions.installed': 'No meu jogo',
   'extensions.available': 'Disponível',
   'extensions.loadExample': 'Carregar exemplo',
   'extensions.examplesLoading': 'Carregando exemplos…',
@@ -197,11 +214,12 @@ export const ptBR: Record<string, string> = {
   'extensions.docsRetry': 'Tentar novamente',
   'extensions.removeWarning':
     'Existem {count} blocos desta extensão em uso. Removê-la apagará esses blocos.',
-  'extensions.confirmRemove': 'Confirmar remoção',
+  'extensions.confirmRemove': 'Tirar do jogo',
   'extensions.cancel': 'Cancelar',
-  'extensions.empty': 'Este projeto ainda não tem extensões. Instale uma para ganhar blocos novos!',
+  'extensions.empty':
+    'Este jogo ainda não tem blocos a mais. Escolha um conjunto para ganhar blocos novos!',
   'extensions.officialOnly':
-    'Aqui só entram extensões oficiais do Sistema Zero, revisadas com carinho pela nossa equipe.',
+    'Aqui só entram conjuntos de blocos oficiais do Sistema Zero, revisados com carinho pela nossa equipe.',
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',

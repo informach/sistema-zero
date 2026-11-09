@@ -205,7 +205,7 @@ describe('Materiais do jogo — as abas', () => {
   it('sem permissão de envio, nenhuma aba oferece o botão de enviar', () => {
     seedProject({ with3DExtension: true })
     render(<AssetsPanel open onClose={() => {}} allowUpload={false} />)
-    expect(screen.queryByText('Enviar imagem')).toBeNull()
+    expect(screen.queryByText('Enviar do computador')).toBeNull()
     fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
     expect(screen.queryByText('🔊 Enviar som')).toBeNull()
     fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
@@ -355,7 +355,7 @@ describe('Materiais do jogo — a aba "Modelos 3D"', () => {
     render(<AssetsPanel open onClose={() => {}} />)
     expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
     // A de imagens segue inteira.
-    expect(screen.getByText('Enviar imagem')).not.toBeNull()
+    expect(screen.getByText('Enviar do computador')).not.toBeNull()
   })
 
   it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda', () => {

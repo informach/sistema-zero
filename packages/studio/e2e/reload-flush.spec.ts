@@ -83,8 +83,8 @@ function advanced3DKit(page: Page) {
 
 /** O "Enviar modelo 3D" e o "Trazer do Molda" do céu só existem com um consumidor 3D. */
 async function installAdvanced3D(page: Page): Promise<void> {
-  await openMenuItem(page, 'Extensões')
-  await advanced3DKit(page).getByRole('button', { name: 'Instalar', exact: true }).click()
+  await openMenuItem(page, 'Mais blocos')
+  await advanced3DKit(page).getByRole('button', { name: 'Pôr no meu jogo', exact: true }).click()
   await expect(advanced3DKit(page).getByText('Instalada', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
 }
@@ -250,7 +250,7 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) =>
   await expect(saveStatus(page, 'Salvo')).toBeVisible({ timeout: 10_000 })
 
   await page.reload()
-  await openMenuItem(page, 'Extensões')
+  await openMenuItem(page, 'Mais blocos')
   await expect(advanced3DKit(page).getByText('Instalada', { exact: true })).toBeVisible()
   expect(errors).toEqual([])
 })

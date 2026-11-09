@@ -391,7 +391,23 @@ export const ProjectCard = memo(function ProjectCard({
           // Com o espaço reservado, todos os cards têm a MESMA altura e a capa que
           // chega depois (a captura é assíncrona) não empurra o grid.
           // A caixa cinza-clara de cantos de 12px das telas-modelo (`.sz-tool-cover`).
-          <div className="sz-tool-cover pointer-events-none mt-2 min-h-0 flex-1">
+          <div className="sz-tool-cover pointer-events-none relative mt-2 min-h-0 flex-1">
+            {/* Linguagem e jeito (redesenho de 11/2026): "Meus jogos" é a mesma galeria para
+                JavaScript e Python, então cada cartão diz o que é antes de abrir. */}
+            {summary.programmingLanguage !== 'unknown' ? (
+              <span className="sz-project-tags">
+                <span className={`sz-project-tag sz-project-tag--${summary.programmingLanguage}`}>
+                  {summary.programmingLanguage === 'python' ? 'Python' : 'JavaScript'}
+                </span>
+                <span className="sz-project-tag">
+                  {t(
+                    summary.kind === 'pro' || summary.mode === 'code'
+                      ? 'projects.tag.code'
+                      : 'projects.tag.blocks',
+                  )}
+                </span>
+              </span>
+            ) : null}
             {summary.thumbDataUrl ? (
               <img
                 src={summary.thumbDataUrl}
