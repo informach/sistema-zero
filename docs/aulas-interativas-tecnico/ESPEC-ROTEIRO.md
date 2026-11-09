@@ -399,6 +399,14 @@ segunda vez, "clique em Rodar de novo mais uma vez" (nunca "Rodar de novo de nov
 Rodar de novo dá o foco ao jogo, as setas e a barra de espaço funcionam sem clicar no jogo. No
 Na tela, o gesto é `[rodar de novo]`, e não `[clicar "Atualizar o preview"]`.
 
+**O jogo sai de cena enquanto a criança monta (09/11/2026).** Na gravação, o palco esconde
+sozinho o jogo ao lado dos blocos nos gestos de montar (categoria, encaixar, soltar, trocar,
+abrir campo, apontar bloco, apontar paleta…) e aumenta um pouco os blocos; nos de testar no jogo
+(`[tocar prévia …]`, `[apontar prévia …]`, setas na prévia, `[rodar de novo]`,
+`[reduzir estúdio]`) o jogo volta. A troca acontece entre um gesto e outro, sem a mão, e não
+corta nada da fala. O roteiro não precisa dizer nada para isso. Para fixar a tela num trecho:
+`[esconder o jogo]` ou `[mostrar o jogo]`, que valem até `[jogo automático]` ou o fim da parte.
+
 **Verbos do EdiAula, para qualquer página.** Servem para um botão ou campo que não tem tag
 própria; o nome é o que a pessoa lê na tela ou o nome acessível do botão:
 
