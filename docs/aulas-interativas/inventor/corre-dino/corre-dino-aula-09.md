@@ -36,7 +36,7 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as”.
+video-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as”.
 
 **Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 

@@ -12,6 +12,10 @@ A versão vigente segue [exploração orientada por objetivos](../../../aulas-in
 **Conferência da equipe, 19/10/2026 (não gravar):** exemplos privados por parte, conforme o manifesto e sua fonte geradora. andar: entrada sem movimento e solução que anda sem borda. borda: entrada que já anda e solução com limite. O projeto inicial e a continuidade permanecem; a entrada para ensaio não substitui o baseline da verificação. Cores, imagens, textos e magnitude de velocidade do exemplo não são respostas únicas. A direção precisa continuar coerente e zero não demonstra movimento. Os objetivos atuais combinam estrutura e observação em execução. Movimento, memória após afastamento e os dois caminhos da porta são testados no jogo por entradas reais, preservando as escolhas de arte e posição; os testes jogados do roteiro continuam parte da construção. Esta revisão conserva as falas e as âncoras de edição já registradas. Não informa nova gravação, publicação ou ensaio com crianças.
 
 
+## O vídeo da experiência explica o conceito e convida, 09/11/2026
+
+Decisão da responsável: as aulas em vídeo não explicam a experiência, porque a moldura nova (08/11/2026) mudou o visual e o nome dos controles (Devagar, o filme, a cerca). As partes 3 e 5 seguem o molde do Cadê, como os Dias 2 e 3: o conceito, a analogia (o bloquinho de folhear; a janela), a pergunta da Debinha devolvida com "Isso você vai testar na experiência." e um convite só, com o fecho comum. Saíram o "Olha aqui: nesta experiência…" (Devagar e o filme dos quadros; a cerca e a faixa fora da tela) e a lista do que comparar ("no Devagar e no Rápido", "inclusive com ele já fora da tela"); na parte 5, o "Primeiro," da explicação do limite também saiu, para a fala não soar como sequência de testes. O Na tela das duas partes só amplia a experiência e mostra o Zappy, sem apontar controles. A âncora posterior da troca da Debinha na parte 5 acompanhou a fala nova; a frase dela não mudou. Instruções, recados da página e Passo a passo continuam iguais. As duas partes precisam de voz nova e de gravação nova.
+
 ## Resumo
 
 - Estado de entrada: primeiro contato com o curso. No projeto, cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.
@@ -168,9 +172,9 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 | --- | --- | --- | --- | --- |
 | `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar (se houver mídia antiga no Admin, substituir) |
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |
-| `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para a câmera lenta | Câmera lenta | 80 a 100 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para investigar, sem explicar a experiência | Câmera lenta | 70 a 85 s | Gravar (convite de 09/11/2026) |
 | `video-d1-andar` | Controles e movimento ligados à ideia do passinho, teste e verificação | Projeto inicial | 5 a 6 min | Gravar (revisão de 01/11/2026) |
-| `video-d1-limite` | A janela, o limite da tela depois do passinho, sem blocos, e o convite para a beirada | Beirada da tela | 75 a 95 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-limite` | A janela, o limite da tela depois do passinho, sem blocos, e o convite para investigar, sem explicar a experiência | Beirada da tela | 60 a 80 s | Gravar (convite de 09/11/2026) |
 | `video-d1-borda` | Borda no jogo, o limite ligado à conferência da beirada, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (revisão de 01/11/2026) |
 
 ## Continuidade

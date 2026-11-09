@@ -732,7 +732,7 @@
         "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"clique na área do jogo e segure uma seta\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita do teclado por um instante. No \"Tá vendo? A nave fica parada\", manter a nave parada à vista. No \"Deixe à vista o começo de A cada quadro do jogo\", arrastar até o bloco aparecer [arrastar até \"A cada quadro do jogo\"]. No \"Agora abra Jogo 2D, depois Movimento\", abrir as categorias [categoria Jogo 2D > Movimento > Movimentos prontos]. No \"Arraste e solte no começo de A cada quadro do jogo\", encaixar o bloco no começo [encaixar \"Mover o sprite com as setas\" em \"A cada quadro do jogo\"]. No \"É este bloco que dá o passinho\", apontar o bloco [apontar bloco \"Mover o sprite com as setas\"]. No \"é este número que diz\", apontar o número da velocidade, sem trocar [apontar bloco \"Mover o sprite com as setas\"]. No \"clique no 6\", trocar o número [trocar \"6\" por \"7\" em \"Mover o sprite com as setas\"]. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita por um instante, sem chegar à beirada. Não refazer a comparação de duas velocidades: ela é da experiência anterior. No \"fica um rastro de naves\", apontar o rastro [apontar prévia 400 410]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Aqui no seu jogo, clique na área do jogo e segure uma seta. Tá vendo? A nave fica parada, porque o jogo ainda não olha a seta.",
-          "Lembra da experiência da câmera lenta? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!",
+          "Lembra da primeira experiência desta aula? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!",
           "Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo. E ele vem antes do desenho, para o desenho já mostrar a nave no lugar novo.",
           "Deixe à vista o começo de A cada quadro do jogo, logo acima de Desenhar o sprite nave.",
           "Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.",
@@ -831,9 +831,9 @@
         "speech": [
           "A tela do jogo tem beiradas: é até ali que a gente vê o jogo.",
           "Sabe quando você olha por uma janela? Você só vê o que está dentro da moldura.",
-          "No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.",
+          "No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e o jogo pode ter esse limite ou não.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que acontece com a nave na beirada, com o limite desligado e ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que acontece com a nave na beirada, com e sem o limite. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activityKey": "experiencia-limite-da-tela",
         "activity": {
@@ -872,8 +872,8 @@
           }
         },
         "avatar": {
-          "after": "e ela pode ficar ligada ou desligada.",
-          "speech": "E se o limite for ligado com a nave já fora da tela?",
+          "after": "e o jogo pode ter esse limite ou não.",
+          "speech": "E se a nave já estiver fora da tela, o que o limite faz com ela?",
           "beforeScreen": "Manter a tela parada, sem rodar a experiência na beirada.",
           "afterScreen": "Depois da saída, ampliar a experiência parada."
         }
@@ -885,7 +885,7 @@
         "screen": "A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"clique na área do jogo e segure uma seta até a beirada\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita até parte da nave passar da beirada. No \"Deixe à vista o espaço entre Mover o sprite\", apontar o lugar [apontar abaixo de \"Mover o sprite com as setas\"]. No \"Agora abra Jogo 2D, depois Movimento\", abrir as categorias [categoria Jogo 2D > Movimento > Bordas e rebatidas]. No \"Arraste e solte logo abaixo de Mover o sprite com as setas\", encaixar o bloco [encaixar \"Manter o sprite\" abaixo de \"Mover o sprite com as setas\"]. No \"Repare: o bloco chega com o nome heroi\", apontar o nome [apontar bloco \"Manter o sprite\"]. No \"Clique em heroi\", abrir o campo [abrir campo \"heroi\" em \"Manter o sprite\"]. No \"e escolha nave na lista\", escolher [escolher \"nave\" em \"Manter o sprite\"]. No \"É este bloco que confere a beirada\", apontar o bloco [apontar bloco \"Manter o sprite\"]. No \"clique na área do jogo e segure a seta para a esquerda\", clicar no jogo [tocar prévia 400 240] e segurar a seta da esquerda até a beirada; no \"Depois segure a seta para a direita\", segurar a da direita até a outra beirada. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Aqui no seu jogo, clique na área do jogo e segure uma seta até a beirada. Tá vendo? A nave passa e vai sumindo, porque o jogo ainda não tem limite.",
-          "Lembra da experiência da parte anterior? Com o limite ligado, a nave voltava. Agora a gente vai pôr esse limite no seu jogo!",
+          "Lembra da experiência da parte anterior? Com o limite, a nave voltava. Agora a gente vai pôr esse limite no seu jogo!",
           "O jogo confere a beirada logo depois do passinho e antes do desenho. Por isso, o limite vai entre o movimento e o desenho da nave.",
           "Deixe à vista o espaço entre Mover o sprite com as setas e Desenhar o sprite, dentro de A cada quadro do jogo.",
           "Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte logo abaixo de Mover o sprite com as setas, quando aparecer o encaixe.",
@@ -4589,7 +4589,7 @@
           "Sabe a porta de casa, que só abre com a chave? Antes de abrir, é como se ela fizesse uma pergunta: a chave está aqui? E a resposta decide o que acontece.",
           "O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quantos asteroides o jogo cria, com a pergunta ligada e desligada, na tela de início e com a partida já começada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantos asteroides o jogo cria, com e sem a pergunta, na tela de início e com a partida já começada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -4661,7 +4661,7 @@
         "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"Olhe o seu jogo logo que ele abre\", apontar as pedras caindo na prévia [apontar prévia 400 120]. No \"Deixe à vista o fim de Ao iniciar\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Jogo 2D, depois Jogo e telas\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida] e encaixar o bloco [encaixar \"Mudar o estado do jogo para\" abaixo de \"Dar ao sprite\"]. No \"É este bloco que diz em que estado\", apontar o bloco [apontar bloco \"Mudar o estado do jogo para\"]. No \"Pegue a sequência pelo primeiro bloco, Limpar a tela\", levar a sequência inteira com a mão, pelo **Limpar a tela**, até o lugar livre e soltar. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e encaixar o bloco [encaixar \"Se\" em \"A cada quadro do jogo\"]. No \"É este bloco que faz uma pergunta\", apontar o Se [apontar bloco \"Se\"]. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é e solte nesse lugar\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco ao lado de Se e escolher jogando. No \"Agora devolva a sequência para dentro do Se\", levar a sequência pelo **Limpar a tela** e soltar dentro do então. No \"Agora olhe a prévia\", apontar a prévia sem nave e sem pedras [apontar prévia 400 240]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Olhe o seu jogo logo que ele abre. Tá vendo? As pedras já caem, porque o jogo ainda não pergunta se a partida começou.",
-          "Lembra da experiência da parte anterior? Com a pergunta ligada, a tela de início esperava, e nada nascia. Agora a gente vai pôr essa pergunta no seu jogo!",
+          "Lembra da experiência da parte anterior? Com a pergunta, a tela de início esperava, e nada nascia. Agora a gente vai pôr essa pergunta no seu jogo!",
           "O jogo vai ter dois momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.",
           "O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao iniciar.",
           "Deixe à vista o fim de Ao iniciar, logo depois de Dar ao sprite nave 3 de vida.",
@@ -4874,7 +4874,7 @@
         "screen": "A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Com a abertura no seu jogo, toque na barra de espaço\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space]. No \"Deixe à vista o bloco A cada 40 quadros\", arrastar até o bloco aparecer [arrastar até \"A cada 40 quadros\"]. No \"Pegue o bloco que cria asteroides\", levar o bloco com a mão até o espaço livre e soltar. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e encaixar o bloco [encaixar \"Se\" em \"A cada 40 quadros\"]. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco ao lado de Se e escolher jogando. No \"Agora leve o bloco que cria asteroides\", levar o bloco para dentro do então. No \"Encontre o evento da barra de espaço\", arrastar até o evento aparecer [arrastar até \"Quando apertar a tecla\"]. No \"Pegue a sequência pelo primeiro bloco, Criar tiro\", levar a sequência com a mão até o espaço livre. No \"pegue outro Se e solte dentro do evento\", abrir as categorias [categoria Programação > Lógica & Se], encaixar o bloco [encaixar \"Se\" em \"Quando apertar a tecla\"] e levar a pergunta pronta até a lixeira. No \"solte nesse lugar e escolha jogando\", soltar **o estado do jogo é** ao lado de Se e escolher jogando. No \"Agora leve Criar tiro e Tocar efeito\", levar a sequência para dentro do então. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space], deixando ouvir o silêncio sem fala por cima. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Com a abertura no seu jogo, toque na barra de espaço. Tá vendo? Nenhum tiro aparece, mas o som toca, porque a tecla não espera a partida.",
-          "Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, nada nascia antes da partida. Agora a gente vai pôr a pergunta no seu jogo também!",
+          "Lembra da experiência da primeira parte desta aula? Com a pergunta, nada nascia antes da partida. Agora a gente vai pôr a pergunta no seu jogo também!",
           "No seu jogo, ela vai em dois lugares: no bloco A cada 40 quadros, que cria as pedras, e na barra de espaço, que cria os tiros.",
           "Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele.",
           "Pegue o bloco que cria asteroides, de dentro de A cada 40 quadros, e solte nesse espaço livre por enquanto.",

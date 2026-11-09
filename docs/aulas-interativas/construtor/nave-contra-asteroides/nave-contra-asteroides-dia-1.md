@@ -105,7 +105,7 @@ video-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: �
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave já fora da tela?”. Antes: “conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,”.
+video-limite-da-tela-K1: Dedé substitui “E se a nave já estiver fora da tela, o que o limite faz com ela?”. Antes: “conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e o jogo pode ter esse limite ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,”.
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-beirada.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 

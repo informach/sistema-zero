@@ -50,7 +50,7 @@ Anexar `docs/aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-p
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a”.
+video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca só”.
 
 **Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 

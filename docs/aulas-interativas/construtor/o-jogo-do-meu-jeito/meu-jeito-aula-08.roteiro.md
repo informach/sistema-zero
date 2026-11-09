@@ -15,7 +15,7 @@
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Mais adiante, você vai poder publicar o seu jogo no Mural, para outras pessoas jogarem. Antes, vale entender o que vai para lá quando você publica. Na experiência, o Mural é só um treino: nada dela vai para o Mural de verdade.
+[engaging, energetic, conversational voice] Mais adiante, você vai poder publicar o seu jogo no Mural, para outras pessoas jogarem. Antes, vale entender o que vai para lá quando você publica.
 
 [curious] Sabe quando você tira uma foto de um desenho e manda para alguém da família?
 
@@ -30,7 +30,7 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-copia-publicada-K1 | Dedé | 1 | nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família? | E se eu mudar o projeto depois de publicar, o Mural muda junto? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você | [curious] |
+| video-copia-publicada-K1 | Dedé | 1 | o que vai para lá quando você publica. Sabe quando você tira uma foto de um desenho e manda para alguém da família? | E se eu mudar o projeto depois de publicar, o Mural muda junto? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

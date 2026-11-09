@@ -80,7 +80,7 @@
 
 [engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Não tem nenhum contorno, porque o jogo ainda não mostra a borda.
 
-[engaging, energetic, conversational voice] Lembra da experiência do tamanho da tela, na quarta parte desta aula? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência do tamanho da tela, na quarta parte desta aula? A borda mostrava onde a tela acaba. Agora a gente vai colocar a borda no seu jogo!
 
 [engaging, energetic, conversational voice] A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, ela vai logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar.
 

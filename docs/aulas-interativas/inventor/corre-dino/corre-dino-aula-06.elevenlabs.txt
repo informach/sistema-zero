@@ -2,7 +2,7 @@
 
 [engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.
 
 [curious] E quando o cacto some da tela, ele sai do grupo também?
 

@@ -74,7 +74,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 **Clipe:** `video-alavanca`
 
-**Na tela:** Começar pela retomada: levar o personagem até a alavanca e mostrar que nada acontece. Na frase do papelzinho, mostrar ponteAberta na experiência por 2 a 3 segundos. Criar ponteAberta no fim de Ao iniciar, com o bloco verdadeiro trocado para falso. Em Quando acontecer, montar o encontro com a alavanca, as duas trocas de imagem, Alterar ponteAberta para verdadeiro e Alterar aviso, um bloco por vez, sempre com o destino à vista antes de abrir a paleta. Testar puxando a alavanca.
+**Na tela:** Começar pela retomada: levar o personagem até a alavanca e mostrar que nada acontece. Na frase do papelzinho, mostrar por 2 a 3 segundos a mesma imagem do vídeo conceitual, com o nome ponteAberta e as duas respostas, verdadeiro e falso, sem voltar à experiência. Criar ponteAberta no fim de Ao iniciar, com o bloco verdadeiro trocado para falso. Em Quando acontecer, montar o encontro com a alavanca, as duas trocas de imagem, Alterar ponteAberta para verdadeiro e Alterar aviso, um bloco por vez, sempre com o destino à vista antes de abrir a paleta. Testar puxando a alavanca.
 
 **Fala para ElevenLabs:**
 

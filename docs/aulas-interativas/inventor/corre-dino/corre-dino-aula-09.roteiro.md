@@ -19,20 +19,20 @@
 
 [engaging, energetic, conversational voice] Sabe quando você brinca de pega-pega? Antes de começar, a turma combina o que vale como pegar.
 
-[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.
+[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.
 
 [curious] E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que se encosta, os desenhos ou as áreas pontilhadas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que se encosta, os desenhos ou as áreas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-contato-K1 | Debinha | 1 | combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado. | E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as | [curious] |
+| video-contato-K1 | Debinha | 1 | o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida. | E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

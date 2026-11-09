@@ -66,9 +66,9 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a memória da chave desligada, a chave saía do chão, mas temChave continuava falso.
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? A chave podia sair do chão sem o jogo guardar que o personagem pegou a chave: pegar e guardar eram coisas diferentes.
 
-[engaging, energetic, conversational voice] O seu jogo está igual à memória desligada: a chave sai do chão, mas o jogo não guarda em lugar nenhum que ela foi pega. Agora a gente vai ligar a memória da chave no seu jogo!
+[engaging, energetic, conversational voice] O seu jogo está assim agora: a chave sai do chão, mas o jogo não guarda em lugar nenhum que ela foi pega. Agora a gente vai ensinar o seu jogo a lembrar da chave!
 
 [engaging, energetic, conversational voice] São dois passos. Primeiro, você cria temChave, começando em falso. Depois, faz o encontro com a chave guardar verdadeiro nela.
 
@@ -108,7 +108,7 @@
 
 [engaging, energetic, conversational voice] Desta vez, deixe em verdadeiro, porque agora o personagem está com a chave.
 
-[engaging, energetic, conversational voice] É este bloco que liga a memória da chave: no encontro, ele guarda verdadeiro em temChave.
+[engaging, energetic, conversational voice] É este bloco que faz o jogo lembrar da chave: no encontro, ele guarda verdadeiro em temChave.
 
 [confident, clear, unhurried voice] Confira se ficou assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.
 

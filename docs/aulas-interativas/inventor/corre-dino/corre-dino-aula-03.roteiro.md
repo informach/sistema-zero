@@ -19,20 +19,20 @@
 
 [engaging, energetic, conversational voice] Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.
 
-[engaging, energetic, conversational voice] No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.
+[engaging, energetic, conversational voice] No seu jogo, o Dino vai pular. E o jogo pode ter gravidade ou não.
 
 [curious] E sem gravidade, o Dino volta para o chão depois do pulo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho na altura dele. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-gravidade-modelo-K1 | Debinha | 1 | para sempre. No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não. | E sem gravidade, o Dino volta para o chão depois do pulo? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com | [curious] |
+| video-gravidade-modelo-K1 | Debinha | 1 | bola para cima? Ela não fica lá no alto para sempre. No seu jogo, o Dino vai pular. E o jogo pode ter gravidade ou não. | E sem gravidade, o Dino volta para o chão depois do pulo? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -97,20 +97,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.
 
-[engaging, energetic, conversational voice] No seu jogo, você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.
+[engaging, energetic, conversational voice] No seu jogo, você escolhe o impulso do Dino. A gravidade continua a mesma em todos os pulos.
 
 [curious] E com mais impulso, até onde o Dino chega?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que o impulso muda nas marcas da altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o impulso muda na altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-impulso-modelo-K1 | Debinha | 1 | você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos. | E com mais impulso, até onde o Dino chega? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda nas marcas da | [curious] |
+| video-impulso-modelo-K1 | Debinha | 1 | força ou com muita força. No seu jogo, você escolhe o impulso do Dino. A gravidade continua a mesma em todos os pulos. | E com mais impulso, até onde o Dino chega? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda na altura dos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

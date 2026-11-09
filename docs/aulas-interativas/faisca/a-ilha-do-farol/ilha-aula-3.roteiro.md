@@ -123,7 +123,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
 
-[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Na experiência, a porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim.
+[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Pense na porta do farol. Ela pergunta: a porta está trancada? E abre quando a resposta é sim.
 
 [curious] Com o não na pergunta, o que a porta faz?
 

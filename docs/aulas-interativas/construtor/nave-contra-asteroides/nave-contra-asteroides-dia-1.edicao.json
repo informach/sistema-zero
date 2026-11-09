@@ -57,10 +57,10 @@
       "clipe": "video-limite-da-tela",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.",
+      "ancoraAntes": "conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e o jogo pode ter esse limite ou não.",
       "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,",
-      "falaPrincipal": "E se o limite for ligado com a nave já fora da tela?",
-      "falaPersonagem": "E se o limite for ligado com a nave já fora da tela?",
+      "falaPrincipal": "E se a nave já estiver fora da tela, o que o limite faz com ela?",
+      "falaPersonagem": "E se a nave já estiver fora da tela, o que o limite faz com ela?",
       "tags": ["[curious]"]
     },
     {

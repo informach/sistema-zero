@@ -6,7 +6,7 @@
 
 ### Clipe `video-visivel-guardado` · Para onde vai o cacto que sai da tela?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-visivel-guardado`
 
@@ -19,7 +19,7 @@
 
 [engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.
 
 [curious] E quando o cacto some da tela, ele sai do grupo também?
 
@@ -32,7 +32,7 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-visivel-guardado-K1 | Dedé | 1 | num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela. | E quando o cacto some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos | [curious] |
+| video-visivel-guardado-K1 | Dedé | 1 | jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela. | E quando o cacto some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

@@ -26,13 +26,13 @@
 
 [engaging, energetic, conversational voice] No seu jogo, o toque é a ação. A reação que a gente quer é um esconderijo ficar invisível, para aparecer quem está atrás dele. Essa reação precisa estar ligada ao toque para acontecer.
 
-[upbeat, encouraging voice] Agora é a sua vez de investigar essa ligação no jardim. Compare o que acontece com a reação ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que um toque faz no jardim quando a reação está ligada a ele e quando não está. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, toque num esconderijo. Tá vendo? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O toque só deixava o esconderijo invisível quando a reação estava ligada a ele. Agora a gente vai fazer isso com os esconderijos do seu jogo!
 
 [curious] E como faz isso no jogo?
 

@@ -249,7 +249,7 @@
         "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Olhe a área do seu jogo. Tá vendo? Não tem nenhum contorno, porque o jogo ainda não mostra a borda.",
-          "Lembra da experiência do tamanho da tela, na quarta parte desta aula? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!",
+          "Lembra da experiência do tamanho da tela, na quarta parte desta aula? A borda mostrava onde a tela acaba. Agora a gente vai colocar a borda no seu jogo!",
           "A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, ela vai logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar.",
           "Deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia.",
           "Agora abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.",
@@ -1297,9 +1297,9 @@
         "speech": [
           "A gravidade é uma força que puxa tudo para baixo, e cada jogo decide se usa essa força.",
           "Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.",
-          "No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.",
+          "No seu jogo, o Dino vai pular. E o jogo pode ter gravidade ou não.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho na altura dele. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1406,9 +1406,9 @@
         "speech": [
           "Impulso é a força do começo de um pulo. É ele que diz com quanta força um personagem sai do chão.",
           "Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.",
-          "No seu jogo, você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.",
+          "No seu jogo, você escolhe o impulso do Dino. A gravidade continua a mesma em todos os pulos.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que o impulso muda nas marcas da altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que o impulso muda na altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -2726,7 +2726,7 @@
         "speech": [
           "Um jogo pode guardar várias coisas parecidas juntas, numa lista que ele move em todo quadro. Essa lista se chama grupo.",
           "Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.",
-          "No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.",
+          "No seu jogo, os cactos ficam num grupo, guardado nos bastidores. Quando um cacto passa da borda da esquerda, ele some da tela.",
           "O que você acha? Isso você vai testar na experiência.",
           "Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
@@ -3064,7 +3064,7 @@
           "Sabe a porta de casa, que só abre com a chave? É como se ela perguntasse: a chave está aqui?",
           "O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar quantos cactos nascem com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantos cactos nascem sem a pergunta e com a pergunta, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -3118,7 +3118,7 @@
         "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Olhe a área do seu jogo. Tá vendo? A corrida começa sozinha, porque o jogo não sabe em que momento está.",
-          "Lembra da experiência da parte anterior? Com a pergunta ligada, a tela de início esperava. Agora a gente vai guardar em que momento o seu jogo está!",
+          "Lembra da experiência da parte anterior? Com a pergunta, a tela de início esperava. Agora a gente vai guardar em que momento o seu jogo está!",
           "O jogo vai ter momentos, cada um com um nome: inicio, antes de a partida começar, e jogando, a partida. Esse momento se chama estado do jogo.",
           "O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao iniciar.",
           "Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites.",
@@ -3160,7 +3160,7 @@
         "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Olhe a área do seu jogo. Tá vendo? O Dino e os cactos continuam correndo, porque nada pergunta pelo estado.",
-          "Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, a tela de início esperava a partida. Agora a gente vai pôr essa pergunta no seu jogo!",
+          "Lembra da experiência da primeira parte desta aula? Com a pergunta, a tela de início esperava a partida. Agora a gente vai pôr essa pergunta no seu jogo!",
           "Antes de pegar cada bloco, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.",
           "O que acontece em cada quadro da partida só pode acontecer quando o estado for jogando. Mas a limpeza e a floresta também passam na tela de início. Por isso, a pergunta vai logo depois da floresta, e tudo o que vem depois dela vai para dentro da pergunta.",
           "Primeiro, separe esses blocos, sem apagar nada. Deixe à vista um lugar livre perto de A cada quadro do jogo.",
@@ -3376,7 +3376,7 @@
         "bridge": "Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
         "screen": "Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, nenhum cacto nascia na tela de início. Agora o relógio do seu jogo vai aprender a esperar também!",
+          "Lembra da experiência da primeira parte desta aula? Com a pergunta, nenhum cacto nascia na tela de início. Agora o relógio do seu jogo vai aprender a esperar também!",
           "O relógio dos cactos não fica dentro de A cada quadro do jogo: ele tem o próprio ritmo. Por isso, a pergunta que você acabou de montar não vale para ele, e ele continua criando cactos na tela de início. Você não vê esses cactos, porque o desenho deles agora espera a partida, mas eles vão sendo guardados no grupo.",
           "O relógio também vai ganhar a pergunta. Primeiro, deixe à vista o interior do relógio de 1.4 segundo e arraste No grupo criar obstáculo para um espaço livre, fora do relógio. Ele volta para dentro daqui a pouco.",
           "Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali.",
@@ -4234,9 +4234,9 @@
         "speech": [
           "Para a corrida acabar, o jogo precisa saber quando o Dino bate num cacto. Esse momento se chama batida.",
           "Sabe quando você brinca de pega-pega? Antes de começar, a turma combina o que vale como pegar.",
-          "No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.",
+          "No seu jogo, em volta de cada desenho tem uma área, que fica invisível durante a partida.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que se encosta, os desenhos ou as áreas pontilhadas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que se encosta, os desenhos ou as áreas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -4267,7 +4267,7 @@
         },
         "activityKey": "experiencia-contato",
         "avatar": {
-          "after": "em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.",
+          "after": "em volta de cada desenho tem uma área, que fica invisível durante a partida.",
           "speech": "E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?",
           "beforeScreen": "Manter a experiência ampliada e parada até a professora terminar a frase.",
           "afterScreen": "Depois da saída, seguir com a experiência parada, sem clicar em nada."
@@ -6244,7 +6244,7 @@
         "screen": "Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.",
-          "Lembra da experiência da parte anterior? Na régua, somar -1 levava de -5 para -6, e, nas raias da primeira parte, o -6 chegava mais longe. Agora a gente vai sortear essa diferença!",
+          "Lembra da experiência da parte anterior? Na régua, somar -1 levava de -5 para -6, e, na primeira parte, o cacto com -6 chegava mais longe. Agora a gente vai sortear essa diferença!",
           "Tirar 1 é o mesmo que somar -1. Por isso, a velocidade vai ser uma conta: -5 menos um número sorteado, de 0 a 1. Se sair 0, fica -5; se sair 1, fica -6.",
           "Deixe à vista o campo vx, com -5, no bloco que cria os cactos.",
           "Agora abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.",
@@ -6571,7 +6571,7 @@
           "Sabe o botão de volume? Cada toque deixa o som um pouco mais forte.",
           "No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -6818,7 +6818,7 @@
         "bridge": "Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
         "screen": "Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, a base parou no -9. Agora a gente vai programar esse limite!",
+          "Lembra da experiência da primeira parte desta aula? Com a pergunta, a base parou no -9. Agora a gente vai programar esse limite!",
           "Agora são duas perguntas, uma dentro da outra: primeiro, a partida já começou? Se sim, a base ainda é maior que -9?",
           "Deixe à vista o espaço vazio do então de Se jogando, no relógio de 5 segundos.",
           "Agora abra Programação e depois Lógica e Se, pegue outro bloco Se e solte nesse espaço.",

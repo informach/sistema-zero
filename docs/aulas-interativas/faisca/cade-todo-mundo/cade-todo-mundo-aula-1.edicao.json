@@ -25,7 +25,7 @@
       "clipe": "video-a1-programar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!",
+      "ancoraAntes": "deixava o esconderijo invisível quando a reação estava ligada a ele. Agora a gente vai fazer isso com os esconderijos do seu jogo!",
       "ancoraDepois": "Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui",
       "falaPrincipal": "E como faz isso no jogo?",
       "falaPersonagem": "E como faz isso no jogo?",

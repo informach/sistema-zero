@@ -44,7 +44,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.",
-      "ancoraDepois": "O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta cerca liga e",
+      "ancoraDepois": "O que você acha que acontece? Isso você vai testar na experiência. Agora você vai investigar o que o jogo faz na beirada",
       "falaPrincipal": "E se eu ligar o limite com ele já fora da tela?",
       "falaPersonagem": "E se eu ligar o limite com ele já fora da tela?",
       "tags": ["[curious]"]

@@ -34,9 +34,7 @@
 
 [engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, quando você escolhe Devagar, os quadros passam devagar, e cada quadro novo aparece neste filme, um do lado do outro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -92,15 +90,13 @@
 
 [engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se o personagem passa da beirada, ele vai sumindo da sua vista.
 
-[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
+[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. O personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
 
 [curious] E se eu ligar o limite com ele já fora da tela?
 
 [engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, esta cerca liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o jogo faz na beirada da tela, com o limite desligado e com o limite ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

@@ -1026,7 +1026,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar."
+        "text": "Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1051,7 +1051,7 @@
     },
     {
       "key": "video-a1-programar",
-      "plannedVideo": "Título: Faça o primeiro personagem aparecer\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-1.roteiro.md. Substituições kids: [{\"id\":\"video-a1-programar-K1\",\"clipe\":\"video-a1-programar\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!\",\"ancoraDepois\":\"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui\",\"falaPrincipal\":\"E como faz isso no jogo?\",\"falaPersonagem\":\"E como faz isso no jogo?\",\"tags\":[\"[curious]\"]},{\"id\":\"video-a1-programar-K3\",\"clipe\":\"video-a1-programar\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também. Talvez você esteja pensando:\",\"ancoraDepois\":\"Se aconteceu com você, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o\",\"falaPrincipal\":\"No meu jogo ainda não funcionou.\",\"falaPersonagem\":\"No meu jogo ainda não funcionou.\",\"tags\":[\"[thoughtful]\"]}]"
+      "plannedVideo": "Título: Faça o primeiro personagem aparecer\n\nMaster integral da professora. Roteiro: cade-todo-mundo-aula-1.roteiro.md. Substituições kids: [{\"id\":\"video-a1-programar-K1\",\"clipe\":\"video-a1-programar\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"deixava o esconderijo invisível quando a reação estava ligada a ele. Agora a gente vai fazer isso com os esconderijos do seu jogo!\",\"ancoraDepois\":\"Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui\",\"falaPrincipal\":\"E como faz isso no jogo?\",\"falaPersonagem\":\"E como faz isso no jogo?\",\"tags\":[\"[curious]\"]},{\"id\":\"video-a1-programar-K3\",\"clipe\":\"video-a1-programar\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também. Talvez você esteja pensando:\",\"ancoraDepois\":\"Se aconteceu com você, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o\",\"falaPrincipal\":\"No meu jogo ainda não funcionou.\",\"falaPersonagem\":\"No meu jogo ainda não funcionou.\",\"tags\":[\"[thoughtful]\"]}]"
     },
     {
       "key": "ponte-a1-programar",

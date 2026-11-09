@@ -62,7 +62,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-quadro`
 
-**Na tela:** No "já reparou como um desenho animado", mostrar o meme ilustrado (2 a 3 s) do Zappy correndo num bloquinho de folhear, uma folha por desenho, cada uma com ele um pouquinho mais adiante [na edição: meme do bloquinho de folhear]. No "Cada desenho desses se chama quadro", mostrar as folhas lado a lado [na edição: as folhas do bloquinho lado a lado]. No "E como o jogo sabe", ampliar a experiência, pausada e sem rodar quadros [ampliar experiência]. No "Em cada quadro, o jogo olha a seta", apontar o selo do filme, **seta solta** [apontar selo]. No "Se ela está apertada", apontar a tecla de seta da experiência, sem segurar [apontar "Seta para a direita"]. No "Olha aqui: nesta experiência, quando você escolhe Devagar", apontar o botão **Devagar**, sem clicar [apontar "Devagar"]. No "cada quadro novo aparece neste filme", apontar o filme com os quadros do jogo [apontar "Os quadros do jogo"]: com a seta solta, o filme mostraria "parado", que é a descoberta da criança. No "no Devagar e no Rápido", apontar o botão **Rápido**, sem clicar [apontar "Rápido"]. No "ajuda a observar", mostrar o Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não falar de blocos, regra, comando, x ou velocidade: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança nem dizer o que acontece com a seta solta: a criança descobre na experiência (convite à investigação, como no Cadê, 02/11/2026).
+**Na tela:** No "já reparou como um desenho animado", mostrar o meme ilustrado (2 a 3 s) do Zappy correndo num bloquinho de folhear, uma folha por desenho, cada uma com ele um pouquinho mais adiante [na edição: meme do bloquinho de folhear]. No "Cada desenho desses se chama quadro", mostrar as folhas lado a lado [na edição: as folhas do bloquinho lado a lado]. No "E como o jogo sabe", a tela volta para a experiência, no tamanho da aula, pausada e sem rodar quadros. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não segurar a seta nem mexer nos controles da experiência: o que acontece com a seta solta é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, comando, x ou velocidade: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). O vídeo explica o conceito e convida, sem explicar a experiência nem nomear os controles dela (decisão de 09/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -75,9 +75,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, quando você escolhe Devagar, os quadros passam devagar, e cada quadro novo aparece neste filme, um do lado do outro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
@@ -156,29 +154,27 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-limite`
 
-**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "Primeiro, o personagem dá o passinho" até o "Isso é o limite da tela", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva o personagem além da beirada e o jogo puxando ele de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando de volta]. Não rodar a experiência na beirada: testar é a vez da criança. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência]. No "Olha aqui: nesta experiência, esta cerca", apontar o interruptor **Cerca desligada**, sem clicar [apontar "Cerca desligada"]. No "e esta faixa mostra o que ficou fora da janela", apontar a faixa **fora da tela** [apontar faixa fora da tela]. No "Compare o personagem na beirada", apontar a tecla de seta da experiência, sem segurar [apontar "Seta para a direita"]. No "ajuda a observar", mostrar o Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança nem responder a pergunta da Debinha: a criança descobre na experiência (convite à investigação, como no Cadê, 02/11/2026).
+**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "O personagem dá o passinho" até o "Isso é o limite da tela", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva o personagem além da beirada e o jogo puxando ele de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando de volta]. Durante a pergunta da Debinha, a tela volta para a experiência, no tamanho da aula e parada. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "O Zappy ajuda a observar", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não rodar a experiência na beirada nem mexer nos controles dela: testar é a vez da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não responder a pergunta da Debinha: a criança descobre na experiência. O vídeo explica o conceito e convida, sem explicar a experiência nem nomear os controles dela (decisão de 09/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se o personagem passa da beirada, ele vai sumindo da sua vista.
 
-[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
+[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. O personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
 
 [curious] E se eu ligar o limite com ele já fora da tela?
 
 [engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, esta cerca liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o jogo faz na beirada da tela, com o limite desligado e com o limite ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta cerca liga e | [curious] |
+| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | O que você acha que acontece? Isso você vai testar na experiência. Agora você vai investigar o que o jogo faz na beirada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

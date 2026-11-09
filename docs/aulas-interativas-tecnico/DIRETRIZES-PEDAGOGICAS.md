@@ -45,7 +45,7 @@ Na montagem, ensinar caminho da paleta, nome literal do bloco, encaixe com refer
 
 Explicar palavras novas quando necessárias e usar o próprio jogo como exemplo.
 
-**O vídeo dá sentido ao conceito; a experiência conduz a investigação.** Desde 25/10/2026, seguir [Conceito, investigação e construção](DESCOBERTA-GUIADA.md). O vídeo nomeia a ideia, usa uma situação concreta e uma analogia quando ajuda, liga-a ao jogo e propõe algo para observar. Uma demonstração breve pode esclarecer a ideia, sem percorrer todos os controles e testes para a pessoa repetir.
+**O vídeo dá sentido ao conceito; a experiência conduz a investigação.** Desde 25/10/2026, seguir [Conceito, investigação e construção](DESCOBERTA-GUIADA.md). O vídeo nomeia a ideia, usa uma situação concreta e uma analogia quando ajuda, liga-a ao jogo e propõe algo para observar. Desde 09/11/2026 o vídeo não explica a experiência: não descreve a tela dela nem nomeia, aponta ou demonstra controles; termina no convite para explorar o conceito na experiência da aula. Ao lembrar a experiência em outra parte, lembrar o conceito ou o que se observou, nunca um botão dela.
 
 As comparações da experiência são orientadas pelo Zappy, em falas curtas determinadas pelo estado e pelas ações realizadas. Os objetivos guiam a investigação; os controles ficam livres e as descobertas contam em qualquer ordem. A pessoa pode repetir e continuar depois de concluir. Cada orientação aparece quando necessária. O botão pedido usa a cor principal do tema; as demais ações continuam reconhecíveis como botões secundários. A cena torna visíveis a regra, a mudança e os casos em que nada muda. A ponte externa convida à investigação e não repete a fala interna.
 

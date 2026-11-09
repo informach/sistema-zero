@@ -73,14 +73,14 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que muda no jogo quando você troca a história e quando desliga o tiro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no jogo quando você troca só a aparência e quando muda o que o jogo faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-aparencia-e-regras-K1 | Debinha | 1 | Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo. | E se eu trocar a nave por um carrinho, o jogo muda? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a | [curious] |
+| video-aparencia-e-regras-K1 | Debinha | 1 | Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo. | E se eu trocar a nave por um carrinho, o jogo muda? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca só | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
