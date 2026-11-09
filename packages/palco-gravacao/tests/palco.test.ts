@@ -9,7 +9,16 @@ import { projetoDaParte } from '../src/lib/projeto-da-parte'
 import { projetoAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
-import { agir, agirNaPagina, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
+import {
+  agir,
+  agirNaPagina,
+  type JogoDaAula,
+  jogoPara,
+  novoJogoNoEstudio,
+  ocupado,
+  VERBOS,
+  ZOOM_SEM_JOGO,
+} from '../src/lib/verbos'
 
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
@@ -49,6 +58,9 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
     posicao: { x: 100, y: 100, scroll: 0 },
   }),
+  jogoAVista: () => null,
+  alternarJogo: async () => false,
+  zoom: async () => {},
   ...patch,
 })
 
@@ -925,5 +937,112 @@ describe('roteiros gravados pelo robô', () => {
     expect(colchetes.length).toBeGreaterThan(100)
     for (const colchete of colchetes.filter((c) => !doEdiAula.test(c)))
       expect(() => agir(colchete, jogosDoFarol, pagina()), colchete).not.toThrow()
+  })
+})
+
+describe('o jogo ao lado dos blocos', () => {
+  /** Uma página que lembra o que a ponte fez com o jogo e com o zoom. */
+  const comJogo = (aVista = true) => {
+    const feito: string[] = []
+    let jogoAVista = aVista
+    const p = pagina({
+      jogoAVista: () => jogoAVista,
+      alternarJogo: async () => {
+        jogoAVista = !jogoAVista
+        feito.push(jogoAVista ? 'mostrou' : 'escondeu')
+        return true
+      },
+      zoom: async (passos) => {
+        feito.push(`zoom ${passos}`)
+      },
+    })
+    return { p, feito }
+  }
+
+  test('montar esconde, testar no jogo mostra, o resto tanto faz', () => {
+    expect(jogoPara('encaixar "Deixar o sprite" em "Quando clicar ou tocar"')).toBe(false)
+    expect(jogoPara('categoria Jogo 2D > Sprites')).toBe(false)
+    expect(jogoPara('apontar bloco "Ao iniciar"')).toBe(false)
+    expect(jogoPara('apontar paleta')).toBe(false)
+    expect(jogoPara('tocar prévia arbusto')).toBe(true)
+    expect(jogoPara('apontar prévia 75 26')).toBe(true)
+    expect(jogoPara('segurar seta da direita na prévia por 1 s')).toBe(true)
+    expect(jogoPara('reduzir estúdio')).toBe(true)
+    // O escolher continua o abrir campo: trocar o jogo ali fecharia a lista aberta.
+    expect(jogoPara('escolher "escolhido" em "Deixar o sprite"')).toBeNull()
+    expect(jogoPara('afastar de "Deixar o sprite"')).toBeNull()
+    expect(jogoPara('verificar projeto')).toBeNull()
+    expect(jogoPara('expandir estúdio')).toBeNull()
+    expect(jogoPara('rodar de novo')).toBe(true)
+  })
+
+  test('rodar de novo clica no Rodar da barra, com o nome que ele tiver', () => {
+    expect(agir('rodar de novo', jogos)).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-live-target="studio-run"]' } },
+    ])
+    expect(agir('parar', jogos)).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-live-target="studio-stop"]' } },
+    ])
+  })
+
+  test('o zoom sai mesmo quando o Estúdio já trouxe o jogo de volta', async () => {
+    const { p, feito } = comJogo()
+    const jogo = novoJogoNoEstudio()
+    await agirNaPagina('apontar paleta', jogos, p, jogo)
+    // O Rodar com o jogo escondido: o Estúdio mostra o jogo sozinho.
+    await p.alternarJogo()
+    feito.length = 0
+    await agirNaPagina('tocar prévia arbusto', jogos, p, jogo)
+    expect(feito).toEqual([`zoom ${-ZOOM_SEM_JOGO}`])
+    expect(jogo.zoom).toBe(0)
+  })
+
+  test('esconder dá o zoom depois, mostrar desfaz o zoom antes', async () => {
+    const { p, feito } = comJogo()
+    const jogo = novoJogoNoEstudio()
+    await agirNaPagina('apontar bloco "Ao iniciar"', jogos, p, jogo)
+    await agirNaPagina('categoria Jogo 2D', jogos, p, jogo)
+    expect(feito).toEqual(['escondeu', `zoom ${ZOOM_SEM_JOGO}`])
+    expect(jogo.zoom).toBe(ZOOM_SEM_JOGO)
+    await agirNaPagina('tocar prévia arbusto', jogos, p, jogo)
+    expect(feito).toEqual([
+      'escondeu',
+      `zoom ${ZOOM_SEM_JOGO}`,
+      `zoom ${-ZOOM_SEM_JOGO}`,
+      'mostrou',
+    ])
+    expect(jogo.zoom).toBe(0)
+  })
+
+  test('o roteiro fixa o jogo até "jogo automático"', async () => {
+    const { p, feito } = comJogo()
+    const jogo = novoJogoNoEstudio()
+    expect(agir('mostrar o jogo', jogos)).toHaveLength(1)
+    await agirNaPagina('mostrar o jogo', jogos, p, jogo)
+    await agirNaPagina('encaixar "Deixar o sprite" em "Quando clicar ou tocar"', jogos, p, jogo)
+    expect(feito).toEqual([])
+    await agirNaPagina('jogo automático', jogos, p, jogo)
+    await agirNaPagina('apontar paleta', jogos, p, jogo)
+    expect(feito).toEqual(['escondeu', `zoom ${ZOOM_SEM_JOGO}`])
+    await agirNaPagina('esconder o jogo', jogos, p, jogo)
+    await agirNaPagina('tocar prévia arbusto', jogos, p, jogo)
+    expect(feito).toEqual(['escondeu', `zoom ${ZOOM_SEM_JOGO}`])
+  })
+
+  test('sem o Estúdio na tela, ou sem o item no menu, nada muda', async () => {
+    const jogo = novoJogoNoEstudio()
+    await agirNaPagina('apontar paleta', jogos, pagina(), jogo)
+    expect(jogo.zoom).toBe(0)
+    let zooms = 0
+    const estreito = pagina({
+      jogoAVista: () => true,
+      alternarJogo: async () => false,
+      zoom: async () => {
+        zooms++
+      },
+    })
+    await agirNaPagina('apontar paleta', jogos, estreito, jogo)
+    expect(zooms).toBe(0)
+    expect(jogo.zoom).toBe(0)
   })
 })
