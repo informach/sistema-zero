@@ -64,8 +64,9 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
 
   // 4. A troca: no Criar sprite chave, a imagem passa de chave-dourada a minha-chave.
   await page.getByRole('button', { name: 'Expandir' }).click()
-  // Com a prévia ao lado, o fim do bloco fica atrás dela: a criança esconde a prévia.
-  await page.getByRole('button', { name: 'Ocultar pré-visualização' }).click()
+  // Com a prévia ao lado, o fim do bloco fica atrás dela: a criança esconde o jogo pelo menu.
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  await page.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
   const campo = (nome: string) =>
     page
       .locator('.sz_g2d_create_image_sprite .blocklyEditableField')
