@@ -175,6 +175,7 @@ export function PonteLivre() {
   const fala = discoverySpeech(ponteGuidance(p.state, f, { rodando }))
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="A ponte apressada"
       kind="ponte"
@@ -228,7 +229,7 @@ export function PonteLivre() {
               }}
             />
           </Modulo>
-          <Modulo titulo="O jogo guarda" icone="📓" dica="A ponte olha aqui.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="A ponte olha aqui.">
             <CaderninhoDe
               linhas={[
                 {
@@ -239,7 +240,7 @@ export function PonteLivre() {
               ]}
             />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="A ponte sobe e o relógio para.">
+          <Modulo compacto titulo="Partida" icone="🔄" dica="A ponte sobe e o relógio para.">
             <BotaoGrande pulsar={atravessou} onClick={jogarDeNovo}>
               <span aria-hidden>🔄</span> Jogar de novo
             </BotaoGrande>

@@ -134,6 +134,7 @@ export function MoedasLivre() {
   const fala = discoveryGuidance(p.activity, p.state)?.text ?? ''
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="O contador de moedas"
       kind="moedas"
@@ -192,7 +193,15 @@ export function MoedasLivre() {
               }}
             />
           </Modulo>
-          <Modulo titulo="Depois de pegar" icone="✨" dica="Ligado, a moeda some do caminho.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="O baú olha aqui.">
+            <CaderninhoDe linhas={[{ pergunta: 'Quantas moedas?', resposta: String(c.moedas) }]} />
+          </Modulo>
+          <Modulo
+            compacto
+            titulo="Depois de pegar"
+            icone="✨"
+            dica="Ligado, a moeda some do caminho."
+          >
             <Interruptor
               ligado={c.disappear}
               rotulo="Some ao pegar?"
@@ -201,10 +210,7 @@ export function MoedasLivre() {
               onClick={() => p.dispatch({ type: 'coin-disappears', enabled: !c.disappear })}
             />
           </Modulo>
-          <Modulo titulo="O jogo guarda" icone="📓" dica="O baú olha aqui.">
-            <CaderninhoDe linhas={[{ pergunta: 'Quantas moedas?', resposta: String(c.moedas) }]} />
-          </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="As moedas voltam e o número vai a 0.">
+          <Modulo compacto titulo="Partida" icone="🔄" dica="As moedas voltam e o número vai a 0.">
             <BotaoGrande
               pulsar={f('kept') && !f('below-goal') && c.moedas >= COIN_COUNTER.goal}
               onClick={jogarDeNovo}

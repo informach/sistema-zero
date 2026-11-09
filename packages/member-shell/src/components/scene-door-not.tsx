@@ -140,6 +140,8 @@ export function PortaDoNao() {
   const fala = discoveryGuidance(p.activity, p.state)?.text ?? ''
   return (
     <Frame
+      arranjo="faisca"
+      aspectoDoPalco={1.1}
       raiz={raiz}
       title="O que muda com o não?"
       kind="porta-do-nao"
@@ -188,10 +190,15 @@ export function PortaDoNao() {
               }}
             />
           </Modulo>
-          <Modulo titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="A porta olha aqui.">
             <Caderninho sim={l.hasKey} />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="A chave volta para o chão e o farol apaga.">
+          <Modulo
+            compacto
+            titulo="Partida"
+            icone="🔄"
+            dica="A chave volta para o chão e o farol apaga."
+          >
             <BotaoGrande pulsar={f(`not-flips-${chave}`) && l.hasKey} onClick={jogarDeNovo}>
               <span aria-hidden>🔄</span> Jogar de novo
             </BotaoGrande>

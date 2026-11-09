@@ -106,6 +106,7 @@ export function CabanaLivre() {
   const fala = discoveryGuidance(p.activity, p.state)?.text ?? ''
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="A porta com duas peças"
       kind="cabana"
@@ -145,7 +146,7 @@ export function CabanaLivre() {
               }}
             />
           </Modulo>
-          <Modulo titulo="O jogo guarda" icone="📓" dica="A cabana olha aqui.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="A cabana olha aqui.">
             <CaderninhoDe
               linhas={[
                 { pergunta: 'Tem a chave?', resposta: sn(k.temChave), sim: k.temChave },
@@ -153,7 +154,7 @@ export function CabanaLivre() {
               ]}
             />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="As peças voltam ao chão.">
+          <Modulo compacto titulo="Partida" icone="🔄" dica="As peças voltam ao chão.">
             <BotaoGrande
               pulsar={
                 k.door === 'open' ||

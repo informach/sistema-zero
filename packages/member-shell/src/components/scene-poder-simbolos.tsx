@@ -111,6 +111,7 @@ export function SimbolosLivre() {
   }
   return (
     <Frame
+      arranjo="faisca"
       raiz={raiz}
       title="A ordem dos símbolos"
       kind="simbolos"
@@ -154,7 +155,7 @@ export function SimbolosLivre() {
               }}
             />
           </Modulo>
-          <Modulo titulo="O jogo guarda" icone="📓" dica="Cada símbolo olha aqui.">
+          <Modulo compacto titulo="O jogo guarda" icone="📓" dica="Cada símbolo olha aqui.">
             <CaderninhoDe
               linhas={[
                 q.mode === 'order'
@@ -166,7 +167,12 @@ export function SimbolosLivre() {
               ]}
             />
           </Modulo>
-          <Modulo titulo="Partida" icone="🔄" dica="Os símbolos apagam e o passo volta a 0.">
+          <Modulo
+            compacto
+            titulo="Partida"
+            icone="🔄"
+            dica="Os símbolos apagam e o passo volta a 0."
+          >
             <BotaoGrande
               pulsar={q.chest === 'open' || (f('out-of-turn') && !f('middle-start'))}
               onClick={jogarDeNovo}
