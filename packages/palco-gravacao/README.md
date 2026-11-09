@@ -129,6 +129,14 @@ está sendo conferido.
   (na Parte 6 do Farol, a seta segurada logo depois de expandir caiu na seta da esquerda).
 - **Os roteiros do Farol são conferidos nos testes:** todo colchete do Na tela das Aulas 1 e 2 do
   Desafio do Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
+- **Estúdio clássico redesenhado e moldura nova das experiências** (conferido em 09/11/2026): o
+  redesenho guardou o que o palco usa (o texto das categorias, que ganharam ícone só pelo CSS e
+  "›" no lugar do triângulo; "Organizar blocos" no botão direito; "Atualizar o preview"; o iframe
+  "Pré-visualização"; a lixeira `.blocklyTrash`; "Expandir"/"Reduzir"; o passeio de primeiros
+  passos fica desligado na aula). A gaveta Mensagens/Problemas e o zoom 1,0 só mudam o tamanho da
+  área, que o palco mede na hora. Na experiência, a fala do Zappy segue em `.sz-scene-console-fala`.
+  Desde 09/11 os roteiros não apontam controles da experiência; `tocar`, `apontar selo` e `apontar
+  faixa fora da tela` continuam entendidos, mas sem uso.
 
 ## Rodar
 
