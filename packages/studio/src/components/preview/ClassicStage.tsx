@@ -19,14 +19,14 @@ const STAGE_HEAD_COMPACT_MAX_PX = 520
 
 /**
  * O palco do Estúdio clássico, blocos e Ponte, JavaScript e Python (redesenho de 11/2026): o
- * cabeçalho do palco do Pro — [Jogo/Página/Programa] [pílula de estado] [Atualizar] [Jogo maior]
- * [tela cheia] — e, embaixo, a prévia. Quem roda e para é a barra de cima (`ProRunControls`,
+ * cabeçalho do palco do Pro — [Jogo/Página/Programa] [pílula de estado] [Jogo maior] [tela cheia]
+ * — e, embaixo, a prévia. Quem roda, roda de novo e para é a barra de cima (`ProRunControls`,
  * lendo o `proRun` que a prévia publica); no celular, onde a barra não tem o Rodar, entra o par
  * Rodar / Parar embaixo do palco, com os `data-live-target`.
  *
- * ⚠️ O "Atualizar" (a seta redonda logo acima do jogo) é uma âncora das aulas gravadas: a fala
- * do Desafio do Farol manda clicar nele, e o robô de gravação o acha pelo nome acessível
- * "Atualizar o preview". Não renomear nem tirar daqui.
+ * Sem "Atualizar" no cabeçalho (decisão da Helena, 09/11/2026): com o jogo rodando ele fazia o
+ * mesmo que o "Rodar de novo" da barra (recomeça do zero e dá o foco ao jogo), e as aulas mandam
+ * clicar em Rodar de novo.
  */
 export function ClassicStage({
   subject,
@@ -66,18 +66,15 @@ export function ClassicStage({
   const width = useMeasuredWidth(card)
   const compact = phone || (width > 0 && width < STAGE_HEAD_COMPACT_MAX_PX)
   const stageLarge = useUIStore((s) => s.stageLarge)
-  const { state, canRun, canStop, hasReload, canReload } = useProRun(
+  const { state, canRun, canStop } = useProRun(
     useShallow((s) => ({
       state: s.state,
-      hasReload: Boolean(s.actions?.reload),
       canRun: Boolean(s.actions && s.state?.canRun),
       canStop: Boolean(s.actions && s.state?.canStop),
-      canReload: Boolean(s.actions?.reload && s.state?.canRun),
     })),
   )
   const phase = state?.phase ?? null
   const pill = phase ? STAGE_PILL[phase] : null
-  const reloadText = t('run.reload')
   const run = () => {
     const { actions, revealStage } = api.getState()
     actions?.run()
@@ -93,21 +90,6 @@ export function ClassicStage({
           </span>
         ) : null}
         <span className="flex-1" />
-        {/* Fica SEMPRE à vista com a prévia do JavaScript (âncora das aulas gravadas): enquanto
-            o jogo prepara, ou para quem só observa, aparece desligado em vez de sumir. */}
-        {hasReload ? (
-          <button
-            type="button"
-            className={cn('sz-pro-btn sz-pro-btn--sm', compact && 'sz-pro-btn--icon')}
-            disabled={!canReload}
-            aria-label={t('stage.reloadLabel')}
-            title={reloadText}
-            onClick={() => api.getState().actions?.reload?.()}
-          >
-            <IconRefresh />
-            {!compact ? <span aria-hidden="true">{reloadText}</span> : null}
-          </button>
-        ) : null}
         {onToggleLarge && !phone ? (
           <button
             type="button"

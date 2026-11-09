@@ -88,7 +88,6 @@ export const ptBR: Record<string, string> = {
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
   'topbar.showStage': 'Mostrar o jogo',
-  'stage.reloadLabel': 'Atualizar o preview',
   'stage.bigger': 'Jogo maior',
   'stage.smaller': 'Jogo menor',
   'stage.errorMark': 'O jogo parou neste bloco.',
