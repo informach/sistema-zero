@@ -98,6 +98,51 @@ describe('personagem do diálogo da aula', () => {
     }
   })
 
+  test('⚠️ na experiência LIVRE o balão sempre tem o Zappy, mesmo com um diálogo na parte', () => {
+    // Pedido dela (09/11/2026): na aula de verdade a parte já tem a fala do Zappy à esquerda, e o
+    // balão de dentro da experiência aparecia sem ele. O balão livre fala do jogo, não repete a
+    // orientação: o mascote fica (a regra de não repetir vale só para a instrução das guiadas).
+    const activity = {
+      type: 'experimentation',
+      scene: 'touch-response',
+      cenario: 'jardim',
+      setup: { freeExploration: true },
+    } as const
+    const content = publicInteractiveBlock({
+      kind: 'interactive',
+      required: true,
+      semPerguntaFinal: true,
+      title: 'O toque',
+      instructions: 'Toque no arbusto.',
+      hints: [],
+      activity,
+    })
+    for (const temDialogo of [false, true]) {
+      const html = renderToStaticMarkup(
+        <LessonPlayerProvider
+          value={{
+            lessonId: 'lesson',
+            courseSlug: 'course',
+            viewerId: null,
+            viewerWatermark: null,
+            initialPositionSeconds: null,
+            dialogueMascot: () => <span data-mascot aria-hidden="true" />,
+          }}
+        >
+          <LessonSectionProvider value={{ titulo: 'Parte', temDialogo }}>
+            <SceneActivityView
+              block={{ id: 'experiencia', kind: 'interactive', sortOrder: 0, content }}
+              content={content}
+              activity={activity}
+            />
+          </LessonSectionProvider>
+        </LessonPlayerProvider>,
+      )
+      const fala = html.slice(html.indexOf('sz-discovery-fala-bloco'))
+      expect(fala).toContain('data-mascot')
+    }
+  })
+
   test('o contexto e a pergunta do palpite compartilham um personagem', () => {
     const activity = { type: 'experimentation', scene: 'axis-z' } as const
     const content = publicInteractiveBlock({
