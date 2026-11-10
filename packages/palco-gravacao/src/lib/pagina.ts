@@ -133,6 +133,11 @@ export interface PaginaDoPalco {
    */
   alternarJogo(): Promise<boolean>
   /**
+   * O jogo ao lado dos blocos ainda está carregando: sem a prévia, com o documento provisório, com
+   * o documento ainda não carregado no quadro ou com "Preparando a oficina".
+   */
+  jogoCarregando(): boolean
+  /**
    * Dá `passos` de zoom na área de código (negativos diminuem), como o Ctrl e a roda do mouse,
    * presos no canto de cima à esquerda das pilhas à vista.
    */
@@ -149,6 +154,11 @@ function marcar(el: Element): string {
   el.setAttribute('data-palco-alvo', id)
   return `[data-palco-alvo="${id}"]`
 }
+
+/** Menos que isso no `srcdoc` da prévia é o documento provisório, não o jogo. */
+const DOCUMENTO_DO_JOGO = 1000
+/** Quanto esperar pelo aviso de carregado de um quadro que já tinha o jogo quando foi visto. */
+const JA_CARREGADO = 1500
 
 const visivel = (el: Element): boolean => {
   const r = el.getBoundingClientRect()
@@ -857,6 +867,31 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const area = areaDeTrabalho(doc)
       if (!area || !visivel(area)) return null
       return this.previa() !== null
+    },
+
+    jogoCarregando() {
+      const frame = doc.querySelector<HTMLIFrameElement>('iframe[title="Pré-visualização"]')
+      if (!frame || !visivel(frame)) return true
+      const preparando = doc.querySelector('.sz-pro-pill--prep')
+      if (preparando && visivel(preparando)) return true
+      // O Estúdio põe primeiro um documento provisório (dezenas de caracteres) e depois o jogo.
+      const atual = frame.srcdoc.length
+      if (atual < DOCUMENTO_DO_JOGO) return true
+      // O quadro avisa quando o documento atual terminou de carregar (os scripts do jogo rodaram).
+      // Visto pela primeira vez já com o jogo, o carregamento pode ter passado: vale depois de
+      // um instante.
+      const quadro = frame as HTMLIFrameElement & { palcoCarregou?: number; palcoOuvindo?: true }
+      if (!quadro.palcoOuvindo) {
+        quadro.palcoOuvindo = true
+        quadro.addEventListener('load', () => {
+          quadro.palcoCarregou = quadro.srcdoc.length
+        })
+        doc.defaultView?.setTimeout(() => {
+          quadro.palcoCarregou ??= atual
+        }, JA_CARREGADO)
+        return true
+      }
+      return quadro.palcoCarregou !== atual
     },
 
     async alternarJogo() {
