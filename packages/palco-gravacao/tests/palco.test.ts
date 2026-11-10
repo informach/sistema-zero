@@ -14,6 +14,7 @@ import {
   agirNaPagina,
   type JogoDaAula,
   jogoPara,
+  jogoVoltando,
   novoJogoNoEstudio,
   ocupado,
   VERBOS,
@@ -60,6 +61,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   }),
   jogoAVista: () => null,
   alternarJogo: async () => false,
+  jogoCarregando: () => false,
   zoom: async () => {},
   ...patch,
 })
@@ -1012,6 +1014,45 @@ describe('o jogo ao lado dos blocos', () => {
       'mostrou',
     ])
     expect(jogo.zoom).toBe(0)
+  })
+
+  test('o jogo que volta deixa a ponte ocupada até carregar e ficar carregado', async () => {
+    const { p, feito } = comJogo(false)
+    const jogo = novoJogoNoEstudio()
+    await agirNaPagina('segurar seta da direita na prévia por 1 s', jogos, p, jogo)
+    expect(feito).toEqual(['mostrou'])
+    const em = jogo.voltou?.em ?? 0
+    expect(em).toBeGreaterThan(0)
+    // O documento provisório, depois o jogo, e o Estúdio montando a prévia de novo.
+    let carregando = true
+    const pagina = { jogoCarregando: () => carregando }
+    expect(jogoVoltando(jogo, pagina, em + 100)).toBe(true)
+    carregando = false
+    expect(jogoVoltando(jogo, pagina, em + 500)).toBe(true)
+    carregando = true
+    expect(jogoVoltando(jogo, pagina, em + 900)).toBe(true)
+    carregando = false
+    expect(jogoVoltando(jogo, pagina, em + 1000)).toBe(true)
+    expect(jogoVoltando(jogo, pagina, em + 2100)).toBe(true)
+    // Firme por 1,2 s seguidos: livre, e não conta mais.
+    expect(jogoVoltando(jogo, pagina, em + 2200)).toBe(false)
+    expect(jogo.voltou).toBeUndefined()
+    carregando = true
+    expect(jogoVoltando(jogo, pagina, em + 2300)).toBe(false)
+  })
+
+  test('o jogo que não carrega libera a ponte depois do teto, e esconder não ocupa', async () => {
+    const { p } = comJogo(false)
+    const jogo = novoJogoNoEstudio()
+    await agirNaPagina('tocar prévia arbusto', jogos, p, jogo)
+    const em = jogo.voltou?.em ?? 0
+    const sempre = { jogoCarregando: () => true }
+    expect(jogoVoltando(jogo, sempre, em + 9_000)).toBe(true)
+    expect(jogoVoltando(jogo, sempre, em + 10_000)).toBe(false)
+    const outro = novoJogoNoEstudio()
+    await agirNaPagina('apontar paleta', jogos, comJogo().p, outro)
+    expect(outro.voltou).toBeUndefined()
+    expect(jogoVoltando(outro, sempre)).toBe(false)
   })
 
   test('o roteiro fixa o jogo até "jogo automático"', async () => {
