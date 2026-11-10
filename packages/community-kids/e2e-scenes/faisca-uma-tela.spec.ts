@@ -37,6 +37,53 @@ const TELAS = [
   { width: 375, height: 667 },
 ] as const
 
+test.describe('375×667 com fonte substituta larga', () => {
+  test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true })
+
+  test('os três eixos da Ilha ficam acima do rodapé com mais uma linha no balão', async ({
+    page,
+  }) => {
+    await page.goto('/?course=ilha&block=experiencia-posicao-3d&width=900&barras&zappy')
+    await page.addStyleTag({
+      content: ':root { --font-baloo: "Baloo 2"; --font-nunito: Nunito; }',
+    })
+    await expect(page.locator('.sz-island-world[data-ready="true"]')).toBeVisible({
+      timeout: 30_000,
+    })
+    // A fonte de sistema do Linux quebra a fala em quatro linhas. Verdana também reproduz
+    // essa altura no Windows, sem depender da fonte que o sistema escolhe como substituta.
+    await page.locator('.sz-scene-console-visual .sz-fala-balao > p').evaluate((el) => {
+      el.style.fontFamily = 'Verdana, sans-serif'
+    })
+    await page.evaluate(() => {
+      const console = document.querySelector('.sz-scene-console')
+      const topo = document.querySelector('.ensaio-topo')?.getBoundingClientRect().height ?? 0
+      if (console) window.scrollTo(0, console.getBoundingClientRect().top + scrollY - topo)
+    })
+    const faixa = await faixaVisivel(page, false)
+    await expect
+      .poll(async () => {
+        const controls = await page.locator('.sz-discovery-painel-caixa').boundingBox()
+        return controls ? controls.y + controls.height : Number.POSITIVE_INFINITY
+      })
+      .toBeLessThanOrEqual(faixa.fim + 1)
+    await inteiroNaJanela(page, faixa, page.locator('.sz-discovery-palco'), 'a cena')
+    await inteiroNaJanela(
+      page,
+      faixa,
+      page.locator('.sz-scene-console-visual .sz-discovery-fala-bloco'),
+      'a fala com a fonte substituta',
+    )
+    for (const eixo of ['x', 'y', 'z']) {
+      for (const acao of ['menos', 'mais']) {
+        const botao = page.getByRole('button', { name: `${eixo} ${acao} meio` })
+        await inteiroNaJanela(page, faixa, botao, `o ${acao} do eixo ${eixo}`)
+        await botao.click({ trial: true })
+      }
+    }
+  })
+})
+
 type Faixa = { topo: number; fim: number }
 
 /**

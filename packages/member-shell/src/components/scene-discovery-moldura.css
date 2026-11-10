@@ -2459,7 +2459,9 @@
     .sz-discovery-livre-eixos
     .sz-discovery-livre-eixo {
     justify-content: center;
-    padding: 2px 6px;
+    /* As três linhas cabem com quatro linhas de fala, inclusive com fonte substituta larga.
+     * O espaço entre os eixos vem do gap; os botões mantêm seu tamanho e a cena, seu piso. */
+    padding: 0 6px;
   }
 }
 @container scene-workspace (width < 52rem) {
