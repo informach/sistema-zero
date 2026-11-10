@@ -96,12 +96,12 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-som-no-pulo`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Rodar de novo e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.
+[confident, clear, unhurried voice] Clique em Rodar de novo e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o som ligado ao pulo, cada pulo teve o seu som. Agora a gente vai fazer isso no seu jogo!
 
@@ -127,7 +127,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] É este bloco que toca o som do pulo.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
+[upbeat, encouraging voice] Agora teste! Clique em Rodar de novo e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
 
 [engaging, energetic, conversational voice] Por último, toque duas vezes na barra de espaço com o Dino no ar. [confident, clear, unhurried voice] Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.
 

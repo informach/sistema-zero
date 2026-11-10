@@ -125,6 +125,18 @@ export interface PaginaDoPalco {
   } | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
+  /** O jogo ao lado dos blocos está à vista? Nulo sem a área de código do Estúdio na tela. */
+  jogoAVista(): boolean | null
+  /**
+   * Troca o "Mostrar o jogo" do menu ⋯ do Estúdio pela própria página, com o menu invisível
+   * (`html.palco-trocando-jogo`). Falso quando o menu não tem o item (o Estúdio estreito).
+   */
+  alternarJogo(): Promise<boolean>
+  /**
+   * Dá `passos` de zoom na área de código (negativos diminuem), como o Ctrl e a roda do mouse,
+   * presos no canto de cima à esquerda das pilhas à vista.
+   */
+  zoom(passos: number): Promise<void>
 }
 
 let marks = 0
@@ -839,6 +851,79 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2),
         posicao: { x: r.left, y: r.top, scroll: rolante.scrollTop },
       }
+    },
+
+    jogoAVista() {
+      const area = areaDeTrabalho(doc)
+      if (!area || !visivel(area)) return null
+      return this.previa() !== null
+    },
+
+    async alternarJogo() {
+      const area = areaDeTrabalho(doc)
+      const view = doc.defaultView
+      if (!area || !view) return false
+      // O ⋯ do Estúdio desta área: o que tem o ancestral mais próximo em comum com ela.
+      const fundura = (b: Element): number => {
+        let n = 0
+        for (let a = b.parentElement; a; a = a.parentElement) if (a.contains(area)) n++
+        return n
+      }
+      const botao = [...doc.querySelectorAll<HTMLElement>('button[aria-label="Mais opções"]')]
+        .filter(visivel)
+        .sort((a, b) => fundura(b) - fundura(a))[0]
+      if (!botao) return false
+      const pausa = (ms: number) => new Promise((r) => view.setTimeout(r, ms))
+      const raiz = doc.documentElement
+      raiz.classList.add('palco-trocando-jogo')
+      try {
+        botao.click()
+        let item: HTMLElement | null = null
+        for (let passou = 0; passou < 1000 && !item; passou += 50) {
+          await pausa(50)
+          item = doc.querySelector<HTMLElement>('[role="menu"] [data-sz-menu-item="stage"]')
+        }
+        if (!item) {
+          if (doc.querySelector('[role="menu"]')) botao.click()
+          return false
+        }
+        item.click()
+        for (let passou = 0; passou < 1000 && doc.querySelector('[role="menu"]'); passou += 50)
+          await pausa(50)
+        return true
+      } finally {
+        raiz.classList.remove('palco-trocando-jogo')
+        botao.blur()
+      }
+    },
+
+    async zoom(passos) {
+      const area = areaDeTrabalho(doc)
+      if (!area || !visivel(area) || !passos) return
+      const view = areaVisivel(doc, area)
+      const { caixas } = pilhasDaArea(doc)
+      const dentro = caixas.filter((c) => c.right > view.left && c.left < view.right)
+      // O canto das pilhas fica parado e elas crescem para a direita e para baixo.
+      const x = dentro.length
+        ? Math.max(view.left + 4, Math.min(...dentro.map((c) => c.left), view.right - 4))
+        : view.left + 4
+      const y = dentro.length
+        ? Math.max(view.top + 4, Math.min(...dentro.map((c) => c.top), view.bottom - 4))
+        : view.top + 4
+      const alvo = doc.elementFromPoint(x, y) ?? area
+      // O Blockly: com a roda movendo a área, Ctrl e roda dão zoom; cada 50 px de roda, um passo.
+      alvo.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+          deltaY: -50 * passos,
+          deltaMode: 0,
+          ctrlKey: true,
+        }),
+      )
+      await new Promise((r) => doc.defaultView?.requestAnimationFrame(() => r(null)))
     },
 
     fundoLivre() {

@@ -26,7 +26,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "chão, como na experiência. Agora teste! Segure as setas e leve o personagem até a chave. Olha só: a chave sai do chão!",
-      "ancoraDepois": "Não, ela só sai desta partida. Para ver, clique em Atualizar, o botão com uma seta redonda, logo acima do jogo. Começa",
+      "ancoraDepois": "Não, ela só sai desta partida. Para ver, clique em Rodar de novo, no alto do Estúdio. Começa uma partida nova, e a",
       "falaPrincipal": "A chave some para sempre?",
       "falaPersonagem": "A chave some para sempre?",
       "tags": ["[curious]"]

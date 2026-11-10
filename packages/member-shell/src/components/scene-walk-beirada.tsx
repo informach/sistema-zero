@@ -96,8 +96,54 @@ export function WalkNaBeirada() {
     if (puxou && devagar && w.frame > 0) SONS.borda()
   }, [w.frame, puxou, devagar])
   const cenario = p.activity.cenario
+  const controles = (so?: 'andar' | 'resto') => (
+    <ControlesDoAndar
+      so={so}
+      ritmo={ritmo}
+      escolha={escolha}
+      setEscolha={setEscolha}
+      raiz={raiz}
+      mao={w.frame === 0 && !f('left-the-screen')}
+      extra={
+        <Modulo
+          compacto={!quem.nave}
+          titulo="Limite da tela"
+          icone="🧱"
+          dica={`Ligada, a cerca segura ${quem.nome} dentro.`}
+        >
+          <Interruptor
+            ligado={w.keepInside}
+            estado={(on) => (on ? 'Cerca ligada' : 'Cerca desligada')}
+            pulsar={fora && !w.keepInside}
+            onClick={() => {
+              const ligar = !w.keepInside
+              p.dispatch({ type: 'keep-on-screen', enabled: ligar })
+              // Ligar com quem saiu lá fora: em Devagar, o próximo quadro traz de volta (sem
+              // voltar ao início, que apagaria o que ela quer ver).
+              if (ligar && w.x > lighthouseWalkMaxX()) {
+                setEscolha('lenta')
+                ritmo.rodar('lenta', { reiniciar: false })
+              }
+            }}
+          />
+        </Modulo>
+      }
+      pedeVelocidade={
+        w.keepInside && !f('stayed-inside') && w.x >= lighthouseWalkMaxX() - 10 * w.speed
+          ? 'lenta'
+          : null
+      }
+    />
+  )
+  const filme = (
+    <Filme info={<SeloSimples />}>
+      <TiraDeQuadros />
+    </Filme>
+  )
   return (
     <Frame
+      // O Farol (Faísca) usa o arranjo de uma tela só; a Nave (Construtor) segue como era.
+      arranjo={quem.nave ? undefined : 'faisca'}
       raiz={raiz}
       title="A beirada da tela"
       kind="limite"
@@ -121,49 +167,11 @@ export function WalkNaBeirada() {
           <PalcoDoAndar fora piscar={devagar} />
         )
       }
-      abaixoDoPalco={
-        <Filme info={<SeloSimples />}>
-          <TiraDeQuadros />
-        </Filme>
-      }
+      abaixoDoPalco={quem.nave ? filme : undefined}
+      registro={quem.nave ? undefined : filme}
       ferramentas={<FerramentasDoAndar ritmo={ritmo} />}
-      controles={
-        <ControlesDoAndar
-          ritmo={ritmo}
-          escolha={escolha}
-          setEscolha={setEscolha}
-          raiz={raiz}
-          mao={w.frame === 0 && !f('left-the-screen')}
-          extra={
-            <Modulo
-              titulo="Limite da tela"
-              icone="🧱"
-              dica={`Ligada, a cerca segura ${quem.nome} dentro.`}
-            >
-              <Interruptor
-                ligado={w.keepInside}
-                estado={(on) => (on ? 'Cerca ligada' : 'Cerca desligada')}
-                pulsar={fora && !w.keepInside}
-                onClick={() => {
-                  const ligar = !w.keepInside
-                  p.dispatch({ type: 'keep-on-screen', enabled: ligar })
-                  // Ligar com quem saiu lá fora: em Devagar, o próximo quadro traz de volta (sem
-                  // voltar ao início, que apagaria o que ela quer ver).
-                  if (ligar && w.x > lighthouseWalkMaxX()) {
-                    setEscolha('lenta')
-                    ritmo.rodar('lenta', { reiniciar: false })
-                  }
-                }}
-              />
-            </Modulo>
-          }
-          pedeVelocidade={
-            w.keepInside && !f('stayed-inside') && w.x >= lighthouseWalkMaxX() - 10 * w.speed
-              ? 'lenta'
-              : null
-          }
-        />
-      }
+      movimento={quem.nave ? undefined : controles('andar')}
+      controles={quem.nave ? controles() : controles('resto')}
     />
   )
 }

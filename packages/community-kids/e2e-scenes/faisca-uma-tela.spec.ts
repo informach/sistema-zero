@@ -1,7 +1,8 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
 /**
- * "Experiências numa tela só" (09/11/2026, Canvas aprovado por ela): nas 8 telas do Faísca, a CENA,
+ * "Experiências numa tela só" (09/11/2026, Canvas aprovado por ela): nas 15 experiências dos cursos
+ * do Faísca (a Chave do Farol, o Cadê, a Ilha e os quatro Poderes), a CENA,
  * a FALA DO ZAPPY e os CONTROLES ficam inteiros na janela sem a criança precisar rolar, no modo
  * normal (com a experiência rolada até o console) e no ampliado. Rolar pode, mas só para chegar às
  * descobertas e aos testes. Na tela larga, os dois cartões ficam metade/metade, e a cena fica no
@@ -11,6 +12,13 @@ import { expect, type Locator, type Page, test } from '@playwright/test'
  * em toda largura o rodapé fixo da aula. "À vista" é entre elas, e nada pode estar por cima.
  */
 const EXPERIENCIAS = [
+  ['farol', 'experiencia-quadro'],
+  ['farol', 'experiencia-limite'],
+  ['farol', 'experiencia-memoria'],
+  ['farol', 'experiencia-porta'],
+  ['farol', 'experiencia-posicao'],
+  ['cade', 'experiencia-toque'],
+  ['cade', 'experiencia-achados'],
   ['ponte', 'experiencia'],
   ['moedas', 'experiencia'],
   ['simbolos', 'experiencia'],
@@ -28,6 +36,53 @@ const TELAS = [
   { width: 390, height: 844 },
   { width: 375, height: 667 },
 ] as const
+
+test.describe('375×667 com fonte substituta larga', () => {
+  test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true })
+
+  test('os três eixos da Ilha ficam acima do rodapé com mais uma linha no balão', async ({
+    page,
+  }) => {
+    await page.goto('/?course=ilha&block=experiencia-posicao-3d&width=900&barras&zappy')
+    await page.addStyleTag({
+      content: ':root { --font-baloo: "Baloo 2"; --font-nunito: Nunito; }',
+    })
+    await expect(page.locator('.sz-island-world[data-ready="true"]')).toBeVisible({
+      timeout: 30_000,
+    })
+    // A fonte de sistema do Linux quebra a fala em quatro linhas. Verdana também reproduz
+    // essa altura no Windows, sem depender da fonte que o sistema escolhe como substituta.
+    await page.locator('.sz-scene-console-visual .sz-fala-balao > p').evaluate((el) => {
+      el.style.fontFamily = 'Verdana, sans-serif'
+    })
+    await page.evaluate(() => {
+      const console = document.querySelector('.sz-scene-console')
+      const topo = document.querySelector('.ensaio-topo')?.getBoundingClientRect().height ?? 0
+      if (console) window.scrollTo(0, console.getBoundingClientRect().top + scrollY - topo)
+    })
+    const faixa = await faixaVisivel(page, false)
+    await expect
+      .poll(async () => {
+        const controls = await page.locator('.sz-discovery-painel-caixa').boundingBox()
+        return controls ? controls.y + controls.height : Number.POSITIVE_INFINITY
+      })
+      .toBeLessThanOrEqual(faixa.fim + 1)
+    await inteiroNaJanela(page, faixa, page.locator('.sz-discovery-palco'), 'a cena')
+    await inteiroNaJanela(
+      page,
+      faixa,
+      page.locator('.sz-scene-console-visual .sz-discovery-fala-bloco'),
+      'a fala com a fonte substituta',
+    )
+    for (const eixo of ['x', 'y', 'z']) {
+      for (const acao of ['menos', 'mais']) {
+        const botao = page.getByRole('button', { name: `${eixo} ${acao} meio` })
+        await inteiroNaJanela(page, faixa, botao, `o ${acao} do eixo ${eixo}`)
+        await botao.click({ trial: true })
+      }
+    }
+  })
+})
 
 type Faixa = { topo: number; fim: number }
 
@@ -69,7 +124,8 @@ for (const tela of TELAS) {
       test(`${curso} ${bloco}: cena, fala e controles à vista sem rolar`, async ({
         page,
       }, info) => {
-        await page.goto(`/?course=${curso}&block=${bloco}&width=900&barras`)
+        // `zappy`: dentro de uma parte que já tem a fala do Zappy, como na aula de verdade.
+        await page.goto(`/?course=${curso}&block=${bloco}&width=900&barras&zappy`)
         await page.addStyleTag({
           content: ':root { --font-baloo: "Baloo 2"; --font-nunito: Nunito; }',
         })
@@ -115,6 +171,10 @@ for (const tela of TELAS) {
             fala.getByRole('button', { name: /Ouvir/ }),
             'o "Ouvir" do Zappy',
           )
+          // O Zappy está no balão da experiência (09/11/2026: ela via o balão sem ele).
+          await inteiroNaJanela(page, faixa, fala.locator('[data-zappy]'), 'o Zappy')
+          // E nada da regra fica em cima da cena: os controles moram no painel da direita.
+          expect(await page.locator('.sz-discovery-sobre').count(), 'nada por cima da cena').toBe(0)
           const n = await modulos.count()
           expect(n, 'o painel tem controles').toBeGreaterThan(0)
           for (let i = 0; i < n; i++)

@@ -56,7 +56,7 @@
 
 [curious] A chave some para sempre?
 
-[engaging, energetic, conversational voice] Não, ela só sai desta partida. Para ver, clique em Atualizar, o botão com uma seta redonda, logo acima do jogo. Começa uma partida nova, e a chave volta para o chão.
+[engaging, energetic, conversational voice] Não, ela só sai desta partida. Para ver, clique em Rodar de novo, no alto do Estúdio. Começa uma partida nova, e a chave volta para o chão.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e chave, e dentro dele está Destruir o sprite chave. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -148,7 +148,7 @@
 
 [upbeat, encouraging voice] Agora teste! Segure as setas e leve o personagem até a chave. [interested, animated voice] Olha só: a chave sai do chão, e o aviso muda para a sua mensagem!
 
-[confident, clear, unhurried voice] Agora clique em Atualizar, o botão com uma seta redonda, logo acima do jogo. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol.
+[confident, clear, unhurried voice] Agora clique em Rodar de novo, no alto do Estúdio. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 

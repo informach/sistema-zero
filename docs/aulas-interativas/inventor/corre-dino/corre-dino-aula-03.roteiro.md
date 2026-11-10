@@ -131,12 +131,12 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-comando-de-pulo`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Rodar de novo e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique em Atualizar, a seta circular no alto da prévia, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
+[confident, clear, unhurried voice] Clique em Rodar de novo, no alto do Estúdio, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Mais impulso deixava o pulo mais alto. Agora a gente vai dar os controles ao seu Dino!
 
@@ -152,7 +152,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [confident, clear, unhurried voice] Clique no 15 da força do pulo e troque por 14. A força do pulo é o impulso da experiência.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar e, sem clicar no jogo, toque e solte a barra de espaço. [interested, animated voice] Olha só: o Dino pula e volta para o chão!
+[upbeat, encouraging voice] Agora teste! Clique em Rodar de novo e, sem clicar no jogo, toque e solte a barra de espaço. [interested, animated voice] Olha só: o Dino pula e volta para o chão!
 
 [engaging, energetic, conversational voice] Depois que ele pousar, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.
 

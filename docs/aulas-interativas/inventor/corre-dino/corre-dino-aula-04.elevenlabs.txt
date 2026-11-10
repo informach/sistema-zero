@@ -26,7 +26,7 @@
 
 [long pause]
 
-[confident, clear, unhurried voice] Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.
+[confident, clear, unhurried voice] Clique em Rodar de novo e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o som ligado ao pulo, cada pulo teve o seu som. Agora a gente vai fazer isso no seu jogo!
 
@@ -52,7 +52,7 @@
 
 [engaging, energetic, conversational voice] É este bloco que toca o som do pulo.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
+[upbeat, encouraging voice] Agora teste! Clique em Rodar de novo e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
 
 [engaging, energetic, conversational voice] Por último, toque duas vezes na barra de espaço com o Dino no ar. [confident, clear, unhurried voice] Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.
 

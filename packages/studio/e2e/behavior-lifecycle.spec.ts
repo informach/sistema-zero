@@ -260,7 +260,7 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       'true',
     )
     await page.getByRole('button', { name: 'Limpar' }).click()
-    await page.getByRole('button', { name: 'Atualizar o preview' }).click()
+    await page.getByRole('button', { name: 'Rodar de novo', exact: true }).click()
     await expect
       .poll(() => logMessages.allTextContents(), { timeout: 15_000 })
       .toEqual(['lifecycle:start', 'lifecycle:loop'])
@@ -274,7 +274,7 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       .toEqual(['lifecycle:start', 'lifecycle:loop', 'lifecycle:event'])
 
     await page.getByRole('button', { name: 'Limpar' }).click()
-    await page.getByRole('button', { name: 'Atualizar o preview' }).click()
+    await page.getByRole('button', { name: 'Rodar de novo', exact: true }).click()
     await expect
       .poll(() => logMessages.allTextContents())
       .toEqual(['lifecycle:start', 'lifecycle:loop'])

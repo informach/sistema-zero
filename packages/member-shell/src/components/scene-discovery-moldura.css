@@ -2459,7 +2459,9 @@
     .sz-discovery-livre-eixos
     .sz-discovery-livre-eixo {
     justify-content: center;
-    padding: 2px 6px;
+    /* As três linhas cabem com quatro linhas de fala, inclusive com fonte substituta larga.
+     * O espaço entre os eixos vem do gap; os botões mantêm seu tamanho e a cena, seu piso. */
+    padding: 0 6px;
   }
 }
 @container scene-workspace (width < 52rem) {
@@ -2640,7 +2642,7 @@
     .sz-scene-console-visual
     > .sz-discovery-fala-bloco
     .sz-fala-linha
-    > :first-child {
+    > :not(.sz-fala-balao) {
     width: 44px;
     height: 44px;
   }
@@ -2757,5 +2759,79 @@
   .sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-caderno-resposta {
     font-size: 1rem;
     line-height: 1.1;
+  }
+}
+
+/* ════════ as 7 telas do Farol e do Cadê no arranjo (09/11/2026) ════════
+   A Velocidade (Devagar | Rápido) ficava espremida na meia coluna do painel e o texto saía do
+   botão: no arranjo ela vira uma coluna, um botão embaixo do outro, na largura do módulo. */
+.sz-discovery-moldura[data-arranjo="faisca"]
+.sz-discovery-velocidade:not(.sz-discovery-livre-camera) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-velocidade:not(.sz-discovery-livre-camera)
+  button {
+  justify-content: center;
+  min-height: 44px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"]
+  .sz-discovery-velocidade:not(.sz-discovery-livre-camera)
+  button
+  + button {
+  border-top: 2px solid var(--szd-borda);
+}
+/* A peça solta comprida (a do toque do Cadê, "Quando tocar → mostrar") quebra para a linha de baixo
+   no painel: inclinada a 6°, as pontas encostavam no slot e no texto do estado. */
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-encaixe-linha {
+  row-gap: 10px;
+}
+.sz-discovery-moldura[data-arranjo="faisca"] .sz-discovery-painel .sz-discovery-peca-solta {
+  rotate: -3deg;
+  margin-block: 2px 6px;
+}
+/* O Zappy no balão do celular (09/11/2026: ele aparece sempre, mesmo com a fala na parte da aula).
+   O mascote tira largura do texto: num celular estreito (375 px) ele fica com 36 px e a letra um
+   pouco menor, para a fala não passar de duas ou três linhas e a cena e os controles caberem. */
+@container scene-workspace (width < 26rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco
+    .sz-fala-linha {
+    gap: 6px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco
+    .sz-fala-linha
+    > :not(.sz-fala-balao) {
+    width: 36px;
+    height: 36px;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+    .sz-fala-balao
+    > p {
+    font-size: 0.84rem;
+    line-height: 1.2;
+  }
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-scene-console-visual
+    > .sz-discovery-fala-bloco:not(.sz-discovery-fala-ideia)
+    .sz-fala-balao {
+    padding-block: 4px;
+  }
+}
+/* A frase da regra ("Tem [pelo menos] 5 moedas?") numa linha só no painel estreito: a frase tinha
+   letra própria (0,95rem) e não seguia a letra menor da linha, e quebrava em duas. */
+@container faisca-painel (width < 22rem) {
+  .sz-discovery-moldura[data-arranjo="faisca"]
+    .sz-discovery-painel
+    .sz-discovery-livre-encaixe
+    .sz-discovery-livre-frase {
+    font-size: 0.82rem;
   }
 }

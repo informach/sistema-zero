@@ -1,5 +1,7 @@
 # Módulos do Desafio do Primeiro Jogo
 
+**Rodar de novo no lugar do Atualizar, 09/11/2026 (decisão da responsável):** o Estúdio clássico não tem mais o botão Atualizar logo acima do jogo. Para recomeçar a partida, a criança clica em **Rodar de novo**, no meio da barra de cima do Estúdio (com o jogo parado, o mesmo botão diz **Rodar**). Ele recomeça o jogo do zero e dá o foco ao jogo, como o Atualizar fazia: as setas e a barra de espaço funcionam sem clicar no jogo. As falas que pediam Atualizar pedem Rodar de novo, e "o botão com uma seta redonda, logo acima do jogo" virou "no alto do Estúdio". O Na tela usa `[rodar de novo]` no lugar de `[clicar "Atualizar o preview"]`. A quarta pergunta do quiz diz "Clicar em Rodar de novo para começar uma partida nova…", e o Passo a passo do projeto foi gerado de novo. Precisam de voz nova as partes 2 e 4 do Dia 2 e as partes 2, 3, 4, 5 e 7 do Dia 3 (as falas do Dedé e da Debinha não mudam; mudam só as âncoras depois delas). O que as revisões abaixo dizem do Atualizar conta o que valia na época.
+
 **Vozes dos vídeos, 10/10/2026:** aplicado o mesmo raciocínio do Cadê Todo Mundo? aos roteiros da
 Chave do Farol. A professora conduz e o avatar entra, fala e sai em momentos ligados à explicação.
 Zappy fica como fala da página, com o recurso Ouvir; memes e capturas da interface mostram o
