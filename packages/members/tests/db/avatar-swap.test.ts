@@ -29,8 +29,8 @@ const PAGA_NOVA = Object.entries(C.parts).find(([, p]) => p.tier === 'coins')?.[
 
 async function perfil(sql: DbConnection['sql'], userId: string, saldo: number) {
   await sql`insert into members.gamification_profiles
-      (user_id, account_id, audience, coin_balance, created_at, updated_at)
-    values (${userId}, ${userId}, 'kids', ${saldo}, now(), now())`
+      (id, user_id, account_id, audience, coin_balance, created_at, updated_at)
+    values (${randomUUID()}, ${userId}, ${userId}, 'kids', ${saldo}, now(), now())`
 }
 
 async function compra(sql: DbConnection['sql'], userId: string, chave: string, preco: number) {
