@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { avatarProblems, AVATAR_CATALOG as C } from '@sistemazero/core/avatar'
 import {
   AVATAR_REFUND_SOURCE_ID,
+  AVATAR_SWAP_BANK,
   bankAvatar,
   bankIndexFor,
   swapAvatars,
@@ -113,5 +114,17 @@ test('o banco de sorteados: o mesmo perfil cai sempre no mesmo, e todos são vá
     expect(avatarProblems(C, a.slots)).toEqual([])
     const rosto = C.parts[a.slots.rosto ?? '']
     expect(rosto?.audience).toBe('boy')
+  }
+})
+
+test('o banco de fotos guardado confere com o sorteio do catálogo de agora (senão, gere de novo)', async () => {
+  const banco = (await Bun.file(
+    new URL('../../scripts/avatar-swap-bank.json', import.meta.url),
+  ).json()) as Record<string, { foto: string; slots: Record<string, string> }>
+  expect(Object.keys(banco)).toHaveLength(AVATAR_SWAP_BANK)
+  for (let i = 0; i < AVATAR_SWAP_BANK; i++) {
+    const item = banco[String(i)]
+    expect(item?.foto).toMatch(/^https:\/\/cdn\.sistemazero\.com\.br\/community\/avatar3d-troca\//)
+    expect(item?.slots, `sorteado ${i}`).toEqual(bankAvatar(i).slots)
   }
 })

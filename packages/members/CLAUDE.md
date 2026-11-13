@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/members
 
+## Avatar do pack: a troca (13/11/2026)
+
+`scripts/swap-avatar.ts` (regras em `infrastructure/persistence/drizzle/avatar-swap.ts`): devolve as
+moedas gastas no avatar antigo (`avatar-refund-v3`, uma vez), tira do inventário o que não é do pack
+e troca cada avatar antigo por um dos 200 sorteados de menino (`bankAvatar`, pelo id do perfil), com
+a foto do banco `scripts/avatar-swap-bank.json` (foto no bucket público + as peças). Sem `--confirm`
+é dry-run. ⚠️ Recusa rodar se o catálogo de agora sortear outra coisa para algum índice (a arte mudou
+as peças grátis): gere o banco de novo (`member-shell/qa/avatar-banco-client.tsx`). O teste
+`tests/db/avatar-swap.test.ts` confere o banco contra o catálogo (este caso roda sem banco de dados).
+
 ## Publicação de cursos pelo Admin (01/11/2026)
 
 `application/course-publication` reúne o serviço, o worker e o processador da promoção.

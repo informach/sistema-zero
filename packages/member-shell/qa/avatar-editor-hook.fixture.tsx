@@ -37,7 +37,7 @@ beforeEach(() => {
     filter: 'boy',
     customized: false,
     owned: [],
-    photoUrl: null,
+    photoUrl: 'https://cdn.exemplo/foto.webp',
     balance: 500,
   }
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -237,5 +237,21 @@ test('o voltar espera a gravação (com a foto) e diz que algo foi salvo', async
   expect(salvou).toBe(true)
   expect(puts()).toHaveLength(1)
   expect(t.fotos).toEqual([true])
+  await t.fechar()
+})
+
+test('sem foto ainda, a primeira visita tira a foto de frente do sorteado, sem gravar o avatar', async () => {
+  estado.photoUrl = null
+  const t = await montar()
+  await esperar(() => chamadas.some((c) => c.path === '/api/members/avatar/snapshot'), 6000)
+  expect(t.fotos).toEqual([true])
+  expect(puts()).toEqual([])
+  await t.fechar()
+})
+
+test('com foto, abrir e não mexer não manda nada', async () => {
+  const t = await montar()
+  await act(async () => new Promise((r) => setTimeout(r, 2000)))
+  expect(chamadas.filter((c) => c.method !== 'GET')).toEqual([])
   await t.fechar()
 })

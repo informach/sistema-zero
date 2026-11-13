@@ -38,12 +38,20 @@ for (const [skin, name] of [
   )
 }
 const bundle = await Bun.build({
-  entrypoints: [resolve(import.meta.dir, 'avatar-pack-client.tsx')],
+  entrypoints: [
+    resolve(import.meta.dir, 'avatar-pack-client.tsx'),
+    resolve(import.meta.dir, 'avatar-banco-client.tsx'),
+  ],
   target: 'browser',
   define: { 'process.env.NODE_ENV': JSON.stringify('production'), 'process.env': '{}' },
 })
 if (!bundle.success) throw new AggregateError(bundle.logs, 'build falhou')
-const script = await bundle.outputs.find((o) => o.path.endsWith('.js'))?.text()
+const script = await bundle.outputs.find((o) => o.path.includes('avatar-pack-client'))?.text()
+const scriptDoBanco = await bundle.outputs
+  .find((o) => o.path.includes('avatar-banco-client'))
+  ?.text()
+/** Onde o banco de fotos da troca é gravado (`/banco`). */
+const BANCO_DIR = process.env.BANCO_DIR
 
 type Filtro = 'girl' | 'boy' | 'all' | null
 function novoEstado(filtro: Filtro, moedas: number) {
@@ -82,6 +90,19 @@ Bun.serve({
       return new Response(pagina(url.searchParams.get('skin') === 'adult' ? 'adult' : 'kids'), {
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
+    if (p === '/banco')
+      return new Response(pagina('kids').replace('/app.js', '/banco.js'), {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    if (p === '/banco.js')
+      return new Response(scriptDoBanco, { headers: { 'content-type': 'text/javascript' } })
+    const foto = p.match(/^\/__banco\/(\d{1,3})(\/falhou)?$/)
+    if (foto && req.method === 'POST') {
+      if (!BANCO_DIR) return new Response('sem BANCO_DIR', { status: 500 })
+      if (foto[2]) console.log(`banco: ${foto[1]} falhou`)
+      else await Bun.write(resolve(BANCO_DIR, `${foto[1]}.png`), await req.arrayBuffer())
+      return new Response('ok')
+    }
     if (p === '/app.js')
       return new Response(script, { headers: { 'content-type': 'text/javascript' } })
     if (p === '/kids.css' || p === '/adult.css')

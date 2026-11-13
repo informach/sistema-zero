@@ -329,6 +329,40 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
     return () => clearTimeout(t)
   }, [loadState, dirty, unowned.length, saveError, slotsKey, filter, saveNow])
 
+  // Sem foto ainda (perfil novo, nunca abriu o Meu avatar): a foto de frente do avatar que ele
+  // já tem (o sorteado), sem gravar nada. Ninguém fica sem foto no menu, no ranking e no Mural.
+  const fotoInicial = useRef(false)
+  const semFoto = state !== null && state.photoUrl === null
+  useEffect(() => {
+    if (loadState !== 'ready' || !semFoto || fotoInicial.current) return
+    let tentativas = 0
+    const t = setInterval(() => {
+      tentativas += 1
+      const capture = captureRef.current
+      // Mexeu antes: a gravação de sempre já leva a foto.
+      if (fotoInicial.current || latest.current.dirty || tentativas > 8) {
+        clearInterval(t)
+        return
+      }
+      if (!capture) return
+      fotoInicial.current = true
+      clearInterval(t)
+      void (async () => {
+        try {
+          const blob = await capture({ portrait: true })
+          if (!blob) return
+          const fd = new FormData()
+          fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
+          const res = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+          if (res.ok) savedSomething.current = true
+        } catch {
+          // a próxima visita tenta de novo
+        }
+      })()
+    }, 1500)
+    return () => clearInterval(t)
+  }, [loadState, semFoto])
+
   // Saiu da página com algo por gravar: vai junto (sem foto: a página está fechando).
   useEffect(() => {
     const flush = () => {

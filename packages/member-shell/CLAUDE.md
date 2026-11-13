@@ -21,7 +21,8 @@ os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-qua
   última mudança, `PUT /api/members/avatar` `{slots, filter}` e a foto de frente
   (`capture({portrait: true})` → `/snapshot`). Nada grava com peça paga só de prévia (`status:
   'preview'`); falha vira `error` sem nova tentativa sozinha (o botão chama `retrySave`); `pagehide`
-  manda o pendente com `keepalive` (sem foto); o voltar espera gravar (`finishBeforeExit`). Compra
+  manda o pendente com `keepalive` (sem foto); o voltar espera gravar (`finishBeforeExit`); sem foto
+  ainda (perfil novo), a primeira visita tira a foto de frente do sorteado, sem gravar. Compra
   em dois toques (peça ou conjunto, `POST …/parts/:id/buy`). "Surpreenda-me" = `drawAvatar` com o
   filtro, grátis + o que a pessoa tem. Filtro `null` = a tela pergunta antes de mostrar as peças.
 - **Telas**: `configurator.tsx` (Kids: grupos, abas, tipos, filtro Menina/Menino/Todas, o selo
@@ -32,6 +33,10 @@ os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-qua
 - **`avatar-scene.tsx`** monta o `PackAvatarRig` (pódio e câmera na escala do boneco, ~1,15 m).
 - **BFF**: `PUT /api/members/avatar` aceita só `{slots: Record<encaixe, peça>, filter?}` (ids com
   `_`). `lib/types.ts`: `AvatarStateView` (`equipped`, `filter`, `customized`, `owned`, `photoUrl`).
+- **Banco de fotos da troca** (`qa/avatar-banco-client.tsx`, `/banco?de=0&ate=199` na prévia com
+  `BANCO_DIR`): a foto de frente de cada sorteado de menino da troca, pela mesma cena; as 200 estão
+  no bucket público (`community/avatar3d-troca/`) e o `members/scripts/avatar-swap-bank.json` guarda
+  foto e peças de cada uma.
 - **Prévia local** (sem login, peças fora do git): `AVATAR_QA_DIR=<cópia das peças> bun
   packages/member-shell/qa/avatar-pack-serve.ts` (porta 5282, `?skin=adult`, `/__reset?filtro=`).
 - Testes: `tests/avatar-pack.test.ts`, `tests/avatar-editor-hook.test.ts` (o salvar sozinho num
