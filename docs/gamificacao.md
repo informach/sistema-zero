@@ -333,79 +333,36 @@ do mês. Members: tabelas `challenge_custom_themes` + `challenge_month_overrides
 
 ---
 
-## 6. Avatar 3D (configurador de personagem)
+## 6. Avatar 3D (pack Cute Characters, desde 13/11/2026)
 
-Catálogo no members: `packages/members/src/domain/avatar/avatar3d-catalog.ts`. Apresentação
-(rótulo PT + URL do GLB) no kids: `community-kids/src/lib/avatar3d-catalog.ts`, PURA, chaveada
-pelo MESMO `id` (travada por `members/tests/unit/catalog-conformance.test.ts`). O render 3D vive
-no kids (`components/kids/avatar3d/*`, rota `/meu-avatar`) — **personagem GLB real (Quaternius CC0,
-via pack do WawaSensei):** 1 esqueleto compartilhado (`Armature.glb`) + 1 GLB skinned por peça
-(`avatar-rig.tsx`/`asset-part.tsx`; material `Color_*` tintável, `Skin_*` pele compartilhada). GLB
-SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar3d/` e, iguais,
-em `community/public/avatar3d/` (a comunidade adulta usa o MESMO catálogo e os mesmos arquivos;
-`community-kids/tests/avatar3d-catalog.test.ts` confere que as duas cópias batem).
+O avatar inteiro (esqueleto, peças, categorias e cores) é o do pack Cute Characters
+(https://ithappystudios.com/characters/cute-characters/), mais as peças que a arte faz para
+completar. Levantamento e decisões: `docs/plans/2026-11-13-avatar-novo-levantamento.md`; preços e
+grátis: `docs/plans/2026-11-13-avatar-novo-precos.md`. O avatar antigo (Quaternius, cores livres)
+saiu da plataforma; só o fantasma familiar do jogo ainda o usa, até o plano do jogo.
 
-**Peças próprias (26/10/2026, Canvas "Provador do avatar"):** 32 peças modeladas no Blender sobre
-o mesmo esqueleto e no estilo do pacote: 7 cabelos (`hair-12`…`hair-18`), o rosto delicado
-(`head-05`/`head-06`, que são o Rosto 1 com sorriso pequeno e fechado; `eyes-13`/`eyes-14` com
-cílios; `eyebrow-11`; `nose-05`; `face-10` bochecha rosada), `face-09` sardas, óculos
-`glasses-05`/`06`, roupas `top-04`…`06`, `bottom-04`/`05`, `outfit-06`, calçados `shoes-04`/`05`,
-acessórios `acc-09` colar e `acc-10` cachecol, e a aba nova **Enfeite** (`enfeite-01`…`05`).
-⚠️ O exportador de glTF do Blender grava as juntas em outra ordem: toda peça nova passa pelo
-reordenador antes de entrar (o teste acima trava a ordem do `Armature.glb`). Os nomes das peças
-novas dizem o que elas são ("Rabo de cavalo alto"); as antigas seguem numeradas.
-
-### Categorias (`AVATAR_CATEGORIES`) + config
-
-15 categorias: `head, hair, eyes, eyebrows, nose, faceDecor, facialHair, glasses, hat,
-hairAccessory, top, bottom, outfit, shoes, accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
-slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (com peça `*-none` grátis
-= "tirar"): `hair, faceDecor, facialHair, glasses, hat, hairAccessory, outfit, accessory`.
-`AVATAR_HIDE_GROUPS = {hat:['hair','hairAccessory'], outfit:['top','bottom']}` (chapéu real
-esconde o cabelo e o enfeite — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
-
-### Peças (`AVATAR3D_PARTS`) + cores — livre vs pago
-
-~130 peças; identidade (head/eyes/eyebrows/nose) **100% grátis**, e o rosto delicado inteiro
-também (incluindo a bochecha rosada, `face-10`). Pagas 40–150 Zappy na maioria das categorias
-(cabelo, barba, faceDecor, óculos, chapéu, enfeite, top, bottom, outfit, shoes, acessório). Cabelos
-grátis: `hair-01`, `hair-08` e `hair-12` (longo solto). `tier`
-derivado (`free()`/`paid()`); peça grátis é **implicitamente possuída** (não vai ao inventário).
-**COR é GRÁTIS** e irrestrita dentro da paleta da categoria (`AVATAR_CATEGORY_PALETTES`; pintar
-não custa — a economia está nas PEÇAS). Sem paleta: `eyes`, `nose` (segue a pele), `faceDecor` e
-`hat` (cor embutida). Desde 26/10/2026 `hairAccessory` e `accessory` usam a paleta das roupas;
-no acessório só as peças com `Color_` mudam de cor (`acc-05`, `acc-06`, `acc-09`, `acc-10`). As
-peças de cor embutida numa categoria com paleta (brincos de metal, óculos 2, fantasias) estão em
-`AVATAR_FIXED_COLOR_PARTS` (member-shell): com uma delas vestida, a fileira de cores some.
-
-### Equipar / comprar / foto
-
-- **Equipar** (`EquipAvatarService` + `assertEquippableConfig`): ESTRITO — peça existe, na
-  categoria certa, grátis OU possuída (`avatar_inventory` → senão `AVATAR_PART_NOT_OWNED`/403), e
-  cor ∈ paleta (senão `AVATAR_INVALID`/400). Leitura TOLERANTE (`canonicalizeAvatarConfig`:
-  categoria/peça/cor desconhecida → default; config DiceBear LEGADA sem `version:2` → default 3D
-  inteiro, sem migração de dados).
-- **Comprar** (`BuyAvatarPartService`): charge-first idempotente (`spend_cosmetic`,
-  `avatar-buy:<user>:<part>`); já possuída → no-op; grátis → 400; sem saldo → 402.
-- **Foto/snapshot** (`SetAvatarPhotoService`, `PUT /members/avatar/photo`, migration `0023`
-  `avatar_configs.photo_url`): a "foto" do canvas 3D é a IMAGEM do avatar em todo o app. O BFF
-  (member-shell `avatarSnapshot`) sobe o PNG p/ o R2 (namespace `avatar3d`) e grava a URL;
-  `AvatarStateView.photoUrl` + `PublicProfileView.avatarPhotoUrl`. Config 3D (peças+cores) também
-  persiste — base p/ uma futura "aventura" com o personagem.
-  ⚠️ **A URL passa por ALLOWLIST de prefixos** (env `AVATAR_PHOTO_URL_PREFIXES`, csv — obrigatória
-  em produção; full review 24/07): a rota é alcançável por qualquer aluno via gateway e a foto é
-  renderizada p/ OUTRAS crianças (liga/Clube/perfil público) — URL externa arbitrária seria
-  pixel-rastreador + conteúdo não moderado. Fora da allowlist → 400 `AVATAR_INVALID`. E a cara da
-  criança vem EXCLUSIVAMENTE deste snapshot (decisão 24/07): o upload de FOTO de perfil pelos pais
-  foi REMOVIDO do kids (grade `/perfis` e Área dos pais também mostram o snapshot).
-
-### Como adicionar uma peça
-
-1. `free(id, category)` ou `paid(id, category, price)` em `AVATAR3D_PARTS` (members).
-2. Entrada `AVATAR_PART_INFO[id] = {category, labelPt}` no kids (mesmo `id`).
-3. Render: dropar o GLB em `community-kids/public/avatar3d/parts/<id>.glb` (skinned no MESMO
-   esqueleto do `Armature.glb`; material `Color_*` p/ tintável, `Skin_*` p/ pele; SEM Draco/KTX2).
-4. Nenhuma migration (catálogo em código).
+- **Catálogo e regras: `@sistemazero/core/avatar`**, o mesmo no Members, na tela e no jogo.
+  `catalog.generated.ts` é DADO e também o REGISTRO do que já foi migrado da arte (cada peça
+  guarda de onde veio). Regras do pack em `rules.ts` (uma peça por encaixe, a fantasia como
+  conjunto, os grupos que não se misturam, os pares que não combinam, as orelhas pela cor do
+  corpo) e o sorteio com semente em `draw.ts` (filtro menina/menino/todas, por padrão só grátis,
+  sempre vestido).
+- **Arquivos: buckets R2 PRIVADOS** (o pack é pago e o repositório é público), pasta `avatar/`, com
+  o nome levando a impressão digital (cache imutável). A tela e o jogo pedem
+  `/api/avatar3d/<arquivo>` (sessão + arquivo do catálogo → link assinado). Migrar da arte:
+  `bun run avatar:conferir` (o que é novo, mudou ou saiu) e `bun run avatar:migrar --tudo --destino r2`.
+  Peça migrada nunca sai (vira `retired`).
+- **Gravado** (`avatar_configs.equipped`, versão 3): `{slots: encaixe → peça, filter, customized}`.
+  Leitura tolerante (o que não for versão 3 vira o sorteado do perfil); gravação estrita (peça,
+  encaixe, combinações e posse). A ação de aula "personalizar o avatar" vale com `customized`.
+- **Compra** (`BuyAvatarPartService`): peça paga ou FANTASIA INTEIRA (o conjunto é o item do
+  inventário), chave `avatar-buy-v3:`; parte de fantasia sozinha → 400; faixa `festa` → 409.
+  As oito roupas das festas do jogo (B16) são da faixa `festa`: só o jogo concede.
+- **Foto**: a mesma de antes (`PUT /members/avatar/photo`, allowlist de prefixos). A tela tira a
+  foto de frente a cada gravação (salvar sozinho) e na primeira visita de quem não tem foto.
+- **Troca dos avatares antigos** (`members/scripts/swap-avatar.ts`): devolve as moedas do avatar
+  antigo, limpa o inventário e dá a cada perfil um dos 200 sorteados de menino com a foto do banco.
+- Tela: CLAUDE.md do member-shell ("Meu avatar com o pack").
 
 ---
 

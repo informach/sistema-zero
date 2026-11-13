@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/avatar-quarto
 
+## O avatar do pack Cute Characters (13/11/2026)
+
+- `avatar/pack-rig.tsx` (`PackAvatarRig`, `PackRigBoundary`, `PACK_IDLE_POSE`) e
+  `avatar/pack-instance.ts`: o esqueleto do pack (metros, em pé, frente +Z) com uma peça por
+  encaixe, presas pelo NOME do osso, e a textura única aplicada pela anotação do GLB. A barreira de
+  erro tira o boneco sem derrubar quem o mostra quando o esqueleto não baixa (bucket privado).
+- `avatar/pack-catalog.ts`: repassa o catálogo do `@sistemazero/core/avatar` para o jogo (que não
+  importa o core) e `avatarDoPack` (o avatar que chega da plataforma, só com peças conhecidas).
+- O `AvatarRig`, o `catalog.ts` e o resto do avatar antigo ficam só para o jogo (o fantasma
+  familiar e os testes de locomoção e patins) até o plano do jogo; a plataforma não os usa mais.
+
 ## Várias montagens do avatar (30/10/2026)
 
 `avatar/instance.ts` prepara ossos e texturas de esqueleto próprios por montagem. Nunca montar
