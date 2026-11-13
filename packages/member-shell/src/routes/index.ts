@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { isContentFingerprint } from '@sistemazero/core/creations'
+import { createAvatarFileRoutes } from './avatar-files'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createMasteryRoutes } from './masteries'
@@ -1940,6 +1941,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     avatarBuy,
     avatarEquip,
     avatarSnapshot,
+    avatarFile: createAvatarFileRoutes(session),
     roomGet,
     roomSave,
     roomBuy,

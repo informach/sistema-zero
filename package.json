@@ -13,6 +13,8 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "ci": "biome ci .",
+    "avatar:conferir": "bun --no-env-file scripts/avatar/conferir.ts",
+    "avatar:migrar": "bun --env-file=packages/admin/.env scripts/avatar/migrar.ts",
     "dev:up": "bun run scripts/dev.ts up",
     "dev:down": "bun run scripts/dev.ts down",
     "dev:restart": "bun run scripts/dev.ts restart",
