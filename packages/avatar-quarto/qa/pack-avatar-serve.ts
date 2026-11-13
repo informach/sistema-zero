@@ -29,7 +29,8 @@ Bun.serve({
   port: porta,
   async fetch(req) {
     const url = new URL(req.url)
-    if (url.pathname === '/') return new Response(html, { headers: { 'content-type': 'text/html' } })
+    if (url.pathname === '/')
+      return new Response(html, { headers: { 'content-type': 'text/html' } })
     if (url.pathname === '/app.js')
       return new Response(app, { headers: { 'content-type': 'text/javascript' } })
     if (url.pathname.startsWith('/api/avatar3d/')) {

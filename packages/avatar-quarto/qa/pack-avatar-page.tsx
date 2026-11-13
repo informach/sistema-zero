@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import {
-  AVATAR_CATALOG as C,
   type AvatarSlots,
+  AVATAR_CATALOG as C,
   drawAvatar,
   equipPart,
   withEars,
@@ -24,7 +24,10 @@ const avatares: { nome: string; slots: AvatarSlots }[] = seeds.map((s) => ({
 }))
 if (q.get('fantasia')) {
   const conjunto = Object.values(C.sets)[2]
-  const base = withEars(C, { corpo: C.rules.default.corpo ?? '', rosto: C.rules.default.rosto ?? '' })
+  const base = withEars(C, {
+    corpo: C.rules.default.corpo ?? '',
+    rosto: C.rules.default.rosto ?? '',
+  })
   avatares.push({ nome: 'fantasia', slots: equipPart(C, base, conjunto?.parts[0]?.part ?? '') })
 }
 
@@ -44,7 +47,12 @@ function Quadro({ slots }: { slots: AvatarSlots }) {
           slots={slots}
           pose={pose}
           charRef={charRef}
-          onStood={() => document.body.setAttribute('data-em-pe', String(Number(document.body.getAttribute('data-em-pe') ?? 0) + 1))}
+          onStood={() =>
+            document.body.setAttribute(
+              'data-em-pe',
+              String(Number(document.body.getAttribute('data-em-pe') ?? 0) + 1),
+            )
+          }
         />
       </Suspense>
     </Canvas>
@@ -53,7 +61,9 @@ function Quadro({ slots }: { slots: AvatarSlots }) {
 
 function Pagina() {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12, fontFamily: 'sans-serif' }}>
+    <div
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12, fontFamily: 'sans-serif' }}
+    >
       {avatares.map((a) => (
         <figure key={a.nome} style={{ margin: 0 }}>
           <Quadro slots={a.slots} />

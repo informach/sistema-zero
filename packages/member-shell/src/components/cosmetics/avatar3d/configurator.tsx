@@ -180,7 +180,7 @@ function FilterQuestion({ onChoose }: { onChoose: AvatarEditor['chooseFilter'] }
       aria-labelledby="avatar-filtro-titulo"
       className="flex flex-col items-center gap-3 rounded-3xl border-2 border-primary/40 bg-card p-5 text-center"
     >
-      <KidsMascot expression="happy" className="size-20" />
+      <KidsMascot expression="celebrating" className="size-20" />
       <h2
         id="avatar-filtro-titulo"
         className="[font-family:var(--font-display)] font-extrabold text-xl leading-tight"
