@@ -281,7 +281,7 @@ const CAMINHO = [
           {P.faq.map((item) => (
             <details class="c9-duvida">
               <summary>{item.pergunta}</summary>
-              <p>{fill(item.resposta)}{'link' in item && <> <a href={link(item.link.href)}>{item.link.texto}</a></>}</p>
+              <p>{fill(item.resposta)}</p>
             </details>
           ))}
         </div>
