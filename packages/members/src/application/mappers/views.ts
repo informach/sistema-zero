@@ -9,7 +9,6 @@ import {
   type LessonSection,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import {
@@ -295,19 +294,6 @@ export interface AdminRankingPageView {
   me: AdminRankingEntryView | null
 }
 
-/** Uma peça do catálogo de avatar 3D na visão do aluno (lojinha/configurador). */
-export interface AvatarPartView {
-  id: string
-  category: AvatarCategory
-  /** `festa` (B16): só a festa do Arquipélago concede; a loja mostra de onde vem, sem preço. */
-  tier: 'free' | 'coins' | 'festa'
-  price: number
-  /** Possui (grátis OU comprada). */
-  owned: boolean
-  /** Paga e ainda não comprada → mostra cadeado + preço na lojinha. */
-  locked: boolean
-}
-
 /**
  * Perfil PÚBLICO de uma criança (`GET /members/profiles/:profileId/public`) — visível
  * a qualquer aluno da comunidade. SÓ dado de jogo: XP, colocação, conquistas QUE TEM
@@ -325,8 +311,8 @@ export interface PublicProfileView {
   level: StudentLevel
   /** SÓ as conquistas conquistadas (não o catálogo completo). */
   badges: { slug: string; unlockedAt: string }[]
-  /** Config 3D equipada (peça+cor por categoria) — p/ uma futura visualização do personagem. */
-  avatar: { style: string; slots: Partial<Record<AvatarCategory, AvatarSlot>> }
+  /** O avatar equipado (encaixe → peça do pack). */
+  avatar: { style: string; slots: Record<string, string> }
   /** Foto (snapshot) do avatar 3D — mostrada no card público; `null` se nunca tirou. */
   avatarPhotoUrl: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
@@ -445,21 +431,24 @@ export interface RoomEditorView {
   balanceUnlimited?: boolean
 }
 
-/** Estado do avatar 3D do aluno (`GET /members/avatar`): equipado + catálogo + saldo. */
+/**
+ * Estado do avatar do aluno (`GET /members/avatar`). O catálogo (peças, conjuntos, preços, regras,
+ * arquivos) é o `@sistemazero/core/avatar`, o mesmo na tela e aqui; esta view traz só o que é da
+ * pessoa: o que veste, o que tem, o filtro escolhido, a foto e o saldo.
+ */
 export interface AvatarStateView {
   style: string
-  /** Peça+cor equipada por categoria (categoria faltante já vem com o default). */
-  equipped: Partial<Record<AvatarCategory, AvatarSlot>>
-  parts: AvatarPartView[]
-  /** Paleta de cores por categoria (categoria sem cor é omitida). */
-  palettes: Partial<Record<AvatarCategory, string[]>>
-  /** Oclusão de render (chapéu real esconde o cabelo). Single source com o domínio. */
-  hideGroups: Partial<Record<AvatarCategory, AvatarCategory[]>>
-  /** Categoria removível → id da peça "nenhum" (o configurador mostra "Tirar"). */
-  removable: Partial<Record<AvatarCategory, string>>
-  /** Foto (snapshot) atual do avatar 3D — `null` se a criança ainda não salvou. */
+  /** Encaixe → peça (com as orelhas da cor do corpo). */
+  equipped: Record<string, string>
+  /** Menina, menino ou todos; `null` = ainda não escolheu (a tela pergunta). */
+  filter: 'girl' | 'boy' | 'all' | null
+  /** `true` quando a própria pessoa já salvou uma escolha (o sorteado nasce `false`). */
+  customized: boolean
+  /** Ids no inventário: peças pagas e da festa, e conjuntos de fantasia (as grátis são de todos). */
+  owned: string[]
+  /** Foto (snapshot) atual do avatar — `null` se ainda não há. */
   photoUrl: string | null
-  /** Saldo de moedas Zappy (p/ a lojinha do avatar). */
+  /** Saldo de moedas Zappy. */
   balance: number
   /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
   balanceUnlimited?: boolean

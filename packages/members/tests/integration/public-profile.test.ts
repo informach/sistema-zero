@@ -37,7 +37,8 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
     expect(body.badges.map((b: { slug: string }) => b.slug)).toEqual(['first-lesson'])
     expect(body.ranking).toEqual({ position: 1, totalStudents: 1 })
     // Avatar 3D: nunca configurado → default grátis preenchido (slot = {asset, color?}).
-    expect(body.avatar.slots.hair.asset).toBe('hair-01')
+    expect(body.avatar.style).toBe('cute-v1')
+    expect(body.avatar.slots.corpo).toBeDefined()
     expect(body.room).toBeNull()
   })
 
@@ -47,7 +48,7 @@ describe('Perfil público (GET /members/profiles/:id/public)', () => {
     expect(body.xp).toBe(0)
     expect(body.badges).toEqual([])
     expect(body.ranking).toBeNull()
-    expect(body.avatar.slots.head.asset).toBe('head-01')
+    expect(body.avatar.slots.rosto).toBeDefined()
     expect(body.room).toBeNull()
   })
 

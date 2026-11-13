@@ -62,7 +62,7 @@ function setup(action: PlatformAction) {
 }
 
 describe('platform actions as section criteria', () => {
-  test('default avatar and merely saving it do not pass; an earlier real change passes with current preview', async () => {
+  test('the drawn avatar does not pass, even saved by the swap; a choice the child saved passes', async () => {
     const ctx = setup('customize-avatar')
     expect(await (await ctx.verify()).json()).toMatchObject({
       passed: false,
@@ -86,20 +86,20 @@ describe('platform actions as section criteria', () => {
         ],
       },
     })
+    // O sorteado gravado pela troca (sem `customized`) não conta.
     await ctx.avatar.upsertConfig(
       ctx.owner.userId,
       ctx.owner.accountId,
       'kids',
-      defaultAvatarConfig(),
+      defaultAvatarConfig(ctx.owner.userId),
       new Date(),
     )
     expect(await (await ctx.verify()).json()).toMatchObject({ passed: false })
-    const config = defaultAvatarConfig()
-    config.slots.top = { asset: 'top-01', color: '#e74c3c' }
+    const config = { ...defaultAvatarConfig(ctx.owner.userId), customized: true }
     await ctx.avatar.upsertConfig(ctx.owner.userId, ctx.owner.accountId, 'kids', config, new Date())
     expect(await (await ctx.verify()).json()).toMatchObject({
       passed: true,
-      avatarSlots: { top: config.slots.top },
+      avatarSlots: config.slots,
       sectionProgress: { completed: 1 },
     })
     expect(await (await ctx.verify(ctx.sectionId, ctx.revision, ctx.sibling)).json()).toMatchObject(
@@ -111,7 +111,7 @@ describe('platform actions as section criteria', () => {
       ctx.owner.userId,
       ctx.owner.accountId,
       'kids',
-      defaultAvatarConfig(),
+      defaultAvatarConfig(ctx.owner.userId),
       new Date(),
     )
     expect(

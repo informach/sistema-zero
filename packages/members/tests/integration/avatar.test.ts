@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { AVATAR_CATALOG as C, equipPart, withEars } from '@sistemazero/core/avatar'
 import { buildApp } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -22,164 +23,142 @@ const putAvatar = (app: App, body: unknown) =>
     }),
   )
 
-/** Concede moedas kids ao USER direto no ledger (atalho de setup; respeita o teto). */
-function seedCoins(gamification: ReturnType<typeof buildApp>['gamification'], coins: number) {
+/** Concede moedas kids ao USER direto no ledger (atalho de setup; respeita o teto de 100 por dia). */
+function seedCoins(
+  gamification: ReturnType<typeof buildApp>['gamification'],
+  coins: number,
+  today = '2026-06-02',
+) {
   return gamification.award({
     userId: USER,
     accountId: USER,
     audience: 'kids',
     events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 10, coins }],
-    today: '2026-06-02',
-    now: new Date('2026-06-02T12:00:00.000Z'),
+    today,
+    now: new Date(`${today}T12:00:00.000Z`),
     privileged: false,
   })
 }
 
-describe('Avatar 3D — estado e catálogo', () => {
-  test('sem config → default grátis + catálogo (owned/locked/price) + paletas/oclusão + saldo', async () => {
+const partes = Object.entries(C.parts).filter(([, p]) => !p.hidden && !p.retired)
+const pecaDe = (grupo: string, tier: string, preco?: number) => {
+  const id = partes.find(
+    ([, p]) => p.group === grupo && p.tier === tier && (preco === undefined || p.price === preco),
+  )?.[0]
+  if (!id) throw new Error(`sem peça ${grupo}/${tier}/${preco}`)
+  return id
+}
+const CAMISETA_PAGA = pecaDe('roupa_cima', 'coins', 50)
+const base = () =>
+  withEars(C, { corpo: C.rules.default.corpo ?? '', rosto: C.rules.default.rosto ?? '' })
+
+describe('Avatar do pack: estado', () => {
+  test('sem nada salvo, o perfil vê o seu sorteado, grátis e vestido', async () => {
     const { app, gamification } = buildApp()
     await seedCoins(gamification, 100)
-
     const body = await readJson(await getAvatar(app))
-    expect(body.style).toBe('char-v1')
+    expect(body.style).toBe('cute-v1')
     expect(body.balance).toBe(100)
-    // Default: peça+cor por categoria (slot = {asset, color?}).
-    expect(body.equipped.hair.asset).toBe('hair-01')
-    expect(body.equipped.head.color).toBe('#ecad80')
-
-    const paid = body.parts.find((p: { id: string }) => p.id === 'hair-04')
-    expect(paid).toMatchObject({
-      category: 'hair',
-      tier: 'coins',
-      price: 60,
-      owned: false,
-      locked: true,
-    })
-    const freePart = body.parts.find((p: { id: string }) => p.id === 'hair-01')
-    expect(freePart).toMatchObject({ tier: 'free', owned: true, locked: false })
-
-    // Paletas + oclusão + removíveis viajam no estado (p/ o configurador).
-    expect(Array.isArray(body.palettes.hair)).toBe(true)
-    expect(body.hideGroups.hat).toContain('hair')
-    expect(body.removable.glasses).toBe('glasses-none')
+    expect(body.filter).toBeNull()
+    expect(body.customized).toBe(false)
+    expect(body.owned).toEqual([])
+    expect(body.equipped.corpo).toBeDefined()
+    expect(body.equipped.rosto).toBeDefined()
+    for (const id of Object.values(body.equipped) as string[])
+      expect(['free', 'auto']).toContain(C.parts[id]?.tier ?? '')
+    // O mesmo perfil vê o mesmo sorteado a cada leitura.
+    expect((await readJson(await getAvatar(app))).equipped).toEqual(body.equipped)
   })
 })
 
-describe('Avatar 3D — compra (sink de moedas)', () => {
-  test('compra debita, fica owned, e re-compra é no-op (sem cobrar 2×)', async () => {
+describe('Avatar do pack: compra', () => {
+  test('compra debita, fica no inventário, e comprar de novo não cobra', async () => {
     const { app, gamification } = buildApp()
     await seedCoins(gamification, 100)
-
-    const buy = await readJson(await buyPart(app, 'hair-04'))
-    expect(buy).toEqual({ alreadyOwned: false, balance: 40 }) // 100 - 60
-
-    const after = await readJson(await getAvatar(app))
-    expect(after.balance).toBe(40)
-    expect(after.parts.find((p: { id: string }) => p.id === 'hair-04').owned).toBe(true)
-
-    const again = await readJson(await buyPart(app, 'hair-04'))
-    expect(again).toEqual({ alreadyOwned: true, balance: 40 }) // não cobra de novo
-  })
-
-  test('débito sem posse é recuperado no retry da MESMA compra (sem cobrar 2×)', async () => {
-    const { app, gamification, avatar } = buildApp()
-    await seedCoins(gamification, 100)
-    // Estado em que a moeda já foi debitada (coin_event existe + saldo caiu) mas o item NUNCA
-    // entrou no inventário — o que um crash entre transações deixaria. A compra atômica
-    // (`spendCoins` concede a posse na MESMA transação) torna esse estado impossível em prod;
-    // este teste fixa o CONTRATO de recuperação: o retry da mesma compra repõe a posse via
-    // ALREADY_SPENT sem novo débito (a atomicidade em si só se prova contra o Postgres real).
-    const key = `${USER}:kids`
-    const seeded = gamification.profiles.get(key)
-    gamification.profiles.set(key, {
-      ...(seeded as NonNullable<typeof seeded>),
-      coinBalance: 40, // já debitado (100 - 60)
+    expect(await readJson(await buyPart(app, CAMISETA_PAGA))).toEqual({
+      alreadyOwned: false,
+      balance: 50,
     })
-    gamification.coinEvents.push({
-      userId: USER,
-      audience: 'kids',
-      sourceType: 'spend_cosmetic',
-      sourceId: `avatar-buy:${USER}:hair-04`,
-      amount: -60,
-      balanceAfter: 40,
-      createdAt: new Date('2026-06-02T12:00:00.000Z'),
+    expect(await readJson(await buyPart(app, CAMISETA_PAGA))).toEqual({
+      alreadyOwned: true,
+      balance: 50,
     })
-    expect(await avatar.listInventory(USER, 'kids')).not.toContain('hair-04') // ainda sem posse
-
-    // Retry da MESMA compra → ALREADY_SPENT recupera a posse SEM cobrar de novo.
-    const retry = await readJson(await buyPart(app, 'hair-04'))
-    expect(retry).toEqual({ alreadyOwned: false, balance: 40 }) // saldo intocado
-    expect(await avatar.listInventory(USER, 'kids')).toContain('hair-04') // posse recuperada
-    expect((await readJson(await getAvatar(app))).balance).toBe(40) // sem débito duplo
+    expect((await readJson(await getAvatar(app))).owned).toEqual([CAMISETA_PAGA])
   })
 
-  test('sem saldo → 402 INSUFFICIENT_COINS', async () => {
+  test('a fantasia se compra inteira; uma parte sozinha → 400', async () => {
     const { app, gamification } = buildApp()
-    await seedCoins(gamification, 40)
-    const res = await buyPart(app, 'glasses-04') // custa 120
-    expect(res.status).toBe(402)
-    expect((await readJson(res)).error.code).toBe('INSUFFICIENT_COINS')
+    // A fantasia custa até 300 e o teto é de 100 moedas por dia: três dias de aula.
+    await seedCoins(gamification, 100, '2026-06-02')
+    await seedCoins(gamification, 100, '2026-06-03')
+    await seedCoins(gamification, 100, '2026-06-04')
+    const [setId, conjunto] = Object.entries(C.sets).find(([, s]) => s.price <= 300) ?? []
+    if (!setId || !conjunto) throw new Error('sem fantasia')
+    const parte = await buyPart(app, conjunto.parts[0]?.part ?? '')
+    expect(parte.status).toBe(400)
+    expect((await readJson(parte)).error.code).toBe('AVATAR_PART_IN_SET')
+    const compra = await buyPart(app, setId)
+    expect(compra.status).toBe(200)
+    expect((await readJson(await getAvatar(app))).owned).toEqual([setId])
+    // E com o conjunto no inventário, a fantasia se veste.
+    const slots = equipPart(C, base(), conjunto.parts[0]?.part ?? '')
+    expect((await putAvatar(app, { slots })).status).toBe(200)
   })
 
-  test('comprar peça grátis → 400; peça inexistente → 404', async () => {
+  test('a chave da compra é a do pack (avatar-buy-v3), separada das compras antigas', async () => {
     const { app, gamification } = buildApp()
     await seedCoins(gamification, 100)
+    await buyPart(app, CAMISETA_PAGA)
+    const chaves = gamification.coinEvents
+      .filter((e) => e.sourceType === 'spend_cosmetic')
+      .map((e) => e.sourceId)
+    expect(chaves).toEqual([`avatar-buy-v3:${USER}:${CAMISETA_PAGA}`])
+  })
 
-    const freeBuy = await buyPart(app, 'hair-01')
-    expect(freeBuy.status).toBe(400)
-    expect((await readJson(freeBuy)).error.code).toBe('AVATAR_PART_FREE')
-
-    const unknown = await buyPart(app, 'peca-fantasma')
-    expect(unknown.status).toBe(404)
-    expect((await readJson(unknown)).error.code).toBe('AVATAR_PART_NOT_FOUND')
+  test('sem saldo → 402; peça grátis → 400; inexistente → 404; prêmio da festa → 409', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 10)
+    expect((await buyPart(app, CAMISETA_PAGA)).status).toBe(402)
+    expect((await buyPart(app, pecaDe('roupa_cima', 'free'))).status).toBe(400)
+    expect((await buyPart(app, 'nao_existe')).status).toBe(404)
+    const premio = Object.values(C.rules.festas)[0]?.prize ?? ''
+    expect((await buyPart(app, premio)).status).toBe(409)
   })
 })
 
-describe('Avatar 3D — equipar (escrita estrita)', () => {
-  test('equipa peça grátis + comprada com cor; preenche categorias faltantes', async () => {
-    const { app, gamification } = buildApp()
-    await seedCoins(gamification, 100)
-    await buyPart(app, 'hair-04')
-
-    const res = await putAvatar(app, {
-      slots: {
-        hair: { asset: 'hair-04', color: '#27ae60' },
-        head: { asset: 'head-02', color: '#9e5622' },
-      },
-    })
-    expect(res.status).toBe(200)
-    const body = await readJson(res)
-    expect(body.equipped.hair).toEqual({ asset: 'hair-04', color: '#27ae60' })
-    expect(body.equipped.head.asset).toBe('head-02')
-    expect(body.equipped.eyes.asset).toBe('eyes-01') // categoria faltante → default
-  })
-
-  test('equipar peça paga NÃO possuída → 403 AVATAR_PART_NOT_OWNED', async () => {
+describe('Avatar do pack: gravar', () => {
+  test('grava o que a pessoa montou, com o filtro, e passa a contar como personalizado', async () => {
     const { app } = buildApp()
-    const res = await putAvatar(app, { slots: { hair: { asset: 'hair-07' } } })
-    expect(res.status).toBe(403)
-    expect((await readJson(res)).error.code).toBe('AVATAR_PART_NOT_OWNED')
+    const slots = equipPart(C, base(), pecaDe('roupa_cima', 'free'))
+    const put = await putAvatar(app, { slots, filter: 'boy' })
+    expect(put.status).toBe(200)
+    const body = await readJson(put)
+    expect(body.equipped).toEqual(slots)
+    expect(body.filter).toBe('boy')
+    const estado = await readJson(await getAvatar(app))
+    expect(estado.customized).toBe(true)
+    expect(estado.filter).toBe('boy')
+    // Gravar de novo sem filtro mantém o que estava.
+    await putAvatar(app, { slots })
+    expect((await readJson(await getAvatar(app))).filter).toBe('boy')
   })
 
-  test('peça desconhecida → 400; cor fora da paleta → 400', async () => {
+  test('peça paga sem posse → 403; o que não combina → 400; formato antigo → 400', async () => {
     const { app } = buildApp()
-    const ok = await putAvatar(app, { slots: { hair: { asset: 'hair-01' } } })
-    expect(ok.status).toBe(200) // sanity: válido passa
-
-    const bad = await putAvatar(app, { slots: { eyes: { asset: 'olhos-roxos-magicos' } } })
-    expect(bad.status).toBe(400)
-    expect((await readJson(bad)).error.code).toBe('AVATAR_INVALID')
-
-    // Hex válido no FORMATO mas fora da paleta da categoria → 400 (domínio).
-    const badColor = await putAvatar(app, {
-      slots: { hair: { asset: 'hair-01', color: '#123456' } },
-    })
-    expect(badColor.status).toBe(400)
-    expect((await readJson(badColor)).error.code).toBe('AVATAR_INVALID')
+    const paga = equipPart(C, base(), CAMISETA_PAGA)
+    expect((await putAvatar(app, { slots: paga })).status).toBe(403)
+    const naoCombina = {
+      ...base(),
+      roupa_inteira: pecaDe('roupa_inteira', 'free'),
+      calca: pecaDe('calca', 'free'),
+    }
+    expect((await putAvatar(app, { slots: naoCombina })).status).toBe(400)
+    const antigo = { slots: { head: { asset: 'head-01', color: '#ecad80' } } }
+    expect((await putAvatar(app, antigo)).status).toBe(400)
   })
 })
 
-describe('Avatar 3D — foto (snapshot)', () => {
+describe('Avatar do pack: foto', () => {
   const putPhoto = (app: App, photoUrl: string) =>
     app.handle(
       new Request('http://localhost/members/avatar/photo', {
@@ -189,52 +168,13 @@ describe('Avatar 3D — foto (snapshot)', () => {
       }),
     )
 
-  test('grava a URL (upsert sem equipar antes); aparece no GET; rejeita não-http', async () => {
+  test('grava a URL (sem gravar avatar antes); aparece no GET; recusa o que não é http', async () => {
     const { app } = buildApp()
-
-    const put = await putPhoto(app, 'https://cdn.sistemazero.com.br/community/avatar3d/x/a.webp')
-    expect(put.status).toBe(200)
-    expect((await readJson(put)).photoUrl).toBe(
-      'https://cdn.sistemazero.com.br/community/avatar3d/x/a.webp',
-    )
-
-    const state = await readJson(await getAvatar(app))
-    expect(state.photoUrl).toBe('https://cdn.sistemazero.com.br/community/avatar3d/x/a.webp')
-
-    // Formato inválido (javascript:) barrado na borda (DTO `^https?://`).
-    const bad = await putPhoto(app, 'javascript:alert(1)')
-    expect(bad.status).toBe(400)
-  })
-})
-
-describe('Avatar 3D — roupas da festa (B16, só conquistadas na festa)', () => {
-  test('aparecem trancadas, sem preço, e não se compram', async () => {
-    const { app, gamification } = buildApp()
-    await seedCoins(gamification, 100)
-    const body = await readJson(await getAvatar(app))
-    expect(body.parts.find((p: { id: string }) => p.id === 'hat-08')).toMatchObject({
-      tier: 'festa',
-      price: 0,
-      owned: false,
-      locked: true,
-    })
-    const res = await buyPart(app, 'hat-08')
-    expect(res.status).toBe(409)
-    expect((await readJson(res)).error.code).toBe('AVATAR_PART_FESTA')
-    // Nada foi cobrado nem entregue.
-    const depois = await readJson(await getAvatar(app))
-    expect(depois.balance).toBe(100)
-    expect(depois.parts.find((p: { id: string }) => p.id === 'hat-08').owned).toBe(false)
-  })
-
-  test('vestir a roupa da festa sem tê-la é recusado', async () => {
-    const { app } = buildApp()
-    const atual = await readJson(await getAvatar(app))
-    const res = await putAvatar(app, {
-      style: atual.style,
-      slots: { ...atual.equipped, hat: { asset: 'hat-08' } },
-    })
-    expect(res.status).toBe(403)
-    expect((await readJson(res)).error.code).toBe('AVATAR_PART_NOT_OWNED')
+    const url = 'https://cdn.sistemazero.com.br/community/avatar3d/x/a.webp'
+    expect((await putPhoto(app, url)).status).toBe(200)
+    const estado = await readJson(await getAvatar(app))
+    expect(estado.photoUrl).toBe(url)
+    expect(estado.customized).toBe(false)
+    expect((await putPhoto(app, 'javascript:alert(1)')).status).toBe(400)
   })
 })

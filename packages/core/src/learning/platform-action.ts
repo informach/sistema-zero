@@ -22,7 +22,7 @@ export interface PlatformActionResult {
   passed: boolean
   feedback: string
   /** Canonical saved slots, so the preview never substitutes a stale photo. */
-  avatarSlots?: Record<string, { asset: string; color?: string }>
+  avatarSlots?: Record<string, string>
   /** A cor escolhida, quando houve escolha. Ausente = a pessoa ainda não escolheu nenhuma. */
   palette?: Palette
 }

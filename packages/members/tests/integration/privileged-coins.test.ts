@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
+import { AVATAR_CATALOG } from '@sistemazero/core/avatar'
 import { buildApp } from '../helpers'
+
+/** Uma peça paga do avatar do pack. */
+const PECA_PAGA =
+  Object.entries(AVATAR_CATALOG.parts).find(([, p]) => p.tier === 'coins' && !p.hidden)?.[0] ?? ''
 
 /**
  * Passe livre da EQUIPE no Kids (06/2026): superadmin/admin/staff acessam o Estúdio
@@ -72,9 +77,9 @@ describe('Equipe interna — Zappy Coins ilimitadas (moedas virtuais)', () => {
     const { app, gamification, avatar } = buildApp()
     const h = roleHeaders('admin')
 
-    const buy = await readJson(await post(app, '/members/avatar/parts/glasses-04/buy', h)) // 120
+    const buy = await readJson(await post(app, `/members/avatar/parts/${PECA_PAGA}/buy`, h))
     expect(buy).toEqual({ alreadyOwned: false, balance: 0, unlimited: true })
-    expect(await avatar.listInventory(STAFF_USER, 'kids')).toContain('glasses-04')
+    expect(await avatar.listInventory(STAFF_USER, 'kids')).toContain(PECA_PAGA)
     expect(await gamification.getBalance(STAFF_USER, 'kids')).toBe(0) // nada debitado
   })
 
@@ -102,7 +107,7 @@ describe('Equipe interna — Zappy Coins ilimitadas (moedas virtuais)', () => {
 
   test('customer sem saldo continua 402 (sem regressão)', async () => {
     const { app } = buildApp()
-    const res = await post(app, '/members/avatar/parts/glasses-04/buy', {
+    const res = await post(app, `/members/avatar/parts/${PECA_PAGA}/buy`, {
       'x-auth-user-id': STAFF_USER,
       'x-auth-user-role': 'customer',
     })

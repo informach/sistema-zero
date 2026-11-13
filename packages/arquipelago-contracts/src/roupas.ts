@@ -45,7 +45,14 @@ export function origemDaRoupa(
   return quem ? { tipo: 'amizade', quem } : { tipo: 'festa' }
 }
 
-const Peca = z.string().regex(/^[a-z]+-[a-z0-9]+$/)
+/**
+ * O id de uma peça do avatar. Aceita os do avatar do pack (`cabelo_arco_iris_pacote`, 13/11/2026)
+ * e os antigos (`hat-04`), que as roupas da amizade e da festa ainda citam até a etapa do jogo.
+ */
+const Peca = z
+  .string()
+  .max(64)
+  .regex(/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/)
 
 /** `POST /arquipelago/roupas/sincronizar`: as peças que chegaram agora ao avatar. */
 export const RoupasConcedidasSchema = z.strictObject({

@@ -1,5 +1,5 @@
 import type { PlatformAction, PlatformActionResult } from '@sistemazero/core/learning'
-import { canonicalizeAvatarConfig, defaultAvatarConfig } from '../../domain/avatar/avatar-config'
+import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
 import type { CourseAudience } from '../../domain/course/course'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { ProfilePreferencesRepository } from '../../domain/ports/profile-preferences-repository.port'
@@ -11,17 +11,6 @@ import {
   DEFAULT_ROOM_THEME,
   DEFAULT_ROOM_WALL_COLORS,
 } from '../../domain/room/room-catalog'
-import { stableJson } from '../../domain/shared/stable-json'
-
-function visibleAvatar(slots: Record<string, { asset: string; color?: string }>) {
-  return Object.fromEntries(
-    Object.entries(slots).map(([category, slot]) => [
-      category,
-      slot.asset.endsWith('-none') ? { asset: slot.asset } : slot,
-    ]),
-  )
-}
-
 export class PlatformActionService {
   constructor(
     private readonly avatars: AvatarRepository,
@@ -35,10 +24,9 @@ export class PlatformActionService {
     action: PlatformAction,
   ): Promise<PlatformActionResult> {
     if (action === 'customize-avatar') {
-      const saved = canonicalizeAvatarConfig(await this.avatars.getConfig(userId, audience))
-      const passed =
-        stableJson(visibleAvatar(saved.slots)) !==
-        stableJson(visibleAvatar(defaultAvatarConfig().slots))
+      // O avatar nasce sorteado: passa quando a própria pessoa salvou uma escolha.
+      const saved = canonicalizeAvatarConfig(await this.avatars.getConfig(userId, audience), userId)
+      const passed = saved.customized === true
       return {
         action,
         passed,
