@@ -12,7 +12,10 @@ test.describe('os Poderes: andar até as coisas é o gesto do jogo', () => {
     await abrir(page, 'ponte', 'experiencia')
     await expect(page.getByRole('button', { name: 'Puxar a alavanca' })).toHaveCount(0)
     await page.mouse.click(5, 5)
-    await andar2d(page, [200, 141], [200, 262])
+    // O x mira 206, não 200: o andar2d para até 8 px antes do alvo, e com o x abaixo de 194 o pé
+    // (x + 32) ainda fica sobre o laguinho, que não deixa descer. Mirando 206 ele para entre 198 e
+    // 206: sempre fora da água, dentro do raio da ponte e longe do da alavanca.
+    await andar2d(page, [206, 141], [206, 262])
     await expect(feitas(page)).toHaveCount(1)
     await expect(page.getByText('A ponte está aberta?')).toBeVisible()
   })
