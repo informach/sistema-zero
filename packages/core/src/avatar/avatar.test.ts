@@ -168,6 +168,25 @@ describe('sorteio', () => {
     }
   })
 
+  test('o avatar sorteado sai sempre vestido: em cima e embaixo, ou roupa inteira, ou fantasia', () => {
+    for (let i = 0; i < 400; i++) {
+      for (const tiers of [['free'], ['free', 'coins']] as const) {
+        const s = drawAvatar(C, `vestido-${i}`, { filter: 'boy', tiers })
+        const fantasia = Object.values(s).some((id) => C.parts[id]?.set)
+        if (fantasia || s.roupa_inteira) continue
+        expect(s.roupa_cima, JSON.stringify(s)).toBeDefined()
+        expect(s.calca ?? s.bermuda, JSON.stringify(s)).toBeDefined()
+      }
+    }
+    // Sem a opção, o sorteio do pack deixa gente sem blusa.
+    const semRoupa = Array.from({ length: 100 }, (_, i) =>
+      drawAvatar(C, `cru-${i}`, { dressed: false }),
+    ).filter(
+      (s) => !s.roupa_cima && !s.roupa_inteira && !Object.values(s).some((id) => C.parts[id]?.set),
+    )
+    expect(semRoupa.length).toBeGreaterThan(0)
+  })
+
   test('a mesma semente dá o mesmo avatar, e sementes diferentes variam', () => {
     expect(drawAvatar(C, 'perfil-1', { filter: 'boy' })).toEqual(
       drawAvatar(C, 'perfil-1', { filter: 'boy' }),

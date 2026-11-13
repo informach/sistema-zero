@@ -9,6 +9,8 @@
     "./avatar/avatar-rig": "./src/avatar/avatar-rig.tsx",
     "./avatar/catalog": "./src/avatar/catalog.ts",
     "./avatar/measure": "./src/avatar/measure.ts",
+    "./avatar/pack-instance": "./src/avatar/pack-instance.ts",
+    "./avatar/pack-rig": "./src/avatar/pack-rig.tsx",
     "./avatar/instance": "./src/avatar/instance.ts",
     "./avatar/visible-parts": "./src/avatar/visible-parts.ts",
     "./quarto/catalog": "./src/quarto/catalog.ts",
@@ -35,6 +37,7 @@
   "dependencies": {
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
+    "@sistemazero/core": "workspace:*",
     "three": "^0.184.0"
   },
   "peerDependencies": {

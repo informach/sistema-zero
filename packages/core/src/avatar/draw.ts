@@ -24,6 +24,12 @@ export interface DrawOptions {
   expressions?: readonly string[]
   /** Peças a mais que podem sair, mesmo fora das faixas (as que a pessoa tem). */
   owned?: ReadonlySet<string>
+  /**
+   * Sempre vestido: roupa de cima e de baixo (ou roupa inteira, ou fantasia). O sorteio do pack
+   * liga cada roupa com 35% de chance e deixa o boneco de peito de fora; num avatar de criança
+   * isso não serve. Padrão: ligado.
+   */
+  dressed?: boolean
 }
 
 export const FRIENDLY_EXPRESSIONS = ['normal', 'neutro', 'feliz'] as const
@@ -107,6 +113,7 @@ export function drawAvatar(
       liberados = proximos
     }
   }
+  if (options.dressed ?? true) slots = vestir(slots, escolher)
   // Corpo e rosto sempre: se o filtro deixou o passo sem peça, vale o padrão do pack.
   for (const slot of ['corpo', 'rosto'] as const) {
     if (!slots[slot]) {
@@ -115,4 +122,32 @@ export function drawAvatar(
     }
   }
   return withEars(catalog, slots)
+
+  /** Completa a roupa que o sorteio deixou faltando, com peças que combinam com o resto. */
+  function vestir(atual: AvatarSlots, sortear: (grupo: string) => string | undefined): AvatarSlots {
+    const tem = (slot: string) => Boolean(atual[slot])
+    const fantasia = Object.values(atual).some((id) => catalog.parts[id]?.set)
+    if (fantasia || tem('roupa_inteira')) return atual
+    let s = atual
+    const completar = (grupos: readonly string[]) => {
+      for (const grupo of grupos) {
+        const peca = sortear(grupo)
+        if (!peca) continue
+        const depois = equipPart(catalog, s, peca)
+        // Só fica se não tirou nada do que já estava (a regra do pack manda tirar o que não combina).
+        if (
+          Object.keys(s).every(
+            (slot) =>
+              slot === 'orelhas' || depois[slot] === s[slot] || slot === catalog.parts[peca]?.slot,
+          )
+        ) {
+          s = depois
+          return
+        }
+      }
+    }
+    if (!tem('roupa_cima')) completar(['roupa_cima'])
+    if (!tem('calca') && !tem('bermuda')) completar(['calca', 'bermuda'])
+    return s
+  }
 }
