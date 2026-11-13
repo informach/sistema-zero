@@ -32,6 +32,7 @@ import {
   type SalvamentoGuardado,
   type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
+import { AVATAR_CATALOG, drawAvatar } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa, listarCriacoesQueCabemFalsas } from './aparencias-falsas'
@@ -618,17 +619,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     publico,
     perfil: { id: 'perfil-de-teste', primeiroNome: 'Lia' },
     lerJornada: async () => ({ posicao: o.posicao ?? 2 }),
-    lerAvatar: async () => ({
-      slots: {
-        head: { asset: 'head-01', color: '#d9a07a' },
-        hair: { asset: 'hair-13', color: '#3b2416' },
-        eyebrows: { asset: 'eyebrow-01', color: '#3b2416' },
-        eyes: { asset: 'eyes-01' },
-        top: { asset: 'top-06', color: '#e84393' },
-        bottom: { asset: 'bottom-01', color: '#2c3e50' },
-        shoes: { asset: 'shoes-01', color: '#ffffff' },
-      },
-    }),
+    // O sorteado de sempre da plataforma de mentira (o mesmo a cada abertura).
+    lerAvatar: async () => ({ slots: drawAvatar(AVATAR_CATALOG, 'plataforma-falsa') }),
     lerQuarto: async () => quarto,
     salvarQuarto: async (q) => {
       quarto = q

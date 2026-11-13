@@ -37,8 +37,9 @@ os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-qua
 - Testes: `tests/avatar-pack.test.ts`, `tests/avatar-editor-hook.test.ts` (o salvar sozinho num
   navegador de mentira, `qa/avatar-editor-hook.fixture.tsx`), `tests/cosmetics-skin.test.tsx` e
   `tests/avatar-seasonal-choices.test.tsx`.
-- ⚠️ Pendente da etapa do jogo: `arquipelago-host.tsx` (`lerAvatar`) ainda entrega ao jogo o
-  formato antigo, e o `VESTUARIO_DAS_FESTAS` cita peças antigas (as sugestões da festa não aparecem).
+- O jogo recebe o avatar do pack (`arquipelago-host.tsx`, `lerAvatar`: encaixe → peça) e as
+  sugestões da festa (`VESTUARIO_DAS_FESTAS`) são peças do pack. `PackRigBoundary` (avatar-quarto)
+  em volta do boneco: esqueleto que não baixa não derruba a tela.
 
 ## Experiências numa tela só: o arranjo do Faísca (09/11/2026)
 

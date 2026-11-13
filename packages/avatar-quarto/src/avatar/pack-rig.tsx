@@ -54,6 +54,30 @@ class PieceErrorBoundary extends Component<
   }
 }
 
+/**
+ * O boneco inteiro some sem derrubar quem o mostra quando o esqueleto (ou a textura) não baixa: o
+ * arquivo vem do bucket privado, e uma falha lá não pode tirar o jogo nem a tela do ar. `resetKey`
+ * tenta de novo quando muda (outra montagem do avatar).
+ */
+export class PackRigBoundary extends Component<
+  { resetKey?: string; children: ReactNode },
+  { failed: boolean; key: string | undefined }
+> {
+  state = { failed: false, key: this.props.resetKey }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  static getDerivedStateFromProps(
+    props: { resetKey?: string },
+    state: { failed: boolean; key: string | undefined },
+  ) {
+    return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
+
 /** As texturas do catálogo, carregadas uma vez e ajustadas como o glTF pede. */
 function useTexturasDoPack(catalog: AvatarCatalog): TexturasDoPack {
   const entradas = useMemo(() => Object.entries(catalog.base.textures), [catalog])

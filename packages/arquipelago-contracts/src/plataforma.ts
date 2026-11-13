@@ -53,13 +53,13 @@ export interface JornadaDoJogo {
   posicao: number
 }
 
-export interface SlotDoAvatar {
-  asset: string
-  color?: string
-}
-
+/**
+ * O avatar da pessoa (pack Cute Characters, 13/11/2026): encaixe → id da peça, como o Members
+ * guarda. O jogo lê com tolerância (`avatarDoPack` do `avatar-quarto`): uma plataforma antiga, que
+ * ainda mandasse `{asset, color}`, vira o avatar de partida, sem quebrar.
+ */
 export interface AvatarDoJogo {
-  slots: Record<string, SlotDoAvatar>
+  slots: Record<string, string>
 }
 
 /**

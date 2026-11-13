@@ -1,4 +1,4 @@
-import { basename, resolve } from 'node:path'
+import { basename, resolve, sep } from 'node:path'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 
 await conferirPortosDaArte()
@@ -7,9 +7,13 @@ await conferirPortosDaArte()
  * Servidor do playground: compila o jogo com o Bun a cada pedido e serve os modelos do avatar
  * e do quarto direto do `public/` do Kids (são os mesmos arquivos que a plataforma serve). Os
  * arquivos do próprio jogo (o Zappy) saem da compilação e ficam guardados para o pedido seguinte.
+ *
+ * As peças do avatar do pack (`/api/avatar3d/`, 13/11/2026) são pagas e não estão no repositório:
+ * `AVATAR_QA_DIR` aponta para uma cópia local (fora do git). Sem ela, o boneco não aparece.
  */
 const PORTA = Number(process.env.PORTA ?? 4520)
 const PUBLICO = resolve(import.meta.dir, '../../community-kids/public')
+const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
 
 const arquivosDoJogo = new Map<string, Blob>()
 
@@ -76,6 +80,13 @@ Bun.serve({
     }
     const doJogo = arquivosDoJogo.get(pathname.slice(1))
     if (doJogo) return new Response(doJogo)
+    if (pathname.startsWith('/api/avatar3d/')) {
+      if (!PACK) return new Response('sem AVATAR_QA_DIR', { status: 404 })
+      const alvo = resolve(PACK, decodeURIComponent(pathname.slice('/api/avatar3d/'.length)))
+      if (!alvo.startsWith(PACK + sep)) return new Response('fora', { status: 403 })
+      const f = Bun.file(alvo)
+      return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
+    }
     if (pathname.startsWith('/avatar3d/') || pathname.startsWith('/room3d/')) {
       const f = Bun.file(PUBLICO + pathname)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })

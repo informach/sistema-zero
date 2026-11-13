@@ -12,15 +12,20 @@ import { VESTUARIO_DAS_FESTAS } from './vestuario-festas'
  */
 export const CORACOES_DA_ROUPA = 3
 
-/** Uma peça por morador, aos três corações (escolha editorial, peças pagas do catálogo). */
+/**
+ * Uma peça por morador, aos três corações (escolha editorial, peças pagas do catálogo do pack,
+ * 13/11/2026): cada uma lembra o morador (o cogumelo do Bosque, a touca do padeiro, o caranguejo
+ * do Recife, o gorro do Pico, o capacete de quem escava, o macacão de piloto das Nuvens, o chapéu
+ * de pescador da praia).
+ */
 export const ROUPAS_DA_AMIZADE: Readonly<Record<MoradorDoPedido, string>> = {
-  capi: 'acc-09',
-  bento: 'top-04',
-  mare: 'glasses-05',
-  floco: 'hat-01',
-  jade: 'hat-04',
-  irie: 'outfit-02',
-  nico: 'hat-02',
+  capi: 'chapeu_cogumelo_pacote',
+  bento: 'chapeu_touca_cozinheiro_pacote',
+  mare: 'chapeu_caranguejo_pacote',
+  floco: 'chapeu_gorro_curto_vermelho_pacote',
+  jade: 'chapeu_capacete_mineiro_pacote',
+  irie: 'roupa_inteira_macacao_piloto_azul_pacote',
+  nico: 'chapeu_pescador_azul_pacote',
 }
 
 /** As roupas da festa em vigor: as duas feitas para ela (B16); as outras são só sugestões. */
@@ -46,8 +51,8 @@ export function origemDaRoupa(
 }
 
 /**
- * O id de uma peça do avatar. Aceita os do avatar do pack (`cabelo_arco_iris_pacote`, 13/11/2026)
- * e os antigos (`hat-04`), que as roupas da amizade e da festa ainda citam até a etapa do jogo.
+ * O id de uma peça do avatar do pack (`cabelo_arco_iris_pacote`, 13/11/2026). Os antigos
+ * (`hat-04`) continuam aceitos na leitura: um pedido de um jogo aberto antes da troca não quebra.
  */
 const Peca = z
   .string()

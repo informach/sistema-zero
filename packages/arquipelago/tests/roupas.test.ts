@@ -6,17 +6,22 @@ import { falaDasRoupasNovas, nomeDaPeca, ROUPAS_DA_AMIZADE } from '../src/sistem
 /** As roupas conquistadas no jogo (§6.28, A21). */
 
 test('a fala conta o presente da amizade e as roupas da festa, nas regras da criança', () => {
-  expect(nomeDaPeca('hat-04')).toBe('Chapéu 4')
+  expect(nomeDaPeca('chapeu_capacete_mineiro_pacote')).toBe('Capacete de mineiro')
+  expect(nomeDaPeca('nao-existe')).toBe('nao-existe')
   expect(falaDasRoupasNovas([], null)).toBeNull()
   expect(falaDasRoupasNovas([ROUPAS_DA_AMIZADE.jade], null)).toBe(
-    'Roupa nova no seu avatar: chapéu 4, presente da amizade com a Jade.',
+    'Roupa nova no seu avatar: capacete de mineiro, presente da amizade com a Jade.',
   )
-  expect(falaDasRoupasNovas(['top-06', 'enfeite-01'], 'junina')).toBe(
-    'Roupas da Festa Junina no seu avatar: camiseta listrada e laço. Elas continuam suas depois da festa.',
+  expect(
+    falaDasRoupasNovas(['chapeu_palha_fita_pacote', 'roupa_inteira_vestido_chita'], 'junina'),
+  ).toBe(
+    'Roupas da Festa Junina no seu avatar: chapéu de palha com fita e vestido de chita. Elas continuam suas depois da festa.',
   )
-  expect(falaDasRoupasNovas(['face-08'], 'carnaval')).toContain('Roupas do Carnaval')
+  expect(falaDasRoupasNovas(['chapeu_cartola_colorida_pacote'], 'carnaval')).toContain(
+    'Roupas do Carnaval',
+  )
   for (const t of [
-    falaDasRoupasNovas([ROUPAS_DA_AMIZADE.nico, 'acc-10'], 'fim-de-ano')!,
+    falaDasRoupasNovas([ROUPAS_DA_AMIZADE.nico, 'roupa_cima_sueter_estrela'], 'fim-de-ano')!,
     falaDasRoupasNovas([ROUPAS_DA_AMIZADE.capi], null)!,
   ]) {
     expect(t).not.toMatch(/[—!]/)

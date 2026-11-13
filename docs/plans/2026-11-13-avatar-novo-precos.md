@@ -31,7 +31,11 @@ conjunto de uma vez o servidor precisa de uma compra por conjunto (hoje a compra
 
 **Fora da loja:**
 - os três prêmios das festas do jogo (cartola colorida, chapéu de palha com fita, gorro de Papai
-  Noel) ficam reservados para as festas;
+  Noel) ficam reservados para as festas; ⚠️ desde a ligação do jogo (13/11/2026) também o colete de
+  franjas, o vestido de chita, a tiara de lanterninhas, a capa de estrelas e o suéter de estrela:
+  são as oito roupas de festa da proposta do jogo (B16, uma de cabeça e uma de corpo por festa),
+  que só a festa dá, então saíram da loja (preço 0, faixa `festa`) e os preços das tabelas abaixo
+  deixam de valer para elas;
 - nenhuma peça sai do catálogo (decisão da dona). A única que não entra na loja é o rascunho de
   roupa, que a própria arte marca como peça inacabada.
 

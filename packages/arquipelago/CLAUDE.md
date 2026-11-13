@@ -1,5 +1,21 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## O avatar do pack no jogo (13/11/2026)
+
+O avatar da plataforma virou o do pack Cute Characters (plano
+`~/.claude/plans/pasted-content-id-1edc-certo-eu-fluttering-blossom.md`, etapa 6, o mínimo):
+- `AvatarDoJogo` (contrato) é encaixe → id da peça; o jogo lê com `avatarDoPack` do `avatar-quarto`
+  (`avatar/pack-catalog.ts`, que repassa o catálogo do core: o jogo não importa o core direto).
+- `personagem/avatar-do-jogo.tsx` monta o `PackAvatarRig` dentro do `PackRigBoundary` (esqueleto que
+  não baixa não derruba o jogo) e o boneco fica PARADO. ⚠️ Até o plano do jogo: sem as animações de
+  movimento, sem patins (feitos para o esqueleto Mixamo), as mãos no cipó e a lanterna na mão
+  procuram os ossos antigos e ficam como estão; o tamanho é o do pack (1,15 m, o antigo 2,13 m); a
+  pausa não congela a pose de parado. O fantasma familiar continua com o avatar antigo de partida
+  (os arquivos de `community-kids/public/avatar3d`).
+- As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.
+- Playground: `AVATAR_QA_DIR=<cópia das peças do pack>` serve `/api/avatar3d/` (as peças são pagas e
+  ficam fora do git); sem ela o boneco não aparece.
+
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
 código, conteúdo, prova local e implantação separados. Salvamento atual V23, teto de
 81.920 bytes UTF-8 (80 KB, escolha da dona nas lacunas de 01/11/2026), moedas do jogo até 100

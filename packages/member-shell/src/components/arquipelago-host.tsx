@@ -306,8 +306,8 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     async lerAvatar() {
       const r = await json('/api/members/avatar')
-      const slots = (r.corpo as { equipped?: Record<string, { asset: string; color?: string }> })
-        ?.equipped
+      // O avatar do pack: encaixe → peça (o jogo confere cada uma no catálogo).
+      const slots = (r.corpo as { equipped?: Record<string, string> } | null)?.equipped
       if (r.status !== 200 || !slots) throw new Error(`avatar (${r.status})`)
       return { slots }
     },

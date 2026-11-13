@@ -2,7 +2,11 @@
 
 import { ContactShadows, useProgress } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { PACK_IDLE_POSE, PackAvatarRig } from '@sistemazero/avatar-quarto/avatar/pack-rig'
+import {
+  PACK_IDLE_POSE,
+  PackAvatarRig,
+  PackRigBoundary,
+} from '@sistemazero/avatar-quarto/avatar/pack-rig'
 import type { AvatarSlots } from '@sistemazero/core/avatar'
 import { type RefObject, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
@@ -227,14 +231,16 @@ function SceneContents({
 
       {/* Personagem GLB — Suspense POR peça (no rig); fica em pé UMA vez. */}
       <Suspense fallback={null}>
-        <PackAvatarRig
-          slots={slots}
-          pose={pose}
-          loading={loading}
-          charRef={charRef}
-          completeRef={completeRef}
-          onStood={() => setReady(true)}
-        />
+        <PackRigBoundary>
+          <PackAvatarRig
+            slots={slots}
+            pose={pose}
+            loading={loading}
+            charRef={charRef}
+            completeRef={completeRef}
+            onStood={() => setReady(true)}
+          />
+        </PackRigBoundary>
       </Suspense>
 
       {/* Pódio logo abaixo dos pés. */}

@@ -6,12 +6,11 @@ import { SeasonalAvatarChoices } from '../src/components/cosmetics/avatar3d/seas
 
 /**
  * As sugestões da festa do jogo só mostram peças que o catálogo do pack tem, com o nome e o preço
- * do catálogo. ⚠️ Até a etapa do jogo o contrato cita peças do avatar antigo: elas não aparecem
- * (nada de peça que a tela não consegue vestir).
+ * do catálogo (uma peça que o catálogo não tem não aparece: a tela não conseguiria vestir).
  */
 const festas = Object.keys(VESTUARIO_DAS_FESTAS) as (keyof typeof VESTUARIO_DAS_FESTAS)[]
 
-test('só peças do catálogo do pack, com o nome e o preço dele; sem nenhuma, nada aparece', () => {
+test('só peças do catálogo do pack, com o nome e o preço dele', () => {
   for (const festa of festas) {
     const colecao = VESTUARIO_DAS_FESTAS[festa]
     const html = renderToStaticMarkup(
@@ -22,12 +21,14 @@ test('só peças do catálogo do pack, com o nome e o preço dele; sem nenhuma, 
         onSelect={() => {}}
       />,
     )
-    const doPack = [...colecao.conquista, ...colecao.pecas].filter((id) => C.parts[id])
-    if (doPack.length === 0) {
-      expect(html).toBe('')
-      continue
-    }
-    for (const id of doPack) expect(html).toContain(C.parts[id]?.label ?? '?')
+    const todas = [...colecao.conquista, ...colecao.pecas]
+    expect(todas.every((id) => C.parts[id])).toBe(true)
+    for (const id of todas) expect(html).toContain(C.parts[id]?.label ?? '?')
+    // As da festa dizem de onde vêm; as sugestões, o preço.
+    for (const id of colecao.conquista)
+      expect(html).toContain(`${C.parts[id]?.label} · vem da festa`)
+    for (const id of colecao.pecas)
+      expect(html).toContain(`${C.parts[id]?.label} · ${C.parts[id]?.price} moedas`)
   }
 })
 
