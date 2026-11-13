@@ -4,7 +4,7 @@ import {
   AvatarPartInSetError,
   AvatarPartNotFoundError,
 } from '../../domain/avatar/avatar.errors'
-import { avatarItem } from '../../domain/avatar/avatar3d-catalog'
+import { avatarItem, isOffShelf } from '../../domain/avatar/avatar3d-catalog'
 import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
@@ -47,7 +47,8 @@ export class BuyAvatarPartService {
     privileged = false,
   ): Promise<BuyAvatarPartResult> {
     const part = avatarItem(partId)
-    if (!part) throw new AvatarPartNotFoundError()
+    // Fora da loja (rascunho da arte ou peça aposentada) é como se não existisse para a compra.
+    if (!part || isOffShelf(partId)) throw new AvatarPartNotFoundError()
     if (part.tier === 'set') throw new AvatarPartInSetError()
     if (part.tier === 'free' || part.tier === 'auto') throw new AvatarPartFreeError()
     if (part.tier === 'festa') throw new AvatarPartFestaError()

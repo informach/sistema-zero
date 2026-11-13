@@ -250,13 +250,21 @@ describe('a porta da plataforma para o jogo', () => {
     const pedidos = servir({
       'GET /api/members/avatar': {
         status: 200,
-        body: { equipped: { hair: { asset: 'hair-13' } } },
+        body: { equipped: { cabelo: 'cabelo_cacheado_curto_pacote' } },
       },
       'GET /api/members/room': { status: 200, body: { state } },
       'PUT /api/members/room': { status: 200, body: state },
     })
     const p = plataforma()
-    expect(await p.lerAvatar()).toEqual({ slots: { hair: { asset: 'hair-13' } } })
+    expect(await p.lerAvatar()).toEqual({ slots: { cabelo: 'cabelo_cacheado_curto_pacote' } })
+    // Um jogo da versão 1 (o avatar antigo) recebe o avatar vazio, que ele completa com o dele.
+    const antiga = criarPlataformaDoArquipelago({
+      versao: 1,
+      publico: 'kids',
+      perfil: { id: 'p1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect(await antiga.lerAvatar()).toEqual({ slots: {} })
     expect(await p.lerQuarto()).toEqual(state)
     expect(await p.salvarQuarto(state)).toEqual(state)
     expect(pedidos.at(-1)).toMatchObject({ method: 'PUT', body: JSON.stringify(state) })

@@ -278,8 +278,9 @@ function corpoJson(metodo: string, corpo: unknown): RequestInit {
  */
 export function criarPlataformaDoArquipelago(opcoes: {
   /**
-   * A versão negociada com o jogo (A35). O host monta a porta dessa versão: hoje só existe a 1;
-   * quando vier a 2, o que mudar nela fica atrás desta versão e o jogo v1 recebe a porta v1.
+   * A versão negociada com o jogo (A35). O host monta a porta dessa versão: na 2 o avatar é o do
+   * pack (encaixe → peça); um jogo da versão 1 recebe o avatar vazio (`{slots: {}}`), que ele
+   * completa com o avatar de partida dele, em vez de peças que ele não sabe ler.
    */
   versao?: number
   publico: PublicoJogo
@@ -309,7 +310,8 @@ export function criarPlataformaDoArquipelago(opcoes: {
       // O avatar do pack: encaixe → peça (o jogo confere cada uma no catálogo).
       const slots = (r.corpo as { equipped?: Record<string, string> } | null)?.equipped
       if (r.status !== 200 || !slots) throw new Error(`avatar (${r.status})`)
-      return { slots }
+      // Jogo da versão 1 (avatar antigo): vazio, ele completa com o avatar de partida dele.
+      return (opcoes.versao ?? VERSAO_CONTRATO_PLATAFORMA) < 2 ? { slots: {} } : { slots }
     },
     async lerQuarto() {
       const r = await json('/api/members/room')
@@ -409,6 +411,8 @@ export function ArquipelagoHost(props: {
   useEffect(() => {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
+    /** A versão combinada com o jogo (a mesma porta para o avatar que volta do "vestir"). */
+    let versaoDoJogo: number | undefined
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
@@ -540,6 +544,7 @@ export function ArquipelagoHost(props: {
         setEstado('indisponivel')
         return
       }
+      versaoDoJogo = versao
       montagem = modulo.montarArquipelago(
         elemento.current,
         criarPlataformaDoArquipelago({
@@ -642,6 +647,7 @@ export function ArquipelagoHost(props: {
                   const acesso = await json(`${BASE}/ferramentas/avatar`)
                   if (!pertenceAoPerfil(acesso.corpo, id)) throw Error('O perfil ativo mudou')
                   const p = criarPlataformaDoArquipelago({
+                    versao: versaoDoJogo,
                     publico,
                     perfil: { id, primeiroNome },
                     voltarPara,

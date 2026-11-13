@@ -8,8 +8,8 @@ explicam sua introdução, não a versão atual da resposta.
 ## Avatar do pack (13/11/2026)
 
 `AvatarDoJogo.slots` é encaixe → id da peça do pack (antes `{asset, color}`; `SlotDoAvatar` saiu).
-A versão do contrato não subiu: o jogo lê com tolerância (o formato antigo vira o avatar de
-partida). `ROUPAS_DA_AMIZADE` e `VESTUARIO_DAS_FESTAS` apontam para peças do pack; a `conquista`
+`VERSAO_CONTRATO_PLATAFORMA` subiu para 2: a página, com um jogo da versão 1, entrega o avatar
+vazio (o jogo antigo completa com o avatar de partida dele); o jogo novo lê com tolerância. `ROUPAS_DA_AMIZADE` e `VESTUARIO_DAS_FESTAS` apontam para peças do pack; a `conquista`
 das festas são as oito peças da faixa `festa` do catálogo (B16), conferidas em
 `tests/vestuario-festas.test.ts` contra o core pelo caminho. O esquema `Peca` ainda aceita os ids
 antigos na leitura.

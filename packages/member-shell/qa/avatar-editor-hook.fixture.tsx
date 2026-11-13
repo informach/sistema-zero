@@ -127,7 +127,7 @@ test('ao abrir, nada grava; uma escolha grátis grava 1 s depois, com o filtro e
   expect(t.ed().status).toBe('waiting')
   await act(async () => new Promise((r) => setTimeout(r, 400)))
   expect(puts()).toEqual([])
-  await esperar(() => t.ed().status === 'saved' && t.fotos.length === 1)
+  await esperar(() => t.ed().status === 'saved' && t.fotos.length === 1, 6000)
   expect(puts()).toHaveLength(1)
   const corpo = puts()[0]?.body as { slots: Record<string, string>; filter: string }
   expect(corpo.slots.roupa_cima).toBe(blusa)
@@ -230,11 +230,11 @@ test('sair da página com algo por gravar manda junto (keepalive, sem foto)', as
 test('o voltar espera a gravação (com a foto) e diz que algo foi salvo', async () => {
   const t = await montar()
   await act(async () => t.ed().choose(item(gratis('calcado')), avatarTab('calcado')))
-  let salvou: boolean | undefined
+  let fim: { ok: boolean; saved: boolean } | undefined
   await act(async () => {
-    salvou = await t.ed().finishBeforeExit()
+    fim = await t.ed().finishBeforeExit()
   })
-  expect(salvou).toBe(true)
+  expect(fim).toEqual({ ok: true, saved: true })
   expect(puts()).toHaveLength(1)
   expect(t.fotos).toEqual([true])
   await t.fechar()
@@ -253,5 +253,50 @@ test('com foto, abrir e não mexer não manda nada', async () => {
   const t = await montar()
   await act(async () => new Promise((r) => setTimeout(r, 2000)))
   expect(chamadas.filter((c) => c.method !== 'GET')).toEqual([])
+  await t.fechar()
+})
+
+test('com uma peça paga de prévia, a mudança grátis de antes grava; a foto espera a prévia acabar', async () => {
+  const t = await montar()
+  const calcado = gratis('calcado')
+  await act(async () => t.ed().choose(item(calcado), avatarTab('calcado')))
+  await act(async () => t.ed().choose(item(paga('roupa_cima')), avatarTab('roupa_cima')))
+  expect(t.ed().status).toBe('preview')
+  await esperar(() => puts().length === 1, 4000)
+  const corpo = puts()[0]?.body as { slots: Record<string, string> }
+  expect(corpo.slots.calcado).toBe(calcado)
+  expect(corpo.slots.roupa_cima).not.toBe(paga('roupa_cima'))
+  await act(async () => new Promise((r) => setTimeout(r, 1500)))
+  expect(t.fotos).toEqual([])
+  // Desistiu da peça paga: o avatar da tela é o gravado, e aí vem a foto.
+  await act(async () => t.ed().cancelBuy())
+  await esperar(() => t.fotos.length === 1, 4000)
+  expect(puts()).toHaveLength(1)
+  await t.fechar()
+})
+
+test('sair no meio da prévia guarda as mudanças grátis', async () => {
+  const t = await montar()
+  const calcado = gratis('calcado')
+  await act(async () => t.ed().choose(item(calcado), avatarTab('calcado')))
+  await act(async () => t.ed().choose(item(paga('chapeu')), avatarTab('chapeu')))
+  let fim: { ok: boolean; saved: boolean } | undefined
+  await act(async () => {
+    fim = await t.ed().finishBeforeExit()
+  })
+  expect(fim?.ok).toBe(true)
+  expect((puts().at(-1)?.body as { slots: Record<string, string> }).slots.calcado).toBe(calcado)
+  await t.fechar()
+})
+
+test('sair com a gravação falhando devolve ok falso (a tela não sai calada)', async () => {
+  putFalha = true
+  const t = await montar()
+  await act(async () => t.ed().choose(item(gratis('calcado')), avatarTab('calcado')))
+  let fim: { ok: boolean; saved: boolean } | undefined
+  await act(async () => {
+    fim = await t.ed().finishBeforeExit()
+  })
+  expect(fim).toEqual({ ok: false, saved: false })
   await t.fechar()
 })

@@ -13,8 +13,10 @@ import {
   type AvatarPartEntry,
   type AvatarSlots,
   equipPart,
+  isAvatarOwned,
   isListed,
   matchesFilter,
+  ownershipOf,
   removeSlot,
   wornSet,
 } from '@sistemazero/core/avatar'
@@ -206,18 +208,13 @@ export interface AvatarShopItem {
   owned: boolean
 }
 
-/** O que a pessoa pode usar sem comprar (as grátis são de todos; conjunto pelo id do conjunto). */
+/** O que a pessoa pode usar sem comprar: a régua de posse do core, a mesma do servidor. */
 export function isAvatarItemOwned(
   catalog: AvatarCatalog,
   id: string,
   owned: ReadonlySet<string>,
 ): boolean {
-  const conjunto = catalog.sets[id]
-  if (conjunto) return owned.has(id)
-  const p = catalog.parts[id]
-  if (!p) return false
-  if (p.set) return owned.has(p.set)
-  return p.tier === 'free' || p.tier === 'auto' || owned.has(id)
+  return isAvatarOwned(catalog, id, owned)
 }
 
 /**
@@ -388,10 +385,8 @@ export function avatarUnownedWorn(
 ): string[] {
   const faltam = new Set<string>()
   for (const id of Object.values(slots)) {
-    const p = catalog.parts[id]
-    if (!p) continue
-    const item = p.set ?? id
-    if (!isAvatarItemOwned(catalog, item, owned)) faltam.add(item)
+    const chave = ownershipOf(catalog, id)
+    if (chave !== null && !owned.has(chave)) faltam.add(chave)
   }
   return [...faltam]
 }

@@ -33,6 +33,8 @@ export interface AvatarMessages {
   savedAndLeaving: string
   saved: string
   saveFailed: string
+  /** O voltar quando a gravação falhou: avisa e só sai no segundo toque. */
+  exitUnsaved: string
 }
 
 export const AVATAR_MESSAGES: Record<CosmeticsSkin, AvatarMessages> = {
@@ -46,6 +48,7 @@ export const AVATAR_MESSAGES: Record<CosmeticsSkin, AvatarMessages> = {
     savedAndLeaving: 'Avatar salvo! 😄',
     saved: 'Mudanças salvas! 😄',
     saveFailed: 'Não consegui salvar agora. Tente de novo!',
+    exitUnsaved: 'Não consegui salvar seu avatar. Toque em voltar de novo para sair assim mesmo.',
   },
   adult: {
     notEnoughCoins: 'Você ainda não tem moedas suficientes.',
@@ -57,6 +60,7 @@ export const AVATAR_MESSAGES: Record<CosmeticsSkin, AvatarMessages> = {
     savedAndLeaving: 'Avatar salvo.',
     saved: 'Mudanças salvas.',
     saveFailed: 'Não consegui salvar agora. Tente de novo.',
+    exitUnsaved: 'Não consegui salvar o avatar. Para sair sem salvar, clique em Voltar de novo.',
   },
 }
 
@@ -77,6 +81,8 @@ export interface RoomMessages {
   buyFailed: string
   saved: string
   saveFailed: string
+  /** O voltar quando a gravação falhou: avisa e só sai no segundo toque. */
+  exitUnsaved: string
 }
 
 export const ROOM_MESSAGES: Record<CosmeticsSkin, RoomMessages> = {

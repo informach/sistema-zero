@@ -81,6 +81,9 @@ export async function swapAvatars(
   for (const g of gastos) {
     if (g.coins <= 0) continue
     const devolvida = await sql.begin(async (tx) => {
+      // A mesma trava das outras escritas de moeda do perfil (gasto, prêmio, jogo): com a troca
+      // rodando no banco vivo, o `balance_after` do extrato fica na sequência certa.
+      await tx`select pg_advisory_xact_lock(hashtextextended(${`gamification:${g.user_id}`}, 0))`
       const [ja] = await tx`
         select 1 from members.coin_events
          where user_id = ${g.user_id} and audience = ${g.audience}::members.course_audience

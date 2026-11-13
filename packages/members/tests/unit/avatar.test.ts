@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { AVATAR_CATALOG as C, equipPart, withEars } from '@sistemazero/core/avatar'
+import { AVATAR_CATALOG as C, equipPart, ownershipOf, withEars } from '@sistemazero/core/avatar'
 import { AvatarInvalidError, AvatarPartNotOwnedError } from '../../src/domain/avatar/avatar.errors'
 import {
   assertEquippableConfig,
   canonicalizeAvatarConfig,
   defaultAvatarConfig,
 } from '../../src/domain/avatar/avatar-config'
-import { avatarItem, inventoryIds, needsOwnership } from '../../src/domain/avatar/avatar3d-catalog'
+import { avatarItem, inventoryIds, isOffShelf } from '../../src/domain/avatar/avatar3d-catalog'
 
 const partes = Object.entries(C.parts)
 const umaDa = (filtro: (p: (typeof partes)[number][1]) => boolean) => {
@@ -21,11 +21,12 @@ const base = () =>
 
 describe('avatar do pack: o que se compra', () => {
   test('peça paga, da festa e conjunto precisam de posse; grátis e orelhas não', () => {
-    expect(needsOwnership(avatarItem(gratisDo('roupa_cima')) ?? fail())).toBe(false)
-    expect(needsOwnership(avatarItem(pagaDo('roupa_cima')) ?? fail())).toBe(true)
+    expect(ownershipOf(C, gratisDo('roupa_cima'))).toBeNull()
+    expect(ownershipOf(C, pagaDo('roupa_cima'))).toBe(pagaDo('roupa_cima'))
     const conjunto = Object.keys(C.sets)[0] ?? ''
     expect(avatarItem(conjunto)?.kind).toBe('set')
-    expect(needsOwnership(avatarItem(conjunto) ?? fail())).toBe(true)
+    expect(avatarItem(conjunto) ?? fail()).toMatchObject({ kind: 'set' })
+    expect(isOffShelf(gratisDo('roupa_cima'))).toBe(false)
     expect(inventoryIds().has(conjunto)).toBe(true)
     expect(inventoryIds().has(gratisDo('calca'))).toBe(false)
     expect(avatarItem('nao-existe')).toBeNull()

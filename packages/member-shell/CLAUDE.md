@@ -18,11 +18,13 @@ os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-qua
   `avatarUnownedWorn` (o que está só de prévia) e as poses da Cabine (`AVATAR_POSES`, sem
   `pulo_no_ar` e `correr_frente`: o clipe leva o boneco para fora da foto).
 - **`avatar3d/use-avatar-editor.ts`**: a lógica das DUAS peles. ⭐ **Salva sozinho**: 1 s depois da
-  última mudança, `PUT /api/members/avatar` `{slots, filter}` e a foto de frente
-  (`capture({portrait: true})` → `/snapshot`). Nada grava com peça paga só de prévia (`status:
-  'preview'`); falha vira `error` sem nova tentativa sozinha (o botão chama `retrySave`); `pagehide`
-  manda o pendente com `keepalive` (sem foto); o voltar espera gravar (`finishBeforeExit`); sem foto
-  ainda (perfil novo), a primeira visita tira a foto de frente do sorteado, sem gravar. Compra
+  última mudança, `PUT /api/members/avatar` `{slots, filter}`, uma gravação de cada vez. Com peça
+  paga só de prévia (`status: 'preview'`) grava o último avatar SEM a prévia (as mudanças grátis de
+  antes não se perdem). A foto de frente (`capture({portrait: true})` → `/snapshot`) vem depois,
+  só com o avatar da tela gravado e sem prévia (também na primeira visita de quem não tem foto).
+  Falha vira `error` sem nova tentativa sozinha (`retrySave`); `pagehide` cancela a gravação no ar
+  e manda o pendente com `keepalive`; o voltar espera gravar e tirar a foto (`finishBeforeExit`
+  → `{ok, saved}`) e, com a gravação falhando, avisa e só sai no segundo toque. Compra
   em dois toques (peça ou conjunto, `POST …/parts/:id/buy`). "Surpreenda-me" = `drawAvatar` com o
   filtro, grátis + o que a pessoa tem. Filtro `null` = a tela pergunta antes de mostrar as peças.
 - **Telas**: `configurator.tsx` (Kids: grupos, abas, tipos, filtro Menina/Menino/Todas, o selo

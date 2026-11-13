@@ -99,6 +99,7 @@ describe('pele adulta — o texto', () => {
       savedAndLeaving: 'Avatar salvo! 😄',
       saved: 'Mudanças salvas! 😄',
       saveFailed: 'Não consegui salvar agora. Tente de novo!',
+      exitUnsaved: 'Não consegui salvar seu avatar. Toque em voltar de novo para sair assim mesmo.',
     })
     const kids = ROOM_MESSAGES.kids
     expect(kids.full(40)).toBe('Seu quarto está cheio! Tire algo antes de adicionar mais. 🧹')
@@ -318,7 +319,7 @@ describe('AdultAvatarConfigurator', () => {
     randomize: noop,
     chooseFilter: noop,
     takePhoto: async () => {},
-    finishBeforeExit: async () => false,
+    finishBeforeExit: async () => ({ ok: true, saved: false }),
     ...over,
   })
   const render = (over: Partial<AvatarEditor> = {}, returnTo: '/' | '/perfil' = '/perfil') =>

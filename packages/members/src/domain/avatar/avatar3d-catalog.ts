@@ -29,9 +29,10 @@ export function avatarItem(id: string, catalog: AvatarCatalog = AVATAR_CATALOG):
   return null
 }
 
-/** O que precisa estar no inventário para vestir: peças pagas e da festa, e conjuntos. */
-export function needsOwnership(item: AvatarItem): boolean {
-  return item.kind === 'set' || item.tier === 'coins' || item.tier === 'festa'
+/** Some da loja: rascunho da arte (`hidden`) ou peça que saiu da arte (`retired`). Não se compra. */
+export function isOffShelf(id: string, catalog: AvatarCatalog = AVATAR_CATALOG): boolean {
+  const p = catalog.parts[id]
+  return Boolean(p && (p.hidden || p.retired))
 }
 
 /** Ids que podem ir ao inventário (o que se compra ou o jogo concede). */

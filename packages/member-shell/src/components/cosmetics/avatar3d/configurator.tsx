@@ -14,7 +14,8 @@ import {
   Undo2,
   X,
 } from 'lucide-react'
-import type { ComponentType } from 'react'
+import { type ComponentType, useRef } from 'react'
+import { toast } from 'sonner'
 import {
   AVATAR_FILTERS,
   AVATAR_TAB_GROUPS,
@@ -233,11 +234,18 @@ export function AvatarConfigurator({
   const { state, loadState, mode, status, tab, catalog } = editor
 
   // Sair = gravar o que falta e só então navegar. Navegação DURA (não `router.push`): a foto nova
-  // aparece no menu e na barra, que moram no layout e não são relidos numa navegação SPA.
+  // aparece no menu e na barra, que moram no layout e não são relidos numa navegação SPA. Se a
+  // gravação falhar, a tela avisa e fica; o segundo toque sai assim mesmo.
+  const sairMesmoAssim = useRef(false)
   const exitAvatar = async () => {
     if (editor.busy || editor.photoBusy) return
-    const saved = await editor.finishBeforeExit()
-    if (onReturn) onReturn(saved)
+    const fim = await editor.finishBeforeExit()
+    if (!fim.ok && !sairMesmoAssim.current) {
+      sairMesmoAssim.current = true
+      toast.error(AVATAR_MESSAGES[skin].exitUnsaved)
+      return
+    }
+    if (onReturn) onReturn(fim.saved)
     else window.location.assign(returnTo)
   }
   const exitLabel = onReturn

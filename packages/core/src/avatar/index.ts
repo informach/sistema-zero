@@ -27,6 +27,8 @@ export {
   equipPart,
   FANTASIA_SLOT,
   GROUP_CONFLICTS,
+  isAvatarOwned,
+  ownershipOf,
   partOf,
   partsConflict,
   REQUIRED_SLOTS,

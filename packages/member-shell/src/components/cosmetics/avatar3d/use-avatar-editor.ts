@@ -53,6 +53,12 @@ export interface RuleNotice {
 
 /** Quanto o avatar espera parado antes de gravar. */
 export const AUTOSAVE_DELAY_MS = 1000
+/** Quanto a foto de frente espera depois de gravado (o boneco termina de trocar as peças). */
+export const FOTO_DEPOIS_MS = 600
+
+/** As peças em texto, na ordem dos encaixes (para comparar avatares). */
+const chave = (slots: AvatarSlots) =>
+  JSON.stringify(Object.entries(slots).sort(([a], [b]) => (a < b ? -1 : 1)))
 
 const same = (a: AvatarSlots, b: AvatarSlots) => {
   const ka = Object.keys(a)
@@ -62,8 +68,9 @@ const same = (a: AvatarSlots, b: AvatarSlots) => {
 /**
  * A lógica do "Meu avatar" do pack, a mesma no Kids e na comunidade adulta (só a tela muda):
  * carregar, escolher peça (com as regras do pack), comprar em dois toques (peça ou fantasia),
- * filtro menina/menino/todas, sortear, e SALVAR SOZINHO: cada mudança grava depois de 1 s parado,
- * com a foto de frente; peça paga só experimentada não grava; ao sair, o que falta vai junto.
+ * filtro menina/menino/todas, sortear, e SALVAR SOZINHO: cada mudança grava depois de 1 s parado
+ * e, gravada, ganha a foto de frente; a peça paga só experimentada não entra (o resto, sim); ao
+ * sair, o que falta vai junto.
  */
 export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
   const [state, setState] = useState<AvatarStateView | null>(null)
@@ -88,6 +95,8 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
   const [pending, setPending] = useState<{ item: AvatarShopItem; undo: AvatarSlots } | null>(null)
   const [notice, setNotice] = useState<RuleNotice | null>(null)
   const savedSomething = useRef(false)
+  /** As peças da última foto de frente (`null` = não há foto). */
+  const fotografado = useRef<string | null>(null)
   const captureRef = useRef<CaptureFn | null>(null)
   const onReady = useCallback((c: CaptureFn) => {
     captureRef.current = c
@@ -102,6 +111,8 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
       if (!data?.equipped) throw new Error('avatar missing')
       if (isCurrent && !isCurrent()) return
       setState(data)
+      // A foto que existe é a do avatar gravado; sem foto, a primeira visita tira (abaixo).
+      fotografado.current = data.photoUrl ? chave(data.equipped) : null
       setSlots(data.equipped)
       setSaved({ slots: data.equipped, filter: data.filter })
       setFilter(data.filter)
@@ -137,8 +148,13 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
     [tab, kind, filter, owned, slots],
   )
   const unowned = useMemo(() => avatarUnownedWorn(C, slots, owned), [slots, owned])
+  // O que se grava: o avatar da tela, ou, com uma peça paga só de prévia, o último avatar sem
+  // prévia (as mudanças grátis de antes da prévia não se perdem; a peça paga só entra comprada).
+  const ultimoProprio = useRef<AvatarSlots>(slots)
+  if (unowned.length === 0) ultimoProprio.current = slots
+  const alvo = unowned.length === 0 ? slots : ultimoProprio.current
 
-  const dirty = !same(slots, saved.slots) || (filter !== null && filter !== saved.filter)
+  const dirty = !same(alvo, saved.slots) || (filter !== null && filter !== saved.filter)
   const status: SaveStatus =
     unowned.length > 0
       ? 'preview'
@@ -260,123 +276,132 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
   }
 
   // ── Salvar sozinho ──────────────────────────────────────────────────────────────────────
-  const latest = useRef({ slots, filter, unowned, saved, dirty })
-  latest.current = { slots, filter, unowned, saved, dirty }
+  const latest = useRef({ slots, alvo, filter, unowned, saved, dirty })
+  latest.current = { slots, alvo, filter, unowned, saved, dirty }
   const inFlight = useRef<Promise<boolean> | null>(null)
+  const emVoo = useRef<AbortController | null>(null)
 
-  const persist = useCallback(
-    async (opts: { photo: boolean; keepalive?: boolean }): Promise<boolean> => {
-      const atual = latest.current
-      if (!atual.dirty || atual.unowned.length > 0) return true
-      const enviado = { slots: atual.slots, filter: atual.filter }
-      setSaving(true)
-      try {
-        const res = await fetch('/api/members/avatar', {
-          method: 'PUT',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(enviado.filter ? enviado : { slots: enviado.slots }),
-          ...(opts.keepalive ? { keepalive: true } : {}),
-        })
-        if (!res.ok) throw new Error('equip')
-        setSaved({ slots: enviado.slots, filter: enviado.filter ?? latest.current.saved.filter })
-        setSaveError(false)
-        savedSomething.current = true
-        // A foto de frente (melhor esforço): a escolha já está guardada.
-        const capture = captureRef.current
-        if (opts.photo && capture) {
-          try {
-            const blob = await capture({ portrait: true })
-            if (blob) {
-              const fd = new FormData()
-              fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
-              await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
-            }
-          } catch {
-            // a próxima gravação tenta de novo
-          }
-        }
-        return true
-      } catch {
-        setSaveError(true)
-        return false
-      } finally {
-        setSaving(false)
-      }
-    },
-    [],
-  )
+  /** Grava o alvo de agora. Sem foto: a foto vem depois, só do avatar sem prévia (abaixo). */
+  const persist = useCallback(async (opts: { keepalive?: boolean } = {}): Promise<boolean> => {
+    const atual = latest.current
+    if (!atual.dirty) return true
+    const enviado = { slots: atual.alvo, filter: atual.filter }
+    const controle = new AbortController()
+    emVoo.current = controle
+    setSaving(true)
+    try {
+      const res = await fetch('/api/members/avatar', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(enviado.filter ? enviado : { slots: enviado.slots }),
+        signal: controle.signal,
+        ...(opts.keepalive ? { keepalive: true } : {}),
+      })
+      if (!res.ok) throw new Error('equip')
+      setSaved({ slots: enviado.slots, filter: enviado.filter ?? latest.current.saved.filter })
+      setSaveError(false)
+      savedSomething.current = true
+      return true
+    } catch {
+      if (!controle.signal.aborted) setSaveError(true)
+      return false
+    } finally {
+      if (emVoo.current === controle) emVoo.current = null
+      setSaving(false)
+    }
+  }, [])
 
-  const saveNow = useCallback(
-    async (opts: { photo: boolean; keepalive?: boolean } = { photo: true }) => {
-      while (inFlight.current) await inFlight.current
-      const p = persist(opts)
-      inFlight.current = p
-      try {
-        return await p
-      } finally {
-        inFlight.current = null
-      }
-    },
-    [persist],
-  )
+  /** Uma gravação de cada vez, na ordem: a mais nova nunca chega antes da anterior. */
+  const saveNow = useCallback(async () => {
+    while (inFlight.current) await inFlight.current
+    const p = persist()
+    inFlight.current = p
+    try {
+      return await p
+    } finally {
+      inFlight.current = null
+    }
+  }, [persist])
 
-  // Grava 1 s depois da última mudança (nunca durante a prévia de uma peça paga).
-  const slotsKey = JSON.stringify(slots)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `slotsKey` e `filter` não são lidos, mas cada mudança deles precisa recomeçar a espera de 1 s (com `dirty` já verdadeiro, só eles mudam).
+  // Grava 1 s depois da última mudança.
+  const alvoKey = chave(alvo)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `alvoKey` e `filter` não são lidos, mas cada mudança deles precisa recomeçar a espera de 1 s (com `dirty` já verdadeiro, só eles mudam).
   useEffect(() => {
-    if (loadState !== 'ready' || !dirty || unowned.length > 0 || saveError) return
-    const t = setTimeout(() => void saveNow({ photo: true }), AUTOSAVE_DELAY_MS)
+    if (loadState !== 'ready' || !dirty || saveError) return
+    const t = setTimeout(() => void saveNow(), AUTOSAVE_DELAY_MS)
     return () => clearTimeout(t)
-  }, [loadState, dirty, unowned.length, saveError, slotsKey, filter, saveNow])
+  }, [loadState, dirty, saveError, alvoKey, filter, saveNow])
 
-  // Sem foto ainda (perfil novo, nunca abriu o Meu avatar): a foto de frente do avatar que ele
-  // já tem (o sorteado), sem gravar nada. Ninguém fica sem foto no menu, no ranking e no Mural.
-  const fotoInicial = useRef(false)
-  const semFoto = state !== null && state.photoUrl === null
-  useEffect(() => {
-    if (loadState !== 'ready' || !semFoto || fotoInicial.current) return
-    let tentativas = 0
-    const t = setInterval(() => {
-      tentativas += 1
-      const capture = captureRef.current
-      // Mexeu antes: a gravação de sempre já leva a foto.
-      if (fotoInicial.current || latest.current.dirty || tentativas > 8) {
-        clearInterval(t)
-        return
-      }
-      if (!capture) return
-      fotoInicial.current = true
-      clearInterval(t)
-      void (async () => {
-        try {
-          const blob = await capture({ portrait: true })
-          if (!blob) return
-          const fd = new FormData()
-          fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
-          const res = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
-          if (res.ok) savedSomething.current = true
-        } catch {
-          // a próxima visita tenta de novo
+  /**
+   * A foto de frente, quando o avatar gravado é o da tela (nada por gravar, nenhuma prévia) e a
+   * foto de agora é de outras peças. Vale também para quem ainda não tem foto (perfil novo):
+   * ninguém fica sem foto no menu, no ranking e no Mural.
+   */
+  const fotoPendente = useRef<Promise<void> | null>(null)
+  const tirarFotoSePrecisa = useCallback(async (acabouDeGravar = false): Promise<void> => {
+    if (fotoPendente.current) return fotoPendente.current
+    const atual = latest.current
+    const capture = captureRef.current
+    const pecas = chave(atual.slots)
+    // `acabouDeGravar`: a gravação deu certo agora, mas a tela ainda não renderizou o "gravado".
+    if (
+      !capture ||
+      (atual.dirty && !acabouDeGravar) ||
+      atual.unowned.length > 0 ||
+      fotografado.current === pecas
+    )
+      return
+    const tarefa = (async () => {
+      try {
+        const blob = await capture({ portrait: true })
+        // Mudou durante a foto: a próxima rodada tira de novo.
+        if (!blob || chave(latest.current.slots) !== pecas) return
+        const fd = new FormData()
+        fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
+        const res = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+        if (res.ok) {
+          fotografado.current = pecas
+          savedSomething.current = true
         }
-      })()
-    }, 1500)
-    return () => clearInterval(t)
-  }, [loadState, semFoto])
+      } catch {
+        // a próxima mudança (ou a próxima visita) tenta de novo
+      }
+    })()
+    fotoPendente.current = tarefa
+    try {
+      await tarefa
+    } finally {
+      fotoPendente.current = null
+    }
+  }, [])
+  const slotsKey = chave(slots)
+  useEffect(() => {
+    if (loadState !== 'ready' || dirty || saving || unowned.length > 0) return
+    if (fotografado.current === slotsKey) return
+    const t = setTimeout(() => void tirarFotoSePrecisa(), FOTO_DEPOIS_MS)
+    return () => clearTimeout(t)
+  }, [loadState, dirty, saving, unowned.length, slotsKey, tirarFotoSePrecisa])
 
-  // Saiu da página com algo por gravar: vai junto (sem foto: a página está fechando).
+  // Saiu da página com algo por gravar: vai junto (sem foto: a página está fechando). Uma
+  // gravação ainda no ar é cancelada antes, para a velha não chegar depois da nova.
   useEffect(() => {
     const flush = () => {
-      if (latest.current.dirty && latest.current.unowned.length === 0)
-        void persist({ photo: false, keepalive: true })
+      if (!latest.current.dirty) return
+      emVoo.current?.abort()
+      void persist({ keepalive: true })
     }
     window.addEventListener('pagehide', flush)
     return () => window.removeEventListener('pagehide', flush)
   }, [persist])
 
-  /** Sair: espera gravar o que falta (com a foto) antes de ir. */
-  async function finishBeforeExit(): Promise<boolean> {
-    if (latest.current.dirty && latest.current.unowned.length === 0) await saveNow({ photo: true })
-    return savedSomething.current
+  /**
+   * Sair: grava o que falta e tira a foto antes de ir. `ok` falso = a gravação falhou (a tela não
+   * sai sem avisar); `saved` = algo foi gravado nesta visita.
+   */
+  async function finishBeforeExit(): Promise<{ ok: boolean; saved: boolean }> {
+    const ok = latest.current.dirty ? await saveNow() : true
+    if (ok) await tirarFotoSePrecisa(true)
+    return { ok, saved: savedSomething.current }
   }
 
   /** Cabine de fotos: a foto de corpo inteiro na pose escolhida. */
@@ -385,13 +410,15 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
     if (!capture || photoBusy) return
     setPhotoBusy(true)
     try {
-      await saveNow({ photo: false })
+      await saveNow()
       const blob = await capture({ portrait: false })
       if (!blob) throw new Error('foto')
       const fd = new FormData()
       fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
       const res = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
       if (!res.ok) throw new Error('foto')
+      // A foto da Cabine vale para estas peças: a de frente não passa por cima dela.
+      fotografado.current = chave(latest.current.slots)
       savedSomething.current = true
       toast.success(messages.photoTaken)
     } catch {

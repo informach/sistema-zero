@@ -1,4 +1,9 @@
-import type { AvatarFilter, AvatarSlots } from '@sistemazero/core/avatar'
+import {
+  AVATAR_CATALOG,
+  type AvatarFilter,
+  type AvatarSlots,
+  withEars,
+} from '@sistemazero/core/avatar'
 import {
   type AvatarConfig,
   assertEquippableConfig,
@@ -14,10 +19,15 @@ export interface EquipAvatarInput {
   filter?: AvatarFilter
 }
 
+function mesmasPecas(a: AvatarSlots, b: AvatarSlots): boolean {
+  const ka = Object.keys(a)
+  return ka.length === Object.keys(b).length && ka.every((k) => a[k] === b[k])
+}
+
 /**
  * Grava o avatar que a pessoa montou. ESTRITO: combina pelas regras do pack e toda peça paga, da
- * festa ou de fantasia está no inventário (`assertEquippableConfig`). Gravar aqui é sempre uma
- * escolha da pessoa, então o avatar passa a contar como personalizado. `accountId` é imutável.
+ * festa ou de fantasia está no inventário (`assertEquippableConfig`). Passa a contar como
+ * personalizado quando alguma peça muda (uma vez personalizado, fica). `accountId` é imutável.
  */
 export class EquipAvatarService {
   constructor(
@@ -35,15 +45,19 @@ export class EquipAvatarService {
       this.avatar.listInventory(userId, audience),
       this.avatar.getConfig(userId, audience),
     ])
-    const filter = input.filter ?? canonicalizeAvatarConfig(anterior, userId).filter
+    const atual = canonicalizeAvatarConfig(anterior, userId)
+    const filter = input.filter ?? atual.filter
     assertEquippableConfig({ slots: input.slots, filter }, new Set(owned))
+    // Personalizado = a pessoa mudou alguma peça. Só responder o filtro (a pergunta da primeira
+    // vez) grava o filtro, mas o avatar continua o sorteado: a ação de aula ainda não passa.
+    const mudou = !mesmasPecas(withEars(AVATAR_CATALOG, input.slots), atual.slots)
     const config = canonicalizeAvatarConfig(
       {
         version: 3,
         style: AVATAR_CHAR_STYLE,
         slots: input.slots,
         ...(filter ? { filter } : {}),
-        customized: true,
+        ...(atual.customized || mudou ? { customized: true } : {}),
       },
       userId,
     )

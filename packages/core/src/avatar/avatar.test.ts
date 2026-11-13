@@ -7,7 +7,9 @@ import {
   drawAvatar,
   equipPart,
   isAvatarFile,
+  isAvatarOwned,
   isListed,
+  ownershipOf,
   removeSlot,
   withEars,
 } from './index'
@@ -222,5 +224,35 @@ describe('arquivos', () => {
     expect(isAvatarFile(C, '../segredo.glb')).toBe(false)
     expect(isAvatarFile(C, 'pecas/../../x.glb')).toBe(false)
     expect(isAvatarFile(C, 'materiais/aula.pdf')).toBe(false)
+  })
+})
+
+describe('posse', () => {
+  test('grátis e orelhas são de todo mundo; paga, da festa e escondida pedem a própria peça', () => {
+    const nada = new Set<string>()
+    const de = (filtro: (p: (typeof C.parts)[string]) => boolean) =>
+      Object.entries(C.parts).find(([, p]) => !p.set && filtro(p))?.[0] ?? ''
+    const gratis = de((p) => p.tier === 'free' && !p.hidden)
+    const paga = de((p) => p.tier === 'coins' && !p.hidden)
+    const daFesta = de((p) => p.tier === 'festa')
+    expect(ownershipOf(C, gratis)).toBeNull()
+    expect(isAvatarOwned(C, gratis, nada)).toBe(true)
+    expect(ownershipOf(C, paga)).toBe(paga)
+    expect(isAvatarOwned(C, paga, nada)).toBe(false)
+    expect(isAvatarOwned(C, paga, new Set([paga]))).toBe(true)
+    expect(isAvatarOwned(C, daFesta, nada)).toBe(false)
+    const escondida = de((p) => Boolean(p.hidden))
+    if (escondida) expect(ownershipOf(C, escondida)).toBe(escondida)
+    expect(isAvatarOwned(C, 'nao-existe', nada)).toBe(false)
+  })
+
+  test('a parte de fantasia e o conjunto pedem o CONJUNTO no inventário', () => {
+    const [setId, conjunto] = Object.entries(C.sets)[0] ?? []
+    if (!setId || !conjunto) throw new Error('sem fantasia')
+    const parte = conjunto.parts[0]?.part ?? ''
+    expect(ownershipOf(C, parte)).toBe(setId)
+    expect(isAvatarOwned(C, parte, new Set([parte]))).toBe(false)
+    expect(isAvatarOwned(C, parte, new Set([setId]))).toBe(true)
+    expect(isAvatarOwned(C, setId, new Set([setId]))).toBe(true)
   })
 })

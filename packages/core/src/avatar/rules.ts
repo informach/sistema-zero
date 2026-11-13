@@ -183,5 +183,29 @@ export function avatarProblems(catalog: AvatarCatalog, slots: AvatarSlots): Avat
   return problemas
 }
 
+/**
+ * O que precisa estar no inventário para usar uma peça: o conjunto, se ela é de fantasia; a própria
+ * peça, se é paga, da festa ou escondida (rascunho da arte); nada (`null`) se é de todo mundo
+ * (grátis e orelhas). A MESMA régua no servidor (gravar) e na tela (prévia), sem cópia.
+ */
+export function ownershipOf(catalog: AvatarCatalog, partId: string): string | null {
+  const p = partOf(catalog, partId)
+  if (!p) return null
+  if (p.set) return p.set
+  return p.tier === 'coins' || p.tier === 'festa' || p.hidden ? partId : null
+}
+
+/** A pessoa pode usar a peça, ou o conjunto de fantasia (pelo id dele), com este inventário. */
+export function isAvatarOwned(
+  catalog: AvatarCatalog,
+  id: string,
+  owned: ReadonlySet<string>,
+): boolean {
+  if (catalog.sets[id]) return owned.has(id)
+  if (!catalog.parts[id]) return false
+  const chave = ownershipOf(catalog, id)
+  return chave === null || owned.has(chave)
+}
+
 /** O encaixe da fantasia (a parte principal do conjunto mora nele). */
 export const FANTASIA_SLOT = SLOT_DA_FANTASIA

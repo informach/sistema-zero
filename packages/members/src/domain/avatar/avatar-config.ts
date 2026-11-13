@@ -5,10 +5,11 @@ import {
   type AvatarSlots,
   avatarProblems,
   drawAvatar,
+  ownershipOf,
   withEars,
 } from '@sistemazero/core/avatar'
 import { AvatarInvalidError, AvatarPartNotOwnedError } from './avatar.errors'
-import { AVATAR_CHAR_STYLE, avatarItem, needsOwnership } from './avatar3d-catalog'
+import { AVATAR_CHAR_STYLE } from './avatar3d-catalog'
 
 /**
  * O avatar gravado (`avatar_configs.equipped`, JSON): uma peça por encaixe do pack.
@@ -105,13 +106,10 @@ export function assertEquippableConfig(
     throw new AvatarInvalidError('Filtro de avatar desconhecido')
   const problema = avatarProblems(catalog, withEars(catalog, config.slots))[0]
   if (problema) throw new AvatarInvalidError(descrever(problema))
+  // A régua de posse é a do core (`ownershipOf`), a mesma da tela.
   for (const id of Object.values(config.slots)) {
-    const peca = catalog.parts[id]
-    if (!peca) continue
-    const item = peca.set ? avatarItem(peca.set, catalog) : avatarItem(id, catalog)
-    if (!item) throw new AvatarInvalidError(`Peça de avatar desconhecida: ${id}`)
-    if ((needsOwnership(item) || peca.hidden) && !ownedIds.has(item.id))
-      throw new AvatarPartNotOwnedError()
+    const chave = ownershipOf(catalog, id)
+    if (chave !== null && !ownedIds.has(chave)) throw new AvatarPartNotOwnedError()
   }
 }
 

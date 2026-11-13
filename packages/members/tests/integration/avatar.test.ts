@@ -115,6 +115,30 @@ describe('Avatar do pack: compra', () => {
     expect(chaves).toEqual([`avatar-buy-v3:${USER}:${CAMISETA_PAGA}`])
   })
 
+  test('peça escondida (rascunho da arte) não se compra: 404, como se não existisse', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 100)
+    const escondida = Object.entries(C.parts).find(([, p]) => p.hidden && !p.set)?.[0]
+    if (!escondida) return
+    expect((await buyPart(app, escondida)).status).toBe(404)
+    expect((await readJson(await getAvatar(app))).owned).toEqual([])
+  })
+
+  test('só responder o filtro grava o filtro, mas o avatar não conta como personalizado', async () => {
+    const { app } = buildApp()
+    const antes = await readJson(await getAvatar(app))
+    expect((await putAvatar(app, { slots: antes.equipped, filter: 'girl' })).status).toBe(200)
+    const depois = await readJson(await getAvatar(app))
+    expect(depois.filter).toBe('girl')
+    expect(depois.customized).toBe(false)
+    // Trocar uma peça conta, e continua contando depois.
+    const outra = equipPart(C, antes.equipped, pecaDe('roupa_cima', 'free'))
+    await putAvatar(app, { slots: outra })
+    expect((await readJson(await getAvatar(app))).customized).toBe(true)
+    await putAvatar(app, { slots: outra, filter: 'boy' })
+    expect((await readJson(await getAvatar(app))).customized).toBe(true)
+  })
+
   test('sem saldo → 402; peça grátis → 400; inexistente → 404; prêmio da festa → 409', async () => {
     const { app, gamification } = buildApp()
     await seedCoins(gamification, 10)
