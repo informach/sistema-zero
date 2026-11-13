@@ -12,7 +12,7 @@ import { PRIMARY_ACTION, SECONDARY_ACTION } from './parent-ui'
 /**
  * Card de embaixador da área dos pais: o responsável vira embaixador do presente com um clique
  * (os dados já são os da conta) e recebe o link da própria página por e-mail. Desde 20/10/2026 o
- * presente tem dois públicos: uma família com criança de 9 a 17 anos (Kids) ou um adulto que quer
+ * presente tem dois públicos: uma família com criança de 5 a 17 anos (Kids) ou um adulto que quer
  * criar o próprio jogo. O cadastrado copia o link certo para cada um (`shareUrls`); sem
  * `shareUrls` (referrals antigo), o `shareUrl` é o link Kids.
  * ⚠️ Regra da dona (20/10/2026): o desenho é o da área dos pais de hoje (faixa lilás, ícone em
@@ -172,7 +172,7 @@ export function AmbassadorCard() {
                       url={familyUrl}
                       label="Cartão para uma família"
                       title="Um presente para criar em família"
-                      subtitle="Kids · 9 a 17 anos"
+                      subtitle="Kids · 5 a 17 anos"
                       description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
                       notice="Acesse o link e faça o cadastro como responsável pela criança."
                     />
@@ -210,7 +210,7 @@ export function AmbassadorCard() {
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Como embaixador(a), você pode dar 7 dias no Sistema Zero, sem custo, a outra
-                  família com criança de 9 a 17 anos ou a um adulto que quer criar o próprio jogo.
+                  família com criança de 5 a 17 anos ou a um adulto que quer criar o próprio jogo.
                   Se alguém que recebeu o seu presente assinar a Comunidade dos Criadores, Kids ou
                   adulta, você recebe um agradecimento
                   {bonusDescription ? ` de ${bonusDescription}` : ''} por Pix, depois da garantia de

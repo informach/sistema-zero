@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Presente Kids: 5 a 17 anos (13/11/2026)
+
+O cartão "Seja um embaixador" diz "família com criança de 5 a 17 anos" e o cartão de divulgação
+"Kids · 5 a 17 anos" (decisão da dona; antes era 9 a 17). Ver o CLAUDE.md do funnel.
+
 ## Ensaio de ponta a ponta da vaga de arte (29/10/2026)
 
 `bun run e2e:art-slots` (`playwright.art-slots.config.ts`, também no CI do Kids): o desenho do bloco

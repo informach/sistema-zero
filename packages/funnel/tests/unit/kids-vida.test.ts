@@ -108,7 +108,10 @@ for (const mode of modes)
               if (bloco.tipo === 'cta')
                 for (const field of [bloco.termos, bloco.nota])
                   if (field) expect(lintLightCopy(semMarcas(field))).toEqual([])
-            expect(result.destino).toEndWith(idade === 'm9' ? '/oferta/criar-junto' : '/oferta')
+            // O Desafio Kids tem uma página só desde 13/11/2026; a Comunidade segue com a "criar junto".
+            expect(result.destino).toEndWith(
+              idade === 'm9' && mode === 'comunidade' ? '/oferta/criar-junto' : '/oferta',
+            )
           }
     })
     test('mantém integralmente os 29 resultados aprovados da proposta V5', () => {

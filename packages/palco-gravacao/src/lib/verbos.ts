@@ -317,6 +317,8 @@ export interface JogoNoEstudio {
   modo: 'auto' | 'mostrar' | 'esconder'
   /** Os passos de zoom dados ao esconder o jogo, desfeitos ao mostrá-lo. */
   zoom: number
+  /** Quando a ponte trouxe o jogo de volta, até ele ficar carregado (ver `jogoVoltando`). */
+  voltou?: { em: number; firmeDesde?: number }
 }
 
 export const novoJogoNoEstudio = (): JogoNoEstudio => ({ modo: 'auto', zoom: 0 })
@@ -1041,6 +1043,10 @@ export async function ajustarJogo(
   if (aVista === mostrar) return
   if (!(await pagina.alternarJogo())) return
   await esperarAte(() => pagina.jogoAVista() === mostrar, JOGO_NO_MAXIMO)
+  // O jogo que volta é uma prévia nova: a ponte fica ocupada até ele carregar (`jogoVoltando`),
+  // senão a seta ou o toque caem na tela em branco (Farol, Aula 1, Parte 4, 10/11/2026). A
+  // espera fica fora do `agir`, que o EdiAula espera só por alguns segundos.
+  if (mostrar) jogo.voltou = { em: Date.now() }
   // O Blockly acompanha o tamanho novo da área um instante depois (o observador de tamanho).
   await assentar(pagina)
   if (!mostrar && ZOOM_SEM_JOGO) {
@@ -1052,6 +1058,38 @@ export async function ajustarJogo(
 
 /** O teto da espera pelo jogo sair ou voltar depois da troca no menu. */
 const JOGO_NO_MAXIMO = 3000
+/**
+ * Por quanto tempo o jogo que voltou precisa ficar carregado, sem documento novo nem "Preparando a
+ * oficina", e o teto da espera. Com os blocos mudados enquanto o jogo estava fora, o Estúdio
+ * monta a prévia de novo um instante depois de ela aparecer.
+ */
+const JOGO_ESTAVEL = 1200
+const JOGO_CARREGANDO_NO_MAXIMO = 10_000
+
+/**
+ * O jogo que a ponte trouxe de volta ainda não ficou carregado por JOGO_ESTAVEL seguidos (a
+ * ponte responde ocupada). Passado o teto, ou firme o bastante, deixa de contar.
+ */
+export function jogoVoltando(
+  jogo: JogoNoEstudio,
+  pagina: Pick<PaginaDoPalco, 'jogoCarregando'>,
+  agora = Date.now(),
+): boolean {
+  const voltou = jogo.voltou
+  if (!voltou) return false
+  if (agora - voltou.em >= JOGO_CARREGANDO_NO_MAXIMO) {
+    jogo.voltou = undefined
+    return false
+  }
+  if (pagina.jogoCarregando()) {
+    voltou.firmeDesde = undefined
+    return true
+  }
+  voltou.firmeDesde ??= agora
+  if (agora - voltou.firmeDesde < JOGO_ESTAVEL) return true
+  jogo.voltou = undefined
+  return false
+}
 
 async function esperarAte(pronto: () => boolean, maximo: number): Promise<void> {
   for (let passou = 0; passou < maximo && !pronto(); passou += ENTRE_MEDIDAS)

@@ -1,7 +1,8 @@
 import { RELATOS } from '../../comunidade-dos-criadores/oferta/relatos'
 import type { RelatoId } from '../../comunidade-dos-criadores/oferta/types'
 
-// Página do Desafio do Primeiro Jogo para 9 a 17 anos (proposta revisada aprovada em 05/11/2026, Canvas
+// Página do Desafio do Primeiro Jogo Kids, de 5 a 17 anos (abaixo de 9, com acompanhante; desde
+// 13/11/2026 a única página Kids do Desafio). Proposta revisada aprovada em 05/11/2026, Canvas
 // "Desafio do Primeiro Jogo · três páginas", quadro Desafio917 com o review aplicado). A copy é a
 // do desenho, palavra por palavra. Preço só por marcador ({{preco}}, {{preco_dia}}), preenchido
 // pelo corpo a partir do catálogo; nada de valor escrito à mão.
@@ -29,11 +30,11 @@ export function legendaRelatoDesafio(r: RelatoDesafio): string {
 }
 
 export const PAGINA_DESAFIO_9A17 = {
-  seoTitle: 'Desafio do Primeiro Jogo: habilidades para a vida | Sistema Zero',
+  seoTitle: 'Desafio do Primeiro Jogo: habilidades cognitivas para a vida | Sistema Zero',
   description:
-    'Ajude seu filho a praticar planejamento, resolução de problemas e comunicação para a escola e a vida. Treinamento guiado com criação de jogos e programação em blocos. 9 a 17 anos.',
+    'Ajude seu filho a praticar planejamento, resolução de problemas e comunicação para a escola e a vida. Treinamento guiado com criação de jogos e programação em blocos. 5 a 17 anos; abaixo de 9, com acompanhante.',
   capa: 'desafio-primeiro-jogo/farol-capa.webp',
-  cta: 'Quero começar por {{preco}}',
+  cta: 'Quero ajudar meu filho',
   condicoes: 'Pagamento único · 30 dias de acesso · 7 dias de garantia',
   topo: {
     pular: 'Ir para o conteúdo',
@@ -58,7 +59,7 @@ export const PAGINA_DESAFIO_9A17 = {
     cta: 'Conhecer o treinamento',
   },
   hero: {
-    selo: 'Habilidades para a vida · 9 a 17 anos',
+    selo: 'Habilidades cognitivas para a vida · 5 a 17 anos, abaixo de 9 com acompanhante',
     titulo: 'Ajude seu filho a resolver problemas e fazer escolhas ',
     destaque: 'com mais autonomia, na escola e na vida.',
     texto:
@@ -146,7 +147,7 @@ export const PAGINA_DESAFIO_9A17 = {
       titulo: 'Programar é organizar as instruções para realizar uma ideia.',
       paragrafos: [
         'Aqui, as instruções são montadas com blocos de encaixar. Por exemplo: quando o personagem chega ao farol, o jogo confere se ele pegou a chave antes de acender a luz. Seu filho monta essa regra, testa e observa se aconteceu o que esperava. O raciocínio ganha uma forma que ele pode ver e revisar.',
-        'Ele recebe um projeto inicial e orientações para construir cada parte. Também faz escolhas: personagem, cenário, avisos e posição da chave. Ao mudar o lugar da chave, muda o percurso de quem joga e pode conferir o efeito da própria decisão.',
+        'Ele recebe um projeto inicial e orientações para construir cada parte. Também faz escolhas: personagem, cenário, avisos e posição da chave. Ao mudar o lugar da chave, muda o percurso de quem joga e pode conferir o efeito da própria decisão. Ao escolher uma coisa, ele abre mão de outra e vê o que essa escolha provocou: aprende causa e consequência e exercita a tolerância à frustração.',
       ],
     },
   },
@@ -200,7 +201,9 @@ export const PAGINA_DESAFIO_9A17 = {
   treina: {
     tag: 'Do treinamento para outras situações',
     titulo:
-      'Enquanto constrói o jogo, ele pratica maneiras de pensar que você pode retomar fora da tela.',
+      'Enquanto constrói o jogo, ele pratica habilidades cognitivas para a vida, que você pode retomar fora da tela.',
+    texto:
+      'Cada habilidade trabalha funções executivas importantes para lidar com os contextos da vida diária.',
     habilidades: [
       {
         titulo: 'Planejar antes de agir',
@@ -285,6 +288,7 @@ export const PAGINA_DESAFIO_9A17 = {
       '“Qual parte podemos olhar juntos?” Ajudem a localizar a dificuldade antes de tentar uma solução.',
       '“Quer fazer uma pausa ou testar uma parte comigo?” Combine uma forma possível de continuar.',
       'Depois, peça que mostre o que mudou. Reconheça uma escolha, uma tentativa ou a ajuda que conseguiu pedir.',
+      'Abaixo de 9 anos, fique ao lado durante as atividades: ajude na leitura e nos controles e deixe que ele escolha e teste com você.',
     ],
   },
   oferta: {
@@ -349,16 +353,12 @@ export const PAGINA_DESAFIO_9A17 = {
     {
       pergunta: 'Para qual idade foi pensado?',
       resposta:
-        'Para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia, conforme seu momento e familiaridade com o computador. Menores de 9 anos também podem participar, com um responsável acompanhando as atividades.',
-      link: {
-        href: '/kids/desafio-primeiro-jogo/oferta/criar-junto',
-        texto: 'Conhecer a proposta para criar junto.',
-      },
+        'Para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, a criança faz as atividades acompanhada por um responsável: você ajuda na leitura e nos controles, e ela escolhe e testa com você. A partir dos 9, a autonomia varia conforme o momento e a familiaridade com o computador.',
     },
     {
       pergunta: 'Meu filho é autista. Como podemos avaliar a participação?',
       resposta:
-        'Comecem juntos e observem como ele compreende uma orientação, usa os controles e comunica o que precisa. As aulas são gravadas e permitem pausar e rever; as falas do Zappy têm botão Ouvir. Ele pode explicar uma escolha falando, apontando ou mostrando. O acompanhamento deve considerar o ritmo e as necessidades de apoio dele, inclusive dos 9 aos 17 anos.',
+        'Comecem juntos e observem como ele compreende uma orientação, usa os controles e comunica o que precisa. As aulas são gravadas e permitem pausar e rever; as falas do Zappy têm botão Ouvir. Ele pode explicar uma escolha falando, apontando ou mostrando. O acompanhamento deve considerar o ritmo e as necessidades de apoio dele, em qualquer idade.',
     },
     {
       pergunta: 'Precisa saber programar? Quanto devo acompanhar?',
@@ -399,7 +399,7 @@ export const PAGINA_DESAFIO_9A17 = {
   },
   barra: {
     sufixo: 'pagamento único',
-    cta: 'Começar o treinamento',
+    cta: 'Quero ajudar meu filho',
   },
   pratica: {
     metodologia:

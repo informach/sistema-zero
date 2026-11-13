@@ -31,6 +31,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
   const adultUserId = randomUUID()
   const adultCourseId = randomUUID()
   const kidsOnlyCourseId = randomUUID()
+  const kidsOtherCourseId = randomUUID()
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
@@ -75,7 +76,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
   afterAll(async () => {
     if (conn) {
       await conn.sql`delete from members.xp_events where user_id in (${userId}, ${movedUserId}, ${adultUserId})`
-      await conn.sql`delete from members.courses where id in (${bonusCourseId}, ${movedCourseId}, ${adultCourseId}, ${kidsOnlyCourseId})`
+      await conn.sql`delete from members.courses where id in (${bonusCourseId}, ${movedCourseId}, ${adultCourseId}, ${kidsOnlyCourseId}, ${kidsOtherCourseId})`
       await conn.close()
     }
   })
@@ -136,15 +137,20 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
         (${adultCourseId}, ${`adulto-${adultCourseId}`}, 'Laços adultos', 'published',
          'adult', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_repeat'] })}::jsonb),
         (${kidsOnlyCourseId}, ${`kids-${kidsOnlyCourseId}`}, 'Laços Kids', 'published',
-         'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_while'] })}::jsonb)`
-    // A mesma pessoa concluiu o curso adulto e tem uma conclusão no curso Kids (nos dois públicos).
+         'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_while'] })}::jsonb),
+        (${kidsOtherCourseId}, ${`kids-${kidsOtherCourseId}`}, 'Funções Kids', 'published',
+         'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_js_function'] })}::jsonb)`
+    // A mesma pessoa concluiu o curso adulto, um curso Kids no público Kids e OUTRO curso Kids com
+    // a conclusão no público adulto. São dois cursos Kids porque o banco de verdade só aceita uma
+    // conclusão por pessoa e curso (`xp_events_user_source_uq`): com um curso só, este teste
+    // reprovava quando o arquivo do ranking criava o índice antes (CI, 13/11/2026).
     await conn.sql`
       insert into members.xp_events
         (id, user_id, audience, source_type, source_id, amount, created_at)
       values
         (${randomUUID()}, ${adultUserId}, 'adult', 'course_complete', ${adultCourseId}, 0, now()),
         (${randomUUID()}, ${adultUserId}, 'kids', 'course_complete', ${kidsOnlyCourseId}, 0, now()),
-        (${randomUUID()}, ${adultUserId}, 'adult', 'course_complete', ${kidsOnlyCourseId}, 0, now())`
+        (${randomUUID()}, ${adultUserId}, 'adult', 'course_complete', ${kidsOtherCourseId}, 0, now())`
 
     expect(await repo.listStudioUnlocksByCourse(adultUserId, 'adult')).toEqual([
       { courseId: adultCourseId, blocks: ['sz_js_repeat'] },

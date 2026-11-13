@@ -15,7 +15,7 @@ test('campanhas falam dos dois públicos com a copy do Canvas', async () => {
     new URL('../src/app/admin/embaixadores/convites-client.tsx', import.meta.url),
   ).text()
   expect(source).toContain('Público do presente')
-  expect(source).toContain('Família com criança de 9 a 17 anos. Cadê Todo Mundo e Mural Kids.')
+  expect(source).toContain('Família com criança de 5 a 17 anos. Cadê Todo Mundo e Mural Kids.')
   expect(source).toContain('18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.')
   expect(source).toContain('Cada campanha tem seu link, seu')
   // Sem travessão, sem "!" e sem o "?" no nome do curso.

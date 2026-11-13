@@ -78,6 +78,12 @@ const CAMINHO = [
                 </li>
               ))}
             </ul>
+            {preco.precoCheio && preco.descontoPct && (
+              <div class="d9-desconto">
+                <span class="d9-desconto__selo">Cupom {preco.codigo} · {preco.descontoPct}% de desconto</span>
+                <p class="d9-desconto__preco">De <s>{preco.precoCheio}</s> por <strong>{preco.preco}</strong></p>
+              </div>
+            )}
             <div class="d9-acoes">
               <a class="c9-btn c9-btn--grande" href="#oferta" data-analytics-id="desafio-hero-oferta">{fill(P.cta)}</a>
               <a class="d9-link" href="#farol">{P.hero.linkSecundario}</a>
@@ -173,6 +179,7 @@ const CAMINHO = [
           <div class="c9-cabeca c9-cabeca--820">
             <span class="c9-tag c9-cor--roxo c9-tag--clara">{P.treina.tag}</span>
             <h2 id="d9-treina" class="c9-h2">{P.treina.titulo}</h2>
+            <p class="c9-p">{P.treina.texto}</p>
           </div>
           <div class="d9-habilidades">
             {P.treina.habilidades.map((h, i) => (
@@ -230,6 +237,7 @@ const CAMINHO = [
             </ul>
             <article class="c9-plano d9-plano">
               <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
+              {preco.precoCheio && preco.descontoPct && <span class="d9-desconto__selo">{preco.descontoPct}% de desconto</span>}
               <p class="c9-plano__preco">{preco.precoCheio && <s class="d9-cheio">{preco.precoCheio}</s>}{preco.preco}<span> {P.oferta.sufixo}</span></p>
               <p class="c9-plano__texto">{fill(P.oferta.porDia)}</p>
               <button type="button" class="c9-plano__btn d9-plano__btn" data-checkout-cta data-analytics-id="desafio-oferta-comprar">{fill(P.cta)}</button>
@@ -273,7 +281,7 @@ const CAMINHO = [
           {P.faq.map((item) => (
             <details class="c9-duvida">
               <summary>{item.pergunta}</summary>
-              <p>{fill(item.resposta)}{'link' in item && <> <a href={link(item.link.href)}>{item.link.texto}</a></>}</p>
+              <p>{fill(item.resposta)}</p>
             </details>
           ))}
         </div>
@@ -291,7 +299,13 @@ const CAMINHO = [
     </main>
 
     <div class="kof-mobar c9-barra" data-mobar aria-hidden="true">
-      <span class="c9-barra__preco"><strong>{preco.preco}</strong><span>{P.barra.sufixo}</span></span>
+      <span class="c9-barra__preco">
+        {preco.precoCheio && preco.descontoPct ? (
+          <><strong><s class="d9-barra__cheio">{preco.precoCheio}</s>{' '}{preco.preco}</strong><span>{preco.descontoPct}% de desconto</span></>
+        ) : (
+          <><strong>{preco.preco}</strong><span>{P.barra.sufixo}</span></>
+        )}
+      </span>
       <a class="c9-btn" href="#oferta" tabindex="-1">{P.barra.cta}</a>
     </div>
   </div>

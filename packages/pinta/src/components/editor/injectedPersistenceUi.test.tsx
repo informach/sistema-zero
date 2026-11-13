@@ -17,9 +17,17 @@ const { setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
 const { createMemoryPersistence } = await import('../../state/memoryPersistence')
 
+// Um perfil SÓ deste arquivo, novo a cada teste: o que se confere aqui é que o editor com
+// armazenamento injetado não grava no perfil. Com o perfil padrão (''), um autosave atrasado de
+// OUTRO arquivo (o `clipboardUi` grava o desenho "doce" ao desmontar) caía depois do
+// `clearIdbMock()` e reprovava este teste sem ele ter feito nada: no CI, mais lento, isso virou
+// regra (13/11/2026). A gravação atrasada fica presa ao perfil dela (a persistência captura o
+// namespace ao ser criada), então um perfil próprio isola de verdade, sem depender de espera.
+let perfil = 0
 beforeEach(() => {
   clearIdbMock()
-  setPintaStorageNamespace('')
+  perfil += 1
+  setPintaStorageNamespace(`injetado-${perfil}`)
 })
 
 /** O que o IndexedDB do PERFIL tem agora — o que a curadoria de armazenamento promete não tocar. */

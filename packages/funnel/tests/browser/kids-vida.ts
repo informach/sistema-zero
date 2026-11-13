@@ -174,7 +174,10 @@ try {
         (await page.locator('[data-quiz-offer]').getAttribute('href')) ?? '',
         base,
       )
-      assert.equal(offer.pathname, path(mode) + '/oferta' + (age === 'm9' ? '/criar-junto' : ''))
+      assert.equal(
+        offer.pathname,
+        path(mode) + '/oferta' + (age === 'm9' && mode === 'comunidade' ? '/criar-junto' : ''),
+      )
       assert.equal(offer.searchParams.get('utm_source'), source)
       assert.equal(offer.searchParams.get('event_code'), 'QA_VIDA')
       assert.equal(offer.searchParams.get('cupom'), 'QA50')

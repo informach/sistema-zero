@@ -56,7 +56,7 @@ describe('seção Embaixador', () => {
     // A identidade da comunidade (o palco do Estúdio à noite), nunca a cara arcade do funil.
     expect(out).toContain('sz-palco')
     expect(out).toContain('a um adulto que quer criar o próprio jogo')
-    expect(out).toContain('família com criança de 9 a 17 anos')
+    expect(out).toContain('família com criança de 5 a 17 anos')
     expect(out).toMatch(/agradecimento de R\$\s45,00 por/)
     expect(out).toContain(AMBASSADOR_TERMS)
     expect(out).toContain('Quero ser embaixador(a)')

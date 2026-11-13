@@ -50,13 +50,13 @@ describe('copy do presente: as regras de voz valem nos dois públicos', () => {
     }
   })
 
-  test('a faixa Kids é 9 a 17 e o adulto é 18 ou mais, sem números inventados', () => {
+  test('a faixa Kids é 5 a 17 (abaixo de 9 com acompanhante) e o adulto é 18 ou mais', () => {
     const kids = JSON.stringify([PRESENTE_KIDS, RESGATE_COPY.kids])
-    expect(kids).toContain('9 a 17 anos')
-    expect(kids).not.toMatch(/9 a 14|a partir de 9 anos/)
+    expect(kids).toContain('5 a 17 anos')
+    expect(kids).not.toMatch(/9 a 17|9 a 14|menores também|menores de 9 anos também/)
     const adulto = JSON.stringify([PRESENTE_ADULTO, RESGATE_COPY.adult])
     expect(adulto).toContain('18 anos ou mais')
-    expect(adulto).not.toMatch(/9 a 17|seu filho|responsável/i)
+    expect(adulto).not.toMatch(/5 a 17|9 a 17|seu filho|responsável/i)
     // Nenhum valor de bônus escrito à mão: ele vem de `bonus.amountCents`.
     expect(JSON.stringify(PAINEL_EMBAIXADOR)).not.toMatch(/R\$\s*\d/)
   })
@@ -75,14 +75,17 @@ describe('copy do presente: as regras de voz valem nos dois públicos', () => {
 describe('página Kids', () => {
   test('conversa com o responsável sobre o filho e diz o que o presente inclui', () => {
     const texto = JSON.stringify(PRESENTE_KIDS)
-    expect(texto).toContain('treinar habilidades para a vida')
+    expect(texto).toContain('treinar habilidades cognitivas para a vida')
+    expect(texto).toContain('funções executivas')
+    expect(texto).toContain('causa e consequência')
     expect(texto).toContain('O primeiro passo é do responsável')
     expect(texto).toContain('7 dias de acesso ao curso e ao Mural')
     expect(texto).toContain('link de um jogo publicado permanece acessível')
     expect(texto).toContain('assinatura à parte')
     expect(texto).toContain('Cada e-mail pode resgatar um presente Kids')
-    expect(texto).toContain('Crianças menores de 9 anos também podem participar')
-    expect(texto).toContain('acompanhadas por um responsável durante as atividades')
+    expect(texto).toContain('pensado para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos')
+    expect(texto).toContain('abaixo de 9 anos, precisa de acompanhante')
+    expect(PRESENTE_KIDS.hero.beneficios[1]).toBe('7 dias de acesso ao curso e ao Mural')
     expect(texto).not.toContain('Desafio do Primeiro Jogo')
   })
 
@@ -274,7 +277,7 @@ describe('painel do embaixador', () => {
       />,
     )
     expect(html.match(/type="radio"/g)).toHaveLength(2)
-    expect(html).toContain('Uma criança de 9 a 17 anos')
+    expect(html).toContain('Uma criança de 5 a 17 anos')
     expect(html).toContain('Alguém de 18 anos ou mais')
     expect(html).toContain('Link do presente para uma família')
     expect(html).toContain('value="https://example.com/bolsa/vo-x7k2"')

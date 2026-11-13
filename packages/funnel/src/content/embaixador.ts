@@ -43,14 +43,14 @@ export const PAINEL_EMBAIXADOR = {
     /** Sem nome no cadastro: o título sem a saudação. */
     tituloSemNome: 'Escolha para quem é o presente e mande o seu link.',
     texto:
-      'Você pode dar 7 dias no Sistema Zero, sem custo para quem recebe, a uma família com criança de 9 a 17 anos ou a um adulto que quer criar o próprio jogo. Cada um chega a uma página feita para ele.',
+      'Você pode dar 7 dias no Sistema Zero, sem custo para quem recebe, a uma família com criança de 5 a 17 anos ou a um adulto que quer criar o próprio jogo. Cada um chega a uma página feita para ele.',
   },
   seletor: {
     legenda: 'Para quem é o presente',
     opcoes: {
       kids: {
         selo: 'Para uma família',
-        titulo: 'Uma criança de 9 a 17 anos',
+        titulo: 'Uma criança de 5 a 17 anos',
         texto:
           'O responsável faz o cadastro. A criança faz o Cadê Todo Mundo e publica o jogo no Mural Kids por 7 dias.',
         imagem: {
@@ -75,7 +75,7 @@ export const PAINEL_EMBAIXADOR = {
       adult: 'Link do presente para um adulto',
     } satisfies Record<GiftAudience, string>,
     chip: {
-      kids: 'Kids · 9 a 17 anos',
+      kids: 'Kids · 5 a 17 anos',
       adult: 'Adulto · 18 anos ou mais',
     } satisfies Record<GiftAudience, string>,
     campo: 'Seu link público do presente',
@@ -94,7 +94,7 @@ export const PAINEL_EMBAIXADOR = {
     manualAria: 'Texto para copiar manualmente',
   },
   mensagens: {
-    kids: 'Oi. Lembrei de vocês: no Sistema Zero, a criança faz um jogo de procurar personagens funcionar, com a explicação ao lado. Quero dar 7 dias de presente para vocês, sem custo e sem cartão. É para crianças de 9 a 17 anos, no computador. Você faz o cadastro por este link: {{link}}',
+    kids: 'Oi. Lembrei de vocês: no Sistema Zero, a criança faz um jogo de procurar personagens funcionar, com a explicação ao lado. Quero dar 7 dias de presente para vocês, sem custo e sem cartão. É para crianças de 5 a 17 anos (abaixo de 9, com um acompanhante), no computador. Você faz o cadastro por este link: {{link}}',
     adult:
       'Oi. Lembrei de você: no Sistema Zero dá para fazer o primeiro jogo no navegador, com o projeto preparado e a aula ao lado. Quero dar 7 dias de presente para você, sem custo e sem cartão. O cadastro é por este link: {{link}}',
   } satisfies Record<GiftAudience, string>,
@@ -168,7 +168,7 @@ export const PAINEL_EMBAIXADOR = {
     texto:
       'Pense em uma pessoa e escolha o público dela. O link certo leva a uma página que fala com quem vai usar.',
     kids: {
-      titulo: 'Uma família com criança de 9 a 17 anos',
+      titulo: 'Uma família com criança de 5 a 17 anos',
       texto:
         'A criança que adora jogos e pergunta como eles são feitos. Ou a família que procura, para parte do tempo de computador, uma tarefa concreta que o filho consegue mostrar no fim.',
     },

@@ -1,5 +1,6 @@
 /**
- * Espelho editorial das três páginas de oferta do Desafio do Primeiro Jogo (21/10/2026):
+ * Espelho editorial das páginas de oferta do Desafio do Primeiro Jogo (Kids e adulta; a "criar junto"
+ * saiu em 13/11/2026):
  * docs/marketing/kids/desafio-primeiro-jogo/copy/pagina-*.md a partir da copy tipada. A copy vive no
  * código; o espelho existe para ler e revisar a página inteira em Markdown. Para mudar uma frase,
  * edite o `.ts` e rode `bun scripts/espelho-copy-desafio.ts`; `desafio-offer-copy.test.ts` reprova
@@ -9,7 +10,6 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { PAGINA_DESAFIO_ADULTO } from '../src/funnels/desafio-adulto/oferta/pagina'
 import { PAGINA_DESAFIO_9A17 } from '../src/funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
-import { PAGINA_DESAFIO_MENOR9 } from '../src/funnels/desafio-primeiro-jogo/oferta/pagina-menor9'
 import { espelhoDoModulo } from './espelho-copy-comunidade'
 
 export const PASTA_ESPELHO_DESAFIO = join(
@@ -24,10 +24,9 @@ export const PASTA_ESPELHO_DESAFIO = join(
   'copy',
 )
 
-/** As três páginas, na ordem do módulo de cada uma (que é a ordem da página). */
+/** As páginas, na ordem do módulo de cada uma (que é a ordem da página). */
 export const MODULOS_ESPELHO_DESAFIO: Record<string, { arquivo: string; modulo: object }> = {
   '9a17': { arquivo: 'pagina-9-a-17.md', modulo: PAGINA_DESAFIO_9A17 },
-  'criar-junto': { arquivo: 'pagina-menor-9.md', modulo: PAGINA_DESAFIO_MENOR9 },
   adulto: { arquivo: 'pagina-adulto.md', modulo: PAGINA_DESAFIO_ADULTO },
 }
 

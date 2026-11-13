@@ -59,6 +59,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     for (const col of [
       'id uuid',
       'block_id uuid',
+      'lesson_id uuid',
+      'course_id uuid',
       'submitted_at timestamptz',
       // O insert deste arquivo nomeia `project`: sem ele aqui, quebra quando a
       // `user-data-purge` cria a tabela mínima antes (medido num banco novo, 14/10/2026).
@@ -123,10 +125,13 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     return id
   }
 
+  // Aula e curso vão no insert porque no banco de verdade as duas colunas são obrigatórias. Sem
+  // elas, o teste reprovava quando outro arquivo criava a tabela com `course_id not null` antes
+  // (a ordem dos arquivos muda a cada rodada do CI; 13/11/2026).
   const insertSubmission = async (userId: string, blockId: string, at: string) => {
     await conn.sql.unsafe(
-      'insert into members.studio_submissions (id, user_id, block_id, submitted_at, project) values ($1, $2, $3, $4, $5)',
-      [randomUUID(), userId, blockId, at, JSON.stringify({})],
+      'insert into members.studio_submissions (id, user_id, block_id, lesson_id, course_id, submitted_at, project) values ($1, $2, $3, $4, $5, $6, $7)',
+      [randomUUID(), userId, blockId, randomUUID(), randomUUID(), at, JSON.stringify({})],
     )
   }
 

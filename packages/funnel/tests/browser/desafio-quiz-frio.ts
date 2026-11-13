@@ -161,7 +161,7 @@ try {
     await page.locator('.rc-titulo').waitFor()
     assert.equal(
       await page.locator('[data-analytics-id="resultado-oferta"]').getAttribute('href'),
-      `${kids}/oferta/criar-junto#sessao`,
+      `${kids}/oferta#aula`,
     )
     assert.equal(await page.locator('.rc--kids-m9').count(), 1)
     await noOverflow(page)
