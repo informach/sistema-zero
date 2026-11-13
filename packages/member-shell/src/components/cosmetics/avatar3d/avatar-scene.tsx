@@ -2,17 +2,17 @@
 
 import { ContactShadows, useProgress } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { PACK_IDLE_POSE, PackAvatarRig } from '@sistemazero/avatar-quarto/avatar/pack-rig'
+import type { AvatarSlots } from '@sistemazero/core/avatar'
 import { type RefObject, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import type { AvatarSlot } from '../../../lib/avatar3d-catalog'
 import { recoverWebGLContext } from '../../../lib/webgl-recovery'
 import { useReducedMotion } from '../room/use-reduced-motion'
-import { AvatarRig } from './avatar-rig'
 import { CameraManager, type CamMode } from './camera-manager'
 import { measureCharacter } from './measure'
 import { framePhoto } from './photo-framing'
 
-type Slots = Partial<Record<string, AvatarSlot>>
+type Slots = AvatarSlots
 /** `portrait`: força um retrato de rosto (de frente), independente do enquadramento na tela. */
 export type CaptureFn = (opts?: { portrait?: boolean }) => Promise<Blob | null>
 
@@ -165,8 +165,8 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
   })
   return (
     <group ref={group} scale={[1, 0.0001, 1]} visible={false}>
-      <mesh ref={beam} position={[0, 1.1, 0]}>
-        <cylinderGeometry args={[0.75, 0.75, 2.2, 28, 1, true]} />
+      <mesh ref={beam} position={[0, 0.7, 0]}>
+        <cylinderGeometry args={[0.45, 0.45, 1.4, 28, 1, true]} />
         <meshBasicMaterial
           color="#7cf3ff"
           transparent
@@ -175,8 +175,8 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
           depthWrite={false}
         />
       </mesh>
-      <mesh ref={ring} position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.85, 0.85, 0.05, 28]} />
+      <mesh ref={ring} position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.03, 28]} />
         <meshBasicMaterial color="#7cf3ff" transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>
@@ -227,7 +227,7 @@ function SceneContents({
 
       {/* Personagem GLB — Suspense POR peça (no rig); fica em pé UMA vez. */}
       <Suspense fallback={null}>
-        <AvatarRig
+        <PackAvatarRig
           slots={slots}
           pose={pose}
           loading={loading}
@@ -238,11 +238,11 @@ function SceneContents({
       </Suspense>
 
       {/* Pódio logo abaixo dos pés. */}
-      <mesh position={[0, -0.05, 0]} receiveShadow>
-        <cylinderGeometry args={[0.7, 0.85, 0.1, 32]} />
+      <mesh position={[0, -0.03, 0]} receiveShadow>
+        <cylinderGeometry args={[0.34, 0.4, 0.06, 32]} />
         <meshStandardMaterial color={dark ? '#1b2230' : '#cfe7ee'} roughness={0.9} />
       </mesh>
-      <ContactShadows position={[0, 0.01, 0]} opacity={0.45} scale={2.4} blur={2.6} far={2} />
+      <ContactShadows position={[0, 0.005, 0]} opacity={0.45} scale={1.1} blur={2.4} far={1.2} />
       <TeleporterBeam loading={loading} />
 
       <CameraManager mode={mode} ready={ready} />
@@ -266,7 +266,7 @@ export function AvatarScene({
   onReady,
   dark,
   mode = 'customize',
-  pose = 'Idle',
+  pose = PACK_IDLE_POSE,
 }: {
   slots: Slots
   onReady: (c: CaptureFn) => void
@@ -279,7 +279,7 @@ export function AvatarScene({
       shadows
       dpr={[1, 2]}
       gl={{ preserveDrawingBuffer: true, antialias: true }}
-      camera={{ position: [0, 1.0, 6.5], fov: 45 }}
+      camera={{ position: [0, 0.7, 4], fov: 45 }}
       onCreated={recoverWebGLContext}
     >
       <SceneContents slots={slots} pose={pose} mode={mode} dark={dark} onReady={onReady} />

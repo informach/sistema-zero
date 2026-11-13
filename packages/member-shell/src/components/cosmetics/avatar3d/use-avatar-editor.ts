@@ -1,0 +1,411 @@
+'use client'
+
+import {
+  AVATAR_CATALOG,
+  type AvatarFilter,
+  type AvatarSlots,
+  drawAvatar,
+} from '@sistemazero/core/avatar'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import {
+  AVATAR_IDLE_POSE,
+  AVATAR_TABS,
+  type AvatarKind,
+  type AvatarShopItem,
+  type AvatarTab,
+  type AvatarTabId,
+  applyAvatarItem,
+  avatarKindOfWorn,
+  avatarKinds,
+  avatarRemovedBy,
+  avatarShopItems,
+  avatarTab,
+  avatarUnownedWorn,
+  isAvatarItemOwned,
+  visibleAvatarKinds,
+} from '../../../lib/avatar-pack'
+import type { AvatarStateView } from '../../../lib/types'
+import type { AvatarMessages } from '../skin'
+import type { CaptureFn } from './avatar-scene'
+
+const C = AVATAR_CATALOG
+export type Mode = 'customize' | 'photo'
+export type LoadState = 'loading' | 'ready' | 'error'
+
+/**
+ * O estado do salvamento, que a tela mostra no lugar do antigo botão "Salvar":
+ * - `saved`: o que está na tela é o que está guardado;
+ * - `waiting`: mudou, grava depois de 1 s sem mexer;
+ * - `saving`: gravando (e tirando a foto de frente);
+ * - `preview`: há peça paga só experimentada: nada grava até comprar ou tirar;
+ * - `error`: a última gravação falhou (tenta de novo na próxima mudança ou no "Tentar de novo").
+ */
+export type SaveStatus = 'saved' | 'waiting' | 'saving' | 'preview' | 'error'
+
+/** O aviso das regras: "para vestir X, saiu Y", com o desfazer. */
+export interface RuleNotice {
+  chosen: string
+  removed: string[]
+  undo: AvatarSlots
+}
+
+/** Quanto o avatar espera parado antes de gravar. */
+export const AUTOSAVE_DELAY_MS = 1000
+
+const same = (a: AvatarSlots, b: AvatarSlots) => {
+  const ka = Object.keys(a)
+  return ka.length === Object.keys(b).length && ka.every((k) => a[k] === b[k])
+}
+
+/**
+ * A lógica do "Meu avatar" do pack, a mesma no Kids e na comunidade adulta (só a tela muda):
+ * carregar, escolher peça (com as regras do pack), comprar em dois toques (peça ou fantasia),
+ * filtro menina/menino/todas, sortear, e SALVAR SOZINHO: cada mudança grava depois de 1 s parado,
+ * com a foto de frente; peça paga só experimentada não grava; ao sair, o que falta vai junto.
+ */
+export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
+  const [state, setState] = useState<AvatarStateView | null>(null)
+  const [loadState, setLoadState] = useState<LoadState>('loading')
+  const [slots, setSlots] = useState<AvatarSlots>({})
+  const [saved, setSaved] = useState<{ slots: AvatarSlots; filter: AvatarFilter | null }>({
+    slots: {},
+    filter: null,
+  })
+  const [filter, setFilter] = useState<AvatarFilter | null>(null)
+  const [owned, setOwned] = useState<ReadonlySet<string>>(new Set())
+  const [balance, setBalance] = useState(0)
+  const [coinsUnlimited, setCoinsUnlimited] = useState(false)
+  const [mode, setMode] = useState<Mode>('customize')
+  const [pose, setPose] = useState<string>(AVATAR_IDLE_POSE)
+  const [tabId, setTabId] = useState<AvatarTabId>('cabelo')
+  const [kindByTab, setKindByTab] = useState<Partial<Record<AvatarTabId, string>>>({})
+  const [busy, setBusy] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [pending, setPending] = useState<{ item: AvatarShopItem; undo: AvatarSlots } | null>(null)
+  const [notice, setNotice] = useState<RuleNotice | null>(null)
+  const savedSomething = useRef(false)
+  const captureRef = useRef<CaptureFn | null>(null)
+  const onReady = useCallback((c: CaptureFn) => {
+    captureRef.current = c
+  }, [])
+
+  const load = useCallback(async (isCurrent?: () => boolean) => {
+    setLoadState('loading')
+    try {
+      const res = await fetch('/api/members/avatar')
+      if (!res.ok) throw new Error('avatar load failed')
+      const data = (await res.json()) as AvatarStateView | null
+      if (!data?.equipped) throw new Error('avatar missing')
+      if (isCurrent && !isCurrent()) return
+      setState(data)
+      setSlots(data.equipped)
+      setSaved({ slots: data.equipped, filter: data.filter })
+      setFilter(data.filter)
+      setOwned(new Set(data.owned))
+      setBalance(data.balance)
+      setCoinsUnlimited(data.balanceUnlimited === true)
+      setLoadState('ready')
+    } catch {
+      if (isCurrent && !isCurrent()) return
+      setState(null)
+      setLoadState('error')
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    void load(() => alive)
+    return () => {
+      alive = false
+    }
+  }, [load])
+
+  const tab: AvatarTab = avatarTab(tabId)
+  const allKinds: AvatarKind[] = useMemo(() => avatarKinds(C, tab), [tab])
+  const kinds = useMemo(
+    () => visibleAvatarKinds(C, tab, allKinds, filter ?? 'all', owned, slots),
+    [tab, allKinds, filter, owned, slots],
+  )
+  const kindId = kindByTab[tabId] ?? avatarKindOfWorn(kinds, tab, slots)
+  const kind = kinds.find((k) => k.id === kindId) ?? kinds[0]
+  const items = useMemo(
+    () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', owned, slots) : []),
+    [tab, kind, filter, owned, slots],
+  )
+  const unowned = useMemo(() => avatarUnownedWorn(C, slots, owned), [slots, owned])
+
+  const dirty = !same(slots, saved.slots) || (filter !== null && filter !== saved.filter)
+  const status: SaveStatus =
+    unowned.length > 0
+      ? 'preview'
+      : saving
+        ? 'saving'
+        : saveError
+          ? 'error'
+          : dirty
+            ? 'waiting'
+            : 'saved'
+
+  function chooseTab(id: AvatarTabId) {
+    setTabId(id)
+  }
+  function chooseKind(id: string) {
+    setKindByTab((k) => ({ ...k, [tabId]: id }))
+  }
+
+  /**
+   * Escolher uma peça. Paga e ainda não comprada: o 1º toque veste de PRÉVIA e arma a compra;
+   * o 2º toque na mesma compra. As regras do pack tiram o que não combina, e o aviso diz o quê.
+   */
+  function choose(item: AvatarShopItem, inTab: AvatarTab = tab) {
+    if (busy) return
+    if (!item.owned && pending?.item.id === item.id) {
+      if (item.tier !== 'festa') void buy(item)
+      return
+    }
+    const antes = slots
+    const depois = applyAvatarItem(C, antes, item, inTab)
+    if (same(antes, depois)) return
+    const saiu = avatarRemovedBy(C, antes, depois, inTab)
+    setNotice(saiu.length > 0 ? { chosen: item.label, removed: saiu, undo: antes } : null)
+    setSlots(depois)
+    setSaveError(false)
+    setPending((p) => {
+      if (!item.owned) return { item, undo: p?.undo ?? antes }
+      // A prévia de outra peça paga continua de pé enquanto ela estiver no avatar.
+      return p && avatarUnownedWorn(C, depois, owned).includes(p.item.id) ? p : null
+    })
+  }
+
+  /** Escolher pelo id (as sugestões da festa do jogo): abre a aba da peça e veste. */
+  function chooseById(id: string) {
+    const p = C.parts[id]
+    const alvo = p ? AVATAR_TABS.find((t) => t.groups.includes(p.group)) : undefined
+    if (!p || !alvo) return
+    setTabId(alvo.id)
+    choose(
+      {
+        id,
+        kind: 'part',
+        label: p.label,
+        thumb: p.thumb,
+        tier: p.tier,
+        price: p.price,
+        owned: isAvatarItemOwned(C, id, owned),
+      },
+      alvo,
+    )
+  }
+
+  /** "Deixar para depois": desfaz a prévia da peça paga. */
+  function cancelBuy() {
+    if (!pending) return
+    setSlots(pending.undo)
+    setPending(null)
+    setNotice(null)
+  }
+
+  function undoNotice() {
+    if (!notice) return
+    setSlots(notice.undo)
+    setNotice(null)
+    setPending(null)
+  }
+
+  async function buy(item: AvatarShopItem) {
+    setBusy(item.id)
+    try {
+      const res = await fetch(`/api/members/avatar/parts/${encodeURIComponent(item.id)}/buy`, {
+        method: 'POST',
+      })
+      const body = (await res.json().catch(() => null)) as {
+        balance?: number
+        unlimited?: boolean
+      } | null
+      if (!res.ok) {
+        toast.error(res.status === 402 ? messages.notEnoughCoins : messages.buyRefused)
+        return
+      }
+      setOwned((o) => new Set([...o, item.id]))
+      if (typeof body?.balance === 'number') setBalance(body.balance)
+      if (body?.unlimited === true) setCoinsUnlimited(true)
+      setPending(null)
+      toast.success(messages.bought)
+    } catch {
+      toast.error(messages.buyFailed)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  /** "Surpreenda-me": um sorteio do pack com o filtro, só com peças grátis e as que a pessoa tem. */
+  function randomize() {
+    const sorteado = drawAvatar(C, `${Date.now()}-${Math.random()}`, {
+      filter: filter ?? 'all',
+      owned,
+    })
+    setPending(null)
+    setNotice(null)
+    setSaveError(false)
+    setSlots(sorteado)
+  }
+
+  function chooseFilter(f: AvatarFilter) {
+    setFilter(f)
+    setSaveError(false)
+  }
+
+  // ── Salvar sozinho ──────────────────────────────────────────────────────────────────────
+  const latest = useRef({ slots, filter, unowned, saved, dirty })
+  latest.current = { slots, filter, unowned, saved, dirty }
+  const inFlight = useRef<Promise<boolean> | null>(null)
+
+  const persist = useCallback(
+    async (opts: { photo: boolean; keepalive?: boolean }): Promise<boolean> => {
+      const atual = latest.current
+      if (!atual.dirty || atual.unowned.length > 0) return true
+      const enviado = { slots: atual.slots, filter: atual.filter }
+      setSaving(true)
+      try {
+        const res = await fetch('/api/members/avatar', {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(enviado.filter ? enviado : { slots: enviado.slots }),
+          ...(opts.keepalive ? { keepalive: true } : {}),
+        })
+        if (!res.ok) throw new Error('equip')
+        setSaved({ slots: enviado.slots, filter: enviado.filter ?? latest.current.saved.filter })
+        setSaveError(false)
+        savedSomething.current = true
+        // A foto de frente (melhor esforço): a escolha já está guardada.
+        const capture = captureRef.current
+        if (opts.photo && capture) {
+          try {
+            const blob = await capture({ portrait: true })
+            if (blob) {
+              const fd = new FormData()
+              fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
+              await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+            }
+          } catch {
+            // a próxima gravação tenta de novo
+          }
+        }
+        return true
+      } catch {
+        setSaveError(true)
+        return false
+      } finally {
+        setSaving(false)
+      }
+    },
+    [],
+  )
+
+  const saveNow = useCallback(
+    async (opts: { photo: boolean; keepalive?: boolean } = { photo: true }) => {
+      while (inFlight.current) await inFlight.current
+      const p = persist(opts)
+      inFlight.current = p
+      try {
+        return await p
+      } finally {
+        inFlight.current = null
+      }
+    },
+    [persist],
+  )
+
+  // Grava 1 s depois da última mudança (nunca durante a prévia de uma peça paga).
+  const slotsKey = JSON.stringify(slots)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `slotsKey` e `filter` não são lidos, mas cada mudança deles precisa recomeçar a espera de 1 s (com `dirty` já verdadeiro, só eles mudam).
+  useEffect(() => {
+    if (loadState !== 'ready' || !dirty || unowned.length > 0 || saveError) return
+    const t = setTimeout(() => void saveNow({ photo: true }), AUTOSAVE_DELAY_MS)
+    return () => clearTimeout(t)
+  }, [loadState, dirty, unowned.length, saveError, slotsKey, filter, saveNow])
+
+  // Saiu da página com algo por gravar: vai junto (sem foto: a página está fechando).
+  useEffect(() => {
+    const flush = () => {
+      if (latest.current.dirty && latest.current.unowned.length === 0)
+        void persist({ photo: false, keepalive: true })
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [persist])
+
+  /** Sair: espera gravar o que falta (com a foto) antes de ir. */
+  async function finishBeforeExit(): Promise<boolean> {
+    if (latest.current.dirty && latest.current.unowned.length === 0) await saveNow({ photo: true })
+    return savedSomething.current
+  }
+
+  /** Cabine de fotos: a foto de corpo inteiro na pose escolhida. */
+  async function takePhoto() {
+    const capture = captureRef.current
+    if (!capture || photoBusy) return
+    setPhotoBusy(true)
+    try {
+      await saveNow({ photo: false })
+      const blob = await capture({ portrait: false })
+      if (!blob) throw new Error('foto')
+      const fd = new FormData()
+      fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
+      const res = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error('foto')
+      savedSomething.current = true
+      toast.success(messages.photoTaken)
+    } catch {
+      toast.error(messages.photoNotUpdated)
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
+  return {
+    catalog: C,
+    state,
+    loadState,
+    slots,
+    filter,
+    owned,
+    balance,
+    coinsUnlimited,
+    mode,
+    setMode,
+    pose,
+    setPose,
+    tab,
+    chooseTab,
+    kinds,
+    kind,
+    chooseKind,
+    items,
+    busy,
+    status,
+    pending: pending?.item ?? null,
+    notice,
+    photoBusy,
+    onReady,
+    retry: () => void load(),
+    retrySave: () => {
+      setSaveError(false)
+    },
+    choose,
+    chooseById,
+    cancelBuy,
+    undoNotice,
+    dismissNotice: () => setNotice(null),
+    randomize,
+    chooseFilter,
+    takePhoto,
+    finishBeforeExit,
+  }
+}
+
+export type AvatarEditor = ReturnType<typeof useAvatarEditor>

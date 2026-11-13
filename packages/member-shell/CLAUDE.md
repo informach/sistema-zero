@@ -1,5 +1,45 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## "Meu avatar" com o pack Cute Characters (13/11/2026)
+
+Canvas aprovado: https://claude.ai/artifact/9AnWm8YaQsFewWWu9eQFSw. O catálogo, as regras e o
+sorteio são o `@sistemazero/core/avatar` (o mesmo do Members); os arquivos vêm de
+`/api/avatar3d/<arquivo>` (`routes/avatar-files.ts`: sessão + arquivo do catálogo → link assinado do
+bucket PRIVADO). O catálogo antigo (`lib/avatar3d-catalog`, `thumb-canvas`, `configurator-shared`,
+os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-quarto` até a etapa dele.
+
+- **`lib/avatar-pack.ts`** (puro): as 14 abas em três grupos (`AVATAR_TAB_GROUPS`: Você, Cabeça,
+  Roupa; todo grupo do pack menos as orelhas cai em UMA aba, travado por teste), os tipos dentro da
+  aba (`avatarKinds`: grupos do pack; a blusa pela palavra do id, desconhecida vira "Outras"; o rosto
+  pelo desenho), `visibleAvatarKinds` (com o filtro, só os tipos com peça), `avatarShopItems` (o
+  "Nenhum" primeiro, grátis, pagas da mais barata à mais cara; fantasia como CONJUNTO com o preço
+  dele; a peça vestida aparece mesmo fora do filtro), `applyAvatarItem` (as regras do core),
+  `avatarRemovedBy` (o aviso "Para vestir X, saiu: Y"; a fantasia conta uma vez),
+  `avatarUnownedWorn` (o que está só de prévia) e as poses da Cabine (`AVATAR_POSES`, sem
+  `pulo_no_ar` e `correr_frente`: o clipe leva o boneco para fora da foto).
+- **`avatar3d/use-avatar-editor.ts`**: a lógica das DUAS peles. ⭐ **Salva sozinho**: 1 s depois da
+  última mudança, `PUT /api/members/avatar` `{slots, filter}` e a foto de frente
+  (`capture({portrait: true})` → `/snapshot`). Nada grava com peça paga só de prévia (`status:
+  'preview'`); falha vira `error` sem nova tentativa sozinha (o botão chama `retrySave`); `pagehide`
+  manda o pendente com `keepalive` (sem foto); o voltar espera gravar (`finishBeforeExit`). Compra
+  em dois toques (peça ou conjunto, `POST …/parts/:id/buy`). "Surpreenda-me" = `drawAvatar` com o
+  filtro, grátis + o que a pessoa tem. Filtro `null` = a tela pergunta antes de mostrar as peças.
+- **Telas**: `configurator.tsx` (Kids: grupos, abas, tipos, filtro Menina/Menino/Todas, o selo
+  "Salvo/Salvando…/Só experimentando" no lugar do botão Salvar) e `configurator-adult.tsx` (adulto:
+  recebe `editor`, frases em `ADULT_AVATAR_COPY` com Femininas/Masculinas/Todas; classes novas
+  `sz-cos-savestate` e `sz-cos-av-notice` no `cosmetics-adult.css` da comunidade). Miniaturas são
+  `<img>` do bucket (o desenho ao vivo saiu). Cor do corpo é a aba "Cor" com as 16 bolinhas.
+- **`avatar-scene.tsx`** monta o `PackAvatarRig` (pódio e câmera na escala do boneco, ~1,15 m).
+- **BFF**: `PUT /api/members/avatar` aceita só `{slots: Record<encaixe, peça>, filter?}` (ids com
+  `_`). `lib/types.ts`: `AvatarStateView` (`equipped`, `filter`, `customized`, `owned`, `photoUrl`).
+- **Prévia local** (sem login, peças fora do git): `AVATAR_QA_DIR=<cópia das peças> bun
+  packages/member-shell/qa/avatar-pack-serve.ts` (porta 5282, `?skin=adult`, `/__reset?filtro=`).
+- Testes: `tests/avatar-pack.test.ts`, `tests/avatar-editor-hook.test.ts` (o salvar sozinho num
+  navegador de mentira, `qa/avatar-editor-hook.fixture.tsx`), `tests/cosmetics-skin.test.tsx` e
+  `tests/avatar-seasonal-choices.test.tsx`.
+- ⚠️ Pendente da etapa do jogo: `arquipelago-host.tsx` (`lerAvatar`) ainda entrega ao jogo o
+  formato antigo, e o `VESTUARIO_DAS_FESTAS` cita peças antigas (as sugestões da festa não aparecem).
+
 ## Experiências numa tela só: o arranjo do Faísca (09/11/2026)
 
 Pedido dela: a criança rolava para baixo para apertar um botão e subia para ver o personagem (no

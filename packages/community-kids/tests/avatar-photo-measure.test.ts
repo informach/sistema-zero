@@ -2,8 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import { measureCharacter } from '../src/components/kids/avatar3d/measure'
 import { framePhoto, PORTRAIT_SHARE } from '../src/components/kids/avatar3d/photo-framing'
-import { allPartsSettled, visibleParts } from '../src/components/kids/avatar3d/visible-parts'
-import { DEFAULT_AVATAR_SLOTS } from '../src/lib/avatar3d-catalog'
 
 /**
  * A foto do avatar com a cabeça cortada (12/10/2026). Duas causas, medidas num ensaio com a cena
@@ -119,43 +117,4 @@ describe('framePhoto: a região fotografada cabe no quadrado recortado', () => {
       for (const p of pts) expect(Math.abs(p.y)).toBeLessThan(0.95)
     })
   }
-})
-
-describe('as peças que o personagem mostra', () => {
-  test('o conjunto inicial mostra cabeça, cabelo, rosto e roupa, sem as "nenhum"', () => {
-    expect(visibleParts(DEFAULT_AVATAR_SLOTS).map(([cat]) => cat)).toEqual([
-      'head',
-      'hair',
-      'eyes',
-      'eyebrows',
-      'nose',
-      'top',
-      'bottom',
-      'shoes',
-    ])
-  })
-
-  test('o chapéu esconde o cabelo e a roupa inteira esconde a de cima e a de baixo', () => {
-    const cats = visibleParts({
-      ...DEFAULT_AVATAR_SLOTS,
-      hat: { asset: 'hat-01' },
-      outfit: { asset: 'outfit-01' },
-    }).map(([cat]) => cat)
-    expect(cats).toContain('hat')
-    expect(cats).toContain('outfit')
-    expect(cats).not.toContain('hair')
-    expect(cats).not.toContain('top')
-    expect(cats).not.toContain('bottom')
-  })
-
-  test('só está tudo na cena quando cada peça mostrada chegou, e a peça certa', () => {
-    const parts = visibleParts(DEFAULT_AVATAR_SLOTS)
-    const settled = new Map(parts)
-    expect(allPartsSettled(parts, settled)).toBe(true)
-    settled.delete('head')
-    expect(allPartsSettled(parts, settled)).toBe(false)
-    // A cabeça anterior ainda na cena não conta: a troca está carregando.
-    settled.set('head', 'head-99')
-    expect(allPartsSettled(parts, settled)).toBe(false)
-  })
 })

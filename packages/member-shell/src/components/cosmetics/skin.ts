@@ -12,8 +12,11 @@
  * member-shell inteiro: frase adulta com curso, aula, seção, professor ou aluno mora no APP e
  * chega por prop (as dicas dos troféus: `community/src/lib/adult-trophy-hints.ts`).
  */
+
+import type { AvatarFilter } from '@sistemazero/core/avatar'
+import type { AvatarTabId } from '../../lib/avatar-pack'
 import type { AvatarReturnPath } from '../../lib/avatar-return'
-import type { AvatarCategory } from '../../lib/avatar3d-catalog'
+import type { SaveStatus } from './avatar3d/use-avatar-editor'
 
 export type CosmeticsSkin = 'kids' | 'adult'
 
@@ -26,6 +29,7 @@ export interface AvatarMessages {
   bought: string
   buyFailed: string
   photoNotUpdated: string
+  photoTaken: string
   savedAndLeaving: string
   saved: string
   saveFailed: string
@@ -38,6 +42,7 @@ export const AVATAR_MESSAGES: Record<CosmeticsSkin, AvatarMessages> = {
     bought: 'Desbloqueado! 🎉',
     buyFailed: 'Não consegui comprar agora.',
     photoNotUpdated: 'Avatar salvo, mas a foto não atualizou agora.',
+    photoTaken: 'Foto nova no seu avatar! 📸',
     savedAndLeaving: 'Avatar salvo! 😄',
     saved: 'Mudanças salvas! 😄',
     saveFailed: 'Não consegui salvar agora. Tente de novo!',
@@ -48,6 +53,7 @@ export const AVATAR_MESSAGES: Record<CosmeticsSkin, AvatarMessages> = {
     bought: 'Peça desbloqueada.',
     buyFailed: 'Não consegui desbloquear agora. Tente de novo.',
     photoNotUpdated: 'Avatar salvo, mas a foto não atualizou agora.',
+    photoTaken: 'Foto do avatar atualizada.',
     savedAndLeaving: 'Avatar salvo.',
     saved: 'Mudanças salvas.',
     saveFailed: 'Não consegui salvar agora. Tente de novo.',
@@ -136,64 +142,23 @@ export function adultPrice(price: number): string {
   return `${price} ${moedas(price)}`
 }
 
-/**
- * Os nomes das cores das paletas do avatar (`AVATAR_CATEGORY_PALETTES`, valores FIXOS do catálogo,
- * espelhados do members). O Kids continua com "Cor 1", "Cor 2". Cor que não estiver aqui (catálogo
- * novo) cai em "Cor N": nunca um nome inventado. A cobertura é travada em teste.
- */
-export const ADULT_COLOR_NAMES: Record<string, string> = {
-  // Pele
-  '#f2d3b1': 'Pele muito clara',
-  '#ecad80': 'Pele clara',
-  '#cf9b6e': 'Pele média',
-  '#9e5622': 'Pele morena',
-  '#763900': 'Pele escura',
-  '#5a2e0a': 'Pele muito escura',
-  // Cabelo, sobrancelha e barba
-  '#2c1b18': 'Preto',
-  '#4a3120': 'Castanho escuro',
-  '#6a4e35': 'Castanho',
-  '#a5673f': 'Castanho claro',
-  '#d6a04b': 'Loiro escuro',
-  '#e6c84a': 'Loiro',
-  '#ece0c8': 'Branco',
-  '#c0392b': 'Vermelho',
-  '#8e44ad': 'Roxo',
-  '#2980b9': 'Azul',
-  '#27ae60': 'Verde',
-  '#e84393': 'Rosa',
-  // Roupas, calçado e óculos
-  '#e74c3c': 'Vermelho',
-  '#e67e22': 'Laranja',
-  '#f1c40f': 'Amarelo',
-  '#2ecc71': 'Verde',
-  '#1abc9c': 'Turquesa',
-  '#3498db': 'Azul',
-  '#9b59b6': 'Roxo',
-  '#ecf0f1': 'Branco',
-  '#34495e': 'Azul-acinzentado',
-  '#7f8c8d': 'Cinza',
-  '#2c3e50': 'Azul-marinho',
-  '#16a085': 'Verde-petróleo',
-  '#d35400': 'Laranja-escuro',
-}
-
-export function adultColorName(hex: string, index: number): string {
-  return ADULT_COLOR_NAMES[hex.toLowerCase()] ?? `Cor ${index + 1}`
-}
-
 export const ADULT_AVATAR_COPY = {
   title: 'Meu avatar 3D',
   back: (returnTo: AvatarReturnPath): ShortText => ({
     lead: 'Voltar',
     rest: returnTo === '/' ? ' ao início' : ' ao meu perfil',
   }),
+  backToGame: 'Voltar ao jogo',
   randomize: { lead: 'Sortear', rest: ' visual' } satisfies ShortText,
-  save: 'Salvar',
-  saving: 'Salvando…',
   takePhoto: 'Tirar foto',
-  /** Com uma peça travada de prévia o botão fica indisponível; no celular sobra o verbo. */
-  lockedSuffix: ' (peça bloqueada)',
+  /** O avatar se salva sozinho: no lugar do antigo "Salvar", o estado do salvamento. */
+  saveStatus: {
+    saved: 'Salvo',
+    waiting: 'Salvando…',
+    saving: 'Salvando…',
+    preview: 'Em prévia',
+  } satisfies Record<Exclude<SaveStatus, 'error'>, string>,
+  saveError: 'Não salvou. Tentar de novo',
   loading: 'Carregando o seu avatar…',
   loadError: 'Não consegui carregar o seu avatar.',
   retry: 'Tentar de novo',
@@ -202,56 +167,40 @@ export const ADULT_AVATAR_COPY = {
   modeGroup: 'Modo',
   customize: 'Personalizar',
   photo: 'Cabine de fotos',
+  filterLabel: 'Mostrar peças',
+  filterQuestion: 'Quais peças você quer ver?',
+  filterHint: 'Dá para trocar quando quiser, no alto deste painel.',
+  filters: { girl: 'Femininas', boy: 'Masculinas', all: 'Todas' } satisfies Record<
+    AvatarFilter,
+    string
+  >,
   partGroup: 'Parte do avatar',
-  categories: {
-    head: 'Rosto',
-    hair: 'Cabelo',
-    eyes: 'Olhos',
-    eyebrows: 'Sobrancelhas',
-    nose: 'Nariz',
-    faceDecor: 'Pintura de rosto',
-    facialHair: 'Barba',
-    glasses: 'Óculos',
-    hat: 'Chapéu',
-    hairAccessory: 'Enfeite',
-    top: 'Blusa',
-    bottom: 'Calça',
-    outfit: 'Vestido',
-    shoes: 'Calçado',
-    accessory: 'Acessório',
-  } satisfies Record<AvatarCategory, string>,
-  /** Título da fileira de cores (só as categorias que têm paleta). */
-  colorHeading: {
-    head: 'Cor da pele',
-    hair: 'Cor do cabelo',
-    eyebrows: 'Cor das sobrancelhas',
-    facialHair: 'Cor da barba',
-    glasses: 'Cor dos óculos',
-    top: 'Cor da blusa',
-    bottom: 'Cor da calça',
-    outfit: 'Cor do vestido',
-    shoes: 'Cor do calçado',
-    hairAccessory: 'Cor do enfeite',
-    accessory: 'Cor do acessório',
-  } as Partial<Record<AvatarCategory, string>>,
-  colorFallback: 'Cores',
-  itemsHeading: {
-    head: 'Formatos de rosto',
-    hair: 'Modelos de cabelo',
-    eyes: 'Modelos de olhos',
-    eyebrows: 'Modelos de sobrancelha',
-    nose: 'Modelos de nariz',
-    faceDecor: 'Pinturas de rosto',
-    facialHair: 'Modelos de barba',
-    glasses: 'Modelos de óculos',
-    hat: 'Modelos de chapéu',
-    hairAccessory: 'Modelos de enfeite',
-    top: 'Modelos de blusa',
-    bottom: 'Modelos de calça',
-    outfit: 'Modelos de vestido',
-    shoes: 'Modelos de calçado',
-    accessory: 'Modelos de acessório',
-  } satisfies Record<AvatarCategory, string>,
+  tabs: {
+    corpo: 'Cor do corpo',
+    rosto: 'Rosto',
+    acessorio_rosto: 'No rosto',
+    cabelo: 'Cabelo',
+    chapeu: 'Chapéu',
+    oculos: 'Óculos',
+    roupa_cima: 'Blusa',
+    roupa_inteira: 'Vestido e macacão',
+    calca: 'Calça e bermuda',
+    calcado: 'Calçado',
+    meias: 'Meias',
+    luvas: 'Luvas',
+    costas: 'Capa',
+    fantasia: 'Fantasia',
+  } satisfies Record<AvatarTabId, string>,
+  kindGroup: 'Tipo',
+  none: 'Nenhum',
+  /** As regras do pack à vista: o que a escolha tirou do avatar. */
+  notice: (chosen: string, removed: readonly string[]) =>
+    `Para usar ${chosen}, saiu: ${
+      removed.length > 3
+        ? `${removed.slice(0, 3).join(', ')} e mais ${removed.length - 3}`
+        : removed.join(', ')
+    }.`,
+  undo: 'Desfazer',
   emptyItems: 'Nenhum modelo nesta parte ainda.',
   /** Peça travada: o motivo e o preço entram no nome do botão (o cadeado é só desenho). */
   lockedTile: (label: string, price: number) => `${label}, bloqueado, ${adultPrice(price)}`,
@@ -266,7 +215,7 @@ export const ADULT_AVATAR_COPY = {
     `${label}, em prévia. Selecione de novo para desbloquear por ${adultPrice(price)}`,
   preview: (label: string) => ({
     strong: `Prévia: ${label}.`,
-    text: ' Gostou? Desbloqueie para usar sempre.',
+    text: ' Gostou? Desbloqueie para usar sempre. Até lá, o avatar não é salvo.',
   }),
   notNow: 'Agora não',
   photoHint: {
@@ -275,16 +224,6 @@ export const ADULT_AVATAR_COPY = {
     after: ', no alto da tela.',
   },
   poseGroup: 'Pose',
-  /** Rótulo de cada pose do `Poses.glb` (o id é o nome da animação). */
-  poses: {
-    Idle: 'Parado',
-    Chill: 'Relaxado',
-    Cool: 'Estiloso',
-    Punch: 'Soco',
-    Ninja: 'Ninja',
-    King: 'Rei',
-    Busy: 'Ocupado',
-  } as Record<string, string>,
 } as const
 
 export const ADULT_ROOM_COPY = {

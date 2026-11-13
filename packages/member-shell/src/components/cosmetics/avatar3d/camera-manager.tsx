@@ -27,10 +27,10 @@ export type CamMode = 'customize' | 'photo'
 // de altura) cortava o topo do cabelo e a aba do chapéu (26/10/2026, medido na prévia). Hoje o
 // quadro cobre ~3,2u centrado em 1,15: do pódio ao chapéu mais alto, com folga em cima. Câmera um
 // tico à esquerda e acima (vista 3/4 gentil), na mesma direção de antes.
-const CAM_POS = [-0.5, 1.35, 3.85] as const
+const CAM_POS = [-0.28, 0.72, 2.05] as const
 // Cabine de fotos: um tico MAIS LONGE (nunca aproxima — a criança VÊ a pose inteira com folga).
-const CAM_POS_PHOTO = [-0.5, 1.35, 4.35] as const
-const CAM_TARGET = [0, 1.15, 0] as const
+const CAM_POS_PHOTO = [-0.28, 0.72, 2.4] as const
+const CAM_TARGET = [0, 0.56, 0] as const
 
 export function CameraManager({
   mode,
@@ -55,8 +55,8 @@ export function CameraManager({
     <CameraControls
       ref={controls}
       makeDefault
-      minDistance={1.5}
-      maxDistance={9}
+      minDistance={0.9}
+      maxDistance={5}
       minPolarAngle={Math.PI / 6}
       maxPolarAngle={Math.PI / 1.9}
     />

@@ -1093,49 +1093,38 @@ export interface LeagueMeView {
   myPosition: number
 }
 
-// ── Avatar 3D (configurador por categorias) — espelha as views do members ───
-/** Peça+cor equipada por categoria (`color` ausente em categoria sem paleta). */
-export interface AvatarSlotView {
-  asset: string
-  color?: string
-}
+// ── Avatar (pack Cute Characters) — espelha as views do members ─────────────────
+/**
+ * O catálogo, as regras e os preços são o `@sistemazero/core/avatar` (a tela lê direto); a view
+ * traz só o que é da pessoa.
+ */
+export type AvatarFilterView = 'girl' | 'boy' | 'all'
 
-/** Config equipada enviada ao salvar (`PUT /members/avatar`). `slots` = categoria→peça+cor. */
+/** O que se grava (`PUT /members/avatar`): encaixe → peça, e o filtro escolhido. */
 export interface AvatarConfigInput {
-  style?: string
-  slots: Record<string, AvatarSlotView>
+  slots: Record<string, string>
+  filter?: AvatarFilterView
 }
 
-/** Uma peça do catálogo na visão do aluno (lojinha). `category` largo (forward-compat). */
-export interface AvatarPartView {
-  id: string
-  category: string
-  /** `festa` (B16, 31/10/2026): só a festa do Arquipélago concede; sem preço nem compra. */
-  tier: 'free' | 'coins' | 'festa'
-  price: number
-  owned: boolean
-  locked: boolean
-}
-
-/** `GET /members/avatar` — equipado + catálogo + paletas + foto + saldo Zappy. */
+/** `GET /members/avatar`. */
 export interface AvatarStateView {
   style: string
-  equipped: Record<string, AvatarSlotView>
-  parts: AvatarPartView[]
-  /** Paleta de cores por categoria (categoria sem cor é omitida). */
-  palettes?: Record<string, string[]>
-  /** Oclusão de render (chapéu real esconde o cabelo). */
-  hideGroups?: Record<string, string[]>
-  /** Categoria removível → id da peça "nenhum". */
-  removable?: Record<string, string>
-  /** Foto (snapshot) atual do avatar 3D — `null` se ainda não salvou. */
-  photoUrl?: string | null
+  /** Encaixe → peça (com as orelhas da cor do corpo). */
+  equipped: Record<string, string>
+  /** `null` = ainda não escolheu (a tela pergunta). */
+  filter: AvatarFilterView | null
+  /** A própria pessoa já gravou uma escolha (o sorteado nasce `false`). */
+  customized: boolean
+  /** Peças pagas e da festa, e conjuntos de fantasia (as grátis são de todos). */
+  owned: string[]
+  /** Foto (snapshot) atual do avatar — `null` se ainda não há. */
+  photoUrl: string | null
   balance: number
   /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
   balanceUnlimited?: boolean
 }
 
-/** Resposta da compra de peça (`POST /members/avatar/parts/:id/buy`). */
+/** Resposta da compra de peça ou de fantasia (`POST /members/avatar/parts/:id/buy`). */
 export interface AvatarPurchaseResult {
   alreadyOwned: boolean
   balance: number
@@ -1143,10 +1132,11 @@ export interface AvatarPurchaseResult {
   unlimited?: boolean
 }
 
-/** Resposta de salvar a config (`PUT /members/avatar`). */
+/** Resposta de salvar o avatar (`PUT /members/avatar`). */
 export interface AvatarEquipResult {
-  equipped: Record<string, AvatarSlotView>
+  equipped: Record<string, string>
   style: string
+  filter: AvatarFilterView | null
 }
 
 /** Resposta de salvar a foto/snapshot (`POST /api/members/avatar/snapshot`). */
@@ -1238,7 +1228,7 @@ export interface PublicProfileGameView {
   level?: StudentLevelView
   /** SÓ as conquistas que a criança tem (não o catálogo). */
   badges: { slug: string; unlockedAt: string }[]
-  avatar: { style: string; slots: Record<string, AvatarSlotView> }
+  avatar: { style: string; slots: Record<string, string> }
   /** Foto (snapshot) do avatar 3D — mostrada no card público; `null` se nunca tirou. */
   avatarPhotoUrl?: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */

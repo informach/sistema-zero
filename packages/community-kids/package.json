@@ -18,7 +18,6 @@
     "e2e:art-slots": "playwright test --config playwright.art-slots.config.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts",
     "gen:room-thumbs": "bun scripts/gen-room-thumbs.ts",
     "galeria:cenas": "bun tests/visual/build-galeria-cenas.tsx tmp/galeria-cenas.html",
     "capturar:desafio-oferta": "node --experimental-strip-types tests/visual/capture-desafio-offer.ts",
