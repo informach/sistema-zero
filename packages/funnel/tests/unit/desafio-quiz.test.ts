@@ -452,8 +452,7 @@ describe('Desafio v5: o resultado em conversa', () => {
       expect(r.destino).toBe(destino)
       if (botao?.tipo === 'cta') {
         // A seção que responde à condição: o computador nas dúvidas, o formato na aula ou na sessão.
-        const ancora =
-          d.unmet[0] === 'computador' ? '#duvidas' : d.branch === 'm9' ? '#sessao' : '#aula'
+        const ancora = d.unmet[0] === 'computador' ? '#duvidas' : '#aula'
         expect(botao.href).toBe(d.unmet.length ? `${destino}${ancora}` : destino)
         expect(botao.rotulo === COPY.CTA_UNMET_LABEL).toBe(d.unmet.length > 0)
         expect(botao.nota).toBe(COPY.CTA_NOTA)
@@ -503,7 +502,7 @@ describe('Desafio v5: o resultado em conversa', () => {
     const aoVivo = buildDesafioKidsResult(answersM9({ m9_garantia: 'ao_vivo' }))!
     expect(cta(aoVivo)).toMatchObject({
       rotulo: COPY.CTA_UNMET_LABEL,
-      href: '/kids/desafio-primeiro-jogo/oferta/criar-junto#sessao',
+      href: '/kids/desafio-primeiro-jogo/oferta#aula',
     })
     expect(desafioDecision(answers917({ computador: 'verificar' }))).toMatchObject({
       unmet: [],

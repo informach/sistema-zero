@@ -15,7 +15,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "38484ebf5913b3175fa46ff9968eb28ac8a9fda75723e50e12102b28486a36e2"
+    "sha256": "4f10d3d1959875149475241a93546d5bfd6359e338a46d904f0d0542d6b29f6d"
   },
   {
     "mode": "desafio",
@@ -33,7 +33,7 @@
       "apoio": "junto",
       "condicao": "ritmo"
     },
-    "sha256": "b9bd7f909791f35b2b6ae2696b3cecaa0db134ca52b0520d3fc5b934ccb52e81"
+    "sha256": "87826bc3b0f3d55f10453ae2c864f004ac207150ff2f14040d5b224e271c028e"
   },
   {
     "mode": "desafio",
@@ -51,7 +51,7 @@
       "apoio": "junto",
       "condicao": "preco"
     },
-    "sha256": "094c3b6c80a30b66e04ceb9e353556ec10dcf1c0f275677931b67dd678bb2287"
+    "sha256": "2885708348cef8b4ab7f07b9037178fb67e0fb411d24f3f9f5a2f8cb244adc52"
   },
   {
     "mode": "desafio",
@@ -69,7 +69,7 @@
       "apoio": "junto",
       "condicao": "geral"
     },
-    "sha256": "d7a0e8df6e8135ec1390f8b8e5c8b526684b2999bb0ff78c022959ba2043e318"
+    "sha256": "5431ee99b682cf33388f3a8eb7863b49badd619083c53c594e4a5851c3e0b897"
   },
   {
     "mode": "desafio",
@@ -87,7 +87,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "88ced9c917edda306ed16ffa455752e40af0f1ae0b1ad3e2b01eba7cf0766569"
+    "sha256": "dd2fbb66a753acfc670994c9f7f149cfd7abeca07552e574f8c1372bb0c8669a"
   },
   {
     "mode": "desafio",
@@ -105,7 +105,7 @@
       "apoio": "junto",
       "condicao": "interesse"
     },
-    "sha256": "53420d853a020f4a76bc856f693e5a03e5b5b460b6bff356c731a8374f76d908"
+    "sha256": "62a17c1e3f7a4f0e183be0c7fcba123b5ed968f1953dc3eb9bed76b31c2a7752"
   },
   {
     "mode": "desafio",
@@ -411,7 +411,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "58dbe055279013590cea28b48f313122ee6ec079ce4b4269bf772a0cba22d4c1"
+    "sha256": "0a063de8cb55d74560c81787cabfdd67d355100d2c4fc1e23f8786f7d131db9d"
   },
   {
     "mode": "desafio",
@@ -429,7 +429,7 @@
       "apoio": "sozinho",
       "condicao": "conduzir"
     },
-    "sha256": "5dc3ebdd42e429c2b7ced1da9f48a6a521b331f59ec7b476880bdebf56abbcc7"
+    "sha256": "94e5aaa2e5f9958edfd91c97ce6389ab2d5bbd719e19343368487b9c785cb470"
   },
   {
     "mode": "desafio",
@@ -447,7 +447,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "5e37cbeacb59d129e49592ab5393df6c7ab2ede522ca6186ea39a8cbdec8aa1e"
+    "sha256": "c6ccc3b2ebc34962abe7f0d73060eca17ec9df64f2876ea4405968423fca3746"
   },
   {
     "mode": "desafio",

@@ -41,7 +41,6 @@ export default defineConfig({
         `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
         `${site}/pro/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
-        `${site}/kids/desafio-primeiro-jogo/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,

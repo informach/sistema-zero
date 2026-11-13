@@ -1,8 +1,8 @@
 /**
  * Run after `bun run build`: node --import tsx tests/browser/desafio-ofertas.ts
  *
- * As três páginas de oferta do Desafio do Primeiro Jogo (21/10/2026): Kids 9 a 17 (`/oferta`), menor
- * de 9 (`/oferta/criar-junto`) e a adulta (`/pro/desafio-primeiro-jogo/oferta`). Sobe o build com um
+ * As páginas de oferta do Desafio do Primeiro Jogo: a Kids, de 5 a 17 anos (`/oferta`, a única Kids
+ * desde 13/11/2026), e a adulta (`/pro/desafio-primeiro-jogo/oferta`). Sobe o build com um
  * catálogo falso (preço diferente da referência de R$ 67, para provar que o SSR usa o catálogo) e
  * confere, em cada página: status e no-store, um h1, âncoras e ids, imagens, o preço ao vivo,
  * larguras sem rolagem lateral, os dois CTAs e o pré-checkout até o checkout com a atribuição.
@@ -135,14 +135,6 @@ const PAGINAS: Pagina[] = [
   {
     nome: 'kids-9a17',
     path: `${kidsBase}/oferta`,
-    basePath: kidsBase,
-    preco: /R\$\s73/,
-    nomeCampo: 'Nome do responsável',
-    subtitulo: /Confirme os dados do responsável/,
-  },
-  {
-    nome: 'kids-criar-junto',
-    path: `${kidsBase}/oferta/criar-junto`,
     basePath: kidsBase,
     preco: /R\$\s73/,
     nomeCampo: 'Nome do responsável',
@@ -393,6 +385,8 @@ try {
   }
   for (const inexistente of [
     `${kidsBase}/oferta/expressao-visual`,
+    // A "criar junto" do Kids saiu em 13/11/2026, sem redirecionamento.
+    `${kidsBase}/oferta/criar-junto`,
     `${adultBase}/oferta/criar-junto`,
     `${adultBase}/oferta/tempo-de-tela`,
   ])

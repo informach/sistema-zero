@@ -7,6 +7,8 @@ export interface PrecoDoDesafio {
   preco: string
   /** O valor cheio riscado, só quando um cupom válido deu desconto. */
   precoCheio: string | null
+  /** O desconto do cupom em porcentagem inteira ("50"), só quando um cupom válido deu desconto. */
+  descontoPct: number | null
   /** "Menos de R$ X por dia de acesso": os 30 dias de acesso, sempre acima da conta exata. */
   precoDia: string
   /** O código que o pré-checkout leva ao checkout, que volta a cotá-lo. */
@@ -24,9 +26,15 @@ export function precoDoDesafio(priceReais: string, coupon: CouponPresentation): 
   const valido = coupon.status === 'valid' ? coupon : null
   const cheioCents = valido ? valido.listPriceCents : Math.round(Number(priceReais) * 100)
   const finalCents = valido ? valido.finalPriceCents : cheioCents
+  const comDesconto = valido !== null && valido.discountCents > 0 && cheioCents > 0
+  const preco = formatarPreco(finalCents)
+  const precoCheio = comDesconto ? formatarPreco(cheioCents) : null
+  const descontoPct =
+    comDesconto && valido ? Math.round((valido.discountCents / cheioCents) * 100) : null
   return {
-    preco: formatBRLFromCents(finalCents),
-    precoCheio: valido && valido.discountCents > 0 ? formatBRLFromCents(cheioCents) : null,
+    preco,
+    precoCheio,
+    descontoPct,
     precoDia: formatBRLFromCents2(precoPorDiaCents(finalCents)),
     codigo: coupon.status === 'none' ? null : coupon.code,
     aviso:
@@ -34,7 +42,10 @@ export function precoDoDesafio(priceReais: string, coupon: CouponPresentation): 
         ? null
         : coupon.status === 'valid'
           ? {
-              texto: `Cupom ${coupon.code} aplicado. O valor já está com o desconto.`,
+              texto:
+                precoCheio && descontoPct
+                  ? `Cupom ${coupon.code} aplicado: ${descontoPct}% de desconto. De ${precoCheio} por ${preco}.`
+                  : `Cupom ${coupon.code} aplicado. O valor já está com o desconto.`,
               alerta: false,
             }
           : {
@@ -42,6 +53,14 @@ export function precoDoDesafio(priceReais: string, coupon: CouponPresentation): 
               alerta: true,
             },
   }
+}
+
+/**
+ * O valor em reais, com centavos só quando houver: R$ 67 ou R$ 33,50. Sem isso, um cupom de 50% sobre
+ * R$ 67 aparecia como R$ 34, um valor diferente do cobrado no checkout.
+ */
+export function formatarPreco(cents: number): string {
+  return Math.round(cents) % 100 === 0 ? formatBRLFromCents(cents) : formatBRLFromCents2(cents)
 }
 
 /** Troca os marcadores de preço da copy pelos valores do catálogo. */

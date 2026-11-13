@@ -1,10 +1,10 @@
 <!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/desafio-primeiro-jogo/oferta/ e desafio-adulto/oferta/. Edite o código e rode `bun scripts/espelho-copy-desafio.ts` (em packages/funnel). -->
 
-**seoTitle**: Desafio do Primeiro Jogo: habilidades para a vida | Sistema Zero
+**seoTitle**: Desafio do Primeiro Jogo: habilidades cognitivas para a vida | Sistema Zero
 
-**description**: Ajude seu filho a praticar planejamento, resolução de problemas e comunicação para a escola e a vida. Treinamento guiado com criação de jogos e programação em blocos. 9 a 17 anos.
+**description**: Ajude seu filho a praticar planejamento, resolução de problemas e comunicação para a escola e a vida. Treinamento guiado com criação de jogos e programação em blocos. 5 a 17 anos; abaixo de 9, com acompanhante.
 
-**cta**: Quero começar por {{preco}}
+**cta**: Quero ajudar meu filho
 
 **condicoes**: Pagamento único · 30 dias de acesso · 7 dias de garantia
 
@@ -22,7 +22,7 @@
 
 **topo.cta**: Conhecer o treinamento
 
-**hero.selo**: Habilidades para a vida · 9 a 17 anos
+**hero.selo**: Habilidades cognitivas para a vida · 5 a 17 anos, abaixo de 9 com acompanhante
 
 **hero.titulo**: Ajude seu filho a resolver problemas e fazer escolhas
 
@@ -96,7 +96,7 @@
 
 **farol.blocos.paragrafos[0]**: Aqui, as instruções são montadas com blocos de encaixar. Por exemplo: quando o personagem chega ao farol, o jogo confere se ele pegou a chave antes de acender a luz. Seu filho monta essa regra, testa e observa se aconteceu o que esperava. O raciocínio ganha uma forma que ele pode ver e revisar.
 
-**farol.blocos.paragrafos[1]**: Ele recebe um projeto inicial e orientações para construir cada parte. Também faz escolhas: personagem, cenário, avisos e posição da chave. Ao mudar o lugar da chave, muda o percurso de quem joga e pode conferir o efeito da própria decisão.
+**farol.blocos.paragrafos[1]**: Ele recebe um projeto inicial e orientações para construir cada parte. Também faz escolhas: personagem, cenário, avisos e posição da chave. Ao mudar o lugar da chave, muda o percurso de quem joga e pode conferir o efeito da própria decisão. Ao escolher uma coisa, ele abre mão de outra e vê o que essa escolha provocou: aprende causa e consequência e exercita a tolerância à frustração.
 
 **aula.tag**: Aprender envolve fazer
 
@@ -130,7 +130,9 @@
 
 **treina.tag**: Do treinamento para outras situações
 
-**treina.titulo**: Enquanto constrói o jogo, ele pratica maneiras de pensar que você pode retomar fora da tela.
+**treina.titulo**: Enquanto constrói o jogo, ele pratica habilidades cognitivas para a vida, que você pode retomar fora da tela.
+
+**treina.texto**: Cada habilidade trabalha funções executivas importantes para lidar com os contextos da vida diária.
 
 **treina.habilidades[0].titulo**: Planejar antes de agir
 
@@ -189,6 +191,8 @@
 **responsavel.itens[2]**: “Quer fazer uma pausa ou testar uma parte comigo?” Combine uma forma possível de continuar.
 
 **responsavel.itens[3]**: Depois, peça que mostre o que mudou. Reconheça uma escolha, uma tentativa ou a ajuda que conseguiu pedir.
+
+**responsavel.itens[4]**: Abaixo de 9 anos, fique ao lado durante as atividades: ajude na leitura e nos controles e deixe que ele escolha e teste com você.
 
 **oferta.titulo**: Comece por um treinamento guiado, com um projeto que seu filho pode construir e mostrar.
 
@@ -258,13 +262,11 @@
 
 **faq[2].pergunta**: Para qual idade foi pensado?
 
-**faq[2].resposta**: Para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia, conforme seu momento e familiaridade com o computador. Menores de 9 anos também podem participar, com um responsável acompanhando as atividades.
-
-**faq[2].link.texto**: Conhecer a proposta para criar junto.
+**faq[2].resposta**: Para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, a criança faz as atividades acompanhada por um responsável: você ajuda na leitura e nos controles, e ela escolhe e testa com você. A partir dos 9, a autonomia varia conforme o momento e a familiaridade com o computador.
 
 **faq[3].pergunta**: Meu filho é autista. Como podemos avaliar a participação?
 
-**faq[3].resposta**: Comecem juntos e observem como ele compreende uma orientação, usa os controles e comunica o que precisa. As aulas são gravadas e permitem pausar e rever; as falas do Zappy têm botão Ouvir. Ele pode explicar uma escolha falando, apontando ou mostrando. O acompanhamento deve considerar o ritmo e as necessidades de apoio dele, inclusive dos 9 aos 17 anos.
+**faq[3].resposta**: Comecem juntos e observem como ele compreende uma orientação, usa os controles e comunica o que precisa. As aulas são gravadas e permitem pausar e rever; as falas do Zappy têm botão Ouvir. Ele pode explicar uma escolha falando, apontando ou mostrando. O acompanhamento deve considerar o ritmo e as necessidades de apoio dele, em qualquer idade.
 
 **faq[4].pergunta**: Precisa saber programar? Quanto devo acompanhar?
 
@@ -298,7 +300,7 @@
 
 **barra.sufixo**: pagamento único
 
-**barra.cta**: Começar o treinamento
+**barra.cta**: Quero ajudar meu filho
 
 **pratica.metodologia**: Nossa metodologia é aprender fazendo: entender um objetivo, montar uma parte, testar, ajustar e compartilhar. A Chave do Farol dá forma a esse percurso. Cada etapa combina orientação, experiências para investigar e criação no Estúdio.
 

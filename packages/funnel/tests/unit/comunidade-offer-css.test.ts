@@ -37,9 +37,8 @@ const novos = {
   'presente-kids.css': '.c917',
   'presente-adulto.css': '.cda',
   'embaixador.css': '.emb',
-  // As três páginas do Desafio (21/10/2026) vestem o layout da Comunidade do mesmo público.
+  // As páginas do Desafio vestem o layout da Comunidade do mesmo público.
   'desafio-917.css': '.c917',
-  'desafio-menor9.css': '.cm9',
   'desafio-adulto.css': '.cda',
 } as const
 const novosCss = Object.fromEntries(

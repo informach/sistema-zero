@@ -77,10 +77,10 @@ import {
   WISH_M9,
 } from './result-copy'
 
-/** As duas páginas de oferta Kids, destino do botão do resultado. */
+/** O destino do botão do resultado: a página Kids do Desafio é uma só desde 13/11/2026. */
 export const DESAFIO_OFFER_PATHS = {
   '9a17': '/kids/desafio-primeiro-jogo/oferta',
-  m9: '/kids/desafio-primeiro-jogo/oferta/criar-junto',
+  m9: '/kids/desafio-primeiro-jogo/oferta',
 } as const
 
 type Opener = 'cena' | 'sintese' | 'cena_desejada'
@@ -106,7 +106,7 @@ function opener(answers: QuizAnswers, prefix: '' | 'm9_', p: string): Opener {
  */
 const ANCORA: Record<DesafioBranchComCarta, Record<Condition, string>> = {
   '9a17': { computador: '#duvidas', formato: '#aula' },
-  m9: { computador: '#duvidas', formato: '#sessao' },
+  m9: { computador: '#duvidas', formato: '#aula' },
 }
 
 function cta(

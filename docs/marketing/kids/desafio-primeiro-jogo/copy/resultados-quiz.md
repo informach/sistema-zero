@@ -49,7 +49,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## m9-persistir
 
@@ -96,7 +96,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## m9-raciocinar
 
@@ -143,7 +143,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## m9-expressar
 
@@ -190,7 +190,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## m9-rotina
 
@@ -237,7 +237,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## m9-explorar
 
@@ -282,7 +282,7 @@ Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajud
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## 9a12-planejar
 
@@ -1077,7 +1077,7 @@ Conheça o treinamento para ver como essa prática ganha forma na Chave do Farol
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## apoio-pendente
 
@@ -1124,7 +1124,7 @@ Você pode conhecer o treinamento para entender os exemplos e o formato. Antes d
 
 Botão: Conhecer o formato e os requisitos
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## ajuda-inicial
 
@@ -1171,7 +1171,7 @@ Você pode conhecer o treinamento para entender os exemplos e o formato. Antes d
 
 Botão: Conhecer o formato e os requisitos
 
-Destino: /kids/desafio-primeiro-jogo/oferta/criar-junto
+Destino: /kids/desafio-primeiro-jogo/oferta
 
 ## professor
 

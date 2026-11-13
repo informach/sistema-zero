@@ -1,16 +1,6 @@
-// As páginas de oferta do Desafio Kids (21/10/2026): `/oferta` é a de 9 a 17 anos e
-// `/oferta/criar-junto` a do menor de 9, criando junto com um adulto. A adulta é outro funil
-// (`pro/desafio-primeiro-jogo`, em `../desafio-adulto`).
-
-export type DesafioPagina = '9a17' | 'criar-junto'
-
-/** As subpáginas de `/oferta/<id>` (a de 9 a 17 é a própria `/oferta`). */
-export const DESAFIO_SUBPAGINAS = ['criar-junto'] as const
-export type DesafioSubpagina = (typeof DESAFIO_SUBPAGINAS)[number]
-
-export function isDesafioSubpagina(value: unknown): value is DesafioSubpagina {
-  return typeof value === 'string' && (DESAFIO_SUBPAGINAS as readonly string[]).includes(value)
-}
+// A página de oferta do Desafio Kids é uma só desde 13/11/2026: `/oferta`, de 5 a 17 anos (abaixo de
+// 9, com acompanhante). A "criar junto" do menor de 9 saiu, sem redirecionamento (decisão da dona). A
+// adulta é outro funil (`pro/desafio-primeiro-jogo`, em `../desafio-adulto`).
 
 /**
  * As variantes por motivo que existiram até 21/10/2026 (`primeiro-jogo` já era um apelido). Os links

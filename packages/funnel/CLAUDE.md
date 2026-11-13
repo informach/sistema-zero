@@ -11,6 +11,17 @@ presente: o topo diz "7 dias de acesso ao curso e ao Mural" (sem "contados do ca
 (causa e consequência, tolerância à frustração) no fim da seção da aula. Canvas da aprovação:
 https://claude.ai/artifact/VdLE8MeHMQk6yvf9m7GUH3.
 
+**Desafio Kids numa página só (13/11/2026, Canvas https://claude.ai/artifact/PswwnM7AETQC17mHf57hWk):**
+a `/kids/desafio-primeiro-jogo/oferta` passou a ser de 5 a 17 anos (abaixo de 9, com acompanhante) e a
+`/oferta/criar-junto` do Desafio SAIU, sem redirecionamento (decisão da dona): `DesafioMenor9Body`,
+`pagina-menor9.ts` e `desafio-menor9.css` apagados, espelho em `copy/historico/2026-11-13-criar-junto/`.
+O quiz Kids do Desafio (v6 em `kids-vida/narrative.ts` e o v5 em `quiz/result.ts`) leva o menor de 9 à
+página principal; a Comunidade segue com a "criar junto" dela. Os botões de compra dizem "Quero ajudar
+meu filho", sem preço. Com cupom válido, `precoDoDesafio` dá `descontoPct` e o corpo mostra o selo do
+cupom, "De R$ X por R$ Y" no topo, o selo no cartão e o desconto na barra do celular; `formatarPreco`
+mostra centavos quando houver (50% de R$ 67 é R$ 33,50, não R$ 34). O Termo do Desafio não mudou
+(`desafio-2026-10-21`). A seção "Desafio do Primeiro Jogo em três públicos" abaixo é anterior a isso.
+
 ## Quizzes adultos: autonomia para criar (06/11/2026)
 
 As versões vigentes são `desafio-autonomia-v2` e `comunidade-autonomia-v2`.
