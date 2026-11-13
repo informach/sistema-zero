@@ -405,14 +405,14 @@ export function ArquipelagoHost(props: {
     )
   }
   const abrindo = useRef(false)
+  /** A versão combinada com o jogo (a mesma porta para o avatar que volta do "vestir"). */
+  const versaoDoJogo = useRef<number | undefined>(undefined)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
 
   useEffect(() => {
     let vivo = true
     let montagem: MontagemDoArquipelago | null = null
-    /** A versão combinada com o jogo (a mesma porta para o avatar que volta do "vestir"). */
-    let versaoDoJogo: number | undefined
     const abrirFerramenta = async (pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta> => {
       if (abrindo.current || pendente.current)
         return { situacao: 'indisponivel', motivo: 'ocupado' }
@@ -544,7 +544,7 @@ export function ArquipelagoHost(props: {
         setEstado('indisponivel')
         return
       }
-      versaoDoJogo = versao
+      versaoDoJogo.current = versao
       montagem = modulo.montarArquipelago(
         elemento.current,
         criarPlataformaDoArquipelago({
@@ -647,7 +647,7 @@ export function ArquipelagoHost(props: {
                   const acesso = await json(`${BASE}/ferramentas/avatar`)
                   if (!pertenceAoPerfil(acesso.corpo, id)) throw Error('O perfil ativo mudou')
                   const p = criarPlataformaDoArquipelago({
-                    versao: versaoDoJogo,
+                    versao: versaoDoJogo.current,
                     publico,
                     perfil: { id, primeiroNome },
                     voltarPara,

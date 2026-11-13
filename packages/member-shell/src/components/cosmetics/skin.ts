@@ -81,8 +81,6 @@ export interface RoomMessages {
   buyFailed: string
   saved: string
   saveFailed: string
-  /** O voltar quando a gravação falhou: avisa e só sai no segundo toque. */
-  exitUnsaved: string
 }
 
 export const ROOM_MESSAGES: Record<CosmeticsSkin, RoomMessages> = {
