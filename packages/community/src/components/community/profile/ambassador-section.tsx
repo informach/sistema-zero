@@ -16,7 +16,7 @@ const SUPPORT_HREF = '/ajuda#atendimento'
 /**
  * "Embaixador" em Meu perfil (20/10/2026): a pessoa adulta vira embaixadora do presente com um
  * clique e copia um link para cada público (um adulto que quer criar o próprio jogo ou uma família
- * com criança de 9 a 17 anos). A lógica dos estados é a do cartão da área dos pais do Kids
+ * com criança de 5 a 17 anos). A lógica dos estados é a do cartão da área dos pais do Kids
  * (`community-kids/src/app/pais/_components/ambassador-card.tsx`), na voz do adulto.
  *
  * ⚠️ Regra da dona (20/10/2026): dentro da comunidade vale a identidade DESTE app (`sz-card`,
@@ -130,7 +130,7 @@ export function AmbassadorSection({ initial }: { initial: AmbassadorEnrollmentVi
         ) : (
           <p className="text-[0.9rem] text-muted-foreground">
             Dê 7 dias no Sistema Zero, sem custo para quem recebe, a um adulto que quer criar o
-            próprio jogo ou a uma família com criança de 9 a 17 anos. Se alguém que recebeu o seu
+            próprio jogo ou a uma família com criança de 5 a 17 anos. Se alguém que recebeu o seu
             presente assinar a Comunidade dos Criadores, adulta ou Kids, você recebe um
             agradecimento{bonusValue ? ` de ${bonusValue}` : ''} por Pix, depois da garantia de 7
             dias.

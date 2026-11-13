@@ -52,7 +52,7 @@ describe('cartão de embaixador da área dos pais', () => {
     render(<AmbassadorCard />)
     await screen.findByText('Seja um embaixador do Sistema Zero')
     const text = document.body.textContent ?? ''
-    expect(text).toContain('família com criança de 9 a 17 anos')
+    expect(text).toContain('família com criança de 5 a 17 anos')
     expect(text).toContain('adulto que quer criar o próprio jogo')
     expect(text).toMatch(/R\$\s45,00/)
     expect(text).toContain('Não é salário nem renda garantida')

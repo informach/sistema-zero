@@ -26,7 +26,7 @@ function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
   const coupon = campaign.couponView
   const couponShareable = coupon?.state === 'active' || coupon?.state === 'scheduled'
   const period = `De ${date(campaign.startsAt)} até ${date(new Date(Date.parse(campaign.endsAt) - 1).toISOString())} (Brasília).`
-  const audience = campaign.audience === 'kids' ? 'Kids · 9 a 17 anos' : 'Adultos · 18 anos ou mais'
+  const audience = campaign.audience === 'kids' ? 'Kids · 5 a 17 anos' : 'Adultos · 18 anos ou mais'
   return (
     <article
       className={`emb-cartao emb-campanha ${!shareable && !couponShareable ? 'emb-campanha--inativa' : ''}`}

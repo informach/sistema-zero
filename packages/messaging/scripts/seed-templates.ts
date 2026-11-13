@@ -1220,7 +1220,7 @@ export const seeds = [
           '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 17 anos montam, passo a passo, um jogo de procurar personagens e concluem o curso com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 5 a 17 anos (abaixo de 9 anos, com um responsável acompanhando) montam, passo a passo, um jogo de procurar personagens e concluem o curso com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(

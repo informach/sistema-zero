@@ -16,7 +16,7 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
     referralTemplates.indexOf("key: 'referrals-scholarship-invite'"),
     referralTemplates.indexOf("key: 'referrals-scholarship-welcome'"),
   )
-  expect(invite).toContain('9 a 17 anos')
+  expect(invite).toContain('5 a 17 anos (abaixo de 9 anos, com um responsável acompanhando)')
   expect(invite).toContain('Não pedimos cartão')
   expect(invite).toContain('este curso e a participação no Mural')
   expect(invite).toContain('publicar o jogo do curso, comentar e reagir')

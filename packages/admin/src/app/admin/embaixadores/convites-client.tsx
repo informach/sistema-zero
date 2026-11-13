@@ -562,7 +562,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                       : 'Um presente para famílias · Kids'
                   }
                   description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
-                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${cardDateLabel(detail.campaign.startsAt)} até ${cardDateLabel(new Date(Date.parse(detail.campaign.endsAt) - 1).toISOString())} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para pessoas de 18 anos ou mais.' : 'Para crianças de 9 a 17 anos. Cadastro pelo responsável.'}`}
+                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${cardDateLabel(detail.campaign.startsAt)} até ${cardDateLabel(new Date(Date.parse(detail.campaign.endsAt) - 1).toISOString())} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para pessoas de 18 anos ou mais.' : 'Para crianças de 5 a 17 anos; abaixo de 9, com acompanhante. Cadastro pelo responsável.'}`}
                 />
               </div>
               {detail.campaign.state === 'draft' && (
@@ -969,7 +969,7 @@ function CampaignEditor({
             <AudienceBadge audience={audience} />
             <p className="text-sm text-muted-foreground">
               {audience === 'kids'
-                ? 'Família com criança de 9 a 17 anos. Cadê Todo Mundo e Mural Kids.'
+                ? 'Família com criança de 5 a 17 anos. Cadê Todo Mundo e Mural Kids.'
                 : '18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.'}
             </p>
             <p id="campaign-audience-help" className="text-sm text-muted-foreground">

@@ -1,5 +1,16 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Presente Kids: 5 a 17 anos e ajustes da Viviane (13/11/2026)
+
+Por decisão da dona, a faixa do presente Kids passou a ser **5 a 17 anos; abaixo de 9, com
+acompanhante**, sempre nessa ordem (nunca "menores também podem"). Vale para a página do presente,
+`/kids/embaixadores`, o painel do embaixador, a mensagem de WhatsApp, os cartões "Seja embaixador",
+o Admin e o e-mail de convite. As ofertas da Comunidade e do Desafio continuam 9 a 17. Na página do
+presente: o topo diz "7 dias de acesso ao curso e ao Mural" (sem "contados do cadastro"),
+"habilidades cognitivas para a vida", a frase das funções executivas nas habilidades e a das escolhas
+(causa e consequência, tolerância à frustração) no fim da seção da aula. Canvas da aprovação:
+https://claude.ai/artifact/VdLE8MeHMQk6yvf9m7GUH3.
+
 ## Quizzes adultos: autonomia para criar (06/11/2026)
 
 As versões vigentes são `desafio-autonomia-v2` e `comunidade-autonomia-v2`.

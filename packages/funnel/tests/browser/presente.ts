@@ -467,11 +467,8 @@ try {
         const idade = page
           .locator('.pk-duvidas details')
           .filter({ hasText: 'Para qual idade é o presente?' })
-        assert.match(await idade.locator('p').innerText(), /9 a 17 anos.*mais autonomia/)
-        assert.match(
-          await idade.locator('p').innerText(),
-          /menores de 9 anos.*acompanhadas por um responsável/,
-        )
+        assert.match(await idade.locator('p').innerText(), /5 a 17 anos\. Abaixo de 9 anos/)
+        assert.match(await idade.locator('p').innerText(), /acompanhada por um responsável/)
         assert.match(
           (await page.locator('[aria-labelledby=pk-mural] img').getAttribute('src')) ?? '',
           /cade-jogo-3\.webp$/,
@@ -650,7 +647,7 @@ try {
   await page.getByRole('button', { name: 'Enviar convite' }).click()
   await page.getByText('Convite enviado para ana@example.com.').waitFor()
   assert.deepEqual(invites, [{ name: 'Ana', email: 'ana@example.com', audience: 'adult' }])
-  await page.getByRole('radio', { name: /Uma criança de 9 a 17 anos/ }).check()
+  await page.getByRole('radio', { name: /Uma criança de 5 a 17 anos/ }).check()
   await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Bia')
   await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('bia@example.com')
   await page.getByRole('button', { name: 'Enviar convite' }).click()
