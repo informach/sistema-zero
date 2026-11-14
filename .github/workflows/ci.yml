@@ -205,11 +205,17 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/live-recorder-runtime" --no-audit --no-fund bun@1.4.3
           LIVE_RECORDER_BUN="$RUNNER_TEMP/live-recorder-runtime/node_modules/.bin/bun" bun run test:transport
 
-      # O molda voltou a rodar aqui (10/09/2026). Ele passou um dia num job Windows porque o Bun
-      # 1.3.11 segfaultava neste runner dentro de `SceneWorkshop.test.tsx`: `terminate()` num
-      # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
-      # Bun 1.4.0). O conserto no código é o aperto de mão de `packages/molda/src/workers/
-      # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
+      # O Bun 1.3.11 ainda pode encerrar a VM durante o descarte de workers reais
+      # (oven-sh/bun#33936). A suíte completa usa o runtime corrigido, como o gravador;
+      # o restante do pipeline mantém seu runtime e a geração de artefatos atual.
+      - name: Testes do Molda no runtime corrigido de workers
+        working-directory: packages/molda
+        run: |
+          npm install --prefix "$RUNNER_TEMP/molda-runtime" --no-audit --no-fund bun@1.4.4
+          export PATH="$RUNNER_TEMP/molda-runtime/node_modules/.bin:$PATH"
+          bun --version
+          bun run test
+
       - name: Preparar navegadores das provas de persistência do Studio
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium

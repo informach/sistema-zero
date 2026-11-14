@@ -5,9 +5,11 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 // from '*'. Select positive names so native suites run only in their Windows job.
 // Studio has a separate step so its large Blockly round-trip does not compete
 // with trusted runtime builds and the other package suites for the same CPUs.
+// Molda runs in its own step with the Bun worker lifetime fix (1.4.4).
 const separate = new Set([
   '@sistemazero/agent-runtime',
   '@sistemazero/marketing-desktop',
+  '@sistemazero/molda',
   '@sistemazero/studio',
 ])
 const root = JSON.parse(readFileSync('package.json', 'utf8'))
