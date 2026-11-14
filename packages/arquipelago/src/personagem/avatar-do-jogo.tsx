@@ -55,9 +55,22 @@ const CLIPES_URL = avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file)
 /** O nome dos clipes no mixer: os do pack com outro nome, para não cruzar com os da plataforma. */
 export const nomeNoJogo = (id: ClipeDoJogo) => `jogo/${id}`
 /** Os clipes que o jogo toca uma vez (o tempo é o da regra; não voltam ao começo sozinhos). */
-const UMA_VEZ: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_fim']
+const UMA_VEZ: readonly ClipeDoJogo[] = [
+  'pulo_inicio',
+  'pulo_fim',
+  'sentar',
+  'deitar',
+  'subir_borda',
+]
 /** O pulo do pack sobe o corpo; no jogo quem sobe é a física (o agachar fica). */
 const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim']
+/**
+ * Sentar e deitar ficam com o deslocamento: o desenho já está no assento (ou no colchão) e é o
+ * clipe que leva a bacia de onde ela começa em pé até lá.
+ */
+const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
+/** Subindo (a escada, a borda), quem sobe é o corpo da física: o clipe fica sem a subida. */
+const SEM_A_SUBIDA: readonly ClipeDoJogo[] = ['subir_escada', 'subir_borda']
 
 /**
  * Os clipes do jogo prontos para o mixer: sem o deslocamento do `Hips` (o corpo anda pela física),
@@ -71,8 +84,14 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
   for (const id of CLIPES_DO_JOGO) {
     const clipe = porNome.get(id)
     if (!clipe) continue
+    if (COM_O_DESLOCAMENTO.includes(id)) {
+      const copia = clipe.clone()
+      copia.name = nomeNoJogo(id)
+      prontos.push(copia)
+      continue
+    }
     const vertical: VerticalDoClipe =
-      id === 'subir_escada'
+      SEM_A_SUBIDA.includes(id)
         ? 'tendencia'
         : NO_PULO.includes(id) && emPe !== null
           ? { teto: emPe }
@@ -94,20 +113,17 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * isso é aplicado às ações do mixer (o tempo é posto à mão: o mixer não avança sozinho). Na pausa
  * nada muda, então a pose fica congelada.
  *
- * Depois da pose: os braços (`depoisDaPose`, as mãos no cipó) e os pés no chão (`chao`, por IK em
- * `pes-no-chao.ts`). Os dois rodam também na pausa: o mixer reaplica a pose a cada quadro.
+ * Depois da pose: os pés no chão (`chao`, por IK em `pes-no-chao.ts`), também na pausa (o mixer
+ * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
  * ⚠️ Os patins não aparecem até a arte entregar o par do pack (a flag só muda a velocidade).
  */
 export function AvatarDoJogo({
   movimento,
-  depoisDaPose,
   chao,
   comLanterna = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
-  /** Mexe nos ossos depois da pose de cada quadro (os braços para cima no cipó e no tronco). */
-  depoisDaPose?: () => void
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
   chao?: AlturaDoChao
   /** Os patins nos pés: ainda não aparecem no boneco do pack (veja acima). */
@@ -176,7 +192,6 @@ export function AvatarDoJogo({
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
             />
-            {depoisDaPose ? <DepoisDaPose fazer={depoisDaPose} /> : null}
             {chao ? (
               <PesNoChao
                 chao={chao}
@@ -199,15 +214,9 @@ export function AvatarDoJogo({
 }
 
 /**
- * Roda a cada quadro DEPOIS da pose: monta logo depois do avatar, dentro do mesmo `Suspense`, então
- * o `useFrame` dele entra depois do mixer (os braços no cipó mexem por cima das animações).
+ * Os pés no chão de verdade, depois da pose: monta logo depois do avatar, dentro do mesmo
+ * `Suspense`, então o `useFrame` dele entra depois do mixer.
  */
-function DepoisDaPose({ fazer }: { fazer: () => void }) {
-  useFrame(fazer)
-  return null
-}
-
-/** Os pés no chão de verdade, depois da pose (e dos braços). */
 function PesNoChao({
   chao,
   movimento,

@@ -5,8 +5,9 @@
  *
  * A regra fala em ESTADOS (o que o corpo está fazendo). Cada estado toca um pedaço de um clipe do
  * pack (`POSE_DO_ESTADO`): os clipes de movimento do jogo moram no GLB `game.file` do catálogo, e
- * as medidas deles (duração, passada) também vêm de lá, vezes a escala do herói no mundo. Os modos
- * que a arte ainda não animou usam uma pose de reserva (a tabela do plano da etapa 1, seção 1.4).
+ * as medidas deles (duração, passada) também vêm de lá, vezes a escala do herói no mundo. Nadar,
+ * boiar, sentar, deitar, o cipó e a borda usam as animações que a arte fez para este corpo; os modos
+ * que ela ainda não animou (planar, escalar, equilibrar, escorregar, montar) usam uma pose de reserva.
  *
  * Andar e correr são tocados pela MESMA fase: na mistura os pés dos dois caem juntos. A fase anda
  * pela distância percorrida dividida pela passada, então o pé não patina no chão.
@@ -14,7 +15,7 @@
 import { AVATAR_CATALOG, type AvatarGameClip } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { CORPO } from './corpo'
 
-/** Os clipes de movimento do pack que o jogo usa (os do GLB `game.file`). */
+/** Os clipes que o jogo usa (os do GLB `game.file`): os de movimento do pack e os que a arte fez. */
 export const CLIPES_DO_JOGO = [
   'parado_relaxado',
   'andar_frente',
@@ -25,6 +26,15 @@ export const CLIPES_DO_JOGO = [
   'pulo_fim',
   'cair',
   'subir_escada',
+  'nadar',
+  'boiar',
+  'sentar',
+  'sentado',
+  'deitar',
+  'deitado',
+  'pendurar_cipo',
+  'pendurar_borda',
+  'subir_borda',
 ] as const
 export type ClipeDoJogo = (typeof CLIPES_DO_JOGO)[number]
 
@@ -49,6 +59,8 @@ export const ESTADOS = [
   'Sentar',
   'Montar',
   'Deitar',
+  'Sentando',
+  'Deitando',
 ] as const
 export type Estado = (typeof ESTADOS)[number]
 
@@ -84,19 +96,23 @@ export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = {
   Queda: inteiro('cair'),
   Aterrissagem: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
   SubirEscada: inteiro('subir_escada'),
+  // As animações que a arte fez para este corpo:
+  Nado: inteiro('nadar'),
+  NadoParado: inteiro('boiar'),
+  Corda: inteiro('pendurar_cipo'),
+  PendurarBorda: inteiro('pendurar_borda'),
+  SubirBorda: inteiro('subir_borda'),
+  // Sentar e deitar: o movimento de se acomodar uma vez, depois o laço de quem ficou.
+  Sentando: inteiro('sentar'),
+  Sentar: inteiro('sentado'),
+  Deitando: inteiro('deitar'),
+  Deitar: inteiro('deitado'),
   // As reservas, até a arte entregar a animação de cada modo:
-  Nado: inteiro('pulo_no_ar'),
-  NadoParado: inteiro('pulo_no_ar'),
-  Corda: inteiro('pulo_no_ar'),
   Planar: inteiro('pulo_no_ar'),
-  PendurarBorda: inteiro('pulo_no_ar'),
-  SubirBorda: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
   Escalar: inteiro('subir_escada'),
   Equilibrar: inteiro('parado_relaxado'),
   Escorregar: parada('agachado_frente', AGACHADO_PARADO),
   Montar: parada('agachado_frente', AGACHADO_PARADO),
-  Sentar: inteiro('parado_relaxado'),
-  Deitar: inteiro('parado_relaxado'),
 }
 
 /** As medidas de um clipe do jogo no catálogo (lança se a arte não o mandou). */
@@ -133,6 +149,11 @@ export const CICLO_DA_ESCADA = {
   duracao: DURACAO_DO_CLIPE.subir_escada,
 } as const
 export const CICLO_DE_ESCALAR = CICLO_DA_ESCADA
+/** Nadar: as braçadas de um ciclo levam o corpo `passada` metros. */
+export const CICLO_DE_NADO = {
+  passada: doCatalogo('nadar').stride * escala,
+  duracao: DURACAO_DO_CLIPE.nadar,
+} as const
 
 /**
  * As velocidades em que o corpo anda e corre são do MUNDO (`CORPO.andar`, `CORPO.correr`): é nelas
@@ -209,6 +230,8 @@ export interface Locomocao {
   aterrissando: number
   /** O quanto a aterrissagem pesa (pulo alto pesa mais; correndo, menos). */
   forcaDaAterrissagem: number
+  /** O descanso em que ela está se acomodando ou já ficou (`null` fora do banco e da cama). */
+  acomodada: 'sentar' | 'deitar' | null
 }
 
 const zeros = (): Record<Estado, number> =>
@@ -226,6 +249,7 @@ export function criarLocomocao(): Locomocao {
     pulou: false,
     aterrissando: 0,
     forcaDaAterrissagem: 0,
+    acomodada: null,
   }
 }
 
@@ -256,6 +280,7 @@ export function ciclosPorSegundo(v: number): number {
 export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number): Locomocao {
   const alvo = zeros()
   let transicao: number = TRANSICAO.chao
+  if (e.especial !== 'sentar' && e.especial !== 'deitar') l.acomodada = null
 
   if (e.especial) {
     // O corpo é levado por outra regra: um estado por modo. Subir (tronco, escada) anda pela
@@ -280,10 +305,26 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
     else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
     else if (e.especial === 'escorregar') laco('Escorregar')
-    else if (e.especial === 'sentar' || e.especial === 'deitar' || e.especial === 'montar') {
-      // Sentar, deitar e montar entram devagar, como quem se acomoda.
+    else if (e.especial === 'montar') {
+      // Montar entra devagar, como quem se acomoda.
       transicao = TRANSICAO.agua
-      laco(e.especial === 'sentar' ? 'Sentar' : e.especial === 'deitar' ? 'Deitar' : 'Montar')
+      laco('Montar')
+    } else if (e.especial === 'sentar' || e.especial === 'deitar') {
+      // Sentar e deitar: o movimento de se acomodar uma vez (a arte o fez começando em pé, junto do
+      // assento ou em cima do colchão) e depois o laço de quem ficou. Levantar é a troca de volta
+      // para o chão, na hora: quem quer andar não espera uma animação.
+      transicao = TRANSICAO.agua
+      const entra: Estado = e.especial === 'sentar' ? 'Sentando' : 'Deitando'
+      const fica: Estado = e.especial === 'sentar' ? 'Sentar' : 'Deitar'
+      if (l.acomodada !== e.especial) {
+        l.acomodada = e.especial
+        l.tempos[entra] = 0
+        l.tempos[fica] = 0
+      }
+      if (l.tempos[entra] < 1) {
+        alvo[entra] = 1
+        l.tempos[entra] = Math.min(1, l.tempos[entra] + dt / duracaoDoEstado(entra))
+      } else laco(fica)
     } else if (e.especial === 'equilibrio') {
       // Andando no tronco, um passo curto pela distância; parada, fica em pé se equilibrando.
       const andando = limitar(e.velocidade / EQUILIBRIO_ANDANDO)
@@ -309,12 +350,17 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     l.descendo = 0
     l.pulou = false
     l.aterrissando = 0
-    // Nadando para a frente ou boiando (as duas usam a reserva até a arte mandar o nado).
+    // Nadando para a frente ou boiando. As braçadas andam pela distância (como os passos no chão),
+    // até `RITMO_MAXIMO` vezes a cadência do clipe: o nado da arte é calmo e o do jogo é rápido.
     const nadando = limitar(e.velocidade / NADANDO_ACIMA_DE)
     alvo.Nado = nadando
     alvo.NadoParado = 1 - nadando
     transicao = TRANSICAO.agua
-    l.tempos.Nado = (l.tempos.Nado + dt / duracaoDoEstado('Nado')) % 1
+    const bracadas = Math.min(
+      e.velocidade / CICLO_DE_NADO.passada,
+      RITMO_MAXIMO / CICLO_DE_NADO.duracao,
+    )
+    l.tempos.Nado = (l.tempos.Nado + bracadas * dt) % 1
     l.tempos.NadoParado = (l.tempos.NadoParado + dt / duracaoDoEstado('NadoParado')) % 1
   } else if (!e.noChao) {
     // Saiu do chão subindo: é um pulo (começa no empurrão).

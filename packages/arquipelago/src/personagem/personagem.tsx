@@ -32,6 +32,7 @@ import { entradaDaObra, frenteDaEntrada } from '../sistemas/construcao/entrada'
 import { LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
+import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-dos-clipes'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { BANCO } from '../sistemas/descanso'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
@@ -45,6 +46,7 @@ import {
   MODOS,
   mudarModo,
 } from '../sistemas/modos'
+import { BORDA } from '../sistemas/modos/borda'
 import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { MONTARIA } from '../sistemas/montaria'
@@ -55,13 +57,7 @@ import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, obraVisivel, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
-import {
-  acharBracos,
-  type BracosDoAvatar,
-  CORDA_NO_CORPO,
-  INCLINACAO_NO_CIPO,
-  segurarACorda,
-} from './bracos'
+import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from './bracos'
 import { AJUSTE_MAXIMO, type AlturaDoChao } from './pes-no-chao'
 import { PlanadorAberto } from './planador-aberto'
 
@@ -94,11 +90,8 @@ const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
 /** No planador, o corpo pende um pouco para a frente, pendurado na barra (radianos). */
 const INCLINACAO_NO_PLANADOR = 0.25
-/**
- * Nadando, o corpo deita para a frente em volta do quadril, que fica na linha d'água (radianos).
- * É a reserva até a arte mandar o nado: a pose do ar (`pulo_no_ar`) deitada.
- */
-const INCLINACAO_NO_NADO = 1.15
+/** Pendurada na borda, onde a origem do desenho fica (as mãos do clipe caem na quina). */
+const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -160,6 +153,9 @@ export function Personagem() {
   const avisouDaCorrenteza = useRef(false)
   /** De 0 (de pé) a 1 (no assento ou no colchão), e o último lugar, para o desenho voltar suave. */
   const emDescanso = useRef(0)
+  /** O quanto o desenho está na água (0 a 1) e pendurado na borda, para a origem dele mudar suave. */
+  const naAgua = useRef(0)
+  const naBorda = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
@@ -254,29 +250,9 @@ export function Personagem() {
   }, [world])
   useEffect(() => () => world.removeCharacterController(kccNoCipo), [world, kccNoCipo])
 
-  // No cipó e no tronco os braços vão para cima, por cima da pose (os ossos aparecem quando o
-  // avatar termina de carregar).
-  const bracos = useRef<BracosDoAvatar | null>(null)
-  /** Já procurou os ossos nesta ida ao cipó ou ao tronco (não procura de novo a cada quadro). */
-  const procurouBracos = useRef(false)
-  const depoisDaPose = useMemo(
-    () => () => {
-      const corpoVisivel = visual.current
-      // No cipó as mãos miram a corda; no tronco o clipe "Escalar" já alterna as mãos na casca.
-      if (v.modo !== 'cipo' || !corpoVisivel) return
-      if (!bracos.current && !procurouBracos.current) {
-        procurouBracos.current = true
-        bracos.current = acharBracos(corpoVisivel)
-      }
-      if (bracos.current) segurarACorda(bracos.current, corpoVisivel)
-    },
-    [v],
-  )
-
-  // Quando o modo muda: a loja (a dica e os botões) e os braços (procuram os ossos de novo).
+  // Quando o modo muda: a loja (a dica e os botões).
   const aviso = useMemo<AvisoDeModo>(
     () => (modo) => {
-      procurouBracos.current = false
       movimento.modo = modo
       loja.getState().definirModo(modo)
       loja.getState().definirDescanso(modo === 'descanso' ? (v.descanso?.jeito ?? null) : null)
@@ -502,16 +478,14 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô); no planador, para a frente;
-    // nadando, deitado (a reserva do nado, girada em volta do quadril logo abaixo).
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô); no planador, para a frente.
+    // Nadando e boiando o clipe da arte já vem deitado: o desenho não inclina.
     const inclinar =
       v.modo === 'cipo' && v.cipo
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
         : v.modo === 'planar'
           ? INCLINACAO_NO_PLANADOR
-          : nadando
-            ? INCLINACAO_NO_NADO
-            : 0
+          : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando
@@ -524,8 +498,8 @@ export function Personagem() {
     // No tronco caído, o corpo pende para o lado pedido (e volta sozinho, `sistemas/modos`).
     const deLado = v.modo === 'equilibrio' ? inclinacaoNoDesenho(v) : curva
     vis.rotation.z = MathUtils.lerp(vis.rotation.z, deLado, Math.min(1, dt * 8))
-    // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
-    // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
+    // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto do clipe em que
+    // as mãos seguram a corda fica em cima das mãos do jogo, com o giro e a inclinação do balanço.
     v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)
     noCorpo.copy(CORDA_NO_CORPO).applyEuler(vis.rotation)
     const k = v.noCipo
@@ -535,15 +509,20 @@ export function Personagem() {
         (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
       -noCorpo.z * k,
     )
-    // Deitado na água, o giro é em volta do quadril (na linha d'água), não dos pés: o quadril volta
-    // para onde estava em pé.
-    if (nadando && v.noCipo < 0.001) {
-      const a = vis.rotation.x
-      const h = CORPO.cintura
-      const frente = -h * Math.sin(a)
-      vis.position.x += Math.sin(vis.rotation.y) * frente
-      vis.position.y += h * (1 - Math.cos(a))
-      vis.position.z += Math.cos(vis.rotation.y) * frente
+    // Na água, a origem do desenho é a superfície (é onde ela está nos clipes de nadar e boiar): sobe
+    // dos pés até a cintura, que é o que o corpo do jogo põe na linha d'água.
+    naAgua.current += ((nadando ? 1 : 0) - naAgua.current) * Math.min(1, dt * 8)
+    vis.position.y += DESENHO_NA_AGUA.sobe * naAgua.current * (1 - k)
+    // Pendurada na borda, a origem do desenho vai para onde as mãos do clipe caem na quina; subindo,
+    // volta aos pés no mesmo passo em que o corpo sobe (o clipe de subir vem sem a subida).
+    const penduradaAlvo = v.modo === 'borda' ? 1 - v.subindoNaBorda : 0
+    if (v.modo === 'borda' && v.subindoNaBorda > 0) naBorda.current = penduradaAlvo
+    else naBorda.current += (penduradaAlvo - naBorda.current) * Math.min(1, dt * 12)
+    if (naBorda.current > 0.001) {
+      const b = naBorda.current
+      vis.position.x -= Math.sin(vis.rotation.y) * NA_BORDA.recua * b
+      vis.position.y += NA_BORDA.sobe * b
+      vis.position.z -= Math.cos(vis.rotation.y) * NA_BORDA.recua * b
     }
     // Descansando, o desenho vai para o assento ou o colchão (o corpo do Rapier fica de pé ao
     // lado, fora do móvel): a origem do desenho (os pés no clipe) no lugar do descanso.
@@ -640,7 +619,6 @@ export function Personagem() {
       >
         <AvatarDoJogo
           movimento={animacao}
-          depoisDaPose={depoisDaPose}
           chao={chaoDosPes}
           comPatins={calcados}
           comLanterna={lanterna}

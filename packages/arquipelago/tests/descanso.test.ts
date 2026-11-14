@@ -29,6 +29,7 @@ import {
   MODOS,
   type MundoDoMovimento,
 } from '../src/sistemas/modos'
+import { SENTADO } from '../src/sistemas/lugares-dos-clipes'
 import { DESCANSO } from '../src/sistemas/modos/descanso'
 import { jogoPausado } from '../src/sistemas/pausa'
 import {
@@ -115,7 +116,12 @@ describe('os lugares de descansar', () => {
     const l = lugarNoBanco('banco-1', { x: 2, y: 1, z: 3 }, 0)
     expect(l.jeito).toBe('sentar')
     expect(l.giro).toBe(0)
-    expect(l.desenho).toEqual({ x: 2, y: 1, z: 3 + BANCO.assentoAFrente + BANCO.baciaAtras })
+    // A bacia do clipe fica em cima da origem do desenho: ela vai embaixo do assento, e sobe ou
+    // desce a diferença entre o assento do banco e o do clipe.
+    expect(l.desenho.x).toBe(2)
+    expect(l.desenho.z).toBeCloseTo(3 + BANCO.assentoAFrente, 9)
+    expect(l.desenho.y).toBeCloseTo(1 + BANCO.assento - SENTADO.assento, 9)
+    expect(Math.abs(BANCO.assento - SENTADO.assento)).toBeLessThan(0.1)
     expect(l.corpo.z - 3).toBeGreaterThan(BANCO.meioFundo + CORPO.raio)
     expect(l.corpo.x).toBeCloseTo(2, 9)
   })
@@ -123,12 +129,12 @@ describe('os lugares de descansar', () => {
   test('na cama o desenho deita com os pés para o rumo dela e a cabeça no travesseiro', () => {
     const l = lugarNaCama({ x: 0, y: 1, z: 0 }, Math.PI / 2)
     expect(l.jeito).toBe('deitar')
-    expect(l.desenho.x).toBeCloseTo(CAMA.pesAFrente, 9)
-    expect(l.desenho.y).toBeCloseTo(1 + CAMA.colchao + CAMA.costas, 9)
-    // A cabeça fica a uns 1,7 m dos pés, para o lado do travesseiro (dentro da cama de 2,9 m).
-    const cabeca = l.desenho.x - CORPO.desenho.cabeca
-    expect(cabeca).toBeGreaterThan(-1.42)
-    expect(cabeca).toBeLessThan(-0.6)
+    // A origem do desenho (embaixo da bacia) fica na superfície do colchão, perto do meio da cama:
+    // a cabeça vai para o travesseiro e os pés para o rumo dela, os dois dentro da cama de 2,9 m.
+    expect(l.desenho.x).toBeCloseTo(CAMA.baciaAFrente, 9)
+    expect(l.desenho.y).toBeCloseTo(1 + CAMA.colchao, 9)
+    expect(l.giro).toBe(Math.PI / 2)
+    expect(CORPO.medidas.height / 2 + CAMA.baciaAFrente).toBeLessThan(1.42)
     // O corpo de pé fica ao lado da cama, fora dela.
     expect(Math.abs(l.corpo.z)).toBeGreaterThan(CAMA.meiaLargura + CORPO.raio)
   })

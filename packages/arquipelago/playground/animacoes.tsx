@@ -6,13 +6,7 @@ import { CanvasTexture, type Group, NearestFilter, RepeatWrapping, SRGBColorSpac
 import { Contexto, type ContextoDoJogo } from '../src/estado/contexto'
 import { criarLoja } from '../src/estado/loja'
 import { AvatarDoJogo } from '../src/personagem/avatar-do-jogo'
-import {
-  acharBracos,
-  type BracosDoAvatar,
-  CORDA_NO_CORPO,
-  INCLINACAO_NO_CIPO,
-  segurarACorda,
-} from '../src/personagem/bracos'
+import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from '../src/personagem/bracos'
 import type { EntradaDaLocomocao } from '../src/sistemas/locomocao'
 
 /**
@@ -114,7 +108,10 @@ function Motor({
       m.velocidade = 0
     } else if (q.get('nado') === '1') {
       m.nadando = true
-      m.velocidade = 2.6
+      m.velocidade = Number(q.get('v') ?? 2.6)
+    } else if (q.get('sentar') === '1' || q.get('deitar') === '1') {
+      m.especial = q.get('sentar') === '1' ? 'sentar' : 'deitar'
+      m.velocidade = 0
     } else if (q.get('pulo') === '1') {
       // Pula a cada 2 s, parado: sobe, cai e aterrissa.
       if (m.noChao && t.current > 2) {
@@ -147,23 +144,13 @@ function Motor({
 const CIPO_NA_MAO = q.get('cipo') === '1'
 
 /**
- * No cipó como no jogo: o clipe Corda, o corpo em volta das mãos e as mãos fechadas na
- * corda (`segurarACorda`), com a corda desenhada passando à frente do queixo.
+ * No cipó como no jogo: o clipe da arte (`pendurar_cipo`) e o corpo posto de modo que as mãos dele
+ * caiam na corda desenhada.
  */
 function NaCorda({ movimento }: { movimento: { current: EntradaDaLocomocao } }) {
   const corpo = useRef<Group>(null)
-  const bracos = useRef<BracosDoAvatar | null>(null)
   // A corda fica no lugar; o corpo gira em volta do ponto dela, como no jogo.
   const [cx, cy, cz] = [0, CORDA_NO_CORPO.y + 0.4, 0]
-  const depoisDaPose = useMemo(
-    () => () => {
-      const g = corpo.current
-      if (!g) return
-      if (!bracos.current) bracos.current = acharBracos(g)
-      if (bracos.current) segurarACorda(bracos.current, g)
-    },
-    [],
-  )
   // O rig mede onde o avatar está ao ficar de pé: o corpo só pendura depois disso (o jogo também
   // pega o cipó com o avatar já de pé).
   const quadros = useRef(0)
@@ -181,7 +168,7 @@ function NaCorda({ movimento }: { movimento: { current: EntradaDaLocomocao } }) 
         <meshStandardMaterial color="#5d7d3a" />
       </mesh>
       <group ref={corpo}>
-        <AvatarDoJogo movimento={movimento} depoisDaPose={depoisDaPose} />
+        <AvatarDoJogo movimento={movimento} />
       </group>
     </>
   )
@@ -223,9 +210,7 @@ function Visualizador() {
         {CIPO_NA_MAO ? (
           <NaCorda movimento={movimento} />
         ) : (
-          <group rotation={q.get('nado') === '1' ? [1.1, 0, 0] : [0, 0, 0]} position={[0, 0, 0]}>
-            <AvatarDoJogo movimento={movimento} />
-          </group>
+          <AvatarDoJogo movimento={movimento} />
         )}
       </Canvas>
       <p

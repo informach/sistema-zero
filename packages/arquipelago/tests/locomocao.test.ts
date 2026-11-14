@@ -7,11 +7,13 @@ import {
   CICLO_DE_ANDAR,
   CICLO_DE_CORRER,
   CICLO_DE_ESCALAR,
+  CICLO_DE_NADO,
   CLIPES_DO_JOGO,
   ciclosPorSegundo,
   criarLocomocao,
   criarPoseDosClipes,
   DURACAO_DO_CLIPE,
+  duracaoDoEstado,
   type EntradaDaLocomocao,
   ESTADOS,
   POSE_DO_ESTADO,
@@ -23,6 +25,14 @@ import {
   VELOCIDADE_DO_ANDAR,
   VELOCIDADE_DO_CORRER,
 } from '../src/sistemas/locomocao'
+import {
+  DESENHO_NA_AGUA,
+  desenhoPenduradoNaBorda,
+  medidaDoLugar,
+  PENDURADO_NA_BORDA,
+  PENDURADO_NO_CIPO,
+} from '../src/sistemas/lugares-dos-clipes'
+import { BORDA } from '../src/sistemas/modos/borda'
 
 const soma = (p: Record<string, number>) => Object.values(p).reduce((a, b) => a + b, 0)
 const chao = (velocidade: number): EntradaDaLocomocao => ({
@@ -181,12 +191,88 @@ describe('máquina de estados', () => {
       rodar(undefined, { velocidade, noChao: true, velY: 0, nadando: false, especial }, 1).pesos
     expect(modo('planar').Planar).toBeCloseTo(1)
     expect(modo('montar').Montar).toBeCloseTo(1)
-    expect(modo('sentar').Sentar).toBeCloseTo(1)
-    expect(modo('deitar').Deitar).toBeCloseTo(1)
     expect(modo('escalada', 0.5).Escalar).toBeCloseTo(1)
+    expect(modo('cipo').Corda).toBeCloseTo(1)
+    expect(modo('borda').PendurarBorda).toBeCloseTo(1)
     // No tronco caído: parada se equilibra; andando, um pé na frente do outro.
     expect(modo('equilibrio').Equilibrar).toBeCloseTo(1)
     expect(modo('equilibrio', 0.8).Andar).toBeCloseTo(1)
+  })
+
+  test('sentar e deitar: o movimento de se acomodar uma vez, depois o laço de quem ficou', () => {
+    for (const [especial, entra, fica] of [
+      ['sentar', 'Sentando', 'Sentar'],
+      ['deitar', 'Deitando', 'Deitar'],
+    ] as const) {
+      const e = { velocidade: 0, noChao: true, velY: 0, nadando: false, especial }
+      // No meio do movimento, só ele; o laço ainda não começou.
+      const l = rodar(undefined, e, duracaoDoEstado(entra) / 2)
+      expect(l.pesos[entra]).toBeCloseTo(1)
+      expect(l.pesos[fica]).toBe(0)
+      expect(l.tempos[entra]).toBeCloseTo(0.5, 1)
+      // Acabou de se acomodar: fica no laço, e o movimento de entrar parou no último quadro.
+      rodar(l, e, duracaoDoEstado(entra) / 2 + 1)
+      expect(l.pesos[fica]).toBeCloseTo(1)
+      expect(l.pesos[entra]).toBe(0)
+      expect(l.tempos[entra]).toBe(1)
+      expect(soma(l.pesos)).toBeCloseTo(1)
+      // Levantou e voltou: o movimento de se acomodar recomeça do início.
+      rodar(l, { ...e, especial: null }, 0.5)
+      expect(l.pesos.Parado).toBeCloseTo(1)
+      rodar(l, e, 0.1)
+      expect(l.tempos[entra]).toBeLessThan(0.2)
+      expect(l.pesos[entra]).toBeGreaterThan(0)
+    }
+  })
+
+  test('as braçadas andam pela distância, sem passar do dobro da cadência do clipe', () => {
+    const agua = { velocidade: 0.5, noChao: false, velY: 0, nadando: true, especial: null }
+    // Devagar: uma braçada inteira a cada passada do clipe.
+    const devagar = passoDaLocomocao(criarLocomocao(), agua, 0.1)
+    expect(devagar.tempos.Nado).toBeCloseTo((0.5 / CICLO_DE_NADO.passada) * 0.1, 6)
+    // Na velocidade do nado do jogo, o teto.
+    const rapido = passoDaLocomocao(criarLocomocao(), { ...agua, velocidade: 2.6 }, 0.1)
+    expect(rapido.tempos.Nado).toBeCloseTo((RITMO_MAXIMO / CICLO_DE_NADO.duracao) * 0.1, 6)
+  })
+})
+
+describe('as animações da arte no lugar', () => {
+  test('nadar, boiar, sentar, deitar, o cipó e a borda tocam os clipes que a arte fez', () => {
+    expect(POSE_DO_ESTADO.Nado.clipe).toBe('nadar')
+    expect(POSE_DO_ESTADO.NadoParado.clipe).toBe('boiar')
+    expect(POSE_DO_ESTADO.Sentando.clipe).toBe('sentar')
+    expect(POSE_DO_ESTADO.Sentar.clipe).toBe('sentado')
+    expect(POSE_DO_ESTADO.Deitando.clipe).toBe('deitar')
+    expect(POSE_DO_ESTADO.Deitar.clipe).toBe('deitado')
+    expect(POSE_DO_ESTADO.Corda.clipe).toBe('pendurar_cipo')
+    expect(POSE_DO_ESTADO.PendurarBorda.clipe).toBe('pendurar_borda')
+    expect(POSE_DO_ESTADO.SubirBorda.clipe).toBe('subir_borda')
+  })
+
+  test('pendurada na borda, as mãos do clipe caem na quina; a origem do desenho sobe e recua', () => {
+    const { sobe, recua } = desenhoPenduradoNaBorda(BORDA)
+    // A quina fica `maosAcimaDoCentro` acima do meio do corpo: a origem do desenho, `maos` abaixo
+    // dela. De pé, a origem fica nos pés (o fim da cápsula mais a folga).
+    const origem = -CORPO.doCentroAoPe - CORPO.folga + sobe
+    expect(origem + PENDURADO_NA_BORDA.maos).toBeCloseTo(BORDA.maosAcimaDoCentro, 9)
+    // E a quina fica `aFrente` da origem: o corpo do jogo está a `daParede` dela.
+    expect(BORDA.daParede + recua).toBeCloseTo(PENDURADO_NA_BORDA.aFrente, 9)
+    // O boneco do pack é baixo: pendurado, ele sobe bastante, mas menos que a própria altura.
+    expect(sobe).toBeGreaterThan(0.3)
+    expect(sobe).toBeLessThan(CORPO.medidas.height)
+    expect(Math.abs(recua)).toBeLessThan(0.2)
+  })
+
+  test('no cipó a corda passa à frente do corpo, na altura das mãos do clipe', () => {
+    expect(PENDURADO_NO_CIPO.cordaAFrente).toBeGreaterThan(0.2)
+    expect(PENDURADO_NO_CIPO.cordaAFrente).toBeLessThan(0.6)
+    expect(PENDURADO_NO_CIPO.maos).toBeGreaterThan(CORPO.cintura)
+    expect(PENDURADO_NO_CIPO.maos).toBeLessThan(CORPO.medidas.height)
+  })
+
+  test('na água a origem do desenho sobe dos pés até a cintura (a superfície do clipe)', () => {
+    expect(DESENHO_NA_AGUA.sobe).toBeCloseTo(CORPO.cintura + CORPO.folga, 9)
+    expect(() => medidaDoLugar('nadar', 'nao-existe')).toThrow()
   })
 })
 
@@ -194,10 +280,10 @@ describe('dos estados aos clipes', () => {
   test('o peso de cada clipe é a soma dos estados dele, no instante do mais pesado', () => {
     const l = criarLocomocao()
     l.pesos.Parado = 0
-    l.pesos.Nado = 0.7
-    l.pesos.NadoParado = 0.3
-    l.tempos.Nado = 0.5
-    l.tempos.NadoParado = 0.1
+    l.pesos.Planar = 0.7
+    l.pesos.NoAr = 0.3
+    l.tempos.Planar = 0.5
+    l.tempos.NoAr = 0.1
     const pose = poseDosClipes(l, criarPoseDosClipes())
     expect(pose.pulo_no_ar.peso).toBeCloseTo(1)
     expect(pose.pulo_no_ar.tempo).toBeCloseTo(0.5 * DURACAO_DO_CLIPE.pulo_no_ar, 6)
