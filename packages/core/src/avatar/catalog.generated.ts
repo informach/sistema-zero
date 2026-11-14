@@ -3302,6 +3302,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "price": 90,
       "band": "especial",
+      "hidden": true,
+      "lift": 0.0447,
       "file": "pecas/calcado_patins.80520b0ee30f.glb",
       "thumb": "miniaturas/calcado_patins.1fe8b8a6edb7.webp",
       "tris": 7014,

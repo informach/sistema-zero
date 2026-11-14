@@ -39,10 +39,10 @@ import {
   passoDaLocomocao,
   poseDosClipes,
 } from '../sistemas/locomocao'
-import { descidaDoEntrarNaAgua } from '../sistemas/lugares-dos-clipes'
+import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
-import { DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import { BARRA_NAS_MAOS, DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -74,8 +74,13 @@ const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim'
  * clipe que leva a bacia de onde ela começa em pé até lá.
  */
 const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
-/** Subindo (a escada, a borda), quem sobe é o corpo da física: o clipe fica sem a subida. */
-const SEM_A_SUBIDA: readonly ClipeDoJogo[] = ['subir_escada', 'subir_borda', 'sair_da_agua']
+/** Subindo (a escada, a borda, a casca), quem sobe é o corpo da física: o clipe fica sem a subida. */
+const SEM_A_SUBIDA: readonly ClipeDoJogo[] = [
+  'subir_escada',
+  'subir_borda',
+  'sair_da_agua',
+  'escalar',
+]
 
 /**
  * Desce o começo do clipe (o `Hips`) `quanto` metros, sumindo em linha reta até o fim: o entrar na
@@ -143,24 +148,35 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * Depois da pose: os pés no chão (`chao`, por IK em `pes-no-chao.ts`), também na pausa (o mixer
  * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
- * ⚠️ Os patins não aparecem até a arte entregar o par do pack (a flag só muda a velocidade).
+ * De patins, o avatar veste os patins do pack no lugar do calçado e sobe o que as rodas somam ao
+ * corpo (as rodas ainda não giram). No planador, a barra do pack vai nas duas mãos (e a lanterna,
+ * se estava acesa, volta depois de fechar o planador).
  */
 export function AvatarDoJogo({
   movimento,
   chao,
+  comPatins = false,
   comLanterna = false,
+  planando = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
   chao?: AlturaDoChao
-  /** Os patins nos pés: ainda não aparecem no boneco do pack (veja acima). */
+  /** Os patins calçados (fase2-05): a peça dos patins do pack no lugar do calçado. */
   comPatins?: boolean
   /** A lanterna do pack acesa na mão direita (fase2-06), com os dedos fechados no cabo. */
   comLanterna?: boolean
+  /** No modo planar: a barra do planador nas duas mãos. */
+  planando?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
-  const slots = useMemo(() => avatarDoPack(slotsDoJogo), [slotsDoJogo])
+  const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
+  const slots = useMemo(() => {
+    const vestido = avatarDoPack(slotsDoJogo)
+    return deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
+  }, [slotsDoJogo, deRodas])
+  const naMao = planando ? 'mao_barra_planador' : comLanterna ? 'mao_lanterna' : null
   const personagem = useRef<Group>(null)
   const [emPe, setEmPe] = useState(false)
   const visualRef = useRef<Group>(null)
@@ -210,7 +226,11 @@ export function AvatarDoJogo({
 
   return (
     <group ref={visualRef} name="avatar-visual" visible={emPe}>
-      <group name="escala-do-heroi" scale={CORPO.medidas.scale}>
+      <group
+        name="escala-do-heroi"
+        scale={CORPO.medidas.scale}
+        position-y={deRodas ? PATINS_NOS_PES.sobe : 0}
+      >
         <PackRigBoundary>
           <Suspense fallback={null}>
             <AvatarComClipes
@@ -218,9 +238,15 @@ export function AvatarDoJogo({
               charRef={personagem}
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
-              equipment={comLanterna ? LANTERNA_NA_MAO : SEM_OBJETO_NA_MAO}
+              equipment={
+                naMao === 'mao_barra_planador'
+                  ? BARRA_NAS_MAOS
+                  : naMao === 'mao_lanterna'
+                    ? LANTERNA_NA_MAO
+                    : SEM_OBJETO_NA_MAO
+              }
             />
-            {comLanterna ? <DedosNoCabo corpo={personagem} objeto="mao_lanterna" /> : null}
+            {naMao ? <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} /> : null}
             {chao ? (
               <PesNoChao
                 chao={chao}

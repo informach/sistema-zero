@@ -35,10 +35,10 @@ export const MONTARIA = {
    */
   descida: { lado: 3.2, subida: 4 },
   /**
-   * Montada, o desenho da criança sobe até a sela no clipe "Sentar" (a bacia dele fica a 0,53 da
-   * origem, o assento do banco, e 18 cm atrás dela, `BANCO.baciaAtras`).
+   * Montada, o desenho da criança sobe até a sela: a origem do clipe `montado` da arte é a sela,
+   * com a bacia logo acima dela e as pernas para os dois lados.
    */
-  subidaDoDesenho: 1.512 * 0.85 - 0.53,
+  subidaDoDesenho: 1.512 * 0.85,
 } as const
 
 /**

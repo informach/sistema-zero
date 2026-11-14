@@ -49,6 +49,13 @@ const FORA_DO_SORTEIO_DA_PLATAFORMA = [
   'cabelo_crespo_sob_chapeu',
 ]
 
+/**
+ * Peças que a arte fez só para dentro do jogo (o selo dela diz "uso interno, só dentro de jogo"):
+ * entram no catálogo escondidas (`hidden`), fora da loja e do sorteio, e o jogo as veste quando
+ * precisa (os patins, enquanto a criança patina).
+ */
+export const SO_NO_JOGO: ReadonlySet<string> = new Set(['calcado_patins'])
+
 /** Os clipes do pack que o configurador usa (parado e as poses da Cabine de fotos). */
 export const CLIPES_DO_CONFIGURADOR = [
   'parado_relaxado',

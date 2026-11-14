@@ -34,11 +34,15 @@ import { LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
-import { BANCO } from '../sistemas/descanso'
+import { ESCALADA } from '../sistemas/escalada'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
 import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
 import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
-import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-dos-clipes'
+import {
+  avancoNaParede,
+  DESENHO_NA_AGUA,
+  desenhoPenduradoNaBorda,
+} from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
   type AvisoDeModo,
@@ -53,7 +57,7 @@ import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { MONTARIA } from '../sistemas/montaria'
 import { ritmo } from '../sistemas/necessidades'
-import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
+import { comPatins } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
 import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
@@ -94,6 +98,8 @@ const INCLINACAO_MAXIMA = 0.14
 const INCLINACAO_NO_PLANADOR = 0.25
 /** Pendurada na borda, onde a origem do desenho fica (as mãos do clipe caem na quina). */
 const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
+/** Escalando, quanto o desenho anda para a casca (o corpo fica a raio + folga dela). */
+const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -138,6 +144,9 @@ export function Personagem() {
   const colisorMontado = useRef<RapierCollider>(null)
   /** De 0 (de pé) a 1 (na sela), para o desenho subir e descer suave. */
   const naSela = useRef(0)
+  /** De 0 (no chão) a 1 (agarrada na casca), para o desenho chegar à casca suave. */
+  const naCasca = useRef(0)
+  const planando = useEstado((s) => s.modo === 'planar')
   const visual = useRef<Group>(null)
   const usosAtendidos = useRef(controle.usar)
   const pulosAtendidos = useRef(controle.pulos)
@@ -433,12 +442,11 @@ export function Personagem() {
     // animações (`avatar-do-jogo`).
     const m = animacao.current
     // No chão, a velocidade no chão; no cipó o laço não anda pela distância; nos outros modos, a
-    // do corpo (pela casca, pelo tronco caído), que toca os ciclos deles.
-    // De patins o corpo desliza mais rápido com o mesmo passo das pernas (os pés deslizam).
-    const passada = e.patins && !nadando ? RAPIDEZ_DOS_PATINS : 1
+    // do corpo (pela casca, pelo tronco caído), que toca os ciclos deles. De patins, a velocidade
+    // de verdade: os impulsos do `patinar` andam pela distância deslizada.
     const real =
       v.modo === 'chao'
-        ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt / passada
+        ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt
         : v.modo === 'cipo' || v.modo === 'barco' || v.modo === 'balao'
           ? 0
           : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
@@ -446,6 +454,7 @@ export function Personagem() {
     m.noChao = v.modo !== 'chao' || v.noChao
     m.velY = v.velY
     m.nadando = nadando
+    m.patinando = e.patins && v.modo === 'chao' && !nadando
     // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
     const viajando =
       v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
@@ -579,14 +588,16 @@ export function Personagem() {
       vis.position.y += (ultimo.desenho.y - centro.y - vis.position.y) * d
       vis.position.z += (ultimo.desenho.z - centro.z - vis.position.z) * d
     }
-    // Montada, o desenho sobe até a sela, com a bacia em cima dela (o clipe Sentar a põe atrás
-    // da origem): o corpo do Rapier continua no chão, dentro do colisor de montada.
+    // Montada, o desenho sobe até a sela (a origem do clipe `montado` é a sela, com a bacia logo
+    // acima): o corpo do Rapier continua no chão, dentro do colisor de montada.
     naSela.current += ((v.modo === 'montar' ? 1 : 0) - naSela.current) * Math.min(1, dt * 8)
-    if (naSela.current > 0.001) {
-      const s = naSela.current
-      vis.position.x += Math.sin(vis.rotation.y) * BANCO.baciaAtras * s
-      vis.position.y += MONTARIA.subidaDoDesenho * s
-      vis.position.z += Math.cos(vis.rotation.y) * BANCO.baciaAtras * s
+    if (naSela.current > 0.001) vis.position.y += MONTARIA.subidaDoDesenho * naSela.current
+    // Escalando, o desenho vai para a casca a distância que o clipe `escalar` tem da parede.
+    naCasca.current += ((v.modo === 'escalada' ? 1 : 0) - naCasca.current) * Math.min(1, dt * 8)
+    if (naCasca.current > 0.001) {
+      const c = naCasca.current * AVANCO_NA_CASCA
+      vis.position.x += Math.sin(vis.rotation.y) * c
+      vis.position.z += Math.cos(vis.rotation.y) * c
     }
     // No balão, o desenho vai no cesto como ele está desenhado (com o clipe `flutuar`).
     const voo = v.balao
@@ -665,6 +676,7 @@ export function Personagem() {
             chao={chaoDosPes}
             comPatins={calcados}
             comLanterna={lanterna}
+            planando={planando && comPlanador}
           />
           {comPlanador ? (
             <Suspense fallback={null}>
