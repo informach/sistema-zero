@@ -12,8 +12,6 @@ import { CORPO } from '../sistemas/corpo'
 import { amostrarFantasma } from '../sistemas/fantasma'
 import { ciclosPorSegundo } from '../sistemas/locomocao'
 
-/** O fantasma é o boneco de partida do pack (o avatar de quem correu fica para o salvamento). */
-const SLOTS_DO_FANTASMA = avatarDoPack(null)
 const CORRER = nomeNoJogo('correr_frente')
 /** As pernas do fantasma giram no ritmo de quem corre no mundo (ciclos por segundo). */
 const RITMO_DO_FANTASMA = ciclosPorSegundo(CORPO.correr)
@@ -40,6 +38,10 @@ function Silhueta({ referencia }: { referencia: { fantasma: Fantasma } }) {
   const correr = useRef<AnimationAction | null>(null)
   const pose = useRef({ x: 0, y: 0, z: 0, giro: 0 }).current
   const clipes = useClipesDoJogo()
+  // O contorno é o do avatar de quem correu (as peças que ele vestia, só as que o catálogo
+  // conhece); trajeto antigo, sem a roupa, usa o boneco de partida do pack.
+  const roupa = referencia.fantasma.avatar
+  const slots = useMemo(() => avatarDoPack(roupa ?? null), [roupa])
   const material = useMemo(
     () =>
       new MeshBasicMaterial({
@@ -94,7 +96,7 @@ function Silhueta({ referencia }: { referencia: { fantasma: Fantasma } }) {
     <group ref={grupo} name="fantasma-familiar" visible={false}>
       <group scale={CORPO.medidas.scale}>
         <PackAvatarRig
-          slots={SLOTS_DO_FANTASMA}
+          slots={slots}
           charRef={rig}
           onStood={preparar}
           extraClips={clipes}

@@ -6,6 +6,7 @@ import {
   FantasmaSchema,
   GuardarFantasmaSchema,
   LeituraDoFantasmaSchema,
+  PECAS_MAXIMAS_DO_FANTASMA,
   PERCURSOS,
 } from '../src'
 
@@ -78,4 +79,39 @@ test('coordenadas, giro, versão, chaves desconhecidas e respostas sem trajeto s
   expect(
     LeituraDoFantasmaSchema.safeParse({ versao: 1, situacao: 'ausente', fantasma: base }).success,
   ).toBe(false)
+})
+
+test('o trajeto pode levar a roupa de quem correu: só encaixe e peça, sem identidade', () => {
+  const roupa = { corpo: 'corpo_pele_media_pacote', cabelo: 'cabelo_crespo_sob_chapeu' }
+  expect(FantasmaSchema.safeParse({ ...base, avatar: roupa }).success).toBe(true)
+  // Sem a roupa continua valendo (os trajetos guardados antes dela).
+  expect(FantasmaSchema.safeParse(base).success).toBe(true)
+  // Nada que não seja id de peça: nome, endereço, texto livre, objeto dentro.
+  for (const ruim of [
+    { corpo: 'Ana Clara' },
+    { corpo: 'https://exemplo.com/a.glb' },
+    { 'meu encaixe': 'corpo_pele_media_pacote' },
+    { corpo: { id: 'x' } },
+    { corpo: 'x'.repeat(81) },
+  ])
+    expect(FantasmaSchema.safeParse({ ...base, avatar: ruim }).success).toBe(false)
+  const demais = Object.fromEntries(
+    Array.from({ length: PECAS_MAXIMAS_DO_FANTASMA + 1 }, (_, i) => [`encaixe_${i}`, 'peca']),
+  )
+  expect(FantasmaSchema.safeParse({ ...base, avatar: demais }).success).toBe(false)
+  // Com a roupa no teto, o trajeto de cinco minutos ainda cabe no artefato.
+  const cheia = Object.fromEntries(
+    Array.from({ length: PECAS_MAXIMAS_DO_FANTASMA }, (_, i) => [
+      `e${i}`.padEnd(80, 'x'),
+      'p'.repeat(80),
+    ]),
+  )
+  const n = DURACAO_MAXIMA_DO_FANTASMA_MS / 100 + 1
+  const longo = {
+    ...base,
+    tempoMs: DURACAO_MAXIMA_DO_FANTASMA_MS,
+    amostras: Array.from({ length: n }, () => [-50000, -50000, -50000, 65535]),
+    avatar: cheia,
+  }
+  expect(FantasmaSchema.safeParse(longo).success).toBe(true)
 })

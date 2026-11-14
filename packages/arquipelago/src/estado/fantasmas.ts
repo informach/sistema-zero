@@ -1,4 +1,5 @@
 import {
+  AvatarDoFantasmaSchema,
   type Fantasma,
   type IrmaoParaOJogo,
   IrmaosParaOJogoSchema,
@@ -285,7 +286,13 @@ export function criarLojaDosFantasmas(
     ) {
       if (capturando !== percurso) return
       capturando = null
-      const f = gravador.terminar(percurso, tempoMs, p.x, p.y, p.z, p.direcao)
+      const trajeto = gravador.terminar(percurso, tempoMs, p.x, p.y, p.z, p.direcao)
+      // O fantasma leva a roupa de quem correu (o contorno é o dela); roupa fora do formato não vai.
+      const roupa = AvatarDoFantasmaSchema.safeParse(loja.getState().avatar.slots)
+      const f =
+        trajeto && roupa.success && Object.keys(roupa.data).length > 0
+          ? { ...trajeto, avatar: roupa.data }
+          : trajeto
       if (!f || melhorTempoDoPercurso(loja.getState().salvamento.percursos, percurso) !== tempoMs)
         return
       const g = geracao
