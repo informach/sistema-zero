@@ -2,6 +2,7 @@ import { Html } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { CuboidCollider, Physics, RigidBody } from '@react-three/rapier'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
+import { AVATAR_CATALOG, drawAvatar } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CanvasTexture, NearestFilter, RepeatWrapping, SRGBColorSpace } from 'three'
@@ -400,7 +401,8 @@ function SalaDeMovimento() {
       salvamento,
       jornada: 2,
       quarto: { theme: 'padrao', placedItems: [], pet: null },
-      avatar: { slots: {} },
+      // O mesmo boneco vestido da plataforma falsa (sorteio fixo): a pista confere as peças também.
+      avatar: { slots: drawAvatar(AVATAR_CATALOG, 'plataforma-falsa') },
       acesso: { liberado: true, motivo: null, limiteDiarioMinutos: null, usadoHojeSegundos: 0 },
       aoMudar: () => {},
     })
