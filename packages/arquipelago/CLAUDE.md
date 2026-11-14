@@ -59,6 +59,16 @@ Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.
   `avatar-quarto/avatar/pack-catalog`). ⚠️ Número de corpo novo NÃO se escreve à mão: derive do
   `CORPO` (câmera, Zappy, esmaecer de copas, mergulho, `CINTURA`, `GRAVIDADE` e `GRAVIDADE_DO_CIPO`
   já derivam). Teste que precisa da cápsula importa o `CORPO`.
+- **O mundo novo pelas animações (14/11/2026):** `sistemas/mundo-pela-animacao.ts`
+  (`mundoPelaAnimacao`, `MUNDO_DA_AVENTURA`): escala 1, gravidade de verdade (9,81), andar, correr
+  e nadar = a velocidade natural do clipe (passada ÷ duração) vezes `FATORES_DA_AVENTURA` (1,5; 2;
+  2: correr e nadar no teto do `RITMO_MAXIMO`, sem o pé escorregar), pulo na altura que o quadril
+  sobe no `pulo_inicio` (0,97 m), degrau/folga/mãos os de hoje na proporção do corpo. O
+  `CharacterMover` do pacote Unity do pack NÃO é referência (sem cena que o use, unidades que se
+  contradizem, pulo de 15 m). O jogo roda no `MUNDO` de `mundo/mundo-escolhido.ts`: sempre o
+  `MUNDO_ATUAL`, menos no playground com `?mundo=aventura` (a página põe
+  `globalThis.__arquipelagoMundo` antes do jogo carregar). `CORPO`, `GRAVIDADE` e o cipó leem o
+  `MUNDO`, não o `MUNDO_ATUAL`. As estações da sala de movimento são medidas para 1,85.
 - Ficaram para os passos 4 e 5 (dependem das poses do pack, não do esqueleto): `BANCO`, `CAMA`,
   `MONTARIA.subidaDoDesenho`, `BARRA_NO_AVATAR` e a lanterna.
 

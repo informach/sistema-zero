@@ -7,11 +7,11 @@
  * avatar (`rastro.direcao`). O `angulo` é medido da vertical; positivo é para o lado do `rumo`.
  */
 
-import { MUNDO_ATUAL } from '../mundo/mundo-do-jogo'
+import { MUNDO } from '../mundo/mundo-escolhido'
 import { CORPO } from './corpo'
 
-/** A gravidade do personagem: a do mundo (`mundo/mundo-do-jogo.ts`). */
-export const GRAVIDADE_DO_CIPO = MUNDO_ATUAL.gravidade
+/** A gravidade do personagem: a do mundo (`mundo/mundo-escolhido.ts`). */
+export const GRAVIDADE_DO_CIPO = MUNDO.gravidade
 
 export const CIPO = {
   /** Do centro do corpo até as mãos na corda, ao lado do rosto (meio braço acima do ombro). */

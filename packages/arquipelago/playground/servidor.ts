@@ -41,8 +41,14 @@ async function compilar(entrada: string): Promise<Response> {
   return new Response(js ? await js.text() : '', { headers: { 'content-type': 'text/javascript' } })
 }
 
+/**
+ * `?mundo=aventura` troca as regras do mundo antes de o jogo carregar (`mundo/mundo-escolhido.ts`):
+ * o avatar no tamanho de verdade, com as velocidades e o pulo tirados das animações.
+ */
+const ESCOLHER_O_MUNDO =
+  "<script>globalThis.__arquipelagoMundo=new URLSearchParams(location.search).get('mundo')</script>"
 const pagina = (titulo: string, js: string) =>
-  `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titulo}</title><style>html,body,#jogo{margin:0;height:100%;background:#0e1638}</style></head><body><div id="jogo"></div><script type="module" src="${js}"></script></body></html>`
+  `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titulo}</title><style>html,body,#jogo{margin:0;height:100%;background:#0e1638}</style></head><body><div id="jogo"></div>${ESCOLHER_O_MUNDO}<script type="module" src="${js}"></script></body></html>`
 const HTML = pagina('Arquipélago Vagalume · playground', '/jogo.js')
 /** O visualizador das animações do avatar (`/animacoes?v=1.4`, veja `animacoes.tsx`). */
 const HTML_DAS_ANIMACOES = pagina('Arquipélago Vagalume · animações', '/animacoes.js')
