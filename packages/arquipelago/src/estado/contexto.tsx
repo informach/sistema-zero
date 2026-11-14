@@ -238,6 +238,8 @@ export interface Movimento {
    * encostam. `null` até o personagem desenhar o primeiro quadro.
    */
   corpoDesenhado: CorpoQueEmpurra | null
+  /** Quantas vezes um morador acenou para ela (cada aceno novo, ela acena de volta, parada). */
+  acenos: number
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
   /**
@@ -278,6 +280,7 @@ export function criarMovimento(): Movimento {
     noChao: false,
     foco: { x: 0, y: 0, z: 0 },
     corpoDesenhado: null,
+    acenos: 0,
     corrida: null,
     mira: null,
     pedidoDoPercurso: null,

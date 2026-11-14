@@ -71,3 +71,14 @@ export function desenhoPenduradoNaBorda(borda: { maosAcimaDoCentro: number; daPa
  * corpo do jogo nada com a cintura na superfície: a origem sobe dos pés até a cintura.
  */
 export const DESENHO_NA_AGUA = { sobe: CORPO.cintura + CORPO.folga } as const
+
+/**
+ * Entrar na água: a arte fez o clipe saindo de pé de uma margem (o chão dela fica
+ * `margem_chao_acima_da_agua_m` acima da superfície). No jogo quem começa a nadar está de pé no fundo,
+ * com a água passando da cintura por `passaDaCintura`: o começo do clipe desce este tanto (em metros
+ * do clipe, sem a escala), e a descida vai sumindo até o fim, quando ela boia como no clipe.
+ */
+export function descidaDoEntrarNaAgua(passaDaCintura: number): number {
+  const margem = medidaDoLugar('entrar_na_agua', 'margem_chao_acima_da_agua_m')
+  return (margem + CORPO.cintura + passaDaCintura) / escala
+}

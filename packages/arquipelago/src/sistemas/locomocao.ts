@@ -35,6 +35,10 @@ export const CLIPES_DO_JOGO = [
   'pendurar_cipo',
   'pendurar_borda',
   'subir_borda',
+  'entrar_na_agua',
+  'sair_da_agua',
+  'sentado_no_barco',
+  'acenar',
 ] as const
 export type ClipeDoJogo = (typeof CLIPES_DO_JOGO)[number]
 
@@ -61,6 +65,10 @@ export const ESTADOS = [
   'Deitar',
   'Sentando',
   'Deitando',
+  'EntrandoNaAgua',
+  'SaindoDaAgua',
+  'NoBarco',
+  'Acenar',
 ] as const
 export type Estado = (typeof ESTADOS)[number]
 
@@ -86,6 +94,11 @@ const EMPURRAO_DO_PULO = 0.5
 const PE_TOCANDO = 0.3
 /** O agachado parado das reservas (escorregar, montar): o meio do primeiro passo. */
 const AGACHADO_PARADO = 0.25
+/**
+ * Sair da água: a arte fez a saída inteira por um barranco (boiar, apoiar as mãos, subir e ficar de
+ * pé). Nas praias do jogo quem sai já está andando: fica só o fim, o corpo se erguendo.
+ */
+const ERGUENDO_DA_AGUA = 0.6
 
 export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = {
   Parado: inteiro('parado_relaxado'),
@@ -107,6 +120,12 @@ export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = {
   Sentar: inteiro('sentado'),
   Deitando: inteiro('deitar'),
   Deitar: inteiro('deitado'),
+  // Entrar na água uma vez, antes de nadar; ao sair, o fim de quem se ergue.
+  EntrandoNaAgua: inteiro('entrar_na_agua'),
+  SaindoDaAgua: { clipe: 'sair_da_agua', de: ERGUENDO_DA_AGUA, ate: 1 },
+  // Na viagem de barco, sentada no piso dele. Parada perto de um morador que acena, acena de volta.
+  NoBarco: inteiro('sentado_no_barco'),
+  Acenar: inteiro('acenar'),
   // As reservas, até a arte entregar a animação de cada modo:
   Planar: inteiro('pulo_no_ar'),
   Escalar: inteiro('subir_escada'),
@@ -183,6 +202,8 @@ export const QUEDA_LONGA = 0.6
 export const AR_PARA_ATERRISSAR = 0.3
 /** A aterrissagem é tocada um pouco mais depressa que o clipe, para não segurar quem quer andar. */
 export const DURACAO_DA_ATERRISSAGEM = duracaoDoEstado('Aterrissagem') * 0.7
+/** Sair da água pesa menos em quem já sai correndo, e some enquanto o corpo se ergue. */
+export const DURACAO_DA_SAIDA_DA_AGUA = duracaoDoEstado('SaindoDaAgua')
 /** Nadando, acima disto (m/s) nada; abaixo, boia. */
 export const NADANDO_ACIMA_DE = 0.5
 /** No tronco caído, acima disto (m/s) anda um pé na frente do outro; parada, se equilibra. */
@@ -204,6 +225,8 @@ export interface EntradaDaLocomocao {
   especial: ModoEspecial | null
   /** Subindo a borda: de 0 (pendurada) a 1 (de pé em cima). Fora disso, 0. */
   subindo?: number
+  /** Um morador acenou para ela há pouco: parada, acena de volta. */
+  acenando?: boolean
 }
 
 export type ModoEspecial =
@@ -217,6 +240,7 @@ export type ModoEspecial =
   | 'deitar'
   | 'montar'
   | 'planar'
+  | 'barco'
 
 export interface Locomocao {
   pesos: Record<Estado, number>
@@ -232,6 +256,11 @@ export interface Locomocao {
   forcaDaAterrissagem: number
   /** O descanso em que ela está se acomodando ou já ficou (`null` fora do banco e da cama). */
   acomodada: 'sentar' | 'deitar' | null
+  /** Estava nadando no quadro anterior (para o entrar e o sair da água tocarem uma vez). */
+  naAgua: boolean
+  /** Quanto falta do movimento de sair da água (s) e o quanto ele pesa. */
+  saindoDaAgua: number
+  forcaDaSaidaDaAgua: number
 }
 
 const zeros = (): Record<Estado, number> =>
@@ -250,6 +279,9 @@ export function criarLocomocao(): Locomocao {
     aterrissando: 0,
     forcaDaAterrissagem: 0,
     acomodada: null,
+    naAgua: false,
+    saindoDaAgua: 0,
+    forcaDaSaidaDaAgua: 0,
   }
 }
 
@@ -281,6 +313,17 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
   const alvo = zeros()
   let transicao: number = TRANSICAO.chao
   if (e.especial !== 'sentar' && e.especial !== 'deitar') l.acomodada = null
+  if (!e.nadando && l.naAgua) {
+    // Saiu da água: pisando (a praia, a margem), o corpo se ergue uma vez.
+    l.naAgua = false
+    if (e.noChao && !e.especial) {
+      l.saindoDaAgua = DURACAO_DA_SAIDA_DA_AGUA
+      l.tempos.SaindoDaAgua = 0
+      l.forcaDaSaidaDaAgua = 1 - 0.6 * limitar(e.velocidade / VELOCIDADE_DO_CORRER)
+    }
+  }
+  if (e.nadando || e.especial || !e.noChao) l.saindoDaAgua = 0
+  if (!e.acenando) l.tempos.Acenar = 0
 
   if (e.especial) {
     // O corpo é levado por outra regra: um estado por modo. Subir (tronco, escada) anda pela
@@ -305,7 +348,11 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
     else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
     else if (e.especial === 'escorregar') laco('Escorregar')
-    else if (e.especial === 'montar') {
+    else if (e.especial === 'barco') {
+      // Na viagem de barco: senta devagar e fica.
+      transicao = TRANSICAO.agua
+      laco('NoBarco')
+    } else if (e.especial === 'montar') {
       // Montar entra devagar, como quem se acomoda.
       transicao = TRANSICAO.agua
       laco('Montar')
@@ -353,9 +400,22 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     // Nadando para a frente ou boiando. As braçadas andam pela distância (como os passos no chão),
     // até `RITMO_MAXIMO` vezes a cadência do clipe: o nado da arte é calmo e o do jogo é rápido.
     const nadando = limitar(e.velocidade / NADANDO_ACIMA_DE)
-    alvo.Nado = nadando
-    alvo.NadoParado = 1 - nadando
     transicao = TRANSICAO.agua
+    // Entrou na água agora: o movimento de entrar uma vez, depois nada ou boia.
+    if (!l.naAgua) {
+      l.naAgua = true
+      l.tempos.EntrandoNaAgua = 0
+    }
+    if (l.tempos.EntrandoNaAgua < 1) {
+      alvo.EntrandoNaAgua = 1
+      l.tempos.EntrandoNaAgua = Math.min(
+        1,
+        l.tempos.EntrandoNaAgua + dt / duracaoDoEstado('EntrandoNaAgua'),
+      )
+    } else {
+      alvo.Nado = nadando
+      alvo.NadoParado = 1 - nadando
+    }
     const bracadas = Math.min(
       e.velocidade / CICLO_DE_NADO.passada,
       RITMO_MAXIMO / CICLO_DE_NADO.duracao,
@@ -409,6 +469,21 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
       transicao = TRANSICAO.ar
     } else {
       Object.assign(alvo, chao)
+    }
+    // Parada perto de um morador que acenou, acena de volta (o que seria o "Parado").
+    if (e.acenando) {
+      alvo.Acenar = alvo.Parado
+      alvo.Parado = 0
+      l.tempos.Acenar = (l.tempos.Acenar + dt / duracaoDoEstado('Acenar')) % 1
+    }
+    // Saindo da água, o corpo se ergue por cima do passo e vai sumindo.
+    if (l.saindoDaAgua > 0) {
+      l.saindoDaAgua = Math.max(0, l.saindoDaAgua - dt)
+      l.tempos.SaindoDaAgua = 1 - l.saindoDaAgua / DURACAO_DA_SAIDA_DA_AGUA
+      const peso = l.forcaDaSaidaDaAgua * (1 - suave(l.tempos.SaindoDaAgua))
+      for (const c of ESTADOS) alvo[c] *= 1 - peso
+      alvo.SaindoDaAgua = peso
+      transicao = TRANSICAO.ar
     }
   }
 

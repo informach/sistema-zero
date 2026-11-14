@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
+import { AnimationClip, VectorKeyframeTrack } from 'three'
+import { comOComecoMaisBaixo } from '../src/personagem/avatar-do-jogo'
 import { CORPO } from '../src/sistemas/corpo'
 import {
   AR_PARA_ATERRISSAR,
@@ -12,6 +14,7 @@ import {
   ciclosPorSegundo,
   criarLocomocao,
   criarPoseDosClipes,
+  DURACAO_DA_SAIDA_DA_AGUA,
   DURACAO_DO_CLIPE,
   duracaoDoEstado,
   type EntradaDaLocomocao,
@@ -27,6 +30,7 @@ import {
 } from '../src/sistemas/locomocao'
 import {
   DESENHO_NA_AGUA,
+  descidaDoEntrarNaAgua,
   desenhoPenduradoNaBorda,
   medidaDoLugar,
   PENDURADO_NA_BORDA,
@@ -178,7 +182,8 @@ describe('máquina de estados', () => {
 
   test('na água: nadando para a frente ou boiando', () => {
     const agua = { velocidade: 2.6, noChao: false, velY: 0, nadando: true, especial: null }
-    const l = rodar(undefined, agua, 1)
+    // Depois de entrar na água (um movimento só), nada.
+    const l = rodar(undefined, agua, duracaoDoEstado('EntrandoNaAgua') + 1)
     expect(l.pesos.Nado).toBeCloseTo(1)
     expect(soma(l.pesos)).toBeCloseTo(1)
     rodar(l, { ...agua, velocidade: 0 }, 1)
@@ -233,6 +238,81 @@ describe('máquina de estados', () => {
     // Na velocidade do nado do jogo, o teto.
     const rapido = passoDaLocomocao(criarLocomocao(), { ...agua, velocidade: 2.6 }, 0.1)
     expect(rapido.tempos.Nado).toBeCloseTo((RITMO_MAXIMO / CICLO_DE_NADO.duracao) * 0.1, 6)
+  })
+})
+
+describe('entrar e sair da água, o barco e o aceno', () => {
+  const agua = { velocidade: 0, noChao: false, velY: 0, nadando: true, especial: null }
+  const praia = { velocidade: 1, noChao: true, velY: 0, nadando: false, especial: null }
+
+  test('entrar na água toca uma vez, antes de nadar ou boiar', () => {
+    const l = rodar(undefined, agua, duracaoDoEstado('EntrandoNaAgua') / 2)
+    expect(l.pesos.EntrandoNaAgua).toBeCloseTo(1)
+    expect(l.pesos.NadoParado).toBe(0)
+    rodar(l, agua, duracaoDoEstado('EntrandoNaAgua') / 2 + 1)
+    expect(l.pesos.NadoParado).toBeCloseTo(1)
+    expect(l.pesos.EntrandoNaAgua).toBe(0)
+    // Continua na água: não entra de novo.
+    rodar(l, { ...agua, velocidade: 2.6 }, 2)
+    expect(l.pesos.Nado).toBeCloseTo(1)
+    expect(l.tempos.EntrandoNaAgua).toBe(1)
+  })
+
+  test('saindo da água pisando, o corpo se ergue uma vez e some; quem sai correndo quase não vê', () => {
+    const l = rodar(undefined, agua, 4)
+    passoDaLocomocao(l, praia, 1 / 60)
+    expect(l.saindoDaAgua).toBeGreaterThan(0)
+    rodar(l, praia, 0.3)
+    expect(l.pesos.SaindoDaAgua).toBeGreaterThan(0.2)
+    expect(soma(l.pesos)).toBeCloseTo(1, 1)
+    rodar(l, praia, DURACAO_DA_SAIDA_DA_AGUA + 0.5)
+    expect(l.pesos.SaindoDaAgua).toBeCloseTo(0)
+    expect(l.pesos.Andar + l.pesos.Parado).toBeCloseTo(1)
+    // Correndo, pesa menos.
+    const correndo = rodar(undefined, agua, 4)
+    passoDaLocomocao(correndo, { ...praia, velocidade: VELOCIDADE_DO_CORRER }, 1 / 60)
+    expect(correndo.forcaDaSaidaDaAgua).toBeCloseTo(0.4)
+    // Saiu da água pulando (sem pisar): nada de se erguer.
+    const pulando = rodar(undefined, agua, 4)
+    passoDaLocomocao(pulando, { ...praia, noChao: false, velY: 3 }, 1 / 60)
+    expect(pulando.saindoDaAgua).toBe(0)
+  })
+
+  test('na viagem de barco ela vai sentada', () => {
+    const l = rodar(undefined, { ...praia, velocidade: 0, especial: 'barco' }, 1)
+    expect(l.pesos.NoBarco).toBeCloseTo(1)
+    expect(POSE_DO_ESTADO.NoBarco.clipe).toBe('sentado_no_barco')
+  })
+
+  test('parada, acena de volta; andando, o aceno não segura o passo', () => {
+    const parada = rodar(undefined, { ...praia, velocidade: 0, acenando: true }, 1)
+    expect(parada.pesos.Acenar).toBeCloseTo(1)
+    expect(parada.pesos.Parado).toBe(0)
+    expect(parada.tempos.Acenar).toBeGreaterThan(0)
+    const andando = rodar(undefined, { ...praia, velocidade: VELOCIDADE_DO_ANDAR, acenando: true }, 1)
+    expect(andando.pesos.Acenar).toBeCloseTo(0)
+    expect(andando.pesos.Andar).toBeCloseTo(1)
+    // Acabou o aceno: volta ao parado e o próximo recomeça do início.
+    rodar(parada, { ...praia, velocidade: 0 }, 1)
+    expect(parada.pesos.Parado).toBeCloseTo(1)
+    expect(parada.tempos.Acenar).toBe(0)
+  })
+
+  test('o começo do entrar na água desce até o fundo e a descida some até o fim', () => {
+    const descida = descidaDoEntrarNaAgua(0.12)
+    // Em metros do clipe: a margem da arte mais a cintura (e o quanto a água passa dela).
+    expect(descida * CORPO.medidas.scale).toBeCloseTo(
+      medidaDoLugar('entrar_na_agua', 'margem_chao_acima_da_agua_m') + CORPO.cintura + 0.12,
+      9,
+    )
+    const clipe = new AnimationClip('entrar', 1, [
+      new VectorKeyframeTrack('Hips.position', [0, 0.5, 1], [0, 1, 0, 0, 0.6, 0, 0, 0.2, 0]),
+    ])
+    comOComecoMaisBaixo(clipe, 0.5)
+    const y = [...(clipe.tracks[0]?.values ?? [])].filter((_, i) => i % 3 === 1)
+    expect(y[0]).toBeCloseTo(0.5, 6)
+    expect(y[1]).toBeCloseTo(0.35, 6)
+    expect(y[2]).toBeCloseTo(0.2, 6)
   })
 })
 

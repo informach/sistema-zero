@@ -36,7 +36,7 @@ import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-do
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { BANCO } from '../sistemas/descanso'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
-import type { EntradaDaLocomocao } from '../sistemas/locomocao'
+import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
   type AvisoDeModo,
@@ -156,6 +156,9 @@ export function Personagem() {
   /** O quanto o desenho está na água (0 a 1) e pendurado na borda, para a origem dele mudar suave. */
   const naAgua = useRef(0)
   const naBorda = useRef(0)
+  /** Os acenos dos moradores já respondidos e o quanto falta do aceno dela (s). */
+  const acenosVistos = useRef(movimento.acenos)
+  const acenando = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
@@ -416,12 +419,22 @@ export function Personagem() {
     m.noChao = v.modo !== 'chao' || v.noChao
     m.velY = v.velY
     m.nadando = nadando
-    m.especial =
-      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
+    // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
+    const viajando = v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
+    m.especial = viajando
+      ? 'barco'
+      : v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
           : v.modo
+    // Um morador acenou: ela acena de volta por um ciclo do clipe.
+    if (movimento.acenos !== acenosVistos.current) {
+      acenosVistos.current = movimento.acenos
+      acenando.current = DURACAO_DO_CLIPE.acenar
+    }
+    acenando.current = Math.max(0, acenando.current - dt)
+    m.acenando = acenando.current > 0
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })

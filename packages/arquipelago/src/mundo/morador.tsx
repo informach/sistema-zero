@@ -178,7 +178,7 @@ function ModeloDoMorador({
   morador: MoradorNoMundo
   lugar: { x: number; z: number }
 }) {
-  const { loja, rastro } = useJogo()
+  const { loja, rastro, movimento } = useJogo()
   const conversa = lojaDaConversa(loja, morador.quem)
   const raiz = useRef<Group>(null)
   const { cena, actions, mixer, olhos } = useCopiaAnimada(morador.url, raiz, UMA_VEZ)
@@ -206,6 +206,8 @@ function ModeloDoMorador({
       if (agora - ultimoAceno.current > morador.medidas.acenoACada) {
         pedido = 'acenar'
         ultimoAceno.current = agora
+        // Ela acena de volta (se estiver parada).
+        movimento.acenos += 1
       }
     }
     estavaPerto.current = perto

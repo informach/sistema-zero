@@ -39,6 +39,8 @@ import {
   passoDaLocomocao,
   poseDosClipes,
 } from '../sistemas/locomocao'
+import { descidaDoEntrarNaAgua } from '../sistemas/lugares-dos-clipes'
+import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
 import { LanternaNaMao } from './lanterna-na-mao'
 import {
@@ -61,6 +63,8 @@ const UMA_VEZ: readonly ClipeDoJogo[] = [
   'sentar',
   'deitar',
   'subir_borda',
+  'entrar_na_agua',
+  'sair_da_agua',
 ]
 /** O pulo do pack sobe o corpo; no jogo quem sobe é a física (o agachar fica). */
 const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim']
@@ -70,7 +74,25 @@ const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim'
  */
 const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
 /** Subindo (a escada, a borda), quem sobe é o corpo da física: o clipe fica sem a subida. */
-const SEM_A_SUBIDA: readonly ClipeDoJogo[] = ['subir_escada', 'subir_borda']
+const SEM_A_SUBIDA: readonly ClipeDoJogo[] = ['subir_escada', 'subir_borda', 'sair_da_agua']
+
+/**
+ * Desce o começo do clipe (o `Hips`) `quanto` metros, sumindo em linha reta até o fim: o entrar na
+ * água começa de pé no fundo, onde o corpo do jogo está, e termina boiando como a arte fez.
+ */
+export function comOComecoMaisBaixo(clipe: AnimationClip, quanto: number): AnimationClip {
+  const trilha = clipe.tracks.find((t) => t.name === 'Hips.position' && t.getValueSize() === 3)
+  if (!trilha) return clipe
+  const { times, values } = trilha
+  const n = times.length
+  const t0 = times[0] ?? 0
+  const total = (times[n - 1] ?? t0) - t0
+  for (let i = 0; i < n; i++) {
+    const f = total > 0 ? ((times[i] ?? t0) - t0) / total : 1
+    values[i * 3 + 1] = (values[i * 3 + 1] ?? 0) - quanto * (1 - f)
+  }
+  return clipe
+}
 
 /**
  * Os clipes do jogo prontos para o mixer: sem o deslocamento do `Hips` (o corpo anda pela física),
@@ -96,7 +118,12 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
         : NO_PULO.includes(id) && emPe !== null
           ? { teto: emPe }
           : 'manter'
-    prontos.push(semDeslocamento(clipe, nomeNoJogo(id), { vertical }))
+    const pronto = semDeslocamento(clipe, nomeNoJogo(id), { vertical })
+    prontos.push(
+      id === 'entrar_na_agua'
+        ? comOComecoMaisBaixo(pronto, descidaDoEntrarNaAgua(ENTRAR_NO_NADO))
+        : pronto,
+    )
   }
   return prontos
 }
