@@ -370,35 +370,35 @@
             "id": "abrir",
             "title": "Abra Meu avatar",
             "body": "No menu, clique em **Meu espaço** e depois em **Meu avatar**. Você também pode clicar em **Personalizar avatar** no seu perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-000c2f6f7271b07a.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-814eac7df25c3700.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu avatar destacado."
           },
           {
             "id": "montar",
             "title": "Escolha o visual",
             "body": "Escolha uma parte do avatar, como **Cabelo**, **Chapéu** ou **Blusa**, e clique nas peças para experimentar. As partes ficam em três grupos: **Você** (a cor do corpo e o rosto), **Cabeça** e **Roupa**. Algumas partes têm tipos, como **Camiseta** e **Camisa** na Blusa. Em **Peças de**, escolha **Menina**, **Menino** ou **Todas**. Quando uma peça não combina com outra, aparece o que saiu, com o botão **Desfazer**. Clique em **Surpreenda-me**, no canto de cima, para sortear um visual com peças que você já tem.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-090fcb922cef4d5d.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-f41828d3547979a4.webp",
             "imageAlt": "Editor Meu avatar com a parte Chapéu aberta e o aviso de que o cabelo saiu, com o botão Desfazer."
           },
           {
             "id": "comprar",
             "title": "Desbloqueie uma peça com moedas",
             "body": "Peças com cadeado mostram o preço em moedas: clique numa delas para ver como fica no seu avatar. Para ficar com ela, clique em **Comprar por** e o preço, ou em **Deixar para depois** se mudar de ideia. As fantasias se compram inteiras. Veja [como ganhar moedas](/como-fazer/plataforma-resgatar-missoes).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/comprar-f5a5c9ca649b6b36.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/comprar-2774207303ea5c99.webp",
             "imageAlt": "Editor Meu avatar com uma peça de cadeado vestida de prévia e a faixa Gostou? Está vestido de prévia!, com os botões Deixar para depois e Comprar por destacados."
           },
           {
             "id": "salvar",
             "title": "Seu avatar se guarda sozinho",
             "body": "Não precisa salvar: um segundo depois de cada escolha, o canto de cima mostra **Salvo**. Se ele mostrar **Só experimentando**, ainda tem uma peça com cadeado no visual: compre a peça ou troque por outra para guardar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-56c432b9d0bd369f.webp",
-            "imageAlt": "Editor Meu avatar com o botão Salvar destacado no canto de cima."
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-d6ffa84cf0798b34.webp",
+            "imageAlt": "Editor Meu avatar com o aviso Salvo destacado no canto de cima."
           },
           {
             "id": "foto",
             "title": "Tire uma foto do avatar",
             "body": "Clique em **Cabine de fotos**, no alto do painel de escolhas. Escolha uma pose, arraste o personagem para escolher o lado e clique em **Tirar foto**, no canto de cima. A foto vira a imagem do seu perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/foto-27c981802fce6a1d.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/foto-76f93d6752850eaf.webp",
             "imageAlt": "Cabine de fotos do avatar com as poses no painel ao lado e o botão Tirar foto destacado no canto de cima."
           }
         ],
