@@ -50,6 +50,8 @@ python docs/aulas-interativas-tecnico/recursos/corre-dino/gerar-materiais.py
 python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 ```
 
+**Visual:** todo Passo a passo do projeto, novo ou refeito, segue a [receita do Passo a passo](recursos/caderno-visual/README.md), aprovada em 14/11/2026 no Cadê Todo Mundo? e no A Chave do Farol. Ela define a capa, as cores, os cards, os passos e os blocos desenhados como no Estúdio, e o texto fica num `caderno-conteudo.json`.
+
 As saídas são `docs/aulas-interativas/<posto>/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
 
 Na Aula 1 do Cadê Todo Mundo? e do A Chave do Farol, o passo a passo também mostra a plataforma: páginas "Conheça a plataforma" com prints reais da área das crianças, marcas numeradas e a legenda de cada controle, junto da parte em que a tela aparece. Fontes, captura e conferência em [recursos/guia-da-plataforma](recursos/guia-da-plataforma/README.md).

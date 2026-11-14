@@ -154,7 +154,7 @@ Manter certificados emitidos e aulas já concluídas. Adicionar uma seção não
 
 ## 5. Caderno, ajuda e publicação
 
-O **Passo a passo do projeto** acompanha o conteúdo real, com instruções completas, e tem o mesmo nome nos dois públicos. Pode conter visão geral, navegação, experiências, testes, publicação, quiz e certificado. Não acrescentar um mapa ilustrado de percurso que a aula não ensina. O mapa separado para responsáveis foi retirado destes cursos.
+O **Passo a passo do projeto** acompanha o conteúdo real, com instruções completas, e tem o mesmo nome nos dois públicos. Pode conter visão geral, navegação, experiências, testes, publicação, quiz e certificado. Não acrescentar um mapa ilustrado de percurso que a aula não ensina. O mapa separado para responsáveis foi retirado destes cursos. O visual segue a [receita do Passo a passo](recursos/caderno-visual/README.md) (14/11/2026): capa com a arte do curso, cards coloridos, passos numerados e blocos desenhados como no Estúdio, para a leitura ficar clara para a criança.
 
 Usar o padrão visual do Cadê Todo Mundo: tipografia, cartões, ilustrações e blocos com encaixes desenhados. **Cada bloco deve ter a cor exata da definição final no Estúdio**, inclusive áreas, famílias e valores encaixados. Não aproximar pela cor geral da categoria. Gerar e conferir o PDF renderizado, legibilidade e cortes.
 
