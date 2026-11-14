@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "ab50fc301ccd50fbb9a9e29bb16218d250593921",
+    "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
     "syncedAt": "2026-11-14",
-    "rulesBlob": "58933578793010a55bceee55a556805453ca94c9"
+    "rulesBlob": "31e68619aa701713ba9b6d088b9ea2b8e7d1db63"
   },
   "base": {
     "skeleton": {
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "570e9e090ce4f1fa392bc1098e920813ac1c93ef",
-      "tree": "ae9f0a84154a267b396c04dc6511bd41b5f2576b",
+      "catalogBlob": "668d643f8babd15e844291f099e4b5edd94552de",
+      "tree": "2d2278840a9b7b3767aa7a8359e086b0ca605931",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.4f187cc6c3a7.glb",
+        "file": "base/animacoes-do-jogo.2e30432067da.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -897,6 +897,155 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             "hatOff": true
           },
           {
+            "id": "boiar",
+            "duration": 3.033,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 92,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "superficie_m": 0,
+              "linha_d_agua_m": 0.53
+            }
+          },
+          {
+            "id": "nadar",
+            "duration": 4.567,
+            "loop": true,
+            "stride": 1.827,
+            "rise": 0,
+            "frames": 138,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              1.827
+            ],
+            "place": {
+              "superficie_m": 0,
+              "linha_d_agua_m": 0.48,
+              "velocidade_m_s": 0.4
+            }
+          },
+          {
+            "id": "entrar_na_agua",
+            "duration": 1.7,
+            "loop": false,
+            "stride": 0.76,
+            "rise": -0.712,
+            "frames": 52,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 14
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 14
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              -0.712,
+              0.76
+            ],
+            "place": {
+              "termina_a_frente_m": 0.76,
+              "margem_chao_acima_da_agua_m": 0.162,
+              "margem_beira_a_frente_m": 0.33
+            }
+          },
+          {
+            "id": "sair_da_agua",
+            "duration": 2.833,
+            "loop": false,
+            "stride": 0.88,
+            "rise": 0.712,
+            "frames": 86,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 74,
+                "off": 86
+              },
+              {
+                "foot": "left",
+                "on": 74,
+                "off": 86
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0.712,
+              0.88
+            ],
+            "place": {
+              "termina_a_frente_m": 0.88,
+              "margem_chao_acima_da_agua_m": 0.162,
+              "margem_beira_a_frente_m": 0.55
+            }
+          },
+          {
+            "id": "andar_na_agua",
+            "duration": 1.2,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 37,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 6,
+                "off": 28
+              },
+              {
+                "foot": "right",
+                "on": 27,
+                "off": 8
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "parte_rasa_m": 0.3
+            }
+          },
+          {
+            "id": "sentado_no_barco",
+            "duration": 3,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "bacia_m": 0.05,
+              "pernas_a_frente_m": 0.42
+            }
+          },
+          {
             "id": "pendurar_borda",
             "duration": 2,
             "loop": true,
@@ -1060,8 +1209,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               }
             ],
             "place": {
-              "corda_a_frente_m": 0.21,
-              "corda_raio_m": 0.07,
+              "corda_a_frente_m": 0.17,
+              "corda_raio_m": 0.012,
               "maos_m": [
                 0.57,
                 0.47
@@ -1069,123 +1218,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             }
           },
           {
-            "id": "boiar",
-            "duration": 3.033,
-            "loop": true,
-            "stride": 0,
-            "rise": 0,
-            "frames": 92,
-            "feet": [],
-            "handsFree": true,
-            "displacement": [
-              0,
-              0,
-              0
-            ],
-            "place": {
-              "superficie_m": 0,
-              "linha_d_agua_m": 0.53
-            }
-          },
-          {
-            "id": "nadar",
-            "duration": 4.567,
-            "loop": true,
-            "stride": 1.827,
-            "rise": 0,
-            "frames": 138,
-            "feet": [],
-            "handsFree": true,
-            "displacement": [
-              0,
-              0,
-              1.827
-            ],
-            "place": {
-              "superficie_m": 0,
-              "linha_d_agua_m": 0.48,
-              "velocidade_m_s": 0.4
-            }
-          },
-          {
-            "id": "entrar_na_agua",
-            "duration": 1.7,
-            "loop": false,
-            "stride": 0.76,
-            "rise": -0.712,
-            "frames": 52,
-            "feet": [
-              {
-                "foot": "right",
-                "on": 0,
-                "off": 14
-              },
-              {
-                "foot": "left",
-                "on": 0,
-                "off": 14
-              }
-            ],
-            "handsFree": true,
-            "displacement": [
-              0,
-              -0.712,
-              0.76
-            ],
-            "place": {
-              "termina_a_frente_m": 0.76,
-              "margem_chao_acima_da_agua_m": 0.162,
-              "margem_beira_a_frente_m": 0.33
-            }
-          },
-          {
-            "id": "sair_da_agua",
-            "duration": 2.833,
-            "loop": false,
-            "stride": 0.88,
-            "rise": 0.712,
-            "frames": 86,
-            "feet": [
-              {
-                "foot": "right",
-                "on": 74,
-                "off": 86
-              },
-              {
-                "foot": "left",
-                "on": 74,
-                "off": 86
-              }
-            ],
-            "handsFree": false,
-            "displacement": [
-              0,
-              0.712,
-              0.88
-            ],
-            "place": {
-              "termina_a_frente_m": 0.88,
-              "margem_chao_acima_da_agua_m": 0.162,
-              "margem_beira_a_frente_m": 0.55
-            }
-          },
-          {
-            "id": "andar_na_agua",
-            "duration": 1.2,
+            "id": "equilibrar",
+            "duration": 1.333,
             "loop": true,
             "stride": 0.492,
             "rise": 0,
-            "frames": 37,
+            "frames": 41,
             "feet": [
               {
                 "foot": "left",
-                "on": 6,
-                "off": 28
+                "on": 7,
+                "off": 33
               },
               {
                 "foot": "right",
-                "on": 27,
-                "off": 8
+                "on": 29,
+                "off": 9
               }
             ],
             "handsFree": true,
@@ -1195,16 +1243,17 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               0.492
             ],
             "place": {
-              "parte_rasa_m": 0.3
+              "linha_x_m": 0,
+              "solas_ocupam_m": 0.114
             }
           },
           {
-            "id": "sentado_no_barco",
-            "duration": 3,
+            "id": "escorregar",
+            "duration": 2,
             "loop": true,
             "stride": 0,
             "rise": 0,
-            "frames": 91,
+            "frames": 61,
             "feet": [],
             "handsFree": true,
             "displacement": [
@@ -1215,6 +1264,205 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             "place": {
               "bacia_m": 0.05,
               "pernas_a_frente_m": 0.42
+            }
+          },
+          {
+            "id": "patinar",
+            "duration": 1.6,
+            "loop": true,
+            "stride": 1.44,
+            "rise": 0,
+            "frames": 49,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              1.44
+            ]
+          },
+          {
+            "id": "planar",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 61
+              },
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 61
+              }
+            ],
+            "place": {
+              "barra_m": 0.6,
+              "a_frente_m": 0.25,
+              "entre_as_maos_m": 0.22
+            }
+          },
+          {
+            "id": "escalar",
+            "duration": 1.333,
+            "loop": true,
+            "stride": 0,
+            "rise": 0.2,
+            "frames": 41,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0.2,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "left",
+                "on": 12,
+                "off": 41
+              },
+              {
+                "hand": "right",
+                "on": 32,
+                "off": 20
+              }
+            ],
+            "place": {
+              "parede_a_frente_m": 0.25,
+              "maos_m": [
+                0.53,
+                0.67
+              ],
+              "tornozelos_m": [
+                0.05,
+                0.19
+              ],
+              "palma_aquem_da_parede_m": 0.041
+            }
+          },
+          {
+            "id": "empurrar",
+            "duration": 1.6,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 49,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 8,
+                "off": 38
+              },
+              {
+                "foot": "right",
+                "on": 34,
+                "off": 14
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "plano_a_frente_m": 0.3,
+              "maos_m": 0.48,
+              "maos_para_o_lado_m": 0.1,
+              "palma_aquem_do_plano_m": 0.041
+            }
+          },
+          {
+            "id": "montar",
+            "duration": 2,
+            "loop": false,
+            "stride": 0.37,
+            "rise": 0.054,
+            "frames": 61,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 13
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 13
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              -0.37,
+              0.054,
+              0
+            ],
+            "place": {
+              "assento_m": 0.3,
+              "comeca_ao_lado_m": 0.37,
+              "entre_as_pernas_m": 0.2
+            }
+          },
+          {
+            "id": "montado",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "bacia_m": 0.05,
+              "entre_as_pernas_m": 0.2
+            }
+          },
+          {
+            "id": "desmontar",
+            "duration": 2,
+            "loop": false,
+            "stride": 0.37,
+            "rise": -0.054,
+            "frames": 61,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 48,
+                "off": 61
+              },
+              {
+                "foot": "left",
+                "on": 48,
+                "off": 61
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0.37,
+              -0.054,
+              0
+            ],
+            "place": {
+              "assento_m": 0.3,
+              "termina_ao_lado_m": 0.37,
+              "entre_as_pernas_m": 0.2
             }
           }
         ],
@@ -1303,6 +1551,27 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             ],
             "objects": [
               "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_cilindro_fino_esq",
+            "duration": 0.033,
+            "loop": true,
+            "frames": 2,
+            "bones": [
+              "LeftHandIndex1",
+              "LeftHandIndex2",
+              "LeftHandMiddle1",
+              "LeftHandMiddle2",
+              "LeftHandRing1",
+              "LeftHandRing2",
+              "LeftHandPinky1",
+              "LeftHandPinky2",
+              "LeftHandThumb1",
+              "LeftHandThumb2"
+            ],
+            "objects": [
+              "mao_barra_planador"
             ]
           }
         ]
@@ -3024,6 +3293,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/calcado_pantufa_sapo_pacote.68d8d2e0b92e.webp",
       "tier": "coins",
       "tris": 728
+    },
+    "calcado_patins": {
+      "slot": "calcado",
+      "group": "calcado",
+      "label": "Patins",
+      "audience": "both",
+      "tier": "coins",
+      "price": 90,
+      "band": "especial",
+      "file": "pecas/calcado_patins.80520b0ee30f.glb",
+      "thumb": "miniaturas/calcado_patins.1fe8b8a6edb7.webp",
+      "tris": 7014,
+      "origin": {
+        "blob": "1db34b4e36662fabce730943676be87602698010",
+        "thumbBlob": "ac282f663a19245da28224b030a93556b2a4a157",
+        "meta": "01b8750e409067ca",
+        "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
+        "migratedAt": "2026-11-14"
+      }
     },
     "calcado_sandalia_azul_petroleo_pacote": {
       "audience": "both",
@@ -10246,6 +10534,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "calcado_tenis_branco_liso_pacote",
           "calcado_botas_cano_alto",
           "calcado_botinha_lisa",
+          "calcado_patins",
           "calcado_tenis_cano_alto"
         ]
       },
@@ -10365,6 +10654,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "calca_marrom_meias_pacote": [
         "calcado_botas_cano_alto",
+        "calcado_patins",
         "calcado_tenis_cano_alto"
       ],
       "calca_saia_babados": [
@@ -10394,6 +10684,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_jaqueta_vermelha_pacote"
       ],
       "calcado_botas_cano_alto": [
+        "calca_marrom_meias_pacote"
+      ],
+      "calcado_patins": [
         "calca_marrom_meias_pacote"
       ],
       "calcado_tenis_cano_alto": [
@@ -10956,6 +11249,20 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     }
   },
   "equipment": {
+    "mao_barra_planador": {
+      "label": "Barra do planador (duas mãos)",
+      "socket": "mao_direita",
+      "file": "pecas/mao_barra_planador.469df7ec5d97.glb",
+      "thumb": "miniaturas/mao_barra_planador.100339de7d5f.webp",
+      "tris": 608,
+      "origin": {
+        "blob": "ba35becb854a0608599d215105506630b8902053",
+        "thumbBlob": "440545e45520a065e703b018ae3a00b4fc31a60a",
+        "meta": "fb2f2ff3d3ad105f",
+        "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "mao_lanterna": {
       "label": "Lanterna (mão direita)",
       "socket": "mao_direita",
@@ -10973,8 +11280,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "f8fb988b17744892e6f312d0b38abc46ff1ba3c0",
         "thumbBlob": "8ed60e8f3e59800d6e7fea24c7a7b4cad44c3810",
-        "meta": "9bd7f65b563d7238",
-        "commit": "ab50fc301ccd50fbb9a9e29bb16218d250593921",
+        "meta": "064a31f0eb58888d",
+        "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
         "migratedAt": "2026-11-14"
       }
     }

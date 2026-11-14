@@ -219,3 +219,10 @@ Cada lote entra na `origin/main` da arte como hoje. Avisem o nome do lote; o nos
   `animacao: "dirigir"`, `segura` e `maos`. Corrigiu a direção do motorista (carros +Z, vagonete
   +X) e o ponto `plantar` do vaso azul da Terra Doce, que está a 0,65 m de altura (estava 0,0 m,
   por erro de medida).
+- **14/11/2026, à noite:** a arte entregou o passo 6 (`pontos_de_jogo` em 305 peças das sete
+  bibliotecas, com as que ficaram sem ponto e o porquê em
+  `em_producao/coordenacao/pontos_de_jogo/<biblioteca>/`), as 17 animações da P1 e as 9 da P2,
+  o `pendurar_cipo` refeito para a corda fina (`cipo_corda`, 2,4 cm), a lanterna, a barra do
+  planador e os patins. Tiraram o assento de trás do barco a vela do Reino (a vela passava no
+  lugar da cabeça). Migrado ao catálogo da plataforma no mesmo dia (`avatar:migrar`, arte
+  `bb7e5e7c7`). Falta da arte: a P3 (menos `acenar`, já entregue) e o `dirigir`.
