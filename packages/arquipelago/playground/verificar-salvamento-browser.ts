@@ -248,7 +248,7 @@ try {
   await arrastar()
   await reaberto.mouse.up()
   await reaberto.waitForFunction(
-    (button: HTMLButtonElement) => !button.disabled,
+    (button) => button instanceof HTMLButtonElement && !button.disabled,
     await desfazer.elementHandle(),
   )
   await desfazer.click()
