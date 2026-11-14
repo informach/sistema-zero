@@ -14,6 +14,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { nota } from '../caderno-visual/visual'
 
 export type CursoDoGuia = 'cade-todo-mundo' | 'desafio-primeiro-jogo'
 
@@ -126,26 +127,26 @@ export function guiaSecao(
   const pagina = CONTEUDO_DO_GUIA.paginas.find((p) => p.id === id)
   if (!pagina) throw new Error(`Página do guia desconhecida: ${id}`)
   const telas = pagina.telas.map((tela) => figura(curso, tela)).join('')
-  const nota = pagina.nota ? `<div class="note guia-nota">${pagina.nota}</div>` : ''
-  return `<section class="page lesson-one guia" data-id="${id}"><div class="inner"><div class="guia-topo"><span class="guia-selo">Conheça a plataforma</span><div class="kicker">${kicker(pagina.parte)}</div><h2>${pagina.titulo}</h2><p>${pagina.texto}</p></div><div class="content guia-conteudo">${telas}${nota}</div></div>${rodape}</section>`
+  const notaDaPagina = pagina.nota ? nota(pagina.nota) : ''
+  return `<section class="page guia" data-id="${id}"><div class="inner"><div class="guia-topo"><span class="guia-selo">Conheça a plataforma</span><div class="kicker">${kicker(pagina.parte)}</div><h2>${pagina.titulo}</h2><p>${pagina.texto}</p></div><div class="content guia-conteudo">${telas}${notaDaPagina}</div></div>${rodape}</section>`
 }
 
 /** Estilo das páginas do guia. Usa as cores e as fontes do caderno de referência. */
 export const GUIA_CSS = `
 .guia .inner { display: flex; flex-direction: column; }
-.guia-topo { border-top: 5px solid var(--accent); padding-top: 4mm; margin-bottom: 5mm; }
-.guia-selo { display: inline-block; border-radius: 40px; padding: 4px 11px; font-size: 8.5pt; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--brand); background: var(--brand-soft); }
-.guia-topo .kicker { margin-top: 3mm; color: var(--accent); font-size: 10pt; }
+.guia-topo { background: #fff; border: 1px solid #dfe6ee; border-top: 4px solid var(--destaque); border-radius: 16px; padding: 4.4mm 6mm 5mm; margin-bottom: 5mm; box-shadow: 0 4px 14px #1b2a4a10; }
+.guia-selo { display: inline-block; border-radius: 40px; padding: 4px 11px; font-size: 8.5pt; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--destaque); background: var(--destaque-claro); }
+.guia-topo .kicker { margin-top: 3mm; }
 .guia-topo h2 { margin: 1.5mm 0 2.5mm; font-size: 23pt; }
-.guia-topo p { font-size: 11pt; line-height: 1.5; text-wrap: pretty; }
+.guia-topo p { font-size: 11pt; line-height: 1.5; font-weight: 600; text-wrap: pretty; }
 .guia-conteudo { display: grid; gap: 4.5mm; align-content: start; }
 .guia-figura { margin: 0; }
 .guia-print { position: relative; width: 100%; border-radius: 12px; border: 1px solid #d9def2; box-shadow: 0 6px 18px #1f20421f; background: #fff; }
 .guia-print img { display: block; width: 100%; height: 100%; border-radius: 11px; }
-.guia-figura figcaption { margin-top: 2mm; color: var(--muted); font-size: 8.5pt; font-weight: 700; }
-.guia-alvo { position: absolute; border: 2.4px solid var(--brand); border-radius: 7px; box-shadow: 0 0 0 2.5px #ffffffd9, 0 0 0 4px #5a4bff33; }
+.guia-figura figcaption { margin-top: 2mm; color: #8a94a6; font-size: 8.5pt; font-weight: 700; font-style: italic; }
+.guia-alvo { position: absolute; border: 2.4px solid var(--destaque); border-radius: 7px; box-shadow: 0 0 0 2.5px #ffffffd9; }
 .guia-alvo--grande { border-style: dashed; border-width: 2px; box-shadow: 0 0 0 2px #ffffffb3; }
-.guia-num, .guia-num-legenda { display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: #fff; font-family: 'Baloo 2', Arial, sans-serif; font-weight: 800; line-height: 1; }
+.guia-num, .guia-num-legenda { display: grid; place-items: center; border-radius: 50%; background: var(--destaque); color: #fff; font-family: 'Baloo 2', Arial, sans-serif; font-weight: 800; line-height: 1; }
 .guia-num { position: absolute; width: 6.6mm; height: 6.6mm; transform: translate(-50%, -50%); font-size: 10.5pt; border: 2px solid #fff; box-shadow: 0 2px 6px #1f204259; z-index: 2; }
 /* Nos lados, o número fica do lado de fora da marca, para não cobrir o nome do botão. Nos cantos
    (cartões inteiros), fica sobre a quina do contorno. */
@@ -158,8 +159,8 @@ export const GUIA_CSS = `
 .guia-legenda--lado { grid-template-columns: minmax(0, 1fr); align-content: start; }
 .guia-legenda li { display: flex; gap: 2.6mm; align-items: flex-start; }
 .guia-num-legenda { flex: none; width: 5.8mm; height: 5.8mm; font-size: 9.5pt; margin-top: .3mm; }
-.guia-legenda p { font-size: 9.8pt; line-height: 1.42; text-wrap: pretty; }
-.guia-legenda b { color: var(--ink); }
+.guia-legenda p { font-size: 9.8pt; line-height: 1.42; font-weight: 600; text-wrap: pretty; }
+.guia-legenda b { color: var(--tinta); }
 .guia-lado { display: grid; gap: 6mm; align-items: start; }
 .guia-nota { font-size: 10pt; }
 `

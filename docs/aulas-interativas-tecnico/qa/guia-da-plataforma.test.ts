@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   CONTEUDO_DO_GUIA,
@@ -91,4 +91,43 @@ describe.each(CURSOS)('prints de %s', (curso) => {
         }
     }
   })
+})
+
+/** Todos os textos de um JSON de conteúdo, menos os campos técnicos (ids, nomes de desenho…). */
+function textosDoCaderno(valor: unknown, chave = ''): string[] {
+  if (typeof valor === 'string')
+    return [
+      'id',
+      'kind',
+      'name',
+      'tone',
+      'scene',
+      'category',
+      'header',
+      'image',
+      'icon',
+      'n',
+    ].includes(chave)
+      ? []
+      : [valor]
+  if (Array.isArray(valor)) return valor.flatMap((item) => textosDoCaderno(item, chave))
+  if (typeof valor !== 'object' || valor === null) return []
+  return Object.entries(valor).flatMap(([k, v]) => textosDoCaderno(v, k))
+}
+
+test.each([
+  'cade-todo-mundo',
+  'desafio-farol',
+])('o texto do Passo a passo de %s segue a régua das aulas', (curso) => {
+  const conteudo = JSON.parse(
+    readFileSync(resolve(import.meta.dir, `../recursos/${curso}/caderno-conteudo.json`), 'utf8'),
+  )
+  const textos = textosDoCaderno(conteudo)
+  expect(textos.length).toBeGreaterThan(20)
+  for (const texto of textos) {
+    expect(texto, texto).not.toContain('—')
+    expect(PALAVRAS_DA_ESCOLA.test(texto), texto).toBe(false)
+    expect(concordanciasErradas(texto), texto).toEqual([])
+    expect(guiasPessoa(texto), texto).toEqual([])
+  }
 })

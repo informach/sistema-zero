@@ -16,9 +16,61 @@
         "tone": "note"
       },
       {
-        "kind": "step",
+        "kind": "index",
         "title": "Encontre seu passo",
-        "text": "No alto de cada página estão o dia e a parte, como na tela da aula.<br/><b>Dia 1 · O personagem ganha movimento:</b> o personagem anda e fica inteiro na tela, páginas {{pagina:guia-aula}} a {{pagina:p3}}. Nas páginas {{pagina:guia-aula}} a {{pagina:guia-estudio-expandido}}, conheça a tela de cada parte e o que é cada botão.<br/><b>Dia 2 · A chave muda o curso:</b> o jogo pega a chave, guarda que pegou e avisa, páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}.<br/><b>Dia 3 · A luz do farol:</b> o farol confere a chave e acende, páginas {{pagina:porta-experiencia}} a {{pagina:p8}}.<br/><b>A surpresa do final:</b> escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}.<br/><b>Avisos, lugar da chave e envio:</b> páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}.<br/><b>Publique no Mural:</b> página {{pagina:p9}}.<br/><b>As regras do seu jogo:</b> página {{pagina:revisao-final}}.<br/><b>Certificado e ajuda:</b> página {{pagina:p10}}."
+        "text": "No alto de cada página estão o dia e a parte, como na tela da aula.",
+        "days": [
+          {
+            "kicker": "Dia 1",
+            "title": "O personagem ganha movimento",
+            "text": "O personagem anda e fica inteiro na tela.",
+            "pages": "Páginas {{pagina:guia-aula}} a {{pagina:p3}}"
+          },
+          {
+            "kicker": "Dia 2",
+            "title": "A chave muda o curso",
+            "text": "O jogo pega a chave, guarda que pegou e avisa.",
+            "pages": "Páginas {{pagina:memoria-experiencia}} a {{pagina:coleta-testes}}"
+          },
+          {
+            "kicker": "Dia 3",
+            "title": "A luz do farol",
+            "text": "O farol confere a chave e acende.",
+            "pages": "Páginas {{pagina:porta-experiencia}} a {{pagina:p8}}"
+          }
+        ],
+        "extras": [
+          {
+            "icon": "tela",
+            "title": "Conheça a plataforma",
+            "text": "A tela de cada parte, páginas {{pagina:guia-aula}} a {{pagina:guia-estudio-expandido}}"
+          },
+          {
+            "icon": "presente",
+            "title": "A surpresa do final",
+            "text": "Escolhas e galerias, páginas {{pagina:personalizar}} a {{pagina:galeria-farois}}"
+          },
+          {
+            "icon": "mensagem",
+            "title": "Avisos, lugar da chave e envio",
+            "text": "Páginas {{pagina:farol-mensagens}} a {{pagina:posicionar-chave}}"
+          },
+          {
+            "icon": "mundo",
+            "title": "Publique no Mural",
+            "text": "Página {{pagina:p9}}"
+          },
+          {
+            "icon": "lista",
+            "title": "As regras do seu jogo",
+            "text": "Página {{pagina:revisao-final}}"
+          },
+          {
+            "icon": "medalha",
+            "title": "Certificado e ajuda",
+            "text": "Página {{pagina:p10}}"
+          }
+        ]
       },
       {
         "kind": "box",
