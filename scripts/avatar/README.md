@@ -16,9 +16,24 @@ PRIVADOS do R2. Rodam sob pedido, de tempos em tempos (não há rotina automáti
   - os DADOS da peça no `catalogo.json` da arte: nome, gênero, grupo, conjunto, expressão, cor de
     amostra, triângulos (a impressão `origin.meta`, calculada por `impressaoDaPeca`).
 - **Saíram:** peças que sumiram da arte.
-- **Esqueleto** e **regras de combinação** novas.
+- **O próprio avatar (o esqueleto)**, dizendo o que mudou:
+  - o arquivo do esqueleto (os ossos e as animações do pack, usadas na cabine de fotos e no jogo);
+  - os dados do esqueleto (`esqueleto/catalogo.json`: ossos, encaixes, medidas do corpo e os campos
+    de cada animação, como passada e apoios dos pés);
+  - qualquer outro arquivo da pasta `esqueleto/` (a árvore no git), inclusive as animações em
+    arquivo próprio (`esqueleto/glb/animacoes/<id>.glb`);
+  - as animações do jogo que faltam no catálogo.
+- **As regras de combinação** (`regras.json`: grupos, sorteio, o que não combina com o quê).
+
+O corpo, o rosto e as orelhas são peças (pastas `corpos/`, `rostos/`, `orelhas/`) e entram na
+conferência das peças; a textura compartilhada vem dentro dos GLBs das peças. `LEIA.md` e
+`pagina/` são da arte (a página de conferência dela) e não vão para a plataforma.
 
 Sai com código 1 quando há o que migrar e diz "Tudo migrado." quando não há.
+
+⚠️ **Pendente:** a migração ainda não lê animação em arquivo próprio (`pacote: false` com `arquivo`
+na lista `animacoes` do esqueleto, o formato combinado com a arte para as animações novas do jogo).
+A conferência já acusa quando elas chegam; ensine o `migrar.ts` a juntá-las ao GLB do jogo nesse dia.
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)
 

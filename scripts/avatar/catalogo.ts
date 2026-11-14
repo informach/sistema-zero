@@ -180,6 +180,8 @@ export interface Comparacao {
   sairam: string[]
   iguais: number
   esqueletoMudou: boolean
+  /** O que mudou no esqueleto (o próprio avatar), em palavras; vazio quando nada mudou. */
+  mudancasDoEsqueleto: string[]
   regrasMudaram: boolean
 }
 
@@ -187,14 +189,30 @@ export interface Comparacao {
  * O esqueleto precisa ser migrado de novo: mudou o GLB, mudou o catálogo dele (ossos, encaixes,
  * animações), ou o catálogo daqui ainda não tem as animações do jogo.
  */
-export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: string): boolean {
+/**
+ * O que mudou no esqueleto da arte desde a migração (vazio = nada). O esqueleto é o próprio avatar:
+ * os ossos, as animações da cabine e do jogo, os encaixes e as medidas do corpo.
+ */
+export function mudancasDoEsqueleto(
+  arte: Arte,
+  catalogo: AvatarCatalog,
+  arquivo: string,
+): string[] {
   const s = catalogo.base.skeleton
-  return (
-    s.blob !== arte.blob(`esqueleto/${arquivo}`) ||
-    s.catalogBlob !== arte.blob('esqueleto/catalogo.json') ||
-    !s.game?.file ||
-    s.game.clips.map((c) => c.id).join() !== CLIPES_DO_JOGO.join()
-  )
+  const mudancas: string[] = []
+  if (s.blob !== arte.blob(`esqueleto/${arquivo}`))
+    mudancas.push('o arquivo do esqueleto (ossos e animações do pack)')
+  if (s.catalogBlob !== arte.blob('esqueleto/catalogo.json'))
+    mudancas.push('os dados do esqueleto (ossos, encaixes, medidas do corpo, animações)')
+  if (s.tree !== arte.arvoreDe('esqueleto'))
+    mudancas.push('algum arquivo da pasta do esqueleto (inclusive as animações em arquivo próprio)')
+  if (!s.game?.file || s.game.clips.map((c) => c.id).join() !== CLIPES_DO_JOGO.join())
+    mudancas.push('as animações do jogo (falta alguma ou a lista mudou)')
+  return mudancas
+}
+
+export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: string): boolean {
+  return mudancasDoEsqueleto(arte, catalogo, arquivo).length > 0
 }
 
 /** JSON com as chaves em ordem (a mesma peça dá a mesma impressão, qualquer que seja a ordem). */
@@ -248,6 +266,7 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
       .map(([id]) => id),
     iguais,
     esqueletoMudou: esqueletoMudou(arte, catalogo, esqueleto.arquivo),
+    mudancasDoEsqueleto: mudancasDoEsqueleto(arte, catalogo, esqueleto.arquivo),
     regrasMudaram: catalogo.source.rulesBlob !== arte.blob('regras.json'),
   }
 }

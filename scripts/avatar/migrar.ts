@@ -162,6 +162,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         blob: arte.blob(caminhoDoEsqueleto),
         clips: pronto.clipes,
         catalogBlob: arte.blob('esqueleto/catalogo.json'),
+        tree: arte.arvoreDe('esqueleto'),
         bones: Object.fromEntries(
           esqueleto.lista_ossos.map((o) => [o.nome, { parent: o.pai, head: o.cabeca }]),
         ),

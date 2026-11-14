@@ -26,6 +26,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "pose_a"
       ],
       "catalogBlob": "544118c27041014b1c7029d121d7c7d5db571903",
+      "tree": "72d69d789c53324134c249790a5b147ec4fd072d",
       "bones": {
         "Root": {
           "parent": null,

@@ -169,6 +169,11 @@ export interface AvatarSkeleton {
   clips: string[]
   /** O blob do `esqueleto/catalogo.json` da arte (ossos, encaixes e animações). */
   catalogBlob: string
+  /**
+   * A árvore da pasta `esqueleto/` no git da arte: muda com QUALQUER arquivo dela (o GLB, os dados
+   * e cada animação em arquivo próprio, `esqueleto/glb/animacoes/<id>.glb`).
+   */
+  tree?: string
   /** Osso → pai e posição em repouso. */
   bones: Record<string, AvatarBone>
   /** Encaixe → onde ele fica (`mao_direita` no osso `RightHandProp`, `olhos` na frente do rosto). */

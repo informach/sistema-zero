@@ -164,6 +164,13 @@ export class Arte {
     return new Uint8Array(git(['cat-file', 'blob', this.blob(caminho)]))
   }
 
+  /** O id da árvore de uma pasta (a partir da pasta do avatar): muda com qualquer arquivo dentro. */
+  arvoreDe(pasta: string): string {
+    return git(['rev-parse', `${this.commit}:${PASTA_DA_ARTE}/${pasta}`])
+      .toString('utf8')
+      .trim()
+  }
+
   json<T>(caminho: string): T {
     return JSON.parse(new TextDecoder().decode(this.ler(caminho))) as T
   }

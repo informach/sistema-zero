@@ -41,8 +41,14 @@ export function conferir(args: readonly string[]): number {
     c.mudaram.map((p) => `${p.id}  (${p.pasta}: ${p.rotulo})`),
   )
   lista('Saíram da arte', c.sairam)
-  if (c.esqueletoMudou) console.log('\nO esqueleto da arte mudou.')
-  if (c.regrasMudaram) console.log('\nAs regras da arte mudaram.')
+  if (c.esqueletoMudou) {
+    console.log('\nO próprio avatar (o esqueleto) mudou na arte:')
+    for (const m of c.mudancasDoEsqueleto) console.log(`  ${m}`)
+  }
+  if (c.regrasMudaram)
+    console.log(
+      '\nAs regras de combinação mudaram na arte (regras.json: grupos, sorteio, o que não combina).',
+    )
 
   const aConferir = Object.entries(catalogo.parts).filter(([, p]) => p.review && !p.retired)
   if (aConferir.length > 0)
