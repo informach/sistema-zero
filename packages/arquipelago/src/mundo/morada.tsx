@@ -632,6 +632,12 @@ function NativeActor({
       const prefs = conforto.getState().conforto
       const k = MULTIPLICADOR_DA_RAPIDEZ[prefs.rapidez]
       const dt = Math.min(delta, 0.1)
+      const commanded =
+        controle.cameraX !== 0 || controle.cameraY !== 0 || recenter.current !== controle.recentrar
+      const damping = controls.enableDamping
+      // Os setters já aplicam um ângulo absoluto. O amortecimento do arraste
+      // reduziria novamente cada passo do analógico e atrasaria o recentralizar.
+      if (commanded) controls.enableDamping = false
       if (controle.cameraX)
         controls.setAzimuthalAngle(
           controls.getAzimuthalAngle() - controle.cameraX * CAMERA.giroDoAnalogico * k * dt,
@@ -654,6 +660,10 @@ function NativeActor({
       if (recenter.current !== controle.recentrar) {
         recenter.current = controle.recentrar
         controls.setAzimuthalAngle((visual.current?.rotation.y ?? 0) + Math.PI)
+      }
+      if (commanded) {
+        controls.update()
+        controls.enableDamping = damping
       }
     }
     controls.update()
