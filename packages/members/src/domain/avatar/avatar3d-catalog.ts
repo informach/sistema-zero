@@ -29,10 +29,17 @@ export function avatarItem(id: string, catalog: AvatarCatalog = AVATAR_CATALOG):
   return null
 }
 
-/** Some da loja: rascunho da arte (`hidden`) ou peça que saiu da arte (`retired`). Não se compra. */
-export function isOffShelf(id: string, catalog: AvatarCatalog = AVATAR_CATALOG): boolean {
+/**
+ * Some da loja: rascunho da arte (`hidden`), peça que saiu da arte (`retired`) ou, no Kids, peça
+ * só do adulto (`adultOnly`). Não se compra.
+ */
+export function isOffShelf(
+  id: string,
+  audience: 'kids' | 'adult',
+  catalog: AvatarCatalog = AVATAR_CATALOG,
+): boolean {
   const p = catalog.parts[id]
-  return Boolean(p && (p.hidden || p.retired))
+  return Boolean(p && (p.hidden || p.retired || (p.adultOnly && audience !== 'adult')))
 }
 
 /** Ids que podem ir ao inventário (o que se compra ou o jogo concede). */

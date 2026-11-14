@@ -130,14 +130,6 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   'estante-trofeus': { labelPt: 'Estante de Troféus', emoji: '🏅', w: 3, h: 2, surface: 6 },
 }
 
-// ── Arquivos 3D (27/10/2026): cada peça tem um GLB feito no Blender e uma miniatura PNG, servidos
-// da pasta `public/room3d/` de CADA comunidade (same-origin, sem CORS). Os scripts que os geram
-// moram em `community-kids/scripts/room-blender/`; o teste `room3d-catalog` confere as duas pastas.
-/** GLB de uma peça (ex.: `/room3d/items/cama.glb`). */
-export const roomGlbUrl = (id: string): string => `/room3d/items/${id}.glb`
-/** Miniatura da peça nas bandejas (ex.: `/room3d/thumbs/cama.png`). */
-export const roomThumbUrl = (id: string): string => `/room3d/thumbs/${id}.png`
-
 /** Concedida junto com o 1º troféu (espelha `TROPHY_SHELF_ITEM_ID` do members). */
 export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
 

@@ -47,8 +47,9 @@ export class BuyAvatarPartService {
     privileged = false,
   ): Promise<BuyAvatarPartResult> {
     const part = avatarItem(partId)
-    // Fora da loja (rascunho da arte ou peça aposentada) é como se não existisse para a compra.
-    if (!part || isOffShelf(partId)) throw new AvatarPartNotFoundError()
+    // Fora da loja (rascunho da arte, peça aposentada ou, no Kids, só do adulto) é como se não
+    // existisse para a compra.
+    if (!part || isOffShelf(partId, audience)) throw new AvatarPartNotFoundError()
     if (part.tier === 'set') throw new AvatarPartInSetError()
     if (part.tier === 'free' || part.tier === 'auto') throw new AvatarPartFreeError()
     if (part.tier === 'festa') throw new AvatarPartFestaError()

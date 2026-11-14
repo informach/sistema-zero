@@ -1,4 +1,5 @@
 import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
+import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
 import {
   ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE,
   ZAPPY_SOURCE_REQUEST_MAX_BYTES,
@@ -2439,6 +2440,27 @@ const config: GatewayConfigInput = {
     // Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil (kids). Estado +
     // lojinha (GET), salvar o quarto montado (PUT) e comprar item/tema (POST).
     // `/members/room` (2 seg) não colide; `/members/room/items/:id/buy` (4 seg) idem.
+    {
+      id: 'members-house-get',
+      methods: ['GET'],
+      pathPattern: '/members/house',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-house-save',
+      methods: ['PUT'],
+      pathPattern: '/members/house',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: MORADA_LIMITS.bytes + 1024,
+    },
     {
       id: 'members-room-get',
       methods: ['GET'],

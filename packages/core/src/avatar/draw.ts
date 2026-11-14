@@ -30,6 +30,8 @@ export interface DrawOptions {
    * isso não serve. Padrão: ligado.
    */
   dressed?: boolean
+  /** Kids (padrão) ou adulto: a peça só do adulto não sai no Kids. */
+  community?: AvatarCommunity
 }
 
 export const FRIENDLY_EXPRESSIONS = ['normal', 'neutro', 'feliz'] as const
@@ -55,9 +57,15 @@ export function matchesFilter(audience: AvatarAudience, filter: AvatarFilter): b
   return filter === 'all' || audience === 'both' || audience === filter
 }
 
-/** A peça pode aparecer na loja e no sorteio (não está escondida nem aposentada). */
-export function isListed(part: AvatarPartEntry): boolean {
-  return !part.hidden && !part.retired
+/** De qual comunidade é a loja: o Kids ou a adulta. */
+export type AvatarCommunity = 'kids' | 'adult'
+
+/**
+ * A peça pode aparecer na loja e no sorteio (não está escondida nem aposentada e, no Kids, não é
+ * só do adulto). Sem dizer a comunidade, vale a régua do Kids (a mais fechada).
+ */
+export function isListed(part: AvatarPartEntry, community: AvatarCommunity = 'kids'): boolean {
+  return !part.hidden && !part.retired && !(part.adultOnly && community !== 'adult')
 }
 
 export function drawAvatar(
@@ -76,7 +84,7 @@ export function drawAvatar(
     const conjunto = catalog.sets[id]
     if (conjunto) return faixas.has(conjunto.tier) || (options.owned?.has(id) ?? false)
     const p = catalog.parts[id]
-    if (!p || !isListed(p) || fora.has(id)) return false
+    if (!p || !isListed(p, options.community) || fora.has(id)) return false
     if (!matchesFilter(p.audience, filtro)) return false
     if (p.face && !expressoes.has(p.face.expression)) return false
     if (p.set) {

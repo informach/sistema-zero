@@ -1,0 +1,23 @@
+# Biblioteca Morada
+
+Importa móveis, construção, fazenda, os 24 gatos/cachorros e os oito troféus próprios. Só metadados entram no Git. GLB, imagens e miniaturas importados ficam em `output/morada-assets/morada`, ignorado pelo Git, e depois nos buckets privados.
+
+## Preparar e conferir
+
+Na raiz: `bun run morada:migrar`, depois `bun run morada:conferir`. `ARTES_3D_DIR` altera a fonte (`../artes-3d` por padrão), `MORADA_OUTPUT_DIR` altera a pasta de preparação. A importação não muda a fonte da arte nem o banco.
+
+O catálogo gerado tem arquivos por hash; extrai texturas compartilhadas para carregar sem imagens embutidas/blob no Kids. Mantém as origens e converte `dims` para XYZ. Paredes antigas recebem caixas calculadas pelos vãos autorais; batentes mantêm vãos livres; folhas sem dobradiça recebem pivô de abertura na cópia importada. Partes móveis usam colisões em coordenadas da peça em repouso, com `part` identificando o nó que as carrega.
+
+## Conferência no navegador
+
+`bun scripts/morada/qa.ts` abre o editor real em `http://127.0.0.1:5284`; `?adulto=1` escolhe a pele adulta. Recursos privados locais, casa e revisão em memória, sem sessão/banco de produção. O playground do jogo também aceita `MORADA_QA_DIR=<pasta dos recursos>`. O servidor fica ligado apenas em 127.0.0.1.
+
+## Publicação dos recursos
+
+`bun --env-file=packages/admin/.env scripts/morada/migrar.ts --r2` prepara e envia os arquivos aos buckets PRIVADOS de testes e produção, seguindo o mecanismo do avatar. Não publica a aplicação nem migra contas. Fazer isso antes de disponibilizar o cliente que referencia o catálogo novo.
+
+## Banco e contas
+
+Aplicar a migration `0149_morada_house.sql` com o fluxo do Members. A ferramenta `packages/members/scripts/swap-morada.ts` faz ensaio por padrão; revisar o relatório antes da execução de escrita. O reembolso é pelo extrato histórico dos itens retirados, preservando Galeria e troféus. A casa usa CAS/revisão e as requisições do editor antigo são recusadas depois da conversão.
+
+As peças da Morada são disponibilizadas grátis nesta entrega; não foram inventados preços novos. Os oito troféus continuam exigindo conquista. A identidade visual das páginas Kids e adulta deve permanecer a atual.

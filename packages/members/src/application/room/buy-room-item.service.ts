@@ -14,6 +14,7 @@ import {
   ROOM_THEMES_BY_ID,
 } from '../../domain/room/room-catalog'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { MoradaHouseService } from './morada-house.service'
 
 export interface BuyRoomItemResult {
   alreadyOwned: boolean
@@ -43,6 +44,7 @@ export class BuyRoomItemService {
     private readonly coins: GamificationRepository,
     private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
+    private readonly morada?: Pick<MoradaHouseService, 'assertLegacyWritable'>,
   ) {}
 
   async execute(
@@ -51,6 +53,7 @@ export class BuyRoomItemService {
     itemId: string,
     privileged = false,
   ): Promise<BuyRoomItemResult> {
+    await this.morada?.assertLegacyWritable(userId, audience)
     const thing = roomThing(itemId)
     if (!thing) throw new RoomItemNotFoundError()
     if (thing.tier === 'free') throw new RoomItemFreeError()

@@ -1,5 +1,5 @@
 import {
-  type Bone,
+  Bone,
   type Material,
   Mesh,
   MeshStandardMaterial,
@@ -55,6 +55,41 @@ interface AnotacaoDoMaterial {
 function anotacao(material: Material): AnotacaoDoMaterial {
   const avatar = (material.userData as { avatar?: AnotacaoDoMaterial } | undefined)?.avatar
   return avatar && typeof avatar === 'object' ? avatar : {}
+}
+
+/**
+ * Os ossos da montagem mais os que só um OBJETO DE MÃO tem (a `Luz` da lanterna, filha do osso da
+ * mão): cada osso que falta entra como filho do mesmo pai, na pose de descanso do arquivo. Osso sem
+ * pai na montagem fica de fora (a peça é recusada adiante, como qualquer peça de outro esqueleto).
+ * `soltar` tira da montagem os ossos acrescentados.
+ */
+export function ossosComOsDoObjeto(original: Object3D, ossos: ReadonlyMap<string, Bone>) {
+  const todos = new Map(ossos)
+  const novos: Bone[] = []
+  const entrar = (osso: Bone): Bone | undefined => {
+    const tem = todos.get(osso.name)
+    if (tem) return tem
+    const pai = osso.parent instanceof Bone ? entrar(osso.parent) : undefined
+    if (!pai) return undefined
+    const novo = new Bone()
+    novo.name = osso.name
+    novo.position.copy(osso.position)
+    novo.quaternion.copy(osso.quaternion)
+    novo.scale.copy(osso.scale)
+    pai.add(novo)
+    todos.set(osso.name, novo)
+    novos.push(novo)
+    return novo
+  }
+  original.traverse((o) => {
+    if (o instanceof SkinnedMesh) for (const osso of o.skeleton.bones) entrar(osso)
+  })
+  return {
+    ossos: todos as ReadonlyMap<string, Bone>,
+    soltar() {
+      for (const osso of novos) osso.removeFromParent()
+    },
+  }
 }
 
 export interface PecaPresa {

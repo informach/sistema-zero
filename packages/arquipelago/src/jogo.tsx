@@ -26,6 +26,7 @@ import { EfeitoDasVisitasAdultas } from './interface/visitas-adultas'
 import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
+import { CONTROLE_DA_CAMERA } from './mundo/medidas'
 import { boasVindas, deveMostrarAbertura, PAINEL_DA_ABERTURA } from './sistemas/abertura'
 import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
@@ -175,7 +176,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       y: 0,
       z: 0,
       giro: 0,
-      inclinacao: 0.5,
+      inclinacao: CONTROLE_DA_CAMERA.inclinacaoDeVolta,
       direcao: 0,
       velocidade: 0,
       zappy: { x: 0, y: 0, z: 0 },

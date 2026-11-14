@@ -84,7 +84,7 @@ export function falaDoReplantio(i: number, corais: number): string {
 
 // ------------------------------------------------------------------ o aquário
 
-/** Os peixes do `aquario.glb`: o peixe N aparece com o coral N replantado. */
+/** O peixe N da coleção aparece com o coral N replantado; o renderer escolhe a arte Morada. */
 export const PEIXES_DO_AQUARIO = ['peixe-1', 'peixe-2', 'peixe-3', 'peixe-4'] as const
 
 export function peixesVisiveis(corais: number): boolean[] {

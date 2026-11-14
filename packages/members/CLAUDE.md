@@ -1,5 +1,38 @@
 # CLAUDE.md — @sistemazero/members
 
+## Casa Morada (14/11/2026, implementação local)
+
+- Revisão de ownership: leitura e CAS usam a mesma chave de dados `(userId, audience)`.
+  O `accountId` vem do contexto autenticado, não do documento, e é reparado na escrita para
+  recuperar registros históricos que guardavam o id da criança no lugar do responsável.
+  Perfil, público e revisão continuam obrigatórios no filtro de atualização.
+- Uma atualização do catálogo pode retirar modelos, pets, slots e texturas. A leitura usa
+  `reconcileMoradaHouse`: omite recursos retirados e descendentes órfãos, sem mutar o documento
+  guardado ou avançar revisão. Escrita continua estrita; JSON/estrutura corrompidos não são ocultados.
+- `house.migrations` aceita o marcador `arquipelago-functions-v1`, conservado por união nas
+  escritas da casa e do quarto. Ele registra importação idempotente, sem conceder progresso.
+
+- `GET /members/house` entrega `{house, revision, owned}`; `PUT` recebe
+  `{house, revision, scope?: 'room'|'house'}`. Revisão vencida responde 409 com `current`.
+  O escopo `room` preserva o lote, os outros cômodos e suas instâncias. Não depende do acesso ao jogo.
+- `morada_houses` (migration gerada `0149_morada_house`) é a fonte canônica. `room_state`
+  permanece como leitura histórica. Cliente antigo não grava nem compra depois de existir casa nova.
+  A carteira também confere a retirada sob a trava usada pelo reembolso, cobrindo compras em voo.
+- Catálogo inicial Morada é grátis; somente os oito troféus exigem posse conquistada.
+  A projeção `state.house` do quarto e do perfil público contém somente o cômodo do quarto.
+  A porta interna `/casa` e o `house` do `/quarto` interno entregam a casa completa para visitas autorizadas.
+- O contrato puro está em `core/morada/schema`: 600 instâncias e 512 KB, sem truncar.
+  Posição local, ids estáveis, pais/slots, ciclos, dimensões, texturas e referências são validados.
+  UGC continua no salvamento do jogo; a casa aceita vínculos `behavior`, sem bytes ou URLs de criações.
+- `bun scripts/swap-morada.ts` faz somente ensaio. `--confirm` aplica a conversão e o reembolso
+  histórico uma vez por perfil/público (`morada-refund-v1`). Galeria e troféus são preservados;
+  pets mantêm a espécie quando há equivalente, e o pássaro é omitido. Não apagar o extrato nem conquistas.
+  A migration e a operação de dados não foram aplicadas a bancos da aplicação ou de produção.
+- SQL real: `MORADA_TEST_DATABASE_URL` deve apontar para banco local descartável `kids_journey_*`;
+  sem ela, os dois testes de banco são pulados. Os testes de serviço e HTTP não precisam de Postgres.
+  Evidência local: os dois testes SQL passaram em Postgres 16 descartável, incluindo CAS
+  concorrente, públicos separados, ensaio, valor histórico, Galeria, troféus e repetição idempotente.
+
 ## Avatar do pack: a troca (13/11/2026)
 
 `scripts/swap-avatar.ts` (regras em `infrastructure/persistence/drizzle/avatar-swap.ts`): devolve as

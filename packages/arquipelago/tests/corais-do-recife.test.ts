@@ -1,5 +1,4 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
-import { join } from 'node:path'
 import { criarSalvamentoInicial, ILHAS, PONTOS_DE_CORAL } from '@sistemazero/arquipelago-contracts'
 import { type Mesh, type Object3D, Raycaster, Vector3 } from 'three'
 import { lerColisores } from '../src/mundo/colisores-da-ilha'
@@ -13,7 +12,6 @@ import {
   coralReplantado,
   falaDoReplantio,
   LAGOA_DO_RECIFE,
-  PEIXES_DO_AQUARIO,
   PONTOS_DOS_CORAIS,
   peixesVisiveis,
   replantarCoral,
@@ -157,12 +155,6 @@ describe('no recife.glb e nos modelos', () => {
         'coralDesbotadoSombra',
       ])
     }
-    const aquario = jsonDoGlb(
-      join(import.meta.dir, '..', 'src', 'assets', 'objetos', 'aquario.glb'),
-    )
-    for (const nome of PEIXES_DO_AQUARIO)
-      expect(aquario.nodes.some((n) => n.name === nome)).toBe(true)
-    expect(aquario.animations?.some((a) => a.name === 'nadar')).toBe(true)
   })
 
   test('cada ponto fica na água rasa da beira da lagoa, no fundo, sem colisor em cima', () => {

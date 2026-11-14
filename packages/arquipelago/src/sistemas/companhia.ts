@@ -3,7 +3,7 @@ import { nasceu } from './filhote-do-vale'
 
 /**
  * Quem acompanha a criança pela ilha (S01, levantamento de 30/10). A proposta põe a casa e "os
- * bichinhos reais da plataforma" no jogo; o bichinho do quarto (`quarto.pet`) sai do quarto e anda
+ * bichinhos reais da plataforma" no jogo; o bichinho da casa canônica (`quarto.house.pet`) sai e anda
  * junto. Com um bicho adotado no Bosque, a criança escolhe quem acompanha; o outro espera em casa.
  * Adotar um bicho faz dele a companhia (como sempre foi: ele vai junto para casa). Desde a V21
  * (§6.28, A7), o filhote do Vale que já nasceu e ganhou nome também pode ir junto: o dino de

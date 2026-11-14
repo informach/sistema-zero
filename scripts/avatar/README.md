@@ -31,9 +31,18 @@ conferência das peças; a textura compartilhada vem dentro dos GLBs das peças.
 
 Sai com código 1 quando há o que migrar e diz "Tudo migrado." quando não há.
 
-⚠️ **Pendente:** a migração ainda não lê animação em arquivo próprio (`pacote: false` com `arquivo`
-na lista `animacoes` do esqueleto, o formato combinado com a arte para as animações novas do jogo).
-A conferência já acusa quando elas chegam; ensine o `migrar.ts` a juntá-las ao GLB do jogo nesse dia.
+**As animações do jogo e os objetos de mão (desde 14/11/2026):**
+
+- A arte entrega as animações dela uma por arquivo (`pacote: false` com `arquivo` na lista
+  `animacoes` do esqueleto) e os clipes de camada em `poses_mao`. A migração junta TODAS no arquivo
+  do jogo (`base/animacoes-do-jogo.<digital>.glb`), ao lado das de locomoção do pack, religando os
+  canais pelo nome do osso. Animação nova da arte entra sozinha na próxima migração; o catálogo
+  guarda as medidas de cada uma (`skeleton.game.clips`: passada, mãos, o lugar em que acontece) e
+  as camadas (`skeleton.game.layers`). A plataforma não baixa esse arquivo.
+- Os objetos de mão (pasta `maos/`: a lanterna) NÃO são roupa. Vão para `equipment` no catálogo,
+  fora de `parts`, das regras, do sorteio, do configurador e do inventário; o encaixe e o grupo
+  deles saem das regras na conversão. Pasta nova de objeto do jogo entra em
+  `PASTAS_DE_EQUIPAMENTO` (`arte.ts`).
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)
 
@@ -55,7 +64,14 @@ A conferência já acusa quando elas chegam; ensine o `migrar.ts` a juntá-las a
 3. **Conferir de novo:** `bun run avatar:conferir` tem de dizer "Tudo migrado."
 4. **Revisar com a dona** os preços das peças novas e qualquer nome que a arte trocou (o diff do
    `catalog.generated.ts` mostra). Ajuste de preço é editorial: muda no catálogo e a próxima
-   migração preserva.
+   migração preserva. Peça revisada perde o `review`. As réguas da revisão de 14/11/2026 (todas
+   as peças conferidas): comum 40–70 (camiseta e calça simples 50–60, camisa e moletom 70), especial
+   70–110 (jaqueta 90, roupa inteira 110), raro 110–150 (o engraçado e o fantasioso), fantasia
+   200–300; **cabelo de verdade é sempre comum (60)**, qualquer tipo de cabelo (crespo, trança,
+   dread, coque), e só o cabelo com enfeite ou de cor/peruca de fantasia sobe de faixa; enfeite
+   pequeno (laço, presilha) e o que é do dia a dia (máscara) ficam em 50; cada aba tem de dar à
+   menina e ao menino um jeito grátis de se vestir (por isso a saia rodada e o cabelo crespo são
+   grátis).
 5. **Testes** (um de cada vez):
    - `cd packages/core && bun test src/avatar` (regras, sorteio, contrato do personagem);
    - `cd packages/members && bun test tests/db/avatar-swap.test.ts` (o banco de 200 fotos da troca

@@ -1,14 +1,10 @@
-import { useFrame } from '@react-three/fiber'
 import type { Obra } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef } from 'react'
+import { MoradaPieceView } from '@sistemazero/avatar-quarto/morada/piece'
+import { Suspense } from 'react'
 import type { Object3D } from 'three'
-import {
-  type FonteDaObra,
-  lojaDaConstrucao,
-  PAINEL_DE_CONSTRUIR,
-  useConstrucao,
-} from '../estado/construcao'
-import { useEstado, useJogo } from '../estado/contexto'
+import type { FonteDaObra } from '../estado/construcao'
+import { useJogo } from '../estado/contexto'
+import { casaMoradaStore } from '../estado/morada'
 import {
   type IdDoLote,
   type Lote,
@@ -16,18 +12,8 @@ import {
   naArea,
   type Retangulo,
 } from '../sistemas/construcao/lote'
-import { ModoConstruir, type ReferencialDaObra } from './construir'
-import { noModelo } from './medidas'
-import { ObraNoMundo } from './obra'
-
-/** O piso da cabana fica 2 cm acima do tampo (como o da casa, para não piscar contra o chão). */
-const ACIMA_DO_TAMPO = 0.02
-/** A quantos metros do lote o Construir já abre a cabana (e não a casa). */
+import { useInterativo } from './interativos'
 export const PERTO_DO_LOTE = 3
-/** De quanto em quanto tempo (s) o jogo confere se a pessoa está no lote. */
-const CONFERIR_O_LOTE = 0.25
-
-/** O lote da cabana lido das âncoras `lote-cabana-a` e `-b` do modelo (ou `null` sem elas). */
 export function loteDoModelo(
   modelo: Object3D,
   ilha: Exclude<IdDoLote, 'casa'> = 'bosque',
@@ -61,85 +47,46 @@ export function pertoDoLote(lote: Lote, p: { x: number; z: number }): boolean {
   return naArea(perto, { x: Math.floor(p.x), z: Math.floor(p.z) })
 }
 
-type PropsDaCabana = {
-  modelo: Object3D
-  meio: { x: number; y: number; z: number }
-  giro: number
-}
-
-/** A cabana do Bosque (28/10/2026). */
+type PropsDaCabana = { modelo: Object3D; meio: { x: number; y: number; z: number }; giro: number }
 export function CabanaDoBosque(props: PropsDaCabana) {
   return <CabanaDaIlha ilha="bosque" {...props} />
 }
-
-/**
- * A cabana que a criança constrói numa ilha (montada pela ilha ativa): registra o lote no
- * Construir, diz se a pessoa está perto dele (aí o Construir abre a cabana) e desenha a obra de
- * `construcao.cabanas[ilha]` girada com a ilha. O Bosque e o iglu do Pico (E04), cuja obra mora no
- * documento à parte do serviço (`fonte` e `obraDeFora`); sem as âncoras do lote no modelo, nada
- * aparece.
- */
+/** Os abrigos antigos levam ao mesmo lote Morada. Não criam outra cópia da casa. */
 export function CabanaDaIlha({
   ilha,
   modelo,
   meio,
   giro,
-  fonte,
-  obraDeFora = null,
 }: PropsDaCabana & {
   ilha: Exclude<IdDoLote, 'casa'>
-  /** A obra fora do salvamento (o iglu) e onde gravar. */
   fonte?: FonteDaObra
   obraDeFora?: Obra | null
 }) {
-  const { loja, rastro } = useJogo()
-  const construcao = lojaDaConstrucao(loja)
-  const lote = useMemo(() => loteDoModelo(modelo, ilha), [modelo, ilha])
-  const doSalvamento = useEstado((s) =>
-    ilha === 'pico' ? null : (s.salvamento.construcao.cabanas[ilha] ?? null),
-  )
-  const obra = fonte ? obraDeFora : doSalvamento
-  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
-  const aqui = useConstrucao(construcao, (s) => s.onde === ilha)
-  const altura = useMemo(() => alturaDoLote(modelo), [modelo])
-  const base = useMemo<[number, number, number]>(
-    () => [meio.x, meio.y + altura + ACIMA_DO_TAMPO, meio.z],
-    [meio, altura],
-  )
-  const referencial = useMemo<ReferencialDaObra>(
-    () => ({ x: meio.x, z: meio.z, giro }),
-    [meio, giro],
-  )
-
-  useEffect(() => {
-    if (!lote) return
-    construcao.getState().registrarCabana({ lote, perto: false, ...(fonte ? { fonte } : {}) })
-    return () => {
-      const s = construcao.getState()
-      if (s.cabana?.lote === lote) s.registrarCabana(null)
-      // A ilha saiu com o Construir da cabana aberto: ele fecha.
-      if (s.onde === ilha && loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) s.fechar()
-    }
-  }, [lote, construcao, loja, ilha, fonte])
-
-  const espera = useRef(0)
-  useFrame((_, dt) => {
-    if (!lote) return
-    espera.current -= dt
-    if (espera.current > 0) return
-    espera.current = CONFERIR_O_LOTE
-    const p = noModelo(rastro.x - meio.x, rastro.z - meio.z, giro)
-    construcao.getState().definirPertoDaCabana(pertoDoLote(lote, p))
+  const { loja, plataforma } = useJogo()
+  const lote = loteDoModelo(modelo, ilha)
+  const local = lote
+    ? { x: (lote.area.x0 + lote.area.x1) / 2, z: (lote.area.z0 + lote.area.z1) / 2 }
+    : { x: 0, z: 0 }
+  const x = meio.x + local.x * Math.cos(giro) + local.z * Math.sin(giro)
+  const z = meio.z - local.x * Math.sin(giro) + local.z * Math.cos(giro)
+  useInterativo(`abrigo-morada-${ilha}`, {
+    x,
+    z,
+    raio: lote ? 3 : 0,
+    rotulo: () => (lote ? 'Entrar na sua casa' : null),
+    agir: () => void casaMoradaStore(loja, plataforma).getState().enter(),
   })
-
-  if (!lote || !obra) return null
-  const construindoAqui = construindo && aqui
+  if (!lote) return null
   return (
-    <>
-      <ObraNoMundo obra={obra} lote={lote} base={base} giro={giro} construindo={construindoAqui} />
-      {construindoAqui ? (
-        <ModoConstruir lote={lote} obra={obra} base={base[1]} referencial={referencial} />
-      ) : null}
-    </>
+    <Suspense fallback={null}>
+      <MoradaPieceView
+        instance={{
+          id: `portal-${ilha}`,
+          pieceId: 'construcao/arco_2m',
+          position: [x - 1, meio.y + alturaDoLote(modelo), z],
+          rotation: giro,
+        }}
+      />
+    </Suspense>
   )
 }

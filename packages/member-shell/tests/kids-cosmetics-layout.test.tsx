@@ -26,7 +26,7 @@ describe('o painel ao lado do 3D', () => {
     expect(tela).toContain('@container/bandeja')
     // ⚠️ `sm:` mede a JANELA: num painel de 420px ao lado do quarto, `sm:grid-cols-6` daria seis
     // colunas espremidas. As bandejas medem o contêiner.
-    expect(source('src/components/cosmetics/room/room-builder-trays.tsx')).not.toMatch(/\bsm:/)
+    expect(source('src/components/cosmetics/room/morada-room-builder.tsx')).not.toMatch(/\bsm:/)
   })
 
   test('ao lado, o quarto ocupa a largura e a altura da janela, como o avatar', () => {
@@ -36,7 +36,9 @@ describe('o painel ao lado do 3D', () => {
     const tela = source('src/components/cosmetics/room/room-builder-view.tsx')
     expect(tela).toContain('md:@min-[45rem]/quarto:h-[max(30rem,calc(100dvh-2rem))]')
     expect(tela).toContain('@min-[45rem]/quarto:grid-cols-[minmax(0,1fr)_')
-    expect(tela).toContain("'@min-[45rem]/quarto:aspect-auto @min-[45rem]/quarto:h-full'")
+    expect(source('src/components/cosmetics/room/morada-room-builder.tsx')).toContain(
+      '@min-[45rem]/quarto:aspect-auto @min-[45rem]/quarto:h-full',
+    )
     expect(tela).not.toContain('w-fit')
     expect(source('src/components/cosmetics/room/use-responsive-zoom.ts')).toContain(
       'Math.min(width / worldW, height / worldH)',

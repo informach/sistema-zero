@@ -11,6 +11,7 @@ import { arestasDaAbertura, chaveDaAresta } from './construcao/grade'
 import { type Celula, chaveDaCelula, LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from './construcao/lote'
 import { celulasDosMoveisAltos } from './construcao/moveis'
 import { celulasDoObjeto } from './construcao/projeto-azul'
+import { moradaAccess, moradaBoxes, moradaComfort, rotateMorada } from './morada'
 import { sorteio } from './moradores'
 
 export const PAINEL_DOS_CONVIDADOS = 'convidados-da-casa'
@@ -55,6 +56,58 @@ export function encontroNaCasa(
   tipo: TipoDeEncontro,
   evitar?: { x: number; z: number },
 ): EncontroNaCasa {
+  if (quarto.house) {
+    const house = quarto.house
+    const points = Math.max(0, ...house.rooms.map((room) => moradaComfort(house, room.id).total))
+    const empty = (motivo: EncontroNaCasa['motivo']): EncontroNaCasa => ({
+      convidados: [],
+      pontos: points,
+      motivo,
+    })
+    if (!s.casa.portaNova) return empty('casa')
+    const threshold = tipo === 'festa' ? ACONCHEGO_DA_FESTA : ACONCHEGO_QUE_CHAMA_VISITA
+    if (points < threshold) return empty('aconchego')
+    const people = MORADORES_CONVIDAVEIS.filter(
+      (who) => jornada >= POSTOS[who] && s.moradores[who].conversaEm !== null,
+    ).sort(
+      (a, b) =>
+        sorteio(`${perfil}:${dia}:${a}`) - sorteio(`${perfil}:${dia}:${b}`) || a.localeCompare(b),
+    )
+    if (!people.length) return empty('amizade')
+    if (!moradaAccess(house)) return empty('espaco')
+    const boxes = moradaBoxes(house).filter(
+      (box) => box.center[1] + box.size[1] / 2 > 0.2 && box.center[1] - box.size[1] / 2 < 1.2,
+    )
+    const convidados: ConvidadoNaCasa[] = []
+    for (const room of house.rooms.filter(
+      (room) => room.origin[1] < 0.2 && moradaComfort(house, room.id).total >= threshold,
+    )) {
+      for (
+        let z = room.origin[2] - room.size[1] / 2 + 1;
+        z < room.origin[2] + room.size[1] / 2 - 1;
+        z += 0.5
+      )
+        for (
+          let x = room.origin[0] - room.size[0] / 2 + 1;
+          x < room.origin[0] + room.size[0] / 2 - 1;
+          x += 0.5
+        ) {
+          if (convidados.length >= Math.min(tipo === 'festa' ? 3 : 1, people.length)) break
+          if (convidados.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < 4)) continue
+          if (
+            boxes.some((box) => {
+              const p = rotateMorada([x - box.center[0], 0, z - box.center[2]], -box.rotation)
+              return (
+                Math.abs(p[0]) < box.size[0] / 2 + 0.6 && Math.abs(p[2]) < box.size[2] / 2 + 0.6
+              )
+            })
+          )
+            continue
+          convidados.push({ quem: people[convidados.length]!, x, z })
+        }
+    }
+    return { convidados, pontos: points, motivo: convidados.length ? 'pronto' : 'espaco' }
+  }
   const obra = s.construcao.casa ?? LOTE_DA_CASA.obraInicial
   const vazio = (motivo: EncontroNaCasa['motivo'], pontos = 0): EncontroNaCasa => ({
     convidados: [],

@@ -32,6 +32,7 @@ import {
   respeitarFolga,
 } from '../sistemas/espaco-dos-bichos'
 import { jogoPausado } from '../sistemas/pausa'
+import { petDaMorada } from '../sistemas/pet-morada'
 import {
   atrasDela,
   type ClipeDoBicho,
@@ -83,7 +84,7 @@ export function BichoAdotado() {
   // A última reação já tocada fica aqui, fora do corpo: crescer troca o corpo (outro modelo), e o
   // corpo novo ainda toca a festinha do cuidado que o fez crescer.
   const reacaoVista = useRef(lojaDoBicho(loja).getState().reacao.n)
-  const emCasa = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) !== 'adotado')
+  const emCasa = useEstado((s) => quemAcompanha(s.salvamento, petDaMorada(s.quarto)) !== 'adotado')
   if (!id || !fase || !nome) return null
   return (
     <ComReserva reserva={null}>

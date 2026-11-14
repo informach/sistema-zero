@@ -4,7 +4,8 @@ import {
   type Plataforma,
   planificacaoDoMolde,
 } from '@sistemazero/arquipelago-contracts'
-import plantaGlb from '../assets/objetos/planta-interior.glb'
+import { MORADA_CATALOG, moradaFileUrl } from '@sistemazero/avatar-quarto/morada/catalog'
+import { MORADA_FUNCTION } from '../sistemas/morada'
 
 /** Exemplo reaproveitado da arte existente. Só converte a unidade do jogo para a grade da oficina. */
 function naGradeDoMolda(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
@@ -32,7 +33,10 @@ function naGradeDoMolda(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
 export const lerAparenciaFalsa: NonNullable<Plataforma['lerAparencia']> = async (id, signal) => {
   signal?.throwIfAborted()
   if (id.endsWith('-molda')) {
-    const r = await fetch(new URL(plantaGlb, import.meta.url).href, { signal })
+    const r = await fetch(
+      moradaFileUrl(MORADA_CATALOG.pieces[MORADA_FUNCTION['planta-interior']]!.file),
+      { signal },
+    )
     if (!r.ok) return null
     return { tipo: 'molda', bytes: naGradeDoMolda(new Uint8Array(await r.arrayBuffer())) }
   }

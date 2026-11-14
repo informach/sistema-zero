@@ -1,5 +1,6 @@
 import type { LugarDeDescanso } from '../estado/contexto'
 import { CORPO } from './corpo'
+import { SENTADO } from './lugares-dos-clipes'
 import type { Necessidades } from './necessidades'
 
 /**
@@ -83,13 +84,15 @@ export const FALA_DE_ACORDAR_EM_CASA = 'Você acordou em casa, descansada. Nada 
 
 /**
  * O banco do `lib_ilhas.py` (`banco`): assento a 0,53 do chão, 0,5 de fundo, encosto atrás. A
- * frente é o −Z do colisor `col-banco-N` (girado com ele). Os números do desenho sentado são os do
- * `arte/avatar/mixamo.py` (`ASSENTO` e `BACIA_ATRAS`: a bacia 18 cm atrás da origem do desenho).
+ * frente é o −Z do colisor `col-banco-N` (girado com ele). No clipe da arte (`sentado`) a bacia
+ * fica em cima da origem do desenho, que mora no chão embaixo do assento (`SENTADO`).
  */
 export const BANCO = {
+  /** A altura do assento do banco, do chão. */
+  assento: 0.53,
   /** O assento fica um pouco à frente do meio do colisor (o encosto ocupa o fundo). */
   assentoAFrente: 0.05,
-  /** O clipe "Sentar" põe a bacia este tanto atrás dos pés (`BACIA_ATRAS` do script). */
+  /** Montada (a reserva, até a arte animar o montar), a bacia fica este tanto atrás da origem. */
   baciaAtras: 0.18,
   /** Meia profundidade do colisor do banco. */
   meioFundo: 0.275,
@@ -97,13 +100,15 @@ export const BANCO = {
   folga: 0.12,
 } as const
 
-/** A cama do quarto (`room3d/items/cama.glb`): colchão a 0,72, travesseiro no −Z (rot 0). */
+/**
+ * A cama do quarto (`room3d/items/cama.glb`): colchão a 0,72, travesseiro no −Z (rot 0). No clipe da
+ * arte (`deitado`) a origem do desenho fica na superfície do colchão, embaixo da bacia, com a
+ * cabeça para o −Z e os pés para o +Z.
+ */
 export const CAMA = {
   colchao: 0.72,
-  /** Metade da grossura do corpo deitado (as costas ficam abaixo da linha dos pés). */
-  costas: 0.1,
-  /** A origem do desenho (os pés) fica a isto do meio da cama, para o lado dos pés. */
-  pesAFrente: 0.68,
+  /** A bacia (a origem do desenho) fica a isto do meio da cama, para o lado dos pés. */
+  baciaAFrente: 0.1,
   /** Meia largura da cama (o corpo fica de pé ao lado dela). */
   meiaLargura: 0.97,
   folga: 0.12,
@@ -111,7 +116,8 @@ export const CAMA = {
 
 /**
  * O lugar de sentar num banco: o meio do assento no mundo (o chão embaixo dele) e para onde a
- * frente do banco olha (`frente`, giro `d` olha para `(sin d, cos d)`).
+ * frente do banco olha (`frente`, giro `d` olha para `(sin d, cos d)`). O desenho sobe ou desce a
+ * diferença entre o assento do banco e o do clipe.
  */
 export function lugarNoBanco(
   id: string,
@@ -120,12 +126,16 @@ export function lugarNoBanco(
 ): LugarDeDescanso {
   const fx = Math.sin(frente)
   const fz = Math.cos(frente)
-  const desenho = BANCO.assentoAFrente + BANCO.baciaAtras
+  const desenho = BANCO.assentoAFrente
   const corpo = BANCO.meioFundo + CORPO.raio + BANCO.folga
   return {
     id,
     jeito: 'sentar',
-    desenho: { x: meio.x + fx * desenho, y: meio.y, z: meio.z + fz * desenho },
+    desenho: {
+      x: meio.x + fx * desenho,
+      y: meio.y + BANCO.assento - SENTADO.assento,
+      z: meio.z + fz * desenho,
+    },
     giro: frente,
     corpo: { x: meio.x + fx * corpo, z: meio.z + fz * corpo },
   }
@@ -147,9 +157,9 @@ export function lugarNaCama(
     id: 'cama',
     jeito: 'deitar',
     desenho: {
-      x: meio.x + fx * CAMA.pesAFrente,
-      y: meio.y + CAMA.colchao + CAMA.costas,
-      z: meio.z + fz * CAMA.pesAFrente,
+      x: meio.x + fx * CAMA.baciaAFrente,
+      y: meio.y + CAMA.colchao,
+      z: meio.z + fz * CAMA.baciaAFrente,
     },
     giro: rumoDosPes,
     // Ao lado da cama, de través do rumo dos pés: (cos d, −sin d).

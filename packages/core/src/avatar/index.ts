@@ -5,6 +5,7 @@
 export { type BodyMeasures, bodyMeasures, type PhysicalBody, physicalBody } from './body'
 export { AVATAR_CATALOG } from './catalog.generated'
 export {
+  type AvatarCommunity,
   type AvatarFilter,
   type DrawOptions,
   drawAvatar,

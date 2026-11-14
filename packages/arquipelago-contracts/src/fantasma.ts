@@ -13,6 +13,16 @@ export const AmostraDoFantasmaSchema = z.tuple([
   coordenada,
   z.number().int().min(0).max(65_535),
 ])
+/** Encaixe do avatar e id de peça do pack: só letras minúsculas, números e `_`. */
+const pecaDoAvatar = z.string().regex(/^[a-z0-9_]{1,80}$/)
+export const PECAS_MAXIMAS_DO_FANTASMA = 24
+/**
+ * As peças que o avatar de quem correu vestia (encaixe → id da peça), para o contorno do fantasma
+ * ser o dele. Só a roupa: sem nome, perfil nem inventário. Quem lê usa só as peças que conhece.
+ */
+export const AvatarDoFantasmaSchema = z
+  .record(pecaDoAvatar, pecaDoAvatar)
+  .refine((r) => Object.keys(r).length <= PECAS_MAXIMAS_DO_FANTASMA)
 export const FantasmaSchema = z
   .strictObject({
     versao: z.literal(1),
@@ -20,6 +30,8 @@ export const FantasmaSchema = z
     tempoMs: z.number().int().min(1).max(DURACAO_MAXIMA_DO_FANTASMA_MS),
     passoMs: z.literal(PASSO_DO_FANTASMA_MS),
     amostras: z.array(AmostraDoFantasmaSchema).min(2).max(AMOSTRAS_MAXIMAS_DO_FANTASMA),
+    /** Opcional: os trajetos guardados antes de 14/11/2026 não têm (o fantasma usa o boneco de partida). */
+    avatar: AvatarDoFantasmaSchema.optional(),
   })
   .refine((r) => r.amostras.length === Math.ceil(r.tempoMs / PASSO_DO_FANTASMA_MS) + 1)
   .refine((r) => new TextEncoder().encode(JSON.stringify(r)).byteLength <= FANTASMA_MAX_BYTES)

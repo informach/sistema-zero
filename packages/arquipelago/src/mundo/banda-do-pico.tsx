@@ -1,9 +1,10 @@
 import { useFrame } from '@react-three/fiber'
+import { MORADA_CATALOG } from '@sistemazero/avatar-quarto/morada/catalog'
+import { MoradaPieceView } from '@sistemazero/avatar-quarto/morada/piece'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
-import { Box3, type Group, type Object3D, Quaternion, Vector3 } from 'three'
+import { type Group, type Object3D, Quaternion, Vector3 } from 'three'
 import pinguimGlb from '../assets/bichos/pinguim.glb'
-import bandaGlb from '../assets/objetos/banda.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import {
@@ -26,9 +27,13 @@ import { Colisores } from './colisores'
 import type { ColisorDaIlha } from './colisores-da-ilha'
 import type { Troca } from './ilha-completa'
 import { useInterativo } from './interativos'
-import { ComReserva, copiarNo, useModelo } from './modelos'
+import { ComReserva } from './modelos'
 
-const URL_DA_BANDA = new URL(bandaGlb, import.meta.url).href
+const INSTRUMENTO_MORADA: Record<Instrumento, string> = {
+  xilofone: 'moveis/brinquedos/xilofone_colorido',
+  violao: 'moveis/objetos/violao_pacote',
+  bateria: 'moveis/objetos/brinquedo_tambor',
+}
 const URL_DO_PINGUIM = new URL(pinguimGlb, import.meta.url).href
 const SEM_UMA_VEZ: readonly string[] = []
 /** O balanço de quem toca: subida (m), giro (rad) e batidas por segundo. */
@@ -137,32 +142,24 @@ function InstrumentoDaBanda({
   const { loja } = useJogo()
   const podeAgir = usePodeAgir(troca)
   const voltou = useEstado((s) => instrumentoDeVolta(s.salvamento.pico.banda, i))
-  const raiz = useModelo(URL_DA_BANDA)
-  const desenho = useMemo(() => {
-    const c = copiarNo(raiz, id)
-    // No arquivo eles ficam arrumados lado a lado; aqui cada um vai sozinho para o seu lugar.
-    c.position.set(0, 0, 0)
-    c.rotation.set(0, 0, 0)
-    return c
-  }, [raiz, id])
-  // A caixa do desenho (o pivô fica no meio da base) vira o colisor, do tamanho dele.
-  const caixa = useMemo(() => new Box3().setFromObject(desenho, true), [desenho])
+  const piece = MORADA_CATALOG.pieces[INSTRUMENTO_MORADA[id]]
+  if (!piece) throw new Error(`Instrumento Morada ausente: ${id}`)
   const lugar = voltou ? lugares.palco[id] : lugares.perdido[id]
-  const colisores = useMemo<ColisorDaIlha[]>(() => {
-    const meioDaCaixa = caixa.getCenter(new Vector3())
-    const tamanho = caixa.getSize(new Vector3())
-    const q = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), lugar.giro)
-    const centro = meioDaCaixa.clone().applyQuaternion(q)
-    return [
-      {
-        forma: 'caixa',
-        nome: `col-instrumento-${id}`,
-        posicao: [lugar.x + centro.x, lugar.y + centro.y, lugar.z + centro.z],
-        rotacao: [q.x, q.y, q.z, q.w],
-        meio: [tamanho.x / 2, tamanho.y / 2, tamanho.z / 2],
-      },
-    ]
-  }, [caixa, lugar, id])
+  const colisores = useMemo<ColisorDaIlha[]>(
+    () =>
+      piece.colliders.map((box, index) => {
+        const q = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), lugar.giro)
+        const center = new Vector3(...box.center).applyQuaternion(q)
+        return {
+          forma: 'caixa',
+          nome: `col-instrumento-${id}-${index}`,
+          posicao: [lugar.x + center.x, lugar.y + center.y, lugar.z + center.z],
+          rotacao: [q.x, q.y, q.z, q.w],
+          meio: [box.size[0] / 2, box.size[1] / 2, box.size[2] / 2],
+        }
+      }),
+    [piece, lugar, id],
+  )
   const perdido = lugares.perdido[id]
   useInterativo(`pico:instrumento-${id}`, {
     x: perdido.x,
@@ -182,9 +179,14 @@ function InstrumentoDaBanda({
   })
   return (
     <>
-      <group position={[lugar.x, lugar.y, lugar.z]} rotation={[0, lugar.giro, 0]}>
-        <primitive object={desenho} />
-      </group>
+      <MoradaPieceView
+        instance={{
+          id: `instrumento-${id}`,
+          pieceId: piece.id,
+          position: [lugar.x, lugar.y, lugar.z],
+          rotation: lugar.giro,
+        }}
+      />
       <Colisores key={voltou ? 'palco' : 'perdido'} lista={colisores} />
     </>
   )

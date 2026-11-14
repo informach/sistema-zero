@@ -18,6 +18,7 @@ import {
 } from '../sistemas/filhote-do-vale'
 import { diaDe } from '../sistemas/moradores'
 import { jogoPausado } from '../sistemas/pausa'
+import { petDaMorada } from '../sistemas/pet-morada'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { paraOMundo } from './bosque'
@@ -46,7 +47,9 @@ export function FilhoteDoVale({
   const { loja, movimento } = useJogo()
   const filhote = useEstado((s) => s.salvamento.vale.filhote)
   // Com o filhote acompanhando a criança (A7), ele não fica passeando no Vale ao mesmo tempo.
-  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'filhote')
+  const acompanha = useEstado(
+    (s) => quemAcompanha(s.salvamento, petDaMorada(s.quarto)) === 'filhote',
+  )
   const lugares = useMemo(() => {
     const pe = preparada.modelo.getObjectByName('pe-do-vulcao')?.position
     if (!pe) return null

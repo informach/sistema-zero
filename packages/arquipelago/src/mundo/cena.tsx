@@ -3,6 +3,7 @@ import { Physics } from '@react-three/rapier'
 import { Suspense } from 'react'
 import { lojaDaAbertura, useAbertura } from '../estado/abertura'
 import { useEstado, useJogo } from '../estado/contexto'
+import { casaMoradaStore, useCasaMorada } from '../estado/morada'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
@@ -21,7 +22,6 @@ import { Ceu } from './ceu'
 import { ChavesDaCasa } from './chaves-da-casa'
 import { ClimaDaIlha } from './clima-da-ilha'
 import { ColecoesDaPraia } from './colecoes-da-praia'
-import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
 import { EnquantoFechado } from './enquanto-fechado'
 import { FantasmaFamiliar } from './fantasma-familiar'
@@ -72,14 +72,15 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
   const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
   // A abertura cobre a tela inteira: o mundo não precisa ser desenhado por baixo dela. Na saída
   // ele volta a desenhar, para estar lá quando a tela clareia.
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  const moradaAberta = useCasaMorada(casaMoradaStore(loja, plataforma), (state) => state.open)
   const aberturaSaindo = useAbertura(lojaDaAbertura(loja), (a) => a.saindo)
   const naAbertura = useEstado((estado) => estado.painelAberto === PAINEL_DA_ABERTURA)
   const aberturaCobre = naAbertura && !aberturaSaindo
   const pausado = useEstado(jogoPausado)
   return (
     <Canvas
-      frameloop={ferramentaAberta || aberturaCobre ? 'never' : 'always'}
+      frameloop={ferramentaAberta || aberturaCobre || moradaAberta ? 'never' : 'always'}
       className="arq-canvas"
       dpr={[0, PERFIS_DE_QUALIDADE[nivel].dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -92,7 +93,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
       }}
     >
       <MonitorDeQualidade />
-      <CameraDaFoto />
+      <CameraDaFoto ativa={!moradaAberta} />
       <Ceu />
       <Suspense fallback={null}>
         {/* Passo fixo com o desenho suavizado entre passos; os passos rodam antes dos outros
@@ -116,7 +117,6 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <SegredoDoCipo />
           <MergulhoDaGruta />
           <Casa />
-          <ConvidadosDaCasa />
           <Horta />
           <FloradaDaIlha />
           <ClimaDaIlha />

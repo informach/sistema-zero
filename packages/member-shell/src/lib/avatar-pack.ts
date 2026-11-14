@@ -9,6 +9,7 @@
  */
 import {
   type AvatarCatalog,
+  type AvatarCommunity,
   type AvatarFilter,
   type AvatarPartEntry,
   type AvatarSlots,
@@ -220,7 +221,7 @@ export function isAvatarItemOwned(
 /**
  * As escolhas de um tipo da aba, para o filtro: as peças listadas, os conjuntos de fantasia, e o
  * "Nenhum" primeiro quando a aba deixa tirar. Peça escondida ou aposentada só aparece se estiver
- * no avatar (quem tem não a perde de vista).
+ * no avatar (quem tem não a perde de vista). A peça só do adulto não aparece no Kids.
  */
 export function avatarShopItems(
   catalog: AvatarCatalog,
@@ -229,6 +230,7 @@ export function avatarShopItems(
   filter: AvatarFilter,
   owned: ReadonlySet<string>,
   slots: AvatarSlots,
+  community: AvatarCommunity = 'kids',
 ): AvatarShopItem[] {
   const vestidas = new Set(Object.values(slots))
   const itens: AvatarShopItem[] = []
@@ -259,7 +261,8 @@ export function avatarShopItems(
     }
     const p = catalog.parts[id]
     if (!p) continue
-    if (!vestidas.has(id) && (!isListed(p) || !matchesFilter(p.audience, filter))) continue
+    if (!vestidas.has(id) && (!isListed(p, community) || !matchesFilter(p.audience, filter)))
+      continue
     itens.push({
       id,
       kind: 'part',
@@ -294,9 +297,12 @@ export function visibleAvatarKinds(
   filter: AvatarFilter,
   owned: ReadonlySet<string>,
   slots: AvatarSlots,
+  community: AvatarCommunity = 'kids',
 ): AvatarKind[] {
   const visiveis = kinds.filter((k) =>
-    avatarShopItems(catalog, tab, k, filter, owned, slots).some((i) => i.kind !== 'none'),
+    avatarShopItems(catalog, tab, k, filter, owned, slots, community).some(
+      (i) => i.kind !== 'none',
+    ),
   )
   return tab.id === 'rosto' ? visiveis.map((k, i) => ({ ...k, label: `Rosto ${i + 1}` })) : visiveis
 }

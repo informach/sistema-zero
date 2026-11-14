@@ -72,6 +72,8 @@ import {
   type SpendCoinsResult,
   type XpSourceType,
 } from '../../../domain/ports/gamification-repository.port'
+import { RETIRED_ROOM_IDS } from '../../../domain/room/morada-retirement'
+import { RoomItemNotPurchasableError } from '../../../domain/room/room.errors'
 import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
 import { beginLockedKidsJourneyMilestone } from './kids-journey.repository'
@@ -85,6 +87,7 @@ import {
   gamificationProfiles,
   leagueMembership,
   missionClaims,
+  moradaHouses,
   roomInventory,
   userBadges,
   xpEvents,
@@ -1923,6 +1926,16 @@ export async function spendCoinsInTransaction(
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
   )
+  // O swap usa a mesma trava: uma compra antiga já em voo não pode debitar depois da devolução.
+  if (input.grantInventory?.scope === 'room' && RETIRED_ROOM_IDS.has(input.grantInventory.itemId)) {
+    const [migrated] = await tx
+      .select({ id: moradaHouses.id })
+      .from(moradaHouses)
+      .where(and(eq(moradaHouses.userId, input.userId), eq(moradaHouses.audience, input.audience)))
+      .limit(1)
+    if (migrated)
+      throw new RoomItemNotPurchasableError('Este item foi substituído pela biblioteca Morada.')
+  }
   // Idempotência: a MESMA compra (reason + key) já debitou? (duplo-clique/retry).
   const [existing] = await tx
     .select({ id: coinEvents.id })

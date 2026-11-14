@@ -1,5 +1,6 @@
 import { ILHAS } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ComponentProps, useEffect, useMemo, useRef, useState } from 'react'
+import { useStore } from 'zustand'
 import { PAINEL_DA_CHEGADA } from '../estado/chegada'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -7,6 +8,7 @@ import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { lojaDoFarol, useFarol } from '../estado/farol'
 import { lojaDaGaleria, useGaleria } from '../estado/galeria'
 import { restanteDeHoje } from '../estado/loja'
+import { casaMoradaStore } from '../estado/morada'
 import { useToque } from '../estado/preferencias'
 import { lojaDosPassos, usePassos } from '../estado/primeiros-passos'
 import { useRetrato } from '../estado/retrato'
@@ -23,6 +25,7 @@ import {
   progressoDoQuadro,
   teclaDoAtalho,
 } from '../sistemas/hud'
+import { LUGARES_DOS_LEMBRETES } from '../sistemas/ir-tocando'
 import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../sistemas/iscas'
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
@@ -68,6 +71,7 @@ import { VisorDaLuneta } from './luneta'
 import { PainelDoMapa, useIlhaAqui } from './mapa'
 import { PainelDaMare, PainelDoFloco, PainelDoNico } from './mare'
 import { Menu } from './menu'
+import { CasaMorada } from './morada'
 import { PrimeirosPassos, RostoDoZappy, useLinhaDosPassos } from './primeiros-passos'
 import { PainelDoObjeto } from './projeto-azul'
 import { PainelDoQuadro } from './quadro-das-cores'
@@ -246,7 +250,7 @@ const CONFERIR_O_AGORA_MS = 5000
 
 /** O "Agora": até três lembretes do que já está esperando no jogo (`sistemas/hud.ts`). */
 function Agora() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, movimento } = useJogo()
   const portaNova = useEstado((s) => s.salvamento.casa.portaNova)
   const necessidades = useEstado((s) => s.salvamento.necessidades)
   const horta = useEstado((s) => s.salvamento.horta)
@@ -292,12 +296,33 @@ function Agora() {
             </button>
           </li>
         ) : null}
-        {lista.slice(0, linha ? 2 : 3).map((l) => (
-          <li key={l.id}>
-            <span className="arq-agora-marca" aria-hidden="true" />
-            {l.texto}
-          </li>
-        ))}
+        {lista.slice(0, linha ? 2 : 3).map((l) => {
+          const lugares = LUGARES_DOS_LEMBRETES[l.id]
+          return (
+            <li key={l.id}>
+              {lugares ? (
+                // Tocar na tarefa leva até ela (o avatar vai sozinho até o objeto dela).
+                <button
+                  type="button"
+                  className="arq-agora-ir"
+                  aria-label={`${l.texto}. Ir até lá`}
+                  onClick={(e) => {
+                    e.currentTarget.blur()
+                    movimento.levarAte = lugares
+                  }}
+                >
+                  <span className="arq-agora-marca" aria-hidden="true" />
+                  {l.texto}
+                </button>
+              ) : (
+                <>
+                  <span className="arq-agora-marca" aria-hidden="true" />
+                  {l.texto}
+                </>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )
@@ -531,8 +556,10 @@ function Mochila() {
 
 /** O botão do modo foto (a tecla F continua valendo, pelo `AtalhoDaFoto`). */
 function BotaoDaFoto() {
-  const { loja } = useJogo()
-  const pode = useEstado(podeEntrarNaFoto)
+  const { loja, plataforma } = useJogo()
+  const casa = casaMoradaStore(loja, plataforma)
+  const editando = useStore(casa, (s) => s.editing)
+  const pode = useEstado((s) => podeEntrarNaFoto(s, editando))
   return (
     <button
       type="button"
@@ -541,7 +568,8 @@ function BotaoDaFoto() {
       title="Modo foto (F)"
       disabled={!pode}
       onClick={() => {
-        if (podeEntrarNaFoto(loja.getState())) loja.getState().abrirPainel(PAINEL_DA_FOTO)
+        if (podeEntrarNaFoto(loja.getState(), casa.getState().editing))
+          loja.getState().abrirPainel(PAINEL_DA_FOTO)
       }}
     >
       <Icone nome="foto" tamanho={22} />
@@ -903,6 +931,16 @@ function Corte() {
 /** Quanto o HUD leva para entrar depois da abertura (ele aparece aos poucos, como no roteiro). */
 const ENTRADA_DO_HUD_MS = 1400
 
+/** Mantém o Canvas da casa no mesmo lugar durante os modos que trocam o conteúdo da HUD. */
+function SuperficieHud({ children, ...props }: ComponentProps<'div'>) {
+  return (
+    <div {...props} className={props.className ?? 'arq-hud'}>
+      <CasaMorada />
+      {children}
+    </div>
+  )
+}
+
 export function Hud() {
   const { loja, plataforma } = useJogo()
   // O anel dos primeiros passos e das dicas: a parte da HUD que a fala mostra (`estilos.ts`).
@@ -913,7 +951,11 @@ export function Hud() {
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const naChegada = useEstado((s) => s.painelAberto === PAINEL_DA_CHEGADA)
   const nasEstrelas = useEstado((s) => s.painelAberto === PAINEL_DAS_ESTRELAS)
-  const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
+  const morada = casaMoradaStore(loja, plataforma)
+  const naMorada = useStore(morada, (s) => s.open)
+  const editandoMorada = useStore(morada, (s) => s.editing)
+  const construindo =
+    useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) || (naMorada && editandoMorada)
   const naFoto = useEstado(hudEscondido)
   const visitando = useEstado((s) => s.visita !== null)
   // Na corrida e no balão o HUD fica só com o que importa para a atividade.
@@ -960,42 +1002,42 @@ export function Hud() {
   // A abertura toma a tela inteira; o HUD entra devagar quando ela termina.
   if (naAbertura)
     return (
-      <div className="arq-hud">
+      <SuperficieHud>
         <Abertura />
-      </div>
+      </SuperficieHud>
     )
   if (naLuneta)
     return (
-      <div className="arq-hud">
+      <SuperficieHud>
         <VisorDaLuneta />
-      </div>
+      </SuperficieHud>
     )
   // A cena da subida de posto (N02): só a legenda e o Pular.
   if (naChegada)
     return (
-      <div className="arq-hud">
+      <SuperficieHud>
         <LegendaDaChegada />
-      </div>
+      </SuperficieHud>
     )
   if (nasEstrelas)
     return (
-      <div className="arq-hud">
+      <SuperficieHud>
         <VisorDasEstrelas />
-      </div>
+      </SuperficieHud>
     )
   // Modo foto: o HUD, a fala do Zappy e as dicas somem; só ficam "Tirar foto" e "Voltar".
   if (naFoto)
     return (
-      <div className="arq-hud">
+      <SuperficieHud>
         <ModoFoto />
-      </div>
+      </SuperficieHud>
     )
   const classes = ['arq-hud']
   if (emAtividade) classes.push('em-atividade')
   if (toque) classes.push('toque')
   if (entrando) classes.push('entrando')
   return (
-    <div
+    <SuperficieHud
       className={classes.join(' ')}
       data-anel={noFarol ? undefined : (anel ?? undefined)}
       data-anel-cor={!noFarol && anel && anelDaDica ? 'dica' : undefined}
@@ -1079,7 +1121,7 @@ export function Hud() {
       <Menu />
       <Resultado />
       <Corte />
-    </div>
+    </SuperficieHud>
   )
 }
 

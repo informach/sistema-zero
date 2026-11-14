@@ -36,6 +36,7 @@ import type {
   LiveProgram,
   LiveSession,
 } from '@sistemazero/core/live'
+import type { MoradaHouse } from '@sistemazero/core/morada'
 import type { Palette } from '@sistemazero/core/palette'
 import type { PensaOperationStep, PensaOperationView } from '@sistemazero/core/pensa'
 import type {
@@ -1220,6 +1221,22 @@ export const roomState = members.table(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [uniqueIndex('room_state_user_audience_uq').on(t.userId, t.audience)],
+)
+
+/** Documento canônico independente do acesso ao jogo. Escrita por revisão (CAS). */
+export const moradaHouses = members.table(
+  'morada_houses',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull(),
+    house: jsonb('house').$type<MoradaHouse>().notNull(),
+    revision: integer('revision').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('morada_houses_user_audience_uq').on(t.userId, t.audience)],
 )
 
 export const roomInventory = members.table(
@@ -3262,6 +3279,7 @@ export const schema = {
   missionClaims,
   leagueMembership,
   roomState,
+  moradaHouses,
   roomInventory,
   certificatesIssued,
   pensaProjects,

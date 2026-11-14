@@ -1,5 +1,27 @@
 # CLAUDE.md — @sistemazero/avatar-quarto
 
+## Quarto, casa e pets Morada (14/11/2026)
+
+- O desenho aprovado está em `docs/plans/2026-11-14-morada-design.md`.
+- O contrato e o catálogo são reexportados por `morada/catalog`. O jogo importa por esta porta;
+  a plataforma pode usar o core diretamente para suas regras de edição.
+- `morada/piece` preserva as origens autorais, lê materiais externos, cores por célula da paleta,
+  texturas por material, partes móveis e slots. `prepareMoradaScene` clona ossos e materiais por
+  montagem, preserva as geometrias do cache e esconde as malhas autorais de colisão.
+- `MoradaPieceView` recebe `instance`, `catalog?`, `paused?`, `interactive?`, `onSelect?`, `onMove?`,
+  `onLoad?` e `attachments?`. `onMove` habilita o arraste em passos de 0,5 m; o consumidor valida
+  a posição. Sem callback, não há edição. `interactive` habilita abrir portas/gavetas.
+- `MoradaHouseView` monta cômodos e instâncias, põe filhos no slot da instância pai e mantém o
+  objeto acompanhando a parte móvel. `onPieceLoad` permite ao jogo ler os nós para sua física.
+- `MoradaPetView` recebe o id do pet e o clipe opcional; `MoradaRoomPet` é o passeio do quarto,
+  com pausas, limites nativos e obstáculos das caixas do catálogo. O personagem e o jogo não
+  compartilham esqueleto com os pets; cada montagem tem seu mixer.
+- Os renderizadores antigos de quarto, pets e reservas em primitivas saíram. De `quarto/`,
+  ficam apenas dados/regras puros que os leitores históricos ainda usam. Os oito troféus são
+  peças do catálogo Morada. A estante usa as peças e os slots da biblioteca nova.
+- Os modelos, miniaturas e texturas são privados, em `/api/morada3d/`, com nomes endereçados por
+  conteúdo. Não copiar GLBs de packs para `public/` ou para o git.
+
 ## O avatar do pack Cute Characters (13/11/2026)
 
 - `avatar/pack-rig.tsx` (`PackAvatarRig`, `PackRigBoundary`, `PACK_IDLE_POSE`) e

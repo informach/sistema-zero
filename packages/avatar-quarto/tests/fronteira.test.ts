@@ -14,6 +14,7 @@ const PERMITIDOS = [
   '@react-three/fiber',
   '@react-three/drei',
   '@sistemazero/core/avatar',
+  '@sistemazero/core/morada',
 ]
 
 function arquivos(dir: string): string[] {

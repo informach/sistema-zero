@@ -1,3 +1,4 @@
+import { MoradaHouseSchema } from '@sistemazero/core/morada/schema'
 import { z } from 'zod'
 import type { AparenciaLida } from './aparencias'
 import type { MoldeDeObjeto } from './objetos'
@@ -80,6 +81,7 @@ export const ItemDoQuartoSchema = z.looseObject({
   slot: z.number().int().optional(),
 })
 export const QuartoSchema = z.looseObject({
+  house: MoradaHouseSchema.optional(),
   theme: z.string(),
   placedItems: z.array(ItemDoQuartoSchema).max(200),
   pet: z.string().nullable(),
@@ -88,6 +90,18 @@ export const QuartoSchema = z.looseObject({
   lighting: z.string().optional(),
 })
 export type QuartoDoJogo = z.infer<typeof QuartoSchema>
+
+export const CasaMoradaGuardadaSchema = z.strictObject({
+  house: MoradaHouseSchema,
+  revision: z.number().int().nonnegative(),
+  owned: z.array(z.string().max(160)).max(600),
+})
+export type CasaMoradaGuardada = z.infer<typeof CasaMoradaGuardadaSchema>
+export type PedidoDeCasaMorada = {
+  house: CasaMoradaGuardada['house']
+  revision: number
+  scope?: 'room' | 'house'
+}
 
 /** Uma chamada ao serviço do jogo, repassada pela plataforma com a sessão de quem joga. */
 export interface RespostaDoServico {
@@ -175,6 +189,8 @@ export interface Plataforma {
   lerJornada(): Promise<JornadaDoJogo>
   lerAvatar(): Promise<AvatarDoJogo>
   lerQuarto(): Promise<QuartoDoJogo>
+  lerCasaMorada?(): Promise<CasaMoradaGuardada>
+  salvarCasaMorada?(pedido: PedidoDeCasaMorada): Promise<CasaMoradaGuardada>
   salvarQuarto(quarto: QuartoDoJogo): Promise<QuartoDoJogo>
   servico: ServicoDoJogo
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>

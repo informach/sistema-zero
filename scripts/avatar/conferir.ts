@@ -41,6 +41,11 @@ export function conferir(args: readonly string[]): number {
     c.mudaram.map((p) => `${p.id}  (${p.pasta}: ${p.rotulo})`),
   )
   lista('Saíram da arte', c.sairam)
+  lista(
+    'Objetos de mão do jogo novos ou que mudaram na arte',
+    c.equipamentos.map((p) => `${p.id}  (${p.rotulo})`),
+  )
+  lista('Objetos de mão que saíram da arte', c.equipamentosQueSairam)
   if (c.esqueletoMudou) {
     console.log('\nO próprio avatar (o esqueleto) mudou na arte:')
     for (const m of c.mudancasDoEsqueleto) console.log(`  ${m}`)
@@ -55,7 +60,14 @@ export function conferir(args: readonly string[]): number {
     console.log(`\nCom preço e marca ainda a conferir: ${aConferir.length} peças.`)
 
   const pendente =
-    c.novas.length + c.mudaram.length + c.sairam.length > 0 || c.esqueletoMudou || c.regrasMudaram
+    c.novas.length +
+      c.mudaram.length +
+      c.sairam.length +
+      c.equipamentos.length +
+      c.equipamentosQueSairam.length >
+      0 ||
+    c.esqueletoMudou ||
+    c.regrasMudaram
   console.log(
     pendente ? '\nHá o que migrar: bun run avatar:migrar --tudo --destino r2' : '\nTudo migrado.',
   )

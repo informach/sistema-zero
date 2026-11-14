@@ -230,7 +230,7 @@ export function AvatarConfigurator({
   onReturn?: (saved: boolean) => void
   festa?: MoldeDoVestuario['festa']
 }) {
-  const editor = useAvatarEditor({ messages: AVATAR_MESSAGES[skin] })
+  const editor = useAvatarEditor({ messages: AVATAR_MESSAGES[skin], community: skin })
   const { state, loadState, mode, status, tab, catalog } = editor
 
   // Sair = gravar o que falta e só então navegar. Navegação DURA (não `router.push`): a foto nova

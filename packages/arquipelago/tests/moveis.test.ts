@@ -7,7 +7,6 @@ import {
   ObraDaCasaSchema,
   type ProjetoAzul,
 } from '@sistemazero/arquipelago-contracts'
-import { Box3 } from 'three'
 import { lugarDoMovel } from '../src/mundo/moveis-da-obra'
 import { aconchegoDosComodos } from '../src/sistemas/construcao/aconchego'
 import { falaDaRecusa } from '../src/sistemas/construcao/falas'
@@ -36,7 +35,6 @@ import {
   type Resultado,
 } from '../src/sistemas/construcao/obra'
 import { porObjeto } from '../src/sistemas/construcao/projeto-azul'
-import { carregarGlb } from './ajuda-colisores'
 
 const L = LOTE_DA_CASA
 const agora = new Date('2026-10-30T12:00:00Z')
@@ -90,35 +88,6 @@ describe('o catálogo dos móveis', () => {
     // A tupla do salvamento volta igual.
     const m: MovelPosto = { id: 'sofa', x: -5, z: 2, giro: 2 }
     expect(moveisDaObra({ ...comComodo(), moveis: [tuplaDoMovel(m)] })).toEqual([m])
-  })
-
-  test('cada móvel é um nó do GLB do cômodo dele e cabe na área (o de encostar até o fundo)', async () => {
-    for (const categoria of CATEGORIAS_DOS_MOVEIS) {
-      const arquivo = categoria === 'festa' ? 'festas' : categoria
-      const modelo = await carregarGlb(`src/assets/casa/casa-${arquivo}.glb`)
-      for (const id of MOVEIS.filter((m) => DADOS_DO_MOVEL[m].categoria === categoria)) {
-        const no = modelo.getObjectByName(id)
-        expect([id, Boolean(no)]).toEqual([id, true])
-        if (!no) continue
-        const caixa = new Box3().setFromObject(no)
-        const area = DADOS_DO_MOVEL[id].area
-        if (area === null) {
-          // Peça de parede: o fundo em 0,10 atrás da origem (README de arte/casa), fina.
-          expect([id, caixa.min.z]).toEqual([id, expect.closeTo(-0.1, 1)])
-          // A lanterna de papel da festa junina pende de um braço de ferro (0,45 da parede).
-          expect(caixa.max.z - caixa.min.z).toBeLessThan(
-            id === 'festa-junina-lanterna-papel' ? 0.5 : 0.35,
-          )
-          continue
-        }
-        // A origem no meio da área; nada passa dela.
-        expect([id, caixa.max.x - caixa.min.x <= area.largura + 0.001]).toEqual([id, true])
-        expect([id, caixa.max.z - caixa.min.z <= area.fundo + 0.001]).toEqual([id, true])
-        expect([id, caixa.min.x >= -area.largura / 2 - 0.001]).toEqual([id, true])
-        expect([id, caixa.min.z >= -area.fundo / 2 - 0.001]).toEqual([id, true])
-        expect([id, caixa.min.y]).toEqual([id, expect.closeTo(0, 1)])
-      }
-    }
   })
 })
 

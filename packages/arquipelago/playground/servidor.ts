@@ -1,4 +1,5 @@
 import { basename, resolve, sep } from 'node:path'
+import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 
 await conferirPortosDaArte()
@@ -13,7 +14,9 @@ await conferirPortosDaArte()
  * modelo vazio: o jogo roda sem o boneco.
  */
 const PORTA = Number(process.env.PORTA ?? 4520)
-const PUBLICO = resolve(import.meta.dir, '../../community-kids/public')
+const MORADA = resolve(
+  process.env.MORADA_QA_DIR ?? resolve(import.meta.dir, '../../../output/morada-assets/morada'),
+)
 const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
 /** O glTF mínimo (uma cena sem nada): o carregador do three aceita o JSON no lugar do binário. */
 const GLTF_VAZIO = { asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [] }] }
@@ -101,8 +104,12 @@ Bun.serve({
       const f = Bun.file(alvo)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
     }
-    if (pathname.startsWith('/room3d/')) {
-      const f = Bun.file(PUBLICO + pathname)
+    if (pathname.startsWith('/api/morada3d/')) {
+      const file = decodeURIComponent(pathname.slice('/api/morada3d/'.length))
+      if (!isMoradaFile(file)) return new Response('Fora do catálogo', { status: 404 })
+      const path = resolve(MORADA, file)
+      if (!path.startsWith(MORADA + sep)) return new Response('Fora da pasta', { status: 403 })
+      const f = Bun.file(path)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
     }
     return new Response(HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } })

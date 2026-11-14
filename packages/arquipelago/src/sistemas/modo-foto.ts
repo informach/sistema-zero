@@ -1,5 +1,5 @@
 import type { EnvioAoClube, SituacaoDoClube } from '@sistemazero/arquipelago-contracts'
-import { jogoPausado, type SinaisDePausa } from './pausa'
+import { jogoPausadoNaMorada, type SinaisDePausa } from './pausa'
 
 /**
  * O modo foto (fase2-09, regras puras): um valor de `painelAberto`, então o personagem fica parado
@@ -31,8 +31,8 @@ export function eTeclaDaFoto(e: {
 }
 
 /** Só entra com o jogo correndo: nada de menu, painel, ferramenta, resultado ou pausa aberta. */
-export function podeEntrarNaFoto(s: SinaisDePausa): boolean {
-  return !jogoPausado(s)
+export function podeEntrarNaFoto(s: SinaisDePausa, editandoMorada = false): boolean {
+  return !editandoMorada && !jogoPausadoNaMorada(s)
 }
 
 /** O nome do arquivo: `arquipelago-2026-10-29-15h04.png` (a hora do aparelho). */
