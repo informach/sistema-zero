@@ -431,7 +431,7 @@ D5 e D6 aprovadas. A D4 foi recusada como estava escrita e virou a seção 8.1.
   avatar. **Aprovada.**
 - **D4. O Adventure Land gigante:** usar só como fantasia (montanhas, vegetação, coletáveis,
   mecanismos, plataformas altas) e nunca misturar portas e casas dele com casas da Morada no mesmo
-  lugar; ou deixar de fora as portas e casas dele. **Recusada como estava:** ver 8.1.
+  lugar; ou deixar de fora as portas e casas dele. **Recusada como estava; decidida em 8.2.**
 - **D5. Animações próprias pela sessão de arte**, com a lista da seção 6.3 e encaixes de cabeça,
   costas e pés no esqueleto. **Aprovada.**
 - **D6. Contrato único de pontos de interação** (seção 6.4), levado à sessão de arte para entrar
@@ -493,6 +493,48 @@ Recomendação:
 5. **Construção fora da ilha principal (decisão pendente).** Hoje o jogo tem cabanas em outras
    ilhas. É preciso decidir se a construção fica só na casa da ilha principal ou se as cabanas
    continuam, e com qual biblioteca.
+
+### 8.2 A D4 decidida (14/11/2026, depois do teste visual)
+
+Teste visual (privado): https://claude.ai/artifact/NmX9yPcU8gF9j6s4BfA9SG. Uma casa de 8 × 8 m
+montada com a construção da Morada, entre peças do reino, com a luz do jogo e o avatar de 1,15 m.
+
+**O que o teste mostrou:**
+- **Escala:** bate sem fator. A porta da Morada tem 2,10 m e o vão do portão do reino tem 2,45 m.
+- **Cor e luz:** combinam.
+- **Material e forma:** são a única diferença. A telha com textura detalhada e as quinas retas da
+  Morada contrastam com as formas arredondadas do reino.
+
+**Decisão da dona:** a ilha principal é a casa da criança, com liberdade criativa. Não há
+padronização de estilo: se ela quiser misturar tudo, pode.
+
+- **Pouca construção autoral na ilha principal.** A arte monta o chão, o contorno, algumas
+  plataformas de parkour da biblioteca de aventura e talvez uma casa de fantasia para a Íris
+  (ainda em aberto).
+- **Uma área livre grande para a criança**, com a Morada inteira à disposição: casa, paredes,
+  telhados, portas, janelas, móveis, quintal e plantação, com todas as cores e texturas. O quarto
+  da plataforma é um cômodo dessa casa (D2). A horta do jogo passa a usar as peças de quintal da
+  Morada; quanto de fazenda entra ainda está em aberto.
+- **O resto do mundo é a biblioteca de aventura**, montado pela arte.
+
+**Como fica no sistema:**
+- **Dois tipos de ilha, um só sistema de conteúdo.** A ilha de casa é montada em parte pela arte e
+  em parte pela criança. As ilhas de aventura são montadas só pela arte. Os dois tipos usam o
+  mesmo catálogo, o mesmo componente de desenho, a mesma escala (1) e os mesmos pontos de
+  interação. Os canteiros declaram onde se planta, como a cadeira declara onde se senta.
+- **Regras só técnicas, invisíveis para a criança:**
+  - limite de peças e de peso por área, medido num celular simples, com peças repetidas
+    instanciadas e geometria parada juntada;
+  - colisão em tudo o que ela constrói;
+  - acesso garantido até a porta: ela pode errar, mas não pode ficar presa.
+- **A casa e o quintal num documento próprio**, com versão, em coordenadas da área livre. O
+  salvamento de hoje tem teto de 80 KB e não serve para uma casa livre. O documento à parte da
+  obra estendida é o molde.
+
+**Em aberto:**
+- a casa da Íris;
+- quanto de fazenda entra na ilha principal;
+- o tamanho da área livre.
 
 ## 9. Próximos passos
 
