@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  aoAlcance,
   type ChaoNoPonto,
   caminhoDoToque,
   comandoCancela,
@@ -7,7 +8,9 @@ import {
   destinoDaIda,
   foiUmToque,
   IR_TOCANDO,
+  interativoNoToque,
   passoDaIda,
+  pontosParaUsar,
   restanteDaIda,
 } from '../src/sistemas/ir-tocando'
 
@@ -139,5 +142,49 @@ describe('a ida', () => {
       situacao = passoDaIda(ida, { x: 0.01, z: 0 }, 1 / 60, rumo)
     expect(situacao).toBe('travada')
     expect(criarIda([], { x: 0, z: 0 })).toBeNull()
+  })
+})
+
+describe('tocar num objeto', () => {
+  const objeto = (x: number, z: number, raio = 1.5, extra: object = {}) => ({
+    x,
+    z,
+    raio,
+    rotulo: () => 'Sentar no banco',
+    ...extra,
+  })
+
+  test('o toque no objeto ou no chão junto dele escolhe o objeto; longe dele, não', () => {
+    const lista: [string, ReturnType<typeof objeto>][] = [
+      ['banco', objeto(5, 0)],
+      ['placa', objeto(5, 4, 0.8)],
+    ]
+    expect(interativoNoToque(lista, { x: 5.3, z: 0.2 })?.id).toBe('banco')
+    // A placa tem alcance curto, mas o toque vale até `PERTO_DO_OBJETO`.
+    expect(interativoNoToque(lista, { x: 5.9, z: 4.5 })?.id).toBe('placa')
+    expect(interativoNoToque(lista, { x: 12, z: 0 })).toBeNull()
+  })
+
+  test('o bicho que segue e o objeto sem nada a fazer não contam', () => {
+    const lista: [string, ReturnType<typeof objeto>][] = [
+      ['bicho', objeto(1, 0, 1.5, { deFundo: true })],
+      ['porta', objeto(1.2, 0, 1.5, { rotulo: () => null })],
+    ]
+    expect(interativoNoToque(lista, { x: 1, z: 0 })).toBeNull()
+  })
+
+  test('para usar, para dentro do alcance, primeiro do lado de quem chega', () => {
+    const alvo = { x: 0, z: 0, raio: 1.5 }
+    const pontos = pontosParaUsar(alvo, { x: 0, z: -10 })
+    expect(pontos).toHaveLength(8)
+    for (const p of pontos) expect(Math.hypot(p.x, p.z)).toBeLessThan(alvo.raio)
+    expect(pontos[0]?.z).toBeLessThan(0)
+    expect(aoAlcance(alvo, { x: 1, z: 1 })).toBe(true)
+    expect(aoAlcance(alvo, { x: 2, z: 2 })).toBe(false)
+  })
+
+  test('a ida guarda o objeto a usar ao chegar', () => {
+    expect(criarIda([{ x: 1, z: 0 }], { x: 0, z: 0 }, 'banco')?.usar).toBe('banco')
+    expect(criarIda([{ x: 1, z: 0 }], { x: 0, z: 0 })?.usar).toBeNull()
   })
 })

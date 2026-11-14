@@ -43,15 +43,22 @@ export interface Ida {
   /** Há quanto tempo (s) ela não avança, e de onde se mede o avanço. */
   semAvancar: number
   marca: PontoNoChao
+  /** O objeto a usar ao chegar (tocou nele), ou `null` (tocou no chão). */
+  usar: string | null
 }
 
-export function criarIda(caminho: readonly PontoNoChao[], de: PontoNoChao): Ida | null {
+export function criarIda(
+  caminho: readonly PontoNoChao[],
+  de: PontoNoChao,
+  usar: string | null = null,
+): Ida | null {
   if (caminho.length === 0) return null
   return {
     caminho: caminho.map((p) => ({ x: p.x, z: p.z })),
     indice: 0,
     semAvancar: 0,
     marca: { x: de.x, z: de.z },
+    usar,
   }
 }
 
@@ -211,4 +218,61 @@ function temCasaLivrePerto(g: Grade, p: PontoNoChao): boolean {
         return true
     }
   return false
+}
+
+// ── Tocar num objeto: ir até ele e usar ─────────────────────────────────────────────────────────
+
+/** Um interativo como o toque o vê (o mesmo formato do registro do mundo). */
+export interface InterativoDoToque {
+  x: number
+  z: number
+  raio: number
+  deFundo?: boolean
+  rotulo(): string | null
+}
+
+/** Um toque a até isto (m) de um objeto conta como tocar nele (o objeto é maior que o ponto dele). */
+export const PERTO_DO_OBJETO = 1.2
+
+/**
+ * O objeto tocado: o interativo com algo a fazer mais perto do ponto tocado, até o alcance dele (ou
+ * `PERTO_DO_OBJETO`, o que for maior). O de fundo (o bicho que segue) não conta: é o objeto que a
+ * criança mira, não o que anda junto.
+ */
+export function interativoNoToque(
+  lista: Iterable<[string, InterativoDoToque]>,
+  p: PontoNoChao,
+): { id: string; x: number; z: number; raio: number } | null {
+  let melhor: { id: string; x: number; z: number; raio: number; d: number } | null = null
+  for (const [id, it] of lista) {
+    if (it.deFundo || !it.rotulo()) continue
+    const d = Math.hypot(it.x - p.x, it.z - p.z)
+    if (d > Math.max(it.raio, PERTO_DO_OBJETO)) continue
+    if (!melhor || d < melhor.d) melhor = { id, x: it.x, z: it.z, raio: it.raio, d }
+  }
+  return melhor ? { id: melhor.id, x: melhor.x, z: melhor.z, raio: melhor.raio } : null
+}
+
+/**
+ * Onde parar para usar o objeto: pontos em volta dele, dentro do alcance (com folga), o primeiro no
+ * lado de quem chega. Quem chama tenta um por um até achar caminho.
+ */
+export function pontosParaUsar(
+  alvo: { x: number; z: number; raio: number },
+  de: PontoNoChao,
+): PontoNoChao[] {
+  const r = Math.max(0.3, alvo.raio * 0.6)
+  const rumo = Math.atan2(de.x - alvo.x, de.z - alvo.z)
+  const pontos: PontoNoChao[] = []
+  for (const desvio of [0, 1, -1, 2, -2, 3, -3, 4])
+    pontos.push({
+      x: alvo.x + Math.sin(rumo + (desvio * Math.PI) / 4) * r,
+      z: alvo.z + Math.cos(rumo + (desvio * Math.PI) / 4) * r,
+    })
+  return pontos
+}
+
+/** Já está ao alcance do objeto: usa sem andar. */
+export function aoAlcance(alvo: { x: number; z: number; raio: number }, p: PontoNoChao): boolean {
+  return Math.hypot(alvo.x - p.x, alvo.z - p.z) <= alvo.raio
 }

@@ -3,14 +3,18 @@ import { type RapierRigidBody, useRapier } from '@react-three/rapier'
 import { type RefObject, useEffect, useMemo, useRef } from 'react'
 import { DoubleSide, type Mesh, type MeshBasicMaterial, Vector3 } from 'three'
 import { useJogo } from '../estado/contexto'
+import type { PontoNoChao } from '../sistemas/caminho'
 import { CORPO } from '../sistemas/corpo'
 import {
+  aoAlcance,
   type ChaoNoPonto,
   caminhoDoToque,
   criarIda,
   destinoDaIda,
   foiUmToque,
   IR_TOCANDO,
+  interativoNoToque,
+  pontosParaUsar,
 } from '../sistemas/ir-tocando'
 import { CINTURA, superficieDaAgua } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
@@ -28,7 +32,8 @@ const COR_DA_RECUSA = '#8a94a6'
 
 /**
  * Ir tocando: um toque (ou clique) no chão e o avatar vai até lá sozinho, andando pelo caminho que
- * desvia dos obstáculos (`sistemas/ir-tocando.ts`). Arrastar continua girando a câmera. A marca
+ * desvia dos obstáculos (`sistemas/ir-tocando.ts`); num objeto (o banco, a placa, um morador), vai
+ * até ele e usa. Arrastar continua girando a câmera. A marca
  * amarela mostra o destino; a cinza, por um instante, o lugar a que não se chega andando.
  *
  * O toque vira um raio da câmera contra o mundo da física (o que a câmera enxerga como sólido: o
@@ -36,7 +41,7 @@ const COR_DA_RECUSA = '#8a94a6'
  * um raio para baixo (a altura do chão) e uma cápsula (o corpo cabe?) por casa.
  */
 export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> }) {
-  const { loja, movimento, rastro } = useJogo()
+  const { loja, movimento, rastro, interativos } = useJogo()
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const { world, rapier } = useRapier()
@@ -114,13 +119,17 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
         undefined,
         eu,
       )
-      // Parede, tronco, céu: não é lugar de ir.
-      if (!hit || hit.normal.y < CHAO_DE_PISAR) return
+      if (!hit) return
       const alvo = {
         x: ponto.x + rumo.x * hit.timeOfImpact,
         y: ponto.y + rumo.y * hit.timeOfImpact,
         z: ponto.z + rumo.z * hit.timeOfImpact,
       }
+      // Tocou num objeto (o banco, a placa, um morador): vai até ele e usa. Vale tocar no próprio
+      // objeto (a normal pode ser de lado) ou no chão bem junto dele.
+      const objeto = estado.visita ? null : interativoNoToque(interativos, alvo)
+      // Parede, tronco, céu, sem objeto: não é lugar de ir.
+      if (!objeto && hit.normal.y < CHAO_DE_PISAR) return
       const de = eu.translation()
       const pes = de.y - CORPO.doCentroAoPe
       // De cima do mais alto dos dois (ela ou o ponto tocado) até bem abaixo do mais baixo.
@@ -156,13 +165,28 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
         )
         return { y, cabe: encosta === null }
       }
-      const resultado = caminhoDoToque({ x: de.x, z: de.z }, { x: alvo.x, z: alvo.z }, chao)
+      const daqui = { x: de.x, z: de.z }
       const m = lugar.current
-      m.x = alvo.x
+      m.x = objeto?.x ?? alvo.x
       m.y = alvo.y
-      m.z = alvo.z
+      m.z = objeto?.z ?? alvo.z
+      if (objeto) {
+        // Já ao alcance: usa sem andar. Senão, o primeiro ponto em volta dele a que se chega.
+        let caminho: PontoNoChao[] | null = aoAlcance(objeto, daqui) ? [daqui] : null
+        for (const p of caminho ? [] : pontosParaUsar(objeto, daqui)) {
+          const r = caminhoDoToque(daqui, p, chao)
+          if ('caminho' in r) {
+            caminho = r.caminho
+            break
+          }
+        }
+        movimento.ida = caminho ? criarIda(caminho, daqui, objeto.id) : null
+        m.recusa = caminho ? 0 : RECUSA_NA_TELA
+        return
+      }
+      const resultado = caminhoDoToque(daqui, { x: alvo.x, z: alvo.z }, chao)
       if ('caminho' in resultado) {
-        movimento.ida = criarIda(resultado.caminho, { x: de.x, z: de.z })
+        movimento.ida = criarIda(resultado.caminho, daqui)
         m.recusa = 0
       } else {
         movimento.ida = null
@@ -178,7 +202,7 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
       el.removeEventListener('pointerup', sobe)
       el.removeEventListener('pointercancel', cancela)
     }
-  }, [gl, camera, world, rapier, loja, movimento, corpo, ferramentas])
+  }, [gl, camera, world, rapier, loja, movimento, corpo, ferramentas, interativos])
 
   // A ida acaba com a montagem (trocar de cena, fechar o jogo).
   useEffect(

@@ -350,13 +350,11 @@ export function Personagem() {
         controle.pulos !== pulosAtendidos.current,
         controle.usar !== usosAtendidos.current,
       )
-      if (
-        pegou ||
-        v.modo !== 'chao' ||
-        v.nadando ||
-        passoDaIda(ida, p, dt, rumoDaIda) !== 'andando'
-      )
-        movimento.ida = null
+      const situacao = pegou ? 'cancelada' : passoDaIda(ida, p, dt, rumoDaIda)
+      // Tocou num objeto e chegou: usa, se ele for o que está ao alcance agora (o E de sempre).
+      if (situacao === 'chegou' && ida.usar && v.modo === 'chao' && !v.nadando)
+        if (maisPerto(interativos, p.x, p.z)?.id === ida.usar) controle.usar += 1
+      if (situacao !== 'andando' || v.modo !== 'chao' || v.nadando) movimento.ida = null
       else {
         ix = rumoDaIda.x * Math.cos(g) - rumoDaIda.z * Math.sin(g)
         iz = -(rumoDaIda.x * Math.sin(g) + rumoDaIda.z * Math.cos(g))
