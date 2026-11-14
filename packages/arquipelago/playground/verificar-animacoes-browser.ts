@@ -544,8 +544,13 @@ try {
       await page.getByText('Sentar no banco').first().waitFor({ timeout: 60_000 })
       await page.keyboard.press('KeyE')
       if (!(await esperarModo(page, 'descanso'))) throw new Error('não sentou')
-      await page.waitForTimeout(3500)
+      // Sentar é um movimento de uns 2,3 s de jogo; sem placa de vídeo o jogo anda a 0,1 s por
+      // quadro, a 1 quadro por segundo: a foto do meio e, bem depois, a de quem já ficou sentada.
+      await page.waitForTimeout(8000)
+      await foto(page, 'sentando', 0.6)
+      await page.waitForTimeout(45_000)
       await foto(page, 'sentar', 0.6)
+      await foto(page, 'sentar-de-lado', 1.6)
       await page.keyboard.down('KeyS')
       await page.waitForTimeout(1500)
       await page.keyboard.up('KeyS')
