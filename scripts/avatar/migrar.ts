@@ -5,6 +5,8 @@
  *   bun run avatar:migrar --tudo --destino r2             (tudo o que é novo ou mudou)
  *   bun run avatar:migrar <id> <id> --destino r2          (só essas peças)
  *   bun run avatar:migrar --tudo --destino pasta:<pasta>  (ensaio: grava numa pasta, não no bucket)
+ *   bun run avatar:migrar --so-esqueleto --destino r2      (só o esqueleto e as animações do jogo;
+ *                                                          peças, conjuntos e regras ficam como estão)
  *   … --ref <ref>   outra referência do git da arte      … --sem-buscar   não traz do remoto antes
  *
  * O que fica como estava: preço, marca de menina ou menino e o que mais alguém tenha acertado à mão
@@ -18,13 +20,15 @@ import { Arte, buscarDaArte, type ItemDaArte, REF_PADRAO } from './arte'
 import { type Balde, chaveNoBucket, comBalde } from './balde'
 import {
   CLIPES_DO_CONFIGURADOR,
+  CLIPES_DO_JOGO,
   comparar,
+  esqueletoMudou,
   gravarCatalogo,
   lerCatalogo,
   REPOSITORIO_DA_ARTE,
   regrasDoCatalogo,
 } from './catalogo'
-import { digital, prepararEsqueleto, prepararPeca } from './glb'
+import { digital, medirClipes, prepararEsqueleto, prepararPeca } from './glb'
 import { precoDoConjunto, proporPeca } from './proposta'
 
 /** Cada envio é um processo do wrangler (uns 4 s): oito de cada vez. */
@@ -38,6 +42,7 @@ const EM_PARALELO = 8
 function arquivosJaEnviados(catalogo: AvatarCatalog): Set<string> {
   const ja = new Set<string>(Object.values(catalogo.base.textures))
   if (catalogo.base.skeleton.file) ja.add(catalogo.base.skeleton.file)
+  if (catalogo.base.skeleton.game?.file) ja.add(catalogo.base.skeleton.game.file)
   for (const p of Object.values(catalogo.parts)) {
     ja.add(p.file)
     ja.add(p.thumb)
@@ -79,10 +84,12 @@ function argumentos(args: readonly string[]) {
   let destino = ''
   let ref = REF_PADRAO
   let tudo = false
+  let soEsqueleto = false
   let buscar = true
   for (let i = 0; i < args.length; i++) {
     const a = args[i] ?? ''
     if (a === '--tudo') tudo = true
+    else if (a === '--so-esqueleto') soEsqueleto = true
     else if (a === '--sem-buscar') buscar = false
     else if (a === '--destino') destino = args[++i] ?? ''
     else if (a === '--ref') ref = args[++i] ?? ''
@@ -90,12 +97,15 @@ function argumentos(args: readonly string[]) {
     else ids.push(a)
   }
   if (!destino) throw new Error('Falta --destino r2 (ou pasta:<caminho> para ensaiar).')
-  if (tudo === ids.length > 0) throw new Error('Diga --tudo ou os ids das peças, não os dois.')
-  return { ids, destino, ref, tudo, buscar }
+  if (soEsqueleto && (tudo || ids.length > 0))
+    throw new Error('--so-esqueleto não vai junto com --tudo nem com ids de peças.')
+  if (!soEsqueleto && tudo === ids.length > 0)
+    throw new Error('Diga --tudo ou os ids das peças, não os dois.')
+  return { ids, destino, ref, tudo, soEsqueleto, buscar }
 }
 
 export async function migrar(args: readonly string[], hoje = new Date()) {
-  const { ids, destino, ref, tudo, buscar } = argumentos(args)
+  const { ids, destino, ref, tudo, soEsqueleto, buscar } = argumentos(args)
   if (buscar) buscarDaArte()
   const arte = new Arte(ref)
   const catalogo: AvatarCatalog = lerCatalogo()
@@ -106,7 +116,8 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
   const dia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(hoje)
 
   let escolhidas: ItemDaArte[]
-  if (tudo) escolhidas = [...comparacao.novas, ...comparacao.mudaram]
+  if (soEsqueleto) escolhidas = []
+  else if (tudo) escolhidas = [...comparacao.novas, ...comparacao.mudaram]
   else {
     escolhidas = ids.map((id) => {
       const item = naArte.get(id)
@@ -125,19 +136,48 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
   const ja = destino === 'r2' ? arquivosJaEnviados(catalogo) : new Set<string>()
   await comBalde(destino, async (balde) => {
     const enviar = criarEnvio(balde, ja)
-    // 1. O esqueleto, com os clipes do configurador.
+    // 1. O esqueleto: o da plataforma (clipes do configurador), o do jogo (as animações de
+    //    locomoção) e o contrato do personagem (ossos em repouso, encaixes, medidas dos clipes).
     const esqueleto = arte.esqueleto()
     const caminhoDoEsqueleto = `esqueleto/${esqueleto.arquivo}`
-    if (catalogo.base.skeleton.blob !== arte.blob(caminhoDoEsqueleto)) {
-      const pronto = await prepararEsqueleto(arte.ler(caminhoDoEsqueleto), CLIPES_DO_CONFIGURADOR)
+    if (esqueletoMudou(arte, catalogo, esqueleto.arquivo)) {
+      const origem = arte.ler(caminhoDoEsqueleto)
+      const pronto = await prepararEsqueleto(origem, CLIPES_DO_CONFIGURADOR)
       const arquivo = `base/esqueleto.${digital(pronto.glb)}.glb`
       if (await enviar(arquivo, pronto.glb)) enviados += 1
+      const doJogo = await prepararEsqueleto(origem, CLIPES_DO_JOGO)
+      const arquivoDoJogo = `base/animacoes-do-jogo.${digital(doJogo.glb)}.glb`
+      if (await enviar(arquivoDoJogo, doJogo.glb)) enviados += 1
+      const medidas = await medirClipes(origem, CLIPES_DO_JOGO)
+      const daArte = new Map(esqueleto.animacoes.map((a) => [a.id, a]))
       catalogo.base.skeleton = {
         file: arquivo,
         blob: arte.blob(caminhoDoEsqueleto),
         clips: pronto.clipes,
+        catalogBlob: arte.blob('esqueleto/catalogo.json'),
+        bones: Object.fromEntries(
+          esqueleto.lista_ossos.map((o) => [o.nome, { parent: o.pai, head: o.cabeca }]),
+        ),
+        sockets: { ...esqueleto.pontos_de_segurar },
+        game: {
+          file: arquivoDoJogo,
+          clips: CLIPES_DO_JOGO.map((id) => {
+            const a = daArte.get(id)
+            if (!a) throw new Error(`O catálogo do esqueleto da arte não tem a animação ${id}.`)
+            return {
+              id,
+              duration: a.duracao_s,
+              loop: a.laco,
+              stride: medidas[id]?.passada ?? 0,
+              rise: medidas[id]?.subida ?? 0,
+            }
+          }),
+        },
       }
       console.log(`esqueleto: ${arquivo} (${Math.round(pronto.glb.byteLength / 1024)} KB)`)
+      console.log(
+        `animações do jogo: ${arquivoDoJogo} (${Math.round(doJogo.glb.byteLength / 1024)} KB)`,
+      )
     }
 
     // 2. As peças.
@@ -195,6 +235,13 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       console.log(`${antes ? 'atualizada' : 'nova'}: ${item.id}`)
     })
   })
+
+  if (soEsqueleto) {
+    gravarCatalogo(catalogo)
+    console.log(`
+Só o esqueleto: ${enviados} arquivos enviados.`)
+    return { migradas: 0, enviados, total: Object.keys(catalogo.parts).length }
+  }
 
   // 3. Quem saiu da arte fica, aposentada. Quem voltou deixa de estar.
   for (const [id, entrada] of Object.entries(catalogo.parts)) {

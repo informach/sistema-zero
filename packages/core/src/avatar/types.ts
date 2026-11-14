@@ -110,9 +110,43 @@ export interface AvatarRules {
   default: Record<string, string>
 }
 
+/** Um osso do esqueleto na pose de descanso (em pé, metros, Y para cima, frente +Z). */
+export interface AvatarBone {
+  parent: string | null
+  /** Onde o osso começa (a "cabeça" do osso no Blender), no espaço do personagem. */
+  head: [number, number, number]
+}
+
+/** Uma animação do jogo, com o que a migração mediu no `Hips` (escala nativa). */
+export interface AvatarGameClip {
+  id: string
+  /** Segundos. */
+  duration: number
+  loop: boolean
+  /** Deslocamento horizontal do `Hips` do primeiro ao último quadro (a passada do ciclo). */
+  stride: number
+  /** Deslocamento vertical do `Hips` do primeiro ao último quadro (o pulo sobe, a queda desce). */
+  rise: number
+}
+
+export interface AvatarSkeleton {
+  /** O esqueleto com as poses do configurador (a plataforma). */
+  file: string
+  /** O blob do GLB do esqueleto na arte. */
+  blob: string
+  clips: string[]
+  /** O blob do `esqueleto/catalogo.json` da arte (ossos, encaixes e animações). */
+  catalogBlob: string
+  /** Osso → pai e posição em repouso. */
+  bones: Record<string, AvatarBone>
+  /** Encaixe → osso (`mao_direita` → `RightHandProp`). */
+  sockets: Record<string, string>
+  /** As animações do jogo, num arquivo à parte: a plataforma não as baixa. */
+  game: { file: string; clips: AvatarGameClip[] }
+}
+
 export interface AvatarBaseFiles {
-  /** Esqueleto com as poses do configurador. */
-  skeleton: { file: string; blob: string; clips: string[] }
+  skeleton: AvatarSkeleton
   /** Texturas compartilhadas pelas peças: impressão digital → arquivo. */
   textures: Record<string, string>
 }

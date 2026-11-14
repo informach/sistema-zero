@@ -89,6 +89,51 @@ export async function prepararPeca(origem: Uint8Array): Promise<PecaPronta> {
   }
 }
 
+/** O que a migração mede em cada clipe, no `Hips` (escala nativa, metros). */
+export interface MedidaDoClipe {
+  /** Deslocamento horizontal (XZ) do primeiro ao último quadro. */
+  passada: number
+  /** Deslocamento vertical do primeiro ao último quadro. */
+  subida: number
+}
+
+/**
+ * Mede o deslocamento do `Hips` em cada clipe pedido. O pack guarda o andar no `Hips` (o `Root`
+ * fica parado): o jogo tira esse deslocamento para a animação ficar no lugar, e a passada medida
+ * aqui é o que casa a velocidade do corpo com o passo, sem o pé escorregar.
+ */
+export async function medirClipes(
+  origem: Uint8Array,
+  clipes: readonly string[],
+  osso = 'Hips',
+): Promise<Record<string, MedidaDoClipe>> {
+  const doc = await io.readBinary(origem)
+  const medidas: Record<string, MedidaDoClipe> = {}
+  for (const animacao of doc.getRoot().listAnimations()) {
+    const nome = animacao.getName()
+    if (!clipes.includes(nome)) continue
+    const canal = animacao
+      .listChannels()
+      .find((c) => c.getTargetNode()?.getName() === osso && c.getTargetPath() === 'translation')
+    const saida = canal?.getSampler()?.getOutput()?.getArray()
+    if (!saida || saida.length < 6) {
+      medidas[nome] = { passada: 0, subida: 0 }
+      continue
+    }
+    const n = saida.length
+    const dx = (saida[n - 3] ?? 0) - (saida[0] ?? 0)
+    const dy = (saida[n - 2] ?? 0) - (saida[1] ?? 0)
+    const dz = (saida[n - 1] ?? 0) - (saida[2] ?? 0)
+    medidas[nome] = {
+      passada: Math.round(Math.hypot(dx, dz) * 1000) / 1000,
+      subida: Math.round(dy * 1000) / 1000,
+    }
+  }
+  for (const clipe of clipes)
+    if (!medidas[clipe]) throw new Error(`O esqueleto da arte não tem o clipe ${clipe}.`)
+  return medidas
+}
+
 /** O esqueleto só com os clipes pedidos (o configurador não precisa dos 28 do pack). */
 export async function prepararEsqueleto(
   origem: Uint8Array,

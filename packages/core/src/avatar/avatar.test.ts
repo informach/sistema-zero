@@ -30,6 +30,48 @@ describe('o catálogo', () => {
     expect(Object.keys(C.base.textures).length).toBeGreaterThan(0)
   })
 
+  test('o contrato do personagem: ossos, encaixes e as animações do jogo com as medidas', () => {
+    const s = C.base.skeleton
+    const ossos = Object.entries(s.bones)
+    expect(ossos.length).toBe(44)
+    // Todo osso tem pai conhecido, menos a raiz.
+    for (const [nome, osso] of ossos) {
+      if (osso.parent === null) expect(nome).toBe('Root')
+      else expect(s.bones[osso.parent], `${nome} → ${osso.parent}`).toBeDefined()
+    }
+    // Os ossos que o jogo procura pelo nome.
+    for (const nome of [
+      'Hips',
+      'Spine1',
+      'Head',
+      'LeftUpLeg',
+      'LeftLeg',
+      'LeftFoot',
+      'RightUpLeg',
+      'RightLeg',
+      'RightFoot',
+      'LeftArm',
+      'LeftForeArm',
+      'LeftHand',
+      'RightArm',
+      'RightForeArm',
+      'RightHand',
+      'RightHandProp',
+    ])
+      expect(s.bones[nome], nome).toBeDefined()
+    expect(s.sockets.mao_direita).toBe('RightHandProp')
+    expect(s.game.file).toMatch(/^base\/animacoes-do-jogo\.[0-9a-f]{12}\.glb$/)
+    expect(isAvatarFile(C, s.game.file)).toBe(true)
+    const clipe = (id: string) => s.game.clips.find((c) => c.id === id)
+    for (const c of s.game.clips) expect(c.duration, c.id).toBeGreaterThan(0)
+    // Andar e correr deslocam o Hips (é a passada); o pulo sobe e desce o mesmo tanto.
+    expect(clipe('andar_frente')?.stride).toBeGreaterThan(0.3)
+    expect(clipe('correr_frente')?.stride).toBeGreaterThan(clipe('andar_frente')?.stride ?? 0)
+    expect(clipe('pulo_inicio')?.rise).toBeGreaterThan(0.5)
+    expect(clipe('pulo_inicio')?.rise ?? 0).toBeCloseTo(-(clipe('pulo_fim')?.rise ?? 0), 1)
+    expect(clipe('subir_escada')?.rise).toBeGreaterThan(0.3)
+  })
+
   test('toda peça citada por grupo, conjunto, orelha e padrão existe', () => {
     for (const [grupo, g] of Object.entries(C.rules.groups))
       for (const id of g.parts) {

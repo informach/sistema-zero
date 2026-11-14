@@ -28,6 +28,7 @@ export function avatarBucketKey(file: string): string {
 export function avatarFiles(catalog: AvatarCatalog): Set<string> {
   const files = new Set<string>(Object.values(catalog.base.textures))
   if (catalog.base.skeleton.file) files.add(catalog.base.skeleton.file)
+  if (catalog.base.skeleton.game?.file) files.add(catalog.base.skeleton.game.file)
   for (const part of Object.values(catalog.parts)) {
     files.add(part.file)
     files.add(part.thumb)

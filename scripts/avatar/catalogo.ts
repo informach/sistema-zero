@@ -41,11 +41,38 @@ export const CLIPES_DO_CONFIGURADOR = [
   'pose_a',
 ] as const
 
+/**
+ * As animações que o jogo (Arquipélago) usa, num arquivo à parte (`base/animacoes-do-jogo.*.glb`):
+ * a plataforma não as baixa. Locomoção, pulo em três partes, queda e escada de mão.
+ */
+export const CLIPES_DO_JOGO = [
+  'parado_relaxado',
+  'andar_frente',
+  'correr_frente',
+  'agachado_frente',
+  'pulo_inicio',
+  'pulo_no_ar',
+  'pulo_fim',
+  'cair',
+  'subir_escada',
+] as const
+
 export function catalogoVazio(): AvatarCatalog {
   return {
     version: 1,
     source: { repo: REPOSITORIO_DA_ARTE, ref: '', commit: '', syncedAt: '', rulesBlob: '' },
-    base: { skeleton: { file: '', blob: '', clips: [] }, textures: {} },
+    base: {
+      skeleton: {
+        file: '',
+        blob: '',
+        clips: [],
+        catalogBlob: '',
+        bones: {},
+        sockets: {},
+        game: { file: '', clips: [] },
+      },
+      textures: {},
+    },
     parts: {},
     sets: {},
     rules: {
@@ -154,6 +181,20 @@ export interface Comparacao {
   regrasMudaram: boolean
 }
 
+/**
+ * O esqueleto precisa ser migrado de novo: mudou o GLB, mudou o catálogo dele (ossos, encaixes,
+ * animações), ou o catálogo daqui ainda não tem as animações do jogo.
+ */
+export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: string): boolean {
+  const s = catalogo.base.skeleton
+  return (
+    s.blob !== arte.blob(`esqueleto/${arquivo}`) ||
+    s.catalogBlob !== arte.blob('esqueleto/catalogo.json') ||
+    !s.game?.file ||
+    s.game.clips.map((c) => c.id).join() !== CLIPES_DO_JOGO.join()
+  )
+}
+
 export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
   const naArte = arte.pecas()
   const ids = new Set(naArte.map((p) => p.id))
@@ -178,7 +219,7 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
       .filter(([id, p]) => !ids.has(id) && !p.retired)
       .map(([id]) => id),
     iguais,
-    esqueletoMudou: catalogo.base.skeleton.blob !== arte.blob(`esqueleto/${esqueleto.arquivo}`),
+    esqueletoMudou: esqueletoMudou(arte, catalogo, esqueleto.arquivo),
     regrasMudaram: catalogo.source.rulesBlob !== arte.blob('regras.json'),
   }
 }

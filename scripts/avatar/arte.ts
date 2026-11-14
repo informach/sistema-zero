@@ -79,7 +79,11 @@ export interface EsqueletoDaArte {
   id: string
   arquivo: string
   ossos: number
-  animacoes: { id?: string; nome?: string }[]
+  /** Cada osso na pose de descanso: nome, pai e onde começa (metros, Y para cima, frente +Z). */
+  lista_ossos: { nome: string; pai: string | null; cabeca: [number, number, number] }[]
+  /** Encaixe → osso (`mao_direita` → `RightHandProp`). */
+  pontos_de_segurar: Record<string, string>
+  animacoes: { id: string; duracao_s: number; laco: boolean; maos_livres?: boolean }[]
 }
 
 /** Onde está o repositório da arte nesta máquina (`ARTES_3D_DIR`, ou a pasta irmã `artes-3d`). */
