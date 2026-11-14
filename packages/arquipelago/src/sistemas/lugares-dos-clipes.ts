@@ -12,41 +12,47 @@ import { CORPO } from './corpo'
 
 const escala = CORPO.medidas.scale
 
-/** Uma medida do lugar de um clipe, na escala do mundo (lança se a arte não a mandou). */
-export function medidaDoLugar(clipe: string, chave: string): number {
+/**
+ * Uma medida do lugar de um clipe, na escala do mundo. Sem ela no catálogo: com `reserva` (a medida
+ * que a arte mandou em 14/11/2026, em metros do clipe), avisa e usa a reserva; sem, lança. As medidas
+ * deste arquivo são lidas ao carregar o jogo: catálogo novo sem uma delas não pode impedir o jogo
+ * de abrir.
+ */
+export function medidaDoLugar(clipe: string, chave: string, reserva?: number): number {
   const valor = AVATAR_CATALOG.base.skeleton.game.clips.find((c) => c.id === clipe)?.place?.[chave]
-  if (typeof valor !== 'number')
+  const lista = Array.isArray(valor) && valor.length > 0 ? valor : null
+  const numero =
+    typeof valor === 'number'
+      ? valor
+      : lista
+        ? lista.reduce((s, v) => s + v, 0) / lista.length
+        : null
+  if (numero !== null) return numero * escala
+  if (reserva === undefined)
     throw new Error(`O clipe ${clipe} do avatar não tem a medida ${chave}.`)
-  return valor * escala
-}
-
-/** O mesmo, para uma medida em lista (as duas mãos na corda): a média. */
-function mediaDoLugar(clipe: string, chave: string): number {
-  const valor = AVATAR_CATALOG.base.skeleton.game.clips.find((c) => c.id === clipe)?.place?.[chave]
-  if (!Array.isArray(valor) || valor.length === 0)
-    throw new Error(`O clipe ${clipe} do avatar não tem a medida ${chave}.`)
-  return (valor.reduce((soma, v) => soma + v, 0) / valor.length) * escala
+  console.warn(`O clipe ${clipe} do avatar não tem a medida ${chave}: vale a reserva.`)
+  return reserva * escala
 }
 
 /**
  * Sentado: a origem do desenho fica no chão, embaixo da bacia, e o assento do clipe tem esta altura.
  * Num assento de outra altura, o desenho sobe ou desce a diferença.
  */
-export const SENTADO = { assento: medidaDoLugar('sentado', 'assento_m') } as const
+export const SENTADO = { assento: medidaDoLugar('sentado', 'assento_m', 0.3) } as const
 
 /** Deitado: a origem do desenho fica na superfície de deitar, embaixo da bacia. */
-export const DEITADO = { travesseiro: medidaDoLugar('deitado', 'travesseiro_m') } as const
+export const DEITADO = { travesseiro: medidaDoLugar('deitado', 'travesseiro_m', 0.07) } as const
 
 /** Pendurado na borda: a quina fica isto acima da origem do desenho e isto à frente dela. */
 export const PENDURADO_NA_BORDA = {
-  maos: medidaDoLugar('pendurar_borda', 'maos_m'),
-  aFrente: medidaDoLugar('pendurar_borda', 'a_frente_m'),
+  maos: medidaDoLugar('pendurar_borda', 'maos_m', 0.6),
+  aFrente: medidaDoLugar('pendurar_borda', 'a_frente_m', 0.25),
 } as const
 
 /** No cipó: o eixo da corda passa isto à frente da origem do desenho, e as mãos seguram nesta altura. */
 export const PENDURADO_NO_CIPO = {
-  maos: mediaDoLugar('pendurar_cipo', 'maos_m'),
-  cordaAFrente: medidaDoLugar('pendurar_cipo', 'corda_a_frente_m'),
+  maos: medidaDoLugar('pendurar_cipo', 'maos_m', 0.52),
+  cordaAFrente: medidaDoLugar('pendurar_cipo', 'corda_a_frente_m', 0.21),
 } as const
 
 /**
@@ -79,6 +85,6 @@ export const DESENHO_NA_AGUA = { sobe: CORPO.cintura + CORPO.folga } as const
  * do clipe, sem a escala), e a descida vai sumindo até o fim, quando ela boia como no clipe.
  */
 export function descidaDoEntrarNaAgua(passaDaCintura: number): number {
-  const margem = medidaDoLugar('entrar_na_agua', 'margem_chao_acima_da_agua_m')
+  const margem = medidaDoLugar('entrar_na_agua', 'margem_chao_acima_da_agua_m', 0.162)
   return (margem + CORPO.cintura + passaDaCintura) / escala
 }

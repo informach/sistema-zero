@@ -394,3 +394,17 @@ describe('dos estados aos clipes', () => {
     expect(soma(Object.fromEntries(CLIPES_DO_JOGO.map((c) => [c, pose[c].peso])))).toBeCloseTo(1)
   })
 })
+
+describe('catálogo sem uma medida (achado do review de 14/11)', () => {
+  test('com reserva, a medida que falta vale a reserva na escala do mundo; sem reserva, lança', () => {
+    expect(medidaDoLugar('sentado', 'nao-existe', 0.3)).toBeCloseTo(0.3 * CORPO.medidas.scale, 9)
+    expect(() => medidaDoLugar('sentado', 'nao-existe')).toThrow()
+    // A medida em lista (as duas mãos na corda) vale a média.
+    expect(PENDURADO_NO_CIPO.maos).toBeGreaterThan(0)
+  })
+
+  test('todo estado toca um clipe que o catálogo tem (com a reserva, se a arte não mandou)', () => {
+    const doCatalogo = new Set(AVATAR_CATALOG.base.skeleton.game.clips.map((c) => c.id))
+    for (const e of ESTADOS) expect(doCatalogo.has(POSE_DO_ESTADO[e].clipe), e).toBe(true)
+  })
+})

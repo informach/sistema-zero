@@ -100,7 +100,25 @@ const AGACHADO_PARADO = 0.25
  */
 const ERGUENDO_DA_AGUA = 0.6
 
-export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = {
+/** Os clipes que o catálogo de agora tem (um catálogo novo pode chegar sem algum). */
+const NO_CATALOGO = new Set(AVATAR_CATALOG.base.skeleton.game.clips.map((c) => c.id))
+
+/**
+ * A pose de reserva de cada estado que usa uma animação da arte, para quando o catálogo chegar sem
+ * ela: o jogo segue com a pose antiga daquele modo, em vez de não abrir (os clipes do pack, de que
+ * as reservas são feitas, estão no catálogo desde o começo).
+ */
+const RESERVA_DO_ESTADO: Partial<Record<Estado, PoseDoEstado>> = {
+  Nado: inteiro('pulo_no_ar'),
+  NadoParado: inteiro('pulo_no_ar'),
+  Corda: inteiro('pulo_no_ar'),
+  PendurarBorda: inteiro('pulo_no_ar'),
+  SubirBorda: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
+  EntrandoNaAgua: inteiro('pulo_no_ar'),
+  SaindoDaAgua: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
+}
+
+const DA_ARTE: Record<Estado, PoseDoEstado> = {
   Parado: inteiro('parado_relaxado'),
   Andar: inteiro('andar_frente'),
   Correr: inteiro('correr_frente'),
@@ -134,11 +152,24 @@ export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = {
   Montar: parada('agachado_frente', AGACHADO_PARADO),
 }
 
-/** As medidas de um clipe do jogo no catálogo (lança se a arte não o mandou). */
+export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = Object.fromEntries(
+  ESTADOS.map((e) => [
+    e,
+    NO_CATALOGO.has(DA_ARTE[e].clipe)
+      ? DA_ARTE[e]
+      : (RESERVA_DO_ESTADO[e] ?? inteiro('parado_relaxado')),
+  ]),
+) as Record<Estado, PoseDoEstado>
+
+/**
+ * As medidas de um clipe do jogo no catálogo. Sem ele (catálogo novo sem o clipe), medidas neutras:
+ * um segundo, sem passada; o estado dele já foi para a reserva (`POSE_DO_ESTADO`).
+ */
 function doCatalogo(id: ClipeDoJogo): AvatarGameClip {
   const clipe = AVATAR_CATALOG.base.skeleton.game.clips.find((c) => c.id === id)
-  if (!clipe) throw new Error(`O catálogo do avatar não tem o clipe do jogo ${id}.`)
-  return clipe
+  if (clipe) return clipe
+  console.warn(`O catálogo do avatar não tem o clipe do jogo ${id}: o estado usa a reserva.`)
+  return { id, duration: 1, loop: true, stride: 0, rise: 0, frames: 0, feet: [] }
 }
 
 /** A duração de cada clipe do jogo (s). */

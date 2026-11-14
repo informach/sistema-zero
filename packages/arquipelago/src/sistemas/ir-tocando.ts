@@ -7,6 +7,7 @@
  * recusado na hora do toque. Qualquer comando dela (andar, pular, usar) cancela a ida.
  */
 import { acharCaminho, criarGrade, type Grade, type PontoNoChao } from './caminho'
+import { CORPO } from './corpo'
 
 export const IR_TOCANDO = {
   /** Um toque: o dedo (ou o mouse) sobe em até isto (ms) e a menos de tantos pixels de onde desceu. */
@@ -25,8 +26,11 @@ export const IR_TOCANDO = {
   /** Sem avançar `avancoMinimo` (m) por este tempo (s), desiste: alguma coisa segurou. */
   travada: 0.9,
   avancoMinimo: 0.12,
-  /** Duas casas vizinhas com mais que isto de diferença de altura são um degrau alto ou um barranco. */
-  degrau: 0.5,
+  /**
+   * Duas casas vizinhas com mais que isto de diferença de altura são um degrau alto ou um barranco:
+   * o degrau que o corpo sobe sozinho (`CORPO.degrau`, o autostep do controlador).
+   */
+  degrau: CORPO.degrau,
   /** O direcional empurrado além disto cancela a ida. */
   cancelaCom: 0.25,
 } as const
@@ -190,6 +194,28 @@ export type RecusaDaIda = 'longe' | 'sem-caminho'
  * O caminho do toque: de onde ela está até o ponto tocado. Recusa o que fica longe demais e o que
  * não se alcança andando.
  */
+/**
+ * O caminho até ficar ao alcance de um objeto: já ao alcance, um ponto só (onde ela está); senão, o
+ * primeiro ponto em volta dele a que se chega andando. A grade é montada UMA vez, em volta dela e
+ * do objeto (os pontos ficam dentro da folga), e só a busca roda para cada ponto: montar a grade é
+ * a parte cara (uma consulta à física por casa).
+ */
+export function caminhoAteObjeto(
+  de: PontoNoChao,
+  objeto: { x: number; z: number; raio: number },
+  chao: (x: number, z: number) => ChaoNoPonto,
+): PontoNoChao[] | null {
+  if (aoAlcance(objeto, de)) return [{ x: de.x, z: de.z }]
+  if (Math.hypot(objeto.x - de.x, objeto.z - de.z) > IR_TOCANDO.alcance) return null
+  const grade = gradeDaIda(de, objeto, chao)
+  for (const p of pontosParaUsar(objeto, de)) {
+    if (!temCasaLivrePerto(grade, p)) continue
+    const caminho = acharCaminho(grade, de, p)
+    if (caminho && caminho.length >= 2) return caminho.slice(1)
+  }
+  return null
+}
+
 export function caminhoDoToque(
   de: PontoNoChao,
   ate: PontoNoChao,
@@ -284,6 +310,7 @@ export function aoAlcance(alvo: { x: number; z: number; raio: number }, p: Ponto
  * avatar vai até o mais perto deles que tem algo a fazer agora.
  */
 export const LUGARES_DOS_LEMBRETES: Readonly<Record<string, readonly string[]>> = {
+  // A porta nova do quarto; com a casa da Morada, a porta da casa (o interativo dela).
   porta: ['porta-nova', 'porta-da-casa'],
   fome: ['objeto-geladeira', 'bancada'],
   energia: ['cama'],

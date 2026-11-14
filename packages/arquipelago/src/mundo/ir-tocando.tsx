@@ -3,11 +3,10 @@ import { type RapierRigidBody, useRapier } from '@react-three/rapier'
 import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react'
 import { DoubleSide, type Mesh, type MeshBasicMaterial, Vector3 } from 'three'
 import { useJogo } from '../estado/contexto'
-import type { PontoNoChao } from '../sistemas/caminho'
 import { CORPO } from '../sistemas/corpo'
 import {
-  aoAlcance,
   type ChaoNoPonto,
+  caminhoAteObjeto,
   caminhoDoToque,
   criarIda,
   destinoDaIda,
@@ -16,7 +15,6 @@ import {
   IR_TOCANDO,
   interativoDoLembrete,
   interativoNoToque,
-  pontosParaUsar,
 } from '../sistemas/ir-tocando'
 import { CINTURA, superficieDaAgua } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
@@ -25,26 +23,17 @@ import { NIVEL_DA_AGUA } from './medidas'
 
 /** O chão tocado precisa ser de pisar: a normal dele aponta para cima pelo menos isto. */
 const CHAO_DE_PISAR = 0.6
-/** O corpo que se confere em cada casa: do joelho para cima (o degrau baixo se sobe andando). */
-const CORPO_DA_CONFERENCIA = { doChao: 0.5, raio: CORPO.raio * 0.85 } as const
+/**
+ * O corpo que se confere em cada casa: do degrau que ele sobe sozinho para cima (o que é mais baixo
+ * que isso ele sobe andando).
+ */
+const CORPO_DA_CONFERENCIA = { doChao: CORPO.degrau, raio: CORPO.raio * 0.85 } as const
+/** Levando até uma tarefa, até onde (m, acima e abaixo dos pés) se procura o chão do caminho. */
+const DESNIVEL_ATE_A_TAREFA = 4
 /** Quanto tempo a marca cinza de "aí não chego andando" fica na tela (s). */
 const RECUSA_NA_TELA = 0.9
 const COR_DA_IDA = '#ffd23f'
 const COR_DA_RECUSA = '#8a94a6'
-
-/** O caminho até ficar ao alcance de um objeto (já ao alcance, um ponto só: onde ela está). */
-function caminhoAteObjeto(
-  daqui: PontoNoChao,
-  objeto: { x: number; z: number; raio: number },
-  chao: (x: number, z: number) => ChaoNoPonto,
-): PontoNoChao[] | null {
-  if (aoAlcance(objeto, daqui)) return [daqui]
-  for (const p of pontosParaUsar(objeto, daqui)) {
-    const r = caminhoDoToque(daqui, p, chao)
-    if ('caminho' in r) return r.caminho
-  }
-  return null
-}
 
 /**
  * Ir tocando: um toque (ou clique) no chão e o avatar vai até lá sozinho, andando pelo caminho que
@@ -194,8 +183,9 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
       const daqui = { x: de.x, z: de.z }
       const m = lugar.current
       m.x = objeto?.x ?? alvo.x
-      m.y = alvo.y
       m.z = objeto?.z ?? alvo.z
+      // A marca fica no chão (tocando num objeto, o raio bate no alto dele: o encosto, a cabeça).
+      m.y = objeto ? (chao(m.x, m.z).y ?? alvo.y) : alvo.y
       if (objeto) {
         const caminho = caminhoAteObjeto(daqui, objeto, chao)
         movimento.ida = caminho ? criarIda(caminho, daqui, objeto.id) : null
@@ -243,12 +233,14 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
         const daqui = { x: de.x, z: de.z }
         const pes = de.y - CORPO.doCentroAoPe
         const objeto = interativoDoLembrete(interativos, pedido, daqui)
-        const caminho = objeto ? caminhoAteObjeto(daqui, objeto, chaoEntre(eu, pes, pes)) : null
+        // A tarefa pode estar morro acima ou abaixo: a busca do chão olha um bom desnível.
+        const chao = chaoEntre(eu, pes - DESNIVEL_ATE_A_TAREFA, pes + DESNIVEL_ATE_A_TAREFA)
+        const caminho = objeto ? caminhoAteObjeto(daqui, objeto, chao) : null
         if (objeto && caminho) {
           movimento.ida = criarIda(caminho, daqui, objeto.id)
           const m = lugar.current
           m.x = objeto.x
-          m.y = pes
+          m.y = chao(objeto.x, objeto.z).y ?? pes
           m.z = objeto.z
           m.recusa = 0
         } else estado.dizer(FALA_SEM_CAMINHO_ATE_A_TAREFA)

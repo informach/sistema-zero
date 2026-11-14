@@ -33,18 +33,33 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   as reservas dos modos que a arte ainda não animou; `poseDosClipes` junta os pesos por clipe. Passadas
   e durações vêm do catálogo vezes a escala; andar e correr ficam inteiros nas velocidades do mundo;
   as pernas giram até `RITMO_MAXIMO` (2) vezes a cadência do clipe. O mixer é do jogo (escala de tempo
-  0; na pausa a pose congela). Nadando, a reserva deita o desenho em volta do quadril
-  (`INCLINACAO_NO_NADO`).
+  0; na pausa a pose congela).
+- **As animações da arte (14/11/2026):** nadar, boiar, entrar e sair da água, sentar, deitar, o cipó,
+  a borda, sentada no barco e o aceno de volta são clipes que a arte fez para este corpo (os estados
+  `Nado`, `Sentando`, `NoBarco`, `Acenar`…). O desenho vai para o lugar que a arte mediu em cada
+  clipe (`sistemas/lugares-dos-clipes.ts`: o assento, a quina, a corda, a linha d'água), do catálogo
+  vezes a escala. Catálogo sem um clipe ou sem uma medida não impede o jogo de abrir: o estado vai
+  para a reserva (`RESERVA_DO_ESTADO`) e a medida para a reserva escrita no código, com aviso.
 - **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
-  eixo do osso); as mãos no cipó miram o encaixe `mao_*` do pack (`bracos.ts`: a corda passa fora da
-  cabeça, na altura das mãos); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do
-  Rapier pelo `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada); a
-  lanterna vai no encaixe `mao_direita`. Os dois rodam também na pausa (o mixer reaplica a pose).
+  eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
+  `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
+  vêm do clipe `pendurar_cipo` (a IK dos braços saiu). A lanterna é a do pack (`objeto-na-mao.tsx`:
+  o `PackAvatarRig` a monta pelo `equipment` do catálogo, e os dedos fecham no cabo pela camada da
+  arte). ⚠️⚠️ O mixer do three só reescreve um osso quando o valor animado MUDA: na pausa, ou num osso
+  parado no clipe, o ajuste do quadro anterior fica no osso. Todo ajuste depois da pose parte da pose
+  do mixer por `personagem/pose-limpa.ts` (`antes`, o ajuste, `depois`; `soltar` ao parar de vez),
+  senão ele se acumula (o quadril afundava no chão com o jogo pausado numa rampa; review de 14/11).
   ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade). O calçar
   antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
   saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
-- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com o boneco de partida (`avatarDoPack(null)`), o
-  material próprio e o `correr_frente` no relógio da corrida; o pé desconta a folga, como o jogador.
+- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com a roupa de quem correu (`Fantasma.avatar` no
+  contrato, opcional; sem ela, o boneco de partida), o material próprio e o `correr_frente` no
+  relógio da corrida; o pé desconta a folga, como o jogador.
+- **Jogabilidade (14/11/2026):** ir tocando (`sistemas/ir-tocando.ts` + `mundo/ir-tocando.tsx`: toque
+  no chão anda até lá; num objeto, vai e usa; as tarefas do "Agora" levam até o objeto delas por
+  `movimento.levarAte`); a grade do caminho é montada uma vez por pedido, com a física, e o degrau
+  aceito é o `CORPO.degrau`. Viagem rápida do mapa para ilha aberta e já visitada
+  (`sistemas/viagem-rapida.ts`). Câmera normal a 11 m e inclinação de partida 0,62.
 - Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do
   GLB `game.file`).
 - As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.

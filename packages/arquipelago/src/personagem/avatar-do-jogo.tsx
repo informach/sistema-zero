@@ -51,6 +51,7 @@ import {
   pesoDosPes,
   suavizarPeso,
 } from './pes-no-chao'
+import { PoseLimpa } from './pose-limpa'
 
 /** O GLB dos clipes de movimento do jogo (bucket privado, pela rota `/api/avatar3d/`). */
 const CLIPES_URL = avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file)
@@ -254,16 +255,24 @@ function PesNoChao({
   pausado: boolean
 }) {
   const pernas = useRef<PernasDoAvatar | null>(null)
+  const limpa = useRef<PoseLimpa | null>(null)
   const peso = useRef(0)
   useFrame((_, dt) => {
     const r = raiz.current
     const c = corpo.current
     if (!r?.visible || !c) return
     // O avatar pode remontar as peças (e o esqueleto): procura de novo se o osso saiu da cena.
-    if (!pernas.current?.quadril.parent) pernas.current = acharPernas(c)
-    if (!pernas.current) return
+    if (!pernas.current?.quadril.parent) {
+      pernas.current = acharPernas(c)
+      const p = pernas.current
+      limpa.current = p ? new PoseLimpa([p.quadril, ...p.esquerda, ...p.direita]) : null
+    }
+    if (!pernas.current || !limpa.current) return
     if (!pausado) peso.current = suavizarPeso(peso.current, pesoDosPes(movimento.current), dt)
+    // Parte da pose do mixer (na pausa ele não reescreve: o ajuste do quadro anterior somaria).
+    limpa.current.antes()
     assentarOsPes(pernas.current, r, chao, peso.current)
+    limpa.current.depois()
   })
   return null
 }
