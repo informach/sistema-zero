@@ -423,7 +423,7 @@ biblioteca de aventura e para a Morada:
 - **D1. Escala do herói:** o avatar no tamanho nativo (1,15 m), com fator 1, na plataforma e no
   jogo. *Recomendado.*
 - **D2. O quarto da plataforma é um cômodo da casa no jogo:** mesmo inventário e mesmo arranjo.
-  *Recomendado.*
+  **Decidido pela dona em 14/11/2026.**
 - **D3. Troca dos móveis:** devolver as moedas e os quartos recomeçarem com móveis grátis, como no
   avatar; ou uma equivalência peça a peça.
 - **D4. O Adventure Land gigante:** usar só como fantasia (montanhas, vegetação, coletáveis,
