@@ -420,19 +420,79 @@ biblioteca de aventura e para a Morada:
 
 ## 8. Decisões da dona
 
+**Decisões de 14/11/2026:** D1, D2, D3 (primeira opção: devolver as moedas e os quartos recomeçarem),
+D5 e D6 aprovadas. A D4 foi recusada como estava escrita e virou a seção 8.1.
+
 - **D1. Escala do herói:** o avatar no tamanho nativo (1,15 m), com fator 1, na plataforma e no
-  jogo. *Recomendado.*
+  jogo. **Aprovada.**
 - **D2. O quarto da plataforma é um cômodo da casa no jogo:** mesmo inventário e mesmo arranjo.
-  **Decidido pela dona em 14/11/2026.**
+  **Aprovada.**
 - **D3. Troca dos móveis:** devolver as moedas e os quartos recomeçarem com móveis grátis, como no
-  avatar; ou uma equivalência peça a peça.
+  avatar. **Aprovada.**
 - **D4. O Adventure Land gigante:** usar só como fantasia (montanhas, vegetação, coletáveis,
   mecanismos, plataformas altas) e nunca misturar portas e casas dele com casas da Morada no mesmo
-  lugar; ou deixar de fora as portas e casas dele. *Recomendado: só como fantasia.*
+  lugar; ou deixar de fora as portas e casas dele. **Recusada como estava:** ver 8.1.
 - **D5. Animações próprias pela sessão de arte**, com a lista da seção 6.3 e encaixes de cabeça,
-  costas e pés no esqueleto.
+  costas e pés no esqueleto. **Aprovada.**
 - **D6. Contrato único de pontos de interação** (seção 6.4), levado à sessão de arte para entrar
-  nos catálogos.
+  nos catálogos. **Aprovada.**
+
+### 8.1 A casa da Morada numa ilha de aventura (a D4 refeita)
+
+O que a dona definiu:
+- a Morada serve só para a casa da criança, com o quarto, na ilha principal (a do Faísca);
+- todo o resto do mundo é feito com a biblioteca de aventura.
+
+Fatos medidos:
+
+- **As cenas da equipe não usam peças do Adventure Land.** Terra doce, reino, faroeste, inverno,
+  templo e estádio não têm nenhuma porta, casa ou plataforma do pack. O templo usa só 2
+  personagens dele. O pack gigante só aparece na própria ilha de demonstração.
+- **A Morada e as bibliotecas da equipe já estão na mesma escala humana:**
+
+  | Medida | Morada | Bibliotecas da equipe |
+  |---|---|---|
+  | Porta | 0,90 × 2,10 | passagem de 2,2; `muro_portao` com 2,4 × 2,45 |
+  | Parede | 3 m | muro de 3 m |
+  | Corpo de referência | adulto de 1,73 m | manequim de 1,70 m |
+
+  O herói de 1,15 m cabe nas duas sem fator.
+
+Recomendação:
+
+1. **Um sistema de conteúdo só, com duas bibliotecas.** A aventura (o mundo) e a Morada (a casa)
+   passam pelo mesmo caminho:
+   - catálogo gerado da arte, no core;
+   - arquivos no bucket;
+   - o mesmo componente de desenho;
+   - colisão pelas caixas do catálogo;
+   - os mesmos pontos de interação da D6.
+   
+   Cada biblioteca declara a escala dela para o jogo: Morada 1 e bibliotecas da equipe 1. Se um
+   dia o Adventure Land for usado, ele recebe um fator único, decidido na pista de conferência,
+   e um teste confere que a porta dele, depois do fator, bate com a das outras.
+2. **A casa num lote declarado pela cena da ilha.** A cena da ilha principal, feita pela arte,
+   reserva o lote da casa:
+   - a área;
+   - a altura do chão, plano;
+   - a frente;
+   - a porta de entrada ligada ao caminho;
+   - a margem.
+   
+   A casa da Morada vive dentro do lote, na grade de 0,5 m e em coordenadas do lote. A ilha não
+   depende do interior da casa, e a casa não depende da ilha. Um teste confere que o lote é plano,
+   está livre e tem acesso.
+3. **O personagem não distingue as duas bibliotecas.** Dentro e fora da casa ele usa os mesmos
+   pontos de interação (sentar, deitar e abrir, da Morada; subir, agarrar e pendurar, da
+   aventura), a mesma escala e a mesma física.
+4. **Conferir o estilo.** Falta ver, com uma imagem lado a lado na luz do jogo, se a fachada e o
+   telhado da Morada combinam com as peças de aventura em volta. Se destoarem, há dois caminhos:
+   - a arte faz a parte de fora da casa no estilo da aventura, na grade e nas medidas da Morada,
+     e os móveis e o interior seguem da Morada;
+   - ou a luz e o tratamento de material do jogo são os mesmos para as duas bibliotecas.
+5. **Construção fora da ilha principal (decisão pendente).** Hoje o jogo tem cabanas em outras
+   ilhas. É preciso decidir se a construção fica só na casa da ilha principal ou se as cabanas
+   continuam, e com qual biblioteca.
 
 ## 9. Próximos passos
 
