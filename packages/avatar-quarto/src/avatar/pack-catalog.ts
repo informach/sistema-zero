@@ -6,7 +6,9 @@
 import {
   AVATAR_CATALOG,
   type AvatarCatalog,
+  type AvatarEquipment,
   type AvatarGameClip,
+  type AvatarGameLayer,
   type AvatarSkeleton,
   type AvatarSlots,
   avatarFileUrl,
@@ -21,7 +23,9 @@ import {
 export {
   AVATAR_CATALOG,
   type AvatarCatalog,
+  type AvatarEquipment,
   type AvatarGameClip,
+  type AvatarGameLayer,
   type AvatarSkeleton,
   type AvatarSlots,
   avatarFileUrl,

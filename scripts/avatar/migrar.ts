@@ -19,8 +19,11 @@ import type { AvatarCatalog, AvatarPartEntry } from '../../packages/core/src/ava
 import { Arte, buscarDaArte, type ItemDaArte, REF_PADRAO } from './arte'
 import { type Balde, chaveNoBucket, comBalde } from './balde'
 import {
+  animacoesAvulsas,
   CLIPES_DO_CONFIGURADOR,
   CLIPES_DO_JOGO,
+  camadaDoJogo,
+  clipeDoJogo,
   comparar,
   encaixesDaArte,
   esqueletoMudou,
@@ -45,7 +48,7 @@ function arquivosJaEnviados(catalogo: AvatarCatalog): Set<string> {
   const ja = new Set<string>(Object.values(catalogo.base.textures))
   if (catalogo.base.skeleton.file) ja.add(catalogo.base.skeleton.file)
   if (catalogo.base.skeleton.game?.file) ja.add(catalogo.base.skeleton.game.file)
-  for (const p of Object.values(catalogo.parts)) {
+  for (const p of [...Object.values(catalogo.parts), ...Object.values(catalogo.equipment ?? {})]) {
     ja.add(p.file)
     ja.add(p.thumb)
   }
@@ -147,7 +150,18 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       const pronto = await prepararEsqueleto(origem, CLIPES_DO_CONFIGURADOR)
       const arquivo = `base/esqueleto.${digital(pronto.glb)}.glb`
       if (await enviar(arquivo, pronto.glb)) enviados += 1
-      const doJogo = await prepararEsqueleto(origem, CLIPES_DO_JOGO)
+      // As animações que a arte fez para o jogo e os clipes de camada, um arquivo cada, entram no
+      // mesmo arquivo das de locomoção do pack.
+      const avulsas = animacoesAvulsas(esqueleto)
+      const camadas = esqueleto.poses_mao ?? []
+      const doJogo = await prepararEsqueleto(
+        origem,
+        CLIPES_DO_JOGO,
+        [...avulsas, ...camadas].map((a) => ({
+          id: a.id,
+          glb: arte.ler(`esqueleto/${a.arquivo}`),
+        })),
+      )
       const arquivoDoJogo = `base/animacoes-do-jogo.${digital(doJogo.glb)}.glb`
       if (await enviar(arquivoDoJogo, doJogo.glb)) enviados += 1
       const medidas = await medirClipes(origem, CLIPES_DO_JOGO)
@@ -170,30 +184,74 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         height: Math.round(altura * 1000) / 1000,
         game: {
           file: arquivoDoJogo,
-          clips: CLIPES_DO_JOGO.map((id) => {
-            const a = daArte.get(id)
-            if (!a) throw new Error(`O catálogo do esqueleto da arte não tem a animação ${id}.`)
-            // A passada e a subida que a arte mediu valem; sem elas, as medidas daqui no `Hips`.
-            return {
-              id,
-              duration: a.duracao_s,
-              loop: a.laco,
-              stride: a.passada_m ?? medidas[id]?.passada ?? 0,
-              rise: a.subida_m ?? medidas[id]?.subida ?? 0,
-              frames: a.quadros ?? 0,
-              feet: (a.pes ?? []).map((p) => ({
-                foot: p.pe === 'esq' ? ('left' as const) : ('right' as const),
-                on: p.toca,
-                off: p.sai,
-              })),
-            }
-          }),
+          clips: [
+            ...CLIPES_DO_JOGO.map((id) => {
+              const a = daArte.get(id)
+              if (!a) throw new Error(`O catálogo do esqueleto da arte não tem a animação ${id}.`)
+              return clipeDoJogo(a, medidas[id])
+            }),
+            ...avulsas.map((a) => clipeDoJogo(a)),
+          ],
+          ...(camadas.length > 0 ? { layers: camadas.map(camadaDoJogo) } : {}),
         },
       }
       console.log(`esqueleto: ${arquivo} (${Math.round(pronto.glb.byteLength / 1024)} KB)`)
       console.log(
-        `animações do jogo: ${arquivoDoJogo} (${Math.round(doJogo.glb.byteLength / 1024)} KB)`,
+        `animações do jogo: ${arquivoDoJogo} (${Math.round(doJogo.glb.byteLength / 1024)} KB, ${avulsas.length} da arte, ${camadas.length} de camada)`,
       )
+    }
+
+    // 1b. Os objetos de mão do jogo (a lanterna): fora do guarda-roupa, em `equipment`.
+    for (const item of comparacao.equipamentos) {
+      const caminhoDoGlb = `${item.pasta}/${item.arquivo}`
+      const caminhoDaMiniatura = `${item.pasta}/${item.miniatura}`
+      const pronta = await prepararPeca(arte.ler(caminhoDoGlb))
+      const miniatura = arte.ler(caminhoDaMiniatura)
+      const arquivo = `pecas/${item.id}.${digital(pronta.glb)}.glb`
+      const thumb = `miniaturas/${item.id}.${digital(miniatura)}.webp`
+      for (const textura of pronta.texturas) {
+        const nome = `base/textura.${textura.digital}.${textura.extensao}`
+        if (await enviar(nome, textura.bytes)) enviados += 1
+        catalogo.base.textures[textura.digital] = nome
+      }
+      if (await enviar(arquivo, pronta.glb)) enviados += 1
+      if (await enviar(thumb, miniatura)) enviados += 1
+      const luz = item.segura?.luz
+      catalogo.equipment = {
+        ...catalogo.equipment,
+        [item.id]: {
+          label: item.rotulo,
+          socket: item.slot,
+          file: arquivo,
+          thumb,
+          tris: item.tris,
+          ...(item.segura?.animacao_de_uso ? { use: item.segura.animacao_de_uso } : {}),
+          ...(luz
+            ? {
+                light: {
+                  bone: luz.osso,
+                  on: luz.acesa.escala,
+                  off: luz.apagada.escala,
+                  color: luz.cor,
+                  range: luz.alcance_m,
+                },
+              }
+            : {}),
+          origin: {
+            blob: arte.blob(caminhoDoGlb),
+            thumbBlob: arte.blob(caminhoDaMiniatura),
+            meta: impressaoDaPeca(item),
+            commit: arte.commit,
+            migratedAt: dia,
+          },
+        },
+      }
+      console.log(`objeto de mão: ${item.id}`)
+    }
+    for (const id of comparacao.equipamentosQueSairam) {
+      const { [id]: _fora, ...resto } = catalogo.equipment ?? {}
+      catalogo.equipment = resto
+      console.log(`objeto de mão que saiu da arte: ${id}`)
     }
 
     // 2. As peças.
@@ -283,7 +341,7 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
       ...(antes ? (antes.review ? { review: true as const } : {}) : { review: true as const }),
     }
   }
-  catalogo.rules = regrasDoCatalogo(regras)
+  catalogo.rules = regrasDoCatalogo(regras, new Set(arte.equipamentos().map((e) => e.id)))
   catalogo.source = {
     repo: REPOSITORIO_DA_ARTE,
     ref,

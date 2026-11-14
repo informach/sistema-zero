@@ -5,8 +5,21 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { AvatarCatalog, AvatarRules, AvatarSocket } from '../../packages/core/src/avatar/types'
-import type { Arte, EsqueletoDaArte, ItemDaArte, RegrasDaArte } from './arte'
+import type {
+  AvatarCatalog,
+  AvatarGameClip,
+  AvatarGameLayer,
+  AvatarRules,
+  AvatarSocket,
+} from '../../packages/core/src/avatar/types'
+import type {
+  AnimacaoDaArte,
+  Arte,
+  CamadaDaArte,
+  EsqueletoDaArte,
+  ItemDaArte,
+  RegrasDaArte,
+} from './arte'
 
 const RAIZ = resolve(import.meta.dirname, '../..')
 /**
@@ -117,6 +130,7 @@ export function gravarCatalogo(catalogo: AvatarCatalog): void {
     base: { ...catalogo.base, textures: ordenado(catalogo.base.textures) },
     parts: ordenado(catalogo.parts),
     sets: ordenado(catalogo.sets),
+    ...(catalogo.equipment ? { equipment: ordenado(catalogo.equipment) } : {}),
   }
   writeFileSync(
     ARQUIVO_DO_CATALOGO,
@@ -125,8 +139,19 @@ export function gravarCatalogo(catalogo: AvatarCatalog): void {
   )
 }
 
-/** As regras do pack, do jeito da arte para o jeito do catálogo. */
-export function regrasDoCatalogo(regras: RegrasDaArte): AvatarRules {
+/**
+ * As regras do pack, do jeito da arte para o jeito do catálogo. Os grupos só de objetos de mão (a
+ * lanterna) e os encaixes deles ficam de fora: não são guarda-roupa.
+ */
+export function regrasDoCatalogo(
+  regras: RegrasDaArte,
+  equipamentos: ReadonlySet<string> = new Set(),
+): AvatarRules {
+  const deEquipamento = new Set(
+    Object.entries(regras.grupos)
+      .filter(([, g]) => g.pecas.length > 0 && g.pecas.every((p) => equipamentos.has(p)))
+      .map(([id]) => id),
+  )
   const incompatible: Record<string, Set<string>> = {}
   const ligar = (a: string, b: string) => {
     incompatible[a] ??= new Set()
@@ -144,14 +169,18 @@ export function regrasDoCatalogo(regras: RegrasDaArte): AvatarRules {
     festas[id] = { label: festa.rotulo, prize: festa.premio, themed: festa.pecas_do_tema }
   }
   return {
-    slots: regras.slots.map((s) => ({
-      id: s.slot,
-      label: s.rotulo,
-      required: s.obrigatorio,
-      groups: s.grupos,
-    })),
+    slots: regras.slots
+      .filter((s) => !s.grupos.every((g) => deEquipamento.has(g)))
+      .map((s) => ({
+        id: s.slot,
+        label: s.rotulo,
+        required: s.obrigatorio,
+        groups: s.grupos.filter((g) => !deEquipamento.has(g)),
+      })),
     groups: Object.fromEntries(
-      Object.entries(regras.grupos).map(([id, g]) => [id, { label: g.rotulo, parts: g.pecas }]),
+      Object.entries(regras.grupos)
+        .filter(([id]) => !deEquipamento.has(id))
+        .map(([id, g]) => [id, { label: g.rotulo, parts: g.pecas }]),
     ),
     setDisables: regras.exclusoes.fantasia_desliga,
     incompatible: ordenado(
@@ -159,13 +188,15 @@ export function regrasDoCatalogo(regras: RegrasDaArte): AvatarRules {
     ),
     earsByBody: regras.orelhas_por_corpo,
     draw: {
-      steps: regras.sorteio.passos.map((p) => ({
-        group: p.grupo,
-        probability: p.probabilidade,
-        compatible: p.compativeis,
-        ...(p.libera ? { unlocks: p.libera, unlockChance: p.chance_libera ?? 1 } : {}),
-        ...(p.libera_se_nao_ligado ? { unlocksUnlessOn: p.libera_se_nao_ligado } : {}),
-      })),
+      steps: regras.sorteio.passos
+        .filter((p) => !deEquipamento.has(p.grupo))
+        .map((p) => ({
+          group: p.grupo,
+          probability: p.probabilidade,
+          compatible: p.compativeis,
+          ...(p.libera ? { unlocks: p.libera, unlockChance: p.chance_libera ?? 1 } : {}),
+          ...(p.libera_se_nao_ligado ? { unlocksUnlessOn: p.libera_se_nao_ligado } : {}),
+        })),
       excluded: [...new Set([...(regras.fora_do_sorteio ?? []), ...FORA_DO_SORTEIO_DA_PLATAFORMA])],
     },
     faces: regras.rostos.conjuntos,
@@ -188,6 +219,10 @@ export interface Comparacao {
   esqueletoMudou: boolean
   /** O que mudou no esqueleto (o próprio avatar), em palavras; vazio quando nada mudou. */
   mudancasDoEsqueleto: string[]
+  /** Objetos de mão do jogo novos na arte, ou que mudaram desde a migração. */
+  equipamentos: ItemDaArte[]
+  /** Objetos de mão migrados que saíram da arte. */
+  equipamentosQueSairam: string[]
   regrasMudaram: boolean
 }
 
@@ -212,9 +247,89 @@ export function mudancasDoEsqueleto(
     mudancas.push('os dados do esqueleto (ossos, encaixes, medidas do corpo, animações)')
   if (s.tree !== arte.arvoreDe('esqueleto'))
     mudancas.push('algum arquivo da pasta do esqueleto (inclusive as animações em arquivo próprio)')
-  if (!s.game?.file || s.game.clips.map((c) => c.id).join() !== CLIPES_DO_JOGO.join())
+  const esqueleto = arte.esqueleto()
+  const esperados = [...CLIPES_DO_JOGO, ...animacoesAvulsas(esqueleto).map((a) => a.id)]
+  if (!s.game?.file || s.game.clips.map((c) => c.id).join() !== esperados.join())
     mudancas.push('as animações do jogo (falta alguma ou a lista mudou)')
+  const camadas = (esqueleto.poses_mao ?? []).map((c) => c.id)
+  if ((s.game?.layers ?? []).map((c) => c.id).join() !== camadas.join())
+    mudancas.push('os clipes de camada do jogo (os dedos no cabo, o braço com a lanterna)')
   return mudancas
+}
+
+/** As animações que a arte fez para o jogo, uma por arquivo (`pacote: false`). */
+export function animacoesAvulsas(
+  esqueleto: EsqueletoDaArte,
+): (AnimacaoDaArte & { arquivo: string })[] {
+  return esqueleto.animacoes.filter(
+    (a): a is AnimacaoDaArte & { arquivo: string } => a.pacote === false && Boolean(a.arquivo),
+  )
+}
+
+type Medida = [string, number | number[]]
+
+/** Só as medidas (números e listas de números) de um bloco da arte, com um prefixo opcional. */
+function medidasDe(bloco: Record<string, unknown> | undefined, prefixo = ''): Medida[] {
+  const saida: Medida[] = []
+  for (const [chave, valor] of Object.entries(bloco ?? {})) {
+    if (typeof valor === 'number') saida.push([prefixo + chave, valor])
+    else if (Array.isArray(valor)) {
+      if (valor.length > 0 && valor.every((v) => typeof v === 'number'))
+        saida.push([prefixo + chave, valor as number[]])
+    } else if (valor && typeof valor === 'object')
+      saida.push(...medidasDe(valor as Record<string, unknown>, `${prefixo}${chave}_`))
+  }
+  return saida
+}
+
+/**
+ * Uma animação da arte no formato do catálogo. A passada e a subida que a arte mediu valem; sem
+ * elas (clipe do pack de antes do `jogo1`), as medidas feitas aqui no `Hips`.
+ */
+export function clipeDoJogo(
+  a: AnimacaoDaArte,
+  medida?: { passada: number; subida: number },
+): AvatarGameClip {
+  const lugar = Object.fromEntries([...medidasDe(a.lugar), ...medidasDe(a.agua)])
+  return {
+    id: a.id,
+    duration: a.duracao_s,
+    loop: a.laco,
+    stride: a.passada_m ?? medida?.passada ?? 0,
+    rise: a.subida_m ?? medida?.subida ?? 0,
+    frames: a.quadros ?? 0,
+    feet: (a.pes ?? []).map((p) => ({
+      foot: p.pe === 'esq' ? ('left' as const) : ('right' as const),
+      on: p.toca,
+      off: p.sai,
+    })),
+    ...(a.pacote === false && a.maos_livres !== undefined ? { handsFree: a.maos_livres } : {}),
+    ...(a.pacote === false && a.deslocamento_m ? { displacement: a.deslocamento_m } : {}),
+    ...(a.maos
+      ? {
+          hands: a.maos.map((m) => ({
+            hand: m.mao === 'esq' ? ('left' as const) : ('right' as const),
+            on: m.agarra,
+            off: m.solta,
+          })),
+        }
+      : {}),
+    ...(Object.keys(lugar).length > 0 ? { place: lugar } : {}),
+    ...(a.chapeu_sai ? { hatOff: true as const } : {}),
+    ...(a.objeto ? { object: a.objeto } : {}),
+  }
+}
+
+export function camadaDoJogo(c: CamadaDaArte): AvatarGameLayer {
+  return {
+    id: c.id,
+    duration: c.duracao_s,
+    loop: c.laco,
+    frames: c.quadros,
+    bones: c.ossos,
+    ...(c.animacao ? { with: c.animacao } : {}),
+    objects: c.objetos ?? [],
+  }
 }
 
 export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: string): boolean {
@@ -264,7 +379,19 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
     else iguais += 1
   }
   const esqueleto = arte.esqueleto()
+  const doJogo = arte.equipamentos()
+  const idsDoJogo = new Set(doJogo.map((e) => e.id))
   return {
+    equipamentos: doJogo.filter((item) => {
+      const entrada = catalogo.equipment?.[item.id]
+      return (
+        !entrada ||
+        entrada.origin.blob !== arte.blob(`${item.pasta}/${item.arquivo}`) ||
+        entrada.origin.thumbBlob !== arte.blob(`${item.pasta}/${item.miniatura}`) ||
+        entrada.origin.meta !== impressaoDaPeca(item)
+      )
+    }),
+    equipamentosQueSairam: Object.keys(catalogo.equipment ?? {}).filter((id) => !idsDoJogo.has(id)),
     novas,
     mudaram,
     sairam: Object.entries(catalogo.parts)

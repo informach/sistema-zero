@@ -17,6 +17,12 @@ export const REF_PADRAO = 'origin/main'
 /** Pastas da biblioteca que não são categorias de peça. */
 const FORA_DAS_CATEGORIAS = new Set(['pagina', 'esqueleto'])
 
+/**
+ * Pastas dos OBJETOS DE MÃO do jogo (a lanterna). Não são roupa: ficam fora do guarda-roupa, do
+ * sorteio e do inventário, e vão para `equipment` no catálogo.
+ */
+const PASTAS_DE_EQUIPAMENTO = new Set(['maos'])
+
 export interface ItemDaArte {
   id: string
   rotulo: string
@@ -41,6 +47,18 @@ export interface ItemDaArte {
   premio_da_festa?: boolean
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
+  /** Objeto de mão: o osso que o segura, a animação de usar e a luz dele. */
+  segura?: {
+    osso: string
+    animacao_de_uso?: string
+    luz?: {
+      osso: string
+      acesa: { escala: number }
+      apagada: { escala: number }
+      cor: string
+      alcance_m: number
+    }
+  }
 }
 
 interface FantasiaDaArte {
@@ -90,6 +108,8 @@ export interface EsqueletoDaArte {
    */
   pontos_de_segurar: Record<string, string | EncaixeDaArte>
   animacoes: AnimacaoDaArte[]
+  /** Os clipes de camada (os dedos no cabo, o braço que se abre), um arquivo cada. */
+  poses_mao?: CamadaDaArte[]
   /** As medidas do corpo padrão (desde o `jogo1`). */
   medidas_corpo?: { altura_m: number; olhos_m: number }
 }
@@ -111,6 +131,29 @@ export interface AnimacaoDaArte {
   passada_m?: number
   subida_m?: number
   pes?: { pe: 'esq' | 'dir'; toca: number; sai: number }[]
+  /** `false` = animação nossa, em arquivo próprio (`arquivo`, a partir da pasta do esqueleto). */
+  pacote?: boolean
+  arquivo?: string
+  deslocamento_m?: [number, number, number]
+  maos?: { mao: 'esq' | 'dir'; agarra: number; solta: number }[]
+  /** Onde o clipe acontece (o assento, a quina, a corda): medidas em metros e uma nota. */
+  lugar?: Record<string, unknown>
+  /** O mesmo, para os clipes da água (a `margem` vem num objeto dentro). */
+  agua?: Record<string, unknown>
+  chapeu_sai?: boolean
+  objeto?: string
+}
+
+export interface CamadaDaArte {
+  id: string
+  arquivo: string
+  duracao_s: number
+  laco: boolean
+  quadros: number
+  ossos: string[]
+  /** A animação que a camada acompanha (sem isto, vale por cima de qualquer uma). */
+  animacao?: string
+  objetos?: string[]
 }
 
 /** Onde está o repositório da arte nesta máquina (`ARTES_3D_DIR`, ou a pasta irmã `artes-3d`). */
@@ -190,12 +233,27 @@ export class Arte {
     return item
   }
 
-  /** Todas as peças aprovadas, com a pasta de cada uma. */
+  /** Todas as peças aprovadas (as do guarda-roupa), com a pasta de cada uma. */
   pecas(): ItemDaArte[] {
+    return this.itens(false)
+  }
+
+  /** Os objetos de mão do jogo (a lanterna), com a pasta de cada um. */
+  equipamentos(): ItemDaArte[] {
+    return this.itens(true)
+  }
+
+  private itens(equipamento: boolean): ItemDaArte[] {
     const pastas = new Set<string>()
     for (const caminho of this.arvore.keys()) {
       const [pasta, arquivo] = caminho.split('/')
-      if (pasta && arquivo === 'catalogo.json' && !FORA_DAS_CATEGORIAS.has(pasta)) pastas.add(pasta)
+      if (
+        pasta &&
+        arquivo === 'catalogo.json' &&
+        !FORA_DAS_CATEGORIAS.has(pasta) &&
+        PASTAS_DE_EQUIPAMENTO.has(pasta) === equipamento
+      )
+        pastas.add(pasta)
     }
     return [...pastas]
       .sort()

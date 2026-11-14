@@ -90,6 +90,77 @@ describe('o catálogo', () => {
     }
   })
 
+  test('as animações que a arte fez para o jogo vêm com as medidas do lugar', () => {
+    const jogo = C.base.skeleton.game
+    const clipe = (id: string) => jogo.clips.find((c) => c.id === id)
+    for (const id of [
+      'acenar',
+      'acender',
+      'sentar',
+      'sentado',
+      'levantar',
+      'deitar',
+      'deitado',
+      'levantar_da_cama',
+      'pendurar_borda',
+      'andar_pendurado_esquerda',
+      'andar_pendurado_direita',
+      'subir_borda',
+      'pendurar_cipo',
+      'boiar',
+      'nadar',
+      'entrar_na_agua',
+      'sair_da_agua',
+      'andar_na_agua',
+      'sentado_no_barco',
+    ]) {
+      expect(clipe(id), id).toBeDefined()
+      expect(clipe(id)?.frames, id).toBeGreaterThan(1)
+      expect(typeof clipe(id)?.handsFree, id).toBe('boolean')
+      expect(clipe(id)?.displacement, id).toHaveLength(3)
+    }
+    // Onde o clipe acontece: o assento, a quina da borda, a corda e a água.
+    expect(clipe('sentado')?.place?.assento_m).toBeGreaterThan(0)
+    expect(clipe('pendurar_borda')?.place?.maos_m).toBeGreaterThan(0)
+    expect(clipe('pendurar_cipo')?.place?.corda_a_frente_m).toBeGreaterThan(0)
+    expect(clipe('nadar')?.place?.linha_d_agua_m).toBeGreaterThan(0)
+    expect(clipe('sair_da_agua')?.place?.margem_beira_a_frente_m).toBeGreaterThan(0)
+    // Pendurada, as duas mãos agarram; subindo a borda, o corpo sobe e avança.
+    expect(clipe('pendurar_borda')?.hands?.map((m) => m.hand).sort()).toEqual(['left', 'right'])
+    expect(clipe('subir_borda')?.rise).toBeGreaterThan(0.4)
+    expect(clipe('deitado')?.hatOff).toBe(true)
+    expect(clipe('acender')?.object).toBe('mao_lanterna')
+    // Os clipes do pack continuam como eram (sem os campos das animações nossas).
+    expect(clipe('andar_frente')?.handsFree).toBeUndefined()
+    // As camadas: só os ossos listados, todos do esqueleto, e os objetos existem.
+    expect(jogo.layers?.length).toBeGreaterThan(0)
+    for (const camada of jogo.layers ?? []) {
+      expect(camada.bones.length, camada.id).toBeGreaterThan(0)
+      for (const osso of camada.bones)
+        expect(C.base.skeleton.bones[osso], `${camada.id}: ${osso}`).toBeDefined()
+      for (const objeto of camada.objects)
+        expect(C.equipment?.[objeto], `${camada.id}: ${objeto}`).toBeDefined()
+    }
+  })
+
+  test('a lanterna é objeto de mão do jogo, fora do guarda-roupa', () => {
+    const lanterna = C.equipment?.mao_lanterna
+    if (!lanterna) throw new Error('sem a lanterna')
+    expect(C.base.skeleton.sockets[lanterna.socket]?.bone).toBe('RightHandProp')
+    expect(lanterna.file).toMatch(/^pecas\/mao_lanterna\.[0-9a-f]{12}\.glb$/)
+    expect(isAvatarFile(C, lanterna.file)).toBe(true)
+    expect(isAvatarFile(C, lanterna.thumb)).toBe(true)
+    expect(C.base.skeleton.game.clips.some((c) => c.id === lanterna.use)).toBe(true)
+    expect(lanterna.light?.bone).toBe('Luz')
+    // Não é peça, não tem encaixe nem grupo no guarda-roupa, e não sai no sorteio.
+    for (const id of Object.keys(C.equipment ?? {})) {
+      expect(C.parts[id], id).toBeUndefined()
+      for (const g of Object.values(C.rules.groups)) expect(g.parts).not.toContain(id)
+    }
+    expect(C.rules.slots.some((s) => s.id === lanterna.socket)).toBe(false)
+    expect(C.rules.groups[lanterna.socket]).toBeUndefined()
+  })
+
   test('toda peça citada por grupo, conjunto, orelha e padrão existe', () => {
     for (const [grupo, g] of Object.entries(C.rules.groups))
       for (const id of g.parts) {

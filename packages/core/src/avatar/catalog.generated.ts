@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+    "commit": "ab50fc301ccd50fbb9a9e29bb16218d250593921",
     "syncedAt": "2026-11-14",
-    "rulesBlob": "3ea46606263200988964a397e38a71b19cace69a"
+    "rulesBlob": "58933578793010a55bceee55a556805453ca94c9"
   },
   "base": {
     "skeleton": {
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "544118c27041014b1c7029d121d7c7d5db571903",
-      "tree": "72d69d789c53324134c249790a5b147ec4fd072d",
+      "catalogBlob": "570e9e090ce4f1fa392bc1098e920813ac1c93ef",
+      "tree": "ae9f0a84154a267b396c04dc6511bd41b5f2576b",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.b448925e3f75.glb",
+        "file": "base/animacoes-do-jogo.4f187cc6c3a7.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -676,6 +676,633 @@ export const AVATAR_CATALOG: AvatarCatalog = {
                 "on": 23,
                 "off": 4
               }
+            ]
+          },
+          {
+            "id": "acenar",
+            "duration": 4,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 121,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 121
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 121
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "acender",
+            "duration": 1.5,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 46,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 46
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 46
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "object": "mao_lanterna"
+          },
+          {
+            "id": "sentar",
+            "duration": 2.267,
+            "loop": false,
+            "stride": 0.2,
+            "rise": 0.054,
+            "frames": 69,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 33
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 33
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              -0.002,
+              0.054,
+              -0.2
+            ],
+            "place": {
+              "assento_m": 0.3,
+              "bacia_sentada_m": 0.35,
+              "comeca_a_frente_m": 0.2
+            }
+          },
+          {
+            "id": "sentado",
+            "duration": 3,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "assento_m": 0.3,
+              "bacia_sentada_m": 0.35
+            }
+          },
+          {
+            "id": "levantar",
+            "duration": 2.3,
+            "loop": false,
+            "stride": 0.2,
+            "rise": -0.054,
+            "frames": 70,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 39,
+                "off": 70
+              },
+              {
+                "foot": "left",
+                "on": 39,
+                "off": 70
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0.002,
+              -0.054,
+              0.2
+            ],
+            "place": {
+              "assento_m": 0.3,
+              "bacia_sentada_m": 0.35,
+              "termina_a_frente_m": 0.2
+            }
+          },
+          {
+            "id": "deitar",
+            "duration": 2.767,
+            "loop": false,
+            "stride": 0.1,
+            "rise": -0.228,
+            "frames": 84,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 22
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 22
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              -0.228,
+              -0.1
+            ],
+            "place": {
+              "travesseiro_m": 0.07,
+              "bacia_deitada_m": 0.068,
+              "comeca_para_os_pes_m": 0.1
+            },
+            "hatOff": true
+          },
+          {
+            "id": "deitado",
+            "duration": 2.167,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 66,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "travesseiro_m": 0.07,
+              "bacia_deitada_m": 0.068
+            },
+            "hatOff": true
+          },
+          {
+            "id": "levantar_da_cama",
+            "duration": 2.767,
+            "loop": false,
+            "stride": 0.1,
+            "rise": 0.228,
+            "frames": 84,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 61,
+                "off": 84
+              },
+              {
+                "foot": "left",
+                "on": 61,
+                "off": 84
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0.228,
+              0.1
+            ],
+            "place": {
+              "travesseiro_m": 0.07,
+              "bacia_deitada_m": 0.068,
+              "termina_para_os_pes_m": 0.1
+            },
+            "hatOff": true
+          },
+          {
+            "id": "pendurar_borda",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 61
+              },
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 61
+              }
+            ],
+            "place": {
+              "maos_m": 0.6,
+              "a_frente_m": 0.25
+            }
+          },
+          {
+            "id": "andar_pendurado_esquerda",
+            "duration": 1.333,
+            "loop": true,
+            "stride": 0.18,
+            "rise": 0,
+            "frames": 41,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0.18,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 20
+              },
+              {
+                "hand": "left",
+                "on": 18,
+                "off": 41
+              },
+              {
+                "hand": "right",
+                "on": 37,
+                "off": 41
+              }
+            ],
+            "place": {
+              "maos_m": 0.6,
+              "a_frente_m": 0.25,
+              "passo_m": 0.18
+            }
+          },
+          {
+            "id": "andar_pendurado_direita",
+            "duration": 1.333,
+            "loop": true,
+            "stride": 0.18,
+            "rise": 0,
+            "frames": 41,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              -0.18,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 20
+              },
+              {
+                "hand": "right",
+                "on": 18,
+                "off": 41
+              },
+              {
+                "hand": "left",
+                "on": 37,
+                "off": 41
+              }
+            ],
+            "place": {
+              "maos_m": 0.6,
+              "a_frente_m": 0.25,
+              "passo_m": 0.18
+            }
+          },
+          {
+            "id": "subir_borda",
+            "duration": 2.367,
+            "loop": false,
+            "stride": 0.5,
+            "rise": 0.58,
+            "frames": 72,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              -0.002,
+              0.58,
+              0.5
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 17
+              },
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 17
+              }
+            ],
+            "place": {
+              "maos_m": 0.6,
+              "a_frente_m": 0.25,
+              "termina_a_frente_m": 0.5
+            }
+          },
+          {
+            "id": "pendurar_cipo",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 61
+              },
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 61
+              }
+            ],
+            "place": {
+              "corda_a_frente_m": 0.21,
+              "corda_raio_m": 0.07,
+              "maos_m": [
+                0.57,
+                0.47
+              ]
+            }
+          },
+          {
+            "id": "boiar",
+            "duration": 3.033,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 92,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "superficie_m": 0,
+              "linha_d_agua_m": 0.53
+            }
+          },
+          {
+            "id": "nadar",
+            "duration": 4.567,
+            "loop": true,
+            "stride": 1.827,
+            "rise": 0,
+            "frames": 138,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              1.827
+            ],
+            "place": {
+              "superficie_m": 0,
+              "linha_d_agua_m": 0.48,
+              "velocidade_m_s": 0.4
+            }
+          },
+          {
+            "id": "entrar_na_agua",
+            "duration": 1.7,
+            "loop": false,
+            "stride": 0.76,
+            "rise": -0.712,
+            "frames": 52,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 14
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 14
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              -0.712,
+              0.76
+            ],
+            "place": {
+              "termina_a_frente_m": 0.76,
+              "margem_chao_acima_da_agua_m": 0.162,
+              "margem_beira_a_frente_m": 0.33
+            }
+          },
+          {
+            "id": "sair_da_agua",
+            "duration": 2.833,
+            "loop": false,
+            "stride": 0.88,
+            "rise": 0.712,
+            "frames": 86,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 74,
+                "off": 86
+              },
+              {
+                "foot": "left",
+                "on": 74,
+                "off": 86
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0.712,
+              0.88
+            ],
+            "place": {
+              "termina_a_frente_m": 0.88,
+              "margem_chao_acima_da_agua_m": 0.162,
+              "margem_beira_a_frente_m": 0.55
+            }
+          },
+          {
+            "id": "andar_na_agua",
+            "duration": 1.2,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 37,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 6,
+                "off": 28
+              },
+              {
+                "foot": "right",
+                "on": 27,
+                "off": 8
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "parte_rasa_m": 0.3
+            }
+          },
+          {
+            "id": "sentado_no_barco",
+            "duration": 3,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "bacia_m": 0.05,
+              "pernas_a_frente_m": 0.42
+            }
+          }
+        ],
+        "layers": [
+          {
+            "id": "segurar_braco_dir_andar_tras",
+            "duration": 0.867,
+            "loop": true,
+            "frames": 27,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "andar_tras",
+            "objects": [
+              "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_correr_esquerda",
+            "duration": 0.633,
+            "loop": true,
+            "frames": 20,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_esquerda",
+            "objects": [
+              "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_correr_frente",
+            "duration": 0.633,
+            "loop": true,
+            "frames": 20,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_frente",
+            "objects": [
+              "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_tras",
+            "objects": [
+              "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_parado_olhando",
+            "duration": 15.9,
+            "loop": true,
+            "frames": 478,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "parado_olhando",
+            "objects": [
+              "mao_lanterna"
+            ]
+          },
+          {
+            "id": "segurar_cilindro_fino_dir",
+            "duration": 0.033,
+            "loop": true,
+            "frames": 2,
+            "bones": [
+              "RightHandIndex1",
+              "RightHandIndex2",
+              "RightHandMiddle1",
+              "RightHandMiddle2",
+              "RightHandRing1",
+              "RightHandRing2",
+              "RightHandPinky1",
+              "RightHandPinky2",
+              "RightHandThumb1",
+              "RightHandThumb2"
+            ],
+            "objects": [
+              "mao_lanterna"
             ]
           }
         ]
@@ -8755,303 +9382,303 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "label": "Abelha",
       "parts": [
         {
-          "part": "fantasia_abelha_blusa_listrada_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_abelha_blusa_listrada_pacote"
         },
         {
-          "part": "fantasia_abelha_cabeca_antenas_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_abelha_cabeca_antenas_pacote"
         },
         {
-          "part": "fantasia_abelha_calca_pacote",
-          "slot": "calca"
+          "slot": "calca",
+          "part": "fantasia_abelha_calca_pacote"
         },
         {
-          "part": "fantasia_abelha_asas_pacote",
-          "slot": "roupa_inteira"
+          "slot": "roupa_inteira",
+          "part": "fantasia_abelha_asas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_astronauta": {
       "label": "Astronauta",
       "parts": [
         {
-          "part": "fantasia_astronauta_traje_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_astronauta_traje_pacote"
         },
         {
-          "part": "fantasia_astronauta_capacete_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_astronauta_capacete_pacote"
         },
         {
-          "part": "fantasia_astronauta_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_astronauta_luvas_pacote"
         },
         {
-          "part": "fantasia_astronauta_calca_pacote",
-          "slot": "calca"
+          "slot": "calca",
+          "part": "fantasia_astronauta_calca_pacote"
         },
         {
-          "part": "fantasia_astronauta_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_astronauta_botas_pacote"
         }
       ],
-      "price": 300,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 300
     },
     "fantasia_bobo_corte": {
       "label": "Bobo da corte",
       "parts": [
         {
-          "part": "fantasia_bobo_corte_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_bobo_corte_macacao_pacote"
         },
         {
-          "part": "fantasia_bobo_corte_chapeu_guizos_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_bobo_corte_chapeu_guizos_pacote"
         }
       ],
-      "price": 200,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 200
     },
     "fantasia_cavaleiro": {
       "label": "Cavaleiro",
       "parts": [
         {
-          "part": "fantasia_cavaleiro_peitoral_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_cavaleiro_peitoral_pacote"
         },
         {
-          "part": "fantasia_cavaleiro_elmo_chifres_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_cavaleiro_elmo_chifres_pacote"
         },
         {
-          "part": "fantasia_cavaleiro_ombreiras_pacote",
-          "slot": "roupa_cima"
+          "slot": "roupa_cima",
+          "part": "fantasia_cavaleiro_ombreiras_pacote"
         },
         {
-          "part": "fantasia_cavaleiro_bracadeiras_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_cavaleiro_bracadeiras_pacote"
         },
         {
-          "part": "fantasia_cavaleiro_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_cavaleiro_botas_pacote"
         }
       ],
-      "price": 300,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 300
     },
     "fantasia_coelho_roxo": {
       "label": "Coelho roxo",
       "parts": [
         {
-          "part": "fantasia_coelho_roxo_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_coelho_roxo_macacao_pacote"
         },
         {
-          "part": "fantasia_coelho_roxo_capuz_coelho_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_coelho_roxo_capuz_coelho_pacote"
         },
         {
-          "part": "fantasia_coelho_roxo_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_coelho_roxo_botas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_dinossauro_listrado": {
       "label": "Dinossauro listrado",
       "parts": [
         {
-          "part": "fantasia_dinossauro_listrado_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_dinossauro_listrado_macacao_pacote"
         },
         {
-          "part": "fantasia_dinossauro_listrado_cabeca_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_dinossauro_listrado_cabeca_pacote"
         },
         {
-          "part": "fantasia_dinossauro_listrado_laco_rosa_pacote",
-          "slot": "roupa_cima"
+          "slot": "roupa_cima",
+          "part": "fantasia_dinossauro_listrado_laco_rosa_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_papai_noel": {
       "label": "Papai Noel",
       "parts": [
         {
-          "part": "fantasia_papai_noel_casaco_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_papai_noel_casaco_pacote"
         },
         {
-          "part": "fantasia_papai_noel_gorro_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_papai_noel_gorro_pacote"
         },
         {
-          "part": "fantasia_papai_noel_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_papai_noel_luvas_pacote"
         },
         {
-          "part": "fantasia_papai_noel_calca_pacote",
-          "slot": "calca"
+          "slot": "calca",
+          "part": "fantasia_papai_noel_calca_pacote"
         },
         {
-          "part": "fantasia_papai_noel_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_papai_noel_botas_pacote"
         }
       ],
-      "price": 300,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 300
     },
     "fantasia_pinguim": {
       "label": "Pinguim",
       "parts": [
         {
-          "part": "fantasia_pinguim_macacao_pes_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_pinguim_macacao_pes_pacote"
         },
         {
-          "part": "fantasia_pinguim_cabeca_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_pinguim_cabeca_pacote"
         }
       ],
-      "price": 200,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 200
     },
     "fantasia_pirata": {
       "label": "Pirata",
       "parts": [
         {
-          "part": "fantasia_pirata_casaco_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_pirata_casaco_pacote"
         },
         {
-          "part": "fantasia_pirata_chapeu_pirata_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_pirata_chapeu_pirata_pacote"
         },
         {
-          "part": "fantasia_pirata_calca_botas_pacote",
-          "slot": "calca"
+          "slot": "calca",
+          "part": "fantasia_pirata_calca_botas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_pombo": {
       "label": "Pombo",
       "parts": [
         {
-          "part": "fantasia_pombo_macacao_pes_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_pombo_macacao_pes_pacote"
         },
         {
-          "part": "fantasia_pombo_cabeca_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_pombo_cabeca_pacote"
         }
       ],
-      "price": 200,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 200
     },
     "fantasia_robo_amarelo": {
       "label": "Robô amarelo",
       "parts": [
         {
-          "part": "fantasia_robo_amarelo_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_robo_amarelo_macacao_pacote"
         },
         {
-          "part": "fantasia_robo_amarelo_cabeca_robo_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_robo_amarelo_cabeca_robo_pacote"
         },
         {
-          "part": "fantasia_robo_amarelo_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_robo_amarelo_luvas_pacote"
         },
         {
-          "part": "fantasia_robo_amarelo_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_robo_amarelo_botas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_soldado": {
       "label": "Soldado",
       "parts": [
         {
-          "part": "fantasia_soldado_camisa_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_soldado_camisa_pacote"
         },
         {
-          "part": "fantasia_soldado_capacete_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_soldado_capacete_pacote"
         },
         {
-          "part": "fantasia_soldado_bolsas_colete_pacote",
-          "slot": "roupa_cima"
+          "slot": "roupa_cima",
+          "part": "fantasia_soldado_bolsas_colete_pacote"
         },
         {
-          "part": "fantasia_soldado_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_soldado_luvas_pacote"
         },
         {
-          "part": "fantasia_soldado_calca_pacote",
-          "slot": "calca"
+          "slot": "calca",
+          "part": "fantasia_soldado_calca_pacote"
         },
         {
-          "part": "fantasia_soldado_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_soldado_botas_pacote"
         }
       ],
-      "price": 300,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 300
     },
     "fantasia_super_heroi": {
       "label": "Super-herói",
       "parts": [
         {
-          "part": "fantasia_super_heroi_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_super_heroi_macacao_pacote"
         },
         {
-          "part": "fantasia_super_heroi_mascara_capacete_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_super_heroi_mascara_capacete_pacote"
         },
         {
-          "part": "fantasia_super_heroi_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_super_heroi_luvas_pacote"
         },
         {
-          "part": "fantasia_super_heroi_botas_pacote",
-          "slot": "calcado"
+          "slot": "calcado",
+          "part": "fantasia_super_heroi_botas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_traje_neon": {
       "label": "Traje neon",
       "parts": [
         {
-          "part": "fantasia_traje_neon_macacao_pacote",
-          "slot": "fantasia"
+          "slot": "fantasia",
+          "part": "fantasia_traje_neon_macacao_pacote"
         },
         {
-          "part": "fantasia_traje_neon_capacete_pacote",
-          "slot": "chapeu"
+          "slot": "chapeu",
+          "part": "fantasia_traje_neon_capacete_pacote"
         },
         {
-          "part": "fantasia_traje_neon_luvas_pacote",
-          "slot": "luvas"
+          "slot": "luvas",
+          "part": "fantasia_traje_neon_luvas_pacote"
         }
       ],
-      "price": 250,
-      "tier": "coins"
+      "tier": "coins",
+      "price": 250
     }
   },
   "rules": {
@@ -10326,6 +10953,30 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "corpo": "corpo_pele_media_clara_pacote",
       "orelhas": "orelhas_corpo_pele_media_clara_pacote",
       "rosto": "rosto_masc_02_normal_pacote"
+    }
+  },
+  "equipment": {
+    "mao_lanterna": {
+      "label": "Lanterna (mão direita)",
+      "socket": "mao_direita",
+      "file": "pecas/mao_lanterna.40c0f05976c1.glb",
+      "thumb": "miniaturas/mao_lanterna.259f4ce20d91.webp",
+      "tris": 2000,
+      "use": "acender",
+      "light": {
+        "bone": "Luz",
+        "on": 1,
+        "off": 0.02,
+        "color": "#FFE08A",
+        "range": 4
+      },
+      "origin": {
+        "blob": "f8fb988b17744892e6f312d0b38abc46ff1ba3c0",
+        "thumbBlob": "8ed60e8f3e59800d6e7fea24c7a7b4cad44c3810",
+        "meta": "9bd7f65b563d7238",
+        "commit": "ab50fc301ccd50fbb9a9e29bb16218d250593921",
+        "migratedAt": "2026-11-14"
+      }
     }
   }
 }

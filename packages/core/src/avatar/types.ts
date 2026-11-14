@@ -151,6 +151,57 @@ export interface AvatarGameClip {
   frames: number
   /** Os apoios dos pés que a arte mediu (vazio quando não mediu ou nenhum pé apoia). */
   feet: AvatarFootContact[]
+  /** As duas mãos ficam livres (falso: o objeto de mão sai enquanto o clipe toca). */
+  handsFree?: boolean
+  /** Deslocamento do `Hips` do primeiro ao último quadro, em x, y, z (metros, escala nativa). */
+  displacement?: [number, number, number]
+  /** Quando cada mão agarra (pendurar na borda, no cipó): quadros, como os apoios dos pés. */
+  hands?: { hand: 'left' | 'right'; on: number; off: number }[]
+  /**
+   * As medidas do LUGAR em que o clipe acontece, com os nomes da arte (`assento_m`, `maos_m`,
+   * `a_frente_m`, `corda_a_frente_m`, `linha_d_agua_m`…; as da margem com o prefixo `margem_`):
+   * onde fica o assento, a quina, a corda ou a água em relação ao `Root`. Metros, escala nativa.
+   */
+  place?: Record<string, number | number[]>
+  /** O chapéu sai enquanto o clipe toca (deitar). */
+  hatOff?: boolean
+  /** O objeto de mão que o clipe usa (o `acender` só toca com a lanterna na mão). */
+  object?: string
+}
+
+/**
+ * Um clipe de camada: toca por cima de outra animação, sobrescrevendo só os ossos listados (os
+ * dedos fechados no cabo da lanterna, o braço que se abre para a lanterna não bater no corpo).
+ */
+export interface AvatarGameLayer {
+  id: string
+  duration: number
+  loop: boolean
+  frames: number
+  /** Os únicos ossos que a camada mexe. */
+  bones: string[]
+  /** A animação que ela acompanha, no mesmo tempo; sem isto, vale por cima de qualquer uma. */
+  with?: string
+  /** Os objetos de mão com que ela entra. */
+  objects: string[]
+}
+
+/**
+ * Um objeto de mão do jogo (a lanterna). Não é roupa: não aparece no configurador, não entra no
+ * sorteio nem no inventário; quem o põe na mão é o jogo.
+ */
+export interface AvatarEquipment {
+  label: string
+  /** O encaixe do esqueleto em que ele fica (`mao_direita`). */
+  socket: string
+  file: string
+  thumb: string
+  tris: number
+  /** A animação de usar (`acender`). */
+  use?: string
+  /** A luz do objeto: o osso que acende, as escalas de acesa e apagada, a cor e o alcance (m). */
+  light?: { bone: string; on: number; off: number; color: string; range: number }
+  origin: AvatarPartOrigin
 }
 
 /**
@@ -185,8 +236,11 @@ export interface AvatarSkeleton {
   sockets: Record<string, AvatarSocket>
   /** Altura do corpo padrão do pack, do pé ao topo da cabeça, sem cabelo nem chapéu (metros). */
   height: number
-  /** As animações do jogo, num arquivo à parte: a plataforma não as baixa. */
-  game: { file: string; clips: AvatarGameClip[] }
+  /**
+   * As animações do jogo, num arquivo à parte: a plataforma não as baixa. `clips` são as do pack
+   * que o jogo usa e as que a arte fez (sentar, deitar, pendurar, nadar…); `layers`, as de camada.
+   */
+  game: { file: string; clips: AvatarGameClip[]; layers?: AvatarGameLayer[] }
 }
 
 export interface AvatarBaseFiles {
@@ -201,5 +255,7 @@ export interface AvatarCatalog {
   base: AvatarBaseFiles
   parts: Record<string, AvatarPartEntry>
   sets: Record<string, AvatarSetEntry>
+  /** Os objetos de mão do jogo (a lanterna): fora do guarda-roupa. */
+  equipment?: Record<string, AvatarEquipment>
   rules: AvatarRules
 }

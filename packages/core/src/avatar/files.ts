@@ -33,6 +33,10 @@ export function avatarFiles(catalog: AvatarCatalog): Set<string> {
     files.add(part.file)
     files.add(part.thumb)
   }
+  for (const item of Object.values(catalog.equipment ?? {})) {
+    files.add(item.file)
+    files.add(item.thumb)
+  }
   return files
 }
 

@@ -31,9 +31,18 @@ conferência das peças; a textura compartilhada vem dentro dos GLBs das peças.
 
 Sai com código 1 quando há o que migrar e diz "Tudo migrado." quando não há.
 
-⚠️ **Pendente:** a migração ainda não lê animação em arquivo próprio (`pacote: false` com `arquivo`
-na lista `animacoes` do esqueleto, o formato combinado com a arte para as animações novas do jogo).
-A conferência já acusa quando elas chegam; ensine o `migrar.ts` a juntá-las ao GLB do jogo nesse dia.
+**As animações do jogo e os objetos de mão (desde 14/11/2026):**
+
+- A arte entrega as animações dela uma por arquivo (`pacote: false` com `arquivo` na lista
+  `animacoes` do esqueleto) e os clipes de camada em `poses_mao`. A migração junta TODAS no arquivo
+  do jogo (`base/animacoes-do-jogo.<digital>.glb`), ao lado das de locomoção do pack, religando os
+  canais pelo nome do osso. Animação nova da arte entra sozinha na próxima migração; o catálogo
+  guarda as medidas de cada uma (`skeleton.game.clips`: passada, mãos, o lugar em que acontece) e
+  as camadas (`skeleton.game.layers`). A plataforma não baixa esse arquivo.
+- Os objetos de mão (pasta `maos/`: a lanterna) NÃO são roupa. Vão para `equipment` no catálogo,
+  fora de `parts`, das regras, do sorteio, do configurador e do inventário; o encaixe e o grupo
+  deles saem das regras na conversão. Pasta nova de objeto do jogo entra em
+  `PASTAS_DE_EQUIPAMENTO` (`arte.ts`).
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)
 
