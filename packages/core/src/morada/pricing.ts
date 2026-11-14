@@ -24,6 +24,19 @@ export interface MoradaPrice {
   band?: MoradaBand
   /** Preço proposto pela régua, ainda não conferido. */
   review?: true
+  /**
+   * Só na comunidade adulta: no Kids não aparece no Meu quarto e não se compra (as peças de
+   * cassino, decisão da dona de 14/11/2026, como o chapéu de cerveja do avatar).
+   */
+  adultOnly?: true
+}
+
+/** A peça é só do adulto (no Kids não aparece nem se compra). */
+export function isMoradaAdultOnly(
+  pieceId: string,
+  prices: Readonly<Record<string, MoradaPrice>> = MORADA_PRICES,
+): boolean {
+  return prices[pieceId]?.adultOnly === true
 }
 
 /**

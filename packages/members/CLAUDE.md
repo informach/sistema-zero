@@ -27,6 +27,8 @@
   Compra: `POST /house/buy {pieceId}` (`BuyMoradaPieceService`, o mesmo `spendCoins` do quarto antigo,
   chave `morada-buy:<user>:<peça>`). `scripts/conceder-morada.ts` (ensaio; `--confirm`) grava no
   inventário as pagas que já estavam nas casas quando o preço chegou.
+  Preços conferidos pela dona em 14/11 (sem `review`). `adultOnly` (as duas peças de cassino): no
+  Kids não aparece no Meu quarto e a compra responde 404, como o chapéu de cerveja do avatar.
   A projeção `state.house` do quarto e do perfil público contém somente o cômodo do quarto.
   A porta interna `/casa` e o `house` do `/quarto` interno entregam a casa completa para visitas autorizadas.
 - O contrato puro está em `core/morada/schema`: 600 instâncias e 512 KB, sem truncar.

@@ -93,6 +93,13 @@ describe('comprar peça da Morada com moedas', () => {
     )
   })
 
+  test('peça só do adulto não existe para o Kids', async () => {
+    const { buy } = montar(1000)
+    await expect(
+      buy.execute('u1', 'kids', 'moveis/livros/livro_cassino_pacote'),
+    ).rejects.toBeInstanceOf(RoomItemNotFoundError)
+  })
+
   test('sem saldo: 402 e nada entra no inventário', async () => {
     const { buy, room } = montar(0)
     await expect(buy.execute('u1', 'kids', paga)).rejects.toBeInstanceOf(InsufficientCoinsError)

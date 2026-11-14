@@ -1,4 +1,4 @@
-import { MORADA_CATALOG, moradaPrice } from '@sistemazero/core/morada'
+import { isMoradaAdultOnly, MORADA_CATALOG, moradaPrice } from '@sistemazero/core/morada'
 import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
@@ -32,7 +32,9 @@ export class BuyMoradaPieceService {
     pieceId: string,
     privileged = false,
   ): Promise<BuyRoomItemResult> {
-    if (!MORADA_CATALOG.pieces[pieceId]) throw new RoomItemNotFoundError('Peça não encontrada.')
+    // Peça só do adulto não existe para o Kids (como o chapéu de cerveja do avatar).
+    if (!MORADA_CATALOG.pieces[pieceId] || (audience !== 'adult' && isMoradaAdultOnly(pieceId)))
+      throw new RoomItemNotFoundError('Peça não encontrada.')
     const price = moradaPrice(pieceId)
     if (price.tier === 'free') throw new RoomItemFreeError('Essa peça já é gratuita.')
     if (price.tier === 'trophy') throw new RoomItemNotPurchasableError()

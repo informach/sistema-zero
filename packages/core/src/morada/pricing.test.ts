@@ -3,6 +3,7 @@ import { MORADA_CATALOG } from './catalog.generated'
 import { createMoradaHouse } from './house'
 import { MORADA_PRICES } from './prices.generated'
 import {
+  isMoradaAdultOnly,
   isMoradaFree,
   isMoradaTrophyTier,
   MORADA_TROPHY_SHELF,
@@ -57,6 +58,17 @@ describe('preço das peças Morada (a régua do avatar)', () => {
       expect(p.price, id).toBeLessThanOrEqual(300)
       expect(p.price % 10, id).toBe(0)
     }
+  })
+
+  test('as peças de cassino são só do adulto (e pagas)', () => {
+    for (const id of [
+      'moveis/livros/livro_cassino_pacote',
+      'moveis/luminarias/letreiro_neon_cassino_pacote',
+    ]) {
+      expect(isMoradaAdultOnly(id), id).toBe(true)
+      expect(moradaPrice(id).tier, id).toBe('coins')
+    }
+    expect(Object.values(MORADA_PRICES).every((p) => !p.review)).toBe(true)
   })
 
   test('peça desconhecida não é permitida; grátis é; paga só com posse', () => {

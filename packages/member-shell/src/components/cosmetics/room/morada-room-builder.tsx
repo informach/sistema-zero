@@ -1,5 +1,6 @@
 'use client'
 import {
+  isMoradaAdultOnly,
   isMoradaTrophyTier,
   MORADA_CATALOG,
   MORADA_TROPHY_SHELF,
@@ -269,6 +270,8 @@ export function MoradaRoomBuilder({
   const filtered = pieces.filter(
     (p) =>
       matchesTab(p, tab) &&
+      // Peça só do adulto (as de cassino) não aparece no Kids, a não ser que já seja dela.
+      (adult || !isMoradaAdultOnly(p.id) || ownedFromServer.has(p.id)) &&
       p.label.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')),
   )
   const tile = (piece: MoradaPiece) => {
