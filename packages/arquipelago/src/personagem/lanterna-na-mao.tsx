@@ -1,20 +1,21 @@
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { type RefObject, useMemo, useRef } from 'react'
 import { type Bone, type Group, type Object3D, Vector3 } from 'three'
 import lanternaGlb from '../assets/itens/lanterna.glb'
 
 const LANTERNA_URL = new URL(lanternaGlb, import.meta.url).href
-/** O osso que segura a alça (o mesmo esqueleto Mixamo dos braços no cipó). */
-export const OSSO_DA_LANTERNA = 'mixamorigRightHand'
-/** A lanterna do arquivo tem 33 cm; na mão grande do avatar (1,6 m) ela cresce para uns 46. */
+/** O ponto de segurar da mão direita do pack (o encaixe `mao_direita` do catálogo). */
+export const OSSO_DA_LANTERNA = AVATAR_CATALOG.base.skeleton.sockets.mao_direita ?? 'RightHandProp'
+/** A lanterna do arquivo tem 33 cm; na mão do herói (2,14 m na ponte do mundo) ela cresce para uns 46. */
 export const ESCALA_DA_LANTERNA = 1.4
 /**
- * O osso da mão fica no punho: a alça vai na ponta dos dedos (para baixo dele) e um pouco para
- * fora do corpo, senão a mão tapa a lanterna.
+ * O encaixe fica no meio da palma, onde a mão fecha: a alça vai nele, um pouco para fora do corpo,
+ * senão a mão tapa a lanterna.
  */
-export const ALCA_ABAIXO_DO_PUNHO = 0.11
-export const ALCA_PARA_FORA = 0.04
+export const ALCA_ABAIXO_DO_PUNHO = 0
+export const ALCA_PARA_FORA = 0.03
 
 /**
  * A lanterna acesa pendurada na mão direita (fase2-06). Fica dentro do `avatar-visual`, de pé no

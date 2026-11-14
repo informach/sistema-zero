@@ -1,6 +1,7 @@
 /**
- * As animações do avatar (os clipes do Mixamo, `arte/avatar/mixamo.py`) no jogo de verdade: um
- * print de cada uma, na cena em que ela aparece. Executar no pacote:
+ * As animações do avatar (os clipes do pack, `sistemas/locomocao.ts`) no jogo de verdade: um print
+ * de cada uma, na cena em que ela aparece. As peças do pack são pagas e ficam fora do git: rode com
+ * `AVATAR_QA_DIR=<cópia local do bucket do avatar>` (com o GLB `game.file` do catálogo). No pacote:
  * bun build playground/verificar-animacoes-browser.ts --target=node --external playwright-core --outfile .cache/verificar-animacoes-browser.mjs
  * node .cache/verificar-animacoes-browser.mjs
  * ARQUIPELAGO_CHROMIUM escolhe o navegador; ARQUIPELAGO_PRINTS, a pasta dos prints;
@@ -331,10 +332,12 @@ try {
       const t = m.troncos[0]
       if (!t) throw new Error('sem tronco de escalar')
       const { base, raioBase } = t.tronco
-      // Do lado do tronco longe dos cipós (perto deles as mãos pegam um no caminho).
+      // Do lado do tronco longe dos cipós (perto deles as mãos pegam um no caminho). Só os cipós da
+      // ilha do tronco: os de outras ilhas (o dos segredos da sua ilha) puxariam a conta para longe.
+      const daIlha = t.id.split(':')[0]
       let lx = 0
       let lz = 0
-      for (const c of m.cipos) {
+      for (const c of m.cipos.filter((c) => c.id.split(':')[0] === daIlha)) {
         lx += base.x - c.pivo.x
         lz += base.z - c.pivo.z
       }
@@ -602,8 +605,11 @@ try {
     const TAMPO = 1
     const dino = vale.mundo({ x: MONTARIA_NO_VALE.x, y: TAMPO, z: MONTARIA_NO_VALE.z })
     const aoLado = vale.mundo({ x: MONTARIA_NO_VALE.x, y: TAMPO, z: MONTARIA_NO_VALE.z - 1.6 })
+    // Sobre o Vale do salvamento de hoje (campo que faltar invalida o salvamento e o jogo começa
+    // outro, longe do Vale).
+    const inicial = criarSalvamentoInicial(new Date())
     const guardado = salvar(aoLado, {
-      vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote: null },
+      vale: { ...inicial.vale, pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE] },
     } as Partial<Salvamento>)
     const { page, context } = await abrir('/?posicao=8', guardado)
     await tentar('montar', async () => {

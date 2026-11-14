@@ -10,6 +10,7 @@
     "./avatar/catalog": "./src/avatar/catalog.ts",
     "./avatar/measure": "./src/avatar/measure.ts",
     "./avatar/pack-catalog": "./src/avatar/pack-catalog.ts",
+    "./avatar/pack-clips": "./src/avatar/pack-clips.ts",
     "./avatar/pack-instance": "./src/avatar/pack-instance.ts",
     "./avatar/pack-rig": "./src/avatar/pack-rig.tsx",
     "./avatar/instance": "./src/avatar/instance.ts",

@@ -8,8 +8,11 @@
   erro tira o boneco sem derrubar quem o mostra quando o esqueleto não baixa (bucket privado).
 - `avatar/pack-catalog.ts`: repassa o catálogo do `@sistemazero/core/avatar` para o jogo (que não
   importa o core) e `avatarDoPack` (o avatar que chega da plataforma, só com peças conhecidas).
-- O `AvatarRig`, o `catalog.ts` e o resto do avatar antigo ficam só para o jogo (o fantasma
-  familiar e os testes de locomoção e patins) até o plano do jogo; a plataforma não os usa mais.
+- `avatar/pack-clips.ts` (14/11): `semDeslocamento(clipe, nome, {vertical})` tira o andar do `Hips`
+  numa cópia do clipe (o jogo anda pela física), com o vertical mantido, sem a tendência (escada) ou
+  com teto (pulo); `alturaNoComeco` dá a altura do `Hips` em pé. A plataforma não usa.
+- O `AvatarRig`, o `catalog.ts` e o resto do avatar antigo só sobram para os patins do jogo (até a
+  arte mandar o par do pack); o fantasma já usa o pack. A plataforma não os usa mais.
 
 ## Várias montagens do avatar (30/10/2026)
 

@@ -62,6 +62,7 @@ import {
   INCLINACAO_NO_CIPO,
   segurarACorda,
 } from './bracos'
+import { AJUSTE_MAXIMO, type AlturaDoChao } from './pes-no-chao'
 import { PlanadorAberto } from './planador-aberto'
 
 const MEIA_ALTURA = CORPO.meiaAltura
@@ -93,6 +94,11 @@ const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
 /** No planador, o corpo pende um pouco para a frente, pendurado na barra (radianos). */
 const INCLINACAO_NO_PLANADOR = 0.25
+/**
+ * Nadando, o corpo deita para a frente em volta do quadril, que fica na linha d'água (radianos).
+ * É a reserva até a arte mandar o nado: a pose do ar (`pulo_no_ar`) deitada.
+ */
+const INCLINACAO_NO_NADO = 1.15
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -200,6 +206,31 @@ export function Personagem() {
       return corpoQueSegura(corpo?.userData, v.modo)
     },
     [v.modo],
+  )
+  // O chão embaixo de cada pé, para o desenho assentar os pés (`pes-no-chao.ts`): um raio para
+  // baixo com o mesmo filtro do controlador (o que segura o corpo é o que o pé pisa).
+  const raioDoPe = useMemo(
+    () => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }),
+    [rapier],
+  )
+  const chaoDosPes = useMemo<AlturaDoChao>(
+    () => (x, z, deY) => {
+      raioDoPe.origin.x = x
+      raioDoPe.origin.y = deY
+      raioDoPe.origin.z = z
+      const hit = world.castRay(
+        raioDoPe,
+        AJUSTE_MAXIMO * 3,
+        true,
+        rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+        undefined,
+        undefined,
+        corpoDoPersonagem.current ?? undefined,
+        aceitaColisorDoMundo,
+      )
+      return hit ? deY - hit.timeOfImpact : null
+    },
+    [world, rapier, raioDoPe, aceitaColisorDoMundo],
   )
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
@@ -471,14 +502,16 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô). Nadar de bruços e deitar de
-    // costas já vêm deitados nos clipes.
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô); no planador, para a frente;
+    // nadando, deitado (a reserva do nado, girada em volta do quadril logo abaixo).
     const inclinar =
       v.modo === 'cipo' && v.cipo
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
         : v.modo === 'planar'
           ? INCLINACAO_NO_PLANADOR
-          : 0
+          : nadando
+            ? INCLINACAO_NO_NADO
+            : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando
@@ -502,6 +535,16 @@ export function Personagem() {
         (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
       -noCorpo.z * k,
     )
+    // Deitado na água, o giro é em volta do quadril (na linha d'água), não dos pés: o quadril volta
+    // para onde estava em pé.
+    if (nadando && v.noCipo < 0.001) {
+      const a = vis.rotation.x
+      const h = CORPO.cintura
+      const frente = -h * Math.sin(a)
+      vis.position.x += Math.sin(vis.rotation.y) * frente
+      vis.position.y += h * (1 - Math.cos(a))
+      vis.position.z += Math.cos(vis.rotation.y) * frente
+    }
     // Descansando, o desenho vai para o assento ou o colchão (o corpo do Rapier fica de pé ao
     // lado, fora do móvel): a origem do desenho (os pés no clipe) no lugar do descanso.
     const lugar = v.descanso
@@ -598,6 +641,7 @@ export function Personagem() {
         <AvatarDoJogo
           movimento={animacao}
           depoisDaPose={depoisDaPose}
+          chao={chaoDosPes}
           comPatins={calcados}
           comLanterna={lanterna}
         />

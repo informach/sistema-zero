@@ -1,44 +1,53 @@
 import { type Bone, type Object3D, Quaternion, Vector3 } from 'three'
 import { CIPO } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
+import { ikDeDoisOssos } from './ik'
 
 /**
- * As mãos na corda do cipó. O clipe "Corda" (o "Climbing A Rope" do Mixamo) segura uma corda na
- * frente do rosto, e a do jogo passa ao lado dele; então, depois da pose de cada quadro, cada braço
- * é dobrado por IK de dois ossos (braço e antebraço) até o punho chegar ao ponto da pegada. Os
- * ossos são os do Mixamo, com o nome que o `GLTFLoader` deixa (sem os dois-pontos).
+ * As mãos na corda do cipó. Até a arte mandar a animação de se pendurar, o cipó usa a pose do ar
+ * (`POSE_DO_ESTADO.Corda`), e depois da pose de cada quadro cada braço é dobrado por IK de dois
+ * ossos (`ik.ts`) até o ponto de segurar do pack (`LeftHandProp`/`RightHandProp`, o encaixe
+ * `mao_*` do catálogo) chegar à corda.
  *
- * O avatar é chibi: o ombro fica a 1,01 m do pé, do ombro ao punho são 0,36 m e a cabeça é grande
- * (vai de 1,28 m a 2,13 m, 0,98 m de largura, com o rosto 0,44 m à frente). Por isso as mãos
- * seguram na altura do queixo, não acima da cabeça.
+ * O pack é chibi: a cabeça é quase metade do corpo e o braço é curto (ombro a 0,99 m e braço de
+ * 0,48 m na ponte de 1,85). As mãos seguram meio braço acima do ombro, e a corda passa logo fora da
+ * cabeça, do lado esquerdo: a mão esquerda chega; a direita cruza o peito e chega esticada.
  */
 const OSSOS = {
-  esquerdo: ['mixamorigLeftArm', 'mixamorigLeftForeArm', 'mixamorigLeftHand'],
-  direito: ['mixamorigRightArm', 'mixamorigRightForeArm', 'mixamorigRightHand'],
+  esquerdo: ['LeftArm', 'LeftForeArm', 'LeftHand', 'LeftHandProp'],
+  direito: ['RightArm', 'RightForeArm', 'RightHand', 'RightHandProp'],
 } as const
+
+const m = CORPO.medidas
+/** A altura das mãos na corda, do pé. */
+const MAOS_NA_CORDA = CORPO.doCentroAoPe + CIPO.maosAcimaDoCentro
+/** O raio da cabeça (uma bola) na altura das mãos: a corda passa fora dele. */
+const CABECA_NA_ALTURA_DAS_MAOS = Math.sqrt(
+  Math.max(0, m.headRadius ** 2 - (m.headCenter - MAOS_NA_CORDA) ** 2),
+)
+/** A folga entre a corda e a cabeça (a corda desenhada tem uns 4 cm de raio). */
+const FOLGA_DA_CORDA = 0.06
 
 /**
  * Onde a corda passa no corpo do avatar (metros a partir dos pés; ele olha para +z e a esquerda
- * dele é +x): ao lado do rosto, do lado esquerdo, na altura das mãos do cipó
- * (`CIPO.maosAcimaDoCentro` acima do centro). É como se pendura numa corda de verdade, com a
- * cabeça ao lado dela; e a cabeça grande do avatar não entra na corda. O personagem põe o corpo de
+ * dele é +x): ao lado da cabeça, do lado esquerdo, um pouco à frente, na altura das mãos do cipó.
+ * É como se pendura numa corda de verdade, com a cabeça ao lado dela. O personagem põe o corpo de
  * modo que este ponto caia em cima da corda.
  */
-export const CORDA_NO_CORPO = new Vector3(0.24, CORPO.doCentroAoPe + CIPO.maosAcimaDoCentro, 0.4)
+export const CORDA_NO_CORPO = new Vector3(
+  CABECA_NA_ALTURA_DAS_MAOS + FOLGA_DA_CORDA,
+  MAOS_NA_CORDA,
+  0.1,
+)
 
-/**
- * O corpo pende para trás no cipó (radianos), além do que o clipe "Corda" já faz: nada, a pose do
- * Mixamo (agarrada na corda, pernas cruzadas) já tem o corpo no jeito.
- */
+/** O corpo pende para trás no cipó (radianos), além da pose: nada por enquanto. */
 export const INCLINACAO_NO_CIPO = 0
 
-/**
- * Onde cada punho segura: um pouco antes da corda (a palma passa do punho e fecha em volta dela),
- * a mão esquerda logo acima da direita. O braço direito, curto, cruza o peito e chega esticado.
- */
+/** A mão esquerda segura um palmo acima da direita, como quem sobe numa corda. */
+const PALMO = 0.08
 const PEGADA_NO_CIPO = {
-  esquerdo: new Vector3(CORDA_NO_CORPO.x - 0.02, CORDA_NO_CORPO.y + 0.1, CORDA_NO_CORPO.z - 0.1),
-  direito: new Vector3(CORDA_NO_CORPO.x - 0.08, CORDA_NO_CORPO.y - 0.06, CORDA_NO_CORPO.z - 0.1),
+  esquerdo: new Vector3(CORDA_NO_CORPO.x, CORDA_NO_CORPO.y + PALMO / 2, CORDA_NO_CORPO.z),
+  direito: new Vector3(CORDA_NO_CORPO.x, CORDA_NO_CORPO.y - PALMO / 2, CORDA_NO_CORPO.z),
 } as const
 
 /** Para onde o cotovelo aponta (para fora e para baixo, como quem se pendura). */
@@ -48,6 +57,7 @@ const COTOVELO = {
 } as const
 
 export interface BracosDoAvatar {
+  /** Braço, antebraço, mão e o ponto de segurar, de cada lado. */
   esquerdo: Bone[]
   direito: Bone[]
 }
@@ -66,58 +76,28 @@ export function acharBracos(raiz: Object3D): BracosDoAvatar | null {
 }
 
 const giroDoCorpo = new Quaternion()
-const doOsso = new Quaternion()
-const doPai = new Quaternion()
-const troca = new Quaternion()
-const eixo = new Vector3()
-const ombro = new Vector3()
-const cotovelo = new Vector3()
-const punho = new Vector3()
 const alvo = new Vector3()
-const rumo = new Vector3()
 const polo = new Vector3()
-const braco = new Vector3()
+const punho = new Vector3()
+const pegada = new Vector3()
 
 /** Fecha as mãos na corda (depois de a pose deste quadro ter sido aplicada). */
 export function segurarACorda(bracos: BracosDoAvatar, corpo: Object3D): void {
   corpo.getWorldQuaternion(giroDoCorpo)
   for (const lado of ['esquerdo', 'direito'] as const) {
-    const [osso, ante, mao] = bracos[lado]
-    if (!osso || !ante || !mao) continue
-    osso.getWorldPosition(ombro)
-    ante.getWorldPosition(cotovelo)
-    mao.getWorldPosition(punho)
-    const a = ombro.distanceTo(cotovelo)
-    const b = cotovelo.distanceTo(punho)
-    alvo.copy(PEGADA_NO_CIPO[lado])
-    corpo.localToWorld(alvo)
-    // Do ombro ao alvo, sem passar do comprimento do braço (longe demais, estica reto).
-    rumo.subVectors(alvo, ombro)
-    const d = Math.min(Math.max(rumo.length(), Math.abs(a - b) + 1e-4), a + b - 1e-4)
-    rumo.normalize()
-    // Lei dos cossenos: o ângulo no ombro entre o rumo do alvo e o braço.
-    const cosA = Math.min(1, Math.max(-1, (a * a + d * d - b * b) / (2 * a * d)))
-    const senA = Math.sqrt(1 - cosA * cosA)
+    const [osso, ante, mao, ponto] = bracos[lado]
+    if (!osso || !ante || !mao || !ponto) continue
     polo.copy(COTOVELO[lado]).applyQuaternion(giroDoCorpo)
-    polo.addScaledVector(rumo, -polo.dot(rumo)).normalize()
-    braco.copy(rumo).multiplyScalar(cosA).addScaledVector(polo, senA)
-    apontar(osso, braco)
-    // O antebraço vai do cotovelo novo até o alvo (no alcance).
-    cotovelo.copy(ombro).addScaledVector(braco, a)
-    alvo.copy(ombro).addScaledVector(rumo, d)
-    apontar(ante, braco.subVectors(alvo, cotovelo).normalize())
+    // O punho vai para onde a pegada fica na corda, menos o caminho do punho ao ponto de segurar:
+    // é o ponto de segurar que encosta na corda, não o punho. A mão gira junto com o antebraço,
+    // então esse caminho é medido de novo depois da primeira volta.
+    for (let volta = 0; volta < 2; volta++) {
+      alvo.copy(PEGADA_NO_CIPO[lado])
+      corpo.localToWorld(alvo)
+      mao.getWorldPosition(punho)
+      ponto.getWorldPosition(pegada)
+      alvo.sub(pegada.sub(punho))
+      ikDeDoisOssos(osso, ante, mao, alvo, polo)
+    }
   }
-}
-
-/** Gira o osso (no mundo) até o +y dele, a direção em que ele cresce, apontar para `para`. */
-function apontar(osso: Bone, para: Vector3): void {
-  const pai = osso.parent
-  if (!pai) return
-  osso.getWorldQuaternion(doOsso)
-  eixo.set(0, 1, 0).applyQuaternion(doOsso)
-  troca.setFromUnitVectors(eixo, para)
-  doOsso.premultiply(troca)
-  pai.getWorldQuaternion(doPai).invert()
-  osso.quaternion.copy(doPai.multiply(doOsso))
-  osso.updateMatrixWorld(true)
 }

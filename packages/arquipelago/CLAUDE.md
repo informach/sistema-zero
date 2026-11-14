@@ -24,11 +24,27 @@ O avatar da plataforma virou o do pack Cute Characters (plano
 - `AvatarDoJogo` (contrato) é encaixe → id da peça; o jogo lê com `avatarDoPack` do `avatar-quarto`
   (`avatar/pack-catalog.ts`, que repassa o catálogo do core: o jogo não importa o core direto).
 - `personagem/avatar-do-jogo.tsx` monta o `PackAvatarRig` dentro do `PackRigBoundary` (esqueleto que
-  não baixa não derruba o jogo) e o boneco fica PARADO. ⚠️ Até o plano do jogo: sem as animações de
-  movimento, sem patins (feitos para o esqueleto Mixamo), as mãos no cipó e a lanterna na mão
-  procuram os ossos antigos e ficam como estão; o tamanho é o do pack (1,15 m, o antigo 2,13 m); a
-  pausa não congela a pose de parado. O fantasma familiar continua com o avatar antigo de partida
-  (os arquivos de `community-kids/public/avatar3d`).
+  não baixa não derruba o jogo), na escala do mundo (`escala-do-heroi`, `CORPO.medidas.scale`).
+- **Animações (14/11, etapa 1 passo 4):** os clipes de movimento vêm do GLB `game.file` do catálogo
+  (bucket privado), sem o deslocamento do `Hips` (`semDeslocamento` do `avatar-quarto/avatar/pack-clips`,
+  na carga; o pulo com teto na altura de quem está em pé, a escada sem a subida) e com o nome
+  `jogo/<id>` (não cruzam com os da plataforma). `sistemas/locomocao.ts` fala em ESTADOS;
+  `POSE_DO_ESTADO` diz o clipe e o pedaço dele (o pulo começa no empurrão, o pouso no pé tocando) e
+  as reservas dos modos que a arte ainda não animou; `poseDosClipes` junta os pesos por clipe. Passadas
+  e durações vêm do catálogo vezes a escala; andar e correr ficam inteiros nas velocidades do mundo;
+  as pernas giram até `RITMO_MAXIMO` (2) vezes a cadência do clipe. O mixer é do jogo (escala de tempo
+  0; na pausa a pose congela). Nadando, a reserva deita o desenho em volta do quadril
+  (`INCLINACAO_NO_NADO`).
+- **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
+  eixo do osso); as mãos no cipó miram o encaixe `mao_*` do pack (`bracos.ts`: a corda passa fora da
+  cabeça, na altura das mãos); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do
+  Rapier pelo `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada); a
+  lanterna vai no encaixe `mao_direita`. Os dois rodam também na pausa (o mixer reaplica a pose).
+  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade).
+- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com o boneco de partida (`avatarDoPack(null)`), o
+  material próprio e o `correr_frente` no relógio da corrida; o pé desconta a folga, como o jogador.
+- Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do
+  GLB `game.file`).
 - As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.
 - Playground: `AVATAR_QA_DIR=<cópia das peças do pack>` serve `/api/avatar3d/` (as peças são pagas e
   ficam fora do git); sem ela o boneco não aparece.

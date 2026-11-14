@@ -1,16 +1,22 @@
-import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import type { Fantasma } from '@sistemazero/arquipelago-contracts'
-import { AvatarRig } from '@sistemazero/avatar-quarto/avatar/avatar-rig'
-import { DEFAULT_AVATAR_SLOTS } from '@sistemazero/avatar-quarto/avatar/catalog'
+import { avatarDoPack } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
+import { PackAvatarRig, PackRigBoundary } from '@sistemazero/avatar-quarto/avatar/pack-rig'
 import { Suspense, useCallback, useEffect, useMemo, useRef } from 'react'
 import { type AnimationAction, type Group, MeshBasicMaterial, Vector3 } from 'three'
 import { useStore } from 'zustand'
-import locomocao from '../assets/avatar/locomocao.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosFantasmas } from '../estado/fantasmas'
+import { nomeNoJogo, useClipesDoJogo } from '../personagem/avatar-do-jogo'
 import { CORPO } from '../sistemas/corpo'
 import { amostrarFantasma } from '../sistemas/fantasma'
+import { ciclosPorSegundo } from '../sistemas/locomocao'
+
+/** O fantasma é o boneco de partida do pack (o avatar de quem correu fica para o salvamento). */
+const SLOTS_DO_FANTASMA = avatarDoPack(null)
+const CORRER = nomeNoJogo('correr_frente')
+/** As pernas do fantasma giram no ritmo de quem corre no mundo (ciclos por segundo). */
+const RITMO_DO_FANTASMA = ciclosPorSegundo(CORPO.correr)
 
 /** Referência visual sem corpo do Rapier, colisão, luz, sombra ou item de outro perfil. */
 export function FantasmaFamiliar() {
@@ -19,9 +25,11 @@ export function FantasmaFamiliar() {
   const ref = useStore(fantasmas.estado, (s) => s.referencia)
   const percurso = useEstado((s) => s.corrida?.percurso ?? null)
   return ref && percurso === ref.fantasma.percurso ? (
-    <Suspense fallback={null}>
-      <Silhueta key={ref.perfilId + ref.fantasma.percurso} referencia={ref} />
-    </Suspense>
+    <PackRigBoundary>
+      <Suspense fallback={null}>
+        <Silhueta key={ref.perfilId + ref.fantasma.percurso} referencia={ref} />
+      </Suspense>
+    </PackRigBoundary>
   ) : null
 }
 
@@ -29,9 +37,9 @@ function Silhueta({ referencia }: { referencia: { fantasma: Fantasma } }) {
   const { loja, movimento } = useJogo()
   const grupo = useRef<Group>(null),
     rig = useRef<Group>(null)
-  const acoes = useRef<Record<string, AnimationAction | null>>({})
+  const correr = useRef<AnimationAction | null>(null)
   const pose = useRef({ x: 0, y: 0, z: 0, giro: 0 }).current
-  const clipes = useGLTF(new URL(locomocao, import.meta.url).href, false, false)
+  const clipes = useClipesDoJogo()
   const material = useMemo(
     () =>
       new MeshBasicMaterial({
@@ -45,13 +53,13 @@ function Silhueta({ referencia }: { referencia: { fantasma: Fantasma } }) {
   )
   useEffect(() => () => material.dispose(), [material])
   const animar = useCallback((todas: Record<string, AnimationAction | null>) => {
-    acoes.current = todas
     for (const [nome, acao] of Object.entries(todas)) {
       if (!acao) continue
-      acao.setEffectiveWeight(nome === 'Correr' ? 1 : 0)
+      acao.setEffectiveWeight(nome === CORRER ? 1 : 0)
       acao.setEffectiveTimeScale(0)
       acao.play()
     }
+    correr.current = todas[CORRER] ?? null
   }, [])
   const preparar = () => {
     const g = rig.current
@@ -72,21 +80,28 @@ function Silhueta({ referencia }: { referencia: { fantasma: Fantasma } }) {
     )
     if (!g.visible || !c) return
     amostrarFantasma(referencia.fantasma, c.tempoMs, pose)
-    g.position.set(pose.x, pose.y - CORPO.doCentroAoPe, pose.z)
+    // O pé no chão como o do personagem: o controlador deixa a folga embaixo da cápsula.
+    g.position.set(pose.x, pose.y - CORPO.doCentroAoPe - CORPO.folga, pose.z)
     g.rotation.y = pose.giro
-    const correr = acoes.current.Correr
-    if (correr) correr.time = (c.tempoMs / 1000) % correr.getClip().duration
+    // O relógio da corrida move as pernas: a pausa (que para a corrida) congela o fantasma.
+    const acao = correr.current
+    if (acao) {
+      const d = acao.getClip().duration
+      acao.time = (((c.tempoMs / 1000) * RITMO_DO_FANTASMA) % 1) * d
+    }
   })
   return (
     <group ref={grupo} name="fantasma-familiar" visible={false}>
-      <AvatarRig
-        slots={DEFAULT_AVATAR_SLOTS}
-        charRef={rig}
-        onStood={preparar}
-        extraClips={clipes.animations}
-        onAnimations={animar}
-        materialOverride={material}
-      />
+      <group scale={CORPO.medidas.scale}>
+        <PackAvatarRig
+          slots={SLOTS_DO_FANTASMA}
+          charRef={rig}
+          onStood={preparar}
+          extraClips={clipes}
+          onAnimations={animar}
+          materialOverride={material}
+        />
+      </group>
     </group>
   )
 }
