@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { type RapierRigidBody, useRapier } from '@react-three/rapier'
-import { type RefObject, useEffect, useMemo, useRef } from 'react'
+import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react'
 import { DoubleSide, type Mesh, type MeshBasicMaterial, Vector3 } from 'three'
 import { useJogo } from '../estado/contexto'
 import type { PontoNoChao } from '../sistemas/caminho'
@@ -11,8 +11,10 @@ import {
   caminhoDoToque,
   criarIda,
   destinoDaIda,
+  FALA_SEM_CAMINHO_ATE_A_TAREFA,
   foiUmToque,
   IR_TOCANDO,
+  interativoDoLembrete,
   interativoNoToque,
   pontosParaUsar,
 } from '../sistemas/ir-tocando'
@@ -30,11 +32,26 @@ const RECUSA_NA_TELA = 0.9
 const COR_DA_IDA = '#ffd23f'
 const COR_DA_RECUSA = '#8a94a6'
 
+/** O caminho até ficar ao alcance de um objeto (já ao alcance, um ponto só: onde ela está). */
+function caminhoAteObjeto(
+  daqui: PontoNoChao,
+  objeto: { x: number; z: number; raio: number },
+  chao: (x: number, z: number) => ChaoNoPonto,
+): PontoNoChao[] | null {
+  if (aoAlcance(objeto, daqui)) return [daqui]
+  for (const p of pontosParaUsar(objeto, daqui)) {
+    const r = caminhoDoToque(daqui, p, chao)
+    if ('caminho' in r) return r.caminho
+  }
+  return null
+}
+
 /**
  * Ir tocando: um toque (ou clique) no chão e o avatar vai até lá sozinho, andando pelo caminho que
  * desvia dos obstáculos (`sistemas/ir-tocando.ts`); num objeto (o banco, a placa, um morador), vai
- * até ele e usa. Arrastar continua girando a câmera. A marca
- * amarela mostra o destino; a cinza, por um instante, o lugar a que não se chega andando.
+ * até ele e usa. Arrastar continua girando a câmera. A marca amarela mostra o destino; a cinza, por
+ * um instante, o lugar a que não se chega andando. O "Agora" do HUD pede o mesmo por
+ * `movimento.levarAte` (os lugares de uma tarefa): o avatar vai até o objeto dela.
  *
  * O toque vira um raio da câmera contra o mundo da física (o que a câmera enxerga como sólido: o
  * chão, as paredes, os troncos). A grade do caminho é montada na hora, só em volta do trecho, com
@@ -66,6 +83,48 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
       rumo: new Vector3(),
     }),
     [rapier],
+  )
+
+  /**
+   * O que o mundo diz de cada ponto entre os pés dela (`pes`) e um ponto a `yAlvo`: a altura do chão
+   * e se o corpo cabe ali de pé e seco.
+   */
+  const chaoEntre = useCallback(
+    (eu: RapierRigidBody, pes: number, yAlvo: number) => {
+      const topo = Math.max(pes, yAlvo) + CORPO.medidas.height
+      const fundo = Math.min(pes, yAlvo) - 2
+      return (x: number, z: number): ChaoNoPonto => {
+        const { paraBaixo, capsula, semGiro } = ferramentas
+        paraBaixo.origin = { x, y: topo, z }
+        const piso = world.castRay(
+          paraBaixo,
+          topo - fundo,
+          true,
+          rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+          undefined,
+          undefined,
+          eu,
+        )
+        if (!piso) return { y: null, cabe: false }
+        const y = topo - piso.timeOfImpact
+        // Água acima da cintura é nadar: ali não se vai andando.
+        if (superficieDaAgua(movimento.aguas, NIVEL_DA_AGUA, x, z) - y > CINTURA)
+          return { y, cabe: false }
+        const meio =
+          y + CORPO_DA_CONFERENCIA.doChao + (CORPO.medidas.height - CORPO_DA_CONFERENCIA.doChao) / 2
+        const encosta = world.intersectionWithShape(
+          { x, y: meio, z },
+          semGiro,
+          capsula,
+          rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+          undefined,
+          undefined,
+          eu,
+        )
+        return { y, cabe: encosta === null }
+      }
+    },
+    [world, rapier, ferramentas, movimento],
   )
 
   useEffect(() => {
@@ -131,55 +190,14 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
       // Parede, tronco, céu, sem objeto: não é lugar de ir.
       if (!objeto && hit.normal.y < CHAO_DE_PISAR) return
       const de = eu.translation()
-      const pes = de.y - CORPO.doCentroAoPe
-      // De cima do mais alto dos dois (ela ou o ponto tocado) até bem abaixo do mais baixo.
-      const topo = Math.max(pes, alvo.y) + CORPO.medidas.height
-      const fundo = Math.min(pes, alvo.y) - 2
-      const chao = (x: number, z: number): ChaoNoPonto => {
-        const { paraBaixo, capsula, semGiro } = ferramentas
-        paraBaixo.origin = { x, y: topo, z }
-        const piso = world.castRay(
-          paraBaixo,
-          topo - fundo,
-          true,
-          rapier.QueryFilterFlags.EXCLUDE_SENSORS,
-          undefined,
-          undefined,
-          eu,
-        )
-        if (!piso) return { y: null, cabe: false }
-        const y = topo - piso.timeOfImpact
-        // Água acima da cintura é nadar: ali não se vai andando.
-        if (superficieDaAgua(movimento.aguas, NIVEL_DA_AGUA, x, z) - y > CINTURA)
-          return { y, cabe: false }
-        const meio =
-          y + CORPO_DA_CONFERENCIA.doChao + (CORPO.medidas.height - CORPO_DA_CONFERENCIA.doChao) / 2
-        const encosta = world.intersectionWithShape(
-          { x, y: meio, z },
-          semGiro,
-          capsula,
-          rapier.QueryFilterFlags.EXCLUDE_SENSORS,
-          undefined,
-          undefined,
-          eu,
-        )
-        return { y, cabe: encosta === null }
-      }
+      const chao = chaoEntre(eu, de.y - CORPO.doCentroAoPe, alvo.y)
       const daqui = { x: de.x, z: de.z }
       const m = lugar.current
       m.x = objeto?.x ?? alvo.x
       m.y = alvo.y
       m.z = objeto?.z ?? alvo.z
       if (objeto) {
-        // Já ao alcance: usa sem andar. Senão, o primeiro ponto em volta dele a que se chega.
-        let caminho: PontoNoChao[] | null = aoAlcance(objeto, daqui) ? [daqui] : null
-        for (const p of caminho ? [] : pontosParaUsar(objeto, daqui)) {
-          const r = caminhoDoToque(daqui, p, chao)
-          if ('caminho' in r) {
-            caminho = r.caminho
-            break
-          }
-        }
+        const caminho = caminhoAteObjeto(daqui, objeto, chao)
         movimento.ida = caminho ? criarIda(caminho, daqui, objeto.id) : null
         m.recusa = caminho ? 0 : RECUSA_NA_TELA
         return
@@ -202,17 +220,41 @@ export function IrTocando({ corpo }: { corpo: RefObject<RapierRigidBody | null> 
       el.removeEventListener('pointerup', sobe)
       el.removeEventListener('pointercancel', cancela)
     }
-  }, [gl, camera, world, rapier, loja, movimento, corpo, ferramentas, interativos])
+  }, [gl, camera, world, rapier, loja, movimento, corpo, ferramentas, interativos, chaoEntre])
 
   // A ida acaba com a montagem (trocar de cena, fechar o jogo).
   useEffect(
     () => () => {
       movimento.ida = null
+      movimento.levarAte = null
     },
     [movimento],
   )
 
   useFrame((_, dt) => {
+    // O "Agora" pediu para levar até uma tarefa: acha o objeto dela e vai, como num toque nele.
+    const pedido = movimento.levarAte
+    if (pedido) {
+      movimento.levarAte = null
+      const eu = corpo.current
+      const estado = loja.getState()
+      if (eu && !jogoPausado(estado) && movimento.modo === 'chao' && !estado.visita) {
+        const de = eu.translation()
+        const daqui = { x: de.x, z: de.z }
+        const pes = de.y - CORPO.doCentroAoPe
+        const objeto = interativoDoLembrete(interativos, pedido, daqui)
+        const caminho = objeto ? caminhoAteObjeto(daqui, objeto, chaoEntre(eu, pes, pes)) : null
+        if (objeto && caminho) {
+          movimento.ida = criarIda(caminho, daqui, objeto.id)
+          const m = lugar.current
+          m.x = objeto.x
+          m.y = pes
+          m.z = objeto.z
+          m.recusa = 0
+        } else estado.dizer(FALA_SEM_CAMINHO_ATE_A_TAREFA)
+      }
+    }
+
     const malha = marca.current
     const tinta = material.current
     if (!malha || !tinta) return

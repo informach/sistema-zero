@@ -243,6 +243,8 @@ export interface Movimento {
   acenos: number
   /** Ela tocou num lugar do chão e está indo para lá sozinha (`sistemas/ir-tocando.ts`). */
   ida: Ida | null
+  /** O "Agora" pediu para levar até uma tarefa: os lugares dela (`LUGARES_DOS_LEMBRETES`). */
+  levarAte: readonly string[] | null
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
   /**
@@ -285,6 +287,7 @@ export function criarMovimento(): Movimento {
     corpoDesenhado: null,
     acenos: 0,
     ida: null,
+    levarAte: null,
     corrida: null,
     mira: null,
     pedidoDoPercurso: null,

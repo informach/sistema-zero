@@ -276,3 +276,49 @@ export function pontosParaUsar(
 export function aoAlcance(alvo: { x: number; z: number; raio: number }, p: PontoNoChao): boolean {
   return Math.hypot(alvo.x - p.x, alvo.z - p.z) <= alvo.raio
 }
+
+// ── Levar até a tarefa do "Agora" ──────────────────────────────────────────────────────────────
+
+/**
+ * Onde se faz cada lembrete do "Agora": ids de interativos (terminados em `-`, o começo do id). O
+ * avatar vai até o mais perto deles que tem algo a fazer agora.
+ */
+export const LUGARES_DOS_LEMBRETES: Readonly<Record<string, readonly string[]>> = {
+  porta: ['porta-nova', 'porta-da-casa'],
+  fome: ['objeto-geladeira', 'bancada'],
+  energia: ['cama'],
+  regar: ['canteiro-'],
+  colher: ['canteiro-'],
+  'primeiro-pedido': ['canteiro-', 'objeto-geladeira'],
+  desafio: ['quadro-'],
+}
+
+const casa = (id: string, lugares: readonly string[]) =>
+  lugares.some((l) => (l.endsWith('-') ? id.startsWith(l) : id === l))
+
+/**
+ * O interativo de um lembrete: o mais perto de `de` cujo id casa com um dos lugares, com algo a fazer
+ * agora; sem nenhum com algo a fazer, o mais perto mesmo assim (a porta fechada, o canteiro que
+ * ainda cresce: ir até lá mostra onde fica).
+ */
+export function interativoDoLembrete(
+  lista: Iterable<[string, InterativoDoToque]>,
+  lugares: readonly string[],
+  de: PontoNoChao,
+): { id: string; x: number; z: number; raio: number } | null {
+  let comAcao: { id: string; x: number; z: number; raio: number; d: number } | null = null
+  let qualquer: { id: string; x: number; z: number; raio: number; d: number } | null = null
+  for (const [id, it] of lista) {
+    if (it.deFundo || !casa(id, lugares)) continue
+    const d = Math.hypot(it.x - de.x, it.z - de.z)
+    const este = { id, x: it.x, z: it.z, raio: it.raio, d }
+    if (it.rotulo() && (!comAcao || d < comAcao.d)) comAcao = este
+    if (!qualquer || d < qualquer.d) qualquer = este
+  }
+  const o = comAcao ?? qualquer
+  return o ? { id: o.id, x: o.x, z: o.z, raio: o.raio } : null
+}
+
+/** O que o Zappy diz quando não acha o caminho até a tarefa (longe, em outra ilha). */
+export const FALA_SEM_CAMINHO_ATE_A_TAREFA =
+  'Daqui eu não acho o caminho. Chegue mais perto, ou abra o mapa para viajar.'

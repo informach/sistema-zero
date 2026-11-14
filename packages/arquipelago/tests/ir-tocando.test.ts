@@ -8,7 +8,9 @@ import {
   destinoDaIda,
   foiUmToque,
   IR_TOCANDO,
+  interativoDoLembrete,
   interativoNoToque,
+  LUGARES_DOS_LEMBRETES,
   passoDaIda,
   pontosParaUsar,
   restanteDaIda,
@@ -186,5 +188,31 @@ describe('tocar num objeto', () => {
   test('a ida guarda o objeto a usar ao chegar', () => {
     expect(criarIda([{ x: 1, z: 0 }], { x: 0, z: 0 }, 'banco')?.usar).toBe('banco')
     expect(criarIda([{ x: 1, z: 0 }], { x: 0, z: 0 })?.usar).toBeNull()
+  })
+})
+
+describe('levar até a tarefa do "Agora"', () => {
+  const it = (x: number, rotulo: string | null) => ({ x, z: 0, raio: 1.5, rotulo: () => rotulo })
+
+  test('cada lembrete do "Agora" tem onde ser feito', () => {
+    for (const id of ['porta', 'fome', 'energia', 'regar', 'colher', 'primeiro-pedido', 'desafio'])
+      expect(LUGARES_DOS_LEMBRETES[id]?.length, id).toBeGreaterThan(0)
+  })
+
+  test('vai ao mais perto com algo a fazer; sem nenhum assim, ao mais perto mesmo', () => {
+    const lista: [string, ReturnType<typeof it>][] = [
+      ['canteiro-a', it(2, null)],
+      ['canteiro-b', it(6, 'Regar')],
+      ['canteiro-c', it(9, 'Regar')],
+      ['cama', it(1, 'Deitar')],
+    ]
+    expect(interativoDoLembrete(lista, ['canteiro-'], { x: 0, z: 0 })?.id).toBe('canteiro-b')
+    expect(interativoDoLembrete(lista.slice(0, 1), ['canteiro-'], { x: 0, z: 0 })?.id).toBe(
+      'canteiro-a',
+    )
+    // O id inteiro só casa com o id inteiro; o começo, só quando termina em "-".
+    expect(interativoDoLembrete(lista, ['cam'], { x: 0, z: 0 })).toBeNull()
+    expect(interativoDoLembrete(lista, ['cama'], { x: 0, z: 0 })?.id).toBe('cama')
+    expect(interativoDoLembrete(lista, ['quadro-'], { x: 0, z: 0 })).toBeNull()
   })
 })
