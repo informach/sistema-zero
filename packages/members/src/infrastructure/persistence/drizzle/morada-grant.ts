@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import { isMoradaFree, isMoradaTrophyTier, MORADA_CATALOG } from '@sistemazero/core/morada'
+import {
+  isMoradaFree,
+  isMoradaFunctionInstance,
+  isMoradaTrophyTier,
+  MORADA_CATALOG,
+} from '@sistemazero/core/morada'
 import type postgres from 'postgres'
 import type { CourseAudience } from '../../../domain/course/course'
 
@@ -11,9 +16,12 @@ export interface MoradaGrantReport {
   perProfile: { userId: string; audience: string; pieces: number }[]
 }
 
-/** As peças pagas (nem grátis, nem troféu) que estão numa casa: as instâncias e o bichinho. */
+/**
+ * As peças pagas (nem grátis, nem troféu) que estão numa casa: as instâncias e o bichinho. As
+ * funções do jogo (a geladeira conquistada…) valem pela função e não viram posse da peça.
+ */
 export function paidPiecesInHouse(house: {
-  instances?: { pieceId?: unknown }[]
+  instances?: { pieceId?: unknown; behavior?: unknown }[]
   pet?: unknown
 }): string[] {
   const ids = new Set<string>()
@@ -22,7 +30,13 @@ export function paidPiecesInHouse(house: {
     if (isMoradaFree(id) || isMoradaTrophyTier(id)) return
     ids.add(id)
   }
-  for (const instance of house.instances ?? []) add(instance.pieceId)
+  for (const instance of house.instances ?? []) {
+    const funcao =
+      typeof instance.pieceId === 'string' &&
+      typeof instance.behavior === 'string' &&
+      isMoradaFunctionInstance({ pieceId: instance.pieceId, behavior: instance.behavior })
+    if (!funcao) add(instance.pieceId)
+  }
   add(house.pet)
   return [...ids].sort()
 }

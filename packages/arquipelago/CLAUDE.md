@@ -107,8 +107,8 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   `calcado_patins` do pack é SÓ do jogo (`hidden`, fora da loja e do sorteio: `SO_NO_JOGO` em
   `scripts/avatar/catalogo.ts`); calçados, o `AvatarDoJogo` a veste no lugar do calçado e sobe o
   desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
-  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins); as rodas ainda não
-  giram (a arte deu os eixos). O `empurrar` ainda não tem quem o use.
+  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins). As rodas e o
+  empurrar: veja o item seguinte.
 - **O que a arte e o pack já tinham (15/11/2026):** andar e correr de lado e de costas (na virada, pela
   direção no referencial do corpo: `frente`/`deLado` da entrada, `pesosDaDirecao`); pendurada andando
   pela quina (`andar_pendurado_*`); água rasa (`aguaNosPes` do modo chão acima de

@@ -59,8 +59,8 @@ import { suavizarAngulo } from '../sistemas/zappy'
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** A câmera mira os olhos (o encaixe `olhos` da arte). */
 const ALTURA_DO_OLHAR = CORPO.doCentro.olhos
-/** Do ponto que a câmera olha (a cabeça) até o peito do avatar (a junta do ombro). */
-const ALTURA_DO_PEITO = CORPO.doCentro.cabeca - CORPO.doCentro.ombro
+/** Do ponto que a câmera olha (os olhos) até o peito do avatar (a junta do ombro). */
+const ALTURA_DO_PEITO = CORPO.doCentro.olhos - CORPO.doCentro.ombro
 /**
  * No cipó a câmera olha para um ponto entre o corpo e o meio do cipó (`movimento.foco`), e segue
  * mais devagar: o balanço passa pela tela sem a câmera correr atrás dele. Com menos movimento

@@ -6,6 +6,7 @@ import {
   isMoradaAdultOnly,
   isMoradaFree,
   isMoradaTrophyTier,
+  MORADA_PECAS_DAS_FUNCOES,
   MORADA_TROPHY_SHELF,
   moradaInstanceAllowed,
   moradaPieceAllowed,
@@ -85,10 +86,23 @@ describe('preço das peças Morada (a régua do avatar)', () => {
   })
 
   test('a função do jogo (behavior objeto:) vem da conquista no jogo, não da loja', () => {
-    const paga = Object.keys(MORADA_PRICES).find((id) => MORADA_PRICES[id]?.tier === 'coins')
-    if (!paga) throw new Error('sem peça paga')
-    expect(moradaInstanceAllowed({ pieceId: paga, behavior: 'objeto:geladeira' }, [])).toBe(true)
-    expect(moradaInstanceAllowed({ pieceId: paga }, [])).toBe(false)
+    const geladeira = MORADA_PECAS_DAS_FUNCOES.geladeira?.[0] ?? ''
+    expect(moradaPrice(geladeira).tier).toBe('coins')
+    expect(moradaInstanceAllowed({ pieceId: geladeira, behavior: 'objeto:geladeira' }, [])).toBe(
+      true,
+    )
+    expect(moradaInstanceAllowed({ pieceId: geladeira }, [])).toBe(false)
+    // Um behavior numa peça que não é daquela função não libera nada (pedido montado à mão).
+    const outra = Object.keys(MORADA_PRICES).find(
+      (id) =>
+        MORADA_PRICES[id]?.tier === 'coins' &&
+        !Object.values(MORADA_PECAS_DAS_FUNCOES).some((l) => l.includes(id)),
+    )
+    if (!outra) throw new Error('sem peça paga')
+    expect(moradaInstanceAllowed({ pieceId: outra, behavior: 'objeto:geladeira' }, [])).toBe(false)
+    expect(moradaInstanceAllowed({ pieceId: geladeira, behavior: 'objeto:fliperama' }, [])).toBe(
+      false,
+    )
     // Troféu continua pedindo a conquista mesmo com um behavior.
     expect(
       moradaInstanceAllowed({ pieceId: 'trophy/trofeu-chama', behavior: 'objeto:museu' }, []),

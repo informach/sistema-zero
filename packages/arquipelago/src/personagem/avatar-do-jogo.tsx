@@ -157,7 +157,7 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
  * De patins, o avatar veste os patins do pack no lugar do calçado e sobe o que as rodas somam ao
- * corpo (as rodas ainda não giram). No planador, a barra do pack vai nas duas mãos (e a lanterna,
+ * corpo (as rodas giram pela distância, `RodasDosPatins`). No planador, a barra do pack vai nas duas mãos (e a lanterna,
  * se estava acesa, volta depois de fechar o planador).
  */
 export function AvatarDoJogo({
