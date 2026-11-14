@@ -11,7 +11,11 @@ import {
   SkinnedMesh,
   Texture,
 } from 'three'
-import { copiarEsqueletoDoPack, prepararPecaDoPack } from '../src/avatar/pack-instance'
+import {
+  copiarEsqueletoDoPack,
+  ossosComOsDoObjeto,
+  prepararPecaDoPack,
+} from '../src/avatar/pack-instance'
 
 /** Um esqueleto de três ossos com nomes, como o GLB de ossos do pack. */
 function esqueletoDoPack() {
@@ -106,4 +110,40 @@ test('malha sem pele é apontada, não desenhada', () => {
   const pronta = prepararPecaDoPack(cena, montagem.ossos, new Map())
   expect(pronta.pecas).toEqual([])
   expect(pronta.faltando).toEqual(['(malha sem pele: enfeite)'])
+})
+
+test('o objeto de mão traz o osso que só ele tem, embaixo do mesmo pai, e sai sem deixar resto', () => {
+  const montagem = copiarEsqueletoDoPack(esqueletoDoPack())
+  // O arquivo da lanterna: os ossos do pack mais a `Luz`, filha da cabeça (no pack, da mão).
+  const arquivo = esqueletoDoPack()
+  const cabeca = arquivo.getObjectByName('Head') as Bone
+  const luz = new Bone()
+  luz.name = 'Luz'
+  luz.position.set(0, 0.2, 0.1)
+  cabeca.add(luz)
+  const ossos = [cabeca, luz]
+  const malha = new SkinnedMesh(new BoxGeometry(), new MeshStandardMaterial())
+  malha.bind(new Skeleton(ossos, [new Matrix4(), new Matrix4()]))
+  arquivo.add(malha)
+
+  // Sem o osso, a peça é recusada (é a regra das roupas).
+  expect(prepararPecaDoPack(arquivo, montagem.ossos, new Map()).faltando).toContain('Luz')
+
+  const comOsDele = ossosComOsDoObjeto(arquivo, montagem.ossos)
+  const nova = comOsDele.ossos.get('Luz')
+  expect(nova).toBeDefined()
+  expect(nova).not.toBe(luz)
+  expect(nova?.parent).toBe(montagem.ossos.get('Head'))
+  expect(nova?.position.toArray()).toEqual([0, 0.2, 0.1])
+  // Os ossos do pack continuam os da montagem, e o mapa dela não mudou.
+  expect(comOsDele.ossos.get('Hips')).toBe(montagem.ossos.get('Hips'))
+  expect(montagem.ossos.has('Luz')).toBe(false)
+  const presa = prepararPecaDoPack(arquivo, comOsDele.ossos, new Map())
+  expect(presa.faltando).toEqual([])
+  expect(presa.pecas).toHaveLength(1)
+  expect(presa.pecas[0]?.skeleton.bones[1]).toBe(nova)
+
+  comOsDele.soltar()
+  expect(nova?.parent).toBeNull()
+  expect(montagem.ossos.get('Head')?.children.includes(nova as Bone)).toBe(false)
 })

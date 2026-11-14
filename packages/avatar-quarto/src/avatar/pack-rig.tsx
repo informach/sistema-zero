@@ -5,6 +5,7 @@ import { useFrame, useLoader } from '@react-three/fiber'
 import {
   AVATAR_CATALOG,
   type AvatarCatalog,
+  type AvatarEquipment,
   type AvatarSlots,
   avatarFileUrl,
   withEars,
@@ -23,7 +24,12 @@ import * as THREE from 'three'
 import { useReducedMotion } from '../use-reduced-motion'
 import { measureCharacter } from './measure'
 import { instanteDaFoto } from './pack-clips'
-import { copiarEsqueletoDoPack, prepararPecaDoPack, type TexturasDoPack } from './pack-instance'
+import {
+  copiarEsqueletoDoPack,
+  ossosComOsDoObjeto,
+  prepararPecaDoPack,
+  type TexturasDoPack,
+} from './pack-instance'
 
 /** A pose de quem está parado no pack. */
 export const PACK_IDLE_POSE = 'parado_relaxado'
@@ -179,6 +185,56 @@ function PackPart({
 }
 
 /**
+ * Um objeto de mão do jogo (a lanterna), preso ao esqueleto como as peças. Ele traz ossos que só ele
+ * tem (a `Luz`), que entram na montagem enquanto ele está na mão; `aceso` põe a luz dele na escala
+ * de acesa ou de apagada que o catálogo diz.
+ */
+const semEfeito = () => {}
+
+function PackEquipment({
+  item,
+  aceso,
+  ossos,
+  texturas,
+  materialOverride,
+}: {
+  item: AvatarEquipment
+  aceso: boolean
+  ossos: ReadonlyMap<string, THREE.Bone>
+  texturas: TexturasDoPack
+  materialOverride?: THREE.Material
+}) {
+  const { scene } = useGLTF(avatarFileUrl(item.file), false, false)
+  const comOsDele = useMemo(() => ossosComOsDoObjeto(scene, ossos), [scene, ossos])
+  useEffect(() => () => comOsDele.soltar(), [comOsDele])
+  const montagem = useMemo(
+    () => prepararPecaDoPack(scene, comOsDele.ossos, texturas, materialOverride, 2),
+    [scene, comOsDele, texturas, materialOverride],
+  )
+  useEffect(() => () => montagem.soltar(), [montagem])
+  useEffect(() => {
+    const luz = item.light
+    const osso = luz ? comOsDele.ossos.get(luz.bone) : undefined
+    if (luz && osso) osso.scale.setScalar(aceso ? luz.on : luz.off)
+  }, [item, aceso, comOsDele])
+  return (
+    <>
+      {montagem.pecas.map((m, i) => (
+        <skinnedMesh
+          // biome-ignore lint/suspicious/noArrayIndexKey: ordem estável das malhas do GLB.
+          key={i}
+          name="objeto-de-mao"
+          geometry={m.geometry}
+          material={m.material}
+          skeleton={m.skeleton}
+          frustumCulled={false}
+        />
+      ))}
+    </>
+  )
+}
+
+/**
  * O avatar do pack Cute Characters: o esqueleto do pack (em metros, em pé, frente para +Z) com uma
  * peça por encaixe. Cada peça carrega no seu `<Suspense>` (trocar uma não apaga as outras); enquanto
  * uma carrega, o boneco faz a "cabine" (encolhe, gira e flutua). Fica em pé UMA vez (pés no chão).
@@ -195,6 +251,7 @@ export function PackAvatarRig({
   onStood,
   completeRef,
   extraClips,
+  equipment,
   onAnimations,
   materialOverride,
   catalog = AVATAR_CATALOG,
@@ -209,6 +266,8 @@ export function PackAvatarRig({
   onStood?: () => void
   completeRef?: RefObject<boolean>
   extraClips?: THREE.AnimationClip[]
+  /** Os objetos de mão do jogo que estão na mão agora (ids de `catalog.equipment`), acesos. */
+  equipment?: readonly string[]
   onAnimations?: (
     actions: Record<string, THREE.AnimationAction | null>,
     mixer: THREE.AnimationMixer,
@@ -351,6 +410,22 @@ export function PackAvatarRig({
                 </Suspense>
               </PieceErrorBoundary>
             ))}
+            {(equipment ?? []).map((id) => {
+              const item = catalog.equipment?.[id]
+              return item ? (
+                <PieceErrorBoundary key={`objeto:${id}`} resetKey={item.file} onSettled={semEfeito}>
+                  <Suspense fallback={null}>
+                    <PackEquipment
+                      item={item}
+                      aceso
+                      ossos={montagem.ossos}
+                      texturas={texturas}
+                      materialOverride={materialOverride}
+                    />
+                  </Suspense>
+                </PieceErrorBoundary>
+              ) : null
+            })}
           </group>
         </group>
       </group>

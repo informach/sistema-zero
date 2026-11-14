@@ -42,7 +42,7 @@ import {
 import { descidaDoEntrarNaAgua } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
-import { LanternaNaMao } from './lanterna-na-mao'
+import { DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -155,7 +155,7 @@ export function AvatarDoJogo({
   chao?: AlturaDoChao
   /** Os patins nos pés: ainda não aparecem no boneco do pack (veja acima). */
   comPatins?: boolean
-  /** A lanterna acesa na mão direita (fase2-06). */
+  /** A lanterna do pack acesa na mão direita (fase2-06), com os dedos fechados no cabo. */
   comLanterna?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
@@ -218,7 +218,9 @@ export function AvatarDoJogo({
               charRef={personagem}
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
+              equipment={comLanterna ? LANTERNA_NA_MAO : SEM_OBJETO_NA_MAO}
             />
+            {comLanterna ? <DedosNoCabo corpo={personagem} objeto="mao_lanterna" /> : null}
             {chao ? (
               <PesNoChao
                 chao={chao}
@@ -231,11 +233,6 @@ export function AvatarDoJogo({
           </Suspense>
         </PackRigBoundary>
       </group>
-      {comLanterna && emPe ? (
-        <Suspense fallback={null}>
-          <LanternaNaMao avatar={visualRef} personagem={personagem} />
-        </Suspense>
-      ) : null}
     </group>
   )
 }
