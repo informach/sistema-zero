@@ -309,7 +309,7 @@ describe('AdultAvatarConfigurator', () => {
     },
     photoBusy: false,
     onReady: noop,
-    retry: noop,
+    retry: () => undefined,
     retrySave: noop,
     choose: noop,
     chooseById: noop,

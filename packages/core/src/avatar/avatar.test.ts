@@ -160,8 +160,9 @@ describe('sorteio', () => {
         for (const id of Object.values(s)) {
           const p = C.parts[id]
           expect(p?.hidden, id).toBeFalsy()
-          if (p?.set) expect(C.sets[p.set]?.tier).toBe('free')
-          else if (p?.slot !== 'orelhas') expect(p?.tier, id).toBe('free')
+          // Fantasia nunca é grátis: o sorteio só de grátis não a escolhe.
+          expect(p?.set, id).toBeUndefined()
+          if (p?.slot !== 'orelhas') expect(p?.tier, id).toBe('free')
           if (filter !== 'all') expect(['both', filter]).toContain(p?.audience ?? 'both')
         }
         const rosto = C.parts[s.rosto ?? '']
