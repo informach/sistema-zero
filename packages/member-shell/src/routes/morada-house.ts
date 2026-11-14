@@ -11,6 +11,41 @@ const Body = z.strictObject({
   scope: z.enum(['room', 'house']).optional(),
 })
 
+const BuyBody = z.strictObject({ pieceId: z.string().min(1).max(200) })
+
+/**
+ * Compra uma peça paga da Morada com moedas (idempotente; sem saldo → 402). O id da peça tem barras
+ * (`moveis/sofas/…`): vai no corpo.
+ */
+export function createMoradaBuyRoutes(
+  session: Pick<SessionModule, 'getSession' | 'audience'>,
+  gateway: Pick<GatewayModule, 'gatewayFetch'>,
+) {
+  return {
+    POST: async (request: Request) => {
+      const user = await session.getSession()
+      if (!user) return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
+      if (isReadonlyImpersonation(user))
+        return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
+      const parsed = BuyBody.safeParse(await request.json().catch(() => null))
+      if (!parsed.success)
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Peça inválida.' } },
+          { status: 400 },
+        )
+      const result = await gateway.gatewayFetch('/members/house/buy', {
+        method: 'POST',
+        query: { audience: session.audience },
+        body: parsed.data,
+      })
+      return NextResponse.json(result.body ?? { ok: result.status === 200 }, {
+        status: result.status,
+        headers: { 'cache-control': 'private, no-store' },
+      })
+    },
+  }
+}
+
 export function createMoradaHouseRoutes(
   session: Pick<SessionModule, 'getSession' | 'audience'>,
   gateway: Pick<GatewayModule, 'gatewayFetch'>,

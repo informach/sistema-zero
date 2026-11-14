@@ -110,6 +110,7 @@ import { GetProfilesOverviewService } from './application/profiles-overview/get-
 import { SendAccessEndedMessagesService } from './application/renewal-reminder/send-access-ended-messages.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
+import { BuyMoradaPieceService } from './application/room/buy-morada-piece.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
 import { GetRoomService } from './application/room/get-room.service'
 import { MoradaHouseService } from './application/room/morada-house.service'
@@ -968,6 +969,12 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     moradaHouse,
   )
+  const buyMoradaPiece = new BuyMoradaPieceService(
+    gamificationRepo,
+    awardGamification,
+    clock,
+    moradaHouse,
+  )
   const getPublicProfile = new GetPublicProfileService(
     gamificationRepo,
     avatarRepo,
@@ -1404,6 +1411,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getRoom,
       saveRoom,
       moradaHouse,
+      buyMoradaPiece,
       buyRoomItem,
       profileAllowance,
       consumeAiUsage,

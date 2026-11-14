@@ -1,10 +1,14 @@
 'use client'
 import {
+  isMoradaTrophyTier,
   MORADA_CATALOG,
+  MORADA_TROPHY_SHELF,
   type MoradaInstance,
   type MoradaPiece,
   type MoradaRoom,
   moradaFileUrl,
+  moradaPieceAllowed,
+  moradaPrice,
 } from '@sistemazero/core/morada'
 import {
   ArrowDownToLine,
@@ -24,6 +28,7 @@ import {
   THEME_PRESETS,
 } from '../../../lib/room-catalog'
 import { KidsMascot } from '../presentation'
+import { adultPrice, adultUnlock } from '../skin'
 import { moradaFitsRoom, moradaSurfaceOptions, removeMoradaInstance } from './morada-editor-model'
 import type { MoradaRoomViewProps } from './morada-room-view'
 import { moradaTrophyHint } from './morada-trophy-hint'
@@ -59,10 +64,11 @@ const MATERIAL_LABELS: Record<string, string> = {
 }
 function matchesTab(piece: MoradaPiece, tab: RoomBuilderTab): boolean {
   if (tab === 'bichinho') return piece.kind === 'pet'
-  if (tab === 'trofeus') return piece.tags.includes('trophy')
+  // Os troféus e a estante de troféus (como no quarto antigo, a estante vem com o 1º troféu).
+  if (tab === 'trofeus') return isMoradaTrophyTier(piece.id)
   if (tab === 'piso') return piece.category === 'chaos'
   if (tab === 'parede') return piece.kind === 'construction' && piece.category !== 'chaos'
-  if (piece.kind !== 'furniture' || piece.tags.includes('trophy')) return false
+  if (piece.kind !== 'furniture' || isMoradaTrophyTier(piece.id)) return false
   if (tab === 'plantas') return piece.category === 'plantas' || piece.category === 'fazenda'
   if (tab === 'luzes') return piece.category === 'luminarias'
   if (tab === 'enfeites') return DECOR.has(piece.category)
@@ -95,14 +101,25 @@ export function MoradaRoomBuilder({
   const [stackPicker, setStackPicker] = useState(false)
   const [cutaway, setCutaway] = useState(true)
   const pieces = useMemo(() => Object.values(MORADA_CATALOG.pieces), [])
+  // A posse do servidor (troféus, estante, compradas e o que já está na casa); as grátis entram
+  // pela régua do core (`moradaPieceAllowed`).
+  const ownedFromServer = useMemo(() => new Set(editor.saved?.owned ?? []), [editor.saved])
   const owned = useMemo(
-    () =>
-      new Set([
-        ...pieces.filter((p) => !p.tags.includes('trophy')).map((p) => p.id),
-        ...(editor.saved?.owned ?? []),
-      ]),
-    [pieces, editor.saved],
+    () => ({ has: (id: string) => moradaPieceAllowed(id, ownedFromServer) }),
+    [ownedFromServer],
   )
+  /** A peça paga que a criança tocou e ainda não confirmou comprar. */
+  const [toBuy, setToBuy] = useState<MoradaPiece | null>(null)
+  /** `comprada`: acabou de comprar (o `owned` ainda não renderizou de novo). */
+  const place = (piece: MoradaPiece, comprada = false) =>
+    piece.kind === 'pet' ? editor.update((h) => ({ ...h, pet: piece.id })) : add(piece.id, comprada)
+  const confirmBuy = async () => {
+    const piece = toBuy
+    if (!piece) return
+    const ok = await editor.buy(piece.id)
+    setToBuy(null)
+    if (ok) place(piece, true)
+  }
   const draft = editor.draft
   const room = draft?.rooms.find((r) => r.id === draft.roomId)
   const selected = draft?.instances.find((i) => i.id === selectedId)
@@ -130,9 +147,9 @@ export function MoradaRoomBuilder({
       instances: house.instances.map((i) => (i.id === selected.id ? next : i)),
     }))
   }
-  const add = (pieceId: string) => {
+  const add = (pieceId: string, comprada = false) => {
     const piece = MORADA_CATALOG.pieces[pieceId]
-    if (!draft || !piece || !owned.has(pieceId) || locked) return
+    if (!draft || !piece || locked || !(comprada || owned.has(pieceId))) return
     const instance: MoradaInstance = {
       id: crypto.randomUUID(),
       pieceId,
@@ -241,49 +258,115 @@ export function MoradaRoomBuilder({
       }),
     }))
   }
-  const surfaces = draft && selected ? moradaSurfaceOptions(draft, selected) : []
+  // Para pôr um troféu, a estante de troféus vem primeiro (destacada); as outras superfícies
+  // continuam valendo, como no quarto antigo.
+  const surfaces = (draft && selected ? moradaSurfaceOptions(draft, selected) : []).sort(
+    (a, b) =>
+      Number(b.parent.pieceId === MORADA_TROPHY_SHELF) -
+      Number(a.parent.pieceId === MORADA_TROPHY_SHELF),
+  )
+  const trophyOnShelf = Boolean(selected && isMoradaTrophyTier(selected.pieceId))
   const filtered = pieces.filter(
     (p) =>
       matchesTab(p, tab) &&
       p.label.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')),
   )
-  const tile = (piece: MoradaPiece) => (
-    <button
-      key={piece.id}
-      type="button"
-      disabled={locked || !owned.has(piece.id)}
-      aria-pressed={piece.kind === 'pet' ? draft?.pet === piece.id : undefined}
-      className={
-        adult
-          ? 'sz-cos-tile'
-          : 'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60'
-      }
-      onClick={() =>
-        piece.kind === 'pet' ? editor.update((h) => ({ ...h, pet: piece.id })) : add(piece.id)
-      }
-    >
-      <img
-        src={moradaFileUrl(piece.thumb)}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        className={adult ? 'sz-cos-tile-thumb' : 'size-14 object-contain'}
-      />
-      <span
-        className={adult ? 'sz-cos-tile-name' : 'max-w-full truncate font-semibold'}
-        title={piece.label}
+  const tile = (piece: MoradaPiece) => {
+    const price = moradaPrice(piece.id)
+    const mine = owned.has(piece.id)
+    const forSale = !mine && price.tier === 'coins'
+    return (
+      <button
+        key={piece.id}
+        type="button"
+        // Troféu não conquistado fica travado; peça paga abre a compra.
+        disabled={locked || (!mine && !forSale) || Boolean(editor.buying)}
+        aria-pressed={piece.kind === 'pet' ? draft?.pet === piece.id : undefined}
+        className={
+          adult
+            ? 'sz-cos-tile'
+            : 'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60'
+        }
+        onClick={() => (forSale ? setToBuy(piece) : place(piece))}
       >
-        {piece.label}
-      </span>
-      {!owned.has(piece.id) ? (
-        <span className="text-muted-foreground">
-          <Lock className="inline size-3" /> {moradaTrophyHint(piece.id, adult, trophyHints)}
+        <img
+          src={moradaFileUrl(piece.thumb)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className={adult ? 'sz-cos-tile-thumb' : 'size-14 object-contain'}
+        />
+        <span
+          className={adult ? 'sz-cos-tile-name' : 'max-w-full truncate font-semibold'}
+          title={piece.label}
+        >
+          {piece.label}
         </span>
-      ) : null}
-    </button>
-  )
+        {forSale ? (
+          <span className={adult ? 'sz-cos-tile-name' : 'font-bold text-(--sz-hot)'}>
+            <Lock className="inline size-3" aria-hidden="true" />{' '}
+            {adult ? adultPrice(price.price) : `🪙 ${price.price}`}
+            {adult ? null : <span className="sr-only"> moedas</span>}
+          </span>
+        ) : !mine ? (
+          <span className="text-muted-foreground">
+            <Lock className="inline size-3" /> {moradaTrophyHint(piece.id, adult, trophyHints)}
+          </span>
+        ) : null}
+      </button>
+    )
+  }
   const notice = (
     <>
+      {toBuy && adult ? (
+        <div role="status" className="sz-cos-buybar">
+          <p>
+            <strong>{toBuy.label}</strong>
+          </p>
+          <div className="sz-cos-buybar-actions">
+            <button
+              type="button"
+              className="sz-cos-buybar-quiet"
+              disabled={Boolean(editor.buying)}
+              onClick={() => setToBuy(null)}
+            >
+              Agora não
+            </button>
+            <button
+              type="button"
+              className="sz-cos-buybar-main"
+              disabled={Boolean(editor.buying)}
+              onClick={() => void confirmBuy()}
+            >
+              {adultUnlock(moradaPrice(toBuy.id).price)}
+            </button>
+          </div>
+        </div>
+      ) : toBuy ? (
+        <div role="status" className="space-y-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-3">
+          <p className="font-semibold text-sm">
+            Comprar {toBuy.label} por 🪙 {moradaPrice(toBuy.id).price} moedas?
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={chip}
+              disabled={Boolean(editor.buying)}
+              onClick={() => void confirmBuy()}
+            >
+              {editor.buying ? <Loader2 className="size-4 animate-spin" /> : null} Comprar
+            </button>
+            <button
+              type="button"
+              className={chip}
+              disabled={Boolean(editor.buying)}
+              onClick={() => setToBuy(null)}
+            >
+              Agora não
+            </button>
+          </div>
+        </div>
+      ) : null}
       {editor.message ? (
         <p
           role="status"
@@ -441,7 +524,11 @@ export function MoradaRoomBuilder({
             <button
               type="button"
               key={`${parent.id}:${slot.id}`}
-              className={chip}
+              className={
+                trophyOnShelf && parent.pieceId === MORADA_TROPHY_SHELF
+                  ? `${chip} border-primary bg-primary/10`
+                  : chip
+              }
               onClick={() => {
                 updateSelected({
                   parentId: parent.id,
@@ -451,6 +538,7 @@ export function MoradaRoomBuilder({
                 setStackPicker(false)
               }}
             >
+              {parent.pieceId === MORADA_TROPHY_SHELF ? '🏆 ' : ''}
               {MORADA_CATALOG.pieces[parent.pieceId]?.label}
             </button>
           ))}
@@ -728,7 +816,7 @@ export function MoradaRoomBuilder({
         pieces={chips}
         extras={extras}
         tray={tray}
-        notice={editor.message || editor.conflict ? notice : null}
+        notice={editor.message || editor.conflict || toBuy ? notice : null}
       />
     </section>
   )

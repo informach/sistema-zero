@@ -3,6 +3,7 @@ import { criarSalvamentoInicial, type Plataforma } from '@sistemazero/arquipelag
 import {
   createMoradaHouse,
   MORADA_CATALOG,
+  MORADA_PRICES,
   type MoradaHouse,
 } from '@sistemazero/avatar-quarto/morada/catalog'
 import { criarLoja } from '../src/estado/loja'
@@ -268,10 +269,12 @@ test('falha na leitura do andar não marca importação final e permite recupera
 })
 test('projeção própria preserva troca e remoção do pet, sem adotar pet de visita', async () => {
   const { store, source, envelope } = setup()
-  await store.getState().enter(true)
   const pets = Object.values(MORADA_CATALOG.pieces)
     .filter((p) => p.kind === 'pet')
     .slice(0, 2)
+  // Os bichinhos são pagos (14/11/2026): a troca vale entre os que são dela.
+  envelope.owned = pets.map((p) => p.id)
+  await store.getState().enter(true)
   for (const pet of [pets[0]!.id, pets[1]!.id, null]) {
     expect(store.getState().edit({ ...store.getState().house!, pet })).toBe(true)
     expect(petDaMorada(source.getState().quarto)).toBe(pet)
@@ -280,6 +283,38 @@ test('projeção própria preserva troca e remoção do pet, sem adotar pet de v
   expect(petDaMorada(source.getState().quarto)).toBeNull()
   source.getState().visitar(null)
   expect(petDaMorada(source.getState().quarto)).toBeNull()
+})
+test('peça paga ou bichinho que não são dela não entram; o que já está na casa continua', async () => {
+  const { store, envelope } = setup()
+  // Uma peça paga pequena, de chão, no meio do quarto.
+  const paga = Object.keys(MORADA_PRICES).find((id) => {
+    const p = MORADA_CATALOG.pieces[id]
+    return (
+      MORADA_PRICES[id]?.tier === 'coins' &&
+      p?.mount === 'floor' &&
+      p.size[0] < 0.8 &&
+      p.size[2] < 0.8
+    )
+  })
+  const pet = Object.values(MORADA_CATALOG.pieces).find((p) => p.kind === 'pet')?.id
+  if (!paga || !pet) throw new Error('sem peça paga ou bichinho')
+  const comPaga = (h: MoradaHouse): MoradaHouse => ({
+    ...h,
+    instances: [
+      ...h.instances,
+      { id: 'sofa', pieceId: paga, position: [1, 0, 1], rotation: 0, roomId: h.roomId },
+    ],
+  })
+  await store.getState().enter(true)
+  expect(store.getState().edit({ ...store.getState().house!, pet })).toBe(false)
+  expect(store.getState().error).toMatch(/Meu quarto/)
+  // A casa guardada já tinha a peça paga e o bichinho: continuam valendo para editar.
+  const outro = setup()
+  outro.envelope.house = { ...comPaga(outro.envelope.house), pet }
+  await outro.store.getState().enter(true)
+  const casa = outro.store.getState().house!
+  expect(outro.store.getState().edit(rename(casa, 'Com o que já tinha'))).toBe(true)
+  expect(envelope.owned).toEqual([])
 })
 test('modo e operação de construir conservam porta, corrida, suporte, conciliação e resultado como guardas', async () => {
   const { store, source } = setup()
