@@ -107,6 +107,12 @@ Bun.serve({
     if (pathname.startsWith('/api/morada3d/')) {
       const file = decodeURIComponent(pathname.slice('/api/morada3d/'.length))
       if (!isMoradaFile(file)) return new Response('Fora do catálogo', { status: 404 })
+      // Provas de estado/física no CI não distribuem o pack privado. A cópia real,
+      // quando solicitada, continua estrita: arquivo ausente responde 404.
+      if (process.env.MORADA_QA_EMPTY_ASSETS === '1' && !process.env.MORADA_QA_DIR)
+        return file.endsWith('.glb')
+          ? Response.json(GLTF_VAZIO, { headers: { 'content-type': 'model/gltf+json' } })
+          : new Response(PNG_DE_UM_PONTO, { headers: { 'content-type': 'image/png' } })
       const path = resolve(MORADA, file)
       if (!path.startsWith(MORADA + sep)) return new Response('Fora da pasta', { status: 403 })
       const f = Bun.file(path)

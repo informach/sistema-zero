@@ -162,24 +162,55 @@ export function CenaMorada({
                 )}
               />
             )}
-            {editing ? (
-              // biome-ignore lint/a11y/noStaticElementInteractions: alvo 3D; o editor oferece colocação e coordenadas por botões e campos DOM.
-              <mesh
-                rotation-x={-Math.PI / 2}
-                position={[0, 0.05, 0]}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onPlace(e.point.x, e.point.z)
-                }}
-              >
-                <planeGeometry args={house.lot.size} />
-                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-              </mesh>
-            ) : null}
+            {editing ? <PlacementPlane size={house.lot.size} onPlace={onPlace} /> : null}
           </Physics>
         </Suspense>
       </Canvas>
     </Contexto.Provider>
+  )
+}
+
+/** O gerenciador 3D não encaminha pointercancel à malha: cancelar invalida o toque no canvas. */
+function PlacementPlane({
+  size,
+  onPlace,
+}: {
+  size: MoradaHouse['lot']['size']
+  onPlace(x: number, z: number): void
+}) {
+  const canvas = useThree((state) => state.gl.domElement)
+  const pressed = useRef(false)
+  useEffect(() => {
+    const cancel = () => {
+      pressed.current = false
+    }
+    canvas.addEventListener('pointerdown', cancel, true)
+    canvas.addEventListener('pointercancel', cancel)
+    window.addEventListener('blur', cancel)
+    return () => {
+      canvas.removeEventListener('pointerdown', cancel, true)
+      canvas.removeEventListener('pointercancel', cancel)
+      window.removeEventListener('blur', cancel)
+    }
+  }, [canvas])
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: alvo 3D; há colocação e coordenadas por controles DOM.
+    <mesh
+      rotation-x={-Math.PI / 2}
+      position={[0, 0.05, 0]}
+      onPointerDown={(event) => {
+        pressed.current = event.button === 0
+      }}
+      onClick={(event) => {
+        event.stopPropagation()
+        if (!pressed.current) return
+        pressed.current = false
+        onPlace(event.point.x, event.point.z)
+      }}
+    >
+      <planeGeometry args={size} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+    </mesh>
   )
 }
 
