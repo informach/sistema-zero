@@ -52,7 +52,7 @@ export const PENDURADO_NA_BORDA = {
 /** No cipó: o eixo da corda passa isto à frente da origem do desenho, e as mãos seguram nesta altura. */
 export const PENDURADO_NO_CIPO = {
   maos: medidaDoLugar('pendurar_cipo', 'maos_m', 0.52),
-  cordaAFrente: medidaDoLugar('pendurar_cipo', 'corda_a_frente_m', 0.21),
+  cordaAFrente: medidaDoLugar('pendurar_cipo', 'corda_a_frente_m', 0.17),
 } as const
 
 /**
