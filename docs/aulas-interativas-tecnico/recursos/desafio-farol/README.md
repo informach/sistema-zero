@@ -6,6 +6,6 @@ Material comum aos dois públicos, com instruções completas, exemplos e nomes 
 python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py
 ```
 
-O gerador usa as fontes editoriais e de projeto em `../../qa/`. Requer Bun, Python/Playwright e Chrome ou Edge. Não há versão adulta separada nem argumento `--adulto`.
+O gerador usa as fontes editoriais e de projeto em `../../qa/`. As páginas "Conheça a plataforma" do Dia 1 (`"guia": true` em `caderno-conteudo.json`) vêm de [../guia-da-plataforma](../guia-da-plataforma/README.md). Requer Bun, Python/Playwright e Chrome ou Edge. Não há versão adulta separada nem argumento `--adulto`.
 
 Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf). Intermediários e relatórios ficam em `tmp/pdfs/desafio-farol/`. O pipeline confere fontes, imagens, cores reais dos blocos e limites. Renderizar e revisar visualmente após mudar texto ou esquemas; testes não substituem a inspeção.

@@ -52,6 +52,8 @@ python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 
 As saídas são `docs/aulas-interativas/<posto>/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
 
+Na Aula 1 do Cadê Todo Mundo? e do A Chave do Farol, o passo a passo também mostra a plataforma: páginas "Conheça a plataforma" com prints reais da área das crianças, marcas numeradas e a legenda de cada controle, junto da parte em que a tela aparece. Fontes, captura e conferência em [recursos/guia-da-plataforma](recursos/guia-da-plataforma/README.md).
+
 Importar é uma etapa separada: confira curso/aula de destino e preserve anexos existentes. O adaptador comum só altera `courseSlug` entre o curso canônico e seu correspondente adulto, mantendo aula, blocos, partes e critérios. A geração local não publica vídeos nem gera áudio pago.
 
 

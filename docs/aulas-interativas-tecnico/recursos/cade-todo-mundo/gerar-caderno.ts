@@ -29,6 +29,7 @@ import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/val
 import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
+import { GUIA_CSS, GUIA_IDS, guiaSecao } from '../guia-da-plataforma/guia'
 
 const scriptDir = import.meta.dir
 const root = resolve(scriptDir, '../../../..')
@@ -75,8 +76,32 @@ const template = readFileSync(templatePath, 'utf8')
 // O material comum usa a capa do jogo.
 const semZappy = template.replace(/\s*<img class="zappy" src="\{\{ZAPPY\}\}"[^>]*>/, '')
 if (semZappy.includes('{{ZAPPY}}')) throw new Error('O Zappy da capa não saiu.')
-const html = semZappy
-  .replace('/* {{FONT_FACES}} */', fontFaces)
+// As páginas "Conheça a plataforma" da Aula 1 entram depois do mapa, antes da montagem.
+const rodape =
+  '<div class="page-no"><span class="brand">Cadê Todo Mundo? | Passo a passo do projeto</span><span><!--N--></span></div>'
+const guia = GUIA_IDS.map((id) =>
+  guiaSecao(id, { curso: 'cade-todo-mundo', kicker: (parte) => `Aula 1 · Parte ${parte}`, rodape }),
+).join('\n')
+if (!semZappy.includes('<!--GUIA-->')) throw new Error('O template não marca onde entra o guia.')
+const montado = semZappy
+  .replace('/* {{FONT_FACES}} */', `${fontFaces}\n${GUIA_CSS}`)
+  .replace('<!--GUIA-->', guia)
+// A capa conta como página 1; cada folha seguinte recebe "N / total" no `<!--N-->`, e
+// `<!--pagina:<id>-->` vira o número da folha com aquele `data-id`. São comentários porque o
+// Biome confere o template como HTML.
+const folhas = [...montado.matchAll(/<section class="page[^"]*"(?: data-id="([^"]+)")?/g)].map(
+  (m) => m[1],
+)
+let numero = 1
+const numerado = montado
+  .replace(/<!--N-->/g, () => `${++numero} / ${folhas.length}`)
+  .replace(/<!--pagina:([a-z0-9-]+)-->/g, (_, id: string) => {
+    const indice = folhas.indexOf(id)
+    if (indice < 0) throw new Error(`Página citada no caderno não existe: ${id}`)
+    return String(indice + 1)
+  })
+if (numero !== folhas.length) throw new Error('Alguma folha do caderno ficou sem número.')
+const html = numerado
   .replaceAll('{{SCENE_HIDDEN}}', scene(false))
   .replaceAll('{{SCENE_REVEALED}}', scene(true))
   .replace('<!--BICHOS-->', gallery(JARDIM_BICHOS))

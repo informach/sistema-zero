@@ -18,6 +18,7 @@ import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/val
 import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
+import { GUIA_CSS, guiaSecao } from '../guia-da-plataforma/guia'
 
 /**
  * Todo texto que a criança lê mora em `caderno-conteudo.json` (13/10/2026), inclusive o índice,
@@ -29,6 +30,9 @@ import { FONTE as nunito } from '../../../../packages/studio/src/official-extens
  * `note`, `activity` (com `pill`), `delivery` (com `finish`), `gallery` (com `category`) e
  * `drawing` (com `name`, um dos desenhos abaixo, e `title`). `{{pagina:<id>}}` vira o número
  * da página com aquele id, depois de montadas todas as folhas.
+ *
+ * Uma página `{ "id": "guia-…", "guia": true }` é uma das folhas "Conheça a plataforma" (o print
+ * real da tela com as marcas), montada por `guia-da-plataforma/guia.ts` a partir do `id`.
  */
 type Item = {
   kind: string
@@ -40,14 +44,17 @@ type Item = {
   name?: string
   pill?: string
 }
-type ContentPage = {
-  id: string
-  kicker: string
-  title: string
-  subtitle: string
-  lit?: boolean
-  items: Item[]
-}
+type ContentPage =
+  | { id: string; guia: true }
+  | {
+      id: string
+      guia?: false
+      kicker: string
+      title: string
+      subtitle: string
+      lit?: boolean
+      items: Item[]
+    }
 const root = resolve(import.meta.dir, '../../../..')
 const pages = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
@@ -270,6 +277,7 @@ function renderItem(item: Item): string {
 }
 type Sheet = {
   id: string
+  guia: boolean
   theme: string
   kicker: string
   title: string
@@ -277,16 +285,21 @@ type Sheet = {
   body: string
   lit?: boolean
 }
-const sheets: Sheet[] = pages.map((page) => ({
-  id: page.id,
-  // O tema segue o kicker kids: o texto adulto não muda as cores da página.
-  theme: page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one',
-  kicker: page.kicker,
-  title: page.title,
-  subtitle: page.subtitle,
-  body: page.items.map(renderItem).join(''),
-  lit: page.lit === true,
-}))
+const sheets: Sheet[] = pages.map((page) =>
+  page.guia
+    ? { id: page.id, guia: true, theme: '', kicker: '', title: '', subtitle: '', body: '' }
+    : {
+        id: page.id,
+        guia: false,
+        // O tema segue o kicker kids: o texto adulto não muda as cores da página.
+        theme: page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one',
+        kicker: page.kicker,
+        title: page.title,
+        subtitle: page.subtitle,
+        body: page.items.map(renderItem).join(''),
+        lit: page.lit === true,
+      },
+)
 // A numeração conta a capa como página 1.
 function pageNumber(id: string): number {
   const index = sheets.findIndex((sheet) => sheet.id === id)
@@ -314,10 +327,17 @@ const ui = {
 // O adulto não tem mascote: a capa sai sem o Zappy.
 const zappy = ''
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="${ui.capaAlt}"></div><div class="cover-copy"><span class="badge">${ui.selo}</span><h1>A Chave<br>do <em>Farol</em></h1><p>${ui.capa}</p><div class="cover-bottom">${ui.capaFim}</div></div>${zappy}</section>`
+const pageNo = (index: number) =>
+  `<div class="page-no"><span class="brand">${ui.rodape}</span><span>${index + 2} / ${total}</span></div>`
 const body = sheets
-  .map(
-    (sheet, index) =>
-      `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="${ui.cenaAlt}"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">${ui.rodape}</span><span>${index + 2} / ${total}</span></div></section>`,
+  .map((sheet, index) =>
+    sheet.guia
+      ? guiaSecao(sheet.id, {
+          curso: 'desafio-primeiro-jogo',
+          kicker: (parte) => `Dia 1 · Parte ${parte}`,
+          rodape: pageNo(index),
+        })
+      : `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="${ui.cenaAlt}"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div>${pageNo(index)}</section>`,
   )
   .join('\n')
 // Estilo só do Farol. O CSS de referência (Cadê) não muda por causa dele.
@@ -377,7 +397,7 @@ const extraCss = `
 .farol-pair .farol-option { border: 0; padding: 1mm; }
 .farol-pair img { height: 27mm; }
 `
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${css}\n${extraCss}\n${GUIA_CSS}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')
 const pasta = `tmp/pdfs/desafio-farol`
 const out = resolve(root, pasta)
