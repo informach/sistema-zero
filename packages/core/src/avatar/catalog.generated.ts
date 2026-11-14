@@ -384,6 +384,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "mao_esquerda": "LeftHandProp",
         "mao_direita": "RightHandProp"
       },
+      "height": 1.156,
       "game": {
         "file": "base/animacoes-do-jogo.b448925e3f75.glb",
         "clips": [

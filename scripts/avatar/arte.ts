@@ -39,6 +39,8 @@ export interface ItemDaArte {
   rascunho?: boolean
   festa?: string
   premio_da_festa?: boolean
+  /** A caixa da peça na pose de descanso (metros, Y para cima). */
+  caixa?: { min: [number, number, number]; max: [number, number, number] }
 }
 
 interface FantasiaDaArte {

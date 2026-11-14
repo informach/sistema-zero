@@ -141,6 +141,8 @@ export interface AvatarSkeleton {
   bones: Record<string, AvatarBone>
   /** Encaixe → osso (`mao_direita` → `RightHandProp`). */
   sockets: Record<string, string>
+  /** Altura do corpo padrão do pack, do pé ao topo da cabeça, sem cabelo nem chapéu (metros). */
+  height: number
   /** As animações do jogo, num arquivo à parte: a plataforma não as baixa. */
   game: { file: string; clips: AvatarGameClip[] }
 }

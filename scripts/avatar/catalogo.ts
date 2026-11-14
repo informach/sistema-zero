@@ -69,6 +69,7 @@ export function catalogoVazio(): AvatarCatalog {
         catalogBlob: '',
         bones: {},
         sockets: {},
+        height: 0,
         game: { file: '', clips: [] },
       },
       textures: {},
