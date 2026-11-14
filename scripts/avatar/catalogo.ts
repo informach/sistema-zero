@@ -216,13 +216,13 @@ export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: str
 }
 
 /** JSON com as chaves em ordem (a mesma peça dá a mesma impressão, qualquer que seja a ordem). */
-function ordenado(valor: unknown): unknown {
-  if (Array.isArray(valor)) return valor.map(ordenado)
+function comChavesEmOrdem(valor: unknown): unknown {
+  if (Array.isArray(valor)) return valor.map(comChavesEmOrdem)
   if (valor && typeof valor === 'object')
     return Object.fromEntries(
       Object.keys(valor)
         .sort()
-        .map((k) => [k, ordenado((valor as Record<string, unknown>)[k])]),
+        .map((k) => [k, comChavesEmOrdem((valor as Record<string, unknown>)[k])]),
     )
   return valor
 }
@@ -235,7 +235,7 @@ function ordenado(valor: unknown): unknown {
 export function impressaoDaPeca(item: ItemDaArte): string {
   const { pasta: _pasta, ...dados } = item
   return createHash('sha256')
-    .update(JSON.stringify(ordenado(dados)))
+    .update(JSON.stringify(comChavesEmOrdem(dados)))
     .digest('hex')
     .slice(0, 16)
 }

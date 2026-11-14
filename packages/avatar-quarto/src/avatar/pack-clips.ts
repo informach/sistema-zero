@@ -4,7 +4,12 @@
  * feita na carga, sobre uma cópia: os arquivos do pack não mudam e a plataforma (que mostra o boneco
  * parado num lugar) nunca passa por aqui.
  */
-import { type AnimationClip, Quaternion, QuaternionKeyframeTrack } from 'three'
+import {
+  type AnimationClip,
+  Quaternion,
+  QuaternionKeyframeTrack,
+  QuaternionLinearInterpolant,
+} from 'three'
 
 /** O que fazer com a subida e a descida do `Hips`. */
 export type VerticalDoClipe =
@@ -80,11 +85,15 @@ const qAgora = new Quaternion()
  * Soma o giro de cada osso em relação ao primeiro quadro, em `amostras` instantes do clipe.
  */
 export function instanteDaFoto(clipe: AnimationClip, amostras = 60): number {
+  // Só as trilhas lineares (quatro valores por quadro): numa cúbica os valores trazem as tangentes.
   const trilhas = clipe.tracks.filter(
-    (t): t is QuaternionKeyframeTrack => t instanceof QuaternionKeyframeTrack,
+    (t): t is QuaternionKeyframeTrack =>
+      t instanceof QuaternionKeyframeTrack && t.values.length === t.times.length * 4,
   )
   if (trilhas.length === 0 || clipe.duration <= 0) return clipe.duration
-  const leitores = trilhas.map((t) => t.createInterpolant())
+  const leitores = trilhas.map(
+    (t) => new QuaternionLinearInterpolant(t.times, t.values, 4, new Float32Array(4)),
+  )
   const comeco = leitores.map((l) => qComeco.fromArray(l.evaluate(0)).clone())
   let melhor = clipe.duration
   let maior = -1
