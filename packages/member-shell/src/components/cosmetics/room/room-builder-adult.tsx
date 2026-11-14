@@ -25,8 +25,8 @@ export function AdultRoomBuilder({
       avatarPhotoUrl={avatarPhotoUrl}
       header={header}
       skin="adult"
-      trophyHints={trophyHints}
       view={AdultRoomBuilderView}
+      trophyHints={trophyHints}
     />
   )
 }

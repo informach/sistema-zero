@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  CasaMoradaGuardadaSchema,
   type ClubeDoJogo,
   type DesafioAberto,
   EnvioAoClubeSchema,
@@ -318,6 +319,27 @@ export function criarPlataformaDoArquipelago(opcoes: {
       const quarto = QuartoSchema.safeParse((r.corpo as { state?: unknown } | null)?.state)
       if (r.status !== 200 || !quarto.success) throw new Error(`quarto (${r.status})`)
       return quarto.data
+    },
+    async lerCasaMorada() {
+      const response = await json('/api/members/house')
+      if (response.status !== 200) throw new Error(`A casa não abriu (${response.status}).`)
+      return CasaMoradaGuardadaSchema.parse(response.corpo)
+    },
+    async salvarCasaMorada(pedido) {
+      const response = await json('/api/members/house', corpoJson('PUT', pedido))
+      if (response.status === 409) {
+        const current =
+          typeof response.corpo === 'object' &&
+          response.corpo !== null &&
+          'current' in response.corpo
+            ? CasaMoradaGuardadaSchema.safeParse(response.corpo.current)
+            : null
+        const error = new Error('A casa mudou em outro lugar.')
+        if (current?.success) Object.assign(error, { current: current.data })
+        throw error
+      }
+      if (response.status !== 200) throw new Error(`A casa não foi gravada (${response.status}).`)
+      return CasaMoradaGuardadaSchema.parse(response.corpo)
     },
     async salvarQuarto(quarto) {
       const r = await json('/api/members/room', corpoJson('PUT', quarto))

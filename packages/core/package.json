@@ -1,7 +1,7 @@
 {
   "name": "@sistemazero/core",
   "version": "0.1.0",
-  "description": "Utilidades compartilhadas do monorepo sistema-zero (security, logging, errors, result, http, time) — sem dependência de framework.",
+  "description": "Utilidades compartilhadas do monorepo sistema-zero (security, logging, errors, result, http, time) â€” sem dependÃªncia de framework.",
   "type": "module",
   "private": true,
   "module": "src/index.ts",
@@ -34,7 +34,9 @@
     "./learning/scene": "./src/learning/scene/index.ts",
     "./avatar": "./src/avatar/index.ts",
     "./palette": "./src/palette/index.ts",
-    "./profiles": "./src/profiles/index.ts"
+    "./profiles": "./src/profiles/index.ts",
+    "./morada": "./src/morada/index.ts",
+    "./morada/schema": "./src/morada/schema.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

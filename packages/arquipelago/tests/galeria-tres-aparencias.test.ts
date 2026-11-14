@@ -16,8 +16,8 @@ describe('a galeria com a clássica, a retrô e a moderna', () => {
       )
       expect(urls[0]).toBe(classico)
       expect(new Set(urls).size).toBe(3)
-      expect(urls[1]).toContain(`${objeto}-retro`)
-      expect(urls[2]).toContain(`${objeto}-moderna`)
+      expect(urls[1]).toStartWith('/api/morada3d/models/')
+      expect(urls[2]).toStartWith('/api/morada3d/models/')
     }
   })
 

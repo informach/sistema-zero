@@ -5,6 +5,7 @@ import type { ComponentProps } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AdultAvatarConfigurator } from '../src/components/cosmetics/avatar3d/configurator-adult'
 import type { AvatarEditor } from '../src/components/cosmetics/avatar3d/use-avatar-editor'
+import { moradaTrophyHint } from '../src/components/cosmetics/room/morada-trophy-hint'
 import { RoomBuilderView } from '../src/components/cosmetics/room/room-builder-view'
 import { AdultRoomBuilderView } from '../src/components/cosmetics/room/room-builder-view-adult'
 import { roomItemIcon } from '../src/components/cosmetics/room/room-item-icon'
@@ -133,128 +134,54 @@ describe('pele adulta — nada só na cor', () => {
 })
 
 function roomProps(): ComponentProps<typeof RoomBuilderView> {
-  const noop = () => {}
-  const draft = {
-    theme: 'aconchego',
-    placedItems: [
-      { itemId: 'mesa', x: 1, y: 1 },
-      { itemId: 'ursinho', x: 5, y: 5 },
-      { itemId: 'vela', x: 0, y: 0, on: 'mesa', slot: 0 },
-    ],
-    pet: null,
-  }
   return {
-    scene: {
-      avatarPhotoUrl: null,
-      data: {
-        state: draft,
-        items: [
-          {
-            id: 'cama',
-            category: 'furniture',
-            tier: 'coins',
-            price: 50,
-            owned: false,
-            locked: true,
-          },
-          { id: 'mesa', category: 'furniture', tier: 'free', price: 0, owned: true, locked: false },
-          {
-            id: 'trofeu-primeiro-jogo',
-            category: 'decor',
-            tier: 'trophy',
-            price: 0,
-            owned: true,
-            locked: false,
-          },
-          {
-            id: 'trofeu-chama',
-            category: 'decor',
-            tier: 'trophy',
-            price: 0,
-            owned: false,
-            locked: true,
-          },
-        ],
-        themes: [],
-        floors: [],
-        lightings: [],
-        balance: 120,
-      },
-      loadState: 'ready',
-      draft,
-      onMoveItem: noop,
-      onPaintWall: noop,
-      paintColor: null,
-      onRetry: noop,
-    },
-    selection: {
-      selected: 1,
-      onSelectPiece: noop,
-      stackPicker: false,
-      surfaces: [{ itemId: 'mesa', free: 1 }],
-      onBringDown: noop,
-      onToggleStackPicker: noop,
-      onRotateSelected: noop,
-      onRemoveSelected: noop,
-      onPlaceOnSurface: noop,
-      onCloseStackPicker: noop,
-    },
-    wallet: { coinsUnlimited: false, balance: 120, saving: false, onSave: noop },
-    catalog: {
-      tab: 'moveis',
-      onSelectTab: noop,
-      confirmBuyId: 'cama',
-      busy: null,
-      onCancelBuy: noop,
-      onBuy: noop,
-      isOwned: (id) => id !== 'cama' && id !== 'trofeu-chama',
-      onPickItem: noop,
-      onApplyFloor: noop,
-      onApplyLighting: noop,
-      onApplyTheme: noop,
-      brush: '#f3ede1',
-      onPickBrush: noop,
-      onPickPet: noop,
-    },
+    wallet: { balance: 120, unlimited: false },
+    saving: false,
+    ready: true,
+    onSave: () => {},
+    tab: 'moveis',
+    onTab: () => {},
+    stage: <div>Espaço Morada</div>,
+    actions: <button type="button">Em cima…</button>,
+    pieces: <button type="button">Mesa</button>,
+    extras: null,
+    tray: <button type="button">Cama</button>,
+    notice: null,
   }
 }
 
 describe('as duas telas do espaço', () => {
-  test('RoomBuilderView é a tela do Kids de sempre', () => {
+  test('a pele Kids conserva o gradiente, as dez abas e o painel ao lado', () => {
     const html = renderToStaticMarkup(<RoomBuilderView {...roomProps()} />)
     expect(html).toContain('Salvar quarto')
     expect(html).toContain('Em cima…')
-    expect(html).toContain('Comprar por 50')
+    expect(html).toContain('sz-btn-gradient')
+    expect(html).toContain('grid-cols-5')
+    expect(html).toContain('Itens do quarto')
     expect(html).not.toContain('sz-cos-')
+    expect(html).not.toContain('Comprar por')
   })
 
-  test('AdultRoomBuilderView: texto adulto, atalhos escritos, sem emoji e com as classes da pele', () => {
-    const html = renderToStaticMarkup(<AdultRoomBuilderView {...roomProps()} />)
+  test('a pele adulta conserva tokens próprios, moedas, atalhos e dez abas sem emoji', () => {
+    const props = roomProps()
+    const html = renderToStaticMarkup(
+      <AdultRoomBuilderView {...props} actions={<button type="button">Pôr em cima de…</button>} />,
+    )
     expect(html).toContain('Salvar espaço')
     expect(html).toContain('Pôr em cima de…')
-    expect(html).toContain('Peça selecionada: Ursinho')
     expect(html).toContain(ADULT_ROOM_COPY.keyboardHint)
-    expect(html).toContain('Vela<span class="sz-cos-chip-note"> · na Mesa</span>')
-    expect(html).toContain('Cama: 50 moedas.')
-    expect(html).toContain('Desbloquear por 50 moedas')
+    expect(html).toContain('sz-cos-room-wrap')
+    expect(html).toContain('sz-cos-room-tabs')
+    expect(html).toContain('sz-cos-room-tray')
     expect(html).toContain('120<span> moedas</span>')
-    expect(html).not.toContain('Prévia')
     expect(EMOJI.test(html)).toBe(false)
   })
 
-  test('AdultRoomBuilderView: troféus com a dica que o APP passa e o conquistado em texto', () => {
-    const props = roomProps()
-    const trophies = { ...props, catalog: { ...props.catalog, tab: 'trofeus' as const } }
+  test('dicas de troféus usam a voz do app e preservam o texto neutro adulto', () => {
     const hints = { 'trofeu-chama': 'Dica do app para a chama.' }
-    const html = renderToStaticMarkup(<AdultRoomBuilderView {...trophies} trophyHints={hints} />)
-    expect(html).toContain(ADULT_ROOM_COPY.trophiesIntro)
-    expect(html).toContain('Conquistado')
-    expect(html).toContain('Dica do app para a chama.')
-    // Nunca a dica do Kids na pele adulta: sem a do app, a frase neutra.
-    const semDica = renderToStaticMarkup(<AdultRoomBuilderView {...trophies} />)
-    expect(semDica).not.toContain(TROPHY_HINT['trofeu-chama'] as string)
-    expect(semDica).toContain(ADULT_ROOM_COPY.trophyFallback)
-    expect(EMOJI.test(html)).toBe(false)
+    expect(moradaTrophyHint('trophy/trofeu-chama', true, hints)).toBe(hints['trofeu-chama'])
+    expect(moradaTrophyHint('trophy/trofeu-chama', true)).toBe(ADULT_ROOM_COPY.trophyFallback)
+    expect(moradaTrophyHint('trophy/trofeu-chama', false)).toBe(TROPHY_HINT['trofeu-chama'] ?? '')
   })
 })
 
@@ -405,17 +332,10 @@ describe('AdultAvatarConfigurator', () => {
   })
 })
 
-test('compra compatível informa a posse compartilhada nos dois temas, sem prometer modelos ausentes', () => {
+test('a biblioteca Morada não apresenta compra de arte antiga nas peles', () => {
   for (const View of [RoomBuilderView, AdultRoomBuilderView]) {
-    const props = roomProps()
-    if (!props.scene.data) throw new Error('Fixture do quarto sem catálogo')
-    props.scene.data.items = [
-      { id: 'aquario', category: 'decor', tier: 'coins', price: 70, owned: false, locked: true },
-    ]
-    props.catalog.confirmBuyId = 'aquario'
-    const html = renderToStaticMarkup(<View {...props} />)
-    expect(html).toContain('A posse também vale no Arquipélago, quando você construir esse objeto.')
-    const original = renderToStaticMarkup(<View {...roomProps()} />)
-    expect(original).not.toContain('A posse também vale no Arquipélago')
+    const html = renderToStaticMarkup(<View {...roomProps()} />)
+    expect(html).not.toContain('Comprar por')
+    expect(html).not.toContain('Desbloquear por')
   }
 })

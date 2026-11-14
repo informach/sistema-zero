@@ -22,6 +22,7 @@ import {
 import { type Cuidado, cuidar } from '../sistemas/cuidar'
 import { ITENS, itensVisiveis } from '../sistemas/itens'
 import { diaDe } from '../sistemas/moradores'
+import { petDaMorada } from '../sistemas/pet-morada'
 
 /** Até esta distância da borda do lago (m) dá para dar banho. */
 const PERTO_DA_AGUA = 2.5
@@ -45,10 +46,10 @@ export function PainelDoBicho() {
   const adotado = useEstado((s) => s.salvamento.bichos.adotado)
   const outros = useEstado((s) => s.salvamento.bichos.outros)
   const dentroDeCasa = useEstado((s) => s.dentroDeCasa)
-  const pet = useEstado((s) => s.quarto.pet)
-  const escolhe = useEstado((s) => podeEscolherCompanhia(s.salvamento, s.quarto.pet))
-  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet))
-  const opcoes = useEstado((s) => opcoesDeCompanhia(s.salvamento, s.quarto.pet).join(','))
+  const pet = useEstado((s) => petDaMorada(s.quarto))
+  const escolhe = useEstado((s) => podeEscolherCompanhia(s.salvamento, petDaMorada(s.quarto)))
+  const acompanha = useEstado((s) => quemAcompanha(s.salvamento, petDaMorada(s.quarto)))
+  const opcoes = useEstado((s) => opcoesDeCompanhia(s.salvamento, petDaMorada(s.quarto)).join(','))
     .split(',')
     .filter((c): c is Companhia => c === 'adotado' || c === 'quarto' || c === 'filhote')
   const nomeDoFilhote = useEstado((s) => s.salvamento.vale.filhote?.nome ?? null)

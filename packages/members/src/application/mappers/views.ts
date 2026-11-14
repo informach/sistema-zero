@@ -420,6 +420,7 @@ export interface RoomThemeView {
 
 /** Estado do quarto do aluno (`GET /members/room`): montado + catálogo + saldo. */
 export interface RoomEditorView {
+  morada?: import('../room/morada-house.service').MoradaHouseEnvelope
   state: RoomState
   items: RoomItemView[]
   themes: RoomThemeView[]

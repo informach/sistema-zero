@@ -34,3 +34,11 @@ export function jogoPausado(s: SinaisDePausa): boolean {
     s.cochilando === true
   )
 }
+
+/** A cena da casa usa um painel permanente, sem dispensar os demais bloqueios do jogo. */
+export function jogoPausadoNaMorada(s: SinaisDePausa): boolean {
+  return jogoPausado({
+    ...s,
+    painelAberto: s.painelAberto === 'casa-morada' ? null : s.painelAberto,
+  })
+}

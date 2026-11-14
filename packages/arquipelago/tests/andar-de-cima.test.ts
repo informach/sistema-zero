@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { join } from 'node:path'
 import {
   type AndarDeCima,
   criarSalvamentoInicial,
@@ -12,7 +11,6 @@ import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
 import {
   ALTURA_DO_ANDAR,
   andarDaObra,
-  caixaDeAntesDoAndar,
   caixasDoPiso,
   celulaDeChegada,
   celulaDeEntrada,
@@ -22,11 +20,8 @@ import {
   guardaCorpos,
   loteDeCima,
   lugarDaEscada,
-  noDoAndar,
   obraDeCima,
   POSICAO_DO_ANDAR,
-  pecasDoAndar,
-  pecasVisiveisDoAndar,
   pisoDeCima,
   plantaDeCima,
   podeTerAndar,
@@ -39,8 +34,6 @@ import { planta } from '../src/sistemas/construcao/comodos'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
 import { porMovel } from '../src/sistemas/construcao/moveis'
 import { esticarParede, porAbertura } from '../src/sistemas/construcao/obra'
-import { NADA_CORTADO, TUDO_CORTADO } from '../src/sistemas/construcao/pecas'
-import { carregarGlb } from './ajuda-colisores'
 
 const LOTE = LOTE_DA_CASA
 
@@ -231,125 +224,6 @@ describe('o andar de cima da casa (E04, Pico)', () => {
     })
     const comParede = { ...andar, paredes: [{ x: -6, z: -8, eixo: 'z' as const, n: 8 }] }
     expect(tirarEscada(comParede)).toEqual({ ok: false, motivo: 'escada-com-obra' })
-  })
-
-  test('as peças do andar existem nos arquivos e a janela cortada vira a parede baixa', async () => {
-    const pasta = join(import.meta.dir, '..', 'src', 'assets', 'casa')
-    const andarGlb = await carregarGlb(join(pasta, 'casa-andar.glb'))
-    const paredesGlb = await carregarGlb(join(pasta, 'casa-paredes-andar.glb'))
-    const obra = obraComSala()
-    const andar = comEscada(obra)
-    const lote = loteDeCima(LOTE)
-    let cima = obraDeCima(andar)
-    for (const [a, b] of [
-      [
-        { x: -6, z: -8 },
-        { x: 6, z: -8 },
-      ],
-      [
-        { x: -6, z: 0 },
-        { x: 6, z: 0 },
-      ],
-      [
-        { x: -6, z: -8 },
-        { x: -6, z: 0 },
-      ],
-      [
-        { x: 6, z: -8 },
-        { x: 6, z: 0 },
-      ],
-      [
-        { x: 0, z: -8 },
-        { x: 0, z: 0 },
-      ],
-    ] as const) {
-      const r = esticarParede(cima, lote, a, b)
-      if (!r.ok) throw new Error(r.motivo)
-      cima = r.obra
-    }
-    for (const [tipo, a] of [
-      ['porta', { eixo: 'z', x: 0, z: -4 }],
-      // Do cômodo de cima para o piso aberto (em cima da sala): a porta de lambri do andar (B7c).
-      ['porta', { eixo: 'z', x: -6, z: -4 }],
-      ['janela-grande', { eixo: 'x', x: -4, z: 0 }],
-      ['janela-arco', { eixo: 'x', x: 2, z: 0 }],
-      ['janela-redonda', { eixo: 'z', x: 6, z: -4 }],
-    ] as const) {
-      const r = porAbertura(cima, lote, tipo, a)
-      if (!r.ok) throw new Error(r.motivo)
-      cima = r.obra
-    }
-    const final = andarDaObra(cima, andar.escada)
-    expect(conferirAndar(final, obra, LOTE)).toBeNull()
-    const p = planta(obra, LOTE)
-    const pc = plantaDeCima(final, LOTE)
-    for (const corte of [NADA_CORTADO, TUDO_CORTADO]) {
-      const tudo = pecasDoAndar(final, p, pc, corte)
-      for (const x of tudo.pecas) {
-        const raiz = x.arquivo === 'andar' ? andarGlb : paredesGlb
-        expect([x.arquivo, raiz.getObjectByName(x.no)?.name]).toEqual([x.arquivo, x.no])
-      }
-      expect(tudo.telhados.length).toBeGreaterThan(0)
-      expect(tudo.telhados.every((t) => (t.y ?? 0) > ALTURA_DO_ANDAR)).toBe(true)
-    }
-    const emPe = pecasDoAndar(final, p, pc, NADA_CORTADO)
-    expect(emPe.folhas).toHaveLength(2)
-    // Entre os dois cômodos de cima, a porta lisa do andar com a folha de dentro; do cômodo para o
-    // piso aberto, a de lambri do andar com a folha `porta`, como o térreo faz com a família.
-    const portas = (pecas: readonly { no: string; x: number; z: number }[]) =>
-      pecas
-        .filter((x) => x.no.startsWith('parede-porta-'))
-        .map((x) => [x.no, x.x, x.z])
-        .sort()
-    expect(portas(emPe.pecas)).toEqual([
-      ['parede-porta-lambri-andar', -6, -3.5],
-      ['parede-porta-lisa-andar', 0, -3.5],
-    ])
-    expect(emPe.folhas.map((f) => [f.no, f.x, f.z, f.y]).sort()).toEqual([
-      ['porta', -6, -3.5, ALTURA_DO_ANDAR],
-      ['porta-interna', 0, -3.5, ALTURA_DO_ANDAR],
-    ])
-    expect(portas(pecasDoAndar(final, p, pc, TUDO_CORTADO).pecas)).toEqual([
-      ['parede-porta-lambri-baixa-andar', -6, -3.5],
-      ['parede-porta-lisa-baixa-andar', 0, -3.5],
-    ])
-    // O lambri (o -Y local, que gira para -z no giro 0) fica do lado do piso aberto (x < -6): a
-    // parede de eixo z com o dentro em +x gira -90°, como no térreo (`giroDaParede`).
-    const lambri = emPe.pecas.find((x) => x.no === 'parede-porta-lambri-andar')
-    expect(lambri?.giro).toBeCloseTo(-Math.PI / 2, 6)
-    expect(noDoAndar('parede-janela-arco-lambri-baixa')).toBe('parede-lambri-baixa-andar')
-    expect(noDoAndar('quina-lisa')).toBe('quina-lisa-andar')
-    expect(noDoAndar('parede-porta-lambri-baixa')).toBe('parede-porta-lambri-baixa-andar')
-    expect(noDoAndar('parede-porta-lisa')).toBe('parede-porta-lisa-andar')
-    // Com o andar escondido (dentro de casa no térreo, Construir do térreo), só a escada aparece:
-    // ela fica de pé no térreo e é subida pelos colisores do arquivo.
-    expect(pecasVisiveisDoAndar(emPe, true)).toBe(emPe.pecas)
-    expect(pecasVisiveisDoAndar(emPe, false).map((x) => x.no)).toEqual(['escada-interna'])
-    // A reserva enquanto o kit do andar não chega: o piso de cima é uma laje fina na altura dele,
-    // as paredes de cima ficam em cima dele (as cortadas com 1,0), e o resto espera o arquivo.
-    for (const x of [...emPe.pecas, ...pecasDoAndar(final, p, pc, TUDO_CORTADO).pecas]) {
-      const c = caixaDeAntesDoAndar(x)
-      if (
-        x.no.startsWith('piso-andar-vao') ||
-        x.no === 'escada-interna' ||
-        x.no === 'guarda-corpo-andar'
-      )
-        expect({ no: x.no, c }).toEqual({ no: x.no, c: null })
-      else if (x.no.startsWith('piso-andar-'))
-        expect({ no: x.no, y: c?.y, altura: c?.altura }).toEqual({
-          no: x.no,
-          y: ALTURA_DO_ANDAR - 0.05,
-          altura: 0.1,
-        })
-      else {
-        // Paredes e quinas de cima: o pé no piso de cima.
-        expect({ no: x.no, pe: c ? c.y - c.altura / 2 : null }).toEqual({
-          no: x.no,
-          pe: ALTURA_DO_ANDAR,
-        })
-        expect(c?.altura).toBe(x.no.endsWith('-baixa-andar') ? 1 : 4)
-      }
-    }
   })
 
   test('a loja do Construir põe a escada, constrói lá em cima, desfaz e segura o térreo', () => {

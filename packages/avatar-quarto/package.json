@@ -1,7 +1,7 @@
 {
   "name": "@sistemazero/avatar-quarto",
   "version": "0.1.0",
-  "description": "O avatar 3D e o quarto 3D (catálogos, modelos e cena), compartilhados pela plataforma (member-shell) e pelo jogo Arquipélago Vagalume. Consumido como TS source.",
+  "description": "O avatar 3D e o quarto 3D (catÃ¡logos, modelos e cena), compartilhados pela plataforma (member-shell) e pelo jogo ArquipÃ©lago Vagalume. Consumido como TS source.",
   "type": "module",
   "private": true,
   "exports": {
@@ -12,18 +12,15 @@
     "./avatar/pack-rig": "./src/avatar/pack-rig.tsx",
     "./quarto/catalog": "./src/quarto/catalog.ts",
     "./quarto/coords": "./src/quarto/coords.ts",
-    "./quarto/floor": "./src/quarto/floor.tsx",
-    "./quarto/furniture-models": "./src/quarto/furniture-models.tsx",
-    "./quarto/furniture-piece": "./src/quarto/furniture-piece.tsx",
-    "./quarto/geometry": "./src/quarto/geometry.ts",
-    "./quarto/materials": "./src/quarto/materials.ts",
-    "./quarto/pet-3d": "./src/quarto/pet-3d.tsx",
     "./quarto/pet-walk": "./src/quarto/pet-walk.ts",
-    "./quarto/prims": "./src/quarto/prims.tsx",
-    "./quarto/room-glb-model": "./src/quarto/room-glb-model.tsx",
-    "./quarto/room-lights": "./src/quarto/room-lights.tsx",
-    "./quarto/walls": "./src/quarto/walls.tsx",
-    "./use-reduced-motion": "./src/use-reduced-motion.ts"
+    "./use-reduced-motion": "./src/use-reduced-motion.ts",
+    "./morada/catalog": "./src/morada/catalog.ts",
+    "./morada/house": "./src/morada/house.tsx",
+    "./morada/instance": "./src/morada/instance.ts",
+    "./morada/pet": "./src/morada/pet.tsx",
+    "./morada/piece": "./src/morada/piece.tsx",
+    "./morada/pet-room": "./src/morada/pet-room.tsx",
+    "./morada/pet-walk": "./src/morada/pet-walk.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

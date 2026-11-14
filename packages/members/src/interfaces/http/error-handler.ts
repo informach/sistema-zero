@@ -23,6 +23,8 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  MORADA_INVALID: 400,
+  MORADA_CLIENT_OUTDATED: 409,
   COURSE_PUBLICATION_CONFLICT: 409,
   COURSE_PUBLICATION_PEER_UNAVAILABLE: 424,
   COURSE_PUBLICATION_LEASE_LOST: 409,

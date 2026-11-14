@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import { cn } from '../../../lib/cn'
-import { lightingPreset, resolveRoomAppearance } from '../../../lib/room-catalog'
 import type { RoomStateView } from '../../../lib/types'
 import { KidsAvatar, KidsMascot } from '../presentation'
 
@@ -36,7 +35,7 @@ export function RoomCanvas({
   onPaintWall,
   paintColor = null,
   staticView = false,
-  emptyHint = 'Toque numa peça na lojinha para montar seu quarto! 🛋️',
+  emptyHint = 'Escolha uma peça na biblioteca para montar seu quarto.',
   className,
 }: {
   state: RoomStateView
@@ -59,13 +58,13 @@ export function RoomCanvas({
    * (a câmera encaixa o quarto em qualquer formato: `use-responsive-zoom.ts`). */
   className?: string
 }) {
-  const dark = Boolean(lightingPreset(resolveRoomAppearance(state).lightingId).dark)
   // Alternativa textual da cena 3D p/ leitores de tela (no modo `view`, ex.: perfil público de um
   // colega). No `edit` a cena é interativa e a lista de peças já dá o rótulo do grupo.
-  const itemCount = state.placedItems.length
+  const itemCount =
+    state.house?.instances.filter((i) => i.roomId === state.house?.roomId).length ?? 0
   const roomLabel =
     `Quarto 3D com ${itemCount} ${itemCount === 1 ? 'item' : 'itens'} de decoração` +
-    (state.pet ? ' e um bichinho de estimação' : '')
+    (state.house?.pet ? ' e um bichinho de estimação' : '')
   return (
     <div
       className={cn(
@@ -90,11 +89,11 @@ export function RoomCanvas({
           <KidsAvatar photoUrl={avatarPhotoUrl} size="lg" className="size-full drop-shadow-md" />
         </div>
       ) : null}
-      {mode === 'edit' && state.placedItems.length === 0 ? (
+      {mode === 'edit' && itemCount === 0 ? (
         <p
           className={cn(
             'pointer-events-none absolute inset-x-0 top-3 px-4 text-center font-semibold text-sm',
-            dark ? 'text-white/85' : 'text-foreground/70',
+            'text-foreground/70',
           )}
         >
           {emptyHint}

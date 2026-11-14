@@ -2,6 +2,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import { canonicalizeRoomState, type RoomState } from '../../domain/room/room-catalog'
+import type { MoradaHouseService } from './morada-house.service'
 
 /**
  * Salva o quarto montado. CANONICALIZA contra o inventário (descarta tema/item/pet
@@ -13,6 +14,7 @@ export class SaveRoomService {
     private readonly room: RoomRepository,
     private readonly clock: () => Date,
     private readonly logger?: Logger,
+    private readonly morada?: Pick<MoradaHouseService, 'assertLegacyWritable'>,
   ) {}
 
   async execute(
@@ -21,6 +23,7 @@ export class SaveRoomService {
     audience: CourseAudience,
     raw: RoomState,
   ): Promise<RoomState> {
+    await this.morada?.assertLegacyWritable(userId, audience)
     const owned = new Set(await this.room.listInventory(userId, audience))
     const canonical = canonicalizeRoomState(raw, owned)
     // Descarte é TOLERÂNCIA por design (posse nunca se perde), mas silencioso
