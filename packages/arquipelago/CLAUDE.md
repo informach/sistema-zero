@@ -1,5 +1,22 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## O corpo sai do esqueleto; o mundo declara a escala (14/11/2026, etapa 1 passo 3)
+
+Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.
+- `mundo/mundo-do-jogo.ts` (sem imports): `MundoDoJogo` e `MUNDO_ATUAL`. O mundo de hoje declara a
+  ponte de escala 1,85 (o herói fica com 2,14 m, como o boneco antigo) e as REGRAS dele:
+  gravidade, velocidades, pulo, degrau, rampas, `grudaAte` (o `snapToGround`), folga e até onde as
+  mãos agarram (`maosNaBorda` 0,9, `maosNaEscalada` 1). Essas regras ficam no mundo porque os níveis
+  foram medidos com elas; os braços curtos do pack chegam lá pela IK. Os mundos novos declaram 1.
+- `sistemas/corpo.ts`: `CORPO = corpoDoMundo(AVATAR_CATALOG, MUNDO_ATUAL)`, com o MESMO formato
+  de antes e mais `cintura`, `doCentro` (cabeça, topo, ombro, mãos no cipó; alturas a partir do
+  centro da cápsula) e `medidas`. A cápsula sai de `bodyMeasures`/`physicalBody` do core (pelo
+  `avatar-quarto/avatar/pack-catalog`). ⚠️ Número de corpo novo NÃO se escreve à mão: derive do
+  `CORPO` (câmera, Zappy, esmaecer de copas, mergulho, `CINTURA`, `GRAVIDADE` e `GRAVIDADE_DO_CIPO`
+  já derivam). Teste que precisa da cápsula importa o `CORPO`.
+- Ficaram para os passos 4 e 5 (dependem das poses do pack, não do esqueleto): `BANCO`, `CAMA`,
+  `MONTARIA.subidaDoDesenho`, `BARRA_NO_AVATAR` e a lanterna.
+
 ## O avatar do pack no jogo (13/11/2026)
 
 O avatar da plataforma virou o do pack Cute Characters (plano

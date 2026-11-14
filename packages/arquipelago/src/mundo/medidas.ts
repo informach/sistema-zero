@@ -1,5 +1,6 @@
 import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
 import { CONTORNO_DO_MERGULHO, MERGULHO } from '../sistemas/mergulho'
+import { MUNDO_ATUAL } from './mundo-do-jogo'
 
 /**
  * As medidas do mundo (1 unidade = 1 célula do quarto, mais ou menos 1 metro). Tudo o que é
@@ -14,7 +15,7 @@ export const NIVEL_DA_AGUA = 0
 export const PASSO_DA_FISICA = 1 / 60
 export const PRIORIDADE_DA_FISICA = -1
 /** A gravidade do jogo (m/s², para baixo): mais forte que a de verdade, para o pulo ser ágil. */
-export const GRAVIDADE = 24
+export const GRAVIDADE = MUNDO_ATUAL.gravidade
 export const ALTURA_DA_TERRA = 1
 export const FUNDO_DO_MAR = -3.5
 

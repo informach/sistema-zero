@@ -13,7 +13,7 @@ import { mudarModo } from './trocas'
 /** Agarrar a borda e subir (especificação, "Agarrar a borda e subir"). Números de partida. */
 export const BORDA = {
   /** As mãos, de braços para cima, ficam isto acima do meio do corpo (o avatar é chibi). */
-  maosAcimaDoCentro: 0.9,
+  maosAcimaDoCentro: CORPO.maosNaBorda,
   /** Agarra com as mãos até isto acima ou abaixo da quina... */
   alcanceDeAltura: 0.35,
   /** ...e de fora até isto (os 0,35 da especificação mais os 0,25 da assistência de alcance). */

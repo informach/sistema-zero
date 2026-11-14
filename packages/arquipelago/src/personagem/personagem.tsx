@@ -204,7 +204,7 @@ export function Personagem() {
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
     c.enableAutostep(CORPO.degrau, 0.25, true)
-    c.enableSnapToGround(0.35)
+    c.enableSnapToGround(CORPO.grudaAte)
     c.setMaxSlopeClimbAngle(MathUtils.degToRad(CORPO.sobeAte))
     c.setMinSlopeSlideAngle(MathUtils.degToRad(CORPO.escorregaAcimaDe))
     // Empurra o que é dinâmico (o tronco do lago) com o peso de uma criança: andando contra, ele

@@ -6,12 +6,32 @@
 import {
   AVATAR_CATALOG,
   type AvatarCatalog,
+  type AvatarGameClip,
+  type AvatarSkeleton,
   type AvatarSlots,
+  avatarFileUrl,
+  type BodyMeasures,
+  bodyMeasures,
   drawAvatar,
+  type PhysicalBody,
+  physicalBody,
   withEars,
 } from '@sistemazero/core/avatar'
 
-export { AVATAR_CATALOG, type AvatarCatalog, type AvatarSlots, drawAvatar, withEars }
+export {
+  AVATAR_CATALOG,
+  type AvatarCatalog,
+  type AvatarGameClip,
+  type AvatarSkeleton,
+  type AvatarSlots,
+  avatarFileUrl,
+  type BodyMeasures,
+  bodyMeasures,
+  drawAvatar,
+  type PhysicalBody,
+  physicalBody,
+  withEars,
+}
 
 /** O nome de uma peça do pack (o id, se ela não estiver no catálogo). */
 export function nomeDaPecaDoPack(id: string, catalog: AvatarCatalog = AVATAR_CATALOG): string {

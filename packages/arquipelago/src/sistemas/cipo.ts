@@ -7,12 +7,15 @@
  * avatar (`rastro.direcao`). O `angulo` é medido da vertical; positivo é para o lado do `rumo`.
  */
 
-/** A gravidade do personagem (a mesma de `personagem.tsx`). */
-export const GRAVIDADE_DO_CIPO = 24
+import { MUNDO_ATUAL } from '../mundo/mundo-do-jogo'
+import { CORPO } from './corpo'
+
+/** A gravidade do personagem: a do mundo (`mundo/mundo-do-jogo.ts`). */
+export const GRAVIDADE_DO_CIPO = MUNDO_ATUAL.gravidade
 
 export const CIPO = {
-  /** Do centro do corpo até as mãos, com os braços para cima. */
-  maosAcimaDoCentro: 0.3,
+  /** Do centro do corpo até as mãos na corda, ao lado do rosto (meio braço acima do ombro). */
+  maosAcimaDoCentro: CORPO.doCentro.maosNoCipo,
   /** No ponto mais baixo do balanço, os pés passam a esta altura do chão. */
   folgaDosPes: 0.35,
   /** O cipó nunca fica mais curto que isto (um pêndulo curto demais balança nervoso). */
