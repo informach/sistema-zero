@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { AnimationClip, QuaternionKeyframeTrack, VectorKeyframeTrack } from 'three'
-import { alturaNoComeco, semDeslocamento } from '../src/avatar/pack-clips'
+import {
+  AnimationClip,
+  Quaternion,
+  QuaternionKeyframeTrack,
+  Vector3,
+  VectorKeyframeTrack,
+} from 'three'
+import { alturaNoComeco, instanteDaFoto, semDeslocamento } from '../src/avatar/pack-clips'
 
 /** Um passo montado à mão: o `Hips` anda 0,5 para a frente (+Z) e balança no Y. */
 function passo(): AnimationClip {
@@ -66,5 +72,32 @@ describe('semDeslocamento', () => {
     expect(Array.from(pronto.tracks[0]?.values ?? [])).toEqual([0, 0, 0, 1, 0, 0])
     expect(alturaNoComeco(solto)).toBeNull()
     expect(alturaNoComeco(passo())).toBeCloseTo(0.3, 6)
+  })
+})
+
+describe('instanteDaFoto', () => {
+  const giro = (graus: number) =>
+    new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), (graus * Math.PI) / 180).toArray()
+
+  test('o chute: a perna sobe até 90° e volta; a foto é na perna lá em cima', () => {
+    const tempos = [0, 0.3, 0.6, 1.2]
+    const chute = new AnimationClip('chute', 1.2, [
+      new QuaternionKeyframeTrack('LeftUpLeg.quaternion', tempos, [
+        ...giro(0),
+        ...giro(40),
+        ...giro(90),
+        ...giro(0),
+      ]),
+      // Um osso que quase não mexe não muda o auge.
+      new QuaternionKeyframeTrack('Spine.quaternion', [0, 1.2], [...giro(0), ...giro(5)]),
+    ])
+    expect(instanteDaFoto(chute)).toBeCloseTo(0.6, 1)
+  })
+
+  test('sem giro nenhum, a foto é no fim do clipe', () => {
+    const parado = new AnimationClip('x', 2, [
+      new VectorKeyframeTrack('Hips.position', [0, 2], [0, 0.3, 0, 0, 0.3, 0]),
+    ])
+    expect(instanteDaFoto(parado)).toBe(2)
   })
 })

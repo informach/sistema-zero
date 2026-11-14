@@ -392,6 +392,7 @@ export function AvatarConfigurator({
                 dark={dark}
                 mode={mode}
                 pose={mode === 'photo' ? editor.pose : undefined}
+                poseTake={editor.poseTake}
               />
             ) : (
               <div className="flex h-full items-center justify-center">

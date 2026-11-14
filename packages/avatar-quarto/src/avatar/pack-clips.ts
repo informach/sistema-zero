@@ -4,7 +4,7 @@
  * feita na carga, sobre uma cópia: os arquivos do pack não mudam e a plataforma (que mostra o boneco
  * parado num lugar) nunca passa por aqui.
  */
-import type { AnimationClip } from 'three'
+import { type AnimationClip, Quaternion, QuaternionKeyframeTrack } from 'three'
 
 /** O que fazer com a subida e a descida do `Hips`. */
 export type VerticalDoClipe =
@@ -68,4 +68,37 @@ export function semDeslocamento(
     else if (vertical !== 'manter') values[j + 1] = Math.min(values[j + 1] ?? 0, vertical.teto)
   }
   return copia
+}
+
+const qComeco = new Quaternion()
+const qAgora = new Quaternion()
+
+/**
+ * O instante da foto de uma pose (segundos): o auge do movimento, quando os ossos estão mais longe
+ * de onde o movimento começou (no chute, a perna esticada; no soco, o braço lá na frente). É também
+ * onde o movimento quase para (um extremo), então a pose congelada ali não parece cortada no meio.
+ * Soma o giro de cada osso em relação ao primeiro quadro, em `amostras` instantes do clipe.
+ */
+export function instanteDaFoto(clipe: AnimationClip, amostras = 60): number {
+  const trilhas = clipe.tracks.filter(
+    (t): t is QuaternionKeyframeTrack => t instanceof QuaternionKeyframeTrack,
+  )
+  if (trilhas.length === 0 || clipe.duration <= 0) return clipe.duration
+  const leitores = trilhas.map((t) => t.createInterpolant())
+  const comeco = leitores.map((l) => qComeco.fromArray(l.evaluate(0)).clone())
+  let melhor = clipe.duration
+  let maior = -1
+  for (let i = 0; i <= amostras; i++) {
+    const t = (clipe.duration * i) / amostras
+    let soma = 0
+    for (let k = 0; k < leitores.length; k++) {
+      qAgora.fromArray(leitores[k]?.evaluate(t) ?? [0, 0, 0, 1])
+      soma += comeco[k]?.angleTo(qAgora) ?? 0
+    }
+    if (soma > maior + 1e-9) {
+      maior = soma
+      melhor = t
+    }
+  }
+  return melhor
 }

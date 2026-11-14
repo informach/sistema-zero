@@ -69,12 +69,19 @@ export interface PecaPresa {
  * Prende as malhas de uma peça aos ossos da montagem. Geometria fica a do cache; materiais e
  * esqueletos são da montagem (descartados em `soltar`). Osso que a montagem não tem é recusado:
  * peça de outro esqueleto não pode entrar torta.
+ *
+ * `camada` (0 = o corpo) diz o que fica por cima quando duas peças ocupam quase o mesmo lugar: a
+ * luva sem dedos sobre a mão, a meia dentro do tênis, a barra da camiseta sobre a calça. Sem isso a
+ * placa de vídeo decide a cada quadro qual das duas desenhar, e a peça pisca (pior com o corpo se
+ * mexendo). Cada camada acima avança a profundidade um tantinho (`polygonOffset`), que só decide
+ * entre superfícies quase coincidentes: o que está mesmo na frente continua na frente.
  */
 export function prepararPecaDoPack(
   original: Object3D,
   ossos: ReadonlyMap<string, Bone>,
   texturas: TexturasDoPack,
   override?: Material,
+  camada = 0,
 ) {
   const proprios = new Map<Material, Material>()
   const esqueletos: Skeleton[] = []
@@ -93,6 +100,11 @@ export function prepararPecaDoPack(
         const brilho = emissiveMap ? texturas.get(emissiveMap) : undefined
         if (brilho) copia.emissiveMap = brilho
         copia.needsUpdate = true
+      }
+      if (camada > 0) {
+        copia.polygonOffset = true
+        copia.polygonOffsetFactor = -camada
+        copia.polygonOffsetUnits = -camada
       }
       proprios.set(mat, copia)
     }

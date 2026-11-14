@@ -74,7 +74,9 @@ function SnapshotBridge({
   canCaptureRef.current = canCapture
   // Câmera de RETRATO (rosto, DE FRENTE) reusada — "Salvar" sai sempre com a cara boa,
   // independente do enquadramento de corpo inteiro / da órbita que estiver na tela.
-  const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
+  // O "perto" da câmera decide a precisão da profundidade: com 0,01 a roupa (1 a 2 mm acima da
+  // pele) brigava com o corpo na foto. O retrato fica a uns 0,7 m do rosto.
+  const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.1, 20))
   const tmpBox = useRef(new THREE.Box3())
   useEffect(() => {
     const capture: CaptureFn = async (opts) => {
@@ -196,12 +198,14 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
 function SceneContents({
   slots,
   pose,
+  poseTake,
   mode,
   dark,
   onReady,
 }: {
   slots: Slots
   pose: string
+  poseTake?: number
   mode: CamMode
   dark: boolean
   onReady: (c: CaptureFn) => void
@@ -216,12 +220,23 @@ function SceneContents({
     <>
       <color attach="background" args={[dark ? '#0d1117' : '#eaf4f7']} />
       <ambientLight intensity={0.75} />
+      {/* A sombra do boneco no pódio e a de um braço no corpo. A caixa da sombra é do tamanho do
+          pódio com o boneco (não os 10 m de fábrica: cada ponto do mapa cobria 1 cm e as peças
+          ganhavam riscos), e o `normalBias` afasta a sombra da própria superfície: sem ele a peça
+          se sombreava e piscava com o corpo se mexendo (a "acne" de sombra). */}
       <directionalLight
         position={[3, 5, 4]}
         intensity={1.6}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0002}
+        shadow-normalBias={0.02}
+        shadow-camera-left={-1.2}
+        shadow-camera-right={1.2}
+        shadow-camera-top={1.6}
+        shadow-camera-bottom={-1.2}
+        shadow-camera-near={1}
+        shadow-camera-far={14}
       />
       <directionalLight
         position={[-4, 3, -2]}
@@ -235,6 +250,7 @@ function SceneContents({
           <PackAvatarRig
             slots={slots}
             pose={pose}
+            poseTake={poseTake}
             loading={loading}
             charRef={charRef}
             completeRef={completeRef}
@@ -273,22 +289,34 @@ export function AvatarScene({
   dark,
   mode = 'customize',
   pose = PACK_IDLE_POSE,
+  poseTake,
 }: {
   slots: Slots
   onReady: (c: CaptureFn) => void
   dark: boolean
   mode?: CamMode
   pose?: string
+  /** Muda a cada escolha de pose: a mesma pose escolhida de novo repete o movimento. */
+  poseTake?: number
 }) {
   return (
     <Canvas
       shadows
       dpr={[1, 2]}
       gl={{ preserveDrawingBuffer: true, antialias: true }}
-      camera={{ position: [0, 0.7, 4], fov: 45 }}
+      // Perto e longe na medida da cena (a câmera fica de 0,9 a 5 m do boneco): com o padrão de
+      // 0,1 a 1000, numa placa de 16 bits de profundidade a roupa e a pele piscavam uma sobre a outra.
+      camera={{ position: [0, 0.7, 4], fov: 45, near: 0.3, far: 30 }}
       onCreated={recoverWebGLContext}
     >
-      <SceneContents slots={slots} pose={pose} mode={mode} dark={dark} onReady={onReady} />
+      <SceneContents
+        slots={slots}
+        pose={pose}
+        poseTake={poseTake}
+        mode={mode}
+        dark={dark}
+        onReady={onReady}
+      />
     </Canvas>
   )
 }

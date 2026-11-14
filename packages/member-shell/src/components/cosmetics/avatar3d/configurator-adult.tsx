@@ -132,6 +132,7 @@ export function AdultAvatarConfigurator(props: AdultAvatarConfiguratorProps) {
             dark={props.dark}
             mode={mode}
             pose={mode === 'photo' ? editor.pose : undefined}
+            poseTake={editor.poseTake}
           />
         ) : (
           <div className="sz-cos-av-wait">

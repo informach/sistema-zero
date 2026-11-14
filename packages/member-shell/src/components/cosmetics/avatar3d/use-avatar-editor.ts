@@ -85,7 +85,13 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
   const [balance, setBalance] = useState(0)
   const [coinsUnlimited, setCoinsUnlimited] = useState(false)
   const [mode, setMode] = useState<Mode>('customize')
-  const [pose, setPose] = useState<string>(AVATAR_IDLE_POSE)
+  const [pose, setPoseState] = useState<string>(AVATAR_IDLE_POSE)
+  /** Quantas vezes uma pose foi escolhida: tocar de novo na mesma pose repete o movimento. */
+  const [poseTake, setPoseTake] = useState(0)
+  const setPose = useCallback((id: string) => {
+    setPoseState(id)
+    setPoseTake((n) => n + 1)
+  }, [])
   const [tabId, setTabId] = useState<AvatarTabId>('cabelo')
   const [kindByTab, setKindByTab] = useState<Partial<Record<AvatarTabId, string>>>({})
   const [busy, setBusy] = useState<string | null>(null)
@@ -440,6 +446,7 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
     mode,
     setMode,
     pose,
+    poseTake,
     setPose,
     tab,
     chooseTab,

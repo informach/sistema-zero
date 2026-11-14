@@ -22,10 +22,43 @@ import {
 import * as THREE from 'three'
 import { useReducedMotion } from '../use-reduced-motion'
 import { measureCharacter } from './measure'
+import { instanteDaFoto } from './pack-clips'
 import { copiarEsqueletoDoPack, prepararPecaDoPack, type TexturasDoPack } from './pack-instance'
 
 /** A pose de quem está parado no pack. */
 export const PACK_IDLE_POSE = 'parado_relaxado'
+
+/**
+ * As poses que ficam em laço (quem está parado respira e olha em volta). As outras (soco, chute,
+ * defesa) fazem o movimento UMA vez e param no auge dele (`instanteDaFoto`): a pose para a foto,
+ * que mostra o golpe, em vez de voltar ao começo e repetir.
+ */
+export const PACK_LOOP_POSES: ReadonlySet<string> = new Set(['parado_relaxado', 'parado_olhando'])
+
+/**
+ * A camada de cada encaixe (`prepararPecaDoPack`): o corpo embaixo, depois o que veste a pele
+ * (rosto, cabelo, meias, calça) e por cima o que cobre outras peças (camiseta sobre a calça, tênis
+ * sobre a meia, luva, chapéu sobre o cabelo). Encaixe novo sem camada fica no meio.
+ */
+export const CAMADA_DO_ENCAIXE: Readonly<Record<string, number>> = {
+  corpo: 0,
+  orelhas: 0,
+  rosto: 1,
+  cabelo: 1,
+  meias: 1,
+  calca: 1,
+  bermuda: 1,
+  roupa_cima: 2,
+  roupa_inteira: 2,
+  luvas: 2,
+  calcado: 2,
+  oculos: 2,
+  acessorio_rosto: 2,
+  chapeu: 2,
+  costas: 2,
+  fantasia: 2,
+}
+export const camadaDoEncaixe = (encaixe: string): number => CAMADA_DO_ENCAIXE[encaixe] ?? 1
 
 /**
  * Uma peça que não baixa some sozinha, sem derrubar a tela (o `useGLTF` lança para fora do
@@ -102,12 +135,14 @@ function useTexturasDoPack(catalog: AvatarCatalog): TexturasDoPack {
 
 function PackPart({
   file,
+  camada,
   ossos,
   texturas,
   onSettled,
   materialOverride,
 }: {
   file: string
+  camada: number
   ossos: ReadonlyMap<string, THREE.Bone>
   texturas: TexturasDoPack
   onSettled: () => void
@@ -119,8 +154,8 @@ function PackPart({
     onSettled()
   }, [onSettled])
   const montagem = useMemo(
-    () => prepararPecaDoPack(scene, ossos, texturas, materialOverride),
-    [scene, ossos, texturas, materialOverride],
+    () => prepararPecaDoPack(scene, ossos, texturas, materialOverride, camada),
+    [scene, ossos, texturas, materialOverride, camada],
   )
   useEffect(() => () => montagem.soltar(), [montagem])
   return (
@@ -154,6 +189,7 @@ function PackPart({
 export function PackAvatarRig({
   slots,
   pose = PACK_IDLE_POSE,
+  poseTake,
   loading = false,
   charRef,
   onStood,
@@ -166,6 +202,8 @@ export function PackAvatarRig({
   slots: AvatarSlots
   /** Um clipe do esqueleto do pack (`catalog.base.skeleton.clips`). */
   pose?: string
+  /** Muda a cada escolha de pose: a mesma pose escolhida de novo faz o movimento outra vez. */
+  poseTake?: number
   loading?: boolean
   charRef: RefObject<THREE.Group | null>
   onStood?: () => void
@@ -197,14 +235,35 @@ export function PackAvatarRig({
     if (onAnimations && actions) onAnimations(actions, mixer)
   }, [actions, mixer, onAnimations])
 
+  // A pose de agora: em laço ou uma vez, parando no auge (`parada`, lido a cada quadro).
+  const parada = useRef<{ action: THREE.AnimationAction; em: number } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `poseTake` não é lido; ele refaz o movimento quando a mesma pose é escolhida de novo.
   useEffect(() => {
     if (onAnimations) return
     const action = actions?.[pose] ?? actions?.[PACK_IDLE_POSE]
-    action?.reset().fadeIn(0.3).play()
-    return () => {
-      action?.fadeOut(0.3)
+    if (!action) return
+    const emLaco = !actions?.[pose] || PACK_LOOP_POSES.has(pose)
+    action.reset()
+    if (emLaco) {
+      action.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY)
+      parada.current = null
+    } else {
+      action.setLoop(THREE.LoopOnce, 1)
+      action.clampWhenFinished = true
+      const em = instanteDaFoto(action.getClip())
+      parada.current = { action, em }
+      // Com menos movimento pedido no aparelho, vai direto para a pose final, sem animar.
+      if (reduced) {
+        action.time = em
+        action.paused = true
+      }
     }
-  }, [actions, pose, onAnimations])
+    action.fadeIn(reduced ? 0 : 0.3).play()
+    return () => {
+      if (parada.current?.action === action) parada.current = null
+      action.fadeOut(reduced ? 0 : 0.3)
+    }
+  }, [actions, pose, poseTake, onAnimations, reduced])
 
   // Encaixe → arquivo da peça, com as orelhas da cor do corpo.
   const parts = useMemo(() => {
@@ -225,6 +284,12 @@ export function PackAvatarRig({
   const tmpBox = useMemo(() => new THREE.Box3(), [])
   const tmpVec = useMemo(() => new THREE.Vector3(), [])
   useFrame((_, dt) => {
+    // A pose que para no auge: chegou lá, congela (o mixer segue aplicando o quadro parado).
+    const p = parada.current
+    if (p && !p.action.paused && p.action.time >= p.em) {
+      p.action.time = p.em
+      p.action.paused = true
+    }
     const complete = partsRef.current.every(([slot, id]) => settled.current.get(slot) === id)
     if (completeRef) completeRef.current = complete
     const k = Math.min(1, dt * 6)
@@ -277,6 +342,7 @@ export function PackAvatarRig({
                 <Suspense fallback={null}>
                   <PackPart
                     file={file}
+                    camada={camadaDoEncaixe(slot)}
                     ossos={montagem.ossos}
                     texturas={texturas}
                     materialOverride={materialOverride}
