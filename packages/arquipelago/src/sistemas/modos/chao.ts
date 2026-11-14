@@ -109,6 +109,8 @@ export const MODO_CHAO: ModoDeMovimento = {
     }
 
     c.nadando = nadando
+    // A água acima dos pés (a cintura está `CINTURA` acima deles): a água rasa das animações.
+    c.aguaNosPes = Math.max(0, naAgua + CINTURA)
     c.velDoPasso.x = vx
     c.velDoPasso.z = vz
     // No mar (não num lago), fora das boias, a correnteza mansa leva de volta para a ilha. Ela entra

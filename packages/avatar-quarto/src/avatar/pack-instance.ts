@@ -58,19 +58,33 @@ function anotacao(material: Material): AnotacaoDoMaterial {
 }
 
 /**
- * Os ossos da montagem mais os que só um OBJETO DE MÃO tem (a `Luz` da lanterna, filha do osso da
- * mão): cada osso que falta entra como filho do mesmo pai, na pose de descanso do arquivo. Osso sem
+ * Os ossos da montagem mais os que só uma peça ou um objeto de mão tem (a `Luz` da lanterna, filha
+ * do osso da mão; as rodas dos patins, filhas dos ossos do pé): cada osso que falta entra como filho
+ * do mesmo pai, na pose de descanso do arquivo. Osso sem
  * pai na montagem fica de fora (a peça é recusada adiante, como qualquer peça de outro esqueleto).
+ * `aceitar` diz quais ossos novos podem entrar (nas peças vestidas, só as rodas dos patins: um osso
+ * renomeado por engano continua recusando a peça). Um osso igual que já esteja no pai (de uma
+ * montagem que a renderização descartou) é reaproveitado, sem duplicar.
  * `soltar` tira da montagem os ossos acrescentados.
  */
-export function ossosComOsDoObjeto(original: Object3D, ossos: ReadonlyMap<string, Bone>) {
+export function ossosComOsDoObjeto(
+  original: Object3D,
+  ossos: ReadonlyMap<string, Bone>,
+  aceitar: (nome: string) => boolean = () => true,
+) {
   const todos = new Map(ossos)
   const novos: Bone[] = []
   const entrar = (osso: Bone): Bone | undefined => {
     const tem = todos.get(osso.name)
     if (tem) return tem
+    if (!aceitar(osso.name)) return undefined
     const pai = osso.parent instanceof Bone ? entrar(osso.parent) : undefined
     if (!pai) return undefined
+    const igual = pai.children.find((c): c is Bone => c instanceof Bone && c.name === osso.name)
+    if (igual) {
+      todos.set(osso.name, igual)
+      return igual
+    }
     const novo = new Bone()
     novo.name = osso.name
     novo.position.copy(osso.position)

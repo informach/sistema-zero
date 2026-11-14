@@ -89,8 +89,70 @@ export function moradaPieceAllowed(
 }
 
 /**
- * Uma instância da casa: as funções do jogo (`behavior: objeto:<id>`, a geladeira, o fliperama, o
- * museu…) chegam pela conquista no jogo, que o serviço do jogo confere; as outras seguem a posse.
+ * As peças de cada função do jogo (`behavior: objeto:<id>`): a de sempre e as duas aparências da
+ * galeria. ⚠️ Espelho de `MORADA_FUNCTION` e `MORADA_VARIANTS` do arquipelago (um teste de lá
+ * confere que são iguais): o serviço precisa saber, sem o jogo, que peça cada função pode usar.
+ */
+export const MORADA_PECAS_DAS_FUNCOES: Readonly<Record<string, readonly string[]>> = {
+  geladeira: [
+    'moveis/cozinha_eletros/geladeira_duplex_branca',
+    'moveis/cozinha_eletros/geladeira_retro_pes_rosa',
+    'moveis/cozinha_eletros/geladeira_duas_portas_lilas',
+  ],
+  forno: [
+    'moveis/cozinha_eletros/forno_eletrico_creme',
+    'moveis/cozinha_eletros/forno_eletrico_vermelho',
+    'moveis/cozinha_moveis/fogao_modulo_moderna',
+  ],
+  aquario: [
+    'moveis/armarios/armario_vitrine_turquesa',
+    'moveis/armarios/armario_vitrine_rosa',
+    'moveis/armarios/armario_vitrine_amarelo',
+  ],
+  lareira: [
+    'moveis/lareiras/lareira_branca_tampo_amarelo',
+    'moveis/lareiras/lareira_tijolo_chamine',
+    'moveis/lareiras/lareira_canto_coifa',
+  ],
+  banda: [
+    'moveis/objetos/piano_armario_chocolate',
+    'moveis/objetos/piano_armario_branco',
+    'moveis/objetos/piano_cauda_preto',
+  ],
+  fliperama: [
+    'moveis/jogos/fliperama_foguete_estelar',
+    'moveis/jogos/fliperama_pista_turbo',
+    'moveis/jogos/fliperama_abelha_zumzum',
+  ],
+  museu: [
+    'moveis/estantes/estante_nichos_8_azul',
+    'moveis/estantes/estante_escada_branca',
+    'moveis/estantes/estante_tubos_3_laranja',
+  ],
+  casinha: [
+    'moveis/objetos/arranhador_torre_casinha',
+    'moveis/brinquedos/cabana_casinha_pano',
+    'cidade/fazenda/casinha_ferramentas',
+  ],
+  'planta-interior': [
+    'moveis/plantas/planta_costela_de_adao',
+    'moveis/plantas/planta_jiboia',
+    'moveis/plantas/planta_palmeira_areca',
+  ],
+}
+
+/** A instância é uma função do jogo de verdade: o `objeto:<id>` numa peça daquela função. */
+export function isMoradaFunctionInstance(
+  instance: Pick<MoradaInstance, 'pieceId' | 'behavior'>,
+): boolean {
+  const id = instance.behavior?.startsWith('objeto:') ? instance.behavior.slice(7) : null
+  return !!id && (MORADA_PECAS_DAS_FUNCOES[id]?.includes(instance.pieceId) ?? false)
+}
+
+/**
+ * Uma instância da casa: as funções do jogo (a geladeira, o fliperama, o museu…, cada uma só nas
+ * peças dela) chegam pela conquista no jogo, que o serviço do jogo confere; as outras seguem a
+ * posse. Um `behavior` numa peça que não é daquela função não libera nada (pedido montado à mão).
  */
 export function moradaInstanceAllowed(
   instance: Pick<MoradaInstance, 'pieceId' | 'behavior'>,
@@ -98,7 +160,7 @@ export function moradaInstanceAllowed(
   catalog: MoradaCatalog = MORADA_CATALOG,
 ): boolean {
   if (!catalog.pieces[instance.pieceId]) return false
-  if (instance.behavior?.startsWith('objeto:') && !isMoradaTrophyTier(instance.pieceId, catalog))
+  if (isMoradaFunctionInstance(instance) && !isMoradaTrophyTier(instance.pieceId, catalog))
     return true
   return moradaPieceAllowed(instance.pieceId, owned, catalog)
 }

@@ -42,7 +42,13 @@ import {
 import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
-import { BARRA_NAS_MAOS, DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import {
+  BARRA_NAS_MAOS,
+  BracoComObjeto,
+  DedosNoCabo,
+  LANTERNA_NA_MAO,
+  SEM_OBJETO_NA_MAO,
+} from './objeto-na-mao'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -52,6 +58,7 @@ import {
   suavizarPeso,
 } from './pes-no-chao'
 import { PoseLimpa } from './pose-limpa'
+import { RodasDosPatins } from './rodas-dos-patins'
 
 /** O GLB dos clipes de movimento do jogo (bucket privado, pela rota `/api/avatar3d/`). */
 const CLIPES_URL = avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file)
@@ -66,6 +73,7 @@ const UMA_VEZ: readonly ClipeDoJogo[] = [
   'subir_borda',
   'entrar_na_agua',
   'sair_da_agua',
+  'acender',
 ]
 /** O pulo do pack sobe o corpo; no jogo quem sobe é a física (o agachar fica). */
 const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim']
@@ -149,7 +157,7 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
  * De patins, o avatar veste os patins do pack no lugar do calçado e sobe o que as rodas somam ao
- * corpo (as rodas ainda não giram). No planador, a barra do pack vai nas duas mãos (e a lanterna,
+ * corpo (as rodas giram pela distância, `RodasDosPatins`). No planador, a barra do pack vai nas duas mãos (e a lanterna,
  * se estava acesa, volta depois de fechar o planador).
  */
 export function AvatarDoJogo({
@@ -246,7 +254,13 @@ export function AvatarDoJogo({
                     : SEM_OBJETO_NA_MAO
               }
             />
+            {naMao === 'mao_lanterna' ? (
+              <BracoComObjeto corpo={personagem} objeto={naMao} pose={pose} />
+            ) : null}
             {naMao ? <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} /> : null}
+            {deRodas ? (
+              <RodasDosPatins corpo={personagem} movimento={movimento} pausado={pausado} />
+            ) : null}
             {chao ? (
               <PesNoChao
                 chao={chao}

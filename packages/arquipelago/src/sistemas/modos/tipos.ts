@@ -99,6 +99,8 @@ export interface EstadoDoCorpo {
   /** 0 no chão, 1 pendurado no cipó (o desenho passa de um para o outro suave). */
   noCipo: number
   nadando: boolean
+  /** Quanto de água há acima dos pés no modo chão (m; 0 fora da água): a água rasa das animações. */
+  aguaNosPes: number
   /** A velocidade pedida no chão (o Zappy lê); 1 no cipó e no tronco, que estão sempre "andando". */
   velPedida: number
 }
@@ -151,6 +153,7 @@ export function criarEstadoDoCorpo(): EstadoDoCorpo {
     soltouDoTronco: Number.NEGATIVE_INFINITY,
     noCipo: 0,
     nadando: false,
+    aguaNosPes: 0,
     velPedida: 0,
   }
 }

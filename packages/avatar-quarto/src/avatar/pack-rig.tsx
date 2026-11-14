@@ -159,9 +159,17 @@ function PackPart({
   useEffect(() => {
     onSettled()
   }, [onSettled])
+  // A peça pode trazer ossos que só ela tem: só os de efeito das rodas dos patins (`Roda_*`, filhos
+  // dos ossos do pé) entram, enquanto ela está vestida; qualquer outro osso desconhecido continua
+  // recusando a peça (peça de outro esqueleto não entra torta).
+  const comOsDela = useMemo(
+    () => ossosComOsDoObjeto(scene, ossos, (nome) => nome.startsWith('Roda_')),
+    [scene, ossos],
+  )
+  useEffect(() => () => comOsDela.soltar(), [comOsDela])
   const montagem = useMemo(
-    () => prepararPecaDoPack(scene, ossos, texturas, materialOverride, camada),
-    [scene, ossos, texturas, materialOverride, camada],
+    () => prepararPecaDoPack(scene, comOsDela.ossos, texturas, materialOverride, camada),
+    [scene, comOsDela, texturas, materialOverride, camada],
   )
   useEffect(() => () => montagem.soltar(), [montagem])
   return (

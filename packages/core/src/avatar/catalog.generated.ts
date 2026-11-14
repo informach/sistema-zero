@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "668d643f8babd15e844291f099e4b5edd94552de",
-      "tree": "2d2278840a9b7b3767aa7a8359e086b0ca605931",
+      "catalogBlob": "1449d1cb78820a75384e4f688bf4a016a06d6dfd",
+      "tree": "30ab0b306cabb7457f9a8152e4125228ac6eb28e",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.2e30432067da.glb",
+        "file": "base/animacoes-do-jogo.19f43404e8df.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -675,6 +675,126 @@ export const AVATAR_CATALOG: AvatarCatalog = {
                 "foot": "left",
                 "on": 23,
                 "off": 4
+              }
+            ]
+          },
+          {
+            "id": "andar_tras",
+            "duration": 0.867,
+            "loop": true,
+            "stride": 0.507,
+            "rise": 0,
+            "frames": 27,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 5,
+                "off": 18
+              },
+              {
+                "foot": "right",
+                "on": 18,
+                "off": 7
+              }
+            ]
+          },
+          {
+            "id": "andar_esquerda",
+            "duration": 0.833,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 26,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 5,
+                "off": 19
+              },
+              {
+                "foot": "right",
+                "on": 19,
+                "off": 5
+              }
+            ]
+          },
+          {
+            "id": "andar_direita",
+            "duration": 0.833,
+            "loop": true,
+            "stride": 0.494,
+            "rise": 0,
+            "frames": 26,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 6,
+                "off": 20
+              },
+              {
+                "foot": "right",
+                "on": 19,
+                "off": 5
+              }
+            ]
+          },
+          {
+            "id": "correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "stride": 0.699,
+            "rise": 0,
+            "frames": 19,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 6,
+                "off": 13
+              },
+              {
+                "foot": "right",
+                "on": 14,
+                "off": 3
+              }
+            ]
+          },
+          {
+            "id": "correr_esquerda",
+            "duration": 0.633,
+            "loop": true,
+            "stride": 0.7,
+            "rise": 0,
+            "frames": 20,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 3
+              },
+              {
+                "foot": "right",
+                "on": 8,
+                "off": 12
+              }
+            ]
+          },
+          {
+            "id": "correr_direita",
+            "duration": 0.6,
+            "loop": true,
+            "stride": 0.7,
+            "rise": 0,
+            "frames": 19,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 7,
+                "off": 13
+              },
+              {
+                "foot": "left",
+                "on": 16,
+                "off": 3
               }
             ]
           },
@@ -1463,6 +1583,419 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               "assento_m": 0.3,
               "termina_ao_lado_m": 0.37,
               "entre_as_pernas_m": 0.2
+            }
+          },
+          {
+            "id": "comemorar",
+            "duration": 1.667,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 51,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 10
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 10
+              },
+              {
+                "foot": "right",
+                "on": 18,
+                "off": 29
+              },
+              {
+                "foot": "left",
+                "on": 18,
+                "off": 29
+              },
+              {
+                "foot": "right",
+                "on": 37,
+                "off": 51
+              },
+              {
+                "foot": "left",
+                "on": 37,
+                "off": 51
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "id": "pegar_do_chao",
+            "duration": 2,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 61
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 61
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "ponto_de_pegar_m": [
+                -0.25,
+                0.039,
+                0.05
+              ]
+            }
+          },
+          {
+            "id": "plantar",
+            "duration": 3,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 91
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 91
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "terra_m": 0.19,
+              "faixa_da_terra_m": [
+                0,
+                0.3
+              ],
+              "mao_a_frente_m": 0.3,
+              "beira_a_frente_min_m": 0.17,
+              "palma_acima_da_terra_m": 0.045
+            }
+          },
+          {
+            "id": "plantar_alto",
+            "duration": 3,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 91
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 91
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "terra_m": 0.55,
+              "faixa_da_terra_m": [
+                0.45,
+                0.65
+              ],
+              "mao_a_frente_m": 0.28,
+              "beira_a_frente_min_m": 0.17,
+              "palma_acima_da_terra_m": 0.053
+            }
+          },
+          {
+            "id": "regar",
+            "duration": 3,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 91
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 91
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "alca_m": [
+                -0.12,
+                0.56,
+                0.23
+              ],
+              "inclina_graus": 35,
+              "faixa_da_terra_m": [
+                0,
+                0.65
+              ],
+              "beira_a_frente_min_m": 0.17,
+              "beira_a_frente_min_com_terra_acima_de_0_50_m": 0.27
+            }
+          },
+          {
+            "id": "dancar",
+            "duration": 1.6667,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 51,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 51
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 51
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 2,
+              "passo_s": 0.8333
+            }
+          },
+          {
+            "id": "dancar_3_33s",
+            "duration": 3.3333,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 101,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 101
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 101
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 4,
+              "passo_s": 0.8333
+            }
+          },
+          {
+            "id": "dancar_4_13s",
+            "duration": 4.125,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 125,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 125
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 125
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 5,
+              "passo_s": 0.825
+            }
+          },
+          {
+            "id": "dancar_4_38s",
+            "duration": 4.375,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 133,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 133
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 133
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 5,
+              "passo_s": 0.875
+            }
+          },
+          {
+            "id": "dancar_5_83s",
+            "duration": 5.8333,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 176,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 176
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 176
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 7,
+              "passo_s": 0.8333
+            }
+          },
+          {
+            "id": "dancar_8_96s",
+            "duration": 8.9583,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 270,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 270
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 270
+              }
+            ],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "passos": 11,
+              "passo_s": 0.8144
+            }
+          },
+          {
+            "id": "dirigir",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "hands": [
+              {
+                "hand": "right",
+                "on": 0,
+                "off": 61
+              },
+              {
+                "hand": "left",
+                "on": 0,
+                "off": 61
+              }
+            ],
+            "place": {
+              "bacia_m": 0.05,
+              "bacia_a_frente_m": 0.1,
+              "encosto_graus": 12,
+              "pes_m": [
+                0.085,
+                0.02,
+                0.32
+              ],
+              "maos_m": [
+                0.16,
+                0.276,
+                0.269
+              ]
             }
           }
         ],

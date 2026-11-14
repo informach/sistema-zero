@@ -37,7 +37,11 @@ import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { ESCALADA } from '../sistemas/escalada'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
 import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
-import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
+import {
+  AGUA_RASA_A_PARTIR_DE,
+  DURACAO_DO_CLIPE,
+  type EntradaDaLocomocao,
+} from '../sistemas/locomocao'
 import {
   avancoNaParede,
   DESENHO_NA_AGUA,
@@ -102,6 +106,8 @@ const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
+/** Depois do último contato, os passos de quem empurra seguram isto (s): sem piscar entre passos. */
+const SEGURA_O_EMPURRAO = 0.25
 /**
  * Para onde ir quando o ponto pedido, dentro de casa, cai em cima de um móvel: o lugar livre mais
  * perto dele (ou a frente da porta, com o quarto todo tomado: na casa construída, a da porta de
@@ -172,6 +178,13 @@ export function Personagem() {
   const rumoDaIda = useRef({ x: 0, z: 0, correr: false }).current
   const acenosVistos = useRef(movimento.acenos)
   const acenando = useRef(0)
+  /** O gesto de acender a lanterna (s que faltam) e se ela estava acesa no passo anterior. */
+  const acendendo = useRef(0)
+  const lanternaAgora = useRef(lanterna)
+  lanternaAgora.current = lanterna
+  const lanternaAntes = useRef(lanterna)
+  /** Quanto falta (s) dos passos de quem empurra, depois do último contato. */
+  const empurrando = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
@@ -473,6 +486,39 @@ export function Personagem() {
     acenando.current = Math.max(0, acenando.current - dt)
     m.acenando = acenando.current > 0
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
+    // Para onde o corpo anda no referencial dele (a frente é para onde o desenho olha): na virada,
+    // os passos de lado e de costas; pendurada, andar pela quina.
+    const giro = visual.current?.rotation.y ?? v.direcao
+    const vx = (prox.x - p.x) / dt
+    const vz = (prox.z - p.z) / dt
+    const frente = vx * Math.sin(giro) + vz * Math.cos(giro)
+    const deLado = -vx * Math.cos(giro) + vz * Math.sin(giro)
+    const suave = Math.min(1, dt * 14)
+    m.frente = (m.frente ?? frente) + (frente - (m.frente ?? frente)) * suave
+    m.deLado = (m.deLado ?? deLado) + (deLado - (m.deLado ?? deLado)) * suave
+    // Na água rasa (até onde ela ainda anda), os passos da água.
+    m.naAguaRasa = v.modo === 'chao' && !nadando && v.noChao && v.aguaNosPes > AGUA_RASA_A_PARTIR_DE
+    // Acendeu a lanterna agora: o gesto de acender, uma vez.
+    if (lanternaAgora.current && !lanternaAntes.current)
+      acendendo.current = DURACAO_DO_CLIPE.acender
+    lanternaAntes.current = lanternaAgora.current
+    acendendo.current = Math.max(0, acendendo.current - dt)
+    m.acendendo = acendendo.current > 0
+    // Andando contra algo que se mexe (o caixote, o tronco do lago): os passos de quem empurra. O
+    // contato vem do controlador do chão neste passo; segura um pouco para não piscar.
+    let empurrou = false
+    if (v.modo === 'chao' && v.noChao && !nadando && real > 0.2) {
+      for (let i = 0; i < kcc.numComputedCollisions(); i++) {
+        const contato = kcc.computedCollision(i)
+        const tocado = contato?.collider?.parent()
+        if (tocado?.isDynamic() && Math.abs(contato?.normal1.y ?? 1) < 0.5) {
+          empurrou = true
+          break
+        }
+      }
+    }
+    empurrando.current = empurrou ? SEGURA_O_EMPURRAO : Math.max(0, empurrando.current - dt)
+    m.empurrando = empurrando.current > 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
     if (v.correnteza >= CORRENTEZA.aviso && !avisouDaCorrenteza.current) {
