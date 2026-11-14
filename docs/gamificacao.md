@@ -349,9 +349,10 @@ saiu da plataforma; só o fantasma familiar do jogo ainda o usa, até o plano do
   sempre vestido).
 - **Arquivos: buckets R2 PRIVADOS** (o pack é pago e o repositório é público), pasta `avatar/`, com
   o nome levando a impressão digital (cache imutável). A tela e o jogo pedem
-  `/api/avatar3d/<arquivo>` (sessão + arquivo do catálogo → link assinado). Migrar da arte:
-  `bun run avatar:conferir` (o que é novo, mudou ou saiu) e `bun run avatar:migrar --tudo --destino r2`.
-  Peça migrada nunca sai (vira `retired`).
+  `/api/avatar3d/<arquivo>` (sessão + arquivo do catálogo → link assinado). Migrar da arte (sob
+  pedido, de tempos em tempos): o roteiro inteiro está em [`scripts/avatar/README.md`](../scripts/avatar/README.md)
+  (`bun run avatar:conferir` acusa peça nova, modificada no modelo, na miniatura ou só nos dados, e
+  retirada; `bun run avatar:migrar --tudo --destino r2` traz). Peça migrada nunca sai (vira `retired`).
 - **Gravado** (`avatar_configs.equipped`, versão 3): `{slots: encaixe → peça, filter, customized}`.
   Leitura tolerante (o que não for versão 3 vira o sorteado do perfil); gravação estrita (peça,
   encaixe, combinações e posse). A ação de aula "personalizar o avatar" vale com `customized`.
