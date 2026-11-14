@@ -28,6 +28,11 @@ export interface AvatarPartOrigin {
   blob: string
   /** Id do blob da miniatura. */
   thumbBlob: string
+  /**
+   * Impressão dos DADOS da peça no catálogo da arte (nome, gênero, grupo, conjunto, cor de amostra,
+   * triângulos...): muda quando a arte edita a peça sem mexer no modelo nem na miniatura.
+   */
+  meta?: string
   /** Commit da arte lido na migração. */
   commit: string
   /** Dia da migração (AAAA-MM-DD). */

@@ -25,6 +25,7 @@ import {
   encaixesDaArte,
   esqueletoMudou,
   gravarCatalogo,
+  impressaoDaPeca,
   lerCatalogo,
   REPOSITORIO_DA_ARTE,
   regrasDoCatalogo,
@@ -241,6 +242,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         origin: {
           blob: arte.blob(caminhoDoGlb),
           thumbBlob: arte.blob(caminhoDaMiniatura),
+          meta: impressaoDaPeca(item),
           commit: arte.commit,
           migratedAt: dia,
         },

@@ -1,0 +1,102 @@
+name: Avatar · peças novas do pack
+
+# Toda segunda de manhã: compara a biblioteca do avatar na arte (informach/artes-3d, origin/main)
+# com o catálogo da plataforma na staging (onde as migrações entram primeiro). Havendo peça nova,
+# mudada ou retirada, ou regra de combinação nova, abre (ou atualiza) UMA issue com a lista; sem
+# nada pendente, fecha a issue. Não migra nada: a migração precisa das credenciais do R2 e de
+# alguém conferir os preços propostos (`bun run avatar:migrar --tudo --destino r2`, numa sessão).
+#
+# Precisa do segredo ARTES_3D_DEPLOY_KEY: a chave privada de uma deploy key SÓ DE LEITURA
+# cadastrada no repositório informach/artes-3d.
+
+on:
+  schedule:
+    - cron: '0 12 * * 1' # segunda, 9h em São Paulo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: avatar-pack-check
+  cancel-in-progress: true
+
+jobs:
+  conferir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TITULO: 'Avatar: peças do pack para migrar'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: staging
+
+      # Só o git da arte, sem os modelos: o conferir compara pelos ids dos blobs e lê apenas os
+      # catálogos JSON, que o git baixa sob demanda (clone parcial).
+      - uses: actions/checkout@v5
+        with:
+          repository: informach/artes-3d
+          ref: main
+          path: artes-3d
+          ssh-key: ${{ secrets.ARTES_3D_DEPLOY_KEY }}
+          filter: blob:none
+          sparse-checkout: biblioteca_aventura/avatar/regras.json
+          sparse-checkout-cone-mode: false
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Conferir a arte contra o catálogo
+        id: conferir
+        env:
+          ARTES_3D_DIR: ${{ github.workspace }}/artes-3d
+        run: |
+          set +e
+          bun scripts/avatar/conferir.ts --sem-buscar > relatorio.txt 2>&1
+          codigo=$?
+          set -e
+          cat relatorio.txt
+          if grep -q 'Tudo migrado' relatorio.txt; then
+            echo "pendente=nao" >> "$GITHUB_OUTPUT"
+          elif grep -q 'Há o que migrar' relatorio.txt; then
+            echo "pendente=sim" >> "$GITHUB_OUTPUT"
+          else
+            echo "O conferir falhou (código $codigo)." >&2
+            exit 1
+          fi
+
+      - name: Abrir ou atualizar a issue
+        if: steps.conferir.outputs.pendente == 'sim'
+        run: |
+          {
+            echo "A biblioteca do avatar na arte tem o que migrar para a plataforma."
+            echo "Conferido em $(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M') contra o catálogo da staging."
+            echo
+            echo '```'
+            cat relatorio.txt
+            echo '```'
+            echo
+            echo 'Para migrar, numa sessão com as credenciais do R2: `bun run avatar:migrar --tudo --destino r2`,'
+            echo 'depois confira os preços propostos, os testes do avatar e envie para a staging.'
+            echo 'Esta issue fecha sozinha na próxima conferência sem nada pendente.'
+          } > corpo.md
+          numero=$(gh issue list --state open --search "\"$TITULO\" in:title" --json number,title \
+            --jq "[.[] | select(.title == env.TITULO)][0].number // empty")
+          if [ -n "$numero" ]; then
+            gh issue edit "$numero" --body-file corpo.md
+          else
+            gh issue create --title "$TITULO" --body-file corpo.md
+          fi
+
+      - name: Fechar a issue (nada pendente)
+        if: steps.conferir.outputs.pendente == 'nao'
+        run: |
+          numero=$(gh issue list --state open --search "\"$TITULO\" in:title" --json number,title \
+            --jq "[.[] | select(.title == env.TITULO)][0].number // empty")
+          if [ -n "$numero" ]; then
+            gh issue close "$numero" --comment "Tudo migrado em $(TZ=America/Sao_Paulo date '+%d/%m/%Y')."
+          fi

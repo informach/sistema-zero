@@ -2,6 +2,7 @@
  * O catálogo do avatar como REGISTRO da migração: o que a plataforma já tem, de onde cada peça
  * veio, e a comparação com o que a arte tem hoje.
  */
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { AvatarCatalog, AvatarRules, AvatarSocket } from '../../packages/core/src/avatar/types'
@@ -196,6 +197,31 @@ export function esqueletoMudou(arte: Arte, catalogo: AvatarCatalog, arquivo: str
   )
 }
 
+/** JSON com as chaves em ordem (a mesma peça dá a mesma impressão, qualquer que seja a ordem). */
+function ordenado(valor: unknown): unknown {
+  if (Array.isArray(valor)) return valor.map(ordenado)
+  if (valor && typeof valor === 'object')
+    return Object.fromEntries(
+      Object.keys(valor)
+        .sort()
+        .map((k) => [k, ordenado((valor as Record<string, unknown>)[k])]),
+    )
+  return valor
+}
+
+/**
+ * A impressão dos dados de uma peça no catálogo da arte: tudo o que a arte diz dela (menos a pasta,
+ * que é daqui). Muda quando a arte renomeia, troca o gênero, o grupo, o conjunto, a cor de amostra
+ * ou refaz a contagem de triângulos, mesmo sem mexer no modelo nem na miniatura.
+ */
+export function impressaoDaPeca(item: ItemDaArte): string {
+  const { pasta: _pasta, ...dados } = item
+  return createHash('sha256')
+    .update(JSON.stringify(ordenado(dados)))
+    .digest('hex')
+    .slice(0, 16)
+}
+
 export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
   const naArte = arte.pecas()
   const ids = new Set(naArte.map((p) => p.id))
@@ -207,7 +233,8 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
     if (!entrada) novas.push(item)
     else if (
       entrada.origin.blob !== arte.blob(`${item.pasta}/${item.arquivo}`) ||
-      entrada.origin.thumbBlob !== arte.blob(`${item.pasta}/${item.miniatura}`)
+      entrada.origin.thumbBlob !== arte.blob(`${item.pasta}/${item.miniatura}`) ||
+      entrada.origin.meta !== impressaoDaPeca(item)
     )
       mudaram.push(item)
     else iguais += 1
