@@ -2716,9 +2716,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "group": "chapeu_sobre_cabelo",
       "label": "Gorro de tricô (só com cabelo)",
       "audience": "both",
-      "tier": "coins",
-      "price": 70,
-      "band": "comum",
+      "tier": "free",
+      "price": 0,
       "review": true,
       "file": "pecas/chapeu_gorro_trico_pacote.d8cd8fccfb20.glb",
       "thumb": "miniaturas/chapeu_gorro_trico_pacote.c604ff180163.webp",
@@ -3038,9 +3037,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "group": "chapeu_sobre_cabelo",
       "label": "Tiara",
       "audience": "both",
-      "tier": "coins",
-      "price": 70,
-      "band": "comum",
+      "tier": "free",
+      "price": 0,
       "review": true,
       "file": "pecas/chapeu_tiara.37fa4ac53577.glb",
       "thumb": "miniaturas/chapeu_tiara.88a1c105d9ad.webp",
@@ -9143,7 +9141,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "excluded": [
         "roupa_cima_rascunho_pacote",
-        "chapeu_caixa_brinquedo_pacote"
+        "chapeu_caixa_brinquedo_pacote",
+        "chapeu_gorro_trico_pacote",
+        "chapeu_tiara"
       ]
     },
     "faces": {

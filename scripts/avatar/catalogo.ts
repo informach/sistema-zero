@@ -21,6 +21,14 @@ import type { AvatarCatalog } from './types'
 
 export const AVATAR_CATALOG: AvatarCatalog = `
 
+/**
+ * Peças que a PLATAFORMA tira do sorteio, além das que a arte tira (`fora_do_sorteio`). As duas
+ * eram pagas quando o banco de 200 sorteados da troca foi fotografado; ficaram grátis em 14/11/2026
+ * (os únicos chapéus grátis que vão com cabelo). No sorteio, mudariam 38 dos 200 avatares do banco
+ * e a foto deixaria de bater com as peças. Saem daqui só junto com um banco gerado de novo.
+ */
+const FORA_DO_SORTEIO_DA_PLATAFORMA = ['chapeu_gorro_trico_pacote', 'chapeu_tiara']
+
 /** Os clipes do pack que o configurador usa (parado e as poses da Cabine de fotos). */
 export const CLIPES_DO_CONFIGURADOR = [
   'parado_relaxado',
@@ -123,7 +131,7 @@ export function regrasDoCatalogo(regras: RegrasDaArte): AvatarRules {
         ...(p.libera ? { unlocks: p.libera, unlockChance: p.chance_libera ?? 1 } : {}),
         ...(p.libera_se_nao_ligado ? { unlocksUnlessOn: p.libera_se_nao_ligado } : {}),
       })),
-      excluded: regras.fora_do_sorteio ?? [],
+      excluded: [...new Set([...(regras.fora_do_sorteio ?? []), ...FORA_DO_SORTEIO_DA_PLATAFORMA])],
     },
     faces: regras.rostos.conjuntos,
     expressions: Object.fromEntries(

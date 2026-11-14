@@ -244,7 +244,7 @@ tempo: o preço de cada peça continua na mesma régua de hoje, e há mais o que
 | Gorro curto vermelho | os dois | comum | 70 |
 | Gorro de Papai Noel | os dois | festa do jogo | — |
 | Gorro de gelatina sorridente | os dois | raro | 150 |
-| Gorro de tricô (só com cabelo) | os dois | comum | 70 |
+| Gorro de tricô (só com cabelo) | os dois | grátis (14/11, fora do sorteio) | — |
 | Laço | os dois | comum | 70 |
 | Máscara de gás | os dois | raro | 150 |
 | Presilhas de estrela | os dois | comum | 70 |
@@ -253,7 +253,7 @@ tempo: o preço de cada peça continua na mesma régua de hoje, e há mais o que
 | Saco de papel | os dois | raro | 150 |
 | Sombreiro | os dois | especial | 100 |
 | Televisão na cabeça | os dois | raro | 150 |
-| Tiara | os dois | comum | 70 |
+| Tiara | os dois | grátis (14/11, fora do sorteio) | — |
 | Tiara de fones de ouvido | os dois | especial | 100 |
 | Tiara de lanterninhas | os dois | especial | 100 |
 | Tiara de orelhas de coelho | os dois | especial | 100 |
