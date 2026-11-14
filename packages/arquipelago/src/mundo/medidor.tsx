@@ -205,7 +205,8 @@ function medirBorroes(raiz: Object3D) {
       if (id.startsWith('vila-doce-')) lumisDaVila.push(id.slice(10))
     } else if (o.name.startsWith('lumi-da-rotina-'))
       lumiDaRotina = { lumi: o.name.slice(15), x: o.position.x, y: o.position.y, z: o.position.z }
-    else if (o.name === 'lanterna-na-mao' && o.visible) {
+    // A lanterna do pack é presa ao esqueleto: o osso `Luz` (a lente) só existe com ela na mão.
+    else if (o.name === 'Luz' && (o as { isBone?: boolean }).isBone) {
       const p = o.getWorldPosition(new Vector3())
       lanternaNaMao = { x: p.x, y: p.y, z: p.z }
     }

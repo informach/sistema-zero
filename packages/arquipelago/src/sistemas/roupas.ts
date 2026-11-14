@@ -1,5 +1,5 @@
 import { origemDaRoupa } from '@sistemazero/arquipelago-contracts'
-import { AVATAR_PART_INFO } from '@sistemazero/avatar-quarto/avatar/catalog'
+import { nomeDaPecaDoPack } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import type { Festa } from './festas'
 import { NOMES_DAS_FESTAS } from './festas'
 import { VIDA_NO_ANEL } from './moradores-do-anel'
@@ -10,9 +10,9 @@ export {
   roupasConquistadas,
 } from '@sistemazero/arquipelago-contracts'
 
-/** O nome da peça como a loja do avatar mostra ("Chapéu 4", "Cachecol"). */
+/** O nome da peça como a loja do avatar mostra ("Chapéu de cogumelo", "Capa de estrelas"). */
 export function nomeDaPeca(peca: string): string {
-  return AVATAR_PART_INFO[peca]?.labelPt ?? peca
+  return nomeDaPecaDoPack(peca)
 }
 
 const NOMES_DO_PEDIDO: Readonly<Record<string, string>> = {

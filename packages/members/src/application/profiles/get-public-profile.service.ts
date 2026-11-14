@@ -87,7 +87,7 @@ export class GetPublicProfileService {
     const ranking = profile
       ? await this.gamification.getRanking(profileId, profile.accountId, audience, this.clock())
       : null
-    const equipped = canonicalizeAvatarConfig(avatarConfig)
+    const equipped = canonicalizeAvatarConfig(avatarConfig, profileId)
     // Quarto: `null` se nunca montou; senão canonicalizado (modo visualização).
     const room = roomRaw ? canonicalizeRoomState(roomRaw, new Set(roomInventory)) : null
     return {

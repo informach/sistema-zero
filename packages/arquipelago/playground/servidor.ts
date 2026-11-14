@@ -1,4 +1,4 @@
-import { basename, resolve } from 'node:path'
+import { basename, resolve, sep } from 'node:path'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 
 await conferirPortosDaArte()
@@ -7,9 +7,22 @@ await conferirPortosDaArte()
  * Servidor do playground: compila o jogo com o Bun a cada pedido e serve os modelos do avatar
  * e do quarto direto do `public/` do Kids (são os mesmos arquivos que a plataforma serve). Os
  * arquivos do próprio jogo (o Zappy) saem da compilação e ficam guardados para o pedido seguinte.
+ *
+ * As peças do avatar do pack (`/api/avatar3d/`, 13/11/2026) são pagas e não estão no repositório:
+ * `AVATAR_QA_DIR` aponta para uma cópia local (fora do git). Sem ela (o CI), o servidor entrega um
+ * modelo vazio: o jogo roda sem o boneco.
  */
 const PORTA = Number(process.env.PORTA ?? 4520)
 const PUBLICO = resolve(import.meta.dir, '../../community-kids/public')
+const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
+/** O glTF mínimo (uma cena sem nada): o carregador do three aceita o JSON no lugar do binário. */
+const GLTF_VAZIO = { asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [] }] }
+const PNG_DE_UM_PONTO = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  ),
+  (c) => c.charCodeAt(0),
+)
 
 const arquivosDoJogo = new Map<string, Blob>()
 
@@ -76,7 +89,19 @@ Bun.serve({
     }
     const doJogo = arquivosDoJogo.get(pathname.slice(1))
     if (doJogo) return new Response(doJogo)
-    if (pathname.startsWith('/avatar3d/') || pathname.startsWith('/room3d/')) {
+    if (pathname.startsWith('/api/avatar3d/')) {
+      // Sem a cópia das peças (o CI, que não tem o pack): um modelo vazio e uma imagem de 1 ponto,
+      // para o jogo seguir sem o boneco e sem erro de arquivo que não baixou.
+      if (!PACK)
+        return pathname.endsWith('.glb')
+          ? Response.json(GLTF_VAZIO, { headers: { 'content-type': 'model/gltf+json' } })
+          : new Response(PNG_DE_UM_PONTO, { headers: { 'content-type': 'image/png' } })
+      const alvo = resolve(PACK, decodeURIComponent(pathname.slice('/api/avatar3d/'.length)))
+      if (!alvo.startsWith(PACK + sep)) return new Response('fora', { status: 403 })
+      const f = Bun.file(alvo)
+      return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
+    }
+    if (pathname.startsWith('/room3d/')) {
       const f = Bun.file(PUBLICO + pathname)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
     }

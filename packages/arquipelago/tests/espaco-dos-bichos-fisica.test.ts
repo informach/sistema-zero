@@ -82,7 +82,7 @@ function porCrianca(world: Mundo, x: number, z: number) {
   const col = world.createCollider(R.ColliderDesc.capsule(CORPO.meiaAltura, CORPO.raio), corpo)
   const k = world.createCharacterController(CORPO.folga)
   k.enableAutostep(CORPO.degrau, 0.25, true)
-  k.enableSnapToGround(0.35)
+  k.enableSnapToGround(CORPO.grudaAte)
   k.setMaxSlopeClimbAngle((CORPO.sobeAte * Math.PI) / 180)
   k.setMinSlopeSlideAngle((CORPO.escorregaAcimaDe * Math.PI) / 180)
   const c = criarEstadoDoCorpo()
@@ -149,24 +149,29 @@ function novoMundo() {
 
 const pe = (c: Corpo) => c.translation().y - CORPO.doCentroAoPe
 
-test('a criança para encostada no cachorro do quarto, sem subir nele', () => {
+test('a criança nunca atravessa nem sobe no bicho do quarto: encosta ou contorna', () => {
   for (const id of ['pet-cachorro', 'pet-gato', 'porquinho-filhote', 'cachorro-adulto']) {
     const world = novoMundo()
     try {
       const { cap } = porBicho(world, id, 2, 0)
       const cr = porCrianca(world, 0, 0)
+      const encosto = CORPO.raio + cap.raio
+      let menor = Number.POSITIVE_INFINITY
+      let maisAlto = 0
       world.step()
       for (let i = 0; i < 180; i++) {
         passoDaCrianca(cr, i, 1, 0)
         world.step()
+        const p = cr.corpo.translation()
+        menor = Math.min(menor, Math.hypot(2 - p.x, p.z))
+        maisAlto = Math.max(maisAlto, pe(cr.corpo))
       }
-      const x = cr.corpo.translation().x
-      const encosto = 2 - CORPO.raio - cap.raio
-      expect(x).toBeLessThan(encosto)
-      expect(x).toBeGreaterThan(encosto - CORPO.folga - 0.05)
-      expect(Math.abs(cr.corpo.translation().z)).toBeLessThan(0.15)
-      // O degrau automático não a leva para cima do bicho.
-      expect(pe(cr.corpo)).toBeLessThan(0.1)
+      // Andando reto contra ele, as duas cápsulas nunca se cruzam. Bem de frente contra um corpo
+      // redondo o controlador desliza na curva: ela para encostada ou dá a volta (o porquinho
+      // filhote, de 19 cm de raio, ela contorna), sem nunca entrar nele.
+      expect(menor).toBeGreaterThan(encosto - 0.01)
+      // E o degrau automático não a leva para cima do bicho.
+      expect(maisAlto).toBeLessThan(0.1)
     } finally {
       world.free()
     }
@@ -415,8 +420,9 @@ test('o bicho que segue mantém a folga e não fica preso nela, ida e volta', ()
     expect(menor).toBeGreaterThan(CORPO.raio + espaco.raio - 0.02)
     expect(reapareceu).toBe(false)
     expect(preso).toBe(false)
-    // Na volta ela andou de verdade (não ficou presa nele) e ele continua por perto.
-    expect(xMaisLonge - cr.corpo.translation().x).toBeGreaterThan(4)
+    // Na volta ela andou de verdade (não ficou presa nele): mais da metade do que andaria nos 3 s
+    // sem ele no caminho. Ele continua por perto.
+    expect(xMaisLonge - cr.corpo.translation().x).toBeGreaterThan((CORPO.andar * 3) / 2)
     const fim = Math.hypot(
       bicho.translation().x - cr.corpo.translation().x,
       bicho.translation().z - cr.corpo.translation().z,

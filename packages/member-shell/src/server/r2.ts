@@ -416,7 +416,17 @@ export async function r2DeleteObjectPrivate(key: string): Promise<void> {
  */
 export async function r2PresignGetPrivate(
   key: string,
-  opts: { expiresInSeconds?: number; responseContentDisposition?: string } = {},
+  opts: {
+    expiresInSeconds?: number
+    responseContentDisposition?: string
+    /** O `Cache-Control` que o R2 devolve na resposta (`response-cache-control`). */
+    responseCacheControl?: string
+    /**
+     * A hora da assinatura (padrão: agora). Assinar sempre com a mesma hora dá o MESMO link,
+     * e o cache do navegador, que é pelo endereço, reaproveita o arquivo.
+     */
+    signingDate?: Date
+  } = {},
 ): Promise<string> {
   const cfg = requirePrivateR2Config()
   return getSignedUrl(
@@ -425,8 +435,12 @@ export async function r2PresignGetPrivate(
       Bucket: cfg.bucket,
       Key: normalizeKey(key),
       ResponseContentDisposition: opts.responseContentDisposition,
+      ResponseCacheControl: opts.responseCacheControl,
     }),
-    { expiresIn: opts.expiresInSeconds ?? 300 },
+    {
+      expiresIn: opts.expiresInSeconds ?? 300,
+      ...(opts.signingDate ? { signingDate: opts.signingDate } : {}),
+    },
   )
 }
 

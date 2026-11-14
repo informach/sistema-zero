@@ -1,5 +1,71 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## O corpo sai do esqueleto; o mundo declara a escala (14/11/2026, etapa 1 passo 3)
+
+Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.
+- `mundo/mundo-do-jogo.ts` (sem imports): `MundoDoJogo` e `MUNDO_ATUAL`. O mundo de hoje declara a
+  ponte de escala 1,85 (o herói fica com 2,14 m, como o boneco antigo) e as REGRAS dele:
+  gravidade, velocidades, pulo, degrau, rampas, `grudaAte` (o `snapToGround`), folga e até onde as
+  mãos agarram (`maosNaBorda` 0,9, `maosNaEscalada` 1). Essas regras ficam no mundo porque os níveis
+  foram medidos com elas; os braços curtos do pack chegam lá pela IK. Os mundos novos declaram 1.
+- `sistemas/corpo.ts`: `CORPO = corpoDoMundo(AVATAR_CATALOG, MUNDO_ATUAL)`, com o MESMO formato
+  de antes e mais `cintura`, `doCentro` (cabeça, topo, ombro, mãos no cipó; alturas a partir do
+  centro da cápsula) e `medidas`. A cápsula sai de `bodyMeasures`/`physicalBody` do core (pelo
+  `avatar-quarto/avatar/pack-catalog`). ⚠️ Número de corpo novo NÃO se escreve à mão: derive do
+  `CORPO` (câmera, Zappy, esmaecer de copas, mergulho, `CINTURA`, `GRAVIDADE` e `GRAVIDADE_DO_CIPO`
+  já derivam). Teste que precisa da cápsula importa o `CORPO`.
+- Ficaram para os passos 4 e 5 (dependem das poses do pack, não do esqueleto): `BANCO`, `CAMA`,
+  `MONTARIA.subidaDoDesenho`, `BARRA_NO_AVATAR` e a lanterna.
+
+## O avatar do pack no jogo (13/11/2026)
+
+O avatar da plataforma virou o do pack Cute Characters (plano
+`~/.claude/plans/pasted-content-id-1edc-certo-eu-fluttering-blossom.md`, etapa 6, o mínimo):
+- `AvatarDoJogo` (contrato) é encaixe → id da peça; o jogo lê com `avatarDoPack` do `avatar-quarto`
+  (`avatar/pack-catalog.ts`, que repassa o catálogo do core: o jogo não importa o core direto).
+- `personagem/avatar-do-jogo.tsx` monta o `PackAvatarRig` dentro do `PackRigBoundary` (esqueleto que
+  não baixa não derruba o jogo), na escala do mundo (`escala-do-heroi`, `CORPO.medidas.scale`).
+- **Animações (14/11, etapa 1 passo 4):** os clipes de movimento vêm do GLB `game.file` do catálogo
+  (bucket privado), sem o deslocamento do `Hips` (`semDeslocamento` do `avatar-quarto/avatar/pack-clips`,
+  na carga; o pulo com teto na altura de quem está em pé, a escada sem a subida) e com o nome
+  `jogo/<id>` (não cruzam com os da plataforma). `sistemas/locomocao.ts` fala em ESTADOS;
+  `POSE_DO_ESTADO` diz o clipe e o pedaço dele (o pulo começa no empurrão, o pouso no pé tocando) e
+  as reservas dos modos que a arte ainda não animou; `poseDosClipes` junta os pesos por clipe. Passadas
+  e durações vêm do catálogo vezes a escala; andar e correr ficam inteiros nas velocidades do mundo;
+  as pernas giram até `RITMO_MAXIMO` (2) vezes a cadência do clipe. O mixer é do jogo (escala de tempo
+  0; na pausa a pose congela).
+- **As animações da arte (14/11/2026):** nadar, boiar, entrar e sair da água, sentar, deitar, o cipó,
+  a borda, sentada no barco e o aceno de volta são clipes que a arte fez para este corpo (os estados
+  `Nado`, `Sentando`, `NoBarco`, `Acenar`…). O desenho vai para o lugar que a arte mediu em cada
+  clipe (`sistemas/lugares-dos-clipes.ts`: o assento, a quina, a corda, a linha d'água), do catálogo
+  vezes a escala. Catálogo sem um clipe ou sem uma medida não impede o jogo de abrir: o estado vai
+  para a reserva (`RESERVA_DO_ESTADO`) e a medida para a reserva escrita no código, com aviso.
+- **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
+  eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
+  `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
+  vêm do clipe `pendurar_cipo` (a IK dos braços saiu). A lanterna é a do pack (`objeto-na-mao.tsx`:
+  o `PackAvatarRig` a monta pelo `equipment` do catálogo, e os dedos fecham no cabo pela camada da
+  arte). ⚠️⚠️ O mixer do three só reescreve um osso quando o valor animado MUDA: na pausa, ou num osso
+  parado no clipe, o ajuste do quadro anterior fica no osso. Todo ajuste depois da pose parte da pose
+  do mixer por `personagem/pose-limpa.ts` (`antes`, o ajuste, `depois`; `soltar` ao parar de vez),
+  senão ele se acumula (o quadril afundava no chão com o jogo pausado numa rampa; review de 14/11).
+  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade). O calçar
+  antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
+  saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
+- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com a roupa de quem correu (`Fantasma.avatar` no
+  contrato, opcional; sem ela, o boneco de partida), o material próprio e o `correr_frente` no
+  relógio da corrida; o pé desconta a folga, como o jogador.
+- **Jogabilidade (14/11/2026):** ir tocando (`sistemas/ir-tocando.ts` + `mundo/ir-tocando.tsx`: toque
+  no chão anda até lá; num objeto, vai e usa; as tarefas do "Agora" levam até o objeto delas por
+  `movimento.levarAte`); a grade do caminho é montada uma vez por pedido, com a física, e o degrau
+  aceito é o `CORPO.degrau`. Viagem rápida do mapa para ilha aberta e já visitada
+  (`sistemas/viagem-rapida.ts`). Câmera normal a 11 m e inclinação de partida 0,62.
+- Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do
+  GLB `game.file`).
+- As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.
+- Playground: `AVATAR_QA_DIR=<cópia das peças do pack>` serve `/api/avatar3d/` (as peças são pagas e
+  ficam fora do git); sem ela o boneco não aparece.
+
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
 código, conteúdo, prova local e implantação separados. Salvamento atual V23, teto de
 81.920 bytes UTF-8 (80 KB, escolha da dona nas lacunas de 01/11/2026), moedas do jogo até 100

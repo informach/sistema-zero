@@ -1,23 +1,13 @@
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
-import {
-  AVATAR_CATEGORIES,
-  AVATAR_CATEGORY_PALETTES,
-  AVATAR_HIDE_GROUPS,
-  AVATAR_REMOVABLE_NONE,
-  AVATAR3D_PARTS,
-  type AvatarCategory,
-} from '../../domain/avatar/avatar3d-catalog'
 import type { CourseAudience } from '../../domain/course/course'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { AvatarStateView } from '../mappers/views'
 
 /**
- * Estado do avatar do aluno NA VITRINE: config equipada (com defaults preenchidos),
- * catálogo COMPLETO com `owned`/`locked`/`price`, as PALETAS por categoria, o mapa de
- * oclusão (chapéu→cabelo), os ids "nenhum" das removíveis e o saldo de moedas (p/ a
- * lojinha). O members é a fonte da verdade do "existe + custa + possui + paleta"; o app
- * kids casa pelo `id` com o rótulo PT + URL do GLB (como BADGE_SLUGS × BADGE_INFO).
+ * O avatar do aluno NA VITRINE: o que veste (o sorteado do perfil, se nunca salvou), o que tem,
+ * o filtro escolhido, a foto e o saldo. O catálogo e as regras são o `@sistemazero/core/avatar`,
+ * que a tela lê direto.
  */
 export class GetAvatarService {
   constructor(
@@ -36,33 +26,16 @@ export class GetAvatarService {
       this.coins.getBalance(userId, audience),
       this.avatar.getPhotoUrl(userId, audience),
     ])
-    const equipped = canonicalizeAvatarConfig(config)
-    const ownedSet = new Set(owned)
-    const parts = AVATAR3D_PARTS.map((p) => ({
-      id: p.id,
-      category: p.category,
-      tier: p.tier,
-      price: p.price,
-      owned: p.tier === 'free' || ownedSet.has(p.id),
-      // Paga ainda não comprada, ou da festa ainda não ganha (B16).
-      locked: p.tier !== 'free' && !ownedSet.has(p.id),
-    }))
-    const palettes: Partial<Record<AvatarCategory, string[]>> = {}
-    for (const category of AVATAR_CATEGORIES) {
-      const palette = AVATAR_CATEGORY_PALETTES[category]
-      if (palette) palettes[category] = [...palette]
-    }
+    const equipped = canonicalizeAvatarConfig(config, userId)
     return {
       style: equipped.style,
       equipped: equipped.slots,
-      parts,
-      palettes,
-      hideGroups: AVATAR_HIDE_GROUPS,
-      removable: AVATAR_REMOVABLE_NONE,
+      filter: equipped.filter ?? null,
+      customized: equipped.customized === true,
+      owned,
       photoUrl,
       balance,
-      // Equipe = moedas VIRTUAIS ilimitadas (nunca persiste): a UI mostra ∞ e a lojinha
-      // nunca trava por saldo. O `balance` real (acima) segue intocado.
+      // Equipe = moedas VIRTUAIS ilimitadas (nunca persiste): a UI mostra ∞.
       ...(privileged ? { balanceUnlimited: true } : {}),
     }
   }

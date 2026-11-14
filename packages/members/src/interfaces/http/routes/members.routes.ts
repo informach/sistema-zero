@@ -62,7 +62,6 @@ import type { SubmitStudioProjectService } from '../../../application/submit-stu
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { ZappyHistoryService } from '../../../application/zappy/zappy-history.service'
 import type { ZappyKnowledgeService } from '../../../application/zappy/zappy-knowledge.service'
-import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
@@ -735,9 +734,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            { version: 2, style: body.style ?? AVATAR_CHAR_STYLE, slots: body.slots },
+            { slots: body.slots, ...(body.filter ? { filter: body.filter } : {}) },
           )
-          return { equipped: equipped.slots, style: equipped.style }
+          return {
+            equipped: equipped.slots,
+            style: equipped.style,
+            filter: equipped.filter ?? null,
+          }
         },
         { body: AvatarConfigBody, query: AudienceQuery },
       )

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { isContentFingerprint } from '@sistemazero/core/creations'
+import { createAvatarFileRoutes } from './avatar-files'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createMasteryRoutes } from './masteries'
@@ -45,15 +46,15 @@ import { WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from '../server/watermark-qu
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
 
-/** Config 3D do avatar (categoria→{peça,cor}). O members valida posse/categoria/paleta — aqui só forma. */
+/** Id de item do quarto (o quarto ainda usa os ids com hífen). */
 const AVATAR_SLUG = z.string().regex(/^[a-z0-9-]{1,64}$/)
-const AVATAR_HEX = z.string().regex(/^#[0-9a-fA-F]{6}$/)
+/**
+ * O avatar do pack (encaixe → peça, e o filtro). O members confere peças, combinações e posse; aqui
+ * só a forma. Os ids do pack têm `_`.
+ */
 const AvatarConfigSchema = z.object({
-  style: z.string().max(40).optional(),
-  slots: z.record(
-    z.string().max(40),
-    z.object({ asset: AVATAR_SLUG, color: AVATAR_HEX.optional() }),
-  ),
+  slots: z.record(z.string().regex(/^[a-z_]{1,40}$/), z.string().regex(/^[a-z0-9_-]{1,96}$/)),
+  filter: z.enum(['girl', 'boy', 'all']).optional(),
 })
 
 /** Estado do quarto (o members canonicaliza contra o inventário/paleta — aqui só forma). */
@@ -1026,8 +1027,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  // ── Avatar 3D (configurador por categorias) ──────────────────────────────
-  /** Estado do avatar (equipado + catálogo + paletas + foto + saldo) — configurador client-side. */
+  // ── Avatar (pack Cute Characters) ────────────────────────────────────────
+  /** O avatar da pessoa (o que veste, o que tem, o filtro, a foto e o saldo). */
   const avatarGet = {
     GET: async () => {
       const { status, body } = await members.getAvatar()
@@ -1035,7 +1036,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  /** Compra uma peça paga do avatar com moedas (idempotente; sem saldo → 402). */
+  /** Compra uma peça paga ou uma fantasia inteira com moedas (idempotente; sem saldo → 402). */
   const avatarBuy = {
     POST: async (_req: Request, ctx: { params: Promise<{ partId: string }> }) => {
       const readonly = await requireWritableSession()
@@ -1046,7 +1047,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  /** Salva a config equipada do avatar (o members valida posse/camada — estrito). */
+  /** Salva o avatar (o members confere peças, combinações e posse — estrito). */
   const avatarEquip = {
     PUT: async (req: Request) => {
       const readonly = await requireWritableSession()
@@ -1940,6 +1941,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     avatarBuy,
     avatarEquip,
     avatarSnapshot,
+    avatarFile: createAvatarFileRoutes(session),
     roomGet,
     roomSave,
     roomBuy,

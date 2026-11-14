@@ -14,6 +14,7 @@ import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
 import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
+import { IrTocando } from '../mundo/ir-tocando'
 import {
   alturaDaIlha,
   CENTRO_DA_CASA,
@@ -35,7 +36,9 @@ import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { BANCO } from '../sistemas/descanso'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
-import type { EntradaDaLocomocao } from '../sistemas/locomocao'
+import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
+import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
+import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
   type AvisoDeModo,
@@ -45,6 +48,7 @@ import {
   MODOS,
   mudarModo,
 } from '../sistemas/modos'
+import { BORDA } from '../sistemas/modos/borda'
 import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
 import { MONTARIA } from '../sistemas/montaria'
@@ -55,13 +59,8 @@ import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, obraVisivel, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
-import {
-  acharBracos,
-  type BracosDoAvatar,
-  CORDA_NO_CORPO,
-  INCLINACAO_NO_CIPO,
-  segurarACorda,
-} from './bracos'
+import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from './bracos'
+import { AJUSTE_MAXIMO, type AlturaDoChao } from './pes-no-chao'
 import { PlanadorAberto } from './planador-aberto'
 
 const MEIA_ALTURA = CORPO.meiaAltura
@@ -93,6 +92,8 @@ const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
 /** No planador, o corpo pende um pouco para a frente, pendurado na barra (radianos). */
 const INCLINACAO_NO_PLANADOR = 0.25
+/** Pendurada na borda, onde a origem do desenho fica (as mãos do clipe caem na quina). */
+const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -154,6 +155,14 @@ export function Personagem() {
   const avisouDaCorrenteza = useRef(false)
   /** De 0 (de pé) a 1 (no assento ou no colchão), e o último lugar, para o desenho voltar suave. */
   const emDescanso = useRef(0)
+  /** O quanto o desenho está na água (0 a 1) e pendurado na borda, para a origem dele mudar suave. */
+  const naAgua = useRef(0)
+  const naBorda = useRef(0)
+  /** Os acenos dos moradores já respondidos e o quanto falta do aceno dela (s). */
+  /** Para onde a ida manda andar agora (escrito a cada passo, sem criar lixo). */
+  const rumoDaIda = useRef({ x: 0, z: 0, correr: false }).current
+  const acenosVistos = useRef(movimento.acenos)
+  const acenando = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
 
   const inicial = useMemo(() => {
@@ -201,10 +210,35 @@ export function Personagem() {
     },
     [v.modo],
   )
+  // O chão embaixo de cada pé, para o desenho assentar os pés (`pes-no-chao.ts`): um raio para
+  // baixo com o mesmo filtro do controlador (o que segura o corpo é o que o pé pisa).
+  const raioDoPe = useMemo(
+    () => new rapier.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }),
+    [rapier],
+  )
+  const chaoDosPes = useMemo<AlturaDoChao>(
+    () => (x, z, deY) => {
+      raioDoPe.origin.x = x
+      raioDoPe.origin.y = deY
+      raioDoPe.origin.z = z
+      const hit = world.castRay(
+        raioDoPe,
+        AJUSTE_MAXIMO * 3,
+        true,
+        rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+        undefined,
+        undefined,
+        corpoDoPersonagem.current ?? undefined,
+        aceitaColisorDoMundo,
+      )
+      return hit ? deY - hit.timeOfImpact : null
+    },
+    [world, rapier, raioDoPe, aceitaColisorDoMundo],
+  )
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA_DO_CONTROLADOR)
     c.enableAutostep(CORPO.degrau, 0.25, true)
-    c.enableSnapToGround(0.35)
+    c.enableSnapToGround(CORPO.grudaAte)
     c.setMaxSlopeClimbAngle(MathUtils.degToRad(CORPO.sobeAte))
     c.setMinSlopeSlideAngle(MathUtils.degToRad(CORPO.escorregaAcimaDe))
     // Empurra o que é dinâmico (o tronco do lago) com o peso de uma criança: andando contra, ele
@@ -223,29 +257,9 @@ export function Personagem() {
   }, [world])
   useEffect(() => () => world.removeCharacterController(kccNoCipo), [world, kccNoCipo])
 
-  // No cipó e no tronco os braços vão para cima, por cima da pose (os ossos aparecem quando o
-  // avatar termina de carregar).
-  const bracos = useRef<BracosDoAvatar | null>(null)
-  /** Já procurou os ossos nesta ida ao cipó ou ao tronco (não procura de novo a cada quadro). */
-  const procurouBracos = useRef(false)
-  const depoisDaPose = useMemo(
-    () => () => {
-      const corpoVisivel = visual.current
-      // No cipó as mãos miram a corda; no tronco o clipe "Escalar" já alterna as mãos na casca.
-      if (v.modo !== 'cipo' || !corpoVisivel) return
-      if (!bracos.current && !procurouBracos.current) {
-        procurouBracos.current = true
-        bracos.current = acharBracos(corpoVisivel)
-      }
-      if (bracos.current) segurarACorda(bracos.current, corpoVisivel)
-    },
-    [v],
-  )
-
-  // Quando o modo muda: a loja (a dica e os botões) e os braços (procuram os ossos de novo).
+  // Quando o modo muda: a loja (a dica e os botões).
   const aviso = useMemo<AvisoDeModo>(
     () => (modo) => {
-      procurouBracos.current = false
       movimento.modo = modo
       loja.getState().definirModo(modo)
       loja.getState().definirDescanso(modo === 'descanso' ? (v.descanso?.jeito ?? null) : null)
@@ -304,6 +318,7 @@ export function Personagem() {
         pedidos.olharPara = null
       }
       pedidos.teleporte = null
+      movimento.ida = null
       return
     }
     if (pedidos.chaoChegando.size > 0 && v.modo !== 'barco') {
@@ -324,6 +339,28 @@ export function Personagem() {
       iz /= tam
     }
     const g = rastro.giro
+    // Indo sozinha para onde tocou: o rumo do caminho vira o direcional (no referencial da câmera,
+    // como o dela). O direcional, o pulo e o usar devolvem o comando; fora do chão a ida acaba.
+    let correndoSozinha = false
+    const ida = movimento.ida
+    if (ida && !parado) {
+      const pegou = comandoCancela(
+        ix,
+        iz,
+        controle.pulos !== pulosAtendidos.current,
+        controle.usar !== usosAtendidos.current,
+      )
+      const situacao = pegou ? 'cancelada' : passoDaIda(ida, p, dt, rumoDaIda)
+      // Tocou num objeto e chegou: usa, se ele for o que está ao alcance agora (o E de sempre).
+      if (situacao === 'chegou' && ida.usar && v.modo === 'chao' && !v.nadando)
+        if (maisPerto(interativos, p.x, p.z)?.id === ida.usar) controle.usar += 1
+      if (situacao !== 'andando' || v.modo !== 'chao' || v.nadando) movimento.ida = null
+      else {
+        ix = rumoDaIda.x * Math.cos(g) - rumoDaIda.z * Math.sin(g)
+        iz = -(rumoDaIda.x * Math.sin(g) + rumoDaIda.z * Math.cos(g))
+        correndoSozinha = rumoDaIda.correr
+      }
+    }
     const e = entrada
     e.agora = agora
     e.parado = parado
@@ -342,7 +379,7 @@ export function Personagem() {
     pulosAtendidos.current = controle.pulos
     e.usou = controle.usar !== usosAtendidos.current
     usosAtendidos.current = controle.usar
-    e.correr = controle.correr
+    e.correr = controle.correr || correndoSozinha
     e.ritmo = ritmo(estado.salvamento.necessidades)
     e.patins = comPatins(estado.patins, estado.salvamento.inventario)
     e.planador = temPlanador(estado.salvamento)
@@ -409,12 +446,23 @@ export function Personagem() {
     m.noChao = v.modo !== 'chao' || v.noChao
     m.velY = v.velY
     m.nadando = nadando
-    m.especial =
-      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
+    // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
+    const viajando =
+      v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
+    m.especial = viajando
+      ? 'barco'
+      : v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
           : v.modo
+    // Um morador acenou: ela acena de volta por um ciclo do clipe.
+    if (movimento.acenos !== acenosVistos.current) {
+      acenosVistos.current = movimento.acenos
+      acenando.current = DURACAO_DO_CLIPE.acenar
+    }
+    acenando.current = Math.max(0, acenando.current - dt)
+    m.acenando = acenando.current > 0
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
 
     estado.definirLugar({ dentroDeCasa: dentroDaCasa(prox.x, prox.z), nadando })
@@ -471,8 +519,8 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô). Nadar de bruços e deitar de
-    // costas já vêm deitados nos clipes.
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô); no planador, para a frente.
+    // Nadando e boiando o clipe da arte já vem deitado: o desenho não inclina.
     const inclinar =
       v.modo === 'cipo' && v.cipo
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
@@ -491,8 +539,8 @@ export function Personagem() {
     // No tronco caído, o corpo pende para o lado pedido (e volta sozinho, `sistemas/modos`).
     const deLado = v.modo === 'equilibrio' ? inclinacaoNoDesenho(v) : curva
     vis.rotation.z = MathUtils.lerp(vis.rotation.z, deLado, Math.min(1, dt * 8))
-    // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto da corda no
-    // corpo (ao lado do rosto) fica em cima das mãos, com o giro e a inclinação do balanço.
+    // No chão, os pés no fim da cápsula. No cipó, o corpo pende das mãos: o ponto do clipe em que
+    // as mãos seguram a corda fica em cima das mãos do jogo, com o giro e a inclinação do balanço.
     v.noCipo += ((v.modo === 'cipo' ? 1 : 0) - v.noCipo) * Math.min(1, dt * 10)
     noCorpo.copy(CORDA_NO_CORPO).applyEuler(vis.rotation)
     const k = v.noCipo
@@ -502,6 +550,21 @@ export function Personagem() {
         (CIPO.maosAcimaDoCentro - noCorpo.y) * k,
       -noCorpo.z * k,
     )
+    // Na água, a origem do desenho é a superfície (é onde ela está nos clipes de nadar e boiar): sobe
+    // dos pés até a cintura, que é o que o corpo do jogo põe na linha d'água.
+    naAgua.current += ((nadando ? 1 : 0) - naAgua.current) * Math.min(1, dt * 8)
+    vis.position.y += DESENHO_NA_AGUA.sobe * naAgua.current * (1 - k)
+    // Pendurada na borda, a origem do desenho vai para onde as mãos do clipe caem na quina; subindo,
+    // volta aos pés no mesmo passo em que o corpo sobe (o clipe de subir vem sem a subida).
+    const penduradaAlvo = v.modo === 'borda' ? 1 - v.subindoNaBorda : 0
+    if (v.modo === 'borda' && v.subindoNaBorda > 0) naBorda.current = penduradaAlvo
+    else naBorda.current += (penduradaAlvo - naBorda.current) * Math.min(1, dt * 12)
+    if (naBorda.current > 0.001) {
+      const b = naBorda.current
+      vis.position.x -= Math.sin(vis.rotation.y) * NA_BORDA.recua * b
+      vis.position.y += NA_BORDA.sobe * b
+      vis.position.z -= Math.cos(vis.rotation.y) * NA_BORDA.recua * b
+    }
     // Descansando, o desenho vai para o assento ou o colchão (o corpo do Rapier fica de pé ao
     // lado, fora do móvel): a origem do desenho (os pés no clipe) no lugar do descanso.
     const lugar = v.descanso
@@ -570,43 +633,46 @@ export function Personagem() {
   })
 
   return (
-    <RigidBody
-      ref={corpo}
-      type="kinematicPosition"
-      colliders={false}
-      position={[inicial.x, inicial.y, inicial.z]}
-      enabledRotations={[false, false, false]}
-    >
-      <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
-      {montado ? (
-        <CapsuleCollider
-          ref={colisorMontado}
-          args={[MONTARIA.meiaAltura, MONTARIA.raio]}
-          // O pé no mesmo lugar que o da cápsula dela.
-          position={[0, MONTARIA.meiaAltura + MONTARIA.raio - MEIA_ALTURA - RAIO, 0]}
-          collisionGroups={GRUPO_DE_NINGUEM}
-        />
-      ) : null}
-      <group
-        ref={(g) => {
-          visual.current = g
-          // O giro primeiro e a inclinação no corpo: nadar e balançar inclinam para a frente dele.
-          if (g) g.rotation.order = 'YXZ'
-        }}
-        position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
+    <>
+      <IrTocando corpo={corpo} />
+      <RigidBody
+        ref={corpo}
+        type="kinematicPosition"
+        colliders={false}
+        position={[inicial.x, inicial.y, inicial.z]}
+        enabledRotations={[false, false, false]}
       >
-        <AvatarDoJogo
-          movimento={animacao}
-          depoisDaPose={depoisDaPose}
-          comPatins={calcados}
-          comLanterna={lanterna}
-        />
-        {comPlanador ? (
-          <Suspense fallback={null}>
-            <PlanadorAberto />
-          </Suspense>
+        <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
+        {montado ? (
+          <CapsuleCollider
+            ref={colisorMontado}
+            args={[MONTARIA.meiaAltura, MONTARIA.raio]}
+            // O pé no mesmo lugar que o da cápsula dela.
+            position={[0, MONTARIA.meiaAltura + MONTARIA.raio - MEIA_ALTURA - RAIO, 0]}
+            collisionGroups={GRUPO_DE_NINGUEM}
+          />
         ) : null}
-      </group>
-    </RigidBody>
+        <group
+          ref={(g) => {
+            visual.current = g
+            // O giro primeiro e a inclinação no corpo: nadar e balançar inclinam para a frente dele.
+            if (g) g.rotation.order = 'YXZ'
+          }}
+          position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
+        >
+          <AvatarDoJogo
+            movimento={animacao}
+            chao={chaoDosPes}
+            comPatins={calcados}
+            comLanterna={lanterna}
+          />
+          {comPlanador ? (
+            <Suspense fallback={null}>
+              <PlanadorAberto />
+            </Suspense>
+          ) : null}
+        </group>
+      </RigidBody>
+    </>
   )
 }

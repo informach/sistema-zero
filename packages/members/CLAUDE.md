@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/members
 
+## Avatar do pack: a troca (13/11/2026)
+
+`scripts/swap-avatar.ts` (regras em `infrastructure/persistence/drizzle/avatar-swap.ts`): devolve as
+moedas gastas no avatar antigo (`avatar-refund-v3`, uma vez), tira do inventário o que não é do pack
+e troca cada avatar antigo por um dos 200 sorteados de menino (`bankAvatar`, pelo id do perfil), com
+a foto do banco `scripts/avatar-swap-bank.json` (foto no bucket público + as peças). Sem `--confirm`
+é dry-run. ⚠️ Recusa rodar se o catálogo de agora sortear outra coisa para algum índice (a arte mudou
+as peças grátis): gere o banco de novo (`member-shell/qa/avatar-banco-client.tsx`). O teste
+`tests/db/avatar-swap.test.ts` confere o banco contra o catálogo (este caso roda sem banco de dados).
+
 ## Publicação de cursos pelo Admin (01/11/2026)
 
 `application/course-publication` reúne o serviço, o worker e o processador da promoção.
@@ -136,9 +146,9 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   avatar no `avatar_inventory`
   (idempotente pela chave única), confere o dono como nas moedas, nunca cobra. Quem decide o que foi
   conquistado é o serviço do jogo. Teste: `tests/db/arquipelago-avatar.test.ts` (mesma variável).
-  **B16 (31/10/2026):** as oito roupas das festas são da faixa `festa` do `avatar3d-catalog.ts`
-  (preço 0): comprar dá 409 `AVATAR_PART_FESTA`, a leitura as marca trancadas e vestir exige a
-  posse. Só esta porta as entrega. `tests/unit/avatar-festa-conformance.test.ts` lê o
+  **B16 (31/10/2026; peças do pack desde 13/11/2026):** as oito roupas das festas são da faixa
+  `festa` do catálogo do pack (`@sistemazero/core/avatar`, preço 0): comprar dá 409
+  `AVATAR_PART_FESTA`, a tela as mostra com "Da festa" e vestir exige a posse. Só esta porta as entrega. `tests/unit/avatar-festa-conformance.test.ts` lê o
   `vestuario-festas.ts` do contrato pelo caminho e confere que a faixa é a `conquista` das festas.
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.

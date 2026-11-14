@@ -43,6 +43,7 @@ import {
   trajetoDaPonte,
 } from '../src/mundo/medidas'
 import { LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from '../src/sistemas/construcao/lote'
+import { CORPO } from '../src/sistemas/corpo'
 
 const MUNDO = join(import.meta.dir, '..', 'src', 'assets', 'mundo')
 
@@ -73,12 +74,12 @@ function grupo(nome: string): string {
   return /^\d+$/.test(partes.at(-1) ?? '') ? partes.slice(0, -1).join('-') : nome
 }
 
-// O personagem: cápsula de raio 0,35, meia altura 0,55; o degrau automático é de 0,45 (com a
+// O personagem: a cápsula do jogo (`CORPO`); o degrau automático é de 0,45 (com a
 // curva do pé ele sobe até uns 0,58, `ALTURA_QUE_SEGURA`). Na busca, qualquer coisa acima de 0,45
 // conta como obstáculo (a conta mais rigorosa).
-const RAIO_DO_CORPO = 0.35
-const CENTRO_DO_CORPO = 0.9
-const DEGRAU = 0.45
+const RAIO_DO_CORPO = CORPO.raio
+const CENTRO_DO_CORPO = CORPO.doCentroAoPe
+const DEGRAU = CORPO.degrau
 
 const inversas = new WeakMap<Solido, Matrix4>()
 function inversa(c: Solido): Matrix4 {

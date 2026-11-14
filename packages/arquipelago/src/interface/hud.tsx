@@ -23,6 +23,7 @@ import {
   progressoDoQuadro,
   teclaDoAtalho,
 } from '../sistemas/hud'
+import { LUGARES_DOS_LEMBRETES } from '../sistemas/ir-tocando'
 import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../sistemas/iscas'
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
@@ -246,7 +247,7 @@ const CONFERIR_O_AGORA_MS = 5000
 
 /** O "Agora": até três lembretes do que já está esperando no jogo (`sistemas/hud.ts`). */
 function Agora() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, movimento } = useJogo()
   const portaNova = useEstado((s) => s.salvamento.casa.portaNova)
   const necessidades = useEstado((s) => s.salvamento.necessidades)
   const horta = useEstado((s) => s.salvamento.horta)
@@ -292,12 +293,33 @@ function Agora() {
             </button>
           </li>
         ) : null}
-        {lista.slice(0, linha ? 2 : 3).map((l) => (
-          <li key={l.id}>
-            <span className="arq-agora-marca" aria-hidden="true" />
-            {l.texto}
-          </li>
-        ))}
+        {lista.slice(0, linha ? 2 : 3).map((l) => {
+          const lugares = LUGARES_DOS_LEMBRETES[l.id]
+          return (
+            <li key={l.id}>
+              {lugares ? (
+                // Tocar na tarefa leva até ela (o avatar vai sozinho até o objeto dela).
+                <button
+                  type="button"
+                  className="arq-agora-ir"
+                  aria-label={`${l.texto}. Ir até lá`}
+                  onClick={(e) => {
+                    e.currentTarget.blur()
+                    movimento.levarAte = lugares
+                  }}
+                >
+                  <span className="arq-agora-marca" aria-hidden="true" />
+                  {l.texto}
+                </button>
+              ) : (
+                <>
+                  <span className="arq-agora-marca" aria-hidden="true" />
+                  {l.texto}
+                </>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

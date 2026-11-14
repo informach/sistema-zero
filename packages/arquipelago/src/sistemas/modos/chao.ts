@@ -14,8 +14,8 @@ import { entrarNoEscorregador, pistaSobOsPes } from './escorregar'
 import { abrirOPlanador, podeAbrirOPlanador } from './planar'
 import type { ModoDeMovimento } from './tipos'
 
-/** O avatar nada quando a cintura (esta altura acima dos pés) passa da linha da água. */
-export const CINTURA = 0.55
+/** O avatar nada quando a cintura (esta altura acima dos pés, o quadril) passa da linha da água. */
+export const CINTURA = CORPO.cintura
 /**
  * Em pé no fundo, começa a nadar quando a água passa da cintura por isto; nadando, só volta a andar
  * quando pisa e a cintura sai da água por `SAIR_DO_NADO`. A folga entre as duas evita trocar de nado

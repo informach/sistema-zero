@@ -3708,7 +3708,7 @@ export class InMemoryAvatarRepository implements AvatarRepository {
     const k = this.key(userId, audience)
     if (!this.configs.has(k)) {
       this.accountIds.set(k, accountId)
-      this.configs.set(k, defaultAvatarConfig())
+      this.configs.set(k, defaultAvatarConfig(userId))
     }
     this.photoUrls.set(k, photoUrl)
   }

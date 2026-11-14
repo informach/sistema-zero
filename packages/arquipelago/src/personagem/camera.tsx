@@ -40,6 +40,7 @@ import {
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
 import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
+import { CORPO } from '../sistemas/corpo'
 import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
 import { CAMERA_DA_GALERIA, cameraDaGaleria, galeriaAberta } from '../sistemas/galeria-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
@@ -56,8 +57,10 @@ import {
 import { suavizarAngulo } from '../sistemas/zappy'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
-/** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
-const ALTURA_DO_PEITO = 0.7
+/** Do centro do corpo ao ponto que a câmera olha: o meio da cabeça. */
+const ALTURA_DO_OLHAR = CORPO.doCentro.cabeca
+/** Do ponto que a câmera olha (a cabeça) até o peito do avatar (a junta do ombro). */
+const ALTURA_DO_PEITO = CORPO.doCentro.cabeca - CORPO.doCentro.ombro
 /**
  * No cipó a câmera olha para um ponto entre o corpo e o meio do cipó (`movimento.foco`), e segue
  * mais devagar: o balanço passa pela tela sem a câmera correr atrás dele. Com menos movimento
@@ -536,7 +539,7 @@ export function Camera() {
     let ax = rastro.x + (movimento.foco.x - rastro.x) * f
     const mergulhando = movimento.modo === 'mergulho'
     // No porão o teto fica perto. O foco acompanha o corpo, não a cabeça em pé.
-    const alturaDoFoco = mergulhando ? MERGULHO.focoDaCamera : 0.9
+    const alturaDoFoco = mergulhando ? MERGULHO.focoDaCamera : ALTURA_DO_OLHAR
     let ay = rastro.y + alturaDoFoco + (movimento.foco.y - rastro.y - alturaDoFoco) * f
     let az = rastro.z + (movimento.foco.z - rastro.z) * f
     // O perfil da vez (`sistemas/perfis-de-camera.ts`) e a troca aos poucos.
@@ -556,14 +559,17 @@ export function Camera() {
     const w = pesos.conversa
     if (fala) {
       ax += ((fala.x + rastro.x) / 2 - ax) * w
-      ay += ((fala.y + rastro.y + 0.9) / 2 - ay) * w
+      ay += ((fala.y + rastro.y + ALTURA_DO_OLHAR) / 2 - ay) * w
       az += ((fala.z + rastro.z) / 2 - az) * w
     }
     alvo.current.x += (ax - alvo.current.x) * k
     alvo.current.y += (ay - alvo.current.y) * k
     alvo.current.z += (az - alvo.current.z) * k
     // Lá no alto, o ângulo desce e a câmera chega perto (passa por baixo das copas).
-    const alto = pesoNoAlto(rastro.y - 0.9 - ALTURA_DA_TERRA, CAMERA_NO_ALTO.acimaDoChao)
+    const alto = pesoNoAlto(
+      rastro.y - CORPO.doCentroAoPe - ALTURA_DA_TERRA,
+      CAMERA_NO_ALTO.acimaDoChao,
+    )
     noAlto.current += (alto - noAlto.current) * k
     const n = dentro ? 0 : noAlto.current
     // O ângulo e a distância do perfil; lá no alto, por cima, o ângulo desce e a câmera chega perto.

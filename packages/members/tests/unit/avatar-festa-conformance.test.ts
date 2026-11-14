@@ -1,24 +1,19 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { AVATAR3D_PARTS } from '../../src/domain/avatar/avatar3d-catalog'
+import { AVATAR_CATALOG as C } from '@sistemazero/core/avatar'
+// Pelo caminho: o contrato do jogo não é dependência do Members.
+import { VESTUARIO_DAS_FESTAS } from '../../../arquipelago-contracts/src/vestuario-festas'
 
 /**
- * B16 (31/10/2026): as roupas que só a festa do Arquipélago concede são exatamente a `conquista` de
- * cada festa no contrato do jogo. O contrato não é dependência do Members: o arquivo é lido pelo
- * caminho, como os outros testes de conformidade.
+ * As peças da faixa `festa` (só a festa do Arquipélago concede, não se compram) são exatamente as
+ * roupas que as festas do jogo dão (`conquista` do contrato, B16), e o prêmio de cada festa das
+ * regras do pack está entre elas.
  */
-const fonte = readFileSync(
-  join(import.meta.dir, '../../../arquipelago-contracts/src/vestuario-festas.ts'),
-  'utf8',
-)
-const conquistas = [...fonte.matchAll(/conquista: \[([^\]]*)\]/g)].flatMap((m) =>
-  [...(m[1] ?? '').matchAll(/'([^']+)'/g)].map((id) => id[1] ?? ''),
-)
-
-test('a faixa festa do catálogo é a conquista das quatro festas, nem mais nem menos', () => {
-  expect(conquistas).toHaveLength(8)
-  const daFesta = AVATAR3D_PARTS.filter((p) => p.tier === 'festa').map((p) => p.id)
-  expect([...daFesta].sort()).toEqual([...conquistas].sort())
-  for (const p of AVATAR3D_PARTS.filter((x) => x.tier === 'festa')) expect(p.price).toBe(0)
+test('a faixa festa do catálogo é a conquista das festas do jogo, nem mais nem menos', () => {
+  const doJogo = Object.values(VESTUARIO_DAS_FESTAS).flatMap((f) => [...f.conquista])
+  const daFesta = Object.entries(C.parts)
+    .filter(([, p]) => p.tier === 'festa')
+    .map(([id]) => id)
+  expect([...daFesta].sort()).toEqual([...doJogo].sort())
+  for (const id of daFesta) expect(C.parts[id]?.price).toBe(0)
+  for (const festa of Object.values(C.rules.festas)) expect(daFesta).toContain(festa.prize)
 })

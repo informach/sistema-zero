@@ -13,13 +13,16 @@ import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
  * (Pinta, Molda, Estúdio) também são as da plataforma: o jogo PEDE para abrir e a página abre a
  * ferramenta de verdade por cima do jogo; melhorou a ferramenta, melhorou no jogo.
  */
-export const VERSAO_CONTRATO_PLATAFORMA = 1
+export const VERSAO_CONTRATO_PLATAFORMA = 2
 
 /**
  * As versões do contrato que os dois lados aceitam (A35, revisão de 31/10/2026): a atual e a
  * anterior, para o jogo e a plataforma poderem subir em dias diferentes. Ao subir a versão, o lado
  * novo continua aceitando o antigo por uma rodada de implantação; a versão anterior só deixa de
- * valer quando a seguinte chegar. Hoje só existe a 1.
+ * valer quando a seguinte chegar.
+ *
+ * Versão 2 (13/11/2026): o avatar do pack (`AvatarDoJogo.slots` é encaixe → id da peça). A página,
+ * com um jogo da versão 1, entrega o avatar vazio (o jogo antigo mostra o avatar de partida dele).
  */
 export const VERSOES_COMPATIVEIS_DA_PLATAFORMA: readonly number[] =
   VERSAO_CONTRATO_PLATAFORMA > 1
@@ -53,13 +56,13 @@ export interface JornadaDoJogo {
   posicao: number
 }
 
-export interface SlotDoAvatar {
-  asset: string
-  color?: string
-}
-
+/**
+ * O avatar da pessoa (pack Cute Characters, contrato 2, 13/11/2026): encaixe → id da peça, como o
+ * Members guarda. O jogo lê com tolerância (`avatarDoPack` do `avatar-quarto`): uma página da
+ * versão 1, que ainda mandasse `{asset, color}`, vira o avatar de partida, sem quebrar.
+ */
 export interface AvatarDoJogo {
-  slots: Record<string, SlotDoAvatar>
+  slots: Record<string, string>
 }
 
 /**

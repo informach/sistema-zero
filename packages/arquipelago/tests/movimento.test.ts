@@ -58,8 +58,11 @@ function energia(b: Balanco): number {
 
 describe('cipó (pêndulo)', () => {
   test('as mãos seguram onde os pés passam livres do chão, sem passar do fim da corda', () => {
-    // Pivô a 5,26 do chão: 5,26 − 0,35 − 0,9 − 0,3 = 3,71.
-    expect(comprimentoDaPegada(6.26, 1, 4.5, CORPO.doCentroAoPe)).toBeCloseTo(3.71, 5)
+    // Pivô a 5,26 do chão: a corda até as mãos é o que sobra tirando a folga dos pés, os pés até o
+    // centro e o centro até as mãos (com o corpo de hoje, uns 3,68).
+    const pegada = 5.26 - CIPO.folgaDosPes - CORPO.doCentroAoPe - CIPO.maosAcimaDoCentro
+    expect(pegada).toBeGreaterThan(3.6)
+    expect(comprimentoDaPegada(6.26, 1, 4.5, CORPO.doCentroAoPe)).toBeCloseTo(pegada, 5)
     // Corda curta: segura no fim dela.
     expect(comprimentoDaPegada(6.26, 1, 2.2, CORPO.doCentroAoPe)).toBe(2.2)
     // Galho baixo demais: nunca menos que o mínimo.

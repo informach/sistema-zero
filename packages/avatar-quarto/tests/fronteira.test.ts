@@ -5,10 +5,16 @@ import pkg from '../package.json'
 
 /**
  * O pacote é dividido pela plataforma e pelo Arquipélago Vagalume. Ele só pode depender de
- * three e do React Three Fiber: importar a plataforma (member-shell, apps) ou o jogo daqui
- * faria uma mudança de um lado quebrar o outro.
+ * three, do React Three Fiber e do catálogo puro do avatar no core (sem framework): importar a
+ * plataforma (member-shell, apps) ou o jogo daqui faria uma mudança de um lado quebrar o outro.
  */
-const PERMITIDOS = ['react', 'three', '@react-three/fiber', '@react-three/drei']
+const PERMITIDOS = [
+  'react',
+  'three',
+  '@react-three/fiber',
+  '@react-three/drei',
+  '@sistemazero/core/avatar',
+]
 
 function arquivos(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

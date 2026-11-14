@@ -1,40 +1,107 @@
-/**
- * As medidas do corpo do personagem (a cápsula do Rapier), divididas entre o personagem, as
- * regras do cipó e da escalada e os testes que leem o `bosque.glb`.
- */
-export const CORPO = {
-  meiaAltura: 0.55,
-  raio: 0.35,
+import {
+  AVATAR_CATALOG,
+  type AvatarCatalog,
+  type BodyMeasures,
+  bodyMeasures,
+  physicalBody,
+} from '@sistemazero/avatar-quarto/avatar/pack-catalog'
+import { MUNDO_ATUAL, type MundoDoJogo } from '../mundo/mundo-do-jogo'
+
+/** O corpo do personagem num mundo: as medidas do esqueleto na escala do mundo e as regras dele. */
+export interface CorpoDoJogo {
+  /** Meia altura do cilindro da cápsula do Rapier. */
+  meiaAltura: number
+  raio: number
   /** Do centro da cápsula até os pés. */
-  doCentroAoPe: 0.9,
+  doCentroAoPe: number
+  /** Da sola à linha d'água de quem nada (o quadril). */
+  cintura: number
   /**
    * O corpo como o avatar é desenhado, para as cordas encostarem nele (metros a partir dos pés,
    * no meio do corpo): o tronco e as pernas como uma cápsula e a cabeça, que é grande e sai da
-   * cápsula do Rapier (vai de 1,28 m a 2,13 m do pé, com 0,98 m de largura), como uma bola.
+   * cápsula do Rapier, como uma bola.
    */
-  desenho: { de: 0.45, ate: 1.05, raio: 0.37, cabeca: 1.7, raioDaCabeca: 0.45 },
-  /**
-   * Velocidades no chão (m/s), casadas com as pernas curtas do avatar (0,5 m): andando o passo é o
-   * do clipe "Andar" misturado com o "Correr"; correndo, o "Correr" no ritmo certo, sem patinar.
-   */
-  andar: 2.2,
-  correr: 4.6,
-  nadar: 2.6,
-  /** Velocidade para cima ao pular (m/s): com a gravidade do jogo, sobe uns 1,5 m. */
-  pulo: 8.5,
-  /** O degrau mais alto que o corpo sobe sozinho, andando (m). */
-  degrau: 0.45,
-  /** A rampa mais inclinada que ele sobe andando (graus). */
-  sobeAte: 52,
+  desenho: { de: number; ate: number; raio: number; cabeca: number; raioDaCabeca: number }
+  /** Alturas do corpo a partir do CENTRO da cápsula (o `rastro` é o centro). */
+  doCentro: {
+    /** O meio da cabeça: para onde a câmera olha. */
+    cabeca: number
+    /** O alto da cabeça (sem cabelo nem chapéu). */
+    topo: number
+    /** A junta do ombro (o peito). */
+    ombro: number
+    /** As mãos penduradas na corda do cipó, ao lado do rosto: meio braço acima do ombro. */
+    maosNoCipo: number
+  }
+  /** As medidas de onde tudo isto saiu (já na escala do mundo). */
+  medidas: BodyMeasures
+  andar: number
+  correr: number
+  nadar: number
+  pulo: number
+  degrau: number
+  sobeAte: number
   /** Acima desta inclinação ele escorrega (graus); entre `sobeAte` e esta, não sobe nem escorrega. */
-  escorregaAcimaDe: 60,
+  escorregaAcimaDe: number
+  grudaAte: number
   /**
    * O controlador do Rapier mantém esta folga entre a cápsula e o chão. O desenho desce o mesmo
    * tanto para o pé encostar (sem ela o avatar anda flutuando), e os modos que põem o corpo direto
    * num lugar (o tronco caído) deixam a mesma folga.
    */
-  folga: 0.06,
-} as const
+  folga: number
+  maosNaBorda: number
+  maosNaEscalada: number
+}
+
+/**
+ * O corpo do personagem num mundo: a cápsula e as alturas saem do esqueleto do catálogo
+ * (`bodyMeasures`/`physicalBody` do core, as regras escritas uma vez lá), as velocidades e os
+ * alcances são regras do mundo (`mundo/mundo-do-jogo.ts`).
+ */
+export function corpoDoMundo(catalogo: AvatarCatalog, mundo: MundoDoJogo): CorpoDoJogo {
+  const m = bodyMeasures(catalogo.base.skeleton, mundo.escalaDoHeroi)
+  const f = physicalBody(m)
+  const c = f.centerToFoot
+  return {
+    meiaAltura: f.halfHeight,
+    raio: f.radius,
+    doCentroAoPe: c,
+    cintura: f.waist,
+    desenho: {
+      de: f.drawn.from,
+      ate: f.drawn.to,
+      raio: f.drawn.radius,
+      cabeca: f.drawn.head,
+      raioDaCabeca: f.drawn.headRadius,
+    },
+    doCentro: {
+      cabeca: m.headCenter - c,
+      topo: m.height - c,
+      ombro: m.shoulder - c,
+      maosNoCipo: m.shoulder + m.arm / 2 - c,
+    },
+    medidas: m,
+    andar: mundo.andar,
+    correr: mundo.correr,
+    nadar: mundo.nadar,
+    pulo: mundo.pulo,
+    degrau: mundo.degrau,
+    sobeAte: mundo.sobeAte,
+    escorregaAcimaDe: mundo.escorregaAcimaDe,
+    grudaAte: mundo.grudaAte,
+    folga: mundo.folga,
+    maosNaBorda: mundo.maosNaBorda,
+    maosNaEscalada: mundo.maosNaEscalada,
+  }
+}
+
+/**
+ * O corpo do personagem no mundo de hoje (a ponte de escala 1,85), dividido entre o personagem, as
+ * regras do cipó e da escalada e os testes que leem os GLBs das ilhas. Uma constante de módulo:
+ * há um mundo só; a troca de mundo com o jogo aberto chega com os mundos novos.
+ */
+export const CORPO: Readonly<CorpoDoJogo> = corpoDoMundo(AVATAR_CATALOG, MUNDO_ATUAL)
 
 /** Até onde chega um pulo no plano, saindo a `velocidade` (m/s): o tempo no ar vezes ela. */
 export function alcanceDoPulo(velocidade: number, gravidade: number): number {

@@ -236,6 +236,7 @@
       "dependencies": {
         "@react-three/drei": "^10",
         "@react-three/fiber": "^9",
+        "@sistemazero/core": "workspace:*",
         "three": "^0.184.0",
       },
       "devDependencies": {

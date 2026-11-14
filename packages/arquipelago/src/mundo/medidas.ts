@@ -1,5 +1,6 @@
 import { type Ilha, ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
 import { CONTORNO_DO_MERGULHO, MERGULHO } from '../sistemas/mergulho'
+import { MUNDO_ATUAL } from './mundo-do-jogo'
 
 /**
  * As medidas do mundo (1 unidade = 1 célula do quarto, mais ou menos 1 metro). Tudo o que é
@@ -14,7 +15,7 @@ export const NIVEL_DA_AGUA = 0
 export const PASSO_DA_FISICA = 1 / 60
 export const PRIORIDADE_DA_FISICA = -1
 /** A gravidade do jogo (m/s², para baixo): mais forte que a de verdade, para o pulo ser ágil. */
-export const GRAVIDADE = 24
+export const GRAVIDADE = MUNDO_ATUAL.gravidade
 export const ALTURA_DA_TERRA = 1
 export const FUNDO_DO_MAR = -3.5
 
@@ -450,8 +451,11 @@ export const CONTROLE_DA_CAMERA = {
   /** Do quase rente ao chão (7°) até quase de cima (72°). */
   inclinacaoMinima: 0.12,
   inclinacaoMaxima: 1.25,
-  /** A inclinação de quando a câmera volta para as costas. */
-  inclinacaoDeVolta: 0.5,
+  /**
+   * A inclinação de quando a câmera volta para as costas (e a de partida): um pouco de cima, para o
+   * chão à frente do boneco cabeçudo aparecer por cima da cabeça dele (era 0,5).
+   */
+  inclinacaoDeVolta: 0.62,
   distanciaMinima: 4,
   distanciaMaxima: 18,
   /** Metros por pixel de roda e por toque nas teclas + e -. */

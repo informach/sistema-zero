@@ -32,6 +32,7 @@
     "./course/publication": "./src/course/publication.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/scene": "./src/learning/scene/index.ts",
+    "./avatar": "./src/avatar/index.ts",
     "./palette": "./src/palette/index.ts",
     "./profiles": "./src/profiles/index.ts"
   },

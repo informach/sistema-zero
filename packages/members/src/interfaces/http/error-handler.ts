@@ -92,6 +92,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // Avatar / carteira Zappy.
   AVATAR_INVALID: 400,
   AVATAR_PART_FREE: 400,
+  AVATAR_PART_IN_SET: 400,
   AVATAR_PART_FESTA: 409,
   AVATAR_PART_NOT_OWNED: 403,
   AVATAR_PART_NOT_FOUND: 404,

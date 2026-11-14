@@ -39,3 +39,11 @@ export class AvatarPartFreeError extends DomainError {
     super(message)
   }
 }
+
+/** Tentou comprar uma PARTE de fantasia: a fantasia se compra inteira, pelo conjunto. → 400. */
+export class AvatarPartInSetError extends DomainError {
+  readonly code = 'AVATAR_PART_IN_SET'
+  constructor(message = 'Essa peça faz parte de uma fantasia: compre a fantasia inteira') {
+    super(message)
+  }
+}
