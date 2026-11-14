@@ -14,6 +14,7 @@ import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
 import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
+import { IrTocando } from '../mundo/ir-tocando'
 import {
   alturaDaIlha,
   CENTRO_DA_CASA,
@@ -32,11 +33,12 @@ import { entradaDaObra, frenteDaEntrada } from '../sistemas/construcao/entrada'
 import { LOTE_DA_CASA_GRANDE } from '../sistemas/construcao/lote'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
-import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-dos-clipes'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { BANCO } from '../sistemas/descanso'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
+import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
 import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
+import { DESENHO_NA_AGUA, desenhoPenduradoNaBorda } from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
   type AvisoDeModo,
@@ -157,6 +159,8 @@ export function Personagem() {
   const naAgua = useRef(0)
   const naBorda = useRef(0)
   /** Os acenos dos moradores já respondidos e o quanto falta do aceno dela (s). */
+  /** Para onde a ida manda andar agora (escrito a cada passo, sem criar lixo). */
+  const rumoDaIda = useRef({ x: 0, z: 0, correr: false }).current
   const acenosVistos = useRef(movimento.acenos)
   const acenando = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
@@ -314,6 +318,7 @@ export function Personagem() {
         pedidos.olharPara = null
       }
       pedidos.teleporte = null
+      movimento.ida = null
       return
     }
     if (pedidos.chaoChegando.size > 0 && v.modo !== 'barco') {
@@ -334,6 +339,30 @@ export function Personagem() {
       iz /= tam
     }
     const g = rastro.giro
+    // Indo sozinha para onde tocou: o rumo do caminho vira o direcional (no referencial da câmera,
+    // como o dela). O direcional, o pulo e o usar devolvem o comando; fora do chão a ida acaba.
+    let correndoSozinha = false
+    const ida = movimento.ida
+    if (ida && !parado) {
+      const pegou = comandoCancela(
+        ix,
+        iz,
+        controle.pulos !== pulosAtendidos.current,
+        controle.usar !== usosAtendidos.current,
+      )
+      if (
+        pegou ||
+        v.modo !== 'chao' ||
+        v.nadando ||
+        passoDaIda(ida, p, dt, rumoDaIda) !== 'andando'
+      )
+        movimento.ida = null
+      else {
+        ix = rumoDaIda.x * Math.cos(g) - rumoDaIda.z * Math.sin(g)
+        iz = -(rumoDaIda.x * Math.sin(g) + rumoDaIda.z * Math.cos(g))
+        correndoSozinha = rumoDaIda.correr
+      }
+    }
     const e = entrada
     e.agora = agora
     e.parado = parado
@@ -352,7 +381,7 @@ export function Personagem() {
     pulosAtendidos.current = controle.pulos
     e.usou = controle.usar !== usosAtendidos.current
     usosAtendidos.current = controle.usar
-    e.correr = controle.correr
+    e.correr = controle.correr || correndoSozinha
     e.ritmo = ritmo(estado.salvamento.necessidades)
     e.patins = comPatins(estado.patins, estado.salvamento.inventario)
     e.planador = temPlanador(estado.salvamento)
@@ -420,7 +449,8 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
-    const viajando = v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
+    const viajando =
+      v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
     m.especial = viajando
       ? 'barco'
       : v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
@@ -605,43 +635,46 @@ export function Personagem() {
   })
 
   return (
-    <RigidBody
-      ref={corpo}
-      type="kinematicPosition"
-      colliders={false}
-      position={[inicial.x, inicial.y, inicial.z]}
-      enabledRotations={[false, false, false]}
-    >
-      <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
-      {montado ? (
-        <CapsuleCollider
-          ref={colisorMontado}
-          args={[MONTARIA.meiaAltura, MONTARIA.raio]}
-          // O pé no mesmo lugar que o da cápsula dela.
-          position={[0, MONTARIA.meiaAltura + MONTARIA.raio - MEIA_ALTURA - RAIO, 0]}
-          collisionGroups={GRUPO_DE_NINGUEM}
-        />
-      ) : null}
-      <group
-        ref={(g) => {
-          visual.current = g
-          // O giro primeiro e a inclinação no corpo: nadar e balançar inclinam para a frente dele.
-          if (g) g.rotation.order = 'YXZ'
-        }}
-        position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
+    <>
+      <IrTocando corpo={corpo} />
+      <RigidBody
+        ref={corpo}
+        type="kinematicPosition"
+        colliders={false}
+        position={[inicial.x, inicial.y, inicial.z]}
+        enabledRotations={[false, false, false]}
       >
-        <AvatarDoJogo
-          movimento={animacao}
-          chao={chaoDosPes}
-          comPatins={calcados}
-          comLanterna={lanterna}
-        />
-        {comPlanador ? (
-          <Suspense fallback={null}>
-            <PlanadorAberto />
-          </Suspense>
+        <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
+        {montado ? (
+          <CapsuleCollider
+            ref={colisorMontado}
+            args={[MONTARIA.meiaAltura, MONTARIA.raio]}
+            // O pé no mesmo lugar que o da cápsula dela.
+            position={[0, MONTARIA.meiaAltura + MONTARIA.raio - MEIA_ALTURA - RAIO, 0]}
+            collisionGroups={GRUPO_DE_NINGUEM}
+          />
         ) : null}
-      </group>
-    </RigidBody>
+        <group
+          ref={(g) => {
+            visual.current = g
+            // O giro primeiro e a inclinação no corpo: nadar e balançar inclinam para a frente dele.
+            if (g) g.rotation.order = 'YXZ'
+          }}
+          position={[0, -DO_CENTRO_AO_PE - FOLGA_DO_CONTROLADOR, 0]}
+        >
+          <AvatarDoJogo
+            movimento={animacao}
+            chao={chaoDosPes}
+            comPatins={calcados}
+            comLanterna={lanterna}
+          />
+          {comPlanador ? (
+            <Suspense fallback={null}>
+              <PlanadorAberto />
+            </Suspense>
+          ) : null}
+        </group>
+      </RigidBody>
+    </>
   )
 }

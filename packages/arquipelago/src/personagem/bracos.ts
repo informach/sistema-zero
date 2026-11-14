@@ -15,11 +15,7 @@ import { PENDURADO_NO_CIPO } from '../sistemas/lugares-dos-clipes'
  * Onde a corda passa no corpo do avatar (metros a partir da origem do desenho; ele olha para +z):
  * no meio, à frente, na altura das mãos do clipe.
  */
-export const CORDA_NO_CORPO = new Vector3(
-  0,
-  PENDURADO_NO_CIPO.maos,
-  PENDURADO_NO_CIPO.cordaAFrente,
-)
+export const CORDA_NO_CORPO = new Vector3(0, PENDURADO_NO_CIPO.maos, PENDURADO_NO_CIPO.cordaAFrente)
 
 /** O corpo pende para trás no cipó (radianos), além da pose: o clipe já pende. */
 export const INCLINACAO_NO_CIPO = 0

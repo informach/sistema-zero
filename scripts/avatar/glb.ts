@@ -167,7 +167,8 @@ async function juntarAnimacao(doc: Document, avulsa: AnimacaoAvulsa): Promise<vo
     const tem = nos.get(nome)
     if (tem) return tem
     const pai = origem.getParentNode()
-    if (!pai) throw new Error(`A animação ${avulsa.id} mexe no nó ${nome}, que o esqueleto não tem.`)
+    if (!pai)
+      throw new Error(`A animação ${avulsa.id} mexe no nó ${nome}, que o esqueleto não tem.`)
     const novo = doc
       .createNode(nome)
       .setTranslation(origem.getTranslation())
@@ -183,7 +184,11 @@ async function juntarAnimacao(doc: Document, avulsa: AnimacaoAvulsa): Promise<vo
     if (!dados || !vetor) throw new Error(`A animação ${avulsa.id} tem um canal sem dados.`)
     let copia = copias.get(dados)
     if (!copia) {
-      copia = doc.createAccessor().setType(dados.getType()).setArray(vetor.slice()).setBuffer(buffer)
+      copia = doc
+        .createAccessor()
+        .setType(dados.getType())
+        .setArray(vetor.slice())
+        .setBuffer(buffer)
       copias.set(dados, copia)
     }
     return copia
@@ -206,7 +211,11 @@ async function juntarAnimacao(doc: Document, avulsa: AnimacaoAvulsa): Promise<vo
       nova.addSampler(amostra)
     }
     nova.addChannel(
-      doc.createAnimationChannel().setTargetNode(noDe(alvo)).setTargetPath(caminho).setSampler(amostra),
+      doc
+        .createAnimationChannel()
+        .setTargetNode(noDe(alvo))
+        .setTargetPath(caminho)
+        .setSampler(amostra),
     )
   }
 }

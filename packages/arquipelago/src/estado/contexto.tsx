@@ -11,6 +11,7 @@ import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
+import type { Ida } from '../sistemas/ir-tocando'
 import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
 import type { FilaDeSalvamento } from '../sistemas/salvar'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
@@ -240,6 +241,8 @@ export interface Movimento {
   corpoDesenhado: CorpoQueEmpurra | null
   /** Quantas vezes um morador acenou para ela (cada aceno novo, ela acena de volta, parada). */
   acenos: number
+  /** Ela tocou num lugar do chão e está indo para lá sozinha (`sistemas/ir-tocando.ts`). */
+  ida: Ida | null
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
   /**
@@ -281,6 +284,7 @@ export function criarMovimento(): Movimento {
     foco: { x: 0, y: 0, z: 0 },
     corpoDesenhado: null,
     acenos: 0,
+    ida: null,
     corrida: null,
     mira: null,
     pedidoDoPercurso: null,

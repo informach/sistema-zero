@@ -21,6 +21,7 @@ import {
   SEGUNDOS_DE_COCHILO,
   sonecaAcabou,
 } from '../src/sistemas/descanso'
+import { SENTADO } from '../src/sistemas/lugares-dos-clipes'
 import {
   atenderPedido,
   criarEstadoDoCorpo,
@@ -29,7 +30,6 @@ import {
   MODOS,
   type MundoDoMovimento,
 } from '../src/sistemas/modos'
-import { SENTADO } from '../src/sistemas/lugares-dos-clipes'
 import { DESCANSO } from '../src/sistemas/modos/descanso'
 import { jogoPausado } from '../src/sistemas/pausa'
 import {

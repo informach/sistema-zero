@@ -29,7 +29,8 @@ export function poseDaCamada(
   if (!clipe) return pose
   for (const osso of camada.bones) {
     const trilha = clipe.tracks.find((t) => t.name === `${osso}.quaternion`)
-    if (trilha && trilha.values.length >= 4) pose.set(osso, new Quaternion().fromArray(trilha.values))
+    if (trilha && trilha.values.length >= 4)
+      pose.set(osso, new Quaternion().fromArray(trilha.values))
   }
   return pose
 }

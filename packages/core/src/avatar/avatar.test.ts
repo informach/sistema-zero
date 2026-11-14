@@ -126,7 +126,11 @@ describe('o catálogo', () => {
     expect(clipe('nadar')?.place?.linha_d_agua_m).toBeGreaterThan(0)
     expect(clipe('sair_da_agua')?.place?.margem_beira_a_frente_m).toBeGreaterThan(0)
     // Pendurada, as duas mãos agarram; subindo a borda, o corpo sobe e avança.
-    expect(clipe('pendurar_borda')?.hands?.map((m) => m.hand).sort()).toEqual(['left', 'right'])
+    expect(
+      clipe('pendurar_borda')
+        ?.hands?.map((m) => m.hand)
+        .sort(),
+    ).toEqual(['left', 'right'])
     expect(clipe('subir_borda')?.rise).toBeGreaterThan(0.4)
     expect(clipe('deitado')?.hatOff).toBe(true)
     expect(clipe('acender')?.object).toBe('mao_lanterna')

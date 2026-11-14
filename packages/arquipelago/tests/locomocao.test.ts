@@ -289,7 +289,11 @@ describe('entrar e sair da água, o barco e o aceno', () => {
     expect(parada.pesos.Acenar).toBeCloseTo(1)
     expect(parada.pesos.Parado).toBe(0)
     expect(parada.tempos.Acenar).toBeGreaterThan(0)
-    const andando = rodar(undefined, { ...praia, velocidade: VELOCIDADE_DO_ANDAR, acenando: true }, 1)
+    const andando = rodar(
+      undefined,
+      { ...praia, velocidade: VELOCIDADE_DO_ANDAR, acenando: true },
+      1,
+    )
     expect(andando.pesos.Acenar).toBeCloseTo(0)
     expect(andando.pesos.Andar).toBeCloseTo(1)
     // Acabou o aceno: volta ao parado e o próximo recomeça do início.

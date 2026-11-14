@@ -112,12 +112,11 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
       prontos.push(copia)
       continue
     }
-    const vertical: VerticalDoClipe =
-      SEM_A_SUBIDA.includes(id)
-        ? 'tendencia'
-        : NO_PULO.includes(id) && emPe !== null
-          ? { teto: emPe }
-          : 'manter'
+    const vertical: VerticalDoClipe = SEM_A_SUBIDA.includes(id)
+      ? 'tendencia'
+      : NO_PULO.includes(id) && emPe !== null
+        ? { teto: emPe }
+        : 'manter'
     const pronto = semDeslocamento(clipe, nomeNoJogo(id), { vertical })
     prontos.push(
       id === 'entrar_na_agua'

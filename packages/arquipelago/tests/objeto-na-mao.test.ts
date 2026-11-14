@@ -32,10 +32,17 @@ describe('a lanterna do pack na mão', () => {
 
   test('a pose da camada é o primeiro quadro do clipe dela, só nos ossos listados', () => {
     const clipe = new AnimationClip('dedos', 1, [
-      new QuaternionKeyframeTrack('RightHandIndex1.quaternion', [0, 1], [0, 0, 0.5, 0.5, 0, 0, 0, 1]),
+      new QuaternionKeyframeTrack(
+        'RightHandIndex1.quaternion',
+        [0, 1],
+        [0, 0, 0.5, 0.5, 0, 0, 0, 1],
+      ),
       new QuaternionKeyframeTrack('Head.quaternion', [0, 1], [1, 0, 0, 0, 1, 0, 0, 0]),
     ])
-    const pose = poseDaCamada([clipe], { id: 'dedos', bones: ['RightHandIndex1', 'RightHandIndex2'] })
+    const pose = poseDaCamada([clipe], {
+      id: 'dedos',
+      bones: ['RightHandIndex1', 'RightHandIndex2'],
+    })
     expect([...pose.keys()]).toEqual(['RightHandIndex1'])
     expect(pose.get('RightHandIndex1')?.toArray()).toEqual([0, 0, 0.5, 0.5])
     // Sem o clipe no arquivo, nenhuma pose (os dedos ficam como a animação deixa).

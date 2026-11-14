@@ -207,11 +207,7 @@ function Visualizador() {
         <Camera />
         <Chao movimento={movimento} />
         <Motor movimento={movimento} aoMudar={setTexto} />
-        {CIPO_NA_MAO ? (
-          <NaCorda movimento={movimento} />
-        ) : (
-          <AvatarDoJogo movimento={movimento} />
-        )}
+        {CIPO_NA_MAO ? <NaCorda movimento={movimento} /> : <AvatarDoJogo movimento={movimento} />}
       </Canvas>
       <p
         style={{
