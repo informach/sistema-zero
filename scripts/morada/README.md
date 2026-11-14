@@ -1,5 +1,7 @@
 # Biblioteca Morada
 
+Publicação concluída em staging e produção em 14/11/2026. O [registro operacional](../../docs/operations/2026-11-14-morada-publicacao.md) documenta os arquivos verificados, a conversão efetiva das contas, os reembolsos e os deployments. As instruções abaixo continuam sendo o procedimento para novas operações.
+
 Importa móveis, construção, fazenda, os 24 gatos/cachorros e os oito troféus próprios. Só metadados entram no Git. GLB, imagens e miniaturas importados ficam em `output/morada-assets/morada`, ignorado pelo Git, e depois nos buckets privados.
 
 ## Preparar e conferir
