@@ -6,8 +6,9 @@
  * A regra fala em ESTADOS (o que o corpo está fazendo). Cada estado toca um pedaço de um clipe do
  * pack (`POSE_DO_ESTADO`): os clipes de movimento do jogo moram no GLB `game.file` do catálogo, e
  * as medidas deles (duração, passada) também vêm de lá, vezes a escala do herói no mundo. Nadar,
- * boiar, sentar, deitar, o cipó e a borda usam as animações que a arte fez para este corpo; os modos
- * que ela ainda não animou (planar, escalar, equilibrar, escorregar, montar) usam uma pose de reserva.
+ * boiar, sentar, deitar, o cipó, a borda e os modos do jogo (planar, escalar, equilibrar, escorregar,
+ * montado, patinar) usam as animações que a arte fez para este corpo; sem uma delas no catálogo, o
+ * estado usa a pose de reserva (`RESERVA_DO_ESTADO`).
  *
  * Andar e correr são tocados pela MESMA fase: na mistura os pés dos dois caem juntos. A fase anda
  * pela distância percorrida dividida pela passada, então o pé não patina no chão.
@@ -39,6 +40,12 @@ export const CLIPES_DO_JOGO = [
   'sair_da_agua',
   'sentado_no_barco',
   'acenar',
+  'equilibrar',
+  'escorregar',
+  'patinar',
+  'planar',
+  'escalar',
+  'montado',
 ] as const
 export type ClipeDoJogo = (typeof CLIPES_DO_JOGO)[number]
 
@@ -69,6 +76,7 @@ export const ESTADOS = [
   'SaindoDaAgua',
   'NoBarco',
   'Acenar',
+  'Patinar',
 ] as const
 export type Estado = (typeof ESTADOS)[number]
 
@@ -116,6 +124,12 @@ const RESERVA_DO_ESTADO: Partial<Record<Estado, PoseDoEstado>> = {
   SubirBorda: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
   EntrandoNaAgua: inteiro('pulo_no_ar'),
   SaindoDaAgua: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
+  Planar: inteiro('pulo_no_ar'),
+  Escalar: inteiro('subir_escada'),
+  Equilibrar: inteiro('parado_relaxado'),
+  Escorregar: parada('agachado_frente', AGACHADO_PARADO),
+  Montar: parada('agachado_frente', AGACHADO_PARADO),
+  Patinar: inteiro('andar_frente'),
 }
 
 const DA_ARTE: Record<Estado, PoseDoEstado> = {
@@ -144,12 +158,15 @@ const DA_ARTE: Record<Estado, PoseDoEstado> = {
   // Na viagem de barco, sentada no piso dele. Parada perto de um morador que acena, acena de volta.
   NoBarco: inteiro('sentado_no_barco'),
   Acenar: inteiro('acenar'),
-  // As reservas, até a arte entregar a animação de cada modo:
-  Planar: inteiro('pulo_no_ar'),
-  Escalar: inteiro('subir_escada'),
-  Equilibrar: inteiro('parado_relaxado'),
-  Escorregar: parada('agachado_frente', AGACHADO_PARADO),
-  Montar: parada('agachado_frente', AGACHADO_PARADO),
+  // Os modos do jogo (P2): pendurada na barra do planador, subindo pela casca, andando no tronco
+  // caído com os braços abertos, sentada descendo o escorregador, montada (o laço de quem já
+  // subiu: o `montar` da arte começa ao lado de uma sela baixa, e a do dino é alta) e de patins.
+  Planar: inteiro('planar'),
+  Escalar: inteiro('escalar'),
+  Equilibrar: inteiro('equilibrar'),
+  Escorregar: inteiro('escorregar'),
+  Montar: inteiro('montado'),
+  Patinar: inteiro('patinar'),
 }
 
 export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = Object.fromEntries(
@@ -193,12 +210,26 @@ export const CICLO_DE_CORRER = {
   passada: doCatalogo('correr_frente').stride * escala,
   duracao: DURACAO_DO_CLIPE.correr_frente,
 } as const
-/** Subir a escada (e, de reserva, o tronco): o corpo sobe `passada` por ciclo. */
+/** Subir a escada: o corpo sobe `passada` por ciclo. */
 export const CICLO_DA_ESCADA = {
   passada: doCatalogo('subir_escada').rise * escala,
   duracao: DURACAO_DO_CLIPE.subir_escada,
 } as const
-export const CICLO_DE_ESCALAR = CICLO_DA_ESCADA
+
+/**
+ * O ciclo de um estado que anda pela distância, pelo clipe que ele toca de verdade (o da arte ou o
+ * da reserva): quanto o corpo anda (`passada`) ou sobe (`subida`) por ciclo.
+ */
+function cicloDoEstado(estado: Estado, medida: 'stride' | 'rise') {
+  const clipe = POSE_DO_ESTADO[estado].clipe
+  return { passada: doCatalogo(clipe)[medida] * escala, duracao: DURACAO_DO_CLIPE[clipe] } as const
+}
+/** Escalar a casca: as mãos e os pés sobem `passada` por ciclo. */
+export const CICLO_DE_ESCALAR = cicloDoEstado('Escalar', 'rise')
+/** No tronco caído, um pé na frente do outro: `passada` por ciclo. */
+export const CICLO_DE_EQUILIBRAR = cicloDoEstado('Equilibrar', 'stride')
+/** De patins: o corpo desliza `passada` por ciclo de impulsos. */
+export const CICLO_DE_PATINAR = cicloDoEstado('Patinar', 'stride')
 /** Nadar: as braçadas de um ciclo levam o corpo `passada` metros. */
 export const CICLO_DE_NADO = {
   passada: doCatalogo('nadar').stride * escala,
@@ -212,6 +243,18 @@ export const CICLO_DE_NADO = {
  */
 export const VELOCIDADE_DO_ANDAR = CORPO.andar
 export const VELOCIDADE_DO_CORRER = CORPO.correr
+
+/** As mesmas transições em mundos com escalas e velocidades diferentes. */
+export interface MedidasDaLocomocao {
+  escala: number
+  andar: number
+  correr: number
+}
+export const LOCOMOCAO_DO_MUNDO: MedidasDaLocomocao = {
+  escala,
+  andar: VELOCIDADE_DO_ANDAR,
+  correr: VELOCIDADE_DO_CORRER,
+}
 
 /** Abaixo disto o avatar está parado (só o "Parado"). */
 export const PARADO_ABAIXO_DE = 0.15
@@ -237,8 +280,15 @@ export const DURACAO_DA_ATERRISSAGEM = duracaoDoEstado('Aterrissagem') * 0.7
 export const DURACAO_DA_SAIDA_DA_AGUA = duracaoDoEstado('SaindoDaAgua')
 /** Nadando, acima disto (m/s) nada; abaixo, boia. */
 export const NADANDO_ACIMA_DE = 0.5
-/** No tronco caído, acima disto (m/s) anda um pé na frente do outro; parada, se equilibra. */
-export const EQUILIBRIO_ANDANDO = 0.25
+
+/**
+ * Quantos ciclos por segundo, andando pela distância: a velocidade pela passada, até `RITMO_MAXIMO`
+ * vezes a cadência do clipe. Clipe sem passada (uma reserva parada) não anda.
+ */
+function ciclosPelaDistancia(velocidade: number, ciclo: { passada: number; duracao: number }) {
+  if (ciclo.passada <= 0 || ciclo.duracao <= 0) return 0
+  return Math.min(velocidade / ciclo.passada, RITMO_MAXIMO / ciclo.duracao)
+}
 
 export interface EntradaDaLocomocao {
   /** Velocidade no chão (metros por segundo, sem a vertical). */
@@ -258,6 +308,11 @@ export interface EntradaDaLocomocao {
   subindo?: number
   /** Um morador acenou para ela há pouco: parada, acena de volta. */
   acenando?: boolean
+  /**
+   * De patins no chão: no lugar de andar e correr, desliza (`Patinar`). A `velocidade` é a do corpo
+   * de verdade (os impulsos andam pela distância).
+   */
+  patinando?: boolean
 }
 
 export type ModoEspecial =
@@ -319,19 +374,27 @@ export function criarLocomocao(): Locomocao {
 const limitar = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x))
 
 /** Os pesos de chão (parado, andar e correr) para uma velocidade, somando 1. */
-export function pesosNoChao(v: number): { Parado: number; Andar: number; Correr: number } {
-  if (v < PARADO_ABAIXO_DE) return { Parado: 1, Andar: 0, Correr: 0 }
-  const movendo = limitar((v - PARADO_ABAIXO_DE) / (SAIDA_DO_PARADO - PARADO_ABAIXO_DE))
-  const correndo = limitar((v - VELOCIDADE_DO_ANDAR) / (VELOCIDADE_DO_CORRER - VELOCIDADE_DO_ANDAR))
+export function pesosNoChao(
+  v: number,
+  medidas = LOCOMOCAO_DO_MUNDO,
+): { Parado: number; Andar: number; Correr: number } {
+  const proporcao = medidas.andar / VELOCIDADE_DO_ANDAR
+  const paradoAbaixo = PARADO_ABAIXO_DE * proporcao
+  if (v < paradoAbaixo) return { Parado: 1, Andar: 0, Correr: 0 }
+  const movendo = limitar((v - paradoAbaixo) / ((SAIDA_DO_PARADO - PARADO_ABAIXO_DE) * proporcao))
+  const correndo = limitar((v - medidas.andar) / (medidas.correr - medidas.andar))
   return { Parado: 1 - movendo, Andar: movendo * (1 - correndo), Correr: movendo * correndo }
 }
 
 /** Quanto a fase do passo anda por segundo nesta velocidade (com a passada misturada). */
-export function ciclosPorSegundo(v: number): number {
-  const p = pesosNoChao(v)
+export function ciclosPorSegundo(v: number, medidas = LOCOMOCAO_DO_MUNDO): number {
+  const p = pesosNoChao(v, medidas)
   const andando = p.Andar + p.Correr
   if (andando <= 0) return 0
-  const passada = (p.Andar * CICLO_DE_ANDAR.passada + p.Correr * CICLO_DE_CORRER.passada) / andando
+  const passada =
+    (((p.Andar * CICLO_DE_ANDAR.passada + p.Correr * CICLO_DE_CORRER.passada) / andando) *
+      medidas.escala) /
+    escala
   const cadencia = (p.Andar / CICLO_DE_ANDAR.duracao + p.Correr / CICLO_DE_CORRER.duracao) / andando
   return Math.min(v / passada, RITMO_MAXIMO * cadencia)
 }
@@ -340,7 +403,12 @@ export function ciclosPorSegundo(v: number): number {
  * Um quadro: atualiza a fase, os tempos e os pesos (aproximando-se dos alvos no tempo da
  * transição). Muda o objeto (é chamado a cada quadro, sem criar lixo).
  */
-export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number): Locomocao {
+export function passoDaLocomocao(
+  l: Locomocao,
+  e: EntradaDaLocomocao,
+  dt: number,
+  medidas = LOCOMOCAO_DO_MUNDO,
+): Locomocao {
   const alvo = zeros()
   let transicao: number = TRANSICAO.chao
   if (e.especial !== 'sentar' && e.especial !== 'deitar') l.acomodada = null
@@ -364,10 +432,9 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     l.pulou = false
     l.aterrissando = 0
     transicao = TRANSICAO.ar
-    const pelaDistancia = (c: Estado, passada: number) => {
+    const pelaDistancia = (c: Estado, ciclo: { passada: number; duracao: number }) => {
       alvo[c] = 1
-      const ciclos = Math.min(e.velocidade / passada, RITMO_MAXIMO / duracaoDoEstado(c))
-      l.tempos[c] = (l.tempos[c] + ciclos * dt) % 1
+      l.tempos[c] = (l.tempos[c] + ciclosPelaDistancia(e.velocidade, ciclo) * dt) % 1
     }
     const laco = (c: Estado) => {
       alvo[c] = 1
@@ -376,8 +443,8 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     }
     if (e.especial === 'cipo') laco('Corda')
     else if (e.especial === 'planar') laco('Planar')
-    else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR.passada)
-    else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA.passada)
+    else if (e.especial === 'escalada') pelaDistancia('Escalar', CICLO_DE_ESCALAR)
+    else if (e.especial === 'escada') pelaDistancia('SubirEscada', CICLO_DA_ESCADA)
     else if (e.especial === 'escorregar') laco('Escorregar')
     else if (e.especial === 'barco') {
       // Na viagem de barco: senta devagar e fica.
@@ -404,17 +471,9 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
         l.tempos[entra] = Math.min(1, l.tempos[entra] + dt / duracaoDoEstado(entra))
       } else laco(fica)
     } else if (e.especial === 'equilibrio') {
-      // Andando no tronco, um passo curto pela distância; parada, fica em pé se equilibrando.
-      const andando = limitar(e.velocidade / EQUILIBRIO_ANDANDO)
-      const ciclos = Math.min(
-        e.velocidade / CICLO_DE_ANDAR.passada,
-        RITMO_MAXIMO / CICLO_DE_ANDAR.duracao,
-      )
-      l.fase = (l.fase + ciclos * dt) % 1
-      l.tempos.Andar = l.fase
-      l.tempos.Equilibrar = (l.tempos.Equilibrar + dt / duracaoDoEstado('Equilibrar')) % 1
-      alvo.Andar = andando
-      alvo.Equilibrar = 1 - andando
+      // No tronco caído, os braços abertos e um pé na frente do outro, pela distância; parada,
+      // fica no passo em que parou, se equilibrando.
+      pelaDistancia('Equilibrar', CICLO_DE_EQUILIBRAR)
     } else {
       // Na borda: pendurada, ou subindo (o tempo do estado é o progresso que o modo dá).
       const subindo = e.subindo ?? 0
@@ -475,19 +534,19 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
       alvo.NoAr = (1 - empurrando) * (1 - longa)
     } else {
       // Um degrau para baixo: continua o passo como se estivesse no chão.
-      Object.assign(alvo, pesosNoChao(e.velocidade))
+      Object.assign(alvo, pesosNoChao(e.velocidade, medidas))
     }
   } else {
     if (l.noAr > AR_PARA_ATERRISSAR) {
       l.aterrissando = DURACAO_DA_ATERRISSAGEM
       l.tempos.Aterrissagem = 0
       // Correndo, a aterrissagem é só um amortecer leve (as pernas já seguem o passo).
-      l.forcaDaAterrissagem = 1 - 0.6 * limitar(e.velocidade / VELOCIDADE_DO_CORRER)
+      l.forcaDaAterrissagem = 1 - 0.6 * limitar(e.velocidade / medidas.correr)
     }
     l.noAr = 0
     l.descendo = 0
     l.pulou = false
-    const chao = pesosNoChao(e.velocidade)
+    const chao = pesosNoChao(e.velocidade, medidas)
     if (l.aterrissando > 0) {
       l.aterrissando = Math.max(0, l.aterrissando - dt)
       l.tempos.Aterrissagem = 1 - l.aterrissando / DURACAO_DA_ATERRISSAGEM
@@ -518,22 +577,45 @@ export function passoDaLocomocao(l: Locomocao, e: EntradaDaLocomocao, dt: number
     }
   }
 
+  // De patins, o andar e o correr viram deslizar: o peso dos dois passa para o `Patinar`, que anda
+  // pela distância, como os passos (parada, o "Parado" de sempre; no ar, o pulo de sempre).
+  if (e.patinando && !e.nadando && !e.especial) {
+    alvo.Patinar += alvo.Andar + alvo.Correr
+    alvo.Andar = 0
+    alvo.Correr = 0
+    l.tempos.Patinar =
+      (l.tempos.Patinar + ciclosPelaDistancia(e.velocidade, CICLO_DE_PATINAR) * dt) % 1
+  }
+
   // O "Parado" respira no tempo dele, sempre (assim volta ao meio do laço, sem pular de pose).
   l.tempos.Parado = (l.tempos.Parado + dt / duracaoDoEstado('Parado')) % 1
   if (!e.nadando && !e.especial) {
-    l.fase = (l.fase + ciclosPorSegundo(e.velocidade) * dt) % 1
+    l.fase = (l.fase + ciclosPorSegundo(e.velocidade, medidas) * dt) % 1
     l.tempos.Andar = l.fase
     l.tempos.Correr = l.fase
   }
 
-  // Cada peso anda até o alvo no tempo da transição (linear: chega na hora certa).
+  // Um único fator mistura os vetores completos; a soma permanece1 mesmo quando
+  // duas poses (andar/correr) cedem lugar a uma terceira (parado ou pulo).
   const passo = transicao > 0 ? dt / transicao : 1
+  let maiorDiferenca = 0
+  for (const c of ESTADOS) maiorDiferenca = Math.max(maiorDiferenca, Math.abs(alvo[c] - l.pesos[c]))
+  const mistura = maiorDiferenca > 0 ? Math.min(1, passo / maiorDiferenca) : 1
   for (const c of ESTADOS) {
     const d = alvo[c] - l.pesos[c]
-    l.pesos[c] += Math.abs(d) <= passo ? d : Math.sign(d) * passo
+    l.pesos[c] += d * mistura
   }
-  // A aterrissagem acompanha o alvo na hora (é ela que amortece o toque no chão).
-  if (alvo.Aterrissagem > 0) l.pesos.Aterrissagem = alvo.Aterrissagem
+  // O amortecimento do pouso entra no contato, repartindo o restante entre as
+  // outras poses sem deixar a pose de repouso do esqueleto entrar no mixer.
+  if (alvo.Aterrissagem > 0) {
+    let outros = 0
+    for (const c of ESTADOS) if (c !== 'Aterrissagem') outros += l.pesos[c]
+    for (const c of ESTADOS)
+      if (c !== 'Aterrissagem') {
+        l.pesos[c] = outros > 0 ? (l.pesos[c] * (1 - alvo.Aterrissagem)) / outros : alvo[c]
+      }
+    l.pesos.Aterrissagem = alvo.Aterrissagem
+  }
   return l
 }
 

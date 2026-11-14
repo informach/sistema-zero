@@ -40,6 +40,11 @@ export function medidaDoLugar(clipe: string, chave: string, reserva?: number): n
  */
 export const SENTADO = { assento: medidaDoLugar('sentado', 'assento_m', 0.3) } as const
 
+/**
+ * Montado (`montado`): a origem do desenho é a sela, com a bacia logo acima dela e as pernas para os
+ * dois lados. Escorregando (`escorregar`): a origem é a pista, embaixo da bacia.
+ */
+
 /** Deitado: a origem do desenho fica na superfície de deitar, embaixo da bacia. */
 export const DEITADO = { travesseiro: medidaDoLugar('deitado', 'travesseiro_m', 0.07) } as const
 
@@ -53,6 +58,35 @@ export const PENDURADO_NA_BORDA = {
 export const PENDURADO_NO_CIPO = {
   maos: medidaDoLugar('pendurar_cipo', 'maos_m', 0.52),
   cordaAFrente: medidaDoLugar('pendurar_cipo', 'corda_a_frente_m', 0.17),
+} as const
+
+/**
+ * No planador: as duas mãos seguram a barra isto acima da origem do desenho (os pés, pendurados) e
+ * isto à frente dela. É onde a barra do planador fica no desenho.
+ */
+export const NO_PLANADOR = {
+  barra: medidaDoLugar('planar', 'barra_m', 0.6),
+  aFrente: medidaDoLugar('planar', 'a_frente_m', 0.25),
+} as const
+
+/** Escalando: a parede (a casca do tronco) fica isto à frente da origem do desenho. */
+export const NA_PAREDE = { aFrente: medidaDoLugar('escalar', 'parede_a_frente_m', 0.25) } as const
+
+/**
+ * Quanto o desenho anda para a frente na escalada: no jogo a casca fica `daCasca` à frente do meio
+ * do corpo; no clipe, `NA_PAREDE.aFrente` à frente da origem (negativo: recua).
+ */
+export function avancoNaParede(daCasca: number): number {
+  return daCasca - NA_PAREDE.aFrente
+}
+
+/**
+ * Os patins do pack (só do jogo: fora da loja). A criança calça e o jogo veste esta peça no lugar
+ * do calçado; as rodas ficam abaixo da sola, e o desenho sobe o que elas somam à altura do corpo.
+ */
+export const PATINS_NOS_PES = {
+  peca: 'calcado_patins',
+  sobe: (AVATAR_CATALOG.parts.calcado_patins?.lift ?? 0) * escala,
 } as const
 
 /**

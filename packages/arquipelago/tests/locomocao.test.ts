@@ -2,14 +2,17 @@ import { describe, expect, test } from 'bun:test'
 import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { AnimationClip, VectorKeyframeTrack } from 'three'
 import { comOComecoMaisBaixo } from '../src/personagem/avatar-do-jogo'
+import { BARRA_NO_AVATAR } from '../src/personagem/planador-aberto'
 import { CORPO } from '../src/sistemas/corpo'
 import {
   AR_PARA_ATERRISSAR,
   CICLO_DA_ESCADA,
   CICLO_DE_ANDAR,
   CICLO_DE_CORRER,
+  CICLO_DE_EQUILIBRAR,
   CICLO_DE_ESCALAR,
   CICLO_DE_NADO,
+  CICLO_DE_PATINAR,
   CLIPES_DO_JOGO,
   ciclosPorSegundo,
   criarLocomocao,
@@ -29,14 +32,19 @@ import {
   VELOCIDADE_DO_CORRER,
 } from '../src/sistemas/locomocao'
 import {
+  avancoNaParede,
   DESENHO_NA_AGUA,
   descidaDoEntrarNaAgua,
   desenhoPenduradoNaBorda,
   medidaDoLugar,
+  NA_PAREDE,
+  NO_PLANADOR,
+  PATINS_NOS_PES,
   PENDURADO_NA_BORDA,
   PENDURADO_NO_CIPO,
 } from '../src/sistemas/lugares-dos-clipes'
 import { BORDA } from '../src/sistemas/modos/borda'
+import { MONTARIA } from '../src/sistemas/montaria'
 
 const soma = (p: Record<string, number>) => Object.values(p).reduce((a, b) => a + b, 0)
 const chao = (velocidade: number): EntradaDaLocomocao => ({
@@ -78,7 +86,31 @@ describe('os clipes do pack no catálogo', () => {
     expect(CICLO_DE_ANDAR.duracao).toBe(DURACAO_DO_CLIPE.andar_frente)
     expect(CICLO_DE_CORRER.passada).toBeGreaterThan(CICLO_DE_ANDAR.passada)
     expect(CICLO_DA_ESCADA.passada).toBeGreaterThan(0)
-    expect(CICLO_DE_ESCALAR).toBe(CICLO_DA_ESCADA)
+    // Os modos da P2 andam pelas medidas dos clipes da arte.
+    const daArte = (id: string) => AVATAR_CATALOG.base.skeleton.game.clips.find((c) => c.id === id)
+    expect(CICLO_DE_ESCALAR.passada).toBeCloseTo(
+      (daArte('escalar')?.rise ?? 0) * CORPO.medidas.scale,
+      6,
+    )
+    expect(CICLO_DE_EQUILIBRAR.passada).toBeCloseTo(
+      (daArte('equilibrar')?.stride ?? 0) * CORPO.medidas.scale,
+      6,
+    )
+    expect(CICLO_DE_PATINAR.passada).toBeCloseTo(
+      (daArte('patinar')?.stride ?? 0) * CORPO.medidas.scale,
+      6,
+    )
+    for (const c of [CICLO_DE_ESCALAR, CICLO_DE_EQUILIBRAR, CICLO_DE_PATINAR])
+      expect(c.passada).toBeGreaterThan(0)
+  })
+
+  test('os modos do jogo tocam as animações da arte (P2)', () => {
+    expect(POSE_DO_ESTADO.Planar.clipe).toBe('planar')
+    expect(POSE_DO_ESTADO.Escalar.clipe).toBe('escalar')
+    expect(POSE_DO_ESTADO.Equilibrar.clipe).toBe('equilibrar')
+    expect(POSE_DO_ESTADO.Escorregar.clipe).toBe('escorregar')
+    expect(POSE_DO_ESTADO.Montar.clipe).toBe('montado')
+    expect(POSE_DO_ESTADO.Patinar.clipe).toBe('patinar')
   })
 })
 
@@ -199,9 +231,44 @@ describe('máquina de estados', () => {
     expect(modo('escalada', 0.5).Escalar).toBeCloseTo(1)
     expect(modo('cipo').Corda).toBeCloseTo(1)
     expect(modo('borda').PendurarBorda).toBeCloseTo(1)
-    // No tronco caído: parada se equilibra; andando, um pé na frente do outro.
+    // No tronco caído, o equilibrar da arte: andando, pela distância; parada, no passo em que parou.
     expect(modo('equilibrio').Equilibrar).toBeCloseTo(1)
-    expect(modo('equilibrio', 0.8).Andar).toBeCloseTo(1)
+    expect(modo('equilibrio', 0.8).Equilibrar).toBeCloseTo(1)
+    expect(modo('escorregar').Escorregar).toBeCloseTo(1)
+  })
+
+  test('no tronco caído o passo anda pela distância e para com ela', () => {
+    const tronco = (velocidade: number): EntradaDaLocomocao => ({
+      velocidade,
+      noChao: true,
+      velY: 0,
+      nadando: false,
+      especial: 'equilibrio',
+    })
+    const l = rodar(undefined, tronco(0.5), 0.5)
+    const andou = l.tempos.Equilibrar
+    expect(andou).toBeCloseTo((0.5 * 0.5) / CICLO_DE_EQUILIBRAR.passada, 1)
+    rodar(l, tronco(0), 1)
+    expect(l.tempos.Equilibrar).toBeCloseTo(andou, 6)
+  })
+
+  test('de patins, andar e correr viram deslizar; parada e no ar, como sempre', () => {
+    const patins = (velocidade: number): EntradaDaLocomocao => ({
+      ...chao(velocidade),
+      patinando: true,
+    })
+    const l = rodar(undefined, patins(VELOCIDADE_DO_CORRER * 1.3), 1)
+    expect(l.pesos.Patinar).toBeCloseTo(1)
+    expect(l.pesos.Andar + l.pesos.Correr).toBeCloseTo(0)
+    expect(soma(l.pesos)).toBeCloseTo(1)
+    // Os impulsos andam pela distância, até o teto do ritmo (os patins deslizam além dele).
+    const antes = l.tempos.Patinar
+    rodar(l, patins(1), 0.5)
+    expect((l.tempos.Patinar - antes + 1) % 1).toBeCloseTo((1 * 0.5) / CICLO_DE_PATINAR.passada, 1)
+    rodar(l, patins(0), 1)
+    expect(l.pesos.Parado).toBeCloseTo(1)
+    rodar(l, { ...ar(4), patinando: true }, 0.3)
+    expect(l.pesos.Patinar).toBeCloseTo(0, 1)
   })
 
   test('sentar e deitar: o movimento de se acomodar uma vez, depois o laço de quem ficou', () => {
@@ -354,6 +421,25 @@ describe('as animações da arte no lugar', () => {
     expect(PENDURADO_NO_CIPO.maos).toBeLessThan(CORPO.medidas.height)
   })
 
+  test('o planador, a casca, a sela e os patins pelas medidas da arte', () => {
+    const escala = CORPO.medidas.scale
+    expect(NO_PLANADOR.barra).toBeCloseTo(medidaDoLugar('planar', 'barra_m'), 9)
+    expect(NO_PLANADOR.aFrente).toBeCloseTo(medidaDoLugar('planar', 'a_frente_m'), 9)
+    // A barra fica nas mãos, abaixo do topo da cabeça: a asa passa por cima dela.
+    expect(NO_PLANADOR.barra).toBeLessThan(CORPO.medidas.height * escala)
+    expect(BARRA_NO_AVATAR).toEqual({ y: NO_PLANADOR.barra, z: NO_PLANADOR.aFrente })
+    // Na escalada, o desenho chega à casca: a parede do clipe cai onde a casca está.
+    expect(avancoNaParede(0.5) + NA_PAREDE.aFrente).toBeCloseTo(0.5, 9)
+    // Montada, a origem do desenho (a sela do clipe `montado`) vai à sela do dino.
+    expect(MONTARIA.subidaDoDesenho).toBeCloseTo(MONTARIA.sela, 9)
+    // Os patins: peça do pack só do jogo (fora da loja), que soma as rodas à altura do corpo.
+    const patins = AVATAR_CATALOG.parts[PATINS_NOS_PES.peca]
+    expect(patins?.slot).toBe('calcado')
+    expect(patins?.hidden).toBe(true)
+    expect(PATINS_NOS_PES.sobe).toBeCloseTo((patins?.lift ?? 0) * escala, 9)
+    expect(PATINS_NOS_PES.sobe).toBeGreaterThan(0)
+  })
+
   test('na água a origem do desenho sobe dos pés até a cintura (a superfície do clipe)', () => {
     expect(DESENHO_NA_AGUA.sobe).toBeCloseTo(CORPO.cintura + CORPO.folga, 9)
     expect(() => medidaDoLugar('nadar', 'nao-existe')).toThrow()
@@ -369,8 +455,14 @@ describe('dos estados aos clipes', () => {
     l.tempos.Planar = 0.5
     l.tempos.NoAr = 0.1
     const pose = poseDosClipes(l, criarPoseDosClipes())
-    expect(pose.pulo_no_ar.peso).toBeCloseTo(1)
-    expect(pose.pulo_no_ar.tempo).toBeCloseTo(0.5 * DURACAO_DO_CLIPE.pulo_no_ar, 6)
+    // Cada estado no clipe dele (desde a P2 o planar tem o seu), no instante dele.
+    const clipeDoPlanar = POSE_DO_ESTADO.Planar.clipe
+    expect(pose[clipeDoPlanar].peso).toBeCloseTo(clipeDoPlanar === 'pulo_no_ar' ? 1 : 0.7)
+    expect(pose[clipeDoPlanar].tempo).toBeCloseTo(0.5 * DURACAO_DO_CLIPE[clipeDoPlanar], 6)
+    if (clipeDoPlanar !== 'pulo_no_ar') {
+      expect(pose.pulo_no_ar.peso).toBeCloseTo(0.3)
+      expect(pose.pulo_no_ar.tempo).toBeCloseTo(0.1 * DURACAO_DO_CLIPE.pulo_no_ar, 6)
+    }
     expect(pose.parado_relaxado.peso).toBe(0)
   })
 

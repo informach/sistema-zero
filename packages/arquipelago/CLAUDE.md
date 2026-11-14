@@ -40,6 +40,19 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   clipe (`sistemas/lugares-dos-clipes.ts`: o assento, a quina, a corda, a linha d'água), do catálogo
   vezes a escala. Catálogo sem um clipe ou sem uma medida não impede o jogo de abrir: o estado vai
   para a reserva (`RESERVA_DO_ESTADO`) e a medida para a reserva escrita no código, com aviso.
+- **Os modos do jogo (P2 da arte, 14/11/2026):** `planar` (as duas mãos na barra: `BARRA_NO_AVATAR`
+  sai de `NO_PLANADOR`, e a barra do pack `mao_barra_planador` vai nas mãos, com os dedos das duas
+  mãos fechados por `camadasDosDedos`; a lanterna sai da mão enquanto plana), `escalar` (sem a
+  subida; o desenho anda até a casca por `avancoNaParede`), `equilibrar` (pela distância; parada,
+  fica no passo), `escorregar` (a origem é a pista, embaixo da bacia), `montado` (a origem é a
+  sela: `MONTARIA.subidaDoDesenho` é a altura da sela; o `montar`/`desmontar` da arte começa ao
+  lado de uma sela de 0,3 m e fica para os veículos do mundo novo) e `patinar` (estado `Patinar`,
+  no lugar de andar e correr com `patinando`; a velocidade é a de verdade). Patins: a peça
+  `calcado_patins` do pack é SÓ do jogo (`hidden`, fora da loja e do sorteio: `SO_NO_JOGO` em
+  `scripts/avatar/catalogo.ts`); calçados, o `AvatarDoJogo` a veste no lugar do calçado e sobe o
+  desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
+  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins); as rodas ainda não
+  giram (a arte deu os eixos). O `empurrar` ainda não tem quem o use.
 - **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
   eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
   `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
@@ -49,8 +62,7 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   parado no clipe, o ajuste do quadro anterior fica no osso. Todo ajuste depois da pose parte da pose
   do mixer por `personagem/pose-limpa.ts` (`antes`, o ajuste, `depois`; `soltar` ao parar de vez),
   senão ele se acumula (o quadril afundava no chão com o jogo pausado numa rampa; review de 14/11).
-  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade). O calçar
-  antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
+  O calçar antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
   saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
 - **Fantasma (passo 6):** o mesmo `PackAvatarRig` com a roupa de quem correu (`Fantasma.avatar` no
   contrato, opcional; sem ela, o boneco de partida), o material próprio e o `correr_frente` no

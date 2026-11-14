@@ -62,8 +62,13 @@ export interface AvatarPartEntry {
   set?: string
   /** Festa do jogo que dá a peça como prêmio. */
   festa?: string
-  /** Não aparece na loja nem no sorteio (rascunho da arte ou peça substituída por outra). */
+  /**
+   * Não aparece na loja nem no sorteio (rascunho da arte, peça substituída por outra ou peça que a
+   * arte fez só para dentro do jogo, como os patins).
+   */
   hidden?: boolean
+  /** Quanto a peça soma à altura do corpo, em metros na escala nativa (os patins: as rodas). */
+  lift?: number
   /**
    * Só na comunidade adulta: no Kids não aparece na loja nem no sorteio e não se compra (o chapéu
    * de cerveja, decisão da dona de 14/11/2026). Editorial: a migração preserva.

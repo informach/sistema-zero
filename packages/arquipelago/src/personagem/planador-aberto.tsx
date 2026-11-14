@@ -3,17 +3,18 @@ import { type Group, Vector3 } from 'three'
 import planadorGlb from '../assets/movimento/planador.glb'
 import { useEstado } from '../estado/contexto'
 import { trocarClipe, useCopiaAnimada } from '../mundo/animado'
+import { NO_PLANADOR } from '../sistemas/lugares-dos-clipes'
 import { jogoPausado } from '../sistemas/pausa'
 
 const URL_DO_PLANADOR = new URL(planadorGlb, import.meta.url).href
 const SEM_UMA_VEZ: readonly string[] = []
 /**
  * Onde a barra do planador fica no desenho do avatar (metros a partir dos pés, olhando para +z):
- * nas mãos do clipe "Planar", fechadas na frente do peito (o script do Mixamo põe as mãos nesta
- * altura e mede 0,2 m à frente). A asa fica uns 1,2 m acima dela, por cima da cabeça e do cabelo.
- * O vazio `pegada` do arquivo é a barra.
+ * nas duas mãos do clipe `planar` da arte, que mediu a barra acima e à frente da origem
+ * (`NO_PLANADOR`). As mãos seguram ali a barra do pack (`mao_barra_planador`); a asa do arquivo
+ * fica uns 1,2 m acima dela, por cima da cabeça e do cabelo. O vazio `pegada` do arquivo é a barra.
  */
-export const BARRA_NO_AVATAR = { y: 1.25, z: 0.2 } as const
+export const BARRA_NO_AVATAR = { y: NO_PLANADOR.barra, z: NO_PLANADOR.aFrente } as const
 
 /**
  * O planador aberto em cima da criança (fase3-09): o `planador.glb` do kit de movimento, com as
