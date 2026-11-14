@@ -13,6 +13,18 @@
   com teto (pulo); `alturaNoComeco` dá a altura do `Hips` em pé. A plataforma não usa.
 - O `AvatarRig`, o `catalog.ts` e o resto do avatar antigo só sobram para os patins do jogo (até a
   arte mandar o par do pack); o fantasma já usa o pack. A plataforma não os usa mais.
+- **Sem pisca-pisca (14/11/2026, relato dela no configurador):** cada encaixe tem uma camada
+  (`CAMADA_DO_ENCAIXE`: corpo 0, o que veste a pele 1, o que cobre outra peça 2) e o
+  `prepararPecaDoPack` põe `polygonOffset` na cópia do material: onde duas peças quase coincidem (a
+  luva sem dedos sobre a mão, a barra da camiseta sobre a calça), a de cima ganha. Encaixe novo
+  entra na tabela. A cena do configurador (member-shell, `avatar-scene.tsx`) tem a caixa de
+  sombra do tamanho do pódio com `normalBias` (sem isso as peças se sombreavam e piscavam) e a
+  câmera de 0,3 a 30 m (o retrato, 0,1 a 20): com "perto" pequeno, numa placa de 16 bits de
+  profundidade a roupa e a pele brigavam. Prova: mapa de pixels que mudam entre quadros parados.
+- **Poses da cabine:** `PACK_LOOP_POSES` (parado e olhando) seguem em laço; as outras fazem o
+  movimento uma vez e congelam em `instanteDaFoto` (`pack-clips.ts`: o maior giro somado dos ossos
+  desde o primeiro quadro, o auge do golpe). Com menos movimento, direto na pose final. `poseTake`
+  (o configurador conta as escolhas) refaz o movimento quando a mesma pose é escolhida de novo.
 
 ## Várias montagens do avatar (30/10/2026)
 
