@@ -5,7 +5,8 @@ import {
   bodyMeasures,
   physicalBody,
 } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
-import { MUNDO_ATUAL, type MundoDoJogo } from '../mundo/mundo-do-jogo'
+import type { MundoDoJogo } from '../mundo/mundo-do-jogo'
+import { MUNDO } from '../mundo/mundo-escolhido'
 
 /** O corpo do personagem num mundo: as medidas do esqueleto na escala do mundo e as regras dele. */
 export interface CorpoDoJogo {
@@ -97,11 +98,12 @@ export function corpoDoMundo(catalogo: AvatarCatalog, mundo: MundoDoJogo): Corpo
 }
 
 /**
- * O corpo do personagem no mundo de hoje (a ponte de escala 1,85), dividido entre o personagem, as
- * regras do cipó e da escalada e os testes que leem os GLBs das ilhas. Uma constante de módulo:
- * há um mundo só; a troca de mundo com o jogo aberto chega com os mundos novos.
+ * O corpo do personagem no mundo em que o jogo roda (hoje a ponte de escala 1,85; no playground,
+ * `?mundo=aventura`), dividido entre o personagem, as regras do cipó e da escalada e os testes que
+ * leem os GLBs das ilhas. Uma constante de módulo: a troca de mundo com o jogo aberto chega com os
+ * mundos novos (`mundo/mundo-escolhido.ts`).
  */
-export const CORPO: Readonly<CorpoDoJogo> = corpoDoMundo(AVATAR_CATALOG, MUNDO_ATUAL)
+export const CORPO: Readonly<CorpoDoJogo> = corpoDoMundo(AVATAR_CATALOG, MUNDO)
 
 /** Até onde chega um pulo no plano, saindo a `velocidade` (m/s): o tempo no ar vezes ela. */
 export function alcanceDoPulo(velocidade: number, gravidade: number): number {
