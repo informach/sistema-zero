@@ -4,8 +4,8 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { AvatarCatalog, AvatarRules } from '../../packages/core/src/avatar/types'
-import type { Arte, ItemDaArte, RegrasDaArte } from './arte'
+import type { AvatarCatalog, AvatarRules, AvatarSocket } from '../../packages/core/src/avatar/types'
+import type { Arte, EsqueletoDaArte, ItemDaArte, RegrasDaArte } from './arte'
 
 const RAIZ = resolve(import.meta.dirname, '../..')
 /**
@@ -223,4 +223,32 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
     esqueletoMudou: esqueletoMudou(arte, catalogo, esqueleto.arquivo),
     regrasMudaram: catalogo.source.rulesBlob !== arte.blob('regras.json'),
   }
+}
+
+/**
+ * Os encaixes do esqueleto no formato do catálogo. Os das mãos chegam como o nome do osso (o ponto
+ * de segurar é o próprio osso: posição zero, sem giro, e no descanso a cabeça dele); os do `jogo1`
+ * chegam com osso, posição, rotação e o ponto no descanso.
+ */
+export function encaixesDaArte(esqueleto: EsqueletoDaArte): Record<string, AvatarSocket> {
+  const ossos = new Map(esqueleto.lista_ossos.map((o) => [o.nome, o]))
+  const encaixes: Record<string, AvatarSocket> = {}
+  for (const [nome, e] of Object.entries(esqueleto.pontos_de_segurar)) {
+    if (typeof e === 'string') {
+      const osso = ossos.get(e)
+      if (!osso)
+        throw new Error(`O encaixe ${nome} aponta para o osso ${e}, que o esqueleto não tem.`)
+      encaixes[nome] = { bone: e, position: [0, 0, 0], rotation: [0, 0, 0, 1], rest: osso.cabeca }
+    } else {
+      if (!ossos.has(e.osso))
+        throw new Error(`O encaixe ${nome} aponta para o osso ${e.osso}, que o esqueleto não tem.`)
+      encaixes[nome] = {
+        bone: e.osso,
+        position: e.posicao,
+        rotation: e.rotacao,
+        rest: e.no_descanso_m,
+      }
+    }
+  }
+  return encaixes
 }

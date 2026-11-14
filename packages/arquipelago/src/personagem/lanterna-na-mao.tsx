@@ -7,7 +7,8 @@ import lanternaGlb from '../assets/itens/lanterna.glb'
 
 const LANTERNA_URL = new URL(lanternaGlb, import.meta.url).href
 /** O ponto de segurar da mão direita do pack (o encaixe `mao_direita` do catálogo). */
-export const OSSO_DA_LANTERNA = AVATAR_CATALOG.base.skeleton.sockets.mao_direita ?? 'RightHandProp'
+export const OSSO_DA_LANTERNA =
+  AVATAR_CATALOG.base.skeleton.sockets.mao_direita?.bone ?? 'RightHandProp'
 /** A lanterna do arquivo tem 33 cm; na mão do herói (2,14 m na ponte do mundo) ela cresce para uns 46. */
 export const ESCALA_DA_LANTERNA = 1.4
 /**

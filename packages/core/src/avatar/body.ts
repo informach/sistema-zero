@@ -17,7 +17,7 @@ export interface BodyMeasures {
   /** Centro e raio da cabeça (a cabeça do pack é quase uma bola). */
   headCenter: number
   headRadius: number
-  /** Altura dos olhos (estimada pela cabeça até a arte mandar o encaixe `olhos`). */
+  /** Altura dos olhos (o encaixe `olhos` da arte; sem ele, estimada pela cabeça). */
   eyes: number
   /** Altura do ombro (junta do braço). */
   shoulder: number
@@ -69,8 +69,8 @@ export function bodyMeasures(s: AvatarSkeleton, scale = 1): BodyMeasures {
     neck: neck * k,
     headCenter: ((neck + top) / 2) * k,
     headRadius: ((top - neck) / 2) * k,
-    // Nos rostos do pack os olhos ficam a uns 40% da altura da cabeça, a partir do pescoço.
-    eyes: (neck + 0.4 * (top - neck)) * k,
+    // Sem o encaixe, nos rostos do pack os olhos ficam a uns 40% da cabeça, a partir do pescoço.
+    eyes: (s.sockets.olhos?.rest[1] ?? neck + 0.4 * (top - neck)) * k,
     shoulder: shoulder * k,
     shoulderWidth: dist(shoulderL, shoulderR) * k,
     hips: bone(s, 'Hips')[1] * k,
@@ -100,15 +100,16 @@ export interface PhysicalBody {
 
 /**
  * As regras do corpo físico, escritas uma vez:
- * - a cápsula vai do pé até o meio entre os olhos e o topo da cabeça (a cabeça grande do pack
- *   passa um pouco dela, como no avatar de antes);
+ * - a cápsula vai do pé até 45% do caminho dos olhos ao topo da cabeça (a cabeça grande do pack
+ *   passa um pouco dela, como no avatar de antes; mais alta, ela rasparia no teto das passagens
+ *   feitas para o corpo de antes, como a cúpula do iglu);
  * - o raio da cápsula é 62% do raio da cabeça (o tronco do pack é estreito; mais largo, ele não
  *   passaria nas portas);
  * - a linha d'água é o quadril;
  * - o desenho para as cordas vai do meio da coxa ao ombro.
  */
 export function physicalBody(m: BodyMeasures): PhysicalBody {
-  const top = m.eyes + (m.height - m.eyes) / 2
+  const top = m.eyes + (m.height - m.eyes) * 0.45
   const radius = m.headRadius * 0.62
   const halfHeight = top / 2 - radius
   return {

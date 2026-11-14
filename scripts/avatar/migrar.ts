@@ -22,6 +22,7 @@ import {
   CLIPES_DO_CONFIGURADOR,
   CLIPES_DO_JOGO,
   comparar,
+  encaixesDaArte,
   esqueletoMudou,
   gravarCatalogo,
   lerCatalogo,
@@ -150,10 +151,11 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       if (await enviar(arquivoDoJogo, doJogo.glb)) enviados += 1
       const medidas = await medirClipes(origem, CLIPES_DO_JOGO)
       const daArte = new Map(esqueleto.animacoes.map((a) => [a.id, a]))
-      // A altura vem do corpo padrão do pack (o topo da cabeça; o osso Head fica na base dela).
+      // A altura: a medida da arte (desde o `jogo1`) ou a caixa do corpo padrão do pack (o topo da
+      // cabeça; o osso Head fica na base dela).
       const corpoPadrao = naArte.get(regras.padrao.pecas.corpo ?? '')
-      const altura = corpoPadrao?.caixa?.max[1]
-      if (!altura) throw new Error('A arte não tem a caixa do corpo padrão para medir a altura.')
+      const altura = esqueleto.medidas_corpo?.altura_m ?? corpoPadrao?.caixa?.max[1]
+      if (!altura) throw new Error('A arte não tem a altura do corpo padrão.')
       catalogo.base.skeleton = {
         file: arquivo,
         blob: arte.blob(caminhoDoEsqueleto),
@@ -162,19 +164,26 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         bones: Object.fromEntries(
           esqueleto.lista_ossos.map((o) => [o.nome, { parent: o.pai, head: o.cabeca }]),
         ),
-        sockets: { ...esqueleto.pontos_de_segurar },
+        sockets: encaixesDaArte(esqueleto),
         height: Math.round(altura * 1000) / 1000,
         game: {
           file: arquivoDoJogo,
           clips: CLIPES_DO_JOGO.map((id) => {
             const a = daArte.get(id)
             if (!a) throw new Error(`O catálogo do esqueleto da arte não tem a animação ${id}.`)
+            // A passada e a subida que a arte mediu valem; sem elas, as medidas daqui no `Hips`.
             return {
               id,
               duration: a.duracao_s,
               loop: a.laco,
-              stride: medidas[id]?.passada ?? 0,
-              rise: medidas[id]?.subida ?? 0,
+              stride: a.passada_m ?? medidas[id]?.passada ?? 0,
+              rise: a.subida_m ?? medidas[id]?.subida ?? 0,
+              frames: a.quadros ?? 0,
+              feet: (a.pes ?? []).map((p) => ({
+                foot: p.pe === 'esq' ? ('left' as const) : ('right' as const),
+                on: p.toca,
+                off: p.sai,
+              })),
             }
           }),
         },

@@ -117,7 +117,17 @@ export interface AvatarBone {
   head: [number, number, number]
 }
 
-/** Uma animação do jogo, com o que a migração mediu no `Hips` (escala nativa). */
+/**
+ * Um pé no chão numa animação: apoia do quadro `on` até o quadro antes de `off` (quadros a partir de
+ * 0). Num laço, o apoio que atravessa a emenda tem `on` maior que `off`.
+ */
+export interface AvatarFootContact {
+  foot: 'left' | 'right'
+  on: number
+  off: number
+}
+
+/** Uma animação do jogo, com o deslocamento do `Hips` e os apoios dos pés (escala nativa). */
 export interface AvatarGameClip {
   id: string
   /** Segundos. */
@@ -127,6 +137,23 @@ export interface AvatarGameClip {
   stride: number
   /** Deslocamento vertical do `Hips` do primeiro ao último quadro (o pulo sobe, a queda desce). */
   rise: number
+  /** Quantos quadros o clipe tem (os apoios contam neles). 0 quando a arte não mediu. */
+  frames: number
+  /** Os apoios dos pés que a arte mediu (vazio quando não mediu ou nenhum pé apoia). */
+  feet: AvatarFootContact[]
+}
+
+/**
+ * Um encaixe do esqueleto (onde se prende um item: a mão, o topo da cabeça, as costas, o pé). Fica
+ * num filho do osso `bone`, com `position` e `rotation` (x, y, z, w) no referencial do osso; a
+ * rotação desfaz a do osso, então no descanso os eixos do encaixe são os do avatar. `rest` é o mesmo
+ * ponto no referencial do avatar, em pé (metros), para conferir.
+ */
+export interface AvatarSocket {
+  bone: string
+  position: [number, number, number]
+  rotation: [number, number, number, number]
+  rest: [number, number, number]
 }
 
 export interface AvatarSkeleton {
@@ -139,8 +166,8 @@ export interface AvatarSkeleton {
   catalogBlob: string
   /** Osso → pai e posição em repouso. */
   bones: Record<string, AvatarBone>
-  /** Encaixe → osso (`mao_direita` → `RightHandProp`). */
-  sockets: Record<string, string>
+  /** Encaixe → onde ele fica (`mao_direita` no osso `RightHandProp`, `olhos` na frente do rosto). */
+  sockets: Record<string, AvatarSocket>
   /** Altura do corpo padrão do pack, do pé ao topo da cabeça, sem cabelo nem chapéu (metros). */
   height: number
   /** As animações do jogo, num arquivo à parte: a plataforma não as baixa. */

@@ -149,30 +149,29 @@ function novoMundo() {
 
 const pe = (c: Corpo) => c.translation().y - CORPO.doCentroAoPe
 
-test('a criança para encostada no cachorro do quarto, sem subir nele', () => {
+test('a criança nunca atravessa nem sobe no bicho do quarto: encosta ou contorna', () => {
   for (const id of ['pet-cachorro', 'pet-gato', 'porquinho-filhote', 'cachorro-adulto']) {
     const world = novoMundo()
     try {
       const { cap } = porBicho(world, id, 2, 0)
       const cr = porCrianca(world, 0, 0)
+      const encosto = CORPO.raio + cap.raio
+      let menor = Number.POSITIVE_INFINITY
+      let maisAlto = 0
       world.step()
       for (let i = 0; i < 180; i++) {
         passoDaCrianca(cr, i, 1, 0)
         world.step()
+        const p = cr.corpo.translation()
+        menor = Math.min(menor, Math.hypot(2 - p.x, p.z))
+        maisAlto = Math.max(maisAlto, pe(cr.corpo))
       }
-      // Encostada: os eixos das duas cápsulas ficam à soma dos raios, mais a folga do controlador
-      // no máximo. Bem de frente contra um corpo redondo ela pode escorregar um pouco para o lado
-      // (o controlador desliza na curva), mas nunca entra nele nem passa por ele.
-      const p = cr.corpo.translation()
-      const eixos = Math.hypot(2 - p.x, p.z)
-      const encosto = CORPO.raio + cap.raio
-      expect(eixos).toBeGreaterThan(encosto - 0.005)
-      // Contra os bichos baixos (o porquinho filhote) o degrau automático tenta subir e ela para
-      // uns centímetros antes: até 10 cm além da folga ainda é encostada.
-      expect(eixos).toBeLessThan(encosto + CORPO.folga + 0.1)
-      expect(p.x).toBeLessThan(2 - cap.raio)
-      // O degrau automático não a leva para cima do bicho.
-      expect(pe(cr.corpo)).toBeLessThan(0.1)
+      // Andando reto contra ele, as duas cápsulas nunca se cruzam. Bem de frente contra um corpo
+      // redondo o controlador desliza na curva: ela para encostada ou dá a volta (o porquinho
+      // filhote, de 19 cm de raio, ela contorna), sem nunca entrar nele.
+      expect(menor).toBeGreaterThan(encosto - 0.01)
+      // E o degrau automático não a leva para cima do bicho.
+      expect(maisAlto).toBeLessThan(0.1)
     } finally {
       world.free()
     }

@@ -25,7 +25,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "0189cc33e322a8fa1caa688bddd0bfc5028c3ac8",
+      "catalogBlob": "544118c27041014b1c7029d121d7c7d5db571903",
       "bones": {
         "Root": {
           "parent": null,
@@ -381,8 +381,139 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       },
       "sockets": {
-        "mao_esquerda": "LeftHandProp",
-        "mao_direita": "RightHandProp"
+        "mao_esquerda": {
+          "bone": "LeftHandProp",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "rest": [
+            0.3475,
+            0.3444,
+            -0.0096
+          ]
+        },
+        "mao_direita": {
+          "bone": "RightHandProp",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "rest": [
+            -0.3475,
+            0.3444,
+            -0.0096
+          ]
+        },
+        "cabeca_topo": {
+          "bone": "Head",
+          "position": [
+            0,
+            0.5335,
+            -0.01547
+          ],
+          "rotation": [
+            -0.001104,
+            0,
+            0,
+            0.999999
+          ],
+          "rest": [
+            0,
+            1.156,
+            -0.0048
+          ]
+        },
+        "olhos": {
+          "bone": "Head",
+          "position": [
+            0,
+            0.19943,
+            0.23659
+          ],
+          "rotation": [
+            -0.001104,
+            0,
+            0,
+            0.999999
+          ],
+          "rest": [
+            0,
+            0.8214,
+            0.2465
+          ]
+        },
+        "costas": {
+          "bone": "Spine1",
+          "position": [
+            0,
+            0.00729,
+            -0.0923
+          ],
+          "rotation": [
+            0.039402,
+            0,
+            0,
+            0.999223
+          ],
+          "rest": [
+            0,
+            0.4929,
+            -0.0945
+          ]
+        },
+        "pe_esquerdo": {
+          "bone": "LeftFoot",
+          "position": [
+            0,
+            0.06711,
+            -0.02248
+          ],
+          "rotation": [
+            0.000002,
+            0.647524,
+            0.762045,
+            -0.000002
+          ],
+          "rest": [
+            0.068,
+            0,
+            0.0372
+          ]
+        },
+        "pe_direito": {
+          "bone": "RightFoot",
+          "position": [
+            0,
+            0.06711,
+            -0.02248
+          ],
+          "rotation": [
+            0.000003,
+            -0.647525,
+            -0.762045,
+            -0.000003
+          ],
+          "rest": [
+            -0.068,
+            0,
+            0.0372
+          ]
+        }
       },
       "height": 1.156,
       "game": {
@@ -393,63 +524,158 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             "duration": 4.3,
             "loop": true,
             "stride": 0,
-            "rise": 0
+            "rise": 0,
+            "frames": 130,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 130
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 130
+              }
+            ]
           },
           {
             "id": "andar_frente",
             "duration": 0.8,
             "loop": true,
             "stride": 0.492,
-            "rise": 0
+            "rise": 0,
+            "frames": 25,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 4,
+                "off": 19
+              },
+              {
+                "foot": "right",
+                "on": 18,
+                "off": 5
+              }
+            ]
           },
           {
             "id": "correr_frente",
             "duration": 0.633,
             "loop": true,
             "stride": 0.701,
-            "rise": 0
+            "rise": 0,
+            "frames": 20,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 6,
+                "off": 13
+              },
+              {
+                "foot": "right",
+                "on": 15,
+                "off": 4
+              }
+            ]
           },
           {
             "id": "agachado_frente",
             "duration": 1,
             "loop": true,
             "stride": 0.6,
-            "rise": 0.005
+            "rise": 0.005,
+            "frames": 31,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 7,
+                "off": 25
+              },
+              {
+                "foot": "right",
+                "on": 23,
+                "off": 10
+              }
+            ]
           },
           {
             "id": "pulo_inicio",
             "duration": 0.6,
             "loop": false,
             "stride": 0.071,
-            "rise": 0.97
+            "rise": 0.97,
+            "frames": 19,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 9
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 9
+              }
+            ]
           },
           {
             "id": "pulo_no_ar",
             "duration": 1.267,
             "loop": true,
             "stride": 0,
-            "rise": 0
+            "rise": 0,
+            "frames": 39,
+            "feet": []
           },
           {
             "id": "pulo_fim",
             "duration": 0.833,
             "loop": false,
             "stride": 0.071,
-            "rise": -0.971
+            "rise": -0.971,
+            "frames": 26,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 8,
+                "off": 26
+              },
+              {
+                "foot": "left",
+                "on": 9,
+                "off": 26
+              }
+            ]
           },
           {
             "id": "cair",
             "duration": 2.8,
             "loop": false,
             "stride": 0,
-            "rise": 0
+            "rise": 0,
+            "frames": 85,
+            "feet": []
           },
           {
             "id": "subir_escada",
             "duration": 1.133,
             "loop": true,
             "stride": 0.027,
-            "rise": 0.498
+            "rise": 0.498,
+            "frames": 35,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 11,
+                "off": 19
+              },
+              {
+                "foot": "left",
+                "on": 23,
+                "off": 4
+              }
+            ]
           }
         ]
       }

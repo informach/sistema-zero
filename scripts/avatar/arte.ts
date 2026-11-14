@@ -83,9 +83,34 @@ export interface EsqueletoDaArte {
   ossos: number
   /** Cada osso na pose de descanso: nome, pai e onde começa (metros, Y para cima, frente +Z). */
   lista_ossos: { nome: string; pai: string | null; cabeca: [number, number, number] }[]
-  /** Encaixe → osso (`mao_direita` → `RightHandProp`). */
-  pontos_de_segurar: Record<string, string>
-  animacoes: { id: string; duracao_s: number; laco: boolean; maos_livres?: boolean }[]
+  /**
+   * Encaixe → onde ele fica. Os das mãos são só o nome do osso (`mao_direita` → `RightHandProp`); os
+   * do pedido do jogo (`jogo1`) dizem o osso, a posição e a rotação no referencial dele, e o mesmo
+   * ponto no descanso.
+   */
+  pontos_de_segurar: Record<string, string | EncaixeDaArte>
+  animacoes: AnimacaoDaArte[]
+  /** As medidas do corpo padrão (desde o `jogo1`). */
+  medidas_corpo?: { altura_m: number; olhos_m: number }
+}
+
+export interface EncaixeDaArte {
+  osso: string
+  posicao: [number, number, number]
+  rotacao: [number, number, number, number]
+  no_descanso_m: [number, number, number]
+}
+
+export interface AnimacaoDaArte {
+  id: string
+  duracao_s: number
+  laco: boolean
+  maos_livres?: boolean
+  /** Os campos do jogo (desde o `jogo1`): quadros, passada e subida do `Hips` e os apoios dos pés. */
+  quadros?: number
+  passada_m?: number
+  subida_m?: number
+  pes?: { pe: 'esq' | 'dir'; toca: number; sai: number }[]
 }
 
 /** Onde está o repositório da arte nesta máquina (`ARTES_3D_DIR`, ou a pasta irmã `artes-3d`). */

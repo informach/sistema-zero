@@ -59,7 +59,18 @@ describe('o catálogo', () => {
       'RightHandProp',
     ])
       expect(s.bones[nome], nome).toBeDefined()
-    expect(s.sockets.mao_direita).toBe('RightHandProp')
+    // Os encaixes: as mãos e os do pedido do jogo, cada um num osso que existe, com a rotação
+    // unitária; no descanso os olhos ficam na frente do rosto e os pés no chão.
+    expect(s.sockets.mao_direita?.bone).toBe('RightHandProp')
+    for (const nome of ['cabeca_topo', 'olhos', 'costas', 'pe_esquerdo', 'pe_direito'])
+      expect(s.sockets[nome], nome).toBeDefined()
+    for (const [nome, e] of Object.entries(s.sockets)) {
+      expect(s.bones[e.bone], nome).toBeDefined()
+      expect(Math.hypot(...e.rotation), nome).toBeCloseTo(1, 4)
+    }
+    expect(s.sockets.olhos?.rest[2]).toBeGreaterThan(0.1)
+    expect(s.sockets.pe_esquerdo?.rest[1]).toBeCloseTo(0, 2)
+    expect(s.sockets.cabeca_topo?.rest[1]).toBeCloseTo(s.height, 2)
     expect(s.game.file).toMatch(/^base\/animacoes-do-jogo\.[0-9a-f]{12}\.glb$/)
     expect(isAvatarFile(C, s.game.file)).toBe(true)
     const clipe = (id: string) => s.game.clips.find((c) => c.id === id)
@@ -70,6 +81,13 @@ describe('o catálogo', () => {
     expect(clipe('pulo_inicio')?.rise).toBeGreaterThan(0.5)
     expect(clipe('pulo_inicio')?.rise ?? 0).toBeCloseTo(-(clipe('pulo_fim')?.rise ?? 0), 1)
     expect(clipe('subir_escada')?.rise).toBeGreaterThan(0.3)
+    // Os apoios dos pés que a arte mediu: no andar os dois pés apoiam, dentro dos quadros do clipe.
+    const andar = clipe('andar_frente')
+    expect(andar?.feet.map((p) => p.foot).sort()).toEqual(['left', 'right'])
+    for (const p of andar?.feet ?? []) {
+      expect(p.on).toBeLessThanOrEqual(andar?.frames ?? 0)
+      expect(p.off).toBeLessThanOrEqual(andar?.frames ?? 0)
+    }
   })
 
   test('toda peça citada por grupo, conjunto, orelha e padrão existe', () => {
