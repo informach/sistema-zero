@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
 import { cameraDaFoto } from '../estado/foto'
+import { casaMoradaStore } from '../estado/morada'
 import {
   clubeDepoisDoEnvio,
   eTeclaDaFoto,
@@ -168,7 +169,7 @@ export function ModoFoto() {
 
 /** A tecla F entra no modo foto com o jogo correndo (o menu também tem o botão). */
 export function AtalhoDaFoto() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
       const alvo = e.target as HTMLElement | null
@@ -179,12 +180,12 @@ export function AtalhoDaFoto() {
       const { code, ctrlKey, altKey, metaKey, repeat } = e
       if (!eTeclaDaFoto({ code, ctrlKey, altKey, metaKey, repeat, dentroDeCampo })) return
       const s = loja.getState()
-      if (!podeEntrarNaFoto(s)) return
+      if (!podeEntrarNaFoto(s, casaMoradaStore(loja, plataforma).getState().editing)) return
       e.preventDefault()
       s.abrirPainel(PAINEL_DA_FOTO)
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
-  }, [loja])
+  }, [loja, plataforma])
   return null
 }

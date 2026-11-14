@@ -22,6 +22,7 @@ import { passarTempo } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
 import { lojaDoFarol } from './farol'
+import { PAINEL_DA_MORADA } from './morada'
 
 /**
  * O que corre com o tempo, fora da cena: necessidades (e as do bicho adotado), o cochilo quando a
@@ -108,7 +109,8 @@ export function Relogios() {
         if (jeito) {
           s.mudar((sv) => ({ ...sv, necessidades: descansar(sv.necessidades, jeito, 2) }))
           if (sonecaAcabou(loja.getState().salvamento.necessidades, jeito)) {
-            movimento.pedido = { tipo: 'levantar' }
+            if (loja.getState().painelAberto === PAINEL_DA_MORADA) loja.setState({ descanso: null })
+            else movimento.pedido = { tipo: 'levantar' }
             s.dizer(FALA_DA_SONECA_CHEIA)
           }
         }

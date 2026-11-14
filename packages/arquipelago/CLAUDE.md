@@ -1,5 +1,50 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Morada canônica (14/11/2026)
+
+A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
+`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` contém somente troféus conquistados;
+peças comuns do catálogo são gratuitas. A leitura/edição tem escopos próprios e de visita
+separados, com epoch para rejeitar respostas antigas. Sair independe da rede e preserva
+o rascunho próprio até confirmação; visitas nunca substituem sua casa ou seu pet. O quarto é `house.roomId`,
+um recorte estável da mesma casa; visitas leem `visita.quarto.house`. Hosts sem essas
+portas mostram indisponibilidade explícita. O jogo só importa catálogo/renderizadores
+por `@sistemazero/avatar-quarto/morada/*`.
+
+A transição de escala é explícita: Casa, Construir e os portais da casa, horta, cabana e
+iglu abrem uma cena própria com avatar, física e câmera nativos em escala 1. As ilhas
+mantêm a ponte 1,85 e continuam jogáveis. O mundo antigo deixa de renderizar enquanto
+a casa está aberta. Não existe casa antiga escondida em outra rota.
+
+`estado/morada.ts` mantém revisão, recuperação, conflitos e histórico de edição;
+`sistemas/morada.ts` resolve coordenadas, slots, volumes autorais e acesso. O editor
+usa todo o lote, grade de 0,5 m, cômodos/andares, encaixes, cores e materiais do catálogo.
+A interface conserva o HUD original e a barra inferior `arq-obra`: ferramentas icônicas,
+bandeja horizontal, Viver/Construir e Pronto. Campos adicionais ficam em detalhes.
+O descanso nativo usa o relógio original de energia e termina ao levantar, andar/pular,
+completar a soneca, entrar no editor ou voltar à ilha; não deixa pedido ao corpo legado.
+Folhas móveis têm colisão cinemática; malhas autorais usam geometria de colisão do pack.
+A horta preserva as 24 parcelas e seus relógios. Projetos conquistados continuam com
+`behavior: objeto:<id>` e equivalentes Morada; não se apaga progresso ao trocar o visual.
+
+Pinta/Molda e referências de autoria continuam em `save.projetos`; o próprio jogo as
+projeta sobre o equivalente Morada. O documento compartilhado não recebe URL ou referência
+UGC sem autorização. Visitantes veem a peça base Morada; a projeção de Pinta segue as faces
+do molde histórico e pode exigir ajuste artístico em superfícies curvas. Aquário é uma
+composição de vitrine e quatro peixes Morada, liberados pelos mesmos corais. O museu usa
+estante e miniaturas Morada (dinossauros de brinquedo e esqueleto didático), vinculadas
+aos mesmos seis IDs de descoberta; as artes de fósseis do Vale permanecem só na ilha.
+As miniaturas são equivalentes visuais, sem alterar nomes, álbum ou progresso dos fósseis. Pets domésticos usam exclusivamente os 24 gatos/cães Morada,
+com passeio no quarto e acompanhamento nas ilhas. Bichos adotados do mundo continuam fora
+do escopo do quarto. Oito troféus são a única arte antiga da casa preservada.
+
+Os documentos históricos de obra e inventário continuam legíveis para migração e testes
+de progresso. A importação das funções do térreo e do andar independe da revisão da
+casa e só conclui com o marcador canônico `arquipelago-functions-v1`; falhas do andar
+permitem nova tentativa, e uma função removida após a importação não reaparece. Seus renderizadores, geradores e artes de casa/kit/objetos foram retirados.
+Testes de binários retirados deram lugar a testes do catálogo real, acesso/colisão, 24
+cultivos, autoridade funcional, CAS, recuperação e projeção de autoria com parser GLB real.
+
 ## O corpo sai do esqueleto; o mundo declara a escala (14/11/2026, etapa 1 passo 3)
 
 Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.

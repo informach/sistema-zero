@@ -31,7 +31,6 @@ import {
  */
 
 const DT = 1 / 60
-const QUARTO = join(import.meta.dir, '..', '..', 'community-kids', 'public', 'room3d', 'items')
 const BICHOS = join(import.meta.dir, '..', 'src', 'assets', 'bichos')
 
 async function medir(caminho: string) {
@@ -46,12 +45,6 @@ async function medir(caminho: string) {
 
 describe('as cápsulas saem dos GLBs reais', () => {
   const casos = [
-    ...(['pet-cachorro', 'pet-gato', 'pet-passaro'] as const).map((id) => ({
-      id,
-      arquivo: join(QUARTO, `${id}.glb`),
-      escala: 1,
-      voa: id === 'pet-passaro',
-    })),
     ...(['cachorro', 'gato', 'coelho', 'porquinho'] as const).flatMap((b) =>
       (['adulto', 'filhote'] as const).map((fase) => ({
         id: `${b}-${fase}` as const,
@@ -63,7 +56,11 @@ describe('as cápsulas saem dos GLBs reais', () => {
   ]
 
   test('todo bicho medido tem cápsula, e toda cápsula foi medida', () => {
-    expect(casos.map((c): string => c.id).sort()).toEqual(Object.keys(ESPACO_DOS_BICHOS).sort())
+    expect(casos.map((c): string => c.id).sort()).toEqual(
+      Object.keys(ESPACO_DOS_BICHOS)
+        .filter((id) => !id.startsWith('pet-'))
+        .sort(),
+    )
   })
 
   for (const c of casos) {

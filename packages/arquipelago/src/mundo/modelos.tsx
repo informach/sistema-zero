@@ -4,9 +4,7 @@ import { Color, type Material, type Mesh, MeshStandardMaterial, type Object3D } 
 import arvoresGlb from '../assets/mundo/arvores.glb'
 import bancadaGlb from '../assets/mundo/bancada.glb'
 import boiasGlb from '../assets/mundo/boias.glb'
-import casaGlb from '../assets/mundo/casa.glb'
 import farolGlb from '../assets/mundo/farol.glb'
-import hortaGlb from '../assets/mundo/horta.glb'
 import ilhasGlb from '../assets/mundo/ilhas-do-anel.glb'
 import pierGlb from '../assets/mundo/pier.glb'
 import ponteGlb from '../assets/mundo/ponte.glb'
@@ -21,9 +19,7 @@ export const MODELOS = {
   arvores: new URL(arvoresGlb, import.meta.url).href,
   bancada: new URL(bancadaGlb, import.meta.url).href,
   boias: new URL(boiasGlb, import.meta.url).href,
-  casa: new URL(casaGlb, import.meta.url).href,
   farol: new URL(farolGlb, import.meta.url).href,
-  horta: new URL(hortaGlb, import.meta.url).href,
   ilhas: new URL(ilhasGlb, import.meta.url).href,
   pier: new URL(pierGlb, import.meta.url).href,
   ponte: new URL(ponteGlb, import.meta.url).href,

@@ -168,6 +168,7 @@ export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
 export function buildApp(
   opts: {
+    moradaHouse?: import('../src/application/room/morada-house.service').MoradaHouseService
     now?: Date
     internalToken?: string
     kidsJourneyConfiguration?: KidsJourneyConfigurationService
@@ -716,10 +717,18 @@ export function buildApp(
         kidsJourneyProfiles,
         adultProfileRepository,
         adultJourney,
+        opts.moradaHouse,
       ),
-      getRoom: new GetRoomService(room, gamification),
-      saveRoom: new SaveRoomService(room, clock),
-      buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
+      moradaHouse: opts.moradaHouse,
+      getRoom: new GetRoomService(room, gamification, opts.moradaHouse),
+      saveRoom: new SaveRoomService(room, clock, undefined, opts.moradaHouse),
+      buyRoomItem: new BuyRoomItemService(
+        room,
+        gamification,
+        awardGamification,
+        clock,
+        opts.moradaHouse,
+      ),
       internalToken: opts.internalToken,
     },
     pensa: (() => {

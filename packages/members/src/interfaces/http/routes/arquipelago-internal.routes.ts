@@ -144,7 +144,7 @@ export function arquipelagoInternalRoutes(deps: {
   /** O saldo de moedas Zappy de quem joga (o cartão da galeria); ausente, 424. */
   saldo?: { getBalance(userId: string, audience: 'kids' | 'adult'): Promise<number> }
   /** O quarto de um perfil (a visita de um irmão no jogo); ausente, 424. */
-  quartos?: Pick<ArquipelagoRoomService, 'quarto'>
+  quartos?: Pick<ArquipelagoRoomService, 'quarto'> & Partial<Pick<ArquipelagoRoomService, 'casa'>>
   /** O ambiente Python de um desafio aberto no jogo (C02b); ausente, 424. */
   ambiente?: Pick<ArquipelagoRuntimeService, 'autorizar'>
   token?: string
@@ -254,6 +254,19 @@ export function arquipelagoInternalRoutes(deps: {
        * O quarto de um perfil (29/10/2026, a visita de um irmão no Arquipélago), no formato
        * `QuartoDosMembrosSchema`. Só leitura; quem pode ver é o serviço do jogo que decide.
        */
+      .get('/casa', async ({ query, set }) => {
+        const pergunta = PerguntaDoQuarto.safeParse(query)
+        if (!pergunta.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_QUERY' } }
+        }
+        const casa = await deps.quartos?.casa?.(pergunta.data.userId, pergunta.data.audience)
+        if (!casa) {
+          set.status = 424
+          return { error: { code: 'CASA_INDISPONIVEL' } }
+        }
+        return casa
+      })
       .get('/quarto', async ({ query, set }) => {
         const pergunta = PerguntaDoQuarto.safeParse(query)
         if (!pergunta.success) {

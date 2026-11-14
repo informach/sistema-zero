@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { basename, resolve } from 'node:path'
+import { basename, resolve, sep } from 'node:path'
 import { ManifestoDeDesafiosSchema } from '@sistemazero/arquipelago-contracts'
+import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 
 const raiz = resolve(import.meta.dir, '../../..')
 const porta = Number(process.env.PORTA ?? 4598)
@@ -97,8 +98,19 @@ Bun.serve({
       )
     const a = arquivos.get(u.pathname.slice(1))
     if (a) return new Response(a)
-    if (u.pathname.startsWith('/room3d/'))
-      return new Response(Bun.file(resolve(raiz, `packages/community-kids/public${u.pathname}`)))
+    if (u.pathname.startsWith('/api/morada3d/')) {
+      const file = decodeURIComponent(u.pathname.slice('/api/morada3d/'.length))
+      const base = resolve(
+        process.env.MORADA_QA_DIR ?? resolve(raiz, 'output/morada-assets/morada'),
+      )
+      const path = resolve(base, file)
+      if (!isMoradaFile(file) || !path.startsWith(base + sep))
+        return new Response('Fora do catálogo', { status: 404 })
+      const asset = Bun.file(path)
+      return (await asset.exists())
+        ? new Response(asset)
+        : new Response('Arquivo ausente', { status: 404 })
+    }
     return new Response(
       `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/qa.css?publico=${u.searchParams.get('publico') === 'adulto' ? 'adulto' : 'kids'}"><style>html,body,#jogo{margin:0;height:100%}dialog iframe{width:100%;height:100%;border:0}</style></head><body><div id="jogo"></div><script type="module" src="/${basename(entrada.path)}"></script></body></html>`,
       { headers: { 'content-type': 'text/html' } },

@@ -45,7 +45,7 @@ describe('as páginas ligam a pele adulta', () => {
       'adult-ui.tsx',
       'avatar3d/configurator-adult.tsx',
       'room/room-builder-view-adult.tsx',
-      'room/room-builder-trays-adult.tsx',
+      'room/morada-room-builder.tsx',
     ]
     const used = new Set(
       files.flatMap((file) => read(join(COSMETICS, file)).match(/sz-cos-[a-z0-9-]+/g) ?? []),

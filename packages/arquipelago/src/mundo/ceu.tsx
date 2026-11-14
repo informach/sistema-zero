@@ -29,7 +29,7 @@ const HEMI_CHAO_NOITE = new Color('#33456a')
 const CEU_FECHADO = new Color('#8f9aa8')
 
 /** Céu, sol, lua e estrelas, pelo relógio do jogo. */
-export function Ceu() {
+export function Ceu({ shadowArea }: { shadowArea?: number } = {}) {
   const { nivel } = useQualidade()
   const { ambiente, loja } = useJogo()
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
@@ -91,7 +91,19 @@ export function Ceu() {
   return (
     <>
       <hemisphereLight ref={hemi} args={['#dff3ff', '#5f7a4a', 0.8]} />
-      <directionalLight ref={sol} position={[40, 60, 30]} intensity={1.4} />
+      <directionalLight
+        ref={sol}
+        position={[40, 60, 30]}
+        intensity={1.4}
+        castShadow={Boolean(shadowArea)}
+        shadow-mapSize={[1024, 1024]}
+        shadow-normalBias={0.04}
+        shadow-bias={-0.001}
+        shadow-camera-left={-(shadowArea ?? 18)}
+        shadow-camera-right={shadowArea ?? 18}
+        shadow-camera-top={shadowArea ?? 18}
+        shadow-camera-bottom={-(shadowArea ?? 18)}
+      />
       <points geometry={pontos}>
         <pointsMaterial
           ref={estrelas}

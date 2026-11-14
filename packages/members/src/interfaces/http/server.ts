@@ -8,6 +8,7 @@ import {
 } from '@sistemazero/core/http'
 import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
+import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
 import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
@@ -133,6 +134,7 @@ const ARQUIPELAGO_OBJECTIVES_BODY_BYTES = 4 * 1024 * 1024
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (pathname === '/members/house') return MORADA_LIMITS.bytes + 1024
   if (pathname === '/members/internal/course-promotions/preview') return 64_000_000
   if (pathname === '/members/admin/python-project-checks/test')
     return SECTION_PYTHON_PROJECT_TEST_BODY_BYTES
@@ -176,6 +178,7 @@ export function createServer(deps: HttpDeps) {
   // O teto do Bun.serve é o MAIOR dos limites — o per-rota (mais estrito) é
   // aplicado no `onParse`; senão o Bun cortaria a entrega do Estúdio antes dela.
   const serveCeiling = Math.max(
+    MORADA_LIMITS.bytes + 1024,
     deps.coursePromotion ? 64_000_000 : 0,
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     ARQUIPELAGO_OBJECTIVES_BODY_BYTES,

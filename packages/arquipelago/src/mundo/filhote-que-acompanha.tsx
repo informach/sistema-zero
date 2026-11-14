@@ -8,6 +8,7 @@ import { quemAcompanha } from '../sistemas/companhia'
 import { CORPO } from '../sistemas/corpo'
 import { FILHOTE_NO_VALE as F, tamanhoDoFilhote } from '../sistemas/filhote-do-vale'
 import { jogoPausado } from '../sistemas/pausa'
+import { petDaMorada } from '../sistemas/pet-morada'
 import { atrasDela, criarSeguir, passoDoSeguir } from '../sistemas/seguir'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
@@ -20,7 +21,7 @@ import { ComReserva } from './modelos'
  * dele, o mesmo painel de cuidar do Vale. Sem corpo de física, como o bicho adotado.
  */
 export function FilhoteQueAcompanha() {
-  const vai = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) === 'filhote')
+  const vai = useEstado((s) => quemAcompanha(s.salvamento, petDaMorada(s.quarto)) === 'filhote')
   if (!vai) return null
   return (
     <ComReserva reserva={null}>

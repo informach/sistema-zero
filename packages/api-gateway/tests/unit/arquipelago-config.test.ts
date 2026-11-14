@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
 import realConfig from '../../gateway.config'
 import { arquipelagoGateway } from '../../src/infrastructure/config/arquipelago-routes'
 import { loadEnv } from '../../src/infrastructure/config/env'
@@ -11,6 +12,20 @@ const transforms = [
 ]
 
 describe('Arquipélago Vagalume no gateway', () => {
+  test('casa canônica tem GET/PUT autenticados, público ativo e corpo limitado', () => {
+    const house = realConfig.routes.filter((route) => route.pathPattern === '/members/house')
+    expect(house).toHaveLength(2)
+    for (const route of house) {
+      expect(route.service).toBe('members')
+      expect(route.auth).toMatchObject({ required: true, strategies: ['jwt'] })
+      expect(route.authorize).toMatchObject({ statuses: ['active'] })
+      expect(route.rateLimit?.by).toBe('principal')
+    }
+    expect(house.map((route) => route.methods)).toEqual([['GET'], ['PUT']])
+    expect(house.find((route) => route.methods.includes('PUT'))?.maxBodyBytes).toBe(
+      MORADA_LIMITS.bytes + 1024,
+    )
+  })
   test('convites adultos exigem JWT, não usam código na URL e têm corpo e frequência limitados', () => {
     const jogo = arquipelagoGateway({
       url: 'http://jogo.local',

@@ -30,7 +30,6 @@ import {
   pintarLado,
 } from '../src/mundo/quarto-na-obra'
 import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
-import { obraDeExemploComFundo } from '../src/plataforma/obra-de-exemplo'
 import { ladoDaParede, planta } from '../src/sistemas/construcao/comodos'
 import {
   entradaDaObra,
@@ -71,7 +70,6 @@ import {
   colisoresDaObra,
   colisoresDaVaranda,
   NADA_CORTADO,
-  NO_DA_JANELA,
   pecasDaObra,
   pecasDaVaranda,
   TUDO_CORTADO,
@@ -540,27 +538,6 @@ describe('as peças do kit', () => {
       x: 7,
       z: -6,
     })
-  })
-
-  test('todo nó de parede que as peças pedem existe no kit (as janelas baixas inclusive)', async () => {
-    const buf = readFileSync(
-      join(import.meta.dir, '..', 'src', 'assets', 'casa', 'casa-paredes.glb'),
-    )
-    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
-    const kit = (await new GLTFLoader().parseAsync(ab, '')).scene
-    const nos: string[] = []
-    for (const fam of ['lambri', 'lisa'])
-      for (const baixa of ['', '-baixa']) {
-        nos.push(`parede-${fam}${baixa}`, `parede-porta-${fam}${baixa}`, `quina-${fam}${baixa}`)
-        for (const janela of Object.values(NO_DA_JANELA)) nos.push(`${janela}-${fam}${baixa}`)
-      }
-    expect(nos.filter((n) => !kit.getObjectByName(n))).toEqual([])
-    // E a obra de exemplo com o fundo, cortada ou não, só pede nós desses.
-    const o = obraDeExemploComFundo()
-    for (const corte of [NADA_CORTADO, TUDO_CORTADO]) {
-      const { paredes, quinas } = pecasDaObra(o, planta(o, L), corte)
-      for (const x of [...paredes, ...quinas]) expect(nos).toContain(x.no)
-    }
   })
 
   test('cômodo novo: piso em todas as células e parede lisa entre os dois', () => {

@@ -8,18 +8,19 @@ import { capturarQuadro } from '../sistemas/modo-foto'
  * Dentro do `<Canvas>`: registra como tirar a foto do modo foto (fase2-09). O quadro é desenhado e
  * lido na mesma chamada (`capturarQuadro`), sem ligar `preserveDrawingBuffer` no jogo todo.
  */
-export function CameraDaFoto() {
+export function CameraDaFoto({ ativa = true }: { ativa?: boolean }) {
   const { loja } = useJogo()
   const gl = useThree((s) => s.gl)
   const cena = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
   useEffect(() => {
+    if (!ativa) return
     const registro = cameraDaFoto(loja)
     const capturar = () => capturarQuadro(gl, cena, camera)
     registro.capturar = capturar
     return () => {
       if (registro.capturar === capturar) registro.capturar = null
     }
-  }, [loja, gl, cena, camera])
+  }, [loja, gl, cena, camera, ativa])
   return null
 }

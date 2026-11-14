@@ -1165,6 +1165,8 @@ export interface RoomWallColors {
 }
 /** Estado montado do quarto (tema + itens + pet + paredes/piso/luz). Serializável. */
 export interface RoomStateView {
+  /** O quarto é um cômodo do documento canônico Morada. */
+  house?: import('@sistemazero/core/morada').MoradaHouse
   theme: string
   placedItems: RoomPlacedItem[]
   pet: string | null
