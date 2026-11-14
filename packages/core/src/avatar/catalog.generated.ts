@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
-    "syncedAt": "2026-11-13",
-    "rulesBlob": "f4592eacb68e88a7ddbc5df4ce74784d7ec13643"
+    "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+    "syncedAt": "2026-11-14",
+    "rulesBlob": "3ea46606263200988964a397e38a71b19cace69a"
   },
   "base": {
     "skeleton": {
@@ -1475,6 +1475,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-13"
       }
     },
+    "cabelo_espetado": {
+      "slot": "cabelo",
+      "group": "cabelo",
+      "label": "Cabelo espetado",
+      "audience": "both",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/cabelo_espetado.3899fea0d867.glb",
+      "thumb": "miniaturas/cabelo_espetado.1024ddf63273.webp",
+      "tris": 4212,
+      "origin": {
+        "blob": "f1617963f1d772ff09f6db1697ea54d89ed5f766",
+        "thumbBlob": "5a651f3f193f87288d6ec195fadc72c8fd2d22cb",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "cabelo_franja_ruiva_pacote": {
       "slot": "cabelo",
       "group": "cabelo",
@@ -2078,6 +2097,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-13"
       }
     },
+    "calca_saia_babados": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia de babados",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_babados.9b050a705457.glb",
+      "thumb": "miniaturas/calca_saia_babados.6dff6235507d.webp",
+      "tris": 1664,
+      "origin": {
+        "blob": "d6eff11b2e24fe50ccce7cb5f485c47c761e0b3e",
+        "thumbBlob": "d24dd5650a5803f227dc526a922f8051abd174de",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "calca_saia_longa": {
       "slot": "calca",
       "group": "calca",
@@ -2095,6 +2133,44 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0f22f1d0f1feb7e835464235ef7e57d75c09d36c",
         "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
         "migratedAt": "2026-11-13"
+      }
+    },
+    "calca_saia_reta": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia reta",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_reta.68c6d5dddf28.glb",
+      "thumb": "miniaturas/calca_saia_reta.91e89466a6ed.webp",
+      "tris": 896,
+      "origin": {
+        "blob": "e5722af5caf0fd2d561b645bab63b9006d2ab826",
+        "thumbBlob": "b7bac192435b12c2549d6d175b360f7d95460326",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
+    "calca_saia_rodada": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia rodada",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_rodada.cdbf2e682efc.glb",
+      "thumb": "miniaturas/calca_saia_rodada.ea0c087070c8.webp",
+      "tris": 1024,
+      "origin": {
+        "blob": "b0f6f246f4bf24a288a8317e5999ee24c2a301f1",
+        "thumbBlob": "613c5802c3701e905bde05b277a20069f0ee1e8b",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
       }
     },
     "calca_verde_remendada_pacote": {
@@ -2151,6 +2227,44 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "93572c4a767733d7b93ecc79b17e156e3b958026",
         "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
         "migratedAt": "2026-11-13"
+      }
+    },
+    "calcado_botas_cano_alto": {
+      "slot": "calcado",
+      "group": "calcado",
+      "label": "Botas de cano alto",
+      "audience": "both",
+      "tier": "coins",
+      "price": 90,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/calcado_botas_cano_alto.8296887f6fb2.glb",
+      "thumb": "miniaturas/calcado_botas_cano_alto.7f1daa5fe5b3.webp",
+      "tris": 782,
+      "origin": {
+        "blob": "3268fb56a1fd2abce0747946bfbbc739b45cd0c1",
+        "thumbBlob": "1c2afc172cb6d7c7be9a5ecf621fb12d90f35f30",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
+    "calcado_botinha_lisa": {
+      "slot": "calcado",
+      "group": "calcado",
+      "label": "Botinha lisa",
+      "audience": "both",
+      "tier": "coins",
+      "price": 50,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calcado_botinha_lisa.62080efaa6ee.glb",
+      "thumb": "miniaturas/calcado_botinha_lisa.8599e3e4cfbe.webp",
+      "tris": 402,
+      "origin": {
+        "blob": "af73020b30d144595b54afc142d5f6849c876b36",
+        "thumbBlob": "f0e15acb2bd5f8b4f1227126cc36802aa9ef923b",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
       }
     },
     "calcado_chinelo_amarelo_pacote": {
@@ -2453,6 +2567,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0d15b2fa535d6f36b065deadca0e49c4aa7af7e7",
         "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
         "migratedAt": "2026-11-13"
+      }
+    },
+    "calcado_tenis_cano_alto": {
+      "slot": "calcado",
+      "group": "calcado",
+      "label": "Tênis de cano alto",
+      "audience": "both",
+      "tier": "coins",
+      "price": 70,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calcado_tenis_cano_alto.3f983c466517.glb",
+      "thumb": "miniaturas/calcado_tenis_cano_alto.b4a4195fde37.webp",
+      "tris": 4790,
+      "origin": {
+        "blob": "d8dc634291307c5abe6f085fc0d1aec22ccacc20",
+        "thumbBlob": "14f32e3d25e73df93ddffb3aaca6e2e0c59d95df",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
       }
     },
     "calcado_tenis_cinza_claro_pacote": {
@@ -5141,6 +5274,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-13"
       }
     },
+    "lenco_pescoco": {
+      "slot": "acessorio_rosto",
+      "group": "acessorio_rosto",
+      "label": "Lenço de pescoço",
+      "audience": "both",
+      "tier": "coins",
+      "price": 50,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/lenco_pescoco.30b15863c92d.glb",
+      "thumb": "miniaturas/lenco_pescoco.cd6d774bf929.webp",
+      "tris": 372,
+      "origin": {
+        "blob": "ea71aa890714e56ac230dcf4f745a6f27c4c6cc3",
+        "thumbBlob": "f97b9be1bf808b9ec63b446cdc25b242f29d43e2",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "luvas_amarelas_pacote": {
       "slot": "luvas",
       "group": "luvas",
@@ -5442,6 +5594,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "715c76d5ce38dab41bffd5fbf93c1f7703af6eec",
         "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
         "migratedAt": "2026-11-13"
+      }
+    },
+    "meias_curtas_babado": {
+      "slot": "meias",
+      "group": "meias",
+      "label": "Meias curtas com babado",
+      "audience": "both",
+      "tier": "coins",
+      "price": 40,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/meias_curtas_babado.6af20782b773.glb",
+      "thumb": "miniaturas/meias_curtas_babado.45177aa258d8.webp",
+      "tris": 374,
+      "origin": {
+        "blob": "f19bffc2e81c1c9874135b486298c1b339211890",
+        "thumbBlob": "35cd6cff7ef2ccbb55074189d45aa8b06a59f6ca",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
       }
     },
     "meias_curtas_pacote": {
@@ -7704,6 +7875,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-13"
       }
     },
+    "roupa_cima_colete_xerife": {
+      "slot": "roupa_cima",
+      "group": "roupa_cima",
+      "label": "Colete de xerife",
+      "audience": "both",
+      "tier": "coins",
+      "price": 70,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/roupa_cima_colete_xerife.119e621685fa.glb",
+      "thumb": "miniaturas/roupa_cima_colete_xerife.e35cf45031b0.webp",
+      "tris": 1471,
+      "origin": {
+        "blob": "74a391f59d4668a7567c2d738cf335f200de7f22",
+        "thumbBlob": "c6d3a0ecbbd447728020879fe798913fc4224edb",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "roupa_cima_jaqueta_amarela_gola_pacote": {
       "slot": "roupa_cima",
       "group": "roupa_cima",
@@ -8404,6 +8594,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-13"
       }
     },
+    "roupa_inteira_jardineira_saia": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Jardineira-saia",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_jardineira_saia.f8936b8e45fc.glb",
+      "thumb": "miniaturas/roupa_inteira_jardineira_saia.59cf0d3d704b.webp",
+      "tris": 1252,
+      "origin": {
+        "blob": "c6c118799e4b4bf28d6c3f57b0f5e3e1e13a4937",
+        "thumbBlob": "f13fa3924985a67c73cd99241e2a2e3735138074",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
+      }
+    },
     "roupa_inteira_macacao_piloto_azul_pacote": {
       "slot": "roupa_inteira",
       "group": "roupa_inteira",
@@ -8421,6 +8630,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f7301850ee85de60a461326afbf7d49d3ff5c946",
         "commit": "ea069b31b04d8152168090c47d8c9a718269fb25",
         "migratedAt": "2026-11-13"
+      }
+    },
+    "roupa_inteira_vestido_alcinha": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido de alcinha",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_alcinha.caf7c58f7b81.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_alcinha.6a1f4683beb5.webp",
+      "tris": 580,
+      "origin": {
+        "blob": "312f565545432efc53b98ccc8a2e206b6e4c3033",
+        "thumbBlob": "a8b4cd4c7bc734e13d2165f3be67b33a0160b239",
+        "commit": "f2dc837f48ab457b79eb2ebf68cf4c2db5a351ab",
+        "migratedAt": "2026-11-14"
       }
     },
     "roupa_inteira_vestido_azul_pacote": {
@@ -9038,7 +9266,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "bigode_13_pacote",
           "bigode_14_pacote",
           "bigode_15_pacote",
-          "chupeta_pacote"
+          "chupeta_pacote",
+          "lenco_pescoco"
         ]
       },
       "rosto": {
@@ -9181,6 +9410,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "cabelo_dreadlocks_pacote",
           "cabelo_black_power",
           "cabelo_coque_crespo",
+          "cabelo_espetado",
           "cabelo_maria_chiquinha",
           "cabelo_trancas_nago"
         ]
@@ -9277,6 +9507,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "roupa_inteira_jardineira_azul_pacote",
           "roupa_inteira_macacao_piloto_azul_pacote",
           "roupa_inteira_camiseta_branca_saia_vermelha_pacote",
+          "roupa_inteira_jardineira_saia",
+          "roupa_inteira_vestido_alcinha",
           "roupa_inteira_vestido_chita",
           "roupa_inteira_vestido_longo"
         ]
@@ -9341,6 +9573,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "roupa_cima_polo_verde_listrada_pacote",
           "roupa_cima_regata_lilas_pacote",
           "roupa_cima_colete_franjas",
+          "roupa_cima_colete_xerife",
           "roupa_cima_sueter_estrela"
         ]
       },
@@ -9362,7 +9595,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "calca_amarela_faixa_pacote",
           "calca_azul_cinto_pacote",
           "calca_roxa_pacote",
-          "calca_saia_longa"
+          "calca_saia_babados",
+          "calca_saia_longa",
+          "calca_saia_reta",
+          "calca_saia_rodada"
         ]
       },
       "calcado": {
@@ -9389,7 +9625,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "calcado_sapato_bege_pacote",
           "calcado_tenis_branco_cano_pacote",
           "calcado_tenis_preto_pacote",
-          "calcado_tenis_branco_liso_pacote"
+          "calcado_tenis_branco_liso_pacote",
+          "calcado_botas_cano_alto",
+          "calcado_botinha_lisa",
+          "calcado_tenis_cano_alto"
         ]
       },
       "bermuda": {
@@ -9405,7 +9644,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "parts": [
           "meias_curtas_pacote",
           "meias_altas_marrons_pacote",
-          "meias_altas_cinza_pacote"
+          "meias_altas_cinza_pacote",
+          "meias_curtas_babado"
         ]
       },
       "fantasia": {
@@ -9505,6 +9745,42 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "chapeu_capacete_moto_pacote",
         "chapeu_televisao_cabeca_pacote"
       ],
+      "calca_marrom_meias_pacote": [
+        "calcado_botas_cano_alto",
+        "calcado_tenis_cano_alto"
+      ],
+      "calca_saia_babados": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote"
+      ],
+      "calca_saia_reta": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_cinza_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_sueter_estrela",
+        "roupa_cima_sueter_listrado_vermelho_pacote"
+      ],
+      "calca_saia_rodada": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote"
+      ],
+      "calcado_botas_cano_alto": [
+        "calca_marrom_meias_pacote"
+      ],
+      "calcado_tenis_cano_alto": [
+        "calca_marrom_meias_pacote"
+      ],
       "chapeu_caixa_brinquedo": [
         "cabelo_coque_baixo_sob_chapeu",
         "cabelo_crespo_sob_chapeu",
@@ -9561,28 +9837,188 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "costas_capa_estrelas"
       ],
       "fantasia_cavaleiro_ombreiras_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "fantasia_dinossauro_listrado_laco_rosa_pacote": [
+        "lenco_pescoco"
+      ],
+      "lenco_pescoco": [
+        "fantasia_cavaleiro_ombreiras_pacote",
+        "fantasia_dinossauro_listrado_laco_rosa_pacote",
+        "roupa_cima_camisa_amarela_aberta_pacote",
+        "roupa_cima_camisa_azul_botao_pacote",
+        "roupa_cima_camisa_azul_clara_botao_pacote",
+        "roupa_cima_camisa_azul_clara_pacote",
+        "roupa_cima_camisa_cinza_botao_pacote",
+        "roupa_cima_camisa_rosa_bolso_pacote",
+        "roupa_cima_camisa_roxa_aberta_pacote",
+        "roupa_cima_camisa_verde_aberta_pacote",
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_cinza_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_colete_xerife",
+        "roupa_cima_jaqueta_amarela_gola_pacote",
+        "roupa_cima_jaqueta_azul_acolchoada_pacote",
+        "roupa_cima_jaqueta_bege_pacote",
+        "roupa_cima_jaqueta_cinza_aberta_pacote",
+        "roupa_cima_jaqueta_couro_marrom_pacote",
+        "roupa_cima_jaqueta_couro_tachas_pacote",
+        "roupa_cima_jaqueta_esportiva_amarela_pacote",
+        "roupa_cima_jaqueta_laranja_acolchoada_pacote",
+        "roupa_cima_jaqueta_rosa_pacote",
+        "roupa_cima_jaqueta_rosa_ziper_pacote",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_moletom_cinza_capuz_pacote",
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_cima_polo_amarela_pacote",
+        "roupa_cima_polo_verde_listrada_pacote",
+        "roupa_cima_sueter_estrela",
+        "roupa_cima_sueter_listrado_vermelho_pacote",
+        "roupa_inteira_camisa_branca_saia_escura_pacote",
+        "roupa_inteira_jardineira_azul_pacote",
+        "roupa_inteira_jardineira_saia",
+        "roupa_inteira_macacao_piloto_azul_pacote",
+        "roupa_inteira_vestido_azul_pacote"
+      ],
+      "roupa_cima_camisa_amarela_aberta_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_azul_botao_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_azul_clara_botao_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_azul_clara_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_cinza_botao_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_rosa_bolso_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_roxa_aberta_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_camisa_verde_aberta_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_colete_azul_petroleo_listrado_pacote": [
+        "calca_saia_babados",
+        "calca_saia_reta",
+        "calca_saia_rodada",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_colete_bolsos_pacote": [
+        "calca_saia_babados",
+        "calca_saia_reta",
+        "calca_saia_rodada"
+      ],
+      "roupa_cima_colete_cinza_pacote": [
+        "calca_saia_reta",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_colete_franjas": [
+        "calca_saia_babados",
+        "calca_saia_reta",
+        "calca_saia_rodada",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_colete_xerife": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_amarela_gola_pacote": [
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_azul_acolchoada_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_bege_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_cinza_aberta_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_couro_marrom_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_couro_tachas_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_esportiva_amarela_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_laranja_acolchoada_pacote": [
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_rosa_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_rosa_ziper_pacote": [
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_universitaria_vermelha_pacote": [
-        "costas_capa_estrelas"
+        "calca_saia_babados",
+        "calca_saia_rodada",
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_jaqueta_verde_cinto_pacote": [
+        "calca_saia_babados",
+        "calca_saia_reta",
+        "calca_saia_rodada",
+        "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_vermelha_pacote": [
-        "costas_capa_estrelas"
+        "calca_saia_babados",
+        "calca_saia_reta",
+        "calca_saia_rodada",
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_moletom_cinza_capuz_pacote": [
+        "lenco_pescoco"
       ],
       "roupa_cima_moletom_laranja_pacote": [
-        "costas_capa_estrelas"
+        "costas_capa_estrelas",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_polo_amarela_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_polo_verde_listrada_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_cima_sueter_estrela": [
+        "calca_saia_reta",
+        "lenco_pescoco"
+      ],
+      "roupa_cima_sueter_listrado_vermelho_pacote": [
+        "calca_saia_reta",
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_camisa_branca_saia_escura_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_jardineira_azul_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_jardineira_saia": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_macacao_piloto_azul_pacote": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_vestido_azul_pacote": [
+        "lenco_pescoco"
       ]
     },
     "earsByBody": {

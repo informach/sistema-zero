@@ -82,6 +82,22 @@ function rodarWrangler(args: readonly string[]): Promise<void> {
   })
 }
 
+/**
+ * Gravar o mesmo objeto de novo não muda nada (a chave tem a impressão digital do conteúdo), então
+ * uma falha passageira da API (o "Too Many Requests" com oito envios ao mesmo tempo, em 14/11/2026)
+ * tenta de novo, com espera crescente, em vez de derrubar a migração inteira.
+ */
+async function rodarWranglerDeNovo(args: readonly string[], tentativas = 3): Promise<void> {
+  for (let i = 1; ; i++) {
+    try {
+      return await rodarWrangler(args)
+    } catch (erro) {
+      if (i >= tentativas) throw erro
+      await new Promise((r) => setTimeout(r, 2000 * i * i))
+    }
+  }
+}
+
 async function comBaldeR2<T>(usar: (balde: Balde) => Promise<T>): Promise<T> {
   const pasta = await mkdtemp(join(tmpdir(), 'sz-avatar-'))
   let n = 0
@@ -92,7 +108,7 @@ async function comBaldeR2<T>(usar: (balde: Balde) => Promise<T>): Promise<T> {
         await writeFile(arquivo, bytes)
         try {
           for (const bucket of BUCKETS_DO_AVATAR) {
-            await rodarWrangler([
+            await rodarWranglerDeNovo([
               'r2',
               'object',
               'put',

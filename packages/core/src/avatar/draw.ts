@@ -85,8 +85,10 @@ export function drawAvatar(
     }
     return faixas.has(p.tier) || (options.owned?.has(id) ?? false)
   }
+  const opcoes = (grupo: string): string[] =>
+    (catalog.rules.groups[grupo]?.parts ?? []).filter(pode)
   const escolher = (grupo: string): string | undefined => {
-    const pecas = (catalog.rules.groups[grupo]?.parts ?? []).filter(pode)
+    const pecas = opcoes(grupo)
     return pecas[Math.floor(aleatorio() * pecas.length)]
   }
 
@@ -113,7 +115,7 @@ export function drawAvatar(
       liberados = proximos
     }
   }
-  if (options.dressed ?? true) slots = vestir(slots, escolher)
+  if (options.dressed ?? true) slots = vestir(slots)
   // Corpo e rosto sempre: se o filtro deixou o passo sem peça, vale o padrão do pack.
   for (const slot of ['corpo', 'rosto'] as const) {
     if (!slots[slot]) {
@@ -123,26 +125,35 @@ export function drawAvatar(
   }
   return withEars(catalog, slots)
 
-  /** Completa a roupa que o sorteio deixou faltando, com peças que combinam com o resto. */
-  function vestir(atual: AvatarSlots, sortear: (grupo: string) => string | undefined): AvatarSlots {
+  /**
+   * Completa a roupa que o sorteio deixou faltando, com peças que combinam com o resto. Tenta
+   * primeiro a sorteada (o mesmo resultado de sempre, o que mantém o banco de fotos da troca) e, se
+   * ela não combina (o lenço de pescoço não vai com camisa de botão nem jaqueta), as outras do grupo
+   * na ordem do catálogo, sem sortear de novo. Antes desistia na primeira e o boneco ficava sem blusa.
+   */
+  function vestir(atual: AvatarSlots): AvatarSlots {
     const tem = (slot: string) => Boolean(atual[slot])
     const fantasia = Object.values(atual).some((id) => catalog.parts[id]?.set)
     if (fantasia || tem('roupa_inteira')) return atual
     let s = atual
     const completar = (grupos: readonly string[]) => {
       for (const grupo of grupos) {
-        const peca = sortear(grupo)
-        if (!peca) continue
-        const depois = equipPart(catalog, s, peca)
-        // Só fica se não tirou nada do que já estava (a regra do pack manda tirar o que não combina).
-        if (
-          Object.keys(s).every(
-            (slot) =>
-              slot === 'orelhas' || depois[slot] === s[slot] || slot === catalog.parts[peca]?.slot,
-          )
-        ) {
-          s = depois
-          return
+        const sorteada = escolher(grupo)
+        if (!sorteada) continue
+        for (const peca of [sorteada, ...opcoes(grupo).filter((p) => p !== sorteada)]) {
+          const depois = equipPart(catalog, s, peca)
+          // Só fica se não tirou nada do que já estava (a regra do pack manda tirar o que não combina).
+          if (
+            Object.keys(s).every(
+              (slot) =>
+                slot === 'orelhas' ||
+                depois[slot] === s[slot] ||
+                slot === catalog.parts[peca]?.slot,
+            )
+          ) {
+            s = depois
+            return
+          }
         }
       }
     }
