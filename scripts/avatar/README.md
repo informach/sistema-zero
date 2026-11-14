@@ -55,7 +55,14 @@ A conferência já acusa quando elas chegam; ensine o `migrar.ts` a juntá-las a
 3. **Conferir de novo:** `bun run avatar:conferir` tem de dizer "Tudo migrado."
 4. **Revisar com a dona** os preços das peças novas e qualquer nome que a arte trocou (o diff do
    `catalog.generated.ts` mostra). Ajuste de preço é editorial: muda no catálogo e a próxima
-   migração preserva.
+   migração preserva. Peça revisada perde o `review`. As réguas da revisão de 14/11/2026 (todas
+   as peças conferidas): comum 40–70 (camiseta e calça simples 50–60, camisa e moletom 70), especial
+   70–110 (jaqueta 90, roupa inteira 110), raro 110–150 (o engraçado e o fantasioso), fantasia
+   200–300; **cabelo de verdade é sempre comum (60)**, qualquer tipo de cabelo (crespo, trança,
+   dread, coque), e só o cabelo com enfeite ou de cor/peruca de fantasia sobe de faixa; enfeite
+   pequeno (laço, presilha) e o que é do dia a dia (máscara) ficam em 50; cada aba tem de dar à
+   menina e ao menino um jeito grátis de se vestir (por isso a saia rodada e o cabelo crespo são
+   grátis).
 5. **Testes** (um de cada vez):
    - `cd packages/core && bun test src/avatar` (regras, sorteio, contrato do personagem);
    - `cd packages/members && bun test tests/db/avatar-swap.test.ts` (o banco de 200 fotos da troca

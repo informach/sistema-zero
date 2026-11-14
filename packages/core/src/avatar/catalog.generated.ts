@@ -700,7 +700,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3fb571c52f1b62eb46deef380b174aa6e0cc1b9d"
       },
       "price": 70,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/barba_cavanhaque_pacote.43ae0e75f017.webp",
       "tier": "coins",
@@ -720,7 +719,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5d5cb1a73774a5c73d3d8d8fd3ac8846b7f9fb1a"
       },
       "price": 70,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/barba_cheia_pacote.b4f2c9a7154a.webp",
       "tier": "coins",
@@ -740,7 +738,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "79f7af283282bf56f87b51e4236eaa1b655e9be2"
       },
       "price": 90,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/barba_dentes_vampiro_pacote.2f21d5a3d101.webp",
       "tier": "coins",
@@ -759,7 +756,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7f6f907e308ac14540363e2c715ccdd206a89691"
       },
       "price": 0,
-      "review": true,
       "slot": "bermuda",
       "thumb": "miniaturas/bermuda_branca_pacote.bd31be2281f3.webp",
       "tier": "free",
@@ -779,7 +775,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5c4cae1c262e8aaaf4c6989ff931ce4f6d09076b"
       },
       "price": 50,
-      "review": true,
       "slot": "bermuda",
       "thumb": "miniaturas/bermuda_short_vermelho_pacote.81659665e8ec.webp",
       "tier": "coins",
@@ -799,7 +794,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "073741ba60d2b7a5caad5659a46889e6232417ba"
       },
       "price": 50,
-      "review": true,
       "slot": "bermuda",
       "thumb": "miniaturas/bermuda_verde_pacote.e4d488d1b6c0.webp",
       "tier": "coins",
@@ -818,7 +812,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9f178e753ebd9b447e0ee48bef36ec2fbb3fe282"
       },
       "price": 0,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_01_pacote.493dc7641716.webp",
       "tier": "free",
@@ -838,7 +831,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a00d3e1a58c883e64610c7af76fb2a9c9ace221a"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_02_pacote.c949e8192321.webp",
       "tier": "coins",
@@ -858,7 +850,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "108f36e9e48d9eb973b84a294ebcb0547a936875"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_03_pacote.89b92e6e3dd1.webp",
       "tier": "coins",
@@ -878,7 +869,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "59bc80ef07847843ec444cf8dd715aaf39eee372"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_04_pacote.9a0b4fb713e1.webp",
       "tier": "coins",
@@ -898,7 +888,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8b8996752f195175794ea9c40d184e93ba7b6e69"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_05_pacote.133837e7bf7a.webp",
       "tier": "coins",
@@ -918,7 +907,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "191f51e5f8ebfd5bcbfddf96a5fe53b37b87c0e3"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_06_pacote.118d9f9556e9.webp",
       "tier": "coins",
@@ -938,7 +926,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "af21bba8c8115fa185f99c6f6beb6e86dd8d3953"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_07_pacote.48e15afd319c.webp",
       "tier": "coins",
@@ -958,7 +945,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1d0cae28c3f385e1245645bde02bce006711b7a9"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_08_pacote.a71e1533fc19.webp",
       "tier": "coins",
@@ -978,7 +964,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "29f45568778988a64d6819c604f2fc4cf20ce90e"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_09_pacote.b77b04ac0d5c.webp",
       "tier": "coins",
@@ -998,7 +983,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b96856df0cabbbf97df4ac34c1c7c8f9e728321c"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_10_pacote.3a65c710787b.webp",
       "tier": "coins",
@@ -1018,7 +1002,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0589f2530d4792290cc4f4e96b1c3da3baf5aba6"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_11_pacote.fb347d5568b8.webp",
       "tier": "coins",
@@ -1038,7 +1021,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3330f9d008cf96fb708e6c7521a5b8ba2233c341"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_12_pacote.7779f2cf4057.webp",
       "tier": "coins",
@@ -1058,7 +1040,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fa21937d377b7a7de3283345c8d63a9fb907e83a"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_13_pacote.5e7eda8059a2.webp",
       "tier": "coins",
@@ -1078,7 +1059,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3cc43a6b94b3c3b6610b4c13bff011e72ea7dc82"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_14_pacote.11a88ac004a6.webp",
       "tier": "coins",
@@ -1098,7 +1078,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4f6342ce1d2a7e33cc68c2988a641d74b0894147"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/bigode_15_pacote.cb44a8ac1a42.webp",
       "tier": "coins",
@@ -1117,7 +1096,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8fad6dd752fb6d4243b7da6a354d2aa7e59dfa63"
       },
       "price": 0,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/brincos_argola_pacote.5ae4926a5312.webp",
       "tier": "free",
@@ -1137,7 +1115,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "57776d24044c5227ff0650637780d5b1f09745b2"
       },
       "price": 120,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_arco_iris_pacote.8435867f3da3.webp",
       "tier": "coins",
@@ -1145,7 +1122,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_black_power": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_black_power.f875d97cf37e.glb",
       "group": "cabelo",
       "label": "Cabelo black power castanho-escuro",
@@ -1156,8 +1133,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "d8eb2ebc8ad6f8e88193c1de09f0ffbd50fd663e"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_black_power.f188617bae24.webp",
       "tier": "coins",
@@ -1176,7 +1152,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "261863b67fb8400c329c1a2562db10742bae5830"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_cacheado_curto_pacote.cb32d6d7482e.webp",
       "tier": "free",
@@ -1184,7 +1159,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_cacheado_grisalho_pacote": {
       "audience": "girl",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_cacheado_grisalho_pacote.ee262ed936a9.glb",
       "group": "cabelo",
       "label": "Cabelo cacheado grisalho",
@@ -1195,8 +1170,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "13f0ddbf7702a3de87affdca8a27e79021c2d154"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_cacheado_grisalho_pacote.ad045273ede4.webp",
       "tier": "coins",
@@ -1216,7 +1190,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "409d059062286f347187ce8ee8e1c0d02c21d750"
       },
       "price": 120,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_cacheado_rosa_pacote.e1718c6f3dc6.webp",
       "tier": "coins",
@@ -1224,7 +1197,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_cachos_longos_pacote": {
       "audience": "girl",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_cachos_longos_pacote.f10f64ea4c7a.glb",
       "group": "cabelo",
       "label": "Cabelo cachos longos (crespo)",
@@ -1235,8 +1208,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "7cd31f45a2a7171ef311b1abb2c4ae89d2a38a76"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_cachos_longos_pacote.3128dac6cfcd.webp",
       "tier": "coins",
@@ -1255,7 +1227,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "db6f0f2645922fa00522e82b14ec73c8a26ba6f8"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_chanel_castanho_pacote.9755041c1ccb.webp",
       "tier": "free",
@@ -1275,7 +1246,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a963329f778478151df8419dd8641ec5480071f0"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_chanel_franja_pacote.b819bb3c6309.webp",
       "tier": "coins",
@@ -1283,7 +1253,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_coque_alto_loiro_pacote": {
       "audience": "girl",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_coque_alto_loiro_pacote.668c5adaaaa2.glb",
       "group": "cabelo",
       "label": "Cabelo coque alto loiro",
@@ -1294,8 +1264,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "ffbf987eee8536cf75c3c1162e9fee1c33e08b81"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_coque_alto_loiro_pacote.6db28097233b.webp",
       "tier": "coins",
@@ -1315,7 +1284,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2127bc10b661f6a55c7c56cac5b558714fb51e7a"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_coque_baixo_sob_chapeu.b5c54ced12c0.webp",
       "tier": "coins",
@@ -1323,7 +1291,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_coque_crespo": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_coque_crespo.b02d18700ad6.glb",
       "group": "cabelo",
       "label": "Coque crespo",
@@ -1334,8 +1302,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "55162860a19f4022d79828941e4b3bf953b48372"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_coque_crespo.0199fe3b332c.webp",
       "tier": "coins",
@@ -1355,7 +1322,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "74b4e0247ae67ccadacbf7765ee1d538da661c3a"
       },
       "price": 90,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_coque_faixa_pacote.f3c8eaac204c.webp",
       "tier": "coins",
@@ -1363,7 +1329,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_crespo_sob_chapeu": {
       "audience": "both",
-      "band": "comum",
       "file": "pecas/cabelo_crespo_sob_chapeu.cbadea6b646f.glb",
       "group": "cabelo_sob_chapeu",
       "label": "Cabelo crespo (para chapéu e enfeite)",
@@ -1374,11 +1339,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "fb4693630a972d4eddec95e0df108c6b829ab450"
       },
-      "price": 60,
-      "review": true,
+      "price": 0,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_crespo_sob_chapeu.a7dd0b6dcc7e.webp",
-      "tier": "coins",
+      "tier": "free",
       "tris": 1553
     },
     "cabelo_curto_castanho_pacote": {
@@ -1394,7 +1358,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "97f8ad537c04f90015968ae0c8c17a042fedbd3c"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_castanho_pacote.a0d9850aceb2.webp",
       "tier": "free",
@@ -1413,7 +1376,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ff5fcc1c91fc09e100cf5901d8e3014f49ae9201"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_escuro_1_pacote.ce2db5f9a144.webp",
       "tier": "free",
@@ -1433,7 +1395,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cc7ff12644493cf5ace9c9ab5dcbfd4101dda34e"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_escuro_2_pacote.c9887a10ebf3.webp",
       "tier": "coins",
@@ -1452,7 +1413,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "87af2294c56fc1ae88b49069f7d207d8a3d85dcc"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_loiro_1_pacote.978409b2bc5a.webp",
       "tier": "free",
@@ -1472,7 +1432,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "55d126010cda62d371b0550aea64e4f751684d72"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_loiro_2_pacote.a046cd71414b.webp",
       "tier": "coins",
@@ -1492,7 +1451,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d82b4c6e0e941b174279b729fd94d63b761fd18e"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_curto_loiro_3_pacote.bad9d8db9df1.webp",
       "tier": "coins",
@@ -1500,7 +1458,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_dreadlocks_pacote": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_dreadlocks_pacote.a216ba039735.glb",
       "group": "cabelo",
       "label": "Cabelo dreadlocks",
@@ -1511,8 +1469,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "6a9d48a712ede67122a086416d7e03602f20fe87"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_dreadlocks_pacote.9c70b8306a2d.webp",
       "tier": "coins",
@@ -1532,7 +1489,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5a651f3f193f87288d6ec195fadc72c8fd2d22cb"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_espetado.1024ddf63273.webp",
       "tier": "coins",
@@ -1552,7 +1508,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b68ef503abd77677624ad85cab8b37c6127d757e"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_franja_ruiva_pacote.7abcf68542ee.webp",
       "tier": "coins",
@@ -1572,7 +1527,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "718263b32adb41ab94d814cde4206220386cb760"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_liso_branco_pacote.eb24ad00f179.webp",
       "tier": "coins",
@@ -1592,7 +1546,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2191300d6d285e4de6f0b29fa9d3ada3191c6e2b"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_liso_cinza_04_pacote.9f4511c19f68.webp",
       "tier": "coins",
@@ -1612,7 +1565,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c1cb4c65bd3fd5f1881993b241b3b6934bd89685"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_liso_cinza_05_pacote.8116754db225.webp",
       "tier": "coins",
@@ -1632,7 +1584,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3372215e0c000f536f521851b1c568fc4d7ca9c2"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_liso_grisalho_pacote.e42a24d5e82a.webp",
       "tier": "coins",
@@ -1652,7 +1603,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "37eb4b95b2f114b9e83ee78d2c8a038304afe13a"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_liso_preto_branco_pacote.10fd605e36dd.webp",
       "tier": "coins",
@@ -1672,7 +1622,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "dc66a07e9f7fbdf9eee2820e294cee115e9ba6f7"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_loiro_curto_pacote.4aaa8d390f3e.webp",
       "tier": "coins",
@@ -1680,7 +1629,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_maria_chiquinha": {
       "audience": "girl",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_maria_chiquinha.926419d16d87.glb",
       "group": "cabelo",
       "label": "Maria-chiquinha",
@@ -1691,8 +1640,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "e596e1a1590a70c4465a5dd366cb74f72e4ed5cf"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_maria_chiquinha.cac884b531ad.webp",
       "tier": "coins",
@@ -1712,7 +1660,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ab0ff55a716efcd6ecb2fdd3234576bc499a0ae9"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_mecha_lateral_pacote.6e59a92a5229.webp",
       "tier": "coins",
@@ -1731,7 +1678,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e0ffa95e0f309314576d962b3dc43b5671815bda"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_ondulado_castanho_pacote.2d0003d3a669.webp",
       "tier": "free",
@@ -1750,7 +1696,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "daa67509475829516a4e29625494085b3000a6e9"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_ondulado_escuro_pacote.eae5f64644f9.webp",
       "tier": "free",
@@ -1770,7 +1715,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "47b275888e8f882eff8d440650c3d228d3915e38"
       },
       "price": 120,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_orelhinhas_rato_loiro_pacote.1a1089f6bbdc.webp",
       "tier": "coins",
@@ -1790,7 +1734,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e7f8aca346c1f41281c23579cccaeb6124b6791c"
       },
       "price": 120,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_peruca_cachos_branca_pacote.ec2416ff8818.webp",
       "tier": "coins",
@@ -1810,7 +1753,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "01dbd68a4e87ed09c19b661b4783d215f105f1e9"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_rabo_cavalo_sob_chapeu.53630e4c79dc.webp",
       "tier": "coins",
@@ -1829,7 +1771,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fd9d115eb48aaa1166445a17eb2a5b0bf9d78c52"
       },
       "price": 0,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_solto_sob_chapeu.541589d720a1.webp",
       "tier": "free",
@@ -1837,7 +1778,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_topete_branco_pacote": {
       "audience": "boy",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_topete_branco_pacote.30dc9f94a788.glb",
       "group": "cabelo",
       "label": "Cabelo topete branco",
@@ -1848,8 +1789,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "7047240baef7026e950d7dbf46cd97b4d5f83c08"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_topete_branco_pacote.5740c248e70f.webp",
       "tier": "coins",
@@ -1857,7 +1797,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_topete_ruivo_pacote": {
       "audience": "boy",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_topete_ruivo_pacote.6205608d659d.glb",
       "group": "cabelo",
       "label": "Cabelo topete ruivo",
@@ -1868,8 +1808,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "aa4708468505cc65395132bac781603f92526c04"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_topete_ruivo_pacote.01d184c73e8e.webp",
       "tier": "coins",
@@ -1877,7 +1816,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "cabelo_trancas_nago": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/cabelo_trancas_nago.76fdff5b1f43.glb",
       "group": "cabelo",
       "label": "Tranças nagô",
@@ -1888,8 +1827,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "dbe2118e67373438b4631a35cf99531f032be4f6"
       },
-      "price": 90,
-      "review": true,
+      "price": 60,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_trancas_nago.983e83b5ecb5.webp",
       "tier": "coins",
@@ -1909,7 +1847,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "be4f908d48815f774d24d4b1f4c7fb5cf2bd5f40"
       },
       "price": 60,
-      "review": true,
       "slot": "cabelo",
       "thumb": "miniaturas/cabelo_trancas_sob_chapeu.824623dd7a9e.webp",
       "tier": "coins",
@@ -1929,7 +1866,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "07566fef28a7beaad333bef037363227bc6f44ac"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_amarela_faixa_pacote.a79b1a547690.webp",
       "tier": "coins",
@@ -1949,7 +1885,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b94b610ab32ad500baecf4554f9f73024fd40e56"
       },
       "price": 60,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_amarela_pacote.61ec318693aa.webp",
       "tier": "coins",
@@ -1969,7 +1904,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "47e187e43fa6ac73e22e206626cb16ec6235e0b1"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_azul_cinto_pacote.82d7b33e74a3.webp",
       "tier": "coins",
@@ -1988,7 +1922,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5260ce9be69c066069e8d4b860420b1a4c33cce0"
       },
       "price": 0,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_azul_clara_pacote.c3cf72cfda23.webp",
       "tier": "free",
@@ -2008,7 +1941,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "500ced65eacee6f60d2f58d88d32db2cc8f398a7"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_azul_petroleo_rasgada_pacote.842a4209e29c.webp",
       "tier": "coins",
@@ -2028,7 +1960,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8b52cb48a1e5b3ff7b73cb5f94c24c46b63c9762"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_bermuda_cargo_cinza_pacote.b8ef6c866827.webp",
       "tier": "coins",
@@ -2048,7 +1979,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1db8d875a5e4d20c2884d602f70651105513e5a6"
       },
       "price": 60,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_branca_pacote.1dc2b1ac6c03.webp",
       "tier": "coins",
@@ -2068,7 +1998,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "deaae5624d4d7ff90c54965c46bdb15e9086ee2d"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_joelheiras_pacote.b037749e9174.webp",
       "tier": "coins",
@@ -2088,7 +2017,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "251ec802a08f22383067479a0d71805e5f427666"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_listrada_roxa_pacote.f246b33345f3.webp",
       "tier": "coins",
@@ -2108,7 +2036,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7dcce1621bb960a59b1896c2d49f0e7b70504ca1"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_marrom_meias_pacote.91ea010e2f5f.webp",
       "tier": "coins",
@@ -2127,7 +2054,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b24e30ae998d4c3c3960c784e3b7101bde26dde0"
       },
       "price": 0,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_marrom_pacote.d29c0a0f747c.webp",
       "tier": "free",
@@ -2147,7 +2073,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "47f24290a52985cb4892544f92a3a8697ca5abef"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_rosa_bolinhas_pacote.5a17336dae1f.webp",
       "tier": "coins",
@@ -2167,7 +2092,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9be0af74198a6bd0b2813318d044fe6f2c56d964"
       },
       "price": 60,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_roxa_pacote.92b9308f9648.webp",
       "tier": "coins",
@@ -2187,7 +2111,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d24dd5650a5803f227dc526a922f8051abd174de"
       },
       "price": 60,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_saia_babados.6dff6235507d.webp",
       "tier": "coins",
@@ -2207,7 +2130,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0f22f1d0f1feb7e835464235ef7e57d75c09d36c"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_saia_longa.de62cc007be7.webp",
       "tier": "coins",
@@ -2227,7 +2149,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b7bac192435b12c2549d6d175b360f7d95460326"
       },
       "price": 60,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_saia_reta.91e89466a6ed.webp",
       "tier": "coins",
@@ -2235,7 +2156,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "calca_saia_rodada": {
       "audience": "girl",
-      "band": "comum",
       "file": "pecas/calca_saia_rodada.cdbf2e682efc.glb",
       "group": "calca",
       "label": "Saia rodada",
@@ -2246,11 +2166,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "613c5802c3701e905bde05b277a20069f0ee1e8b"
       },
-      "price": 60,
-      "review": true,
+      "price": 0,
       "slot": "calca",
       "thumb": "miniaturas/calca_saia_rodada.ea0c087070c8.webp",
-      "tier": "coins",
+      "tier": "free",
       "tris": 1024
     },
     "calca_verde_remendada_pacote": {
@@ -2267,7 +2186,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "32c60f850cad41108084cfe5ed0c84f200acaf8d"
       },
       "price": 80,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_verde_remendada_pacote.3ef04d0fa9a3.webp",
       "tier": "coins",
@@ -2286,7 +2204,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d622472c7f61ce4e3cf49340dcc605f5bde6feb4"
       },
       "price": 0,
-      "review": true,
       "slot": "calca",
       "thumb": "miniaturas/calca_vermelha_pacote.36d8133294f5.webp",
       "tier": "free",
@@ -2306,7 +2223,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "93572c4a767733d7b93ecc79b17e156e3b958026"
       },
       "price": 90,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_bota_marrom_pacote.0e09d042fa2d.webp",
       "tier": "coins",
@@ -2326,7 +2242,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1c2afc172cb6d7c7be9a5ecf621fb12d90f35f30"
       },
       "price": 90,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_botas_cano_alto.7f1daa5fe5b3.webp",
       "tier": "coins",
@@ -2346,7 +2261,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f0e15acb2bd5f8b4f1227126cc36802aa9ef923b"
       },
       "price": 50,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_botinha_lisa.8599e3e4cfbe.webp",
       "tier": "coins",
@@ -2365,7 +2279,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4bf72bdde68a430bf21cb91c14cdf9cc1bc78bdf"
       },
       "price": 0,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_chinelo_amarelo_pacote.0cf74a0eeefb.webp",
       "tier": "free",
@@ -2385,7 +2298,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "29e4e641c6c33b300dcdc40adb438b78ff3e5850"
       },
       "price": 50,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_chinelo_listrado_pacote.33bef5267f18.webp",
       "tier": "coins",
@@ -2405,7 +2317,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4241520954ec156f73dd4162f5d75e59c4a89948"
       },
       "price": 50,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_chinelo_rosa_pacote.957fe2c3b24e.webp",
       "tier": "coins",
@@ -2425,7 +2336,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "228cce534a3cc62910abfcafdea46a72f721d047"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_mocassim_castanho_pacote.70ad52146a6e.webp",
       "tier": "coins",
@@ -2445,7 +2355,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "81e7537029c0aeb6a4bbfb26681944e0108423d0"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_mocassim_marrom_pacote.4336cf17eec2.webp",
       "tier": "coins",
@@ -2465,7 +2374,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a111e5e65f9dec70ffc855f73096fe797fa6bd47"
       },
       "price": 90,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_pantufa_azul_pacote.bb2c47668fab.webp",
       "tier": "coins",
@@ -2485,7 +2393,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "87f1dea25ff0cd2014f81d766fba1935ac16bd52"
       },
       "price": 90,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_pantufa_sapo_pacote.68d8d2e0b92e.webp",
       "tier": "coins",
@@ -2505,7 +2412,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5d0d9f2331f96ea1e3f703b8391358e654e927bf"
       },
       "price": 50,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_sandalia_azul_petroleo_pacote.951611e925c0.webp",
       "tier": "coins",
@@ -2525,7 +2431,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "38330389b7e603bfd39fb32b39d1219c98e856d7"
       },
       "price": 50,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_sandalia_laranja_pacote.00989a22b698.webp",
       "tier": "coins",
@@ -2545,7 +2450,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c9020d9dbdb7f98006e4132c35a3189c5a5f1adc"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_sapato_bege_pacote.8d48182f50b3.webp",
       "tier": "coins",
@@ -2565,7 +2469,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1e7e833a1ad7c5f73f8064a04216a58c935eaab1"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_sapato_marrom_pacote.3bddccb1757d.webp",
       "tier": "coins",
@@ -2585,7 +2488,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "240a03cb546e79940b91ff19037bec23afc5ebf2"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_sapato_preto_pacote.e20d898a2ee2.webp",
       "tier": "coins",
@@ -2605,7 +2507,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b4d79aff0dce6637e66a67df1ab3325d48af6b17"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_bege_pacote.04a78d717205.webp",
       "tier": "coins",
@@ -2625,7 +2526,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4a91ea13dbe76dc472ad89b969a29f142115bbe8"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_branco_cano_pacote.1a14f7ffe6a4.webp",
       "tier": "coins",
@@ -2645,7 +2545,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "aa88ce0e748076ee1887bf3331bf941a49e5211b"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_branco_liso_pacote.02a792825fd3.webp",
       "tier": "coins",
@@ -2664,7 +2563,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0d15b2fa535d6f36b065deadca0e49c4aa7af7e7"
       },
       "price": 0,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_branco_pacote.6115257d207f.webp",
       "tier": "free",
@@ -2684,7 +2582,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "14f32e3d25e73df93ddffb3aaca6e2e0c59d95df"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_cano_alto.b4a4195fde37.webp",
       "tier": "coins",
@@ -2704,7 +2601,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c9d0f42de9ebb42f75f6a8f95aea455e4b27685e"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_cinza_claro_pacote.651036c2be00.webp",
       "tier": "coins",
@@ -2724,7 +2620,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "551f2869f23eb41acf0787a16dea1ca0eedf79cf"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_cinza_pacote.9262ab96b60f.webp",
       "tier": "coins",
@@ -2743,7 +2638,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d9d649da7612f1913b23dd840271f45df1f53f5e"
       },
       "price": 0,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_preto_pacote.9fb33a0e7836.webp",
       "tier": "free",
@@ -2763,7 +2657,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0ac96d1dac9bc935765175ab7d918e171bece712"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_rosa_pacote.4f40df73da48.webp",
       "tier": "coins",
@@ -2783,7 +2676,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b9260b5386913256351da73dc757c5e94ff41cde"
       },
       "price": 70,
-      "review": true,
       "slot": "calcado",
       "thumb": "miniaturas/calcado_tenis_vermelho_pacote.595b659cb3c1.webp",
       "tier": "coins",
@@ -2803,7 +2695,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b016d37ebc81a07a93661114a58041a8f222bfe6"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_abobora_pacote.797c781a0a1c.webp",
       "tier": "coins",
@@ -2823,7 +2714,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1736255e303a36ee5acb8e36e297df941106ad4b"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_bobo_pacote.7e448923aa0c.webp",
       "tier": "coins",
@@ -2843,7 +2733,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "29b33fdafa152c77bf5e63ce35746584dd58bda5"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_boia_coelho_rosa_pacote.e0b52ff3cd42.webp",
       "tier": "coins",
@@ -2863,7 +2752,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "eba331caf67b2fe2e803283aa43ed88d49a139e3"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_boia_patinho_pacote.c811ef76d1fb.webp",
       "tier": "coins",
@@ -2883,7 +2771,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "da3fcef686c4ad96005a0e374aae758ffb00a507"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_boina_vermelha_pacote.43967dec1b15.webp",
       "tier": "coins",
@@ -2902,7 +2789,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "acd3967fb6812320a72843fa0f92244fe37cdf29"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_bone_branco_bolinhas_pacote.031602a556fa.webp",
       "tier": "free",
@@ -2922,7 +2808,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4b6388ce5de8396d6e2e3ee0d48a4fb0b1d04916"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_bone_helice_pacote.2e7bea5e33ac.webp",
       "tier": "coins",
@@ -2942,7 +2827,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d0ce390c82050e20bd53cc59af3263eeeddb59d0"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_bone_orelhas_gato_pacote.bfff13fb17b2.webp",
       "tier": "coins",
@@ -2962,7 +2846,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f310459aec5af235511089401fef38bf19e5accc"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_caixa_brinquedo.0faa9a71145c.webp",
       "tier": "coins",
@@ -2983,7 +2866,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "496473ee7e50b63659a5d3db31ffe66a1c28c824"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_caixa_brinquedo_pacote.e69317d5c40b.webp",
       "tier": "coins",
@@ -3003,7 +2885,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "bd7d68adfb370f474608634bf76363b22478e23e"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_aviador_pacote.7b39bbfde315.webp",
       "tier": "coins",
@@ -3023,7 +2904,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9a34dc72e6abee458d70df1a4820ce8093af516c"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_chifres_rena_pacote.6034bbb81cd5.webp",
       "tier": "coins",
@@ -3043,7 +2923,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f98ccd8bf66094a4d3908489927b802b6228cb3a"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_corrida_pacote.4b03ff1327dd.webp",
       "tier": "coins",
@@ -3063,7 +2942,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "bbfb5e462716a6571729bc746669ab7b905b4d54"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_militar_pacote.594f4acdd12e.webp",
       "tier": "coins",
@@ -3083,7 +2961,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "79095d2d62b84901c92fb7371d37fae952fecf73"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_mineiro_pacote.5ec7f7bb9317.webp",
       "tier": "coins",
@@ -3103,7 +2980,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d329129bbd2219dbfdc09edc0ee24db3b8f65a2f"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capacete_moto_pacote.2dde8995fcbf.webp",
       "tier": "coins",
@@ -3123,7 +2999,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fc76211aa6331602c5cd501a9253c5ddad6980e2"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capelo_formatura_pacote.f120159b28ee.webp",
       "tier": "coins",
@@ -3143,7 +3018,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d89e1a93244c580625a2b13d6ce3e813d3b75802"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capuz_coala_pacote.e8e07632056d.webp",
       "tier": "coins",
@@ -3163,7 +3037,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "56470994ee8bf8ab548d1c9be63a3e6fb34b4a1a"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capuz_galinha_pacote.3e2937683d71.webp",
       "tier": "coins",
@@ -3183,7 +3056,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5ede7bee77d19810c8868fa29d0cee90a0274480"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capuz_gato_preto_pacote.742c4aef60c6.webp",
       "tier": "coins",
@@ -3203,7 +3075,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "40deeffc3191779b407889eeee09219fa903479f"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capuz_raposa_pacote.242cf4bf7074.webp",
       "tier": "coins",
@@ -3223,7 +3094,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "31267d232b93a940fba678098acfab0df309f38f"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_capuz_tubarao_pacote.4ca9afd7574c.webp",
       "tier": "coins",
@@ -3243,7 +3113,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "712de09691f339222da224dc2248e4a7f003771c"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_caracol_cabeca_pacote.32c5d5eeac98.webp",
       "tier": "coins",
@@ -3263,7 +3132,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3698aa881478230159e324c94a23a90164dbb870"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_caranguejo_pacote.535f64882295.webp",
       "tier": "coins",
@@ -3283,7 +3151,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "224b7a407cb6a68d36cfe46a57474d7439a8b689"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cartola_cinza_pacote.ca5a67c74a7d.webp",
       "tier": "coins",
@@ -3303,7 +3170,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cb40869ac6e54fb4b6f90a78c80d161fe838f26e"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cartola_colorida_pacote.9ffcc7317789.webp",
       "tier": "festa",
@@ -3323,7 +3189,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d8704aefa583981191052b68a5b2a31987e2096f"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cartola_listrada_estrelas_pacote.fe3a8dea7d67.webp",
       "tier": "coins",
@@ -3343,7 +3208,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6612d5cbbdf6b7b0a2e5a2ba66350b1ea83120a7"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cauboi.032f0066f823.webp",
       "tier": "coins",
@@ -3363,7 +3227,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7deeb1b44d0a2d60d7d99cac533315124235c266"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cerveja_pacote.4223dc128303.webp",
       "tier": "coins",
@@ -3383,7 +3246,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f0d08c682bd0bc9adaa97891c1007292be31e1d5"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_coco_cinza_pacote.56aa9c5dcae2.webp",
       "tier": "coins",
@@ -3403,7 +3265,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "58e3179a28e2fe9c49d942d54f5ca29c87dc1873"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cogumelo_pacote.7c8dd8b5fb5e.webp",
       "tier": "coins",
@@ -3423,7 +3284,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "86eb1cb8a408c47c15f766d1e45b142d0eca15ac"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_cone_transito_pacote.8e19cc4aceda.webp",
       "tier": "coins",
@@ -3443,7 +3303,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4add3b4cf5ea953eced97975445d4614f329439c"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_coroa_flores.ad36f103c586.webp",
       "tier": "coins",
@@ -3463,7 +3322,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e0169b48211a23b7771c01f2a4b76061ba9abc3a"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_coroa_pacote.08ade440607c.webp",
       "tier": "coins",
@@ -3483,7 +3341,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1769ace2fe389737becc59060a2552b948d6d4d1"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_desentupidor_cabeca_pacote.e76a490e4f90.webp",
       "tier": "coins",
@@ -3503,7 +3360,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2d92a0b3c50c0c4708e9d72d1c51b6bc960de9f2"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_dinossauro_verde_pacote.0aaa4a8274c6.webp",
       "tier": "coins",
@@ -3523,7 +3379,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e8a15f1b3d502910a6efcabc98c6afaf0cadb86b"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_elmo_viking_pacote.2851df5abadc.webp",
       "tier": "coins",
@@ -3543,7 +3398,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9dc8777e754e863fb78a41a00fcc4a482b73e486"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_escafandro_pacote.86ea25027b3c.webp",
       "tier": "coins",
@@ -3563,7 +3417,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8789b4b69e42d1a6e9bc3867e34efb64a3b7dc84"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_galinha_assada_pacote.434cddd4be7c.webp",
       "tier": "coins",
@@ -3582,7 +3435,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fdf8287a8ec19b2031c4586ea21b237a1f0dac2c"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_gorro_cinza_pacote.394b8d4bc68b.webp",
       "tier": "free",
@@ -3602,7 +3454,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "40810aea5bafae910a171fc4e96ee79e40d5e405"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_gorro_curto_vermelho_pacote.57d4e2484646.webp",
       "tier": "coins",
@@ -3622,7 +3473,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "68e080b8720c9ee691a8d74464839e1337ee5acc"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_gorro_gelatina_sorridente_pacote.3c7f9a94d117.webp",
       "tier": "coins",
@@ -3642,7 +3492,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6200bb0787c7eff9f2758cce830a478c36a7b703"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_gorro_papai_noel_pacote.77dd1f45475b.webp",
       "tier": "festa",
@@ -3661,7 +3510,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9cee16af7f19bc13deb146f685e77cd39b702d03"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_gorro_trico_pacote.c604ff180163.webp",
       "tier": "free",
@@ -3681,7 +3529,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c4c2f607a1f23f1ebe6257a5883c77d1054b02dc"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_guarda_chuva_pacote.2b50ef396826.webp",
       "tier": "coins",
@@ -3700,8 +3547,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "f85c2bd46a8c5b8a56a493fb6172aa340141182e"
       },
-      "price": 70,
-      "review": true,
+      "price": 50,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_laco.fa4ed95c0f30.webp",
       "tier": "coins",
@@ -3721,7 +3567,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c6b9cc750c63e4b2c78e2f7ef198d67ebe57cd2c"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_mascara_gas_pacote.9b110b1f7611.webp",
       "tier": "coins",
@@ -3741,7 +3586,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "347000381e048db04822f008f79ca82d01413e9b"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_palha_baixo_pacote.055d7220b4c4.webp",
       "tier": "coins",
@@ -3760,7 +3604,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d1f079d05fc0efbb4f574f13578a95ebc0d83222"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_palha_claro_pacote.ce4736956b7e.webp",
       "tier": "free",
@@ -3780,7 +3623,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "85995ade2738c370e0762eef66083833b4ef48ff"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_palha_fita_pacote.1c7af859548c.webp",
       "tier": "festa",
@@ -3800,7 +3642,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c915de3b8afbfe9eeaeba886be0a8e00330c6935"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_palha_marrom_pacote.14c9da9ec962.webp",
       "tier": "coins",
@@ -3820,7 +3661,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f99b6a61f043213740c8070a07eb28b709463704"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_peixe_lanterna_pacote.98a62f6f2a54.webp",
       "tier": "coins",
@@ -3840,7 +3680,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "507e2f3b8e394c1afede051a400361e34eb7afbc"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_pescador_azul_pacote.d8ddeb96ae56.webp",
       "tier": "coins",
@@ -3859,8 +3698,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "c47c753bf2913c4f35316190d78551773b8d3e7a"
       },
-      "price": 70,
-      "review": true,
+      "price": 50,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_presilhas_estrela.9db8825289fe.webp",
       "tier": "coins",
@@ -3880,7 +3718,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "da4d23ca846ec448de0bf0474ff22d5a07d768cb"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_quepe_marinheiro_pacote.a1499dbf1d2b.webp",
       "tier": "coins",
@@ -3900,7 +3737,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0065c414c7bbc1518964e970021cb6cfc6ba301b"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_quepe_policial_pacote.a2e72fec6317.webp",
       "tier": "coins",
@@ -3920,7 +3756,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ac8fc94473a6d9b9a4d11ce722f521666f545b61"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_saco_papel_pacote.382b6ad29d18.webp",
       "tier": "coins",
@@ -3940,7 +3775,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "db2efe33100a816de1db8b37acdb8a4229906ea7"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_sapo_pacote.bab47186e8e0.webp",
       "tier": "coins",
@@ -3960,7 +3794,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "84f68ef88a00e5f73483237a004ce23f20727739"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_sombreiro_pacote.fb939471750d.webp",
       "tier": "coins",
@@ -3980,7 +3813,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a7b60676add023d2e2210df04e99604e4ae79284"
       },
       "price": 150,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_televisao_cabeca_pacote.103e808e6e82.webp",
       "tier": "coins",
@@ -3999,7 +3831,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "37e6098edf37e4c629bf267543f18fe0fd582b16"
       },
       "price": 0,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_tiara.88a1c105d9ad.webp",
       "tier": "free",
@@ -4019,7 +3850,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fa3e05b8896e1f3ae357690ff9bb40e0945d4e3b"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_tiara_fones_ouvido_pacote.d29bd1b87938.webp",
       "tier": "coins",
@@ -4057,7 +3887,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f3f672f06d11bf9f723289d070ff2d3794df3a36"
       },
       "price": 100,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_tiara_orelhas_coelho_pacote.012fa833b43a.webp",
       "tier": "coins",
@@ -4077,7 +3906,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f0f8ad2bf4657db3c4cdc2468a39961944fb42b0"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_touca_cozinheiro_pacote.6244dc29b2b1.webp",
       "tier": "coins",
@@ -4097,7 +3925,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8594add435914f09e48570f1eb33a861de048f9c"
       },
       "price": 70,
-      "review": true,
       "slot": "chapeu",
       "thumb": "miniaturas/chapeu_verde_pena_pacote.cd8767f707d3.webp",
       "tier": "coins",
@@ -4117,7 +3944,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6aa309c61f7e97a674668f7abb516659872a0a6b"
       },
       "price": 90,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/chupeta_pacote.87b03a443912.webp",
       "tier": "coins",
@@ -4137,7 +3963,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "37fb41c1c1fc0fe0c20da5623b5c490c93aca9cd"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#aaa728",
       "thumb": "miniaturas/corpo_amarelo_limao_pacote.8bf4bf1f238a.webp",
@@ -4158,7 +3983,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fc61aab02836231813b9e9f1c6bb0fda6bc5a8e8"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#fd9904",
       "thumb": "miniaturas/corpo_amarelo_pacote.4233902ecdc0.webp",
@@ -4179,7 +4003,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "800a01dce310df042c03ecf4a4661216ad8e14f6"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#2846a8",
       "thumb": "miniaturas/corpo_azul_pacote.820aa592a8f9.webp",
@@ -4200,7 +4023,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "020e7b4212c70c4f8431c4943917ec4ae397f416"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#00878f",
       "thumb": "miniaturas/corpo_azul_petroleo_pacote.62c91dcbd5d5.webp",
@@ -4221,7 +4043,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "63bae977cd9a798b5d5e3afee96b8b5422bd6bb9"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#efeeee",
       "thumb": "miniaturas/corpo_branco_pacote.66f5f2536aba.webp",
@@ -4242,7 +4063,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "81887e63802d896e602bcf95720156592f88d2c4"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#898a8b",
       "thumb": "miniaturas/corpo_cinza_pacote.34768f89a0fb.webp",
@@ -4263,7 +4083,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "44fa005665949f7290cfd25b4b58c5e0c46c32b5"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#d14916",
       "thumb": "miniaturas/corpo_laranja_pacote.dfb8fb9eef9d.webp",
@@ -4284,7 +4103,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f47f0dbea8c6a25e7c880b6eb10293735438f880"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#fcac79",
       "thumb": "miniaturas/corpo_pele_clara_pacote.9101b27ecad3.webp",
@@ -4305,7 +4123,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2ece49b17f21f44b06b0869df7ad95eb00b46e45"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#452e28",
       "thumb": "miniaturas/corpo_pele_escura_pacote.0780b18fbb6f.webp",
@@ -4326,7 +4143,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "974fb5a575ab2f2a1e1621963c314b9ab109a99f"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#f79b5d",
       "thumb": "miniaturas/corpo_pele_media_clara_pacote.01579698c49f.webp",
@@ -4347,7 +4163,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "31a65296a9a1a05bac3e15e6a090b80260b36e2c"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#e87c56",
       "thumb": "miniaturas/corpo_pele_media_pacote.fc7a0282069c.webp",
@@ -4368,7 +4183,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4e93c3c418d7fc9b76fb30cfc6c2324c042b075a"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#8d452e",
       "thumb": "miniaturas/corpo_pele_morena_pacote.10d5cb90dce9.webp",
@@ -4389,7 +4203,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "08491bceb926577965ee487d70c2504d1440aece"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#2b2a2a",
       "thumb": "miniaturas/corpo_preto_pacote.34a428054f9f.webp",
@@ -4410,7 +4223,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4ba00f1ebe0ba799beb8b17ed0b360c007a0dcdb"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#6426a4",
       "thumb": "miniaturas/corpo_roxo_pacote.637b891bb265.webp",
@@ -4431,7 +4243,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6919821f93cb24cb8b9af64f8bf2a3710703a76a"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#418d39",
       "thumb": "miniaturas/corpo_verde_pacote.c2e56476d190.webp",
@@ -4452,7 +4263,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "16683da6780ddd0965ecc530fb8854370bd5abba"
       },
       "price": 0,
-      "review": true,
       "slot": "corpo",
       "swatch": "#d02c32",
       "thumb": "miniaturas/corpo_vermelho_pacote.200d823494b9.webp",
@@ -4490,7 +4300,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "dc9826bb1a831e5214db97d60733974cbda961be"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_abelha",
       "slot": "roupa_inteira",
       "thumb": "miniaturas/fantasia_abelha_asas_pacote.54a1f80933f3.webp",
@@ -4510,7 +4319,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "24ed267816274e7de9604559e9ea9fa0615089f1"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_abelha",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_abelha_blusa_listrada_pacote.7d7e44792a93.webp",
@@ -4530,7 +4338,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fda293c6142e4dfe5c8db57bb46088f90ddad0d0"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_abelha",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_abelha_cabeca_antenas_pacote.4ca6aa42abae.webp",
@@ -4550,7 +4357,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c774acab0ddbb5aa84706f6ced018db68d4cfa79"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_abelha",
       "slot": "calca",
       "thumb": "miniaturas/fantasia_abelha_calca_pacote.9236a785522c.webp",
@@ -4570,7 +4376,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9b0c642edd3c6b33c2e7a7ab7705fd1888fc4ea8"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_astronauta",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_astronauta_botas_pacote.3a9685d0c87f.webp",
@@ -4590,7 +4395,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0dc8cdf96aede3afde75ec589d881806015f164e"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_astronauta",
       "slot": "calca",
       "thumb": "miniaturas/fantasia_astronauta_calca_pacote.c7a57be2f7b6.webp",
@@ -4610,7 +4414,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3cacf514b1656bbc5da506ca74b973d26233e958"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_astronauta",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_astronauta_capacete_pacote.2dbb799d6998.webp",
@@ -4630,7 +4433,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "17c275498d42c2bd48fa3b67ad73512e601cf043"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_astronauta",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_astronauta_luvas_pacote.86ede1072336.webp",
@@ -4650,7 +4452,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cb800176b43bb800bf1ecba19b8569ab8dd3a619"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_astronauta",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_astronauta_traje_pacote.af66aa5465ff.webp",
@@ -4670,7 +4471,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "81ee7d4f1106c3335f301632f0a28d56288f9b58"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_bobo_corte",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_bobo_corte_chapeu_guizos_pacote.32f134220053.webp",
@@ -4690,7 +4490,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "dc7bd8023b2f5ad238ed9158b73f1ceafecb84a1"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_bobo_corte",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_bobo_corte_macacao_pacote.952423f2def3.webp",
@@ -4710,7 +4509,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "eca63d62aa0f0a474ad566f7c156493b2ee11b60"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_cavaleiro",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_cavaleiro_botas_pacote.7dc97a7041a6.webp",
@@ -4730,7 +4528,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f3ed843d55700f13905d47167b9e0f0da3f8aa8c"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_cavaleiro",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_cavaleiro_bracadeiras_pacote.0683053549e0.webp",
@@ -4750,7 +4547,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "01cf83d7506314afc029ec66a6a506bc305c2f81"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_cavaleiro",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_cavaleiro_elmo_chifres_pacote.b4746555da42.webp",
@@ -4770,7 +4566,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8d3d7d1fc9389704a14a05f05714ace84aa26d4a"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_cavaleiro",
       "slot": "roupa_cima",
       "thumb": "miniaturas/fantasia_cavaleiro_ombreiras_pacote.d829fa81f0f6.webp",
@@ -4790,7 +4585,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "37457e55747d221f8899b0e96ec2bd3627b66937"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_cavaleiro",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_cavaleiro_peitoral_pacote.60eaea65f207.webp",
@@ -4810,7 +4604,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7612a89f06980d3640e09e45055d45c50f5a43b2"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_coelho_roxo",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_coelho_roxo_botas_pacote.34ac40f1a312.webp",
@@ -4830,7 +4623,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d1c877c190080a0d0cf7263eb3a95c174829a178"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_coelho_roxo",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_coelho_roxo_capuz_coelho_pacote.77177824b2ab.webp",
@@ -4850,7 +4642,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "58bffd965982433859626b4b83541be26a817cbf"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_coelho_roxo",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_coelho_roxo_macacao_pacote.b5657ef478b0.webp",
@@ -4870,7 +4661,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1caf53958177217b0b030f315e351f66e8f0650e"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_dinossauro_listrado",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_dinossauro_listrado_cabeca_pacote.84d6cb8ddc67.webp",
@@ -4890,7 +4680,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c7835c3e6fee5335089cd745d44917783249c506"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_dinossauro_listrado",
       "slot": "roupa_cima",
       "thumb": "miniaturas/fantasia_dinossauro_listrado_laco_rosa_pacote.d41b8654be41.webp",
@@ -4910,7 +4699,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cf9b2145587261980c1337bd996db0beffcb0b88"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_dinossauro_listrado",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_dinossauro_listrado_macacao_pacote.f936cb924d56.webp",
@@ -4930,7 +4718,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "af9fcb0874b7d2e20e9fb57af1386253653c1ef1"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_papai_noel",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_papai_noel_botas_pacote.3c90e5eff46b.webp",
@@ -4950,7 +4737,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "82684320d608b5595add6d616c86902b0dd306a7"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_papai_noel",
       "slot": "calca",
       "thumb": "miniaturas/fantasia_papai_noel_calca_pacote.a3f36db97d08.webp",
@@ -4970,7 +4756,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "68b7f7c2b1d1190ce0f66b556935fb411a4bb406"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_papai_noel",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_papai_noel_casaco_pacote.92f25caa21e5.webp",
@@ -4990,7 +4775,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "128f35ceb5f31e3f2971cfbc34939e986fd4acc7"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_papai_noel",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_papai_noel_gorro_pacote.26c8ef477a82.webp",
@@ -5010,7 +4794,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "34d712371e5cd8e3452a66a80df5295e1248774f"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_papai_noel",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_papai_noel_luvas_pacote.bb2b7e7920cb.webp",
@@ -5030,7 +4813,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "22f5bf8ae1177ce3f4bf290e0a3d634fcaaabf96"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pinguim",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_pinguim_cabeca_pacote.31d0b4bc1762.webp",
@@ -5050,7 +4832,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "984c77cb96190e0adde60c0b1c0d026378603e2d"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pinguim",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_pinguim_macacao_pes_pacote.441ab3291e89.webp",
@@ -5070,7 +4851,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a78b74056428ed9310e6f754daab1b91302c627a"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pirata",
       "slot": "calca",
       "thumb": "miniaturas/fantasia_pirata_calca_botas_pacote.80e0f73bf683.webp",
@@ -5090,7 +4870,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "bf069436c85c58b97facf9bec2fb0a8866dde7ca"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pirata",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_pirata_casaco_pacote.9f5e4d210d20.webp",
@@ -5110,7 +4889,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "298ddb291a854ef76c52a478e035acc6b535c9a5"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pirata",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_pirata_chapeu_pirata_pacote.248f942b01d1.webp",
@@ -5130,7 +4908,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e1e01ebf72b3a6f5ae3ea25595da31e64da7fbf8"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pombo",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_pombo_cabeca_pacote.a4ce57676f20.webp",
@@ -5150,7 +4927,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "05994e6fac1c688833ea89a45809dd877880c060"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_pombo",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_pombo_macacao_pes_pacote.db0a631678e2.webp",
@@ -5170,7 +4946,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4b3ce5bae1d6d4a1a6b777302a621d87fac4dd67"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_robo_amarelo",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_robo_amarelo_botas_pacote.d49e825ab586.webp",
@@ -5190,7 +4965,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "dfcc95473c04df871dd14b47e555b7bf61e796a2"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_robo_amarelo",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_robo_amarelo_cabeca_robo_pacote.5fe9837648b1.webp",
@@ -5210,7 +4984,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ca4caa4754f7246785eefd15981897cd0b154f4e"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_robo_amarelo",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_robo_amarelo_luvas_pacote.d8b353360caf.webp",
@@ -5230,7 +5003,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b76a57a814e806755e26d9076b950c14b4dcac3c"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_robo_amarelo",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_robo_amarelo_macacao_pacote.b94e66533262.webp",
@@ -5250,7 +5022,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "68199600b59826f7ed42b29e03bf0e03493aa84d"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "roupa_cima",
       "thumb": "miniaturas/fantasia_soldado_bolsas_colete_pacote.c65545385f17.webp",
@@ -5270,7 +5041,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "66588ad08e605689d8445f4423748830db2186bc"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_soldado_botas_pacote.23884a65556c.webp",
@@ -5290,7 +5060,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "653c81ffcd398bbc4ab6dcc8dd60f3d32c9274af"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "calca",
       "thumb": "miniaturas/fantasia_soldado_calca_pacote.389f6a5182a6.webp",
@@ -5310,7 +5079,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d966fff2389689c6a5d8c39ff61ccddb9a3ad88a"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_soldado_camisa_pacote.67b0adfbb46e.webp",
@@ -5330,7 +5098,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "47b9456df0de782a743a93a7dcca6b795dda8df4"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_soldado_capacete_pacote.61f488bf11ad.webp",
@@ -5350,7 +5117,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d980cfe5068c2ba5a07aaf104cd04f0f7f28ce5f"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_soldado",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_soldado_luvas_pacote.49b80c369eff.webp",
@@ -5370,7 +5136,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ee895d0c69db1f164a95f13b99235137d6032f07"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_super_heroi",
       "slot": "calcado",
       "thumb": "miniaturas/fantasia_super_heroi_botas_pacote.476504d80ae1.webp",
@@ -5390,7 +5155,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "092085de8bb90b8c31e440c8ae8f8d739106294a"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_super_heroi",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_super_heroi_luvas_pacote.57f12baf226c.webp",
@@ -5410,7 +5174,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1934da31ea95807b5616ff8152a9ff930ed2331a"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_super_heroi",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_super_heroi_macacao_pacote.dc53b8be4e1e.webp",
@@ -5430,7 +5193,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "85298ee5dc4e30f98c31b24e69d60f314892c164"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_super_heroi",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_super_heroi_mascara_capacete_pacote.f75327943a6f.webp",
@@ -5450,7 +5212,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "eb2d91decaebc64ab5551deafebaa5a2b93d0b4e"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_traje_neon",
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_traje_neon_capacete_pacote.20f1c1f3dd09.webp",
@@ -5470,7 +5231,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "876066b0c70d22952a87222513739beacff57ff2"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_traje_neon",
       "slot": "luvas",
       "thumb": "miniaturas/fantasia_traje_neon_luvas_pacote.0106b420cc4d.webp",
@@ -5490,7 +5250,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cab34ab01bf458839e63ab1ae1dfc477aa88f0e4"
       },
       "price": 0,
-      "review": true,
       "set": "fantasia_traje_neon",
       "slot": "fantasia",
       "thumb": "miniaturas/fantasia_traje_neon_macacao_pacote.0e46eda33b5c.webp",
@@ -5511,7 +5270,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "883a6c09eebd372bddbf676c8572a2b86718a19b"
       },
       "price": 90,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/fones_sem_fio_pacote.27dcc1e90671.webp",
       "tier": "coins",
@@ -5531,7 +5289,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f97b9be1bf808b9ec63b446cdc25b242f29d43e2"
       },
       "price": 50,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/lenco_pescoco.cd6d774bf929.webp",
       "tier": "coins",
@@ -5551,7 +5308,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d16c15363ffda31ff1a30332224092e7a479333c"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_amarelas_pacote.cd246e53b060.webp",
       "tier": "coins",
@@ -5571,7 +5327,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d65ffed21ebe78ce3e067eff4e36ef089f8a99e5"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_azuis_pacote.61eaa286cdf6.webp",
       "tier": "coins",
@@ -5591,7 +5346,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4547bd58b9b572c87b8a815e63f7786c66466f49"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_cinza_escuro_pacote.136f0bbceefe.webp",
       "tier": "coins",
@@ -5610,7 +5364,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b8b8dd17ee36c356f8bed484f44e2348048b331b"
       },
       "price": 0,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_cinza_pacote.fc5a1e6d2d28.webp",
       "tier": "free",
@@ -5630,7 +5383,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1664945d1633e5fd6afbff43b57612d24cc56f15"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_laranja_pacote.657232e8fc62.webp",
       "tier": "coins",
@@ -5650,7 +5402,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d54b2f9fd50c0844c1e9749ef4495d454d1d86c6"
       },
       "price": 70,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_listradas_vermelhas_pacote.4ce715fa6594.webp",
       "tier": "coins",
@@ -5670,7 +5421,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ecaa4b23a5c74f357ba63560dea53adfdc2b1355"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_pretas_pacote.19eb354b1fa0.webp",
       "tier": "coins",
@@ -5690,7 +5440,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9d91057cd41c25ff25b3b3bced66e51742fbb5d9"
       },
       "price": 70,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_pretas_sem_dedos_pacote.853e88744276.webp",
       "tier": "coins",
@@ -5710,7 +5459,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9a81421a66088b0a8a8de64e1798fede8e9a63c2"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_rosa_pacote.62be34ac4f5a.webp",
       "tier": "coins",
@@ -5730,7 +5478,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "29bb06283e44b209f631f6742346b5f5a1f082bf"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_verde_limao_pacote.db229f2863c7.webp",
       "tier": "coins",
@@ -5750,7 +5497,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "71f4eb14c4f5b12fd4c31c151b183e6e12ec5a32"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_verdes_pacote.1d791dee79e4.webp",
       "tier": "coins",
@@ -5770,7 +5516,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "61ae81a13254615c7a358b3c07f27441024dcb63"
       },
       "price": 50,
-      "review": true,
       "slot": "luvas",
       "thumb": "miniaturas/luvas_vermelhas_pacote.3fa26d8ccc43.webp",
       "tier": "coins",
@@ -5778,7 +5523,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "mascara_cirurgica_pacote": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/mascara_cirurgica_pacote.2313358e011e.glb",
       "group": "acessorio_rosto",
       "label": "Máscara cirúrgica",
@@ -5789,8 +5534,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "e5798770737ac72a14965eed93680148157126d3"
       },
-      "price": 90,
-      "review": true,
+      "price": 50,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/mascara_cirurgica_pacote.2e8f7f2122cf.webp",
       "tier": "coins",
@@ -5798,7 +5542,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "mascara_pano_preta_pacote": {
       "audience": "both",
-      "band": "especial",
+      "band": "comum",
       "file": "pecas/mascara_pano_preta_pacote.2be7bf44b36f.glb",
       "group": "acessorio_rosto",
       "label": "Máscara de pano preta",
@@ -5809,8 +5553,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "cfe7ce51551e8b36acf67613f4dc149db57bdf6a"
       },
-      "price": 90,
-      "review": true,
+      "price": 50,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/mascara_pano_preta_pacote.3ab7d08b4f3f.webp",
       "tier": "coins",
@@ -5830,7 +5573,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "31d66194475fbe6ba71b6b65f5097f1c91415609"
       },
       "price": 40,
-      "review": true,
       "slot": "meias",
       "thumb": "miniaturas/meias_altas_cinza_pacote.bd08e30e3f97.webp",
       "tier": "coins",
@@ -5850,7 +5592,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "715c76d5ce38dab41bffd5fbf93c1f7703af6eec"
       },
       "price": 40,
-      "review": true,
       "slot": "meias",
       "thumb": "miniaturas/meias_altas_marrons_pacote.e79b644f7711.webp",
       "tier": "coins",
@@ -5870,7 +5611,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "35cd6cff7ef2ccbb55074189d45aa8b06a59f6ca"
       },
       "price": 40,
-      "review": true,
       "slot": "meias",
       "thumb": "miniaturas/meias_curtas_babado.45177aa258d8.webp",
       "tier": "coins",
@@ -5889,7 +5629,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a27d0c54a966bdfae8cfcc43b33f43f0b225ac64"
       },
       "price": 0,
-      "review": true,
       "slot": "meias",
       "thumb": "miniaturas/meias_curtas_pacote.e079194893ce.webp",
       "tier": "free",
@@ -5909,7 +5648,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "90d0e592553c6d0f5d283ae6ce39916ac6a2b0e8"
       },
       "price": 90,
-      "review": true,
       "slot": "acessorio_rosto",
       "thumb": "miniaturas/nariz_palhaco_pacote.b90cc1d694d7.webp",
       "tier": "coins",
@@ -5929,7 +5667,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "14e1c807969c6f98a4f75e27359ccaf60ba1d329"
       },
       "price": 90,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_3d_pacote.96092c2feb71.webp",
       "tier": "coins",
@@ -5949,7 +5686,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cd1c69ec128bbd60be4fd3cc6903824ba9894c28"
       },
       "price": 90,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_aviador_laranja_pacote.d30975da8ffb.webp",
       "tier": "coins",
@@ -5968,7 +5704,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "73975faa29c87fb514becde108859db5223245b6"
       },
       "price": 0,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_azuis_pacote.2060bde0c411.webp",
       "tier": "free",
@@ -5988,7 +5723,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6f77413cce4448c5693dbfb07258448e9e46cf01"
       },
       "price": 90,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_coracao_pacote.ab2d97c9b671.webp",
       "tier": "coins",
@@ -6008,7 +5742,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3c60562ab24695f2e0a911b9fcd76838087cdf61"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_escuros_brancos_pacote.690f3c005f35.webp",
       "tier": "coins",
@@ -6028,7 +5761,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "616c62effd23ba645e0955e8accd8c7d166642ca"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_escuros_cinza_pacote.4bb62353f3bf.webp",
       "tier": "coins",
@@ -6048,7 +5780,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "202c811841c687bb020043115c2eb37da6ddbe42"
       },
       "price": 90,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_esqui_pacote.2344bf4af8c4.webp",
       "tier": "coins",
@@ -6068,7 +5799,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f185adb8253bad0a5558336f98973d7d8df08689"
       },
       "price": 90,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_gatinho_verde_pacote.5f52f5501964.webp",
       "tier": "coins",
@@ -6088,7 +5818,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9dc8b6e2fc230364bfc51bcf3420ef1459af45b1"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_grau_vermelhos_pacote.d7abaedee680.webp",
       "tier": "coins",
@@ -6108,7 +5837,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5375bde22ed2102a276565ec356fcf004362b0e1"
       },
       "price": 120,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_lupa_pacote.7770c9768897.webp",
       "tier": "coins",
@@ -6128,7 +5856,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "da6ed8bb40e2c645a468b4aca83a480c66d5d4a1"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_marrons_pacote.75d9f1c75de0.webp",
       "tier": "coins",
@@ -6148,7 +5875,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "95849682d81bd65c95c459a57c74b020e243ff23"
       },
       "price": 120,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_persiana_pacote.79aec00aed43.webp",
       "tier": "coins",
@@ -6168,7 +5894,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "53b269afad92f13cb07de5e69866a96351ca9d90"
       },
       "price": 120,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_pixelados_pacote.169c026658e7.webp",
       "tier": "coins",
@@ -6188,7 +5913,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c3612175c6cd8103f8a29049171419405df87c78"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_azuis_pacote.044971b5b8ae.webp",
       "tier": "coins",
@@ -6207,7 +5931,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5da681f9745146ebe886cd7a79ba79336ede8607"
       },
       "price": 0,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_cinza_pacote.a5e2e01e616d.webp",
       "tier": "free",
@@ -6227,7 +5950,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "29f95391c11f1f7deced92cf9f2615fa88a08fb0"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_rosa_pacote.28f96a2f1083.webp",
       "tier": "coins",
@@ -6247,7 +5969,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "beb71e66fdc9e8b1673708fe1743c108206b825e"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_verdes_pacote.ac8b0ab70063.webp",
       "tier": "coins",
@@ -6267,7 +5988,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6a4d91afb333d3a73124260dbf8dc3b115b79c0e"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_vermelhos_pacote.bf3c2eae286c.webp",
       "tier": "coins",
@@ -6287,7 +6007,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8971bcf0fcb673f359012e9b9ef14dbcd8278c30"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_redondos_vidro_pacote.ffe827a8f533.webp",
       "tier": "coins",
@@ -6307,7 +6026,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d31d8d4299a027d7305c02af3cab587721ac4bf0"
       },
       "price": 60,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_rosa_pacote.b9526718f4bc.webp",
       "tier": "coins",
@@ -6327,7 +6045,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "961f6c8b7c6ec9a56b7324ef86ebc27165cfca83"
       },
       "price": 120,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_tapa_olho_pacote.74c7f0e93f47.webp",
       "tier": "coins",
@@ -6347,7 +6064,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "32772540847b761247c9d8772e248d9be0c20c8d"
       },
       "price": 120,
-      "review": true,
       "slot": "oculos",
       "thumb": "miniaturas/oculos_viseira_triangular_vidro_pacote.2df653a03b4e.webp",
       "tier": "coins",
@@ -6366,7 +6082,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b499ed3acc795007012b4a86ded3d8b6c4c36b2c"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_amarelo_limao_pacote.4803178d443e.webp",
       "tier": "auto",
@@ -6385,7 +6100,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "bea9ec68964a11ca0fc02249e33ff59559f79acc"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_amarelo_pacote.23ceafee62e4.webp",
       "tier": "auto",
@@ -6404,7 +6118,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5314151259fe6ed55f4209e7080563ee1550a056"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_azul_pacote.a95247ca03f9.webp",
       "tier": "auto",
@@ -6423,7 +6136,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5e23128822a6a0482d9b4d74870fe79c67732aa3"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_azul_petroleo_pacote.412215c3138b.webp",
       "tier": "auto",
@@ -6442,7 +6154,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "aa33a845f4d26168d1337b0a12657eecf10262fd"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_branco_pacote.5f1e9e6b85f4.webp",
       "tier": "auto",
@@ -6461,7 +6172,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f87158ad2a7c8d3eae32bc48fa4bc89ebcd91241"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_cinza_pacote.80820b71daf7.webp",
       "tier": "auto",
@@ -6480,7 +6190,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b250f34d5167d8b4ed99ffe254c4d38c8e24ccad"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_laranja_pacote.400a5df1a9ac.webp",
       "tier": "auto",
@@ -6499,7 +6208,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5f4925e4e447213ce2f5a8a52dee637296ce2873"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_pele_clara_pacote.66658b1ea228.webp",
       "tier": "auto",
@@ -6518,7 +6226,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cbf3d0ce23ba8d6761b129d86025f1f79e36ff3c"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_pele_escura_pacote.3d5c28cea523.webp",
       "tier": "auto",
@@ -6537,7 +6244,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "996726d35cfcc729e40afb8db0202615a66f73bc"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_pele_media_clara_pacote.a8c317a41934.webp",
       "tier": "auto",
@@ -6556,7 +6262,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b60d4592456eb00fbd5d3358683c1a331e606ad4"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_pele_media_pacote.c5c7088d93b3.webp",
       "tier": "auto",
@@ -6575,7 +6280,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "80e61500aecf1013cee6616e36531fde41177d72"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_pele_morena_pacote.5264ef2c99c2.webp",
       "tier": "auto",
@@ -6594,7 +6298,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0b9d71d7751e1f7bbf374b2a5c38b8ba8afa673c"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_preto_pacote.eb1f95b7fbdc.webp",
       "tier": "auto",
@@ -6613,7 +6316,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "027661c9c5aa8248787578bf622482ca440e15c9"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_roxo_pacote.d71df773213b.webp",
       "tier": "auto",
@@ -6632,7 +6334,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8d8e3ac3548587a542fe55a8ef7563159c72e288"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_verde_pacote.8af15a810e74.webp",
       "tier": "auto",
@@ -6651,7 +6352,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1d2ba59a5485c5915322c11a29d481a26c6db978"
       },
       "price": 0,
-      "review": true,
       "slot": "orelhas",
       "thumb": "miniaturas/orelhas_corpo_vermelho_pacote.3feceb87fcb9.webp",
       "tier": "auto",
@@ -6674,7 +6374,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e2cbf052b7bb88c00f4681f8865a48b686218b03"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_apaixonado_pacote.a9c738d32f02.webp",
       "tier": "free",
@@ -6697,7 +6396,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "72f3ae5b85df963405d88af7df0f69f90369b6b2"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_atordoado.6298e4ad45f4.webp",
       "tier": "free",
@@ -6720,7 +6418,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e2445e398715ba8a97011867d38f2156e78f2265"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_bravo_pacote.346de26d4eed.webp",
       "tier": "free",
@@ -6743,7 +6440,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8acfe71f8fb0bf78ccf9e87d2d50bd1be01b34f9"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_chorando_pacote.1852f12de7cd.webp",
       "tier": "free",
@@ -6766,7 +6462,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d137927e0ead6a913d25a81046722879edf51df1"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_compaixao.16b9518146a2.webp",
       "tier": "free",
@@ -6789,7 +6484,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9a406e36a75b124247132e8ae5561c830ac7e27a"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_confuso_pacote.2807f3e3b9bd.webp",
       "tier": "free",
@@ -6812,7 +6506,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0b5bb8fe7de6f320738a94698930ae516ce2dc03"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_feliz_pacote.85934b0761d0.webp",
       "tier": "free",
@@ -6835,7 +6528,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0e86831276a89a95220d17fb519051af0fe3b37f"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_furia_pacote.c53502b2aff8.webp",
       "tier": "free",
@@ -6858,7 +6550,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2970911c58861fad2c572ecb8f37756f032bef1e"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_gritando_pacote.738da684e555.webp",
       "tier": "free",
@@ -6881,7 +6572,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "66719235d95e96c8f54c48759f42c6d7dccbc853"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_impaciencia.552f3c62d828.webp",
       "tier": "free",
@@ -6904,7 +6594,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d847cf142d425a93dd6c01136e9c5e33c2c5cad6"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_lingua_pacote.2086fe8fd25c.webp",
       "tier": "free",
@@ -6927,7 +6616,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "738bda7c1b8bc026a63d933010dd40a84c1b3311"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_malvado_pacote.f5d8502ba149.webp",
       "tier": "free",
@@ -6950,7 +6638,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "daac824bbb801047e13d95e2185e995dec04a486"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_neutro_pacote.ab896d1cff9f.webp",
       "tier": "free",
@@ -6973,7 +6660,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4ea722bd9ff8c63d4e0317c6ae08a7b3deb5bd69"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_normal_pacote.2501d9a76e06.webp",
       "tier": "free",
@@ -6996,7 +6682,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d91b83b62d990e6416d06f4ae4497c59e4f011f0"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_surpreso_pacote.b5179136392e.webp",
       "tier": "free",
@@ -7019,7 +6704,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2726453850da17206a3c5af549a7157a2a9057b3"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_01_triste_pacote.1450f41c4f80.webp",
       "tier": "free",
@@ -7042,7 +6726,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "45805f6b556655df89eb631579b944652efe43d4"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_bravo_pacote.b91ac7029c1f.webp",
       "tier": "free",
@@ -7065,7 +6748,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "cd3ff123ba2473e84d04cbf75c43cfdcb8b0077d"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_feliz_pacote.b90dea7ceb36.webp",
       "tier": "free",
@@ -7088,7 +6770,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b059658a599dd57cfaf803d31a2ca99b46d41718"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_malvado_pacote.4ba21ae6569e.webp",
       "tier": "free",
@@ -7111,7 +6792,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ee04709034b30d0ca665116c3b817ef11d4016ff"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_neutro_pacote.73dd2185fa46.webp",
       "tier": "free",
@@ -7134,7 +6814,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1e855df8dec57b789a44f51bf2cf93c065cbaaa9"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_normal_pacote.9c38d009530f.webp",
       "tier": "free",
@@ -7157,7 +6836,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "16a7ae5eaa40414926083371d059b412c223618f"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_surpreso_pacote.9df6e607281a.webp",
       "tier": "free",
@@ -7180,7 +6858,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a421f9802c4d0acda9004161229952e477e74be5"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_fem_02_triste_pacote.b098d79ea96c.webp",
       "tier": "free",
@@ -7203,7 +6880,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e2cbf052b7bb88c00f4681f8865a48b686218b03"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_apaixonado_pacote.a9c738d32f02.webp",
       "tier": "free",
@@ -7226,7 +6902,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b95904af9c56fbb7ec9438d6cfc88e81c3d14252"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_atordoado.3cacd3e9e3b8.webp",
       "tier": "free",
@@ -7249,7 +6924,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5cb4938aadc21a28ea704873b8d012f902bdd538"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_bravo_pacote.b52c20256f79.webp",
       "tier": "free",
@@ -7272,7 +6946,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "fa3ecfe23416d4f13dff4fd7d73d6c06427f3bec"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_chorando_pacote.9eac090f4481.webp",
       "tier": "free",
@@ -7295,7 +6968,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "558f4b17adad2d03531afe8f263a545764c476cd"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_compaixao.6b87ba2aca05.webp",
       "tier": "free",
@@ -7318,7 +6990,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "96458d23dc198bab5e44363cdb9f9117566dfef8"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_confuso_pacote.09c0d4d21882.webp",
       "tier": "free",
@@ -7341,7 +7012,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5eb2630dbcb76cc979983bbd741604b164b7fd90"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_feliz_pacote.5174188e010b.webp",
       "tier": "free",
@@ -7364,7 +7034,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "37a695bf51d7d2a19a1e97ee22b348221eeeda1c"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_furia_pacote.767c4da488b1.webp",
       "tier": "free",
@@ -7387,7 +7056,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3983753c78b6f8e71327d817e5bec9bbb30e642f"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_gritando_pacote.2aa29295aa95.webp",
       "tier": "free",
@@ -7410,7 +7078,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a9dc4ce70204b759d8d9e27de9b4e4680b15e982"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_impaciencia.b09c24cd2274.webp",
       "tier": "free",
@@ -7433,7 +7100,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b0252d220584c8a14321c01f86d498b705d4b54b"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_lingua_pacote.8f7b80db321c.webp",
       "tier": "free",
@@ -7456,7 +7122,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d395e204fc89f5bfb4492648e6e802df010fb7a8"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_malvado_pacote.d4b0d3bc870d.webp",
       "tier": "free",
@@ -7479,7 +7144,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3e6e429a5afe6105fea2edc9ecd7e071e1244fcc"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_neutro_pacote.7018e60f048d.webp",
       "tier": "free",
@@ -7502,7 +7166,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c2804a6a7017d44c7b6b803bd5c02205af1200b5"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_normal_pacote.f8b282e45ca7.webp",
       "tier": "free",
@@ -7525,7 +7188,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f386ddffb30e05d6281a8510b78b64b32e921a7c"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_surpreso_pacote.415d834025df.webp",
       "tier": "free",
@@ -7548,7 +7210,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "bb738322cb0022b4515cc52008e9395768ff654c"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_01_triste_pacote.68050d91e509.webp",
       "tier": "free",
@@ -7571,7 +7232,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "50caa5bc5d6a8e2e0089766d614f2debcc464566"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_bravo_pacote.bc08afe21f65.webp",
       "tier": "free",
@@ -7594,7 +7254,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6188dd33c8a176fc6892fa481bb6c78051452006"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_feliz_pacote.57d14fbda936.webp",
       "tier": "free",
@@ -7617,7 +7276,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "16eebd22615dfda7e317c21c400497c46fbd0b88"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_malvado_pacote.3d1af1d79568.webp",
       "tier": "free",
@@ -7640,7 +7298,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "062d49b1d7c8ca9103fd7c7dd4e500059f41c793"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_neutro_pacote.41a365e9d8d3.webp",
       "tier": "free",
@@ -7663,7 +7320,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ed1d2519d72d41c76032e1eb3e349c54b3de8c5b"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_normal_pacote.f8e7e7850b4e.webp",
       "tier": "free",
@@ -7686,7 +7342,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e63addc1b58fbeb08ad5726fdad0e78e19ab1731"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_surpreso_pacote.c028cce678bc.webp",
       "tier": "free",
@@ -7709,7 +7364,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e834e4de0c8a3936bd1f8245d63bea6e9d466f5d"
       },
       "price": 0,
-      "review": true,
       "slot": "rosto",
       "thumb": "miniaturas/rosto_masc_02_triste_pacote.5531e637d29e.webp",
       "tier": "free",
@@ -7729,7 +7383,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "af1a4fe711938c9e717d668a795366d405a06ba1"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_amarela_aberta_pacote.8ddd50ad56d7.webp",
       "tier": "coins",
@@ -7749,7 +7402,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "effad0efbc27623d994798cf7015acf41d55d365"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_azul_aberta_pacote.527af1037928.webp",
       "tier": "coins",
@@ -7769,7 +7421,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "dbe11dc1cd3eefd104e572aff605fc8191c72aee"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_azul_botao_pacote.ee23f1b9eaa1.webp",
       "tier": "coins",
@@ -7789,7 +7440,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7936780e399f5a0e3fb9964b188f0344ca4ae59a"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_azul_clara_botao_pacote.86f5bb44663a.webp",
       "tier": "coins",
@@ -7808,7 +7458,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8e7c246c2906e415adae3db0eafb130a037f384f"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_azul_clara_pacote.3e599ff00ae4.webp",
       "tier": "free",
@@ -7828,7 +7477,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7bd6ff3c96bac492f246068a2e25ea5c2ce19055"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_cinza_botao_pacote.bac0c28bfec7.webp",
       "tier": "coins",
@@ -7848,7 +7496,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "3ea640aef05ae3f6596e43f635642eca49cf446e"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_rosa_bolso_pacote.3f29a2025c3d.webp",
       "tier": "coins",
@@ -7868,7 +7515,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "065ea3538f3b1257dcd2938231576c0cc5701eb5"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_roxa_aberta_pacote.4f595cdac7ec.webp",
       "tier": "coins",
@@ -7888,7 +7534,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "494a1e23da894b755e41412eba80158f902f8af6"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camisa_verde_aberta_pacote.218dbaefd7f5.webp",
       "tier": "coins",
@@ -7908,7 +7553,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1cf43ca92132ac097b1e77f6ac703cb3b265859d"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_amarela_gola_v_pacote.9bfac34c1a28.webp",
       "tier": "coins",
@@ -7928,7 +7572,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9d1fd37687883b236a0b919aa7e2ef7042e1eac4"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_amarela_verde_pacote.6f337b7d6880.webp",
       "tier": "coins",
@@ -7948,7 +7591,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c60f65b1d92ebd4b9de84a2d1c8a6091fe9008b7"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_azul_degrade_pacote.cc751e0d7063.webp",
       "tier": "coins",
@@ -7968,7 +7610,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f08a34199bb065485a4fee80d772fdcea3d2640d"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_azul_petroleo_gola_v_pacote.1e99c62fbec5.webp",
       "tier": "coins",
@@ -7988,7 +7629,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e20a18364e30f1dba5b49270cd6a0e5744b8bd70"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_branca_gola_v_pacote.0ed4ddca09cf.webp",
       "tier": "coins",
@@ -8007,7 +7647,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "922d5be565d66905c5e90724c45714f1fd933956"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_branca_pacote.0bc38a7cdd46.webp",
       "tier": "free",
@@ -8027,7 +7666,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "79fac5ae2449cb00f1feaf1803765b38c511a967"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_laranja_cinza_pacote.60c5b5bab863.webp",
       "tier": "coins",
@@ -8047,7 +7685,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c66472e27d358fb9a568242e53d7a437bfa4d214"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_ragla_cinza_pacote.cae9f09fb9e2.webp",
       "tier": "coins",
@@ -8067,7 +7704,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "943cfde9b1921911bbd8ea0730c9d6a501523b6e"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_ragla_roxa_verde_pacote.983e92138dee.webp",
       "tier": "coins",
@@ -8086,7 +7722,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "206835fc11705df0d6d09a0b05cb7772e6e8f1d8"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_rosa_pacote.2d44cfd8e072.webp",
       "tier": "free",
@@ -8105,7 +7740,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b6773c27eba1c3fca39f207f04cac0faa6fe9a62"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_roxa_pacote.a8b5340bd482.webp",
       "tier": "free",
@@ -8124,7 +7758,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0c591ac5389c5a6d6bf2b26b7a663cbdbca8dd82"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_camiseta_vermelha_pacote.2a2a5158b91c.webp",
       "tier": "free",
@@ -8144,7 +7777,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ca32acc55b3829c352ba8a51f01443225a820d8d"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_casaco_curto_vermelho_pacote.f7d035f016d6.webp",
       "tier": "coins",
@@ -8164,7 +7796,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0642119d4ace44b9f32e2ab8e77df0276144a17e"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_casaquinho_azul_curto_pacote.fa7057a38874.webp",
       "tier": "coins",
@@ -8184,7 +7815,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "87c4bfeb63fff824b164dc3d2b21fa4c08e8bea3"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_colete_azul_petroleo_listrado_pacote.7b58576c648b.webp",
       "tier": "coins",
@@ -8204,7 +7834,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2988ceca8461f3aefe3a4031b536674f6e9a746b"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_colete_bolsos_pacote.a1eb165d5780.webp",
       "tier": "coins",
@@ -8224,7 +7853,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "e9a37f5afc5652f72c34ee11d2dd081d9afc50e0"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_colete_cinza_pacote.71ef48e9407e.webp",
       "tier": "coins",
@@ -8263,7 +7891,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c6d3a0ecbbd447728020879fe798913fc4224edb"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_colete_xerife.e35cf45031b0.webp",
       "tier": "coins",
@@ -8283,7 +7910,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "39931201d20046443c7935cce83cdad72d4930ae"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_amarela_gola_pacote.010aa7b41b4e.webp",
       "tier": "coins",
@@ -8303,7 +7929,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "751418a1813df9fd01b97e8074bceaa0c27ec421"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_azul_acolchoada_pacote.aa386b44ff6c.webp",
       "tier": "coins",
@@ -8323,7 +7948,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b57fcd967e9e36e20a099e2f668716a41652411b"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_bege_pacote.b5e5822cf418.webp",
       "tier": "coins",
@@ -8343,7 +7967,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5140e9fee0033d500f9c93b76123a1a68fb114de"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_cinza_aberta_pacote.d1fa880f6eaa.webp",
       "tier": "coins",
@@ -8363,7 +7986,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6317a198380b725cc99f342aa381ed51e4996ae9"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_cinza_curta_pacote.9cd38ac5082e.webp",
       "tier": "coins",
@@ -8383,7 +8005,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8fa404efa4cc393b1393cb42124fcc752cfafd32"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_couro_marrom_pacote.1c9848aeefa9.webp",
       "tier": "coins",
@@ -8403,7 +8024,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "b183f07324d43afc2fa50a6946fb675dd7452b3d"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_couro_tachas_pacote.a947cd55a293.webp",
       "tier": "coins",
@@ -8423,7 +8043,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c9c471bc86d764a43ecfd98e488e01e680f8edb7"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_curta_amarela_pacote.2c9e6d4484f6.webp",
       "tier": "coins",
@@ -8443,7 +8062,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c949115d2e8a905795aab18ad316315c3062a72f"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_esportiva_amarela_pacote.03c88f10dd3b.webp",
       "tier": "coins",
@@ -8463,7 +8081,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ed8b04193679323abde71256e0e972143d129218"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_laranja_acolchoada_pacote.92d1fa2ff657.webp",
       "tier": "coins",
@@ -8483,7 +8100,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "ada68a3b37b60a246db2d554626c129b9e89bab3"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_rosa_pacote.5edd0a4cd5b3.webp",
       "tier": "coins",
@@ -8503,7 +8119,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7a0237a5ba83b2772aaa50aa93f7c8640ddbb50c"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_rosa_um_ombro_pacote.ae25f16a0edd.webp",
       "tier": "coins",
@@ -8523,7 +8138,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "33182c0663177d7e2685aecac55431a44a3cb00a"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_rosa_ziper_pacote.09453790d88b.webp",
       "tier": "coins",
@@ -8543,7 +8157,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "61a6a5794f1636175c62777510870019a04d6947"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_roxa_pacote.d024340cec3b.webp",
       "tier": "coins",
@@ -8563,7 +8176,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "89e5f7e620b9e46e845cf0288b76aba662a822f8"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_universitaria_vermelha_pacote.2caf39298010.webp",
       "tier": "coins",
@@ -8583,7 +8195,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "8883b3721a25b407f4810b1756d208d00312beee"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_verde_cinto_pacote.0364296f95d0.webp",
       "tier": "coins",
@@ -8603,7 +8214,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "686a5d93b84e590904ceeba1945c5c6f685b5f88"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_vermelha_pacote.78f97e68160c.webp",
       "tier": "coins",
@@ -8623,7 +8233,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "5dc0c8def7b42b86d769695d8426a98776d228da"
       },
       "price": 90,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_jaqueta_vermelha_ziper_pacote.ea8ea128b84c.webp",
       "tier": "coins",
@@ -8631,7 +8240,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     },
     "roupa_cima_maio_vermelho_pacote": {
       "audience": "girl",
-      "band": "raro",
+      "band": "comum",
       "file": "pecas/roupa_cima_maio_vermelho_pacote.c12336d34e57.glb",
       "group": "roupa_cima",
       "label": "Maiô vermelho",
@@ -8642,8 +8251,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "migratedAt": "2026-11-14",
         "thumbBlob": "453af59ab785dc566d62f6e862cd6fba7ed33b12"
       },
-      "price": 110,
-      "review": true,
+      "price": 70,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_maio_vermelho_pacote.e01d5a5b5108.webp",
       "tier": "coins",
@@ -8663,7 +8271,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "1fda45fbefbd2899faa83baed1e78e4131263058"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_moletom_cinza_capuz_pacote.a61b18304c35.webp",
       "tier": "coins",
@@ -8683,7 +8290,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f4d6c1400460643b65341790702e2f1f7fdd59e7"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_moletom_cinza_escuro_pacote.dfb06f6a57a3.webp",
       "tier": "coins",
@@ -8703,7 +8309,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "9c075deb805598b1289a30d14de521f822f245ac"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_moletom_laranja_pacote.7ef2bca62e64.webp",
       "tier": "coins",
@@ -8723,7 +8328,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "0074109228231157c20206118ddf1fe69fd2bf54"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_polo_amarela_pacote.99d52ad0ce68.webp",
       "tier": "coins",
@@ -8743,7 +8347,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "90a70d4033284d938178203e0afeacea9d16a989"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_polo_verde_listrada_pacote.0310f1bcfa81.webp",
       "tier": "coins",
@@ -8764,7 +8367,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d41f60689239bbf3b364bc98f65e2a9293b0a26e"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_rascunho_pacote.d3d969951336.webp",
       "tier": "coins",
@@ -8783,7 +8385,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "80d8cf3aa0f8d9d3fc23064519da1c34b9c90fe2"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_regata_branca_pacote.54ee57437296.webp",
       "tier": "free",
@@ -8803,7 +8404,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "4fa3ad07219fa6223f4afb205184d0fc203dea22"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_regata_creme_pacote.2cb4a50a6323.webp",
       "tier": "coins",
@@ -8823,7 +8423,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "23e59a73fa6251119aac79e391ea7e675544d60b"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_regata_lilas_pacote.a52b5f0f60f8.webp",
       "tier": "coins",
@@ -8843,7 +8442,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f745b283de451d915018de60fc0c4a63adaf65d3"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_regata_verde_oliva_pacote.f804c5b94845.webp",
       "tier": "coins",
@@ -8881,7 +8479,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "6ad131c7251bdcb6ae4ac35ca9ffd44ac77afbea"
       },
       "price": 70,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_sueter_listrado_vermelho_pacote.3087ade5e502.webp",
       "tier": "coins",
@@ -8901,7 +8498,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d090151e59343e7ab073f1ef1c9ff33003470706"
       },
       "price": 50,
-      "review": true,
       "slot": "roupa_cima",
       "thumb": "miniaturas/roupa_cima_top_rosa_pacote.2d38083b3f99.webp",
       "tier": "coins",
@@ -8921,7 +8517,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "213cd2841af150ea22fa6f41b5e354a644aa7e49"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_camisa_branca_saia_escura_pacote.a14726d1bb1a.webp",
       "tier": "coins",
@@ -8941,7 +8536,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "39a553b7d7de9ecee7008604eb24ab3edd120cfa"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_camiseta_branca_saia_vermelha_pacote.37d2666ddf73.webp",
       "tier": "coins",
@@ -8961,7 +8555,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "c746f4f22cd0bdfcbe49f445840b69ba103cc4ab"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_jaqueta_amarela_saia_escura_pacote.bebfe9224d12.webp",
       "tier": "coins",
@@ -8981,7 +8574,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "129c1882369722de0ad1d69cdfed4eb28194399f"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_jaqueta_verde_calca_cinza_pacote.a4cf30cb6efb.webp",
       "tier": "coins",
@@ -9000,7 +8592,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "2311b40a03394517819846eca15f340686d06e83"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_jardineira_azul_pacote.aaf8e27c95a1.webp",
       "tier": "free",
@@ -9020,7 +8611,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f13fa3924985a67c73cd99241e2a2e3735138074"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_jardineira_saia.59cf0d3d704b.webp",
       "tier": "coins",
@@ -9040,7 +8630,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "f7301850ee85de60a461326afbf7d49d3ff5c946"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_macacao_piloto_azul_pacote.19e7f46291c2.webp",
       "tier": "coins",
@@ -9060,7 +8649,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "a8b4cd4c7bc734e13d2165f3be67b33a0160b239"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_alcinha.6a1f4683beb5.webp",
       "tier": "coins",
@@ -9079,7 +8667,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "617c248e9133cd89c351a3b8e5b67268a2ed738e"
       },
       "price": 0,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_azul_pacote.614ec04e4de2.webp",
       "tier": "free",
@@ -9099,7 +8686,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "57f5cb563d650f243778bc24ab4135fc0991755f"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_azul_petroleo_pacote.b7df5a052685.webp",
       "tier": "coins",
@@ -9138,7 +8724,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "74348ed442a99fba79f889d3dc0b1e402c8c892d"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_longo.e325c03366e3.webp",
       "tier": "coins",
@@ -9158,7 +8743,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "7d9ce53d3f34cc99ec1c3c6b1bca435a3a8379f6"
       },
       "price": 110,
-      "review": true,
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_marrom_pacote.6427a68a6845.webp",
       "tier": "coins",
@@ -9187,7 +8771,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_astronauta": {
@@ -9215,7 +8798,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 300,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_bobo_corte": {
@@ -9231,7 +8813,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 200,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_cavaleiro": {
@@ -9259,7 +8840,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 300,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_coelho_roxo": {
@@ -9279,7 +8859,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_dinossauro_listrado": {
@@ -9299,7 +8878,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_papai_noel": {
@@ -9327,7 +8905,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 300,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_pinguim": {
@@ -9343,7 +8920,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 200,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_pirata": {
@@ -9363,7 +8939,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_pombo": {
@@ -9379,7 +8954,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 200,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_robo_amarelo": {
@@ -9403,7 +8977,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_soldado": {
@@ -9435,7 +9008,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 300,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_super_heroi": {
@@ -9459,7 +9031,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     },
     "fantasia_traje_neon": {
@@ -9479,7 +9050,6 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         }
       ],
       "price": 250,
-      "review": true,
       "tier": "coins"
     }
   },
@@ -10653,7 +10223,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_rascunho_pacote",
         "chapeu_caixa_brinquedo_pacote",
         "chapeu_gorro_trico_pacote",
-        "chapeu_tiara"
+        "chapeu_tiara",
+        "cabelo_crespo_sob_chapeu"
       ]
     },
     "faces": {

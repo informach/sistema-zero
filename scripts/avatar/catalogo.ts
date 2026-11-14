@@ -26,9 +26,15 @@ export const AVATAR_CATALOG: AvatarCatalog = `
  * Peças que a PLATAFORMA tira do sorteio, além das que a arte tira (`fora_do_sorteio`). As duas
  * eram pagas quando o banco de 200 sorteados da troca foi fotografado; ficaram grátis em 14/11/2026
  * (os únicos chapéus grátis que vão com cabelo). No sorteio, mudariam 38 dos 200 avatares do banco
- * e a foto deixaria de bater com as peças. Saem daqui só junto com um banco gerado de novo.
+ * e a foto deixaria de bater com as peças. O cabelo crespo ficou grátis na revisão de preços do
+ * mesmo dia (cabelo crespo grátis para quem tem cabelo crespo) e entra aqui pelo mesmo motivo.
+ * Saem daqui só junto com um banco gerado de novo.
  */
-const FORA_DO_SORTEIO_DA_PLATAFORMA = ['chapeu_gorro_trico_pacote', 'chapeu_tiara']
+const FORA_DO_SORTEIO_DA_PLATAFORMA = [
+  'chapeu_gorro_trico_pacote',
+  'chapeu_tiara',
+  'cabelo_crespo_sob_chapeu',
+]
 
 /** Os clipes do pack que o configurador usa (parado e as poses da Cabine de fotos). */
 export const CLIPES_DO_CONFIGURADOR = [
