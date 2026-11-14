@@ -108,3 +108,91 @@ export function DedosNoCabo({
   })
   return null
 }
+
+/**
+ * As camadas do braço segurando o objeto (o braço aberto, para a lanterna não atravessar o corpo):
+ * cada uma acompanha um clipe do pack (`with`). A do `parado_olhando` vale para o parado do jogo
+ * (`parado_relaxado`), que não tem a dele.
+ */
+const CLIPE_DA_CAMADA: Readonly<Record<string, string>> = { parado_olhando: 'parado_relaxado' }
+export function camadasDoBraco(objeto: string) {
+  return (AVATAR_CATALOG.base.skeleton.game.layers ?? [])
+    .filter((c) => c.with !== undefined && c.objects.includes(objeto))
+    .map((c) => ({ ...c, clipe: CLIPE_DA_CAMADA[c.with as string] ?? (c.with as string) }))
+}
+
+/** O que o braço lê de cada clipe neste quadro: o peso e o instante (s), como o mixer. */
+export type PoseDoBraco = Readonly<Record<string, { peso: number; tempo: number }>>
+
+/**
+ * O braço que segura o objeto, por cima da animação: em cada clipe que tem a camada do braço (andar
+ * de costas, correr, o parado), o giro do braço vai para o da camada no mesmo instante, pelo peso
+ * daquele clipe. Nos clipes sem camada, fica o braço da animação. Parte da pose do mixer (`PoseLimpa`).
+ */
+export function BracoComObjeto({
+  corpo,
+  objeto,
+  pose,
+}: {
+  corpo: RefObject<Object3D | null>
+  objeto: string
+  pose: RefObject<PoseDoBraco>
+}) {
+  const { animations } = useGLTF(
+    avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file),
+    false,
+    false,
+  )
+  // Para cada camada: o clipe que ela acompanha, a duração e, por osso, como ler o giro num instante.
+  const camadas = useMemo(
+    () =>
+      camadasDoBraco(objeto).flatMap((camada) => {
+        const clipe = animations.find((c) => c.name === camada.id)
+        if (!clipe) return []
+        const ossos = camada.bones.flatMap((osso) => {
+          const trilha = clipe.tracks.find((t) => t.name === `${osso}.quaternion`)
+          return trilha ? [{ osso, ler: trilha.createInterpolant() }] : []
+        })
+        return [{ clipe: camada.clipe, duracao: clipe.duration, ossos }]
+      }),
+    [animations, objeto],
+  )
+  const ossos = useRef(new Map<string, Bone>())
+  const limpa = useRef<PoseLimpa | null>(null)
+  const giro = useMemo(() => new Quaternion(), [])
+  useEffect(
+    () => () => {
+      limpa.current?.soltar()
+      limpa.current = null
+    },
+    [],
+  )
+  useFrame(() => {
+    const raiz = corpo.current
+    const atual = pose.current
+    if (!raiz || !atual || camadas.length === 0) return
+    const algum = ossos.current.values().next().value
+    if (ossos.current.size === 0 || !algum?.parent) {
+      ossos.current.clear()
+      const nomes = new Set(camadas.flatMap((c) => c.ossos.map((o) => o.osso)))
+      raiz.traverse((o) => {
+        if ((o as Bone).isBone && nomes.has(o.name)) ossos.current.set(o.name, o as Bone)
+      })
+      limpa.current = new PoseLimpa([...ossos.current.values()])
+    }
+    limpa.current?.antes()
+    for (const camada of camadas) {
+      const p = atual[camada.clipe]
+      if (!p || p.peso <= 0.001) continue
+      const t = camada.duracao > 0 ? p.tempo % camada.duracao : 0
+      for (const { osso, ler } of camada.ossos) {
+        const b = ossos.current.get(osso)
+        if (!b) continue
+        giro.fromArray(ler.evaluate(t) as unknown as number[])
+        b.quaternion.slerp(giro, Math.min(1, p.peso))
+      }
+    }
+    limpa.current?.depois()
+  })
+  return null
+}

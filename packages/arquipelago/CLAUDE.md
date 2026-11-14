@@ -109,6 +109,15 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
   ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins); as rodas ainda não
   giram (a arte deu os eixos). O `empurrar` ainda não tem quem o use.
+- **O que a arte e o pack já tinham (15/11/2026):** andar e correr de lado e de costas (na virada, pela
+  direção no referencial do corpo: `frente`/`deLado` da entrada, `pesosDaDirecao`); pendurada andando
+  pela quina (`andar_pendurado_*`); água rasa (`aguaNosPes` do modo chão acima de
+  `AGUA_RASA_A_PARTIR_DE`); o gesto de acender ao acender a lanterna; empurrar (contato do controlador
+  com corpo dinâmico); o braço com a lanterna pelas camadas da arte (`BracoComObjeto`); as rodas dos
+  patins girando (`rodas-dos-patins.tsx`; ⚠️ a peça traz 8 ossos `Roda_*` que o esqueleto não tem:
+  o `PackPart` agora os acrescenta, como os da lanterna); a câmera mira o encaixe `olhos` e o
+  passarinho pousa sobre o `cabeca_topo`. Sem uso ainda: `costas` (não há mochila nem planador
+  fechado na arte), a P3 (comemorar, pegar do chão, plantar, regar, dançar) e o `dirigir`.
 - **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
   eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
   `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó

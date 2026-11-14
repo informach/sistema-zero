@@ -58,8 +58,9 @@ function anotacao(material: Material): AnotacaoDoMaterial {
 }
 
 /**
- * Os ossos da montagem mais os que só um OBJETO DE MÃO tem (a `Luz` da lanterna, filha do osso da
- * mão): cada osso que falta entra como filho do mesmo pai, na pose de descanso do arquivo. Osso sem
+ * Os ossos da montagem mais os que só uma peça ou um objeto de mão tem (a `Luz` da lanterna, filha
+ * do osso da mão; as rodas dos patins, filhas dos ossos do pé): cada osso que falta entra como filho
+ * do mesmo pai, na pose de descanso do arquivo. Osso sem
  * pai na montagem fica de fora (a peça é recusada adiante, como qualquer peça de outro esqueleto).
  * `soltar` tira da montagem os ossos acrescentados.
  */

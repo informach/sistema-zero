@@ -27,12 +27,14 @@ export interface CorpoDoJogo {
   doCentro: {
     /** O meio da cabeça: para onde a câmera olha. */
     cabeca: number
-    /** O alto da cabeça (sem cabelo nem chapéu). */
+    /** O alto da cabeça (sem cabelo nem chapéu): o encaixe `cabeca_topo` da arte. */
     topo: number
     /** A junta do ombro (o peito). */
     ombro: number
     /** As mãos penduradas na corda do cipó, ao lado do rosto: meio braço acima do ombro. */
     maosNoCipo: number
+    /** Os olhos (o encaixe `olhos` da arte): para onde a câmera mira. */
+    olhos: number
   }
   /** As medidas de onde tudo isto saiu (já na escala do mundo). */
   medidas: BodyMeasures
@@ -64,6 +66,11 @@ export function corpoDoMundo(catalogo: AvatarCatalog, mundo: MundoDoJogo): Corpo
   const m = bodyMeasures(catalogo.base.skeleton, mundo.escalaDoHeroi)
   const f = physicalBody(m)
   const c = f.centerToFoot
+  // Os encaixes da arte na pose de descanso (metros nativos): sem eles, as medidas estimadas.
+  const encaixe = (nome: string, reserva: number) => {
+    const y = catalogo.base.skeleton.sockets?.[nome]?.rest?.[1]
+    return typeof y === 'number' ? y * mundo.escalaDoHeroi : reserva
+  }
   return {
     meiaAltura: f.halfHeight,
     raio: f.radius,
@@ -78,9 +85,10 @@ export function corpoDoMundo(catalogo: AvatarCatalog, mundo: MundoDoJogo): Corpo
     },
     doCentro: {
       cabeca: m.headCenter - c,
-      topo: m.height - c,
+      topo: encaixe('cabeca_topo', m.height) - c,
       ombro: m.shoulder - c,
       maosNoCipo: m.shoulder + m.arm / 2 - c,
+      olhos: encaixe('olhos', m.headCenter) - c,
     },
     medidas: m,
     andar: mundo.andar,

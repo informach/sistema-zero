@@ -159,9 +159,13 @@ function PackPart({
   useEffect(() => {
     onSettled()
   }, [onSettled])
+  // A peça pode trazer ossos que só ela tem (as 8 rodas dos patins, filhas dos ossos do pé):
+  // entram na montagem enquanto ela está vestida, como os da lanterna.
+  const comOsDela = useMemo(() => ossosComOsDoObjeto(scene, ossos), [scene, ossos])
+  useEffect(() => () => comOsDela.soltar(), [comOsDela])
   const montagem = useMemo(
-    () => prepararPecaDoPack(scene, ossos, texturas, materialOverride, camada),
-    [scene, ossos, texturas, materialOverride, camada],
+    () => prepararPecaDoPack(scene, comOsDela.ossos, texturas, materialOverride, camada),
+    [scene, comOsDela, texturas, materialOverride, camada],
   )
   useEffect(() => () => montagem.soltar(), [montagem])
   return (

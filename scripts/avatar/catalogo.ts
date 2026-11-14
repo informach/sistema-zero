@@ -82,6 +82,13 @@ export const CLIPES_DO_JOGO = [
   'pulo_fim',
   'cair',
   'subir_escada',
+  // Andar e correr de lado e de costas: na virada do corpo, os passos acompanham a direção.
+  'andar_tras',
+  'andar_esquerda',
+  'andar_direita',
+  'correr_tras',
+  'correr_esquerda',
+  'correr_direita',
 ] as const
 
 export function catalogoVazio(): AvatarCatalog {

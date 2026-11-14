@@ -57,8 +57,8 @@ import {
 import { suavizarAngulo } from '../sistemas/zappy'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
-/** Do centro do corpo ao ponto que a câmera olha: o meio da cabeça. */
-const ALTURA_DO_OLHAR = CORPO.doCentro.cabeca
+/** A câmera mira os olhos (o encaixe `olhos` da arte). */
+const ALTURA_DO_OLHAR = CORPO.doCentro.olhos
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar (a junta do ombro). */
 const ALTURA_DO_PEITO = CORPO.doCentro.cabeca - CORPO.doCentro.ombro
 /**
