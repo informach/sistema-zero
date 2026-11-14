@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createMoradaHouse } from '@sistemazero/core/morada'
 import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
-import { createMoradaHouseRoutes } from '../src/routes/morada-house'
+import { createMoradaBuyRoutes, createMoradaHouseRoutes } from '../src/routes/morada-house'
 
 function setup(user: unknown = { id: 'member' }, audience: 'kids' | 'adult' = 'kids') {
   const calls: { path: string; options: unknown }[] = []
@@ -46,6 +46,43 @@ test('house preserva revisão, escopo, público e documento atual em conflito se
     await routes.GET()
     expect(calls[1]).toEqual({ path: '/members/house', options: { query: { audience } } })
   }
+})
+
+test('comprar peça: sessão, suporte somente leitura, corpo estrito, público e sem cache', async () => {
+  const calls: { path: string; options: unknown }[] = []
+  const buy = (user: unknown, audience: 'kids' | 'adult' = 'kids') =>
+    createMoradaBuyRoutes({ getSession: async () => user, audience } as never, {
+      gatewayFetch: async <T>(path: string, options?: unknown) => {
+        calls.push({ path, options })
+        return { status: 402, body: { code: 'INSUFFICIENT_COINS' } as T }
+      },
+    })
+  const pedido = (body: unknown) =>
+    new Request('http://localhost/api/members/house/buy', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  expect((await buy(null).POST(pedido({ pieceId: 'a' }))).status).toBe(401)
+  expect(
+    (await buy({ id: 'm', act: { sub: 'admin', mode: 'readonly' } }).POST(pedido({ pieceId: 'a' })))
+      .status,
+  ).toBe(403)
+  expect((await buy({ id: 'm' }).POST(pedido({ pieceId: 'a', userId: 'outro' }))).status).toBe(400)
+  expect((await buy({ id: 'm' }).POST(pedido({}))).status).toBe(400)
+  expect(calls).toHaveLength(0)
+  const result = await buy({ id: 'm' }, 'adult').POST(pedido({ pieceId: 'moveis/sofas/x' }))
+  expect(result.status).toBe(402)
+  expect(result.headers.get('cache-control')).toBe('private, no-store')
+  expect(calls).toEqual([
+    {
+      path: '/members/house/buy',
+      options: {
+        method: 'POST',
+        query: { audience: 'adult' },
+        body: { pieceId: 'moveis/sofas/x' },
+      },
+    },
+  ])
 })
 
 test('house recusa JSON inválido, identidade injetada e corpo excessivo antes do gateway', async () => {

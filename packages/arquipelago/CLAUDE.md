@@ -3,8 +3,9 @@
 ## Morada canônica (14/11/2026)
 
 A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
-`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` contém somente troféus conquistados;
-peças comuns do catálogo são gratuitas. A leitura/edição tem escopos próprios e de visita
+`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` traz troféus, a estante de troféus, as compradas
+e as que já estão na casa; peça paga sem posse não entra (`moradaInstanceAllowed` do core, a mesma
+régua do serviço; a compra é no Meu quarto, e a bandeja do jogo mostra só o que é dela). A leitura/edição tem escopos próprios e de visita
 separados, com epoch para rejeitar respostas antigas. Sair independe da rede e preserva
 o rascunho próprio até confirmação; visitas nunca substituem sua casa ou seu pet. O quarto é `house.roomId`,
 um recorte estável da mesma casa; visitas leem `visita.quarto.house`. Hosts sem essas

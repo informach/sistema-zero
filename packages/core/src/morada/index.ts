@@ -1,4 +1,6 @@
 export * from './catalog.generated'
 export * from './files'
 export * from './house'
+export * from './prices.generated'
+export * from './pricing'
 export * from './types'

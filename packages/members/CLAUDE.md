@@ -18,7 +18,17 @@
 - `morada_houses` (migration gerada `0149_morada_house`) é a fonte canônica. `room_state`
   permanece como leitura histórica. Cliente antigo não grava nem compra depois de existir casa nova.
   A carteira também confere a retirada sob a trava usada pelo reembolso, cobrindo compras em voo.
-- Catálogo inicial Morada é grátis; somente os oito troféus exigem posse conquistada.
+- **Preço (14/11/2026, a dona):** a Morada tem preço pela régua do avatar (`core/morada/pricing.ts` e
+  `prices.generated.ts`, editorial, fora do catálogo gerado; proposta por `scripts/morada/propor-precos.ts`).
+  Construção, a casa inicial e os canteiros são grátis; troféus e a estante de troféus
+  (`MORADA_TROPHY_SHELF`, dada a quem tem a `estante-trofeus`) são por conquista. `owned` = troféus +
+  estante + compradas (`room_inventory`) + as peças que já estão na casa (ninguém perde o que já pôs).
+  `save` recusa peça paga ou bichinho sem posse; as funções do jogo (`behavior: objeto:`) passam.
+  Compra: `POST /house/buy {pieceId}` (`BuyMoradaPieceService`, o mesmo `spendCoins` do quarto antigo,
+  chave `morada-buy:<user>:<peça>`). `scripts/conceder-morada.ts` (ensaio; `--confirm`) grava no
+  inventário as pagas que já estavam nas casas quando o preço chegou.
+  Preços conferidos pela dona em 14/11 (sem `review`). `adultOnly` (as duas peças de cassino): no
+  Kids não aparece no Meu quarto e a compra responde 404, como o chapéu de cerveja do avatar.
   A projeção `state.house` do quarto e do perfil público contém somente o cômodo do quarto.
   A porta interna `/casa` e o `house` do `/quarto` interno entregam a casa completa para visitas autorizadas.
 - O contrato puro está em `core/morada/schema`: 600 instâncias e 512 KB, sem truncar.

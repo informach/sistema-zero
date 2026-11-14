@@ -60,6 +60,7 @@ COPY packages/members/scripts/bootstrap-kids-journey.ts \
      packages/members/scripts/migrate-studio-project-examples.ts \
      packages/members/scripts/swap-avatar.ts \
      packages/members/scripts/swap-morada.ts \
+     packages/members/scripts/conceder-morada.ts \
      packages/members/scripts/avatar-swap-bank.json ./packages/members/scripts/
 COPY packages/members/scripts/publish-course.ts ./packages/members/scripts/
 COPY packages/members/scripts/lib ./packages/members/scripts/lib

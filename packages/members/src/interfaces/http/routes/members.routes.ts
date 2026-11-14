@@ -48,6 +48,7 @@ import type { MarkLessonCompleteService } from '../../../application/mark-lesson
 import type { ParentReportPrefsService } from '../../../application/parent-report/report-prefs.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
+import type { BuyMoradaPieceService } from '../../../application/room/buy-morada-piece.service'
 import type { BuyRoomItemService } from '../../../application/room/buy-room-item.service'
 import type { GetRoomService } from '../../../application/room/get-room.service'
 import {
@@ -136,6 +137,7 @@ function idempotencyKey(headers: Record<string, string | undefined>): string | u
 
 export interface MembersRoutesDeps {
   moradaHouse?: MoradaHouseService
+  buyMoradaPiece?: BuyMoradaPieceService
   adultJourney?: AdultJourneyService
   studioAiAccount?: StudioAiAccountService
   studioAiUsage?: StudioAiUsageService
@@ -861,6 +863,27 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             revision: t.Integer({ minimum: 0 }),
             scope: t.Optional(t.Union([t.Literal('room'), t.Literal('house')])),
           }),
+        },
+      )
+      // Compra uma peça PAGA da Morada com moedas (idempotente; sem saldo → 402). O id da peça
+      // tem barras (`moveis/sofas/…`): vai no corpo, não no caminho.
+      .post(
+        '/house/buy',
+        async ({ headers, query, body, set }) => {
+          if (!deps.buyMoradaPiece) {
+            set.status = 503
+            return { code: 'MORADA_UNAVAILABLE', message: 'Casa indisponível.' }
+          }
+          return deps.buyMoradaPiece.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            body.pieceId,
+            isPrivilegedActor(headers),
+          )
+        },
+        {
+          query: AudienceQuery,
+          body: t.Object({ pieceId: t.String({ minLength: 1, maxLength: 200 }) }),
         },
       )
       // ── Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil ────

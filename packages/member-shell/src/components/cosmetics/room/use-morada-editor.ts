@@ -33,6 +33,8 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
   const [message, setMessage] = useState('')
   const [conflict, setConflict] = useState<MoradaHouseEnvelope | null>(null)
   const [wallet, setWallet] = useState<{ balance: number; unlimited: boolean } | null>(null)
+  /** A peça que está sendo comprada (um pedido por vez). */
+  const [buying, setBuying] = useState<string | null>(null)
   const alive = useRef(true)
   const draftRef = useRef(draft)
   draftRef.current = draft
@@ -140,6 +142,47 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
         : 'A versão mais recente está aberta.',
     )
   }
+  /**
+   * Compra uma peça paga com moedas. Devolve `true` quando a peça passou a ser dela (comprada
+   * agora ou já era); sem saldo ou falha, `false` com o recado na tela.
+   */
+  const buy = async (pieceId: string): Promise<boolean> => {
+    if (buying) return false
+    setBuying(pieceId)
+    setMessage('')
+    try {
+      const response = await sessionFetch('/api/members/house/buy', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pieceId }),
+      })
+      const body: unknown = await response.json().catch(() => null)
+      if (!alive.current) return false
+      if (response.status === 402) {
+        setMessage(ROOM_MESSAGES[skin].notEnoughCoins)
+        return false
+      }
+      if (!response.ok) {
+        setMessage(ROOM_MESSAGES[skin].buyFailed)
+        return false
+      }
+      const data = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>
+      if (typeof data.balance === 'number')
+        setWallet({ balance: data.balance, unlimited: data.unlimited === true })
+      setSaved((current) =>
+        current && !current.owned.includes(pieceId)
+          ? { ...current, owned: [...current.owned, pieceId] }
+          : current,
+      )
+      setMessage(ROOM_MESSAGES[skin].bought)
+      return true
+    } catch {
+      if (alive.current) setMessage(ROOM_MESSAGES[skin].buyFailed)
+      return false
+    } finally {
+      if (alive.current) setBuying(null)
+    }
+  }
   const dirty = Boolean(saved && draft && JSON.stringify(saved.house) !== JSON.stringify(draft))
   useEffect(() => {
     if (!dirty) return
@@ -162,5 +205,7 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
     load,
     resolveConflict,
     setMessage,
+    buy,
+    buying,
   }
 }

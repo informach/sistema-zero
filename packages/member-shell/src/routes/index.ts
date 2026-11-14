@@ -5,7 +5,7 @@ import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createMasteryRoutes } from './masteries'
 import { createMoradaFileRoutes } from './morada-files'
-import { createMoradaHouseRoutes } from './morada-house'
+import { createMoradaBuyRoutes, createMoradaHouseRoutes } from './morada-house'
 import { createProfilePreferencesRoutes } from './profile-preferences'
 import { createStudioFreeRuntimeRoutes } from './studio-free-runtime'
 import { createStudioLessonRuntimeRoutes } from './studio-lesson-runtime'
@@ -1946,6 +1946,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     avatarFile: createAvatarFileRoutes(session),
     moradaFile: createMoradaFileRoutes(session),
     moradaHouse: createMoradaHouseRoutes(session, gateway),
+    moradaBuy: createMoradaBuyRoutes(session, gateway),
     roomGet,
     roomSave,
     roomBuy,

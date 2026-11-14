@@ -11,10 +11,12 @@ import {
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
+  isMoradaTrophyTier,
   MORADA_FUNCTION,
   MORADA_VARIANTS,
   moradaFunction,
   moradaFunctionPiece,
+  moradaInstanceAllowed,
   moradaPieceAllowed,
   moradaWithFunctions,
   moradaWithGarden,
@@ -81,6 +83,28 @@ export function podeConstruirMorada(state: EstadoDoJogo): boolean {
   )
 }
 const FUNCTION_MIGRATION = 'arquipelago-functions-v1' as const
+/**
+ * A posse para editar, como o serviço a confere ao salvar: o `owned` da plataforma mais o que já
+ * está na casa (ninguém perde o que já pôs; o serviço também aceita).
+ */
+export function posseDaCasa(owned: readonly string[], house: MoradaHouse): Set<string> {
+  const posse = new Set(owned)
+  for (const instance of house.instances) posse.add(instance.pieceId)
+  if (house.pet) posse.add(house.pet)
+  return posse
+}
+/** A primeira peça (ou o bichinho) da casa nova que não é dela, ou `null`. */
+export function semPosseNaCasa(next: MoradaHouse, posse: ReadonlySet<string>): string | null {
+  const instance = next.instances.find((i) => !moradaInstanceAllowed(i, posse))
+  if (instance) return instance.pieceId
+  return next.pet && !moradaPieceAllowed(next.pet, posse) ? next.pet : null
+}
+/** Por que uma peça não entra: troféu (e a estante) é por conquista; o resto se compra. */
+export function recadoDaPosse(pieceId: string): string {
+  return isMoradaTrophyTier(pieceId)
+    ? 'Conquiste o troféu antes de colocá-lo na casa.'
+    : 'Esta peça ainda não é sua: ela pode ser comprada com moedas no Meu quarto.'
+}
 const sameHouse = (left: MoradaHouse, right: MoradaHouse) =>
   JSON.stringify(MoradaHouseSchema.parse(left)) === JSON.stringify(MoradaHouseSchema.parse(right))
 
@@ -345,8 +369,8 @@ export function createCasaMoradaStore(
       )
         return false
       const errors = validateMoradaEdit(current, house, state.salvamento)
-      if (house.instances.some((i) => !moradaPieceAllowed(i.pieceId, get().owned)))
-        errors.push('Conquiste o troféu antes de colocá-lo na casa.')
+      const semPosse = semPosseNaCasa(house, posseDaCasa(get().owned, current))
+      if (semPosse) errors.push(recadoDaPosse(semPosse))
       if (errors.length) {
         set({ error: errors[0] })
         return false
@@ -530,8 +554,9 @@ export function createCasaMoradaStore(
         set({ error: `A aparência foi guardada. Para colocá-la na casa: ${errors[0]}` })
         return
       }
-      if (instances.some((i) => !moradaPieceAllowed(i.pieceId, get().owned))) {
-        set({ error: 'Conquiste o troféu antes de colocá-lo na casa.' })
+      const semPosse = semPosseNaCasa(next, posseDaCasa(get().owned, house))
+      if (semPosse) {
+        set({ error: recadoDaPosse(semPosse) })
         return
       }
       try {
