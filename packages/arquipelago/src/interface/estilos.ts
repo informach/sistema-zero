@@ -446,6 +446,10 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-guia-tarefa{padding:6px 8px}
 .arq-guia-tarefa kbd{min-width:26px;height:26px;font-size:12px}
 .arq-hud:has(.arq-obra) .arq-guia{top:186px;width:calc(100% - 20px)}
+.arq-guia,.arq-dica{top:186px;bottom:auto;left:10px;width:auto;max-width:calc(100% - 20px)}
+.arq-dica{padding:8px 12px 8px 8px;gap:8px;font-size:14px;line-height:1.3}
+.arq-dica .arq-zappy{width:26px;height:26px}
+.arq-guia-fala{font-size:15px}
 .arq-agora-passos button{min-height:28px;padding:2px 8px 2px 2px;font-size:13px}
 .arq-passos-fim{place-items:start center;padding-top:70px}
 .arq-passos-fim-cartao{margin-bottom:0;padding:18px}

@@ -451,8 +451,11 @@ export const CONTROLE_DA_CAMERA = {
   /** Do quase rente ao chão (7°) até quase de cima (72°). */
   inclinacaoMinima: 0.12,
   inclinacaoMaxima: 1.25,
-  /** A inclinação de quando a câmera volta para as costas. */
-  inclinacaoDeVolta: 0.5,
+  /**
+   * A inclinação de quando a câmera volta para as costas (e a de partida): um pouco de cima, para o
+   * chão à frente do boneco cabeçudo aparecer por cima da cabeça dele (era 0,5).
+   */
+  inclinacaoDeVolta: 0.62,
   distanciaMinima: 4,
   distanciaMaxima: 18,
   /** Metros por pixel de roda e por toque nas teclas + e -. */
