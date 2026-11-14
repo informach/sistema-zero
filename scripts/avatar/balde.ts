@@ -63,7 +63,8 @@ const WRANGLER = resolve(
 
 function rodarWrangler(args: readonly string[]): Promise<void> {
   return new Promise((ok, falha) => {
-    const filho = spawn(process.execPath, [WRANGLER, ...args], {
+    // O launcher do Wrangler exige Node; Bun pode encerrar o subprocesso sem enviar o arquivo.
+    const filho = spawn('node', [WRANGLER, ...args], {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     let saida = ''

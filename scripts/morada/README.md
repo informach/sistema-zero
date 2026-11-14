@@ -20,4 +20,6 @@ O catálogo gerado tem arquivos por hash; extrai texturas compartilhadas para ca
 
 Aplicar a migration `0149_morada_house.sql` com o fluxo do Members. A ferramenta `packages/members/scripts/swap-morada.ts` faz ensaio por padrão; revisar o relatório antes da execução de escrita. O reembolso é pelo extrato histórico dos itens retirados, preservando Galeria e troféus. A casa usa CAS/revisão e as requisições do editor antigo são recusadas depois da conversão.
 
+O script faz parte da imagem de produção do Members. Antes de `--confirm`, executar o ensaio no ambiente de destino e guardar `--backup-json` em armazenamento privado. Esse modo exporta quartos, inventários, carteiras, extratos e casas em uma transação de leitura consistente; não aceitar `--confirm` junto com backup. O ensaio também constrói e valida cada casa nova, sem escrever. Após aplicar, repetir o ensaio: não deve haver casas, itens ou reembolsos pendentes. O banco histórico permanece para conferência e recuperação; não restaurar carteiras inteiras sobre transações posteriores.
+
 As peças da Morada são disponibilizadas grátis nesta entrega; não foram inventados preços novos. Os oito troféus continuam exigindo conquista. A identidade visual das páginas Kids e adulta deve permanecer a atual.
