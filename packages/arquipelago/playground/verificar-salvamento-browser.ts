@@ -218,17 +218,24 @@ try {
   camera.lookAt(0, 0, 0)
   camera.updateMatrixWorld()
   const naTela = (z: number) => {
-    const p = new Vector3(-6, 0.05, z).project(camera)
+    const p = new Vector3(-12, 0.05, z).project(camera)
     return { x: ret.x + ((p.x + 1) / 2) * ret.width, y: ret.y + ((1 - p.y) / 2) * ret.height }
   }
-  const inicio = naTela(-6),
-    fim = naTela(-6)
+  const inicio = naTela(-12),
+    fim = naTela(-12)
   const alvoLivre = await reaberto.evaluate(
     ({ x, y }) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
     inicio,
   )
   if (!alvoLivre) throw new Error('O alvo de colocação ficou coberto pela interface.')
   const arrastar = async () => {
+    if (
+      !(await reaberto.evaluate(
+        ({ x, y }) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+        inicio,
+      ))
+    )
+      throw new Error('O alvo da colocação foi coberto depois de atualizar a interface.')
     await reaberto.mouse.move(inicio.x, inicio.y)
     await reaberto.mouse.down()
     await reaberto.mouse.move(fim.x, fim.y, { steps: 3 })
@@ -240,12 +247,10 @@ try {
   // Mesmo arrasto, agora confirmado: prova que a região escolhida aceita uma parede.
   await arrastar()
   await reaberto.mouse.up()
-  await reaberto.waitForFunction(() => {
-    const b = [...document.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
-      b.textContent?.includes('Desfazer'),
-    )
-    return b && !b.disabled
-  })
+  await reaberto.waitForFunction(
+    (button: HTMLButtonElement) => !button.disabled,
+    await desfazer.elementHandle(),
+  )
   await desfazer.click()
   if (!(await desfazer.isDisabled()))
     throw new Error('Desfazer não retirou a única parede aplicada.')
