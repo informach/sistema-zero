@@ -292,6 +292,7 @@ describe('AdultAvatarConfigurator', () => {
     mode: 'customize',
     setMode: noop,
     pose: 'parado_relaxado',
+    poseTake: 0,
     setPose: noop,
     tab,
     chooseTab: noop,
