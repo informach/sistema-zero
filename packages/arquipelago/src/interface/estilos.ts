@@ -155,6 +155,7 @@ export const ESTILOS = `
 .arq-agora ul{list-style:none;margin:0;padding:0;display:grid;gap:7px;min-width:0}
 .arq-agora li{display:flex;gap:9px;align-items:flex-start;font-size:14px;font-weight:700;line-height:1.3;min-width:0}
 .arq-agora-ir{all:unset;box-sizing:border-box;display:flex;gap:9px;align-items:flex-start;min-width:0;cursor:pointer;border-radius:8px}.arq-agora-ir:hover{text-decoration:underline;text-decoration-color:#ffc93c;text-underline-offset:3px}.arq-agora-ir:focus-visible{outline:3px solid #ffc93c;outline-offset:2px}
+.arq-mapa-lista li .arq-mapa-ir{grid-column:2;justify-self:start;margin-top:6px;min-height:36px;padding:4px 14px;font-size:14px}
 .arq-agora-marca{flex:none;width:11px;height:11px;margin-top:3px;border-radius:50%;border:2px solid #5fd3c4}
 .arq-dica{background:rgba(20,26,58,.92);border:1px solid rgba(255,201,60,.35);border-radius:18px;padding:12px 16px 12px 12px;box-shadow:0 10px 30px rgba(8,10,30,.35);align-items:center}
 .arq-dica-texto{display:grid;gap:3px}
