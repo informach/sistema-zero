@@ -1,13 +1,9 @@
 import 'server-only'
 import { AVATAR_CATALOG, avatarBucketKey, isAvatarFile } from '@sistemazero/core/avatar'
 import { NextResponse } from 'next/server'
+import { avatarLinkWindow } from '../lib/avatar-link-window'
 import { r2PresignGetPrivate } from '../server/r2'
 import type { SessionModule } from '../server/session'
-
-/** Quanto vale o link assinado. */
-const LINK_SECONDS = 60 * 60
-/** Quanto o navegador guarda o redirecionamento: menos que o link, para nunca reusar um vencido. */
-const REDIRECT_CACHE_SECONDS = 50 * 60
 
 /**
  * Entrega os arquivos do avatar (esqueleto, peças, texturas e miniaturas).
@@ -17,8 +13,9 @@ const REDIRECT_CACHE_SECONDS = 50 * 60
  * (`isAvatarFile`): a rota não serve para ler outra coisa do bucket. O navegador baixa direto do
  * R2 por um link assinado que vence; o servidor só assina.
  *
- * O redirecionamento fica guardado no navegador por 50 minutos, então a mesma peça usa o mesmo
- * link e o cache de imagem e de modelo do navegador funciona.
+ * O link é o MESMO para todo pedido da mesma janela de 6 horas (`avatarLinkWindow`), e o R2
+ * devolve o arquivo com cache longo: as centenas de miniaturas da tela "Meu avatar" e as peças 3D
+ * saem do cache do navegador ao reabrir a tela, em vez de baixar tudo de novo a cada link novo.
  */
 export function createAvatarFileRoutes(session: SessionModule) {
   return {
@@ -29,11 +26,14 @@ export function createAvatarFileRoutes(session: SessionModule) {
       const file = arquivo.join('/')
       if (!isAvatarFile(AVATAR_CATALOG, file))
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+      const janela = avatarLinkWindow(Date.now())
       const url = await r2PresignGetPrivate(avatarBucketKey(file), {
-        expiresInSeconds: LINK_SECONDS,
+        expiresInSeconds: janela.expiresInSeconds,
+        signingDate: janela.signingDate,
+        responseCacheControl: janela.fileCacheControl,
       })
       const res = NextResponse.redirect(url, 302)
-      res.headers.set('cache-control', `private, max-age=${REDIRECT_CACHE_SECONDS}`)
+      res.headers.set('cache-control', `private, max-age=${janela.redirectMaxAgeSeconds}`)
       return res
     },
   }
