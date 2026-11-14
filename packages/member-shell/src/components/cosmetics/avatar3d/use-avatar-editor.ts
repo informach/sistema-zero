@@ -2,6 +2,7 @@
 
 import {
   AVATAR_CATALOG,
+  type AvatarCommunity,
   type AvatarFilter,
   type AvatarSlots,
   drawAvatar,
@@ -72,7 +73,14 @@ const same = (a: AvatarSlots, b: AvatarSlots) => {
  * e, gravada, ganha a foto de frente; a peça paga só experimentada não entra (o resto, sim); ao
  * sair, o que falta vai junto.
  */
-export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
+export function useAvatarEditor({
+  messages,
+  community = 'kids',
+}: {
+  messages: AvatarMessages
+  /** Kids (padrão) ou adulto: a peça só do adulto não aparece no Kids. */
+  community?: AvatarCommunity
+}) {
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<AvatarSlots>({})
@@ -144,14 +152,14 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
   const tab: AvatarTab = avatarTab(tabId)
   const allKinds: AvatarKind[] = useMemo(() => avatarKinds(C, tab), [tab])
   const kinds = useMemo(
-    () => visibleAvatarKinds(C, tab, allKinds, filter ?? 'all', owned, slots),
-    [tab, allKinds, filter, owned, slots],
+    () => visibleAvatarKinds(C, tab, allKinds, filter ?? 'all', owned, slots, community),
+    [tab, allKinds, filter, owned, slots, community],
   )
   const kindId = kindByTab[tabId] ?? avatarKindOfWorn(kinds, tab, slots)
   const kind = kinds.find((k) => k.id === kindId) ?? kinds[0]
   const items = useMemo(
-    () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', owned, slots) : []),
-    [tab, kind, filter, owned, slots],
+    () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', owned, slots, community) : []),
+    [tab, kind, filter, owned, slots, community],
   )
   const unowned = useMemo(() => avatarUnownedWorn(C, slots, owned), [slots, owned])
   // O que se grava: o avatar da tela, ou, com uma peça paga só de prévia, o último avatar sem
@@ -269,6 +277,7 @@ export function useAvatarEditor({ messages }: { messages: AvatarMessages }) {
     const sorteado = drawAvatar(C, `${Date.now()}-${Math.random()}`, {
       filter: filter ?? 'all',
       owned,
+      community,
     })
     setPending(null)
     setNotice(null)

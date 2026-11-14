@@ -123,6 +123,17 @@ describe('a grade', () => {
     expect(vestido.some((i) => i.id === deMenina)).toBe(true)
   })
 
+  test('a peça só do adulto (o chapéu de cerveja) some da loja do Kids e fica na adulta', () => {
+    const tab = avatarTab('chapeu')
+    const kind = avatarKinds(C, tab).find((k) => k.ids.includes('chapeu_cerveja_pacote'))
+    if (!kind) throw new Error('sem o tipo do chapéu de cerveja')
+    const ids = (community?: 'kids' | 'adult') =>
+      avatarShopItems(C, tab, kind, 'all', nenhum, base(), community).map((i) => i.id)
+    expect(ids()).not.toContain('chapeu_cerveja_pacote')
+    expect(ids('kids')).not.toContain('chapeu_cerveja_pacote')
+    expect(ids('adult')).toContain('chapeu_cerveja_pacote')
+  })
+
   test('"Nenhum" primeiro, depois as grátis, depois as pagas da mais barata para a mais cara', () => {
     const tab = avatarTab('chapeu')
     const [kind] = avatarKinds(C, tab)

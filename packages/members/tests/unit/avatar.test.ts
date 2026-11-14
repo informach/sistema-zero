@@ -26,7 +26,10 @@ describe('avatar do pack: o que se compra', () => {
     const conjunto = Object.keys(C.sets)[0] ?? ''
     expect(avatarItem(conjunto)?.kind).toBe('set')
     expect(avatarItem(conjunto) ?? fail()).toMatchObject({ kind: 'set' })
-    expect(isOffShelf(gratisDo('roupa_cima'))).toBe(false)
+    expect(isOffShelf(gratisDo('roupa_cima'), 'kids')).toBe(false)
+    // O chapéu de cerveja é só do adulto: no Kids não se compra.
+    expect(isOffShelf('chapeu_cerveja_pacote', 'kids')).toBe(true)
+    expect(isOffShelf('chapeu_cerveja_pacote', 'adult')).toBe(false)
     expect(inventoryIds().has(conjunto)).toBe(true)
     expect(inventoryIds().has(gratisDo('calca'))).toBe(false)
     expect(avatarItem('nao-existe')).toBeNull()

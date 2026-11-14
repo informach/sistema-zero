@@ -3214,6 +3214,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tris": 1792
     },
     "chapeu_cerveja_pacote": {
+      "adultOnly": true,
       "audience": "both",
       "band": "raro",
       "file": "pecas/chapeu_cerveja_pacote.a16d9de4b83e.glb",

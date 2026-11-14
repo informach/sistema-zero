@@ -64,6 +64,11 @@ export interface AvatarPartEntry {
   festa?: string
   /** Não aparece na loja nem no sorteio (rascunho da arte ou peça substituída por outra). */
   hidden?: boolean
+  /**
+   * Só na comunidade adulta: no Kids não aparece na loja nem no sorteio e não se compra (o chapéu
+   * de cerveja, decisão da dona de 14/11/2026). Editorial: a migração preserva.
+   */
+  adultOnly?: boolean
   /** Preço e marca vieram da regra automática e ainda não foram conferidos. */
   review?: boolean
   /** Saiu da arte depois de migrada: quem tem continua com ela, mas ela some da loja. */

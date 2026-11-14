@@ -211,6 +211,24 @@ describe('vestir', () => {
   })
 })
 
+describe('peça só do adulto', () => {
+  test('o chapéu de cerveja é só do adulto: fora da loja e do sorteio do Kids', () => {
+    const cerveja = C.parts.chapeu_cerveja_pacote
+    if (!cerveja) throw new Error('sem o chapéu de cerveja')
+    expect(cerveja.adultOnly).toBe(true)
+    expect(isListed(cerveja)).toBe(false)
+    expect(isListed(cerveja, 'kids')).toBe(false)
+    expect(isListed(cerveja, 'adult')).toBe(true)
+    const tem = new Set(['chapeu_cerveja_pacote'])
+    const sorteios = (community: 'kids' | 'adult') =>
+      Array.from({ length: 400 }, (_, i) =>
+        drawAvatar(C, `cerveja-${i}`, { owned: tem, community }),
+      ).filter((s) => s.chapeu === 'chapeu_cerveja_pacote').length
+    expect(sorteios('kids')).toBe(0)
+    expect(sorteios('adult')).toBeGreaterThan(0)
+  })
+})
+
 describe('sorteio', () => {
   test('todo avatar sorteado é válido, grátis e do lado pedido', () => {
     for (const filter of ['boy', 'girl', 'all'] as const) {

@@ -219,6 +219,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
             tier: antes.tier,
             price: antes.price,
             ...(antes.band ? { band: antes.band } : {}),
+            ...(antes.adultOnly ? { adultOnly: true as const } : {}),
             ...(antes.review ? { review: true as const } : {}),
           }
         : { ...proporPeca(item), review: true as const }
