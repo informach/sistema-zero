@@ -40,7 +40,9 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   cabeça, na altura das mãos); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do
   Rapier pelo `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada); a
   lanterna vai no encaixe `mao_direita`. Os dois rodam também na pausa (o mixer reaplica a pose).
-  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade).
+  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade). O calçar
+  antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
+  saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
 - **Fantasma (passo 6):** o mesmo `PackAvatarRig` com o boneco de partida (`avatarDoPack(null)`), o
   material próprio e o `correr_frente` no relógio da corrida; o pé desconta a folga, como o jogador.
 - Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do

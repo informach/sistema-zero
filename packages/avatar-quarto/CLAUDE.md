@@ -11,8 +11,10 @@
 - `avatar/pack-clips.ts` (14/11): `semDeslocamento(clipe, nome, {vertical})` tira o andar do `Hips`
   numa cópia do clipe (o jogo anda pela física), com o vertical mantido, sem a tendência (escada) ou
   com teto (pulo); `alturaNoComeco` dá a altura do `Hips` em pé. A plataforma não usa.
-- O `AvatarRig`, o `catalog.ts` e o resto do avatar antigo só sobram para os patins do jogo (até a
-  arte mandar o par do pack); o fantasma já usa o pack. A plataforma não os usa mais.
+- ⚠️ **O avatar antigo SAIU (14/11/2026):** `AvatarRig`, `asset-part`, `catalog.ts`, `instance.ts` e
+  `visible-parts` foram apagados, com as cópias de `public/avatar3d` dos apps e os scripts do Blender
+  que as geravam. O avatar é só o do pack; `measure.ts` (medir o boneco) segue em uso. As seções
+  datadas abaixo que falam do `AvatarRig` são histórico.
 - **Sem pisca-pisca (14/11/2026, relato dela no configurador):** cada encaixe tem uma camada
   (`CAMADA_DO_ENCAIXE`: corpo 0, o que veste a pele 1, o que cobre outra peça 2) e o
   `prepararPecaDoPack` põe `polygonOffset` na cópia do material: onde duas peças quase coincidem (a

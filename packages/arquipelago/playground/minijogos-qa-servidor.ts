@@ -97,7 +97,7 @@ Bun.serve({
       )
     const a = arquivos.get(u.pathname.slice(1))
     if (a) return new Response(a)
-    if (u.pathname.startsWith('/avatar3d/') || u.pathname.startsWith('/room3d/'))
+    if (u.pathname.startsWith('/room3d/'))
       return new Response(Bun.file(resolve(raiz, `packages/community-kids/public${u.pathname}`)))
     return new Response(
       `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/qa.css?publico=${u.searchParams.get('publico') === 'adulto' ? 'adulto' : 'kids'}"><style>html,body,#jogo{margin:0;height:100%}dialog iframe{width:100%;height:100%;border:0}</style></head><body><div id="jogo"></div><script type="module" src="/${basename(entrada.path)}"></script></body></html>`,

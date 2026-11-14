@@ -81,7 +81,9 @@ As 39 peças do quarto foram refeitas no Blender e entraram 27 novas (lista em
 32 peças modeladas no Blender (Canvas "Provador do avatar"), com a aba nova Enfeite; o contrato do
 catálogo está no CLAUDE.md do member-shell e a lista em `docs/gamificacao.md` §6.
 
-- **Os arquivos ficam em DUAS pastas** (`public/avatar3d` daqui e da comunidade adulta).
+- ⚠️ **HISTÓRICO: este avatar saiu em 14/11/2026** (as pastas `public/avatar3d` e os scripts
+  `scripts/avatar-blender/` foram apagados; o avatar é o do pack, ver o CLAUDE.md do member-shell).
+- **Os arquivos ficavam em DUAS pastas** (`public/avatar3d` daqui e da comunidade adulta).
   `tests/avatar3d-catalog.test.ts` confere que toda peça tem GLB e miniatura nas duas e que as
   cópias são iguais, que as juntas de cada GLB seguem a ordem do `Armature.glb` (o Blender exporta
   em outra ordem e a peça ficaria parada no ar nas poses) e que `AVATAR_FIXED_COLOR_PARTS` bate

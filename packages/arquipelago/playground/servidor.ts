@@ -101,7 +101,7 @@ Bun.serve({
       const f = Bun.file(alvo)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
     }
-    if (pathname.startsWith('/avatar3d/') || pathname.startsWith('/room3d/')) {
+    if (pathname.startsWith('/room3d/')) {
       const f = Bun.file(PUBLICO + pathname)
       return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
     }
