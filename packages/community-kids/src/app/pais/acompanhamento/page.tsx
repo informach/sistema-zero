@@ -8,8 +8,10 @@ export const dynamic = 'force-dynamic'
 
 /**
  * O Acompanhamento virou a aba Progresso da página de cada filho (redesenho de 14/11/2026). O
- * endereço continua valendo para o resumo da semana por e-mail e os links salvos: leva ao
- * Progresso do filho pedido (`?crianca=`) ou do primeiro; sem filhos, à Família.
+ * endereço continua vivo só para os e-mails enviados antes do redesenho (resumo da semana e
+ * lembrete de renovação, que hoje apontam para a Família) e os links salvos: leva ao Progresso do
+ * filho pedido (`?crianca=`) ou do primeiro; sem filhos, à Família. Pode sair quando esses
+ * e-mails antigos ficarem para trás (alguns meses depois do redesenho).
  */
 export default async function AcompanhamentoPage({
   searchParams,

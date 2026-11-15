@@ -349,7 +349,10 @@ página própria.
   SÓ as regras da família (tempo de jogo, permissões, convites).
 - **Página do filho:** abas Progresso (padrão, sem `?aba`), Aparelhos, No jogo
   (`arquipelago-do-filho.tsx`: a semana DELE + minijogos) e Perfil (`ProfileEditor embedded`). Os
-  painéis ficam montados. `/pais/acompanhamento` e `/pais/crianca/<id>/editar` só redirecionam.
+  painéis ficam montados. `/pais/crianca/<id>/editar` foi APAGADA (nada apontava para ela).
+  `/pais/acompanhamento` só redireciona ao Progresso (`?crianca=` ou o primeiro filho) e vive
+  apenas para os e-mails enviados antes do redesenho: o resumo da semana e o lembrete de 7 dias
+  (members) e o `/responsavel` hoje apontam para `/pais/familia`. Pode sair alguns meses depois.
 - **Cursos para pais:** curso Kids com `learner: 'parents'` (members). `/pais/cursos` (catálogo +
   progresso por `listParentCatalog`/`listParentCourses`), `/pais/cursos/<slug>` (formato da página
   do adulto; fechado = "Como liberar este curso") e `/pais/cursos/<slug>/aulas/<id>`: o MESMO
@@ -400,9 +403,9 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
 - **Conta:** "Minhas compras" (assinatura + histórico), créditos do Zappy e do Pensa, senha e o cartão de embaixador
   (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
   venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).
-- **Endereços antigos:** `/responsavel` → `/pais/acompanhamento` e `/responsavel/ajuda` →
+- **Endereços antigos:** `/responsavel` → `/pais/familia` (desde 14/11/2026) e `/responsavel/ajuda` →
   `/pais/ajuda/atendimento` (redirecionamentos, para e-mails já enviados). Os serviços apontam
-  direto para as páginas novas: o resumo da semana (members) para o Acompanhamento, a falha de
+  direto para as páginas novas: o resumo da semana (members) para a Família, a falha de
   cobrança (funil) para a Conta, a resposta do atendimento (helpdesk) para o atendimento, o
   convite de embaixador (funil) para `/pais/conta#embaixador`.
 - `PurchasesView`, `ChildrenDashboard`, `ParentSupportCard` e `ParentAreaBack` não existem mais;

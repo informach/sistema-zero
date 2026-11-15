@@ -849,8 +849,10 @@ async function main() {
         nomes: ['pais'],
         rodar: async () => {
           if (!so?.includes('pais')) return
+          // O Acompanhamento virou a aba Progresso do filho (14/11/2026): o endereço antigo leva
+          // ao Progresso do primeiro filho.
           const onde = await abrir('/pais/acompanhamento', 4000)
-          if (!onde.includes('/pais/acompanhamento'))
+          if (!onde.includes('/pais/crianca/'))
             throw new Error(
               `A Área dos pais pede a sessão do responsável (caiu em ${onde}). Exporte os cookies logado como responsável e rode só KIDS_SO=pais.`,
             )
@@ -891,14 +893,14 @@ async function main() {
           )
           // Editar perfil (a visibilidade para os colegas): só abre, nunca salva. ⚠️ A data de
           // nascimento aparece no formulário: embace-a antes de publicar a foto.
-          await abrir('/pais', 3000)
+          await abrir('/pais/familia', 3000)
           const crianca = String(
             await avaliar(
               `document.querySelector('main a[href^="/pais/crianca/"]')?.getAttribute('href')?.split('?')[0] ?? ''`,
             ),
           )
           if (!crianca) throw new Error('Não achei uma criança na Família.')
-          await abrir(`${crianca}/editar`, 3000)
+          await abrir(`${crianca}?aba=perfil`, 3000)
           await foto(
             'tela-pais-perfil',
             await caixaDe(
