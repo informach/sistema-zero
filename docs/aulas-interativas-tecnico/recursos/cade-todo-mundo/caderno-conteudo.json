@@ -1,0 +1,295 @@
+[
+  {
+    "id": "mapa",
+    "kicker": "Antes de começar",
+    "title": "O jardim espera por você",
+    "subtitle": "Neste jardim, três personagens estão escondidos. Você vai montar as regras para fazer cada um aparecer ao tocar no esconderijo e somar um em <b>Achados</b>.",
+    "items": [
+      {
+        "kind": "scene",
+        "scene": "escondido",
+        "text": "O jogo começa com os personagens atrás dos esconderijos."
+      },
+      {
+        "kind": "map",
+        "title": "O que você vai fazer",
+        "cards": [
+          {
+            "title": "O primeiro achado",
+            "text": "Experimente o toque e faça um personagem aparecer quando alguém tocar no esconderijo."
+          },
+          {
+            "title": "Complete a busca",
+            "text": "Faça cada descoberta aumentar o número Achados. Teste os três esconderijos e veja o jogo comemorar."
+          },
+          {
+            "title": "A surpresa do final",
+            "text": "No fim do curso, uma surpresa vai deixar o seu jogo ainda mais seu."
+          }
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "Consulte quando precisar: leia aqui na tela ou clique em <b>Baixar</b> para guardar. Na Aula 1, as páginas {{pagina:guia-aula}} a {{pagina:guia-estudio-expandido}} mostram cada tela da plataforma. Montagem nas páginas {{pagina:fase-1}} e {{pagina:fase-2}}; a surpresa do final na {{pagina:surpresa}}; publicação na {{pagina:publicar}}; revisão e certificado na {{pagina:certificado}}."
+      }
+    ]
+  },
+  {
+    "id": "guia-aula",
+    "guia": true
+  },
+  {
+    "id": "guia-modo-focado",
+    "guia": true
+  },
+  {
+    "id": "guia-passo-a-passo",
+    "guia": true
+  },
+  {
+    "id": "guia-experiencia",
+    "guia": true
+  },
+  {
+    "id": "guia-estudio",
+    "guia": true
+  },
+  {
+    "id": "guia-estudio-expandido",
+    "guia": true
+  },
+  {
+    "id": "fase-1",
+    "kicker": "Fase 1",
+    "title": "O primeiro achado",
+    "subtitle": "Você vai ligar uma reação ao toque: o esconderijo fica invisível e o personagem aparece.",
+    "scene": "coelho",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "experience",
+        "title": "Experiência",
+        "text": "Compare os dois esconderijos com a reação ligada e desligada. Você escolhe onde tocar e pode repetir. Os passos abaixo constroem no seu jogo a regra que revela só o escolhido."
+      },
+      {
+        "kind": "label",
+        "text": "Montar no Estúdio"
+      },
+      {
+        "kind": "heading",
+        "text": "Faça o personagem aparecer"
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "Na área <b>Quando acontecer</b>, encontre o bloco <b>Quando clicar/tocar num sprite do grupo esconderijos chamá-lo de escolhido</b>. Ele já está no projeto.",
+          "Deixe à vista o espaço ao lado de <b>fazer</b>. Em <b>Jogo 2D &gt; Sprites &gt; Aparência</b>, pegue <b>Deixar o sprite ___ com ___% de visibilidade</b> e solte ali.",
+          "Troque <b>jogador</b> por <b>escolhido</b>, no fim da lista, e <b>50</b> por <b>0</b>.",
+          "Toque em esconderijos diferentes. Só o escolhido fica invisível. Achados ainda fica em zero, porque o jogo ainda não conta."
+        ]
+      },
+      {
+        "kind": "drawing",
+        "name": "visibilidade",
+        "title": "Se no seu jogo não aconteceu isso, confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Depois de corrigir, teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique de novo, até aparecer <b>Objetivo cumprido!</b> Espere <b>Salvo</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Depois, clique em <b>Concluir aula</b>."
+      }
+    ]
+  },
+  {
+    "id": "fase-2",
+    "kicker": "Fase 2",
+    "title": "Complete a busca",
+    "subtitle": "Agora o jogo vai contar cada descoberta.",
+    "scene": "achados",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "observe",
+        "title": "Experiência",
+        "text": "Explore novos achados, vazio, repetição e reinício em qualquer ordem. achados guarda um único valor; o placar mostra esse valor. Cada novo personagem soma um."
+      },
+      {
+        "kind": "label",
+        "text": "Montar no Estúdio"
+      },
+      {
+        "kind": "heading",
+        "text": "Cada personagem vale um achado"
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "Em <b>Quando acontecer</b>, encontre o evento do toque, com a ação de visibilidade dentro.",
+          "Com a visibilidade à vista, em <b>Programação &gt; Variáveis</b>, pegue <b>Somar ___ em variável ___</b> e solte <b>logo abaixo</b>.",
+          "Deixe <b>1</b>. Troque <b>contador</b> por <b>achados</b>, o número do jogo.",
+          "Teste vazio e repetição: a contagem fica igual. Encontre os três personagens: Achados vai a <b>1, 2 e 3</b>. A mensagem aparece só no terceiro."
+        ]
+      },
+      {
+        "kind": "drawing",
+        "name": "contagem",
+        "title": "Se algo não funcionou no seu jogo, confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e continuar",
+        "text": "Depois de corrigir, teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique de novo, até aparecer <b>Objetivo cumprido!</b> Seu jogo é salvo automaticamente enquanto você monta. Para continuar, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "surpresa",
+    "kicker": "Fase 2 · A surpresa do final",
+    "title": "Deixe o jogo com a sua cara",
+    "subtitle": "A surpresa chegou! Olha quem mais pode brincar de se esconder. Escolha seus personagens, prepare os esconderijos e combine como quiser!",
+    "header": "simple",
+    "items": [
+      {
+        "kind": "gallery",
+        "category": "bichos",
+        "title": "Bichinhos"
+      },
+      {
+        "kind": "gallery",
+        "category": "esconderijos",
+        "title": "Esconderijos"
+      },
+      {
+        "kind": "heading",
+        "text": "Coloque suas escolhas no jogo"
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "Na área <b>Ao iniciar</b>, encontre um bloco <b>Criar sprite</b>. No fim dele, depois de <b>com imagem</b>, clique no nome, como <b>coelho</b> ou <b>arbusto</b>. Escolha na lista o nome do desenho que você quer. Se não achar, role a lista. Troque bicho por bicho e esconderijo por esconderijo.",
+          "Em <b>Enquanto estiver rodando</b>, encontre o bloco <b>Escrever</b> dentro do <b>Se</b>. Se quiser, troque <b>Você achou todo mundo!</b> por uma frase curta sua."
+        ]
+      },
+      {
+        "kind": "drawing",
+        "name": "escolhas"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste suas escolhas",
+        "text": "Se algum bicho aparecer antes do toque ou um desenho ficar grande demais, clique de novo no nome da imagem e escolha um desenho do mesmo tipo. Encontre todo mundo de novo. Se a frase passar da tela, deixe mais curta e teste de novo. Agora, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "publicar",
+    "kicker": "Fase 2 · Fechamento",
+    "title": "Seu jogo está pronto",
+    "subtitle": "Seu projeto já foi entregue. Se quiser compartilhar no Mural, siga os passos abaixo. Você também pode concluir a aula e continuar a jornada sem publicar.",
+    "scene": "achados",
+    "items": [
+      {
+        "kind": "steps",
+        "steps": [
+          "No alto do Estúdio da aula, depois de enviar o projeto, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima.",
+          "O resumo do projeto já vem preenchido. Deixe como está. Clique em <b>Gerar capa</b> e confira a imagem do seu jogo.",
+          "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Pronto! Clique em <b>Copiar link de jogar</b> e mande o link para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em <b>Fechar</b> e em <b>Concluir aula</b>."
+        ]
+      },
+      {
+        "kind": "screens",
+        "title": "Veja como é na tela",
+        "screens": [
+          {
+            "image": "cade-publicar-estudio.jpg",
+            "caption": "1 · No Estúdio, Compartilhar fica no alto, à direita.",
+            "marks": [
+              {
+                "n": "1",
+                "x": 92.1,
+                "y": 2.7,
+                "w": 14.9,
+                "h": 4.9
+              }
+            ]
+          },
+          {
+            "image": "cade-publicar-janela.jpg",
+            "caption": "2 e 3 · Gerar capa e Publicar.",
+            "marks": [
+              {
+                "n": "2",
+                "x": 10.6,
+                "y": 73.6,
+                "w": 15.4,
+                "h": 4.0
+              },
+              {
+                "n": "3",
+                "x": 90.4,
+                "y": 96.1,
+                "w": 12.6,
+                "h": 4.0
+              }
+            ]
+          },
+          {
+            "image": "cade-publicar-mural.jpg",
+            "caption": "3 · No Mural: Copiar link.",
+            "marks": [
+              {
+                "n": "3",
+                "x": 42.4,
+                "y": 80.4,
+                "w": 65.7,
+                "h": 8.1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Se precisar de ajuda",
+        "text": "Na área <b>Como fazer</b>, o tutorial <b>Como publicar seu jogo no Mural</b> explica também como trocar a capa e copiar o link. Clique no link da aula para abrir a ajuda e, depois, clique em <b>Voltar para a aula</b> para continuar de onde estava."
+      },
+      {
+        "kind": "note",
+        "text": "Você fez os personagens aparecerem com um toque e o jogo contar cada achado."
+      }
+    ]
+  },
+  {
+    "id": "certificado",
+    "kicker": "Fase 3 · Seu certificado",
+    "title": "Reveja o que criou",
+    "subtitle": "Você fez os personagens aparecerem e o jogo contar cada achado.",
+    "scene": "achados",
+    "items": [
+      {
+        "kind": "delivery",
+        "title": "Como o seu jardim funciona",
+        "text": "Na primeira parte desta aula, leia a fala do Zappy e responda às três perguntas sobre seu jogo. Essa parte não tem vídeo."
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "Observe a cena, escolha sua previsão e clique em <b>Ver o que acontece</b>. Compare sua resposta com o resultado no jardim.",
+          "Leia ou ouça a explicação. Se precisar, clique em <b>Tentar de novo</b>. Depois de acertar, use <b>Próxima pergunta</b>. Na última, clique em <b>Concluir revisão</b> e avance na aula."
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Comemore sua criação"
+      },
+      {
+        "kind": "delivery",
+        "text": "Na parte seguinte, assista ao vídeo e clique em <b>Baixar meu certificado</b>. Depois que baixar, clique em <b>Concluir aula</b>. Se já pegou o certificado, o botão mostra <b>Baixar certificado (PDF)</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Ficou com alguma dúvida? Clique em <b>Preciso de ajuda</b>, no rodapé da aula, e conte onde parou. Para usar a plataforma, consulte <b>Como fazer</b>."
+      }
+    ]
+  }
+]
