@@ -159,7 +159,7 @@ export function ProfileForm({
       {/* O formulário num cartão branco, dentro da moldura da área dos pais. */}
       <section className="kids-carta flex flex-col gap-6 px-6 py-8 md:px-10 md:py-10">
         <h1 className="sz-display text-[clamp(1.75rem,3vw,2.25rem)]">
-          {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar criança'}
+          {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar filho(a)'}
         </h1>
         {/* `noValidate`: sem ele, o aviso do próprio navegador ("Preencha este campo.") barra o
             envio antes do `onSubmit` e a mensagem da plataforma nunca aparece. */}

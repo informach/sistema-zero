@@ -479,6 +479,7 @@ export async function createApplication(env: Env): Promise<Application> {
       defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
     },
     liveBenefits,
+    courses,
   )
   // Quota de IA por conta (o BFF consome 1 crédito antes de cada ida ao LLM).
   const aiUsageRepo = new DrizzleAiUsageRepository(db)

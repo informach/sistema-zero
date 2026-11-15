@@ -160,6 +160,25 @@ describe('Curso para pais — vitrines e acesso', () => {
     expect(childAsking.courses).toEqual([])
   })
 
+  test('comprar só um curso para pais não libera perfil de filho; a chave Kids libera', async () => {
+    const env = buildApp({ now: NOW })
+    seedParentsCourse(env)
+    grantLifetime(env.entitlements, {
+      userId: ACCOUNT,
+      courseRef: 'ajudar-sem-fazer-por-eles',
+      now: NOW,
+    })
+    const teto = async () =>
+      (
+        await readJson(
+          await request(env, `/members/internal/profile-allowance?accountId=${ACCOUNT}`),
+        )
+      ).maxProfiles
+    expect(await teto()).toBe(0)
+    grantAllKidsCourses(env.entitlements, { userId: ACCOUNT, now: NOW })
+    expect(await teto()).toBeGreaterThan(0)
+  })
+
   test('a conta abre a aula pela chave dos cursos Kids; o perfil da criança não abre', async () => {
     const env = buildApp({ now: NOW })
     const { lessonIds } = seedParentsCourse(env)

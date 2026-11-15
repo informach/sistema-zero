@@ -146,7 +146,7 @@ describe('o guia v3 dos pais segue o acesso REAL da família', () => {
     const events = install()
     const first = renderFamily({ access: { [profileId]: [] } })
     expect(
-      await screen.findByText('Seu filho já tem perfil. Vamos preparar o acesso?'),
+      await screen.findByText('O perfil já está pronto. Vamos preparar o acesso?'),
     ).toBeTruthy()
     await waitFor(() => expect(events.map((event) => event.action)).toContain('welcome_opened'))
     // O guia leva direto à página da criança, e o mesmo pedido não se repete logo abaixo.
@@ -203,7 +203,7 @@ describe('o guia v3 dos pais segue o acesso REAL da família', () => {
     expect(screen.queryByText('1. Escolha a criança')).toBeNull()
     const guide = screen.getByRole('region', { name: 'Vamos preparar a primeira entrada?' })
     expect(
-      within(guide).getByRole('link', { name: 'Adicionar criança' }).getAttribute('href'),
+      within(guide).getByRole('link', { name: 'Adicionar filho(a)' }).getAttribute('href'),
     ).toBe('/pais/nova-crianca')
   })
 })

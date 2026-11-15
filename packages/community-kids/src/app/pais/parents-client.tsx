@@ -5,13 +5,17 @@ import { BookOpen, ChevronRight, Info } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import {
+  guideCourseDoneKey,
+  guideCourseSeenKey,
   guideDismissedKey,
   guideWelcomeSeenKey,
+  type ParentPurpose,
   parentWelcomeSteps,
   readGuideFlag,
   resolveParentGuideStep,
   writeGuideFlag,
 } from '@/lib/guide'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
@@ -35,6 +39,33 @@ import {
   parentCourseHref,
   studentEntryFor,
 } from './parent-routes'
+
+/**
+ * Quem comprou só um curso para pais (15/11/2026): no lugar dos filhos, o convite para a
+ * Comunidade, em tom de convite (sem cobrança). O link sai com a origem no UTM.
+ */
+function FamilyInvite() {
+  return (
+    <section aria-labelledby="family-invite" className="kids-carta flex flex-col gap-3 p-5 sm:p-6">
+      <h2 id="family-invite" className="sz-display text-[1.375rem] leading-tight">
+        Seus filhos também podem criar
+      </h2>
+      <p className="max-w-2xl text-muted-foreground text-sm">
+        Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar os
+        próprios jogos, com aulas, o Estúdio e a nossa equipe por perto. Quem assina também tem
+        todos os cursos para pais.
+      </p>
+      <a
+        href={comunidadeContinuarUrl('pais-curso-convite')}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${SECONDARY_ACTION} self-start`}
+      >
+        Conhecer a Comunidade dos Criadores
+      </a>
+    </section>
+  )
+}
 
 /**
  * O curso para pais no Início: o que está em andamento continua; sem curso, o convite para
@@ -108,6 +139,7 @@ export function ParentsClient({
   studentDestination,
   voiceAvailable = false,
   parentCourse = null,
+  purpose = 'filhos',
 }: {
   accountId: string
   parentName?: string
@@ -122,7 +154,10 @@ export function ParentsClient({
   voiceAvailable?: boolean
   /** O curso para pais em andamento (ou o primeiro liberado); `null` convida a conhecer. */
   parentCourse?: MyCourseView | null
+  /** Para quem é esta área (`parentPurpose`): o guia e o miolo do Início seguem a compra. */
+  purpose?: ParentPurpose
 }) {
+  const soCurso = purpose === 'curso'
   const profiles = initialProfiles
   const access = initialAccess
   const [guideOpen, setGuideOpen] = useState(false)
@@ -159,8 +194,8 @@ export function ParentsClient({
     const actionable = start.profiles ? start.ready === false : canAddProfile(start.allowance, 0)
     if (actionable) {
       setGuideOpen(true)
-      // O guia acompanha a família por várias páginas (Família, nova criança, página da
-      // criança, Família de novo): a abertura conta UMA vez por conta neste navegador.
+      // O guia acompanha a família por várias páginas (Início, nova criança, página da
+      // criança, Início de novo): a abertura conta UMA vez por conta neste navegador.
       if (!readGuideFlag(welcomeKey))
         trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
       writeGuideFlag(welcomeKey)
@@ -170,6 +205,24 @@ export function ParentsClient({
     // pronto lê "O acesso está preparado" uma vez, e o "Entendi" fecha o guia (tour_completed).
     if (start.ready === true && readGuideFlag(welcomeKey)) setGuideOpen(true)
   }, [guideKey, welcomeKey])
+
+  // Quem comprou só um curso para pais: "Seu curso está pronto", até começar ou fechar.
+  const [courseGuideOpen, setCourseGuideOpen] = useState(false)
+  const courseDoneKey = guideCourseDoneKey(accountId)
+  const courseSeenKey = guideCourseSeenKey(accountId)
+  const courseToStart = soCurso && parentCourse ? parentCourse : null
+  useEffect(() => {
+    if (!courseToStart || courseToStart.progress.percent > 0 || readGuideFlag(courseDoneKey)) return
+    setCourseGuideOpen(true)
+    if (!readGuideFlag(courseSeenKey))
+      trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'course' })
+    writeGuideFlag(courseSeenKey)
+  }, [courseToStart, courseDoneKey, courseSeenKey])
+  function closeCourseGuide(action: 'cta_clicked' | 'welcome_dismissed') {
+    setCourseGuideOpen(false)
+    writeGuideFlag(courseDoneKey)
+    trackOnboardingEvent({ audience: 'parent', action, step: 'course' })
+  }
   function dismissGuide() {
     setGuideOpen(false)
     writeGuideFlag(guideKey)
@@ -192,12 +245,22 @@ export function ParentsClient({
   const attention =
     guideStep === 'access' ? allAttention.filter((item) => item.kind !== 'none') : allAttention
   return (
-    <ParentShell active="inicio" parentName={parentName} studentDestination={studentEntry}>
+    <ParentShell
+      active="inicio"
+      parentName={parentName}
+      studentDestination={studentEntry}
+      semAreaDaCrianca={soCurso}
+    >
       <ParentPageTitle
         title={parentName ? `Olá, ${parentName}` : 'Área dos pais'}
-        text="Veja o que precisa de você, como foi a semana dos seus filhos e continue o seu curso."
+        text={
+          soCurso
+            ? 'Aqui ficam os seus cursos, as oficinas ao vivo e a sua conta.'
+            : 'Veja o que precisa de você, como foi a semana dos seus filhos e continue o seu curso.'
+        }
       />
-      {studentDestination ? (
+      {/* O aviso manda clicar em "Ir para a área da criança", que não existe sem filho. */}
+      {studentDestination && !soCurso ? (
         <section role="status" className="kids-carta flex gap-4 p-5">
           <Info className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
           <div>
@@ -210,6 +273,36 @@ export function ParentsClient({
           </div>
         </section>
       ) : null}
+      {courseGuideOpen && courseToStart ? (
+        <section
+          aria-labelledby="parents-course-guide"
+          className="kids-carta flex flex-col gap-4 border-2 border-primary p-6"
+        >
+          <h2 id="parents-course-guide" className="sz-display text-[1.375rem]">
+            Seu curso está pronto
+          </h2>
+          <p className="max-w-3xl text-sm">
+            <strong>{courseToStart.title}</strong> já está liberado na sua conta. As aulas abrem
+            aqui mesmo, na área dos pais, e quando você voltar o curso continua de onde parou.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={parentCourseHref(courseToStart.courseSlug, courseToStart.continueLessonId)}
+              onClick={() => closeCourseGuide('cta_clicked')}
+              className={PRIMARY_ACTION}
+            >
+              Começar o curso
+            </Link>
+            <button
+              type="button"
+              onClick={() => closeCourseGuide('welcome_dismissed')}
+              className="min-h-11 px-3 font-bold text-sm underline underline-offset-4"
+            >
+              Fechar orientação
+            </button>
+          </div>
+        </section>
+      ) : null}
       {guideStep ? (
         <section
           aria-labelledby="parents-guide"
@@ -219,14 +312,25 @@ export function ParentsClient({
             {guideStep === 'ready'
               ? 'O acesso está preparado'
               : profiles.length
-                ? 'Seu filho já tem perfil. Vamos preparar o acesso?'
+                ? 'O perfil já está pronto. Vamos preparar o acesso?'
                 : 'Vamos preparar a primeira entrada?'}
           </h2>
           {guideStep === 'ready' ? (
             <p className="max-w-3xl text-sm">
               No aparelho autorizado, a criança clica em <strong>Eu sou criador(a)</strong> e
               escolhe o próprio perfil, sem a sua senha. Se ela for usar este computador agora,
-              clique em <strong>Ir para a área da criança</strong>, no alto da página.
+              clique em <strong>Ir para a área da criança</strong>: no computador, ele fica embaixo
+              do menu; no celular, no alto da tela.
+              {parentCourse ? (
+                <>
+                  {' '}
+                  Os cursos para pais também estão liberados para você, em{' '}
+                  <Link href={PARENT_COURSES_HREF} className="font-bold text-primary underline">
+                    Cursos para pais
+                  </Link>
+                  .
+                </>
+              ) : null}
             </p>
           ) : (
             <ol className="grid gap-4 md:grid-cols-3">
@@ -241,7 +345,7 @@ export function ParentsClient({
           <div className="flex flex-wrap items-center gap-2">
             {guideStep === 'profile' ? (
               <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
-                Adicionar criança
+                Adicionar filho(a)
               </Link>
             ) : null}
             {guideStep === 'access' && firstWithoutAccess ? (
@@ -278,41 +382,45 @@ export function ParentsClient({
         studentDestination={studentDestination}
       />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <ParentSection
-          title="Seus filhos esta semana"
-          id="children-title"
-          action={
-            <Link
-              href="/pais/familia"
-              className="inline-flex min-h-11 items-center gap-1 font-bold text-primary text-sm"
-            >
-              Ver a família <ChevronRight className="size-4" aria-hidden="true" />
-            </Link>
-          }
-        >
-          {profiles.length ? (
-            <ul className="kids-carta flex flex-col px-5 py-1 sm:px-6">
-              {profiles.map((profile) => (
-                <ChildSummaryRow
-                  key={profile.id}
-                  profile={profile}
-                  photoUrl={avatarPhotoByProfile[profile.id] ?? null}
-                  stats={stats}
-                  studentDestination={studentDestination}
-                />
-              ))}
-            </ul>
-          ) : canCreateProfile ? (
-            <div className="kids-carta flex flex-col items-start gap-3 p-5 sm:p-6">
-              <p className="text-muted-foreground text-sm">
-                Comece criando o perfil do seu filho ou da sua filha.
-              </p>
-              <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
-                Adicionar filho(a)
+        {soCurso ? (
+          <FamilyInvite />
+        ) : (
+          <ParentSection
+            title="Seus filhos esta semana"
+            id="children-title"
+            action={
+              <Link
+                href="/pais/familia"
+                className="inline-flex min-h-11 items-center gap-1 font-bold text-primary text-sm"
+              >
+                Ver a família <ChevronRight className="size-4" aria-hidden="true" />
               </Link>
-            </div>
-          ) : null}
-        </ParentSection>
+            }
+          >
+            {profiles.length ? (
+              <ul className="kids-carta flex flex-col px-5 py-1 sm:px-6">
+                {profiles.map((profile) => (
+                  <ChildSummaryRow
+                    key={profile.id}
+                    profile={profile}
+                    photoUrl={avatarPhotoByProfile[profile.id] ?? null}
+                    stats={stats}
+                    studentDestination={studentDestination}
+                  />
+                ))}
+              </ul>
+            ) : canCreateProfile ? (
+              <div className="kids-carta flex flex-col items-start gap-3 p-5 sm:p-6">
+                <p className="text-muted-foreground text-sm">
+                  Comece criando o perfil do seu filho ou da sua filha.
+                </p>
+                <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
+                  Adicionar filho(a)
+                </Link>
+              </div>
+            ) : null}
+          </ParentSection>
+        )}
         <aside className="flex flex-col gap-6">
           <ParentCourseCard course={parentCourse} />
           <FamilyAiCredits />

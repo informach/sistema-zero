@@ -161,6 +161,7 @@ export function ParentShell({
   parentName,
   studentDestination,
   variant = 'page',
+  semAreaDaCrianca = false,
   children,
 }: {
   /** A parte acesa no menu; `null` nas páginas que não são de uma parte só. */
@@ -171,6 +172,11 @@ export function ParentShell({
   /** A entrada da criança com o `next` de uma aula, quando o responsável chegou por um link dela. */
   studentDestination?: string
   variant?: 'page' | 'lesson'
+  /**
+   * Quem comprou só um curso para pais (`parentPurpose === 'curso'`, decidido no servidor pelo
+   * Início e pela Família): sem filho cadastrado, não há área da criança para abrir.
+   */
+  semAreaDaCrianca?: boolean
   children: ReactNode
 }) {
   const [password, setPassword] = useState(false)
@@ -235,11 +241,13 @@ export function ParentShell({
           <MenuSections active={active} activeChildId={activeChildId} family={family} />
         </nav>
         <div className="flex shrink-0 flex-col gap-3 pt-4 pb-7">
-          <StudentAreaButton
-            destination={studentDestination}
-            disabled={leaving}
-            className="sz-btn-gradient h-12 w-full gap-2 px-4 text-[0.9375rem]"
-          />
+          {semAreaDaCrianca ? null : (
+            <StudentAreaButton
+              destination={studentDestination}
+              disabled={leaving}
+              className="sz-btn-gradient h-12 w-full gap-2 px-4 text-[0.9375rem]"
+            />
+          )}
           <div className="flex flex-col gap-1 rounded-[0.875rem] bg-(--menu-2) p-2">
             <div className="flex items-center gap-2.5 px-2 py-1.5">
               <UserAvatar firstName={name} avatarUrl={null} size="sm" />
@@ -262,12 +270,14 @@ export function ParentShell({
           <Link href="/pais" prefetch={false} aria-label="Área dos pais, início">
             <KidsLogo className="w-24" />
           </Link>
-          <StudentAreaButton
-            destination={studentDestination}
-            disabled={leaving}
-            shortLabel="Área da criança"
-            className="sz-btn-gradient ml-auto h-10 gap-1.5 px-3.5 text-sm"
-          />
+          {semAreaDaCrianca ? null : (
+            <StudentAreaButton
+              destination={studentDestination}
+              disabled={leaving}
+              shortLabel="Área da criança"
+              className="sz-btn-gradient ml-auto h-10 gap-1.5 px-3.5 text-sm"
+            />
+          )}
         </header>
         {variant === 'lesson' ? (
           <main
