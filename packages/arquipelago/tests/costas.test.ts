@@ -93,4 +93,23 @@ describe('o que vai nas costas do avatar no jogo', () => {
     if (!capa) return
     expect(vestirAsCostas({ ...base(), costas: capa }, deitada).slots.costas).toBeUndefined()
   })
+
+  test('entrando e saindo da água, o planador sai; no andar na água rasa, fica', () => {
+    const entrando = clipesDoCorpo({ deitada: false, empurrandoComo: null, nadando: true })
+    expect(entrando).toContain('entrar_na_agua')
+    const saindo = clipesDoCorpo({
+      deitada: false,
+      empurrandoComo: null,
+      nadando: false,
+      saindoDaAgua: true,
+    })
+    expect(saindo).toEqual(['sair_da_agua'])
+    for (const clipes of [entrando, saindo])
+      expect(vestirAsCostas(base(), { ...situacao, clipes }).slots[slotDoFardo]).toBeUndefined()
+    expect(
+      vestirAsCostas(base(), { ...situacao, clipes: ['andar_na_agua', 'sentado_no_barco'] }).slots[
+        slotDoFardo
+      ],
+    ).toBe(PLANADOR_DOBRADO)
+  })
 })

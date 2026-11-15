@@ -19,8 +19,11 @@ export const PLANADOR_DOBRADO = 'planador_dobrado'
 const SLOT_DAS_COSTAS = 'costas'
 /** Os clipes da arte em que a criança está deitada (o `sai_nas_animacoes` das peças de costas). */
 export const CLIPES_DEITADA = ['deitar', 'deitado', 'levantar_da_cama'] as const
-/** Os clipes da arte do nado (o planador sai nadando, a partir da próxima entrega da arte). */
-export const CLIPES_DO_NADO = ['nadar', 'boiar'] as const
+/**
+ * Os clipes da arte do nado, com o de entrar (que toca com ela já nadando): o planador sai. No andar
+ * na água rasa e sentada no barco ele fica (a arte mediu: não atravessa nada).
+ */
+export const CLIPES_DO_NADO = ['nadar', 'boiar', 'entrar_na_agua'] as const
 
 export interface SituacaoDasCostas {
   /** Tem o planador e não está voando: o fardo vai nas costas. */
@@ -39,12 +42,15 @@ export function clipesDoCorpo(corpo: {
   deitada: boolean
   empurrandoComo: 'baixo' | 'meio' | 'alto' | null
   nadando: boolean
+  /** Saindo da água (o corpo se ergue na margem, já fora do nado). */
+  saindoDaAgua?: boolean
 }): string[] {
   return [
     ...(corpo.deitada ? CLIPES_DEITADA : []),
     ...(corpo.empurrandoComo === 'baixo' ? ['empurrar_baixo'] : []),
     ...(corpo.empurrandoComo === 'meio' ? ['empurrar_meio'] : []),
     ...(corpo.nadando ? CLIPES_DO_NADO : []),
+    ...(corpo.saindoDaAgua ? ['sair_da_agua'] : []),
   ]
 }
 

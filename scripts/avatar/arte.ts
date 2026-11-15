@@ -69,6 +69,8 @@ export interface ItemDaArte {
       arquivo: string
       arquivo_alca_alta?: string
       no_sentado_ate_m?: number
+      /** Até onde o fardo vai para trás do ponto de sentar no barco (`sentado_no_barco`). */
+      no_sentado_no_barco_ate_m?: number
       /** Os cabelos que batem no fardo nesta situação (atrás desta bolsa). */
       nao_aparece_com?: string[]
     }

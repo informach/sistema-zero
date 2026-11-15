@@ -231,6 +231,9 @@ export function AvatarDoJogo({
   nadando?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
+  // Saindo da água (o `sair_da_agua` da locomoção, já fora do nado): o fardo do planador sai.
+  const [saindoDaAgua, setSaindoDaAgua] = useState(false)
+  const saindoMostrado = useRef(false)
   const pausado = useEstado(jogoPausado)
   const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
   const { slots, bracoDasCostas } = useMemo(() => {
@@ -240,7 +243,7 @@ export function AvatarDoJogo({
     // Deitada (o mesmo `semChapeu`), a mochila sai; com o planador, o fardo entra nas costas.
     const costas = vestirAsCostas(calcado, {
       planador: planadorNasCostas,
-      clipes: clipesDoCorpo({ deitada: semChapeu, empurrandoComo, nadando }),
+      clipes: clipesDoCorpo({ deitada: semChapeu, empurrandoComo, nadando, saindoDaAgua }),
       sentada,
     })
     if (!semChapeu || !costas.slots.chapeu) return costas
@@ -255,6 +258,7 @@ export function AvatarDoJogo({
     sentada,
     empurrandoComo,
     nadando,
+    saindoDaAgua,
   ])
   const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
   const equipamento = equipamentoDaMao(naMao)
@@ -297,6 +301,11 @@ export function AvatarDoJogo({
     if (pausado) return
     const dt = Math.min(dtBruto, 0.1)
     const l = passoDaLocomocao(locomocao.current, movimento.current, dt)
+    const saindo = l.saindoDaAgua > 0
+    if (saindo !== saindoMostrado.current) {
+      saindoMostrado.current = saindo
+      setSaindoDaAgua(saindo)
+    }
     const p = poseDosClipes(l, pose.current)
     for (const id of CLIPES_DO_JOGO) {
       const acao = acoes.current[id]

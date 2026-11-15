@@ -7,7 +7,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+    "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
     "syncedAt": "2026-11-15",
     "rulesBlob": "af256ec361452c18b50b257c859e2c96557bea76"
   },
@@ -8870,7 +8870,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "empurrar_baixo",
         "empurrar_meio",
         "nadar",
-        "boiar"
+        "boiar",
+        "entrar_na_agua",
+        "sair_da_agua"
       ],
       "armLayers": {
         "correr_tras": "costas_braco_esq_planador_correr_tras",
@@ -8938,14 +8940,20 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "costas_mochila_pequena": 0.277,
           "costas_mochila_bolso": 0.316,
           "costas_bolsa_saco": 0.307
+        },
+        "seatedInBoatBack": {
+          "none": 0.236,
+          "costas_mochila_pequena": 0.295,
+          "costas_mochila_bolso": 0.334,
+          "costas_bolsa_saco": 0.325
         }
       },
       "hidden": true,
       "origin": {
         "blob": "df86a50ca10d0b5af800c249a324ffb4ce9793b2",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "2b2dfc5960246abe",
-        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
         "migratedAt": "2026-11-15"
       }
     },
@@ -8963,8 +8971,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "fca0a8179092afca7f0c9256737db6123dfc5f47",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "2b2dfc5960246abe",
-        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9067,8 +9075,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "ca29e4a58f39d4bcda157715cc2c8f1680a693a6",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "2b2dfc5960246abe",
-        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9087,8 +9095,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "7815df79a45e8aa4b8d84b1a1c7f5a541a1999cb",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "2b2dfc5960246abe",
-        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9107,8 +9115,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "601c1e2965d7ecb6b861e8412a0cdd573a1484d1",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "2b2dfc5960246abe",
-        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"

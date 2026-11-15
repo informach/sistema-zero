@@ -1031,8 +1031,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   vai nas costas (`vestirAsCostas`, o arquivo pela peça de costas vestida, `situationFor` do core);
   sai sentada (o encosto cortaria), com capa, com as roupas e os cabelos da lista e, atrás de cada
   bolsa, com os cabelos que batem nele (`hiddenWithByBack`). Peça de costas e fardo saem nos clipes do
-  `offIn` que valem agora (`clipesDoCorpo`: deitada, empurrando agachada ou de meia altura e, quando
-  a arte entregar, nadando); o personagem passa o jeito do empurrão e o nado como estado. O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
+  `offIn` que valem agora (`clipesDoCorpo`: deitada, empurrando agachada ou de meia altura, nadando,
+  boiando, entrando e saindo da água); o personagem passa o jeito do empurrão e o nado como estado,
+  e o `AvatarDoJogo` vê a saída da água (`saindoDaAgua` da locomoção). No barco e na água rasa o
+  fardo fica: a arte mediu os 21 pontos de barco (`seatedInBoatBack` no catálogo). O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
   (`armLayers`, o mesmo `BracoComObjeto` da lanterna). A peça de baixo fixa, as variantes montadas e
   a troca dos vestidos do pack pelos nossos com shortinho são do desenho comum (`PackAvatarRig`).
 - **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no

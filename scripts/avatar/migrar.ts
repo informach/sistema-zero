@@ -389,12 +389,15 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       const idsDaAlcaAlta: Record<string, string> = {}
       const noSentado: Record<string, number> = {}
       const escondidaCom: Record<string, string[]> = {}
+      const noBarco: Record<string, number> = {}
       for (const s of daSituacao) {
         if (s.alcaAlta) idsDaAlcaAlta[s.chave] = s.id
         else idsDaSituacao[s.chave] = s.id
         const nome = s.chave === 'none' ? 'sem_nada' : s.chave
         const atras = item.situacoes?.[nome]?.no_sentado_ate_m
         if (typeof atras === 'number') noSentado[s.chave] = atras
+        const atrasNoBarco = item.situacoes?.[nome]?.no_sentado_no_barco_ate_m
+        if (typeof atrasNoBarco === 'number') noBarco[s.chave] = atrasNoBarco
         const com = item.situacoes?.[nome]?.nao_aparece_com
         if (com?.length) escondidaCom[s.chave] = [...com]
       }
@@ -408,6 +411,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
               ...(item.nao_aparece_com?.length ? { hiddenWith: [...item.nao_aparece_com] } : {}),
               ...(Object.keys(escondidaCom).length > 0 ? { hiddenWithByBack: escondidaCom } : {}),
               ...(Object.keys(noSentado).length > 0 ? { seatedBack: noSentado } : {}),
+              ...(Object.keys(noBarco).length > 0 ? { seatedInBoatBack: noBarco } : {}),
             }
           : undefined
 

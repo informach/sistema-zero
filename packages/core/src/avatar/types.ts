@@ -128,6 +128,8 @@ export interface AvatarPartSituations {
   hiddenWithByBack?: Record<string, string[]>
   /** Até onde a peça vai para trás, sentada (m nativos), por situação (chave do `byBack`). */
   seatedBack?: Record<string, number>
+  /** O mesmo do ponto de sentar no barco (`sentado_no_barco`), por situação. */
+  seatedInBoatBack?: Record<string, number>
 }
 
 export interface AvatarSetEntry {
