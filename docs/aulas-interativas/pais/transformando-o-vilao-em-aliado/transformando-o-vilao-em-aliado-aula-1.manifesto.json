@@ -1,0 +1,71 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-1",
+  "title": "O que você deseja para o seu filho",
+  "blocks": [
+    {
+      "key": "video-a1-desejo",
+      "plannedVideo": "Título: O que você mais deseja para o seu filho\n\nHelena na câmera. Apresenta o curso e a Vivianne Lima (slide 2 da aula aberta), faz a pergunta do slide 3 e pede para guardar a palavra. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a1-realidade",
+      "plannedVideo": "Título: A tela que já existe na sua casa\n\nSlides 4 e 5 da aula aberta e o vídeo de depoimentos do slide 6 (Flávia, Daniel e Débora). Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "video-a1-tres-usos",
+      "plannedVideo": "Título: O fogo e os três usos da tela\n\nSlides 7 e 8 da aula aberta: o fogo como ferramenta; assistir, jogar e criar. Fecha com a tarefa da semana e a apostila. Fala completa no roteiro, Parte 3."
+    },
+    {
+      "key": "para-casa-a1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer em casa\n\nDurante uma semana, observe em qual destes usos o seu filho passa mais tempo na tela:\n\n- **Assistir:** receber histórias e conteúdos prontos.\n- **Jogar:** explorar regras e desafios que outra pessoa criou.\n- **Criar:** inventar as próprias regras e ver tudo funcionar.\n\nSem julgar e sem mudar nada ainda. Só observar. E guarde a palavra que veio à sua cabeça na primeira parte: a gente volta nela na última aula."
+      }
+    },
+    {
+      "key": "apostila",
+      "content": {
+        "kind": "materials",
+        "title": "Apostila do curso: Transformando o vilão em aliado",
+        "bookPreview": true,
+        "items": []
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "desejo",
+      "title": "O que você mais deseja",
+      "objective": "Começar pelo que a família deseja para o filho e guardar uma palavra para retomar no fim do curso.",
+      "intent": "presentation",
+      "blockKeys": ["video-a1-desejo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a1-desejo"] }
+    },
+    {
+      "key": "realidade",
+      "title": "A tela que já existe",
+      "objective": "Trocar a pergunta \"como eu tiro a tela?\" por \"o que eu posso oferecer dentro dela?\" e entender que a proposta usa o mesmo tempo de tela, sem aumentar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a1-realidade"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a1-realidade"] }
+    },
+    {
+      "key": "tres-usos",
+      "title": "O fogo e os três usos da tela",
+      "objective": "Reconhecer a tela como ferramenta e diferenciar assistir, jogar e criar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a1-tres-usos", "para-casa-a1", "apostila"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a1-tres-usos"] }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-5",
+  "title": "Foco e a coragem de errar",
+  "blocks": [
+    {
+      "key": "video-a5-foco",
+      "plannedVideo": "Título: O foco que eles já têm\n\nSlide 19 da aula aberta (o que se exercita ao criar) e o vídeo de depoimentos do slide 20 (Daniel, Harle e Flávia). Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a5-erro",
+      "plannedVideo": "Título: Quando estava difícil, eu consegui\n\nO vídeo da Isabela (slide 21 da aula aberta), a primeira barreira e os níveis de suporte. Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "para-casa-a5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer em casa\n\nLembre de uma coisa nova que o seu filho achou difícil e depois conseguiu. Como foi a primeira barreira? Quem estava do lado?\n\n**Os níveis de suporte**, como a Vivianne explica:\n\n1. **Fazer pela criança**, para ela ver que é legal.\n2. **Fazer junto**, tirando um pouquinho do suporte e aumentando um pouquinho a exigência.\n3. **Deixar ela pensar**, até o dia em que ela mesma diz: não fala, deixa eu pensar.\n\nCada criança tem o seu tempo, e pausas fazem parte."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "foco",
+      "title": "O foco que eles já têm",
+      "objective": "Ver as habilidades que a criação exercita como oportunidades de prática e entender o interesse como aliado do foco.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-foco"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a5-foco"] }
+    },
+    {
+      "key": "erro",
+      "title": "Quando estava difícil, eu consegui",
+      "objective": "Entender a primeira barreira de toda atividade nova e o papel dos níveis de suporte.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-erro", "para-casa-a5"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a5-erro"] }
+    }
+  ]
+}
