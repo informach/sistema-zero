@@ -11,6 +11,7 @@ import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
+import type { ObjetoDoGesto } from '../sistemas/gestos'
 import type { Ida } from '../sistemas/ir-tocando'
 import type { Gesto } from '../sistemas/locomocao'
 import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
@@ -248,7 +249,7 @@ export interface Movimento {
    */
   gesto: {
     qual: Gesto
-    objeto: 'mao_regador' | 'mao_balde' | null
+    objeto: ObjetoDoGesto | null
   } | null
   gestos: number
   /** Ela tocou num lugar do chão e está indo para lá sozinha (`sistemas/ir-tocando.ts`). */

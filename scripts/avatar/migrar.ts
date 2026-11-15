@@ -165,11 +165,15 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
     ...Object.keys(regras.substituicoes?.pares ?? {}),
     ...Object.values(regras.trocas_fantasia?.pares ?? {}).flatMap((pares) => Object.values(pares)),
   ])
-  // A peça nossa que entra numa fantasia não vira parte dela: quem é parte é a cópia (passo 4).
+  // A peça nossa que entra numa fantasia não vira parte dela: quem é parte é a cópia (passo 4). A
+  // do pack que ela trocou continua da fantasia (escondida): quem a vestia ainda é reconhecido
+  // como de fantasia e passa para a cópia (`withCurrentSet`).
   const conjuntoDaParte = new Map<string, string>()
   for (const fantasia of regras.fantasias)
     for (const { peca } of fantasia.pecas)
-      if (!trocas.get(fantasia.id)?.has(peca)) conjuntoDaParte.set(peca, fantasia.id)
+      if (trocas.get(fantasia.id)?.get(peca)?.nossa !== peca) conjuntoDaParte.set(peca, fantasia.id)
+  for (const [fantasia, pares] of Object.entries(regras.trocas_fantasia?.pares ?? {}))
+    for (const doPack of Object.values(pares)) conjuntoDaParte.set(doPack, fantasia)
 
   let enviados = 0
   // No ensaio numa pasta, tudo é gravado de novo: a pasta começa vazia.
@@ -272,7 +276,6 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
                 },
               }
             : {}),
-          ...(dedosDaPegada(item).length > 0 ? { fingers: dedosDaPegada(item) } : {}),
           origin: {
             blob: arte.blob(caminhoDoGlb),
             thumbBlob: arte.blob(caminhoDaMiniatura),
@@ -286,11 +289,16 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
     }
     // Os dedos de cada objeto saem da pegada da arte: refeitos em toda migração (sem reenvio), para
     // o objeto migrado antes de a arte declarar a pegada também ganhar os dele.
+    // Sem pegada na arte, sai o `fingers` antigo (o jogo volta à pegada pelas camadas).
     for (const item of arte.equipamentos()) {
       const entrada = catalogo.equipment?.[item.id]
+      if (!entrada) continue
       const dedos = dedosDaPegada(item)
-      if (!entrada || dedos.length === 0) continue
-      catalogo.equipment = { ...catalogo.equipment, [item.id]: { ...entrada, fingers: dedos } }
+      const { fingers: _antes, ...semDedos } = entrada
+      catalogo.equipment = {
+        ...catalogo.equipment,
+        [item.id]: dedos.length > 0 ? { ...semDedos, fingers: dedos } : semDedos,
+      }
     }
     for (const id of comparacao.equipamentosQueSairam) {
       const { [id]: _fora, ...resto } = catalogo.equipment ?? {}
@@ -416,7 +424,11 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
         price: 0,
         set: fantasia.id,
         copyOf: copia.nossa,
+        // A nossa saiu da arte (aposentada no passo 3): a cópia dentro da fantasia também.
+        ...(nossa.retired ? { retired: true as const } : {}),
       }
+      if (nossa.retired)
+        console.warn(`A troca da fantasia ${fantasia.id} cita ${copia.nossa}, que saiu da arte.`)
       copiasDeAgora.add(copia.id)
     }
   }

@@ -1,7 +1,8 @@
 import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import type { Movimento } from '../estado/contexto'
+import type { ObjetoDeMao } from '../personagem/objeto-na-mao'
 import { CORPO } from './corpo'
-import { DURACAO_DO_CLIPE, duracaoDoGesto, type Gesto } from './locomocao'
+import { duracaoDoEstado, duracaoDoGesto, type Gesto } from './locomocao'
 
 /**
  * Os gestos do corpo (regra pura): o mundo pede (`pedirGesto`: colher, plantar, regar, comemorar,
@@ -9,7 +10,8 @@ import { DURACAO_DO_CLIPE, duracaoDoGesto, type Gesto } from './locomocao'
  * dele (`duracaoDoGesto`), parada; andar corta na hora, e fora do chão (nadando, num modo especial)
  * ele não começa. A máquina de locomoção põe o clipe no lugar do "Parado".
  */
-export type ObjetoDoGesto = 'mao_regador' | 'mao_balde'
+/** Os objetos de mão que um gesto traz (o regador ao regar, o balde cheio). */
+export type ObjetoDoGesto = Extract<ObjetoDeMao, 'mao_regador' | 'mao_balde'>
 
 /** O mundo pede um gesto (o personagem atende no passo seguinte). */
 export function pedirGesto(
@@ -51,10 +53,12 @@ export interface GestoEmAndamento {
   duracao: number
   /** Os pedidos do mundo já vistos. */
   vistos: number
+  /** Quantos gestos já começaram (a locomoção recomeça o clipe a cada vez, mesmo repetido). */
+  vez: number
 }
 
 export function criarGestoEmAndamento(vistos = 0): GestoEmAndamento {
-  return { qual: null, objeto: null, falta: 0, duracao: 0, vistos }
+  return { qual: null, objeto: null, falta: 0, duracao: 0, vistos, vez: 0 }
 }
 
 export function comecarGesto(
@@ -66,6 +70,7 @@ export function comecarGesto(
   g.objeto = objeto
   g.duracao = duracaoDoGesto(qual)
   g.falta = g.duracao
+  g.vez += 1
 }
 
 /** De 0 (começando) a 1 (acabou); 0 sem gesto. */
@@ -130,7 +135,8 @@ export function alturaNaSela(
   if (!selaBaixa(sela)) return o.montada ? sela : 0
   const ateOAssento = Math.max(0, sela - ASSENTO_DO_MONTAR)
   if (o.montada) {
-    const d = DURACAO_DO_CLIPE.montar
+    // A mesma duração com que a locomoção toca o subir na sela.
+    const d = duracaoDoEstado('Montando')
     const t = d > 0 ? o.noModo / d : 1
     return t < 1 ? ateOAssento * suave(t) : sela
   }

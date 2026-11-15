@@ -17,6 +17,7 @@ import {
   drawAvatar,
   type PhysicalBody,
   physicalBody,
+  withCurrentSet,
   withEars,
 } from '@sistemazero/core/avatar'
 
@@ -45,7 +46,8 @@ export function nomeDaPecaDoPack(id: string, catalog: AvatarCatalog = AVATAR_CAT
 /**
  * O avatar que veio da plataforma, só com o que o pack conhece: cada encaixe com uma peça do
  * catálogo DAQUELE encaixe (o resto, como o formato antigo `{asset, color}`, sai), corpo e rosto
- * de partida quando faltam, e as orelhas da cor do corpo. Nunca lança: avatar estranho vira o de
+ * de partida quando faltam, a fantasia com as partes de agora (a parte que a arte trocou dentro
+ * dela, `withCurrentSet`) e as orelhas da cor do corpo. Nunca lança: avatar estranho vira o de
  * partida.
  */
 export function avatarDoPack(
@@ -57,5 +59,5 @@ export function avatarDoPack(
     if (typeof id === 'string' && catalog.parts[id]?.slot === slot) limpo[slot] = id
   for (const slot of ['corpo', 'rosto'] as const)
     if (!limpo[slot] && catalog.rules.default[slot]) limpo[slot] = catalog.rules.default[slot]
-  return withEars(catalog, limpo)
+  return withEars(catalog, withCurrentSet(catalog, limpo))
 }

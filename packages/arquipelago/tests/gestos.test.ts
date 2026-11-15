@@ -59,6 +59,18 @@ describe('os gestos pedidos pelo mundo', () => {
     expect(g.qual).toBeNull()
   })
 
+  test('cada gesto que começa ganha uma vez nova, mesmo repetido', () => {
+    const m = pedido()
+    const g = criarGestoEmAndamento()
+    pedirGesto(m, 'PegarDoChao')
+    passoDoGesto(g, m, livre)
+    const primeira = g.vez
+    pedirGesto(m, 'PegarDoChao')
+    passoDoGesto(g, m, livre)
+    expect(g.qual).toBe('PegarDoChao')
+    expect(g.vez).toBe(primeira + 1)
+  })
+
   test('o progresso vai de 0 a 1', () => {
     const g = criarGestoEmAndamento()
     expect(progressoDoGesto(g)).toBe(0)

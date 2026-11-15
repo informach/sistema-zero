@@ -12,6 +12,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
+import { PAINEL_DA_MORADA } from '../estado/morada'
 import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
 import { IrTocando } from '../mundo/ir-tocando'
@@ -198,7 +199,7 @@ export function Personagem() {
   const empurrando = useRef(0)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
   /** O gesto em andamento (`sistemas/gestos`) e o modo do passo anterior (levantar, descer da sela). */
-  const gesto = useRef(criarGestoEmAndamento(movimento.gestos)).current
+  const [gesto] = useState(() => criarGestoEmAndamento(movimento.gestos))
   const modoAntes = useRef(v.modo)
   const jeitoAntes = useRef<'sentar' | 'deitar'>('sentar')
   /** O objeto do gesto na mão (o regador, o balde): muda só quando o gesto começa e acaba. */
@@ -552,13 +553,15 @@ export function Personagem() {
       comecarGesto(gesto, 'Desmontar')
     modoAntes.current = v.modo
     if (v.descanso) jeitoAntes.current = v.descanso.jeito
-    // Pausado (um painel aberto), o gesto espera: começa ou continua quando o jogo volta.
+    // Pausado (um painel aberto), o gesto espera: começa ou continua quando o jogo volta. Com a
+    // casa da Morada aberta, quem faz o gesto é o corpo de lá: aqui o pedido passa.
     passoDoGesto(gesto, movimento, {
       dt: parado ? 0 : dt,
       andou,
-      livre: v.modo === 'chao' && !nadando,
+      livre: v.modo === 'chao' && !nadando && estado.painelAberto !== PAINEL_DA_MORADA,
     })
     m.gesto = gesto.qual
+    m.gestoVez = gesto.vez
     if (gesto.objeto !== objetoMostrado.current) {
       objetoMostrado.current = gesto.objeto
       setObjetoDoGesto(gesto.objeto)

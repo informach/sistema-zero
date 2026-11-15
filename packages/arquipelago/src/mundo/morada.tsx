@@ -43,7 +43,14 @@ import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { Contexto, useEstado, useJogo } from '../estado/contexto'
 import { casaMoradaStore, PAINEL_DA_MORADA } from '../estado/morada'
 import { nomeNoJogo, useClipesDoJogo } from '../personagem/avatar-do-jogo'
+import {
+  BracoComObjeto,
+  camadasDoBraco,
+  DedosNoCabo,
+  equipamentoDaMao,
+} from '../personagem/objeto-na-mao'
 import { MULTIPLICADOR_DA_RAPIDEZ } from '../sistemas/conforto'
+import { criarGestoEmAndamento, type ObjetoDoGesto, passoDoGesto } from '../sistemas/gestos'
 import { estagio, geladeiraEm, progresso } from '../sistemas/horta'
 import {
   CLIPES_DO_JOGO,
@@ -472,8 +479,12 @@ function NativeActor({
   blocked: boolean
   ready: boolean
 }) {
-  const { controle, loja, plataforma, interativos } = useJogo()
+  const { controle, loja, plataforma, interativos, movimento } = useJogo()
   const casa = casaMoradaStore(loja, plataforma)
+  // Os gestos da casa (plantar, regar e colher na horta): o mesmo pedido do mundo, feito aqui.
+  const [gesto] = useState(() => criarGestoEmAndamento(movimento.gestos))
+  const [objetoDoGesto, setObjetoDoGesto] = useState<ObjetoDoGesto | null>(null)
+  const objetoMostrado = useRef<ObjetoDoGesto | null>(null)
   const conforto = lojaDoConforto(loja)
   const canvas = useThree((state) => state.gl.domElement)
   useEffect(() => {
@@ -582,7 +593,15 @@ function NativeActor({
         if (visual.current) visual.current.rotation.y = pose.rotation
         horizontal.current = { x: 0, z: 0 }
         velocity.current = 0
-        moving.current = { ...moving.current, velocidade: 0, velY: 0, especial: rest.mode }
+        // Descansando, nenhum gesto (o pedido que chegar agora passa).
+        passoDoGesto(gesto, movimento, { dt: 1 / 60, andou: false, livre: false })
+        moving.current = {
+          ...moving.current,
+          velocidade: 0,
+          velY: 0,
+          especial: rest.mode,
+          gesto: null,
+        }
         return
       }
     }
@@ -635,12 +654,20 @@ function NativeActor({
     b.setNextKinematicTranslation(nextPosition)
     const actualX = nextPosition.x - position.x
     const actualZ = nextPosition.z - position.z
+    const andou = Math.hypot(controle.eixoX, controle.eixoZ) > 0.3 || velocity.current > 0
+    passoDoGesto(gesto, movimento, { dt, andou, livre: kcc.computedGrounded() })
+    if (gesto.objeto !== objetoMostrado.current) {
+      objetoMostrado.current = gesto.objeto
+      setObjetoDoGesto(gesto.objeto)
+    }
     moving.current = {
       velocidade: Math.hypot(actualX, actualZ) / dt,
       noChao: kcc.computedGrounded(),
       velY: velocity.current,
       nadando: false,
       especial: null,
+      gesto: gesto.qual,
+      gestoVez: gesto.vez,
     }
     if (visual.current && moving.current.velocidade > 0.05) {
       const target = Math.atan2(actualX, actualZ)
@@ -712,7 +739,7 @@ function NativeActor({
         <group ref={visual} visible={false} position={[0, -nativeBody.centerToFoot - 0.02, 0]}>
           <PackRigBoundary>
             <Suspense fallback={null}>
-              <NativeRig rig={rig} moving={moving} blocked={blocked} />
+              <NativeRig rig={rig} moving={moving} blocked={blocked} objeto={objetoDoGesto} />
             </Suspense>
           </PackRigBoundary>
         </group>
@@ -734,10 +761,13 @@ function NativeRig({
   rig,
   moving,
   blocked,
+  objeto,
 }: {
   rig: RefObject<Group | null>
   moving: RefObject<EntradaDaLocomocao>
   blocked: boolean
+  /** O objeto do gesto (o regador ao regar), na mão direita com os dedos fechados. */
+  objeto: ObjetoDoGesto | null
 }) {
   const { loja } = useJogo()
   const slots = useEstado((s) => s.avatar.slots)
@@ -779,13 +809,23 @@ function NativeRig({
     const local = group.parent.worldToLocal(world)
     group.position.set(-local.x, -local.y, -local.z)
   }
+  const equipamento = equipamentoDaMao(objeto)
   return (
-    <PackAvatarRig
-      slots={avatar}
-      charRef={rig}
-      extraClips={clips}
-      onAnimations={onAnimations}
-      onStood={onStood}
-    />
+    <>
+      <PackAvatarRig
+        slots={avatar}
+        charRef={rig}
+        extraClips={clips}
+        onAnimations={onAnimations}
+        onStood={onStood}
+        equipment={equipamento}
+      />
+      {objeto && camadasDoBraco(objeto).length > 0 ? (
+        <BracoComObjeto key={`braco-${objeto}`} corpo={rig} objeto={objeto} pose={pose} />
+      ) : null}
+      {objeto && equipamento.length > 0 ? (
+        <DedosNoCabo key={objeto} corpo={rig} objeto={objeto} />
+      ) : null}
+    </>
   )
 }
