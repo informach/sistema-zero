@@ -1,8 +1,12 @@
-import type { GiftAudience, ReferralGiftOfferView } from '@sistemazero/core/referrals'
+import {
+  type GiftAudience,
+  giftDurationLabel,
+  type ReferralGiftOfferView,
+} from '@sistemazero/core/referrals'
 import type { EstadoPresente, EstadosPresente } from './presente'
 import { PRESENTE_KIDS } from './presente'
 import { PRESENTE_ADULTO } from './presente-adulto'
-import { cursoDoPresente, diasDoPresente } from './presente-resgate'
+import { cursoDoPresente } from './presente-resgate'
 
 /**
  * A página enxuta do presente quando o curso NÃO é o Cadê Todo Mundo (15/11/2026). O texto vem
@@ -42,7 +46,7 @@ export function presenteCursoCopy(
   variante: 'pais' | 'curso',
 ): PresenteCursoCopy {
   const curso = cursoDoPresente(gift)
-  const dias = gift.accessDays ? diasDoPresente(gift.accessDays) : null
+  const dias = gift.accessDays === null ? null : giftDurationLabel(gift.accessDays)
   const adulto = audience === 'adult'
   const pais = variante === 'pais' && !adulto
   const mural = gift.includesMural && !pais
