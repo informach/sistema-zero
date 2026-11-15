@@ -51,10 +51,19 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
       entitlement_id uuid not null, expires_on date not null, message_kind text not null,
       sent_at timestamp with time zone not null default now(),
       primary key (entitlement_id, expires_on, message_kind))`)
+    // O aviso nomeia o curso presenteado pelo título (subconsulta em members.courses).
+    await conn.sql.unsafe('create table if not exists members.courses (id uuid primary key)')
+    await conn.sql.unsafe(`alter table members.courses
+      add column if not exists slug text not null default '',
+      add column if not exists title text not null default ''`)
   })
+
+  const giftCourseId = randomUUID()
+  const giftCourseSlug = `presente-${giftCourseId}`
 
   afterAll(async () => {
     await cleanup()
+    await conn.sql`delete from members.courses where id = ${giftCourseId}`
     await conn.sql.end()
   })
 
@@ -165,6 +174,21 @@ describe.skipIf(!url)('fim do acesso: consultas no Postgres real', () => {
       (row) => row.userId === u(0),
     )
     expect(later.map((row) => row.messageKind)).toEqual(['gift_expired', 'gift_expired'])
+  })
+
+  test('presente: o aviso traz o curso e o título dele', async () => {
+    await conn.sql`insert into members.courses (id, slug, title)
+      values (${giftCourseId}, ${giftCourseSlug}, 'Curso do presente') on conflict (id) do nothing`
+    const twoDays = new Date('2031-03-12T14:00:00Z')
+    const course = await giftRow(u(0), 'a', twoDays, giftCourseSlug)
+    const mural = await giftRow(u(0), 'a', twoDays, 'mural-dos-criadores')
+    const listed = (await repo.listGiftLifecycleEntitlements(NOW, WINDOW, 50)).filter((row) =>
+      mine.has(row.userId),
+    )
+    const byId = new Map(listed.map((row) => [row.id, row]))
+    expect(byId.get(course)?.courseRef).toBe(giftCourseSlug)
+    expect(byId.get(course)?.courseTitle).toBe('Curso do presente')
+    expect(byId.get(mural)?.courseTitle).toBeNull()
   })
 
   test('presente: o limite conta resgates, sem separar curso e Mural', async () => {
