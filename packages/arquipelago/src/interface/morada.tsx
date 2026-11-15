@@ -849,7 +849,10 @@ function PlotAction({ instance, readonly }: { instance: MoradaInstance; readonly
     const depois = loja.getState().salvamento.horta[index]
     if (!antes || !depois || antes === depois) return
     if (!antes.semente && depois.semente) {
-      const terra = MORADA_CATALOG.pieces[instance.pieceId]?.max.y ?? 0
+      // A altura da terra: o ponto `plantar` da arte (pontos de jogo) ou, sem ele, o topo da peça.
+      const peca = MORADA_CATALOG.pieces[instance.pieceId]
+      const ponto = Object.entries(peca?.points ?? {}).find(([nome]) => nome.startsWith('plantar'))
+      const terra = ponto?.[1].position[1] ?? peca?.max[1] ?? 0
       pedirGesto(movimento, gestoDePlantar(terra))
     } else if (antes.semente && !depois.semente) pedirGesto(movimento, 'PegarDoChao')
     else if (depois.regadoEm !== antes.regadoEm) pedirGesto(movimento, 'Regar', 'mao_regador')
