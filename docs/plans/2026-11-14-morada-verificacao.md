@@ -41,6 +41,6 @@ No navegador, com recursos privados locais: peles Kids/adulta em 1280×900 e 390
 
 ## Publicação e limites
 
-O procedimento reproduzível está em `scripts/morada/README.md`: preparar/conferir recursos, enviar aos buckets privados, aplicar a migration 0149, ensaiar/revisar a conversão e então executar o corte. Os comandos estão preparados; produção não foi modificada.
+A publicação foi concluída em staging e produção em 14/11/2026: artes privadas enviadas e verificadas, migration 0149 aplicada, contas convertidas e reembolsos históricos executados. O [registro operacional](../operations/2026-11-14-morada-publicacao.md) contém o SHA, os deployments e os resultados reais. O procedimento reproduzível permanece em `scripts/morada/README.md`.
 
 Nesta entrega as peças novas são grátis; troféus continuam exigindo conquista. UGC próprio continua no salvamento do jogo. Visitas usam a peça Morada base, sem transportar URLs ou bytes privados pela casa. A projeção Pinta conserva a planificação histórica e superfícies curvas podem demandar ajuste artístico. Casa e quintal abrem numa cena nativa separada, ligada às ilhas por portais.

@@ -32,6 +32,7 @@ import {
   lerCatalogo,
   REPOSITORIO_DA_ARTE,
   regrasDoCatalogo,
+  SO_NO_JOGO,
 } from './catalogo'
 import { digital, medirClipes, prepararEsqueleto, prepararPeca } from './glb'
 import { precoDoConjunto, proporPeca } from './proposta'
@@ -298,7 +299,10 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
           : {}),
         ...(conjunto ? { set: conjunto } : {}),
         ...(item.festa ? { festa: item.festa } : {}),
-        ...(item.rascunho || substituidas.has(item.id) ? { hidden: true as const } : {}),
+        ...(item.altura_que_soma_m ? { lift: item.altura_que_soma_m } : {}),
+        ...(item.rascunho || substituidas.has(item.id) || SO_NO_JOGO.has(item.id)
+          ? { hidden: true as const }
+          : {}),
         origin: {
           blob: arte.blob(caminhoDoGlb),
           thumbBlob: arte.blob(caminhoDaMiniatura),

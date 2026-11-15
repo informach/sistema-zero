@@ -58,6 +58,9 @@ Sai com código 1 quando há o que migrar e diz "Tudo migrado." quando não há.
    - **O que é editorial se preserva** numa peça que já existia: público (menino/menina/todos),
      faixa (grátis, moedas…), preço e a marca de revisão. O resto vem da arte.
    - **Peça nova** entra com o preço PROPOSTO pela faixa (`proposta.ts`) e a marca `review`.
+   - **Peça só do jogo** (o selo da arte diz "só dentro de jogo", como os patins) entra escondida
+     (`hidden`, fora da loja e do sorteio): o id vai em `SO_NO_JOGO`, no `catalogo.ts`. O que ela
+     soma à altura do corpo (`altura_que_soma_m`) vira `lift`.
    - **Peça que saiu** da arte fica no catálogo como `retired` (quem tem continua tendo).
    - Para trazer só o esqueleto (ossos, encaixes, animações do jogo): `--so-esqueleto`.
    - Ensaio sem enviar ao R2: `--destino pasta:<caminho>`.

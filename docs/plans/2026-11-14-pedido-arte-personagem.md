@@ -84,6 +84,18 @@ A seção 6 diz como conferimos, e a 7 a ordem de entrega.
 | `plantar` / `regar` | na horta | não |
 | `dancar` | dança curta | sim |
 
+**Depois da P3: veículos** (acrescentado em 14/11/2026, a pedido da arte).
+
+| id | O que é | Laço |
+|---|---|---|
+| `dirigir` | recostada, pernas à frente sob o painel, mãos à frente na altura do volante | sim |
+
+- Serve nos 10 carros do Estádio, na boia-pato e no vagonete, em que o `montado` não cabe:
+  sentada a prumo, a cabeça entra no encosto e as pernas no piso.
+- Só a pose em laço. Para subir e descer, o jogo usa o `montar` / `desmontar` da P2.
+- No `place` do clipe, as mesmas medidas do `sentado`: a altura do assento, até onde vão os pés e
+  onde ficam as mãos.
+
 ## 3. Encaixes no esqueleto
 
 Hoje o esqueleto tem dois encaixes, `mao_esquerda` e `mao_direita` (`LeftHandProp` e
@@ -127,7 +139,7 @@ da peça (Y para cima, frente +Z, metros, origem no meio da base, como os catál
 | `escorregar` | `pontos` [[x,y,z]…] (a curva), `largura_m` | escorregador, tobogã |
 | `sentar` | `ponto` [x,y,z], `direcao` [x,y,z], `altura_m` | cadeira, banco, sofá; inclui os `pontos.sentar` da Morada e os `assentos` dos barcos |
 | `deitar` | `ponto`, `direcao`, `cabeceira` [x,y,z] | cama; inclui os `pontos.deitar` da Morada |
-| `montar` | `sela` [x,y,z], `direcao`, `altura_m` | animal, veículo, boia; inclui o `assento` dos veículos |
+| `montar` | `sela` [x,y,z], `direcao`, `altura_m`, `animacao` (a que serve nesta peça), `segura` ("volante", "beirada"…), `maos` (as posições da mão esquerda e da direita) | animal, veículo, boia; inclui o `assento` dos veículos |
 | `embarcar` | `pontos` [{nome, posicao}] | barcos; inclui o `embarque` |
 | `entrar` | `vao` {largura_m, altura_m}, `direcao`, `posicao` | porta, portão, arco, iglu; inclui o `entrada` e o `vao_m` |
 | `apoiar` | `nome`, `centro`, `tamanho` | lugar para pôr um objeto; inclui os `slots` da Morada |
@@ -140,6 +152,9 @@ da peça (Y para cima, frente +Z, metros, origem no meio da base, como os catál
   arte.
 - Peça que se move ou abre (porta, elevador, trampolim) declara o ponto na posição de repouso e
   diz em que `partes` ou `interativos` ele está preso.
+- A frente de quem está no ponto é a `direcao` do ponto, não a frente da peça. Nos carros, o
+  motorista olha para +Z (o volante e as rodas da frente); no vagonete, para +X (o eixo dos
+  trilhos). A nota do assento dos carros que fala em −Z está errada (corrigido pela arte em 14/11).
 
 ### 5.2 Por onde começar
 
@@ -186,6 +201,7 @@ estádio), cena por cena.
 5. Animações P2.
 6. `pontos_de_jogo` nas cenas montadas.
 7. Animações P3.
+8. `dirigir`.
 
 Cada lote entra na `origin/main` da arte como hoje. Avisem o nome do lote; o nosso
 `avatar:conferir` mostra o que é novo.
@@ -196,3 +212,17 @@ Cada lote entra na `origin/main` da arte como hoje. Avisem o nome do lote; o nos
 - **Nenhuma reescala** de peça ou de biblioteca.
 - **Nenhum plano de integração:** a integração no jogo é nossa, e este pedido é só sobre os
   arquivos e os catálogos.
+
+## 9. Registro
+
+- **14/11/2026:** a arte já pôs nos pontos `montar` dos 10 carros, da boia-pato e do vagonete
+  `animacao: "dirigir"`, `segura` e `maos`. Corrigiu a direção do motorista (carros +Z, vagonete
+  +X) e o ponto `plantar` do vaso azul da Terra Doce, que está a 0,65 m de altura (estava 0,0 m,
+  por erro de medida).
+- **14/11/2026, à noite:** a arte entregou o passo 6 (`pontos_de_jogo` em 305 peças das sete
+  bibliotecas, com as que ficaram sem ponto e o porquê em
+  `em_producao/coordenacao/pontos_de_jogo/<biblioteca>/`), as 17 animações da P1 e as 9 da P2,
+  o `pendurar_cipo` refeito para a corda fina (`cipo_corda`, 2,4 cm), a lanterna, a barra do
+  planador e os patins. Tiraram o assento de trás do barco a vela do Reino (a vela passava no
+  lugar da cabeça). Migrado ao catálogo da plataforma no mesmo dia (`avatar:migrar`, arte
+  `bb7e5e7c7`). Falta da arte: a P3 (menos `acenar`, já entregue) e o `dirigir`.

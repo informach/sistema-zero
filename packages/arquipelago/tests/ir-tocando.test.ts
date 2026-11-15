@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
+import { CORPO } from '../src/sistemas/corpo'
 import {
   aoAlcance,
   type ChaoNoPonto,
+  caminhoAteObjeto,
   caminhoDoToque,
   comandoCancela,
   criarIda,
@@ -214,5 +216,50 @@ describe('levar até a tarefa do "Agora"', () => {
     expect(interativoDoLembrete(lista, ['cam'], { x: 0, z: 0 })).toBeNull()
     expect(interativoDoLembrete(lista, ['cama'], { x: 0, z: 0 })?.id).toBe('cama')
     expect(interativoDoLembrete(lista, ['quadro-'], { x: 0, z: 0 })).toBeNull()
+  })
+})
+
+describe('o caminho até um objeto (achados do review de 14/11)', () => {
+  test('monta a grade uma vez só, mesmo tentando vários pontos em volta do objeto', () => {
+    let consultas = 0
+    // O lado de quem chega fica bloqueado: os primeiros pontos falham.
+    const chao = (x: number, z: number): ChaoNoPonto => {
+      consultas++
+      return { y: 0, cabe: !(z < -0.2 && Math.abs(x - 10) < 3 && z > -2.5) }
+    }
+    const caminho = caminhoAteObjeto({ x: 10, z: -15 }, { x: 10, z: 0, raio: 1.5 }, chao)
+    expect(caminho).not.toBeNull()
+    const fim = caminho?.at(-1)
+    expect(Math.hypot((fim?.x ?? 0) - 10, fim?.z ?? 0)).toBeLessThan(1.5)
+    // Uma grade só: (largura / passo + 1) × (altura / passo + 1) consultas, nada além.
+    const m = IR_TOCANDO.margem
+    const colunas = Math.floor((2 * m) / IR_TOCANDO.passo) + 1
+    const linhas = Math.floor((15 + 2 * m) / IR_TOCANDO.passo) + 1
+    expect(consultas).toBe(colunas * linhas)
+  })
+
+  test('já ao alcance, não anda; longe demais, nem procura', () => {
+    let consultas = 0
+    const chao = (): ChaoNoPonto => {
+      consultas++
+      return { y: 0, cabe: true }
+    }
+    expect(caminhoAteObjeto({ x: 0, z: 0 }, { x: 1, z: 0, raio: 1.5 }, chao)).toEqual([
+      { x: 0, z: 0 },
+    ])
+    expect(caminhoAteObjeto({ x: 0, z: 0 }, { x: 99, z: 0, raio: 1.5 }, chao)).toBeNull()
+    expect(consultas).toBe(0)
+  })
+
+  test('o degrau aceito entre casas é o que o corpo sobe sozinho', () => {
+    expect(IR_TOCANDO.degrau).toBe(CORPO.degrau)
+    // Uma mureta um pouco acima do degrau do corpo não entra no caminho.
+    const mureta = (x: number, z: number): ChaoNoPonto => ({
+      y: x >= 4 && x < 4.6 && Math.abs(z) < 30 ? CORPO.degrau + 0.04 : 0,
+      cabe: true,
+    })
+    expect(caminhoDoToque({ x: 0, z: 0 }, { x: 8, z: 0 }, mureta)).toEqual({
+      recusa: 'sem-caminho',
+    })
   })
 })

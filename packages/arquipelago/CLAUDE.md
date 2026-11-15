@@ -1,5 +1,43 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Nova geografia macro (15/11/2026)
+
+O mundo novo começa pelo blockout `/macro`, em `playground/arquipelago-macro.tsx`. Regras puras em
+`sistemas/geografia-do-arquipelago.ts`, `setores-do-arquipelago.ts` e `ponte-do-arquipelago.ts`;
+renderizadores em `mundo/macro/`. Avatar em escala 1, sete envelopes de 520–640 m, setores de 80 m,
+um oceano compartilhado e ponte modular Faísca–Bosque. `Personagem` recebe partida/interior e
+`Camera` recebe altura/base do cenário; ambos conservam o controlador e as interações existentes.
+O estado do ensaio é local ao playground e não concede Núcleo nem altera contas. A dona confirmou
+que só administradores acessam o jogo: não criar migração nem compatibilidade com o mundo compacto.
+Preservar identidade e estilo visuais das interfaces adulta e Kids; organização, fluxos e componentes
+podem ser adaptados à nova aventura. O painel técnico do playground não é uma proposta de HUD.
+Plano e aceite: `docs/plans/2026-11-15-arquipelago-macro-design.md`.
+
+## Faísca: mapa e piloto artístico (15/11/2026)
+
+`sistemas/faisca.ts` declara seis distritos, lugares, anel, atalhos e o relevo da Faísca; os ramais
+costeiros usam as âncoras já testadas. Lugares de chegada são externos aos volumes dos modelos.
+`mundo/faisca/` monta caminhos, piloto, coelha e medição; não é a campanha nem a Morada integrada.
+O lote da casa permanece reservado. O palco de conversa usa as classes existentes da Capi e a
+posição real do osso Head da coelha; a ferramenta técnica fica oculta durante a conversa.
+
+`scripts/exportar-arte-faisca.ts` lê objetos Git do commit aprovado, exporta 23 GLBs privados em
+`output/faisca-arte` e gera `arte.generated.ts`, com origem, digest, dimensões, caixas e clipes.
+O servidor local só serve nomes do manifesto. O carregador valida SHA-256, deduplica texturas,
+cancela e libera recursos na saída; uma falha parcial mantém o bloco e permite tentar novamente.
+Peças repetidas usam instâncias, incluindo o buffer de morph dos modelos que o possuem.
+
+A pedido do usuário, a velocidade também está em teste: Exploração 1,5/3,4 m/s, Ágil 1,7/3,9;
+`?ritmo=referencia` reproduz o perfil anterior. `ritmo-da-aventura.ts`, `MUNDO.passo` e
+`personagem/passada.ts` sincronizam fase e amplitude por IK, sem escalar os ossos. A lógica extra
+só vale no perfil macro. Pulo, água, patins e modos especiais mantêm seus clipes; a passada extra
+não se aplica a eles. O teste com GLB real é pulado quando o arquivo privado não está disponível.
+
+Persistência de ensaio: `arquipelago:faisca:ensaio`, sem migração. Guardar último ponto de terreno
+livre, não o chão sob um sólido ou sob a ponte dos Campos. `medicao-de-percurso.ts` não conta
+teleporte como caminhada; usa tempo ativo sem o truncamento de dt das animações. Plano atual:
+`docs/plans/2026-11-15-faisca-blockout-artistico-design.md`.
+
 ## Morada canônica (14/11/2026)
 
 A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
@@ -59,6 +97,16 @@ Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.
   `avatar-quarto/avatar/pack-catalog`). ⚠️ Número de corpo novo NÃO se escreve à mão: derive do
   `CORPO` (câmera, Zappy, esmaecer de copas, mergulho, `CINTURA`, `GRAVIDADE` e `GRAVIDADE_DO_CIPO`
   já derivam). Teste que precisa da cápsula importa o `CORPO`.
+- **O mundo novo pelas animações (14/11/2026):** `sistemas/mundo-pela-animacao.ts`
+  (`mundoPelaAnimacao`, `MUNDO_DA_AVENTURA`): escala 1, gravidade de verdade (9,81), andar, correr
+  e nadar = a velocidade natural do clipe (passada ÷ duração) vezes `FATORES_DA_AVENTURA` (1,5; 2;
+  2: correr e nadar no teto do `RITMO_MAXIMO`, sem o pé escorregar), pulo na altura que o quadril
+  sobe no `pulo_inicio` (0,97 m), degrau/folga/mãos os de hoje na proporção do corpo. O
+  `CharacterMover` do pacote Unity do pack NÃO é referência (sem cena que o use, unidades que se
+  contradizem, pulo de 15 m). O jogo roda no `MUNDO` de `mundo/mundo-escolhido.ts`: sempre o
+  `MUNDO_ATUAL`, menos no playground com `?mundo=aventura` (a página põe
+  `globalThis.__arquipelagoMundo` antes do jogo carregar). `CORPO`, `GRAVIDADE` e o cipó leem o
+  `MUNDO`, não o `MUNDO_ATUAL`. As estações da sala de movimento são medidas para 1,85.
 - Ficaram para os passos 4 e 5 (dependem das poses do pack, não do esqueleto): `BANCO`, `CAMA`,
   `MONTARIA.subidaDoDesenho`, `BARRA_NO_AVATAR` e a lanterna.
 
@@ -78,18 +126,45 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   as reservas dos modos que a arte ainda não animou; `poseDosClipes` junta os pesos por clipe. Passadas
   e durações vêm do catálogo vezes a escala; andar e correr ficam inteiros nas velocidades do mundo;
   as pernas giram até `RITMO_MAXIMO` (2) vezes a cadência do clipe. O mixer é do jogo (escala de tempo
-  0; na pausa a pose congela). Nadando, a reserva deita o desenho em volta do quadril
-  (`INCLINACAO_NO_NADO`).
+  0; na pausa a pose congela).
+- **As animações da arte (14/11/2026):** nadar, boiar, entrar e sair da água, sentar, deitar, o cipó,
+  a borda, sentada no barco e o aceno de volta são clipes que a arte fez para este corpo (os estados
+  `Nado`, `Sentando`, `NoBarco`, `Acenar`…). O desenho vai para o lugar que a arte mediu em cada
+  clipe (`sistemas/lugares-dos-clipes.ts`: o assento, a quina, a corda, a linha d'água), do catálogo
+  vezes a escala. Catálogo sem um clipe ou sem uma medida não impede o jogo de abrir: o estado vai
+  para a reserva (`RESERVA_DO_ESTADO`) e a medida para a reserva escrita no código, com aviso.
+- **Os modos do jogo (P2 da arte, 14/11/2026):** `planar` (as duas mãos na barra: `BARRA_NO_AVATAR`
+  sai de `NO_PLANADOR`, e a barra do pack `mao_barra_planador` vai nas mãos, com os dedos das duas
+  mãos fechados por `camadasDosDedos`; a lanterna sai da mão enquanto plana), `escalar` (sem a
+  subida; o desenho anda até a casca por `avancoNaParede`), `equilibrar` (pela distância; parada,
+  fica no passo), `escorregar` (a origem é a pista, embaixo da bacia), `montado` (a origem é a
+  sela: `MONTARIA.subidaDoDesenho` é a altura da sela; o `montar`/`desmontar` da arte começa ao
+  lado de uma sela de 0,3 m e fica para os veículos do mundo novo) e `patinar` (estado `Patinar`,
+  no lugar de andar e correr com `patinando`; a velocidade é a de verdade). Patins: a peça
+  `calcado_patins` do pack é SÓ do jogo (`hidden`, fora da loja e do sorteio: `SO_NO_JOGO` em
+  `scripts/avatar/catalogo.ts`); calçados, o `AvatarDoJogo` a veste no lugar do calçado e sobe o
+  desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
+  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins); as rodas ainda não
+  giram (a arte deu os eixos). O `empurrar` ainda não tem quem o use.
 - **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
-  eixo do osso); as mãos no cipó miram o encaixe `mao_*` do pack (`bracos.ts`: a corda passa fora da
-  cabeça, na altura das mãos); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do
-  Rapier pelo `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada); a
-  lanterna vai no encaixe `mao_direita`. Os dois rodam também na pausa (o mixer reaplica a pose).
-  ⚠️ Patins não aparecem até a arte mandar o par do pack (a flag só muda a velocidade). O calçar
-  antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
+  eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
+  `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
+  vêm do clipe `pendurar_cipo` (a IK dos braços saiu). A lanterna é a do pack (`objeto-na-mao.tsx`:
+  o `PackAvatarRig` a monta pelo `equipment` do catálogo, e os dedos fecham no cabo pela camada da
+  arte). ⚠️⚠️ O mixer do three só reescreve um osso quando o valor animado MUDA: na pausa, ou num osso
+  parado no clipe, o ajuste do quadro anterior fica no osso. Todo ajuste depois da pose parte da pose
+  do mixer por `personagem/pose-limpa.ts` (`antes`, o ajuste, `depois`; `soltar` ao parar de vez),
+  senão ele se acumula (o quadril afundava no chão com o jogo pausado numa rampa; review de 14/11).
+  O calçar antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
   saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
-- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com o boneco de partida (`avatarDoPack(null)`), o
-  material próprio e o `correr_frente` no relógio da corrida; o pé desconta a folga, como o jogador.
+- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com a roupa de quem correu (`Fantasma.avatar` no
+  contrato, opcional; sem ela, o boneco de partida), o material próprio e o `correr_frente` no
+  relógio da corrida; o pé desconta a folga, como o jogador.
+- **Jogabilidade (14/11/2026):** ir tocando (`sistemas/ir-tocando.ts` + `mundo/ir-tocando.tsx`: toque
+  no chão anda até lá; num objeto, vai e usa; as tarefas do "Agora" levam até o objeto delas por
+  `movimento.levarAte`); a grade do caminho é montada uma vez por pedido, com a física, e o degrau
+  aceito é o `CORPO.degrau`. Viagem rápida do mapa para ilha aberta e já visitada
+  (`sistemas/viagem-rapida.ts`). Câmera normal a 11 m e inclinação de partida 0,62.
 - Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do
   GLB `game.file`).
 - As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.

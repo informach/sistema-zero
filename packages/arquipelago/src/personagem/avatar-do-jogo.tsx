@@ -29,6 +29,7 @@ import {
   Vector3,
 } from 'three'
 import { useEstado } from '../estado/contexto'
+import { MUNDO } from '../mundo/mundo-escolhido'
 import { CORPO } from '../sistemas/corpo'
 import {
   CLIPES_DO_JOGO,
@@ -39,10 +40,12 @@ import {
   passoDaLocomocao,
   poseDosClipes,
 } from '../sistemas/locomocao'
-import { descidaDoEntrarNaAgua } from '../sistemas/lugares-dos-clipes'
+import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
-import { DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import { amplitudeDoPasso } from '../sistemas/ritmo-da-aventura'
+import { BARRA_NAS_MAOS, DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import { ampliarPassada } from './passada'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -51,6 +54,7 @@ import {
   pesoDosPes,
   suavizarPeso,
 } from './pes-no-chao'
+import { PoseLimpa } from './pose-limpa'
 
 /** O GLB dos clipes de movimento do jogo (bucket privado, pela rota `/api/avatar3d/`). */
 const CLIPES_URL = avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file)
@@ -73,8 +77,13 @@ const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim'
  * clipe que leva a bacia de onde ela começa em pé até lá.
  */
 const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
-/** Subindo (a escada, a borda), quem sobe é o corpo da física: o clipe fica sem a subida. */
-const SEM_A_SUBIDA: readonly ClipeDoJogo[] = ['subir_escada', 'subir_borda', 'sair_da_agua']
+/** Subindo (a escada, a borda, a casca), quem sobe é o corpo da física: o clipe fica sem a subida. */
+const SEM_A_SUBIDA: readonly ClipeDoJogo[] = [
+  'subir_escada',
+  'subir_borda',
+  'sair_da_agua',
+  'escalar',
+]
 
 /**
  * Desce o começo do clipe (o `Hips`) `quanto` metros, sumindo em linha reta até o fim: o entrar na
@@ -142,24 +151,35 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * Depois da pose: os pés no chão (`chao`, por IK em `pes-no-chao.ts`), também na pausa (o mixer
  * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
- * ⚠️ Os patins não aparecem até a arte entregar o par do pack (a flag só muda a velocidade).
+ * De patins, o avatar veste os patins do pack no lugar do calçado e sobe o que as rodas somam ao
+ * corpo (as rodas ainda não giram). No planador, a barra do pack vai nas duas mãos (e a lanterna,
+ * se estava acesa, volta depois de fechar o planador).
  */
 export function AvatarDoJogo({
   movimento,
   chao,
+  comPatins = false,
   comLanterna = false,
+  planando = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
   chao?: AlturaDoChao
-  /** Os patins nos pés: ainda não aparecem no boneco do pack (veja acima). */
+  /** Os patins calçados (fase2-05): a peça dos patins do pack no lugar do calçado. */
   comPatins?: boolean
   /** A lanterna do pack acesa na mão direita (fase2-06), com os dedos fechados no cabo. */
   comLanterna?: boolean
+  /** No modo planar: a barra do planador nas duas mãos. */
+  planando?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
-  const slots = useMemo(() => avatarDoPack(slotsDoJogo), [slotsDoJogo])
+  const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
+  const slots = useMemo(() => {
+    const vestido = avatarDoPack(slotsDoJogo)
+    return deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
+  }, [slotsDoJogo, deRodas])
+  const naMao = planando ? 'mao_barra_planador' : comLanterna ? 'mao_lanterna' : null
   const personagem = useRef<Group>(null)
   const [emPe, setEmPe] = useState(false)
   const visualRef = useRef<Group>(null)
@@ -209,7 +229,11 @@ export function AvatarDoJogo({
 
   return (
     <group ref={visualRef} name="avatar-visual" visible={emPe}>
-      <group name="escala-do-heroi" scale={CORPO.medidas.scale}>
+      <group
+        name="escala-do-heroi"
+        scale={CORPO.medidas.scale}
+        position-y={deRodas ? PATINS_NOS_PES.sobe : 0}
+      >
         <PackRigBoundary>
           <Suspense fallback={null}>
             <AvatarComClipes
@@ -217,9 +241,15 @@ export function AvatarDoJogo({
               charRef={personagem}
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
-              equipment={comLanterna ? LANTERNA_NA_MAO : SEM_OBJETO_NA_MAO}
+              equipment={
+                naMao === 'mao_barra_planador'
+                  ? BARRA_NAS_MAOS
+                  : naMao === 'mao_lanterna'
+                    ? LANTERNA_NA_MAO
+                    : SEM_OBJETO_NA_MAO
+              }
             />
-            {comLanterna ? <DedosNoCabo corpo={personagem} objeto="mao_lanterna" /> : null}
+            {naMao ? <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} /> : null}
             {chao ? (
               <PesNoChao
                 chao={chao}
@@ -254,16 +284,31 @@ function PesNoChao({
   pausado: boolean
 }) {
   const pernas = useRef<PernasDoAvatar | null>(null)
+  const limpa = useRef<PoseLimpa | null>(null)
   const peso = useRef(0)
   useFrame((_, dt) => {
     const r = raiz.current
     const c = corpo.current
     if (!r?.visible || !c) return
     // O avatar pode remontar as peças (e o esqueleto): procura de novo se o osso saiu da cena.
-    if (!pernas.current?.quadril.parent) pernas.current = acharPernas(c)
-    if (!pernas.current) return
+    if (!pernas.current?.quadril.parent) {
+      pernas.current = acharPernas(c)
+      const p = pernas.current
+      limpa.current = p ? new PoseLimpa([p.quadril, ...p.esquerda, ...p.direita]) : null
+    }
+    if (!pernas.current || !limpa.current) return
     if (!pausado) peso.current = suavizarPeso(peso.current, pesoDosPes(movimento.current), dt)
+    // Parte da pose do mixer (na pausa ele não reescreve: o ajuste do quadro anterior somaria).
+    limpa.current.antes()
+    const e = movimento.current
+    if (e.noChao && !e.nadando && !e.especial && !e.patinando && MUNDO.passo)
+      ampliarPassada(
+        pernas.current,
+        r,
+        amplitudeDoPasso(e.velocidade, CORPO.andar, MUNDO.passo.amplitude),
+      )
     assentarOsPes(pernas.current, r, chao, peso.current)
+    limpa.current.depois()
   })
   return null
 }

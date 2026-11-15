@@ -24,6 +24,8 @@ export interface MundoDoJogo {
   andar: number
   correr: number
   nadar: number
+  /** Ajuste de passada no chão, por IK sem escalar ossos, e teto da cadência de chão. */
+  passo?: { amplitude: number; cadencia: number }
   /** Velocidade para cima ao pular (m/s). */
   pulo: number
   /** O degrau mais alto que o corpo sobe sozinho, andando (m). */

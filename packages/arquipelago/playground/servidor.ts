@@ -1,6 +1,7 @@
 import { basename, resolve, sep } from 'node:path'
 import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
+import { ARTE_DA_FAISCA } from '../src/mundo/faisca/arte.generated'
 
 await conferirPortosDaArte()
 
@@ -18,6 +19,8 @@ const MORADA = resolve(
   process.env.MORADA_QA_DIR ?? resolve(import.meta.dir, '../../../output/morada-assets/morada'),
 )
 const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
+const ARTE_FAISCA = resolve(import.meta.dir, '../../../output/faisca-arte')
+const ARQUIVOS_FAISCA = new Set(Object.values(ARTE_DA_FAISCA.pecas).map((p) => p.arquivo as string))
 /** O glTF mínimo (uma cena sem nada): o carregador do three aceita o JSON no lugar do binário. */
 const GLTF_VAZIO = { asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [] }] }
 const PNG_DE_UM_PONTO = Uint8Array.from(
@@ -41,8 +44,14 @@ async function compilar(entrada: string): Promise<Response> {
   return new Response(js ? await js.text() : '', { headers: { 'content-type': 'text/javascript' } })
 }
 
+/**
+ * `?mundo=aventura` troca as regras do mundo antes de o jogo carregar (`mundo/mundo-escolhido.ts`):
+ * o avatar no tamanho de verdade, com as velocidades e o pulo tirados das animações.
+ */
+const ESCOLHER_O_MUNDO =
+  "<script>globalThis.__arquipelagoRitmo=new URLSearchParams(location.search).get('ritmo');globalThis.__arquipelagoMundo=location.pathname==='/macro'?'macro':new URLSearchParams(location.search).get('mundo')</script>"
 const pagina = (titulo: string, js: string) =>
-  `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titulo}</title><style>html,body,#jogo{margin:0;height:100%;background:#0e1638}</style></head><body><div id="jogo"></div><script type="module" src="${js}"></script></body></html>`
+  `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titulo}</title><style>html,body,#jogo{margin:0;height:100%;background:#0e1638}</style></head><body><div id="jogo"></div>${ESCOLHER_O_MUNDO}<script type="module" src="${js}"></script></body></html>`
 const HTML = pagina('Arquipélago Vagalume · playground', '/jogo.js')
 /** O visualizador das animações do avatar (`/animacoes?v=1.4`, veja `animacoes.tsx`). */
 const HTML_DAS_ANIMACOES = pagina('Arquipélago Vagalume · animações', '/animacoes.js')
@@ -54,6 +63,22 @@ Bun.serve({
   port: PORTA,
   async fetch(req) {
     const { pathname } = new URL(req.url)
+    if (pathname.startsWith('/api/faisca3d/')) {
+      const arquivo = pathname.slice('/api/faisca3d/'.length)
+      if (!ARQUIVOS_FAISCA.has(arquivo))
+        return new Response('Fora da seleção da Faísca', { status: 404 })
+      const f = Bun.file(resolve(ARTE_FAISCA, arquivo))
+      return (await f.exists())
+        ? new Response(f, {
+            headers: {
+              'content-type': 'model/gltf-binary',
+              'cache-control': 'private, max-age=604800, immutable',
+            },
+          })
+        : new Response('Execute scripts/exportar-arte-faisca.ts para preparar a arte local', {
+            status: 404,
+          })
+    }
     if (pathname === '/rotina-lumi.css') {
       const css = await Bun.build({
         entrypoints: [
@@ -73,6 +98,11 @@ Bun.serve({
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
     if (pathname === '/jogo.js') return compilar('playground.tsx')
+    if (pathname === '/macro.js') return compilar('arquipelago-macro.tsx')
+    if (pathname === '/macro')
+      return new Response(pagina('Arquipélago · estudo de escala', '/macro.js'), {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
     if (pathname === '/animacoes.js') return compilar('animacoes.tsx')
     if (pathname === '/animacoes')
       return new Response(HTML_DAS_ANIMACOES, {

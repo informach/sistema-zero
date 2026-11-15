@@ -2,7 +2,9 @@ import { describe, expect, test } from 'bun:test'
 import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { AnimationClip, QuaternionKeyframeTrack } from 'three'
 import {
+  BARRA_NAS_MAOS,
   camadaDosDedos,
+  camadasDosDedos,
   LANTERNA_NA_MAO,
   poseDaCamada,
   SEM_OBJETO_NA_MAO,
@@ -28,6 +30,15 @@ describe('a lanterna do pack na mão', () => {
       expect(AVATAR_CATALOG.base.skeleton.bones[osso], osso).toBeDefined()
     }
     expect(camadaDosDedos('nao-existe')).toBeUndefined()
+  })
+
+  test('a barra do planador fecha as duas mãos; a lanterna, só a direita', () => {
+    for (const id of BARRA_NAS_MAOS) expect(AVATAR_CATALOG.equipment?.[id], id).toBeDefined()
+    const maos = (objeto: string) =>
+      camadasDosDedos(objeto).flatMap((c) => c.bones.map((o) => o.replace(/Hand.*/, '')))
+    expect(new Set(maos('mao_barra_planador'))).toEqual(new Set(['Right', 'Left']))
+    expect(new Set(maos('mao_lanterna'))).toEqual(new Set(['Right']))
+    expect(camadasDosDedos('nao-existe')).toEqual([])
   })
 
   test('a pose da camada é o primeiro quadro do clipe dela, só nos ossos listados', () => {
