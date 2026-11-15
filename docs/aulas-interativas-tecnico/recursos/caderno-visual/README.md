@@ -43,7 +43,7 @@ O título usa o nome do curso dividido em duas linhas de peso parecido. Exemplos
 
 **Arte da capa.** É a ilustração do curso (a mesma da capa do curso), em JPEG, dentro de `arte/capa-<curso>.jpg`, com pelo menos 1300 px de largura. Os personagens ficam na metade de cima, porque a faixa cobre a altura de 590 a 660 px.
 
-**Curso para pais (15/11/2026).** O material se chama "Apostila do curso", porque não tem projeto. Só o nome muda: `capaHtml({ …, selo: 'Apostila do curso' })` e `rodape(curso, numero, 'Apostila do curso')`. Referência: [`../transformando-o-vilao-em-aliado/gerar-caderno.ts`](../transformando-o-vilao-em-aliado/gerar-caderno.ts), com o slide da aula aberta no lugar da cena do jogo no `cabecalho`. Conferência: `python recursos/desafio-farol/gerar-materiais.py transformando-o-vilao-em-aliado`.
+**Curso para pais (15/11/2026).** O material se chama "Apostila do curso", porque não tem projeto. Só o nome muda: `capaHtml({ …, selo: 'Apostila do curso' })` e `rodape(curso, numero, 'Apostila do curso')`. Referência: [`../transformando-o-vilao-em-aliado/gerar-caderno.ts`](../transformando-o-vilao-em-aliado/gerar-caderno.ts), com o cabeçalho simples (curso para pais não tem cena de jogo). Conferência: `python recursos/desafio-farol/gerar-materiais.py transformando-o-vilao-em-aliado`.
 
 ## Cores do curso
 

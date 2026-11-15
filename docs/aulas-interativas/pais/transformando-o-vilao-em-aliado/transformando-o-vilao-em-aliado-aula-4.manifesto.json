@@ -2,106 +2,94 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-4",
-  "title": "Programar é organizar passos",
+  "title": "O interesse do seu filho é a porta de entrada",
   "blocks": [
     {
-      "key": "video-a4-rotina",
-      "plannedVideo": "Título: Você já programa em casa\n\nSlide 16 da aula aberta: a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO; a sequenciação na vida, com os exemplos da Vivianne. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1."
+      "key": "video-a4-interesse",
+      "plannedVideo": "Título: O interesse como porta de entrada\n\nAs seis cenas que muitas famílias contam e o que o jogo oferece em cada uma, o interesse forte como aliado, nem toda criança é dos jogos, o vídeo do Bernardo e o exercício \"Meu filho ama\". Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1."
     },
     {
-      "key": "video-a4-caminho",
-      "plannedVideo": "Título: Você consegue programar este caminho?\n\nSlide 17 da aula aberta: a grade 4 por 4, da bolinha azul até a estrela, sem passar pelos quadrados escuros. A tela fica parada no fim para a pessoa pensar antes do quiz. Fala completa no roteiro, Parte 2."
+      "key": "video-a4-escola",
+      "plannedVideo": "Título: Quando a matéria da escola ganha sentido\n\nA casa 2 e a estrela, a amiga professora de matemática e física, português, ciências, arte e planejamento, o vídeo de depoimentos do que os pais percebem e a pesquisa. Fala completa no roteiro, Parte 2."
     },
     {
-      "key": "quiz-caminho",
+      "key": "para-casa-a4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer esta semana\n\nEscreva a frase do seu filho. Ela é o primeiro rascunho de um jogo dele.\n\n> Meu filho ama ______. Um jogo sobre isso poderia ter ______.\n\nAlguns exemplos para ajudar:\n\n- Ama trens: o trem precisa chegar na estação sem bater.\n- Ama bandeiras: o jogo mostra uma bandeira e ela escolhe o país.\n- Ama dinossauros: o dinossauro precisa fugir do vulcão.\n\nUse também a resposta que ele deu na Aula 2, sobre o jogo que inventaria.\n\n## Para consultar depois\n\n- Scherer, Siddiq e Sánchez Viveros (2019): uma análise de 105 estudos sobre aprender a programar, com ganhos em criatividade, pensamento matemático e raciocínio. [doi.org/10.1037/edu0000314](https://doi.org/10.1037/edu0000314)\n- Li e Oon (2024): pensamento computacional e aprendizagem em ciências e matemática. [doi.org/10.1186/s40594-024-00498-z](https://doi.org/10.1186/s40594-024-00498-z)\n\nOs estudos não são específicos sobre autismo, e programar não é fórmula mágica: é uma ponte a mais."
+      }
+    },
+    {
+      "key": "quiz-a4",
       "content": {
         "kind": "quiz",
         "passingScore": 50,
         "questions": [
           {
             "id": "q1",
-            "prompt": "Na grade do vídeo, a bolinha azul está na linha de baixo, à esquerda, e a estrela na linha de cima, à direita. Os quadrados escuros ficam na segunda coluna, nas duas linhas do meio. Qual sequência leva a bolinha até a estrela?",
+            "prompt": "A sua filha ama bandeiras e diz que matemática é chata. Qual caminho combina com o que você viu nesta aula?",
             "choices": [
-              { "id": "a", "label": "Subir, subir, subir, direita, direita, direita." },
-              { "id": "b", "label": "Direita, subir, subir, subir, direita, direita." },
-              { "id": "c", "label": "Subir, direita, subir, direita, subir, direita." }
+              { "id": "a", "label": "Proibir as bandeiras até as notas melhorarem." },
+              {
+                "id": "b",
+                "label": "Propor um jogo de bandeiras em que ela precisa contar os pontos."
+              },
+              { "id": "c", "label": "Dar mais uma lista de exercícios de matemática." }
             ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. Começar pela direita e logo subir bate no quadrado escuro, e subir uma casa e logo ir para a direita também. E existe outro caminho certo: ir pela direita até o fim e só depois subir."
+            "correctChoiceIds": ["b"],
+            "explanation": "O interesse é a porta de entrada. Quando a conta é parte da ideia dela, a matemática passa a ter sentido."
           },
           {
             "id": "q2",
-            "prompt": "A primeira tentativa bateu num quadrado escuro. O que fazer?",
+            "prompt": "O que é correto dizer sobre as pesquisas com programação?",
             "choices": [
-              { "id": "a", "label": "Apagar tudo e começar do zero." },
+              { "id": "a", "label": "Garantem que as notas vão melhorar." },
               {
                 "id": "b",
-                "label": "Observar onde a bolinha parou, mudar uma instrução e testar de novo."
+                "label": "Mostram ganhos em criatividade, pensamento matemático e raciocínio, com variações entre os estudos."
               },
-              { "id": "c", "label": "Desistir desse desafio e procurar outro." }
+              { "id": "c", "label": "Foram feitas só com crianças autistas." }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "O erro é uma pista. Observar onde parou e trocar uma coisa por vez mostra o efeito de cada mudança. É o mesmo caminho que vale fora da tela."
+            "explanation": "A pesquisa mostra ganhos, com variações, e não é específica sobre autismo. Programar é uma ponte a mais, não uma fórmula mágica."
           }
         ]
-      }
-    },
-    {
-      "key": "video-a4-descoberta",
-      "plannedVideo": "Título: E se a primeira tentativa não funcionar?\n\nSlide 18 da aula aberta: a resposta do caminho, observar, mudar uma instrução e testar de novo; a percepção do ambiente na sala de aula e o \"que horrível\" que virou legal. Fala completa no roteiro, Parte 4."
-    },
-    {
-      "key": "para-casa-a4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "## Para fazer em casa\n\nQuando algo der errado no dia a dia, experimente as três perguntas com o seu filho:\n\n1. **Onde parou?** O que aconteceu de diferente?\n2. **O que dá para mudar?** Uma coisa por vez.\n3. **Vamos tentar de novo?**\n\nE repare na rotina da casa: **quando** acontece algo, **se** for de um jeito, **então** a gente faz aquilo. Vocês já programam juntos."
       }
     }
   ],
   "sections": [
     {
-      "key": "rotina",
-      "title": "Você já programa em casa",
-      "objective": "Entender programar como organizar passos, com a mesma lógica da rotina visual da casa.",
+      "key": "interesse",
+      "title": "O interesse como porta de entrada",
+      "objective": "Reconhecer no próprio filho pontos de partida para criar e ver o interesse forte como aliado, sem tratar as cenas como diagnóstico.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-rotina"],
+      "blockKeys": ["video-a4-interesse"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a4-rotina"] }
+      "completion": { "version": 1, "blockIds": ["video-a4-interesse"] }
     },
     {
-      "key": "caminho",
-      "title": "Você consegue programar este caminho?",
-      "objective": "Viver na prática o que a criança vive ao programar: montar uma sequência de instruções que leve a bolinha até a estrela.",
-      "intent": "application",
-      "blockKeys": ["video-a4-caminho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a4-caminho"] }
-    },
-    {
-      "key": "caminho-resposta",
-      "title": "Qual é o seu caminho?",
-      "objective": "Conferir a sequência pensada e o que fazer quando a primeira tentativa não funciona. O quiz fica numa parte própria, como pede a especificação do manifesto.",
-      "intent": "application",
-      "blockKeys": ["quiz-caminho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-caminho"] }
-    },
-    {
-      "key": "descoberta",
-      "title": "E se a primeira tentativa não funcionar?",
-      "objective": "Ver o erro como pista: observar, mudar uma instrução e testar de novo, dentro e fora da tela.",
+      "key": "escola",
+      "title": "Quando a matéria da escola ganha sentido",
+      "objective": "Ver como a criação dá sentido a conteúdos da escola e o que a pesquisa mostra, com honestidade.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-descoberta", "para-casa-a4"],
+      "blockKeys": ["video-a4-escola", "para-casa-a4"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a4-descoberta"] }
+      "completion": { "version": 1, "blockIds": ["video-a4-escola"] }
+    },
+    {
+      "key": "confira-a4",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a duas situações.",
+      "intent": "application",
+      "blockKeys": ["quiz-a4"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-a4"] }
     }
   ]
 }
