@@ -64,12 +64,28 @@ export interface RedemptionRecord {
   lastError: string | null
   attemptCount: number
   completedAt: Date | null
-  /** Null identifica resgates anteriores à política de sete dias. */
+  /**
+   * Dias do presente. Null nos resgates anteriores à política de sete dias e nos resgates por
+   * oferta vitalícia ou com prazo em meses.
+   */
   accessDurationDays: number | null
-  /** Null identifica resgates anteriores à visita permanente ao Mural. */
+  /**
+   * Null identifica resgates anteriores à visita permanente ao Mural; `trial`/`visitor` são o
+   * caminho antigo (curso + Mural concedidos em separado); `offer` (15/11/2026) concede a oferta
+   * `giftOfferId` inteira pelo members.
+   */
   muralVisitorPolicy: string | null
   muralVisitorGrantedAt: Date | null
+  /** Oferta concedida pelos resgates `offer`; null nos anteriores. */
+  giftOfferId?: string | null
   createdAt: Date
+}
+
+/** O que um resgate NOVO grava sobre o presente (resolvido no catálogo antes do claim). */
+export interface RedemptionGift {
+  offerId: string
+  /** Dias da oferta de prazo fixo em dias; null = vitalícia ou prazo em meses. */
+  accessDurationDays: number | null
 }
 
 export interface InviteRecord {
@@ -252,6 +268,8 @@ export interface ReferralRepository {
   /**
    * Claim da bolsa: `INSERT ... ON CONFLICT (email, audience) DO NOTHING`. `created:false`
    * devolve a linha EXISTENTE daquele público (retomada ou 409 — decisão do serviço).
+   * Com `gift`, grava a política `offer` (oferta + dias). Em código de campanha, a oferta é
+   * conferida sob o lock da campanha: precisa ser a dela (ou a padrão, se ela não tem oferta).
    */
   insertRedemption(input: {
     bonusAmounts?: ReferralBonusAmounts
@@ -263,6 +281,7 @@ export interface ReferralRepository {
     sourceSnapshot?: GiftSource
     courseSlug?: string
     attribution?: GiftAttribution | null
+    gift?: RedemptionGift
   }): Promise<{ created: boolean; redemption: RedemptionRecord }>
   /**
    * Lease atômico: só vence quem encontra `processing_until` NULL/expirado e a

@@ -10,7 +10,9 @@ import type { RedeemScholarshipService } from '../../application/redeem-scholars
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
+  CampaignGiftOfferLockedError,
   CampaignValidationError,
+  GiftCatalogUnavailableError,
 } from '../../domain/campaign'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
@@ -65,6 +67,14 @@ export function createServer(deps: HttpDeps) {
         if (error instanceof CampaignAudienceLockedError) {
           set.status = 409
           return envelope('CAMPAIGN_AUDIENCE_LOCKED', error.message)
+        }
+        if (error instanceof CampaignGiftOfferLockedError) {
+          set.status = 409
+          return envelope('CAMPAIGN_GIFT_OFFER_LOCKED', error.message)
+        }
+        if (error instanceof GiftCatalogUnavailableError) {
+          set.status = 503
+          return envelope('CATALOG_UNAVAILABLE', error.message)
         }
         if (error instanceof CampaignValidationError) {
           set.status = 400

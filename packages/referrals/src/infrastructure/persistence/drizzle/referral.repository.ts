@@ -5,9 +5,13 @@ import type {
   ReferralBonusAmounts,
 } from '@sistemazero/core/referrals'
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
-import { CampaignUnavailableError, campaignSource, campaignState } from '../../../domain/campaign'
+import {
+  CampaignUnavailableError,
+  campaignSource,
+  campaignState,
+  GiftOfferChangedError,
+} from '../../../domain/campaign'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
-import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -20,6 +24,7 @@ import type {
   ConversionToNotify,
   InviteRecord,
   InviteStatus,
+  RedemptionGift,
   RedemptionRecord,
   RedemptionStatus,
   ReferralRepository,
@@ -141,6 +146,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     accessDurationDays: row.accessDurationDays,
     muralVisitorPolicy: row.muralVisitorPolicy,
     muralVisitorGrantedAt: row.muralVisitorGrantedAt,
+    giftOfferId: row.giftOfferId,
     createdAt: row.createdAt,
   }
 }
@@ -645,6 +651,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     sourceSnapshot?: GiftSource
     courseSlug?: string
     attribution?: GiftAttribution | null
+    gift?: RedemptionGift
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
     return this.db.transaction(async (tx) => {
       const sameGift = and(
@@ -676,6 +683,10 @@ export class DrizzleReferralRepository implements ReferralRepository {
         // O público trava fora do rascunho; divergência aqui seria um bug de quem chamou.
         if (campaign.audience !== input.audience)
           throw new Error('público do resgate diverge do público da campanha')
+        // A oferta resolvida no catálogo (fora da tx) precisa ser a da campanha. Campanha
+        // antiga sem oferta usa a padrão do público (o serviço resolveu por slug).
+        if (input.gift && campaign.giftOfferId && campaign.giftOfferId !== input.gift.offerId)
+          throw new GiftOfferChangedError()
         if (campaign.ambassadorId) {
           const [beneficiary] = await tx
             .select()
@@ -717,8 +728,11 @@ export class DrizzleReferralRepository implements ReferralRepository {
           courseSlug: input.courseSlug,
           attribution: input.attribution,
           createdAt: acceptedAt,
-          accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
-          muralVisitorPolicy: 'trial',
+          // Presente por oferta: curso, prazo e Mural vêm da oferta gravada. Sem `gift` (só
+          // usos internos/testes), a linha nasce na forma histórica sem prazo.
+          accessDurationDays: input.gift?.accessDurationDays ?? null,
+          muralVisitorPolicy: input.gift ? 'offer' : null,
+          giftOfferId: input.gift?.offerId ?? null,
         })
         .onConflictDoNothing({
           target: [scholarshipRedemptions.email, scholarshipRedemptions.audience],

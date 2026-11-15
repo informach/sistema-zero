@@ -43,7 +43,8 @@ describe('env do referrals', () => {
     const env = loadEnv(prodEnv())
     expect(env.PORT).toBe(3012)
     expect(env.HOST).toBe('::')
-    expect(env.SCHOLARSHIP_COURSE_SLUG).toBe('cade-todo-mundo')
+    // O presente é uma oferta do catálogo (15/11/2026): as envs de curso saíram.
+    expect('SCHOLARSHIP_COURSE_SLUG' in env).toBe(false)
   })
 
   test('dev mínimo passa (só DATABASE_URL)', () => {
@@ -87,9 +88,9 @@ describe('env do referrals', () => {
     expect(() => loadEnv(prodEnv({ GATEWAY_URL: 'http://localhost:3000' }))).toThrow(/GATEWAY_URL/)
   })
 
-  test('presente adulto: curso padrão, COMMUNITY_URL opcional e bônus da assinatura adulta', () => {
+  test('presente adulto: COMMUNITY_URL opcional e bônus da assinatura adulta', () => {
     const env = loadEnv(prodEnv({ COMMUNITY_URL: undefined, CONVERSION_OFFER_SLUGS: undefined }))
-    expect(env.SCHOLARSHIP_ADULT_COURSE_SLUG).toBe('cade-todo-mundo-adulto')
+    expect('SCHOLARSHIP_ADULT_COURSE_SLUG' in env).toBe(false)
     expect(env.COMMUNITY_URL).toBeUndefined()
     expect(env.CONVERSION_OFFER_SLUGS).toEqual([
       'comunidade-dos-criadores-mensal',
@@ -103,7 +104,6 @@ describe('env do referrals', () => {
     expect(() => loadEnv(prodEnv({ COMMUNITY_URL: 'http://localhost:3000' }))).toThrow(
       /COMMUNITY_URL/,
     )
-    expect(() => loadEnv(prodEnv({ SCHOLARSHIP_ADULT_COURSE_SLUG: 'Curso Adulto' }))).toThrow()
   })
 
   test('lease que não cobre as chamadas S2S falha', () => {
