@@ -40,7 +40,7 @@ test('o quarto mudado na plataforma aparece no jogo, sem reler a cada passo', as
   const novo = { ...QUARTO_DE_EXEMPLO, pet: 'pet-cachorro', floor: 'piso-azul' }
   await p.salvarQuarto(novo)
   await relerOQuarto(loja, p, 1000)
-  expect(loja.getState().quarto).toEqual(novo)
+  expect(loja.getState().quarto).toMatchObject(novo)
 
   await p.salvarQuarto({ ...novo, pet: 'pet-gato' })
   await relerOQuarto(loja, p, 1000 + RELER_O_QUARTO_A_CADA_MS - 1)

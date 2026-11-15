@@ -40,11 +40,15 @@ export const MULTIPLICADOR_DA_RAPIDEZ: Readonly<Record<Conforto['rapidez'], numb
   rapida: 1.5,
 }
 
-/** Metros da câmera até o avatar em cada escolha (dentro de 4 a 18, os limites do zoom). */
+/**
+ * Metros da câmera até o avatar em cada escolha (dentro de 4 a 18, os limites do zoom). O boneco do
+ * pack é cabeçudo: perto dele a cabeça tapa o caminho à frente, então o normal fica a 11 m
+ * (avaliação de jogabilidade de 14/11/2026; era 9).
+ */
 export const METROS_DA_DISTANCIA: Readonly<Record<Conforto['distancia'], number>> = {
-  perto: 6,
-  normal: 9,
-  longe: 13,
+  perto: 7,
+  normal: 11,
+  longe: 15,
 }
 
 export const VOLTA_SOZINHA = {

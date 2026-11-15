@@ -1,5 +1,6 @@
 import { DomainError } from '@sistemazero/core/errors'
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
+import { projectMoradaRoom } from '@sistemazero/core/morada'
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
 import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
@@ -49,6 +50,7 @@ export class GetPublicProfileService {
     private readonly kidsProfiles: Pick<KidsJourneyProfilesService, 'getMany'>,
     private readonly adultProfiles?: AdultProfileRepository,
     private readonly adultJourney?: AdultJourneyService,
+    private readonly morada?: import('../room/morada-house.service').MoradaHouseService,
   ) {}
 
   async execute(inputProfileId: string, audience: CourseAudience): Promise<PublicProfileView> {
@@ -87,9 +89,18 @@ export class GetPublicProfileService {
     const ranking = profile
       ? await this.gamification.getRanking(profileId, profile.accountId, audience, this.clock())
       : null
-    const equipped = canonicalizeAvatarConfig(avatarConfig)
+    const equipped = canonicalizeAvatarConfig(avatarConfig, profileId)
     // Quarto: `null` se nunca montou; senão canonicalizado (modo visualização).
     const room = roomRaw ? canonicalizeRoomState(roomRaw, new Set(roomInventory)) : null
+    const morada = await this.morada?.read(profileId, audience)
+    // Quem nunca montou um quarto nem salvou casa continua sem vitrine de quarto.
+    const publicRoom =
+      morada && (room || morada.revision > 0)
+        ? {
+            ...(room ?? { theme: 'aconchego', placedItems: [], pet: null }),
+            house: projectMoradaRoom(morada.house),
+          }
+        : room
     return {
       profileId,
       ...(adultProfile
@@ -107,7 +118,7 @@ export class GetPublicProfileService {
       badges: badges.map((b) => ({ slug: b.badgeSlug, unlockedAt: b.unlockedAt.toISOString() })),
       avatar: { style: equipped.style, slots: equipped.slots },
       avatarPhotoUrl,
-      room,
+      room: publicRoom,
       games: (hubGames ?? []).map((g) => ({
         title: g.title,
         playId: g.playId,

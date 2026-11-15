@@ -2,17 +2,21 @@
 
 import { ContactShadows, useProgress } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import {
+  PACK_IDLE_POSE,
+  PackAvatarRig,
+  PackRigBoundary,
+} from '@sistemazero/avatar-quarto/avatar/pack-rig'
+import type { AvatarSlots } from '@sistemazero/core/avatar'
 import { type RefObject, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import type { AvatarSlot } from '../../../lib/avatar3d-catalog'
 import { recoverWebGLContext } from '../../../lib/webgl-recovery'
 import { useReducedMotion } from '../room/use-reduced-motion'
-import { AvatarRig } from './avatar-rig'
 import { CameraManager, type CamMode } from './camera-manager'
 import { measureCharacter } from './measure'
 import { framePhoto } from './photo-framing'
 
-type Slots = Partial<Record<string, AvatarSlot>>
+type Slots = AvatarSlots
 /** `portrait`: força um retrato de rosto (de frente), independente do enquadramento na tela. */
 export type CaptureFn = (opts?: { portrait?: boolean }) => Promise<Blob | null>
 
@@ -70,7 +74,9 @@ function SnapshotBridge({
   canCaptureRef.current = canCapture
   // Câmera de RETRATO (rosto, DE FRENTE) reusada — "Salvar" sai sempre com a cara boa,
   // independente do enquadramento de corpo inteiro / da órbita que estiver na tela.
-  const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
+  // O "perto" da câmera decide a precisão da profundidade: com 0,01 a roupa (1 a 2 mm acima da
+  // pele) brigava com o corpo na foto. O retrato fica a uns 0,7 m do rosto.
+  const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.1, 20))
   const tmpBox = useRef(new THREE.Box3())
   useEffect(() => {
     const capture: CaptureFn = async (opts) => {
@@ -165,8 +171,8 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
   })
   return (
     <group ref={group} scale={[1, 0.0001, 1]} visible={false}>
-      <mesh ref={beam} position={[0, 1.1, 0]}>
-        <cylinderGeometry args={[0.75, 0.75, 2.2, 28, 1, true]} />
+      <mesh ref={beam} position={[0, 0.7, 0]}>
+        <cylinderGeometry args={[0.45, 0.45, 1.4, 28, 1, true]} />
         <meshBasicMaterial
           color="#7cf3ff"
           transparent
@@ -175,8 +181,8 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
           depthWrite={false}
         />
       </mesh>
-      <mesh ref={ring} position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.85, 0.85, 0.05, 28]} />
+      <mesh ref={ring} position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.03, 28]} />
         <meshBasicMaterial color="#7cf3ff" transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>
@@ -192,12 +198,14 @@ function TeleporterBeam({ loading }: { loading: boolean }) {
 function SceneContents({
   slots,
   pose,
+  poseTake,
   mode,
   dark,
   onReady,
 }: {
   slots: Slots
   pose: string
+  poseTake?: number
   mode: CamMode
   dark: boolean
   onReady: (c: CaptureFn) => void
@@ -212,12 +220,23 @@ function SceneContents({
     <>
       <color attach="background" args={[dark ? '#0d1117' : '#eaf4f7']} />
       <ambientLight intensity={0.75} />
+      {/* A sombra do boneco no pódio e a de um braço no corpo. A caixa da sombra é do tamanho do
+          pódio com o boneco (não os 10 m de fábrica: cada ponto do mapa cobria 1 cm e as peças
+          ganhavam riscos), e o `normalBias` afasta a sombra da própria superfície: sem ele a peça
+          se sombreava e piscava com o corpo se mexendo (a "acne" de sombra). */}
       <directionalLight
         position={[3, 5, 4]}
         intensity={1.6}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0002}
+        shadow-normalBias={0.02}
+        shadow-camera-left={-1.2}
+        shadow-camera-right={1.2}
+        shadow-camera-top={1.6}
+        shadow-camera-bottom={-1.2}
+        shadow-camera-near={1}
+        shadow-camera-far={14}
       />
       <directionalLight
         position={[-4, 3, -2]}
@@ -227,22 +246,25 @@ function SceneContents({
 
       {/* Personagem GLB — Suspense POR peça (no rig); fica em pé UMA vez. */}
       <Suspense fallback={null}>
-        <AvatarRig
-          slots={slots}
-          pose={pose}
-          loading={loading}
-          charRef={charRef}
-          completeRef={completeRef}
-          onStood={() => setReady(true)}
-        />
+        <PackRigBoundary>
+          <PackAvatarRig
+            slots={slots}
+            pose={pose}
+            poseTake={poseTake}
+            loading={loading}
+            charRef={charRef}
+            completeRef={completeRef}
+            onStood={() => setReady(true)}
+          />
+        </PackRigBoundary>
       </Suspense>
 
       {/* Pódio logo abaixo dos pés. */}
-      <mesh position={[0, -0.05, 0]} receiveShadow>
-        <cylinderGeometry args={[0.7, 0.85, 0.1, 32]} />
+      <mesh position={[0, -0.03, 0]} receiveShadow>
+        <cylinderGeometry args={[0.34, 0.4, 0.06, 32]} />
         <meshStandardMaterial color={dark ? '#1b2230' : '#cfe7ee'} roughness={0.9} />
       </mesh>
-      <ContactShadows position={[0, 0.01, 0]} opacity={0.45} scale={2.4} blur={2.6} far={2} />
+      <ContactShadows position={[0, 0.005, 0]} opacity={0.45} scale={1.1} blur={2.4} far={1.2} />
       <TeleporterBeam loading={loading} />
 
       <CameraManager mode={mode} ready={ready} />
@@ -266,23 +288,35 @@ export function AvatarScene({
   onReady,
   dark,
   mode = 'customize',
-  pose = 'Idle',
+  pose = PACK_IDLE_POSE,
+  poseTake,
 }: {
   slots: Slots
   onReady: (c: CaptureFn) => void
   dark: boolean
   mode?: CamMode
   pose?: string
+  /** Muda a cada escolha de pose: a mesma pose escolhida de novo repete o movimento. */
+  poseTake?: number
 }) {
   return (
     <Canvas
       shadows
       dpr={[1, 2]}
       gl={{ preserveDrawingBuffer: true, antialias: true }}
-      camera={{ position: [0, 1.0, 6.5], fov: 45 }}
+      // Perto e longe na medida da cena (a câmera fica de 0,9 a 5 m do boneco): com o padrão de
+      // 0,1 a 1000, numa placa de 16 bits de profundidade a roupa e a pele piscavam uma sobre a outra.
+      camera={{ position: [0, 0.7, 4], fov: 45, near: 0.3, far: 30 }}
       onCreated={recoverWebGLContext}
     >
-      <SceneContents slots={slots} pose={pose} mode={mode} dark={dark} onReady={onReady} />
+      <SceneContents
+        slots={slots}
+        pose={pose}
+        poseTake={poseTake}
+        mode={mode}
+        dark={dark}
+        onReady={onReady}
+      />
     </Canvas>
   )
 }

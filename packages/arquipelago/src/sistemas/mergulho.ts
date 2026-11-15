@@ -1,4 +1,5 @@
 import type { Ponto } from './cipo'
+import { CORPO } from './corpo'
 
 /** Metros e segundos. A água não cobra fôlego nem muda a cápsula. */
 export const MERGULHO = {
@@ -72,7 +73,14 @@ export function correnteDoMergulho(
   saida.z = d > 0 && forca > 0 ? (dz / d) * forca : 0
 }
 
-/** Visão próxima em passagens estreitas. A folga evita piscar na mesma distância. */
+/**
+ * Visão próxima em passagens estreitas: a câmera mais perto do centro do corpo que o alto da
+ * cabeça (com uma margem para a lente) veria o avatar por dentro. A folga para reaparecer evita
+ * piscar na mesma distância.
+ */
+const ESCONDE_O_AVATAR_ABAIXO = CORPO.doCentro.topo + 0.15
+const MOSTRA_O_AVATAR_ACIMA = ESCONDE_O_AVATAR_ABAIXO + 0.25
+
 export function mostrarAvatarNoMergulho(distancia: number, estavaVisivel: boolean): boolean {
-  return distancia >= (estavaVisivel ? 1.4 : 1.65)
+  return distancia >= (estavaVisivel ? ESCONDE_O_AVATAR_ABAIXO : MOSTRA_O_AVATAR_ACIMA)
 }

@@ -2,14 +2,6 @@ import { describe, expect, test } from 'bun:test'
 // Apresentação (community-kids): rótulo/emoji/anim/URL do GLB. O kids NÃO depende do
 // @sistemazero/members (package.json), e os catálogos do kids são PUROS (sem imports),
 // então alcançamos por caminho relativo só nesta suíte.
-import {
-  AVATAR_CATEGORIES as KIDS_AVATAR_CATEGORIES,
-  DEFAULT_AVATAR_SLOTS as KIDS_AVATAR_DEFAULTS,
-  AVATAR_HIDE_GROUPS as KIDS_AVATAR_HIDE,
-  AVATAR_PART_INFO as KIDS_AVATAR_INFO,
-  AVATAR_CATEGORY_PALETTES as KIDS_AVATAR_PALETTES,
-  AVATAR_REMOVABLE_NONE as KIDS_AVATAR_REMOVABLE,
-} from '../../../community-kids/src/lib/avatar3d-catalog'
 import { STREAK_FREEZE_PRICE as KIDS_STREAK_FREEZE_PRICE } from '../../../community-kids/src/lib/gamification-prices'
 import {
   TROPHY_BADGE_SLUGS as KIDS_TROPHY_BADGES,
@@ -21,15 +13,7 @@ import {
   ROOM_THEME_INFO,
   SURFACE_SLOTS,
 } from '../../../community-kids/src/lib/room-catalog'
-// Autoridade (members): existência/preço/categoria/paleta/oclusão.
-import {
-  AVATAR3D_PARTS,
-  AVATAR_CATEGORIES as MEMBERS_AVATAR_CATEGORIES,
-  DEFAULT_AVATAR_SLOTS as MEMBERS_AVATAR_DEFAULTS,
-  AVATAR_HIDE_GROUPS as MEMBERS_AVATAR_HIDE,
-  AVATAR_CATEGORY_PALETTES as MEMBERS_AVATAR_PALETTES,
-  AVATAR_REMOVABLE_NONE as MEMBERS_AVATAR_REMOVABLE,
-} from '../../src/domain/avatar/avatar3d-catalog'
+// Autoridade (members).
 import { STREAK_FREEZE_PRICE } from '../../src/domain/gamification/coins'
 import {
   ROOM_WALL_PALETTE as MEMBERS_WALL_PALETTE,
@@ -144,41 +128,8 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
     expect(kids).toEqual(members)
   })
 
-  test('avatar3d: toda peça do members existe no kids na MESMA categoria', () => {
-    for (const part of AVATAR3D_PARTS) {
-      const kids = KIDS_AVATAR_INFO[part.id]
-      expect(kids, `peça "${part.id}" ausente em AVATAR_PART_INFO (kids)`).toBeDefined()
-      expect(kids?.category, `categoria divergente em "${part.id}"`).toBe(part.category)
-    }
-  })
-
-  test('avatar3d: toda peça do kids existe no members (sem peça órfã/dead no kids)', () => {
-    const memberIds = new Set(AVATAR3D_PARTS.map((p) => p.id))
-    for (const id of Object.keys(KIDS_AVATAR_INFO)) {
-      expect(memberIds.has(id), `peça "${id}" existe no kids mas NÃO no members`).toBe(true)
-    }
-  })
-
-  test('avatar3d: categorias iguais em ordem', () => {
-    expect([...KIDS_AVATAR_CATEGORIES]).toEqual([...MEMBERS_AVATAR_CATEGORIES])
-  })
-
-  test('avatar3d: defaults (asset + cor) iguais', () => {
-    expect({ ...KIDS_AVATAR_DEFAULTS }).toEqual({ ...MEMBERS_AVATAR_DEFAULTS })
-  })
-
-  test('avatar3d: paletas por categoria iguais', () => {
-    for (const cat of MEMBERS_AVATAR_CATEGORIES) {
-      expect([...(KIDS_AVATAR_PALETTES[cat] ?? [])], `paleta de ${cat}`).toEqual([
-        ...(MEMBERS_AVATAR_PALETTES[cat] ?? []),
-      ])
-    }
-  })
-
-  test('avatar3d: oclusão e removíveis iguais', () => {
-    expect({ ...KIDS_AVATAR_HIDE }).toEqual({ ...MEMBERS_AVATAR_HIDE })
-    expect({ ...KIDS_AVATAR_REMOVABLE }).toEqual({ ...MEMBERS_AVATAR_REMOVABLE })
-  })
+  // O avatar não tem mais dois catálogos para conferir: tela e servidor leem o mesmo
+  // `@sistemazero/core/avatar` (o pack Cute Characters, 13/11/2026).
 
   test('preço do protetor de sequência: kids espelha o members', () => {
     expect(KIDS_STREAK_FREEZE_PRICE).toBe(STREAK_FREEZE_PRICE)

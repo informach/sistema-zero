@@ -1,0 +1,2370 @@
+{
+  "0": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/0.243cce584c68.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "1": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/1.0ec3ebf1280b.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "calca": "calca_marrom_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "2": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/2.fb6287ac2666.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "3": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/3.270f86910c23.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "4": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/4.fba7f1535f5a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "5": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/5.ab3d2ecdc7eb.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "6": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/6.f3a85d3d082c.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "7": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/7.cf726c217158.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "8": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/8.78f0b3620d04.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "meias": "meias_curtas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "9": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/9.cd2a4dc1ac12.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "10": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/10.6a870172a8db.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "11": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/11.4033f0eb88df.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "12": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/12.b793533a767a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "13": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/13.e33d6755fc74.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_curto_castanho_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "14": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/14.6f5b732258e1.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "15": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/15.bb195e462f2d.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "16": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/16.f6456f2874b1.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "17": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/17.e4e1ce79a8f3.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_preto_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "18": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/18.e7ccf95ffd07.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "19": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/19.261bfde015d5.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "20": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/20.a05db633d55c.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_curto_castanho_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "21": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/21.f6f93f14bf14.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "22": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/22.099b9aa288b3.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "23": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/23.4e99bebf390d.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "24": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/24.054a55011a66.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "25": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/25.4a63849a06ad.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "26": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/26.d78bec4ae89a.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "27": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/27.5bcdf1f40620.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "28": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/28.25e10ae618a9.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_branco_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "29": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/29.5b54b94c3e86.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "30": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/30.89435c5ce0b4.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "31": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/31.bf1faff51719.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "meias": "meias_curtas_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "32": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/32.0f48776d68b7.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_castanho_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "33": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/33.447b44f359f0.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "34": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/34.0d38fde6fa8f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "35": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/35.c7cc59de8de3.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "36": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/36.46d304acaa3d.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "37": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/37.382939589360.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "38": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/38.fdfe0facfadc.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "39": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/39.c1c028bc1e94.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "40": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/40.8904198a6d69.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "41": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/41.2bcde4bf79ea.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "42": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/42.bdb7cf2c9cb5.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "43": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/43.c1d52070bb3f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "44": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/44.c38c225f0d85.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "45": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/45.c6ac338fd30e.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_azul_pacote",
+      "calca": "calca_vermelha_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "46": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/46.cff65d438c7f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "47": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/47.3eaa7c452ebe.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "48": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/48.e9da6e4e26da.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "meias": "meias_curtas_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "49": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/49.afcba24a5c80.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "50": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/50.f3d3d2a6252d.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "51": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/51.408822d77025.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "52": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/52.e06469909afa.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "53": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/53.50b83e027580.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "54": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/54.78bd14250490.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "55": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/55.b72ccfa5a861.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "56": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/56.66d68bdaabe4.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "57": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/57.921ad812c36d.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "meias": "meias_curtas_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "58": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/58.55f15a8357e7.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "59": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/59.087c1c2a8c58.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "60": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/60.9a261dc8d99f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "61": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/61.7ffd33477bd8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "62": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/62.1120472280ee.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "63": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/63.3b08623792a9.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "64": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/64.352e2bcaf55f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "calca": "calca_vermelha_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "65": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/65.efa609651a6c.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "66": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/66.52423fe5a2e5.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "67": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/67.190dbddfd9f1.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "68": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/68.d324aef5e40c.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "69": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/69.84078bceffed.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "70": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/70.03d823e3b286.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "71": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/71.f7f1e66a465b.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "calca": "calca_marrom_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "72": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/72.208120d69569.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "73": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/73.5da191fa49d3.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "74": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/74.107f97eeac07.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_marrom_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "75": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/75.798e4ed51081.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "76": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/76.a2315a446d6b.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "77": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/77.7a664c18cce2.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "78": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/78.324e595eee81.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "79": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/79.5bc7b2ae5e42.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "calca": "calca_marrom_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "80": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/80.b9fb230207b2.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "81": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/81.80f5ed4250bd.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "82": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/82.0cb4d45eaaa8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "83": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/83.f412b237c784.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "84": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/84.86e802d1d786.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "85": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/85.0d6b5ccd0f70.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "86": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/86.fad32aab3ed4.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "87": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/87.314c3407872a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "88": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/88.eec912f754c9.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "89": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/89.e443a5a5aad0.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_marrom_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "90": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/90.3af49df8d8a1.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "91": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/91.c70406fea38e.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "92": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/92.e03de3b202e2.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "93": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/93.4017588cc2a7.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "calca": "calca_vermelha_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "94": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/94.028f856fe267.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_branco_pacote",
+      "meias": "meias_curtas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "95": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/95.2b5f2bf26c26.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "96": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/96.7106660af3a5.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "97": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/97.b2629a0e9c6b.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "98": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/98.3e5d25e9fc5f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "99": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/99.9c2c6e36532e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "100": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/100.87b79df4c8e9.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "101": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/101.3c70f098db7f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "102": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/102.fb7c294f0a94.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "meias": "meias_curtas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "103": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/103.fd2028b732ed.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "104": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/104.909de58ed8c1.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "105": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/105.55e7b228ac05.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "106": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/106.da683b92ec73.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "107": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/107.94bf92b47e2c.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "108": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/108.b6cd29432689.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "109": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/109.ffc6b88c3777.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "110": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/110.bde5e761a2ca.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "111": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/111.c8ed147baa32.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "112": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/112.2efe312cda7e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_branco_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "113": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/113.a8488ca84aba.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "114": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/114.548f1f70e15a.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "115": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/115.0ec79fbc6e24.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "116": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/116.ec4ce3a08b7f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_preto_pacote",
+      "meias": "meias_curtas_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "117": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/117.fbfb07c8b666.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "118": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/118.8bba7c112b9e.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "119": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/119.4ad93aceb1d1.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "120": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/120.4093291ad7e6.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "121": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/121.57d1e0dfa2cb.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "122": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/122.b566c64d11fd.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "123": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/123.8cfab98e65e2.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "124": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/124.686ee267e928.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "125": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/125.52b01985b3bc.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_amarelo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_amarelo_pacote"
+    }
+  },
+  "126": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/126.d94ab546c366.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "127": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/127.2954657bb1ee.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "128": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/128.1baadf986c2e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "129": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/129.24a32c7a41e8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_azul_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "130": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/130.abcbaeae98b3.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "131": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/131.3a1f9fca809b.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "132": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/132.dad79e030313.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "133": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/133.42d614032598.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "134": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/134.1d2bd19021a3.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "135": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/135.6e1e65950682.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "meias": "meias_curtas_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "136": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/136.38df7c519fd8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "137": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/137.10b38c0b91f2.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "138": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/138.13f2a8a2b686.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "139": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/139.d79877e66f1e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "140": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/140.277e72871e55.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "141": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/141.646a4d94d302.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "142": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/142.33d44081e0af.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "calca": "calca_vermelha_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "143": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/143.da0d51e9b4be.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_branco_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "144": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/144.ff30a7b83b75.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "145": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/145.809335106e11.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "146": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/146.f8867a3ceb8e.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "147": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/147.eb75b2e956f9.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "148": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/148.4df200a76a51.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "149": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/149.be48d6adadf7.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_preto_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "150": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/150.7e416a6f230f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "151": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/151.a7b6669a67e4.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "152": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/152.365c262f5a67.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "153": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/153.72518a3d62f8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "154": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/154.35d72192f0cb.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_branco_pacote",
+      "calca": "calca_vermelha_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "155": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/155.a389471d84f5.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "calca": "calca_marrom_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "156": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/156.95fe3bc19fa6.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "157": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/157.4249aca188b8.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "158": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/158.b9ed359aa277.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "159": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/159.edcb8ea6b476.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "calca": "calca_marrom_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "160": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/160.4f710798724f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "161": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/161.d927a7311d9a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_marrom_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "162": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/162.727417a78df7.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "calca": "calca_marrom_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "163": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/163.df6b39d0e244.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_branco_pacote",
+      "calca": "calca_vermelha_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "164": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/164.61b80d3fba3e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "165": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/165.8660efc806eb.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "166": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/166.5d37c17aa1b3.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "167": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/167.865c6991c068.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "168": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/168.a40eea079e04.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "169": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/169.38d644a62fde.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_vermelho_pacote",
+      "roupa_cima": "roupa_cima_regata_branca_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "orelhas": "orelhas_corpo_vermelho_pacote"
+    }
+  },
+  "170": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/170.fc43af7351ce.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "meias": "meias_curtas_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "171": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/171.2092db627915.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "172": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/172.a0bd063ab813.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_azul_petroleo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_azul_petroleo_pacote"
+    }
+  },
+  "173": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/173.4ab7b4ad8b87.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "meias": "meias_curtas_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "174": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/174.353afdf35364.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_pele_morena_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "orelhas": "orelhas_corpo_pele_morena_pacote"
+    }
+  },
+  "175": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/175.bcc46e428e5b.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "176": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/176.17a087f44765.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_clara_pacote",
+      "calca": "calca_vermelha_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_escuro_1_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_pele_clara_pacote"
+    }
+  },
+  "177": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/177.695f8326d9a1.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "178": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/178.344f2941b9fb.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "179": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/179.423a5833049f.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "180": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/180.04eef60a674a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_neutro_pacote",
+      "corpo": "corpo_branco_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "orelhas": "orelhas_corpo_branco_pacote"
+    }
+  },
+  "181": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/181.d8d78ac59bcc.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "182": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/182.002e668be57a.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "oculos": "oculos_azuis_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "183": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/183.59207c1dbbdd.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_cima": "roupa_cima_camiseta_branca_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "cabelo": "cabelo_curto_loiro_1_pacote",
+      "calca": "calca_marrom_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  },
+  "184": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/184.c8ad0a1c8379.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "185": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/185.912b56df1727.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "186": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/186.5a5f91a3780f.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "calca": "calca_vermelha_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "187": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/187.da84ab1d4a04.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "bermuda": "bermuda_branca_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "188": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/188.74d2a1a35f5a.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_laranja_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_laranja_pacote"
+    }
+  },
+  "189": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/189.3afee051f5d3.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "190": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/190.e34aabfdcc04.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_azul_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_azul_pacote"
+    }
+  },
+  "191": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/191.3b730bc4aa84.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_feliz_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "calca": "calca_marrom_pacote",
+      "oculos": "oculos_redondos_cinza_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "roupa_cima": "roupa_cima_camiseta_vermelha_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "192": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/192.77bea0e22320.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_verde_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_verde_pacote"
+    }
+  },
+  "193": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/193.6032a9bbfe2e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_pele_media_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "chapeu": "chapeu_gorro_cinza_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_media_clara_pacote"
+    }
+  },
+  "194": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/194.232b952a19f7.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_cinza_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_palha_claro_pacote",
+      "orelhas": "orelhas_corpo_cinza_pacote"
+    }
+  },
+  "195": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/195.65e544dc3993.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_neutro_pacote",
+      "corpo": "corpo_roxo_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "cabelo": "cabelo_ondulado_escuro_pacote",
+      "luvas": "luvas_cinza_pacote",
+      "orelhas": "orelhas_corpo_roxo_pacote"
+    }
+  },
+  "196": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/196.ad66f87dd96e.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_feliz_pacote",
+      "corpo": "corpo_pele_media_pacote",
+      "roupa_cima": "roupa_cima_camisa_azul_clara_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "calcado": "calcado_tenis_branco_pacote",
+      "orelhas": "orelhas_corpo_pele_media_pacote"
+    }
+  },
+  "197": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/197.1dd77e01f7c8.webp",
+    "slots": {
+      "rosto": "rosto_masc_02_normal_pacote",
+      "corpo": "corpo_pele_escura_pacote",
+      "roupa_cima": "roupa_cima_camiseta_roxa_pacote",
+      "acessorio_rosto": "brincos_argola_pacote",
+      "calcado": "calcado_chinelo_amarelo_pacote",
+      "calca": "calca_azul_clara_pacote",
+      "orelhas": "orelhas_corpo_pele_escura_pacote"
+    }
+  },
+  "198": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/198.bd9d9ea735a8.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_preto_pacote",
+      "roupa_inteira": "roupa_inteira_jardineira_azul_pacote",
+      "chapeu": "chapeu_bone_branco_bolinhas_pacote",
+      "acessorio_rosto": "bigode_01_pacote",
+      "orelhas": "orelhas_corpo_preto_pacote"
+    }
+  },
+  "199": {
+    "foto": "https://cdn.sistemazero.com.br/community/avatar3d-troca/199.e92812c33c65.webp",
+    "slots": {
+      "rosto": "rosto_masc_01_normal_pacote",
+      "corpo": "corpo_amarelo_limao_pacote",
+      "roupa_cima": "roupa_cima_camiseta_rosa_pacote",
+      "calca": "calca_vermelha_pacote",
+      "cabelo": "cabelo_cacheado_curto_pacote",
+      "orelhas": "orelhas_corpo_amarelo_limao_pacote"
+    }
+  }
+}

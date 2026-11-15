@@ -1,18 +1,16 @@
 import { randomUUID } from 'node:crypto'
 import { type PedidoDeRoupas, PedidoDeRoupasSchema } from '@sistemazero/arquipelago-contracts'
 import { and, eq } from 'drizzle-orm'
-import { AVATAR3D_PARTS } from '../../../domain/avatar/avatar3d-catalog'
+import { inventoryIds } from '../../../domain/avatar/avatar3d-catalog'
 import type { Database } from './db'
 import { lockLearningOwner } from './learning-owner-lock'
 import { avatarInventory, gamificationProfiles } from './schema'
 
 /**
- * Só peças que alguém precisa TER vão ao inventário: as pagas (a amizade) e as da festa (B16, que
- * só o jogo concede). As grátis já são de todo mundo.
+ * Só o que alguém precisa TER vai ao inventário: peças pagas (a amizade), as da festa (que só o
+ * jogo concede) e conjuntos de fantasia. As grátis já são de todo mundo.
  */
-const PECAS_PAGAS: ReadonlySet<string> = new Set(
-  AVATAR3D_PARTS.filter((p) => p.tier !== 'free').map((p) => p.id),
-)
+const PECAS_PAGAS: ReadonlySet<string> = inventoryIds()
 
 /**
  * As roupas que o Arquipélago concede (§6.28, A21): a amizade com os moradores e a festa da

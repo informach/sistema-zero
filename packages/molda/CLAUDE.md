@@ -695,7 +695,10 @@ depois do primeiro sinal de vida (mensagem, `error` ou `messageerror`). Motivo m
 libera a VM do worker assim que o `terminate()` interrompe o carregamento do módulo, enquanto o job
 de transpilação do grafo ainda roda no pool de threads e escreve nela (`SavedSourceMap.putValue` →
 `panic: Segmentation fault at address 0xFFFFFFFFFFFFFFF8`; oven-sh/bun#33936, corrigido no Bun
-1.4.0 pelo #37075 — a frota já roda `oven/bun:1`, só o CI e o dev pinam 1.3.11). No CI (Linux,
+1.4.0 pelo #37075 — a frota já roda `oven/bun:1`). Desde 14/11/2026, a suíte completa do Molda
+roda em passo próprio do CI com Bun 1.4.4 isolado, seguindo o padrão do gravador; ela sai do
+lote genérico de pacotes, sem retirar testes. O runtime dos outros passos permanece inalterado.
+O handshake continua obrigatório para o ciclo de vida dos workers. No CI antigo (Linux,
 2 vCPU, cache do transpiler FRIO a cada run) a janela é de milissegundos, justamente o tempo que o
 StrictMode e o cancelamento de um preview seguram um worker: 5 runs vermelhos em 10/09 com a MESMA
 pilha, e o dia em que o molda testou num job Windows. Reproduzido em `oven/bun:1.3.11` com

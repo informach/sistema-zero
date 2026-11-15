@@ -1,56 +1,47 @@
 import { expect, test } from 'bun:test'
+import { VESTUARIO_DAS_FESTAS } from '@sistemazero/arquipelago-contracts'
+import { AVATAR_CATALOG as C } from '@sistemazero/core/avatar'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { SeasonalAvatarChoices } from '../src/components/cosmetics/avatar3d/seasonal-choices'
-import type { AvatarPartView } from '../src/lib/types'
 
-const mascara: AvatarPartView = {
-  id: 'face-08',
-  category: 'faceDecor',
-  tier: 'coins',
-  price: 37,
-  owned: false,
-  locked: true,
-}
-test('sugestão usa só catálogo recebido e seu preço real, sem inventar posse ou completar peça ausente', () => {
-  const html = renderToStaticMarkup(
-    <SeasonalAvatarChoices
-      festa="carnaval"
-      parts={[mascara]}
-      disabled={false}
-      onSelect={() => {
-        throw Error('Render não deve selecionar nem comprar')
-      }}
-    />,
-  )
-  expect(html).toContain('Máscara · 37 moedas')
-  expect(html).not.toContain('Coroa de flores')
-  expect(html).not.toContain('aria-pressed="true"')
-  expect(
-    renderToStaticMarkup(
-      <SeasonalAvatarChoices festa="carnaval" parts={[]} disabled={false} onSelect={() => {}} />,
-    ),
-  ).toBe('')
-  expect(
-    renderToStaticMarkup(
+/**
+ * As sugestões da festa do jogo só mostram peças que o catálogo do pack tem, com o nome e o preço
+ * do catálogo (uma peça que o catálogo não tem não aparece: a tela não conseguiria vestir).
+ */
+const festas = Object.keys(VESTUARIO_DAS_FESTAS) as (keyof typeof VESTUARIO_DAS_FESTAS)[]
+
+test('só peças do catálogo do pack, com o nome e o preço dele', () => {
+  for (const festa of festas) {
+    const colecao = VESTUARIO_DAS_FESTAS[festa]
+    const html = renderToStaticMarkup(
       <SeasonalAvatarChoices
-        festa="carnaval"
-        parts={[{ ...mascara, category: 'head' }]}
+        festa={festa}
+        owned={new Set()}
         disabled={false}
         onSelect={() => {}}
       />,
-    ),
-  ).toBe('')
+    )
+    const todas = [...colecao.conquista, ...colecao.pecas]
+    expect(todas.every((id) => C.parts[id])).toBe(true)
+    for (const id of todas) expect(html).toContain(C.parts[id]?.label ?? '?')
+    // As da festa dizem de onde vêm; as sugestões, o preço.
+    for (const id of colecao.conquista)
+      expect(html).toContain(`${C.parts[id]?.label} · vem da festa`)
+    for (const id of colecao.pecas)
+      expect(html).toContain(`${C.parts[id]?.label} · ${C.parts[id]?.price} moedas`)
+  }
 })
-test('peça possuída não pede moedas; operação em voo bloqueia a seleção', () => {
-  const html = renderToStaticMarkup(
-    <SeasonalAvatarChoices
-      festa="carnaval"
-      parts={[{ ...mascara, owned: true, locked: false }]}
-      disabled
-      onSelect={() => {}}
-    />,
-  )
-  expect(html).toContain('disabled=""')
-  expect(html).toContain('Máscara')
-  expect(html).not.toContain('37 moedas')
+
+test('o render não seleciona nada sozinho', () => {
+  for (const festa of festas)
+    renderToStaticMarkup(
+      <SeasonalAvatarChoices
+        festa={festa}
+        owned={new Set()}
+        disabled
+        onSelect={() => {
+          throw new Error('o render não escolhe')
+        }}
+      />,
+    )
 })

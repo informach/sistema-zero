@@ -127,12 +127,14 @@ test('shared avatar assets and personal room render from the adult origin', asyn
   let loadedAssets = 0
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('response', (response) => {
-    if (!new URL(response.url()).pathname.startsWith('/avatar3d/')) return
+    // As peças do pack saem do bucket privado: a rota do app confere a sessão e redireciona.
+    if (!new URL(response.url()).pathname.startsWith('/api/avatar3d/')) return
     if (response.status() >= 400) errors.push(`Avatar asset HTTP ${response.status()}`)
     else loadedAssets++
   })
   await page.goto('/meu-avatar')
-  await expect(page.getByRole('button', { name: 'Salvar', exact: true })).toBeEnabled()
+  // O avatar se salva sozinho: no alto, o estado do salvamento.
+  await expect(page.getByRole('status').filter({ hasText: 'Salvo' })).toBeVisible()
   await expect(page.locator('canvas').first()).toBeVisible()
   await expect.poll(() => loadedAssets).toBeGreaterThan(0)
   // A mounted WebGL canvas can still be empty while GLB pieces load. Read the

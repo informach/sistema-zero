@@ -1,5 +1,61 @@
 # CLAUDE.md — @sistemazero/members
 
+## Casa Morada (14/11/2026, implementação local)
+
+- Revisão de ownership: leitura e CAS usam a mesma chave de dados `(userId, audience)`.
+  O `accountId` vem do contexto autenticado, não do documento, e é reparado na escrita para
+  recuperar registros históricos que guardavam o id da criança no lugar do responsável.
+  Perfil, público e revisão continuam obrigatórios no filtro de atualização.
+- Uma atualização do catálogo pode retirar modelos, pets, slots e texturas. A leitura usa
+  `reconcileMoradaHouse`: omite recursos retirados e descendentes órfãos, sem mutar o documento
+  guardado ou avançar revisão. Escrita continua estrita; JSON/estrutura corrompidos não são ocultados.
+- `house.migrations` aceita o marcador `arquipelago-functions-v1`, conservado por união nas
+  escritas da casa e do quarto. Ele registra importação idempotente, sem conceder progresso.
+
+- `GET /members/house` entrega `{house, revision, owned}`; `PUT` recebe
+  `{house, revision, scope?: 'room'|'house'}`. Revisão vencida responde 409 com `current`.
+  O escopo `room` preserva o lote, os outros cômodos e suas instâncias. Não depende do acesso ao jogo.
+- `morada_houses` (migration gerada `0149_morada_house`) é a fonte canônica. `room_state`
+  permanece como leitura histórica. Cliente antigo não grava nem compra depois de existir casa nova.
+  A carteira também confere a retirada sob a trava usada pelo reembolso, cobrindo compras em voo.
+- **Preço (14/11/2026, a dona):** a Morada tem preço pela régua do avatar (`core/morada/pricing.ts` e
+  `prices.generated.ts`, editorial, fora do catálogo gerado; proposta por `scripts/morada/propor-precos.ts`).
+  Construção, a casa inicial e os canteiros são grátis; troféus e a estante de troféus
+  (`MORADA_TROPHY_SHELF`, dada a quem tem a `estante-trofeus`) são por conquista. `owned` = troféus +
+  estante + compradas (`room_inventory`) + as peças que já estão na casa (ninguém perde o que já pôs).
+  `save` recusa peça paga ou bichinho sem posse; as funções do jogo (`behavior: objeto:`) passam.
+  Compra: `POST /house/buy {pieceId}` (`BuyMoradaPieceService`, o mesmo `spendCoins` do quarto antigo,
+  chave `morada-buy:<user>:<peça>`). `scripts/conceder-morada.ts` (ensaio; `--confirm`) grava no
+  inventário as pagas que já estavam nas casas quando o preço chegou.
+  Preços conferidos pela dona em 14/11 (sem `review`). `adultOnly` (as duas peças de cassino): no
+  Kids não aparece no Meu quarto e a compra responde 404, como o chapéu de cerveja do avatar.
+  A projeção `state.house` do quarto e do perfil público contém somente o cômodo do quarto.
+  A porta interna `/casa` e o `house` do `/quarto` interno entregam a casa completa para visitas autorizadas.
+- O contrato puro está em `core/morada/schema`: 600 instâncias e 512 KB, sem truncar.
+  Posição local, ids estáveis, pais/slots, ciclos, dimensões, texturas e referências são validados.
+  UGC continua no salvamento do jogo; a casa aceita vínculos `behavior`, sem bytes ou URLs de criações.
+- `bun scripts/swap-morada.ts` faz somente ensaio. `--confirm` aplica a conversão e o reembolso
+  histórico uma vez por perfil/público (`morada-refund-v1`). Galeria e troféus são preservados;
+  pets mantêm a espécie quando há equivalente, e o pássaro é omitido. Não apagar o extrato nem conquistas.
+  Publicação em 14/11/2026: migration e conversão aplicadas em staging e produção. Em produção,
+  oito quartos Kids foram convertidos e seis perfis receberam 750 moedas; novo ensaio retornou
+  zero pendências. Backups privados verificados precederam a escrita. Evidências e SHA publicado:
+  `docs/operations/2026-11-14-morada-publicacao.md` (na raiz do repositório).
+- SQL real: `MORADA_TEST_DATABASE_URL` deve apontar para banco local descartável `kids_journey_*`;
+  sem ela, os dois testes de banco são pulados. Os testes de serviço e HTTP não precisam de Postgres.
+  Evidência local: os dois testes SQL passaram em Postgres 16 descartável, incluindo CAS
+  concorrente, públicos separados, ensaio, valor histórico, Galeria, troféus e repetição idempotente.
+
+## Avatar do pack: a troca (13/11/2026)
+
+`scripts/swap-avatar.ts` (regras em `infrastructure/persistence/drizzle/avatar-swap.ts`): devolve as
+moedas gastas no avatar antigo (`avatar-refund-v3`, uma vez), tira do inventário o que não é do pack
+e troca cada avatar antigo por um dos 200 sorteados de menino (`bankAvatar`, pelo id do perfil), com
+a foto do banco `scripts/avatar-swap-bank.json` (foto no bucket público + as peças). Sem `--confirm`
+é dry-run. ⚠️ Recusa rodar se o catálogo de agora sortear outra coisa para algum índice (a arte mudou
+as peças grátis): gere o banco de novo (`member-shell/qa/avatar-banco-client.tsx`). O teste
+`tests/db/avatar-swap.test.ts` confere o banco contra o catálogo (este caso roda sem banco de dados).
+
 ## Publicação de cursos pelo Admin (01/11/2026)
 
 `application/course-publication` reúne o serviço, o worker e o processador da promoção.
@@ -136,9 +192,9 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   avatar no `avatar_inventory`
   (idempotente pela chave única), confere o dono como nas moedas, nunca cobra. Quem decide o que foi
   conquistado é o serviço do jogo. Teste: `tests/db/arquipelago-avatar.test.ts` (mesma variável).
-  **B16 (31/10/2026):** as oito roupas das festas são da faixa `festa` do `avatar3d-catalog.ts`
-  (preço 0): comprar dá 409 `AVATAR_PART_FESTA`, a leitura as marca trancadas e vestir exige a
-  posse. Só esta porta as entrega. `tests/unit/avatar-festa-conformance.test.ts` lê o
+  **B16 (31/10/2026; peças do pack desde 13/11/2026):** as oito roupas das festas são da faixa
+  `festa` do catálogo do pack (`@sistemazero/core/avatar`, preço 0): comprar dá 409
+  `AVATAR_PART_FESTA`, a tela as mostra com "Da festa" e vestir exige a posse. Só esta porta as entrega. `tests/unit/avatar-festa-conformance.test.ts` lê o
   `vestuario-festas.ts` do contrato pelo caminho e confere que a faixa é a `conquista` das festas.
 - ⚠️ Railway: `ARQUIPELAGO_MEMBERS_TOKEN` é nome novo; criar no painel (members e arquipelago-api)
   antes de entrar no `.railway/variables.ts`.

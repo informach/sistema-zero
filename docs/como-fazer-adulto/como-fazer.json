@@ -3677,7 +3677,7 @@
       "position": 5,
       "draft": {
         "title": "Como montar o seu avatar 3D",
-        "summary": "Escolha a aparência, salve e tire a foto na Cabine de fotos.",
+        "summary": "Escolha a aparência; o avatar se salva sozinho, e a Cabine de fotos tira a foto numa pose.",
         "keywords": [
           "avatar",
           "boneco",
@@ -3697,35 +3697,35 @@
             "id": "abrir",
             "title": "Abra o avatar",
             "body": "Clique no cartão com a sua foto, no pé do menu, e depois em **Meu avatar 3D**. Em **Meu perfil**, o botão **Criar meu avatar** (ou **Editar meu avatar**) leva ao mesmo lugar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/abrir-698c2651c92ed69c.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/abrir-1ab7e111d7736337.webp",
             "imageAlt": "Menu do perfil aberto com o item Meu avatar 3D destacado."
           },
           {
             "id": "escolher",
             "title": "Escolha a aparência",
-            "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo**, **Enfeite** ou **Blusa**, e clique na opção e na cor que quiser. Algumas peças já vêm com cor própria e, nelas, as cores não aparecem. **Sortear visual** monta uma combinação para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/escolher-926b4cbcf87d3842.webp",
-            "imageAlt": "Tela Meu avatar 3D com a parte Enfeite escolhida, as cores do enfeite e os modelos de enfeite."
+            "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo**, **Chapéu** ou **Blusa**, e clique no modelo que quiser. Algumas partes têm tipos, como **Camiseta** e **Camisa** na Blusa, e a cor do corpo fica em **Cor do corpo**. Em **Mostrar peças**, escolha **Femininas**, **Masculinas** ou **Todas**. Quando um modelo não combina com outro, aparece o que saiu, com **Desfazer**. **Sortear visual** monta uma combinação com o que você já tem.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/escolher-9d381891200f3e45.webp",
+            "imageAlt": "Tela Meu avatar 3D com a parte Chapéu escolhida, os tipos de chapéu e o aviso do que saiu, com Desfazer."
           },
           {
             "id": "moedas",
             "title": "Peças com preço",
-            "body": "Algumas peças custam moedas. Ao clicar numa delas, você vê uma prévia e decide se quer usar. Para desistir, clique em **Agora não**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/moedas-2bc16c43f3985f4e.webp",
+            "body": "Algumas peças custam moedas, e as fantasias se compram inteiras. Ao clicar numa delas, você vê uma prévia e decide se quer usar. Para desistir, clique em **Agora não**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/moedas-293a40892d4b4c90.webp",
             "imageAlt": "Prévia de uma peça com preço em moedas e o botão Agora não."
           },
           {
             "id": "salvar",
-            "title": "Salve",
-            "body": "Clique em **Salvar** e espere o aviso **Mudanças salvas.**",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/salvar-97e1d97e40186533.webp",
-            "imageAlt": "Botão Salvar destacado e o aviso Mudanças salvas."
+            "title": "O avatar se salva sozinho",
+            "body": "Não há botão de salvar: depois de cada escolha, o alto da tela mostra **Salvo**. Se mostrar **Em prévia**, há uma peça com preço que ainda não é sua; desbloqueie ou troque por outra para salvar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/salvar-dc88aacf71f835b8.webp",
+            "imageAlt": "Alto da tela Meu avatar 3D com o aviso Salvo."
           },
           {
             "id": "foto",
             "title": "Tire a foto",
             "body": "Clique em **Cabine de fotos**, escolha uma pose e clique em **Tirar foto**. Essa foto aparece no seu cartão do menu e na comunidade. Para sair, clique em **Voltar ao meu perfil** ou em **Voltar ao início**, conforme o caminho por onde você entrou.",
-            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/foto-3371b2ae27820ade.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/adulto/como-fazer/conta-montar-o-avatar/foto-94c79b3481dc3a52.webp",
             "imageAlt": "Cabine de fotos com as poses, o avatar posando e o botão Tirar foto destacado."
           }
         ],

@@ -110,8 +110,10 @@ import { GetProfilesOverviewService } from './application/profiles-overview/get-
 import { SendAccessEndedMessagesService } from './application/renewal-reminder/send-access-ended-messages.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
+import { BuyMoradaPieceService } from './application/room/buy-morada-piece.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
 import { GetRoomService } from './application/room/get-room.service'
+import { MoradaHouseService } from './application/room/morada-house.service'
 import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
@@ -206,6 +208,7 @@ import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/dri
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleMasteryRepository } from './infrastructure/persistence/drizzle/mastery.repository'
 import { readMasteryJourneyFacts } from './infrastructure/persistence/drizzle/mastery-journey-facts'
+import { DrizzleMoradaHouseRepository } from './infrastructure/persistence/drizzle/morada-house.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaCheckpointsRepository } from './infrastructure/persistence/drizzle/pensa-checkpoints.repository'
 import { DrizzlePensaFunnelRepository } from './infrastructure/persistence/drizzle/pensa-funnel.repository'
@@ -956,9 +959,22 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
-  const getRoom = new GetRoomService(roomRepo, gamificationRepo)
-  const saveRoom = new SaveRoomService(roomRepo, clock, logger)
-  const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
+  const moradaHouse = new MoradaHouseService(new DrizzleMoradaHouseRepository(db), roomRepo, clock)
+  const getRoom = new GetRoomService(roomRepo, gamificationRepo, moradaHouse)
+  const saveRoom = new SaveRoomService(roomRepo, clock, logger, moradaHouse)
+  const buyRoomItem = new BuyRoomItemService(
+    roomRepo,
+    gamificationRepo,
+    awardGamification,
+    clock,
+    moradaHouse,
+  )
+  const buyMoradaPiece = new BuyMoradaPieceService(
+    gamificationRepo,
+    awardGamification,
+    clock,
+    moradaHouse,
+  )
   const getPublicProfile = new GetPublicProfileService(
     gamificationRepo,
     avatarRepo,
@@ -968,6 +984,7 @@ export async function createApplication(env: Env): Promise<Application> {
     kidsJourneyProfiles,
     adultProfileRepository,
     adultJourney,
+    moradaHouse,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
@@ -1292,7 +1309,7 @@ export async function createApplication(env: Env): Promise<Application> {
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
       saldo: gamificationRepo,
       compras: new ArquipelagoCoinsRepository(db),
-      quartos: new ArquipelagoRoomService(roomRepo),
+      quartos: new ArquipelagoRoomService(roomRepo, moradaHouse),
       ambiente: studioRuntimePolicy
         ? new ArquipelagoRuntimeService(studioRuntimePolicy)
         : undefined,
@@ -1393,6 +1410,8 @@ export async function createApplication(env: Env): Promise<Application> {
       getPublicProfile,
       getRoom,
       saveRoom,
+      moradaHouse,
+      buyMoradaPiece,
       buyRoomItem,
       profileAllowance,
       consumeAiUsage,

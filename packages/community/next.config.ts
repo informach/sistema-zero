@@ -173,14 +173,6 @@ const nextConfig: NextConfig = {
         source: '/_next/static/:path*',
         headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
       },
-      {
-        source: '/avatar3d/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
-      },
-      {
-        source: '/avatar3d/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
-      },
       // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera e
       // tela liberadas SÓ nesta rota, além do microfone e do jogo num documento temporário do R2
       // privado (o `frame-src`). O cabeçalho vale para o documento carregado: a sala se abre e se

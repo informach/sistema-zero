@@ -251,8 +251,9 @@ export const ZappyFeedbackBody = t.Object({
 })
 
 // ── Avatar (guarda-roupa por camadas) ───────────────────────────────────────
-// `partId`/`parts` são SLUGS do catálogo em código (não uuid): `^[a-z0-9-]+$`.
-const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })
+// Ids do catálogo em código (não uuid). Os do avatar do pack têm sublinhado
+// (`cabelo_arco_iris_pacote`), os do quarto, hífen: a régua aceita os dois.
+const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9_-]+$' })
 
 export const AvatarPartParams = t.Object({ partId: AVATAR_SLUG })
 
@@ -321,20 +322,15 @@ export const RoomStateBody = t.Object({
   lighting: t.Optional(AVATAR_SLUG),
 })
 
-/** Corpo de `PUT /members/avatar` — config 3D equipada (categoria → {peça, cor?}). */
+/**
+ * Corpo de `PUT /members/avatar`: encaixe → peça do pack, e o filtro (menina, menino ou todos).
+ * A borda confere só a forma; quem confere as regras do pack e a posse é o domínio
+ * (`assertEquippableConfig`: peça desconhecida ou que não combina → 400; paga sem ter → 403).
+ * `maxProperties` segura um Record gigante (o pack tem 17 encaixes).
+ */
 export const AvatarConfigBody = t.Object({
-  style: t.Optional(t.String({ maxLength: 40 })),
-  // Record categoria→{asset, color?}; o serviço valida semanticamente (categoria/peça
-  // desconhecida → 400; peça paga não possuída → 403; cor fora da paleta → 400). HEX_COLOR
-  // valida só o FORMATO na borda; a PALETA curada é checada no domínio.
-  // `maxProperties` limita o nº de categorias (o catálogo 3D tem 15) — paridade com o teto
-  // de `QuizAttemptBody.answers`; o serviço já rejeita categoria desconhecida, mas a borda
-  // não deve aceitar um Record gigante (defesa anti-DoS, mesmo bem abaixo do teto de corpo).
-  slots: t.Record(
-    t.String({ maxLength: 40 }),
-    t.Object({ asset: AVATAR_SLUG, color: t.Optional(HEX_COLOR) }),
-    { maxProperties: 32 },
-  ),
+  slots: t.Record(t.String({ maxLength: 40 }), AVATAR_SLUG, { maxProperties: 32 }),
+  filter: t.Optional(t.Union([t.Literal('girl'), t.Literal('boy'), t.Literal('all')])),
 })
 
 /**

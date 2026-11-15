@@ -154,6 +154,8 @@ export const ESTILOS = `
 .arq-agora h2{margin:0 0 7px;font:800 12px/1 var(--arq-titulo);letter-spacing:.08em;text-transform:uppercase;color:#ffc93c}
 .arq-agora ul{list-style:none;margin:0;padding:0;display:grid;gap:7px;min-width:0}
 .arq-agora li{display:flex;gap:9px;align-items:flex-start;font-size:14px;font-weight:700;line-height:1.3;min-width:0}
+.arq-agora-ir{all:unset;box-sizing:border-box;display:flex;gap:9px;align-items:flex-start;min-width:0;cursor:pointer;border-radius:8px}.arq-agora-ir:hover{text-decoration:underline;text-decoration-color:#ffc93c;text-underline-offset:3px}.arq-agora-ir:focus-visible{outline:3px solid #ffc93c;outline-offset:2px}
+.arq-mapa-lista li .arq-mapa-ir{grid-column:2;justify-self:start;margin-top:6px;min-height:36px;padding:4px 14px;font-size:14px}
 .arq-agora-marca{flex:none;width:11px;height:11px;margin-top:3px;border-radius:50%;border:2px solid #5fd3c4}
 .arq-dica{background:rgba(20,26,58,.92);border:1px solid rgba(255,201,60,.35);border-radius:18px;padding:12px 16px 12px 12px;box-shadow:0 10px 30px rgba(8,10,30,.35);align-items:center}
 .arq-dica-texto{display:grid;gap:3px}
@@ -446,6 +448,10 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-guia-tarefa{padding:6px 8px}
 .arq-guia-tarefa kbd{min-width:26px;height:26px;font-size:12px}
 .arq-hud:has(.arq-obra) .arq-guia{top:186px;width:calc(100% - 20px)}
+.arq-guia,.arq-dica{top:186px;bottom:auto;left:10px;width:auto;max-width:calc(100% - 20px)}
+.arq-dica{padding:8px 12px 8px 8px;gap:8px;font-size:14px;line-height:1.3}
+.arq-dica .arq-zappy{width:26px;height:26px}
+.arq-guia-fala{font-size:15px}
 .arq-agora-passos button{min-height:28px;padding:2px 8px 2px 2px;font-size:13px}
 .arq-passos-fim{place-items:start center;padding-top:70px}
 .arq-passos-fim-cartao{margin-bottom:0;padding:18px}
@@ -453,4 +459,7 @@ button.arq-item:focus-visible{outline:3px solid #5fd3c4;outline-offset:2px}
 .arq-passos-menu{grid-template-columns:auto minmax(0,1fr)}
 .arq-passos-menu-acoes{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
 }
+
+.arq-morada{position:absolute;inset:0;pointer-events:none}.arq-morada-layout,.arq-morada-scene{position:absolute;inset:0}.arq-morada-scene>div:first-child{pointer-events:auto}.arq-morada .arq-obra{pointer-events:auto}.arq-morada[aria-hidden=true] .arq-obra{display:none}.arq-morada[aria-hidden=true] .arq-morada-scene>div:first-child{pointer-events:none}.arq-obra-morada{max-height:calc(100% - 180px);overflow-y:auto}.arq-obra-morada[hidden]{display:none}.arq-obra-morada label{display:inline-flex;align-items:center;gap:6px;font-size:14px}.arq-obra-morada input,.arq-obra-morada select{font:inherit;min-height:36px;max-width:220px;min-width:0;border:2px solid #e7e3d6;border-radius:10px;padding:4px 8px;background:#fff;color:#1d2340}.arq-obra-morada details{font-size:14px}.arq-obra-morada summary{cursor:pointer;font-weight:700}.arq-obra-ajustes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px}.arq-obra-morada .arq-obra-escolhas.rolar{min-height:112px}.arq-morada-position{display:flex;gap:6px}.arq-morada-position input{width:70px}.arq-obra-recuperacao{bottom:auto;top:100px}.arq-obra-morada .arq-obra-ferramentas{flex-shrink:0}.arq-obra-morada .arq-obra-escolha b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.4em;height:2.4em;text-overflow:ellipsis}@media(max-width:560px){.arq-obra-morada{max-height:calc(100% - 210px)}.arq-obra-morada .arq-obra-escolhas.rolar{min-height:96px}.arq-obra-morada input,.arq-obra-morada select{max-width:160px}}
+.arq-morada-acoes{bottom:110px}
 `

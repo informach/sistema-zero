@@ -3,6 +3,7 @@ import {
   VERSAO_CONTRATO_PLATAFORMA,
   VERSOES_COMPATIVEIS_DA_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
+import { createMoradaHouse } from '@sistemazero/core/morada'
 import {
   caminhoDoJogo,
   criarPlataformaDoArquipelago,
@@ -38,6 +39,33 @@ const plataforma = () =>
     perfil: { id: 'p1', primeiroNome: 'Lia' },
     voltarPara: '/',
   })
+
+test('casa canônica usa a mesma rota do quarto e devolve revisão atual no conflito', async () => {
+  const current = { house: createMoradaHouse(), revision: 2, owned: [] }
+  const calls = servir({
+    'GET /api/members/house': { status: 200, body: current },
+    'PUT /api/members/house': { status: 409, body: { current } },
+  })
+  const p = plataforma()
+  expect(await p.lerCasaMorada?.()).toEqual(JSON.parse(JSON.stringify(current)))
+  let failure: unknown
+  try {
+    await p.salvarCasaMorada?.({ house: current.house, revision: 1, scope: 'house' })
+  } catch (error) {
+    failure = error
+  }
+  expect(failure).toBeInstanceOf(Error)
+  expect((failure as Error & { current: unknown }).current).toEqual(
+    JSON.parse(JSON.stringify(current)),
+  )
+  expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
+    'GET /api/members/house',
+    'PUT /api/members/house',
+  ])
+  expect(JSON.parse(calls[1]!.body!)).toEqual(
+    JSON.parse(JSON.stringify({ house: current.house, revision: 1, scope: 'house' })),
+  )
+})
 
 test('a apresentação dos desafios é pedida só pelo jogo que conhece os campos novos', async () => {
   const pedidos = servir({
@@ -250,13 +278,21 @@ describe('a porta da plataforma para o jogo', () => {
     const pedidos = servir({
       'GET /api/members/avatar': {
         status: 200,
-        body: { equipped: { hair: { asset: 'hair-13' } } },
+        body: { equipped: { cabelo: 'cabelo_cacheado_curto_pacote' } },
       },
       'GET /api/members/room': { status: 200, body: { state } },
       'PUT /api/members/room': { status: 200, body: state },
     })
     const p = plataforma()
-    expect(await p.lerAvatar()).toEqual({ slots: { hair: { asset: 'hair-13' } } })
+    expect(await p.lerAvatar()).toEqual({ slots: { cabelo: 'cabelo_cacheado_curto_pacote' } })
+    // Um jogo da versão 1 (o avatar antigo) recebe o avatar vazio, que ele completa com o dele.
+    const antiga = criarPlataformaDoArquipelago({
+      versao: 1,
+      publico: 'kids',
+      perfil: { id: 'p1', primeiroNome: 'Lia' },
+      voltarPara: '/',
+    })
+    expect(await antiga.lerAvatar()).toEqual({ slots: {} })
     expect(await p.lerQuarto()).toEqual(state)
     expect(await p.salvarQuarto(state)).toEqual(state)
     expect(pedidos.at(-1)).toMatchObject({ method: 'PUT', body: JSON.stringify(state) })

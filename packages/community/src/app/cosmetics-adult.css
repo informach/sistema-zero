@@ -412,6 +412,7 @@
 
   .sz-cos-av-grid {
     display: grid;
+    grid-auto-rows: max-content;
     grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
     gap: 0.625rem;
   }
@@ -489,6 +490,52 @@
   .sz-cos-av-tile[data-confirming] .sz-cos-av-tile-price {
     background: var(--primary);
     color: var(--primary-foreground);
+  }
+  /* A grade da cor do corpo: bolinhas, não miniaturas. */
+  .sz-cos-av-grid[data-swatches] {
+    grid-template-columns: repeat(auto-fill, minmax(var(--cos-swatch), 1fr));
+    justify-items: center;
+  }
+  /* O filtro tem três opções (o modo tem duas). */
+  .sz-cos-segmented:has(> :nth-child(3)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  /* O avatar se salva sozinho: o estado fica onde era o botão "Salvar". */
+  .sz-cos-savestate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: var(--cos-btn-h);
+    padding: 0 1rem;
+    border-radius: 0.75rem;
+    background: var(--muted);
+    color: var(--foreground);
+    font-weight: 700;
+  }
+  .sz-cos-savestate svg {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .sz-cos-savestate[data-status="saved"] svg {
+    color: var(--primary);
+  }
+  .sz-cos-savestate[data-status="preview"] {
+    color: var(--muted-foreground);
+  }
+  /* As regras à vista: o que a escolha tirou do avatar, com o desfazer. */
+  .sz-cos-av-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.875rem;
+    background: var(--muted);
+  }
+  .sz-cos-av-notice p {
+    margin: 0;
   }
 
   /* ── Meu espaço 3D (página) ───────────────────────────────────────────────────────── */

@@ -32,6 +32,12 @@ import {
   type SalvamentoGuardado,
   type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
+import { AVATAR_CATALOG, drawAvatar } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
+import {
+  createMoradaHouse,
+  MoradaHouseSchema,
+  validateMoradaHouse,
+} from '@sistemazero/avatar-quarto/morada/catalog'
 import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa, listarCriacoesQueCabemFalsas } from './aparencias-falsas'
@@ -297,6 +303,29 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     })(),
   )
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
+  let casaMorada = {
+    house: quarto.house ?? createMoradaHouse(),
+    revision: 0,
+    owned: [] as string[],
+  }
+  const chaveCasaMorada = 'arquipelago-playground:morada:v1'
+  if (o.persistir && typeof localStorage !== 'undefined') {
+    const previous = localStorage.getItem(chaveCasaMorada)
+    if (previous) {
+      try {
+        const data = JSON.parse(previous)
+        const parsed = MoradaHouseSchema.safeParse(data.house)
+        if (
+          parsed.success &&
+          typeof data.revision === 'number' &&
+          validateMoradaHouse(parsed.data).length === 0
+        )
+          casaMorada = { house: parsed.data, revision: data.revision, owned: casaMorada.owned }
+      } catch (error) {
+        console.warn('Casa Morada de teste inválida', error)
+      }
+    }
+  }
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
   if (o.usadoHojeSegundos) usado.set(diaDeSaoPaulo(agora()), Math.max(0, o.usadoHojeSegundos))
@@ -618,18 +647,29 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     publico,
     perfil: { id: 'perfil-de-teste', primeiroNome: 'Lia' },
     lerJornada: async () => ({ posicao: o.posicao ?? 2 }),
-    lerAvatar: async () => ({
-      slots: {
-        head: { asset: 'head-01', color: '#d9a07a' },
-        hair: { asset: 'hair-13', color: '#3b2416' },
-        eyebrows: { asset: 'eyebrow-01', color: '#3b2416' },
-        eyes: { asset: 'eyes-01' },
-        top: { asset: 'top-06', color: '#e84393' },
-        bottom: { asset: 'bottom-01', color: '#2c3e50' },
-        shoes: { asset: 'shoes-01', color: '#ffffff' },
-      },
-    }),
-    lerQuarto: async () => quarto,
+    // O sorteado de sempre da plataforma de mentira (o mesmo a cada abertura).
+    lerAvatar: async () => ({ slots: drawAvatar(AVATAR_CATALOG, 'plataforma-falsa') }),
+    lerQuarto: async () => ({ ...quarto, house: structuredClone(casaMorada.house) }),
+    lerCasaMorada: async () => structuredClone(casaMorada),
+    salvarCasaMorada: async (pedido) => {
+      if (o.somenteLeitura) throw new Error('Acesso somente leitura')
+      if (pedido.revision !== casaMorada.revision)
+        throw Object.assign(new Error('A casa mudou'), { current: structuredClone(casaMorada) })
+      const parsed = MoradaHouseSchema.parse(pedido.house)
+      const errors = validateMoradaHouse(parsed)
+      if (
+        parsed.instances.some(
+          (instance) =>
+            instance.pieceId.startsWith('trophy/') && !casaMorada.owned.includes(instance.pieceId),
+        )
+      )
+        errors.push('Troféu não conquistado')
+      if (errors.length) throw new Error(errors.join(' '))
+      casaMorada = { house: parsed, revision: casaMorada.revision + 1, owned: casaMorada.owned }
+      if (o.persistir && typeof localStorage !== 'undefined')
+        localStorage.setItem(chaveCasaMorada, JSON.stringify(casaMorada))
+      return structuredClone(casaMorada)
+    },
     salvarQuarto: async (q) => {
       quarto = q
       return q
@@ -839,7 +879,10 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
               ...resto,
             ],
           }
-        return { situacao: 'quarto-pronto', quarto: structuredClone(quarto) }
+        return {
+          situacao: 'quarto-pronto',
+          quarto: { ...structuredClone(quarto), house: structuredClone(casaMorada.house) },
+        }
       }
       if (pedido.ferramenta === 'avatar') {
         if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }

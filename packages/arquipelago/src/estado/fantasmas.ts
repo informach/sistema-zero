@@ -1,4 +1,5 @@
 import {
+  AvatarDoFantasmaSchema,
   type Fantasma,
   type IrmaoParaOJogo,
   IrmaosParaOJogoSchema,
@@ -8,6 +9,7 @@ import {
   type Plataforma,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
+import { avatarDoPack } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { createStore } from 'zustand/vanilla'
 import { type ArmazemDosFantasmas, criarArmazemDosFantasmas } from '../sistemas/armazem-fantasmas'
 import { mesmosDados } from '../sistemas/conciliar-salvamento'
@@ -285,7 +287,14 @@ export function criarLojaDosFantasmas(
     ) {
       if (capturando !== percurso) return
       capturando = null
-      const f = gravador.terminar(percurso, tempoMs, p.x, p.y, p.z, p.direcao)
+      const trajeto = gravador.terminar(percurso, tempoMs, p.x, p.y, p.z, p.direcao)
+      // O fantasma leva a roupa de quem correu (o contorno é o dela): só as peças que o catálogo
+      // conhece, no formato do pack (um encaixe antigo, da versão 1 da plataforma, fica de fora).
+      const roupa = AvatarDoFantasmaSchema.safeParse(avatarDoPack(loja.getState().avatar.slots))
+      const f =
+        trajeto && roupa.success && Object.keys(roupa.data).length > 0
+          ? { ...trajeto, avatar: roupa.data }
+          : trajeto
       if (!f || melhorTempoDoPercurso(loja.getState().salvamento.percursos, percurso) !== tempoMs)
         return
       const g = geracao

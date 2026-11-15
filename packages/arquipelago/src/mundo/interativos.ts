@@ -8,6 +8,8 @@ import { useJogo } from '../estado/contexto'
 export interface Interativo {
   x: number
   z: number
+  /** Altura opcional para separar os andares da casa nativa. */
+  y?: number
   raio: number
   /** O texto do botão agora (`null` = nada a fazer aqui por enquanto). */
   rotulo(): string | null
@@ -36,10 +38,12 @@ export function maisPerto(
   z: number,
   submerso = false,
   planando = false,
+  y?: number,
 ): { id: string; rotulo: string } | null {
   let melhor: { id: string; rotulo: string; d: number } | null = null
   let fundo: { id: string; rotulo: string; d: number } | null = null
   for (const [id, it] of r) {
+    if (y !== undefined && it.y !== undefined && Math.abs(y - it.y) > 1.5) continue
     if (submerso && !it.submerso) continue
     if (planando && !it.noAr) continue
     const d = (it.x - x) ** 2 + (it.z - z) ** 2
@@ -65,6 +69,9 @@ export function useInterativo(id: string, it: Interativo): void {
       },
       get z() {
         return ultimo.current.z
+      },
+      get y() {
+        return ultimo.current.y
       },
       get raio() {
         return ultimo.current.raio

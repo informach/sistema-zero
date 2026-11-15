@@ -1,5 +1,4 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
 import {
   CATALOGO_DE_OBJETOS,
   planificacaoDoMolde,
@@ -12,6 +11,7 @@ import {
   encaixarCriacao,
   NOMES_DAS_FACES,
 } from '../src/mundo/carregar-aparencia'
+import { glbDeAutoria } from './ajuda-glb-autoria'
 
 test('encaixe usa unidades da grade, apoia no chão, mantém +z e não aumenta peças pequenas', () => {
   const raiz = new Mesh(new BoxGeometry(8, 16, 8), new MeshStandardMaterial())
@@ -38,9 +38,7 @@ test('criação que passa da caixa encolhe uniformemente', () => {
   ;(raiz.material as MeshStandardMaterial).dispose()
 })
 test('GLB real sem textura externa: recursos privados, descarte uma vez, reserva nas falhas', async () => {
-  const bytes = new Uint8Array(
-    readFileSync(new URL('../src/assets/objetos/casinha.glb', import.meta.url)),
-  )
+  const bytes = await glbDeAutoria()
   expect(triangulosDoGlb(bytes)).not.toBeNull()
   const ler = async () => ({ tipo: 'molda' as const, bytes })
   const molde = CATALOGO_DE_OBJETOS.casinha.molde
@@ -148,7 +146,9 @@ test('pintura recorta cada face e descarta só recursos próprios, inclusive ima
     expect(fechadas).toBe(1)
     expect(recursosDoCatalogo).toBe(0)
     // O GLB real junta as superfícies em primitivas de materiais, sem nós pinta*.
-    const arquivo = readFileSync(new URL('../src/assets/objetos/geladeira.glb', import.meta.url))
+    const arquivo = await glbDeAutoria(
+      Object.values(NOMES_DAS_FACES).filter((name) => name !== 'tela'),
+    )
     const real = (
       await new GLTFLoader().parseAsync(
         arquivo.buffer.slice(arquivo.byteOffset, arquivo.byteOffset + arquivo.byteLength),

@@ -36,6 +36,7 @@ import {
   lessonSectionProgress,
   masterySubmissions,
   missionClaims,
+  moradaHouses,
   parentReportPrefs,
   parentReportsSent,
   pensaExecutionEvents,
@@ -379,6 +380,7 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))
       await tx.delete(missionClaims).where(inArray(missionClaims.userId, userIds))
       await tx.delete(roomInventory).where(inArray(roomInventory.userId, userIds))
+      await tx.delete(moradaHouses).where(inArray(moradaHouses.userId, userIds))
       await tx
         .delete(profilePreferences)
         .where(

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
 import { CATALOGO_DE_OBJETOS, criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
+import { MORADA_CATALOG } from '@sistemazero/avatar-quarto/morada/catalog'
 import {
   devolverInstrumento,
   falaDaVolta,
@@ -137,8 +138,12 @@ describe('a arte que a banda usa', () => {
   test('o banda.glb tem os três instrumentos, e o pinguim tem o parado', () => {
     const arquivo = (pasta: string, nome: string) =>
       join(import.meta.dir, '..', 'src', 'assets', pasta, nome)
-    const banda = jsonDoGlb(arquivo('objetos', 'banda.glb'))
-    for (const id of INSTRUMENTOS) expect(banda.nodes.some((n) => n.name === id)).toBe(true)
+    for (const id of [
+      'moveis/brinquedos/xilofone_colorido',
+      'moveis/objetos/violao_pacote',
+      'moveis/objetos/brinquedo_tambor',
+    ])
+      expect(MORADA_CATALOG.pieces[id]?.colliders.length).toBeGreaterThan(0)
     const pinguim = jsonDoGlb(arquivo('bichos', 'pinguim.glb'))
     expect(pinguim.animations?.some((a) => a.name === 'parado')).toBe(true)
   })

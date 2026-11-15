@@ -260,19 +260,18 @@ function Camera({ caso }: { caso: Caso }) {
  * `?calcado=shoes-04`, `?calca=bottom-04` ou `?roupa=outfit-02`: as peças do avatar que mais
  * encostam nos patins (o calçado some com eles calçados).
  */
+/** `?calcado=`, `?calca=`, `?roupa=`: peças do pack (o id) nos encaixes do avatar. */
 function slotsDaUrl() {
   const q = new URLSearchParams(location.search)
-  const peca = (nome: string, cor: string) => {
-    const asset = q.get(nome)
-    return asset ? { asset, color: cor } : undefined
+  const slots: Record<string, string> = {}
+  for (const [param, encaixe] of [
+    ['calcado', 'calcado'],
+    ['calca', 'calca'],
+    ['roupa', 'roupa_inteira'],
+  ] as const) {
+    const peca = q.get(param)
+    if (peca) slots[encaixe] = peca
   }
-  const slots: Record<string, { asset: string; color: string }> = {}
-  const calcado = peca('calcado', '#2c3e50')
-  const calca = peca('calca', '#34495e')
-  const roupa = peca('roupa', '#e84393')
-  if (calcado) slots.shoes = calcado
-  if (calca) slots.bottom = calca
-  if (roupa) slots.outfit = roupa
   return slots
 }
 

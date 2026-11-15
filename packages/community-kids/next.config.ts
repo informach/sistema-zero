@@ -277,13 +277,6 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
       },
       {
-        // Assets do avatar 3D (~28MB de GLB/PNG) têm nomes estáveis de catálogo, mas NÃO são
-        // hashados. Um TTL curto reduz revalidações repetidas sem prender uma correção de arte por
-        // um ano no browser da criança. (Segurança + CSP estrita já vêm das regras acima.)
-        source: '/avatar3d/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
-      },
-      {
         // Every generated artwork URL includes its content hash.
         source: '/edisvg/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],

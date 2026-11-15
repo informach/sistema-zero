@@ -1,4 +1,5 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
+import { MoradaHouseSchema } from '@sistemazero/core/morada'
 import {
   StudioFreeRuntimeRequestSchema,
   StudioLessonRuntimeRequestSchema,
@@ -47,8 +48,13 @@ import type { MarkLessonCompleteService } from '../../../application/mark-lesson
 import type { ParentReportPrefsService } from '../../../application/parent-report/report-prefs.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
+import type { BuyMoradaPieceService } from '../../../application/room/buy-morada-piece.service'
 import type { BuyRoomItemService } from '../../../application/room/buy-room-item.service'
 import type { GetRoomService } from '../../../application/room/get-room.service'
+import {
+  MoradaConflictError,
+  type MoradaHouseService,
+} from '../../../application/room/morada-house.service'
 import type { SaveRoomService } from '../../../application/room/save-room.service'
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
@@ -62,7 +68,6 @@ import type { SubmitStudioProjectService } from '../../../application/submit-stu
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { ZappyHistoryService } from '../../../application/zappy/zappy-history.service'
 import type { ZappyKnowledgeService } from '../../../application/zappy/zappy-knowledge.service'
-import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
@@ -131,6 +136,8 @@ function idempotencyKey(headers: Record<string, string | undefined>): string | u
 }
 
 export interface MembersRoutesDeps {
+  moradaHouse?: MoradaHouseService
+  buyMoradaPiece?: BuyMoradaPieceService
   adultJourney?: AdultJourneyService
   studioAiAccount?: StudioAiAccountService
   studioAiUsage?: StudioAiUsageService
@@ -735,9 +742,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            { version: 2, style: body.style ?? AVATAR_CHAR_STYLE, slots: body.slots },
+            { slots: body.slots, ...(body.filter ? { filter: body.filter } : {}) },
           )
-          return { equipped: equipped.slots, style: equipped.style }
+          return {
+            equipped: equipped.slots,
+            style: equipped.style,
+            filter: equipped.filter ?? null,
+          }
         },
         { body: AvatarConfigBody, query: AudienceQuery },
       )
@@ -801,6 +812,78 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           body: t.Object({
             profileIds: t.Array(t.String({ format: 'uuid' }), { minItems: 1, maxItems: 50 }),
           }),
+        },
+      )
+      .get(
+        '/house',
+        async ({ headers, query, set }) => {
+          if (!deps.moradaHouse) {
+            set.status = 503
+            return { code: 'MORADA_UNAVAILABLE', message: 'Casa indisponível.' }
+          }
+          return deps.moradaHouse.read(resolveUserId(headers), query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
+      .put(
+        '/house',
+        async ({ headers, query, body, set }) => {
+          if (!deps.moradaHouse) {
+            set.status = 503
+            return { code: 'MORADA_UNAVAILABLE', message: 'Casa indisponível.' }
+          }
+          const parsed = MoradaHouseSchema.safeParse(body.house)
+          if (!parsed.success) {
+            set.status = 400
+            return {
+              code: 'MORADA_INVALID',
+              message: 'Casa inválida.',
+              issues: parsed.error.issues,
+            }
+          }
+          try {
+            return await deps.moradaHouse.save(
+              resolveUserId(headers),
+              resolveAccountId(headers),
+              query.audience ?? 'kids',
+              { house: parsed.data, revision: body.revision, scope: body.scope },
+            )
+          } catch (error) {
+            if (error instanceof MoradaConflictError) {
+              set.status = 409
+              return { code: error.code, message: error.message, current: error.current }
+            }
+            throw error
+          }
+        },
+        {
+          query: AudienceQuery,
+          body: t.Object({
+            house: t.Unknown(),
+            revision: t.Integer({ minimum: 0 }),
+            scope: t.Optional(t.Union([t.Literal('room'), t.Literal('house')])),
+          }),
+        },
+      )
+      // Compra uma peça PAGA da Morada com moedas (idempotente; sem saldo → 402). O id da peça
+      // tem barras (`moveis/sofas/…`): vai no corpo, não no caminho.
+      .post(
+        '/house/buy',
+        async ({ headers, query, body, set }) => {
+          if (!deps.buyMoradaPiece) {
+            set.status = 503
+            return { code: 'MORADA_UNAVAILABLE', message: 'Casa indisponível.' }
+          }
+          return deps.buyMoradaPiece.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            body.pieceId,
+            isPrivilegedActor(headers),
+          )
+        },
+        {
+          query: AudienceQuery,
+          body: t.Object({ pieceId: t.String({ minLength: 1, maxLength: 200 }) }),
         },
       )
       // ── Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil ────

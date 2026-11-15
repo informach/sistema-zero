@@ -21,6 +21,11 @@ import bpy  # noqa: E402
 from lib_personagens import HERE, Personagem, cos, formas_dos_olhos, juntar, sen, suave  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
+# ⚠️ A Íris foi montada com peças do avatar ANTIGO (o de antes do pack Cute Characters), que saíram
+# do repositório em 14/11/2026 (`community-kids/public/avatar3d`). O `iris.glb` pronto continua no
+# jogo; para gerá-la de novo, traga as peças do histórico do git:
+#   git checkout 1a9b57194 -- packages/community-kids/public/avatar3d/parts
+# e tire-as depois (o repositório não guarda mais o avatar antigo).
 PARTES = os.path.normpath(os.path.join(HERE, '..', '..', '..', 'community-kids', 'public', 'avatar3d', 'parts'))
 
 PALETA = {

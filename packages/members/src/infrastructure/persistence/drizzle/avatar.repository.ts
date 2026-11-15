@@ -105,7 +105,7 @@ export class DrizzleAvatarRepository implements AvatarRepository {
         accountId,
         audience,
         // A linha pode nascer pela FOTO (antes de equipar) → semeia a config default.
-        equipped: defaultAvatarConfig(),
+        equipped: defaultAvatarConfig(userId),
         photoUrl,
         createdAt: now,
         updatedAt: now,

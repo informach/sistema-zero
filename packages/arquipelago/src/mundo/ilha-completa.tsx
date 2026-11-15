@@ -22,6 +22,7 @@ import recifeGlb from '../assets/ilhas/recife.glb'
 import valeGlb from '../assets/ilhas/vale-dos-dinos.glb'
 import vilaDoceGlb from '../assets/ilhas/vila-doce.glb'
 import { useEstado, useJogo } from '../estado/contexto'
+import { CORPO } from '../sistemas/corpo'
 import {
   type EstadoDaIlha,
   esmaecer,
@@ -187,11 +188,11 @@ export function aplicarOpacidade(materiais: Material[], opacidade: number) {
 }
 
 /** Do centro do corpo à cabeça: é a cabeça que a câmera precisa ver. */
-const ALTURA_DA_CABECA = 0.5
-/** Do centro do corpo aos pés (quase: o pé encosta no chão). */
-const ALTURA_DOS_PES = 0.7
-/** Meia largura do avatar (os lados do corpo também contam). */
-const MEIA_LARGURA = 0.4
+const ALTURA_DA_CABECA = CORPO.doCentro.cabeca
+/** Do centro do corpo aos pés (quase: 20 cm acima da sola, para o raio não começar no chão). */
+const ALTURA_DOS_PES = CORPO.doCentroAoPe - 0.2
+/** Meia largura do avatar (os lados do corpo também contam): a cabeça, que é a parte mais larga. */
+const MEIA_LARGURA = CORPO.desenho.raioDaCabeca
 
 /** Quase inteira: liga o pontilhado (para compilar o shader dele) sem nada sumir na tela. */
 const QUASE_INTEIRA = 0.999

@@ -311,6 +311,8 @@ export interface WallColors {
 }
 
 export interface RoomState {
+  /** Projeção de leitura do cômodo Morada; clientes antigos não podem gravá-la. */
+  house?: import('@sistemazero/core/morada').MoradaHouse
   theme: string
   placedItems: PlacedItem[]
   /** Pet ativo (itemId de categoria `pet`) ou `null`. */

@@ -13,6 +13,7 @@ import {
   porcentoDoMapa,
   temMapa,
 } from '../sistemas/mapa-da-ilha'
+import { chegadaDaViagem, recusaDaViagem } from '../sistemas/viagem-rapida'
 import { JanelaDoPainel, useFecharPainel, useNoMenu } from './janela-do-painel'
 import { useVoz } from './voz'
 
@@ -147,6 +148,9 @@ export function PainelDoMapa() {
 
 function MapaAberto() {
   const fecharPainel = useFecharPainel()
+  const { loja, pedidos } = useJogo()
+  const correndo = useEstado((s) => s.corrida !== null)
+  const visitando = useEstado((s) => s.visita !== null)
   const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
   const visitas = useEstado((s) => s.salvamento.ilhasVisitadas)
@@ -166,6 +170,7 @@ function MapaAberto() {
       </p>
       <p>
         As ilhas preenchidas já receberam sua visita. O contorno colorido mostra onde você pode ir.
+        Para uma ilha já visitada, "Ir para lá" leva num instante.
       </p>
       <PapelDoMapa aqui={aqui} className="arq-mapa-papel" />
       <MapaDaIlhaAqui ilha={aqui} />
@@ -189,6 +194,30 @@ function MapaAberto() {
                 : ''}
               {i.aqui ? ' Você está nesta região.' : ''}
             </small>
+            {recusaDaViagem(i.ilha, {
+              posicao: jornada,
+              visitas,
+              aqui,
+              correndo,
+              visitando,
+            }) === null ? (
+              // Viagem rápida: só para ilha aberta e já visitada (a primeira ida é pela ponte).
+              <button
+                type="button"
+                className="arq-botao arq-mapa-ir"
+                aria-label={`Ir para ${i.ilha.nome}`}
+                onClick={() => {
+                  const chegada = chegadaDaViagem(i.ilha)
+                  if (!chegada) return
+                  pedidos.teleporte = { x: chegada.x, y: chegada.y, z: chegada.z }
+                  pedidos.olharPara = chegada.olhar
+                  fecharPainel()
+                  loja.getState().dizer(`Chegamos: ${i.ilha.nome}!`)
+                }}
+              >
+                Ir para lá
+              </button>
+            ) : null}
           </li>
         ))}
       </ul>

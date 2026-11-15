@@ -202,6 +202,7 @@
       "name": "@sistemazero/arquipelago-contracts",
       "version": "0.1.0",
       "dependencies": {
+        "@sistemazero/core": "workspace:*",
         "zod": "4.3.6",
       },
       "devDependencies": {
@@ -236,6 +237,7 @@
       "dependencies": {
         "@react-three/drei": "^10",
         "@react-three/fiber": "^9",
+        "@sistemazero/core": "workspace:*",
         "three": "^0.184.0",
       },
       "devDependencies": {

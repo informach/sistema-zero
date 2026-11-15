@@ -1,14 +1,21 @@
 import {
   AvatarPartFestaError,
   AvatarPartFreeError,
+  AvatarPartInSetError,
   AvatarPartNotFoundError,
 } from '../../domain/avatar/avatar.errors'
-import { AVATAR3D_PARTS_BY_ID } from '../../domain/avatar/avatar3d-catalog'
+import { avatarItem, isOffShelf } from '../../domain/avatar/avatar3d-catalog'
 import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+
+/**
+ * Prefixo da chave de compra no extrato. O avatar antigo usava `avatar-buy:`, e é por esse prefixo
+ * que a troca devolve as moedas das peças antigas.
+ */
+export const AVATAR_BUY_KEY_PREFIX = 'avatar-buy-v3:'
 
 export interface BuyAvatarPartResult {
   /** `true` = já possuía (nenhuma cobrança). */
@@ -39,10 +46,12 @@ export class BuyAvatarPartService {
     partId: string,
     privileged = false,
   ): Promise<BuyAvatarPartResult> {
-    const part = AVATAR3D_PARTS_BY_ID.get(partId)
-    if (!part) throw new AvatarPartNotFoundError()
-    if (part.tier === 'free') throw new AvatarPartFreeError()
-    // Roupa da festa (B16): só a festa do Arquipélago concede; não há compra.
+    const part = avatarItem(partId)
+    // Fora da loja (rascunho da arte, peça aposentada ou, no Kids, só do adulto) é como se não
+    // existisse para a compra.
+    if (!part || isOffShelf(partId, audience)) throw new AvatarPartNotFoundError()
+    if (part.tier === 'set') throw new AvatarPartInSetError()
+    if (part.tier === 'free' || part.tier === 'auto') throw new AvatarPartFreeError()
     if (part.tier === 'festa') throw new AvatarPartFestaError()
 
     // Já possui? → no-op, sem cobrar (a corrida de 2 compras converge no ledger abaixo).
@@ -65,7 +74,7 @@ export class BuyAvatarPartService {
       audience,
       amount: privileged ? 0 : part.price,
       reason: 'spend_cosmetic',
-      idempotencyKey: `avatar-buy:${userId}:${partId}`,
+      idempotencyKey: `${AVATAR_BUY_KEY_PREFIX}${userId}:${partId}`,
       now,
       grantInventory: { scope: 'avatar', itemId: partId },
     })

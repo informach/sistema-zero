@@ -1,217 +1,49 @@
-import {
-  CATALOGO_DE_OBJETOS,
-  COMODOS_DA_IRIS,
-  type ComodoDaIris,
-  OBJETOS_DA_CASA,
-  type PisoDaCasa,
-  type PisoDoQuintal,
-} from '@sistemazero/arquipelago-contracts'
-import { useState } from 'react'
-import {
-  CAMERA_DE_OBRA,
-  type Ferramenta,
-  lojaDaConstrucao,
-  PAINEL_DE_CONSTRUIR,
-  podeConstruir,
-  type TipoDeJanela,
-  useConstrucao,
-} from '../estado/construcao'
+import { useStore } from 'zustand'
 import { useEstado, useJogo } from '../estado/contexto'
-import { useFesta } from '../estado/festas'
-import { lojaDaObraEstendida, useObraEstendida } from '../estado/obra-estendida'
-import { arrumarOQuarto } from '../estado/quarto'
-import {
-  chaveDoComodo,
-  comodoDaFerramenta,
-  comodoDaJanela,
-  comodoDoPiso,
-  liberado,
-  quantasChaves,
-  TEXTOS_DAS_CHAVES,
-} from '../sistemas/chaves-da-casa'
-import { podeTerAndar } from '../sistemas/construcao/andar'
-import {
-  type CategoriaDoMovel,
-  categoriasDisponiveis,
-  DADOS_DO_MOVEL,
-  ehDeParede,
-  moveisDoCatalogo,
-} from '../sistemas/construcao/moveis'
-import { podeMoldarOTerreno } from '../sistemas/construcao/terreno'
-import { PainelDeAconchego } from './aconchego'
+import { casaMoradaStore, PAINEL_DA_MORADA, podeConstruirMorada } from '../estado/morada'
+import { PAINEL_DOS_CONVIDADOS } from '../sistemas/visitas-dos-moradores'
 import { Icone } from './icones'
-import {
-  MINIATURA_DA_JANELA,
-  MINIATURA_DO_CAMINHO,
-  MINIATURA_DO_MOVEL,
-  MINIATURA_DO_OBJETO,
-  MINIATURA_DO_PISO,
-} from './miniaturas'
 
-const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; dica: string }> = [
-  {
-    id: 'parede',
-    nome: 'Parede',
-    emoji: '🧱',
-    dica: 'Arraste no chão para esticar a parede. Paredes fechadas viram um cômodo.',
-  },
-  {
-    id: 'porta',
-    nome: 'Porta',
-    emoji: '🚪',
-    dica: 'Toque numa parede para pôr a porta. Toque na entrada para levar ela a outro lugar.',
-  },
-  { id: 'janela', nome: 'Janela', emoji: '🪟', dica: 'Toque numa parede para pôr a janela.' },
-  { id: 'piso', nome: 'Piso', emoji: '🟫', dica: 'Toque num cômodo para trocar o piso dele.' },
-  {
-    id: 'cerca',
-    nome: 'Cerca',
-    emoji: '🪵',
-    dica: 'Arraste no quintal para esticar a cerca, como a parede.',
-  },
-  {
-    id: 'caminho',
-    nome: 'Caminho',
-    emoji: '🪨',
-    dica: 'Arraste no quintal para fazer o caminho, célula por célula.',
-  },
-  {
-    id: 'objeto',
-    nome: 'Objetos',
-    emoji: '📦',
-    dica: 'Escolha um objeto e toque onde ele vai. A geladeira fica num cômodo; a casinha, no quintal.',
-  },
-  {
-    id: 'movel',
-    nome: 'Móveis',
-    emoji: '🛋️',
-    dica: 'Escolha um móvel e toque num cômodo novo. Os de parede vão na parede mais perto do toque.',
-  },
-  {
-    id: 'canteiro',
-    nome: 'Canteiro',
-    emoji: '🌱',
-    dica: 'Toque no quintal para pôr um canteiro. Ele planta e rega como a horta.',
-  },
-  {
-    id: 'terreno',
-    nome: 'Terreno',
-    emoji: '⛰️',
-    dica: 'Toque ou arraste no quintal para subir ou descer o chão, meio metro por vez. A casa, os caminhos e o que está posto ficam no plano.',
-  },
-  {
-    id: 'escada',
-    nome: 'Escada',
-    emoji: '🪜',
-    dica: 'Toque num cômodo onde vai o pé da escada do andar de cima. O Girar muda para onde ela sobe.',
-  },
-  {
-    id: 'apagar',
-    nome: 'Apagar',
-    emoji: '🧽',
-    dica: 'Arraste por cima de paredes e cercas para apagar. Um toque tira o objeto, o móvel, a porta, a janela, o caminho ou o canteiro vazio.',
-  },
-  {
-    id: 'olhar',
-    nome: 'Olhar',
-    emoji: '✋',
-    dica: 'Toque num cômodo para ver o aconchego. Arraste para andar pela obra; Q e E giram.',
-  },
-]
-
-/** O que vale lá em cima (o resto é do térreo e do quintal). */
-const FERRAMENTAS_DE_CIMA: ReadonlySet<Ferramenta> = new Set([
-  // Os objetos com função também vão lá em cima (lacunas, 01/11/2026).
-  'objeto',
-  'parede',
-  'porta',
-  'janela',
-  'piso',
-  'movel',
-  'apagar',
-  'olhar',
-])
-
-const JANELAS: ReadonlyArray<{ id: TipoDeJanela; nome: string }> = [
-  { id: 'janela-grande', nome: 'Grande' },
-  { id: 'janela-arco', nome: 'Em arco' },
-  { id: 'janela-redonda', nome: 'Redonda' },
-]
-
-/** Uma lista vazia só (o seletor da loja não pode criar uma nova a cada leitura). */
-const NENHUM_OBJETO: readonly { id: string }[] = []
-
-const CAMINHOS: ReadonlyArray<{ id: PisoDoQuintal; nome: string }> = [
-  { id: 'pedra', nome: 'Pedra' },
-  { id: 'grama', nome: 'Grama' },
-]
-
-const NOME_DA_CATEGORIA: Readonly<Record<CategoriaDoMovel, string>> = {
-  cozinha: 'Cozinha',
-  sala: 'Sala',
-  banheiro: 'Banheiro',
-  cafe: 'Café e feira',
-  festa: 'Festa',
-}
-
-const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
-  { id: 'tabua', nome: 'Tábua' },
-  { id: 'ladrilho', nome: 'Ladrilho' },
-  { id: 'azulejo', nome: 'Azulejo' },
-]
-
-/** Uma escolha da ferramenta (tipo de janela, piso, caminho ou objeto): o desenho e o nome embaixo. */
-function Escolha({
-  nome,
-  imagem,
-  escolhida,
-  nota,
-  trancada = false,
-  aoEscolher,
-}: {
-  nome: string
-  imagem: string
-  escolhida: boolean
-  nota?: string
-  /** Trancada pela chave de um cômodo (N11): continua tocável, e o Zappy diz qual chave falta. */
-  trancada?: boolean
-  aoEscolher: () => void
-}) {
-  return (
-    <button
-      type="button"
-      className={`arq-obra-escolha${trancada ? ' trancada' : ''}`}
-      aria-pressed={escolhida}
-      aria-disabled={trancada || undefined}
-      onClick={aoEscolher}
-    >
-      <img src={imagem} alt="" width={160} height={160} draggable={false} />
-      <b>{nome}</b>
-      {nota ? <small>{nota}</small> : null}
-    </button>
-  )
-}
-
-/**
- * Os modos Viver e Construir (proposta: "Viver Construir Mapa"; o Mapa é de outra fase). Aparece
- * depois que a porta nova abriu, quando nada mais está por cima do jogo.
- */
+/** Os modos continuam no cantinho original da HUD; só a fonte da obra mudou. */
 export function ModosDoJogo() {
-  const { loja } = useJogo()
-  const construcao = lojaDaConstrucao(loja)
-  const permitido = useEstado(podeConstruir)
-  const painel = useEstado((s) => s.painelAberto)
-  const noBarco = useEstado((s) => s.modo === 'barco' || s.modo === 'balao')
-  if (!permitido || noBarco) return null
-  const construindo = painel === PAINEL_DE_CONSTRUIR
+  const { loja, plataforma } = useJogo()
+  const casa = casaMoradaStore(loja, plataforma)
+  const open = useStore(casa, (s) => s.open)
+  const editing = useStore(casa, (s) => s.editing)
+  const blocked = useEstado(
+    (s) =>
+      s.menuAberto ||
+      s.ferramentaAberta ||
+      s.tempoAcabou ||
+      s.tempoPausado ||
+      s.tempoSincronizando ||
+      (s.painelAberto !== null && s.painelAberto !== PAINEL_DA_MORADA) ||
+      s.modo === 'barco' ||
+      s.modo === 'balao',
+  )
+  const allowed = useEstado(podeConstruirMorada)
+  if (blocked) return null
+  if (!allowed)
+    return open ? (
+      <fieldset className="arq-modos">
+        <legend className="arq-sr">Sua casa</legend>
+        <button
+          type="button"
+          className="arq-botao leve"
+          onClick={() => void casa.getState().close()}
+        >
+          Voltar à ilha
+        </button>
+      </fieldset>
+    ) : null
   return (
     <fieldset className="arq-modos">
       <legend className="arq-sr">Modo do jogo</legend>
       <button
         type="button"
         className="arq-botao leve"
-        aria-pressed={!construindo}
-        onClick={() => construcao.getState().fechar()}
+        aria-pressed={!editing}
+        onClick={() => (open ? casa.getState().setEditing(false) : void casa.getState().enter())}
       >
         <Icone nome="casa" tamanho={18} />
         Viver
@@ -219,388 +51,35 @@ export function ModosDoJogo() {
       <button
         type="button"
         className="arq-botao leve"
-        aria-pressed={construindo}
+        aria-pressed={editing}
         data-modo="construir"
-        onClick={() => {
-          if (!construindo) construcao.getState().abrir()
-        }}
+        onClick={() => (open ? casa.getState().setEditing(true) : void casa.getState().enter(true))}
       >
         <Icone nome="martelo" tamanho={18} />
         Construir
       </button>
+      {open && !editing ? (
+        <button
+          type="button"
+          className="arq-botao leve"
+          onClick={() => loja.getState().abrirPainel(PAINEL_DOS_CONVIDADOS)}
+        >
+          Moradores
+        </button>
+      ) : null}
+      {open ? (
+        <button
+          type="button"
+          className="arq-botao leve"
+          onClick={() => void casa.getState().close()}
+        >
+          Voltar à ilha
+        </button>
+      ) : null}
     </fieldset>
   )
 }
-
-/** A dica da Porta com a entrada escolhida (31/10/2026). */
-export const DICA_DA_ENTRADA_ESCOLHIDA =
-  'Toque numa parede de fora para levar a entrada e a varanda.'
-
-/** A barra do Construir: as ferramentas, as escolhas de janela e piso, a câmera e o Desfazer. */
 export function BarraDeConstruir() {
-  const { loja, plataforma } = useJogo()
-  const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
-  const construcao = lojaDaConstrucao(loja)
-  const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
-  const atual = useConstrucao(construcao, (s) => s.ferramenta)
-  const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
-  // Passando por cima de onde não dá, a linha de baixo diz por quê (no toque, o Zappy já diz).
-  const motivo = useConstrucao(construcao, (s) => s.motivoDaPrevia)
-  // Com a porta de entrada escolhida, a dica diz o próximo passo.
-  const entradaEscolhida = useConstrucao(
-    construcao,
-    (s) => s.entradaSelecionada && s.ferramenta === 'porta',
-  )
-  const janela = useConstrucao(construcao, (s) => s.janela)
-  const piso = useConstrucao(construcao, (s) => s.piso)
-  const caminho = useConstrucao(construcao, (s) => s.caminho)
-  const objeto = useConstrucao(construcao, (s) => s.objeto)
-  const movel = useConstrucao(construcao, (s) => s.movel)
-  const [escolhida, setCategoria] = useState<CategoriaDoMovel>('cozinha')
-  const jornada = useEstado((s) => s.jornada)
-  const festa = useFesta()
-  const categorias = categoriasDisponiveis(jornada, festa)
-  // A festa acabou com a aba dela aberta: volta para a cozinha.
-  const categoria = categorias.includes(escolhida) ? escolhida : 'cozinha'
-  const projetos = useEstado((s) => s.salvamento.projetos)
-  const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
-  const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
-  // O Terreno e o andar de cima têm o Desfazer deles (não são a obra do salvamento).
-  const podeDesfazer = useConstrucao(construcao, (s) =>
-    s.ferramenta === 'terreno'
-      ? s.antesDoTerreno.length > 0
-      : s.camada === 'cima' || s.ferramenta === 'escada'
-        ? s.antesDoAndar.length > 0
-        : s.antes.length > 0,
-  )
-  const camada = useConstrucao(construcao, (s) => s.camada)
-  const extensa = lojaDaObraEstendida(loja, plataforma)
-  const temEscada = useObraEstendida(extensa, (o) => !!o.obra?.andar?.escada)
-  // A obra deste aparelho que perdeu para outro aparelho fica guardada (N1): voltar ou descartar.
-  const temCopia = useObraEstendida(extensa, (o) => o.recuperacao !== null)
-  const moldar = useConstrucao(construcao, (s) => s.moldar)
-  // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
-  const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
-  // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
-  const limitesDaCabana = useConstrucao(construcao, (s) =>
-    s.onde !== 'casa' ? (s.cabana?.lote.limites ?? null) : null,
-  )
-  const chaves = useEstado((s) => s.salvamento.chaves)
-  const nota = (comodo: ComodoDaIris | null) =>
-    liberado(chaves, comodo) || !comodo ? undefined : `🔑 ${chaveDoComodo(comodo).nome}`
-  const ferramentas = naCabana
-    ? FERRAMENTAS.filter(
-        (f) =>
-          f.id !== 'canteiro' &&
-          f.id !== 'objeto' &&
-          f.id !== 'movel' &&
-          !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
-          !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
-      )
-    : camada === 'cima'
-      ? FERRAMENTAS.filter((f) => FERRAMENTAS_DE_CIMA.has(f.id))
-      : FERRAMENTAS.filter(
-          (f) =>
-            (f.id !== 'terreno' || podeMoldarOTerreno(jornada)) &&
-            (f.id !== 'escada' || podeTerAndar(jornada)),
-        )
-  // A troca de andar aparece com a escada posta (na casa).
-  const comAndar = !naCabana && temEscada && podeTerAndar(jornada)
-  if (!aberto) return null
-  const s = () => construcao.getState()
-  const dica =
-    motivo ??
-    (entradaEscolhida ? DICA_DA_ENTRADA_ESCOLHIDA : FERRAMENTAS.find((f) => f.id === atual)?.dica)
-  return (
-    <section className="arq-obra" aria-label="Ferramentas de construir">
-      {aconchegoAberto && <PainelDeAconchego />}
-      <div className="arq-obra-dica-linha">
-        <p className={`arq-obra-dica${motivo ? ' recusa' : ''}`} aria-live="polite">
-          {dica}
-        </p>
-        {/* Na mesma linha da dica, para a barra não crescer (N11). */}
-        {quantasChaves(chaves) < COMODOS_DA_IRIS.length ? (
-          <p className="arq-obra-chaves">{TEXTOS_DAS_CHAVES.contagem(quantasChaves(chaves))}</p>
-        ) : null}
-      </div>
-      {temCopia ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">A obra deste aparelho</legend>
-          <p className="arq-obra-dica">
-            A obra mudou em outro aparelho. A deste aparelho ficou guardada.
-          </p>
-          <button
-            type="button"
-            className="arq-botao leve"
-            onClick={() => extensa.getState().recuperar()}
-          >
-            Voltar à deste aparelho
-          </button>
-          <button
-            type="button"
-            className="arq-botao leve"
-            onClick={() => extensa.getState().descartarRecuperacao()}
-          >
-            Ficar com a nova
-          </button>
-        </fieldset>
-      ) : null}
-      {comAndar ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Andar da casa</legend>
-          <button
-            type="button"
-            className="arq-botao leve"
-            aria-pressed={camada === 'chao'}
-            onClick={() => s().escolherCamada('chao')}
-          >
-            Térreo
-          </button>
-          <button
-            type="button"
-            className="arq-botao leve"
-            aria-pressed={camada === 'cima'}
-            onClick={() => s().escolherCamada('cima')}
-          >
-            Andar de cima
-          </button>
-        </fieldset>
-      ) : null}
-      {atual === 'escada' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Rumo da escada</legend>
-          <button type="button" className="arq-botao leve" onClick={() => s().girarObjeto()}>
-            ⟳ Girar
-          </button>
-        </fieldset>
-      ) : null}
-      {atual === 'janela' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Tipo de janela</legend>
-          {JANELAS.map((j) => (
-            <Escolha
-              key={j.id}
-              nome={j.nome}
-              imagem={MINIATURA_DA_JANELA[j.id]}
-              escolhida={janela === j.id}
-              nota={nota(comodoDaJanela(j.id))}
-              trancada={!liberado(chaves, comodoDaJanela(j.id))}
-              aoEscolher={() => s().escolherJanela(j.id)}
-            />
-          ))}
-        </fieldset>
-      ) : null}
-      {atual === 'piso' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Tipo de piso</legend>
-          {PISOS.map((p) => (
-            <Escolha
-              key={p.id}
-              nome={p.nome}
-              imagem={MINIATURA_DO_PISO[p.id]}
-              escolhida={piso === p.id}
-              nota={nota(comodoDoPiso(p.id))}
-              trancada={!liberado(chaves, comodoDoPiso(p.id))}
-              aoEscolher={() => s().escolherPiso(p.id)}
-            />
-          ))}
-        </fieldset>
-      ) : null}
-      {atual === 'objeto' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Objeto</legend>
-          {ganhos.length === 0 ? (
-            <p className="arq-obra-dica">
-              Os objetos chegam pelos pedidos e pelos desafios. Ainda não chegou nenhum.
-            </p>
-          ) : (
-            ganhos.map((id) => (
-              <Escolha
-                key={id}
-                nome={CATALOGO_DE_OBJETOS[id].molde.nome}
-                imagem={MINIATURA_DO_OBJETO[id]}
-                escolhida={objeto === id}
-                nota={postos.some((o) => o.id === id) ? 'já posta' : undefined}
-                aoEscolher={() => s().escolherObjeto(id)}
-              />
-            ))
-          )}
-          {ganhos.length > 0 ? (
-            <button type="button" className="arq-botao leve" onClick={() => s().girarObjeto()}>
-              ⟳ Girar
-            </button>
-          ) : null}
-        </fieldset>
-      ) : null}
-      {atual === 'movel' ? (
-        <>
-          <fieldset className="arq-obra-escolhas arq-obra-categorias">
-            <legend className="arq-sr">Cômodo dos móveis</legend>
-            {categorias.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className="arq-botao leve"
-                aria-pressed={categoria === c}
-                onClick={() => setCategoria(c)}
-              >
-                {NOME_DA_CATEGORIA[c]}
-              </button>
-            ))}
-            <button
-              type="button"
-              className="arq-botao leve arq-obra-girar"
-              onClick={() => s().girarObjeto()}
-            >
-              ⟳ Girar
-            </button>
-            {/* O quarto é o da plataforma (A10): arrumar abre o editor do Meu Quarto. Fica no térreo. */}
-            {camada === 'cima' ? null : (
-              <button
-                type="button"
-                className="arq-botao leve"
-                disabled={ferramentaAberta}
-                onClick={() => void arrumarOQuarto(loja, plataforma)}
-              >
-                🛏️ Meu quarto
-              </button>
-            )}
-          </fieldset>
-          {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}
-          <fieldset className="arq-obra-escolhas rolar">
-            <legend className="arq-sr">Móvel</legend>
-            {moveisDoCatalogo(categoria, festa).map((id) => (
-              <Escolha
-                key={id}
-                nome={DADOS_DO_MOVEL[id].nome}
-                imagem={MINIATURA_DO_MOVEL[id]}
-                escolhida={movel === id}
-                nota={ehDeParede(id) ? 'na parede' : undefined}
-                aoEscolher={() => s().escolherMovel(id)}
-              />
-            ))}
-          </fieldset>
-        </>
-      ) : null}
-      {atual === 'terreno' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Subir ou descer o chão</legend>
-          <button
-            type="button"
-            className="arq-botao leve"
-            aria-pressed={moldar === 1}
-            onClick={() => s().escolherMoldar(1)}
-          >
-            ⬆ Subir
-          </button>
-          <button
-            type="button"
-            className="arq-botao leve"
-            aria-pressed={moldar === -1}
-            onClick={() => s().escolherMoldar(-1)}
-          >
-            ⬇ Descer
-          </button>
-        </fieldset>
-      ) : null}
-      {atual === 'caminho' ? (
-        <fieldset className="arq-obra-escolhas">
-          <legend className="arq-sr">Tipo de caminho</legend>
-          {CAMINHOS.map((c) => (
-            <Escolha
-              key={c.id}
-              nome={c.nome}
-              imagem={MINIATURA_DO_CAMINHO[c.id]}
-              escolhida={caminho === c.id}
-              aoEscolher={() => s().escolherCaminho(c.id)}
-            />
-          ))}
-        </fieldset>
-      ) : null}
-      <fieldset className="arq-obra-ferramentas">
-        <legend className="arq-sr">Ferramenta</legend>
-        {ferramentas.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            className={`arq-ferramenta${liberado(chaves, comodoDaFerramenta(f.id)) ? '' : ' trancada'}`}
-            data-ferramenta={f.id}
-            aria-pressed={atual === f.id}
-            aria-disabled={!liberado(chaves, comodoDaFerramenta(f.id)) || undefined}
-            onClick={() => s().escolher(f.id)}
-          >
-            <span className="arq-ferramenta-icone" aria-hidden="true">
-              {liberado(chaves, comodoDaFerramenta(f.id)) ? f.emoji : '🔑'}
-            </span>
-            <b>{f.nome}</b>
-          </button>
-        ))}
-      </fieldset>
-      <div className="arq-obra-acoes">
-        <button
-          type="button"
-          className="arq-botao leve"
-          aria-expanded={aconchegoAberto}
-          aria-controls="arq-aconchego"
-          onClick={() => {
-            s().escolher('olhar')
-            s().mostrarAconchego(!aconchegoAberto)
-          }}
-        >
-          ☆ Aconchego
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          disabled={!podeDesfazer}
-          onClick={() => s().desfazer()}
-        >
-          ↶ Desfazer
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          aria-label="Girar para a esquerda"
-          onClick={() => s().moverCamera({ giro: s().camera.giro + CAMERA_DE_OBRA.passoDoGiro })}
-        >
-          ⟲
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          aria-label="Girar para a direita"
-          onClick={() => s().moverCamera({ giro: s().camera.giro - CAMERA_DE_OBRA.passoDoGiro })}
-        >
-          ⟳
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          aria-label="Aproximar"
-          onClick={() =>
-            s().moverCamera({
-              distancia: Math.max(CAMERA_DE_OBRA.distanciaMinima, s().camera.distancia - 4),
-            })
-          }
-        >
-          ＋
-        </button>
-        <button
-          type="button"
-          className="arq-botao leve"
-          aria-label="Afastar"
-          onClick={() =>
-            s().moverCamera({
-              distancia: Math.min(CAMERA_DE_OBRA.distanciaMaxima, s().camera.distancia + 4),
-            })
-          }
-        >
-          －
-        </button>
-        <button type="button" className="arq-botao arq-obra-pronto" onClick={() => s().fechar()}>
-          Pronto
-        </button>
-      </div>
-    </section>
-  )
+  return null
 }
+export const DICA_DA_ENTRADA_ESCOLHIDA = 'A entrada é feita com as portas da biblioteca Morada.'

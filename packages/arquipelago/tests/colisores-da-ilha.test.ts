@@ -25,6 +25,7 @@ import {
 } from '../src/mundo/colisores-da-ilha'
 import { prepararIlha } from '../src/mundo/ilha-completa'
 import { BORDA_DOS_COLISORES } from '../src/mundo/medidas'
+import { CORPO } from '../src/sistemas/corpo'
 
 const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'bosque.glb')
 
@@ -48,10 +49,10 @@ function grupo(nome: string): string {
   return /^\d+$/.test(partes.at(-1) ?? '') ? partes.slice(0, -1).join('-') : nome
 }
 
-// O personagem: cápsula de raio 0,35, meia altura 0,55; sobe degrau de até 0,45 (autostep).
-const RAIO_DO_CORPO = 0.35
-const CENTRO_DO_CORPO = 0.9
-const DEGRAU = 0.45
+// O personagem: a cápsula do jogo (`CORPO`); sobe degrau de até 0,45 (autostep).
+const RAIO_DO_CORPO = CORPO.raio
+const CENTRO_DO_CORPO = CORPO.doCentroAoPe
+const DEGRAU = CORPO.degrau
 /** Rampa que o personagem sobe com folga (o controlador para em 52°). */
 const RAMPA_MAXIMA = (40 * Math.PI) / 180
 

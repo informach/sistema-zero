@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  CasaMoradaGuardadaSchema,
   type ClubeDoJogo,
   type DesafioAberto,
   EnvioAoClubeSchema,
@@ -278,8 +279,9 @@ function corpoJson(metodo: string, corpo: unknown): RequestInit {
  */
 export function criarPlataformaDoArquipelago(opcoes: {
   /**
-   * A versão negociada com o jogo (A35). O host monta a porta dessa versão: hoje só existe a 1;
-   * quando vier a 2, o que mudar nela fica atrás desta versão e o jogo v1 recebe a porta v1.
+   * A versão negociada com o jogo (A35). O host monta a porta dessa versão: na 2 o avatar é o do
+   * pack (encaixe → peça); um jogo da versão 1 recebe o avatar vazio (`{slots: {}}`), que ele
+   * completa com o avatar de partida dele, em vez de peças que ele não sabe ler.
    */
   versao?: number
   publico: PublicoJogo
@@ -306,16 +308,38 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     async lerAvatar() {
       const r = await json('/api/members/avatar')
-      const slots = (r.corpo as { equipped?: Record<string, { asset: string; color?: string }> })
-        ?.equipped
+      // O avatar do pack: encaixe → peça (o jogo confere cada uma no catálogo).
+      const slots = (r.corpo as { equipped?: Record<string, string> } | null)?.equipped
       if (r.status !== 200 || !slots) throw new Error(`avatar (${r.status})`)
-      return { slots }
+      // Jogo da versão 1 (avatar antigo): vazio, ele completa com o avatar de partida dele.
+      return (opcoes.versao ?? VERSAO_CONTRATO_PLATAFORMA) < 2 ? { slots: {} } : { slots }
     },
     async lerQuarto() {
       const r = await json('/api/members/room')
       const quarto = QuartoSchema.safeParse((r.corpo as { state?: unknown } | null)?.state)
       if (r.status !== 200 || !quarto.success) throw new Error(`quarto (${r.status})`)
       return quarto.data
+    },
+    async lerCasaMorada() {
+      const response = await json('/api/members/house')
+      if (response.status !== 200) throw new Error(`A casa não abriu (${response.status}).`)
+      return CasaMoradaGuardadaSchema.parse(response.corpo)
+    },
+    async salvarCasaMorada(pedido) {
+      const response = await json('/api/members/house', corpoJson('PUT', pedido))
+      if (response.status === 409) {
+        const current =
+          typeof response.corpo === 'object' &&
+          response.corpo !== null &&
+          'current' in response.corpo
+            ? CasaMoradaGuardadaSchema.safeParse(response.corpo.current)
+            : null
+        const error = new Error('A casa mudou em outro lugar.')
+        if (current?.success) Object.assign(error, { current: current.data })
+        throw error
+      }
+      if (response.status !== 200) throw new Error(`A casa não foi gravada (${response.status}).`)
+      return CasaMoradaGuardadaSchema.parse(response.corpo)
     },
     async salvarQuarto(quarto) {
       const r = await json('/api/members/room', corpoJson('PUT', quarto))
@@ -403,6 +427,8 @@ export function ArquipelagoHost(props: {
     )
   }
   const abrindo = useRef(false)
+  /** A versão combinada com o jogo (a mesma porta para o avatar que volta do "vestir"). */
+  const versaoDoJogo = useRef<number | undefined>(undefined)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
 
@@ -540,6 +566,7 @@ export function ArquipelagoHost(props: {
         setEstado('indisponivel')
         return
       }
+      versaoDoJogo.current = versao
       montagem = modulo.montarArquipelago(
         elemento.current,
         criarPlataformaDoArquipelago({
@@ -642,6 +669,7 @@ export function ArquipelagoHost(props: {
                   const acesso = await json(`${BASE}/ferramentas/avatar`)
                   if (!pertenceAoPerfil(acesso.corpo, id)) throw Error('O perfil ativo mudou')
                   const p = criarPlataformaDoArquipelago({
+                    versao: versaoDoJogo.current,
                     publico,
                     perfil: { id, primeiroNome },
                     voltarPara,

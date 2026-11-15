@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { Matrix4, type Object3D, Quaternion, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
+import { CORPO } from '../src/sistemas/corpo'
 
 /**
  * A casa na árvore do Bosque com os mecanismos (física viva, etapa 5), contra o `bosque.glb`: a
@@ -12,9 +13,9 @@ import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha
  * fechar o caminho em volta do tronco. Tudo no referencial do modelo.
  */
 const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'bosque.glb')
-// O personagem: cápsula de raio 0,35 com o meio 0,9 acima dos pés (como em colisores-da-ilha).
-const RAIO = 0.35
-const CENTRO = 0.9
+// O personagem: a cápsula do jogo (`CORPO`, como em colisores-da-ilha).
+const RAIO = CORPO.raio
+const CENTRO = CORPO.doCentroAoPe
 const FOLHA = 1.1
 const CAIXOTE = 0.25
 

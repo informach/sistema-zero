@@ -23,6 +23,8 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  MORADA_INVALID: 400,
+  MORADA_CLIENT_OUTDATED: 409,
   COURSE_PUBLICATION_CONFLICT: 409,
   COURSE_PUBLICATION_PEER_UNAVAILABLE: 424,
   COURSE_PUBLICATION_LEASE_LOST: 409,
@@ -92,6 +94,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // Avatar / carteira Zappy.
   AVATAR_INVALID: 400,
   AVATAR_PART_FREE: 400,
+  AVATAR_PART_IN_SET: 400,
   AVATAR_PART_FESTA: 409,
   AVATAR_PART_NOT_OWNED: 403,
   AVATAR_PART_NOT_FOUND: 404,

@@ -4,13 +4,16 @@
  * Convenção de giro (a mesma do avatar e do modelo, que nasce virado para +z): giro `d` olha para
  * `(sin d, cos d)` no chão. A direita de quem olha para `d` fica em `(-cos d, sin d)`.
  */
+import { CORPO } from './corpo'
 
-/** Distância para a direita do personagem (no ombro, sem ficar na frente do rosto). */
-export const LADO_DO_ZAPPY = 0.75
+/** O raio do Zappy (a bola do corpo dele, com as asas fechadas). */
+const RAIO_DO_ZAPPY = 0.2
+/** Distância para a direita do personagem: fora da cabeça (que é a parte mais larga), sem ficar na frente do rosto. */
+export const LADO_DO_ZAPPY = CORPO.desenho.raioDaCabeca + RAIO_DO_ZAPPY
 /** Um pouco para trás, para a câmera de trás ver os dois e o rosto dela ficar livre. */
 export const ATRAS_DO_ZAPPY = 0.35
-/** Altura acima do centro do corpo (perto do ombro). */
-export const ALTURA_DO_ZAPPY = 1.3
+/** Altura acima do centro do corpo: no alto da cabeça, onde a câmera de trás o vê. */
+export const ALTURA_DO_ZAPPY = CORPO.doCentro.topo
 /** Abaixo disso (m/s) o personagem conta como parado. */
 export const VELOCIDADE_DE_ANDAR = 0.3
 /** Tempo parado (s) antes de o Zappy deixar de olhar o caminho e virar para ela. */

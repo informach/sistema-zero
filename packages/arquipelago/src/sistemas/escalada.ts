@@ -7,6 +7,7 @@
  * avatar. O corpo fica no `lado` e olha para o tronco.
  */
 import type { Ponto } from './cipo'
+import { CORPO } from './corpo'
 
 export interface Tronco {
   base: Ponto
@@ -32,7 +33,7 @@ export const ESCALADA = {
    * Do centro do corpo até as mãos esticadas no alto, na casca (o clipe "Escalar" alcança acima da
    * cabeça). Com `abaixoDoTopo`, decide até onde o corpo sobe.
    */
-  maosAcimaDoCentro: 1,
+  maosAcimaDoCentro: CORPO.maosNaEscalada,
   /** As mãos param isto abaixo do topo (o galho e a copa ficam lá em cima). */
   abaixoDoTopo: 1.4,
   /** O pulo para fora do tronco: para longe e para cima, em m/s. */

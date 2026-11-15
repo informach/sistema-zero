@@ -1,5 +1,55 @@
 # CLAUDE.md — @sistemazero/avatar-quarto
 
+## Quarto, casa e pets Morada (14/11/2026)
+
+- O desenho aprovado está em `docs/plans/2026-11-14-morada-design.md`.
+- O contrato e o catálogo são reexportados por `morada/catalog`. O jogo importa por esta porta;
+  a plataforma pode usar o core diretamente para suas regras de edição.
+- `morada/piece` preserva as origens autorais, lê materiais externos, cores por célula da paleta,
+  texturas por material, partes móveis e slots. `prepareMoradaScene` clona ossos e materiais por
+  montagem, preserva as geometrias do cache e esconde as malhas autorais de colisão.
+- `MoradaPieceView` recebe `instance`, `catalog?`, `paused?`, `interactive?`, `onSelect?`, `onMove?`,
+  `onLoad?` e `attachments?`. `onMove` habilita o arraste em passos de 0,5 m; o consumidor valida
+  a posição. Sem callback, não há edição. `interactive` habilita abrir portas/gavetas.
+- `MoradaHouseView` monta cômodos e instâncias, põe filhos no slot da instância pai e mantém o
+  objeto acompanhando a parte móvel. `onPieceLoad` permite ao jogo ler os nós para sua física.
+- `MoradaPetView` recebe o id do pet e o clipe opcional; `MoradaRoomPet` é o passeio do quarto,
+  com pausas, limites nativos e obstáculos das caixas do catálogo. O personagem e o jogo não
+  compartilham esqueleto com os pets; cada montagem tem seu mixer.
+- Os renderizadores antigos de quarto, pets e reservas em primitivas saíram. De `quarto/`,
+  ficam apenas dados/regras puros que os leitores históricos ainda usam. Os oito troféus são
+  peças do catálogo Morada. A estante usa as peças e os slots da biblioteca nova.
+- Os modelos, miniaturas e texturas são privados, em `/api/morada3d/`, com nomes endereçados por
+  conteúdo. Não copiar GLBs de packs para `public/` ou para o git.
+
+## O avatar do pack Cute Characters (13/11/2026)
+
+- `avatar/pack-rig.tsx` (`PackAvatarRig`, `PackRigBoundary`, `PACK_IDLE_POSE`) e
+  `avatar/pack-instance.ts`: o esqueleto do pack (metros, em pé, frente +Z) com uma peça por
+  encaixe, presas pelo NOME do osso, e a textura única aplicada pela anotação do GLB. A barreira de
+  erro tira o boneco sem derrubar quem o mostra quando o esqueleto não baixa (bucket privado).
+- `avatar/pack-catalog.ts`: repassa o catálogo do `@sistemazero/core/avatar` para o jogo (que não
+  importa o core) e `avatarDoPack` (o avatar que chega da plataforma, só com peças conhecidas).
+- `avatar/pack-clips.ts` (14/11): `semDeslocamento(clipe, nome, {vertical})` tira o andar do `Hips`
+  numa cópia do clipe (o jogo anda pela física), com o vertical mantido, sem a tendência (escada) ou
+  com teto (pulo); `alturaNoComeco` dá a altura do `Hips` em pé. A plataforma não usa.
+- ⚠️ **O avatar antigo SAIU (14/11/2026):** `AvatarRig`, `asset-part`, `catalog.ts`, `instance.ts` e
+  `visible-parts` foram apagados, com as cópias de `public/avatar3d` dos apps e os scripts do Blender
+  que as geravam. O avatar é só o do pack; `measure.ts` (medir o boneco) segue em uso. As seções
+  datadas abaixo que falam do `AvatarRig` são histórico.
+- **Sem pisca-pisca (14/11/2026, relato dela no configurador):** cada encaixe tem uma camada
+  (`CAMADA_DO_ENCAIXE`: corpo 0, o que veste a pele 1, o que cobre outra peça 2) e o
+  `prepararPecaDoPack` põe `polygonOffset` na cópia do material: onde duas peças quase coincidem (a
+  luva sem dedos sobre a mão, a barra da camiseta sobre a calça), a de cima ganha. Encaixe novo
+  entra na tabela. A cena do configurador (member-shell, `avatar-scene.tsx`) tem a caixa de
+  sombra do tamanho do pódio com `normalBias` (sem isso as peças se sombreavam e piscavam) e a
+  câmera de 0,3 a 30 m (o retrato, 0,1 a 20): com "perto" pequeno, numa placa de 16 bits de
+  profundidade a roupa e a pele brigavam. Prova: mapa de pixels que mudam entre quadros parados.
+- **Poses da cabine:** `PACK_LOOP_POSES` (parado e olhando) seguem em laço; as outras fazem o
+  movimento uma vez e congelam em `instanteDaFoto` (`pack-clips.ts`: o maior giro somado dos ossos
+  desde o primeiro quadro, o auge do golpe). Com menos movimento, direto na pose final. `poseTake`
+  (o configurador conta as escolhas) refaz o movimento quando a mesma pose é escolhida de novo.
+
 ## Várias montagens do avatar (30/10/2026)
 
 `avatar/instance.ts` prepara ossos e texturas de esqueleto próprios por montagem. Nunca montar

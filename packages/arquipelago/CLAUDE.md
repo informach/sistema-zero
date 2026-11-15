@@ -1,5 +1,148 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Morada canônica (14/11/2026)
+
+A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
+`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` traz troféus, a estante de troféus, as compradas
+e as que já estão na casa; peça paga sem posse não entra (`moradaInstanceAllowed` do core, a mesma
+régua do serviço; a compra é no Meu quarto, e a bandeja do jogo mostra só o que é dela). A leitura/edição tem escopos próprios e de visita
+separados, com epoch para rejeitar respostas antigas. Sair independe da rede e preserva
+o rascunho próprio até confirmação; visitas nunca substituem sua casa ou seu pet. O quarto é `house.roomId`,
+um recorte estável da mesma casa; visitas leem `visita.quarto.house`. Hosts sem essas
+portas mostram indisponibilidade explícita. O jogo só importa catálogo/renderizadores
+por `@sistemazero/avatar-quarto/morada/*`.
+
+A transição de escala é explícita: Casa, Construir e os portais da casa, horta, cabana e
+iglu abrem uma cena própria com avatar, física e câmera nativos em escala 1. As ilhas
+mantêm a ponte 1,85 e continuam jogáveis. O mundo antigo deixa de renderizar enquanto
+a casa está aberta. Não existe casa antiga escondida em outra rota.
+
+`estado/morada.ts` mantém revisão, recuperação, conflitos e histórico de edição;
+`sistemas/morada.ts` resolve coordenadas, slots, volumes autorais e acesso. O editor
+usa todo o lote, grade de 0,5 m, cômodos/andares, encaixes, cores e materiais do catálogo.
+A interface conserva o HUD original e a barra inferior `arq-obra`: ferramentas icônicas,
+bandeja horizontal, Viver/Construir e Pronto. Campos adicionais ficam em detalhes.
+O descanso nativo usa o relógio original de energia e termina ao levantar, andar/pular,
+completar a soneca, entrar no editor ou voltar à ilha; não deixa pedido ao corpo legado.
+Folhas móveis têm colisão cinemática; malhas autorais usam geometria de colisão do pack.
+A horta preserva as 24 parcelas e seus relógios. Projetos conquistados continuam com
+`behavior: objeto:<id>` e equivalentes Morada; não se apaga progresso ao trocar o visual.
+
+Pinta/Molda e referências de autoria continuam em `save.projetos`; o próprio jogo as
+projeta sobre o equivalente Morada. O documento compartilhado não recebe URL ou referência
+UGC sem autorização. Visitantes veem a peça base Morada; a projeção de Pinta segue as faces
+do molde histórico e pode exigir ajuste artístico em superfícies curvas. Aquário é uma
+composição de vitrine e quatro peixes Morada, liberados pelos mesmos corais. O museu usa
+estante e miniaturas Morada (dinossauros de brinquedo e esqueleto didático), vinculadas
+aos mesmos seis IDs de descoberta; as artes de fósseis do Vale permanecem só na ilha.
+As miniaturas são equivalentes visuais, sem alterar nomes, álbum ou progresso dos fósseis. Pets domésticos usam exclusivamente os 24 gatos/cães Morada,
+com passeio no quarto e acompanhamento nas ilhas. Bichos adotados do mundo continuam fora
+do escopo do quarto. Oito troféus são a única arte antiga da casa preservada.
+
+Os documentos históricos de obra e inventário continuam legíveis para migração e testes
+de progresso. A importação das funções do térreo e do andar independe da revisão da
+casa e só conclui com o marcador canônico `arquipelago-functions-v1`; falhas do andar
+permitem nova tentativa, e uma função removida após a importação não reaparece. Seus renderizadores, geradores e artes de casa/kit/objetos foram retirados.
+Testes de binários retirados deram lugar a testes do catálogo real, acesso/colisão, 24
+cultivos, autoridade funcional, CAS, recuperação e projeção de autoria com parser GLB real.
+
+## O corpo sai do esqueleto; o mundo declara a escala (14/11/2026, etapa 1 passo 3)
+
+Plano: `docs/plans/2026-11-14-arquipelago-personagem-etapa1.md`.
+- `mundo/mundo-do-jogo.ts` (sem imports): `MundoDoJogo` e `MUNDO_ATUAL`. O mundo de hoje declara a
+  ponte de escala 1,85 (o herói fica com 2,14 m, como o boneco antigo) e as REGRAS dele:
+  gravidade, velocidades, pulo, degrau, rampas, `grudaAte` (o `snapToGround`), folga e até onde as
+  mãos agarram (`maosNaBorda` 0,9, `maosNaEscalada` 1). Essas regras ficam no mundo porque os níveis
+  foram medidos com elas; os braços curtos do pack chegam lá pela IK. Os mundos novos declaram 1.
+- `sistemas/corpo.ts`: `CORPO = corpoDoMundo(AVATAR_CATALOG, MUNDO_ATUAL)`, com o MESMO formato
+  de antes e mais `cintura`, `doCentro` (cabeça, topo, ombro, mãos no cipó; alturas a partir do
+  centro da cápsula) e `medidas`. A cápsula sai de `bodyMeasures`/`physicalBody` do core (pelo
+  `avatar-quarto/avatar/pack-catalog`). ⚠️ Número de corpo novo NÃO se escreve à mão: derive do
+  `CORPO` (câmera, Zappy, esmaecer de copas, mergulho, `CINTURA`, `GRAVIDADE` e `GRAVIDADE_DO_CIPO`
+  já derivam). Teste que precisa da cápsula importa o `CORPO`.
+- **O mundo novo pelas animações (14/11/2026):** `sistemas/mundo-pela-animacao.ts`
+  (`mundoPelaAnimacao`, `MUNDO_DA_AVENTURA`): escala 1, gravidade de verdade (9,81), andar, correr
+  e nadar = a velocidade natural do clipe (passada ÷ duração) vezes `FATORES_DA_AVENTURA` (1,5; 2;
+  2: correr e nadar no teto do `RITMO_MAXIMO`, sem o pé escorregar), pulo na altura que o quadril
+  sobe no `pulo_inicio` (0,97 m), degrau/folga/mãos os de hoje na proporção do corpo. O
+  `CharacterMover` do pacote Unity do pack NÃO é referência (sem cena que o use, unidades que se
+  contradizem, pulo de 15 m). O jogo roda no `MUNDO` de `mundo/mundo-escolhido.ts`: sempre o
+  `MUNDO_ATUAL`, menos no playground com `?mundo=aventura` (a página põe
+  `globalThis.__arquipelagoMundo` antes do jogo carregar). `CORPO`, `GRAVIDADE` e o cipó leem o
+  `MUNDO`, não o `MUNDO_ATUAL`. As estações da sala de movimento são medidas para 1,85.
+- Ficaram para os passos 4 e 5 (dependem das poses do pack, não do esqueleto): `BANCO`, `CAMA`,
+  `MONTARIA.subidaDoDesenho`, `BARRA_NO_AVATAR` e a lanterna.
+
+## O avatar do pack no jogo (13/11/2026)
+
+O avatar da plataforma virou o do pack Cute Characters (plano
+`~/.claude/plans/pasted-content-id-1edc-certo-eu-fluttering-blossom.md`, etapa 6, o mínimo):
+- `AvatarDoJogo` (contrato) é encaixe → id da peça; o jogo lê com `avatarDoPack` do `avatar-quarto`
+  (`avatar/pack-catalog.ts`, que repassa o catálogo do core: o jogo não importa o core direto).
+- `personagem/avatar-do-jogo.tsx` monta o `PackAvatarRig` dentro do `PackRigBoundary` (esqueleto que
+  não baixa não derruba o jogo), na escala do mundo (`escala-do-heroi`, `CORPO.medidas.scale`).
+- **Animações (14/11, etapa 1 passo 4):** os clipes de movimento vêm do GLB `game.file` do catálogo
+  (bucket privado), sem o deslocamento do `Hips` (`semDeslocamento` do `avatar-quarto/avatar/pack-clips`,
+  na carga; o pulo com teto na altura de quem está em pé, a escada sem a subida) e com o nome
+  `jogo/<id>` (não cruzam com os da plataforma). `sistemas/locomocao.ts` fala em ESTADOS;
+  `POSE_DO_ESTADO` diz o clipe e o pedaço dele (o pulo começa no empurrão, o pouso no pé tocando) e
+  as reservas dos modos que a arte ainda não animou; `poseDosClipes` junta os pesos por clipe. Passadas
+  e durações vêm do catálogo vezes a escala; andar e correr ficam inteiros nas velocidades do mundo;
+  as pernas giram até `RITMO_MAXIMO` (2) vezes a cadência do clipe. O mixer é do jogo (escala de tempo
+  0; na pausa a pose congela).
+- **As animações da arte (14/11/2026):** nadar, boiar, entrar e sair da água, sentar, deitar, o cipó,
+  a borda, sentada no barco e o aceno de volta são clipes que a arte fez para este corpo (os estados
+  `Nado`, `Sentando`, `NoBarco`, `Acenar`…). O desenho vai para o lugar que a arte mediu em cada
+  clipe (`sistemas/lugares-dos-clipes.ts`: o assento, a quina, a corda, a linha d'água), do catálogo
+  vezes a escala. Catálogo sem um clipe ou sem uma medida não impede o jogo de abrir: o estado vai
+  para a reserva (`RESERVA_DO_ESTADO`) e a medida para a reserva escrita no código, com aviso.
+- **Os modos do jogo (P2 da arte, 14/11/2026):** `planar` (as duas mãos na barra: `BARRA_NO_AVATAR`
+  sai de `NO_PLANADOR`, e a barra do pack `mao_barra_planador` vai nas mãos, com os dedos das duas
+  mãos fechados por `camadasDosDedos`; a lanterna sai da mão enquanto plana), `escalar` (sem a
+  subida; o desenho anda até a casca por `avancoNaParede`), `equilibrar` (pela distância; parada,
+  fica no passo), `escorregar` (a origem é a pista, embaixo da bacia), `montado` (a origem é a
+  sela: `MONTARIA.subidaDoDesenho` é a altura da sela; o `montar`/`desmontar` da arte começa ao
+  lado de uma sela de 0,3 m e fica para os veículos do mundo novo) e `patinar` (estado `Patinar`,
+  no lugar de andar e correr com `patinando`; a velocidade é a de verdade). Patins: a peça
+  `calcado_patins` do pack é SÓ do jogo (`hidden`, fora da loja e do sorteio: `SO_NO_JOGO` em
+  `scripts/avatar/catalogo.ts`); calçados, o `AvatarDoJogo` a veste no lugar do calçado e sobe o
+  desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
+  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins). As rodas e o
+  empurrar: veja o item seguinte.
+- **O que a arte e o pack já tinham (15/11/2026):** andar e correr de lado e de costas (na virada, pela
+  direção no referencial do corpo: `frente`/`deLado` da entrada, `pesosDaDirecao`); pendurada andando
+  pela quina (`andar_pendurado_*`); água rasa (`aguaNosPes` do modo chão acima de
+  `AGUA_RASA_A_PARTIR_DE`); o gesto de acender ao acender a lanterna; empurrar (contato do controlador
+  com corpo dinâmico); o braço com a lanterna pelas camadas da arte (`BracoComObjeto`); as rodas dos
+  patins girando (`rodas-dos-patins.tsx`; ⚠️ a peça traz 8 ossos `Roda_*` que o esqueleto não tem:
+  o `PackPart` agora os acrescenta, como os da lanterna); a câmera mira o encaixe `olhos` e o
+  passarinho pousa sobre o `cabeca_topo`. Sem uso ainda: `costas` (não há mochila nem planador
+  fechado na arte), a P3 (comemorar, pegar do chão, plantar, regar, dançar) e o `dirigir`.
+- **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
+  eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
+  `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
+  vêm do clipe `pendurar_cipo` (a IK dos braços saiu). A lanterna é a do pack (`objeto-na-mao.tsx`:
+  o `PackAvatarRig` a monta pelo `equipment` do catálogo, e os dedos fecham no cabo pela camada da
+  arte). ⚠️⚠️ O mixer do three só reescreve um osso quando o valor animado MUDA: na pausa, ou num osso
+  parado no clipe, o ajuste do quadro anterior fica no osso. Todo ajuste depois da pose parte da pose
+  do mixer por `personagem/pose-limpa.ts` (`antes`, o ajuste, `depois`; `soltar` ao parar de vez),
+  senão ele se acumula (o quadril afundava no chão com o jogo pausado numa rampa; review de 14/11).
+  O calçar antigo (`patins-nos-pes.tsx`, no esqueleto Mixamo), o `locomocao.glb` e o `arte/avatar/mixamo.py`
+  saíram em 14/11/2026 com o resto do avatar antigo; as seções datadas que os citam são histórico.
+- **Fantasma (passo 6):** o mesmo `PackAvatarRig` com a roupa de quem correu (`Fantasma.avatar` no
+  contrato, opcional; sem ela, o boneco de partida), o material próprio e o `correr_frente` no
+  relógio da corrida; o pé desconta a folga, como o jogador.
+- **Jogabilidade (14/11/2026):** ir tocando (`sistemas/ir-tocando.ts` + `mundo/ir-tocando.tsx`: toque
+  no chão anda até lá; num objeto, vai e usa; as tarefas do "Agora" levam até o objeto delas por
+  `movimento.levarAte`); a grade do caminho é montada uma vez por pedido, com a física, e o degrau
+  aceito é o `CORPO.degrau`. Viagem rápida do mapa para ilha aberta e já visitada
+  (`sistemas/viagem-rapida.ts`). Câmera normal a 11 m e inclinação de partida 0,62.
+- Prints: `playground/verificar-animacoes-browser.ts` com `AVATAR_QA_DIR` (a cópia local precisa do
+  GLB `game.file`).
+- As roupas da amizade e das festas (contrato) são peças do pack; os nomes vêm de `nomeDaPecaDoPack`.
+- Playground: `AVATAR_QA_DIR=<cópia das peças do pack>` serve `/api/avatar3d/` (as peças são pagas e
+  ficam fora do git); sem ela o boneco não aparece.
+
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
 código, conteúdo, prova local e implantação separados. Salvamento atual V23, teto de
 81.920 bytes UTF-8 (80 KB, escolha da dona nas lacunas de 01/11/2026), moedas do jogo até 100

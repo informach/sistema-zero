@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { lojaDaConstrucao, podeConstruir } from '../estado/construcao'
+import { podeConstruir } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { casaMoradaStore } from '../estado/morada'
 import { TEMAS_DE_CONSTRUCAO, temaDaSemana } from '../sistemas/tema-da-semana'
 
 /** Sugestão de criação, sem avaliar escolhas nem gravar uma conquista por abrir o diário. */
 export function ConviteDaSemana() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const [semana, setSemana] = useState(() => temaDaSemana(new Date()))
   const [escolha, setEscolha] = useState('semana')
   const pode = useEstado(
@@ -56,7 +57,7 @@ export function ConviteDaSemana() {
           const s = loja.getState()
           if (s.visita || !s.dentroDeCasa || !podeConstruir({ ...s, painelAberto: null })) return
           s.abrirPainel(null)
-          lojaDaConstrucao(loja).getState().abrir()
+          void casaMoradaStore(loja, plataforma).getState().enter(true)
         }}
       >
         Construir na minha casa
