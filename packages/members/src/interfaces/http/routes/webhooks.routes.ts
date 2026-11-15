@@ -13,6 +13,7 @@ import {
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../../domain/entitlement/entitlement.errors'
+import { MURAL_GIFT_ACCESS } from '../../../domain/entitlement/mural-visitor'
 import { currentChallengeKey } from '../../../domain/gamification/challenges'
 import { deterministicSourceId } from '../../../domain/gamification/source-id'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
@@ -196,6 +197,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                   offerRef: body.offerRef,
                   expiresAt,
                   sourceId: body.sourceId,
+                  useOfferAccessPolicy: body.useOfferAccessPolicy,
+                  anchorAt: body.anchorAt ? new Date(body.anchorAt) : undefined,
+                  audience: body.audience,
                 }
               : body.mode === 'course'
                 ? {
@@ -223,7 +227,13 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           )
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
           await deps.hub.notifyAccessChanged(body.userId, 'grant')
-          return { ok: true, granted: result.granted.length }
+          // O fim do presente (o maior prazo concedido; null = sem prazo), para o referrals gravar
+          // e avisar a família. Re-entrega deduplicada não traz o campo: o referrals já o tem.
+          return {
+            ok: true,
+            granted: result.granted.length,
+            ...(body.mode === 'offer' ? { expiresAt: giftExpiresAt(result.granted) } : {}),
+          }
         } catch (error) {
           if (error instanceof CourseNotFoundError) {
             deps.logger.warn('grant.manual.course_unavailable', {
@@ -479,4 +489,21 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       },
       { body: MuralMessageWebhookBody },
     )
+}
+
+const MURAL_VISITOR_REFS: ReadonlySet<string> = new Set(
+  Object.values(MURAL_GIFT_ACCESS).map((access) => access.visitorRef),
+)
+
+/**
+ * O fim do presente que uma concessão manual deu: o maior prazo entre as matrículas que não são a
+ * visita permanente ao Mural. `null` = sem prazo (alguma matrícula vitalícia, ou só a visita).
+ * Re-entrega deduplicada não passa por aqui: o referrals já gravou o prazo da primeira.
+ */
+function giftExpiresAt(granted: { courseRef: string | null; expiresAt: string | null }[]) {
+  const prazos = granted
+    .filter((view) => !view.courseRef || !MURAL_VISITOR_REFS.has(view.courseRef))
+    .map((view) => view.expiresAt)
+  if (prazos.length === 0 || prazos.some((value) => value === null)) return null
+  return (prazos as string[]).reduce((max, value) => (value > max ? value : max))
 }
