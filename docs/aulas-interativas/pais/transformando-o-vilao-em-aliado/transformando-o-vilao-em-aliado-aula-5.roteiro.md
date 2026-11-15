@@ -6,7 +6,7 @@ A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá
 
 **Clipe:** `video-a5-foco`
 
-**Na tela:** Helena na câmera. Entra o vídeo de depoimentos sobre foco (Daniel, Harle e Flávia) logo depois de "Veja o que esses pais achavam no começo". Entra o vídeo da Isabela logo depois de "Escute a Isabela". Câmera no restante.
+**Na tela:** Helena na câmera. Entra o vídeo de depoimentos sobre foco (Daniel, Harle e Flávia) logo depois de "Veja o que esses pais achavam no começo". Entra o vídeo da Isabela logo depois de "Escute a Isabela". Câmera no restante. Os depoimentos têm legenda de nome e vínculo.
 
 **Fala da Helena:**
 
@@ -17,7 +17,7 @@ Muitos pais conhecem os dois lados: a dificuldade de manter a atenção no que n
 
 A segunda pergunta é: não vai ser difícil demais? Escute a Isabela.
 
-A Isabela não tinha costume de jogar. Ela gostava mesmo era de assistir vídeos, e a mãe dela achava que isso não era para ela. Ela nunca tinha mexido no computador e não sabia segurar o mouse. A gente mostrou onde coloca a mão, onde clica, como faz, e em menos de dez minutos ela já estava à vontade. Num ambiente totalmente novo, ela deu conta e saiu explicando o que tinha aprendido.
+A Isabela não tinha costume de jogar. Ela gostava mesmo era de assistir vídeos, e a mãe dela achava que criar jogos não era para ela. Ela nunca tinha mexido no computador e não sabia segurar o mouse. A gente mostrou onde coloca a mão, onde clica, como faz, e em menos de dez minutos ela já estava à vontade. Num ambiente totalmente novo, ela deu conta e saiu explicando o que tinha aprendido.
 
 Tudo o que é novo pode ser difícil no começo. Mas não é aquele difícil que leva um ano para passar. É a primeira barreira. Para muitas crianças, ela passa rápido, às vezes em poucos dias, e cada uma tem o seu tempo. Pense numa criança aprendendo a andar. Quantas vezes ela cai? E tem sempre alguém do lado. Com a criação é igual. Clique em Próxima parte.
 ```
@@ -35,7 +35,7 @@ Tudo o que é novo pode ser difícil no começo. Mas não é aquele difícil que
 ```text
 E qual é o seu papel nessa hora? Você não precisa saber programar. O seu papel é dar o apoio certo, na medida certa. Eu penso em três degraus.
 
-No primeiro, você faz pela criança, para ela ver que é possível e que é legal.
+No primeiro, bem no comecinho, quando a criança nunca viu aquilo, você faz por ela, para ela ver que é possível e que é legal.
 
 No segundo, vocês fazem juntos. Você tira um pouquinho da ajuda e pede um pouquinho mais dela.
 
@@ -45,7 +45,7 @@ No terceiro, você deixa ela pensar. E chega um momento muito bonito, quando a c
 
 Por isso, cuidado com a resposta pronta. Hoje existe ferramenta que responde tudo na hora, e a tentação é grande, para a criança e para a gente. Só que quem só copia a resposta não aprende a pensar, e um dia vai estar diante de um problema de verdade, sem ter para quem perguntar. A gente precisa colocar os nossos filhos para pensar.
 
-Então, para esta semana, eu tenho uma ferramenta de uma frase. Quando o seu filho travar e pedir: faz para mim, responda com uma pergunta. O que você já tentou? Depois olhem juntos onde parou e o que dá para mudar. Depois responda as perguntas da próxima parte.
+Então, para esta semana, eu tenho uma ferramenta de uma frase. Quando o seu filho já tentou alguma coisa, travou e pede: faz para mim, responda com uma pergunta. O que você já tentou? Depois olhem juntos onde parou e o que dá para mudar. Em seguida, responda as perguntas da próxima parte.
 ```
 
 **Recado na página (não gravar):** Quando ele travar e pedir "faz para mim", pergunte: o que você já tentou?

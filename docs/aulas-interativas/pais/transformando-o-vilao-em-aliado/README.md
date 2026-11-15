@@ -2,7 +2,7 @@
 
 Minicurso gratuito para pais, com a Helena na câmera. São seis aulas curtas, de 6 a 10 minutos (a confirmar depois da gravação), em **Cursos para pais**, na área dos pais do Kids. A família recebe o curso de presente por uma campanha, e no fim ganha o Cadê Todo Mundo por 7 dias.
 
-**O caminho do curso:** da preocupação ao primeiro passo. Cada aula muda uma crença do responsável, traz uma prova (exemplo, depoimento ou pesquisa), entrega uma ferramenta para usar em casa e termina com um quiz de situação.
+**O caminho do curso:** da preocupação ao primeiro passo. Cada aula muda uma crença do responsável, traz uma prova (exemplo, depoimento ou pesquisa), entrega uma ferramenta para usar em casa e tem um quiz de situação.
 
 | Material | Arquivo |
 | --- | --- |
@@ -25,7 +25,7 @@ Cada aula tem **conteúdo** (objetivo, crença que muda, estrutura e ferramenta)
 
 - Uma gravação por parte com vídeo, com o nome do clipe do roteiro (`video-a1-pergunta` e assim por diante): 13 clipes no total. As partes de quiz não têm gravação.
 - A fala do roteiro é para teleprompter. Dá para falar com as próprias palavras, desde que nenhuma ideia se perca.
-- **Na tela** diz o que aparece em cada momento e onde entra cada vídeo de depoimento (ver [Fontes](fontes.md)).
+- **Na tela** diz o que aparece em cada momento e onde entra cada vídeo de depoimento (ver [Fontes](fontes.md)). Todo depoimento leva legenda com nome e vínculo ("Débora, mãe do Bernardo"), para não confundir com a Débora, filha da Helena.
 - A Aula 3 tem alguns segundos de gravação de tela do Estúdio (blocos coloridos) e a grade do desafio do caminho.
 
 ## Como publicar

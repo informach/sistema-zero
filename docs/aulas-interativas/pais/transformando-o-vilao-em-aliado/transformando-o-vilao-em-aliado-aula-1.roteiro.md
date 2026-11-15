@@ -6,12 +6,12 @@ A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá
 
 **Clipe:** `video-a1-pergunta`
 
-**Na tela:** Helena na câmera. Quando ela pede para guardar a palavra, aparece na tela só a pergunta "O que você mais deseja para o futuro do seu filho?". Entra o vídeo de depoimentos da preocupação (Flávia, Daniel e Débora) logo depois de "Veja o que contam alguns pais". Volta para a câmera no fechamento.
+**Na tela:** Helena na câmera. Quando ela pede para guardar a palavra, aparece na tela só a pergunta "O que você mais deseja para o futuro do seu filho?". Entra o vídeo de depoimentos da preocupação (Flávia, Daniel e Débora) logo depois de "Veja o que contam alguns pais", com legenda de nome e vínculo em cada pessoa ("Débora, mãe do Bernardo"), para não confundir com a Débora, filha da Helena. Volta para a câmera no fechamento.
 
 **Fala da Helena:**
 
 ```text
-Oi! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. Antes de qualquer coisa, eu quero te fazer uma pergunta. O que você mais deseja para o futuro do seu filho? Pode ser autonomia, coragem para tentar, prazer de aprender, um jeito de se expressar, ser feliz. Escolha a sua palavra e guarde. A gente volta nela na última aula.
+Oi! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. Antes de qualquer coisa, eu quero te fazer uma pergunta. O que você mais deseja para o futuro do seu filho? Pode ser autonomia, coragem para tentar, prazer de aprender, um jeito de se expressar, ser feliz. A minha, durante muito tempo, foi autonomia: eu queria que os meus filhos dessem conta da vida quando eu não estivesse por perto. Escolha a sua palavra e guarde. A gente volta nela na última aula.
 
 Agora pense numa cena que quase toda casa conhece. Fim de tarde, você fala: desliga isso. E começa a negociação. Mais cinco minutos. Só vou terminar esta fase. Às vezes vira briga. E fica aquela pergunta na cabeça: como eu tiro a tela da vida do meu filho?
 
@@ -47,7 +47,7 @@ O segundo é jogar. Ela explora regras e desafios que outra pessoa criou. Tem jo
 
 O terceiro é criar. Ela inventa as próprias regras e vê aquilo funcionar. É aqui que a tela vira aliada, e é sobre isso que a gente vai falar no resto do curso.
 
-Na maioria das casas, quase nada do tempo de tela está no criar. E tudo bem, é por isso que você está aqui. Eu não quero tirar os jogos do seu filho. Jogar é bom. Eu quero te mostrar uma terceira possibilidade que muita família ainda não conhece.
+Em muitas casas, quase nada do tempo de tela está no criar. E tudo bem, é por isso que você está aqui. Eu não quero tirar os jogos do seu filho. Jogar é bom. Eu quero te mostrar uma terceira possibilidade que muita família ainda não conhece.
 
 Para esta semana, eu tenho uma ferramenta simples: o mapa da semana de telas. Todo dia, anote em qual dos três usos o seu filho passou a maior parte do tempo: assistindo, jogando ou criando. Sem julgar e sem mudar nada ainda. Você só vai observar. O mapa está aqui embaixo e na apostila do curso, que reúne as ideias de todas as aulas. Depois responda as duas perguntas da próxima parte.
 ```

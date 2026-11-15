@@ -2,12 +2,13 @@
 
 ## Base de conhecimento
 
-O conteúdo vem da aula aberta "Transformando o vilão em aliado", de 13/11/2026: a gravação, a transcrição e os slides v7 com as notas de condução (`Downloads/Palestra Vivi/`). Ela é **fonte de conhecimento**, não roteiro. Os argumentos, conceitos, exemplos e depoimentos foram reorganizados numa progressão própria de seis aulas.
+O conteúdo vem do encontro "Transformando o vilão em aliado", de 13/11/2026: a gravação, a transcrição e os slides v7 com as notas de condução (pasta local de origem). Ele é **fonte de conhecimento**, não roteiro. Os argumentos, conceitos, exemplos e depoimentos foram reorganizados numa progressão própria de seis aulas.
 
 **Regras da autoria:**
 - O curso é da Helena, em primeira pessoa. Ninguém mais é citado como autor ou especialista.
-- O curso não menciona a aula aberta, a noite, a plateia nem os slides.
-- Histórias que não são da Helena ou da família dela não entram. As da família (o André e a tela que acalmava, a palestra dele na faculdade, a troca de turno nas conversas, a Isabela e o mouse, a amiga professora) são contadas por ela.
+- O curso não menciona o encontro de origem, a noite, a plateia nem os slides.
+- Histórias que não são da Helena ou da família dela não entram. As dela (o André e a tela que acalmava, a palestra dele na faculdade, o menino calado que hoje precisa ouvir "resume", a Isabela e o mouse, a amiga professora) são contadas por ela.
+- ⚠️ Confirmar com a Helena a história da amiga professora: na gravação ela a conta como amiga dela, mas as notas de condução a atribuem a outra pessoa.
 - Nada é contado como se tivesse acontecido sem ter acontecido. Exemplos de exercício vêm como "exemplos para ajudar".
 
 ## Depoimentos em vídeo

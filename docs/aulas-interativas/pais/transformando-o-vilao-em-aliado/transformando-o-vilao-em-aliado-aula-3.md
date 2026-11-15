@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Você já programa em casa | Blocos coloridos em vez da tela preta; QUANDO, SE e ENTÃO com a rotina da manhã e com a porta e a chave; a ordem dos passos no banho; causa e consequência. | Vídeo assistido. |
 | Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. | Vídeo assistido. |
-| Qual é o seu caminho? | Quiz com a sequência e com o que fazer depois do erro (parte própria, sem vídeo). | Quiz respondido. |
+| Qual é o seu caminho? | Quiz com a sequência do caminho (parte própria, sem vídeo). O que fazer depois do erro é ensinado na parte seguinte. | Quiz respondido. |
 | E se a primeira tentativa não funcionar? | A resposta; observar, mudar uma instrução, testar de novo; o erro como pista; o olhar para o todo e para o ponto importante. | Vídeo assistido; tarefa à vista. |
 
 **Ferramenta:** escrever com o filho uma rotina da casa em forma de regra, e usar as três perguntas quando algo der errado.

@@ -197,7 +197,7 @@
         "tone": "azul",
         "icon": "toque",
         "title": "Causa e consequência",
-        "text": "Quando a criança decide que, ao tocar no esconderijo, ele some, e vê o esconderijo sumir, foi ela que causou aquilo. Ela é quem faz acontecer. Na vida também: quanto mais eu treino, melhor eu jogo bola."
+        "text": "Num esconde-esconde, quando a criança decide que o esconderijo some ao ser tocado, e vê o esconderijo sumir, foi ela que causou aquilo. Ela é quem faz acontecer. Na vida também: quanto mais eu treino, melhor eu jogo bola."
       },
       { "kind": "grid" },
       {
@@ -228,7 +228,7 @@
       {
         "kind": "drawing",
         "name": "cade-regra",
-        "title": "Uma regra de verdade: o esconderijo some e o placar conta"
+        "title": "Como é uma regra de verdade: quando tocar no esconderijo, ele some e o placar soma 1"
       },
       {
         "kind": "box",
@@ -338,7 +338,7 @@
         "kind": "steps",
         "title": "Os três degraus de apoio",
         "steps": [
-          "<b>Fazer pela criança</b>, para ela ver que é possível e que é legal.",
+          "<b>Fazer pela criança</b>, só no comecinho, quando ela nunca viu aquilo.",
           "<b>Fazer junto</b>, tirando um pouquinho da ajuda e pedindo um pouquinho mais dela.",
           "<b>Deixar ela pensar</b>, até o dia em que ela mesma diz: não fala, deixa eu pensar."
         ]
@@ -348,7 +348,7 @@
         "tone": "amarelo",
         "icon": "ajuda",
         "title": "Para fazer esta semana",
-        "text": "Quando o seu filho travar e pedir \"faz para mim\", responda com uma pergunta: <b>o que você já tentou?</b> Depois olhem juntos onde parou e o que dá para mudar."
+        "text": "Quando o seu filho já tentou, travou e pede \"faz para mim\", responda com uma pergunta: <b>o que você já tentou?</b> Depois olhem juntos onde parou e o que dá para mudar."
       }
     ]
   },
@@ -371,14 +371,14 @@
         "tone": "azul",
         "icon": "repetir",
         "title": "Leve o jogo para a vida",
-        "text": "Hoje no meu trabalho também deu errado uma coisa. Como o seu personagem fez para consertar? Quando a criança responde, ela leva uma estratégia do jogo para outra situação."
+        "text": "Depois que ele contar o que deu errado no jogo, você pode dizer: hoje, no meu trabalho, também deu uma coisa errada. Como o seu personagem fez para consertar? Quando a criança responde, ela leva uma estratégia do jogo para outra situação."
       },
       {
         "kind": "box",
         "tone": "azul",
         "icon": "pessoa",
         "title": "Na casa da Helena",
-        "text": "O André era um menino muito difícil de conversar. Depois passou a falar muito, mas só de jogos. E foi falando de jogo que ele começou a perceber a troca de turno e os sinais do outro. Hoje a família conversa com ele sobre qualquer assunto. O jogo foi o pontapé inicial."
+        "text": "O André não era de conversar. Hoje a Helena é que precisa pedir: calma, resume, porque ele quer falar o tempo todo sobre o que está criando. O assunto dos jogos foi o pontapé inicial, e a partir dele a família passou a conversar com ele sobre qualquer assunto."
       },
       {
         "kind": "delivery",
@@ -410,7 +410,7 @@
         "tone": "azul",
         "icon": "etiqueta",
         "title": "Volte à sua palavra",
-        "text": "Releia a palavra que você guardou na página {{pagina:a1}}. Ser feliz, lá na frente, passa por dar conta da própria vida: levar uma tarefa até o fim, lidar com a frustração, esperar a vez. São as habilidades que a criança treina quando cria."
+        "text": "Releia a palavra que você guardou na página {{pagina:a1}}. Ser feliz, lá na frente, passa por dar conta da própria vida: levar uma tarefa até o fim, lidar com a frustração, esperar a vez. São habilidades que a criança pode exercitar quando cria. E olhe de novo o seu mapa da semana: onde cabe um pouco de criar?"
       },
       {
         "kind": "box",
