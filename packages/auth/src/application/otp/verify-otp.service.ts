@@ -2,7 +2,7 @@ import { InvalidOtpError } from '../../domain/otp/otp.errors'
 import type { OtpCodeRepository } from '../../domain/ports/otp-code-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { newParentKidsSession } from '../../domain/study-access/policy'
-import { PasswordNotSetError, UserNotActiveError } from '../../domain/user/user.errors'
+import { UserNotActiveError } from '../../domain/user/user.errors'
 import { toUserView, type UserView } from '../mappers/user-view'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
 import { codeMatchesHash } from './otp-code'
@@ -52,9 +52,8 @@ export class VerifyOtpService {
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
 
-    // No Kids, o OTP autentica diretamente o responsável, inclusive antes de
-    // definir uma senha. Os outros produtos conservam a política de primeiro acesso.
-    if (!user.isPasswordSet() && command.platform !== 'kids') throw new PasswordNotSetError()
+    // Sem exigir senha definida: a senha é opcional para o cliente (15/11/2026, ver
+    // `RequestOtpService`).
 
     const consumed = await this.otpCodes.consume(record.id, now)
     if (!consumed) throw new InvalidOtpError()

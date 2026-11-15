@@ -29,7 +29,8 @@ const ProfileSchema = z.object({
 
 const PasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Informe a senha atual'),
+    // Vazio só para quem nunca criou senha (a seção nem mostra o campo nesse caso).
+    currentPassword: z.string(),
     newPassword: z.string().min(10, 'A nova senha precisa de ao menos 10 caracteres'),
     confirm: z.string(),
   })
@@ -137,8 +138,19 @@ export function PersonalDataSection({ user, readOnly }: { user: UserView; readOn
   )
 }
 
-/** "Alterar senha": a troca encerra todas as sessões, e a pessoa entra de novo com a senha nova. */
-export function PasswordSection({ impersonating }: { impersonating: boolean }) {
+/**
+ * "Alterar senha": a troca encerra todas as sessões, e a pessoa entra de novo com a senha nova.
+ * A senha é opcional (15/11/2026): quem entra só pelo código do e-mail vê "Criar senha", sem a
+ * senha atual.
+ */
+export function PasswordSection({
+  impersonating,
+  passwordSet = true,
+}: {
+  impersonating: boolean
+  passwordSet?: boolean
+}) {
+  const criar = !passwordSet
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -148,9 +160,11 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     const parsed = PasswordSchema.safeParse({ currentPassword, newPassword, confirm })
-    if (!parsed.success) {
+    if (!parsed.success || (!criar && !currentPassword)) {
       const next: Record<string, string> = {}
-      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
+      if (!criar && !currentPassword) next.currentPassword = 'Informe a senha atual'
+      for (const issue of parsed.success ? [] : parsed.error.issues)
+        next[String(issue.path[0])] = issue.message
       setErrors(next)
       return
     }
@@ -160,17 +174,25 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
       const res = await fetch('/api/auth/me/password', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: parsed.data.currentPassword,
-          newPassword: parsed.data.newPassword,
-        }),
+        body: JSON.stringify(
+          criar
+            ? { newPassword: parsed.data.newPassword }
+            : {
+                currentPassword: parsed.data.currentPassword,
+                newPassword: parsed.data.newPassword,
+              },
+        ),
       })
       if (res.ok) {
         // A troca revoga TODAS as sessões (segurança) → re-login com a senha nova.
         // Navegação de DOCUMENTO: cookies HttpOnly mudaram e `router.replace +
         // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
         // load também descarta o router cache com dados RSC da sessão revogada.
-        toast.success('Senha alterada! Entre novamente com a nova senha.')
+        toast.success(
+          criar
+            ? 'Senha criada! Entre novamente com a sua senha ou com o código do e-mail.'
+            : 'Senha alterada! Entre novamente com a nova senha.',
+        )
         window.location.replace('/login')
         return
       }
@@ -191,21 +213,27 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
     <section id="senha" aria-labelledby="perfil-senha" className="sz-card scroll-mt-28 p-6 md:p-8">
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         <h2 id="perfil-senha" className="sz-h3">
-          Alterar senha
+          {criar ? 'Criar senha' : 'Alterar senha'}
         </h2>
-        <ProfileField
-          id="currentPassword"
-          label="Senha atual"
-          error={errors.currentPassword}
-          className={cn('max-w-[26rem]', PASSWORD_CONTROL)}
-        >
-          <PasswordInput
+        {criar ? (
+          <p className="text-[0.9rem] text-muted-foreground">
+            A senha é opcional: você também entra pelo código enviado ao seu e-mail.
+          </p>
+        ) : (
+          <ProfileField
             id="currentPassword"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
-        </ProfileField>
+            label="Senha atual"
+            error={errors.currentPassword}
+            className={cn('max-w-[26rem]', PASSWORD_CONTROL)}
+          >
+            <PasswordInput
+              id="currentPassword"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </ProfileField>
+        )}
         <div className="grid gap-5 sm:grid-cols-2">
           <ProfileField
             id="newPassword"
@@ -237,11 +265,13 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
         <p className="text-[0.9rem] text-muted-foreground">
           {impersonating
             ? 'Numa sessão de suporte a senha não pode ser trocada.'
-            : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}
+            : criar
+              ? 'Ao criar a senha, você sai de todos os aparelhos e entra de novo.'
+              : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}
         </p>
         <button type="submit" disabled={saving || impersonating} className="sz-btn self-start">
           {saving ? <Spinner /> : null}
-          Alterar senha
+          {criar ? 'Criar senha' : 'Alterar senha'}
         </button>
       </form>
     </section>

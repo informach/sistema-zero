@@ -390,7 +390,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       })
       toast.success('Senha criada. A pessoa precisa entrar de novo em todos os aparelhos.')
       setAccessUser(null)
-      await load() // reflete "convite sem resposta" → definido na listagem.
+      await load() // reflete "Entra só por código" → com senha, na listagem.
     } catch (err) {
       toast.error((err as ApiError).message ?? 'A senha não foi criada. Tente de novo.')
     } finally {
@@ -760,14 +760,16 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">{u.email}</div>
-                    {/* Só numa conta ATIVA: a conta pendente já diz "Ativação pendente". */}
+                    {/* Só informativo (a senha é opcional desde 15/11/2026, e o código do e-mail
+                        entra no Kids e na Comunidade adulta). Só numa conta ATIVA: a pendente já
+                        diz "Ativação pendente". */}
                     {u.passwordSet || u.status !== 'active' ? null : (
                       <Badge
                         variant="outline"
-                        className="mt-1 border-amber-500/50 text-amber-600 dark:text-amber-400"
-                        title="A pessoa ainda não criou a senha. O login por código fica bloqueado até o primeiro acesso."
+                        className="mt-1 text-muted-foreground"
+                        title="A pessoa não criou senha e entra pelo código enviado ao e-mail. A senha é opcional."
                       >
-                        Convite sem resposta
+                        Entra só por código
                       </Badge>
                     )}
                   </TableCell>
@@ -1016,9 +1018,10 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       >
         <div className="flex flex-col gap-5">
           {accessUser && !accessUser.passwordSet ? (
-            <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-amber-700 text-xs dark:text-amber-300">
-              Esta pessoa <strong>ainda não criou a senha</strong>: o convite ou a compra ficou sem
-              resposta. O login por código fica bloqueado até o primeiro acesso.
+            <p className="text-muted-foreground text-xs">
+              Esta pessoa <strong>não criou senha</strong> e entra pelo código enviado ao e-mail, no
+              Kids e na Comunidade adulta. A senha é opcional: se ela quiser uma, pode criar na
+              própria conta, pelo link abaixo ou você pode definir aqui.
             </p>
           ) : (
             <p className="text-muted-foreground text-xs">Esta pessoa já criou a própria senha.</p>

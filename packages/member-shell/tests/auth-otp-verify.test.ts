@@ -26,8 +26,8 @@ function postVerify(body: unknown): Request {
   })
 }
 
-describe('authOtpVerify: gate de conta sem senha definida', () => {
-  test('403 do auth com PASSWORD_NOT_SET é repassado (a UI orienta criar a senha)', async () => {
+describe('authOtpVerify: o 403 do auth é a conta inativa', () => {
+  test('a senha é opcional: um PASSWORD_NOT_SET antigo também vira INACTIVE', async () => {
     const routes = makeRoutes({ status: 403, body: { error: { code: 'PASSWORD_NOT_SET' } } })
 
     const res = await routes.authOtpVerify.POST(
@@ -35,7 +35,7 @@ describe('authOtpVerify: gate de conta sem senha definida', () => {
     )
 
     expect(res.status).toBe(403)
-    expect(await res.json()).toMatchObject({ error: { code: 'PASSWORD_NOT_SET' } })
+    expect(await res.json()).toMatchObject({ error: { code: 'INACTIVE' } })
   })
 
   test('403 com outro code (ou sem code) segue colapsado em INACTIVE', async () => {

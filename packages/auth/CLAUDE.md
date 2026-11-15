@@ -395,12 +395,20 @@ src/
     código vigente). `POST /auth/otp/verify` = login passwordless (→ tokens);
     `POST /auth/password/reset-otp` consome o código, define a senha nova e
     **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha` do community (o
-    reset por LINK do item 8 continua p/ o 1º acesso pós-compra). ⚠️ **O
-    `otp/verify` RECUSA conta sem senha definida (07/2026):** se `!user.isPasswordSet()`
-    (convite/compra pendente — Decisão 13) → **403 `PASSWORD_NOT_SET`** (após casar o
-    código, como o `USER_NOT_ACTIVE`; não consome). Senão a pessoa entraria numa sessão
-    que a área dos pais (valida a senha REAL) nunca deixa passar — beco sem saída. A
-    saída é o link de 1º acesso / "esqueci a senha".
+    reset por LINK do item 8 continua p/ o 1º acesso pós-compra). ⭐ **A SENHA É OPCIONAL
+    PARA O CLIENTE (decisão da dona, 15/11/2026; substitui a trava de 07/2026):** o
+    código do e-mail é pedido e aceito com ou sem senha definida, no Kids e na Comunidade
+    adulta. Motivo: desde 10/10/2026 a criança tem o próprio acesso (o aparelho que o
+    responsável autorizou), então a senha deixou de separar a sessão do pai da do filho; e
+    quem tem o e-mail já criaria uma senha pelo "Esqueci minha senha". O
+    `PASSWORD_NOT_SET` saiu (o erro, o mapeamento e as mensagens das telas). Quem nunca
+    definiu senha CRIA uma em `POST /auth/me/password` sem a atual
+    (`ChangeMyPasswordService`; com senha definida, a atual segue obrigatória), e o
+    `UserView` traz `passwordSet` para a tela oferecer "Criar senha". A EQUIPE continua
+    precisando de senha: `StaffOperationsService` exige `isPasswordSet()` e o Admin só
+    entra por senha. ⚠️ Histórico: a trava foi tirada só do Kids em 10/10/2026 (commit
+    `197c7d114`) sem registro aqui, e o Admin seguiu dizendo "o login por código fica
+    bloqueado"; não repetir mudança de regra sem atualizar este item.
 
 12. **⚠️ Gotcha do drizzle ≥ 0.44 (vale p/ o monorepo):** erros do driver chegam
     ENVELOPADOS em `DrizzleQueryError` — o `PostgresError` original (com
@@ -416,9 +424,11 @@ src/
     07/2026):** timestamp NULLABLE. `null` nas contas de **CONVITE** (admin) e **COMPRA**
     (funil/ensure-buyer), cuja senha é aleatória/dummy; carimbado quando o dono define a
     senha (`UserAggregate.changePassword` → cobre reset por LINK/OTP e troca logado) e no
-    **cadastro público** (`register` passa `passwordSet: true`). É o sinal que trava o
-    login por CÓDIGO de conta pendente (Decisão 11) e que o painel usa (`AdminUserView.
-    passwordSet`) p/ marcar "acesso pendente" + oferecer reenviar/definir senha. `register`
+    **cadastro público** (`register` passa `passwordSet: true`). Desde 15/11/2026 a senha é
+    OPCIONAL para o cliente (item 11): o sinal NÃO trava mais o login por código. Ele serve
+    à tela de senha ("Criar senha" sem a atual, via `UserView.passwordSet`), ao painel
+    (`AdminUserView.passwordSet`, chip informativo "Entra só por código" + reenviar/definir
+    senha) e à equipe (`StaffOperationsService` exige senha). `register`
     ganhou o flag opcional `passwordSet` (**default `false` — seguro:** criação nova que
     esqueça de sinalizar nasce "sem senha", travada, nunca o contrário). **Backfill da
     migration = `created_at` para TODOS os existentes** (nunca travar um usuário legítimo

@@ -182,9 +182,9 @@ export class UserAggregate extends AggregateRoot<string> {
 
   /**
    * O dono já DEFINIU a própria senha? `false` numa conta de convite/compra cuja
-   * senha ainda é a aleatória/dummy. O login por CÓDIGO (OTP) recusa essas contas —
-   * senão a pessoa entra numa sessão que a área dos pais (que valida a senha real)
-   * nunca deixa passar. Ela precisa definir a senha pelo link de 1º acesso.
+   * senha ainda é a aleatória/dummy. Para o CLIENTE a senha é opcional (15/11/2026): ele
+   * entra pelo código do e-mail e cria a senha se quiser (`ChangeMyPasswordService`
+   * dispensa a atual nesse caso). A EQUIPE continua precisando dela para operar.
    */
   isPasswordSet(): boolean {
     return this.props.passwordSetAt !== null

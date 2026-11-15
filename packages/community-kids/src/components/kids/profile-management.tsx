@@ -10,7 +10,7 @@ import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { GuideBalloon } from '@/components/kids/parent-guide'
 import { POLITICA_PRIVACIDADE_URL } from '@/lib/links'
@@ -332,6 +332,24 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // A senha é opcional (15/11/2026): quem entra só pelo código do e-mail CRIA a senha aqui, sem
+  // a atual. `null` enquanto lê; na falha da leitura, o formulário de sempre (pede a atual).
+  const [temSenha, setTemSenha] = useState<boolean | null>(null)
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { passwordSet?: boolean } | null) => {
+        if (vivo) setTemSenha(body?.passwordSet !== false)
+      })
+      .catch(() => {
+        if (vivo) setTemSenha(true)
+      })
+    return () => {
+      vivo = false
+    }
+  }, [])
+  const criar = temSenha === false
   const formId = 'parentPasswordChangeForm'
 
   async function onSubmit(e: React.FormEvent) {
@@ -350,10 +368,14 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
       const res = await fetch('/api/auth/me/password', {
         method: 'POST',
         headers: JSON_HEADERS,
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify(criar ? { newPassword } : { currentPassword, newPassword }),
       })
       if (res.ok) {
-        toast.success('Senha alterada! Entre novamente com a nova senha.')
+        toast.success(
+          criar
+            ? 'Senha criada! Entre novamente com a sua senha ou com o código do e-mail.'
+            : 'Senha alterada! Entre novamente com a nova senha.',
+        )
         window.location.replace('/login')
         return
       }
@@ -376,29 +398,39 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
       onClose={() => {
         if (!saving) onCancel()
       }}
-      title="Alterar senha do responsável"
-      description="Por segurança, você será desconectado de todos os dispositivos."
+      title={criar ? 'Criar senha do responsável' : 'Alterar senha do responsável'}
+      description={
+        criar
+          ? 'A senha é opcional: você também pode entrar pelo código enviado ao seu e-mail. Depois de criar, entre de novo em todos os dispositivos.'
+          : 'Por segurança, você será desconectado de todos os dispositivos.'
+      }
       className="max-w-sm rounded-2xl"
       footer={
         <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
           <Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>
             Cancelar
           </Button>
-          <Button type="submit" form={formId} disabled={saving || !currentPassword || !newPassword}>
-            {saving ? <Spinner className="size-4" /> : 'Alterar'}
+          <Button
+            type="submit"
+            form={formId}
+            disabled={saving || temSenha === null || (!criar && !currentPassword) || !newPassword}
+          >
+            {saving ? <Spinner className="size-4" /> : criar ? 'Criar senha' : 'Alterar'}
           </Button>
         </div>
       }
     >
       <form id={formId} className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <Field label="Senha atual" htmlFor="currentPassword">
-          <PasswordInput
-            id="currentPassword"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
-        </Field>
+        {criar ? null : (
+          <Field label="Senha atual" htmlFor="currentPassword">
+            <PasswordInput
+              id="currentPassword"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </Field>
+        )}
         <Field label="Nova senha" htmlFor="newPassword">
           <PasswordInput
             id="newPassword"

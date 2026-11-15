@@ -41,13 +41,6 @@ const SERVER_MESSAGES: Record<string, ReactNode> = {
       <strong>Esta conta está inativa.</strong> Veja na ajuda para entrar como falar com a equipe.
     </>
   ),
-  // Conta comprada que ainda não criou a senha: o código não entra por ela.
-  PASSWORD_NOT_SET: (
-    <>
-      <strong>Você ainda não criou a sua senha.</strong> Abra o link da mensagem de boas-vindas ou
-      use “Esqueci minha senha”.
-    </>
-  ),
   TOO_MANY_ATTEMPTS: 'Muitas tentativas seguidas. Espere um minuto e tente de novo.',
   TOO_MANY_REQUESTS: 'Muitas tentativas seguidas. Espere um minuto e tente de novo.',
   SERVICE_UNAVAILABLE: 'O acesso está fora do ar agora. Tente de novo em alguns instantes.',

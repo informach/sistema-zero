@@ -49,8 +49,8 @@ export const users = auth.table(
     // URL pública da foto de perfil (upload feito pelo app cliente; ex.: R2).
     avatarUrl: text('avatar_url'),
     // Quando o dono DEFINIU a própria senha (cadastro/reset/troca). `null` nas contas
-    // de CONVITE (admin) e COMPRA (funil), cuja senha é aleatória/dummy — essas são
-    // barradas no login por código (OTP) até a senha ser definida no 1º acesso.
+    // de CONVITE (admin) e COMPRA (funil), cuja senha é aleatória/dummy. Desde 15/11/2026
+    // a senha é opcional para o cliente: o login por código vale com ou sem ela.
     passwordSetAt: timestamp('password_set_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

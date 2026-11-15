@@ -14,6 +14,11 @@ export interface UserView {
   phone?: string
   signupSource?: string
   avatarUrl?: string
+  /**
+   * A pessoa já definiu uma senha? A senha é opcional (entra pelo código do e-mail); a tela
+   * de senha usa isto para oferecer "Criar senha" (sem a atual) ou "Alterar senha".
+   */
+  passwordSet: boolean
 }
 
 export function toUserView(user: UserAggregate): UserView {
@@ -24,6 +29,7 @@ export function toUserView(user: UserAggregate): UserView {
     lastName: user.lastName,
     role: user.role,
     status: user.status,
+    passwordSet: user.isPasswordSet(),
   }
   if (user.phone) view.phone = user.phone
   if (user.signupSource) view.signupSource = user.signupSource

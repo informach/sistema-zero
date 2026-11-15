@@ -94,9 +94,12 @@ export const UpdateMeBody = t.Object({
   avatarUrl: t.Optional(t.Union([t.String({ maxLength: 2000, pattern: '^https?://' }), t.Null()])),
 })
 
-/** Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). */
+/**
+ * Corpo de `POST /auth/me/password` (troca logado). A senha atual é exigida de quem já tem
+ * uma; quem nunca definiu senha cria sem ela (o serviço confere).
+ */
 export const ChangeMyPasswordBody = t.Object({
-  currentPassword: t.String({ minLength: 1, maxLength: 200 }),
+  currentPassword: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   newPassword: t.String({ minLength: 1, maxLength: 200 }),
 })
 

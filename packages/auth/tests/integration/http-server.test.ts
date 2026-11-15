@@ -841,6 +841,47 @@ describe('Password reset + perfil self-service', () => {
     ).toBe(200)
   })
 
+  test('quem nunca definiu senha CRIA a senha sem a atual; quem já tem continua precisando dela', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(
+      post('/auth/internal/ensure-buyer', REGISTER_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
+    const code = messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)
+      ?.variables.codigo
+    const verificado = await app.handle(
+      post('/auth/otp/verify', { email: 'maria@example.com', code }),
+    )
+    expect(verificado.status).toBe(200)
+    const entrou = (await verificado.json()) as { tokens: Tokens }
+    const criou = await app.handle(
+      post(
+        '/auth/me/password',
+        { newPassword: 'minha-senha-nova-123' },
+        { authorization: `Bearer ${entrou.tokens.accessToken}` },
+      ),
+    )
+    expect(criou.status).toBe(200)
+    const login = await app.handle(
+      post('/auth/login', { email: 'maria@example.com', password: 'minha-senha-nova-123' }),
+    )
+    expect(login.status).toBe(200)
+    const logado = (await login.json()) as { user: { passwordSet: boolean }; tokens: Tokens }
+    expect(logado.user.passwordSet).toBe(true)
+    // Agora que existe senha, trocar sem a atual é recusado.
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/me/password',
+            { newPassword: 'outra-senha-nova-456' },
+            { authorization: `Bearer ${logado.tokens.accessToken}` },
+          ),
+        )
+      ).status,
+    ).toBe(401)
+  })
+
   test('POST /auth/internal/password-tokens exige o token interno e emite token utilizável', async () => {
     const { app } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -1031,7 +1072,7 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     expect(body.tokens.accessToken.length).toBeGreaterThan(0)
     expect(body.tokens.refreshToken.length).toBeGreaterThan(0)
   })
-  test('responsável Kids pode entrar por e-mail antes de definir senha, sem mudar a regra dos outros produtos', async () => {
+  test('a senha é opcional: conta sem senha entra pelo código no Kids e na Comunidade adulta', async () => {
     const { app, messaging } = buildApp()
     expect(
       (
@@ -1055,19 +1096,14 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(200)
     const code = messaging.sent.find((email) => email.templateKey === 'otp')?.variables.codigo
     expect(code).toMatch(/^\d{6}$/)
-    expect(
-      (
-        await app.handle(
-          post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'main' }),
-        )
-      ).status,
-    ).toBe(403)
     const accepted = await app.handle(
       post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'kids' }),
     )
     expect(accepted.status).toBe(200)
-    const body = (await accepted.json()) as { tokens: Tokens }
+    const body = (await accepted.json()) as { user: { passwordSet: boolean }; tokens: Tokens }
     expect(decodeJwt(body.tokens.accessToken).kids).toMatchObject({ kind: 'parent' })
+    // A tela de senha sabe que a conta ainda não tem uma ("Criar senha").
+    expect(body.user.passwordSet).toBe(false)
     expect(
       (
         await app.handle(
@@ -1075,6 +1111,18 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
         )
       ).status,
     ).toBe(401)
+
+    // Na Comunidade adulta, o mesmo: um código novo entra sem senha definida.
+    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
+    const adulto = messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)
+      ?.variables.codigo
+    expect(
+      (
+        await app.handle(
+          post('/auth/otp/verify', { email: 'maria@example.com', code: adulto, platform: 'main' }),
+        )
+      ).status,
+    ).toBe(200)
   })
 
   test('código de uso único: o mesmo código não loga duas vezes', async () => {
@@ -1154,18 +1202,13 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     )
   }
 
-  test('conta sem senha definida NÃO recebe código de LOGIN (o verify o recusaria)', async () => {
+  test('conta sem senha definida RECEBE código de LOGIN (a senha é opcional)', async () => {
     const { app, users, messaging } = buildApp()
     seedSemSenha(users, 'convidado@example.com')
 
-    const before = messaging.sent.length
-    const res = await app.handle(
-      post('/auth/otp/request', { email: 'convidado@example.com', purpose: 'sign_in' }),
-    )
+    const code = await requestCode(app, messaging, 'convidado@example.com', 'sign_in')
 
-    // Resposta genérica (anti-enumeração) e nenhum e-mail com código inútil.
-    expect(res.status).toBe(200)
-    expect(messaging.sent.slice(before)).toHaveLength(0)
+    expect(code).toMatch(/^\d{6}$/)
   })
 
   test('conta sem senha definida RECEBE código de password_reset (caminho de criar a senha)', async () => {

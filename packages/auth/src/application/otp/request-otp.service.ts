@@ -46,10 +46,10 @@ export class RequestOtpService {
     }
     const user = await this.users.findByEmail(email.value)
     if (!user?.isActive()) return
-    // No Kids o código autentica o responsável mesmo sem senha definida.
-    // Preserva a política de primeiro acesso dos outros produtos.
-    if (command.purpose === 'sign_in' && !user.isPasswordSet() && command.platform !== 'kids')
-      return
+    // A senha é OPCIONAL para o cliente (decisão da dona, 15/11/2026): o código enviado ao
+    // e-mail entra em qualquer produto, com ou sem senha definida. No Kids a criança tem o
+    // próprio acesso (o aparelho autorizado), então a senha deixou de separar pai e filho.
+    // A equipe continua precisando de senha para operar (`StaffOperationsService`).
 
     const now = new Date()
     const code = generateOtpCode()
