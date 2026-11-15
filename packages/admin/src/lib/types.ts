@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
@@ -355,6 +356,17 @@ export const COURSE_MODALITY_LABELS: Record<CourseModality, string> = {
 }
 
 /**
+ * Para quem é o curso (14/11/2026), só no Kids: a criança (trilha, Jornada) ou os pais (feito pelo
+ * responsável em "Cursos para pais", fora da Jornada e sem XP). Contrato em
+ * `@sistemazero/core/course/learner`.
+ */
+export type { CourseLearner }
+export const COURSE_LEARNER_LABELS: Record<CourseLearner, string> = {
+  child: 'Para crianças',
+  parents: 'Para pais',
+}
+
+/**
  * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
  * jornada). `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
@@ -430,6 +442,8 @@ export interface CourseView {
    * (`courseModalityOf` do core).
    */
   modality?: CourseModality
+  /** Para quem (só Kids). Opcional para tolerar members antigo: ausente = criança. */
+  learner?: CourseLearner
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */

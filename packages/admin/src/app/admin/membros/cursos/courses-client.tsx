@@ -57,6 +57,7 @@ import { courseCreationPrefill } from '@/lib/platform-transition'
 import { slugify } from '@/lib/slug'
 import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import {
+  COURSE_LEARNER_LABELS,
   COURSE_MODALITY_LABELS,
   COURSE_STATUSES,
   COURSE_TIER_OPTIONS,
@@ -88,6 +89,8 @@ export function CoursesClient({
   const [status, setStatus] = useState('')
   /** Gravado × ao vivo ('' = todos). O BFF repassa `?modality=` ao members. */
   const [modality, setModality] = useState('')
+  /** Para crianças × para pais ('' = todos), só no Kids. O BFF repassa `?learner=`. */
+  const [learner, setLearner] = useState('')
   const [loading, setLoading] = useState(true)
   const [journeyItems, setJourneyItems] = useState<CourseView[]>([])
   const [journeyLoading, setJourneyLoading] = useState(true)
@@ -131,6 +134,7 @@ export function CoursesClient({
         if (q.trim()) params.set('q', q.trim())
         if (status) params.set('status', status)
         if (modality) params.set('modality', modality)
+        if (learner && platform === 'kids') params.set('learner', learner)
         return apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
       },
       {
@@ -144,7 +148,7 @@ export function CoursesClient({
         onSettled: () => setLoading(false),
       },
     )
-  }, [offset, q, status, modality, platform, loadAuthority])
+  }, [offset, q, status, modality, learner, platform, loadAuthority])
 
   const loadJourney = useCallback(async () => {
     // A grade da Jornada precisa de TODOS os cursos gravados da plataforma (a varredura pagina a
@@ -166,7 +170,7 @@ export function CoursesClient({
         // servidor e é repetido aqui (members antigo ignora o parâmetro).
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
-            `/api/members/courses?audience=${platform}&modality=recorded&limit=${limit}&offset=${pageOffset}`,
+            `/api/members/courses?audience=${platform}&modality=recorded&learner=child&limit=${limit}&offset=${pageOffset}`,
           ),
         ),
       {
@@ -326,6 +330,21 @@ export function CoursesClient({
           <option value="recorded">Só gravados</option>
           <option value="live">Só ao vivo</option>
         </Select>
+        {platform === 'kids' ? (
+          <Select
+            aria-label="Para quem"
+            value={learner}
+            onChange={(e) => {
+              setPage({ platform, offset: 0 })
+              setLearner(e.target.value)
+            }}
+            className="sm:w-44"
+          >
+            <option value="">Crianças e pais</option>
+            <option value="child">{COURSE_LEARNER_LABELS.child}</option>
+            <option value="parents">{COURSE_LEARNER_LABELS.parents}</option>
+          </Select>
+        ) : null}
       </div>
 
       <Card>
@@ -344,7 +363,7 @@ export function CoursesClient({
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4}>
-                  {q.trim() || status || modality ? (
+                  {q.trim() || status || modality || learner ? (
                     <EmptyState
                       title="Nenhum curso com esse filtro"
                       description="Tente outra busca ou tire um dos filtros."
@@ -374,6 +393,11 @@ export function CoursesClient({
                       {c.audience === 'kids' ? (
                         <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success-foreground">
                           Kids
+                        </span>
+                      ) : null}
+                      {c.learner === 'parents' ? (
+                        <span className="rounded-full bg-warning-tint px-2 py-0.5 text-[11px] font-medium text-warning">
+                          {COURSE_LEARNER_LABELS.parents}
                         </span>
                       ) : null}
                       {isLiveCourse(c) ? (
@@ -787,7 +811,9 @@ function CloneCourseDialog({
       description={
         live
           ? 'O curso inteiro é copiado: módulos, aulas, partes e anexos. A cópia também é ao vivo e nasce como rascunho, sem turmas. Depois de copiar, o que muda num curso não muda no outro.'
-          : 'O curso inteiro é copiado: módulos, aulas, partes e anexos. A cópia nasce como rascunho, fora da Jornada do Criador. Depois de copiar, o que muda num curso não muda no outro.'
+          : course?.learner === 'parents'
+            ? 'O curso inteiro é copiado: módulos, aulas, partes e anexos. Curso para pais só existe no Kids: a cópia vira um curso comum, nasce como rascunho e, depois de copiar, o que muda num curso não muda no outro.'
+            : 'O curso inteiro é copiado: módulos, aulas, partes e anexos. A cópia nasce como rascunho, fora da Jornada do Criador. Depois de copiar, o que muda num curso não muda no outro.'
       }
       footer={
         <>

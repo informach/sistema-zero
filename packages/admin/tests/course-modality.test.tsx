@@ -25,8 +25,13 @@ const { CourseFormDialog } = await import('../src/app/admin/membros/cursos/cours
 const { CoursesClient } = await import('../src/app/admin/membros/cursos/courses-client')
 const { PlatformProvider } = await import('../src/components/admin/platform-provider')
 const { setPlatform } = await import('../src/components/admin/platform-store')
-const { isLiveCourse, modalityChangeWarning, modalityFilterParam, studentLessonLink } =
-  await import('../src/lib/course-modality')
+const {
+  isLiveCourse,
+  learnerFilterParam,
+  modalityChangeWarning,
+  modalityFilterParam,
+  studentLessonLink,
+} = await import('../src/lib/course-modality')
 
 type Editing = Parameters<typeof CourseFormDialog>[0]['editing']
 /** As telas do curso são as mais pesadas: com a máquina ocupada passavam dos 5 s do bun. */
@@ -306,5 +311,18 @@ describe('regras puras da modalidade', () => {
     expect(studentLessonLink({ ...course, modality: 'live' }, urls, 'l1')).toBeNull()
     expect(studentLessonLink(course, { adult: 'https://adultos.example' }, 'l1')).toBeNull()
     expect(studentLessonLink(null, urls, 'l1')).toBeNull()
+    // Curso para pais (14/11/2026) abre na área dos pais.
+    expect(studentLessonLink({ ...course, learner: 'parents' }, urls, 'l1')?.url).toBe(
+      'https://kids.example/pais/cursos/farol/aulas/l1',
+    )
+  })
+})
+
+describe('para quem: o filtro da lista', () => {
+  test('só valores do contrato chegam ao servidor', () => {
+    expect(learnerFilterParam('parents')).toBe('parents')
+    expect(learnerFilterParam('child')).toBe('child')
+    expect(learnerFilterParam('todos')).toBeUndefined()
+    expect(learnerFilterParam(null)).toBeUndefined()
   })
 })
