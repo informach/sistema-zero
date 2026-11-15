@@ -34,5 +34,9 @@ export function kidsMayUseBff(
     pathname.startsWith('/api/parents/') ||
     pathname.startsWith('/api/payments/') ||
     pathname.startsWith('/api/helpdesk/portal/')
-  return kids.kind === 'parent' ? parentOnly : !parentOnly
+  // Cursos para pais (14/11/2026): a aula dos pais usa os mesmos endereços da aula da criança
+  // (curso, aula, blocos, anexos, livro e as dúvidas). O members só abre curso para pais na conta.
+  const parentLearning =
+    /^\/api\/(members\/(courses|catalog|lessons|teacher-threads)|cursos)(\/|$)/.test(pathname)
+  return kids.kind === 'parent' ? parentOnly || parentLearning : !parentOnly
 }

@@ -8,7 +8,14 @@ import { KidsMascot } from './mascot'
  * a trilha libera uma aula de cada vez (estilo Duolingo). Sem erro feio — mascote
  * + botão de volta pra trilha.
  */
-export function KidsLockedLesson({ courseSlug }: { courseSlug: string }) {
+export function KidsLockedLesson({
+  courseSlug,
+  courseHref = `/cursos/${encodeURIComponent(courseSlug)}`,
+}: {
+  courseSlug: string
+  /** Onde fica o curso: a área da criança, ou `/pais/cursos/...` nos cursos para pais. */
+  courseHref?: string
+}) {
   return (
     <KidsRecado
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
@@ -19,7 +26,7 @@ export function KidsLockedLesson({ courseSlug }: { courseSlug: string }) {
       chipIcon={Lock}
       title="Aula trancada"
       actions={
-        <Link href={`/cursos/${encodeURIComponent(courseSlug)}`} className="sz-btn-gradient">
+        <Link href={courseHref} className="sz-btn-gradient">
           Voltar ao curso
         </Link>
       }

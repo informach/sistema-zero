@@ -31,6 +31,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     careerSlot: null,
     journeyRole: 'reward',
     modality: 'recorded',
+    learner: 'child',
     metadata: null,
     createdAt: created,
     updatedAt: created,

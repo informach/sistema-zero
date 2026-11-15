@@ -28,6 +28,7 @@ export function ProfileEditor({
   profile,
   showGuideHint = false,
   voiceAvailable = false,
+  embedded = false,
 }: {
   parentName?: string
   /** Ausente = criança nova. */
@@ -36,11 +37,16 @@ export function ProfileEditor({
   showGuideHint?: boolean
   /** A fala está ligada no servidor: o formulário oferece "Falar em vez de escrever". */
   voiceAvailable?: boolean
+  /**
+   * Dentro da aba Perfil da página do filho (redesenho de 14/11/2026): sem moldura nem link de
+   * volta, porque a página já tem os dois.
+   */
+  embedded?: boolean
 }) {
   const creationRequestId = useRef<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [removing, setRemoving] = useState(false)
-  const back = profile ? childHref(profile.id) : '/pais'
+  const back = profile ? childHref(profile.id) : '/pais/familia'
 
   async function run(action: () => Promise<void>) {
     setBusy(true)
@@ -87,7 +93,7 @@ export function ProfileEditor({
             throw error
           const criado = await salvar({ ...values, voiceInputEnabled: false })
           trackOnboardingEvent({ audience: 'parent', action: 'profile_created', step: 'profile' })
-          window.location.assign(comAviso(childHref(criado.profile.id), 'fala-entrar'))
+          window.location.assign(comAviso(childHref(criado.profile.id, 'aparelhos'), 'fala-entrar'))
           return
         }
         if (!existing)
@@ -101,12 +107,13 @@ export function ProfileEditor({
           (result.profile.voiceInputEnabled === true) !== values.voiceInputEnabled
         if (falaNaoGravou && existing) {
           toast.error(
-            'Não consegui guardar a escolha da fala agora. Confira em Editar perfil daqui a pouco.',
+            'Não consegui guardar a escolha da fala agora. Confira na aba Perfil daqui a pouco.',
           )
           setBusy(false)
           return
         }
-        const destino = childHref(result.profile.id)
+        // Criança nova: o passo seguinte é o acesso nos aparelhos. Edição: fica no perfil.
+        const destino = childHref(result.profile.id, existing ? 'perfil' : 'aparelhos')
         window.location.assign(falaNaoGravou ? comAviso(destino, 'fala-nao-gravou') : destino)
       } catch (error) {
         if (error instanceof StudyRequestError && error.code === 'PROFILE_AGE_RESTRICTED')
@@ -120,18 +127,12 @@ export function ProfileEditor({
     if (!profile) return
     void run(async () => {
       await archiveProfile(profile.id)
-      window.location.assign('/pais')
+      window.location.assign('/pais/familia')
     })
   }
 
-  return (
-    <ParentShell active="familia" parentName={parentName}>
-      <Link
-        href={back}
-        className="-mb-4 inline-flex min-h-11 items-center gap-2 self-start font-bold text-muted-foreground text-sm hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" /> {profile ? profile.name : 'Família'}
-      </Link>
+  const form = (
+    <>
       <ProfileForm
         editing={profile ? { mode: 'edit', profile } : { mode: 'create' }}
         busy={busy}
@@ -148,6 +149,18 @@ export function ProfileEditor({
         onCancel={() => setRemoving(false)}
         onConfirm={remove}
       />
+    </>
+  )
+  if (embedded) return form
+  return (
+    <ParentShell active="familia" activeChildId={profile?.id} parentName={parentName}>
+      <Link
+        href={back}
+        className="-mb-4 inline-flex min-h-11 items-center gap-2 self-start font-bold text-muted-foreground text-sm hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" /> {profile ? profile.name : 'Família'}
+      </Link>
+      {form}
     </ParentShell>
   )
 }

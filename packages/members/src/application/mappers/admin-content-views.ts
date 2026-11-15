@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type {
@@ -43,6 +44,8 @@ export interface CourseView {
   videoBeforeActivity: boolean
   /** Gravado (`recorded`) ou ao vivo (`live`): o ao vivo só existe em Oficinas, fora da Jornada. */
   modality: CourseModality
+  /** Para quem: criança (`child`) ou pais (`parents`, só Kids, fora da Jornada e da gamificação). */
+  learner: CourseLearner
   /**
    * Blocos que este curso LIBERA no Estúdio livre quando o aluno satisfaz o critério
    * atual (bônus Kids: conclusão; demais: conclusão + Mural). Vem de
@@ -85,6 +88,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     sequentialLock: c.sequentialLock,
     videoBeforeActivity: c.videoBeforeActivity,
     modality: c.modality,
+    learner: c.learner,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),

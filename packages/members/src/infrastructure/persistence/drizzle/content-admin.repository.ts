@@ -97,6 +97,7 @@ const toCourse = (r: CourseRow): Course => ({
   sequentialLock: r.sequentialLock,
   videoBeforeActivity: r.videoBeforeActivity,
   modality: r.modality,
+  learner: r.learner,
   level: r.level,
   track: r.track,
   careerSlot: r.careerSlot,
@@ -338,6 +339,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     if (filter.status) clauses.push(eq(courses.status, filter.status))
     if (filter.audience) clauses.push(eq(courses.audience, filter.audience))
     if (filter.modality) clauses.push(eq(courses.modality, filter.modality))
+    if (filter.learner) clauses.push(eq(courses.learner, filter.learner))
     const where = clauses.length > 0 ? and(...clauses) : undefined
 
     const [rows, [counted]] = await Promise.all([
@@ -373,6 +375,23 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return rows.map((row) => row.courseId)
   }
 
+  async listPublishedLessonTitlesWithChildOnlyBlocks(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectDistinct({ title: lessons.title })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          isNull(lessonBlocks.archivedAt),
+          inArray(lessonBlocks.kind, ['studio', 'pinta']),
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+    return rows.map((row) => row.title)
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     const now = new Date()
     const row = {
@@ -398,6 +417,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
       // Idem: o service normaliza; `?? 'recorded'` cobre chamada direta.
       modality: fields.modality ?? ('recorded' as const),
+      // Idem: o service normaliza; `?? 'child'` cobre chamada direta.
+      learner: fields.learner ?? ('child' as const),
       // `salesPageUrl` e `studioUnlockBlocks` moram no metadata (jsonb) — as duas
       // chaves geridas pelo form do curso (a 2ª é o currículo do Estúdio livre).
       metadata: buildCourseMetadata(fields),
@@ -466,6 +487,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         journeyRole: 'reward' as const,
         // A modalidade pedida (o service usa a da origem quando o pedido não diz).
         modality: overrides.modality,
+        learner: overrides.learner,
         metadata,
         createdAt: now,
         updatedAt: now,
@@ -741,6 +763,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             careerSlot: course.careerSlot,
             journeyRole: course.journeyRole,
             modality: course.modality,
+            learner: course.learner,
             metadata: course.metadata,
             updatedAt: new Date(),
             version: expectedVersion + 1,

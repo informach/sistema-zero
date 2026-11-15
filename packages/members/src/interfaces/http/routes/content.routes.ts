@@ -80,6 +80,8 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   journeyRole: Object.hasOwn(b, 'journeyRole') ? b.journeyRole : undefined,
   // `null` = não informado (create → recorded; update → preserva).
   modality: b.modality ?? null,
+  // `null` = não informado (create → child; update → preserva).
+  learner: b.learner ?? null,
   // Currículo do Estúdio — MESMA distinção do `careerSlot`: ausente PRESERVA (build antigo
   // do admin não apaga o que a professora liberou), `null`/`[]` limpam de propósito.
   // ⚠️ Estar no DTO NÃO basta: este mapeador é a fronteira real, e um campo que não é
@@ -249,6 +251,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
             status: query.status as CourseStatus | undefined,
             audience: query.audience,
             modality: query.modality,
+            learner: query.learner,
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })

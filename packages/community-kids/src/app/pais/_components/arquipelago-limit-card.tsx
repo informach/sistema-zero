@@ -8,25 +8,27 @@ import {
   LimiteDaFamiliaSchema,
   type PermissoesDaFamilia,
   PermissoesDaFamiliaSchema,
-  type SemanaDaFamiliaParaOsPais,
-  SemanaDaFamiliaParaOsPaisSchema,
 } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
 import { Minus, Plus, TreePalm } from 'lucide-react'
 import { type FormEvent, useEffect, useId, useState } from 'react'
 import type { z } from 'zod'
-import { duracaoPorExtenso, PermissoesDeVisita, SemanaDasCriancas } from './arquipelago-familia'
-import { MinijogosDaFamilia } from './arquipelago-minijogos'
+import { duracaoPorExtenso, PermissoesDeVisita } from './arquipelago-familia'
 import { PRIMARY_ACTION } from './parent-actions'
 
 export { duracaoPorExtenso } from './arquipelago-familia'
 
-const ROTA = '/api/parents/arquipelago/limite'
-const ROTA_DA_SEMANA = '/api/parents/arquipelago/semana'
+export const ROTA_DO_LIMITE = '/api/parents/arquipelago/limite'
+export const ROTA_DA_SEMANA = '/api/parents/arquipelago/semana'
+const ROTA = ROTA_DO_LIMITE
 const ROTA_DAS_PERMISSOES = '/api/parents/arquipelago/permissoes'
 
 /** Lê uma parte do cartão; qualquer falha (rede, status, formato) vira `null` e a parte some. */
-async function ler<T>(rota: string, schema: z.ZodType<T>, signal: AbortSignal): Promise<T | null> {
+export async function ler<T>(
+  rota: string,
+  schema: z.ZodType<T>,
+  signal: AbortSignal,
+): Promise<T | null> {
   try {
     const response = await sessionFetch(rota, { signal })
     if (!response.ok) return null
@@ -44,7 +46,10 @@ function ajustar(minutos: number): number {
 }
 
 /**
- * O Arquipélago Vagalume na Família: a semana de cada criança no jogo, o tempo livre por dia e as
+ * O Arquipélago Vagalume na página Família (redesenho de 14/11/2026): as regras que valem para a
+ * família toda, o tempo de jogo por dia e com quem os filhos podem interagir. A semana de cada
+ * um no jogo e os minijogos moram na aba "No jogo" da página do filho (`ArquipelagoDoFilho`).
+ * Antes: a semana de cada criança no jogo, o tempo livre por dia e as
  * permissões de visita. O cartão só aparece quando o serviço do jogo responde que alguma criança
  * da conta vê o jogo (a mesma política de acesso do jogo). Jogo fechado para a família, serviço
  * fora ou resposta estranha: o cartão fica escondido, porque um cartão de um jogo que a criança
@@ -56,7 +61,6 @@ export function ArquipelagoLimitCard() {
   const tituloDoLimite = useId()
   const ajuda = useId()
   const [limite, setLimite] = useState<number | null>(null)
-  const [semana, setSemana] = useState<SemanaDaFamiliaParaOsPais | null>(null)
   const [permissoes, setPermissoes] = useState<PermissoesDaFamilia | null>(null)
   const [valor, setValor] = useState(LIMITE_DIARIO_MINIMO_MINUTOS)
   const [ocupado, setOcupado] = useState(false)
@@ -73,12 +77,8 @@ export function ArquipelagoLimitCard() {
         if (!data.data.algumaCriancaVe) return
         setLimite(data.data.limiteDiarioMinutos)
         setValor(data.data.limiteDiarioMinutos)
-        const [lidaSemana, lidas] = await Promise.all([
-          ler(ROTA_DA_SEMANA, SemanaDaFamiliaParaOsPaisSchema, controller.signal),
-          ler(ROTA_DAS_PERMISSOES, PermissoesDaFamiliaSchema, controller.signal),
-        ])
+        const lidas = await ler(ROTA_DAS_PERMISSOES, PermissoesDaFamiliaSchema, controller.signal)
         if (controller.signal.aborted) return
-        if (lidaSemana?.algumaCriancaVe) setSemana(lidaSemana)
         setPermissoes(lidas)
       } catch {
         // Sem o serviço do jogo o cartão continua escondido.
@@ -111,7 +111,7 @@ export function ArquipelagoLimitCard() {
       setLimite(data.data.limiteDiarioMinutos)
       setValor(data.data.limiteDiarioMinutos)
       setAviso(
-        `Pronto. Agora cada criança tem ${duracaoPorExtenso(data.data.limiteDiarioMinutos)} por dia.`,
+        `Pronto. Agora cada um dos seus filhos pode jogar ${duracaoPorExtenso(data.data.limiteDiarioMinutos)} por dia.`,
       )
     } catch {
       setErro('Não consegui salvar agora. Tente de novo daqui a pouco.')
@@ -132,24 +132,24 @@ export function ArquipelagoLimitCard() {
         </span>
         <div className="flex min-w-0 flex-col gap-1">
           <h2 id={titulo} className="sz-display text-[1.25rem]">
-            Arquipélago Vagalume
+            Arquipélago Vagalume: as regras da família
           </h2>
           <p className="max-w-2xl text-muted-foreground text-sm">
-            O que as crianças fizeram no jogo, quanto tempo cada uma pode passear por dia e com quem
-            ela pode interagir lá dentro.
+            O Arquipélago é o jogo da plataforma. Nele, seus filhos passeiam pelas ilhas, cumprem
+            desafios do Estúdio e usam o que criaram no Pinta e no Molda. Aqui você decide quanto
+            tempo eles podem jogar por dia e com quem podem interagir. As regras valem para todos os
+            seus filhos.
           </p>
         </div>
       </div>
-      {semana ? <SemanaDasCriancas semana={semana} limiteDiarioMinutos={limite} /> : null}
-      <MinijogosDaFamilia />
       <section aria-labelledby={tituloDoLimite} className="flex flex-col gap-4">
         <div className="flex flex-col gap-0.5">
           <h3 id={tituloDoLimite} className="font-extrabold text-base">
-            Tempo livre no Arquipélago
+            Tempo de jogo por dia
           </h3>
           <p id={ajuda} className="max-w-2xl text-muted-foreground text-xs">
-            Quanto tempo cada criança pode passear pelo jogo por dia. Criar no Pinta, no Molda ou no
-            Estúdio não gasta esse tempo, nem quando ela abre as ferramentas de dentro do jogo.
+            Criar no Estúdio, no Pinta ou no Molda não conta nesse tempo, mesmo quando eles abrem as
+            ferramentas de dentro do jogo.
           </p>
         </div>
         <form onSubmit={salvar} className="flex flex-wrap items-center gap-x-6 gap-y-4">

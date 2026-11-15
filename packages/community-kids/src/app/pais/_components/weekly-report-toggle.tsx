@@ -56,7 +56,7 @@ export function WeeklyReportToggle() {
           <Mail className="size-4" aria-hidden="true" /> Receber o resumo da semana por e-mail
         </span>
         <span className="mt-1 block text-muted-foreground">
-          Toda sexta no fim da tarde enviamos como foi a semana das crianças.
+          Toda sexta, no fim da tarde, mandamos como foi a semana dos seus filhos.
         </span>
       </span>
       <span className="relative mt-0.5 inline-flex shrink-0">

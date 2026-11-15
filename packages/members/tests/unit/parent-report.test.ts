@@ -206,8 +206,8 @@ describe('SendParentReportsService.runCycle', () => {
     expect(email?.variables.resumo).toContain('Lia')
     expect(email?.variables.resumo).toContain('aula concluída')
     expect(email?.idempotencyKey).toBe(`weekly-report:${ACCOUNT}:w:2026-06-29`)
-    // O resumo é do responsável: o botão abre a Área dos pais, não a grade da criança.
-    expect(email?.variables.link).toBe('https://kids.example.com/pais/acompanhamento')
+    // O resumo é do responsável: o botão abre a Família da Área dos pais, não a grade da criança.
+    expect(email?.variables.link).toBe('https://kids.example.com/pais/familia')
 
     const second = await ctx.sender.runCycle()
     expect(second.sent).toBe(0)

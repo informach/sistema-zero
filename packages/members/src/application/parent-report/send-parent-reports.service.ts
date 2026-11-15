@@ -146,7 +146,11 @@ export class SendParentReportsService {
           this.gamification.listProfileIdsByAccount(accountId, 'kids'),
           this.learning.listProfileIdsByAccount(accountId, 'kids'),
         ])
-        const profileIds = [...new Set([...gamificationProfiles, ...learningProfiles])]
+        // A própria conta não é um filho: desde os cursos para pais (14/11/2026) ela também tem
+        // progresso de aula no Kids, e entrar como "perfil" derrubava o resumo da família.
+        const profileIds = [...new Set([...gamificationProfiles, ...learningProfiles])].filter(
+          (id) => id !== accountId,
+        )
         const stats = profileIds.length
           ? await this.childrenStats.execute(accountId, profileIds, { audience: 'kids' })
           : []
@@ -183,10 +187,10 @@ export class SendParentReportsService {
             criancas,
             semana: weekLabel,
             resumo,
-            // O resumo é do responsável: o link abre o Acompanhamento da Área dos pais,
-            // onde também se desliga este e-mail (sem sessão de responsável, o Kids leva à
-            // entrada dos responsáveis e volta para cá depois).
-            link: `${this.opts.kidsUrl ?? ''}/pais/acompanhamento`,
+            // O resumo é do responsável: o link abre a Família da Área dos pais, com os
+            // filhos e a página de cada um, onde também se desliga este e-mail (sem sessão de
+            // responsável, o Kids leva à entrada dos responsáveis e volta para cá depois).
+            link: `${this.opts.kidsUrl ?? ''}/pais/familia`,
           },
           // Dedupe do messaging: retry pós-crash entre enviar e marcar não duplica.
           idempotencyKey: `weekly-report:${accountId}:${weekKey}`,

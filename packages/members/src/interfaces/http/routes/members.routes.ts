@@ -92,6 +92,7 @@ import {
   AvatarsBatchQuery,
   CertificateParams,
   ChildrenStatsQuery,
+  CourseListQuery,
   CourseRatingBody,
   EbookResolveParams,
   GamificationQuery,
@@ -283,32 +284,42 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/courses',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
+          const accountId = resolveAccountId(headers)
+          const learner = query.learner ?? 'child'
+          // Curso para pais é da CONTA do responsável: a sessão de perfil não lista os dele.
+          if (learner === 'parents' && accountId !== userId) return { courses: [] }
           return {
             courses: await deps.listMyCourses.execute(
               userId,
               isPrivilegedActor(headers),
               query.audience ?? 'adult',
-              resolveAccountId(headers),
+              accountId,
+              learner,
             ),
           }
         },
-        { query: AudienceQuery },
+        { query: CourseListQuery },
       )
       // Catálogo "Todos os cursos" (published da audiência + flag hasAccess do aluno).
       .get(
         '/catalog',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
+          const accountId = resolveAccountId(headers)
+          const learner = query.learner ?? 'child'
+          // Curso para pais é da CONTA do responsável: a sessão de perfil não lista os dele.
+          if (learner === 'parents' && accountId !== userId) return { courses: [] }
           return {
             courses: await deps.listCatalog.execute(
               userId,
               isPrivilegedActor(headers),
               query.audience ?? 'adult',
-              resolveAccountId(headers),
+              accountId,
+              learner,
             ),
           }
         },
-        { query: AudienceQuery },
+        { query: CourseListQuery },
       )
       // "Esta CONTA tem acesso a estes produtos?" — gate de produtos que NÃO são
       // curso de trilha (ex.: o Estúdio Completo como produto vendável). Resolve pela

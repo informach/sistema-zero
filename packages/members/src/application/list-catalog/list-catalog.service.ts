@@ -1,5 +1,9 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseAudience } from '../../domain/course/course'
-import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
+import {
+  independentCourseAccessReason,
+  parentsCourseAccessReason,
+} from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
@@ -29,18 +33,22 @@ export class ListCatalogService {
     privileged = false,
     audience: CourseAudience = 'adult',
     accountId?: string,
+    learner: CourseLearner = 'child',
   ): Promise<CatalogCourseView[]> {
+    // Curso para pais (14/11/2026): só Kids, fora da Jornada; quem pede é a conta do responsável.
+    if (learner === 'parents' && audience !== 'kids') return []
+    const parents = learner === 'parents'
     // `hasAccess` resolve a matrícula pela CONTA (sessão de perfil → accountId).
     // Normal Kids locks/badges use one policy/ledger snapshot; team bypass keeps only actual badges.
     const [published, active, staffMilestones] = await Promise.all([
-      this.courses.listPublishedCourses(audience),
+      this.courses.listPublishedCourses(audience, learner),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
-      audience === 'kids' && privileged
+      audience === 'kids' && privileged && !parents
         ? this.gamification.listCourseMilestones(userId, audience)
         : Promise.resolve(null),
     ])
     const journeyState =
-      audience === 'kids' && !privileged
+      audience === 'kids' && !privileged && !parents
         ? await this.kidsJourney.courseState(
             { userId, accountId: accountId ?? userId },
             published.map((course) => course.id),
@@ -65,6 +73,14 @@ export class ListCatalogService {
 
     const journeyLocks = journeyLockViews(published, journeyState?.locks ?? null)
     return published.map((course) => {
+      if (parents) {
+        return {
+          ...toCatalogCourseView(course, hasMaster || owned.has(course.slug), { locked: false }),
+          accessReason: privileged
+            ? ('staff' as const)
+            : parentsCourseAccessReason(course.slug, active, this.clock()),
+        }
+      }
       const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
       const lock = directAccess ? { locked: false } : journeyLocks.get(course.id)
       return {

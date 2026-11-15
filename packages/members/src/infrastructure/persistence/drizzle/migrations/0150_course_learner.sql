@@ -1,0 +1,3 @@
+ALTER TABLE "members"."courses" ADD COLUMN "learner" text DEFAULT 'child' NOT NULL;--> statement-breakpoint
+ALTER TABLE "members"."courses" ADD CONSTRAINT "courses_learner_check" CHECK ("members"."courses"."learner" in ('child', 'parents'));--> statement-breakpoint
+ALTER TABLE "members"."courses" ADD CONSTRAINT "courses_parents_off_journey_check" CHECK ("members"."courses"."learner" = 'child' or ("members"."courses"."audience" = 'kids' and "members"."courses"."modality" = 'recorded' and "members"."courses"."career_slot" is null));

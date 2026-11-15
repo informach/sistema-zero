@@ -901,7 +901,9 @@ function LessonSectionsContent({
       )
       setHelp('')
       setHelpSpoken(false)
-      setHelpStatus('Pedido enviado. A resposta aparecerá nos seus recados.')
+      setHelpStatus(
+        `Pedido enviado. A resposta aparecerá ${player?.helpThread?.label ?? 'nos seus recados'}.`,
+      )
       setHelpThreadId(result.threadId)
       helpRequest.current = null
       setHelpOpen(false)
@@ -1079,7 +1081,12 @@ function LessonSectionsContent({
     <p role="status" className="text-sm">
       {helpStatus}
       {helpThreadId && (
-        <a className="ml-2 underline" href={`/recados/${encodeURIComponent(helpThreadId)}`}>
+        <a
+          className="ml-2 underline"
+          href={
+            player?.helpThread?.href(helpThreadId) ?? `/recados/${encodeURIComponent(helpThreadId)}`
+          }
+        >
           Ver conversa
         </a>
       )}

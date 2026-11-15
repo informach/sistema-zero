@@ -1078,6 +1078,7 @@ describe.skipIf(!url)(
         expectedSourceAudience: 'kids',
         audience: 'adult',
         modality: 'recorded',
+        learner: 'child',
         slug: 'learning-qa-clone',
         title: 'Clone',
       })

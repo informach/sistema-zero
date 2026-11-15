@@ -528,7 +528,7 @@ export function StudyDeviceManager({
             <p>{error}</p>
             {reauth ? (
               <Link
-                href={`/login/responsavel?next=${encodeURIComponent(`/pais/crianca/${profileId}`)}`}
+                href={`/login/responsavel?next=${encodeURIComponent(`/pais/crianca/${profileId}?aba=aparelhos`)}`}
                 className="mt-2 inline-flex min-h-11 items-center font-bold underline"
               >
                 Entrar novamente como responsável

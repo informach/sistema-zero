@@ -29,6 +29,7 @@ function courseFixture(input: Pick<Course, 'id' | 'slug' | 'audience'> & Partial
     sequentialLock: true,
     videoBeforeActivity: false,
     modality: 'recorded',
+    learner: 'child',
     metadata: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),

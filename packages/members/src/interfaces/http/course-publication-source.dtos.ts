@@ -73,6 +73,8 @@ export const PublicationSourceSchema = z
       status: z.literal('published'),
       audience: z.literal('kids'),
       modality: z.literal('recorded'),
+      // Para quem (14/11/2026). `default` aceita a captura de um ambiente ainda sem o campo.
+      learner: z.enum(['child', 'parents']).default('child'),
       level: z.enum(COURSE_LEVELS),
       track: z.enum(COURSE_TRACKS),
       careerSlot: z.number().int().positive().nullable(),

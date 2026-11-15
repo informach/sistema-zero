@@ -9,13 +9,13 @@ export default async function ParentWorkshopsPage() {
   if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   return (
     <ParentShell active="oficinas" parentName={session.firstName}>
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-8">
-        <ParentPageTitle
-          title="Oficinas ao vivo"
-          text="Os encontros das crianças da família, quem participa e como deixar tudo pronto para o dia."
-        />
-        <LiveCatalog mode="parent" prepareHref="/pais" />
-      </div>
+      {/* Sem invólucro próprio (redesenho de 14/11/2026): a mesma largura e o mesmo respiro das
+          outras páginas da área dos pais. */}
+      <ParentPageTitle
+        title="Oficinas ao vivo"
+        text="Os encontros ao vivo dos seus filhos, quem participa de cada um e como deixar tudo pronto para o dia."
+      />
+      <LiveCatalog mode="parent" prepareHref="/pais/familia" />
     </ParentShell>
   )
 }

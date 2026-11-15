@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import { and, asc, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { artSlotFillers } from '../../../domain/course/art-slot-course'
 import type {
@@ -43,6 +44,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     sequentialLock: row.sequentialLock,
     videoBeforeActivity: row.videoBeforeActivity,
     modality: row.modality,
+    learner: row.learner,
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,
@@ -171,7 +173,10 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row?.lessonId ?? null
   }
 
-  async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+  async findAccessibleCoursesBySlugs(
+    slugs: string[],
+    learner: CourseLearner = 'child',
+  ): Promise<Course[]> {
     if (slugs.length === 0) return []
     const rows = await this.db
       .select()
@@ -182,6 +187,8 @@ export class DrizzleCourseRepository implements CourseRepository {
           inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES]),
           // Curso ao vivo não se libera por matrícula: fica fora de "meus cursos".
           eq(courses.modality, 'recorded'),
+          // Curso para pais só aparece na área dos pais; o da criança, só na da criança.
+          eq(courses.learner, learner),
         ),
       )
       // Mesma régua da vitrine: mais antigos primeiro (antes era ordem indefinida).
@@ -201,7 +208,10 @@ export class DrizzleCourseRepository implements CourseRepository {
     return rows.map(toCourse)
   }
 
-  async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
+  async listPublishedCourses(
+    audience: CourseAudience,
+    learner: CourseLearner = 'child',
+  ): Promise<Course[]> {
     const rows = await this.db
       .select()
       .from(courses)
@@ -211,6 +221,8 @@ export class DrizzleCourseRepository implements CourseRepository {
           eq(courses.audience, audience),
           // Curso ao vivo só existe em Oficinas: fora do catálogo e da chave-mestra.
           eq(courses.modality, 'recorded'),
+          // Curso para pais só existe em "Cursos para pais": fora das vitrines da criança.
+          eq(courses.learner, learner),
         ),
       )
       // Ordem PADRÃO das vitrines: jornada de criação (mais antigos primeiro) —

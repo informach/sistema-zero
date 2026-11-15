@@ -1045,6 +1045,7 @@ export function seedSampleCourse(
     careerSlot,
     journeyRole,
     modality: 'recorded',
+    learner: 'child',
     metadata: null,
     createdAt: now,
     updatedAt: now,
