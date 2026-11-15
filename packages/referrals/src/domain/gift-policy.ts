@@ -130,6 +130,25 @@ export function giftMuralText(input: {
 }
 
 /**
+ * O próximo passo do e-mail Kids do presente (`orientacao`, 15/11/2026). Curso da criança: criar
+ * o perfil e autorizar o computador (o texto de `DEVICE_SETUP` do Messaging, em texto puro porque
+ * o Messaging escapa os valores), mais o aviso de que a autorização antiga vale para quem já tinha
+ * conta. Curso PARA PAIS: abrir o curso na área dos pais, sem perfil de criança.
+ */
+export function giftGuidanceText(input: {
+  parentsCourse: boolean
+  existingAccount: boolean
+}): string {
+  if (input.parentsCourse)
+    return 'Entre na área dos pais e abra o curso em Cursos para pais. O curso é para você assistir na sua conta, sem perfil de criança.'
+  const setup =
+    'Depois de entrar como responsável, clique em “Adicionar criança”. Se a criança já tem perfil, clique em “Acesso nos aparelhos” no cartão dela. Na página da criança, clique em “Autorizar aparelho” e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer “Quem vai entrar?”, ele clica em “Eu sou criador(a)” e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.'
+  return input.existingAccount
+    ? `${setup} Se você já autorizou o computador do seu filho, não precisa refazer: ele continua entrando pelo próprio perfil até o prazo que você escolheu terminar.`
+    : setup
+}
+
+/**
  * O lote entrega DOIS direitos, nos dois públicos: participação temporária no Mural (Kids ou
  * adulto) e a visita permanente que mantém o jogo publicado visível depois do prazo.
  */

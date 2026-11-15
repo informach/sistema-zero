@@ -97,10 +97,19 @@ describe('presente do curso por oferta (15/11/2026)', () => {
 
   test('contrato: curso, prazo e Mural chegam prontos do referrals', async () => {
     const section = await kidsGiftSection()
-    expect(section).toContain("['nome', 'campanha', 'curso', 'prazo', 'mural', 'link']")
-    expect(section).toContain("['nome', 'indicador', 'curso', 'prazo', 'mural', 'link']")
-    for (const name of ['curso', 'prazo', 'mural', 'campanha', 'indicador', 'link'])
+    expect(section).toContain(
+      "['nome', 'campanha', 'curso', 'prazo', 'mural', 'orientacao', 'link']",
+    )
+    expect(section).toContain(
+      "['nome', 'indicador', 'curso', 'prazo', 'mural', 'orientacao', 'link']",
+    )
+    for (const name of ['curso', 'prazo', 'mural', 'orientacao', 'campanha', 'indicador', 'link'])
       expect(section).toContain(`{{${name}}}`)
+  })
+
+  test('o próximo passo vem pronto: o aparelho da criança não é fixo (curso para pais)', async () => {
+    const section = await kidsGiftSection()
+    expect(section).not.toMatch(/DEVICE_SETUP|DEVICE_ALREADY_READY|Autorizar aparelho/)
   })
 
   test('sem curso nem prazo fixos: nada de Cadê Todo Mundo nem de sete dias', async () => {

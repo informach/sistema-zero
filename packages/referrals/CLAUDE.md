@@ -39,11 +39,17 @@ oferta) usam `DEFAULT_GIFT_OFFER_SLUGS` em `domain/gift-policy.ts` (`cade-todo-m
   (`grantManualCourse` + `grantMuralTrial`/`grantMuralVisitor`) com o curso gravado no resgate
   (linha sem curso usa o curso da oferta padrão). `gifts:upgrade-mural` lê o curso do resgate.
 - **Leitura pública** `GET internal/codes/:code`: `gift {offerId, offerTitle, courseSlug,
-  courseTitle, learner, accessDays, includesMural}` quando o presente resolve e está disponível
-  (ausente se não). Título e `learner` vêm do `gift-course` do members.
+  courseTitle, learner, accessDays, includesMural}` quando a oferta resolve e o curso está
+  publicado (ausente se não). Título e `learner` vêm do `gift-course` do members. Desde o mesmo
+  dia, a campanha agendada, pausada ou encerrada também traz o `gift` (com `giftAvailable:
+  false`), para o funil mostrar a página do curso certo (curso para pais tem outra); falha do
+  catálogo nesses estados só omite o `gift`, sem 502.
 - **E-mails:** as boas-vindas por oferta usam as chaves `-mural-trial` (Kids) e `-adult`, com
   `curso`, `prazo` (texto pronto: "por 7 dias, até <data> (horário de Brasília)" ou "sem prazo para
-  terminar") e `mural` (frase pronta ou vazia; o Messaging não tem condicional). `validade` segue no
+  terminar"), `mural` (frase pronta ou vazia; o Messaging não tem condicional) e `orientacao`
+  (`giftGuidanceText`, texto puro: no curso da criança, criar o perfil e autorizar o aparelho, com
+  o aviso da autorização antiga na conta existente; no curso para pais, "Entre na área dos pais e
+  abra o curso em Cursos para pais."). `validade` segue no
   envio por compatibilidade com o seed antigo. Curso para pais (`learner: 'parents'`) com conta
   existente → `${KIDS_COMMUNITY_URL}/pais/cursos/<slug>`; conta nova → primeiro acesso de sempre.
   ⚠️ Ordem do deploy: referrals e members ANTES do seed do messaging (os templates novos exigem as
