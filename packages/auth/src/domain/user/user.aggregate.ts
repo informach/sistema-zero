@@ -21,6 +21,8 @@ export interface UserSnapshot {
   // aleatória/dummy — elas só ficam utilizáveis quando o dono define a senha pelo
   // link de 1º acesso. Distingue "conta com senha real" de "conta convidada".
   passwordSetAt: Date | null
+  /** Primeira entrada do dono (senha ou código). Ausente em snapshots antigos = nunca. */
+  firstSignInAt?: Date | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -62,6 +64,7 @@ interface UserProps {
   signupSource: string | null
   avatarUrl: string | null
   passwordSetAt: Date | null
+  firstSignInAt: Date | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -99,6 +102,7 @@ export class UserAggregate extends AggregateRoot<string> {
       // Convite/compra criam com `passwordSet` ausente → `null` (senha ainda não é
       // do dono). Cadastro público passa `true` → carimba `now` (senha real).
       passwordSetAt: input.passwordSet ? now : null,
+      firstSignInAt: null,
       version: 0,
       createdAt: now,
       updatedAt: now,
@@ -122,6 +126,7 @@ export class UserAggregate extends AggregateRoot<string> {
       signupSource: snapshot.signupSource,
       avatarUrl: snapshot.avatarUrl,
       passwordSetAt: snapshot.passwordSetAt,
+      firstSignInAt: snapshot.firstSignInAt ?? null,
       version: snapshot.version,
       createdAt: snapshot.createdAt,
       updatedAt: snapshot.updatedAt,
@@ -183,11 +188,24 @@ export class UserAggregate extends AggregateRoot<string> {
   /**
    * O dono já DEFINIU a própria senha? `false` numa conta de convite/compra cuja
    * senha ainda é a aleatória/dummy. Para o CLIENTE a senha é opcional (15/11/2026): ele
-   * entra pelo código do e-mail e cria a senha se quiser (`ChangeMyPasswordService`
-   * dispensa a atual nesse caso). A EQUIPE continua precisando dela para operar.
+   * entra pelo código do e-mail e cria a senha, se quiser, por um código de
+   * `password_reset` (prova o e-mail). A EQUIPE continua precisando dela para operar.
    */
   isPasswordSet(): boolean {
     return this.props.passwordSetAt !== null
+  }
+
+  get firstSignInAt(): Date | null {
+    return this.props.firstSignInAt
+  }
+
+  /**
+   * A pessoa já ATIVOU a conta? Com a senha opcional (15/11/2026), ativar é criar senha OU já
+   * ter entrado (senha ou código do e-mail). É o que o ciclo do Desafio usa para não mandar
+   * "falta criar sua senha" a quem já entra pelo código.
+   */
+  isActivated(): boolean {
+    return this.isPasswordSet() || this.props.firstSignInAt !== null
   }
 
   /**

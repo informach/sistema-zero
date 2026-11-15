@@ -52,6 +52,9 @@ export const users = auth.table(
     // de CONVITE (admin) e COMPRA (funil), cuja senha é aleatória/dummy. Desde 15/11/2026
     // a senha é opcional para o cliente: o login por código vale com ou sem ela.
     passwordSetAt: timestamp('password_set_at', { withTimezone: true }),
+    // A PRIMEIRA vez que o dono entrou (senha ou código do e-mail; nunca suporte nem a
+    // criança). Com a senha opcional, "ativou a conta" = criou senha OU já entrou.
+    firstSignInAt: timestamp('first_sign_in_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

@@ -400,13 +400,22 @@ src/
     código do e-mail é pedido e aceito com ou sem senha definida, no Kids e na Comunidade
     adulta. Motivo: desde 10/10/2026 a criança tem o próprio acesso (o aparelho que o
     responsável autorizou), então a senha deixou de separar a sessão do pai da do filho; e
-    quem tem o e-mail já criaria uma senha pelo "Esqueci minha senha". O
-    `PASSWORD_NOT_SET` saiu (o erro, o mapeamento e as mensagens das telas). Quem nunca
-    definiu senha CRIA uma em `POST /auth/me/password` sem a atual
-    (`ChangeMyPasswordService`; com senha definida, a atual segue obrigatória), e o
-    `UserView` traz `passwordSet` para a tela oferecer "Criar senha". A EQUIPE continua
-    precisando de senha: `StaffOperationsService` exige `isPasswordSet()` e o Admin só
-    entra por senha. ⚠️ Histórico: a trava foi tirada só do Kids em 10/10/2026 (commit
+    quem tem o e-mail já criaria uma senha pelo "Esqueci minha senha". Quem nunca definiu
+    senha CRIA a primeira pelo código `password_reset` (`POST /auth/password/reset-otp`, o
+    "Esqueci minha senha"). `POST /auth/me/password` continua EXIGINDO a senha atual,
+    também para quem nunca definiu uma: uma sessão roubada não pode criar senha sem provar
+    a posse do e-mail. O `UserView` traz `passwordSet` para a tela mostrar "Criar senha"
+    (link para o `/esqueci-senha`) em vez do formulário de troca. A EQUIPE
+    (`role !== 'customer'`) continua precisando de senha: sem ela, `request-otp` não manda
+    código `sign_in` (no-op silencioso) e `verify-otp` responde `PASSWORD_NOT_SET` (403,
+    repassado pelo member-shell; as telas mandam ao "Esqueci minha senha");
+    `StaffOperationsService` exige `isPasswordSet()` e o Admin só entra por senha.
+    **Ativação:** `users.first_sign_in_at` (migration `0026`) é carimbado na primeira entrada
+    (senha ou código; `markFirstSignIn`, só quando nulo, fora do CAS). `isActivated()` =
+    senha definida OU já entrou; é o `activated` de `/internal/users/emails`, que decide os
+    lembretes "falta ativar" do ciclo do Desafio. O backfill da `0026` usa a primeira família
+    de refresh token sem impersonação (conta, não perfil) ou o primeiro código `sign_in`
+    consumido. ⚠️ Histórico: a trava foi tirada só do Kids em 10/10/2026 (commit
     `197c7d114`) sem registro aqui, e o Admin seguiu dizendo "o login por código fica
     bloqueado"; não repetir mudança de regra sem atualizar este item.
 
@@ -425,12 +434,14 @@ src/
     (funil/ensure-buyer), cuja senha é aleatória/dummy; carimbado quando o dono define a
     senha (`UserAggregate.changePassword` → cobre reset por LINK/OTP e troca logado) e no
     **cadastro público** (`register` passa `passwordSet: true`). Desde 15/11/2026 a senha é
-    OPCIONAL para o cliente (item 11): o sinal NÃO trava mais o login por código. Ele serve
-    à tela de senha ("Criar senha" sem a atual, via `UserView.passwordSet`), ao painel
-    (`AdminUserView.passwordSet`, chip informativo "Entra só por código" + reenviar/definir
-    senha) e à equipe (`StaffOperationsService` exige senha). `register`
+    OPCIONAL para o cliente (item 11): o sinal NÃO trava mais o login por código do
+    cliente. Ele serve à tela de senha ("Criar senha" pelo código do e-mail, via
+    `UserView.passwordSet`), ao painel (`AdminUserView.passwordSet`, chip informativo "Entra
+    só por código" + reenviar/definir senha) e à equipe (sem senha não entra por código e
+    `StaffOperationsService` exige senha). "Ativado" deixou de ser só senha: ver
+    `first_sign_in_at` no item 11. `register`
     ganhou o flag opcional `passwordSet` (**default `false` — seguro:** criação nova que
-    esqueça de sinalizar nasce "sem senha", travada, nunca o contrário). **Backfill da
+    esqueça de sinalizar nasce "sem senha", nunca o contrário). **Backfill da
     migration = `created_at` para TODOS os existentes** (nunca travar um usuário legítimo
     no OTP; contas já convidadas-e-nunca-usadas seguem resolvidas pelo painel). O repo
     `update` PERSISTE a coluna (senão o carimbo do reset se perderia).
@@ -656,13 +667,13 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   Resposta `{ sent }` (`false` = conta inativa ou messaging indisponível). Gateway:
   `auth-admin-user-resend-invite` (POST, superadmin/admin + `authInternalTransforms` + `audit`).
 - **Definir senha manual (`POST /auth/admin/users/:id/set-password`, 07/2026):**
-  `SetUserPasswordService` — suporte destrava um cliente PRESO: troca o hash
-  (`changePassword` carimba `password_set_at` → destrava login por código + área dos pais)
-  e **revoga as sessões** do alvo; o operador informa a senha por fora. Guards: **nunca a si
+  `SetUserPasswordService` — suporte define a senha de um cliente que a pediu: troca o hash
+  (`changePassword` carimba `password_set_at`; desde 15/11/2026 o cliente já entra por
+  código sem senha, então isto não "destrava" mais nada) e **revoga as sessões** do alvo; o operador informa a senha por fora. Guards: **nunca a si
   mesmo** (400 — use `/auth/me/password`), `admin` não redefine senha de admin/superadmin.
   Corpo `{ password }` (política validada no serviço). Gateway: `auth-admin-user-set-password`
   (POST, superadmin/admin + `authInternalTransforms` + `audit`). `AdminUserView` ganhou
-  **`passwordSet`** (bool) p/ o painel marcar "acesso pendente".
+  **`passwordSet`** (bool) p/ o painel mostrar o chip neutro "Entra só por código".
 
 ## Dev local
 

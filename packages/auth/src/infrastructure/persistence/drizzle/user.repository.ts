@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, ilike, inArray, lte, or, type SQL, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, ilike, inArray, isNull, lte, or, type SQL, sql } from 'drizzle-orm'
 import type { ListUsersFilter, UserRepository } from '../../../domain/ports/user-repository.port'
 import { UserAggregate, type UserSnapshot } from '../../../domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../../domain/user/user.errors'
@@ -80,6 +80,14 @@ export class DrizzleUserRepository implements UserRepository {
       .where(and(eq(users.id, s.id), eq(users.version, expectedVersion)))
       .returning({ id: users.id })
     return updated.length === 1
+  }
+
+  async markFirstSignIn(userId: string, at: Date): Promise<void> {
+    // Fora do CAS da `version` de propósito: o `update` acima nunca escreve esta coluna.
+    await this.db
+      .update(users)
+      .set({ firstSignInAt: at })
+      .where(and(eq(users.id, userId), isNull(users.firstSignInAt)))
   }
 
   async prepareDeletion(id: string): Promise<{ profileIds: string[] } | null> {
@@ -214,6 +222,7 @@ function toSnapshot(row: UserRow): UserSnapshot {
     signupSource: row.signupSource,
     avatarUrl: row.avatarUrl,
     passwordSetAt: row.passwordSetAt,
+    firstSignInAt: row.firstSignInAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

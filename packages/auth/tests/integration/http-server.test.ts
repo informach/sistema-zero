@@ -841,47 +841,65 @@ describe('Password reset + perfil self-service', () => {
     ).toBe(200)
   })
 
-  test('quem nunca definiu senha CRIA a senha sem a atual; quem já tem continua precisando dela', async () => {
+  test('quem entra só pelo código fica ATIVADO; a primeira senha nasce do código do e-mail', async () => {
     const { app, messaging } = buildApp()
-    await app.handle(
-      post('/auth/internal/ensure-buyer', REGISTER_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
-    )
-    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
-    const code = messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)
-      ?.variables.codigo
+    const comprador = (await (
+      await app.handle(
+        post('/auth/internal/ensure-buyer', REGISTER_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
+      )
+    ).json()) as { userId: string }
+    const ativado = async () => {
+      const res = await app.handle(
+        post(
+          '/auth/internal/users/emails',
+          { ids: [comprador.userId] },
+          { 'x-internal-token': INTERNAL_TOKEN },
+        ),
+      )
+      return ((await res.json()) as { users: { activated: boolean }[] }).users[0]?.activated
+    }
+    expect(await ativado()).toBe(false)
+    const pedirCodigo = async (purpose: 'sign_in' | 'password_reset') => {
+      await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose }))
+      return messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)?.variables.codigo
+    }
+    const code = await pedirCodigo('sign_in')
     const verificado = await app.handle(
       post('/auth/otp/verify', { email: 'maria@example.com', code }),
     )
     expect(verificado.status).toBe(200)
+    // Entrou pelo código, sem senha: a conta conta como ativada (o Desafio não pede senha).
+    expect(await ativado()).toBe(true)
     const entrou = (await verificado.json()) as { tokens: Tokens }
-    const criou = await app.handle(
-      post(
-        '/auth/me/password',
-        { newPassword: 'minha-senha-nova-123' },
-        { authorization: `Bearer ${entrou.tokens.accessToken}` },
-      ),
-    )
-    expect(criou.status).toBe(200)
-    const login = await app.handle(
-      post('/auth/login', { email: 'maria@example.com', password: 'minha-senha-nova-123' }),
-    )
-    expect(login.status).toBe(200)
-    const logado = (await login.json()) as { user: { passwordSet: boolean }; tokens: Tokens }
-    expect(logado.user.passwordSet).toBe(true)
-    // Agora que existe senha, trocar sem a atual é recusado.
+    // Sem senha atual, a troca logada é recusada: a primeira senha prova o e-mail de novo.
     expect(
       (
         await app.handle(
           post(
             '/auth/me/password',
-            { newPassword: 'outra-senha-nova-456' },
-            { authorization: `Bearer ${logado.tokens.accessToken}` },
+            { newPassword: 'minha-senha-nova-123' },
+            { authorization: `Bearer ${entrou.tokens.accessToken}` },
           ),
         )
       ).status,
-    ).toBe(401)
+    ).toBe(400)
+    const reset = await pedirCodigo('password_reset')
+    expect(
+      (
+        await app.handle(
+          post('/auth/password/reset-otp', {
+            email: 'maria@example.com',
+            code: reset,
+            newPassword: 'minha-senha-nova-123',
+          }),
+        )
+      ).status,
+    ).toBe(200)
+    const login = await app.handle(
+      post('/auth/login', { email: 'maria@example.com', password: 'minha-senha-nova-123' }),
+    )
+    expect(((await login.json()) as { user: { passwordSet: boolean } }).user.passwordSet).toBe(true)
   })
-
   test('POST /auth/internal/password-tokens exige o token interno e emite token utilizável', async () => {
     const { app } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -1201,6 +1219,17 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
       }),
     )
   }
+
+  test('conta da EQUIPE sem senha não recebe código de login (precisa de senha para operar)', async () => {
+    const { app, users, messaging } = buildApp()
+    seedSemSenha(users, 'equipe@example.com')
+    const conta = await users.findByEmail('equipe@example.com')
+    if (!conta) throw new Error('sem conta')
+    conta.changeRole('staff')
+    await users.update(conta, 0)
+
+    expect(await requestCode(app, messaging, 'equipe@example.com', 'sign_in')).toBeUndefined()
+  })
 
   test('conta sem senha definida RECEBE código de LOGIN (a senha é opcional)', async () => {
     const { app, users, messaging } = buildApp()

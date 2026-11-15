@@ -26,8 +26,8 @@ function postVerify(body: unknown): Request {
   })
 }
 
-describe('authOtpVerify: o 403 do auth é a conta inativa', () => {
-  test('a senha é opcional: um PASSWORD_NOT_SET antigo também vira INACTIVE', async () => {
+describe('authOtpVerify: conta inativa × conta da equipe sem senha', () => {
+  test('403 com PASSWORD_NOT_SET (equipe sem senha) é repassado: a UI orienta criar a senha', async () => {
     const routes = makeRoutes({ status: 403, body: { error: { code: 'PASSWORD_NOT_SET' } } })
 
     const res = await routes.authOtpVerify.POST(
@@ -35,7 +35,7 @@ describe('authOtpVerify: o 403 do auth é a conta inativa', () => {
     )
 
     expect(res.status).toBe(403)
-    expect(await res.json()).toMatchObject({ error: { code: 'INACTIVE' } })
+    expect(await res.json()).toMatchObject({ error: { code: 'PASSWORD_NOT_SET' } })
   })
 
   test('403 com outro code (ou sem code) segue colapsado em INACTIVE', async () => {

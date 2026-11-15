@@ -35,6 +35,18 @@ export class UserNotActiveError extends DomainError {
   }
 }
 
+/**
+ * Conta da EQUIPE que ainda não definiu a senha tentou entrar pelo código. Para o cliente a
+ * senha é opcional (15/11/2026); a equipe precisa dela para operar (`StaffOperationsService`
+ * a exige), então o código não abre uma sessão que falharia em toda operação. → 403
+ */
+export class PasswordNotSetError extends DomainError {
+  readonly code = 'PASSWORD_NOT_SET'
+  constructor() {
+    super('Crie a sua senha em "Esqueci minha senha" antes de entrar')
+  }
+}
+
 /** Refresh token ausente, inválido, expirado ou revogado. → 401 */
 export class InvalidRefreshTokenError extends DomainError {
   readonly code = 'INVALID_REFRESH_TOKEN'

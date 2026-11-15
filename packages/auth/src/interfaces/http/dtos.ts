@@ -95,11 +95,11 @@ export const UpdateMeBody = t.Object({
 })
 
 /**
- * Corpo de `POST /auth/me/password` (troca logado). A senha atual é exigida de quem já tem
- * uma; quem nunca definiu senha cria sem ela (o serviço confere).
+ * Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). A PRIMEIRA senha
+ * nasce do código `password_reset` do e-mail (`/auth/password/reset-otp`).
  */
 export const ChangeMyPasswordBody = t.Object({
-  currentPassword: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  currentPassword: t.String({ minLength: 1, maxLength: 200 }),
   newPassword: t.String({ minLength: 1, maxLength: 200 }),
 })
 

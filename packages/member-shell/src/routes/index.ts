@@ -148,8 +148,7 @@ const UpdateMeBody = z.object({
 })
 
 const ChangePasswordBody = z.object({
-  // Ausente só para quem nunca definiu senha: o auth confere.
-  currentPassword: z.string().min(1).max(200).optional(),
+  currentPassword: z.string().min(1).max(200),
   newPassword: z.string().min(1).max(200),
 })
 
@@ -444,15 +443,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   /** Edita o perfil do PRÓPRIO aluno (nome/telefone — e-mail não é editável). */
   const authMe = {
-    /**
-     * Só o que a tela de senha precisa saber: a conta já tem senha? (A senha é opcional desde
-     * 15/11/2026: sem ela, o formulário oferece "Criar senha", sem pedir a atual.)
-     */
-    GET: async () => {
-      const { status, body } = await auth.getMe()
-      if (status !== 200 || !body?.user) return NextResponse.json(body ?? null, { status })
-      return NextResponse.json({ passwordSet: body.user.passwordSet !== false })
-    },
     PATCH: async (req: Request) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
@@ -553,8 +543,17 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!parsed.success) return invalidInput()
 
       const { status, body } = await gateway.verifyOtpRequest(parsed.data.email, parsed.data.code)
-      // A senha é opcional (15/11/2026): o único 403 do auth aqui é a conta inativa.
-      if (status === 403) return NextResponse.json({ error: { code: 'INACTIVE' } }, { status: 403 })
+      if (status === 403) {
+        // O auth distingue dois 403: conta INATIVA × conta da EQUIPE sem senha (a senha é
+        // opcional para o cliente desde 15/11/2026, mas a equipe precisa dela para operar).
+        // Repassar o code real deixa a UI orientar "crie sua senha em Esqueci minha senha".
+        const upstreamCode =
+          body?.error && typeof body.error === 'object' && 'code' in body.error
+            ? (body.error as { code?: unknown }).code
+            : undefined
+        const code = upstreamCode === 'PASSWORD_NOT_SET' ? 'PASSWORD_NOT_SET' : 'INACTIVE'
+        return NextResponse.json({ error: { code } }, { status: 403 })
+      }
       // NÃO mascarar rate limit/indisponibilidade como "código inválido".
       if (status === 429) {
         return NextResponse.json({ error: { code: 'TOO_MANY_ATTEMPTS' } }, { status: 429 })

@@ -2,7 +2,7 @@ import { InvalidOtpError } from '../../domain/otp/otp.errors'
 import type { OtpCodeRepository } from '../../domain/ports/otp-code-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { newParentKidsSession } from '../../domain/study-access/policy'
-import { UserNotActiveError } from '../../domain/user/user.errors'
+import { PasswordNotSetError, UserNotActiveError } from '../../domain/user/user.errors'
 import { toUserView, type UserView } from '../mappers/user-view'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
 import { codeMatchesHash } from './otp-code'
@@ -52,8 +52,9 @@ export class VerifyOtpService {
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
 
-    // Sem exigir senha definida: a senha é opcional para o cliente (15/11/2026, ver
-    // `RequestOtpService`).
+    // A senha é opcional para o CLIENTE (15/11/2026, ver `RequestOtpService`). A equipe
+    // precisa dela para operar: sem senha, o código não abre uma sessão inútil.
+    if (user.role !== 'customer' && !user.isPasswordSet()) throw new PasswordNotSetError()
 
     const consumed = await this.otpCodes.consume(record.id, now)
     if (!consumed) throw new InvalidOtpError()
@@ -63,6 +64,8 @@ export class VerifyOtpService {
       userAgent: command.userAgent,
       ip: command.ip,
     })
+    // A primeira entrada ativa a conta (a senha é opcional desde 15/11/2026).
+    if (!user.firstSignInAt) await this.users.markFirstSignIn(user.id, now)
     return { user: toUserView(user), tokens }
   }
 }

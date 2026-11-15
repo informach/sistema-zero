@@ -49,7 +49,9 @@ export class RequestOtpService {
     // A senha é OPCIONAL para o cliente (decisão da dona, 15/11/2026): o código enviado ao
     // e-mail entra em qualquer produto, com ou sem senha definida. No Kids a criança tem o
     // próprio acesso (o aparelho autorizado), então a senha deixou de separar pai e filho.
-    // A equipe continua precisando de senha para operar (`StaffOperationsService`).
+    // A EQUIPE precisa de senha para operar (`StaffOperationsService`): sem ela, nenhum
+    // código de login sai (o verify recusaria com `PASSWORD_NOT_SET`).
+    if (command.purpose === 'sign_in' && user.role !== 'customer' && !user.isPasswordSet()) return
 
     const now = new Date()
     const code = generateOtpCode()

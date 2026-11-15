@@ -201,7 +201,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
               id: u.id,
               email: u.email,
               firstName: u.firstName,
-              activated: u.isPasswordSet(),
+              // Criou senha OU já entrou (a senha é opcional desde 15/11/2026).
+              activated: u.isActivated(),
             })),
           }
         },

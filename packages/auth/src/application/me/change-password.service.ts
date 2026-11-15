@@ -13,10 +13,10 @@ export interface ChangePasswordOptions {
 }
 
 /**
- * Troca de senha LOGADO (`POST /auth/me/password`): exige a senha atual de quem já tem
- * uma. Quem nunca definiu senha (conta de compra/convite que entra pelo código do e-mail;
- * a senha é opcional desde 15/11/2026) CRIA a senha sem a atual: a sessão já prova o
- * e-mail, o mesmo que o "Esqueci minha senha" exigiria.
+ * Troca de senha LOGADO (`POST /auth/me/password`): exige a senha atual. Quem nunca definiu
+ * senha (a senha é opcional desde 15/11/2026) CRIA a primeira pelo código `password_reset`
+ * do e-mail (`/auth/password/reset-otp`), nunca por aqui: uma sessão aberta num aparelho
+ * compartilhado não pode fixar a senha da conta sem provar o e-mail de novo.
  * Revoga TODAS as sessões (inclusive a atual — escolha deliberada por segurança e
  * simplicidade); o cliente deve re-autenticar com a senha nova.
  */
@@ -30,19 +30,14 @@ export class ChangeMyPasswordService {
 
   async execute(command: {
     userId: string
-    currentPassword?: string
+    currentPassword: string
     newPassword: string
   }): Promise<{ ok: true }> {
     const user = await this.users.findById(command.userId)
     if (!user) throw new UserNotFoundError()
 
-    if (user.isPasswordSet()) {
-      const ok =
-        command.currentPassword !== undefined &&
-        command.currentPassword.length > 0 &&
-        (await this.hasher.verify(command.currentPassword, user.passwordHash))
-      if (!ok) throw new InvalidCredentialsError()
-    }
+    const ok = await this.hasher.verify(command.currentPassword, user.passwordHash)
+    if (!ok) throw new InvalidCredentialsError()
 
     assertPasswordPolicy(command.newPassword, this.opts.passwordMinLength)
 

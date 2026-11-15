@@ -29,8 +29,7 @@ const ProfileSchema = z.object({
 
 const PasswordSchema = z
   .object({
-    // Vazio só para quem nunca criou senha (a seção nem mostra o campo nesse caso).
-    currentPassword: z.string(),
+    currentPassword: z.string().min(1, 'Informe a senha atual'),
     newPassword: z.string().min(10, 'A nova senha precisa de ao menos 10 caracteres'),
     confirm: z.string(),
   })
@@ -140,8 +139,9 @@ export function PersonalDataSection({ user, readOnly }: { user: UserView; readOn
 
 /**
  * "Alterar senha": a troca encerra todas as sessões, e a pessoa entra de novo com a senha nova.
- * A senha é opcional (15/11/2026): quem entra só pelo código do e-mail vê "Criar senha", sem a
- * senha atual.
+ * A senha é opcional (15/11/2026): quem entra só pelo código do e-mail e nunca criou uma vê
+ * "Criar senha", que leva ao código do e-mail ("Esqueci minha senha"), o caminho que prova o
+ * e-mail de novo. Nunca se cria a senha sem a atual por aqui.
  */
 export function PasswordSection({
   impersonating,
@@ -150,7 +150,6 @@ export function PasswordSection({
   impersonating: boolean
   passwordSet?: boolean
 }) {
-  const criar = !passwordSet
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -160,11 +159,9 @@ export function PasswordSection({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     const parsed = PasswordSchema.safeParse({ currentPassword, newPassword, confirm })
-    if (!parsed.success || (!criar && !currentPassword)) {
+    if (!parsed.success) {
       const next: Record<string, string> = {}
-      if (!criar && !currentPassword) next.currentPassword = 'Informe a senha atual'
-      for (const issue of parsed.success ? [] : parsed.error.issues)
-        next[String(issue.path[0])] = issue.message
+      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
       setErrors(next)
       return
     }
@@ -174,25 +171,17 @@ export function PasswordSection({
       const res = await fetch('/api/auth/me/password', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(
-          criar
-            ? { newPassword: parsed.data.newPassword }
-            : {
-                currentPassword: parsed.data.currentPassword,
-                newPassword: parsed.data.newPassword,
-              },
-        ),
+        body: JSON.stringify({
+          currentPassword: parsed.data.currentPassword,
+          newPassword: parsed.data.newPassword,
+        }),
       })
       if (res.ok) {
         // A troca revoga TODAS as sessões (segurança) → re-login com a senha nova.
         // Navegação de DOCUMENTO: cookies HttpOnly mudaram e `router.replace +
         // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
         // load também descarta o router cache com dados RSC da sessão revogada.
-        toast.success(
-          criar
-            ? 'Senha criada! Entre novamente com a sua senha ou com o código do e-mail.'
-            : 'Senha alterada! Entre novamente com a nova senha.',
-        )
+        toast.success('Senha alterada! Entre novamente com a nova senha.')
         window.location.replace('/login')
         return
       }
@@ -209,31 +198,52 @@ export function PasswordSection({
     }
   }
 
+  if (!passwordSet)
+    return (
+      <section
+        id="senha"
+        aria-labelledby="perfil-senha"
+        className="sz-card scroll-mt-28 flex flex-col gap-4 p-6 md:p-8"
+      >
+        <h2 id="perfil-senha" className="sz-h3">
+          Criar senha
+        </h2>
+        <p className="text-[0.9rem] text-muted-foreground">
+          A senha é opcional: você já entra pelo código enviado ao seu e-mail. Se quiser uma senha,
+          crie pelo mesmo código, em “Esqueci minha senha”. Depois disso, você sai de todos os
+          aparelhos e entra de novo.
+        </p>
+        {impersonating ? (
+          <p className="text-[0.9rem] text-muted-foreground">
+            Numa sessão de suporte a senha não pode ser criada.
+          </p>
+        ) : (
+          <a href="/esqueci-senha" className="sz-btn self-start">
+            Criar senha pelo código do e-mail
+          </a>
+        )}
+      </section>
+    )
+
   return (
     <section id="senha" aria-labelledby="perfil-senha" className="sz-card scroll-mt-28 p-6 md:p-8">
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         <h2 id="perfil-senha" className="sz-h3">
-          {criar ? 'Criar senha' : 'Alterar senha'}
+          Alterar senha
         </h2>
-        {criar ? (
-          <p className="text-[0.9rem] text-muted-foreground">
-            A senha é opcional: você também entra pelo código enviado ao seu e-mail.
-          </p>
-        ) : (
-          <ProfileField
+        <ProfileField
+          id="currentPassword"
+          label="Senha atual"
+          error={errors.currentPassword}
+          className={cn('max-w-[26rem]', PASSWORD_CONTROL)}
+        >
+          <PasswordInput
             id="currentPassword"
-            label="Senha atual"
-            error={errors.currentPassword}
-            className={cn('max-w-[26rem]', PASSWORD_CONTROL)}
-          >
-            <PasswordInput
-              id="currentPassword"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </ProfileField>
-        )}
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </ProfileField>
         <div className="grid gap-5 sm:grid-cols-2">
           <ProfileField
             id="newPassword"
@@ -265,13 +275,19 @@ export function PasswordSection({
         <p className="text-[0.9rem] text-muted-foreground">
           {impersonating
             ? 'Numa sessão de suporte a senha não pode ser trocada.'
-            : criar
-              ? 'Ao criar a senha, você sai de todos os aparelhos e entra de novo.'
-              : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}
+            : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}{' '}
+          Esqueceu a senha atual?{' '}
+          <a
+            href="/esqueci-senha"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Crie outra pelo código do e-mail
+          </a>
+          .
         </p>
         <button type="submit" disabled={saving || impersonating} className="sz-btn self-start">
           {saving ? <Spinner /> : null}
-          {criar ? 'Criar senha' : 'Alterar senha'}
+          Alterar senha
         </button>
       </form>
     </section>

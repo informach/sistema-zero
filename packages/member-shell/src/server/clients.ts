@@ -359,8 +359,7 @@ export function createAuthClient(gw: GatewayModule) {
     },
 
     changeMyPassword(body: {
-      /** Ausente só para quem nunca definiu senha (o auth confere). */
-      currentPassword?: string
+      currentPassword: string
       newPassword: string
     }): Promise<GatewayResponse<{ ok: boolean }>> {
       return gw.gatewayFetch('/auth/me/password', { method: 'POST', body })

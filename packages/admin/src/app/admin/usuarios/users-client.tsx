@@ -1020,8 +1020,9 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           {accessUser && !accessUser.passwordSet ? (
             <p className="text-muted-foreground text-xs">
               Esta pessoa <strong>não criou senha</strong> e entra pelo código enviado ao e-mail, no
-              Kids e na Comunidade adulta. A senha é opcional: se ela quiser uma, pode criar na
-              própria conta, pelo link abaixo ou você pode definir aqui.
+              Kids e na Comunidade adulta. A senha é opcional: se quiser uma, a pessoa cria em
+              “Esqueci minha senha” (pelo código do e-mail) ou pelo link abaixo, ou você define
+              aqui.
             </p>
           ) : (
             <p className="text-muted-foreground text-xs">Esta pessoa já criou a própria senha.</p>

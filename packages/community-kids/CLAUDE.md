@@ -1069,9 +1069,11 @@ identidade do responsável); a troca de senha **FECHA o portão no sucesso** (`w
 `/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). ⚠️ **Botão "Sair" na grade (07/2026):**
 `perfis-client.tsx` tem um `logout()` (POST `/api/auth/logout` + `window.location.replace('/login')`)
 SEMPRE visível na barra de ações — sem ele, quem entra (ex.: por CÓDIGO) e não sabe a senha da área
-dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Casa com a trava do login por código
-(o auth recusa OTP de conta sem senha definida → `login-form` mostra "crie sua senha em Esqueci minha
-senha"). O limite de perfis é do plano (criar acima → 409 no
+dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Desde 15/11/2026 a senha do
+responsável é OPCIONAL: o código do e-mail entra com ou sem senha definida (só a conta da equipe sem
+senha recebe `PASSWORD_NOT_SET`). Quem nunca criou senha cria pelo código do e-mail
+(`/esqueci-senha`); o "Senha do responsável" do perfil continua exigindo a atual e aponta para lá.
+O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 **Card "Indique e ganhe" (embaixador, 09/2026):** a Área dos pais (modo gestão) mostra o
