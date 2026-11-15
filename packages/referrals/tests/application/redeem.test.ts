@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
-import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
 import type {
   GrantManualCourseInput,
@@ -169,17 +168,39 @@ describe('RedeemScholarshipService', () => {
     expect(email.variables.mural).toBe('')
   })
 
-  test('oferta com prazo em meses: dias nulos e o fim pela conta do members', async () => {
-    catalog.offers = [{ ...KIDS_GIFT_OFFER, accessDurationValue: 2, accessDurationUnit: 'months' }]
-    const result = await service.execute(input)
-    const r = repo.redemptions[0]!
-    expect(r.accessDurationDays).toBeNull()
-    expect(result).toMatchObject({
-      kind: 'completed',
-      expiresAt: addUtcCalendarMonths(r.createdAt, 2).toISOString(),
-    })
+  test('oferta com prazo em meses ou arquivada: presente indisponível, sem conta', async () => {
+    for (const offer of [
+      { ...KIDS_GIFT_OFFER, accessDurationValue: 2, accessDurationUnit: 'months' as const },
+      { ...KIDS_GIFT_OFFER, status: 'archived' as const },
+    ]) {
+      catalog.offers = [offer]
+      expect((await service.execute(input)).kind).toBe('gift_unavailable')
+      expect((await service.publicGift(null, 'kids')).availability).toBe('unavailable')
+    }
+    expect(repo.redemptions).toHaveLength(0)
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+
+  test('oferta pausada continua servindo de presente', async () => {
+    catalog.offers = [{ ...KIDS_GIFT_OFFER, status: 'paused' }]
+    expect((await service.execute(input)).kind).toBe('completed')
+  })
+
+  test('conta existente, código de embaixador e oferta sem prazo: o e-mail nomeia quem deu', async () => {
+    catalog.offers = [
+      {
+        ...KIDS_GIFT_OFFER,
+        accessMode: 'lifetime',
+        accessDurationValue: null,
+        accessDurationUnit: null,
+      },
+    ]
+    gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
+    expect(await service.execute(input)).toMatchObject({ kind: 'completed', expiresAt: null })
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
-    expect(email.variables.prazo).toStartWith('por 2 meses, até ')
+    expect(email.templateKey).toBe('referrals-scholarship-existing-mural-trial')
+    expect(email.variables.indicador).toBe('Vó')
+    expect(email.variables.prazo).toBe('sem prazo para terminar')
   })
 
   test('Catálogo fora do ar ou oferta padrão ausente bloqueia antes da conta', async () => {

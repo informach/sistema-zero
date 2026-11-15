@@ -1,6 +1,10 @@
 import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import { z } from 'zod'
-import type { GiftOffer, GiftOfferCatalog } from '../../domain/ports/gift-offer-catalog.port'
+import {
+  GIFT_OFFER_STATUSES,
+  type GiftOffer,
+  type GiftOfferCatalog,
+} from '../../domain/ports/gift-offer-catalog.port'
 
 const MURAL_FULL_REFS = new Set(
   (['kids', 'adult'] as const).map((audience) =>
@@ -13,7 +17,7 @@ const offerSchema = z.object({
   id: z.uuid(),
   slug: z.string().min(1),
   name: z.string().min(1),
-  status: z.string(),
+  status: z.enum(GIFT_OFFER_STATUSES),
   accessMode: z.enum(['fixed', 'lifetime', 'billing_cycle']),
   accessDurationValue: z.number().int().positive().nullable(),
   accessDurationUnit: z.enum(['days', 'months']).nullable(),

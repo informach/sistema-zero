@@ -1,6 +1,4 @@
 import type { GiftAudience } from '@sistemazero/core/referrals'
-// Mês-calendário em UTC: a mesma conta do members (`computeFixedExpiry`).
-import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import type { GatewayResult } from './ports/gateway.port'
 import type { GiftOffer } from './ports/gift-offer-catalog.port'
 
@@ -31,54 +29,34 @@ export function scholarshipExpiresAt(createdAt: Date, durationDays: number | nul
 }
 
 /**
- * Dias do presente gravados no resgate (`access_duration_days`): só a oferta de prazo fixo
- * em DIAS. Vitalícia = null (sem prazo); prazo em meses = null, e o fim sai da própria oferta
- * (`offerGiftExpiresAt`), a mesma conta que o members faz a partir do resgate.
+ * Dias do presente gravados no resgate (`access_duration_days`): o prazo fixo da oferta, que é
+ * sempre em DIAS (`giftOfferProblem` recusa meses); vitalícia = null (sem prazo).
  */
 export function giftAccessDays(offer: GiftOffer): number | null {
-  return offer.accessMode === 'fixed' && offer.accessDurationUnit === 'days'
-    ? offer.accessDurationValue
-    : null
-}
-
-/** Fim do presente de uma oferta contado a partir do resgate (`anchorAt` do members). */
-export function offerGiftExpiresAt(offer: GiftOffer, createdAt: Date): Date | null {
-  if (offer.accessMode !== 'fixed' || !offer.accessDurationValue) return null
-  return offer.accessDurationUnit === 'months'
-    ? addUtcCalendarMonths(createdAt, offer.accessDurationValue)
-    : new Date(createdAt.getTime() + offer.accessDurationValue * DAY_MS)
+  return offer.accessMode === 'fixed' ? offer.accessDurationValue : null
 }
 
 /**
  * Motivo para recusar a oferta como presente, ou null se serve. O presente concede sem cobrar,
- * então a oferta precisa ser de pagamento único (prazo fixo ou vitalícia: assinatura não vira
- * presente) e do MESMO público da campanha (o público vem do produto principal da oferta).
+ * então a oferta precisa ser de pagamento único (assinatura não vira presente), sem prazo ou com
+ * prazo fixo em DIAS (o resgate grava os dias e o fim é contado deles), não arquivada (pausada
+ * serve: a oferta pode existir só como presente) e do MESMO público da campanha (o público vem do
+ * produto principal da oferta). As mensagens aparecem para quem edita a campanha no Admin.
  */
 export function giftOfferProblem(offer: GiftOffer, audience: GiftAudience): string | null {
+  if (offer.status === 'archived')
+    return 'A oferta do presente está arquivada no Catálogo. Escolha uma oferta ativa ou pausada.'
   if (offer.accessMode !== 'fixed' && offer.accessMode !== 'lifetime')
     return 'A oferta do presente precisa ser de pagamento único (prazo fixo ou sem prazo). Assinatura não vira presente.'
   if (offer.accessMode === 'fixed' && (!offer.accessDurationValue || !offer.accessDurationUnit))
     return 'A oferta de prazo fixo precisa ter a duração cadastrada no Catálogo.'
+  if (offer.accessMode === 'fixed' && offer.accessDurationUnit !== 'days')
+    return 'O prazo do presente precisa ser em dias. Esta oferta tem prazo em meses: escolha uma oferta com prazo em dias ou sem prazo.'
   if (offer.audience !== audience)
     return audience === 'adult'
       ? 'Escolha uma oferta do público adulto, o mesmo da campanha.'
       : 'Escolha uma oferta do público Kids, o mesmo da campanha.'
   return null
-}
-
-/** "por 7 dias" / "por 1 mês"; vazio quando não há prazo. */
-export function giftDurationText(
-  offer: GiftOffer | null,
-  accessDurationDays: number | null,
-): string {
-  if (offer?.accessMode === 'fixed' && offer.accessDurationValue) {
-    const n = offer.accessDurationValue
-    if (offer.accessDurationUnit === 'months') return `por ${n} ${n === 1 ? 'mês' : 'meses'}`
-    return `por ${n} ${n === 1 ? 'dia' : 'dias'}`
-  }
-  if (accessDurationDays)
-    return `por ${accessDurationDays} ${accessDurationDays === 1 ? 'dia' : 'dias'}`
-  return ''
 }
 
 /**

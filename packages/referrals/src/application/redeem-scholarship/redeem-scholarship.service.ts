@@ -5,6 +5,7 @@ import {
   type GiftAudience,
   type GiftMuralAccess,
   type GiftSource,
+  giftDurationLabel,
   publicGiftSourceName,
   type ReferralBonusAmounts,
   type ReferralGiftOfferView,
@@ -21,14 +22,12 @@ import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
 import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
-  giftDurationText,
   giftGuidanceText,
   giftMuralText,
   giftOfferProblem,
   giftOfferRef,
   giftWelcomeLink,
   isMuralTrialGranted,
-  offerGiftExpiresAt,
   scholarshipExpiresAt,
 } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
@@ -451,14 +450,11 @@ export class RedeemScholarshipService {
   }
 
   /**
-   * Fim do presente: os dias gravados no resgate; na oferta com prazo em meses, a conta do
-   * members a partir do resgate; sem prazo, null.
+   * Fim do presente: os dias gravados no resgate contados do cadastro (o prazo da oferta é
+   * sempre em dias); sem prazo, null.
    */
-  private expiresAtOf(redemption: RedemptionRecord, context: GiftContext): Date | null {
-    if (redemption.accessDurationDays !== null)
-      return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
-    const offer = this.offerOf(redemption, context)
-    return offer ? offerGiftExpiresAt(offer, redemption.createdAt) : null
+  private expiresAtOf(redemption: RedemptionRecord): Date | null {
+    return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
   }
 
   private windowElapsed(expiresAt: Date | null): boolean {
@@ -508,7 +504,7 @@ export class RedeemScholarshipService {
     }
 
     const offerPolicy = redemption.muralVisitorPolicy === 'offer'
-    const expiresAt = this.expiresAtOf(redemption, context)
+    const expiresAt = this.expiresAtOf(redemption)
 
     // 2) Grant (dedupe do members por x-delivery-id ESTÁVEL + idempotência
     //    manual:userId:productId — replay é seguro).
@@ -672,7 +668,7 @@ export class RedeemScholarshipService {
         })
         return 'unknown'
       }
-      const expiresAt = this.expiresAtOf(redemption, context)
+      const expiresAt = this.expiresAtOf(redemption)
       if (this.windowElapsed(expiresAt)) {
         this.logger.warn('referrals.redeem_welcome_expired', { redemptionId: redemption.id })
         return 'unknown'
@@ -697,13 +693,13 @@ export class RedeemScholarshipService {
       // chegam prontos nas variáveis).
       const giftTemplates = offerPolicy || redemption.muralVisitorPolicy === 'trial'
       const validade = expiresAt ? formatValidade(expiresAt) : ''
-      const duration = giftDurationText(offer, redemption.accessDurationDays)
       // O Messaging não tem condicional: curso, prazo e a frase do Mural vão prontos.
       const giftVariables = {
         curso: context.course?.title ?? UNKNOWN_COURSE_TITLE,
-        prazo: expiresAt
-          ? `${duration ? `${duration}, ` : ''}até ${validade} (horário de Brasília)`
-          : 'sem prazo para terminar',
+        prazo:
+          expiresAt && redemption.accessDurationDays !== null
+            ? `por ${giftDurationLabel(redemption.accessDurationDays)}, até ${validade} (horário de Brasília)`
+            : 'sem prazo para terminar',
         mural: giftMuralText({
           audience: redemption.audience,
           participation: offerPolicy
@@ -789,11 +785,12 @@ export class RedeemScholarshipService {
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
+              // Como na conta nova: todo e-mail de código de pessoa nomeia quem deu o presente
+              // (os templates do presente exigem `indicador`; o Messaging aceita a variável extra
+              // no `kids-new-access` histórico).
               ...(campaign
                 ? { campanha: source.name }
-                : adult || expiresAt
-                  ? { indicador: publicGiftSourceName(source) }
-                  : {}),
+                : { indicador: publicGiftSourceName(source) }),
               ...giftVariables,
               // Curso para pais: direto na página do curso na área dos pais.
               link: giftWelcomeLink(redemption.audience, appUrl, null, parentsCourseSlug),
