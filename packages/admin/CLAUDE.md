@@ -2060,12 +2060,19 @@ status GRAVADO (o referrals responde 409 `CAMPAIGN_AUDIENCE_LOCKED`, que vira
 omissão. A lista tem a coluna Público (badge), o detalhe mostra o badge e "Pessoa" no lugar de
 "Responsável" nas adultas, duplicar leva o público junto e a prévia (`previewUrl`) manda
 `audience`. O BFF repassa o corpo inteiro e o QR já sai certo (o público vem do código).
-**Aviso do curso adulto:** com o público Adulto, o editor consulta a lista de Cursos que o painel já
-tem (`/api/members/courses?q=cade-todo-mundo-adulto&audience=adult`) e, se o slug exato não está
-`published`, mostra `ADULT_COURSE_UNPUBLISHED_MESSAGE` (`role="status"`). É a mesma régua do
-`isPublishedGiftCourse` do members. Falha da consulta (403 de papel, members fora) não mostra nada.
-⚠️ Limite conhecido: o slug é o PADRÃO do referrals (`ADULT_GIFT_COURSE_SLUG`); se a env
-`SCHOLARSHIP_ADULT_COURSE_SLUG` for trocada lá, troque aqui também. Testes:
+**Oferta de presente (15/11/2026):** o aviso do curso adulto saiu (`useAdultGiftCourse`). O
+presente é uma OFERTA do catálogo: o editor tem o campo obrigatório "Oferta de presente"
+(`campaign-gift-offer.tsx`), com as ofertas do público da lente (`/api/catalog/offers`, todas as
+páginas) de pagamento único (`accessMode` `fixed`/`lifetime`), mostrando nome, curso (produto
+principal), "+ Mural" (item cujo produto é o Mural completo do público, achado pela busca
+`/api/catalog/products?q=mural-dos-criadores`) e prazo ("7 dias"/"sem prazo"). Pausada pode ser
+escolhida e mostra a situação; RASCUNHO aparece desabilitada, porque a leitura pública do
+catálogo trata oferta em rascunho como inexistente e o referrals recusaria. POST e PATCH levam
+`giftOfferId`; campanha antiga sem oferta mostra "Oferta padrão do Cadê" e o PATCH omite o campo
+(o referrals conserva). Fora do rascunho ou com cadastros o campo trava (409
+`CAMPAIGN_GIFT_OFFER_LOCKED` vira `GIFT_OFFER_LOCKED_MESSAGE`; 503 `CATALOG_UNAVAILABLE` vira
+`GIFT_CATALOG_UNAVAILABLE_MESSAGE`). Lista (coluna Presente), detalhe e cartão de divulgação
+falam da oferta escolhida. Testes:
 `tests/campaign-audience.test.tsx` e a guarda de copy em `tests/ambassador-copy.test.ts`.
 
 Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.

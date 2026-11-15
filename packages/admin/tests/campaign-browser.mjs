@@ -83,10 +83,15 @@ try {
               accessMode: 'fixed',
               accessDurationValue: 30,
               accessDurationUnit: 'days',
+              status: 'active',
+              productId: '44444444-4444-4444-8444-444444444444',
+              productName: `Curso ${audience}`,
+              items: [],
             },
           ],
           total: 1,
         })
+      if (url.pathname === '/api/catalog/products') return send({ items: [], total: 0 })
       const campaign = campaigns.get(audience)
       if (url.pathname.endsWith('/coupon')) {
         campaign.coupon = { couponId: '33333333-3333-4333-8333-333333333333', offerId }
@@ -164,6 +169,7 @@ try {
     await page.getByLabel('Nome interno', { exact: true }).fill(`Encontro ${audience}`)
     await page.getByLabel('Título público', { exact: true }).fill('Palestra na clínica Laopa')
     await page.getByLabel('Código do link', { exact: false }).fill(`evento-${audience}`)
+    await page.locator('select[name="campaign-gift-offer"]').selectOption(offerId)
     await page.getByLabel('Data da campanha', { exact: true }).fill('2026-11-06')
     await page.getByText('06/11/2026 a 08/11/2026, até 23h59.').waitFor()
     await page.getByText('06/11/2026 a 12/11/2026, até 23h59.').waitFor()
@@ -191,6 +197,7 @@ try {
     await page.getByRole('button', { name: 'Salvar campanha', exact: true }).click()
     await page.getByRole('button', { name: 'Cartão do cupom', exact: true }).waitFor()
     assert.equal(campaigns.get(audience).startsAt, '2026-11-06T03:00:00.000Z')
+    assert.equal(campaigns.get(audience).giftOfferId, offerId)
     assert.equal(campaigns.get(audience).endsAt, '2026-11-09T03:00:00.000Z')
     assert.equal(
       requests.find((r) => r.path.endsWith('/coupon') && r.audience === audience).body.percentOff,

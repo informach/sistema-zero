@@ -12,10 +12,13 @@ const { PlatformProvider } = await import('../src/components/admin/platform-prov
 test('busca mais recente vence mesmo quando a resposta antiga chega por último', async () => {
   const originalFetch = globalThis.fetch
   const requests: { url: string; resolve: (value: Response) => void }[] = []
+  // Só as buscas de campanhas entram na corrida; o catálogo (ofertas de presente) responde vazio.
   globalThis.fetch = ((url: string | URL | Request) =>
-    new Promise<Response>((resolve) => {
-      requests.push({ url: String(url), resolve })
-    })) as typeof fetch
+    String(url).startsWith('/api/catalog/')
+      ? Promise.resolve(Response.json({ items: [], total: 0 }))
+      : new Promise<Response>((resolve) => {
+          requests.push({ url: String(url), resolve })
+        })) as typeof fetch
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
