@@ -19,6 +19,7 @@ import {
   physicalBody,
   withCurrentSet,
   withEars,
+  withMountedVariants,
 } from '@sistemazero/core/avatar'
 
 export {
@@ -36,6 +37,7 @@ export {
   type PhysicalBody,
   physicalBody,
   withEars,
+  withMountedVariants,
 }
 
 /** O nome de uma peça do pack (o id, se ela não estiver no catálogo). */

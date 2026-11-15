@@ -4,6 +4,7 @@ import {
   AVATAR_CATALOG,
   avatarDoPack,
   avatarFileUrl,
+  withMountedVariants,
 } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import {
   alturaNoComeco,
@@ -193,6 +194,7 @@ export function AvatarDoJogo({
   objetoDoGesto = null,
   semChapeu = false,
   apoioDasMaos,
+  montada = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -209,17 +211,20 @@ export function AvatarDoJogo({
   semChapeu?: boolean
   /** Onde as mãos se seguram agora (a quina, a escada), no mundo; `null` solta. */
   apoioDasMaos?: RefObject<ApoioDasMaos | null>
+  /** Montada: as peças com variante para montar (a saia assentada na sela) trocam por ela. */
+  montada?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
   const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
   const slots = useMemo(() => {
-    const vestido = avatarDoPack(slotsDoJogo)
+    const doPack = avatarDoPack(slotsDoJogo)
+    const vestido = montada ? withMountedVariants(AVATAR_CATALOG, doPack) : doPack
     const calcado = deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
     if (!semChapeu || !calcado.chapeu) return calcado
     const { chapeu: _fora, ...semOChapeu } = calcado
     return semOChapeu
-  }, [slotsDoJogo, deRodas, semChapeu])
+  }, [slotsDoJogo, deRodas, semChapeu, montada])
   const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
   const equipamento = equipamentoDaMao(naMao)
   const comBraco = naMao !== null && camadasDoBraco(naMao).length > 0

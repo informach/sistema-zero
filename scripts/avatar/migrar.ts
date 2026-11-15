@@ -385,7 +385,15 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         ...(conjunto ? { set: conjunto } : {}),
         ...(item.festa ? { festa: item.festa } : {}),
         ...(item.altura_que_soma_m ? { lift: item.altura_que_soma_m } : {}),
-        ...(item.rascunho || substituidas.has(item.id) || SO_NO_JOGO.has(item.id)
+        ...(item.variante_montado ? { mountedVariant: item.variante_montado } : {}),
+        // A variante (a saia montada) não se vende nem sai no sorteio: só troca de lugar com a original.
+        ...(item.variante_de
+          ? { variantOf: item.variante_de, ...(item.usar_em ? { variantFor: item.usar_em } : {}) }
+          : {}),
+        ...(item.rascunho ||
+        item.variante_de ||
+        substituidas.has(item.id) ||
+        SO_NO_JOGO.has(item.id)
           ? { hidden: true as const }
           : {}),
         origin: {

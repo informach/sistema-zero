@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "9d0f94b2ba966b007575b62db4419a5e5b672de7",
-      "tree": "990367569420c377b386107853f765fb32b40b2d",
+      "catalogBlob": "3d9aded168ffe01c7f031c51da431bc9a40a3b0c",
+      "tree": "5eb672c04d4cfd73e50173548aeeada39a13b858",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.6c9ce0dd180f.glb",
+        "file": "base/animacoes-do-jogo.def37ebf5c64.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -2099,6 +2099,30 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               "beira_a_frente_min_so_com_o_regador_em_cima_m_0.19": 0.005,
               "beira_a_frente_min_so_com_o_regador_em_cima_m_0.49": 0.005,
               "bico_graus_acima_da_horizontal_ao_despejar": 9.7
+            }
+          },
+          {
+            "id": "montado_largo",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": true,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "bacia_m": 0.05,
+              "assento_m": 0.7,
+              "entre_os_joelhos_m": 0.358,
+              "entre_os_tornozelos_m": 0.52,
+              "tornozelo_abaixo_do_assento_m": 0.06,
+              "medido_no_dino_as_pernas_descem_ate_m": 0.113,
+              "medido_no_dino_sela_do_chao_m": 0.695
             }
           }
         ],

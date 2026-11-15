@@ -822,6 +822,7 @@ export function Personagem() {
             objetoDoGesto={objetoDoGesto}
             semChapeu={deitada || levantandoDaCama}
             apoioDasMaos={apoioDasMaos}
+            montada={montado}
           />
           {comPlanador ? (
             <Suspense fallback={null}>
