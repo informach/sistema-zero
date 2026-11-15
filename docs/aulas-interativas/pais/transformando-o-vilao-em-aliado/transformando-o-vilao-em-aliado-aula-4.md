@@ -1,28 +1,15 @@
-# Aula 4. Programar é organizar passos
+# Aula 4. O interesse do seu filho é a porta de entrada
 
-**De onde vem:** aula aberta de 13/11/2026, slides 16 a 18 (transcrição de 01:07 a 01:17).
+**Objetivo de aprendizagem:** o responsável transforma o interesse do filho no rascunho de um jogo e vê como a criação dá sentido a conteúdos da escola.
 
-**Objetivo:** desmistificar a programação, mostrar que ela segue a lógica da rotina da casa e fazer a família viver, num desafio curto, o ciclo de observar, ajustar e testar.
+**Crença que muda:** "esse interesse exagerado atrapalha." Passa a ser: "o interesse é a porta de entrada para aprender."
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| Você já programa em casa | Blocos coloridos em vez da tela preta; a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO; a sequenciação na vida (Vivianne). | Vídeo assistido. |
-| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. A tela fica parada para a pessoa pensar. | Vídeo assistido. |
-| Qual é o seu caminho? | Quiz com a sequência e com o que fazer depois do erro, numa parte própria (o quiz não divide parte com vídeo). | Quiz respondido. |
-| E se a primeira tentativa não funcionar? | A resposta (há mais de um caminho); observar, mudar uma instrução, testar de novo; a percepção do ambiente na sala de aula; o "que horrível" que virou legal. | Vídeo assistido; tarefa à vista. |
+| O interesse como porta de entrada | As seis cenas e o que o jogo oferece em cada uma, sem diagnóstico; o interesse forte como aliado; nem toda criança é dos jogos; o vídeo do Bernardo; o exercício "Meu filho ama". | Vídeo assistido. |
+| Quando a matéria da escola ganha sentido | A casa 2 e a estrela; a amiga professora; português, ciências, arte e planejamento; depoimentos do que os pais percebem; a pesquisa, com honestidade. | Vídeo assistido; tarefa e referências à vista. |
+| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
 
-## Ideias-chave
+**Ferramenta:** a frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___.", usando também a resposta da Aula 2.
 
-- Programar é organizar passos, criar regras, fazer escolhas e testar o resultado.
-- A rotina visual já é um algoritmo.
-- A sequência da porta e da chave é a mesma do banho e da chave esquecida na mochila (Vivianne).
-- O erro é uma pista; o computador não julga.
-- Percepção global do ambiente e foco no ponto importante (Vivianne).
-
-## Quiz
-
-Duas perguntas, nota mínima de 50, sem XP (curso para pais). A primeira confere a sequência do caminho; a segunda, o que fazer quando a primeira tentativa falha. A grade é descrita no enunciado, porque o vídeo pode ter sido pausado.
-
-## Para fazer em casa
-
-Usar as três perguntas quando algo der errado: onde parou, o que dá para mudar, vamos tentar de novo.
+**Cuidados:** as cenas não são diagnóstico; a pesquisa não é específica sobre autismo e não é fórmula mágica.

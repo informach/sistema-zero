@@ -2,46 +2,101 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-6",
-  "title": "A ponte com a escola e com a vida",
+  "title": "Da criação à conversa, e o primeiro passo",
   "blocks": [
     {
-      "key": "video-a6-escola",
-      "plannedVideo": "Título: Quando o conceito ganha sentido\n\nSlides 22, 23 e 24 da aula aberta: a casa 2 e a estrela, as matérias da escola e a pesquisa; o vídeo de depoimentos do slide 25 e a felicidade a longo prazo. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1."
+      "key": "video-a6-conversa",
+      "plannedVideo": "Título: O jogo vira assunto na mesa de casa\n\nEntrar no mundo da criança, o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle), as quatro perguntas e a história do André. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1."
     },
     {
-      "key": "video-a6-ciclo",
-      "plannedVideo": "Título: Do interesse à autoria\n\nSlide 26 da aula aberta (o ciclo de criação) e a gravação de tela do Cadê Todo Mundo no Estúdio: a regra de sumir e a soma em achados. Fala completa no roteiro, Parte 2."
-    },
-    {
-      "key": "referencias-a6",
+      "key": "perguntas-a6",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar depois\n\n- Scherer, Siddiq e Sánchez Viveros (2019). Uma análise de 105 estudos sobre aprender a programar, com ganhos em criatividade, pensamento matemático e raciocínio. [doi.org/10.1037/edu0000314](https://doi.org/10.1037/edu0000314)\n- Li e Oon (2024). Pensamento computacional e aprendizagem em ciências e matemática. [doi.org/10.1186/s40594-024-00498-z](https://doi.org/10.1186/s40594-024-00498-z)\n\nEsses estudos não são específicos sobre autismo, e programar não é fórmula mágica: é uma ponte a mais.\n\n**O ciclo de criação:** imaginar, planejar, criar, testar, melhorar e compartilhar."
+        "markdown": "## Para a mesa de casa\n\nPerguntas sobre o caminho, e não só sobre nota ou tempo de tela. Você não precisa saber programar:\n\n- Me mostra o que você criou?\n- O que foi mais divertido?\n- O que você precisou mudar?\n- O que você vai inventar depois?"
+      }
+    },
+    {
+      "key": "quiz-a6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você chega em casa e quer conversar com o seu filho sobre o que ele criou. Qual pergunta abre mais conversa?",
+            "choices": [
+              { "id": "a", "label": "Quanto tempo você ficou no computador hoje?" },
+              { "id": "b", "label": "Me mostra o que você criou? O que você precisou mudar?" },
+              { "id": "c", "label": "Já terminou? Então pode desligar." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Perguntas sobre o caminho convidam a criança a mostrar e a explicar, e é aí que a conversa acontece."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-a6-primeiro-passo",
+      "plannedVideo": "Título: A sua palavra e o primeiro passo\n\nO ciclo de criação, o vídeo das crianças contando o que sentem ao criar, a palavra guardada na Aula 1, a ideia que fica e o presente: o Cadê Todo Mundo por 7 dias. Fala completa no roteiro, Parte 3."
+    },
+    {
+      "key": "presente",
+      "content": {
+        "kind": "materials",
+        "title": "O presente: Cadê Todo Mundo por 7 dias",
+        "items": [
+          {
+            "id": "presente-cade",
+            "kind": "text",
+            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
+        "bodyText": "Aprendeu como a tela que a família já usa pode virar um treino de habilidades para a vida, criando em vez de só consumir."
       }
     }
   ],
   "sections": [
     {
-      "key": "escola",
-      "title": "Quando o conceito ganha sentido",
-      "objective": "Ver como a criação dá sentido a conteúdos da escola e se liga às habilidades da vida adulta.",
+      "key": "conversa",
+      "title": "O jogo vira assunto na mesa de casa",
+      "objective": "Usar a criação do filho como porta de conversa em família, com perguntas sobre o caminho.",
       "intent": "explanation",
-      "blockKeys": ["video-a6-escola"],
+      "blockKeys": ["video-a6-conversa", "perguntas-a6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a6-escola"] }
+      "completion": { "version": 1, "blockIds": ["video-a6-conversa"] }
     },
     {
-      "key": "ciclo",
-      "title": "Do interesse à autoria",
-      "objective": "Conhecer o ciclo de criação de um jogo e ver uma regra simples virar jogo, com a causa e a consequência que ela ensina.",
-      "intent": "explanation",
-      "blockKeys": ["video-a6-ciclo", "referencias-a6"],
+      "key": "confira-a6",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a uma situação.",
+      "intent": "application",
+      "blockKeys": ["quiz-a6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a6-ciclo"] }
+      "completion": { "version": 1, "blockIds": ["quiz-a6"] }
+    },
+    {
+      "key": "primeiro-passo",
+      "title": "A sua palavra e o primeiro passo",
+      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família viver isso na prática e emitir o certificado. Antes de publicar, acrescente ao bloco do presente o item de link da campanha (/bolsa/<código>).",
+      "intent": "delivery",
+      "blockKeys": ["video-a6-primeiro-passo", "presente", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a6-primeiro-passo", "certificado"] }
     }
   ]
 }

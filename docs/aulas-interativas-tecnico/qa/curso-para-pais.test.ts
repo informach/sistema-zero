@@ -79,4 +79,29 @@ describe.each(cursos)('curso para pais %s', (curso) => {
     }
     expect(arquivos.some((n) => n.endsWith('.elevenlabs.txt'))).toBe(false)
   })
+
+  // Decisão da dona (15/11/2026): o curso é da Helena. Ninguém mais é citado, e o curso não fala da
+  // aula aberta que serviu de fonte. O `fontes.md` é interno e registra de onde veio o conteúdo.
+  test('o que os pais leem não cita outra autora nem a palestra de origem', () => {
+    const textoDoCurso = arquivos
+      .filter((n) => /\.(roteiro\.md|manifesto\.json)$/.test(n) || /-aula-\d+\.md$/.test(n))
+      .concat(['README.md', 'modulos.md'])
+      .map((nome) => ({ nome, texto: readFileSync(resolve(pasta, nome), 'utf8') }))
+    const apostila = resolve(import.meta.dir, `../recursos/${curso}/caderno-conteudo.json`)
+    if (existsSync(apostila))
+      textoDoCurso.push({ nome: 'caderno-conteudo.json', texto: readFileSync(apostila, 'utf8') })
+    for (const { nome, texto } of textoDoCurso) {
+      expect({ nome, citaVivianne: /viviann?e/i.test(texto) }).toEqual({
+        nome,
+        citaVivianne: false,
+      })
+      expect({
+        nome,
+        citaPalestra: /palestra de|na palestra|aula aberta|a plateia/i.test(texto),
+      }).toEqual({
+        nome,
+        citaPalestra: false,
+      })
+    }
+  })
 })

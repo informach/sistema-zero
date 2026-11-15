@@ -1,26 +1,13 @@
-# Aula 2. A virada: de jogar para criar
+# Aula 2. Consumir ou criar: o que muda por dentro
 
-**De onde vem:** aula aberta de 13/11/2026, slides 9 a 12 (transcrição de 00:46 a 00:58).
+**Objetivo de aprendizagem:** o responsável entende a diferença entre a tela que entretém e a que faz pensar, e reconhece as habilidades que a criança usa quando cria (as funções executivas), explicadas com a rotina da casa.
 
-**Objetivo:** apresentar a criação de jogos como treinamento de habilidades para a vida, explicar as funções executivas em palavras simples e contar a história da família que deu origem a tudo.
+**Crença que muda:** "jogo é tudo igual, é só passatempo." Passa a ser: "criar um jogo é um treino de habilidades para a vida; o jogo é o meio."
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| E se ele criasse os próprios jogos? | A virada de chave; a frase da Vivianne; as funções executivas; o Lego com e sem manual; do "o jogo decidiu" para o "eu posso decidir". | Vídeo assistido. |
-| Quando o jogo é dele | Depoimentos de crianças e pais; a história do André, da tela como regulação até a palestra na faculdade. | Vídeo assistido; tarefa à vista. |
+| O que acontece por dentro | O tutorial como memorização; a tela que entretém e a que faz pensar; memória de trabalho, planejamento, organização, controle do impulso e controle emocional na manhã da casa; o Lego sem manual. | Vídeo assistido. |
+| Quando o jogo é dele | Por que a autoria faz a criança aceitar o erro; escolher é abrir mão; começo, meio e fim facilitam desligar; depoimentos; a história da Helena com o André. | Vídeo assistido; tarefa à vista. |
+| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
 
-## Ideias-chave
-
-- "Isso não é um jogo. É um treinamento de habilidades cognitivas para a vida" (Vivianne). Criar jogos é o meio, não o fim.
-- Funções executivas: memória de trabalho, planejamento, organização, controle inibitório e controle emocional.
-- O Lego sem manual (a fazenda) exercita a flexibilidade cognitiva.
-- Escolher é abrir mão: a criança aprende a pensar melhor nas escolhas.
-- A criação motiva a enfrentar o erro, porque existe orgulho: "fui eu que fiz".
-
-## Para fazer em casa
-
-Perguntar ao filho que jogo ele inventaria se pudesse, e só ouvir.
-
-## Cuidados
-
-A história da família é contada pela Helena, com as palavras dela. A frase do André é real e autorizada.
+**Ferramenta:** perguntar ao filho "que jogo você inventaria se pudesse?" e anotar (a resposta volta na Aula 4).

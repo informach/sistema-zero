@@ -2,25 +2,21 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-1",
-  "title": "O que você deseja para o seu filho",
+  "title": "A pergunta certa sobre telas",
   "blocks": [
     {
-      "key": "video-a1-desejo",
-      "plannedVideo": "Título: O que você mais deseja para o seu filho\n\nHelena na câmera. Apresenta o curso e a Vivianne Lima (slide 2 da aula aberta), faz a pergunta do slide 3 e pede para guardar a palavra. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1."
-    },
-    {
-      "key": "video-a1-realidade",
-      "plannedVideo": "Título: A tela que já existe na sua casa\n\nSlides 4 e 5 da aula aberta e o vídeo de depoimentos do slide 6 (Flávia, Daniel e Débora). Fala completa no roteiro, Parte 2."
+      "key": "video-a1-pergunta",
+      "plannedVideo": "Título: A pergunta que cansa\n\nHelena na câmera: a palavra guardada, a briga para desligar, por que tirar a tela não funciona, a troca da pergunta, o mesmo tempo e não mais tempo, e o vídeo de depoimentos da preocupação (Flávia, Daniel e Débora). Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1."
     },
     {
       "key": "video-a1-tres-usos",
-      "plannedVideo": "Título: O fogo e os três usos da tela\n\nSlides 7 e 8 da aula aberta: o fogo como ferramenta; assistir, jogar e criar. Fecha com a tarefa da semana e a apostila. Fala completa no roteiro, Parte 3."
+      "plannedVideo": "Título: Assistir, jogar e criar\n\nO fogo como ferramenta, os três usos da tela e o mapa da semana de telas. Fala completa no roteiro, Parte 2."
     },
     {
       "key": "para-casa-a1",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para fazer em casa\n\nDurante uma semana, observe em qual destes usos o seu filho passa mais tempo na tela:\n\n- **Assistir:** receber histórias e conteúdos prontos.\n- **Jogar:** explorar regras e desafios que outra pessoa criou.\n- **Criar:** inventar as próprias regras e ver tudo funcionar.\n\nSem julgar e sem mudar nada ainda. Só observar. E guarde a palavra que veio à sua cabeça na primeira parte: a gente volta nela na última aula."
+        "markdown": "## Para fazer esta semana: o mapa da semana de telas\n\nTodo dia, anote em qual uso o seu filho passou a maior parte do tempo de tela. Sem julgar e sem mudar nada ainda.\n\n| Dia | Assistir | Jogar | Criar |\n| --- | --- | --- | --- |\n| Segunda | | | |\n| Terça | | | |\n| Quarta | | | |\n| Quinta | | | |\n| Sexta | | | |\n| Sábado | | | |\n| Domingo | | | |\n\nE guarde a sua palavra: o que você mais deseja para o futuro do seu filho? Ela volta na última aula."
       }
     },
     {
@@ -31,41 +27,75 @@
         "bookPreview": true,
         "items": []
       }
+    },
+    {
+      "key": "quiz-a1",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O seu filho passa uma hora por dia assistindo vídeos. Qual é o primeiro passo que este curso propõe?",
+            "choices": [
+              { "id": "a", "label": "Cortar esse tempo pela metade." },
+              {
+                "id": "b",
+                "label": "Usar uma parte desse mesmo tempo para ele criar alguma coisa."
+              },
+              { "id": "c", "label": "Dar mais tempo de tela, desde que ele crie." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A ideia não é aumentar nem só cortar o tempo de tela. É mudar o que acontece dentro do tempo que já existe."
+          },
+          {
+            "id": "q2",
+            "prompt": "Qual destas atividades é criar?",
+            "choices": [
+              { "id": "a", "label": "Assistir a um vídeo de alguém passando uma fase difícil." },
+              { "id": "b", "label": "Jogar a fase mais difícil de um jogo." },
+              { "id": "c", "label": "Inventar as regras de um jogo e testar se funcionam." }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "Criar é inventar as próprias regras e ver tudo funcionar. Assistir e jogar usam o que outra pessoa já decidiu."
+          }
+        ]
+      }
     }
   ],
   "sections": [
     {
-      "key": "desejo",
-      "title": "O que você mais deseja",
-      "objective": "Começar pelo que a família deseja para o filho e guardar uma palavra para retomar no fim do curso.",
+      "key": "pergunta",
+      "title": "A pergunta que cansa",
+      "objective": "Trocar \"como eu tiro a tela?\" por \"o que eu posso oferecer dentro dela?\" e entender que a proposta usa o mesmo tempo de tela.",
       "intent": "presentation",
-      "blockKeys": ["video-a1-desejo"],
+      "blockKeys": ["video-a1-pergunta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a1-desejo"] }
-    },
-    {
-      "key": "realidade",
-      "title": "A tela que já existe",
-      "objective": "Trocar a pergunta \"como eu tiro a tela?\" por \"o que eu posso oferecer dentro dela?\" e entender que a proposta usa o mesmo tempo de tela, sem aumentar.",
-      "intent": "explanation",
-      "blockKeys": ["video-a1-realidade"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a1-realidade"] }
+      "completion": { "version": 1, "blockIds": ["video-a1-pergunta"] }
     },
     {
       "key": "tres-usos",
-      "title": "O fogo e os três usos da tela",
-      "objective": "Reconhecer a tela como ferramenta e diferenciar assistir, jogar e criar.",
+      "title": "Assistir, jogar e criar",
+      "objective": "Reconhecer a tela como ferramenta, diferenciar os três usos e começar o mapa da semana.",
       "intent": "explanation",
       "blockKeys": ["video-a1-tres-usos", "para-casa-a1", "apostila"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": { "version": 1, "blockIds": ["video-a1-tres-usos"] }
+    },
+    {
+      "key": "confira-a1",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a duas situações do dia a dia.",
+      "intent": "application",
+      "blockKeys": ["quiz-a1"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-a1"] }
     }
   ]
 }

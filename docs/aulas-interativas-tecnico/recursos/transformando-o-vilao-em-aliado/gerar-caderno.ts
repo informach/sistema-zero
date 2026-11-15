@@ -1,13 +1,13 @@
 /**
  * Apostila do curso para pais "Transformando o vilão em aliado" (15/11/2026), pela Receita do
  * Passo a passo do projeto (`../caderno-visual/README.md`): capa com a composição fixa, abertura
- * com o mapa das aulas, uma folha por parte de aula com o `cabecalho` (o slide da aula aberta no
- * lugar da cena do jogo) e os cards de `../caderno-visual/visual.ts`. Só o nome do material muda:
- * "Apostila do curso", porque curso para pais não tem projeto.
+ * com o mapa das aulas, uma ou duas folhas por aula com o cabeçalho simples da receita (curso
+ * para pais não tem cena de jogo) e os cards de `../caderno-visual/visual.ts`. Só o nome do
+ * material muda: "Apostila do curso", porque curso para pais não tem projeto.
  *
  * Todo texto mora em `caderno-conteudo.json`. `{{pagina:<id>}}` vira o número da folha com aquele
- * id; a capa conta como página 1. Os slides em `slides/` são a aula aberta de 13/11/2026, já
- * exportados em JPEG.
+ * id; a capa conta como página 1. Uma página pode ter `slide` (imagem em `slides/`) para usar o
+ * `cabecalho` com imagem; hoje nenhuma usa.
  *
  * Itens: `map`, `box` (`tone`, `icon`), `note`, `steps` (com `title` opcional), `delivery`,
  * `compare` (dois cards lado a lado), `quote`, `pairs` (cena e o que o jogo oferece), `rule`
@@ -222,7 +222,7 @@ const folhas = pages.map((page, index) => {
   const topo = page.slide
     ? cabecalho({
         cena: slide(page.slide),
-        alt: `Slide da aula aberta: ${page.title}`,
+        alt: page.title,
         kicker: page.kicker,
         titulo: page.title,
         resumo: page.subtitle,
@@ -244,7 +244,7 @@ const cover = capaHtml({
   tema: 'capa--vilao',
   selo: material,
 })
-// Cores do curso, puxadas da aula aberta: azul-marinho, azul e amarelo.
+// Cores do curso, puxadas da arte da capa: azul-marinho, azul e amarelo.
 const cursoCss = `
 body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8; --destaque-claro: #e6ecfb; --caminho: #2f4fb8;
   --numero-raio: 9px; --numero-fundo: var(--destaque-claro); --numero-cor: var(--destaque);

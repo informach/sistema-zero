@@ -1,25 +1,15 @@
-# Aula 5. Foco e a coragem de errar
+# Aula 5. Quando fica difícil: foco, erro e o seu papel
 
-**De onde vem:** aula aberta de 13/11/2026, slides 19 a 21 (transcrição de 01:16 a 01:25).
+**Objetivo de aprendizagem:** o responsável responde às dúvidas de foco e de dificuldade e aprende a apoiar sem fazer pela criança.
 
-**Objetivo:** responder às duas dúvidas mais comuns dos pais (será que ele vai ter foco? será que vai dar conta?) e apresentar os níveis de suporte.
+**Crença que muda:** "se ele travar, eu preciso resolver por ele (ou ele não é capaz)." Passa a ser: "a primeira barreira é normal, e o meu papel é estar do lado, com a ajuda na medida certa."
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| O foco que eles já têm | As quatro habilidades exercitadas ao criar; depoimentos sobre foco; o foco que eles já têm, a favor do aprendizado (Vivianne). | Vídeo assistido. |
-| Quando estava difícil, eu consegui | O vídeo da Isabela; a primeira barreira; os níveis de suporte; aprender a andar. | Vídeo assistido; tarefa à vista. |
+| O foco que eles já têm | Depoimentos sobre foco; levar o foco da tela para o aprendizado; a Isabela; a primeira barreira; aprender a andar. | Vídeo assistido. |
+| O seu papel: do lado, sem fazer por ele | Os três degraus de apoio; o repertório; o cuidado com a resposta pronta. | Vídeo assistido; tarefa à vista. |
+| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
 
-## Ideias-chave
+**Ferramenta:** a pergunta "o que você já tentou?" quando o filho pedir "faz para mim".
 
-- Raciocínio lógico, resolver problemas, foco e planejamento, lidar com o erro: funções executivas, apresentadas como oportunidade de prática.
-- Foco nas telas eles já têm; o interesse leva esse foco para o aprendizado (Vivianne).
-- Toda atividade nova tem uma primeira barreira, curta.
-- Níveis de suporte: fazer pela criança, fazer junto, deixar ela pensar (Vivianne).
-
-## Para fazer em casa
-
-Lembrar de algo novo que o filho achou difícil e depois conseguiu, e de quem estava do lado.
-
-## Cuidados
-
-Sem promessa de melhora clínica. Confirmar a autorização da família da Isabela antes de publicar o vídeo dela (ver [Fontes](fontes.md)).
+**Cuidados:** sem prazo garantido para a barreira passar; cada criança tem o seu tempo. Confirmar a autorização da família da Isabela antes de publicar o vídeo (ver [Fontes](fontes.md)).

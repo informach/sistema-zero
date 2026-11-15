@@ -1,24 +1,15 @@
-# Aula 6. A ponte com a escola e com a vida
+# Aula 6. Da criação à conversa, e o primeiro passo
 
-**De onde vem:** aula aberta de 13/11/2026, slides 22 a 26, mais a demonstração do slide 27 refeita como gravação de tela (transcrição de 01:23 a 01:44).
+**Objetivo de aprendizagem:** o responsável usa a criação do filho como porta de conversa em família, liga tudo o que viu ao que deseja para o filho e dá o primeiro passo prático com o presente.
 
-**Objetivo:** mostrar como a criação dá sentido a conteúdos da escola, apresentar a pesquisa com honestidade, ligar o desenvolvimento à felicidade a longo prazo e ver uma regra simples virar jogo.
+**Crença que muda:** "não sei conversar sobre o mundo dele." Passa a ser: "eu não preciso saber programar; eu pergunto, olho e celebro."
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| Quando o conceito ganha sentido | A casa 2 e a estrela; a amiga da Helena, doutora em matemática e física; português, ciências, arte e planejamento; a pesquisa; as crianças contando o que sentem ao criar (vídeo do slide 25); "que eles sejam felizes" (Helena) e a felicidade a longo prazo (Vivianne). | Vídeo assistido. |
-| Do interesse à autoria | O ciclo de criação; a redação e o trabalho (Vivianne); o alerta sobre receber tudo pronto; a demonstração do Cadê Todo Mundo; causa e consequência (Vivianne). | Vídeo assistido; referências à vista. |
+| O jogo vira assunto na mesa de casa | Entrar no mundo da criança; depoimentos sobre conversa em família; as quatro perguntas; levar a estratégia do jogo para outra situação; a história do André. | Vídeo assistido; perguntas à vista. |
+| Confira o que ficou | Quiz de situação com uma pergunta. | Quiz respondido. |
+| A sua palavra e o primeiro passo | O ciclo de criação; o vídeo das crianças contando o que sentem ao criar; a palavra guardada na Aula 1; a ideia que fica; o presente do Cadê Todo Mundo por 7 dias; o certificado. | Vídeo assistido e certificado emitido. |
 
-## Ideias-chave
+**Ferramenta:** as quatro perguntas para a mesa de casa.
 
-- Fazer a conta porque a própria ideia precisa dela muda tudo.
-- Uma criação conversa com várias matérias.
-- A pesquisa mostra ganhos em criatividade, pensamento matemático e raciocínio; não é específica sobre autismo nem fórmula mágica.
-- Felicidade a longo prazo passa por autonomia e independência (Vivianne).
-- O ciclo: imaginar, planejar, criar, testar, melhorar e compartilhar.
-- Pensar em vez de receber tudo pronto (o exemplo do ChatGPT, da Vivianne).
-- Causa e consequência: a criança como agente (Vivianne).
-
-## Demonstração
-
-Gravação de tela do Cadê Todo Mundo no Estúdio, com o jardim pronto e sem regras. A Helena monta só duas regras, ao vivo: sumir ao clicar e somar um em achados. Não é aula de ferramenta: o foco é a ideia virando jogo. É também o primeiro contato com o presente da Aula 7.
+**O presente:** o bloco de materiais `presente` traz o texto do presente. Antes de publicar, acrescente a ele o item de link da campanha (`/bolsa/<código>`), criada no Admin em Embaixadores.
