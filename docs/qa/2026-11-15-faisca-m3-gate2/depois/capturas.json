@@ -1,0 +1,150 @@
+{
+  "momento": "depois",
+  "fotos": [
+    {
+      "nome": "porta",
+      "url": "http://127.0.0.1:4530/macro?vista=porta",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,52, 150 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "110",
+        "Triângulos": "166.381",
+        "Geometrias": "99",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "praca",
+      "url": "http://127.0.0.1:4530/macro?vista=praca",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,68, 137 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "102",
+        "Triângulos": "165.407",
+        "Geometrias": "96",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "costa",
+      "url": "http://127.0.0.1:4530/macro?vista=costa",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,52, 153 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "64",
+        "Triângulos": "134.017",
+        "Geometrias": "79",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "oficina",
+      "url": "http://127.0.0.1:4530/macro?vista=oficina",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-24, 6, 132 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "65",
+        "Triângulos": "145.285",
+        "Geometrias": "76",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "farol",
+      "url": "http://127.0.0.1:4530/macro?vista=farol",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "subida",
+      "url": "http://127.0.0.1:4530/macro?vista=subida",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-20, 6,8, 115 m",
+        "Quadros": "58 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "93",
+        "Triângulos": "164.587",
+        "Geometrias": "90",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "ponte-sul",
+      "url": "http://127.0.0.1:4530/macro?vista=ponte-sul",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 135 m",
+        "Quadros": "60 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "77",
+        "Triângulos": "144.983",
+        "Geometrias": "89",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "ponte-norte",
+      "url": "http://127.0.0.1:4530/macro?vista=ponte-norte",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 119 m",
+        "Quadros": "60 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "57",
+        "Triângulos": "114.769",
+        "Geometrias": "76",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "farol-noite",
+      "url": "http://127.0.0.1:4530/macro?vista=farol&noite=1",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      }
+    }
+  ],
+  "erros": []
+}

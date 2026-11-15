@@ -32,13 +32,25 @@ const escolhas: Record<string, string[]> = {
     'placa_seta',
     'cerca_tabuas_3_5m',
   ],
-  'reino/terreno': ['canteiro_horta'],
+  'reino/terreno': ['canteiro_horta', 'caminho_terra_reto', 'caminho_terra_curvo'],
   'reino/castelo': ['poco_manivela_baixa'],
   'reino/personagens': ['coelho'],
   decoracao: ['farol_01_pacote', 'moinho_01_pacote', 'moinho_pas_01_pacote'],
-  construcao: ['ponte_04_pacote', 'lampiao_01_pacote'],
-  plataformas: ['casa_01_pacote'],
+  construcao: ['ponte_04_pacote', 'lampiao_01_pacote', 'cerca_02_pacote'],
+  plataformas: ['casa_01_pacote', 'casa_02_pacote'],
+  vegetacao: ['arvore_04_pacote', 'arbusto_04_pacote', 'folhagem_01_pacote'],
+  tesouros: ['barril_01_pacote'],
 }
+const ensaio = new Set([
+  'caminho_terra_reto',
+  'caminho_terra_curvo',
+  'cerca_02_pacote',
+  'casa_02_pacote',
+  'arvore_04_pacote',
+  'arbusto_04_pacote',
+  'folhagem_01_pacote',
+  'barril_01_pacote',
+])
 interface Item {
   id: string
   arquivo: string
@@ -49,6 +61,7 @@ interface Item {
   tris: number
   colisao: { min: number[]; max: number[] }[]
   animacoes?: { id: string; duracao_s: number; velocidade_m_s?: number }[]
+  encaixe?: { grade_m: number; raio_m?: number; pontos: { nome: string; posicao: number[] }[] }
 }
 const pecas: Record<string, unknown> = {},
   arquivos: { nome: string; dados: Buffer }[] = []
@@ -75,6 +88,7 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
     const nome = `${id}.${digest.slice(0, 12)}.glb`
     pecas[id] = {
       id,
+      ensaio: ensaio.has(id),
       rotulo: item.rotulo,
       origem: item.origem,
       pacote: item.pacote,
@@ -91,6 +105,7 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
         velocidade: a.velocidade_m_s,
       })),
       imagens,
+      encaixe: item.encaixe ?? null,
     }
     arquivos.push({ nome, dados })
   }

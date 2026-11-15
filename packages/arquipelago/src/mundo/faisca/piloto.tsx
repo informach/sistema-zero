@@ -18,6 +18,7 @@ import {
 } from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { useEstado, useJogo } from '../../estado/contexto'
+import { assentamentoDaPeca, pisoDaFaisca } from '../../sistemas/assentamento-da-faisca'
 import {
   COMPOSICAO_DA_FAISCA,
   IRIS_DE_ESTUDO,
@@ -25,15 +26,27 @@ import {
 } from '../../sistemas/composicao-faisca'
 import { alturaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
 import { jogoPausado } from '../../sistemas/pausa'
+import { PECAS_DO_ACERVO, PECAS_DO_CAMINHO } from '../../sistemas/prova-curadoria-faisca'
 import { useInterativo } from '../interativos'
+import { AmbienteDaVila } from './ambiente'
 import { ARTE_DA_FAISCA } from './arte.generated'
 import { type ArteDoPiloto, carregarPiloto } from './carregar-piloto'
 import { preencherInstancias } from './instancias'
 
 type IdDaPeca = keyof typeof ARTE_DA_FAISCA.pecas
-const altura = (p: PecaNaFaisca) =>
-  (p.altura ?? alturaDoArquipelago(p.x, p.z)) + (p.deslocamentoY ?? 0)
 const itens = COMPOSICAO_DA_FAISCA
+const assentamentos = new Map(itens.map((p) => [p.id, assentamentoDaPeca(p)]))
+for (const p of itens)
+  if (p.apoio) {
+    const base = assentamentos.get(p.apoio)
+    if (!base) throw Error(`Apoio ausente: ${p.apoio}`)
+    assentamentos.get(p.id)!.y = base.y + (p.deslocamentoY ?? 0)
+  }
+const assentar = (p: PecaNaFaisca) => {
+  if (!assentamentos.has(p.id)) assentamentos.set(p.id, assentamentoDaPeca(p))
+  return assentamentos.get(p.id)!
+}
+const altura = (p: PecaNaFaisca) => assentar(p).y
 export interface SituacaoDoPiloto {
   estado: 'longe' | 'carregando' | 'pronto' | 'erro'
   erro?: string
@@ -58,11 +71,11 @@ function Instancias({ mesh, matrizes }: { mesh: Mesh; matrizes: Matrix4[] }) {
     />
   )
 }
-function Decoracao({ arte }: { arte: ArteDoPiloto }) {
+function Decoracao({ arte, colecao }: { arte: ArteDoPiloto; colecao: PecaNaFaisca[] }) {
   const partes = useMemo(() => {
     const lista: { id: string; mesh: Mesh; matrizes: Matrix4[] }[] = []
     for (const [id, g] of arte.modelos) {
-      const copias = itens.filter((p) => p.peca === id)
+      const copias = colecao.filter((p) => p.peca === id)
       if (!copias.length) continue
       g.scene.updateMatrixWorld(true)
       g.scene.traverse((o) => {
@@ -80,48 +93,89 @@ function Decoracao({ arte }: { arte: ArteDoPiloto }) {
       })
     }
     return lista
-  }, [arte])
+  }, [arte, colecao])
   return partes.map((p) => <Instancias key={p.id} {...p} />)
 }
-function Colisores({ arte }: { arte: ArteDoPiloto | null }) {
-  const ponte = useMemo(() => {
-    const g = arte?.modelos.get('ponte_04_pacote')
-    if (!g) return []
-    g.scene.updateMatrixWorld(true)
-    const lista: { id: string; vertices: Float32Array; indices: Uint32Array }[] = []
-    g.scene.traverse((o) => {
-      const m = o as Mesh
-      if (!m.isMesh) return
-      const attr = m.geometry.getAttribute('position'),
-        vertices = new Float32Array(attr.count * 3),
-        v = new Vector3()
-      for (let i = 0; i < attr.count; i++) {
-        v.fromBufferAttribute(attr, i).applyMatrix4(m.matrixWorld)
-        vertices.set(v.toArray(), i * 3)
-      }
-      const indices = m.geometry.index
-        ? new Uint32Array(m.geometry.index.array)
-        : Uint32Array.from({ length: attr.count }, (_, i) => i)
-      lista.push({ id: m.uuid, vertices, indices })
-    })
-    return lista
-  }, [arte])
+function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: PecaNaFaisca[] }) {
+  const malhas = useMemo(() => {
+    const mapa = new Map<string, { id: string; vertices: Float32Array; indices: Uint32Array }[]>()
+    for (const id of new Set(
+      colecao.filter((p) => p.solida === 'ponte' || p.solida === 'malha').map((p) => p.peca),
+    )) {
+      const g = arte?.modelos.get(id)
+      if (!g) continue
+      g.scene.updateMatrixWorld(true)
+      const lista: { id: string; vertices: Float32Array; indices: Uint32Array }[] = []
+      g.scene.traverse((o) => {
+        const m = o as Mesh
+        if (!m.isMesh) return
+        const attr = m.geometry.getAttribute('position'),
+          vertices = new Float32Array(attr.count * 3),
+          v = new Vector3()
+        for (let i = 0; i < attr.count; i++) {
+          v.fromBufferAttribute(attr, i).applyMatrix4(m.matrixWorld)
+          vertices.set(v.toArray(), i * 3)
+        }
+        const indices = m.geometry.index
+          ? new Uint32Array(m.geometry.index.array)
+          : Uint32Array.from({ length: attr.count }, (_, i) => i)
+        lista.push({ id: m.uuid, vertices, indices })
+      })
+      mapa.set(id, lista)
+    }
+    return mapa
+  }, [arte, colecao])
   return (
     <>
-      {itens
+      {colecao.map((p) => {
+        const f = assentar(p).fundacao
+        if (!f) return null
+        const w = f.maxX - f.minX,
+          d = f.maxZ - f.minZ,
+          h = f.topo - f.baixo
+        const pos: [number, number, number] = [
+          (f.minX + f.maxX) / 2,
+          (f.baixo + f.topo) / 2,
+          (f.minZ + f.maxZ) / 2,
+        ]
+        return (
+          <RigidBody
+            key={`fundacao-${p.id}`}
+            type="fixed"
+            colliders={false}
+            position={[p.x, 0, p.z]}
+            rotation={[0, p.giro, 0]}
+          >
+            <mesh position={pos} receiveShadow>
+              <boxGeometry args={[w, h, d]} />
+              <meshStandardMaterial color="#8c8e7c" roughness={1} />
+            </mesh>
+            <CuboidCollider position={pos} args={[w / 2, h / 2, d / 2]} />
+          </RigidBody>
+        )
+      })}
+      {colecao
         .filter((p) => p.solida)
         .map((p) => {
           const meta = ARTE_DA_FAISCA.pecas[p.peca as IdDaPeca],
             caixa = meta.colisao[0],
             s = p.escala
-          if (p.solida === 'ponte')
+          if (p.solida === 'ponte' || p.solida === 'malha')
             return (
-              <RigidBody key={p.id} type="fixed" colliders={false} position={[p.x, altura(p), p.z]}>
+              <RigidBody
+                key={p.id}
+                type="fixed"
+                colliders={false}
+                position={[p.x, altura(p), p.z]}
+                rotation={[0, p.giro, 0]}
+              >
                 {arte ? (
-                  ponte.map((m) => <TrimeshCollider key={m.id} args={[m.vertices, m.indices]} />)
-                ) : (
+                  malhas
+                    .get(p.peca)
+                    ?.map((m) => <TrimeshCollider key={m.id} args={[m.vertices, m.indices]} />)
+                ) : p.solida === 'ponte' ? (
                   <CuboidCollider args={[1.9, 0.12, 6.18]} position={[0, 0.45, 0]} />
-                )}
+                ) : null}
               </RigidBody>
             )
           const meio = caixa.min.map((v, i) => ((v + caixa.max[i]!) * s) / 2) as [
@@ -143,7 +197,10 @@ function Colisores({ arte }: { arte: ArteDoPiloto | null }) {
               rotation={[0, p.giro, 0]}
             >
               {p.solida === 'tronco' ? (
-                <CylinderCollider args={[0.9 * s, 0.23 * s]} position={[0, 0.9 * s, 0]} />
+                <CylinderCollider
+                  args={[0.9 * s, (p.raioDoTronco ?? 0.23) * s]}
+                  position={[0, 0.9 * s, 0]}
+                />
               ) : (
                 <CuboidCollider args={metade} position={meio} />
               )}
@@ -217,7 +274,7 @@ function Iris({ arte }: { arte: ArteDoPiloto }) {
       fase < 10 ? fase * 0.488 : fase < 14 ? 4.88 : fase < 24 ? (24 - fase) * 0.488 : 0
     p.current.x = IRIS_DE_ESTUDO.x
     p.current.z = IRIS_DE_ESTUDO.z + distancia
-    const y = alturaDoArquipelago(p.current.x, p.current.z)
+    const y = pisoDaFaisca(p.current.x, p.current.z)
     grupo.current.position.set(p.current.x, y, p.current.z)
     grupo.current.rotation.y = fase < 14 ? 0 : Math.PI
     corpo.current?.setNextKinematicTranslation({ x: p.current.x, y, z: p.current.z })
@@ -249,10 +306,23 @@ function Iris({ arte }: { arte: ArteDoPiloto }) {
   )
 }
 
-export function PilotoDaFaisca({ aoMudar }: { aoMudar: (s: SituacaoDoPiloto) => void }) {
+export function PilotoDaFaisca({
+  aoMudar,
+  curadoria,
+}: {
+  aoMudar: (s: SituacaoDoPiloto) => void
+  curadoria: 'a' | 'b' | null
+}) {
   const { rastro, pedidos } = useJogo()
   const [perto, setPerto] = useState(true),
     [arte, setArte] = useState<ArteDoPiloto | null>(null)
+  const colecao = useMemo(
+    () =>
+      curadoria
+        ? [...itens, ...PECAS_DO_ACERVO, ...(curadoria === 'b' ? PECAS_DO_CAMINHO : [])]
+        : itens,
+    [curadoria],
+  )
   useFrame(() => {
     const agora = Math.hypot(rastro.x, rastro.z - 140) < 200
     if (agora !== perto) setPerto(agora)
@@ -266,7 +336,7 @@ export function PilotoDaFaisca({ aoMudar }: { aoMudar: (s: SituacaoDoPiloto) => 
     let lote: ArteDoPiloto | null = null
     pedidos.chaoChegando.add('arte-faisca')
     aoMudar({ estado: 'carregando', modelos: 0 })
-    carregarPiloto(abort.signal)
+    carregarPiloto(abort.signal, Boolean(curadoria))
       .then((chegou) => {
         lote = chegou
         if (abort.signal.aborted) {
@@ -287,17 +357,18 @@ export function PilotoDaFaisca({ aoMudar }: { aoMudar: (s: SituacaoDoPiloto) => 
       lote?.soltar()
       pedidos.chaoChegando.delete('arte-faisca')
     }
-  }, [perto, aoMudar, pedidos])
+  }, [perto, aoMudar, pedidos, curadoria])
   useLayoutEffect(() => {
     if (arte) pedidos.chaoChegando.delete('arte-faisca')
   }, [arte, pedidos])
   if (!perto) return null
   return (
     <>
-      <Colisores arte={arte} />
+      <Colisores arte={arte} colecao={colecao} />
+      <AmbienteDaVila />
       {arte ? (
         <>
-          <Decoracao arte={arte} />
+          <Decoracao arte={arte} colecao={colecao} />
           <Iris arte={arte} />
         </>
       ) : (

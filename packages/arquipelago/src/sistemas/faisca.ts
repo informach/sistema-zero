@@ -6,6 +6,12 @@ export interface PontoDaFaisca {
 const p = (x: number, z: number): PontoDaFaisca => ({ x, z })
 export const BASE_DO_FAROL = p(-3, 100)
 export const BASE_DA_OFICINA = p(-46, 120)
+/** Implantação local: margem de uma célula de terreno além da base; não altera o envelope da ilha. */
+export const PATAMARES_DA_FAISCA = {
+  moinho: { x: -24, z: 92, meiaLargura: 8, meiaProfundidade: 8 },
+  correio: { x: -17, z: 123, meiaLargura: 7, meiaProfundidade: 7 },
+  vizinhoLeste: { x: 13, z: 124, meiaLargura: 7, meiaProfundidade: 7 },
+} as const
 export const LUGAR_DA_FAISCA = {
   casa: p(0, 150),
   praca: p(0, 137),
@@ -125,7 +131,17 @@ export const ROTAS_DA_FAISCA: RotaDaFaisca[] = [
     p(-80, 140),
     l.oficina,
   ),
-  r('horta-patio', 'Atalho dos Campos', 'atalho', l.horta, p(20, 119), p(0, 116), l.patio),
+  r(
+    'horta-patio',
+    'Atalho dos Campos',
+    'atalho',
+    l.horta,
+    p(20, 119),
+    p(0, 116),
+    p(0, 129),
+    p(-20, 130),
+    l.patio,
+  ),
   r(
     'bosque-clareiras',
     'Clareiras e retorno',
@@ -187,10 +203,23 @@ export function suave(a: number, b: number, v: number) {
   return t * t * (3 - 2 * t)
 }
 /** Colina suave, relevo opcional ao norte e bacia real do lago. */
-export function relevoDaFaisca(x: number, z: number): number {
+function relevoNaturalDaFaisca(x: number, z: number): number {
   const colina = 6 * (1 - suave(6, 40, Math.hypot(x - BASE_DO_FAROL.x, z - BASE_DO_FAROL.z)))
   const longe = suave(85, 150, Math.hypot(x, z - 140))
   const norte = 8 * longe * (0.5 + 0.5 * Math.sin(x / 67) * Math.cos(z / 81))
   const lago = Math.hypot((x - l.lago.x) / 9, (z - l.lago.z) / 4.8)
   return colina + norte - 2.4 * (1 - suave(0.45, 1, lago))
+}
+const patamaresComAltura = Object.values(PATAMARES_DA_FAISCA).map((p) => ({
+  ...p,
+  altura: relevoNaturalDaFaisca(p.x, p.z),
+}))
+export function relevoDaFaisca(x: number, z: number): number {
+  let h = relevoNaturalDaFaisca(x, z)
+  for (const p of patamaresComAltura) {
+    const fora = Math.max(Math.abs(x - p.x) - p.meiaLargura, Math.abs(z - p.z) - p.meiaProfundidade)
+    const peso = 1 - suave(0, 6, fora)
+    if (peso > 0) h += (p.altura - h) * peso
+  }
+  return h
 }

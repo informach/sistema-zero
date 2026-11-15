@@ -1,16 +1,14 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
-import { BufferAttribute, BufferGeometry, CanvasTexture, type Sprite } from 'three'
+import { CanvasTexture, type Sprite } from 'three'
 import { useJogo } from '../../estado/contexto'
 import {
   BASE_DO_FAROL,
   LUGAR_DA_FAISCA,
   ligarCabeceiras,
   type PontoDaFaisca,
-  pontosAoLongo,
   ROTAS_DA_FAISCA,
-  type RotaDaFaisca,
 } from '../../sistemas/faisca'
 import {
   ARQUIPELAGO,
@@ -22,43 +20,6 @@ export const ROTAS_COMPLETAS_DA_FAISCA = [
   ...ROTAS_DA_FAISCA,
   ...ligarCabeceiras(ARQUIPELAGO.slice(1).map((i) => conexaoDaIlha(i.id))),
 ]
-function Caminho({ rota }: { rota: RotaDaFaisca }) {
-  const geometria = useMemo(() => {
-    const pts = pontosAoLongo(rota.pontos, 2),
-      v: number[] = [],
-      indices: number[] = []
-    pts.forEach((p, i) => {
-      const a = pts[Math.max(0, i - 1)]!,
-        b = pts[Math.min(pts.length - 1, i + 1)]!,
-        d = Math.hypot(b.x - a.x, b.z - a.z) || 1,
-        w = rota.tipo === 'atalho' ? 0.9 : 1.6
-      for (const lado of [-1, 1]) {
-        const x = p.x + ((b.z - a.z) / d) * w * lado,
-          z = p.z - ((b.x - a.x) / d) * w * lado
-        v.push(x, alturaDoArquipelago(x, z) + 0.07, z)
-      }
-      if (i > 0) {
-        const j = i * 2
-        indices.push(j - 2, j, j - 1, j - 1, j, j + 1)
-      }
-    })
-    const g = new BufferGeometry()
-    g.setAttribute('position', new BufferAttribute(new Float32Array(v), 3))
-    g.setIndex(indices)
-    g.computeVertexNormals()
-    return g
-  }, [rota])
-  useEffect(() => () => geometria.dispose(), [geometria])
-  return (
-    <mesh geometry={geometria}>
-      <meshStandardMaterial
-        color={rota.tipo === 'atalho' ? '#a1a17c' : '#d6bb85'}
-        roughness={1}
-        side={2}
-      />
-    </mesh>
-  )
-}
 const nomes: Partial<Record<keyof typeof LUGAR_DA_FAISCA, string>> = {
   casa: 'Morada · lote reservado',
   praca: 'Praça dos Criadores',
@@ -119,15 +80,13 @@ function Placa({ p, nome }: { p: PontoDaFaisca; nome: string }) {
     </sprite>
   )
 }
-export function CaminhosDaFaisca() {
+export function CaminhosDaFaisca({ marcos = true }: { marcos?: boolean }) {
   return (
     <>
-      {ROTAS_COMPLETAS_DA_FAISCA.filter((r) => r.tipo !== 'ponte-interna').map((r) => (
-        <Caminho key={r.id} rota={r} />
-      ))}
-      {Object.entries(nomes).map(([id, nome]) => (
-        <Placa key={id} p={LUGAR_DA_FAISCA[id as keyof typeof LUGAR_DA_FAISCA]} nome={nome} />
-      ))}
+      {marcos &&
+        Object.entries(nomes).map(([id, nome]) => (
+          <Placa key={id} p={LUGAR_DA_FAISCA[id as keyof typeof LUGAR_DA_FAISCA]} nome={nome} />
+        ))}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[58, 3.65, 127]} scale={[8, 4, 1]}>
         <circleGeometry args={[1, 48]} />
         <meshStandardMaterial color="#69b4b9" transparent opacity={0.8} roughness={0.25} />

@@ -30,6 +30,9 @@ test('retomada em terra não usa o chão sob construções, canteiros ou ponte d
     [-3, 100],
     [24, 133],
     [58, 127],
+    [-10, 137],
+    [-10, 147],
+    [43, 145],
   ]) {
     const s = ensaioInicial()
     s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }

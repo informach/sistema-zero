@@ -10,11 +10,15 @@ import {
   isAvatarOwned,
   isListed,
   ownershipOf,
+  ownsKey,
   removeSlot,
   setSlots,
+  situationFor,
+  withBaseBottom,
   withCurrentSet,
   withEars,
   withMountedVariants,
+  withReplacements,
   wornSet,
 } from './index'
 
@@ -140,14 +144,15 @@ describe('o catálogo', () => {
     expect(clipe('acender')?.object).toBe('mao_lanterna')
     // Os clipes do pack continuam como eram (sem os campos das animações nossas).
     expect(clipe('andar_frente')?.handsFree).toBeUndefined()
-    // As camadas: só os ossos listados, todos do esqueleto, e os objetos existem.
+    // As camadas: só os ossos listados, todos do esqueleto, e os objetos existem (um objeto de mão
+    // ou uma peça que vai nas costas, como a mochila e o planador dobrado).
     expect(jogo.layers?.length).toBeGreaterThan(0)
     for (const camada of jogo.layers ?? []) {
       expect(camada.bones.length, camada.id).toBeGreaterThan(0)
       for (const osso of camada.bones)
         expect(C.base.skeleton.bones[osso], `${camada.id}: ${osso}`).toBeDefined()
       for (const objeto of camada.objects)
-        expect(C.equipment?.[objeto], `${camada.id}: ${objeto}`).toBeDefined()
+        expect(C.equipment?.[objeto] ?? C.parts[objeto], `${camada.id}: ${objeto}`).toBeDefined()
     }
   })
 
@@ -306,8 +311,10 @@ describe('vestir', () => {
 })
 
 describe('a variante para montar (a saia assentada na sela)', () => {
-  // A arte ainda não entregou as variantes: um catálogo de exemplo com uma saia e a variante dela.
-  const saia = parts.find(([, p]) => p.slot === 'calca' && isListed(p) && !p.set)
+  // Um catálogo de exemplo com uma peça de calça sem variante e a variante dela.
+  const saia = parts.find(
+    ([, p]) => p.slot === 'calca' && isListed(p) && !p.set && !p.mountedVariant,
+  )
   if (!saia) throw new Error('sem peça de calça')
   const [idSaia, pecaSaia] = saia
   const comVariante = {
@@ -319,7 +326,7 @@ describe('a variante para montar (a saia assentada na sela)', () => {
         ...pecaSaia,
         hidden: true,
         variantOf: idSaia,
-        variantFor: 'montado',
+        variantFor: ['montado'],
       },
     },
   }
@@ -550,5 +557,96 @@ describe('peça nossa dentro da fantasia (trocas_fantasia) e peça reaproveitada
 
   test('sem fantasia, withCurrentSet não muda nada', () => {
     expect(withCurrentSet(C, base())).toEqual(base())
+  })
+})
+
+describe('as entregas de 15/11 da arte: shortinho, variantes, planador e cópias do pack', () => {
+  const regra = C.rules.baseBottom
+  if (!regra) throw new Error('o catálogo não tem a peça de baixo fixa')
+
+  test('a peça de baixo fixa entra quando nada cobre e sai quando algo cobre', () => {
+    const fixa = C.parts[regra.part]
+    expect(fixa?.hidden).toBe(true)
+    expect(fixa?.tier).toBe('free')
+    const nua = withBaseBottom(C, base())
+    expect(nua[regra.slot]).toBe(regra.part)
+    // Com calça (ou saia), bermuda, roupa inteira ou fantasia, não entra.
+    for (const grupo of ['calca', 'bermuda', 'roupa_inteira']) {
+      const vestida = equipPart(C, base(), doGrupo(grupo))
+      const desenho = withBaseBottom(C, vestida)
+      expect(Object.values(desenho)).not.toContain(regra.part)
+    }
+    const fantasia = Object.keys(C.sets)[0] ?? ''
+    const comFantasia = equipPart(C, base(), C.sets[fantasia]?.parts[0]?.part ?? '')
+    expect(Object.values(withBaseBottom(C, comFantasia))).not.toContain(regra.part)
+    // A que estava no desenho sai quando uma peça que cobre entra.
+    const depois = withBaseBottom(C, { ...nua, calca: doGrupo('calca') })
+    expect(Object.values(depois)).not.toContain(regra.part)
+  })
+
+  test('as variantes montadas dizem em que situação valem, e a original aponta para elas', () => {
+    const variantes = parts.filter(([, p]) => p.variantOf)
+    expect(variantes.length).toBeGreaterThanOrEqual(17)
+    for (const [id, p] of variantes) {
+      expect(p.hidden, id).toBe(true)
+      expect(p.variantFor, id).toContain('montado')
+      expect(C.parts[p.variantOf ?? '']?.mountedVariant, id).toBe(id)
+    }
+  })
+
+  test('a fantasia de cavaleiro ganhou a calça', () => {
+    const cavaleiro = C.sets.fantasia_cavaleiro
+    expect(cavaleiro?.parts.some(({ slot }) => slot === 'calca')).toBe(true)
+  })
+
+  test('o planador: só do jogo, um arquivo por peça de costas, e some com cabelo comprido', () => {
+    const planador = C.parts.planador_dobrado
+    const s = planador?.situations
+    if (!planador || !s) throw new Error('sem o planador dobrado')
+    expect(planador.hidden).toBe(true)
+    expect(C.rules.slots.some((slot) => slot.id === planador.slot)).toBe(false)
+    // Cada peça de costas do catálogo tem a situação dela, e cada situação aponta para uma peça.
+    const costas = parts.filter(([, p]) => p.slot === 'costas' && !p.retired && !p.copyOf)
+    for (const [id] of costas) expect(s.byBack[id], id).toBeDefined()
+    for (const id of [...Object.values(s.byBack), ...Object.values(s.highStrap ?? {})])
+      expect(C.parts[id]?.situationOf === 'planador_dobrado' || id === 'planador_dobrado').toBe(
+        true,
+      )
+    // Sem nada nas costas, a própria peça; com a mochila, a situação dela.
+    expect(situationFor(C, 'planador_dobrado', base())).toBe('planador_dobrado')
+    const [mochila] = costas[0] ?? []
+    if (mochila)
+      expect(situationFor(C, 'planador_dobrado', { ...base(), costas: mochila })).toBe(
+        s.byBack[mochila],
+      )
+    // Com um casaco da lista, a alça alta (onde há alças).
+    const casaco = s.highStrapWith?.find((id) => C.parts[id] && !C.parts[id]?.set)
+    if (casaco && s.highStrap?.none)
+      expect(situationFor(C, 'planador_dobrado', { ...base(), roupa_cima: casaco })).toBe(
+        s.highStrap.none,
+      )
+    // Um cabelo comprido cobre o fardo.
+    const cabelo = s.hiddenWith?.find((id) => C.parts[id])
+    if (cabelo) expect(situationFor(C, 'planador_dobrado', { ...base(), cabelo })).toBeNull()
+    // Peça sem situações: nada.
+    expect(situationFor(C, doGrupo('calca'), base())).toBeNull()
+  })
+
+  test('a peça do pack substituída: o desenho mostra a nossa, e ter uma é ter a outra', () => {
+    const trocas = C.rules.replacements ?? {}
+    const [doPack, nossa] = Object.entries(trocas).find(([a, b]) => C.parts[a] && C.parts[b]) ?? []
+    if (!doPack || !nossa) throw new Error('sem substituição no catálogo')
+    const slot = C.parts[doPack]?.slot ?? ''
+    expect(withReplacements(C, { ...base(), [slot]: doPack })[slot]).toBe(nossa)
+    expect(withReplacements(C, base())).toEqual(base())
+    expect(ownsKey(C, nossa, new Set([doPack]))).toBe(true)
+    expect(ownsKey(C, doPack, new Set([nossa]))).toBe(true)
+    expect(ownsKey(C, nossa, new Set())).toBe(false)
+    // A nossa herdou o preço da do pack.
+    expect(C.parts[nossa]?.tier).toBe(C.parts[doPack]?.tier)
+    expect(C.parts[nossa]?.price).toBe(C.parts[doPack]?.price)
+    // E quem comprou a do pack pode vestir a nossa (pela régua da posse).
+    if (ownershipOf(C, nossa) !== null)
+      expect(isAvatarOwned(C, nossa, new Set([doPack]))).toBe(true)
   })
 })

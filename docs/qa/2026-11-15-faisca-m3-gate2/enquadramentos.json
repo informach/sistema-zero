@@ -1,0 +1,158 @@
+{
+  "resolucao": [
+    1280,
+    800
+  ],
+  "fov": 55,
+  "baseDoAntes": "0f00486c0 + instrumentação de fotografia, sem composição ambiental",
+  "vistas": {
+    "porta": {
+      "avatar": [
+        0,
+        150
+      ],
+      "camera": [
+        0,
+        12,
+        170
+      ],
+      "alvo": [
+        0,
+        9,
+        125
+      ]
+    },
+    "praca": {
+      "avatar": [
+        0,
+        137
+      ],
+      "camera": [
+        -24,
+        21,
+        160
+      ],
+      "alvo": [
+        0,
+        5,
+        138
+      ]
+    },
+    "costa": {
+      "avatar": [
+        20,
+        153
+      ],
+      "camera": [
+        -1,
+        9,
+        150
+      ],
+      "alvo": [
+        25,
+        4,
+        174
+      ]
+    },
+    "oficina": {
+      "avatar": [
+        -24,
+        132
+      ],
+      "camera": [
+        -25,
+        11,
+        145
+      ],
+      "alvo": [
+        -46,
+        7,
+        120
+      ]
+    },
+    "farol": {
+      "avatar": [
+        -3,
+        109
+      ],
+      "camera": [
+        38,
+        30,
+        145
+      ],
+      "alvo": [
+        -3,
+        20,
+        100
+      ]
+    },
+    "subida": {
+      "avatar": [
+        -20,
+        115
+      ],
+      "camera": [
+        -42,
+        24,
+        122
+      ],
+      "alvo": [
+        -3,
+        15,
+        109
+      ]
+    },
+    "ponte-sul": {
+      "avatar": [
+        58,
+        135
+      ],
+      "camera": [
+        65,
+        9,
+        143
+      ],
+      "alvo": [
+        58,
+        3.8,
+        125
+      ]
+    },
+    "ponte-norte": {
+      "avatar": [
+        58,
+        119
+      ],
+      "camera": [
+        50,
+        9,
+        112
+      ],
+      "alvo": [
+        58,
+        4,
+        129
+      ]
+    }
+  },
+  "sha256": {
+    "antes/costa.png": "dd794f2df018fbec3437f7f1ba8a94d8b42e1d73c5c6f28b2d93f9924d7a0b35",
+    "antes/farol-noite.png": "d1e0456f8a5dedf6370718703c2082a50b462cb512c39719a68aba617d0b8f76",
+    "antes/farol.png": "90d292683410a64688a4b899438c05eb42ab557fdf1a395bfeb0fba4f8679356",
+    "antes/oficina.png": "ad7434a56dd9c52647954dd472b5ea3a59790a0a3955581ffd48385c14fc149c",
+    "antes/ponte-norte.png": "3a6794dbed2a1acd67ad78a55454cd40c4d3cb1b3a3d0e03337f86686a98bd90",
+    "antes/ponte-sul.png": "0325de55db1bcdc81be01c302b2d2177be73cf04c4e35d3c943bf84129898763",
+    "antes/porta.png": "a5cec5467876771237aca4cac8d34cad8a7fdd33bcb6e63c6c4aaa361c37a648",
+    "antes/praca.png": "93f7b59501473b0fe3ff4f1d18d9bb3156e29e3983ffaee200088a45dc0b7a50",
+    "antes/subida.png": "85966295f3548438e6f3f2ff19ec12a44ec6419453a4bf68f88c9371c109db08",
+    "depois/costa.png": "9264ac747cae49e90fff1b3216169eefe1bbdf50b8209f884a7c3c5cc977fc58",
+    "depois/farol-noite.png": "1f9c601c6e04b9f8d733c931b70f596b3157f2fafddd3497d52bc55e7e781e32",
+    "depois/farol.png": "ec569e0fd00cb25c889bb0ec06586faafdaddcb53eab28a50dced390a45ef665",
+    "depois/oficina.png": "d653f217301bfd964c6c254b4e4816a753a9bbc8cce0fb33ba4d2d2d07e13062",
+    "depois/ponte-norte.png": "6225ef0ce19f67e8155b4e47b550b793c2acc8a9e53277cfeb260c3c75d04266",
+    "depois/ponte-sul.png": "c001be62e81a2f4cb479e16201b2fdf5c27d02b8884223d60214509c130496aa",
+    "depois/porta.png": "17f000b8ba0758388f266a1d9a3d09bc73059e94e98737de6117014353952cee",
+    "depois/praca.png": "4c86b0e198c53eab19123d393b6ec1c60ceb4e285c50c5bc467428f0ea560af8",
+    "depois/subida.png": "3fb44abba40366e1dcbc7568890a81f7fef2995f69f6d67987388d93fecf1d44"
+  }
+}

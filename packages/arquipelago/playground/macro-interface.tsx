@@ -27,6 +27,7 @@ export interface MedidaMacro {
   geometrias: number
   texturas: number
   setores: number
+  giroCamera: number
 }
 
 function BotaoMacro({ onClick, ...props }: ComponentProps<'button'>) {
@@ -82,12 +83,12 @@ export function InterfaceMacro({
   const nome = ARQUIPELAGO.find((i) => i.id === medida.ilha)?.nome ?? 'Travessia'
   return (
     <div className="macro-interface" style={{ visibility: conversando ? 'hidden' : undefined }}>
-      <header className="macro-topo">
+      <header className="macro-topo" data-arte={arte.estado}>
         <div>
           <strong>Faísca V2 · blockout artístico</strong>
           <span>
             {nome} · escala nativa · arte{' '}
-            {arte.estado === 'pronto' ? `${arte.modelos}/23` : arte.estado}
+            {arte.estado === 'pronto' ? `${arte.modelos} modelos prontos` : arte.estado}
           </span>
         </div>
         <BotaoMacro type="button" onClick={() => setMapa(!mapa)} aria-expanded={mapa}>
@@ -227,6 +228,8 @@ export function InterfaceMacro({
           </dd>
           <dt>Quadros</dt>
           <dd>{medida.fps} / s</dd>
+          <dt>Giro da câmera</dt>
+          <dd>{medida.giroCamera.toFixed(3)} rad</dd>
           <dt>Setores com física</dt>
           <dd>{medida.setores}</dd>
           <dt>Chamadas de desenho</dt>

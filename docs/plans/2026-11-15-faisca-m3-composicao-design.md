@@ -2,6 +2,8 @@
 
 **Estado:** desenho para avaliação, antes da montagem do M3. **Base:** `staging`, commit `87b9669a8`, conferido localmente e com `origin/staging` em 15/11/2026. Nenhum arquivo do jogo foi alterado nesta etapa.
 
+**Continuidade:** após o commit `0f00486c0`, o usuário encaminhou parecer favorável ao Gate 1, aprovado com ajustes para a primeira passada jogável. A liberação incorpora o início da Costa, volumes de referência, câmera na futura porta e retorno cobre. Não equivale ao aceite final da coordenação/direção de arte. Execução e evidências: [Gate 2](../qa/2026-11-15-faisca-m3-gate2.md). Novas orientações: [patins, mochila e qualidade](./2026-11-15-faisca-patins-mochila-qualidade.md).
+
 Este documento concretiza o **Gate 1 — Aprovação das intenções artísticas** do [parecer da coordenação](../qa/2026-11-15-faisca-m3-parecer-coordenacao.md). O parecer original foi preservado sem edição. A finalidade é permitir a decisão de composição pelo GitHub, antes de aplicar objetos e acabamento. O aceite da base técnica V2 continua separado do aceite artístico.
 
 Referências: [relatório e capturas V2](../qa/2026-11-15-faisca-blockout-artistico.md), [história da Faísca](./2026-11-15-historia-ilha-faisca.html), [layout real](../../packages/arquipelago/src/sistemas/faisca.ts), [composição atual](../../packages/arquipelago/src/sistemas/composicao-faisca.ts). A história define conteúdo e progressão; este estudo define a implantação visual limitada do próximo trecho.
@@ -140,9 +142,9 @@ Não criar outro motor de NPC nem aplicar animações humanas à coelha sem vali
 - [x] Conferir `staging` local e remota, estado dos arquivos e referência do parecer.
 - [x] Preservar o parecer original; verificar medidas, tempos e dependências no código.
 - [x] Produzir mapa de alcance, mapa de composição e folha de referência do Gate 1.
-- [ ] **Gate 1:** coordenação avalia e aprova/ajusta estas intenções de composição.
-- [ ] **Gate 2:** montar a primeira passada nas três áreas; comparar câmeras iguais, dia/noite, colisão e retomada.
-- [ ] **Gate 3:** produzir vídeos de 20–40 s para plano, curvas, partida/parada, subida/descida, salto, ponte e conversa. Comparar os três perfis e anotar o que exige ajuste.
+- [x] **Gate 1:** aprovado com ajustes, conforme parecer encaminhado pelo usuário.
+- [x] **Gate 2 — execução:** primeira passada e comparativos entregues para avaliação; aceite artístico continua pendente.
+- [x] **Gate 3 — evidências:** vídeos de movimento produzidos; aceite perceptivo de animação, IK e ritmo continua pendente.
 - [ ] **Gate 4:** teste acompanhado com crianças e aparelhos físicos, documentado por resultados reais.
 
 Para Gate 2/3, reutilizar os verificadores existentes de percurso, ponte, toque, falha de arte e três ciclos de descarga/reentrada. Conferir testes relevantes, tipagem, build e contadores do renderer após mudanças reais. Não atribuir ao M3 os números de teste/desempenho do V2. A meta sugerida de 4 em 5 participantes é hipótese de aceite humano, não resultado observado.

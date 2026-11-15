@@ -54,6 +54,20 @@ vestir a nova na leitura do Members (`withCurrentSet` do core), sem cair no sort
 - A `pegada` de cada objeto (desde 15/11/2026) diz o clipe que fecha os dedos no cabo (e o da
   segunda mão, na barra do planador): vai para `fingers` no catálogo e é refeita em toda migração,
   sem reenviar nada. O jogo fecha a mão por ela.
+- **Entregas de 15/11/2026** (campos novos que a migração entende):
+  - `peca_de_baixo_fixa` (regras) vira `rules.baseBottom`: o short azul-marinho entra SÓ no desenho
+    (`withBaseBottom` no `PackAvatarRig`) quando nada dos `grupos_que_cobrem` nem fantasia está
+    vestido. A peça é escondida e grátis; o avatar guardado nunca a leva.
+  - `substituicoes` (regras) vira `rules.replacements`: a peça nossa (o vestido com o shortinho)
+    entra no lugar da do pack. O desenho troca (`withReplacements`) e a posse vale uma pela outra
+    (`ownsKey`, no servidor, na tela e na compra). A nossa herda o preço da do pack.
+  - `usar_em` pode ser lista: `variantFor` é sempre lista (`montado`, `montado_largo`).
+  - `sai_nas_animacoes` vira `offIn`; `camadas_braco` vira `armLayers` (animação → clipe de camada).
+  - Peça com `situacoes` (o planador dobrado, `so_no_jogo`): cada arquivo de situação vira uma peça
+    escondida `<id>__<situação>` (e `__alca_alta`) com `situationOf`; a principal guarda `situations`
+    (`byBack`, `highStrap`, `highStrapWith`, `hiddenWith`, `seatedBack`). O core escolhe por
+    `situationFor`. Peça de costas nova pede situação nova na arte (o teste do core confere).
+  - Encaixe `so_do_jogo` (regras): o slot e os grupos dele ficam fora de `rules.slots`/`groups`.
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)
 

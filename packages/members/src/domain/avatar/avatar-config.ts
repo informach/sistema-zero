@@ -6,6 +6,7 @@ import {
   avatarProblems,
   drawAvatar,
   ownershipOf,
+  ownsKey,
   withCurrentSet,
   withEars,
 } from '@sistemazero/core/avatar'
@@ -111,7 +112,7 @@ export function assertEquippableConfig(
   // A régua de posse é a do core (`ownershipOf`), a mesma da tela.
   for (const id of Object.values(config.slots)) {
     const chave = ownershipOf(catalog, id)
-    if (chave !== null && !ownedIds.has(chave)) throw new AvatarPartNotOwnedError()
+    if (chave !== null && !ownsKey(catalog, chave, ownedIds)) throw new AvatarPartNotOwnedError()
   }
 }
 

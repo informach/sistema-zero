@@ -3,6 +3,22 @@ import { alturaDoTerritorio, type IlhaDoArquipelago } from './geografia-do-arqui
 export const LADO_DO_SETOR = 80
 export const RAIO_DE_SETORES = 2
 export const PASSO_DO_TERRENO = 4
+
+/** Altura baricêntrica do mesmo triângulo de 4 m desenhado e usado pelo Rapier. */
+export function alturaNaMalhaDoSetor(ilha: IlhaDoArquipelago, x: number, z: number): number {
+  const p = PASSO_DO_TERRENO,
+    x0 = Math.floor(x / p) * p,
+    z0 = Math.floor(z / p) * p
+  const u = (x - x0) / p,
+    v = (z - z0) / p
+  const h = (dx: number, dz: number) => Math.fround(alturaDoTerritorio(ilha, x0 + dx, z0 + dz))
+  if (u + v <= 1) {
+    const a = h(0, 0)
+    return a + u * (h(p, 0) - a) + v * (h(0, p) - a)
+  }
+  const b = h(p, p)
+  return b + (1 - u) * (h(0, p) - b) + (1 - v) * (h(p, 0) - b)
+}
 export interface SetorDoTerritorio {
   id: string
   x: number

@@ -1,0 +1,30 @@
+[
+  {
+    "longe": {
+      "Altura do avatar": "1,16 m · escala 1",
+      "Andar / correr": "1,5 / 3,4 m/s",
+      "Ponte do Bosque": "232,23 × 5 m",
+      "Posição": "112, 11,61, -55 m",
+      "Quadros": "60 / s",
+      "Giro da câmera": "6.233 rad",
+      "Setores com física": "25",
+      "Chamadas de desenho": "47",
+      "Triângulos": "31.485",
+      "Geometrias": "74",
+      "Texturas": "32"
+    },
+    "perto": {
+      "Altura do avatar": "1,16 m · escala 1",
+      "Andar / correr": "1,5 / 3,4 m/s",
+      "Ponte do Bosque": "232,23 × 5 m",
+      "Posição": "-0, 4,68, 137 m",
+      "Quadros": "60 / s",
+      "Giro da câmera": "6.138 rad",
+      "Setores com física": "24",
+      "Chamadas de desenho": "85",
+      "Triângulos": "142.937",
+      "Geometrias": "120",
+      "Texturas": "41"
+    }
+  }
+]

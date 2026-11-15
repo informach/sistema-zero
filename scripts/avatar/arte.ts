@@ -49,9 +49,32 @@ export interface ItemDaArte {
   altura_que_soma_m?: number
   /** A variante da peça para quando a criança monta (a saia assentada na sela). */
   variante_montado?: string
-  /** Esta peça é variante de outra, para usar numa situação (`usar_em`: `montado`). */
+  /** Esta peça é variante de outra, para usar nas situações de `usar_em` (`montado`, `montado_largo`). */
   variante_de?: string
-  usar_em?: string
+  usar_em?: string | string[]
+  /** A peça de baixo fixa (o short azul-marinho): entra sozinha quando nada cobre (regras). */
+  peca_de_baixo_fixa?: boolean
+  /** Peça só do jogo (o planador dobrado): fora da loja, da grade e do sorteio. */
+  so_no_jogo?: boolean
+  /** O encaixe do esqueleto onde a peça vai (o `planador`). */
+  encaixe?: string
+  /**
+   * Um arquivo por situação (o planador dobrado): `sem_nada` ou o id da peça de costas vestida →
+   * o arquivo com o fardo no lugar e o que o prende; a alça alta (por cima do casaco), onde há
+   * alças; e até onde o fardo vai para trás, sentada.
+   */
+  situacoes?: Record<
+    string,
+    { arquivo: string; arquivo_alca_alta?: string; no_sentado_ate_m?: number }
+  >
+  /** Com estas roupas (casacos), vale o arquivo da alça alta. */
+  alca_alta_com?: string[]
+  /** Com estas peças (cabelos compridos, o saco de papel), a peça não aparece. */
+  nao_aparece_com?: string[]
+  /** Nestas animações a peça some (a mochila deitada). */
+  sai_nas_animacoes?: string[]
+  /** Animação → o clipe de camada que tira o braço da frente da peça (mesmo tempo, só o osso dele). */
+  camadas_braco?: Record<string, { clipe: string; osso: string }>
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
   /**
@@ -84,7 +107,14 @@ interface FantasiaDaArte {
 }
 
 export interface RegrasDaArte {
-  slots: { slot: string; rotulo: string; obrigatorio: boolean; grupos: string[] }[]
+  slots: {
+    slot: string
+    rotulo: string
+    obrigatorio: boolean
+    grupos: string[]
+    /** O encaixe é só do jogo (o planador): fora do guarda-roupa. */
+    so_do_jogo?: boolean
+  }[]
   grupos: Record<string, { rotulo: string; pecas: string[] }>
   fantasias: FantasiaDaArte[]
   exclusoes: { fantasia_desliga: string[] }
@@ -113,6 +143,11 @@ export interface RegrasDaArte {
    */
   trocas_fantasia?: { pares: Record<string, Record<string, string>> }
   nao_combina?: { pares: Record<string, string[]> }
+  /**
+   * A peça de baixo fixa: entra sozinha quando o avatar não tem nenhuma peça dos grupos que cobrem
+   * (fantasia: qualquer uma ligada), como as orelhas seguem o corpo.
+   */
+  peca_de_baixo_fixa?: { peca: string; slot: string; grupos_que_cobrem: string[] }
   festas?: Record<string, { rotulo: string; premio: string; pecas_do_tema: string[] } | string>
 }
 

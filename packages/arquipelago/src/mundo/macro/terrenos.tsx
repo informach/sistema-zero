@@ -11,6 +11,7 @@ import {
   type SetorDoTerritorio,
   setoresPerto,
 } from '../../sistemas/setores-do-arquipelago'
+import { MaterialDoSolo } from '../faisca/pintura-do-solo'
 
 type DadosDaMalha = { vertices: Float32Array; indices: Uint32Array }
 function useGeometria(dados: DadosDaMalha, ilha: IlhaDoArquipelago) {
@@ -27,6 +28,12 @@ function useGeometria(dados: DadosDaMalha, ilha: IlhaDoArquipelago) {
       const y = dados.vertices[i + 1] ?? 0
       pintada.copy(y < ilha.elevacao + 2 ? areia : cor)
       if (y > ilha.elevacao + ilha.relevo * 0.85) pintada.lerp(pedra, 0.35)
+      if (ilha.id === 'sua-ilha' && y > 2) {
+        const x = dados.vertices[i]!,
+          z = dados.vertices[i + 2]!
+        const peso = Math.max(0, 1 - Math.hypot(x, z - 135) / 140)
+        pintada.multiplyScalar(1 + peso * 0.055 * (Math.sin(x / 7) + Math.cos(z / 11)))
+      }
       cores.set([pintada.r, pintada.g, pintada.b], i)
     }
     geo.setAttribute('color', new BufferAttribute(cores, 3))
@@ -43,7 +50,7 @@ function Setor({ ilha, setor }: { ilha: IlhaDoArquipelago; setor: SetorDoTerrito
   return (
     <RigidBody type="fixed" colliders={false}>
       <mesh geometry={geometria} receiveShadow>
-        <meshStandardMaterial vertexColors roughness={0.95} />
+        <MaterialDoSolo faisca={ilha.id === 'sua-ilha'} />
       </mesh>
       <TrimeshCollider args={[dados.vertices, dados.indices]} />
     </RigidBody>
@@ -65,7 +72,7 @@ function Territorio({
   return (
     <group position={[ilha.centro.x, 0, ilha.centro.z]}>
       <mesh geometry={geometria}>
-        <meshStandardMaterial vertexColors roughness={1} />
+        <MaterialDoSolo faisca={ilha.id === 'sua-ilha'} />
       </mesh>
       {setores.map((setor) => (
         <Setor key={setor.id} ilha={ilha} setor={setor} />

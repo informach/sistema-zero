@@ -14,6 +14,7 @@ import {
   alturaDoArquipelago,
   conexaoDaIlha,
 } from '../src/sistemas/geografia-do-arquipelago'
+import { VOLUMES_DA_VILA } from '../src/sistemas/implantacao-da-faisca'
 import { MUNDO_DA_AVENTURA } from '../src/sistemas/mundo-pela-animacao'
 
 const ROTAS_DA_FAISCA = [
@@ -22,7 +23,7 @@ const ROTAS_DA_FAISCA = [
 ]
 test('os caminhos cotidianos mantêm passagem para o corpo entre os modelos reais', () => {
   const bloqueios = new Set<string>()
-  for (const r of ROTAS_DA_FAISCA.filter((r) => r.tipo === 'cotidiano'))
+  for (const r of ROTAS_DA_FAISCA.filter((r) => r.tipo !== 'ponte-interna'))
     for (const a of pontosAoLongo(r.pontos, 0.25))
       for (const objeto of COMPOSICAO_DA_FAISCA.filter((p) => p.solida && p.solida !== 'ponte')) {
         const dx = a.x - objeto.x,
@@ -45,6 +46,44 @@ test('os caminhos cotidianos mantêm passagem para o corpo entre os modelos reai
           bloqueios.add(`${r.id}:${objeto.id}`)
       }
   expect([...bloqueios]).toEqual([])
+})
+
+test('volumes de convívio deixam os eixos e o lote livres, incluindo o retorno pela encosta', () => {
+  const bloqueios: string[] = []
+  for (const r of ROTAS_DA_FAISCA)
+    for (const p of pontosAoLongo(r.pontos, 0.25))
+      for (const v of VOLUMES_DA_VILA)
+        if (
+          Math.abs(p.x - v.x) < v.largura / 2 + 0.2 &&
+          Math.abs(p.z - v.z) < v.profundidade / 2 + 0.2
+        )
+          bloqueios.push(`${r.id}:${v.id}`)
+  expect(bloqueios).toEqual([])
+  for (const v of VOLUMES_DA_VILA)
+    expect(
+      Math.abs(v.x) - v.largura / 2 > 12 ||
+        v.z + v.profundidade / 2 < 154 ||
+        v.z - v.profundidade / 2 > 178,
+    ).toBe(true)
+})
+
+test('o lote da Morada também fica livre das copas das árvores', () => {
+  for (const p of COMPOSICAO_DA_FAISCA.filter((p) => p.solida === 'tronco')) {
+    const box = ARTE_DA_FAISCA.pecas[p.peca as keyof typeof ARTE_DA_FAISCA.pecas].colisao[0]
+    const xs: number[] = [],
+      zs: number[] = []
+    for (const x of [box.min[0], box.max[0]])
+      for (const z of [box.min[2], box.max[2]]) {
+        xs.push(p.x + p.escala * (Math.cos(p.giro) * x + Math.sin(p.giro) * z))
+        zs.push(p.z + p.escala * (-Math.sin(p.giro) * x + Math.cos(p.giro) * z))
+      }
+    expect(
+      Math.max(...xs) < -12 ||
+        Math.min(...xs) > 12 ||
+        Math.max(...zs) < 154 ||
+        Math.min(...zs) > 178,
+    ).toBe(true)
+  }
 })
 
 test('o cotidiano cabe no coração habitado com a velocidade nativa', () => {

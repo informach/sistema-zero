@@ -31,14 +31,18 @@ export {
   GROUP_CONFLICTS,
   isAvatarOwned,
   ownershipOf,
+  ownsKey,
   partOf,
   partsConflict,
   REQUIRED_SLOTS,
   removeSlot,
   setSlots,
+  situationFor,
+  withBaseBottom,
   withCurrentSet,
   withEars,
   withMountedVariants,
+  withReplacements,
   wornSet,
 } from './rules'
 export type * from './types'

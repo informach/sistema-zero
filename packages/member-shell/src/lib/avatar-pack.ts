@@ -18,6 +18,7 @@ import {
   isListed,
   matchesFilter,
   ownershipOf,
+  ownsKey,
   removeSlot,
   wornSet,
 } from '@sistemazero/core/avatar'
@@ -392,7 +393,7 @@ export function avatarUnownedWorn(
   const faltam = new Set<string>()
   for (const id of Object.values(slots)) {
     const chave = ownershipOf(catalog, id)
-    if (chave !== null && !owned.has(chave)) faltam.add(chave)
+    if (chave !== null && !ownsKey(catalog, chave, owned)) faltam.add(chave)
   }
   return [...faltam]
 }

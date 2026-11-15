@@ -29,7 +29,7 @@ try {
   ]) {
     await page.goto(`${url}/macro?ritmo=${ritmo}`)
     await page.waitForFunction(
-      () => document.querySelector('.macro-topo')?.textContent.includes('23/23'),
+      () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
       {},
       { timeout: 60000 },
     )
