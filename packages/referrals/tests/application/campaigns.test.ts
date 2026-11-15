@@ -6,10 +6,22 @@ import {
   validateCampaignInput,
 } from '../../src/application/campaigns/campaign-admin.service'
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
-import { CampaignUnavailableError, campaignState } from '../../src/domain/campaign'
-import type { GrantManualCourseInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
+import {
+  CampaignGiftOfferLockedError,
+  CampaignUnavailableError,
+  CampaignValidationError,
+  campaignState,
+} from '../../src/domain/campaign'
+import type { GrantManualOfferInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
 import { InMemoryCampaignRepository } from '../fakes/campaigns'
-import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
+import {
+  ADULT_GIFT_OFFER,
+  FakeGiftOfferCatalog,
+  FakeReferralsGateway,
+  InMemoryReferralRepository,
+  KIDS_GIFT_OFFER,
+  silentLogger,
+} from '../fakes/in-memory'
 
 const current = new Date()
 const input: CampaignInput = {
@@ -22,12 +34,34 @@ const input: CampaignInput = {
   endsAt: new Date(current.getTime() + 60_000).toISOString(),
   status: 'active',
   channel: 'palestra',
+  giftOfferId: KIDS_GIFT_OFFER.offerId,
+}
+/** Oferta vitalícia, sem o Mural, de um curso para pais (Kids). */
+const PARENTS_OFFER = {
+  ...KIDS_GIFT_OFFER,
+  offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d05',
+  offerSlug: 'vilao-em-aliado',
+  name: 'Transformando o vilão em aliado',
+  accessMode: 'lifetime' as const,
+  accessDurationValue: null,
+  accessDurationUnit: null,
+  courseSlug: 'vilao-em-aliado',
+  includesMural: false,
 }
 async function setup() {
   const referrals = new InMemoryReferralRepository()
   const campaigns = new InMemoryCampaignRepository(referrals)
   const gateway = new FakeReferralsGateway()
-  const admin = new CampaignAdminService(campaigns, referrals, 'https://sistemazero.com.br')
+  const catalog = new FakeGiftOfferCatalog()
+  catalog.add(PARENTS_OFFER)
+  const admin = new CampaignAdminService(
+    campaigns,
+    referrals,
+    'https://sistemazero.com.br',
+    undefined,
+    undefined,
+    catalog,
+  )
   const campaign = await admin.create(input, 'Operador')
   if (!campaign) throw new Error('seed')
   const redeem = new RedeemScholarshipService(
@@ -35,13 +69,13 @@ async function setup() {
     gateway,
     {
       campaigns,
-      courseSlug: 'cade-todo-mundo',
+      giftOffers: catalog,
       kidsCommunityUrl: 'https://kids.sistemazero.com.br',
       leaseMs: 90_000,
     },
     silentLogger,
   )
-  return { referrals, campaigns, gateway, admin, campaign, redeem }
+  return { referrals, campaigns, gateway, admin, campaign, redeem, catalog }
 }
 const family = { code: input.code, email: 'responsavel@example.com', name: 'Responsável' }
 
@@ -117,6 +151,7 @@ describe('campanhas institucionais', () => {
       'https://example.test',
       () => new Date('2026-11-10T12:00:00Z'),
       catalog,
+      new FakeGiftOfferCatalog(),
     )
     const created = await admin.create(
       {
@@ -352,9 +387,14 @@ describe('campanhas institucionais', () => {
     const row = referrals.redemptions[0]!
     expect(row.sourceSnapshot?.name).toBe(input.publicTitle)
     expect(row.courseSlug).toBe('cade-todo-mundo')
+    expect(row.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
     expect(row.attribution?.utmSource).toBe('instagram')
-    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
-    expect(grant.expiresAt).toBe(new Date(row.createdAt.getTime() + 7 * 86_400_000).toISOString())
+    const grant = gateway.callsOf('grantManualOffer')[0]!.input as GrantManualOfferInput
+    expect(grant.offerRef).toBe(KIDS_GIFT_OFFER.offerId)
+    expect(grant.anchorAt).toBe(row.createdAt.toISOString())
+    expect(result).toMatchObject({
+      expiresAt: new Date(row.createdAt.getTime() + 7 * 86_400_000).toISOString(),
+    })
     expect((gateway.callsOf('sendEmail')[0]!.input as SendEmailInput).templateKey).toBe(
       'referrals-campaign-welcome-mural-trial',
     )
@@ -442,12 +482,22 @@ describe('campanhas institucionais', () => {
       pageToken: 't'.repeat(43),
     })
     gateway.grantResult = { status: 200, body: {} }
+    // A oferta padrão do público passa a ser outra; o resgate em andamento conserva a gravada.
+    const newCatalog = new FakeGiftOfferCatalog()
+    newCatalog.offers = [
+      { ...KIDS_GIFT_OFFER, offerSlug: 'oferta-antiga' },
+      {
+        ...KIDS_GIFT_OFFER,
+        offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d0b',
+        courseSlug: 'curso-futuro',
+      },
+    ]
     const newConfiguration = new RedeemScholarshipService(
       referrals,
       gateway,
       {
         campaigns,
-        courseSlug: 'curso-futuro',
+        giftOffers: newCatalog,
         kidsCommunityUrl: 'https://kids.sistemazero.com.br',
         leaseMs: 90_000,
       },
@@ -458,13 +508,120 @@ describe('campanhas institucionais', () => {
     )
     expect(referrals.redemptions).toHaveLength(1)
     expect(referrals.redemptions[0]!.codeId).toBe(originalCodeId)
-    const grant = gateway.callsOf('grantManualCourse').at(-1)?.input as GrantManualCourseInput
-    expect(grant.courseRef).toBe('cade-todo-mundo')
-    expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${accepted.id}`)
+    const grant = gateway.callsOf('grantManualOffer').at(-1)?.input as GrantManualOfferInput
+    expect(grant.offerRef).toBe(KIDS_GIFT_OFFER.offerId)
+    expect(grant.deliveryId).toBe(`scholarship:offer:${KIDS_GIFT_OFFER.offerId}:${accepted.id}`)
+    expect(referrals.redemptions[0]!.courseSlug).toBe('cade-todo-mundo')
     expect((gateway.callsOf('sendEmail')[0]!.input as SendEmailInput).variables.campanha).toBe(
       input.publicTitle,
     )
   })
+  test('campanha nova sem oferta é recusada; oferta de outro público ou assinatura também', async () => {
+    const { admin, catalog } = await setup()
+    const { giftOfferId: _omitida, ...semOferta } = input
+    for (const body of [
+      { ...semOferta, code: 'sem-oferta' },
+      { ...input, code: 'oferta-adulta', giftOfferId: ADULT_GIFT_OFFER.offerId },
+      { ...input, code: 'oferta-inexistente', giftOfferId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7dff' },
+    ])
+      await expect(admin.create(body, 'Operador')).rejects.toBeInstanceOf(CampaignValidationError)
+    const subscription = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d06',
+      offerSlug: 'comunidade-mensal',
+      accessMode: 'billing_cycle',
+    })
+    await expect(
+      admin.create({ ...input, code: 'assinatura', giftOfferId: subscription.offerId }, 'Op'),
+    ).rejects.toThrow(/pagamento único/)
+    expect(() => validateCampaignInput({ ...input, giftOfferId: 'nao-e-uuid' })).toThrow()
+  })
+
+  test('duplicata herda a oferta; troca de oferta trava fora do rascunho e com resgates', async () => {
+    const { admin, campaign, referrals, redeem } = await setup()
+    const { giftOfferId: _omitida, ...semOferta } = input
+    const copy = await admin.create(
+      { ...semOferta, code: 'encontro-dezembro', status: 'draft' },
+      'Operador',
+      campaign.id,
+    )
+    expect(copy?.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+    // Rascunho sem cadastros troca a oferta; ativa trava.
+    const changed = await admin.update(
+      copy!.id,
+      {
+        ...input,
+        code: copy!.code,
+        status: 'draft',
+        giftOfferId: PARENTS_OFFER.offerId,
+        expectedUpdatedAt: copy!.updatedAt,
+      },
+      'Operador',
+    )
+    expect(changed?.giftOfferId).toBe(PARENTS_OFFER.offerId)
+    await expect(
+      admin.update(
+        campaign.id,
+        { ...input, giftOfferId: PARENTS_OFFER.offerId, expectedUpdatedAt: campaign.updatedAt },
+        'Operador',
+      ),
+    ).rejects.toBeInstanceOf(CampaignGiftOfferLockedError)
+    // Rascunho que já teve cadastro também trava.
+    expect((await redeem.execute(family)).kind).toBe('completed')
+    const draft = await admin.update(
+      campaign.id,
+      { ...semOferta, status: 'draft', expectedUpdatedAt: campaign.updatedAt },
+      'Operador',
+    )
+    expect(draft?.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+    await expect(
+      admin.update(
+        campaign.id,
+        {
+          ...input,
+          status: 'draft',
+          giftOfferId: PARENTS_OFFER.offerId,
+          expectedUpdatedAt: draft!.updatedAt,
+        },
+        'Operador',
+      ),
+    ).rejects.toBeInstanceOf(CampaignGiftOfferLockedError)
+    expect(referrals.redemptions[0]!.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+  })
+
+  test('resgate da campanha concede a oferta DELA: vitalícia sem Mural, curso para pais', async () => {
+    const { admin, gateway, referrals, redeem } = await setup()
+    await admin.create(
+      { ...input, code: 'pais-novembro', giftOfferId: PARENTS_OFFER.offerId },
+      'Operador',
+    )
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
+    const result = await redeem.execute({ ...family, code: 'pais-novembro' })
+    expect(result).toMatchObject({ kind: 'completed', expiresAt: null, muralAccess: 'none' })
+    expect(referrals.redemptions[0]).toMatchObject({
+      giftOfferId: PARENTS_OFFER.offerId,
+      courseSlug: 'vilao-em-aliado',
+      accessDurationDays: null,
+      muralVisitorPolicy: 'offer',
+    })
+    expect((gateway.callsOf('grantManualOffer')[0]!.input as GrantManualOfferInput).offerRef).toBe(
+      PARENTS_OFFER.offerId,
+    )
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.templateKey).toBe('referrals-campaign-existing-mural-trial')
+    expect(email.variables).toMatchObject({
+      campanha: input.publicTitle,
+      curso: 'Transformando o vilão em aliado',
+      prazo: 'sem prazo para terminar',
+      mural: '',
+      link: 'https://kids.sistemazero.com.br/pais/cursos/vilao-em-aliado',
+    })
+  })
+
   test('atribuição descarta campos livres com dados pessoais', () => {
     expect(
       sanitizeGiftAttribution({

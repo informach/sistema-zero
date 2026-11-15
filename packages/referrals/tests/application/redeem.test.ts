@@ -1,13 +1,24 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
+import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
-import type { GrantManualCourseInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
-import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
+import type {
+  GrantManualCourseInput,
+  GrantManualOfferInput,
+  SendEmailInput,
+} from '../../src/domain/ports/gateway.port'
+import {
+  FakeGiftOfferCatalog,
+  FakeReferralsGateway,
+  InMemoryReferralRepository,
+  KIDS_GIFT_OFFER,
+  silentLogger,
+} from '../fakes/in-memory'
 
-const OPTS = {
-  courseSlug: 'cade-todo-mundo',
+const BASE_OPTS = {
   kidsCommunityUrl: 'https://kids.sistemazero.com.br',
   leaseMs: 90_000,
 }
+const DAY_MS = 24 * 60 * 60 * 1000
 
 async function seedAmbassadorCode(repo: InMemoryReferralRepository) {
   const created = await repo.createAmbassadorWithCode({
@@ -23,16 +34,33 @@ async function seedAmbassadorCode(repo: InMemoryReferralRepository) {
 describe('RedeemScholarshipService', () => {
   let repo: InMemoryReferralRepository
   let gateway: FakeReferralsGateway
+  let catalog: FakeGiftOfferCatalog
+  let OPTS: typeof BASE_OPTS & { giftOffers: FakeGiftOfferCatalog }
   let service: RedeemScholarshipService
 
   beforeEach(async () => {
     repo = new InMemoryReferralRepository()
     gateway = new FakeReferralsGateway()
+    catalog = new FakeGiftOfferCatalog()
+    OPTS = { ...BASE_OPTS, giftOffers: catalog }
     service = new RedeemScholarshipService(repo, gateway, OPTS, silentLogger)
     await seedAmbassadorCode(repo)
   })
 
   const input = { code: 'cida-x7k2', name: 'Paula Prado', email: 'Paula@Example.com ' }
+
+  /** Resgate ANTIGO em andamento (política `trial` de sete dias, antes do presente por oferta). */
+  async function seedLegacyTrial() {
+    const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula Prado',
+      phone: null,
+      courseSlug: 'cade-todo-mundo',
+    })
+    return redemption
+  }
 
   test('resgate captura comissão por plano e retomada preserva o acordo anterior', async () => {
     const original = new RedeemScholarshipService(
@@ -63,7 +91,7 @@ describe('RedeemScholarshipService', () => {
     expect(repo.redemptions[1]?.bonusAmounts).toEqual({ monthly: 4000, annual: 9000 })
   })
 
-  test('fluxo feliz (conta NOVA): conta → grant → welcome com token', async () => {
+  test('fluxo feliz (conta NOVA): conta → oferta do presente → welcome com token', async () => {
     const result = await service.execute(input)
     expect(result.kind).toBe('completed')
 
@@ -74,33 +102,124 @@ describe('RedeemScholarshipService', () => {
     expect(r.grantedAt).not.toBeNull()
     expect(r.status).toBe('completed')
     expect(r.welcomeSentAt).not.toBeNull()
+    // O resgate novo grava a oferta padrão do público, o prazo dela e o curso principal.
+    expect(r.muralVisitorPolicy).toBe('offer')
+    expect(r.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+    expect(r.accessDurationDays).toBe(7)
+    expect(r.courseSlug).toBe('cade-todo-mundo')
+    expect(catalog.calls).toContain('cade-todo-mundo-7-dias')
 
-    // Grant com delivery-id/sourceId ESTÁVEIS + somente o curso indicado.
-    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
-    expect(grant.courseRef).toBe('cade-todo-mundo')
-    expect(grant.expiresAt).toBe(
-      new Date(r.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    )
-    expect(grant.sourceId).toBe(`scholarship:${r.id}`)
-    expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${r.id}`)
-    const visitor = gateway.callsOf('grantMuralTrial')[0]?.input
+    // Um grant só: a OFERTA inteira, com delivery-id/sourceId ESTÁVEIS e o prazo da oferta
+    // contado do resgate (`anchorAt`).
     if (!r.userId) throw new Error('resgate concluído sem conta')
-    expect(visitor).toEqual({
-      userId: r.userId,
-      sourceId: `scholarship:${r.id}`,
-      deliveryId: `scholarship:mural-trial:${r.id}`,
-      courseRef: 'cade-todo-mundo',
-      expiresAt: grant.expiresAt,
+    expect(gateway.callsOf('grantManualOffer').map((c) => c.input)).toEqual([
+      {
+        userId: r.userId,
+        offerRef: KIDS_GIFT_OFFER.offerId,
+        sourceId: `scholarship:${r.id}`,
+        anchorAt: r.createdAt.toISOString(),
+        audience: 'kids',
+        deliveryId: `scholarship:offer:${KIDS_GIFT_OFFER.offerId}:${r.id}`,
+      } satisfies GrantManualOfferInput,
+    ])
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(0)
+    expect(gateway.callsOf('grantMuralTrial')).toHaveLength(0)
+    expect(result).toMatchObject({
+      muralAccess: 'trial',
+      expiresAt: new Date(r.createdAt.getTime() + 7 * DAY_MS).toISOString(),
     })
 
-    // Welcome do comprador NOVO: token + template da bolsa com link de senha.
+    // Welcome do comprador NOVO: token + template do presente com curso, prazo e Mural prontos.
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(1)
     const send = gateway.callsOf('sendEmail')[0]!
     const email = send.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome-mural-trial')
     expect(email.variables.indicador).toBe('Vó')
+    expect(email.variables.curso).toBe('Cadê Todo Mundo?')
+    expect(email.variables.prazo).toStartWith('por 7 dias, até ')
+    expect(email.variables.prazo).toEndWith('(horário de Brasília)')
+    expect(email.variables.mural).toContain('Mural dos Criadores')
     expect(email.variables.link).toContain('/redefinir-senha?token=tok-abc')
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
+  })
+
+  test('oferta vitalícia sem Mural: sem prazo e sem participação no Mural', async () => {
+    catalog.offers = [
+      {
+        ...KIDS_GIFT_OFFER,
+        offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d09',
+        accessMode: 'lifetime',
+        accessDurationValue: null,
+        accessDurationUnit: null,
+        includesMural: false,
+      },
+    ]
+    const result = await service.execute(input)
+    expect(result).toMatchObject({ kind: 'completed', expiresAt: null, muralAccess: 'none' })
+    const r = repo.redemptions[0]!
+    expect(r.accessDurationDays).toBeNull()
+    expect(r.giftOfferId).toBe('7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d09')
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.prazo).toBe('sem prazo para terminar')
+    expect(email.variables.mural).toBe('')
+  })
+
+  test('oferta com prazo em meses: dias nulos e o fim pela conta do members', async () => {
+    catalog.offers = [{ ...KIDS_GIFT_OFFER, accessDurationValue: 2, accessDurationUnit: 'months' }]
+    const result = await service.execute(input)
+    const r = repo.redemptions[0]!
+    expect(r.accessDurationDays).toBeNull()
+    expect(result).toMatchObject({
+      kind: 'completed',
+      expiresAt: addUtcCalendarMonths(r.createdAt, 2).toISOString(),
+    })
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.prazo).toStartWith('por 2 meses, até ')
+  })
+
+  test('Catálogo fora do ar ou oferta padrão ausente bloqueia antes da conta', async () => {
+    catalog.fail = true
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    catalog.fail = false
+    catalog.offers = []
+    expect((await service.execute(input)).kind).toBe('gift_unavailable')
+    expect(repo.redemptions).toHaveLength(0)
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+
+  test('curso para pais: conta existente vai direto à página do curso na área dos pais', async () => {
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
+    expect((await service.execute(input)).kind).toBe('completed')
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.variables.curso).toBe('Transformando o vilão em aliado')
+    expect(email.variables.link).toBe('https://kids.sistemazero.com.br/pais/cursos/cade-todo-mundo')
+  })
+
+  test('resgate ANTIGO (trial) em andamento segue o caminho antigo: curso + Mural', async () => {
+    const redemption = await seedLegacyTrial()
+    expect(await service.execute(input)).toMatchObject({ kind: 'completed', muralAccess: 'trial' })
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(0)
+    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
+    expect(grant.courseRef).toBe('cade-todo-mundo')
+    expect(grant.expiresAt).toBe(
+      new Date(redemption.createdAt.getTime() + 7 * DAY_MS).toISOString(),
+    )
+    expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${redemption.id}`)
+    expect(gateway.callsOf('grantMuralTrial')[0]?.input).toEqual({
+      userId: redemption.userId,
+      sourceId: `scholarship:${redemption.id}`,
+      deliveryId: `scholarship:mural-trial:${redemption.id}`,
+      courseRef: 'cade-todo-mundo',
+      expiresAt: grant.expiresAt,
+    })
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.templateKey).toBe('referrals-scholarship-welcome-mural-trial')
+    expect(email.variables.curso).toBe('Cadê Todo Mundo?')
+    expect(email.variables.prazo).toStartWith('por 7 dias, até ')
   })
 
   test('conta PRÉ-EXISTENTE: sem token, aviso da política do resgate', async () => {
@@ -242,18 +361,20 @@ describe('RedeemScholarshipService', () => {
     expect(email.templateKey).toBe('referrals-scholarship-welcome-7d')
   })
 
-  test('retomada do grant não reinicia os sete dias', async () => {
+  test('retomada do grant não reinicia o prazo: o members conta do resgate', async () => {
     gateway.grantResult = { status: 502, body: {} }
     expect((await service.execute(input)).kind).toBe('upstream_error')
     const redemption = repo.redemptions[0]!
     redemption.createdAt = new Date(Date.now() - 24 * 60 * 60 * 1000)
     gateway.grantResult = { status: 200, body: { ok: true } }
 
-    expect((await service.execute(input)).kind).toBe('completed')
-    const grant = gateway.callsOf('grantManualCourse')[1]!.input as GrantManualCourseInput
-    expect(grant.expiresAt).toBe(
-      new Date(redemption.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    )
+    const result = await service.execute(input)
+    expect(result).toMatchObject({
+      kind: 'completed',
+      expiresAt: new Date(redemption.createdAt.getTime() + 7 * DAY_MS).toISOString(),
+    })
+    const grant = gateway.callsOf('grantManualOffer')[1]!.input as GrantManualOfferInput
+    expect(grant.anchorAt).toBe(redemption.createdAt.toISOString())
   })
 
   test.each([
@@ -261,6 +382,7 @@ describe('RedeemScholarshipService', () => {
     { status: 204, body: null },
     { status: 200, body: { ok: true, granted: 1 } },
   ])('resposta incompleta do Mural não confirma o resgate: %j', async (result) => {
+    await seedLegacyTrial()
     gateway.muralTrialResult = result
     expect((await service.execute(input)).kind).toBe('upstream_error')
     expect(repo.redemptions[0]?.muralVisitorGrantedAt).toBeNull()
@@ -268,6 +390,7 @@ describe('RedeemScholarshipService', () => {
   })
 
   test('falha no Mural não confirma o presente; retry concede só a etapa faltante', async () => {
+    await seedLegacyTrial()
     gateway.muralTrialResult = { status: 502, body: {} }
     expect((await service.execute(input)).kind).toBe('upstream_error')
     const redemption = repo.redemptions[0]!
@@ -287,6 +410,7 @@ describe('RedeemScholarshipService', () => {
   })
 
   test('reentrega já confirmada do Mural conclui o resgate', async () => {
+    await seedLegacyTrial()
     gateway.muralTrialResult = { status: 200, body: { ok: true, deduped: true } }
     expect(await service.execute(input)).toMatchObject({ kind: 'completed', muralAccess: 'trial' })
     expect(repo.redemptions[0]?.muralVisitorGrantedAt).not.toBeNull()
@@ -294,6 +418,7 @@ describe('RedeemScholarshipService', () => {
   })
 
   test('conflito no grant do Mural temporário fica diagnosticável e não envia e-mail', async () => {
+    await seedLegacyTrial()
     gateway.muralTrialResult = { status: 409, body: {} }
     expect(await service.execute(input)).toEqual({
       kind: 'failed',
@@ -313,7 +438,7 @@ describe('RedeemScholarshipService', () => {
     const result = await service.execute(input)
     expect(result).toEqual({ kind: 'failed', reason: 'gift_window_elapsed' })
     expect(repo.redemptions[0]!.failedReason).toBe('gift_window_elapsed')
-    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(1)
     expect(gateway.callsOf('sendEmail')).toHaveLength(0)
   })
 
@@ -366,7 +491,7 @@ describe('RedeemScholarshipService', () => {
     const second = await service.execute(input)
     expect(second.kind).toBe('completed')
     expect(gateway.callsOf('ensureBuyer')).toHaveLength(1) // não repetiu
-    expect(gateway.callsOf('grantManualCourse')).toHaveLength(2)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(2)
   })
 
   test('grant 409 → failed grant_conflict (terminal, sem e-mail)', async () => {
@@ -435,7 +560,7 @@ describe('RedeemScholarshipService', () => {
     const r = repo.redemptions[0]!
     expect(r.welcomeSentAt).not.toBeNull() // ...mas o welcome saiu agora
     expect(gateway.callsOf('sendEmail')).toHaveLength(1)
-    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1) // grant NÃO repetiu
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(1) // grant NÃO repetiu
   })
 
   test('welcome atrasado não anuncia acesso depois de vencido', async () => {
@@ -465,7 +590,7 @@ describe('RedeemScholarshipService', () => {
     expect((await service.execute(input)).kind).toBe('gift_unavailable')
     expect(repo.redemptions).toHaveLength(0)
     expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
-    expect(gateway.callsOf('grantManualCourse')).toHaveLength(0)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(0)
   })
 
   test('falha ao consultar disponibilidade também bloqueia sem criar conta', async () => {

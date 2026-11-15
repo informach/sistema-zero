@@ -1,8 +1,28 @@
 import type { GiftAudience } from '@sistemazero/core/referrals'
+// Mês-calendário em UTC: a mesma conta do members (`computeFixedExpiry`).
+import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import type { GatewayResult } from './ports/gateway.port'
+import type { GiftOffer } from './ports/gift-offer-catalog.port'
 
-/** Política registrada em cada novo resgate, sem alterar bolsas históricas. */
-export const SCHOLARSHIP_ACCESS_DURATION_DAYS = 7
+/**
+ * Oferta padrão do presente de cada público (15/11/2026): é o que os códigos de embaixador
+ * (e as campanhas antigas, ainda sem oferta escolhida) dão de presente. Fonte ÚNICA destes
+ * slugs; o catálogo resolve cada um na hora do resgate. Substituem as antigas envs de curso
+ * (`SCHOLARSHIP_COURSE_SLUG`/`SCHOLARSHIP_ADULT_COURSE_SLUG`) e o prazo fixo de sete dias:
+ * curso, prazo e Mural agora vêm da própria oferta.
+ */
+export const DEFAULT_GIFT_OFFER_SLUGS: Readonly<Record<GiftAudience, string>> = {
+  kids: 'cade-todo-mundo-7-dias',
+  adult: 'cade-todo-mundo-adulto-7-dias',
+}
+
+/** A oferta que um código entrega: a da campanha, ou a padrão do público. */
+export function giftOfferRef(
+  campaign: { giftOfferId?: string | null } | null | undefined,
+  audience: GiftAudience,
+): string {
+  return campaign?.giftOfferId ?? DEFAULT_GIFT_OFFER_SLUGS[audience]
+}
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -10,29 +30,103 @@ export function scholarshipExpiresAt(createdAt: Date, durationDays: number | nul
   return durationDays === null ? null : new Date(createdAt.getTime() + durationDays * DAY_MS)
 }
 
-/** Curso adulto padrão do presente (clone adulto publicado pela dona no Admin). */
-export const DEFAULT_ADULT_GIFT_COURSE_SLUG = 'cade-todo-mundo-adulto'
-
 /**
- * O que cada público entrega. `appUrl` nulo = o app daquele público não está configurado
- * (`COMMUNITY_URL` ausente): o presente fica indisponível, sem derrubar o outro público.
+ * Dias do presente gravados no resgate (`access_duration_days`): só a oferta de prazo fixo
+ * em DIAS. Vitalícia = null (sem prazo); prazo em meses = null, e o fim sai da própria oferta
+ * (`offerGiftExpiresAt`), a mesma conta que o members faz a partir do resgate.
  */
-export interface GiftTarget {
-  courseSlug: string
-  appUrl: string | null
+export function giftAccessDays(offer: GiftOffer): number | null {
+  return offer.accessMode === 'fixed' && offer.accessDurationUnit === 'days'
+    ? offer.accessDurationValue
+    : null
 }
 
-export type GiftTargets = Record<GiftAudience, GiftTarget>
+/** Fim do presente de uma oferta contado a partir do resgate (`anchorAt` do members). */
+export function offerGiftExpiresAt(offer: GiftOffer, createdAt: Date): Date | null {
+  if (offer.accessMode !== 'fixed' || !offer.accessDurationValue) return null
+  return offer.accessDurationUnit === 'months'
+    ? addUtcCalendarMonths(createdAt, offer.accessDurationValue)
+    : new Date(createdAt.getTime() + offer.accessDurationValue * DAY_MS)
+}
 
-/** Link do e-mail de boas-vindas: definir senha (conta nova) ou entrar (conta existente). */
+/**
+ * Motivo para recusar a oferta como presente, ou null se serve. O presente concede sem cobrar,
+ * então a oferta precisa ser de pagamento único (prazo fixo ou vitalícia: assinatura não vira
+ * presente) e do MESMO público da campanha (o público vem do produto principal da oferta).
+ */
+export function giftOfferProblem(offer: GiftOffer, audience: GiftAudience): string | null {
+  if (offer.accessMode !== 'fixed' && offer.accessMode !== 'lifetime')
+    return 'A oferta do presente precisa ser de pagamento único (prazo fixo ou sem prazo). Assinatura não vira presente.'
+  if (offer.accessMode === 'fixed' && (!offer.accessDurationValue || !offer.accessDurationUnit))
+    return 'A oferta de prazo fixo precisa ter a duração cadastrada no Catálogo.'
+  if (offer.audience !== audience)
+    return audience === 'adult'
+      ? 'Escolha uma oferta do público adulto, o mesmo da campanha.'
+      : 'Escolha uma oferta do público Kids, o mesmo da campanha.'
+  return null
+}
+
+/** "por 7 dias" / "por 1 mês"; vazio quando não há prazo. */
+export function giftDurationText(
+  offer: GiftOffer | null,
+  accessDurationDays: number | null,
+): string {
+  if (offer?.accessMode === 'fixed' && offer.accessDurationValue) {
+    const n = offer.accessDurationValue
+    if (offer.accessDurationUnit === 'months') return `por ${n} ${n === 1 ? 'mês' : 'meses'}`
+    return `por ${n} ${n === 1 ? 'dia' : 'dias'}`
+  }
+  if (accessDurationDays)
+    return `por ${accessDurationDays} ${accessDurationDays === 1 ? 'dia' : 'dias'}`
+  return ''
+}
+
+/**
+ * Link do e-mail de boas-vindas: definir senha (conta nova) ou entrar (conta existente). Curso
+ * PARA PAIS (`learner: 'parents'`) com conta existente abre direto a página do curso na área
+ * dos pais; conta nova segue o primeiro acesso de sempre (definir a senha).
+ */
 export function giftWelcomeLink(
   audience: GiftAudience,
   appUrl: string,
   token: string | null,
+  parentsCourseSlug?: string | null,
 ): string {
   const base = appUrl.replace(/\/$/, '')
   if (token) return `${base}/redefinir-senha?token=${encodeURIComponent(token)}`
+  if (audience === 'kids' && parentsCourseSlug)
+    return `${base}/pais/cursos/${encodeURIComponent(parentsCourseSlug)}`
   return audience === 'adult' ? `${base}/cursos` : `${base}/login/responsavel`
+}
+
+/**
+ * A frase do Mural no e-mail de boas-vindas (o Messaging não tem condicional: o texto vai
+ * pronto, ou vazio quando o presente não inclui o Mural).
+ */
+export function giftMuralText(input: {
+  audience: GiftAudience
+  /** Participação no Mural (`trial` histórico ou oferta que inclui o Mural completo). */
+  participation: boolean
+  /** Visita histórica (`visitor`): só ver e jogar. */
+  visitorOnly?: boolean
+  /** Presente com prazo: depois dele fica a visita ao Mural. */
+  hasDeadline: boolean
+}): string {
+  const adult = input.audience === 'adult'
+  if (input.participation) {
+    if (adult)
+      return input.hasDeadline
+        ? 'Durante o presente, você também publica o jogo no Mural adulto e manda o link para quem quiser. Depois do prazo, a sua conta continua podendo ver e jogar no Mural.'
+        : 'Você também publica o jogo no Mural adulto e manda o link para quem quiser.'
+    return input.hasDeadline
+      ? 'Durante o presente, seu filho também pode publicar o jogo, comentar e reagir no Mural dos Criadores. Depois do prazo, a conta continua podendo ver e jogar no Mural.'
+      : 'Seu filho também pode publicar o jogo, comentar e reagir no Mural dos Criadores.'
+  }
+  if (input.visitorOnly)
+    return adult
+      ? 'Você também pode ver e jogar no Mural adulto enquanto a conta existir.'
+      : 'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir.'
+  return ''
 }
 
 /**

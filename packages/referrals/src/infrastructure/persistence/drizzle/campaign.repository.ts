@@ -8,6 +8,7 @@ import { and, count, desc, eq, ilike, ne, or, sql } from 'drizzle-orm'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
+  CampaignGiftOfferLockedError,
   type CampaignRecord,
   CampaignValidationError,
 } from '../../../domain/campaign'
@@ -46,6 +47,7 @@ function values(input: CampaignInput) {
     schedule: input.schedule ?? null,
     coupon: input.coupon ?? null,
     audience: input.audience ?? 'kids',
+    giftOfferId: input.giftOfferId ?? null,
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,
     commissionAmountCents: input.commissionEnabled ? input.commissionAmountCents : null,
@@ -121,22 +123,29 @@ export class DrizzleCampaignRepository implements CampaignRepository {
       const audience = input.audience ?? previous.audience
       if (previous.status !== 'draft' && audience !== previous.audience)
         throw new CampaignAudienceLockedError()
+      // Oferta: omitida conserva a gravada; trocar uma oferta já ligada segue a régua do público.
+      const giftOfferId = input.giftOfferId === undefined ? previous.giftOfferId : input.giftOfferId
+      const giftOfferChanged = previous.giftOfferId !== null && giftOfferId !== previous.giftOfferId
+      if (previous.status !== 'draft' && giftOfferChanged) throw new CampaignGiftOfferLockedError()
       const [code] = await tx.select().from(codes).where(eq(codes.campaignId, id))
       if (!code) return null
-      if (audience !== previous.audience) {
-        // Rascunho que já foi publicado (active → draft) pode ter resgates: o público deles
-        // não muda, então o da campanha também não.
+      if (audience !== previous.audience || giftOfferChanged) {
+        // Rascunho que já foi publicado (active → draft) pode ter resgates: o público e a oferta
+        // deles não mudam, então os da campanha também não.
         const [used] = await tx
           .select({ id: scholarshipRedemptions.id })
           .from(scholarshipRedemptions)
           .where(eq(scholarshipRedemptions.codeId, code.id))
           .limit(1)
-        if (used) throw new CampaignAudienceLockedError()
+        if (used)
+          throw audience !== previous.audience
+            ? new CampaignAudienceLockedError()
+            : new CampaignGiftOfferLockedError()
       }
       const [updated] = await tx
         .update(campaigns)
         .set({
-          ...values({ ...input, audience }),
+          ...values({ ...input, audience, giftOfferId }),
           updatedAt: new Date(Math.max(Date.now(), previous.updatedAt.getTime() + 1)),
         })
         .where(eq(campaigns.id, id))

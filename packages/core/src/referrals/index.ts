@@ -45,6 +45,20 @@ export function publicGiftSourceName(source: Pick<GiftSource, 'kind' | 'name'>):
   const name = source.name.trim()
   return source.kind === 'campaign' ? name : (name.split(/\s+/u)[0] ?? '')
 }
+/**
+ * O que o presente entrega (15/11/2026): a OFERTA do catálogo escolhida pela campanha (ou a
+ * oferta padrão do público, nos códigos de embaixador). `accessDays` nulo = sem prazo em dias
+ * (oferta vitalícia ou prazo em meses); `learner` vem do curso principal publicado.
+ */
+export interface ReferralGiftOfferView {
+  offerId: string
+  offerTitle: string
+  courseSlug: string | null
+  courseTitle: string | null
+  learner: 'child' | 'parents' | null
+  accessDays: number | null
+  includesMural: boolean
+}
 export interface ReferralGiftView {
   code: string
   displayName: string
@@ -56,6 +70,8 @@ export interface ReferralGiftView {
   giftAvailable: boolean
   /** Ausente em respostas anteriores a 20/10/2026: trate como `kids`. */
   audience?: GiftAudience
+  /** Ausente quando a oferta do presente não pôde ser resolvida (ou em respostas antigas). */
+  gift?: ReferralGiftOfferView
 }
 /** Os links públicos do embaixador, um por público (`/bolsa/<code>`). */
 export interface AmbassadorShareUrls {
@@ -77,6 +93,11 @@ export interface CampaignInput {
   channel: string
   /** Ausente = `kids`. Só muda enquanto a campanha está em rascunho. */
   audience?: GiftAudience
+  /**
+   * Oferta do catálogo (UUID) que a campanha dá de presente, sem cobrar. Obrigatória em
+   * campanha nova; na edição, ausente conserva a gravada. Nula só em campanhas antigas.
+   */
+  giftOfferId?: string | null
   /** Vínculo de atribuição; não habilita comissão por si só. */
   ambassadorId?: string | null
   commissionEnabled?: boolean

@@ -44,11 +44,20 @@ if (args.includes('--help')) {
       const expiresAt = new Date(row.createdAt.getTime() + 7 * 86_400_000)
       console.log(JSON.stringify({ redemptionId: row.id, expiresAt: expiresAt.toISOString() }))
       if (!apply || !gateway || !row.userId) continue
+      // O curso é o GRAVADO no resgate (a env de curso saiu em 15/11/2026); sem ele, não há
+      // como conferir a matrícula da mesma origem.
+      if (!row.courseSlug) {
+        console.error(
+          JSON.stringify({ redemptionId: row.id, error: 'Resgate sem curso gravado; conferir.' }),
+        )
+        process.exitCode = 1
+        continue
+      }
       // Members confere a matrícula da mesma origem; revogação/expiração não é desfeita.
       const result = await gateway.grantMuralTrial({
         userId: row.userId,
         sourceId: `scholarship:${row.id}`,
-        courseRef: row.courseSlug ?? env.SCHOLARSHIP_COURSE_SLUG,
+        courseRef: row.courseSlug,
         expiresAt: expiresAt.toISOString(),
         deliveryId: `scholarship:mural-trial:${row.id}`,
       })

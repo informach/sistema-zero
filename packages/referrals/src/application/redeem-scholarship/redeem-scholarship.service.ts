@@ -7,15 +7,27 @@ import {
   type GiftSource,
   publicGiftSourceName,
   type ReferralBonusAmounts,
+  type ReferralGiftOfferView,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
-import { CampaignUnavailableError, campaignSource, campaignState } from '../../domain/campaign'
+import {
+  type CampaignRecord,
+  CampaignUnavailableError,
+  campaignSource,
+  campaignState,
+  GiftOfferChangedError,
+} from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
 import {
-  DEFAULT_ADULT_GIFT_COURSE_SLUG,
-  type GiftTarget,
+  DEFAULT_GIFT_OFFER_SLUGS,
+  giftAccessDays,
+  giftDurationText,
+  giftMuralText,
+  giftOfferProblem,
+  giftOfferRef,
   giftWelcomeLink,
   isMuralTrialGranted,
+  offerGiftExpiresAt,
   scholarshipExpiresAt,
 } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
@@ -25,6 +37,7 @@ import type {
   ReferralsGateway,
   SendEmailInput,
 } from '../../domain/ports/gateway.port'
+import type { GiftOffer, GiftOfferCatalog } from '../../domain/ports/gift-offer-catalog.port'
 import type {
   RedemptionRecord,
   ReferralRepository,
@@ -63,21 +76,52 @@ export const LEGACY_TEMPLATE_KEYS: Readonly<Record<string, string>> = {
 }
 
 export interface RedeemOptions {
-  /** Curso kids concedido pela indicação, sem a assinatura da Comunidade. */
-  courseSlug: string
   /** Base do app kids p/ o link de senha/área dos pais. */
   kidsCommunityUrl: string
-  /** Curso do presente adulto (env `SCHOLARSHIP_ADULT_COURSE_SLUG`). */
-  adultCourseSlug?: string
   /**
    * Base do app adulto (env `COMMUNITY_URL`). Ausente = presente adulto INDISPONÍVEL
    * (503 GIFT_UNAVAILABLE, `giftAvailable:false`); o Kids segue funcionando.
    */
   communityUrl?: string | null
+  /**
+   * Catálogo: a oferta que o presente concede (15/11/2026). Curso, prazo e Mural vêm dela; os
+   * códigos sem campanha (e as campanhas antigas sem oferta) usam `DEFAULT_GIFT_OFFER_SLUGS`.
+   */
+  giftOffers: GiftOfferCatalog
   leaseMs: number
   campaigns?: CampaignRepository
   bonusAmounts?: ReferralBonusAmounts
 }
+
+/** O curso principal do presente, como o members o publica. */
+export interface GiftCourse {
+  slug: string
+  title: string | null
+  learner: 'child' | 'parents' | null
+}
+
+/** O presente resolvido: a oferta e o curso principal (null = a oferta não tem curso). */
+export interface GiftPlan {
+  offer: GiftOffer
+  course: GiftCourse | null
+}
+
+type Availability<T> =
+  | { kind: 'ok'; value: T }
+  | { kind: 'unavailable' }
+  | { kind: 'upstream_error' }
+
+/**
+ * O que os passos e o e-mail sabem do presente desta execução. `offer` só é a do resgate
+ * `offer`; nos resgates antigos fica nula e o curso é o gravado.
+ */
+interface GiftContext {
+  offer: GiftOffer | null
+  course: GiftCourse | null
+}
+
+/** Curso sem título conhecido (members fora do ar na retomada do e-mail). */
+const UNKNOWN_COURSE_TITLE = 'do presente'
 
 /** E-mails de boas-vindas do presente adulto (sempre com o Mural adulto por sete dias). */
 const ADULT_WELCOME_TEMPLATES = {
@@ -92,13 +136,18 @@ const ADULT_WELCOME_TEMPLATES = {
 } as const
 
 /**
- * Resgate do curso-presente — disponibilidade → CONTA → GRANT → E-MAIL:
+ * Resgate do presente — disponibilidade → CONTA → GRANT → E-MAIL:
  * se o e-mail falhar, o acesso já existe; se o grant falhar, nenhum e-mail
  * mentiroso saiu. Retomável por etapas (colunas user_id/granted_at/
  * welcome_sent_at): falha transitória devolve 502, curso indisponível devolve 503,
  * e a PRÓXIMA submissão do
  * mesmo e-mail continua de onde parou. Anti-execução dupla = lease em coluna
  * (`processing_until`) — crash no meio expira sozinho.
+ *
+ * Desde 15/11/2026 o presente é uma OFERTA do catálogo: o resgate novo grava a oferta
+ * (`muralVisitorPolicy: 'offer'`) e o members concede tudo o que ela inclui, com o prazo
+ * dela. Resgates antigos em andamento (`trial`/`visitor`/históricos) seguem o caminho antigo
+ * (curso + Mural em separado, com o curso gravado no resgate).
  */
 export class RedeemScholarshipService {
   constructor(
@@ -111,47 +160,120 @@ export class RedeemScholarshipService {
     private readonly genPassword: () => string = () => randomBytes(32).toString('base64url'),
   ) {}
 
-  /** Curso e app de cada público. */
-  target(audience: GiftAudience): GiftTarget {
-    return audience === 'adult'
-      ? {
-          courseSlug: this.opts.adultCourseSlug ?? DEFAULT_ADULT_GIFT_COURSE_SLUG,
-          appUrl: this.opts.communityUrl ?? null,
-        }
-      : { courseSlug: this.opts.courseSlug, appUrl: this.opts.kidsCommunityUrl }
+  /** App do público; null = não configurado (presente daquele público indisponível). */
+  private appUrl(audience: GiftAudience): string | null {
+    return audience === 'adult' ? (this.opts.communityUrl ?? null) : this.opts.kidsCommunityUrl
   }
 
-  /** Curso gravado no resgate (retomada conserva o curso) ou o atual do público. */
-  private courseOf(redemption: RedemptionRecord): string {
-    return redemption.courseSlug ?? this.target(redemption.audience).courseSlug
-  }
-
-  async giftAvailability(
-    audience: GiftAudience = 'kids',
-    courseSlug?: string,
-  ): Promise<'available' | 'unavailable' | 'upstream_error'> {
-    const target = this.target(audience)
-    if (!target.appUrl) {
+  /**
+   * O curso está publicado para o público? Também confere o app do público. Sem curso
+   * (oferta só com o Mural, por exemplo) basta o app. Traz título e público do curso.
+   */
+  private async checkCourse(
+    audience: GiftAudience,
+    courseSlug: string | null,
+  ): Promise<Availability<GiftCourse | null>> {
+    if (!this.appUrl(audience)) {
       // Fail-closed: sem o app do público não há para onde mandar a pessoa.
       this.logger.warn('referrals.gift_audience_unconfigured', { audience })
-      return 'unavailable'
+      return { kind: 'unavailable' }
     }
-    const slug = courseSlug ?? target.courseSlug
+    if (!courseSlug) return { kind: 'ok', value: null }
     // Kids sem query: a consulta continua idêntica à de antes do presente adulto.
     const res =
       audience === 'adult'
-        ? await this.gateway.getGiftAvailability(slug, 'adult')
-        : await this.gateway.getGiftAvailability(slug)
+        ? await this.gateway.getGiftAvailability(courseSlug, 'adult')
+        : await this.gateway.getGiftAvailability(courseSlug)
     if (res.status !== 200) {
       this.logger.warn('referrals.gift_availability_failed', { status: res.status })
-      return 'upstream_error'
+      return { kind: 'upstream_error' }
     }
     const available = readBoolean(res.body, 'available')
     if (available === null) {
       this.logger.error('referrals.gift_availability_invalid_response', { status: res.status })
-      return 'upstream_error'
+      return { kind: 'upstream_error' }
     }
-    return available ? 'available' : 'unavailable'
+    if (!available) return { kind: 'unavailable' }
+    const learner = readString(res.body, 'learner')
+    return {
+      kind: 'ok',
+      value: {
+        slug: courseSlug,
+        title: readString(res.body, 'title'),
+        learner: learner === 'child' || learner === 'parents' ? learner : null,
+      },
+    }
+  }
+
+  /** Compatível com as chamadas antigas: só a disponibilidade do curso no público. */
+  async giftAvailability(
+    audience: GiftAudience = 'kids',
+    courseSlug: string | null = null,
+  ): Promise<'available' | 'unavailable' | 'upstream_error'> {
+    const result = await this.checkCourse(audience, courseSlug)
+    return result.kind === 'ok' ? 'available' : result.kind
+  }
+
+  /**
+   * Resolve o presente de uma oferta: existe no catálogo, serve como presente (pagamento único,
+   * mesmo público) e o curso principal está publicado. Oferta inexistente ou inválida é
+   * configuração errada: indisponível (log de erro), nunca um presente pela metade.
+   */
+  async planGift(audience: GiftAudience, offerRef: string): Promise<Availability<GiftPlan>> {
+    if (!this.appUrl(audience)) {
+      this.logger.warn('referrals.gift_audience_unconfigured', { audience })
+      return { kind: 'unavailable' }
+    }
+    let offer: GiftOffer | null
+    try {
+      offer = await this.opts.giftOffers.resolve(offerRef)
+    } catch (error) {
+      this.logger.warn('referrals.gift_offer_lookup_failed', {
+        offerRef,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return { kind: 'upstream_error' }
+    }
+    if (!offer) {
+      this.logger.error('referrals.gift_offer_not_found', { offerRef, audience })
+      return { kind: 'unavailable' }
+    }
+    const problem = giftOfferProblem(offer, audience)
+    if (problem) {
+      this.logger.error('referrals.gift_offer_invalid', { offerRef, audience, problem })
+      return { kind: 'unavailable' }
+    }
+    const course = await this.checkCourse(audience, offer.courseSlug)
+    if (course.kind !== 'ok') return course
+    return { kind: 'ok', value: { offer, course: course.value } }
+  }
+
+  /**
+   * Leitura pública do presente de um código (`GET internal/codes/:code`): disponibilidade e o
+   * que a oferta entrega. `gift` só quando a oferta resolve e o presente está disponível.
+   */
+  async publicGift(
+    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    audience: GiftAudience,
+  ): Promise<{
+    availability: 'available' | 'unavailable' | 'upstream_error'
+    gift?: ReferralGiftOfferView
+  }> {
+    const result = await this.planGift(audience, giftOfferRef(campaign, audience))
+    if (result.kind !== 'ok') return { availability: result.kind }
+    const { offer, course } = result.value
+    return {
+      availability: 'available',
+      gift: {
+        offerId: offer.offerId,
+        offerTitle: offer.name,
+        courseSlug: offer.courseSlug,
+        courseTitle: course?.title ?? null,
+        learner: course?.learner ?? null,
+        accessDays: giftAccessDays(offer),
+        includesMural: offer.includesMural,
+      },
+    }
   }
 
   async execute(input: RedeemInput): Promise<RedeemResult> {
@@ -172,8 +294,8 @@ export class RedeemScholarshipService {
         : null
     const audience = campaign?.audience ?? codeRecord.audience
 
-    // Resgate novo só começa quando o curso está publicado. O 409 de um resgate
-    // concluído continua reconhecível mesmo se o curso sair do catálogo depois.
+    // Resgate novo só começa quando a oferta resolve e o curso está publicado. O 409 de um
+    // resgate concluído continua reconhecível mesmo se o curso sair do catálogo depois.
     // "Já resgatado" é por público: o mesmo e-mail pode ter um presente Kids e um adulto.
     const existing = await this.repo.findRedemptionByEmail(email, audience)
     let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
@@ -184,10 +306,33 @@ export class RedeemScholarshipService {
       if (state !== 'active') return { kind: 'campaign_unavailable', state }
       source = campaignSource(campaign)
     }
+    let context: GiftContext = { offer: null, course: null }
+    let plan: GiftPlan | null = null
     if (existing?.status !== 'completed') {
-      const availability = await this.giftAvailability(audience, existing?.courseSlug ?? undefined)
-      if (availability === 'unavailable') return { kind: 'gift_unavailable' }
-      if (availability === 'upstream_error') return { kind: 'upstream_error' }
+      if (!existing || existing.giftOfferId) {
+        // Resgate novo (oferta da campanha ou a padrão do público) ou retomada de um resgate
+        // por oferta (a oferta GRAVADA nele, mesmo que a campanha mude depois).
+        const result = await this.planGift(
+          audience,
+          existing?.giftOfferId ?? giftOfferRef(campaign, audience),
+        )
+        if (result.kind === 'unavailable') return { kind: 'gift_unavailable' }
+        if (result.kind === 'upstream_error') return { kind: 'upstream_error' }
+        plan = result.value
+        context = { offer: plan.offer, course: plan.course }
+      } else {
+        // Retomada de resgate antigo: o curso gravado nele (ou o da oferta padrão, para as
+        // linhas anteriores à coluna do curso).
+        const courseSlug = existing.courseSlug ?? (await this.defaultCourseSlug(audience))
+        if (!courseSlug) return { kind: 'upstream_error' }
+        const result = await this.checkCourse(audience, courseSlug)
+        if (result.kind === 'unavailable') return { kind: 'gift_unavailable' }
+        if (result.kind === 'upstream_error') return { kind: 'upstream_error' }
+        context = {
+          offer: null,
+          course: result.value ?? { slug: courseSlug, title: null, learner: null },
+        }
+      }
     }
 
     // Claim da bolsa: 1 por e-mail e público. Conflito devolve a linha existente —
@@ -202,14 +347,27 @@ export class RedeemScholarshipService {
         phone,
         sourceSnapshot: source,
         bonusAmounts: codeRecord.ownerKind === 'campaign' ? undefined : this.opts.bonusAmounts,
-        courseSlug: this.target(audience).courseSlug,
+        // Curso principal da oferta, para leitura e e-mail (quem concede é a oferta).
+        courseSlug: plan?.offer.courseSlug ?? undefined,
         attribution: sanitizeGiftAttribution(input.attribution),
+        ...(plan
+          ? {
+              gift: {
+                offerId: plan.offer.offerId,
+                accessDurationDays: giftAccessDays(plan.offer),
+              },
+            }
+          : {}),
       })
     } catch (error) {
       if (error instanceof CampaignUnavailableError)
         return error.state === 'draft'
           ? { kind: 'code_not_found' }
           : { kind: 'campaign_unavailable', state: error.state }
+      if (error instanceof GiftOfferChangedError) {
+        this.logger.warn('referrals.gift_offer_changed', { codeId: codeRecord.id })
+        return { kind: 'upstream_error' }
+      }
       throw error
     }
     const { created, redemption } = claim
@@ -221,11 +379,16 @@ export class RedeemScholarshipService {
       redemption.sourceSnapshot ??
       (originalCode ? { kind: originalCode.ownerKind, name: originalCode.displayName } : source)
     if (!created && redemption.status === 'completed') {
-      // Grant já concluiu mas o welcome pode ter ficado pelo caminho (crash entre
-      // o completed e o e-mail): retoma SÓ o e-mail. O claim atômico do welcome
-      // já é o mutex desta etapa — dispensa o lease (que exclui completed).
+      // Grant já concluiu mas o welcome pode ter ficado pelo caminho (crash entre o
+      // completed e o e-mail): retoma SÓ o e-mail. O claim atômico do welcome já é o mutex
+      // desta etapa — dispensa o lease (que exclui completed).
       if (!redemption.welcomeSentAt) {
-        await this.sendWelcome(redemption, redemption.buyerCreated === true, originalSource)
+        await this.sendWelcome(
+          redemption,
+          redemption.buyerCreated === true,
+          originalSource,
+          await this.describeGift(redemption),
+        )
       }
       return { kind: 'already_redeemed' }
     }
@@ -235,7 +398,7 @@ export class RedeemScholarshipService {
     if (!leased) return { kind: 'processing' }
 
     try {
-      return await this.runSteps(leased, originalSource)
+      return await this.runSteps(leased, originalSource, context)
     } catch (error) {
       this.logger.error('referrals.redeem_failed', {
         redemptionId: redemption.id,
@@ -247,7 +410,72 @@ export class RedeemScholarshipService {
     }
   }
 
-  private async runSteps(redemption: RedemptionRecord, source: GiftSource): Promise<RedeemResult> {
+  /** Curso principal da oferta padrão do público (retomada de linha antiga sem curso gravado). */
+  private async defaultCourseSlug(audience: GiftAudience): Promise<string | null> {
+    try {
+      return (
+        (await this.opts.giftOffers.resolve(DEFAULT_GIFT_OFFER_SLUGS[audience]))?.courseSlug ?? null
+      )
+    } catch {
+      return null
+    }
+  }
+
+  /** Contexto de melhor esforço para retomar só o e-mail de um resgate concluído. */
+  private async describeGift(redemption: RedemptionRecord): Promise<GiftContext> {
+    let offer: GiftOffer | null = null
+    if (redemption.giftOfferId) {
+      offer = await this.opts.giftOffers.resolve(redemption.giftOfferId).catch(() => null)
+    }
+    const slug = redemption.courseSlug ?? offer?.courseSlug ?? null
+    const course = slug ? await this.checkCourse(redemption.audience, slug) : null
+    return {
+      offer,
+      course:
+        course?.kind === 'ok' && course.value
+          ? course.value
+          : slug
+            ? { slug, title: null, learner: null }
+            : null,
+    }
+  }
+
+  /** A oferta do contexto, se for a gravada no resgate `offer`. */
+  private offerOf(redemption: RedemptionRecord, context: GiftContext): GiftOffer | null {
+    return redemption.muralVisitorPolicy === 'offer' &&
+      context.offer &&
+      context.offer.offerId === redemption.giftOfferId
+      ? context.offer
+      : null
+  }
+
+  /**
+   * Fim do presente: os dias gravados no resgate; na oferta com prazo em meses, a conta do
+   * members a partir do resgate; sem prazo, null.
+   */
+  private expiresAtOf(redemption: RedemptionRecord, context: GiftContext): Date | null {
+    if (redemption.accessDurationDays !== null)
+      return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
+    const offer = this.offerOf(redemption, context)
+    return offer ? offerGiftExpiresAt(offer, redemption.createdAt) : null
+  }
+
+  private windowElapsed(expiresAt: Date | null): boolean {
+    return expiresAt !== null && this.now().getTime() >= expiresAt.getTime()
+  }
+
+  /** Curso do caminho antigo: o gravado no resgate (retomada conserva o curso). */
+  private courseOf(redemption: RedemptionRecord, context: GiftContext): string {
+    const slug = redemption.courseSlug ?? context.course?.slug
+    if (!slug) throw new Error('resgate antigo sem curso gravado')
+    return slug
+  }
+
+  private async runSteps(
+    redemption: RedemptionRecord,
+    source: GiftSource,
+    context: GiftContext,
+  ): Promise<RedeemResult> {
     let userId = redemption.userId
     let buyerCreated = redemption.buyerCreated
 
@@ -278,25 +506,41 @@ export class RedeemScholarshipService {
       await this.repo.setRedemptionBuyer(redemption.id, userId, buyerCreated)
     }
 
-    // 2) Grant do curso indicado (dedupe do members por x-delivery-id ESTÁVEL +
-    //    idempotência manual:userId:productId — replay é seguro).
+    const offerPolicy = redemption.muralVisitorPolicy === 'offer'
+    const expiresAt = this.expiresAtOf(redemption, context)
+
+    // 2) Grant (dedupe do members por x-delivery-id ESTÁVEL + idempotência
+    //    manual:userId:productId — replay é seguro).
     if (!redemption.grantedAt) {
-      const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
-      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+      if (this.windowElapsed(expiresAt)) {
         await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
         return { kind: 'failed', reason: 'gift_window_elapsed' }
       }
-      const res = await this.gateway.grantManualCourse({
-        userId,
-        courseRef: this.courseOf(redemption),
-        sourceId: `scholarship:${redemption.id}`,
-        expiresAt: expiresAt?.toISOString() ?? null,
-        // A versão do presente integra a chave: uma entrega antiga da OFERTA
-        // não pode deduplicar o novo grant do CURSO no members.
-        deliveryId: `scholarship:course:${this.courseOf(redemption)}:${redemption.id}`,
-        // Só o adulto leva o campo: o corpo Kids continua byte a byte o de antes.
-        ...(redemption.audience === 'adult' ? { audience: 'adult' as const } : {}),
-      })
+      const offerRef = redemption.giftOfferId
+      if (offerPolicy && !offerRef) throw new Error('resgate por oferta sem oferta gravada')
+      const res =
+        offerPolicy && offerRef
+          ? // Presente por oferta: o members concede tudo o que a oferta inclui (curso, Mural
+            // e a visita depois do prazo), com o prazo da oferta contado do resgate.
+            await this.gateway.grantManualOffer({
+              userId,
+              offerRef,
+              sourceId: `scholarship:${redemption.id}`,
+              anchorAt: redemption.createdAt.toISOString(),
+              audience: redemption.audience,
+              deliveryId: `scholarship:offer:${offerRef}:${redemption.id}`,
+            })
+          : await this.gateway.grantManualCourse({
+              userId,
+              courseRef: this.courseOf(redemption, context),
+              sourceId: `scholarship:${redemption.id}`,
+              expiresAt: expiresAt?.toISOString() ?? null,
+              // A versão do presente integra a chave: uma entrega antiga da OFERTA
+              // não pode deduplicar o novo grant do CURSO no members.
+              deliveryId: `scholarship:course:${this.courseOf(redemption, context)}:${redemption.id}`,
+              // Só o adulto leva o campo: o corpo Kids continua byte a byte o de antes.
+              ...(redemption.audience === 'adult' ? { audience: 'adult' as const } : {}),
+            })
       if (res.status === 409) {
         // Terminal: matrícula manual revogada/expirada do mesmo produto exige
         // decisão humana (aflora no detalhe do embaixador no admin).
@@ -314,7 +558,8 @@ export class RedeemScholarshipService {
       }
       if (res.status < 200 || res.status >= 300) {
         // O pending fica retryável, mas o motivo aflora no admin (lastError) —
-        // sem isso um contrato ou slug errado seria invisível até ler os logs.
+        // sem isso um contrato, slug ou oferta errada seria invisível até ler os logs
+        // (ex.: `grant:502:OFFER_UNRESOLVED`).
         await this.repo
           .recordRedemptionError(redemption.id, upstreamErrorSummary('grant', res))
           .catch(() => {})
@@ -325,7 +570,7 @@ export class RedeemScholarshipService {
         })
         return { kind: 'upstream_error' }
       }
-      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+      if (this.windowElapsed(expiresAt)) {
         await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
         return { kind: 'failed', reason: 'gift_window_elapsed' }
       }
@@ -333,27 +578,24 @@ export class RedeemScholarshipService {
     }
 
     if (
+      !offerPolicy &&
       (redemption.muralVisitorPolicy === 'visitor' || redemption.muralVisitorPolicy === 'trial') &&
       !redemption.muralVisitorGrantedAt
     ) {
-      const muralExpiresAt = scholarshipExpiresAt(
-        redemption.createdAt,
-        redemption.accessDurationDays,
-      )
       if (
         redemption.muralVisitorPolicy === 'trial' &&
-        (!muralExpiresAt || this.now() >= muralExpiresAt)
+        (!expiresAt || this.windowElapsed(expiresAt))
       ) {
         await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
         return { kind: 'failed', reason: 'gift_window_elapsed' }
       }
       const res =
-        redemption.muralVisitorPolicy === 'trial' && muralExpiresAt
+        redemption.muralVisitorPolicy === 'trial' && expiresAt
           ? await this.gateway.grantMuralTrial({
               userId,
               sourceId: `scholarship:${redemption.id}`,
-              courseRef: this.courseOf(redemption),
-              expiresAt: muralExpiresAt.toISOString(),
+              courseRef: this.courseOf(redemption, context),
+              expiresAt: expiresAt.toISOString(),
               deliveryId: `scholarship:mural-trial:${redemption.id}`,
               // Adulto: o Mural adulto pelo mesmo prazo do curso.
               ...(redemption.audience === 'adult' ? { audience: 'adult' as const } : {}),
@@ -386,8 +628,7 @@ export class RedeemScholarshipService {
       await this.repo.markMuralVisitorGranted(redemption.id, this.now())
     }
 
-    const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
-    if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+    if (this.windowElapsed(expiresAt)) {
       await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
       return { kind: 'failed', reason: 'gift_window_elapsed' }
     }
@@ -396,10 +637,13 @@ export class RedeemScholarshipService {
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.
-    const emailStatus = await this.sendWelcome(redemption, buyerCreated === true, source)
+    const emailStatus = await this.sendWelcome(redemption, buyerCreated === true, source, context)
 
-    const muralAccess =
-      redemption.muralVisitorPolicy === 'trial' || redemption.muralVisitorPolicy === 'visitor'
+    const muralAccess: GiftMuralAccess = offerPolicy
+      ? this.offerOf(redemption, context)?.includesMural
+        ? 'trial'
+        : 'none'
+      : redemption.muralVisitorPolicy === 'trial' || redemption.muralVisitorPolicy === 'visitor'
         ? redemption.muralVisitorPolicy
         : 'none'
     return {
@@ -414,14 +658,25 @@ export class RedeemScholarshipService {
     redemption: RedemptionRecord,
     buyerCreated: boolean,
     source: GiftSource,
+    context: GiftContext,
   ): Promise<'accepted' | 'failed' | 'unknown'> {
     try {
-      const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
-      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+      const offerPolicy = redemption.muralVisitorPolicy === 'offer'
+      const offer = this.offerOf(redemption, context)
+      if (offerPolicy && !offer) {
+        // Sem a oferta não há como dizer prazo e Mural sem errar: nada é reivindicado, a
+        // próxima submissão do mesmo e-mail retoma o envio.
+        this.logger.warn('referrals.redeem_welcome_offer_unresolved', {
+          redemptionId: redemption.id,
+        })
+        return 'unknown'
+      }
+      const expiresAt = this.expiresAtOf(redemption, context)
+      if (this.windowElapsed(expiresAt)) {
         this.logger.warn('referrals.redeem_welcome_expired', { redemptionId: redemption.id })
         return 'unknown'
       }
-      const appUrl = this.target(redemption.audience).appUrl
+      const appUrl = this.appUrl(redemption.audience)
       if (!appUrl) {
         // App do público sem configuração: nada é reivindicado, a próxima submissão retoma.
         this.logger.warn('referrals.redeem_welcome_unconfigured', {
@@ -435,9 +690,30 @@ export class RedeemScholarshipService {
       const { firstName } = splitName(redemption.name)
       const idempotencyKey = `scholarship-welcome:${redemption.id}`
       const adult = redemption.audience === 'adult'
-      const adultTemplates =
-        ADULT_WELCOME_TEMPLATES[source.kind === 'campaign' ? 'campaign' : 'scholarship']
+      const campaign = source.kind === 'campaign'
+      const adultTemplates = ADULT_WELCOME_TEMPLATES[campaign ? 'campaign' : 'scholarship']
+      // Presente por oferta e o `trial` antigo usam os mesmos e-mails (curso, prazo e Mural
+      // chegam prontos nas variáveis).
+      const giftTemplates = offerPolicy || redemption.muralVisitorPolicy === 'trial'
       const validade = expiresAt ? formatValidade(expiresAt) : ''
+      const duration = giftDurationText(offer, redemption.accessDurationDays)
+      // O Messaging não tem condicional: curso, prazo e a frase do Mural vão prontos.
+      const giftVariables = {
+        curso: context.course?.title ?? UNKNOWN_COURSE_TITLE,
+        prazo: expiresAt
+          ? `${duration ? `${duration}, ` : ''}até ${validade} (horário de Brasília)`
+          : 'sem prazo para terminar',
+        mural: giftMuralText({
+          audience: redemption.audience,
+          participation: offerPolicy
+            ? Boolean(offer?.includesMural)
+            : redemption.muralVisitorPolicy === 'trial',
+          visitorOnly: redemption.muralVisitorPolicy === 'visitor',
+          hasDeadline: expiresAt !== null,
+        }),
+        validade,
+      }
+      const parentsCourseSlug = context.course?.learner === 'parents' ? context.course.slug : null
 
       let send: GatewayResult
       if (buyerCreated) {
@@ -460,11 +736,11 @@ export class RedeemScholarshipService {
           {
             templateKey: adult
               ? adultTemplates.created
-              : redemption.muralVisitorPolicy === 'trial'
-                ? source.kind === 'campaign'
+              : giftTemplates
+                ? campaign
                   ? 'referrals-campaign-welcome-mural-trial'
                   : 'referrals-scholarship-welcome-mural-trial'
-                : source.kind === 'campaign'
+                : campaign
                   ? 'referrals-campaign-welcome'
                   : redemption.muralVisitorPolicy === 'visitor'
                     ? 'referrals-scholarship-welcome-7d-mural'
@@ -474,11 +750,11 @@ export class RedeemScholarshipService {
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
-              ...(source.kind === 'campaign'
-                ? { campanha: source.name, validade }
-                : adult
-                  ? { indicador: publicGiftSourceName(source), validade }
-                  : { indicador: publicGiftSourceName(source) }),
+              ...(campaign
+                ? { campanha: source.name }
+                : { indicador: publicGiftSourceName(source) }),
+              ...giftVariables,
+              // Conta nova: primeiro acesso de sempre (definir a senha), até no curso para pais.
               link: giftWelcomeLink(redemption.audience, appUrl, token),
             },
           },
@@ -492,11 +768,11 @@ export class RedeemScholarshipService {
           {
             templateKey: adult
               ? adultTemplates.existing
-              : redemption.muralVisitorPolicy === 'trial'
-                ? source.kind === 'campaign'
+              : giftTemplates
+                ? campaign
                   ? 'referrals-campaign-existing-mural-trial'
                   : 'referrals-scholarship-existing-mural-trial'
-                : source.kind === 'campaign'
+                : campaign
                   ? 'referrals-campaign-existing'
                   : redemption.muralVisitorPolicy === 'visitor'
                     ? 'referrals-scholarship-existing-7d-mural'
@@ -506,14 +782,14 @@ export class RedeemScholarshipService {
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
-              ...(source.kind === 'campaign'
-                ? { campanha: source.name, validade }
-                : adult
-                  ? { indicador: publicGiftSourceName(source), validade }
-                  : expiresAt
-                    ? { indicador: publicGiftSourceName(source) }
-                    : {}),
-              link: giftWelcomeLink(redemption.audience, appUrl, null),
+              ...(campaign
+                ? { campanha: source.name }
+                : adult || expiresAt
+                  ? { indicador: publicGiftSourceName(source) }
+                  : {}),
+              ...giftVariables,
+              // Curso para pais: direto na página do curso na área dos pais.
+              link: giftWelcomeLink(redemption.audience, appUrl, null, parentsCourseSlug),
             },
           },
           idempotencyKey,

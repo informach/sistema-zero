@@ -81,10 +81,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           ? campaignSource(campaign)
           : { kind: record.ownerKind, name: record.displayName }
         const publicName = publicGiftSourceName(source)
-        // O público vem do código (campanha → público da campanha) e decide qual curso consultar.
+        // O público vem do código (campanha → público da campanha); a oferta vem da campanha
+        // (ou é a padrão do público) e decide o curso consultado e o `gift` devolvido.
         const audience = campaign?.audience ?? record.audience
-        const availability =
-          state === 'active' ? await deps.redeem.giftAvailability(audience) : 'unavailable'
+        const { availability, gift } =
+          state === 'active'
+            ? await deps.redeem.publicGift(campaign ?? null, audience)
+            : { availability: 'unavailable' as const, gift: undefined }
         if (availability === 'upstream_error') {
           set.status = 502
           return envelope('UPSTREAM_ERROR', 'Não foi possível consultar o presente agora')
@@ -99,6 +102,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           endsAt: campaign?.endsAt.toISOString() ?? null,
           giftAvailable: availability === 'available',
           audience,
+          // O que a oferta entrega (ausente quando não resolve ou o presente está fechado).
+          ...(gift ? { gift } : {}),
         }
       },
       { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
@@ -269,7 +274,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           case 'failed':
             if (result.reason === 'gift_window_elapsed') {
               set.status = 410
-              return envelope('GIFT_EXPIRED', 'Os sete dias de acesso deste cadastro terminaram.')
+              return envelope('GIFT_EXPIRED', 'O prazo de acesso deste cadastro terminou.')
             }
             // Terminal (ex.: matrícula conflitante) — retry não resolve; suporte.
             set.status = 409
