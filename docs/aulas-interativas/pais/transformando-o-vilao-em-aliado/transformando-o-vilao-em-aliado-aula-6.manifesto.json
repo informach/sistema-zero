@@ -49,6 +49,12 @@
             "id": "presente-cade",
             "kind": "text",
             "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
+          },
+          {
+            "id": "presente-cade-link",
+            "kind": "link",
+            "label": "Pegar o presente do Cadê Todo Mundo",
+            "url": "https://sistemazero.com.br/bolsa/vilao-em-aliado-cade"
           }
         ]
       }
@@ -90,7 +96,7 @@
     {
       "key": "primeiro-passo",
       "title": "A sua palavra e o primeiro passo",
-      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família viver isso na prática e emitir o certificado. Antes de publicar, acrescente ao bloco do presente o item de link da campanha (/bolsa/<código>).",
+      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família viver isso na prática e emitir o certificado.",
       "intent": "delivery",
       "blockKeys": ["video-a6-primeiro-passo", "presente", "certificado"],
       "workspaceKey": null,
