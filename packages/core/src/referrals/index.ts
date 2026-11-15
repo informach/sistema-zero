@@ -47,8 +47,9 @@ export function publicGiftSourceName(source: Pick<GiftSource, 'kind' | 'name'>):
 }
 /**
  * O que o presente entrega (15/11/2026): a OFERTA do catálogo escolhida pela campanha (ou a
- * oferta padrão do público, nos códigos de embaixador). `accessDays` nulo = sem prazo em dias
- * (oferta vitalícia ou prazo em meses); `learner` vem do curso principal publicado.
+ * oferta padrão do público, nos códigos de embaixador). O presente só aceita oferta sem prazo
+ * (vitalícia) ou de prazo fixo em DIAS: `accessDays` nulo = sem prazo; `learner` vem do curso
+ * principal publicado.
  */
 export interface ReferralGiftOfferView {
   offerId: string
@@ -58,6 +59,14 @@ export interface ReferralGiftOfferView {
   learner: 'child' | 'parents' | null
   accessDays: number | null
   includesMural: boolean
+}
+/**
+ * O prazo do presente em texto, a fonte única do Admin, do referrals (e-mails) e do funil:
+ * "1 dia", "7 dias" ou "sem prazo" (`accessDays` nulo, oferta vitalícia).
+ */
+export function giftDurationLabel(accessDays: number | null): string {
+  if (accessDays === null) return 'sem prazo'
+  return `${accessDays} ${accessDays === 1 ? 'dia' : 'dias'}`
 }
 export interface ReferralGiftView {
   code: string
