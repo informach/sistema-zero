@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { giftVariant, resolveReferralGiftPage } from '../../src/server/referral-gift-page'
+import {
+  giftVariant,
+  isCadeGift,
+  resolveReferralGiftPage,
+} from '../../src/server/referral-gift-page'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 describe('resolveReferralGiftPage', () => {
@@ -282,23 +286,39 @@ describe('resolveReferralGiftPage', () => {
 
   test('a variante vem do curso: Cadê é a página editorial, pais e outro curso a enxuta', () => {
     const base = { ...oferta, learner: 'child' as const, accessDays: 7, includesMural: true }
-    expect(giftVariant(undefined)).toBe('cade')
-    expect(giftVariant({ ...base, courseSlug: 'cade-todo-mundo' })).toBe('cade')
-    expect(giftVariant({ ...base, courseSlug: 'cade-todo-mundo-adulto', learner: null })).toBe(
-      'cade',
+    expect(giftVariant(undefined, 'kids')).toBe('cade')
+    expect(giftVariant({ ...base, courseSlug: 'cade-todo-mundo' }, 'kids')).toBe('cade')
+    expect(
+      giftVariant({ ...base, courseSlug: 'cade-todo-mundo-adulto', learner: null }, 'adult'),
+    ).toBe('cade')
+    expect(giftVariant({ ...base, learner: 'parents' }, 'kids')).toBe('pais')
+    expect(giftVariant({ ...base, courseSlug: 'a-chave-do-farol' }, 'kids')).toBe('curso')
+    expect(giftVariant({ ...base, courseSlug: null, learner: null }, 'kids')).toBe('curso')
+  })
+
+  test('o Cadê sem prazo em dias usa a variante genérica do curso', () => {
+    const semPrazo = { ...oferta, courseSlug: 'cade-todo-mundo', learner: 'child' as const }
+    expect(semPrazo.accessDays).toBeNull()
+    expect(isCadeGift(semPrazo)).toBe(false)
+    expect(giftVariant(semPrazo, 'kids')).toBe('curso')
+    expect(giftVariant({ ...semPrazo, courseSlug: 'cade-todo-mundo-adulto' }, 'adult')).toBe(
+      'curso',
     )
-    expect(giftVariant({ ...base, learner: 'parents' })).toBe('pais')
-    expect(giftVariant({ ...base, courseSlug: 'a-chave-do-farol' })).toBe('curso')
-    expect(giftVariant({ ...base, courseSlug: null, learner: null })).toBe('curso')
+  })
+
+  test('curso para pais no público adulto cai na variante genérica: /pais/cursos é só do Kids', () => {
+    const paraPais = { ...oferta, learner: 'parents' as const }
+    expect(giftVariant(paraPais, 'kids')).toBe('pais')
+    expect(giftVariant(paraPais, 'adult')).toBe('curso')
   })
 
   test('a rota usa o corpo enxuto para curso de pais e outro curso, nos dois públicos', async () => {
     const page = await Bun.file(
       new URL('../../src/pages/bolsa/[codigo].astro', import.meta.url),
     ).text()
-    expect(page).toContain('giftVariant(oferta)')
+    expect(page).toContain("giftVariant(oferta, 'gift' in page ? page.audience : 'kids')")
     expect(page.match(/<PresenteCursoOferta /g)).toHaveLength(2)
-    expect(page).toContain('presenteKidsDaOferta(oferta)')
-    expect(page).toContain('presenteAdultoDaOferta(oferta)')
+    expect(page).toContain('presenteKidsDaOferta(ofertaCade)')
+    expect(page).toContain('presenteAdultoDaOferta(ofertaCade)')
   })
 })

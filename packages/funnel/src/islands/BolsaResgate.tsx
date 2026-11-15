@@ -36,7 +36,8 @@ export interface BolsaResgateProps {
   retryOnly?: boolean
   /**
    * O que a oferta do presente entrega (leitura pública). Ausente = a copy do Cadê de sempre.
-   * Com `variante: 'pais'`, o "Abrir o curso" leva à página do curso na área dos pais.
+   * Com `variante: 'pais'` no Kids, o "Abrir o curso" leva à página do curso na área dos pais (que
+   * só existe no app Kids; no adulto, `pais` vale como `curso`).
    */
   gift?: ReferralGiftOfferView
   variante?: 'cade' | 'pais' | 'curso'
@@ -59,10 +60,10 @@ export default function BolsaResgate({
   variante = 'cade',
 }: BolsaResgateProps) {
   const t = resgateCopy(audience, gift, variante)
-  // Curso para pais: depois do resgate, a página do curso na área dos pais. Conta nova cria a
-  // senha antes (o "Criar ou recuperar a senha"); o login do responsável cai na área dos pais.
+  // Curso para pais (Kids): depois do resgate, a página do curso na área dos pais. Conta nova cria
+  // a senha antes (o "Criar ou recuperar a senha"); o login do responsável cai na área dos pais.
   const entrarHref =
-    variante === 'pais' && gift?.courseSlug
+    variante === 'pais' && audience !== 'adult' && gift?.courseSlug
       ? cursoParaPaisHref(communityUrl, gift.courseSlug)
       : resgateHref('login', communityUrl)
   const [phase, setPhase] = useState<Phase>('form')
