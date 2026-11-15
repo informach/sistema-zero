@@ -14,6 +14,7 @@ import type {
 } from '../../packages/core/src/morada/types'
 import { comBalde } from '../avatar/balde'
 import { meshNavigationColliders, wallColliders } from './collision'
+import { pontosDaPeca } from './pontos'
 
 const root = resolve(import.meta.dirname, '../..')
 const source = resolve(process.env.ARTES_3D_DIR ?? join(root, '../artes-3d'))
@@ -353,19 +354,8 @@ for (const input of inputs) {
         amount: number(e.curso),
       })
   }
-  const points: MoradaPiece['points'] = {}
-  if (raw.pontos && !Array.isArray(raw.pontos))
-    for (const [name, v] of Object.entries(record.parse(raw.pontos))) {
-      if (vec.safeParse(v).success) points[name] = { position: vec.parse(v) }
-      else if (v && typeof v === 'object' && !Array.isArray(v)) {
-        const p = record.parse(v)
-        if (vec.safeParse(p.ponto ?? p.posicao).success)
-          points[name] = {
-            position: vec.parse(p.ponto ?? p.posicao),
-            ...(vec.safeParse(p.direcao).success ? { direction: vec.parse(p.direcao) } : {}),
-          }
-      }
-    }
+  // Os `pontos` antigos e os `pontos_de_jogo` da arte (onde o avatar senta, deita, planta…).
+  const points: MoradaPiece['points'] = pontosDaPeca(raw)
   const thumbPath = resolve(
     base,
     input.thumb ??
