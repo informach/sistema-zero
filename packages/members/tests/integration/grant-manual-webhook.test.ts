@@ -393,7 +393,8 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     const res = await post(app, raw, 'gm-oferta-7')
     expect(res.status).toBe(200)
     const fim = '2026-11-22T12:00:00.000Z'
-    expect(await readJson(res)).toEqual({ ok: true, granted: 3, expiresAt: fim })
+    // O fim do presente é conta do referrals (dias gravados no resgate): a resposta não o traz.
+    expect(await readJson(res)).toEqual({ ok: true, granted: 3 })
 
     const todas = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
     const porRef = new Map(todas.map((s) => [s.courseRef, s]))
@@ -429,7 +430,7 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
       audience: 'kids',
     })
     const res = await post(app, raw, 'gm-oferta-pais')
-    expect(await readJson(res)).toEqual({ ok: true, granted: 1, expiresAt: null })
+    expect(await readJson(res)).toEqual({ ok: true, granted: 1 })
     const [snap] = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
     expect(snap?.courseRef).toBe(course.slug)
     expect(snap?.expiresAt).toBeNull()
