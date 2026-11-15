@@ -15,6 +15,11 @@ const objeto = (v: unknown): Record<string, unknown> | null =>
  */
 export function pontosDaPeca(raw: Record<string, unknown>): MoradaPiece['points'] {
   const pontos: MoradaPiece['points'] = {}
+  // Como antes (o zod da migração): o campo em formato errado pára a migração, não some calado.
+  if (raw.pontos && typeof raw.pontos !== 'object')
+    throw new Error(`Os pontos da peça ${String(raw.id)} não são um objeto.`)
+  if (raw.pontos_de_jogo !== undefined && !Array.isArray(raw.pontos_de_jogo))
+    throw new Error(`Os pontos de jogo da peça ${String(raw.id)} não são uma lista.`)
   const antigos = objeto(raw.pontos)
   if (antigos)
     for (const [nome, v] of Object.entries(antigos)) {
@@ -54,10 +59,12 @@ function posicaoDoPonto(p: Record<string, unknown>): Vetor | null {
   if (ehVetor(p.posicao)) return p.posicao
   if (ehVetor(p.de) && ehVetor(p.ate))
     return [(p.de[0] + p.ate[0]) / 2, (p.de[1] + p.ate[1]) / 2, (p.de[2] + p.ate[2]) / 2]
-  if (typeof p.altura_m === 'number' && Array.isArray(p.celulas)) {
+  if (typeof p.altura_m === 'number' && Number.isFinite(p.altura_m) && Array.isArray(p.celulas)) {
     const celulas = p.celulas.filter(
       (c): c is [number, number] =>
-        Array.isArray(c) && c.length === 2 && c.every((n) => typeof n === 'number'),
+        Array.isArray(c) &&
+        c.length === 2 &&
+        c.every((n) => typeof n === 'number' && Number.isFinite(n)),
     )
     if (celulas.length === 0) return null
     const x = celulas.reduce((s, c) => s + c[0], 0) / celulas.length

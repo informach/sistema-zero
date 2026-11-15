@@ -59,6 +59,19 @@ describe('os gestos pedidos pelo mundo', () => {
     expect(g.qual).toBeNull()
   })
 
+  test('quem atende consome o pedido: o outro corpo (a ilha parada com a Morada aberta) não repete', () => {
+    const m = pedido()
+    const casa = criarGestoEmAndamento(m.gestos)
+    const ilha = criarGestoEmAndamento(m.gestos)
+    pedirGesto(m, 'Regar', 'mao_regador')
+    passoDoGesto(casa, m, livre)
+    expect(casa.qual).toBe('Regar')
+    expect(m.gesto).toBeNull()
+    // A Morada fecha: a ilha volta a rodar e vê o contador novo, mas o pedido já foi feito.
+    passoDoGesto(ilha, m, livre)
+    expect(ilha.qual).toBeNull()
+  })
+
   test('cada gesto que começa ganha uma vez nova, mesmo repetido', () => {
     const m = pedido()
     const g = criarGestoEmAndamento()

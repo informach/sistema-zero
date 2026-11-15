@@ -439,15 +439,12 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
       const doPack = catalogo.parts[doPackId]
       if (!nossa || !doPack)
         throw new Error(`A troca da fantasia ${fantasia.id} cita peça fora do catálogo.`)
-      const {
-        review: _r,
-        band: _b,
-        festa: _f,
-        adultOnly: _a,
-        hidden: _h,
-        retired: _ret,
-        ...base
-      } = nossa
+      // A cópia leva as travas da original: só do adulto e prêmio de festa continuam valendo.
+      const { review: _r, band: _b, hidden: _h, retired: _ret, ...base } = nossa
+      if (nossa.adultOnly || nossa.festa)
+        console.warn(
+          `A fantasia ${fantasia.id} cita ${copia.nossa}, que é ${nossa.adultOnly ? 'só do adulto' : 'prêmio de festa'}: o conjunto não tem essa trava. Confira com a dona.`,
+        )
       catalogo.parts[copia.id] = {
         ...base,
         slot,

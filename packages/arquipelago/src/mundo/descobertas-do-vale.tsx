@@ -1,5 +1,9 @@
 import { useFrame } from '@react-three/fiber'
-import type { FossilDoVale, NinhoDoVale } from '@sistemazero/arquipelago-contracts'
+import {
+  FOSSEIS_DO_VALE,
+  type FossilDoVale,
+  type NinhoDoVale,
+} from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef, useState } from 'react'
 import { Box3, type Group, Vector3 } from 'three'
 import propsGlb from '../assets/ilhas/vale-dos-dinos-props.glb'
@@ -115,12 +119,14 @@ export function DescobertasDoVale({
         // Tira o fóssil da areia; o sexto fecha a coleção e ela comemora.
         pedirGesto(
           movimento,
-          gestoDoAchado(fosseisAchados(loja.getState().salvamento).length === 6),
+          gestoDoAchado(
+            fosseisAchados(loja.getState().salvamento).length === FOSSEIS_DO_VALE.length,
+          ),
         )
         loja.getState().dizer(TEXTOS_DOS_FOSSEIS.achou(NOME_DO_FOSSIL[r.fossil]))
         return
       }
-      const todos = fosseisAchados(loja.getState().salvamento).length === 6
+      const todos = fosseisAchados(loja.getState().salvamento).length === FOSSEIS_DO_VALE.length
       loja
         .getState()
         .dizer(

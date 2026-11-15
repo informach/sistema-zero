@@ -80,7 +80,9 @@ export function progressoDoGesto(g: GestoEmAndamento): number {
 
 /**
  * Um passo: atende o pedido novo do mundo (se ela está livre: no chão, fora da água), corta o gesto
- * se ela andou e desconta o tempo. Muda `g`.
+ * se ela andou e desconta o tempo. Muda `g`. Quem atende CONSOME o pedido (`gesto` vira `null`): o
+ * corpo da casa e o da ilha leem o mesmo pedido, e o da ilha, parado enquanto a Morada está aberta,
+ * não repete lá fora o gesto que a casa já fez.
  */
 export function passoDoGesto(
   g: GestoEmAndamento,
@@ -89,7 +91,10 @@ export function passoDoGesto(
 ): GestoEmAndamento {
   if (pedido.gestos !== g.vistos) {
     g.vistos = pedido.gestos
-    if (pedido.gesto && e.livre && !e.andou) comecarGesto(g, pedido.gesto.qual, pedido.gesto.objeto)
+    if (pedido.gesto && e.livre && !e.andou) {
+      comecarGesto(g, pedido.gesto.qual, pedido.gesto.objeto)
+      pedido.gesto = null
+    }
   }
   if (!g.qual) return g
   g.falta = e.andou || !e.livre ? 0 : g.falta - e.dt

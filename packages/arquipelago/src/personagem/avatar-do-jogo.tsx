@@ -389,6 +389,7 @@ function MaosNoApoio({
   const bracos = useRef<BracosDoAvatar | null>(null)
   const limpa = useRef<PoseLimpa | null>(null)
   const peso = useRef({ esquerda: 0, direita: 0 })
+  const ultimo = useRef<ApoioDasMaos | null>(null)
   useEffect(
     () => () => {
       limpa.current?.soltar()
@@ -416,12 +417,18 @@ function MaosNoApoio({
     const clipe = maior ? CLIPE_NO_CATALOGO.get(maior) : undefined
     const tempo = maior ? atual[maior].tempo : 0
     const sobre = apoio.current
+    // Soltou (subiu a borda, saiu da escada): enquanto o peso cai, a mão segue indo ao último
+    // apoio, para a correção sair aos poucos e não num salto.
+    if (sobre) ultimo.current = sobre
+    const onde = sobre ?? ultimo.current
     limpa.current.antes()
     for (const lado of ['esquerda', 'direita'] as const) {
       const quer = sobre && maoAgarrada(clipe, tempo, lado) ? 1 : 0
       if (!pausado) peso.current[lado] = suavizarPeso(peso.current[lado], quer, dt)
-      if (sobre) maoNoApoio(b, lado, r, sobre, peso.current[lado])
+      if (onde) maoNoApoio(b, lado, r, onde, peso.current[lado])
     }
+    if (!sobre && peso.current.esquerda < 0.001 && peso.current.direita < 0.001)
+      ultimo.current = null
     limpa.current.depois()
   })
   return null
