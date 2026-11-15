@@ -49,7 +49,7 @@ Arquivos: `tests/faisca.test.ts`, `tests/macro-estado.test.ts`, verificador Gate
 - [x] Capturar depois nas mesmas câmeras, dia/noite e câmera de jogo normal. Registrar vídeos com controles reais, sem teleporte durante a gravação, incluindo ritmos e movimentos para o próximo aceite.
 - [x] Rodar testes do pacote, tipagem, build e Biome dos arquivos alterados. Conferir falha recuperável da arte e toque.
 - [x] Versionar comparativos e vídeos com tamanho controlado e links relativos. Separar implementado, provisório, dependente de arte e não testado em aparelhos físicos.
-- [ ] Commit/push `staging`; confirmar SHA remoto e árvore limpa.
+- [x] Commit/push `staging`; confirmar SHA remoto e árvore limpa. Implementação `ca8ab8ee9`; integração com os commits remotos em `bdfbfd400`, publicado e conferido por `ls-remote`. O merge não alterou os arquivos testados do jogo/avatar.
 
 ## 4. Recorte separado — equipamentos de exploração
 
