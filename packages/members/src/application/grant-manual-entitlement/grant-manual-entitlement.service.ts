@@ -1,3 +1,4 @@
+import { type CourseLearner, courseLearnerOf } from '@sistemazero/core/course/learner'
 import { ValidationError } from '@sistemazero/core/errors'
 import type { Logger } from '@sistemazero/core/logging'
 import { CourseNotFoundError } from '../../domain/course/course.errors'
@@ -140,13 +141,27 @@ export class GrantManualEntitlementService {
     courseRef: string,
     audience: MuralAudience = 'kids',
   ): Promise<boolean> {
+    return (await this.giftCourse(courseRef, audience)).available
+  }
+
+  /**
+   * O curso do presente para o referrals (15/11/2026): publicado, gravado e do público pedido,
+   * com o título e para quem é (`learner`, curso para pais) — o e-mail de boas-vindas nomeia o
+   * curso e o link do curso para pais abre a área dos pais. Indisponível não expõe título.
+   */
+  async giftCourse(
+    courseRef: string,
+    audience: MuralAudience = 'kids',
+  ): Promise<{ available: boolean; title: string | null; learner: CourseLearner | null }> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
     // Curso ao vivo não se libera por matrícula (a vaga é na turma): nunca vira presente.
-    return (
+    const available =
       course?.status === 'published' &&
       course.audience === audience &&
       course.modality === 'recorded'
-    )
+    return available
+      ? { available: true, title: course.title, learner: courseLearnerOf(course.learner) }
+      : { available: false, title: null, learner: null }
   }
 
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
