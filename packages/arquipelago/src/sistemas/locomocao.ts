@@ -558,6 +558,8 @@ export interface EntradaDaLocomocao {
   empurrando?: boolean
   /** Um gesto (`GESTOS`) em andamento: parada no chão, ele no lugar do "Parado". */
   gesto?: Gesto | null
+  /** Quantas vezes um gesto já começou: muda a cada pedido, inclusive do mesmo gesto. */
+  gestoVez?: number
   /** Montada numa sela baixa: o subir na sela toca antes do laço (na alta, o corte direto). */
   selaBaixa?: boolean
 }
@@ -600,6 +602,8 @@ export interface Locomocao {
   naSela: boolean
   /** O gesto do quadro anterior (um gesto novo começa do início). */
   gesto: Gesto | null
+  /** A vez do gesto do quadro anterior (`EntradaDaLocomocao.gestoVez`). */
+  gestoVez: number
 }
 
 const zeros = (): Record<Estado, number> =>
@@ -623,6 +627,7 @@ export function criarLocomocao(): Locomocao {
     forcaDaSaidaDaAgua: 0,
     naSela: false,
     gesto: null,
+    gestoVez: 0,
   }
 }
 
@@ -679,10 +684,13 @@ export function passoDaLocomocao(
   if (e.nadando || e.especial || !e.noChao) l.saindoDaAgua = 0
   if (!e.acenando) l.tempos.Acenar = 0
   if (!e.acendendo) l.tempos.Acender = 0
+  // Um gesto novo, ou o mesmo pedido de novo (outra concha logo depois), começa do início.
   const gesto = e.gesto ?? null
-  if (gesto !== l.gesto) {
+  const vez = e.gestoVez ?? 0
+  if (gesto !== l.gesto || vez !== l.gestoVez) {
     if (gesto) l.tempos[gesto] = 0
     l.gesto = gesto
+    l.gestoVez = vez
   }
   if (e.especial !== 'montar') l.naSela = false
 
@@ -894,10 +902,14 @@ export function passoDaLocomocao(
     l.aterrissando = 0
     transicao = TRANSICAO.ar
     l.tempos.Desmontar = Math.min(1, l.tempos.Desmontar + dt / duracaoDoEstado('Desmontar'))
-  } else if (gesto && e.noChao && !e.nadando && !e.especial && alvo.Parado > 0) {
-    // Um gesto, parada no chão: no lugar do "Parado" (andar o tira, como no acender).
-    alvo[gesto] = alvo.Parado
-    alvo.Parado = 0
+  } else if (gesto && e.noChao && !e.nadando && !e.especial) {
+    // Um gesto, parada no chão: no lugar do "Parado" (andar o tira, como no acender). O clipe
+    // anda sempre no relógio do gesto (o do personagem), mesmo enquanto não aparece (ela ainda
+    // freando, a lanterna acendendo): os dois acabam juntos.
+    if (alvo.Parado > 0) {
+      alvo[gesto] = alvo.Parado
+      alvo.Parado = 0
+    }
     const d = duracaoDoEstado(gesto)
     const t = l.tempos[gesto] + (d > 0 ? dt / d : 1)
     l.tempos[gesto] = EM_LACO.has(gesto) ? t % 1 : Math.min(1, t)

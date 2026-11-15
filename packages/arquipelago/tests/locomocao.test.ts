@@ -158,6 +158,19 @@ describe('os gestos, a sela e os veículos (as animações novas da arte)', () =
     expect(l.pesos.Parado).toBeCloseTo(1)
   })
 
+  test('o mesmo gesto pedido de novo (outra concha logo depois) recomeça o clipe', () => {
+    const l = rodar(undefined, { ...parada('PegarDoChao'), gestoVez: 1 }, 1)
+    expect(l.tempos.PegarDoChao).toBeGreaterThan(0.4)
+    rodar(l, { ...parada('PegarDoChao'), gestoVez: 2 }, 1 / 60)
+    expect(l.tempos.PegarDoChao).toBeLessThan(0.05)
+  })
+
+  test('o clipe do gesto anda no relógio do gesto mesmo antes de aparecer (ela ainda freando)', () => {
+    const l = rodar(undefined, { ...parada('PegarDoChao'), velocidade: VELOCIDADE_DO_ANDAR }, 0.5)
+    expect(l.pesos.PegarDoChao).toBeCloseTo(0)
+    expect(l.tempos.PegarDoChao).toBeCloseTo(0.5 / DURACAO_DO_CLIPE.pegar_do_chao, 1)
+  })
+
   test('andar corta o gesto; um gesto novo começa do início', () => {
     const l = rodar(undefined, parada('Regar'), 1)
     rodar(l, { ...parada('Regar'), velocidade: VELOCIDADE_DO_ANDAR }, 0.5)
