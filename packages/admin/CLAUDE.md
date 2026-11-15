@@ -2063,9 +2063,12 @@ omissão. A lista tem a coluna Público (badge), o detalhe mostra o badge e "Pes
 **Oferta de presente (15/11/2026):** o aviso do curso adulto saiu (`useAdultGiftCourse`). O
 presente é uma OFERTA do catálogo: o editor tem o campo obrigatório "Oferta de presente"
 (`campaign-gift-offer.tsx`), com as ofertas do público da lente (`/api/catalog/offers`, todas as
-páginas) de pagamento único (`accessMode` `fixed`/`lifetime`), mostrando nome, curso (produto
-principal), "+ Mural" (item cujo produto é o Mural completo do público, achado pela busca
-`/api/catalog/products?q=mural-dos-criadores`) e prazo ("7 dias"/"sem prazo"). Pausada pode ser
+páginas: a listagem do Catálogo filtra o público, mas não a política de acesso, e só uma situação
+por vez) de pagamento único sem prazo (`lifetime`) ou com prazo fixo em DIAS (prazo em meses fica
+de fora, o referrals recusa), mostrando nome, curso (produto principal), "+ Mural" (item cujo
+produto é o Mural completo do público, achado pela busca
+`/api/catalog/products?q=mural-dos-criadores`) e prazo (`giftDurationLabel` do Core: "7
+dias"/"sem prazo"). Arquivada só aparece quando já é a da campanha (o referrals recusa escolher). Pausada pode ser
 escolhida e mostra a situação; RASCUNHO aparece desabilitada, porque a leitura pública do
 catálogo trata oferta em rascunho como inexistente e o referrals recusaria. POST e PATCH levam
 `giftOfferId`; campanha antiga sem oferta mostra "Oferta padrão do Cadê" e o PATCH omite o campo

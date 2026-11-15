@@ -1,9 +1,9 @@
 'use client'
 
 import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
-import type { CampaignInput } from '@sistemazero/core/referrals'
+import { type CampaignInput, giftDurationLabel } from '@sistemazero/core/referrals'
 import { Button } from '@sistemazero/ui/button'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useCommunityRequests } from '@/components/admin/community-page'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
 import type { Platform } from '@/lib/platform'
@@ -11,8 +11,9 @@ import type { OfferListItem, Paginated, ProductView } from '@/lib/types'
 
 /**
  * Oferta de presente da campanha (15/11/2026). O presente é uma OFERTA do catálogo do mesmo
- * público da campanha, de pagamento único (prazo fixo ou sem prazo): o referrals recusa
- * assinatura e outro público. Curso, prazo e Mural vêm da oferta escolhida.
+ * público da campanha, de pagamento único, sem prazo ou com prazo fixo em DIAS: o referrals
+ * recusa assinatura, prazo em meses, oferta arquivada e outro público. Curso, prazo e Mural vêm
+ * da oferta escolhida.
  */
 export const GIFT_OFFER_LOCKED_MESSAGE =
   'A oferta de presente só muda enquanto a campanha está em rascunho e sem cadastros. Para trocar, duplique a campanha como nova edição.'
@@ -30,7 +31,7 @@ export interface GiftOfferOption {
   /** Nome do produto principal (o curso). */
   courseName: string | null
   includesMural: boolean
-  /** "7 dias", "1 mês" ou "sem prazo". */
+  /** "7 dias", "1 dia" ou "sem prazo" (`giftDurationLabel`). */
   duration: string
   accessMode: 'fixed' | 'lifetime'
 }
@@ -43,48 +44,44 @@ const statusLabels: Record<string, string> = {
 }
 export const giftOfferStatusLabel = (status: string) => statusLabels[status] ?? status
 
-/** "7 dias" / "1 dia" / "2 meses" / "sem prazo". */
-export function giftOfferDuration(
-  offer: Pick<OfferListItem, 'accessMode' | 'accessDurationValue' | 'accessDurationUnit'>,
-): string {
-  if (offer.accessMode !== 'fixed' || !offer.accessDurationValue) return 'sem prazo'
-  const n = offer.accessDurationValue
-  return offer.accessDurationUnit === 'months'
-    ? `${n} ${n === 1 ? 'mês' : 'meses'}`
-    : `${n} ${n === 1 ? 'dia' : 'dias'}`
-}
-
 /** O que a oferta inclui: o curso principal e, quando houver o item, "+ Mural". */
 export function giftOfferIncludes(option: Pick<GiftOfferOption, 'courseName' | 'includesMural'>) {
   return `${option.courseName ?? 'Curso'}${option.includesMural ? ' + Mural' : ''}`
 }
 
 /**
- * As ofertas que servem de presente: pagamento único (prazo fixo ou sem prazo). Arquivadas
- * ficam de fora da escolha, mas continuam no mapa para nomear a oferta de uma campanha antiga.
+ * As ofertas que servem de presente: pagamento único, sem prazo ou com prazo em dias (prazo em
+ * meses fica de fora). Arquivadas ficam de fora da escolha, mas continuam no mapa para nomear a
+ * oferta de uma campanha antiga.
  */
 export function toGiftOfferOptions(
   offers: OfferListItem[],
   muralProductIds: ReadonlySet<string>,
 ): GiftOfferOption[] {
-  return offers.flatMap((offer) =>
-    offer.accessMode === 'fixed' || offer.accessMode === 'lifetime'
-      ? [
-          {
-            id: offer.id,
-            name: offer.name,
-            slug: offer.slug,
-            status: offer.status,
-            courseName: offer.productName,
-            includesMural:
-              muralProductIds.has(offer.productId) ||
-              offer.items.some((item) => muralProductIds.has(item.productId)),
-            duration: giftOfferDuration(offer),
-            accessMode: offer.accessMode,
-          },
-        ]
-      : [],
-  )
+  return offers.flatMap((offer) => {
+    const { accessMode } = offer
+    if (accessMode !== 'fixed' && accessMode !== 'lifetime') return []
+    // Prazo fixo só em dias e com a duração cadastrada: a régua do `giftOfferProblem` do referrals.
+    if (
+      accessMode === 'fixed' &&
+      (offer.accessDurationUnit !== 'days' || !offer.accessDurationValue)
+    )
+      return []
+    return [
+      {
+        id: offer.id,
+        name: offer.name,
+        slug: offer.slug,
+        status: offer.status,
+        courseName: offer.productName,
+        includesMural:
+          muralProductIds.has(offer.productId) ||
+          offer.items.some((item) => muralProductIds.has(item.productId)),
+        duration: giftDurationLabel(accessMode === 'fixed' ? offer.accessDurationValue : null),
+        accessMode,
+      },
+    ]
+  })
 }
 
 /** O produto do Mural completo do público (o mesmo ref que o referrals procura na oferta). */
@@ -118,7 +115,10 @@ const MAX_PAGES = 10
 
 /**
  * Lê as ofertas do público (todas as páginas, até 1.000) e os produtos do Mural, para saber
- * quais ofertas incluem o Mural. Os itens da oferta só trazem o `productId`.
+ * quais ofertas incluem o Mural. Os itens da oferta só trazem o `productId`. O público já vai na
+ * consulta (`communityQuery`); a listagem do Catálogo não filtra por política de acesso e filtra
+ * uma situação por vez, e a lista precisa das quatro (o rascunho aparece desabilitado, a
+ * arquivada nomeia a oferta de campanha antiga), por isso a paginação.
  */
 export function useGiftOffers(audience: Platform): GiftOffersState {
   const { get } = useCommunityRequests(audience)
@@ -160,7 +160,8 @@ export function useGiftOffers(audience: Platform): GiftOffersState {
     }
   }, [get, audience, attempt])
   const reload = useCallback(() => setAttempt((n) => n + 1), [])
-  return { status, options, byId: new Map(options.map((o) => [o.id, o])), reload }
+  const byId = useMemo(() => new Map(options.map((o) => [o.id, o])), [options])
+  return { status, options, byId, reload }
 }
 
 /** Nome da oferta de presente de uma campanha na lista e no detalhe. */
@@ -203,8 +204,8 @@ export function GiftOfferField({
       <legend className="px-1 text-sm font-semibold">Oferta de presente</legend>
       <p className="text-sm text-muted-foreground">
         O que quem se cadastra recebe sem pagar: o curso, o prazo e, quando a oferta inclui, o
-        Mural. Aparecem as ofertas do Catálogo deste público com pagamento único (prazo fixo ou sem
-        prazo). Uma oferta pausada pode servir só de presente.
+        Mural. Aparecem as ofertas do Catálogo deste público com pagamento único, sem prazo ou com
+        prazo em dias. Uma oferta pausada pode servir só de presente.
       </p>
       <label className="block space-y-1 text-sm font-semibold">
         <span>Oferta de presente</span>
