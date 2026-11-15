@@ -12,4 +12,4 @@
 
 **Ferramenta:** as quatro perguntas para a mesa de casa.
 
-**O presente:** o bloco de materiais `presente` traz o texto do presente. Antes de publicar, acrescente a ele o item de link da campanha (`/bolsa/<código>`), criada no Admin em Embaixadores.
+**O presente:** o bloco de materiais `presente` traz o texto do presente e o link da campanha `vilao-em-aliado-cade` (`/bolsa/vilao-em-aliado-cade`), criada no Admin em Embaixadores.
