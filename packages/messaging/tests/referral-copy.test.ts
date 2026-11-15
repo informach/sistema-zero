@@ -60,10 +60,6 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
   ]) {
     expect(source).toContain(`key: '${key}'`)
   }
-  expect(source).toContain('A aula 2 ensina como publicar')
-  expect(source).toContain(
-    'O link do jogo publicado continua funcionando enquanto a publicação estiver disponível',
-  )
 
   const existingAccountEmail = source.slice(
     source.indexOf("key: 'new-access'"),
@@ -88,13 +84,52 @@ test('deploy da mensageria semeia as novas versões antes dos envios', async () 
   expect(manifest.scripts['db:deploy']).toContain('templates:seed')
 })
 
+describe('presente do curso por oferta (15/11/2026)', () => {
+  /** O trecho do mapa dos quatro e-mails Kids do presente (`-mural-trial`). */
+  async function kidsGiftSection() {
+    const source = await Bun.file(sourcePath).text()
+    const start = source.indexOf("{ key: 'referrals-scholarship-welcome-mural-trial'")
+    const end = source.indexOf('// ── Presente ADULTO (20/10/2026)')
+    expect(start).toBeGreaterThan(0)
+    expect(end).toBeGreaterThan(start)
+    return source.slice(start, end)
+  }
+
+  test('contrato: curso, prazo e Mural chegam prontos do referrals', async () => {
+    const section = await kidsGiftSection()
+    expect(section).toContain("['nome', 'campanha', 'curso', 'prazo', 'mural', 'link']")
+    expect(section).toContain("['nome', 'indicador', 'curso', 'prazo', 'mural', 'link']")
+    for (const name of ['curso', 'prazo', 'mural', 'campanha', 'indicador', 'link'])
+      expect(section).toContain(`{{${name}}}`)
+  })
+
+  test('sem curso nem prazo fixos: nada de Cadê Todo Mundo nem de sete dias', async () => {
+    const section = await kidsGiftSection()
+    expect(section).not.toContain('Cadê Todo Mundo')
+    expect(section).not.toMatch(/sete dias|7 dias|\{\{validade\}\}/)
+    const text = [...section.matchAll(/'([^'\n]*)'/g)]
+      .map((match) => match[1] ?? '')
+      .filter((value) => !/^[a-z0-9-]+$/.test(value))
+      .join('\n')
+    expect(text).not.toMatch(/[!?—–]/)
+  })
+})
+
 describe('presente adulto (20/10/2026)', () => {
+  // Desde 15/11/2026 (presente por oferta) as boas-vindas recebem `curso`, `prazo` e `mural`.
   const ADULT_KEYS = {
     'referrals-scholarship-invite-adult': ['nome', 'indicador', 'link'],
-    'referrals-scholarship-welcome-adult': ['nome', 'indicador', 'validade', 'link'],
-    'referrals-scholarship-existing-adult': ['nome', 'indicador', 'validade', 'link'],
-    'referrals-campaign-welcome-adult': ['nome', 'campanha', 'validade', 'link'],
-    'referrals-campaign-existing-adult': ['nome', 'campanha', 'validade', 'link'],
+    'referrals-scholarship-welcome-adult': ['nome', 'indicador', 'curso', 'prazo', 'mural', 'link'],
+    'referrals-scholarship-existing-adult': [
+      'nome',
+      'indicador',
+      'curso',
+      'prazo',
+      'mural',
+      'link',
+    ],
+    'referrals-campaign-welcome-adult': ['nome', 'campanha', 'curso', 'prazo', 'mural', 'link'],
+    'referrals-campaign-existing-adult': ['nome', 'campanha', 'curso', 'prazo', 'mural', 'link'],
   } as const
 
   async function adultSection() {
@@ -126,8 +161,8 @@ describe('presente adulto (20/10/2026)', () => {
       for (const name of variables) expect(section).toContain(`{{${name}}}`)
     }
     expect(section).toContain("variables: ['nome', 'indicador', 'link']")
-    expect(section).toContain("['nome', 'indicador', 'validade', 'link']")
-    expect(section).toContain("['nome', 'campanha', 'validade', 'link']")
+    expect(section).toContain("['nome', 'indicador', 'curso', 'prazo', 'mural', 'link']")
+    expect(section).toContain("['nome', 'campanha', 'curso', 'prazo', 'mural', 'link']")
     expect(section).not.toContain("channel: 'whatsapp'")
   })
 
@@ -138,10 +173,10 @@ describe('presente adulto (20/10/2026)', () => {
       'o jardim e os personagens já estão prontos, e você monta as regras que fazem os esconderijos sumirem e o placar contar cada achado, no navegador do computador.',
       'O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
       "ctaButton('Ver o meu presente', '{{link}}')",
-      'Seu curso e o Mural adulto estão liberados, {{nome}}',
+      'Seu curso está liberado, {{nome}}',
       'Um presente novo na sua conta, {{nome}}',
-      'na versão adulta, e o <strong>Mural adulto</strong>, até <strong>{{validade}} (horário de Brasília)</strong>.',
-      'Uma das aulas mostra como publicar o jogo no Mural.',
+      'o curso <strong>{{curso}}</strong>, com acesso liberado {{prazo}}.',
+      "p('{{mural}}')",
       'Entre com o e-mail e a senha que você já usa e abra o curso no navegador do computador.',
       "'Criar minha senha'",
       "'Abrir meus cursos'",
