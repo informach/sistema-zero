@@ -60,10 +60,15 @@ import { ESTILOS_MACRO, InterfaceMacro, type MedidaMacro } from './macro-interfa
 
 const VISTA = vistaDaFaisca(new URLSearchParams(location.search).get('vista'))
 const CURADORIA = tipoDaCuradoria(new URLSearchParams(location.search).get('curadoria'))
-const PISO = pisoDoRefino(new URLSearchParams(location.search).get('refino'))
+const PISO = pisoDoRefino(
+  new URLSearchParams(location.search).get('refino') ?? (CURADORIA ? null : 'templo'),
+)
 const AGUA_AVENTURA = new URLSearchParams(location.search).get('agua') === 'aventura'
 const ROTAS_SEM_PILOTO = PISO
-  ? ROTAS_COMPLETAS_DA_FAISCA.filter((r) => r.id !== 'praca-horta')
+  ? ROTAS_COMPLETAS_DA_FAISCA.filter(
+      (r) =>
+        !['casa-praca', 'praca-horta', 'praca-patio', 'praca-costa', 'lago-horta'].includes(r.id),
+    ).map((r) => (r.id === 'costa-pier' ? { ...r, pontos: r.pontos.slice(1) } : r))
   : ROTAS_COMPLETAS_DA_FAISCA
 const CHAVE_ATIVA =
   PISO || new URLSearchParams(location.search).has('lago')
@@ -97,6 +102,7 @@ const VAZIA: MedidaMacro = {
   geometrias: 0,
   texturas: 0,
   setores: 0,
+  distanciaCamera: 0,
   giroCamera: 0,
   nadando: false,
 }
@@ -130,6 +136,7 @@ function MundoMacro({
 }) {
   const { rastro, loja } = useJogo()
   const gl = useThree((s) => s.gl)
+  const camera = useThree((s) => s.camera)
   const sol = useMemo(() => {
     const alvo = new Object3D()
     alvo.position.set(0, 4, 140)
@@ -165,6 +172,11 @@ function MundoMacro({
       geometrias: gl.info.memory.geometries,
       texturas: gl.info.memory.textures,
       setores: setores.current,
+      distanciaCamera: Math.hypot(
+        camera.position.x - rastro.x,
+        camera.position.y - rastro.y - CORPO.doCentro.olhos,
+        camera.position.z - rastro.z,
+      ),
       giroCamera: rastro.giro,
       nadando: loja.getState().nadando,
     })

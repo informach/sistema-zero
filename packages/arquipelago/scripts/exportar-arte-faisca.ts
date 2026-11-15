@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 import { NodeIO } from '@gltf-transform/core'
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
+import { prepararPecasMorada } from './pecas-morada-faisca'
 
 const repo = process.env.ARQUIPELAGO_ARTE_REPO ?? resolve(import.meta.dir, '../../../../artes-3d')
 const pedido = process.argv[2] ?? '7816a7aca0ba6f7d93a90fe4c15f40638b01525f'
@@ -33,10 +34,17 @@ const escolhas: Record<string, string[]> = {
     'barril_em_pe',
     'placa_seta',
     'cerca_tabuas_3_5m',
+    'cerca_tabuas_7m',
     'caixote_aberto',
   ],
-  'reino/terreno': ['canteiro_horta', 'caminho_terra_reto', 'caminho_terra_curvo', 'lago_nadavel'],
-  'faroeste/terreno': ['trilha_terra_reta', 'trilha_terra_curva'],
+  'reino/terreno': [
+    'canteiro_horta',
+    'canteiro_flores',
+    'caminho_terra_reto',
+    'caminho_terra_curvo',
+    'lago_nadavel',
+  ],
+  'faroeste/terreno': ['trilha_terra_reta', 'trilha_terra_curva', 'praca_terra_14x14'],
   'templo/terreno': ['caminho_lajes_reto', 'caminho_lajes_curvo'],
   'reino/castelo': ['poco_manivela_baixa'],
   'reino/personagens': ['coelho'],
@@ -75,6 +83,9 @@ const ensaio = new Set([
   'agua_ilha_pacote',
   'caixote_aberto',
   'plataforma_bambu_01_pacote',
+  'canteiro_flores',
+  'praca_terra_14x14',
+  'cerca_tabuas_7m',
 ])
 interface Item {
   id: string
@@ -116,6 +127,47 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
     const digest = createHash('sha256').update(dados).digest('hex')
     const nome = `${id}.${digest.slice(0, 12)}.glb`
     let lago = null
+    let solo = null
+    if (id === 'praca_terra_14x14') {
+      const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).readBinary(dados),
+        triangulos: number[][] = []
+      for (const node of doc.getRoot().listNodes())
+        for (const prim of node.getMesh()?.listPrimitives() ?? []) {
+          const attr = prim.getAttribute('POSITION')!,
+            ind = prim.getIndices()!,
+            m = node.getWorldMatrix()
+          const ponto = (i: number) => {
+            const p = attr.getElement(i, []),
+              x = p[0]!,
+              y = p[1]!,
+              z = p[2]!
+            return [
+              m[0]! * x + m[4]! * y + m[8]! * z + m[12]!,
+              m[1]! * x + m[5]! * y + m[9]! * z + m[13]!,
+              m[2]! * x + m[6]! * y + m[10]! * z + m[14]!,
+            ]
+          }
+          for (let i = 0; i < ind.getCount(); i += 3) {
+            const [a, b, c] = [0, 1, 2].map((j) => ponto(ind.getScalar(i + j))) as [
+              number[],
+              number[],
+              number[],
+            ]
+            const ux = b[0]! - a[0]!,
+              uy = b[1]! - a[1]!,
+              uz = b[2]! - a[2]!,
+              vx = c[0]! - a[0]!,
+              vy = c[1]! - a[1]!,
+              vz = c[2]! - a[2]!,
+              nx = uy * vz - uz * vy,
+              ny = uz * vx - ux * vz,
+              nz = ux * vy - uy * vx
+            if (ny > 0.5 * Math.hypot(nx, ny, nz)) triangulos.push([...a, ...b, ...c])
+          }
+        }
+      if (!triangulos.length) throw Error('Praça sem superfície superior')
+      solo = { triangulos, minimo: Math.min(...triangulos.flatMap((t) => [t[1]!, t[4]!, t[7]!])) }
+    }
     if (id === 'lago_nadavel') {
       const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).readBinary(dados)
       const pontos = new Map<string, number[]>()
@@ -186,9 +238,14 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
       imagens,
       encaixe: item.encaixe ?? null,
       lago,
+      solo,
     }
     arquivos.push({ nome, dados })
   }
+}
+for (const p of await prepararPecasMorada()) {
+  pecas[p.id] = p.meta
+  arquivos.push({ nome: p.meta.arquivo, dados: p.dados })
 }
 for (const a of arquivos) await Bun.write(resolve(destino, a.nome), a.dados)
 const manifesto = { commit, referencia: pedido, pecas }
@@ -203,5 +260,5 @@ const formato = Bun.spawnSync(
 )
 if (formato.exitCode !== 0) throw Error(formato.stderr.toString())
 console.log(
-  `${arquivos.length} modelos do commit ${commit}; ${(arquivos.reduce((s, a) => s + a.dados.length, 0) / 1048576).toFixed(2)} MB em ${destino}`,
+  `${arquivos.length} modelos preparados; biblioteca ${commit}, Morada com origem por peça; ${(arquivos.reduce((s, a) => s + a.dados.length, 0) / 1048576).toFixed(2)} MB em ${destino}`,
 )

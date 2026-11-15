@@ -2,9 +2,11 @@ import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
 import type { PecaNaFaisca } from './composicao-faisca'
 import { ilhaDoArquipelago } from './geografia-do-arquipelago'
 import { alturaNaMalhaDoSetor } from './setores-do-arquipelago'
+import { alturaDoSoloDaPraca } from './solo-da-praca'
 
 const ilha = ilhaDoArquipelago('sua-ilha')
-export const pisoDaFaisca = (x: number, z: number) => alturaNaMalhaDoSetor(ilha, x, z)
+export const pisoDaFaisca = (x: number, z: number) =>
+  Math.max(alturaNaMalhaDoSetor(ilha, x, z), alturaDoSoloDaPraca(x, z) ?? -Infinity)
 export function baseDoVolume(v: { x: number; z: number; largura: number; profundidade: number }) {
   const alturas = [-1, 0, 1].flatMap((x) =>
     [-1, 0, 1].map((z) => pisoDaFaisca(v.x + (x * v.largura) / 2, v.z + (z * v.profundidade) / 2)),
@@ -19,6 +21,9 @@ const predios = new Set([
   'vizinho-oeste',
   'vizinho-leste',
   'poco',
+  'vizinho-oeste-piso',
+  'vizinho-leste-piso',
+  'correio-piso',
 ])
 export function assentamentoDaPeca(p: PecaNaFaisca) {
   const meta = ARTE_DA_FAISCA.pecas[p.peca as keyof typeof ARTE_DA_FAISCA.pecas],

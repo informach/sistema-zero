@@ -1,0 +1,244 @@
+{
+  "momento": "antes",
+  "fotos": [
+    {
+      "nome": "porta",
+      "url": "http://127.0.0.1:4531/macro?vista=porta",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,52, 150 m",
+        "Quadros": "59 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "110",
+        "Triângulos": "166.381",
+        "Geometrias": "99",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "praca",
+      "url": "http://127.0.0.1:4531/macro?vista=praca",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,68, 137 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "102",
+        "Triângulos": "165.407",
+        "Geometrias": "96",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "costa",
+      "url": "http://127.0.0.1:4531/macro?vista=costa",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,52, 153 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "64",
+        "Triângulos": "134.017",
+        "Geometrias": "79",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "oficina",
+      "url": "http://127.0.0.1:4531/macro?vista=oficina",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-24, 6, 132 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "65",
+        "Triângulos": "145.285",
+        "Geometrias": "76",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "farol",
+      "url": "http://127.0.0.1:4531/macro?vista=farol",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "subida",
+      "url": "http://127.0.0.1:4531/macro?vista=subida",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-20, 6,8, 115 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "93",
+        "Triângulos": "164.587",
+        "Geometrias": "90",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "ponte-sul",
+      "url": "http://127.0.0.1:4531/macro?vista=ponte-sul",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 135 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "77",
+        "Triângulos": "144.983",
+        "Geometrias": "89",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "ponte-norte",
+      "url": "http://127.0.0.1:4531/macro?vista=ponte-norte",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 119 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "57",
+        "Triângulos": "114.769",
+        "Geometrias": "76",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "farol-noite",
+      "url": "http://127.0.0.1:4531/macro?vista=farol&noite=1",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "horta",
+      "url": "http://127.0.0.1:4531/macro?vista=horta",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,55, 139 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "piso",
+      "url": "http://127.0.0.1:4531/macro?vista=piso",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "piso-baixo",
+      "url": "http://127.0.0.1:4531/macro?vista=piso-baixo",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "76",
+        "Triângulos": "159.117",
+        "Geometrias": "84",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "piso-noite",
+      "url": "http://127.0.0.1:4531/macro?vista=piso&noite=1",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      }
+    },
+    {
+      "nome": "lago-lateral",
+      "url": "http://127.0.0.1:4531/macro?vista=lago-lateral",
+      "medidas": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "64, 3,82, 127 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "114",
+        "Triângulos": "175.797",
+        "Geometrias": "98",
+        "Texturas": "22"
+      }
+    }
+  ],
+  "erros": []
+}

@@ -5,7 +5,7 @@ export const VOLUMES_DA_VILA = [
   { id: 'correio', x: -21, z: 125.6, largura: 2.6, profundidade: 0.8, altura: 1 },
   { id: 'lacre', x: -46, z: 125, largura: 6, profundidade: 0.35, altura: 1.6 },
   { id: 'bancada', x: -42.5, z: 114, largura: 2.4, profundidade: 1, altura: 0.9 },
-  { id: 'pausa-lago', x: 43, z: 145, largura: 2.5, profundidade: 0.8, altura: 1 },
+  { id: 'pausa-lago', x: 43, z: 146.5, largura: 2.5, profundidade: 0.8, altura: 1 },
   { id: 'pausa-encosta', x: -31, z: 103, largura: 2.5, profundidade: 0.8, altura: 1 },
 ] as const
 

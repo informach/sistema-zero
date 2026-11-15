@@ -167,26 +167,32 @@ export function CaminhosDaFaisca({ marcos = true }: { marcos?: boolean }) {
         </mesh>
         <CuboidCollider args={[1.5, 0.15, 9]} position={[0, -0.15, 0]} />
       </RigidBody>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, alturaDoArquipelago(0, 166) + 0.08, 166]}>
-        <planeGeometry args={[24, 24]} />
-        <meshStandardMaterial color="#b5c6b2" wireframe />
-      </mesh>
-      {ARQUIPELAGO.slice(1).map((ilha, i) => {
-        const a = (i * Math.PI) / 3
-        return (
-          <mesh
-            key={ilha.id}
-            position={[
-              BASE_DO_FAROL.x + Math.sin(a) * 6.5,
-              alturaDoArquipelago(BASE_DO_FAROL.x, BASE_DO_FAROL.z) + 1,
-              BASE_DO_FAROL.z + Math.cos(a) * 6.5,
-            ]}
-          >
-            <boxGeometry args={[0.8, 1.2, 0.5]} />
-            <meshStandardMaterial color="#b6a67a" wireframe />
-          </mesh>
-        )
-      })}
+      {marcos && (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, alturaDoArquipelago(0, 166) + 0.08, 166]}
+        >
+          <planeGeometry args={[24, 24]} />
+          <meshStandardMaterial color="#b5c6b2" wireframe />
+        </mesh>
+      )}
+      {marcos &&
+        ARQUIPELAGO.slice(1).map((ilha, i) => {
+          const a = (i * Math.PI) / 3
+          return (
+            <mesh
+              key={ilha.id}
+              position={[
+                BASE_DO_FAROL.x + Math.sin(a) * 6.5,
+                alturaDoArquipelago(BASE_DO_FAROL.x, BASE_DO_FAROL.z) + 1,
+                BASE_DO_FAROL.z + Math.cos(a) * 6.5,
+              ]}
+            >
+              <boxGeometry args={[0.8, 1.2, 0.5]} />
+              <meshStandardMaterial color="#b6a67a" wireframe />
+            </mesh>
+          )
+        })}
     </>
   )
 }

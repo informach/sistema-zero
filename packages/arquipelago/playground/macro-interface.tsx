@@ -27,6 +27,7 @@ export interface MedidaMacro {
   geometrias: number
   texturas: number
   setores: number
+  distanciaCamera: number
   giroCamera: number
   nadando: boolean
 }
@@ -86,7 +87,7 @@ export function InterfaceMacro({
     <div className="macro-interface" style={{ visibility: conversando ? 'hidden' : undefined }}>
       <header className="macro-topo" data-arte={arte.estado}>
         <div>
-          <strong>Faísca V2 · blockout artístico</strong>
+          <strong>Faísca V2 · proposta artística em avaliação</strong>
           <span>
             {nome} · escala nativa · arte{' '}
             {arte.estado === 'pronto' ? `${arte.modelos} modelos prontos` : arte.estado}
@@ -229,6 +230,8 @@ export function InterfaceMacro({
           </dd>
           <dt>Quadros</dt>
           <dd>{medida.fps} / s</dd>
+          <dt>Distância da câmera</dt>
+          <dd>{medida.distanciaCamera.toFixed(2)} m</dd>
           <dt>Giro da câmera</dt>
           <dd>{medida.giroCamera.toFixed(3)} rad</dd>
           <dt>Nadando</dt>

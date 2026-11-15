@@ -28,6 +28,7 @@ import { alturaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
 import { jogoPausado } from '../../sistemas/pausa'
 import { PECAS_DO_ACERVO, PECAS_DO_CAMINHO } from '../../sistemas/prova-curadoria-faisca'
 import {
+  CURVAS_DO_REFINO,
   LAGO_DE_CATALOGO,
   PISOS_DO_REFINO,
   type PisoDaFaisca,
@@ -61,7 +62,15 @@ export interface SituacaoDoPiloto {
   modelos: number
 }
 
-function Instancias({ mesh, matrizes }: { mesh: Mesh; matrizes: Matrix4[] }) {
+function Instancias({
+  mesh,
+  matrizes,
+  sombra,
+}: {
+  mesh: Mesh
+  matrizes: Matrix4[]
+  sombra: boolean
+}) {
   const ref = useRef<InstancedMesh>(null)
   useLayoutEffect(() => {
     const m = ref.current
@@ -74,14 +83,14 @@ function Instancias({ mesh, matrizes }: { mesh: Mesh; matrizes: Matrix4[] }) {
       ref={ref}
       args={[mesh.geometry, mesh.material, matrizes.length]}
       dispose={null}
-      castShadow
+      castShadow={sombra}
       receiveShadow
     />
   )
 }
 function Decoracao({ arte, colecao }: { arte: ArteDoPiloto; colecao: PecaNaFaisca[] }) {
   const partes = useMemo(() => {
-    const lista: { id: string; mesh: Mesh; matrizes: Matrix4[] }[] = []
+    const lista: { id: string; mesh: Mesh; matrizes: Matrix4[]; sombra: boolean }[] = []
     for (const [id, g] of arte.modelos) {
       const copias = colecao.filter((p) => p.peca === id)
       if (!copias.length) continue
@@ -97,7 +106,12 @@ function Decoracao({ arte, colecao }: { arte: ArteDoPiloto; colecao: PecaNaFaisc
           base.updateMatrix()
           return base.matrix.clone().multiply(m.matrixWorld)
         })
-        lista.push({ id: `${id}:${m.uuid}`, mesh: m, matrizes })
+        lista.push({
+          id: `${id}:${m.uuid}`,
+          mesh: m,
+          matrizes,
+          sombra: !copias.some((p) => p.solida === 'solo'),
+        })
       })
     }
     return lista
@@ -109,7 +123,7 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
     const mapa = new Map<string, { id: string; vertices: Float32Array; indices: Uint32Array }[]>()
     const tipos = new Map(
       colecao
-        .filter((p) => p.solida === 'ponte' || p.solida === 'malha')
+        .filter((p) => p.solida === 'ponte' || p.solida === 'malha' || p.solida === 'solo')
         .map((p) => [`${p.peca}:${p.escala}`, p]),
     )
     for (const [id, p] of tipos) {
@@ -171,7 +185,7 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
           const meta = ARTE_DA_FAISCA.pecas[p.peca as IdDaPeca],
             caixa = meta.colisao[0],
             s = p.escala
-          if (p.solida === 'ponte' || p.solida === 'malha')
+          if (p.solida === 'ponte' || p.solida === 'malha' || p.solida === 'solo')
             return (
               <RigidBody
                 key={p.id}
@@ -354,9 +368,10 @@ export function PilotoDaFaisca({
     pedidos.chaoChegando.add('arte-faisca')
     aoMudar({ estado: 'carregando', modelos: 0 })
     carregarPiloto(abort.signal, [
+      'coelho',
       ...colecao.map((p) => p.peca),
       ...(LAGO_DE_CATALOGO ? ['lago_nadavel'] : []),
-      ...(piso ? [PISOS_DO_REFINO[piso]] : []),
+      ...(piso ? [PISOS_DO_REFINO[piso], CURVAS_DO_REFINO[piso]] : []),
       ...(!LAGO_DE_CATALOGO || aguaAventura ? ['agua_ilha_pacote'] : []),
     ])
       .then((chegou) => {

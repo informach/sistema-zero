@@ -207,16 +207,34 @@ try {
         },
         24,
       )
-    for (const lago of ['l1', 'l2'])
+    for (const lago of process.argv.includes('--lago=l2') ? ['l2'] : ['l1', 'l2'])
       await gravar(
         `lago-nado-${lago}`,
         49,
         127,
         `refino=faroeste&lago=${lago}`,
         async (p) => {
+          await p.evaluate(() => {
+            window.amostrasCamera = []
+            window.amostradorCamera = setInterval(() => {
+              const el = [...document.querySelectorAll('.macro-painel dt')].find(
+                (e) => e.textContent === 'Distância da câmera',
+              )
+              if (el)
+                window.amostrasCamera.push({
+                  distancia: parseFloat(el.nextElementSibling.textContent),
+                  nadando: [...document.querySelectorAll('.macro-painel dt')].find(
+                    (e) => e.textContent === 'Nadando',
+                  )?.nextElementSibling.textContent,
+                  posicao: [...document.querySelectorAll('.macro-painel dt')].find(
+                    (e) => e.textContent === 'Posição',
+                  )?.nextElementSibling.textContent,
+                })
+            }, 100)
+          })
           const entrada = await andar(p, 54.5, 127),
             nado = await andar(p, 55.2, lago === 'l2' ? 129.5 : 127)
-          await p.waitForTimeout(1400)
+          await p.waitForTimeout(4000)
           const parado = await posicao(p)
           const nadando = await p
             .locator('.macro-painel dl')
@@ -233,6 +251,20 @@ try {
           assert.ok(parado.y < 4.3 && parado.y > 3.4, `Nado: ${JSON.stringify(parado)}`)
           await andar(p, 49, 127)
           const saida = await andar(p, 48, 129)
+          const amostrasCamera = await p.evaluate(() => {
+            clearInterval(window.amostradorCamera)
+            return window.amostrasCamera
+          })
+          assert.ok(
+            amostrasCamera.length >= 20 &&
+              amostrasCamera.every((a) => Number.isFinite(a.distancia)),
+            'A câmera precisa fornecer amostras reais durante o percurso',
+          )
+          const distanciaMinimaCamera = Math.min(...amostrasCamera.map((a) => a.distancia))
+          assert.ok(
+            distanciaMinimaCamera > 0.7,
+            `Câmera entrou no avatar junto à margem: ${distanciaMinimaCamera} m ${JSON.stringify(amostrasCamera.filter((a) => a.distancia < 0.7).slice(0, 12))}`,
+          )
           assert.ok(saida.y > 4.45, JSON.stringify(saida))
           await p.waitForTimeout(5500)
           assert.equal(
@@ -247,7 +279,16 @@ try {
             Math.hypot(retomada.x - saida.x, retomada.z - saida.z) < 1,
             'Retomada deve ficar na praia, fora da bacia',
           )
-          return { entrada, nado, parado, saida, retomada }
+          return {
+            entrada,
+            nado,
+            nadando,
+            parado,
+            saida,
+            retomada,
+            distanciaMinimaCamera,
+            amostrasDaCamera: amostrasCamera.length,
+          }
         },
         40,
       )
@@ -259,7 +300,9 @@ try {
       async (p) => {
         const pontos = []
         for (const [x, z] of [
-          [0, 137],
+          [0, 141],
+          [1, 139],
+          [3.5, 137.35],
           [6, 137.6],
           [13, 138.3],
           [20, 139],

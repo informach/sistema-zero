@@ -9,6 +9,8 @@ import {
 import { ARQUIPELAGO, conexaoDaIlha } from './geografia-do-arquipelago'
 import { distanciaAosCaminhos, sobreVolumeDaVila } from './implantacao-da-faisca'
 import { LAGO_DA_FAISCA, pontoNoContorno } from './lago-da-faisca'
+import { SOLOS_DE_CATALOGO } from './solo-da-praca'
+import { casasDaVila } from './vila-catalogo-faisca'
 
 export interface PecaNaFaisca {
   id: string
@@ -17,7 +19,7 @@ export interface PecaNaFaisca {
   z: number
   giro: number
   escala: number
-  solida?: 'caixa' | 'tronco' | 'ponte' | 'malha'
+  solida?: 'caixa' | 'tronco' | 'ponte' | 'malha' | 'solo'
   altura?: number
   deslocamentoY?: number
   apoio?: string
@@ -29,18 +31,20 @@ function por(id: string, peca: string, x: number, z: number, op: Partial<PecaNaF
   COMPOSICAO_DA_FAISCA.push({ id, peca, x, z, giro: 0, escala: 1, ...op })
 }
 // O lote da Morada fica reservado; estas são casas de vizinhos, nunca a casa do aluno.
-por('vizinho-oeste', 'casa_01_pacote', -16, 144, { escala: 0.45, solida: 'caixa' })
-por(
-  'vizinho-leste',
-  'casa_01_pacote',
-  PATAMARES_DA_FAISCA.vizinhoLeste.x,
-  PATAMARES_DA_FAISCA.vizinhoLeste.z,
-  { escala: 0.45, giro: Math.PI, solida: 'caixa' },
-)
-por('correio', 'casa_01_pacote', PATAMARES_DA_FAISCA.correio.x, PATAMARES_DA_FAISCA.correio.z, {
-  escala: 0.4,
-  solida: 'caixa',
-})
+COMPOSICAO_DA_FAISCA.push(...casasDaVila())
+for (const solo of SOLOS_DE_CATALOGO)
+  por(solo.id, 'praca_terra_14x14', solo.x, solo.z, {
+    altura: solo.y,
+    giro: solo.giro,
+    solida: 'solo',
+  })
+por('correio-caixa', 'morada_caixa_correio', -19.7, 125.8, { solida: 'caixa', escala: 0.8 })
+for (const [i, x, z] of [
+  [0, -10, 147],
+  [1, 43, 146.5],
+  [2, -31, 103],
+] as const)
+  por(`banco-catalogo-${i}`, 'morada_banco', x, z, { solida: 'caixa' })
 // Oficina aberta de bambu, interrompida/lacrada. A silhueta não repete as casas de vizinhos.
 for (const [i, x] of [-48.2, -43.8].entries()) {
   por(`oficina-estrutura-${i}`, 'andaime_bambu_01_pacote', x, 120, { solida: 'malha' })
@@ -60,6 +64,18 @@ por('correio-mesa', 'mesa_02_pacote', -21, 125.6, {
 por('correio-aberto', 'caixote_aberto', -22.5, 123.5, { solida: 'caixa', escala: 0.6 })
 por('poco', 'poco_manivela_baixa', -6, 143, { solida: 'caixa' })
 por('mesa-convivio', 'mesa_01_pacote', -10, 144, { escala: 0.35, solida: 'caixa' })
+por('quadro-suporte', 'andaime_bambu_01_pacote', -10, 137, {
+  escala: 0.4,
+  giro: Math.PI / 2,
+  solida: 'malha',
+})
+por('quadro-painel', 'morada_quadro', -9.345, 137, {
+  apoio: 'quadro-suporte',
+  deslocamentoY: 0.6,
+  giro: Math.PI / 2,
+  solida: 'caixa',
+})
+por('oficina-lacre', 'cerca_tabuas_7m', -46, 125, { escala: 6 / 7, solida: 'caixa' })
 por('farol', 'farol_01_pacote', BASE_DO_FAROL.x, BASE_DO_FAROL.z, { solida: 'caixa' })
 por('moinho', 'moinho_01_pacote', PATAMARES_DA_FAISCA.moinho.x, PATAMARES_DA_FAISCA.moinho.z, {
   escala: 0.6,
@@ -150,14 +166,41 @@ const arvores = [
   [26, 181],
 ].filter(([x, z]) => distanciaAosCaminhos({ x: x!, z: z! }, ROTAS_DA_FAISCA) > 3.3)
 arvores.forEach(([x, z], i) => {
+  const aventura = (x! < -18 && z! > 140 && z! < 156) || (x! > 40 && z! > 140) || x! > 68
   por(
     `arvore-${i}`,
-    i % 3 === 0 ? 'arvore_duas_copas' : i % 2 ? 'arvore_redonda_02' : 'arvore_redonda_01',
+    aventura
+      ? 'arvore_04_pacote'
+      : i % 3 === 0
+        ? 'arvore_duas_copas'
+        : i % 2
+          ? 'arvore_redonda_02'
+          : 'arvore_redonda_01',
     x!,
     z!,
-    { giro: i * 1.23, solida: 'tronco' },
+    { giro: i * 1.23, solida: 'tronco', ...(aventura ? { raioDoTronco: 0.86 } : {}) },
   )
 })
+for (const [i, x, z] of [
+  [0, -12.5, 127],
+  [1, -5, 148],
+  [2, 6, 149],
+] as const)
+  por(`arvore-da-vila-${i}`, 'arvore_04_pacote', x, z, {
+    solida: 'tronco',
+    raioDoTronco: 0.86,
+    giro: i * 0.9,
+  })
+for (const [i, x, z] of [
+  [0, -10, 132],
+  [1, -10, 150],
+  [2, 8, 145.5],
+  [3, 15, 134.5],
+  [4, 7, 133.5],
+] as const)
+  por(`jardim-da-vila-${i}`, 'canteiro_flores', x, z, { escala: 0.65, solida: 'caixa' })
+for (const [i, z] of [133, 141].entries())
+  por(`horta-lateral-${i}`, 'cerca_02_pacote', 34, z, { giro: Math.PI / 2, solida: 'caixa' })
 const grupos = [
   [-21, 149, 4],
   [-9, 131, 3],
@@ -241,11 +284,11 @@ export function pontoLivreParaRetomar(p: { x: number; z: number }, raio: number)
   }
   if (sobreVolumeDaVila(p, raio)) return false
   for (const o of COMPOSICAO_DA_FAISCA) {
-    if (!o.solida) continue
+    if (!o.solida || o.solida === 'solo') continue
     const dx = p.x - o.x,
       dz = p.z - o.z
     if (o.solida === 'tronco') {
-      if (Math.hypot(dx, dz) < 0.23 * o.escala + raio) return false
+      if (Math.hypot(dx, dz) < (o.raioDoTronco ?? 0.23) * o.escala + raio) return false
       continue
     }
     const box = ARTE_DA_FAISCA.pecas[o.peca as keyof typeof ARTE_DA_FAISCA.pecas].colisao[0]

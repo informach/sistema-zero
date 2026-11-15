@@ -25,12 +25,15 @@ test('os caminhos cotidianos mantêm passagem para o corpo entre os modelos reai
   const bloqueios = new Set<string>()
   for (const r of ROTAS_DA_FAISCA.filter((r) => r.tipo !== 'ponte-interna'))
     for (const a of pontosAoLongo(r.pontos, 0.25))
-      for (const objeto of COMPOSICAO_DA_FAISCA.filter((p) => p.solida && p.solida !== 'ponte')) {
+      for (const objeto of COMPOSICAO_DA_FAISCA.filter(
+        (p) => p.solida && p.solida !== 'ponte' && p.solida !== 'solo',
+      )) {
         const dx = a.x - objeto.x,
           dz = a.z - objeto.z,
           s = objeto.escala
         if (objeto.solida === 'tronco') {
-          if (Math.hypot(dx, dz) < 0.23 * s + 0.16) bloqueios.add(`${r.id}:${objeto.id}`)
+          if (Math.hypot(dx, dz) < (objeto.raioDoTronco ?? 0.23) * s + 0.16)
+            bloqueios.add(`${r.id}:${objeto.id}`)
           continue
         }
         const meta = ARTE_DA_FAISCA.pecas[objeto.peca as keyof typeof ARTE_DA_FAISCA.pecas],

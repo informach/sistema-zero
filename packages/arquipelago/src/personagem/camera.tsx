@@ -22,6 +22,7 @@ import {
   DISTANCIA_MINIMA_DA_CAMERA,
   FOLGA_DA_CAMERA,
   GRUA_DA_CAMERA,
+  NIVEL_DA_AGUA,
   RAIO_DA_SONDA_DA_CAMERA,
   VOLTA_DA_CAMERA,
 } from '../mundo/medidas'
@@ -45,6 +46,7 @@ import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
 import { CAMERA_DA_GALERIA, cameraDaGaleria, galeriaAberta } from '../sistemas/galeria-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
+import { superficieDaAgua } from '../sistemas/modos/chao'
 import {
   criarPesos,
   type Enquadramento,
@@ -544,6 +546,15 @@ export function Camera({
     const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
     let ax = rastro.x + (movimento.foco.x - rastro.x) * f
     const mergulhando = movimento.modo === 'mergulho'
+    const pesNaAgua =
+      superficieDaAgua(
+        movimento.aguas,
+        NIVEL_DA_AGUA,
+        rastro.x,
+        rastro.z,
+        RAIO_DA_SONDA_DA_CAMERA,
+      ) >
+      rastro.y - CORPO.doCentroAoPe
     // No porão o teto fica perto. O foco acompanha o corpo, não a cabeça em pé.
     const alturaDoFoco = mergulhando ? MERGULHO.focoDaCamera : ALTURA_DO_OLHAR
     let ay = rastro.y + alturaDoFoco + (movimento.foco.y - rastro.y - alturaDoFoco) * f
@@ -598,9 +609,13 @@ export function Camera({
         y: Math.sin(incl),
         z: Math.cos(giro) * Math.cos(incl),
       }
-      // Da cabeça e do peito: um tronco que esconde só o corpo também conta.
+      // Em terra, um tronco que esconde o peito também conta. Na água (inclusive o raso),
+      // a margem junto ao peito não deve comprimir a câmera no rosto.
+      // A sonda da cabeça continua ativa; no mergulho as duas sondas continuam próprias do modo.
+      const sondas =
+        pesNaAgua && !mergulhando ? [0] : [0, mergulhando ? MERGULHO.sondaAbaixo : ALTURA_DO_PEITO]
       let livre = comprimento
-      for (const abaixo of [0, mergulhando ? MERGULHO.sondaAbaixo : ALTURA_DO_PEITO]) {
+      for (const abaixo of sondas) {
         const de = { x: alvo.current.x, y: alvo.current.y - abaixo, z: alvo.current.z }
         const bateu = world.castShape(
           de,

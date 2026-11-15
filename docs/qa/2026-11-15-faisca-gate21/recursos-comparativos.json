@@ -1,0 +1,510 @@
+{
+  "referencia": "a300c5f2e, somente lista de câmeras atual",
+  "observacao": "Snapshots em câmeras fixas; FPS não é benchmark. Para ciclos estabilizados, ver recursos.json.",
+  "vistas": [
+    {
+      "vista": "porta",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,52, 150 m",
+        "Quadros": "59 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "110",
+        "Triângulos": "166.381",
+        "Geometrias": "99",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "0, 4,54, 150 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "145",
+        "Triângulos": "202.457",
+        "Geometrias": "137",
+        "Texturas": "32"
+      },
+      "delta": {
+        "Chamadas de desenho": 35,
+        "Triângulos": 36076,
+        "Geometrias": 38,
+        "Texturas": 10
+      }
+    },
+    {
+      "vista": "praca",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,68, 137 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "102",
+        "Triângulos": "165.407",
+        "Geometrias": "96",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-0, 4,68, 137 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "148",
+        "Triângulos": "209.731",
+        "Geometrias": "140",
+        "Texturas": "42"
+      },
+      "delta": {
+        "Chamadas de desenho": 46,
+        "Triângulos": 44324,
+        "Geometrias": 44,
+        "Texturas": 20
+      }
+    },
+    {
+      "vista": "costa",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,52, 153 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "64",
+        "Triângulos": "134.017",
+        "Geometrias": "79",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,54, 153 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "90",
+        "Triângulos": "158.565",
+        "Geometrias": "124",
+        "Texturas": "25"
+      },
+      "delta": {
+        "Chamadas de desenho": 26,
+        "Triângulos": 24548,
+        "Geometrias": 45,
+        "Texturas": 3
+      }
+    },
+    {
+      "vista": "oficina",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-24, 6, 132 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "65",
+        "Triângulos": "145.285",
+        "Geometrias": "76",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-24, 6,02, 132 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "64",
+        "Triângulos": "157.075",
+        "Geometrias": "118",
+        "Texturas": "23"
+      },
+      "delta": {
+        "Chamadas de desenho": -1,
+        "Triângulos": 11790,
+        "Geometrias": 42,
+        "Texturas": 1
+      }
+    },
+    {
+      "vista": "farol",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "128",
+        "Triângulos": "189.055",
+        "Geometrias": "135",
+        "Texturas": "30"
+      },
+      "delta": {
+        "Chamadas de desenho": 29,
+        "Triângulos": 36160,
+        "Geometrias": 38,
+        "Texturas": 8
+      }
+    },
+    {
+      "vista": "subida",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-20, 6,8, 115 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "93",
+        "Triângulos": "164.587",
+        "Geometrias": "90",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-20, 6,8, 115 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "135",
+        "Triângulos": "206.831",
+        "Geometrias": "135",
+        "Texturas": "41"
+      },
+      "delta": {
+        "Chamadas de desenho": 42,
+        "Triângulos": 42244,
+        "Geometrias": 45,
+        "Texturas": 19
+      }
+    },
+    {
+      "vista": "ponte-sul",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 135 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "77",
+        "Triângulos": "144.983",
+        "Geometrias": "89",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,54, 135 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "82",
+        "Triângulos": "166.465",
+        "Geometrias": "135",
+        "Texturas": "32"
+      },
+      "delta": {
+        "Chamadas de desenho": 5,
+        "Triângulos": 21482,
+        "Geometrias": 46,
+        "Texturas": 10
+      }
+    },
+    {
+      "vista": "ponte-norte",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 119 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "57",
+        "Triângulos": "114.769",
+        "Geometrias": "76",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "58, 4,52, 119 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "64",
+        "Triângulos": "146.627",
+        "Geometrias": "125",
+        "Texturas": "32"
+      },
+      "delta": {
+        "Chamadas de desenho": 7,
+        "Triângulos": 31858,
+        "Geometrias": 49,
+        "Texturas": 10
+      }
+    },
+    {
+      "vista": "farol-noite",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "99",
+        "Triângulos": "152.895",
+        "Geometrias": "97",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "-3, 10,34, 109 m",
+        "Quadros": "0 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "128",
+        "Triângulos": "189.055",
+        "Geometrias": "136",
+        "Texturas": "30"
+      },
+      "delta": {
+        "Chamadas de desenho": 29,
+        "Triângulos": 36160,
+        "Geometrias": 39,
+        "Texturas": 8
+      }
+    },
+    {
+      "vista": "horta",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20, 4,55, 139 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "20,01, 4,55, 139 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "114",
+        "Triângulos": "194.401",
+        "Geometrias": "136",
+        "Texturas": "35"
+      },
+      "delta": {
+        "Chamadas de desenho": 36,
+        "Triângulos": 35140,
+        "Geometrias": 50,
+        "Texturas": 13
+      }
+    },
+    {
+      "vista": "piso",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,61, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "117",
+        "Triângulos": "194.417",
+        "Geometrias": "137",
+        "Texturas": "36"
+      },
+      "delta": {
+        "Chamadas de desenho": 39,
+        "Triângulos": 35156,
+        "Geometrias": 51,
+        "Texturas": 14
+      }
+    },
+    {
+      "vista": "piso-baixo",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "76",
+        "Triângulos": "159.117",
+        "Geometrias": "84",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,61, 138 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "113",
+        "Triângulos": "194.269",
+        "Geometrias": "135",
+        "Texturas": "35"
+      },
+      "delta": {
+        "Chamadas de desenho": 37,
+        "Triângulos": 35152,
+        "Geometrias": 51,
+        "Texturas": 13
+      }
+    },
+    {
+      "vista": "piso-noite",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,58, 138 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "78",
+        "Triângulos": "159.261",
+        "Geometrias": "86",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "10, 4,61, 138 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "117",
+        "Triângulos": "194.417",
+        "Geometrias": "137",
+        "Texturas": "36"
+      },
+      "delta": {
+        "Chamadas de desenho": 39,
+        "Triângulos": 35156,
+        "Geometrias": 51,
+        "Texturas": 14
+      }
+    },
+    {
+      "vista": "lago-lateral",
+      "antes": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "64, 3,82, 127 m",
+        "Quadros": "60 / s",
+        "Giro da câmera": "0.000 rad",
+        "Setores com física": "24",
+        "Chamadas de desenho": "114",
+        "Triângulos": "175.797",
+        "Geometrias": "98",
+        "Texturas": "22"
+      },
+      "depois": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "64, 4,52, 127 m",
+        "Quadros": "58 / s",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "159",
+        "Triângulos": "222.585",
+        "Geometrias": "141",
+        "Texturas": "43"
+      },
+      "delta": {
+        "Chamadas de desenho": 45,
+        "Triângulos": 46788,
+        "Geometrias": 43,
+        "Texturas": 21
+      }
+    }
+  ]
+}

@@ -33,3 +33,46 @@ export function dentroDaAgua(
   }
   return (lx / a.raioX) ** 2 + (lz / a.raioZ) ** 2 < 1
 }
+
+/** Uma sonda circular toca a água? Não altera o teste pontual usado pelo movimento. */
+export function discoTocaAgua(
+  a: Parameters<typeof dentroDaAgua>[0],
+  x: number,
+  z: number,
+  raio: number,
+): boolean {
+  if (dentroDaAgua(a, x, z)) return true
+  const dx = x - a.x,
+    dz = z - a.z,
+    c = Math.cos(a.giro),
+    s = Math.sin(a.giro),
+    lx = dx * c - dz * s,
+    lz = dx * s + dz * c
+  if (a.contorno) {
+    const pts = a.contorno
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const p = pts[j]!,
+        q = pts[i]!,
+        vx = q.x - p.x,
+        vz = q.z - p.z,
+        l2 = vx * vx + vz * vz
+      const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((lx - p.x) * vx + (lz - p.z) * vz) / l2))
+      if (Math.hypot(lx - p.x - t * vx, lz - p.z - t * vz) <= raio) return true
+    }
+    return false
+  }
+  if (Math.abs(lx) > a.raioX + raio || Math.abs(lz) > a.raioZ + raio) return false
+  // Ponto mais próximo da elipse por multiplicador de Lagrange; expandir seus raios
+  // produziria outra curva e daria resposta incorreta junto às pontas alongadas.
+  const rx2 = a.raioX * a.raioX,
+    rz2 = a.raioZ * a.raioZ
+  let baixo = 0,
+    alto = a.raioX * Math.abs(lx) + a.raioZ * Math.abs(lz)
+  for (let i = 0; i < 40; i++) {
+    const t = (baixo + alto) / 2,
+      f = ((a.raioX * lx) / (t + rx2)) ** 2 + ((a.raioZ * lz) / (t + rz2)) ** 2
+    if (f > 1) baixo = t
+    else alto = t
+  }
+  return Math.hypot(lx - (rx2 * lx) / (alto + rx2), lz - (rz2 * lz) / (alto + rz2)) <= raio + 1e-9
+}

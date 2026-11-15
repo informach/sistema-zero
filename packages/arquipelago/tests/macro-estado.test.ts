@@ -32,10 +32,22 @@ test('retomada em terra não usa o chão sob construções, canteiros ou ponte d
     [58, 127],
     [-10, 137],
     [-10, 147],
-    [43, 145],
+    [43, 146.5],
   ]) {
     const s = ensaioInicial()
     s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }
     expect(() => lerEnsaio(JSON.stringify(s))).toThrow('chão acessível')
+  }
+})
+
+// O banco foi afastado da curva: este ponto da passagem precisa voltar a ser acessível.
+test('retomada aceita a passagem liberada e o chão artístico caminhável', () => {
+  for (const [x, z] of [
+    [43, 145],
+    [-5, 140],
+  ]) {
+    const s = ensaioInicial()
+    s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }
+    expect(() => lerEnsaio(JSON.stringify(s))).not.toThrow()
   }
 })

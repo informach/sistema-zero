@@ -41,6 +41,9 @@ try {
     'ponte-sul',
     'ponte-norte',
     'farol-noite',
+    ...(process.env.FAISCA_CAPTURAS_ADICIONAIS === '1'
+      ? ['horta', 'piso', 'piso-baixo', 'piso-noite', 'lago-lateral']
+      : []),
   ]) {
     const vista = nome.replace('-noite', '')
     await page.goto(
