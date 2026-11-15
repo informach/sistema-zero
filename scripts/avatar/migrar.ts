@@ -16,7 +16,7 @@
  * Depois de rodar, o catálogo mudado é um commit de dados como outro qualquer.
  */
 import type { AvatarCatalog, AvatarPartEntry } from '../../packages/core/src/avatar/types'
-import { Arte, buscarDaArte, type ItemDaArte, REF_PADRAO } from './arte'
+import { Arte, buscarDaArte, type ItemDaArte, REF_PADRAO, type RegrasDaArte } from './arte'
 import { type Balde, chaveNoBucket, comBalde } from './balde'
 import {
   animacoesAvulsas,
@@ -110,6 +110,27 @@ function argumentos(args: readonly string[]) {
   return { ids, destino, ref, tudo, soEsqueleto, buscar }
 }
 
+/**
+ * As trocas de parte dentro das fantasias (`trocas_fantasia` da arte): fantasia → (peça → a nossa e
+ * o id da cópia dela para dentro do conjunto). A chave vale pela peça do pack E pela nossa, porque a
+ * lista da fantasia na arte pode citar uma ou outra.
+ */
+export function trocasDaFantasia(
+  regras: Pick<RegrasDaArte, 'trocas_fantasia'>,
+): Map<string, Map<string, { nossa: string; id: string }>> {
+  const trocas = new Map<string, Map<string, { nossa: string; id: string }>>()
+  for (const [fantasia, pares] of Object.entries(regras.trocas_fantasia?.pares ?? {})) {
+    const daFantasia = new Map<string, { nossa: string; id: string }>()
+    for (const [nossa, doPack] of Object.entries(pares)) {
+      const troca = { nossa, id: `${nossa}__na_${fantasia}` }
+      daFantasia.set(doPack, troca)
+      daFantasia.set(nossa, troca)
+    }
+    trocas.set(fantasia, daFantasia)
+  }
+  return trocas
+}
+
 export async function migrar(args: readonly string[], hoje = new Date()) {
   const { ids, destino, ref, tudo, soEsqueleto, buscar } = argumentos(args)
   if (buscar) buscarDaArte()
@@ -132,10 +153,17 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
     })
   }
 
-  const substituidas = new Set(Object.keys(regras.substituicoes?.pares ?? {}))
+  // Dentro de cada fantasia, a peça do pack que a arte trocou por uma nossa: do pack → id da cópia.
+  const trocas = trocasDaFantasia(regras)
+  const substituidas = new Set([
+    ...Object.keys(regras.substituicoes?.pares ?? {}),
+    ...Object.values(regras.trocas_fantasia?.pares ?? {}).flatMap((pares) => Object.values(pares)),
+  ])
+  // A peça nossa que entra numa fantasia não vira parte dela: quem é parte é a cópia (passo 4).
   const conjuntoDaParte = new Map<string, string>()
   for (const fantasia of regras.fantasias)
-    for (const { peca } of fantasia.pecas) conjuntoDaParte.set(peca, fantasia.id)
+    for (const { peca } of fantasia.pecas)
+      if (!trocas.get(fantasia.id)?.has(peca)) conjuntoDaParte.set(peca, fantasia.id)
 
   let enviados = 0
   // No ensaio numa pasta, tudo é gravado de novo: a pasta começa vazia.
@@ -323,8 +351,10 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
     return { migradas: 0, enviados, total: Object.keys(catalogo.parts).length }
   }
 
-  // 3. Quem saiu da arte fica, aposentada. Quem voltou deixa de estar.
+  // 3. Quem saiu da arte fica, aposentada. Quem voltou deixa de estar. As cópias para dentro da
+  //    fantasia (`copyOf`) não estão na arte: são refeitas no passo 4.
   for (const [id, entrada] of Object.entries(catalogo.parts)) {
+    if (entrada.copyOf) continue
     if (!naArte.has(id) && !entrada.retired) {
       catalogo.parts[id] = { ...entrada, retired: true }
       console.log(`aposentada: ${id}`)
@@ -334,12 +364,58 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
     }
   }
 
-  // 4. Os conjuntos de fantasia e as regras, sempre da versão lida.
+  // 4. Os conjuntos de fantasia e as regras, sempre da versão lida. Onde a arte trocou uma parte
+  //    do pack por uma peça nossa, o conjunto usa uma CÓPIA da nossa (`copyOf`): a original segue
+  //    vendida sozinha, e a cópia é parte da fantasia (posse e combinação pelo conjunto).
+  // A peça do pack substituída fica na biblioteca, fora da loja e do sorteio, mesmo sem ter mudado.
+  for (const id of substituidas) {
+    const entrada = catalogo.parts[id]
+    if (entrada && !entrada.hidden) catalogo.parts[id] = { ...entrada, hidden: true }
+  }
+  const copiasDeAgora = new Set<string>()
+  for (const fantasia of regras.fantasias) {
+    for (const { slot, peca } of fantasia.pecas) {
+      const copia = trocas.get(fantasia.id)?.get(peca)
+      if (!copia) continue
+      const nossa = catalogo.parts[copia.nossa]
+      const doPackId = regras.trocas_fantasia?.pares[fantasia.id]?.[copia.nossa] ?? peca
+      const doPack = catalogo.parts[doPackId]
+      if (!nossa || !doPack)
+        throw new Error(`A troca da fantasia ${fantasia.id} cita peça fora do catálogo.`)
+      const {
+        review: _r,
+        band: _b,
+        festa: _f,
+        adultOnly: _a,
+        hidden: _h,
+        retired: _ret,
+        ...base
+      } = nossa
+      catalogo.parts[copia.id] = {
+        ...base,
+        slot,
+        group: doPack.group,
+        label: `${catalogo.sets[fantasia.id]?.label ?? fantasia.rotulo}: ${nossa.label.toLowerCase()}`,
+        audience: doPack.audience,
+        tier: 'set',
+        price: 0,
+        set: fantasia.id,
+        copyOf: copia.nossa,
+      }
+      copiasDeAgora.add(copia.id)
+    }
+  }
+  for (const [id, entrada] of Object.entries(catalogo.parts))
+    if (entrada.copyOf && !copiasDeAgora.has(id) && !entrada.retired)
+      catalogo.parts[id] = { ...entrada, retired: true }
   for (const fantasia of regras.fantasias) {
     const antes = catalogo.sets[fantasia.id]
     catalogo.sets[fantasia.id] = {
       label: fantasia.rotulo,
-      parts: fantasia.pecas.map(({ slot, peca }) => ({ slot, part: peca })),
+      parts: fantasia.pecas.map(({ slot, peca }) => ({
+        slot,
+        part: trocas.get(fantasia.id)?.get(peca)?.id ?? peca,
+      })),
       tier: antes?.tier ?? 'coins',
       price: antes?.price ?? precoDoConjunto(fantasia.pecas.length),
       ...(antes ? (antes.review ? { review: true as const } : {}) : { review: true as const }),

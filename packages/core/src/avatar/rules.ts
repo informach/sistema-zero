@@ -132,6 +132,17 @@ export function removeSlot(catalog: AvatarCatalog, slots: AvatarSlots, slot: str
   return withEars(catalog, resultado)
 }
 
+/**
+ * Atualiza a fantasia vestida para as partes de agora: quando a arte troca uma parte do conjunto
+ * (o elmo do cavaleiro, `trocas_fantasia`), quem já vestia a fantasia passa a vestir a parte nova,
+ * em vez de ficar com uma "fantasia incompleta". Sem fantasia, nada muda.
+ */
+export function withCurrentSet(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+  const set = wornSet(catalog, slots)
+  const inteiro = set ? setSlots(catalog, set) : null
+  return inteiro ? { ...slots, ...inteiro } : slots
+}
+
 /** Põe as orelhas da cor do corpo, ou tira, quando um capuz ou a fantasia cobrem a cabeça. */
 export function withEars(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
   const { [SLOT_DAS_ORELHAS]: _orelhas, ...resto } = slots

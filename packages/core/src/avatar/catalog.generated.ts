@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
-    "syncedAt": "2026-11-14",
-    "rulesBlob": "31e68619aa701713ba9b6d088b9ea2b8e7d1db63"
+    "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+    "syncedAt": "2026-11-15",
+    "rulesBlob": "67f9878c1f245e04c0ec4a18c5f01ba86b6859ca"
   },
   "base": {
     "skeleton": {
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "1449d1cb78820a75384e4f688bf4a016a06d6dfd",
-      "tree": "30ab0b306cabb7457f9a8152e4125228ac6eb28e",
+      "catalogBlob": "33a736f1f3495daa64ef54c46d9180bfc58c1c1d",
+      "tree": "bd5cd510abe559d49d56ba103d8d7503bf8f1f16",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.19f43404e8df.glb",
+        "file": "base/animacoes-do-jogo.4a40ad6644dd.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -1770,10 +1770,17 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               "inclina_graus": 35,
               "faixa_da_terra_m": [
                 0,
-                0.65
+                0.25
               ],
-              "beira_a_frente_min_m": 0.17,
-              "beira_a_frente_min_com_terra_acima_de_0_50_m": 0.27
+              "beira_a_frente_min_m": 0.45,
+              "beira_a_frente_max_m": 0.47,
+              "beira_a_frente_min_por_terra_m_0.05": 0.17,
+              "beira_a_frente_min_por_terra_m_0.10": 0.29,
+              "beira_a_frente_min_por_terra_m_0.15": 0.355,
+              "beira_a_frente_min_por_terra_m_0.20": 0.385,
+              "beira_a_frente_min_por_terra_m_0.25": 0.45,
+              "boca_do_crivo_ao_despejar_m_a_frente": 0.49,
+              "boca_do_crivo_ao_despejar_m_altura": 0.48
             }
           },
           {
@@ -1997,6 +2004,45 @@ export const AVATAR_CATALOG: AvatarCatalog = {
                 0.269
               ]
             }
+          },
+          {
+            "id": "ajoelhado_no_vagonete",
+            "duration": 2,
+            "loop": true,
+            "stride": 0,
+            "rise": 0,
+            "frames": 61,
+            "feet": [],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "bacia_m": 0.16,
+              "tronco_graus": 34,
+              "tornozelos_m": [
+                0.085,
+                0.08,
+                -0.04
+              ],
+              "maos_m": [
+                0.09,
+                0.127,
+                0.28
+              ],
+              "no_vagonete_origem_na_peca_m": [
+                0.34,
+                0.93,
+                0.11
+              ],
+              "no_vagonete_direcao": [
+                1,
+                0,
+                0
+              ]
+            }
           }
         ],
         "layers": [
@@ -2105,6 +2151,123 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             ],
             "objects": [
               "mao_barra_planador"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_andar_esquerda",
+            "duration": 0.833,
+            "loop": true,
+            "frames": 26,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "andar_esquerda",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_andar_frente",
+            "duration": 0.8,
+            "loop": true,
+            "frames": 25,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "andar_frente",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_andar_tras",
+            "duration": 0.867,
+            "loop": true,
+            "frames": 27,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "andar_tras",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_correr_direita",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_direita",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_correr_esquerda",
+            "duration": 0.633,
+            "loop": true,
+            "frames": 20,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_esquerda",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_correr_frente",
+            "duration": 0.633,
+            "loop": true,
+            "frames": 20,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_frente",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_tras",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_parado_olhando",
+            "duration": 15.9,
+            "loop": true,
+            "frames": 478,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "parado_olhando",
+            "objects": [
+              "mao_balde"
+            ]
+          },
+          {
+            "id": "segurar_braco_dir_largo_parado_relaxado",
+            "duration": 4.3,
+            "loop": true,
+            "frames": 130,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "parado_relaxado",
+            "objects": [
+              "mao_balde"
             ]
           }
         ]
@@ -3280,6 +3443,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/cabelo_trancas_sob_chapeu.824623dd7a9e.webp",
       "tier": "coins",
       "tris": 2996
+    },
+    "cachecol": {
+      "slot": "acessorio_rosto",
+      "group": "acessorio_rosto",
+      "label": "Cachecol",
+      "audience": "both",
+      "tier": "coins",
+      "price": 50,
+      "band": "comum",
+      "file": "pecas/cachecol.78c097661566.glb",
+      "thumb": "miniaturas/cachecol.609ebf76b7cb.webp",
+      "tris": 462,
+      "origin": {
+        "blob": "ae5ef73d16a3e5ac993cc466856973197feaac34",
+        "thumbBlob": "b1f9b3fc235536af42a2abde07a7764a499c9302",
+        "meta": "52b8155d821d7d07",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
     },
     "calca_amarela_faixa_pacote": {
       "audience": "both",
@@ -4778,6 +4960,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 1732
     },
+    "chapeu_coroa_princesa": {
+      "slot": "chapeu",
+      "group": "chapeu_sobre_cabelo",
+      "label": "Coroa de princesa",
+      "audience": "both",
+      "tier": "coins",
+      "price": 100,
+      "band": "especial",
+      "file": "pecas/chapeu_coroa_princesa.1d1bd6418d7c.glb",
+      "thumb": "miniaturas/chapeu_coroa_princesa.6e900f506210.webp",
+      "tris": 1380,
+      "origin": {
+        "blob": "a27fa0e468bdb6ed5fa31160eb9b928d38e1f3d1",
+        "thumbBlob": "d1f8d45ace2f8a35b7ddc82b9e15d71e40f757b7",
+        "meta": "9bae533062f4aacd",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "chapeu_desentupidor_cabeca_pacote": {
       "audience": "both",
       "band": "raro",
@@ -4815,6 +5016,45 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/chapeu_dinossauro_verde_pacote.0aaa4a8274c6.webp",
       "tier": "coins",
       "tris": 944
+    },
+    "chapeu_elmo_cavaleiro": {
+      "slot": "chapeu",
+      "group": "chapeu",
+      "label": "Elmo de cavaleiro",
+      "audience": "both",
+      "tier": "coins",
+      "price": 100,
+      "band": "especial",
+      "file": "pecas/chapeu_elmo_cavaleiro.ed75e9ed8262.glb",
+      "thumb": "miniaturas/chapeu_elmo_cavaleiro.90284c6f2927.webp",
+      "tris": 622,
+      "origin": {
+        "blob": "6460d1a392f2631f6bcbb2401ff334e5beaaa566",
+        "thumbBlob": "2af7819fcf0659330e554612cd67488b3bcc1c3e",
+        "meta": "9a36f4df005b4e87",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "chapeu_elmo_cavaleiro__na_fantasia_cavaleiro": {
+      "slot": "chapeu",
+      "group": "fantasia",
+      "label": "Cavaleiro: elmo de cavaleiro",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/chapeu_elmo_cavaleiro.ed75e9ed8262.glb",
+      "thumb": "miniaturas/chapeu_elmo_cavaleiro.90284c6f2927.webp",
+      "tris": 622,
+      "origin": {
+        "blob": "6460d1a392f2631f6bcbb2401ff334e5beaaa566",
+        "thumbBlob": "2af7819fcf0659330e554612cd67488b3bcc1c3e",
+        "meta": "9a36f4df005b4e87",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      },
+      "set": "fantasia_cavaleiro",
+      "copyOf": "chapeu_elmo_cavaleiro"
     },
     "chapeu_elmo_viking_pacote": {
       "audience": "both",
@@ -4947,6 +5187,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/chapeu_gorro_papai_noel_pacote.77dd1f45475b.webp",
       "tier": "festa",
       "tris": 800
+    },
+    "chapeu_gorro_pompom": {
+      "slot": "chapeu",
+      "group": "chapeu_sobre_cabelo",
+      "label": "Gorro com pompom",
+      "audience": "both",
+      "tier": "coins",
+      "price": 70,
+      "band": "comum",
+      "file": "pecas/chapeu_gorro_pompom.13b6df92622a.glb",
+      "thumb": "miniaturas/chapeu_gorro_pompom.8027da510e9a.webp",
+      "tris": 372,
+      "origin": {
+        "blob": "c45fade11c19709f18e536d206b53309b3c049fb",
+        "thumbBlob": "46a9a4fde86c556e728c1799951db609f11a5bd5",
+        "meta": "8c3f1ee3ec52540c",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
     },
     "chapeu_gorro_trico_pacote": {
       "audience": "both",
@@ -5154,6 +5413,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/chapeu_presilhas_estrela.9db8825289fe.webp",
       "tier": "coins",
       "tris": 624
+    },
+    "chapeu_protetor_orelha": {
+      "slot": "chapeu",
+      "group": "chapeu_sobre_cabelo",
+      "label": "Protetor de orelha",
+      "audience": "both",
+      "tier": "coins",
+      "price": 70,
+      "band": "comum",
+      "file": "pecas/chapeu_protetor_orelha.7981fbc7dcd9.glb",
+      "thumb": "miniaturas/chapeu_protetor_orelha.f6be1c31cd63.webp",
+      "tris": 604,
+      "origin": {
+        "blob": "d831d36717480b148262fd66541c0783fddf402e",
+        "thumbBlob": "c894ce58b92ffe5e1df61e389252366743803a14",
+        "meta": "41b6817c4e7028e3",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
     },
     "chapeu_quepe_marinheiro_pacote": {
       "audience": "both",
@@ -5720,6 +5998,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "free",
       "tris": 3404
     },
+    "costas_capa_cavaleiro": {
+      "slot": "costas",
+      "group": "costas",
+      "label": "Capa de cavaleiro",
+      "audience": "both",
+      "tier": "coins",
+      "price": 120,
+      "band": "raro",
+      "file": "pecas/costas_capa_cavaleiro.fd5397e35bfe.glb",
+      "thumb": "miniaturas/costas_capa_cavaleiro.9e7ad5a02e08.webp",
+      "tris": 1144,
+      "origin": {
+        "blob": "2d00d52448349c10bfc6420fa9c858ae8ea01950",
+        "thumbBlob": "d06cf83256d28284623198195cb73583353032ec",
+        "meta": "3c3bc5abbc421489",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "costas_capa_estrelas": {
       "audience": "both",
       "file": "pecas/costas_capa_estrelas.caa3e5f5f7d4.glb",
@@ -6002,7 +6299,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "chapeu",
       "thumb": "miniaturas/fantasia_cavaleiro_elmo_chifres_pacote.b4746555da42.webp",
       "tier": "set",
-      "tris": 1166
+      "tris": 1166,
+      "hidden": true
     },
     "fantasia_cavaleiro_ombreiras_pacote": {
       "audience": "both",
@@ -10198,6 +10496,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/roupa_inteira_vestido_marrom_pacote.6427a68a6845.webp",
       "tier": "coins",
       "tris": 640
+    },
+    "roupa_inteira_vestido_princesa": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido de princesa",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_vestido_princesa.7aad7f0178a1.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_princesa.670fc9fda96b.webp",
+      "tris": 1146,
+      "origin": {
+        "blob": "b97302fbf7511c8cadf8ce9c5d9ca59595e51a41",
+        "thumbBlob": "01bd5b0d217e2984acd02659fd9690709a53b92e",
+        "meta": "29c8ccbd8976696b",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
     }
   },
   "sets": {
@@ -10275,7 +10592,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         },
         {
           "slot": "chapeu",
-          "part": "fantasia_cavaleiro_elmo_chifres_pacote"
+          "part": "chapeu_elmo_cavaleiro__na_fantasia_cavaleiro"
         },
         {
           "slot": "roupa_cima",
@@ -10708,6 +11025,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "bigode_14_pacote",
           "bigode_15_pacote",
           "chupeta_pacote",
+          "cachecol",
           "lenco_pescoco"
         ]
       },
@@ -10899,7 +11217,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "chapeu_capacete_moto_pacote",
           "chapeu_capacete_aviador_pacote",
           "chapeu_bobo_pacote",
-          "chapeu_cauboi"
+          "chapeu_cauboi",
+          "chapeu_elmo_cavaleiro"
         ]
       },
       "capuz": {
@@ -10930,8 +11249,11 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "chapeu_capelo_formatura_pacote",
           "chapeu_capuz_tubarao_pacote",
           "chapeu_coroa_flores",
+          "chapeu_coroa_princesa",
+          "chapeu_gorro_pompom",
           "chapeu_laco",
           "chapeu_presilhas_estrela",
+          "chapeu_protetor_orelha",
           "chapeu_tiara",
           "chapeu_tiara_lanterninhas"
         ]
@@ -10951,7 +11273,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "roupa_inteira_jardineira_saia",
           "roupa_inteira_vestido_alcinha",
           "roupa_inteira_vestido_chita",
-          "roupa_inteira_vestido_longo"
+          "roupa_inteira_vestido_longo",
+          "roupa_inteira_vestido_princesa"
         ]
       },
       "roupa_cima": {
@@ -11112,6 +11435,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "costas": {
         "label": "Costas (capa, mochila)",
         "parts": [
+          "costas_capa_cavaleiro",
           "costas_capa_estrelas"
         ]
       }
@@ -11132,10 +11456,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "costas"
     ],
     "incompatible": {
+      "cabelo_arco_iris_pacote": [
+        "chapeu_protetor_orelha"
+      ],
+      "cabelo_black_power": [
+        "chapeu_coroa_princesa",
+        "chapeu_gorro_pompom"
+      ],
       "cabelo_cacheado_grisalho_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
+      "cabelo_cachos_longos_pacote": [
+        "chapeu_protetor_orelha"
+      ],
       "cabelo_coque_alto_loiro_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_coque_baixo_sob_chapeu": [
@@ -11144,6 +11480,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "chapeu_capacete_militar_pacote",
         "chapeu_capacete_moto_pacote",
         "chapeu_televisao_cabeca_pacote"
+      ],
+      "cabelo_coque_faixa_pacote": [
+        "chapeu_gorro_pompom"
       ],
       "cabelo_crespo_sob_chapeu": [
         "chapeu_caixa_brinquedo",
@@ -11154,21 +11493,29 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "chapeu_televisao_cabeca_pacote"
       ],
       "cabelo_liso_branco_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_liso_cinza_04_pacote": [
+        "chapeu_protetor_orelha",
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_liso_grisalho_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_liso_preto_branco_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_ondulado_castanho_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_peruca_cachos_branca_pacote": [
+        "chapeu_protetor_orelha",
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
       "cabelo_rabo_cavalo_sob_chapeu": [
@@ -11182,10 +11529,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "chapeu_capacete_moto_pacote",
         "chapeu_televisao_cabeca_pacote"
       ],
+      "cabelo_topete_ruivo_pacote": [
+        "chapeu_coroa_princesa"
+      ],
       "cabelo_trancas_sob_chapeu": [
         "chapeu_capacete_militar_pacote",
         "chapeu_capacete_moto_pacote",
         "chapeu_televisao_cabeca_pacote"
+      ],
+      "cachecol": [
+        "fantasia_bobo_corte_macacao_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_cinza_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_colete_xerife",
+        "roupa_cima_sueter_estrela",
+        "roupa_cima_sueter_listrado_vermelho_pacote"
       ],
       "calca_marrom_meias_pacote": [
         "calcado_botas_cano_alto",
@@ -11253,12 +11612,45 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "chapeu_cartola_listrada_estrelas_pacote": [
         "cabelo_crespo_sob_chapeu"
       ],
+      "chapeu_coroa_princesa": [
+        "cabelo_black_power",
+        "cabelo_topete_ruivo_pacote"
+      ],
+      "chapeu_gorro_pompom": [
+        "cabelo_black_power",
+        "cabelo_coque_faixa_pacote"
+      ],
+      "chapeu_protetor_orelha": [
+        "cabelo_arco_iris_pacote",
+        "cabelo_cachos_longos_pacote",
+        "cabelo_liso_cinza_04_pacote",
+        "cabelo_peruca_cachos_branca_pacote"
+      ],
       "chapeu_televisao_cabeca_pacote": [
         "cabelo_coque_baixo_sob_chapeu",
         "cabelo_crespo_sob_chapeu",
         "cabelo_rabo_cavalo_sob_chapeu",
         "cabelo_solto_sob_chapeu",
         "cabelo_trancas_sob_chapeu"
+      ],
+      "costas_capa_cavaleiro": [
+        "cabelo_cacheado_grisalho_pacote",
+        "cabelo_coque_alto_loiro_pacote",
+        "cabelo_liso_branco_pacote",
+        "cabelo_liso_cinza_04_pacote",
+        "cabelo_liso_grisalho_pacote",
+        "cabelo_liso_preto_branco_pacote",
+        "cabelo_ondulado_castanho_pacote",
+        "cabelo_peruca_cachos_branca_pacote",
+        "fantasia_abelha_asas_pacote",
+        "fantasia_cavaleiro_ombreiras_pacote",
+        "roupa_cima_jaqueta_azul_acolchoada_pacote",
+        "roupa_cima_jaqueta_bege_pacote",
+        "roupa_cima_jaqueta_cinza_aberta_pacote",
+        "roupa_cima_jaqueta_rosa_pacote",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_moletom_laranja_pacote"
       ],
       "costas_capa_estrelas": [
         "cabelo_cacheado_grisalho_pacote",
@@ -11280,9 +11672,14 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_moletom_laranja_pacote"
       ],
       "fantasia_abelha_asas_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas"
       ],
+      "fantasia_bobo_corte_macacao_pacote": [
+        "cachecol"
+      ],
       "fantasia_cavaleiro_ombreiras_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11360,35 +11757,42 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_colete_bolsos_pacote": [
+        "cachecol",
         "calca_saia_babados",
         "calca_saia_reta",
         "calca_saia_rodada"
       ],
       "roupa_cima_colete_cinza_pacote": [
+        "cachecol",
         "calca_saia_reta",
         "lenco_pescoco"
       ],
       "roupa_cima_colete_franjas": [
+        "cachecol",
         "calca_saia_babados",
         "calca_saia_reta",
         "calca_saia_rodada",
         "lenco_pescoco"
       ],
       "roupa_cima_colete_xerife": [
+        "cachecol",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_amarela_gola_pacote": [
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_azul_acolchoada_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_bege_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_cinza_aberta_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11405,6 +11809,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_rosa_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11414,6 +11819,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_cima_jaqueta_universitaria_vermelha_pacote": [
         "calca_saia_babados",
         "calca_saia_rodada",
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11427,6 +11833,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "calca_saia_babados",
         "calca_saia_reta",
         "calca_saia_rodada",
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11434,6 +11841,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_moletom_laranja_pacote": [
+        "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
       ],
@@ -11444,10 +11852,12 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_sueter_estrela": [
+        "cachecol",
         "calca_saia_reta",
         "lenco_pescoco"
       ],
       "roupa_cima_sueter_listrado_vermelho_pacote": [
+        "cachecol",
         "calca_saia_reta",
         "lenco_pescoco"
       ],
@@ -11678,6 +12088,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "excluded": [
         "roupa_cima_rascunho_pacote",
         "chapeu_caixa_brinquedo_pacote",
+        "fantasia_cavaleiro_elmo_chifres_pacote",
         "chapeu_gorro_trico_pacote",
         "chapeu_tiara",
         "cabelo_crespo_sob_chapeu"
@@ -11784,6 +12195,20 @@ export const AVATAR_CATALOG: AvatarCatalog = {
     }
   },
   "equipment": {
+    "mao_balde": {
+      "label": "Balde",
+      "socket": "mao_direita",
+      "file": "pecas/mao_balde.3cf3899ae5a5.glb",
+      "thumb": "miniaturas/mao_balde.c0e535691a16.webp",
+      "tris": 1940,
+      "origin": {
+        "blob": "61288e16d7658e5f5570f0ca72997387e2152705",
+        "thumbBlob": "f4f2a9f7274bbcc5c6ed97152146f708c4df5d33",
+        "meta": "840317bb51220286",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "mao_barra_planador": {
       "label": "Barra do planador (duas mãos)",
       "socket": "mao_direita",
@@ -11818,6 +12243,42 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "064a31f0eb58888d",
         "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
         "migratedAt": "2026-11-14"
+      }
+    },
+    "mao_regador": {
+      "label": "Regador",
+      "socket": "mao_direita",
+      "file": "pecas/mao_regador.dd6129015117.glb",
+      "thumb": "miniaturas/mao_regador.5943e7784d33.webp",
+      "tris": 2286,
+      "origin": {
+        "blob": "81220f30775298618bf1bbedd99430a0371944d0",
+        "thumbBlob": "7a7be5f7e3ec220a6842825a452b67fc0873b750",
+        "meta": "a19f40638cf4254a",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "mao_varinha_luz": {
+      "label": "Varinha de luz",
+      "socket": "mao_direita",
+      "file": "pecas/mao_varinha_luz.9bc87472345c.glb",
+      "thumb": "miniaturas/mao_varinha_luz.b66656f3c6d9.webp",
+      "tris": 968,
+      "use": "acender",
+      "light": {
+        "bone": "Luz",
+        "on": 1,
+        "off": 0.02,
+        "color": "#FFE08A",
+        "range": 2
+      },
+      "origin": {
+        "blob": "e6c3377b98b304a58029993b3b3b741e727ab4f7",
+        "thumbBlob": "9e50c93a5799a62f7d902165af51d36c83e56229",
+        "meta": "57168f1e5ebc15d5",
+        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
       }
     }
   }

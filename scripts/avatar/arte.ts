@@ -93,6 +93,11 @@ export interface RegrasDaArte {
   fora_do_sorteio?: string[]
   /** Peça do pack → a peça nossa que entra no lugar dela. */
   substituicoes?: { pares: Record<string, string> }
+  /**
+   * Dentro de uma fantasia, a peça nossa (chave) entra no lugar da peça do pack (valor): fantasia →
+   * { nossa: do pack }. A do pack fica na biblioteca, fora da fantasia e do sorteio.
+   */
+  trocas_fantasia?: { pares: Record<string, Record<string, string>> }
   nao_combina?: { pares: Record<string, string[]> }
   festas?: Record<string, { rotulo: string; premio: string; pecas_do_tema: string[] } | string>
 }
