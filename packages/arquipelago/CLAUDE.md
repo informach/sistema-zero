@@ -932,19 +932,30 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre, enfeites que seguram o corpo).
 
-## Animações do avatar (Mixamo, 29/10/2026)
+## Animações do avatar (pack da arte; a do Mixamo saiu em 14/11/2026)
 
-- Clipes em `src/assets/avatar/locomocao.glb`, vindos do Mixamo pelo `arte/avatar/mixamo.py`
-  (os FBX ficam fora do repositório, em `MIXAMO_DIR`): Parado, Andar, Correr, Pulo, Queda,
-  Aterrissagem, Nado, NadoParado, Corda (cipó), Planar, Escalar, SubirEscada, Equilibrar,
-  PendurarBorda, SubirBorda, Escorregar, Sentar, Montar e Deitar. O "Idle" da plataforma não é
-  mais usado. O script tira o deslocamento (o corpo do jogo anda), encaixa assento, sela, barra,
-  borda e colchão, e enxuga o GLB (só giros e a posição da bacia). O README de `arte/avatar` diz o
-  que vem de cada arquivo do Mixamo.
-- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe, com
-  as durações e passadas do `RESUMO` do script. Andar e correr na MESMA fase (os dois começam no
-  pé esquerdo), que anda pela distância dividida pela passada. Na água, Nado acima de
-  `NADANDO_ACIMA_DE` e NadoParado abaixo; no tronco caído, Equilibrar parada e Andar andando.
+- Os clipes vêm do arquivo do jogo do catálogo do avatar (`base/animacoes-do-jogo.<digital>.glb`,
+  bucket privado, `skeleton.game` no catálogo): os de locomoção do pack e as animações que a arte
+  fez para este corpo, com as medidas de cada uma (passada, mãos, `place`). O `locomocao.glb` e o
+  `arte/avatar/mixamo.py` não existem mais.
+- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): ESTADOS → pedaço de clipe
+  (`POSE_DO_ESTADO`, com reserva para catálogo sem o clipe). Andar e correr na MESMA fase, que anda
+  pela distância dividida pela passada. Na água, Nado acima de `NADANDO_ACIMA_DE` e NadoParado
+  abaixo.
+- **Gestos (15/11/2026, `sistemas/gestos.ts`, `tests/gestos.test.ts`):** o mundo chama
+  `pedirGesto(movimento, gesto, objeto?)` e ela faz parada, no lugar do Parado; andar corta, pausado
+  espera. Pegar do chão (coleções, chaves, cristal, fóssil, instrumento, colher), comemorar (coleção
+  fechada, desafio feito), plantar e plantar alto (pela altura da terra, `gestoDePlantar`), regar
+  com o regador, o balde (`Segurar`) na pesca e no banho do bicho, e dançar ("Dançar na festa",
+  "Dançar com a banda", `dancaDaVez`). O personagem pede sozinho o levantar do banco e da cama (o
+  desenho fica no assento até o fim) e o desmontar na sela baixa.
+- **Sela:** o `montar` e o `desmontar` da arte são de sela baixa (`selaBaixa`). A do dino é alta
+  (0,70 m nativos): a arte pediu o corte direto, como no vagonete. Dirigir e ajoelhada no vagonete
+  são modos especiais prontos para os veículos.
+- **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no
+  planador, o do gesto, a lanterna acesa. Os dedos fecham pela `pegada` da arte (`fingers` no
+  catálogo); o braço afasta pelas camadas largas do balde. Deitada e levantando da cama, o chapéu
+  sai (`hatOff`). Visualizador: `/animacoes?gesto=Regar&objeto=mao_regador&atraso=1.4`.
 - Os clipes de nadar e de deitar já vêm deitados: o personagem não inclina mais o desenho nesses
   casos. No cipó o Corda faz as pernas e o `depoisDaPose` ainda fecha as mãos na corda
   (`personagem/bracos.ts`, `INCLINACAO_NO_CIPO` 0). O planador põe a barra nas mãos do Planar

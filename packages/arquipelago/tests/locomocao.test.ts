@@ -194,8 +194,14 @@ describe('os gestos, a sela e os veículos (as animações novas da arte)', () =
     expect(l.pesos.Desmontar).toBeCloseTo(1)
   })
 
-  test('montar: o subir na sela uma vez, depois o laço de montada', () => {
-    const montada = { ...chao(0), especial: 'montar' as const }
+  test('na sela alta (o dino), direto no laço de montada, como no vagonete', () => {
+    const l = rodar(undefined, { ...chao(0), especial: 'montar' }, 0.5)
+    expect(l.pesos.Montando).toBe(0)
+    expect(l.pesos.Montar).toBeGreaterThan(0.8)
+  })
+
+  test('na sela baixa: o subir na sela uma vez, depois o laço de montada', () => {
+    const montada = { ...chao(0), especial: 'montar' as const, selaBaixa: true }
     const l = rodar(undefined, montada, 0.5)
     expect(l.pesos.Montando).toBeGreaterThan(0.8)
     rodar(l, montada, DURACAO_DO_CLIPE.montar + 1)

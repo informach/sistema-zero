@@ -110,6 +110,12 @@ function argumentos(args: readonly string[]) {
   return { ids, destino, ref, tudo, soEsqueleto, buscar }
 }
 
+/** Os clipes dos dedos de um objeto de mão (a `pegada` da arte e a da segunda mão), sem repetir. */
+export function dedosDaPegada(item: Pick<ItemDaArte, 'pegada'>): string[] {
+  const clipes = [item.pegada?.clipe_dedos, item.pegada?.segunda_mao?.clipe_dedos]
+  return [...new Set(clipes.filter((c): c is string => Boolean(c)))]
+}
+
 /**
  * As trocas de parte dentro das fantasias (`trocas_fantasia` da arte): fantasia → (peça → a nossa e
  * o id da cópia dela para dentro do conjunto). A chave vale pela peça do pack E pela nossa, porque a
@@ -266,6 +272,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
                 },
               }
             : {}),
+          ...(dedosDaPegada(item).length > 0 ? { fingers: dedosDaPegada(item) } : {}),
           origin: {
             blob: arte.blob(caminhoDoGlb),
             thumbBlob: arte.blob(caminhoDaMiniatura),
@@ -276,6 +283,14 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         },
       }
       console.log(`objeto de mão: ${item.id}`)
+    }
+    // Os dedos de cada objeto saem da pegada da arte: refeitos em toda migração (sem reenvio), para
+    // o objeto migrado antes de a arte declarar a pegada também ganhar os dele.
+    for (const item of arte.equipamentos()) {
+      const entrada = catalogo.equipment?.[item.id]
+      const dedos = dedosDaPegada(item)
+      if (!entrada || dedos.length === 0) continue
+      catalogo.equipment = { ...catalogo.equipment, [item.id]: { ...entrada, fingers: dedos } }
     }
     for (const id of comparacao.equipamentosQueSairam) {
       const { [id]: _fora, ...resto } = catalogo.equipment ?? {}

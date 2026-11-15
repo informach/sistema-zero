@@ -49,6 +49,15 @@ export interface ItemDaArte {
   altura_que_soma_m?: number
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
+  /**
+   * Objeto de mão: como a mão fecha nele (o clipe dos dedos, o ponto da palma, o eixo do cabo) e,
+   * na barra do planador, a segunda mão.
+   */
+  pegada?: {
+    clipe_dedos?: string
+    mao?: string
+    segunda_mao?: { clipe_dedos?: string; mao?: string }
+  }
   /** Objeto de mão: o osso que o segura, a animação de usar e a luz dele. */
   segura?: {
     osso: string

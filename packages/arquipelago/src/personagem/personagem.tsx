@@ -43,6 +43,7 @@ import {
   type ObjetoDoGesto,
   passoDoGesto,
   progressoDoGesto,
+  selaBaixa,
 } from '../sistemas/gestos'
 import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
 import {
@@ -112,6 +113,8 @@ const INCLINACAO_NO_PLANADOR = 0.25
 const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** Escalando, quanto o desenho anda para a casca (o corpo fica a raio + folga dela). */
 const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
+/** A sela do dino é baixa o bastante para o montar e o desmontar da arte? (Não: 0,70 m nativos.) */
+const SELA_BAIXA = selaBaixa(MONTARIA.sela)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /** Depois do último contato, os passos de quem empurra seguram isto (s): sem piscar entre passos. */
@@ -487,6 +490,7 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.patinando = e.patins && v.modo === 'chao' && !nadando
+    m.selaBaixa = SELA_BAIXA
     // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
     const viajando =
       v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
@@ -543,7 +547,8 @@ export function Personagem() {
     const andou = Math.hypot(ix, iz) > 0.3 || e.pulou
     if (modoAntes.current === 'descanso' && v.modo === 'chao' && !andou && !nadando)
       comecarGesto(gesto, jeitoAntes.current === 'deitar' ? 'LevantarDaCama' : 'Levantar')
-    if (modoAntes.current === 'montar' && v.modo === 'chao' && !nadando)
+    // Descer da sela com o desmontar só na sela baixa; na alta (o dino), o corte, como subir.
+    if (modoAntes.current === 'montar' && v.modo === 'chao' && !nadando && SELA_BAIXA)
       comecarGesto(gesto, 'Desmontar')
     modoAntes.current = v.modo
     if (v.descanso) jeitoAntes.current = v.descanso.jeito

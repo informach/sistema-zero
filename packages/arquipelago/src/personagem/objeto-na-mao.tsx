@@ -61,6 +61,9 @@ export function camadaDosDedos(objeto: string) {
  */
 export function camadasDosDedos(objeto: string): CamadaDoJogo[] {
   const todas = camadasDosDedosDoCatalogo()
+  // A pegada que a arte declarou para o objeto (`fingers`) vale primeiro.
+  const daPegada = AVATAR_CATALOG.equipment?.[objeto]?.fingers
+  if (daPegada?.length) return todas.filter((c) => daPegada.includes(c.id))
   const doObjeto = todas.filter((c) => c.objects.includes(objeto))
   const fechaADireita = (c: CamadaDoJogo) => c.bones.some((o) => o.startsWith('RightHand'))
   if (doObjeto.some(fechaADireita)) return doObjeto

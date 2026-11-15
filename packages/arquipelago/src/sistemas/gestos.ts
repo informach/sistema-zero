@@ -110,15 +110,24 @@ const suave = (t: number) => {
 }
 
 /**
- * Quanto o desenho sobe (m) por causa da sela, que é alta (`sela`): montada, até a sela (a origem do
- * `montado` é ela). Subindo, o desenho vai do chão até onde o assento do `montar` cai na sela, ao
- * longo do clipe (a perna passa por cima enquanto ela sobe); descendo, o mesmo ao contrário, junto
- * do `desmontar`.
+ * A sela é baixa o bastante para o `montar` e o `desmontar` da arte (feitos para um assento a 0,3 m
+ * nativos, com folga de um quarto). Na sela alta (o dino do Vale, 0,70 m nativos), a arte pediu o
+ * mesmo corte do vagonete: ela aparece direto montada e direto no chão.
+ */
+export function selaBaixa(sela: number): boolean {
+  return sela <= ASSENTO_DO_MONTAR * 1.25
+}
+
+/**
+ * Quanto o desenho sobe (m) por causa da sela (`sela`): montada, até a sela (a origem do `montado` é
+ * ela). Na sela baixa, subindo, o desenho vai do chão até onde o assento do `montar` cai na sela, ao
+ * longo do clipe; descendo, o mesmo ao contrário, junto do `desmontar`. Na alta, o corte.
  */
 export function alturaNaSela(
   sela: number,
   o: { montada: boolean; noModo: number; desmontando: number | null },
 ): number {
+  if (!selaBaixa(sela)) return o.montada ? sela : 0
   const ateOAssento = Math.max(0, sela - ASSENTO_DO_MONTAR)
   if (o.montada) {
     const d = DURACAO_DO_CLIPE.montar

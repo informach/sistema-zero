@@ -7,7 +7,13 @@ import { Contexto, type ContextoDoJogo } from '../src/estado/contexto'
 import { criarLoja } from '../src/estado/loja'
 import { AvatarDoJogo } from '../src/personagem/avatar-do-jogo'
 import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from '../src/personagem/bracos'
-import type { EntradaDaLocomocao } from '../src/sistemas/locomocao'
+import type { ObjetoDoGesto } from '../src/sistemas/gestos'
+import {
+  duracaoDoGesto,
+  type EntradaDaLocomocao,
+  GESTOS,
+  type Gesto,
+} from '../src/sistemas/locomocao'
 
 /**
  * Visualizador das animações do avatar (fora do jogo, para conferir os clipes). O avatar fica no
@@ -109,6 +115,19 @@ function Motor({
     } else if (q.get('nado') === '1') {
       m.nadando = true
       m.velocidade = Number(q.get('v') ?? 2.6)
+    } else if (t.current < ATRASO) {
+      // `?atraso=1.5`: parada até lá (o rig fica de pé antes do gesto ou do modo começar).
+      m.velocidade = 0
+    } else if (GESTO) {
+      // `?gesto=Regar`: o gesto parada, recomeçando a cada vez que acaba.
+      m.velocidade = 0
+      m.especial = null
+      const d = duracaoDoGesto(GESTO)
+      m.gesto = (t.current - ATRASO) % (d + 0.6) < d ? GESTO : null
+    } else if (q.get('montar') === '1' || q.get('dirigir') === '1' || q.get('vagonete') === '1') {
+      m.especial =
+        q.get('montar') === '1' ? 'montar' : q.get('dirigir') === '1' ? 'dirigir' : 'vagonete'
+      m.velocidade = 0
     } else if (q.get('sentar') === '1' || q.get('deitar') === '1') {
       m.especial = q.get('sentar') === '1' ? 'sentar' : 'deitar'
       m.velocidade = 0
@@ -134,14 +153,30 @@ function Motor({
     } else {
       m.velocidade = Number(q.get('v') ?? 1.4)
     }
+    // O relógio do visualizador, para as fotos quadro a quadro saberem onde estão.
+    ;(globalThis as { __tempo?: number }).__tempo = t.current
+    const noGesto =
+      GESTO && m.gesto
+        ? ` · ${GESTO} ${((t.current - ATRASO) % (duracaoDoGesto(GESTO) + 0.6)).toFixed(2)} s`
+        : ''
     aoMudar(
-      `${m.velocidade.toFixed(2)} m/s${m.noChao ? '' : ' (no ar)'}${m.nadando ? ' (nado)' : ''}`,
+      `${m.velocidade.toFixed(2)} m/s${m.noChao ? '' : ' (no ar)'}${m.nadando ? ' (nado)' : ''}${noGesto}`,
     )
   })
   return null
 }
 
 const CIPO_NA_MAO = q.get('cipo') === '1'
+/** `?gesto=<Gesto>`, `?objeto=mao_regador|mao_balde` e `?lanterna=1` (o objeto na mão). */
+const GESTO = (GESTOS as readonly string[]).includes(q.get('gesto') ?? '')
+  ? (q.get('gesto') as Gesto)
+  : null
+const OBJETO: ObjetoDoGesto | null =
+  q.get('objeto') === 'mao_regador' || q.get('objeto') === 'mao_balde'
+    ? (q.get('objeto') as ObjetoDoGesto)
+    : null
+const LANTERNA = q.get('lanterna') === '1'
+const ATRASO = Number(q.get('atraso') ?? 0)
 
 /**
  * No cipó como no jogo: o clipe da arte (`pendurar_cipo`) e o corpo posto de modo que as mãos dele
@@ -207,7 +242,11 @@ function Visualizador() {
         <Camera />
         <Chao movimento={movimento} />
         <Motor movimento={movimento} aoMudar={setTexto} />
-        {CIPO_NA_MAO ? <NaCorda movimento={movimento} /> : <AvatarDoJogo movimento={movimento} />}
+        {CIPO_NA_MAO ? (
+          <NaCorda movimento={movimento} />
+        ) : (
+          <AvatarDoJogo movimento={movimento} objetoDoGesto={OBJETO} comLanterna={LANTERNA} />
+        )}
       </Canvas>
       <p
         style={{

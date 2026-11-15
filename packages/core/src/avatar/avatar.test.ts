@@ -166,6 +166,21 @@ describe('o catálogo', () => {
     expect(C.rules.groups[lanterna.socket]).toBeUndefined()
   })
 
+  test('a pegada de cada objeto de mão aponta para camadas de dedos que existem', () => {
+    const dedos = new Set(
+      (C.base.skeleton.game.layers ?? []).filter((c) => c.with === undefined).map((c) => c.id),
+    )
+    for (const [id, objeto] of Object.entries(C.equipment ?? {})) {
+      expect(objeto.fingers?.length, id).toBeGreaterThan(0)
+      for (const clipe of objeto.fingers ?? [])
+        expect(dedos.has(clipe), `${id}: ${clipe}`).toBe(true)
+    }
+    // O balde e o regador fecham a mão na alça como a lanterna no cabo; a barra, com as duas mãos.
+    expect(C.equipment?.mao_balde?.fingers).toEqual(C.equipment?.mao_lanterna?.fingers)
+    expect(C.equipment?.mao_regador?.fingers).toEqual(C.equipment?.mao_lanterna?.fingers)
+    expect(C.equipment?.mao_barra_planador?.fingers?.length).toBe(2)
+  })
+
   test('toda peça citada por grupo, conjunto, orelha e padrão existe', () => {
     for (const [grupo, g] of Object.entries(C.rules.groups))
       for (const id of g.parts) {

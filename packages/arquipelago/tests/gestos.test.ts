@@ -11,6 +11,7 @@ import {
   passoDoGesto,
   pedirGesto,
   progressoDoGesto,
+  selaBaixa,
 } from '../src/sistemas/gestos'
 import { DURACAO_DO_CLIPE, duracaoDoGesto } from '../src/sistemas/locomocao'
 import { MONTARIA } from '../src/sistemas/montaria'
@@ -79,18 +80,26 @@ describe('os gestos pedidos pelo mundo', () => {
   })
 })
 
-describe('a sela alta do dino com os clipes de sela baixa da arte', () => {
-  const sela = MONTARIA.subidaDoDesenho
+describe('subir na sela e descer dela', () => {
   test('o assento do montar vem do catálogo, na escala do herói', () => {
     const montar = AVATAR_CATALOG.base.skeleton.game.clips.find((c) => c.id === 'montar')
     expect(ASSENTO_DO_MONTAR).toBeCloseTo(
       ((montar?.place?.assento_m as number) ?? 0.3) * CORPO.medidas.scale,
       6,
     )
-    expect(ASSENTO_DO_MONTAR).toBeLessThan(sela)
   })
 
+  test('a sela do dino é alta: o corte direto, como no vagonete (pedido da arte)', () => {
+    const alta = MONTARIA.subidaDoDesenho
+    expect(selaBaixa(alta)).toBe(false)
+    expect(alturaNaSela(alta, { montada: true, noModo: 0, desmontando: null })).toBe(alta)
+    expect(alturaNaSela(alta, { montada: false, noModo: 0, desmontando: 0 })).toBe(0)
+  })
+
+  // Uma sela baixa (um pônei, um banquinho de montar): o montar e o desmontar da arte.
+  const sela = ASSENTO_DO_MONTAR * 1.2
   test('subindo: do chão até onde o assento do clipe cai na sela; montada, a sela', () => {
+    expect(selaBaixa(sela)).toBe(true)
     const subindo = (noModo: number) =>
       alturaNaSela(sela, { montada: true, noModo, desmontando: null })
     expect(subindo(0)).toBe(0)

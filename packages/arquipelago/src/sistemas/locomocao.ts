@@ -558,6 +558,8 @@ export interface EntradaDaLocomocao {
   empurrando?: boolean
   /** Um gesto (`GESTOS`) em andamento: parada no chão, ele no lugar do "Parado". */
   gesto?: Gesto | null
+  /** Montada numa sela baixa: o subir na sela toca antes do laço (na alta, o corte direto). */
+  selaBaixa?: boolean
 }
 
 export type ModoEspecial =
@@ -711,12 +713,12 @@ export function passoDaLocomocao(
       transicao = TRANSICAO.agua
       laco('NoBarco')
     } else if (e.especial === 'montar') {
-      // Montar: o subir na sela uma vez (a perna passa por cima enquanto o desenho sobe até a
-      // sela), depois o laço de quem já subiu.
+      // Montar: na sela baixa, o subir na sela uma vez (a perna passa por cima), depois o laço de
+      // quem já subiu; na alta (o dino), direto no laço, como no vagonete.
       transicao = TRANSICAO.agua
       if (!l.naSela) {
         l.naSela = true
-        l.tempos.Montando = 0
+        l.tempos.Montando = e.selaBaixa ? 0 : 1
       }
       if (l.tempos.Montando < 1) {
         alvo.Montando = 1

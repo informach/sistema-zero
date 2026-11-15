@@ -12207,7 +12207,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "840317bb51220286",
         "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
         "migratedAt": "2026-11-15"
-      }
+      },
+      "fingers": [
+        "segurar_cilindro_fino_dir"
+      ]
     },
     "mao_barra_planador": {
       "label": "Barra do planador (duas mãos)",
@@ -12221,7 +12224,11 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "fb2f2ff3d3ad105f",
         "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
         "migratedAt": "2026-11-14"
-      }
+      },
+      "fingers": [
+        "segurar_cilindro_fino_dir",
+        "segurar_cilindro_fino_esq"
+      ]
     },
     "mao_lanterna": {
       "label": "Lanterna (mão direita)",
@@ -12243,7 +12250,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "064a31f0eb58888d",
         "commit": "bb7e5e7c76ee247bda7493ccedb8cc14940a7265",
         "migratedAt": "2026-11-14"
-      }
+      },
+      "fingers": [
+        "segurar_cilindro_fino_dir"
+      ]
     },
     "mao_regador": {
       "label": "Regador",
@@ -12257,7 +12267,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "a19f40638cf4254a",
         "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
         "migratedAt": "2026-11-15"
-      }
+      },
+      "fingers": [
+        "segurar_cilindro_fino_dir"
+      ]
     },
     "mao_varinha_luz": {
       "label": "Varinha de luz",
@@ -12279,7 +12292,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "meta": "57168f1e5ebc15d5",
         "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
         "migratedAt": "2026-11-15"
-      }
+      },
+      "fingers": [
+        "segurar_cilindro_fino_dir"
+      ]
     }
   }
 }
