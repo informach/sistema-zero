@@ -137,6 +137,35 @@ export function trocasDaFantasia(
   return trocas
 }
 
+/**
+ * As peças que uma fantasia cita mas que não são só dela: a que já é vendida sozinha (está no
+ * catálogo sem `set`) ou a que já é parte de outra fantasia (as fantasias da fase 2 da arte
+ * reaproveitam capuz, luvas e botas). Uma peça é parte de UMA fantasia só (`set`): nas outras entra
+ * uma cópia (`<peça>__na_<fantasia>`, como na troca da arte), e a original segue como era. Peça
+ * nova citada por várias fica com a primeira fantasia que a cita. Junta-se às `trocas`.
+ */
+export function copiasPorReuso(
+  regras: Pick<RegrasDaArte, 'fantasias'>,
+  partes: Readonly<Record<string, { set?: string } | undefined>>,
+  trocas: Map<string, Map<string, { nossa: string; id: string }>>,
+): Map<string, Map<string, { nossa: string; id: string }>> {
+  const casa = new Map<string, string | null>()
+  for (const fantasia of regras.fantasias)
+    for (const { peca } of fantasia.pecas) {
+      if (casa.has(peca)) continue
+      const entrada = partes[peca]
+      casa.set(peca, entrada ? (entrada.set ?? null) : fantasia.id)
+    }
+  for (const fantasia of regras.fantasias)
+    for (const { peca } of fantasia.pecas) {
+      if (trocas.get(fantasia.id)?.has(peca) || casa.get(peca) === fantasia.id) continue
+      const daFantasia = trocas.get(fantasia.id) ?? new Map<string, { nossa: string; id: string }>()
+      daFantasia.set(peca, { nossa: peca, id: `${peca}__na_${fantasia.id}` })
+      trocas.set(fantasia.id, daFantasia)
+    }
+  return trocas
+}
+
 export async function migrar(args: readonly string[], hoje = new Date()) {
   const { ids, destino, ref, tudo, soEsqueleto, buscar } = argumentos(args)
   if (buscar) buscarDaArte()
@@ -159,8 +188,9 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
     })
   }
 
-  // Dentro de cada fantasia, a peça do pack que a arte trocou por uma nossa: do pack → id da cópia.
-  const trocas = trocasDaFantasia(regras)
+  // Dentro de cada fantasia, a peça do pack que a arte trocou por uma nossa, e a peça que não é só
+  // dela (vendida sozinha ou de outra fantasia): → id da cópia que entra no conjunto.
+  const trocas = copiasPorReuso(regras, catalogo.parts, trocasDaFantasia(regras))
   const substituidas = new Set([
     ...Object.keys(regras.substituicoes?.pares ?? {}),
     ...Object.values(regras.trocas_fantasia?.pares ?? {}).flatMap((pares) => Object.values(pares)),
@@ -323,6 +353,9 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       if (await enviar(thumb, miniatura)) enviados += 1
 
       const antes = catalogo.parts[item.id]
+      const conjunto = conjuntoDaParte.get(item.id)
+      // Peça nova que é parte de uma fantasia não tem preço próprio: vem com o conjunto.
+      const proposta = proporPeca(item)
       const editorial = antes
         ? {
             audience: antes.audience,
@@ -332,8 +365,9 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
             ...(antes.adultOnly ? { adultOnly: true as const } : {}),
             ...(antes.review ? { review: true as const } : {}),
           }
-        : { ...proporPeca(item), review: true as const }
-      const conjunto = conjuntoDaParte.get(item.id)
+        : conjunto
+          ? { audience: proposta.audience, tier: 'set' as const, price: 0, review: true as const }
+          : { ...proposta, review: true as const }
       const entrada: AvatarPartEntry = {
         slot: item.slot,
         // O rascunho do pack não tem grupo (fica escondido): vale o encaixe.
@@ -418,7 +452,9 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
         ...base,
         slot,
         group: doPack.group,
-        label: `${catalogo.sets[fantasia.id]?.label ?? fantasia.rotulo}: ${nossa.label.toLowerCase()}`,
+        // A parte de outra fantasia leva só o nome da peça ("Gato: botas", não "Gato: coelho
+        // roxo: botas").
+        label: `${catalogo.sets[fantasia.id]?.label ?? fantasia.rotulo}: ${(nossa.set ? (nossa.label.split(': ').pop() ?? nossa.label) : nossa.label).toLowerCase()}`,
         audience: doPack.audience,
         tier: 'set',
         price: 0,

@@ -11,8 +11,10 @@ import {
   isListed,
   ownershipOf,
   removeSlot,
+  setSlots,
   withCurrentSet,
   withEars,
+  wornSet,
 } from './index'
 
 const parts = Object.entries(C.parts)
@@ -427,10 +429,16 @@ describe('posse', () => {
   })
 })
 
-describe('peça nossa dentro da fantasia (trocas_fantasia)', () => {
+describe('peça nossa dentro da fantasia (trocas_fantasia) e peça reaproveitada', () => {
   const copias = parts.filter(([, p]) => p.copyOf)
 
-  test('a fantasia de cavaleiro usa a cópia do elmo novo, e o elmo segue vendido sozinho', () => {
+  test('toda parte de uma fantasia é dela (uma peça, uma fantasia)', () => {
+    for (const [setId, conjunto] of Object.entries(C.sets))
+      for (const { part } of conjunto.parts)
+        expect(C.parts[part]?.set, `${setId}: ${part}`).toBe(setId)
+  })
+
+  test('a fantasia usa a cópia (do elmo novo, das botas, do capuz), e a original segue como era', () => {
     expect(copias.length).toBeGreaterThan(0)
     for (const [id, copia] of copias) {
       const original = C.parts[copia.copyOf ?? '']
@@ -438,28 +446,47 @@ describe('peça nossa dentro da fantasia (trocas_fantasia)', () => {
       expect(copia.file).toBe(original?.file ?? '')
       expect(copia.set, id).toBeDefined()
       expect(copia.tier).toBe('set')
-      expect(original?.set, `${copia.copyOf} não é parte de conjunto`).toBeUndefined()
-      expect(original?.hidden).toBeUndefined()
+      // A original é vendida sozinha ou é parte de OUTRA fantasia, nunca desta.
+      expect(original?.set, `${copia.copyOf}`).not.toBe(copia.set)
       const conjunto = C.sets[copia.set ?? '']
       expect(conjunto?.parts.some((p) => p.part === id)).toBe(true)
       expect(ownershipOf(C, id)).toBe(copia.set ?? '')
     }
+    // O elmo novo, fora da fantasia, continua à venda sozinho.
+    expect(C.parts.chapeu_elmo_cavaleiro?.set).toBeUndefined()
+    expect(C.parts.chapeu_elmo_cavaleiro?.hidden).toBeUndefined()
   })
 
   test('quem já vestia a fantasia com a peça antiga do pack passa a vestir a nova, válido', () => {
+    let trocas = 0
     for (const [id, copia] of copias) {
       const conjunto = C.sets[copia.set ?? '']
       if (!conjunto) throw new Error(id)
+      // Só as trocas da arte têm peça antiga (a do pack, escondida, na mesma fantasia).
       const antiga = parts.find(
         ([pid, p]) => p.set === copia.set && p.slot === copia.slot && p.hidden && pid !== id,
       )?.[0]
-      if (!antiga) throw new Error(`sem a peça antiga de ${id}`)
+      if (!antiga) continue
+      trocas += 1
       const vestida: AvatarSlots = { ...base() }
       for (const { slot, part } of conjunto.parts) vestida[slot] = part
       vestida[copia.slot] = antiga
       const atualizada = withEars(C, withCurrentSet(C, vestida))
       expect(atualizada[copia.slot]).toBe(id)
       expect(avatarProblems(C, atualizada)).toEqual([])
+    }
+    expect(trocas).toBeGreaterThan(0)
+  })
+
+  test('as fantasias que reaproveitam botas, capuz e luvas se vestem inteiras, só com o conjunto', () => {
+    for (const setId of ['fantasia_raposa', 'fantasia_gato', 'fantasia_urso_polar']) {
+      const vestida = withEars(C, { ...base(), ...setSlots(C, setId) })
+      expect(wornSet(C, vestida), setId).toBe(setId)
+      expect(avatarProblems(C, vestida), setId).toEqual([])
+      for (const id of Object.values(vestida)) {
+        const chave = ownershipOf(C, id)
+        expect(chave === null || chave === setId, `${setId}: ${id}`).toBe(true)
+      }
     }
   })
 
