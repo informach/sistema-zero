@@ -2049,7 +2049,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (`drizzle/challenge-master-key.ts`), então `all_kids_courses` não encobre o curso adulto. O candidato
   traz `audience`. No adulto, a chave é a mesma com o sufixo `-adult` (mesmas variáveis), o nome
   reserva é `Aluno(a)` e os links são do app adulto (env opcional **`COMMUNITY_URL`**): não ativou →
-  `/esqueci-senha`; não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
+  `/login` (no Kids, `/login/responsavel`, que abre no código; a senha é opcional desde 15/11/2026 e
+  "ativou" = criou senha OU já entrou); não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
   `/progresso`; concluiu e expirou → `accessEndedLink(funnelUrl, 'adult', 'desafio-concluido' |
   'desafio-encerrado')` (continuidade adulta do funil, com UTM). Sem `COMMUNITY_URL`, os avisos que levam
   ao app não saem nem são marcados (log `challenge_lifecycle.adult_url_missing` /
