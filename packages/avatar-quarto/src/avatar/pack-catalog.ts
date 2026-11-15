@@ -17,6 +17,8 @@ import {
   drawAvatar,
   type PhysicalBody,
   physicalBody,
+  situationFor,
+  withBaseBottom,
   withCurrentSet,
   withEars,
   withMountedVariants,
@@ -36,6 +38,8 @@ export {
   drawAvatar,
   type PhysicalBody,
   physicalBody,
+  situationFor,
+  withBaseBottom,
   withEars,
   withMountedVariants,
 }

@@ -90,12 +90,41 @@ export interface AvatarPartEntry {
    */
   mountedVariant?: string
   /**
-   * Esta peça é a variante de outra (`variante_de` da arte), para usar numa situação (`usar_em`,
-   * como `montado`). Não se vende nem sai no sorteio: aparece só no lugar da original.
+   * Esta peça é a variante de outra (`variante_de` da arte), para usar nas situações de `usar_em`
+   * (`montado`, `montado_largo`). Não se vende nem sai no sorteio: aparece só no lugar da original.
    */
   variantOf?: string
-  variantFor?: string
+  variantFor?: string[]
+  /** Nestas animações do jogo a peça some (`sai_nas_animacoes` da arte: a mochila deitada). */
+  offIn?: string[]
+  /**
+   * Animação do jogo → clipe de camada (de `skeleton.game.layers`) que tira o braço da frente da
+   * peça: toca junto com a animação, no mesmo tempo, só no osso dele (`camadas_braco` da arte).
+   */
+  armLayers?: Record<string, string>
+  /**
+   * Peça com um arquivo por situação (o planador dobrado nas costas). Cada situação é outra peça
+   * escondida do catálogo (`situationOf` = esta), com o próprio arquivo; aqui fica qual usar.
+   */
+  situations?: AvatarPartSituations
+  /** Esta peça é o arquivo de uma situação de outra (`situations`): nunca se escolhe sozinha. */
+  situationOf?: string
   origin: AvatarPartOrigin
+}
+
+export interface AvatarPartSituations {
+  /** O encaixe do esqueleto onde a peça vai (só para conferência: o arquivo já vem no lugar). */
+  socket?: string
+  /** `none` (nada nas costas) ou o id da peça de costas vestida → a peça daquela situação. */
+  byBack: Record<string, string>
+  /** O mesmo com a alça alta (por cima do casaco), onde há alças. */
+  highStrap?: Record<string, string>
+  /** Com estas peças (os casacos), vale a alça alta. */
+  highStrapWith?: string[]
+  /** Com estas peças (cabelos compridos, o saco de papel), a peça não aparece. */
+  hiddenWith?: string[]
+  /** Até onde a peça vai para trás, sentada (m nativos), por situação (chave do `byBack`). */
+  seatedBack?: Record<string, number>
 }
 
 export interface AvatarSetEntry {
@@ -140,6 +169,17 @@ export interface AvatarRules {
   festas: Record<string, { label: string; prize: string; themed: string[] }>
   /** O avatar de partida do pack. */
   default: Record<string, string>
+  /**
+   * A peça de baixo fixa (o short azul-marinho): o desenho a põe sozinha quando o avatar não tem
+   * nenhuma peça destes grupos nem fantasia, como as orelhas seguem o corpo. Nunca é guardada.
+   */
+  baseBottom?: { part: string; slot: string; coveringGroups: string[] }
+  /**
+   * Peça do pack → a peça nossa que entra no lugar dela (`substituicoes` da arte: o vestido com o
+   * shortinho por baixo). A do pack fica escondida; quem tinha uma tem a outra, e o desenho mostra a
+   * nossa (`withReplacements`).
+   */
+  replacements?: Record<string, string>
 }
 
 /** Um osso do esqueleto na pose de descanso (em pé, metros, Y para cima, frente +Z). */

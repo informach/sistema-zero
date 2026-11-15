@@ -161,11 +161,13 @@ export function regrasDoCatalogo(
   regras: RegrasDaArte,
   equipamentos: ReadonlySet<string> = new Set(),
 ): AvatarRules {
-  const deEquipamento = new Set(
-    Object.entries(regras.grupos)
+  // Fora do guarda-roupa: os grupos dos objetos de mão e os dos encaixes só do jogo (o planador).
+  const deEquipamento = new Set([
+    ...Object.entries(regras.grupos)
       .filter(([, g]) => g.pecas.length > 0 && g.pecas.every((p) => equipamentos.has(p)))
       .map(([id]) => id),
-  )
+    ...regras.slots.filter((s) => s.so_do_jogo).flatMap((s) => s.grupos),
+  ])
   const incompatible: Record<string, Set<string>> = {}
   const ligar = (a: string, b: string) => {
     incompatible[a] ??= new Set()
@@ -219,6 +221,18 @@ export function regrasDoCatalogo(
     ),
     festas,
     default: regras.padrao.pecas,
+    ...(regras.substituicoes && Object.keys(regras.substituicoes.pares).length > 0
+      ? { replacements: ordenado(regras.substituicoes.pares) }
+      : {}),
+    ...(regras.peca_de_baixo_fixa
+      ? {
+          baseBottom: {
+            part: regras.peca_de_baixo_fixa.peca,
+            slot: regras.peca_de_baixo_fixa.slot,
+            coveringGroups: regras.peca_de_baixo_fixa.grupos_que_cobrem,
+          },
+        }
+      : {}),
   }
 }
 
@@ -408,10 +422,11 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
     equipamentosQueSairam: Object.keys(catalogo.equipment ?? {}).filter((id) => !idsDoJogo.has(id)),
     novas,
     mudaram,
-    // A cópia de uma peça para dentro da fantasia (`copyOf`) não existe na arte: quem a escreve é a
-    // migração. Não conta como peça que saiu.
+    // A cópia de uma peça para dentro da fantasia (`copyOf`) e o arquivo de uma situação
+    // (`situationOf`) não existem na arte como peça: quem os escreve é a migração. Não contam como
+    // peça que saiu.
     sairam: Object.entries(catalogo.parts)
-      .filter(([id, p]) => !ids.has(id) && !p.retired && !p.copyOf)
+      .filter(([id, p]) => !ids.has(id) && !p.retired && !p.copyOf && !p.situationOf)
       .map(([id]) => id),
     iguais,
     esqueletoMudou: esqueletoMudou(arte, catalogo, esqueleto.arquivo),

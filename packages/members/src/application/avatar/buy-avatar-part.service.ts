@@ -1,3 +1,4 @@
+import { AVATAR_CATALOG, ownsKey } from '@sistemazero/core/avatar'
 import {
   AvatarPartFestaError,
   AvatarPartFreeError,
@@ -54,9 +55,10 @@ export class BuyAvatarPartService {
     if (part.tier === 'free' || part.tier === 'auto') throw new AvatarPartFreeError()
     if (part.tier === 'festa') throw new AvatarPartFestaError()
 
-    // Já possui? → no-op, sem cobrar (a corrida de 2 compras converge no ledger abaixo).
+    // Já possui? → no-op, sem cobrar (a corrida de 2 compras converge no ledger abaixo). Conta a
+    // equivalente: quem tem o vestido do pack já tem o nosso, com o shortinho (`ownsKey`).
     const owned = await this.avatar.listInventory(userId, audience)
-    if (owned.includes(partId)) {
+    if (ownsKey(AVATAR_CATALOG, partId, new Set(owned))) {
       return {
         alreadyOwned: true,
         balance: await this.coins.getBalance(userId, audience),
