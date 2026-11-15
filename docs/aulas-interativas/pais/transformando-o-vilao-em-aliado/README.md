@@ -33,7 +33,7 @@ Cada aula tem **conteúdo** (objetivo, crença que muda, estrutura e ferramenta)
 1. No Admin, criar o curso com audiência Kids e **Para quem: Pais** (fora da Jornada, só gravado). Título e descrições em [Módulos](modulos.md).
 2. Criar as seis aulas e importar cada manifesto. Os vídeos entram como vídeo planejado; depois, vincular cada gravação.
 3. Anexar a [apostila](apostila.pdf) no bloco de materiais da Aula 1 (`apostila`, com prévia em livro).
-4. **Presente do fim (Aula 6):** acrescentar ao bloco `presente` o item de link da campanha do Cadê (`/bolsa/<código>`).
+4. **Presente do fim (Aula 6):** o bloco `presente` já leva o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. A campanha `vilao-em-aliado-cade` (público Kids, oferta `cade-todo-mundo-7-dias`, ativa até 31/12/2027) precisa existir em Embaixadores no ambiente onde o curso for publicado.
 5. **O minicurso de presente:** criar no catálogo uma oferta do curso (acesso sem prazo, sem Mural) e uma campanha em Embaixadores que dê essa oferta de presente.
 
 ## Pendências de produção
