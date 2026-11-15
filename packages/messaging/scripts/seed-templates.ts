@@ -1451,8 +1451,11 @@ export const seeds = [
   // Mural; as chaves `-mural-trial` ficaram por compatibilidade. CONTRATO com o referrals:
   // `curso` (título do curso), `prazo` (texto pronto: "por 7 dias, até <data> (horário de
   // Brasília)" ou "sem prazo para terminar"), `mural` (frase pronta, vazia quando o presente não
-  // inclui o Mural: o Messaging não tem condicional) e `campanha` ou `indicador`. Sem curso nem
-  // prazo fixos no texto.
+  // inclui o Mural: o Messaging não tem condicional), `orientacao` (o próximo passo pronto: no
+  // curso da criança, preparar o perfil e o aparelho; no curso PARA PAIS, abrir o curso em Cursos
+  // para pais; texto puro, porque o Messaging escapa os valores) e `campanha` ou `indicador`. Sem
+  // curso nem prazo fixos no texto. ⚠️ `orientacao` é obrigatória: suba o referrals que a envia
+  // antes de semear estes templates.
   ...[
     { key: 'referrals-scholarship-welcome-mural-trial', campaign: false, newAccount: true },
     { key: 'referrals-scholarship-existing-mural-trial', campaign: false, newAccount: false },
@@ -1464,8 +1467,8 @@ export const seeds = [
     name: `Presente do curso (${campaign ? 'campanha' : 'indicação'}, conta ${newAccount ? 'nova' : 'existente'})`,
     subject: 'Seu presente está liberado, {{nome}}',
     variables: campaign
-      ? ['nome', 'campanha', 'curso', 'prazo', 'mural', 'link']
-      : ['nome', 'indicador', 'curso', 'prazo', 'mural', 'link'],
+      ? ['nome', 'campanha', 'curso', 'prazo', 'mural', 'orientacao', 'link']
+      : ['nome', 'indicador', 'curso', 'prazo', 'mural', 'orientacao', 'link'],
     body: emailLayout({
       preheader: 'O curso {{curso}} já está na sua conta.',
       title: 'Seu presente está pronto, {{nome}}',
@@ -1477,8 +1480,7 @@ export const seeds = [
         ),
         p('O acesso fica liberado {{prazo}}.'),
         p('{{mural}}'),
-        p(DEVICE_SETUP.html),
-        ...(newAccount ? [] : [p(DEVICE_ALREADY_READY)]),
+        p('{{orientacao}}'),
         ctaButton(newAccount ? 'Criar minha senha e começar' : 'Acessar meu presente', '{{link}}'),
         p(
           'O presente não inclui outros cursos nem ferramentas de criação livre. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',

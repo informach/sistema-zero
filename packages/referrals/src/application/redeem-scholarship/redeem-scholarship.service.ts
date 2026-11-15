@@ -22,6 +22,7 @@ import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
   giftDurationText,
+  giftGuidanceText,
   giftMuralText,
   giftOfferProblem,
   giftOfferRef,
@@ -712,6 +713,12 @@ export class RedeemScholarshipService {
           hasDeadline: expiresAt !== null,
         }),
         validade,
+        // O próximo passo (e-mails Kids do presente): perfil e aparelho da criança, ou o curso
+        // para pais na área dos pais.
+        orientacao: giftGuidanceText({
+          parentsCourse: context.course?.learner === 'parents',
+          existingAccount: !buyerCreated,
+        }),
       }
       const parentsCourseSlug = context.course?.learner === 'parents' ? context.course.slug : null
 

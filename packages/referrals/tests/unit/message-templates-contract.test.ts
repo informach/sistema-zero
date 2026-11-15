@@ -93,3 +93,23 @@ describe('templates do Messaging usados pelo Referrals', () => {
     }
   })
 })
+
+describe('e-mails Kids do presente por oferta (15/11/2026)', () => {
+  const start = seed.indexOf("{ key: 'referrals-scholarship-welcome-mural-trial'")
+  const gift = seed.slice(start, seed.indexOf('// ── Presente ADULTO (20/10/2026)', start))
+  const service = readFileSync(
+    join(SRC, 'application/redeem-scholarship/redeem-scholarship.service.ts'),
+    'utf8',
+  )
+
+  test('os quatro templates pedem a `orientacao` que o Referrals envia', () => {
+    expect(start).toBeGreaterThan(0)
+    expect(gift).toContain("['nome', 'campanha', 'curso', 'prazo', 'mural', 'orientacao', 'link']")
+    expect(gift).toContain("['nome', 'indicador', 'curso', 'prazo', 'mural', 'orientacao', 'link']")
+    expect(gift).toContain("p('{{orientacao}}')")
+    // O parágrafo fixo do aparelho da criança saiu: no curso para pais ele não serve.
+    expect(gift).not.toMatch(/DEVICE_SETUP|DEVICE_ALREADY_READY/)
+    for (const name of ['curso', 'prazo', 'mural', 'orientacao'])
+      expect(service).toMatch(new RegExp(String.raw`\n\s+${name}:`))
+  })
+})

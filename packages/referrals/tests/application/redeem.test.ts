@@ -139,6 +139,11 @@ describe('RedeemScholarshipService', () => {
     expect(email.variables.prazo).toStartWith('por 7 dias, até ')
     expect(email.variables.prazo).toEndWith('(horário de Brasília)')
     expect(email.variables.mural).toContain('Mural dos Criadores')
+    // Curso da criança, conta nova: o próximo passo é o perfil e o aparelho do filho.
+    expect(email.variables.orientacao).toStartWith(
+      'Depois de entrar como responsável, clique em “Adicionar criança”.',
+    )
+    expect(email.variables.orientacao).not.toContain('já autorizou')
     expect(email.variables.link).toContain('/redefinir-senha?token=tok-abc')
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
   })
@@ -197,6 +202,10 @@ describe('RedeemScholarshipService', () => {
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.variables.curso).toBe('Transformando o vilão em aliado')
     expect(email.variables.link).toBe('https://kids.sistemazero.com.br/pais/cursos/cade-todo-mundo')
+    // Curso para pais: nada de perfil nem aparelho da criança.
+    expect(email.variables.orientacao).toBe(
+      'Entre na área dos pais e abra o curso em Cursos para pais. O curso é para você assistir na sua conta, sem perfil de criança.',
+    )
   })
 
   test('resgate ANTIGO (trial) em andamento segue o caminho antigo: curso + Mural', async () => {
@@ -230,6 +239,11 @@ describe('RedeemScholarshipService', () => {
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-existing-mural-trial')
     expect(email.variables.link).toContain('/login/responsavel')
+    // Conta que já existia: o aparelho autorizado antes continua valendo.
+    expect(email.variables.orientacao).toContain('“Autorizar aparelho”')
+    expect(email.variables.orientacao).toEndWith(
+      'Se você já autorizou o computador do seu filho, não precisa refazer: ele continua entrando pelo próprio perfil até o prazo que você escolheu terminar.',
+    )
   })
 
   test('resgate da política visitante conserva sua entrega e seu e-mail', async () => {
