@@ -47,7 +47,7 @@ import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-c
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
 import { amplitudeDoPasso } from '../sistemas/ritmo-da-aventura'
-import { vestirAsCostas } from './costas'
+import { clipesDoCorpo, vestirAsCostas } from './costas'
 import {
   type ApoioDasMaos,
   acharBracos,
@@ -201,6 +201,8 @@ export function AvatarDoJogo({
   montada = false,
   planadorNasCostas = false,
   sentada = false,
+  empurrandoComo = null,
+  nadando = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -223,6 +225,10 @@ export function AvatarDoJogo({
   planadorNasCostas?: boolean
   /** Sentada num assento: o fardo do planador sai (o encosto o cortaria). */
   sentada?: boolean
+  /** Empurrando (o jeito pela altura): agachada, as peças de costas e o fardo saem. */
+  empurrandoComo?: 'baixo' | 'meio' | 'alto' | null
+  /** Nadando: o fardo sai (a arte, a partir da próxima entrega). */
+  nadando?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
@@ -234,13 +240,22 @@ export function AvatarDoJogo({
     // Deitada (o mesmo `semChapeu`), a mochila sai; com o planador, o fardo entra nas costas.
     const costas = vestirAsCostas(calcado, {
       planador: planadorNasCostas,
-      deitada: semChapeu,
+      clipes: clipesDoCorpo({ deitada: semChapeu, empurrandoComo, nadando }),
       sentada,
     })
     if (!semChapeu || !costas.slots.chapeu) return costas
     const { chapeu: _fora, ...semOChapeu } = costas.slots
     return { ...costas, slots: semOChapeu }
-  }, [slotsDoJogo, deRodas, semChapeu, montada, planadorNasCostas, sentada])
+  }, [
+    slotsDoJogo,
+    deRodas,
+    semChapeu,
+    montada,
+    planadorNasCostas,
+    sentada,
+    empurrandoComo,
+    nadando,
+  ])
   const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
   const equipamento = equipamentoDaMao(naMao)
   const comBraco = naMao !== null && camadasDoBraco(naMao).length > 0

@@ -233,6 +233,16 @@ export function Personagem({
   const deitada = useEstado((s) => s.descanso === 'deitar')
   const sentada = useEstado((s) => s.descanso === 'sentar')
   const [levantandoDaCama, setLevantandoDaCama] = useState(false)
+  /** O que muda as costas do desenho (a mochila e o fardo saem empurrando agachada e nadando). */
+  const [empurrandoComo, setEmpurrandoComo] = useState<'baixo' | 'meio' | 'alto' | null>(null)
+  const [nadandoAgora, setNadandoAgora] = useState(false)
+  const costasMostradas = useRef<{
+    empurrando: 'baixo' | 'meio' | 'alto' | null
+    nadando: boolean
+  }>({
+    empurrando: null,
+    nadando: false,
+  })
   const levantandoMostrado = useRef(false)
 
   const inicial = useMemo(() => {
@@ -575,6 +585,16 @@ export function Personagem({
     empurrando.current = empurrou ? SEGURA_O_EMPURRAO : Math.max(0, empurrando.current - dt)
     m.empurrando = empurrando.current > 0
     m.empurrandoComo = m.empurrando ? jeitoDeEmpurrar(empurrado.current) : 'alto'
+    // Só o que muda vira estado (o desenho troca as peças das costas).
+    const jeitoAgora = m.empurrando ? m.empurrandoComo : null
+    if (jeitoAgora !== costasMostradas.current.empurrando) {
+      costasMostradas.current.empurrando = jeitoAgora
+      setEmpurrandoComo(jeitoAgora)
+    }
+    if (nadando !== costasMostradas.current.nadando) {
+      costasMostradas.current.nadando = nadando
+      setNadandoAgora(nadando)
+    }
     // Os gestos: saindo do banco ou da cama sem andar, ela levanta (o desenho fica no assento até o
     // fim do clipe); descendo da sela, o desmontar; e o que o mundo pedir. Andar corta.
     const andou = Math.hypot(ix, iz) > 0.3 || e.pulou
@@ -844,6 +864,8 @@ export function Personagem({
             montada={montado}
             planadorNasCostas={comPlanador && !planando}
             sentada={sentada}
+            empurrandoComo={empurrandoComo}
+            nadando={nadandoAgora}
           />
           {comPlanador ? (
             <Suspense fallback={null}>

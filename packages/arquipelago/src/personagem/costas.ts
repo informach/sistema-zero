@@ -18,15 +18,34 @@ export const PLANADOR_DOBRADO = 'planador_dobrado'
 /** O encaixe das peças de costas (a mochila, a capa). */
 const SLOT_DAS_COSTAS = 'costas'
 /** Os clipes da arte em que a criança está deitada (o `sai_nas_animacoes` das peças de costas). */
-const CLIPES_DEITADA = ['deitar', 'deitado', 'levantar_da_cama'] as const
+export const CLIPES_DEITADA = ['deitar', 'deitado', 'levantar_da_cama'] as const
+/** Os clipes da arte do nado (o planador sai nadando, a partir da próxima entrega da arte). */
+export const CLIPES_DO_NADO = ['nadar', 'boiar'] as const
 
 export interface SituacaoDasCostas {
   /** Tem o planador e não está voando: o fardo vai nas costas. */
   planador: boolean
-  /** Deitada ou levantando da cama (o fardo e a mochila saem). */
-  deitada: boolean
-  /** Sentada num assento: o fardo sai (ele vai até 0,22 a 0,31 m para trás e o encosto o cortaria). */
+  /**
+   * Os clipes da arte que valem agora (deitada, empurrando agachada, nadando): a peça que tem um
+   * deles no `sai_nas_animacoes` (`offIn`) some, a de costas e o fardo.
+   */
+  clipes: readonly string[]
+  /** Sentada num assento: o fardo sai (ele vai até 0,22 a 0,32 m para trás e o encosto o cortaria). */
   sentada: boolean
+}
+
+/** Os clipes da arte que valem agora, pelo que o corpo está fazendo. */
+export function clipesDoCorpo(corpo: {
+  deitada: boolean
+  empurrandoComo: 'baixo' | 'meio' | 'alto' | null
+  nadando: boolean
+}): string[] {
+  return [
+    ...(corpo.deitada ? CLIPES_DEITADA : []),
+    ...(corpo.empurrandoComo === 'baixo' ? ['empurrar_baixo'] : []),
+    ...(corpo.empurrandoComo === 'meio' ? ['empurrar_meio'] : []),
+    ...(corpo.nadando ? CLIPES_DO_NADO : []),
+  ]
 }
 
 /**
@@ -38,20 +57,18 @@ export function vestirAsCostas(
   situacao: SituacaoDasCostas,
   catalogo: AvatarCatalog = AVATAR_CATALOG,
 ): { slots: AvatarSlots; bracoDasCostas: string | null } {
+  const agora = new Set(situacao.clipes)
+  const sai = (id: string) => catalogo.parts[id]?.offIn?.some((c) => agora.has(c)) ?? false
   let vestido = slots
-  if (situacao.deitada) {
+  if (agora.size > 0) {
     const fica: AvatarSlots = {}
-    for (const [slot, id] of Object.entries(slots)) {
-      const some = catalogo.parts[id]?.offIn?.some((c) =>
-        (CLIPES_DEITADA as readonly string[]).includes(c),
-      )
-      if (!some) fica[slot] = id
-    }
+    for (const [slot, id] of Object.entries(slots)) if (!sai(id)) fica[slot] = id
     vestido = fica
   }
+  // O fardo escolhe o arquivo pelas costas de antes de a peça sair (ela volta logo depois).
   const fardo =
-    situacao.planador && !situacao.deitada && !situacao.sentada
-      ? situationFor(catalogo, PLANADOR_DOBRADO, vestido, SLOT_DAS_COSTAS)
+    situacao.planador && !situacao.sentada && !sai(PLANADOR_DOBRADO)
+      ? situationFor(catalogo, PLANADOR_DOBRADO, slots, SLOT_DAS_COSTAS)
       : null
   const slotDoFardo = catalogo.parts[PLANADOR_DOBRADO]?.slot ?? 'planador'
   const final = fardo ? { ...vestido, [slotDoFardo]: fardo } : vestido

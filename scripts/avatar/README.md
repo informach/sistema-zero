@@ -66,7 +66,9 @@ vestir a nova na leitura do Members (`withCurrentSet` do core), sem cair no sort
   - Peça com `situacoes` (o planador dobrado, `so_no_jogo`): cada arquivo de situação vira uma peça
     escondida `<id>__<situação>` (e `__alca_alta`) com `situationOf`; a principal guarda `situations`
     (`byBack`, `highStrap`, `highStrapWith`, `hiddenWith`, `seatedBack`). O core escolhe por
-    `situationFor`. Peça de costas nova pede situação nova na arte (o teste do core confere).
+    `situationFor`. Peça de costas nova pede situação nova na arte ou entra no `nao_aparece_com` (as
+    capas, 16/11); o teste do core confere. `situacoes.<peça>.nao_aparece_com` vira
+    `hiddenWithByBack`, e a situação que sai da arte fica aposentada.
   - Encaixe `so_do_jogo` (regras): o slot e os grupos dele ficam fora de `rules.slots`/`groups`.
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)

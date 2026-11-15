@@ -605,9 +605,22 @@ describe('as entregas de 15/11 da arte: shortinho, variantes, planador e cópias
     if (!planador || !s) throw new Error('sem o planador dobrado')
     expect(planador.hidden).toBe(true)
     expect(C.rules.slots.some((slot) => slot.id === planador.slot)).toBe(false)
-    // Cada peça de costas do catálogo tem a situação dela, e cada situação aponta para uma peça.
+    // Cada peça de costas do catálogo tem a situação dela ou esconde o planador (as capas), e cada
+    // situação aponta para uma peça de agora.
     const costas = parts.filter(([, p]) => p.slot === 'costas' && !p.retired && !p.copyOf)
-    for (const [id] of costas) expect(s.byBack[id], id).toBeDefined()
+    for (const [id] of costas)
+      expect(s.byBack[id] !== undefined || s.hiddenWith?.includes(id), id).toBe(true)
+    for (const id of Object.values(s.byBack)) expect(C.parts[id]?.retired, id).toBeUndefined()
+    // Com capa, o planador não aparece.
+    const capa = costas.find(([id]) => s.hiddenWith?.includes(id))?.[0]
+    if (capa) expect(situationFor(C, 'planador_dobrado', { ...base(), costas: capa })).toBeNull()
+    // O cabelo que bate no fardo atrás de uma bolsa esconde só naquela situação.
+    for (const [bolsa, cabelos] of Object.entries(s.hiddenWithByBack ?? {})) {
+      const cabelo = cabelos.find((id) => C.parts[id] && !s.hiddenWith?.includes(id))
+      if (!cabelo) continue
+      expect(situationFor(C, 'planador_dobrado', { ...base(), costas: bolsa, cabelo })).toBeNull()
+      expect(situationFor(C, 'planador_dobrado', { ...base(), cabelo })).toBe('planador_dobrado')
+    }
     for (const id of [...Object.values(s.byBack), ...Object.values(s.highStrap ?? {})])
       expect(C.parts[id]?.situationOf === 'planador_dobrado' || id === 'planador_dobrado').toBe(
         true,

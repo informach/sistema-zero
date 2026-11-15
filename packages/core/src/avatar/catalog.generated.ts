@@ -7,7 +7,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+    "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
     "syncedAt": "2026-11-15",
     "rulesBlob": "af256ec361452c18b50b257c859e2c96557bea76"
   },
@@ -6510,11 +6510,18 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_bolsa_saco.3b671829a8ed.glb",
       "thumb": "miniaturas/costas_bolsa_saco.2836a1d4e17d.webp",
       "tris": 1930,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "6e862645c2ca08dbf06051aea6c96b04a47b065a",
         "thumbBlob": "74143cb79664bb44252d8c9b5fe2b565543da67b",
-        "meta": "19c821cf8710858c",
-        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "meta": "b7a35e1ffe308c06",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6529,31 +6536,39 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_capa_cavaleiro.fd5397e35bfe.glb",
       "thumb": "miniaturas/costas_capa_cavaleiro.9e7ad5a02e08.webp",
       "tris": 1144,
+      "offIn": [
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "2d00d52448349c10bfc6420fa9c858ae8ea01950",
         "thumbBlob": "d06cf83256d28284623198195cb73583353032ec",
-        "meta": "3c3bc5abbc421489",
-        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "meta": "24713b38490989e6",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
     "costas_capa_estrelas": {
-      "audience": "both",
-      "file": "pecas/costas_capa_estrelas.caa3e5f5f7d4.glb",
+      "slot": "costas",
       "group": "costas",
       "label": "Capa de estrelas",
+      "audience": "both",
+      "tier": "festa",
+      "price": 0,
+      "file": "pecas/costas_capa_estrelas.caa3e5f5f7d4.glb",
+      "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
+      "tris": 1684,
+      "offIn": [
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "946e456af53458e5c38e20b1e59776a9216b5ff3",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "7103ab9bcb689240",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "8a722480a668243a1cc3d438d8c1484e8e70612b"
-      },
-      "price": 0,
-      "slot": "costas",
-      "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
-      "tier": "festa",
-      "tris": 1684
+        "thumbBlob": "8a722480a668243a1cc3d438d8c1484e8e70612b",
+        "meta": "bdcce01b37b9b027",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "migratedAt": "2026-11-15"
+      }
     },
     "costas_mochila_bolso": {
       "slot": "costas",
@@ -6569,7 +6584,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "offIn": [
         "deitar",
         "deitado",
-        "levantar_da_cama"
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
       ],
       "armLayers": {
         "correr_tras": "costas_braco_esq_mochila_correr_tras",
@@ -6578,8 +6595,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "4705016c65c3354ccbf15d3620f1f1bee05c8854",
         "thumbBlob": "bd93706414c33ac1ff02a2189ea8a1b21b090ae0",
-        "meta": "f5140ec0cffff82c",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "d3bf9d53062f6ec5",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6597,7 +6614,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "offIn": [
         "deitar",
         "deitado",
-        "levantar_da_cama"
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
       ],
       "armLayers": {
         "correr_tras": "costas_braco_esq_mochilinha_correr_tras",
@@ -6606,8 +6625,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "13f6c913a47003d4d36f6a04faa77647a67da2c1",
         "thumbBlob": "dbf51397661bb5aaedef152a40f4bac7835fc0a0",
-        "meta": "87a2cfe6d6aa9663",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "b265475919ad8f84",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -8838,6 +8857,13 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/planador_dobrado.3b8a5c5b82eb.glb",
       "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
       "tris": 1484,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "armLayers": {
         "correr_tras": "costas_braco_esq_planador_correr_tras",
         "correr_esquerda": "costas_braco_dir_planador_correr_esquerda",
@@ -8849,14 +8875,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "none": "planador_dobrado",
           "costas_mochila_pequena": "planador_dobrado__costas_mochila_pequena",
           "costas_mochila_bolso": "planador_dobrado__costas_mochila_bolso",
-          "costas_bolsa_saco": "planador_dobrado__costas_bolsa_saco",
-          "costas_capa_cavaleiro": "planador_dobrado__costas_capa_cavaleiro",
-          "costas_capa_estrelas": "planador_dobrado__costas_capa_estrelas"
+          "costas_bolsa_saco": "planador_dobrado__costas_bolsa_saco"
         },
         "highStrap": {
-          "none": "planador_dobrado__sem_nada__alca_alta",
-          "costas_capa_cavaleiro": "planador_dobrado__costas_capa_cavaleiro__alca_alta",
-          "costas_capa_estrelas": "planador_dobrado__costas_capa_estrelas__alca_alta"
+          "none": "planador_dobrado__sem_nada__alca_alta"
         },
         "highStrapWith": [
           "roupa_cima_camisa_amarela_aberta_pacote",
@@ -8874,23 +8896,48 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "cabelo_liso_preto_branco_pacote",
           "cabelo_cacheado_grisalho_pacote",
           "cabelo_peruca_cachos_branca_pacote",
-          "chapeu_saco_papel_pacote"
+          "chapeu_saco_papel_pacote",
+          "chapeu_caixa_brinquedo",
+          "chapeu_caixa_brinquedo_pacote",
+          "costas_capa_cavaleiro",
+          "costas_capa_estrelas",
+          "roupa_cima_jaqueta_vermelha_pacote",
+          "roupa_inteira_macacao_raposa"
         ],
+        "hiddenWithByBack": {
+          "costas_mochila_pequena": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_liso_cinza_04_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ],
+          "costas_mochila_bolso": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_rabo_cavalo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ],
+          "costas_bolsa_saco": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_liso_cinza_04_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_rabo_cavalo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ]
+        },
         "seatedBack": {
           "none": 0.218,
-          "costas_mochila_pequena": 0.276,
-          "costas_mochila_bolso": 0.302,
-          "costas_bolsa_saco": 0.293,
-          "costas_capa_cavaleiro": 0.312,
-          "costas_capa_estrelas": 0.308
+          "costas_mochila_pequena": 0.277,
+          "costas_mochila_bolso": 0.316,
+          "costas_bolsa_saco": 0.307
         }
       },
       "hidden": true,
       "origin": {
         "blob": "df86a50ca10d0b5af800c249a324ffb4ce9793b2",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "dc4d2b5593d00e02",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "47c999cf942a1b77",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -8901,15 +8948,15 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "audience": "both",
       "tier": "free",
       "price": 0,
-      "file": "pecas/planador_dobrado__costas_bolsa_saco.16863331ef1a.glb",
+      "file": "pecas/planador_dobrado__costas_bolsa_saco.29420f8753c0.glb",
       "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
       "tris": 1484,
       "hidden": true,
       "origin": {
-        "blob": "13ae129f7e6d67ed7e3d4c67f2d9535b832d13f8",
+        "blob": "fca0a8179092afca7f0c9256737db6123dfc5f47",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "dc4d2b5593d00e02",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "47c999cf942a1b77",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -8932,7 +8979,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       },
-      "situationOf": "planador_dobrado"
+      "situationOf": "planador_dobrado",
+      "retired": true
     },
     "planador_dobrado__costas_capa_cavaleiro__alca_alta": {
       "slot": "planador",
@@ -8952,7 +9000,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       },
-      "situationOf": "planador_dobrado"
+      "situationOf": "planador_dobrado",
+      "retired": true
     },
     "planador_dobrado__costas_capa_estrelas": {
       "slot": "planador",
@@ -8972,7 +9021,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       },
-      "situationOf": "planador_dobrado"
+      "situationOf": "planador_dobrado",
+      "retired": true
     },
     "planador_dobrado__costas_capa_estrelas__alca_alta": {
       "slot": "planador",
@@ -8992,7 +9042,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       },
-      "situationOf": "planador_dobrado"
+      "situationOf": "planador_dobrado",
+      "retired": true
     },
     "planador_dobrado__costas_mochila_bolso": {
       "slot": "planador",
@@ -9001,15 +9052,15 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "audience": "both",
       "tier": "free",
       "price": 0,
-      "file": "pecas/planador_dobrado__costas_mochila_bolso.aea282a75319.glb",
+      "file": "pecas/planador_dobrado__costas_mochila_bolso.cc1920b19019.glb",
       "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
       "tris": 1484,
       "hidden": true,
       "origin": {
-        "blob": "0f8a679b003fe41e0c29c7addb1bdc347d50121d",
+        "blob": "ca29e4a58f39d4bcda157715cc2c8f1680a693a6",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "dc4d2b5593d00e02",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "47c999cf942a1b77",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9021,15 +9072,15 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "audience": "both",
       "tier": "free",
       "price": 0,
-      "file": "pecas/planador_dobrado__costas_mochila_pequena.a047443ec75a.glb",
+      "file": "pecas/planador_dobrado__costas_mochila_pequena.5e4ea401818f.glb",
       "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
       "tris": 1484,
       "hidden": true,
       "origin": {
-        "blob": "07eee8b556d61c21038f244f4c74dbaff401e11c",
+        "blob": "7815df79a45e8aa4b8d84b1a1c7f5a541a1999cb",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "dc4d2b5593d00e02",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "47c999cf942a1b77",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9048,8 +9099,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "601c1e2965d7ecb6b861e8412a0cdd573a1484d1",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "dc4d2b5593d00e02",
-        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "meta": "47c999cf942a1b77",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"

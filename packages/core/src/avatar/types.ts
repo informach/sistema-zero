@@ -121,8 +121,11 @@ export interface AvatarPartSituations {
   highStrap?: Record<string, string>
   /** Com estas peças (os casacos), vale a alça alta. */
   highStrapWith?: string[]
-  /** Com estas peças (cabelos compridos, o saco de papel), a peça não aparece. */
+  /** Com estas peças (cabelos compridos, o saco de papel, as capas), a peça não aparece. */
   hiddenWith?: string[]
+  /** Por situação (chave do `byBack`), as peças a mais com que ela não aparece (o cabelo que bate
+   * no fardo atrás daquela bolsa). */
+  hiddenWithByBack?: Record<string, string[]>
   /** Até onde a peça vai para trás, sentada (m nativos), por situação (chave do `byBack`). */
   seatedBack?: Record<string, number>
 }

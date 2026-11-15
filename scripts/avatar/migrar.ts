@@ -388,12 +388,15 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       const idsDaSituacao: Record<string, string> = {}
       const idsDaAlcaAlta: Record<string, string> = {}
       const noSentado: Record<string, number> = {}
+      const escondidaCom: Record<string, string[]> = {}
       for (const s of daSituacao) {
         if (s.alcaAlta) idsDaAlcaAlta[s.chave] = s.id
         else idsDaSituacao[s.chave] = s.id
         const nome = s.chave === 'none' ? 'sem_nada' : s.chave
         const atras = item.situacoes?.[nome]?.no_sentado_ate_m
         if (typeof atras === 'number') noSentado[s.chave] = atras
+        const com = item.situacoes?.[nome]?.nao_aparece_com
+        if (com?.length) escondidaCom[s.chave] = [...com]
       }
       const situacoes =
         daSituacao.length > 0
@@ -403,6 +406,7 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
               ...(Object.keys(idsDaAlcaAlta).length > 0 ? { highStrap: idsDaAlcaAlta } : {}),
               ...(item.alca_alta_com?.length ? { highStrapWith: [...item.alca_alta_com] } : {}),
               ...(item.nao_aparece_com?.length ? { hiddenWith: [...item.nao_aparece_com] } : {}),
+              ...(Object.keys(escondidaCom).length > 0 ? { hiddenWithByBack: escondidaCom } : {}),
               ...(Object.keys(noSentado).length > 0 ? { seatedBack: noSentado } : {}),
             }
           : undefined
@@ -501,6 +505,11 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
           origin: { ...entrada.origin, blob: arte.blob(caminho) },
         }
       }
+      // A situação que saiu da arte (as capas, 16/11/2026) fica no catálogo, aposentada.
+      const deAgora = new Set(daSituacao.map((s) => s.id))
+      for (const [id, p] of Object.entries(catalogo.parts))
+        if (p.situationOf === item.id && !deAgora.has(id) && !p.retired)
+          catalogo.parts[id] = { ...p, retired: true }
       console.log(`${antes ? 'atualizada' : 'nova'}: ${item.id}`)
     })
   })

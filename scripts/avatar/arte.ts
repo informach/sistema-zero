@@ -65,7 +65,13 @@ export interface ItemDaArte {
    */
   situacoes?: Record<
     string,
-    { arquivo: string; arquivo_alca_alta?: string; no_sentado_ate_m?: number }
+    {
+      arquivo: string
+      arquivo_alca_alta?: string
+      no_sentado_ate_m?: number
+      /** Os cabelos que batem no fardo nesta situação (atrás desta bolsa). */
+      nao_aparece_com?: string[]
+    }
   >
   /** Com estas roupas (casacos), vale o arquivo da alça alta. */
   alca_alta_com?: string[]

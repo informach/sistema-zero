@@ -202,7 +202,8 @@ export function withBaseBottom(catalog: AvatarCatalog, slots: AvatarSlots): Avat
 /**
  * O arquivo de uma peça com situações (o planador dobrado nas costas) para este avatar: pela peça de
  * costas vestida (sem ela, `none`), com a alça alta se a roupa pede; `null` quando a peça não
- * aparece (um cabelo comprido a cobre, ou a peça de costas não tem situação).
+ * aparece (um cabelo comprido, uma capa ou uma roupa da lista a cobrem, o cabelo que bate nela atrás
+ * daquela bolsa, ou a peça de costas não tem situação).
  */
 export function situationFor(
   catalog: AvatarCatalog,
@@ -215,6 +216,7 @@ export function situationFor(
   const vestidas = new Set(Object.values(slots))
   if (s.hiddenWith?.some((id) => vestidas.has(id))) return null
   const chave = slots[backSlot] ?? 'none'
+  if (s.hiddenWithByBack?.[chave]?.some((id) => vestidas.has(id))) return null
   const alta = s.highStrapWith?.some((id) => vestidas.has(id)) ?? false
   const id = (alta ? s.highStrap?.[chave] : undefined) ?? s.byBack[chave]
   return id && catalog.parts[id] ? id : null

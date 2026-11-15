@@ -1029,8 +1029,10 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   objeto do jogo cai nela. Objeto novo que se empurra declara a altura.
 - **Costas (15/11/2026, `personagem/costas.ts`):** com o planador e fora do voo, o planador dobrado
   vai nas costas (`vestirAsCostas`, o arquivo pela peça de costas vestida, `situationFor` do core);
-  sai deitada, sentada (o encosto cortaria) e debaixo de cabelo comprido. Deitada, a mochila sai
-  (`offIn`). O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
+  sai sentada (o encosto cortaria), com capa, com as roupas e os cabelos da lista e, atrás de cada
+  bolsa, com os cabelos que batem nele (`hiddenWithByBack`). Peça de costas e fardo saem nos clipes do
+  `offIn` que valem agora (`clipesDoCorpo`: deitada, empurrando agachada ou de meia altura e, quando
+  a arte entregar, nadando); o personagem passa o jeito do empurrão e o nado como estado. O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
   (`armLayers`, o mesmo `BracoComObjeto` da lanterna). A peça de baixo fixa, as variantes montadas e
   a troca dos vestidos do pack pelos nossos com shortinho são do desenho comum (`PackAvatarRig`).
 - **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no
