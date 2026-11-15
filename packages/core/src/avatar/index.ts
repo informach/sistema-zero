@@ -36,6 +36,7 @@ export {
   REQUIRED_SLOTS,
   removeSlot,
   setSlots,
+  withCurrentSet,
   withEars,
   wornSet,
 } from './rules'

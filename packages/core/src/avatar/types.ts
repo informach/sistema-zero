@@ -78,6 +78,12 @@ export interface AvatarPartEntry {
   review?: boolean
   /** Saiu da arte depois de migrada: quem tem continua com ela, mas ela some da loja. */
   retired?: boolean
+  /**
+   * Cópia de uma peça nossa para dentro de uma fantasia (`trocas_fantasia` da arte): o mesmo arquivo
+   * da peça `copyOf`, mas como parte do conjunto (`set`). A peça original continua vendida sozinha;
+   * a cópia só existe vestida com a fantasia. Quem escreve é a migração, não a arte.
+   */
+  copyOf?: string
   origin: AvatarPartOrigin
 }
 

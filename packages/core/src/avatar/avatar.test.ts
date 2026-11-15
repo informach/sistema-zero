@@ -11,6 +11,7 @@ import {
   isListed,
   ownershipOf,
   removeSlot,
+  withCurrentSet,
   withEars,
 } from './index'
 
@@ -408,5 +409,46 @@ describe('posse', () => {
     expect(isAvatarOwned(C, parte, new Set([parte]))).toBe(false)
     expect(isAvatarOwned(C, parte, new Set([setId]))).toBe(true)
     expect(isAvatarOwned(C, setId, new Set([setId]))).toBe(true)
+  })
+})
+
+describe('peça nossa dentro da fantasia (trocas_fantasia)', () => {
+  const copias = parts.filter(([, p]) => p.copyOf)
+
+  test('a fantasia de cavaleiro usa a cópia do elmo novo, e o elmo segue vendido sozinho', () => {
+    expect(copias.length).toBeGreaterThan(0)
+    for (const [id, copia] of copias) {
+      const original = C.parts[copia.copyOf ?? '']
+      expect(original, id).toBeDefined()
+      expect(copia.file).toBe(original?.file ?? '')
+      expect(copia.set, id).toBeDefined()
+      expect(copia.tier).toBe('set')
+      expect(original?.set, `${copia.copyOf} não é parte de conjunto`).toBeUndefined()
+      expect(original?.hidden).toBeUndefined()
+      const conjunto = C.sets[copia.set ?? '']
+      expect(conjunto?.parts.some((p) => p.part === id)).toBe(true)
+      expect(ownershipOf(C, id)).toBe(copia.set ?? '')
+    }
+  })
+
+  test('quem já vestia a fantasia com a peça antiga do pack passa a vestir a nova, válido', () => {
+    for (const [id, copia] of copias) {
+      const conjunto = C.sets[copia.set ?? '']
+      if (!conjunto) throw new Error(id)
+      const antiga = parts.find(
+        ([pid, p]) => p.set === copia.set && p.slot === copia.slot && p.hidden && pid !== id,
+      )?.[0]
+      if (!antiga) throw new Error(`sem a peça antiga de ${id}`)
+      const vestida: AvatarSlots = { ...base() }
+      for (const { slot, part } of conjunto.parts) vestida[slot] = part
+      vestida[copia.slot] = antiga
+      const atualizada = withEars(C, withCurrentSet(C, vestida))
+      expect(atualizada[copia.slot]).toBe(id)
+      expect(avatarProblems(C, atualizada)).toEqual([])
+    }
+  })
+
+  test('sem fantasia, withCurrentSet não muda nada', () => {
+    expect(withCurrentSet(C, base())).toEqual(base())
   })
 })

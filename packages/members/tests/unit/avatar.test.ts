@@ -76,6 +76,21 @@ describe('avatar do pack: leitura tolerante', () => {
       base().orelhas,
     )
   })
+
+  test('quem vestia a fantasia de cavaleiro com o elmo antigo continua de cavaleiro, com o elmo novo', () => {
+    const conjunto = C.sets.fantasia_cavaleiro
+    if (!conjunto) throw new Error('sem a fantasia de cavaleiro')
+    const vestida = { ...base() } as Record<string, string>
+    for (const { slot, part } of conjunto.parts) vestida[slot] = part
+    vestida.chapeu = 'fantasia_cavaleiro_elmo_chifres_pacote'
+    const lido = canonicalizeAvatarConfig(
+      { version: 3, style: 'cute-v1', slots: vestida, customized: true },
+      'x',
+    )
+    expect(lido.customized).toBe(true)
+    expect(lido.slots.chapeu).toBe('chapeu_elmo_cavaleiro__na_fantasia_cavaleiro')
+    expect(lido.slots.fantasia).toBe(vestida.fantasia ?? '')
+  })
 })
 
 describe('avatar do pack: escrita estrita', () => {
