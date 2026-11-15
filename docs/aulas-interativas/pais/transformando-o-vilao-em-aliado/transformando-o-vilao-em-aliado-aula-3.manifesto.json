@@ -1,0 +1,47 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-3",
+  "title": "O interesse como ponte",
+  "blocks": [
+    {
+      "key": "video-a3-reconhece",
+      "plannedVideo": "Título: Você reconhece o seu filho?\n\nSlide 13 da aula aberta: as seis cenas e o que criar um jogo pode oferecer em cada uma, com o cuidado de não tratar como diagnóstico; o hiperfoco a favor. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a3-ponte",
+      "plannedVideo": "Título: O que ele já ama pode ser o começo\n\nSlide 14 com o vídeo do Bernardo, o exercício \"Meu filho ama ___\" e o vídeo de depoimentos do slide 15 (Harle, Daniel, Débora e Flávia). Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "para-casa-a3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer em casa\n\nComplete a frase pensando no seu filho:\n\n> Meu filho ama ______. Um jogo sobre isso poderia ter ______.\n\nAlguns exemplos para ajudar:\n\n- Meu filho ama trens. O jogo poderia ter um trem que precisa chegar na estação sem bater.\n- Minha filha ama bandeiras. O jogo mostra uma bandeira e ela escolhe o país.\n- Ele ama dinossauros. O dinossauro precisa fugir do vulcão.\n\nNem toda criança joga, e tudo bem. O interesse pode ser desenhar, contar histórias ou um canal de vídeos."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "reconhece",
+      "title": "Você reconhece o seu filho?",
+      "objective": "Reconhecer no próprio filho pontos de partida para criar e entender o interesse intenso como aliado, sem tratar as cenas como diagnóstico.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-reconhece"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a3-reconhece"] }
+    },
+    {
+      "key": "ponte",
+      "title": "O interesse como ponte",
+      "objective": "Transformar o interesse do filho na ideia de um jogo e ver o que os pais começam a perceber.",
+      "intent": "application",
+      "blockKeys": ["video-a3-ponte", "para-casa-a3"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a3-ponte"] }
+    }
+  ]
+}

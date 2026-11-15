@@ -1,0 +1,107 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-4",
+  "title": "Programar é organizar passos",
+  "blocks": [
+    {
+      "key": "video-a4-rotina",
+      "plannedVideo": "Título: Você já programa em casa\n\nSlide 16 da aula aberta: a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO; a sequenciação na vida, com os exemplos da Vivianne. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a4-caminho",
+      "plannedVideo": "Título: Você consegue programar este caminho?\n\nSlide 17 da aula aberta: a grade 4 por 4, da bolinha azul até a estrela, sem passar pelos quadrados escuros. A tela fica parada no fim para a pessoa pensar antes do quiz. Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "quiz-caminho",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Na grade do vídeo, a bolinha azul está na linha de baixo, à esquerda, e a estrela na linha de cima, à direita. Os quadrados escuros ficam na segunda coluna, nas duas linhas do meio. Qual sequência leva a bolinha até a estrela?",
+            "choices": [
+              { "id": "a", "label": "Subir, subir, subir, direita, direita, direita." },
+              { "id": "b", "label": "Direita, subir, subir, subir, direita, direita." },
+              { "id": "c", "label": "Subir, direita, subir, direita, subir, direita." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. Começar pela direita e logo subir bate no quadrado escuro, e subir uma casa e logo ir para a direita também. E existe outro caminho certo: ir pela direita até o fim e só depois subir."
+          },
+          {
+            "id": "q2",
+            "prompt": "A primeira tentativa bateu num quadrado escuro. O que fazer?",
+            "choices": [
+              { "id": "a", "label": "Apagar tudo e começar do zero." },
+              {
+                "id": "b",
+                "label": "Observar onde a bolinha parou, mudar uma instrução e testar de novo."
+              },
+              { "id": "c", "label": "Desistir desse desafio e procurar outro." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "O erro é uma pista. Observar onde parou e trocar uma coisa por vez mostra o efeito de cada mudança. É o mesmo caminho que vale fora da tela."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-a4-descoberta",
+      "plannedVideo": "Título: E se a primeira tentativa não funcionar?\n\nSlide 18 da aula aberta: a resposta do caminho, observar, mudar uma instrução e testar de novo; a percepção do ambiente na sala de aula e o \"que horrível\" que virou legal. Fala completa no roteiro, Parte 4."
+    },
+    {
+      "key": "para-casa-a4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer em casa\n\nQuando algo der errado no dia a dia, experimente as três perguntas com o seu filho:\n\n1. **Onde parou?** O que aconteceu de diferente?\n2. **O que dá para mudar?** Uma coisa por vez.\n3. **Vamos tentar de novo?**\n\nE repare na rotina da casa: **quando** acontece algo, **se** for de um jeito, **então** a gente faz aquilo. Vocês já programam juntos."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "rotina",
+      "title": "Você já programa em casa",
+      "objective": "Entender programar como organizar passos, com a mesma lógica da rotina visual da casa.",
+      "intent": "explanation",
+      "blockKeys": ["video-a4-rotina"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a4-rotina"] }
+    },
+    {
+      "key": "caminho",
+      "title": "Você consegue programar este caminho?",
+      "objective": "Viver na prática o que a criança vive ao programar: montar uma sequência de instruções que leve a bolinha até a estrela.",
+      "intent": "application",
+      "blockKeys": ["video-a4-caminho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a4-caminho"] }
+    },
+    {
+      "key": "caminho-resposta",
+      "title": "Qual é o seu caminho?",
+      "objective": "Conferir a sequência pensada e o que fazer quando a primeira tentativa não funciona. O quiz fica numa parte própria, como pede a especificação do manifesto.",
+      "intent": "application",
+      "blockKeys": ["quiz-caminho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-caminho"] }
+    },
+    {
+      "key": "descoberta",
+      "title": "E se a primeira tentativa não funcionar?",
+      "objective": "Ver o erro como pista: observar, mudar uma instrução e testar de novo, dentro e fora da tela.",
+      "intent": "explanation",
+      "blockKeys": ["video-a4-descoberta", "para-casa-a4"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a4-descoberta"] }
+    }
+  ]
+}

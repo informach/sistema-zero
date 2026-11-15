@@ -1,0 +1,47 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-6",
+  "title": "A ponte com a escola e com a vida",
+  "blocks": [
+    {
+      "key": "video-a6-escola",
+      "plannedVideo": "Título: Quando o conceito ganha sentido\n\nSlides 22, 23 e 24 da aula aberta: a casa 2 e a estrela, as matérias da escola e a pesquisa; o vídeo de depoimentos do slide 25 e a felicidade a longo prazo. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a6-ciclo",
+      "plannedVideo": "Título: Do interesse à autoria\n\nSlide 26 da aula aberta (o ciclo de criação) e a gravação de tela do Cadê Todo Mundo no Estúdio: a regra de sumir e a soma em achados. Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "referencias-a6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar depois\n\n- Scherer, Siddiq e Sánchez Viveros (2019). Uma análise de 105 estudos sobre aprender a programar, com ganhos em criatividade, pensamento matemático e raciocínio. [doi.org/10.1037/edu0000314](https://doi.org/10.1037/edu0000314)\n- Li e Oon (2024). Pensamento computacional e aprendizagem em ciências e matemática. [doi.org/10.1186/s40594-024-00498-z](https://doi.org/10.1186/s40594-024-00498-z)\n\nEsses estudos não são específicos sobre autismo, e programar não é fórmula mágica: é uma ponte a mais.\n\n**O ciclo de criação:** imaginar, planejar, criar, testar, melhorar e compartilhar."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "escola",
+      "title": "Quando o conceito ganha sentido",
+      "objective": "Ver como a criação dá sentido a conteúdos da escola e se liga às habilidades da vida adulta.",
+      "intent": "explanation",
+      "blockKeys": ["video-a6-escola"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a6-escola"] }
+    },
+    {
+      "key": "ciclo",
+      "title": "Do interesse à autoria",
+      "objective": "Conhecer o ciclo de criação de um jogo e ver uma regra simples virar jogo, com a causa e a consequência que ela ensina.",
+      "intent": "explanation",
+      "blockKeys": ["video-a6-ciclo", "referencias-a6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a6-ciclo"] }
+    }
+  ]
+}
