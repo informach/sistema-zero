@@ -51,6 +51,9 @@ vestir a nova na leitura do Members (`withCurrentSet` do core), sem cair no sort
   fora de `parts`, das regras, do sorteio, do configurador e do inventário; o encaixe e o grupo
   deles saem das regras na conversão. Pasta nova de objeto do jogo entra em
   `PASTAS_DE_EQUIPAMENTO` (`arte.ts`).
+- A `pegada` de cada objeto (desde 15/11/2026) diz o clipe que fecha os dedos no cabo (e o da
+  segunda mão, na barra do planador): vai para `fingers` no catálogo e é refeita em toda migração,
+  sem reenviar nada. O jogo fecha a mão por ela.
 
 ## Roteiro (o que fazer quando pedirem para conferir o pack)
 

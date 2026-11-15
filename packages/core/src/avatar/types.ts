@@ -212,6 +212,11 @@ export interface AvatarEquipment {
   use?: string
   /** A luz do objeto: o osso que acende, as escalas de acesa e apagada, a cor e o alcance (m). */
   light?: { bone: string; on: number; off: number; color: string; range: number }
+  /**
+   * Os clipes de camada que fecham os dedos no cabo (a `pegada` da arte: a mão que segura e, na
+   * barra do planador, a segunda mão), em `skeleton.game.layers`.
+   */
+  fingers?: string[]
   origin: AvatarPartOrigin
 }
 
