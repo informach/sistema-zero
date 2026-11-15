@@ -60,6 +60,15 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
     ])
       expect(copy).toContain(`"${label}"`)
     expect(copy).not.toContain('Libere este navegador')
+    // Redesenho de 14/11/2026: os cartões moram em "Família" (a seção é "Seus filhos"), o acesso na
+    // aba "Aparelhos" e o "Ir para a área da criança" fica embaixo do menu, não no alto da página.
+    expect(copy).toContain('"Família"')
+    expect(copy).toContain('"Aparelhos"')
+    expect(copy).not.toContain('Suas crianças')
+    expect(copy).not.toContain('no alto da página')
+    expect(parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })[0]?.text).toContain(
+      '"Adicionar filho(a)"',
+    )
     // Botão se clica; "toque" sai do fluxo dos pais.
     expect(copy).not.toMatch(/\btoqu?e\b/i)
     expect(existing.map((step) => step.title)).toEqual([

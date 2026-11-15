@@ -291,7 +291,7 @@ export function StudyDeviceManager({
             <Monitor className="size-7 text-muted-foreground" aria-hidden="true" />
             <p className="font-extrabold">Ainda não há aparelho autorizado para {name}.</p>
             <p className="text-muted-foreground text-sm">
-              Seu filho já tem perfil. Falta preparar onde ele vai criar.
+              O perfil já está pronto. Falta preparar onde {name} vai criar.
             </p>
           </div>
         ) : null}

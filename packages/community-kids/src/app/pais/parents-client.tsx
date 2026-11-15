@@ -159,8 +159,8 @@ export function ParentsClient({
     const actionable = start.profiles ? start.ready === false : canAddProfile(start.allowance, 0)
     if (actionable) {
       setGuideOpen(true)
-      // O guia acompanha a família por várias páginas (Família, nova criança, página da
-      // criança, Família de novo): a abertura conta UMA vez por conta neste navegador.
+      // O guia acompanha a família por várias páginas (Início, nova criança, página da
+      // criança, Início de novo): a abertura conta UMA vez por conta neste navegador.
       if (!readGuideFlag(welcomeKey))
         trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
       writeGuideFlag(welcomeKey)
@@ -219,14 +219,15 @@ export function ParentsClient({
             {guideStep === 'ready'
               ? 'O acesso está preparado'
               : profiles.length
-                ? 'Seu filho já tem perfil. Vamos preparar o acesso?'
+                ? 'O perfil já está pronto. Vamos preparar o acesso?'
                 : 'Vamos preparar a primeira entrada?'}
           </h2>
           {guideStep === 'ready' ? (
             <p className="max-w-3xl text-sm">
               No aparelho autorizado, a criança clica em <strong>Eu sou criador(a)</strong> e
               escolhe o próprio perfil, sem a sua senha. Se ela for usar este computador agora,
-              clique em <strong>Ir para a área da criança</strong>, no alto da página.
+              clique em <strong>Ir para a área da criança</strong>: no computador, ele fica embaixo
+              do menu; no celular, no alto da tela.
             </p>
           ) : (
             <ol className="grid gap-4 md:grid-cols-3">
@@ -241,7 +242,7 @@ export function ParentsClient({
           <div className="flex flex-wrap items-center gap-2">
             {guideStep === 'profile' ? (
               <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
-                Adicionar criança
+                Adicionar filho(a)
               </Link>
             ) : null}
             {guideStep === 'access' && firstWithoutAccess ? (

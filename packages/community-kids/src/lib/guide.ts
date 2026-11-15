@@ -171,9 +171,9 @@ export function parentWelcomeSteps({
   /** A fala da criança está ligada no servidor: o passo de adicionar orienta a ligá-la. */
   voiceAvailable?: boolean
 }): readonly GuideWelcomeStep[] {
-  // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (a Família em `/pais` e a
-  // página da criança, desde o redesenho de 11/10/2026). Sem criança cadastrada, o primeiro passo
-  // é adicionar, não escolher.
+  // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (redesenho de 14/11/2026: o
+  // guia abre no Início, os cartões dos filhos moram na Família, em `/pais/familia`, e o acesso na
+  // aba Aparelhos da página de cada filho). Sem criança cadastrada, o primeiro passo é adicionar.
   return [
     {
       id: 'parent-1',
@@ -181,24 +181,24 @@ export function parentWelcomeSteps({
       title: profilesCount > 0 ? '1. Escolha a criança' : '1. Adicione a criança',
       text:
         profilesCount > 0
-          ? 'Use o perfil que já existe: em "Suas crianças", clique em "Acesso nos aparelhos" no cartão dela. O progresso continua guardado.'
+          ? 'Use o perfil que já existe: em "Família", no menu, clique em "Acesso nos aparelhos" no cartão da criança. O progresso continua guardado.'
           : canCreateProfile
             ? voiceAvailable
-              ? 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
-              : 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela.'
+              ? 'Em "Família", use "Adicionar filho(a)" e coloque o nome e a data de nascimento. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
+              : 'Em "Família", use "Adicionar filho(a)" e coloque o nome e a data de nascimento.'
             : 'Confira o acesso da família antes de adicionar um perfil.',
     },
     {
       id: 'parent-2',
       emoji: '2️⃣',
       title: '2. Autorize o aparelho',
-      text: 'Na página da criança, clique em "Autorizar aparelho". Escolha "Neste aparelho" ou "Em outro aparelho" e o prazo, e clique em "Autorizar este aparelho" ou "Gerar código".',
+      text: 'Na página da criança, na aba "Aparelhos", clique em "Autorizar aparelho". Escolha "Neste aparelho" ou "Em outro aparelho" e o prazo, e clique em "Autorizar este aparelho" ou "Gerar código".',
     },
     {
       id: 'parent-3',
       emoji: '3️⃣',
       title: '3. A criança entra',
-      text: 'No aparelho autorizado, a criança entra em "Eu sou criador(a)" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área da criança", no alto da página.',
+      text: 'No aparelho autorizado, a criança entra em "Eu sou criador(a)" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área da criança": no computador, ele fica embaixo do menu; no celular, no alto da tela.',
     },
   ]
 }
