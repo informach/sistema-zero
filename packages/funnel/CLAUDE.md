@@ -1,5 +1,29 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Presente pela oferta do catálogo (15/11/2026)
+
+O curso, o prazo e o Mural do presente vêm do `gift` da leitura pública do referrals
+(`ReferralGiftView.gift`: `offerTitle`, `courseSlug`, `courseTitle`, `learner`, `accessDays`,
+`includesMural`). `resolveReferralGiftPage` valida o `gift` (`parseGiftOffer`): ausente = leitura
+antiga (comportamento de antes); presente e torto = `unavailable` (falha fechada). O referrals manda
+o `gift` também com a campanha agendada, pausada ou encerrada (sem abrir cadastro).
+`giftVariant` escolhe o corpo de `/bolsa/[codigo].astro`:
+- **`cade`** (`courseSlug` `cade-todo-mundo`/`cade-todo-mundo-adulto`, ou sem `gift`): a página
+  editorial de sempre. `presenteKidsDaOferta`/`presenteAdultoDaOferta` trocam o "7 dias"/"sete
+  dias" do texto inteiro pelo prazo da oferta (`copyComDias`), põem o prazo no topo, no cartão e
+  na barra, e tiram a seção e o cartão do Mural quando `includesMural` é falso. Oferta do Cadê SEM
+  prazo só muda o topo, o cartão e a barra (o texto editorial segue falando dos sete dias).
+- **`pais`** (`learner: 'parents'`): `PresenteCursoOferta` enxuto, "um curso para você, pai ou
+  mãe", sem Mural, sem perfil do filho e sem as seções do Cadê. Copy em `presenteCursoCopy`
+  (`content/presente-curso.ts`). No formulário (`resgateCopy(..., 'pais')`): "Estes dados são
+  seus", aceite de 18 anos ou mais, e o "Abrir o curso" da confirmação leva a
+  `${KIDS_COMMUNITY_URL}/pais/cursos/<courseSlug>` (`cursoParaPaisHref`). Conta nova: o
+  "Criar ou recuperar a senha" segue o primeiro acesso de sempre; o `redefinir-senha` do Kids
+  volta ao `/login/responsavel` SEM `next`, então o curso fica como próximo passo no texto
+  ("abra o curso em Cursos para pais"), não como redirecionamento.
+- **`curso`** (outro curso, Kids ou adulto): o mesmo componente com o nome e o prazo da oferta.
+A prévia do Admin (`/bolsa/previa`) não recebe a oferta e mostra a página do Cadê.
+
 ## Presente Kids: 5 a 17 anos e ajustes da Viviane (13/11/2026)
 
 Por decisão da dona, a faixa do presente Kids passou a ser **5 a 17 anos; abaixo de 9, com

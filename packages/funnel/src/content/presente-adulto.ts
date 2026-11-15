@@ -8,8 +8,10 @@
 // honesta abaixo; o Mural adulto é a prévia com dados de teste; o link do jogo publicado continua
 // depois dos 7 dias, como no Kids. `{{nome}}` é quem deu o presente e `{{data}}` uma data de Brasília.
 
+import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
 import type { CorAdulto } from '../funnels/comunidade-adulto/oferta/types'
 import type { EstadosPresente, ImagemPresente } from './presente'
+import { copyComDias, diasDoPresente } from './presente-resgate'
 
 // Identidade e imagens da página do presente, que tem revisão própria.
 const APRESENTACAO_PRESENTE_ADULTO = {
@@ -293,4 +295,37 @@ export const PRESENTE_ADULTO = {
     contato: 'Falar com a equipe',
   } satisfies EstadosPresente,
   legal: APRESENTACAO_PRESENTE_ADULTO.fechamento.legal,
+}
+
+/**
+ * A página adulta do Cadê com o que a oferta do presente entrega (15/11/2026), na mesma régua de
+ * `presenteKidsDaOferta`: o prazo e o Mural vêm da oferta, o resto é o texto editorial.
+ */
+export function presenteAdultoDaOferta(gift?: ReferralGiftOfferView): typeof PRESENTE_ADULTO {
+  if (!gift) return PRESENTE_ADULTO
+  const P = copyComDias(PRESENTE_ADULTO, gift.accessDays)
+  const dias = gift.accessDays ? diasDoPresente(gift.accessDays) : null
+  const oQue = gift.includesMural ? 'curso e de Mural adulto' : 'curso'
+  return {
+    ...P,
+    hero: {
+      ...P.hero,
+      beneficios: P.hero.beneficios.map((beneficio, index) =>
+        index === 1
+          ? dias
+            ? `${dias} de ${oQue}, contados do cadastro.`
+            : `Acesso ao ${gift.includesMural ? 'curso e ao Mural adulto' : 'curso'}, sem prazo.`
+          : beneficio,
+      ),
+    },
+    condicoes: {
+      ...P.condicoes,
+      cartoes: P.condicoes.cartoes
+        .filter((cartao) => gift.includesMural || !cartao.rotulo.startsWith('MURAL'))
+        .map((cartao, index) =>
+          index === 0 && !dias ? { ...cartao, rotulo: 'CURSO · SEM PRAZO' } : cartao,
+        ),
+    },
+    barra: { ...P.barra, titulo: dias ? `Presente de ${dias}` : 'Presente sem prazo' },
+  }
 }

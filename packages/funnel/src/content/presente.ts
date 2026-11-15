@@ -1,4 +1,6 @@
+import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
 import type { ComunidadeSection } from '../funnels/comunidade-dos-criadores/oferta/types'
+import { copyComDias, diasDoPresente } from './presente-resgate'
 
 /**
  * Copy da página de recebimento do presente Kids (`/bolsa/<codigo>` com o público `kids`), com a
@@ -682,3 +684,43 @@ export const AMBASSADOR_SECTIONS = [
     ['mural'],
   ),
 ] satisfies ComunidadeSection[]
+
+/**
+ * A página do Cadê Kids com o que a oferta do presente entrega (15/11/2026): o texto editorial é o
+ * de sempre, e o prazo e o Mural vêm da oferta. Prazo em dias diferente de sete troca o "7 dias"
+ * e o "sete dias" do texto inteiro; sem prazo (oferta vitalícia), só o topo, o cartão das
+ * condições e a barra dizem "sem prazo" (o Cadê do presente é de 7 dias). Sem o Mural na oferta,
+ * a seção e o cartão do Mural saem. Sem `gift` (leitura antiga), é a `PRESENTE_KIDS`.
+ */
+export function presenteKidsDaOferta(gift?: ReferralGiftOfferView): typeof PRESENTE_KIDS {
+  if (!gift) return PRESENTE_KIDS
+  const P = copyComDias(PRESENTE_KIDS, gift.accessDays)
+  const dias = gift.accessDays ? diasDoPresente(gift.accessDays) : null
+  const acesso = gift.includesMural ? 'ao curso e ao Mural' : 'ao curso'
+  return {
+    ...P,
+    hero: {
+      ...P.hero,
+      beneficios: P.hero.beneficios.map((beneficio, index) =>
+        index === 1
+          ? dias
+            ? `${dias} de acesso ${acesso}`
+            : `Acesso ${acesso}, sem prazo`
+          : beneficio,
+      ),
+      figura: {
+        ...P.hero.figura,
+        rotulo: dias ? `Cadê Todo Mundo • ${dias} de presente` : 'Cadê Todo Mundo • de presente',
+      },
+    },
+    condicoes: {
+      ...P.condicoes,
+      cartoes: P.condicoes.cartoes
+        .filter((cartao) => gift.includesMural || cartao.titulo !== 'Mural para compartilhar')
+        .map((cartao, index) =>
+          index === 0 && !dias ? { ...cartao, titulo: 'O curso completo, sem prazo' } : cartao,
+        ),
+    },
+    barra: { ...P.barra, titulo: dias ? `Presente de ${dias}` : 'Presente sem prazo' },
+  }
+}

@@ -2,7 +2,7 @@
 // Corpo do presente Kids, com copy aprovada em 05/11/2026. O layout `.c917` e as peças de
 // presente-kids.css preservam a identidade existente. Quem lê e cadastra é o responsável.
 import type { ReferralGiftView } from '@sistemazero/core/referrals'
-import { type EstadoPresente, PRESENTE_KIDS as P } from '../../content/presente'
+import { type EstadoPresente, presenteKidsDaOferta } from '../../content/presente'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { ReferralGiftPage } from '../../server/referral-gift-page'
@@ -16,6 +16,9 @@ interface Props {
   preview?: boolean
 }
 const { gift, kind, communityUrl, preview = false } = Astro.props
+// O prazo e o Mural vêm da oferta do presente (sem `gift.gift`, a copy de sempre).
+const P = presenteKidsDaOferta(gift.gift)
+const mostraMural = gift.gift?.includesMural ?? true
 const ready = kind === 'ready' && !preview
 const campaign = gift.source.kind === 'campaign'
 const lastClaimAt = gift.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
@@ -105,7 +108,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
 
 <section id="em-familia" class="c9-sec c9-sec--branco" aria-labelledby="pk-familia"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.familia.etiqueta}</span><h2 id="pk-familia" class="c9-h2">{P.familia.titulo}</h2><p class="c9-p pk-texto-largo">{P.familia.texto}</p></div><div class="pk-rotina">{P.familia.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_PASSOS[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><PresenteFigura figura={P.familia} cor="rosa" class="pk-conversa" /><p class="c9-p pk-texto-largo">{P.familia.nota}</p></div></section>
 
-<section class="c9-sec c9-sec--branco" aria-labelledby="pk-mural">
+{mostraMural && <section class="c9-sec c9-sec--branco" aria-labelledby="pk-mural">
   <div class="c9-wrap c9-lado">
     <PresenteFigura figura={P.mural} cor="rosa" />
     <div class="c9-pilha c9-gap-14 c9-b440">
@@ -114,7 +117,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       {P.mural.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
     </div>
   </div>
-</section>
+</section>}
 
 <section class="c9-sec c9-sec--navy" aria-labelledby="pk-plataforma">
   <div class="c9-wrap c9-lado">
@@ -152,7 +155,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
     </div>
     <div class="pk-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} gift={gift.gift} variante="cade" />
       ) : preview ? (
         <div class="pk-estado c9-cor--verde"><p class="c9-p">{P.resgatar.previa}</p></div>
       ) : (
@@ -168,7 +171,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
             <details id="retomar" class="pk-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p>{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} gift={gift.gift} variante="cade" retryOnly />
             </details>
           )}
         </div>
