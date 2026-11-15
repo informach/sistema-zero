@@ -19,6 +19,7 @@ import { CheckCircle2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { PARENT_DOUBTS_LABEL, parentCourseHref, parentDoubtHref } from '@/app/pais/parent-routes'
 import { KidsBackButton } from '@/components/kids/back-button'
 import type { RatingViewer } from '@/components/kids/course-rating-flow'
 import { useFocusMode } from '@/components/kids/focus-mode'
@@ -62,15 +63,17 @@ interface Props {
   /** A criança pode falar em vez de escrever para a equipe (14/10/2026). */
   voiceInput?: boolean
   /**
-   * Onde moram as páginas de curso: `/cursos` na área da criança e `/pais/cursos` nos cursos
-   * para pais (14/11/2026), que usam este MESMO player.
+   * De que área é a aula. Os cursos para pais (14/11/2026) usam este MESMO player: com `'pais'`,
+   * a página do curso é `/pais/cursos/<slug>`, a resposta do "Preciso de ajuda" aparece nas
+   * dúvidas da Ajuda dos pais (não nos Recados) e o "Como fazer" vira texto (a biblioteca é da
+   * área da criança). Os endereços moram em `app/pais/parent-routes.ts`.
    */
-  courseBasePath?: string
-  /**
-   * Onde aparece a resposta do "Preciso de ajuda": ausente = os Recados da criança; nos cursos
-   * para pais, a lista de dúvidas da Ajuda (`/pais/ajuda/duvidas`).
-   */
-  helpThreadPath?: string
+  area?: 'crianca' | 'pais'
+}
+
+const PARENT_HELP_THREAD: NonNullable<LessonPlayerContextValue['helpThread']> = {
+  href: parentDoubtHref,
+  label: PARENT_DOUBTS_LABEL,
 }
 
 export function LessonPlayer({
@@ -83,19 +86,11 @@ export function LessonPlayer({
   shareUrl,
   lessonDraftsEnabled = false,
   voiceInput = false,
-  courseBasePath = '/cursos',
-  helpThreadPath,
+  area = 'crianca',
 }: Props) {
-  const helpThread = useMemo<LessonPlayerContextValue['helpThread']>(
-    () =>
-      helpThreadPath
-        ? {
-            href: (threadId: string) => `${helpThreadPath}/${encodeURIComponent(threadId)}`,
-            label: 'em Ajuda, na parte Suas dúvidas sobre os cursos',
-          }
-        : undefined,
-    [helpThreadPath],
-  )
+  const parents = area === 'pais'
+  const helpThread = parents ? PARENT_HELP_THREAD : undefined
+  const helpLinks = parents ? false : undefined
   const router = useRouter()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
   const refreshLesson = useLessonRefresh(() => router.refresh())
@@ -156,7 +151,9 @@ export function LessonPlayer({
     publicationPending: boolean
     gamification: GamificationDelta | null
   } | null>(null)
-  const courseHref = `${courseBasePath}/${encodeURIComponent(course.slug)}`
+  const courseHref = parents
+    ? parentCourseHref(course.slug)
+    : `/cursos/${encodeURIComponent(course.slug)}`
 
   // Numeração global da aula nos círculos da mini-trilha.
   const flatLessons = useMemo(() => course.modules.flatMap((m) => m.lessons), [course.modules])
@@ -233,6 +230,7 @@ export function LessonPlayer({
       viewerId,
       voiceInput,
       helpThread,
+      helpLinks,
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
@@ -267,6 +265,7 @@ export function LessonPlayer({
       viewerId,
       voiceInput,
       helpThread,
+      helpLinks,
       refreshLesson,
       lessonDrafts,
     ],

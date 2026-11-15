@@ -170,6 +170,11 @@ export interface ContentAdminRepository {
    * usa isso para avisar o operador).
    */
   listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>
+  /**
+   * Títulos das aulas PUBLICADAS do curso com bloco de Estúdio ou Pinta (ferramentas que só abrem
+   * na sessão de uma criança). Um curso só vira "Para pais" sem nenhuma.
+   */
+  listPublishedLessonTitlesWithChildOnlyBlocks(courseId: string): Promise<string[]>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

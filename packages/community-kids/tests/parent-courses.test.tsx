@@ -2,6 +2,7 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { isLessonPath } from '@sistemazero/member-shell/lib/lesson-path'
 import { render, screen, within } from '@testing-library/react'
 import { HelpContent } from '../src/app/pais/ajuda/help-content'
+import { ParentLessonFrame } from '../src/app/pais/cursos/[slug]/aulas/[lessonId]/parent-lesson-frame'
 import {
   ParentCourseClosed,
   ParentCourseView,
@@ -15,9 +16,10 @@ import type {
   TeacherThreadSummaryView,
 } from '../src/lib/types'
 
+let pathname = '/pais/cursos'
 mock.module('next/navigation', () => ({
   useRouter: () => ({ refresh: () => {}, push: () => {}, replace: () => {} }),
-  usePathname: () => '/pais/cursos',
+  usePathname: () => pathname,
 }))
 
 const originalFetch = globalThis.fetch
@@ -80,6 +82,20 @@ describe('endereços dos cursos para pais', () => {
     expect(isLessonPath('/pais/cursos/ajudar/aulas/l1')).toBe(true)
     expect(isLessonPath('/cursos/cade/aulas/l1')).toBe(true)
     expect(isLessonPath('/pais/cursos/ajudar')).toBe(false)
+  })
+
+  test('na aula, a moldura dos pais tem a alça que abre a lista de aulas', () => {
+    pathname = '/pais/cursos/ajudar/aulas/l1'
+    try {
+      render(
+        <ParentLessonFrame viewerId="conta" parentName="Helena">
+          <p>aula</p>
+        </ParentLessonFrame>,
+      )
+      expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeTruthy()
+    } finally {
+      pathname = '/pais/cursos'
+    }
   })
 })
 

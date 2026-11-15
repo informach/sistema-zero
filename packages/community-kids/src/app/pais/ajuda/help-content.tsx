@@ -4,6 +4,7 @@ import type { TeacherThreadSummaryView } from '@/lib/types'
 import { PRIMARY_ACTION } from '../_components/parent-actions'
 import { ParentShell } from '../_components/parent-shell'
 import { ParentPageTitle, ParentSection } from '../_components/parent-ui'
+import { PARENT_DOUBTS_TITLE } from '../parent-routes'
 
 const STEPS = [
   {
@@ -79,7 +80,7 @@ function CourseDoubts({ doubts }: { doubts: TeacherThreadSummaryView[] }) {
       className="kids-carta flex scroll-mt-24 flex-col gap-2 p-6"
     >
       <h2 id="help-doubts" className="sz-display text-xl">
-        Suas dúvidas sobre os cursos
+        {PARENT_DOUBTS_TITLE}
       </h2>
       <p className="text-muted-foreground text-sm">
         As perguntas que você mandou pelo Preciso de ajuda, dentro das aulas, e as respostas da

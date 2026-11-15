@@ -699,6 +699,21 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return [...found]
   }
 
+  async listPublishedLessonTitlesWithChildOnlyBlocks(courseId: string): Promise<string[]> {
+    const titles = new Set<string>()
+    for (const block of this.blocks) {
+      if (block.content.kind !== 'studio' && block.content.kind !== 'pinta') continue
+      const lesson = this.lessons.find((l) => l.id === block.lessonId)
+      if (
+        lesson?.isPublished &&
+        lesson.courseId === courseId &&
+        this.lessonContentAvailable(lesson.id)
+      )
+        titles.add(lesson.title)
+    }
+    return [...titles]
+  }
+
   async cloneCourseTree(
     sourceCourseId: string,
     overrides: CloneCourseOverrides,

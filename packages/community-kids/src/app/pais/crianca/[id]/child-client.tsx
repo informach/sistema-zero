@@ -127,7 +127,7 @@ export function ChildClient({
       )
     } else if (aviso === 'fala-nao-gravou')
       toast.error(
-        'Não consegui guardar a escolha da fala agora. Confira em Editar perfil daqui a pouco.',
+        'Não consegui guardar a escolha da fala agora. Confira na aba Perfil daqui a pouco.',
         { duration: 20_000 },
       )
   }, [profile.id, profile.name])

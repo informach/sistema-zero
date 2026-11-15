@@ -14,12 +14,16 @@ export function QuizReview({
   result,
   answers,
   helpReturnPath,
+  helpLinks = true,
 }: {
   questions: QuizQuestion[]
   result: QuizAttemptResultView
   answers: Record<string, string>
   helpReturnPath?: string
+  /** `false` (cursos para pais): o "Como fazer" vira texto. */
+  helpLinks?: boolean
 }) {
+  const helpOpts = { helpReturnPath, helpLinks }
   const corrections = new Map(
     result.questions.map((correction) => [correction.questionId, correction]),
   )
@@ -55,7 +59,7 @@ export function QuizReview({
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm [&_img]:my-1 [&_img]:max-h-32 [&_img]:rounded-lg [&_img]:align-middle">
-                  {questionIndex + 1}. {renderInline(question.prompt, { helpReturnPath })}
+                  {questionIndex + 1}. {renderInline(question.prompt, helpOpts)}
                 </p>
                 <div className="mt-2 flex flex-col gap-1 text-sm">
                   {question.choices.map((choice) => {
@@ -77,7 +81,7 @@ export function QuizReview({
                         ) : (
                           <X className="size-3.5 shrink-0" strokeWidth={3} />
                         )}
-                        {renderInline(choice.label, { helpReturnPath })}
+                        {renderInline(choice.label, helpOpts)}
                       </p>
                     )
                   })}
@@ -103,7 +107,7 @@ export function QuizReview({
                       />
                     </div>
                     <div className="lesson-prose text-muted-foreground">
-                      {renderMarkdown(correction.explanation, { helpReturnPath })}
+                      {renderMarkdown(correction.explanation, helpOpts)}
                     </div>
                   </div>
                 ) : null}

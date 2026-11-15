@@ -3,7 +3,9 @@
  * é feito pela CONTA do responsável (sessão sem perfil), fica fora das vitrines da criança e da
  * Jornada, não dá XP nem moedas e abre pela chave dos cursos Kids ou por compra avulsa.
  */
+
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { parentsLessonIssues } from '@sistemazero/core/course/learner'
 import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -73,6 +75,44 @@ describe('Curso para pais — autoria', () => {
     expect(
       (await create(env, { learner: 'parents', careerSlot: 2, journeyRole: 'positioned' })).status,
     ).toBe(400)
+  })
+
+  test('virar curso para pais: recusa Estúdio ou Pinta em aula já publicada', async () => {
+    const env = buildApp({ now: NOW })
+    const seeded = seedSampleCourse(env.courses, 'curso-rascunho', 'draft', 'kids')
+    const lessonId = seeded.lessonIds[0] as string
+    const lesson = env.courses.lessons.find((item) => item.id === lessonId)
+    if (!lesson) throw new Error('aula não semeada')
+    env.courses.blocks.push({
+      id: randomUUID(),
+      lessonId,
+      kind: 'studio',
+      sortOrder: 9,
+      content: { kind: 'studio' } as never,
+    })
+    const patch = async () => {
+      const current = await readJson(
+        await request(env, `/members/admin/courses/${seeded.courseId}`),
+      )
+      return request(env, `/members/admin/courses/${seeded.courseId}`, {
+        method: 'PATCH',
+        body: {
+          ...COURSE,
+          slug: 'curso-rascunho',
+          learner: 'parents',
+          careerSlot: null,
+          version: current.version,
+        },
+      })
+    }
+    const refused = await patch()
+    expect(refused.status).toBe(400)
+    const body = JSON.stringify(await readJson(refused))
+    expect(body).toContain('não usa Estúdio nem Pinta')
+    expect(body).toContain(lesson.title)
+    // Sem a atividade da criança, a troca passa.
+    env.courses.blocks = env.courses.blocks.filter((block) => block.kind !== 'studio')
+    expect((await patch()).status).toBe(200)
   })
 
   test('a listagem do Admin filtra por para quem', async () => {

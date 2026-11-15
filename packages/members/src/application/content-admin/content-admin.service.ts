@@ -268,6 +268,20 @@ export class CourseAdminService {
       throw new InvalidContentCommandError(
         'Para trocar "Para quem", deixe o curso em rascunho primeiro: quem já começou o curso perderia o acesso.',
       )
+    if (nextLearner === 'parents' && existing.learner !== 'parents') {
+      // Curso da Jornada do Criador (aulas planejadas do currículo) não sai dela.
+      if (creatorSeedRequiredLessonIds(existing.metadata))
+        throw new InvalidContentCommandError(
+          'Este curso faz parte do currículo da Jornada do Criador e não pode virar curso para pais.',
+        )
+      // As aulas JÁ publicadas não passam de novo pela conferência da publicação: um Estúdio ou
+      // Pinta nelas travaria o responsável na aula (essas ferramentas só abrem para a criança).
+      const childOnly = await this.content.listPublishedLessonTitlesWithChildOnlyBlocks(id)
+      if (childOnly.length)
+        throw new InvalidContentCommandError(
+          `Curso para pais não usa Estúdio nem Pinta. Tire essas atividades destas aulas antes: ${childOnly.join('; ')}.`,
+        )
+    }
     const merged = {
       ...existing,
       ...rest,

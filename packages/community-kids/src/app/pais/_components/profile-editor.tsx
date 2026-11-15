@@ -107,7 +107,7 @@ export function ProfileEditor({
           (result.profile.voiceInputEnabled === true) !== values.voiceInputEnabled
         if (falaNaoGravou && existing) {
           toast.error(
-            'Não consegui guardar a escolha da fala agora. Confira em Editar perfil daqui a pouco.',
+            'Não consegui guardar a escolha da fala agora. Confira na aba Perfil daqui a pouco.',
           )
           setBusy(false)
           return

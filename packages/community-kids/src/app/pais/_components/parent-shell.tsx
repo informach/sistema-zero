@@ -16,6 +16,7 @@ import {
 import Link from 'next/link'
 import { type ReactNode, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLogo } from '@/components/kids/kids-logo'
 import { ParentPasswordChange } from '@/components/kids/profile-management'
 import { logoutAccount } from '@/components/kids/profiles-unavailable'
@@ -38,21 +39,22 @@ const ICONS: Record<ParentSectionId, typeof Users> = {
 const ITEM =
   'flex h-[2.875rem] shrink-0 items-center gap-3.5 rounded-[0.75rem] px-3.5 font-semibold text-base transition-colors'
 
-/** Os filhos no menu, debaixo de Família: lidos uma vez por aba do navegador. */
-let familyCache: Promise<ProfileView[]> | null = null
+/**
+ * Os filhos no menu, debaixo de Família. Cada página monta a sua moldura: ela mostra na hora a
+ * última lista lida nesta aba e relê em seguida, para um filho criado ou arquivado aparecer (ou
+ * sair) já na página seguinte. Falha na leitura mantém a lista que havia.
+ */
+let lastFamily: ProfileView[] | null = null
 function useFamily(): ProfileView[] {
-  const [profiles, setProfiles] = useState<ProfileView[]>([])
+  const [profiles, setProfiles] = useState<ProfileView[]>(() => lastFamily ?? [])
   useEffect(() => {
     let alive = true
-    familyCache ??= apiGet<{ profiles?: ProfileView[] }>('/api/profiles')
-      .then((body) => body?.profiles ?? [])
-      .catch(() => {
-        familyCache = null
-        return []
+    apiGet<{ profiles?: ProfileView[] }>('/api/profiles')
+      .then((body) => {
+        lastFamily = body?.profiles ?? []
+        if (alive) setProfiles(lastFamily)
       })
-    void familyCache.then((list) => {
-      if (alive) setProfiles(list)
-    })
+      .catch(() => {})
     return () => {
       alive = false
     }
@@ -250,6 +252,9 @@ export function ParentShell({
           </div>
         </div>
       </aside>
+      {/* Na aula, a alça que abre e fecha a lista de aulas (começa fechada, como na aula da
+          criança). Fora do `FocusModeProvider` ela não aparece. */}
+      {variant === 'lesson' ? <FocusModeToggle target="outline" /> : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Celular: a logo e a troca para a criança no alto; as seções na barra de baixo. */}

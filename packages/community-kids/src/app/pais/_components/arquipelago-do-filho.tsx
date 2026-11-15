@@ -26,16 +26,19 @@ export function semanaDoFilho(
 /**
  * A aba "No jogo" da página de um filho (redesenho de 14/11/2026): a semana dele no Arquipélago
  * Vagalume e os minijogos que ele fez. As regras (tempo e visitas) valem para a família toda e
- * ficam na página Família. Jogo fechado para a família ou serviço fora: um recado curto.
+ * ficam na página Família. Jogo fechado para a família: só um recado curto, sem minijogos.
+ * Falha na leitura: um recado de erro, e os minijogos (leitura própria) seguem.
  */
 export function ArquipelagoDoFilho({ perfilId, nome }: { perfilId: string; nome: string }) {
-  const [semana, setSemana] = useState<SemanaDaFamiliaParaOsPais | null | 'fechado'>(null)
+  const [semana, setSemana] = useState<SemanaDaFamiliaParaOsPais | null | 'fechado' | 'erro'>(null)
   useEffect(() => {
     const controller = new AbortController()
     void (async () => {
       const lida = await ler(ROTA_DA_SEMANA, SemanaDaFamiliaParaOsPaisSchema, controller.signal)
       if (controller.signal.aborted) return
-      setSemana(lida?.algumaCriancaVe ? semanaDoFilho(lida, perfilId) : 'fechado')
+      setSemana(
+        lida === null ? 'erro' : lida.algumaCriancaVe ? semanaDoFilho(lida, perfilId) : 'fechado',
+      )
     })()
     return () => controller.abort()
   }, [perfilId])
@@ -62,12 +65,20 @@ export function ArquipelagoDoFilho({ perfilId, nome }: { perfilId: string; nome:
       </div>
       {semana === 'fechado' ? (
         <p className="text-muted-foreground text-sm">
-          Os números do jogo aparecem aqui quando {nome} jogar.
+          O Arquipélago Vagalume ainda não abriu para a sua família. Quando abrir, o que {nome}{' '}
+          fizer no jogo aparece aqui.
+        </p>
+      ) : semana === 'erro' ? (
+        <p role="status" className="text-muted-foreground text-sm">
+          Não conseguimos ler o jogo agora. Tente de novo daqui a pouco.
         </p>
       ) : semana ? (
         <SemanaDasCriancas semana={semana} limiteDiarioMinutos={semana.limiteDiarioMinutos} />
       ) : null}
-      <MinijogosDaCrianca perfilId={perfilId} nome={nome} />
+      {/* Depois da leitura da semana: com o jogo fechado, nem pede os minijogos. */}
+      {semana === null || semana === 'fechado' ? null : (
+        <MinijogosDaCrianca perfilId={perfilId} nome={nome} />
+      )}
     </section>
   )
 }

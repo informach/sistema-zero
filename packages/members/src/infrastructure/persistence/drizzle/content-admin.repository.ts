@@ -375,6 +375,23 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return rows.map((row) => row.courseId)
   }
 
+  async listPublishedLessonTitlesWithChildOnlyBlocks(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectDistinct({ title: lessons.title })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          isNull(lessonBlocks.archivedAt),
+          inArray(lessonBlocks.kind, ['studio', 'pinta']),
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+    return rows.map((row) => row.title)
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     const now = new Date()
     const row = {

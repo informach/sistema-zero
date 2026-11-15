@@ -28,7 +28,13 @@ import {
 } from './_components/parent-ui'
 import { useChildrenStats } from './_components/use-children-stats'
 import { VoiceNewsCard } from './_components/voice-news-card'
-import { childHref, NEW_CHILD_HREF, PARENT_COURSES_HREF, studentEntryFor } from './parent-routes'
+import {
+  childHref,
+  NEW_CHILD_HREF,
+  PARENT_COURSES_HREF,
+  parentCourseHref,
+  studentEntryFor,
+} from './parent-routes'
 
 /**
  * O curso para pais no Início: o que está em andamento continua; sem curso, o convite para
@@ -62,11 +68,7 @@ function ParentCourseCard({ course }: { course: MyCourseView | null }) {
             {course.progress.completedLessons} de {course.progress.totalLessons} aulas concluídas
           </p>
           <Link
-            href={
-              course.continueLessonId
-                ? `${PARENT_COURSES_HREF}/${encodeURIComponent(course.courseSlug)}/aulas/${encodeURIComponent(course.continueLessonId)}`
-                : `${PARENT_COURSES_HREF}/${encodeURIComponent(course.courseSlug)}`
-            }
+            href={parentCourseHref(course.courseSlug, course.continueLessonId)}
             className={PRIMARY_ACTION}
           >
             {course.progress.percent > 0 ? 'Continuar de onde parei' : 'Começar o curso'}

@@ -43,7 +43,7 @@ export class ListCatalogService {
     const [published, active, staffMilestones] = await Promise.all([
       this.courses.listPublishedCourses(audience, learner),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
-      audience === 'kids' && privileged
+      audience === 'kids' && privileged && !parents
         ? this.gamification.listCourseMilestones(userId, audience)
         : Promise.resolve(null),
     ])

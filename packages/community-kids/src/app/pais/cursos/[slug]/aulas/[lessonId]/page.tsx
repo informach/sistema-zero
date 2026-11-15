@@ -51,8 +51,7 @@ export default async function ParentLessonPage({
         viewerId={session.id}
         ratingViewer={{ name: session.firstName ?? null, age: null, avatarUrl: null }}
         shareUrl={null}
-        courseBasePath="/pais/cursos"
-        helpThreadPath="/pais/ajuda/duvidas"
+        area="pais"
       />
     </ParentLessonFrame>
   )

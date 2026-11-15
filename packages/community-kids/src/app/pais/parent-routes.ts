@@ -37,6 +37,10 @@ export function parentCourseHref(slug: string, lessonId?: string | null): string
 export function parentDoubtHref(threadId: string): string {
   return `/pais/ajuda/duvidas/${encodeURIComponent(threadId)}`
 }
+/** A parte da Ajuda com as dúvidas dos cursos para pais (título da lista e o aviso da aula). */
+export const PARENT_DOUBTS_TITLE = 'Suas dúvidas sobre os cursos'
+/** Onde a resposta aparece, no aviso do "Preciso de ajuda" dentro da aula. */
+export const PARENT_DOUBTS_LABEL = `em Ajuda, na parte ${PARENT_DOUBTS_TITLE}`
 
 export const NEW_CHILD_HREF = '/pais/nova-crianca'
 
@@ -66,7 +70,7 @@ export function studentEntryFor(aluno?: string): string {
   return aluno ? `/login/aluno?next=${encodeURIComponent(aluno)}` : '/perfis'
 }
 
-/** Editar o perfil virou a aba Perfil da página do filho (o endereço antigo redireciona). */
+/** Editar o perfil é a aba Perfil da página do filho. */
 export function childEditHref(profileId: string): string {
   return childHref(profileId, 'perfil')
 }

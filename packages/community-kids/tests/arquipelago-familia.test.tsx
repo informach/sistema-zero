@@ -1,11 +1,11 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { ArquipelagoDoFilho } from '../src/app/pais/_components/arquipelago-do-filho'
 import {
   comoComecam,
   ladrilhosDaSemana,
   tempoPorExtenso,
 } from '../src/app/pais/_components/arquipelago-familia'
-import { ArquipelagoDoFilho } from '../src/app/pais/_components/arquipelago-do-filho'
 import { ArquipelagoLimitCard } from '../src/app/pais/_components/arquipelago-limit-card'
 
 const LIA = '11111111-1111-4111-8111-111111111111'
@@ -245,6 +245,27 @@ test('a aba No jogo de quem ainda não jogou diz que os números chegam quando j
     within(semana).getByText('Ainda sem números do jogo. Eles aparecem quando a criança jogar.'),
   ).toBeTruthy()
   expect(within(semana).queryByText('Lia')).toBeNull()
+})
+
+test('a aba No jogo: jogo fechado não oferece minijogos; falha na leitura avisa', async () => {
+  const fechado = servidor({
+    '/semana': () => Response.json({ ...SEMANA, algumaCriancaVe: false }),
+    '/minijogos': () => Response.json({ minijogos: [] }),
+  })
+  const primeira = render(<ArquipelagoDoFilho perfilId={LIA} nome="Lia" />)
+  await screen.findByText(/ainda não abriu para a sua família/)
+  expect(fechado.some((call) => call.url.includes('/minijogos'))).toBe(false)
+  primeira.unmount()
+
+  servidor({
+    '/semana': () => Response.json({}, { status: 503 }),
+    '/minijogos': () => Response.json({ minijogos: [] }),
+  })
+  render(<ArquipelagoDoFilho perfilId={LIA} nome="Lia" />)
+  expect(
+    await screen.findByText('Não conseguimos ler o jogo agora. Tente de novo daqui a pouco.'),
+  ).toBeTruthy()
+  expect(screen.queryByText(/ainda não abriu/)).toBeNull()
 })
 
 test('jogo fechado para a família: nem a semana nem as permissões são pedidas', async () => {
