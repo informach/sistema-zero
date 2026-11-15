@@ -4,8 +4,11 @@ import { AnimationClip, QuaternionKeyframeTrack } from 'three'
 import {
   BARRA_NAS_MAOS,
   camadaDosDedos,
+  camadasDoBraco,
   camadasDosDedos,
+  equipamentoDaMao,
   LANTERNA_NA_MAO,
+  objetoNaMao,
   poseDaCamada,
   SEM_OBJETO_NA_MAO,
 } from '../src/personagem/objeto-na-mao'
@@ -39,6 +42,39 @@ describe('a lanterna do pack na mão', () => {
     expect(new Set(maos('mao_barra_planador'))).toEqual(new Set(['Right', 'Left']))
     expect(new Set(maos('mao_lanterna'))).toEqual(new Set(['Right']))
     expect(camadasDosDedos('nao-existe')).toEqual([])
+  })
+
+  test('o balde e o regador (sem pegada própria) fecham a mão direita no cilindro fino', () => {
+    for (const id of ['mao_balde', 'mao_regador', 'mao_varinha_luz']) {
+      expect(AVATAR_CATALOG.equipment?.[id], id).toBeDefined()
+      const ossos = camadasDosDedos(id).flatMap((c) => c.bones)
+      expect(ossos.length, id).toBeGreaterThan(4)
+      expect(
+        ossos.every((o) => o.startsWith('RightHand')),
+        id,
+      ).toBe(true)
+    }
+  })
+
+  test('um objeto por vez: a barra no planador, o do gesto, e a lanterna acesa', () => {
+    expect(objetoNaMao({ planando: true, doGesto: 'mao_regador', comLanterna: true })).toBe(
+      'mao_barra_planador',
+    )
+    expect(objetoNaMao({ planando: false, doGesto: 'mao_balde', comLanterna: true })).toBe(
+      'mao_balde',
+    )
+    expect(objetoNaMao({ planando: false, doGesto: null, comLanterna: true })).toBe('mao_lanterna')
+    expect(objetoNaMao({ planando: false, doGesto: null, comLanterna: false })).toBeNull()
+    expect(equipamentoDaMao(null)).toBe(SEM_OBJETO_NA_MAO)
+    expect(equipamentoDaMao('mao_lanterna')).toBe(LANTERNA_NA_MAO)
+    expect(equipamentoDaMao('mao_barra_planador')).toBe(BARRA_NAS_MAOS)
+    expect(equipamentoDaMao('mao_regador')).toEqual(['mao_regador'])
+  })
+
+  test('o braço afastado (as camadas largas) acompanha o balde', () => {
+    const clipes = new Set(camadasDoBraco('mao_balde').map((c) => c.clipe))
+    for (const c of ['parado_relaxado', 'andar_frente', 'correr_frente'])
+      expect(clipes.has(c)).toBe(true)
   })
 
   test('a pose da camada é o primeiro quadro do clipe dela, só nos ossos listados', () => {

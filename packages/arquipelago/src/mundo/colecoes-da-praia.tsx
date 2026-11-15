@@ -14,11 +14,13 @@ import type { EstadoDoJogo } from '../estado/loja'
 import {
   alcancaNaPraia,
   CONCHAS_DA_PRAIA,
+  colecaoDaPraia,
   descobriuNaPraia,
   proximoPeixe,
   registrarNaPraia,
 } from '../sistemas/colecoes-da-praia'
 import { CORPO } from '../sistemas/corpo'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
 import {
   falaDaIscaDeGraca,
   gastarIsca,
@@ -76,7 +78,10 @@ function Concha({ p }: { p: (typeof CONCHAS_DA_PRAIA)[number] }) {
       const s = loja.getState()
       if (!podeInteragir(s) || !perto() || descobriuNaPraia(s.salvamento, p.id)) return
       s.mudar((v) => registrarNaPraia(v, p.id))
-      if (!descobriuNaPraia(loja.getState().salvamento, p.id)) return
+      const depois = loja.getState().salvamento
+      if (!descobriuNaPraia(depois, p.id)) return
+      const completou = colecaoDaPraia(depois, 'conchas').every((c) => c.encontrado)
+      if (!p.observar || completou) pedirGesto(movimento, gestoDoAchado(completou))
       s.dizer(
         p.observar
           ? 'A estrela-do-mar ficou no seu lugar. A descoberta está no álbum.'
@@ -140,6 +145,10 @@ function Pesca() {
       const depois = loja.getState().salvamento
       if (usada && (depois.inventario[usada] ?? 0) === 0 && s.isca === usada) s.escolherIsca(null)
       if (!descobriuNaPraia(depois, peixe.id)) return
+      // O peixe no balde por um instante, antes de voltar ao mar; o último da coleção, comemora.
+      if (nova && colecaoDaPraia(depois, 'peixes').every((c) => c.encontrado))
+        pedirGesto(movimento, 'Comemorar')
+      else pedirGesto(movimento, 'Segurar', 'mao_balde')
       s.dizer(
         nova
           ? `Descoberta registrada: ${peixe.nome}. O peixe voltou ao mar.`

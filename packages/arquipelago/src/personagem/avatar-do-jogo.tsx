@@ -43,11 +43,12 @@ import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-c
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
 import {
-  BARRA_NAS_MAOS,
   BracoComObjeto,
+  camadasDoBraco,
   DedosNoCabo,
-  LANTERNA_NA_MAO,
-  SEM_OBJETO_NA_MAO,
+  equipamentoDaMao,
+  type ObjetoDeMao,
+  objetoNaMao,
 } from './objeto-na-mao'
 import {
   type AlturaDoChao,
@@ -74,14 +75,28 @@ const UMA_VEZ: readonly ClipeDoJogo[] = [
   'entrar_na_agua',
   'sair_da_agua',
   'acender',
+  'levantar',
+  'levantar_da_cama',
+  'montar',
+  'desmontar',
+  'pegar_do_chao',
+  'plantar',
+  'plantar_alto',
+  'regar',
+  'comemorar',
 ]
 /** O pulo do pack sobe o corpo; no jogo quem sobe é a física (o agachar fica). */
 const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim']
 /**
- * Sentar e deitar ficam com o deslocamento: o desenho já está no assento (ou no colchão) e é o
- * clipe que leva a bacia de onde ela começa em pé até lá.
+ * Sentar, deitar e levantar ficam com o deslocamento: o desenho está no assento (ou no colchão) e é
+ * o clipe que leva a bacia de onde ela está em pé até lá, e de volta.
  */
-const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
+const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = [
+  'sentar',
+  'deitar',
+  'levantar',
+  'levantar_da_cama',
+]
 /** Subindo (a escada, a borda, a casca), quem sobe é o corpo da física: o clipe fica sem a subida. */
 const SEM_A_SUBIDA: readonly ClipeDoJogo[] = [
   'subir_escada',
@@ -166,6 +181,8 @@ export function AvatarDoJogo({
   comPatins = false,
   comLanterna = false,
   planando = false,
+  objetoDoGesto = null,
+  semChapeu = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -176,15 +193,24 @@ export function AvatarDoJogo({
   comLanterna?: boolean
   /** No modo planar: a barra do planador nas duas mãos. */
   planando?: boolean
+  /** O objeto do gesto em andamento (o regador ao regar, o balde cheio), no lugar da lanterna. */
+  objetoDoGesto?: ObjetoDeMao | null
+  /** Deitada e levantando da cama, o chapéu sai (`hatOff` dos clipes da arte). */
+  semChapeu?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
   const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
   const slots = useMemo(() => {
     const vestido = avatarDoPack(slotsDoJogo)
-    return deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
-  }, [slotsDoJogo, deRodas])
-  const naMao = planando ? 'mao_barra_planador' : comLanterna ? 'mao_lanterna' : null
+    const calcado = deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
+    if (!semChapeu || !calcado.chapeu) return calcado
+    const { chapeu: _fora, ...semOChapeu } = calcado
+    return semOChapeu
+  }, [slotsDoJogo, deRodas, semChapeu])
+  const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
+  const equipamento = equipamentoDaMao(naMao)
+  const comBraco = naMao !== null && camadasDoBraco(naMao).length > 0
   const personagem = useRef<Group>(null)
   const [emPe, setEmPe] = useState(false)
   const visualRef = useRef<Group>(null)
@@ -246,18 +272,19 @@ export function AvatarDoJogo({
               charRef={personagem}
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
-              equipment={
-                naMao === 'mao_barra_planador'
-                  ? BARRA_NAS_MAOS
-                  : naMao === 'mao_lanterna'
-                    ? LANTERNA_NA_MAO
-                    : SEM_OBJETO_NA_MAO
-              }
+              equipment={equipamento}
             />
-            {naMao === 'mao_lanterna' ? (
-              <BracoComObjeto corpo={personagem} objeto={naMao} pose={pose} />
+            {naMao && comBraco ? (
+              <BracoComObjeto
+                key={`braco-${naMao}`}
+                corpo={personagem}
+                objeto={naMao}
+                pose={pose}
+              />
             ) : null}
-            {naMao ? <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} /> : null}
+            {naMao && equipamento.length > 0 ? (
+              <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} />
+            ) : null}
             {deRodas ? (
               <RodasDosPatins corpo={personagem} movimento={movimento} pausado={pausado} />
             ) : null}

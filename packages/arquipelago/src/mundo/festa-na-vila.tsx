@@ -16,6 +16,8 @@ import {
   type Festa,
   PAINEL_DA_FOGUEIRA,
 } from '../sistemas/festas'
+import { pedirGesto } from '../sistemas/gestos'
+import { dancaDaVez } from '../sistemas/locomocao'
 import { jogoPausado } from '../sistemas/pausa'
 import { colisoresDaFesta, FOGUEIRA_DA_FESTA, PECAS_DAS_FESTAS } from './arranjo-da-festa'
 import { iluminarArte } from './arte-animada'
@@ -145,8 +147,28 @@ function FestaCarregada({ festa, catalogo, meio, giro }: Lugar & { festa: Festa;
         />
       ) : null}
       {festa === 'junina' ? <FogueiraInterativa meio={meio} giro={giro} /> : null}
+      <DancarNaFesta meio={meio} />
     </group>
   )
+}
+
+/** No meio da festa, ela dança: a cada vez, uma das seis danças da arte. */
+function DancarNaFesta({ meio }: Pick<Lugar, 'meio'>) {
+  const { loja, movimento } = useJogo()
+  const vezes = useRef(0)
+  useInterativo('festa:dancar', {
+    x: meio.x,
+    z: meio.z,
+    raio: 3,
+    rotulo: () =>
+      movimento.modo === 'chao' && !jogoPausado(loja.getState()) ? 'Dançar na festa' : null,
+    agir: () => {
+      if (movimento.modo !== 'chao' || jogoPausado(loja.getState())) return
+      pedirGesto(movimento, dancaDaVez(vezes.current))
+      vezes.current += 1
+    },
+  })
+  return null
 }
 
 function FogueiraInterativa({ meio, giro }: Lugar) {
