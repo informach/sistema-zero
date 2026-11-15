@@ -8,7 +8,10 @@ import {
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../domain/entitlement/entitlement.errors'
-import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-snapshot'
+import type {
+  EntitlementSnapshot,
+  PurchasedAccessPolicy,
+} from '../../domain/entitlement/entitlement-snapshot'
 import type { AccessType } from '../../domain/entitlement/fulfillment'
 import {
   createMuralVisitorSnapshot,
@@ -20,6 +23,10 @@ import {
 import type { CatalogGateway } from '../../domain/ports/catalog-gateway.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import {
+  computeFixedExpiry,
+  fixedTermMuralVisitorAudience,
+} from '../grant-entitlement/grant-entitlement.service'
 import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/admin-views'
 
 /**
@@ -38,7 +45,23 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
  * existente; se a existente estiver revogada/expirada, falha 409 (use estender).
  */
 export type GrantManualCommand =
-  | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null; sourceId?: string }
+  | {
+      mode: 'offer'
+      userId: string
+      offerRef: string
+      expiresAt?: Date | null
+      sourceId?: string
+      /**
+       * Presente da campanha (15/11/2026): o prazo vem da PRÓPRIA oferta (`fixed` = `anchorAt` +
+       * duração; `lifetime` = sem prazo), e uma oferta de prazo fixo com o Mural completo deixa a
+       * visita permanente, a mesma regra da compra. Ignora `expiresAt`.
+       */
+      useOfferAccessPolicy?: boolean
+      /** Início do prazo (a data do resgate, estável nas re-entregas). Ausente = agora. */
+      anchorAt?: Date
+      /** Público do presente, gravado no snapshot (`giftAudience`) para os avisos de fim. */
+      audience?: MuralAudience
+    }
   | {
       mode: 'course'
       userId: string
@@ -131,7 +154,7 @@ export class GrantManualEntitlementService {
     const expiresAt = cmd.mode === 'mural_visitor' ? null : (cmd.expiresAt ?? null)
     switch (cmd.mode) {
       case 'offer':
-        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
+        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId, cmd)
       case 'course':
         return this.grantByCourse(
           cmd.userId,
@@ -158,6 +181,10 @@ export class GrantManualEntitlementService {
     expiresAt: Date | null,
     now: Date,
     sourceId?: string,
+    gift?: Pick<
+      Extract<GrantManualCommand, { mode: 'offer' }>,
+      'useOfferAccessPolicy' | 'anchorAt' | 'audience'
+    >,
   ): Promise<GrantManualResult> {
     const offer = await this.deps.catalog.resolveOfferEntitlements(offerRef)
     if (!offer) throw new OfferNotFoundError()
@@ -167,6 +194,35 @@ export class GrantManualEntitlementService {
       throw new InvalidEntitlementCommandError(
         'A oferta foi resolvida mas não entrega nenhum item — verifique o catálogo',
       )
+    }
+
+    // Presente: o prazo e a visita ao Mural seguem a oferta, como numa compra.
+    let accessPolicy: PurchasedAccessPolicy | undefined
+    let visitorAudience: MuralAudience | null = null
+    if (gift?.useOfferAccessPolicy) {
+      const policy = offer.accessPolicy
+      if (!policy || policy.mode === 'billing_cycle')
+        throw new InvalidEntitlementCommandError(
+          'O presente precisa de uma oferta de pagamento único (prazo fixo ou sem prazo)',
+        )
+      if (policy.mode === 'fixed') {
+        if (!policy.durationValue || !policy.durationUnit)
+          throw new InvalidEntitlementCommandError('A oferta de prazo fixo não tem a duração')
+        accessPolicy = {
+          mode: 'fixed',
+          durationValue: policy.durationValue,
+          durationUnit: policy.durationUnit,
+        }
+        expiresAt = computeFixedExpiry(
+          gift.anchorAt ?? now,
+          policy.durationValue,
+          policy.durationUnit,
+        )
+      } else {
+        accessPolicy = { mode: 'lifetime', durationValue: null, durationUnit: null }
+        expiresAt = null
+      }
+      visitorAudience = fixedTermMuralVisitorAudience(offer, accessPolicy)
     }
 
     const granted: AdminEntitlementView[] = []
@@ -183,6 +239,8 @@ export class GrantManualEntitlementService {
         courseRef: item.fulfillment?.courseRef ?? null,
         fulfillment: item.fulfillment,
         resolvedAt: now.toISOString(),
+        ...(accessPolicy ? { accessPolicy } : {}),
+        ...(gift?.audience ? { giftAudience: gift.audience } : {}),
       }
       grants.push({
         userId,
@@ -193,6 +251,22 @@ export class GrantManualEntitlementService {
         offerId: offer.offerId,
         snapshot,
         expiresAt,
+        now,
+        sourceId,
+      })
+    }
+    if (visitorAudience) {
+      // A visita permanente ao Mural do mesmo público, depois do prazo (regra da compra).
+      const access = MURAL_GIFT_ACCESS[visitorAudience]
+      grants.push({
+        userId,
+        productId: access.visitorProductId,
+        productKind: 'community',
+        accessType: 'community',
+        courseRef: access.visitorRef,
+        offerId: offer.offerId,
+        snapshot: createMuralVisitorSnapshot(offer.offerId, offer.offerSlug, now, visitorAudience),
+        expiresAt: null,
         now,
         sourceId,
       })

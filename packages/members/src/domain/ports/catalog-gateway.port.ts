@@ -10,10 +10,19 @@ export interface ResolvedOfferItem {
   fulfillment: FulfillmentSpec | null
 }
 
+/** A política de acesso da oferta, como o catálogo a define (`accessMode` + duração). */
+export interface ResolvedOfferAccessPolicy {
+  mode: 'lifetime' | 'fixed' | 'billing_cycle'
+  durationValue: number | null
+  durationUnit: 'days' | 'months' | null
+}
+
 export interface ResolvedOffer {
   offerId: string
   offerSlug: string
   items: ResolvedOfferItem[]
+  /** Ausente quando o catálogo não mandou (contrato antigo). */
+  accessPolicy?: ResolvedOfferAccessPolicy
 }
 
 /**

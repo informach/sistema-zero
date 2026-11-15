@@ -258,18 +258,39 @@ export class GrantEntitlementService {
   }
 }
 
-/**
- * Ofertas do Desafio de 30 dias que, depois do prazo, deixam a visita permanente ao Mural do
- * público delas: a Kids e a adulta (21/10/2026, a mesma oferta com as chaves adultas).
- */
-const DESAFIO_30_DIAS_OFFERS: ReadonlyMap<string, MuralAudience> = new Map([
-  ['desafio-primeiro-jogo-30-dias', 'kids'],
-  ['desafio-primeiro-jogo-adulto-30-dias', 'adult'],
-])
-
 interface MuralVisitorGrant {
   idempotencyKey: string
   audience: MuralAudience
+}
+
+/**
+ * O público do Mural COMPLETO que a oferta inclui como item, se incluir. É o que decide a visita
+ * permanente depois do prazo (`fixedTermMuralVisitorAudience`).
+ */
+export function fullMuralAudienceOf(offer: Pick<ResolvedOffer, 'items'>): MuralAudience | null {
+  for (const audience of ['kids', 'adult'] as const)
+    if (
+      offer.items.some(
+        (item) =>
+          item.kind === 'community' &&
+          item.fulfillment?.accessType === 'community' &&
+          item.fulfillment.courseRef === MURAL_GIFT_ACCESS[audience].fullRef,
+      )
+    )
+      return audience
+  return null
+}
+
+/**
+ * Regra geral (15/11/2026, no lugar do mapa fixo das ofertas do Desafio): uma oferta de PRAZO FIXO
+ * que inclui o Mural completo deixa, depois do prazo, a visita permanente ao Mural do mesmo
+ * público. Vale para a compra e para o presente da campanha (`grantByOffer`), com a mesma oferta.
+ */
+export function fixedTermMuralVisitorAudience(
+  offer: Pick<ResolvedOffer, 'items'>,
+  policy: Pick<PurchasedAccessPolicy, 'mode'>,
+): MuralAudience | null {
+  return policy.mode === 'fixed' ? fullMuralAudienceOf(offer) : null
 }
 
 function permanentMuralVisitorGrant(
@@ -277,36 +298,24 @@ function permanentMuralVisitorGrant(
   cmd: GrantEntitlementCommand,
   resolvedPolicy: PurchasedAccessPolicy,
 ): MuralVisitorGrant | null {
-  const hasFullMural = (audience: MuralAudience) =>
-    offer.items.some(
-      (item) =>
-        item.kind === 'community' &&
-        item.fulfillment?.accessType === 'community' &&
-        item.fulfillment.courseRef === MURAL_GIFT_ACCESS[audience].fullRef,
-    )
-
   // A assinatura Kids (Mural Kids pleno) ganha a visita permanente; a adulta não (fora do escopo).
-  if (resolvedPolicy.mode === 'billing_cycle' && cmd.subscription && hasFullMural('kids')) {
+  if (
+    resolvedPolicy.mode === 'billing_cycle' &&
+    cmd.subscription &&
+    fullMuralAudienceOf(offer) === 'kids'
+  ) {
     return {
       idempotencyKey: `subscription-visitor:${cmd.subscription.subscriptionId}:${MURAL_GIFT_ACCESS.kids.visitorProductId}`,
       audience: 'kids',
     }
   }
-  const audience = DESAFIO_30_DIAS_OFFERS.get(offer.offerSlug)
-  if (
-    audience &&
-    hasFullMural(audience) &&
-    cmd.accessPolicy != null &&
-    resolvedPolicy.mode === 'fixed' &&
-    resolvedPolicy.durationValue === 30 &&
-    resolvedPolicy.durationUnit === 'days'
-  ) {
-    return {
-      idempotencyKey: `payment:${cmd.paymentId}:${MURAL_GIFT_ACCESS[audience].visitorProductId}`,
-      audience,
-    }
+  const audience =
+    cmd.accessPolicy != null ? fixedTermMuralVisitorAudience(offer, resolvedPolicy) : null
+  if (!audience) return null
+  return {
+    idempotencyKey: `payment:${cmd.paymentId}:${MURAL_GIFT_ACCESS[audience].visitorProductId}`,
+    audience,
   }
-  return null
 }
 
 /** Tentativas de extensão sob conflito otimista antes de desistir (→ re-entrega). */
