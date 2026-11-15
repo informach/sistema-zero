@@ -396,6 +396,28 @@ describe('campanhas no HTTP', () => {
       },
     })
   })
+  test('campanha encerrada ainda diz qual é o presente, sem abrir cadastro', async () => {
+    const { app } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const created = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'ended' }),
+      }),
+    )
+    expect(created.status).toBe(201)
+    const page = await app.handle(
+      req(`/referrals/internal/codes/${input.code}`, {
+        headers: { 'x-internal-token': INTERNAL_TOKEN },
+      }),
+    )
+    expect(page.status).toBe(200)
+    expect(await page.json()).toMatchObject({
+      state: 'ended',
+      giftAvailable: false,
+      gift: { offerId: KIDS_GIFT_OFFER.offerId, courseSlug: 'cade-todo-mundo', accessDays: 7 },
+    })
+  })
   test('datas inválidas retornam 400 e encerramento retorna 410 antes de criar conta', async () => {
     const { app, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
     const bad = await app.handle(
