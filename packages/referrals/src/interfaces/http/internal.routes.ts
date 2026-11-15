@@ -84,10 +84,17 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // O público vem do código (campanha → público da campanha); a oferta vem da campanha
         // (ou é a padrão do público) e decide o curso consultado e o `gift` devolvido.
         const audience = campaign?.audience ?? record.audience
+        // Fora do ar (agendada, pausada, encerrada) não há cadastro novo, mas a página ainda diz
+        // qual curso é o presente (curso para pais tem outra página): o `gift` vem quando a
+        // oferta resolve, e falha do catálogo só o omite (a página cai no texto de sempre).
+        const plan = await deps.redeem.publicGift(campaign ?? null, audience)
         const { availability, gift } =
           state === 'active'
-            ? await deps.redeem.publicGift(campaign ?? null, audience)
-            : { availability: 'unavailable' as const, gift: undefined }
+            ? plan
+            : {
+                availability: 'unavailable' as const,
+                gift: plan.availability === 'available' ? plan.gift : undefined,
+              }
         if (availability === 'upstream_error') {
           set.status = 502
           return envelope('UPSTREAM_ERROR', 'Não foi possível consultar o presente agora')
