@@ -1,26 +1,14 @@
-# Aula 3. O interesse como ponte
+# Aula 3. Programar é organizar a vida
 
-**De onde vem:** aula aberta de 13/11/2026, slides 13 a 15 (transcrição de 00:58 a 01:07).
+**Objetivo de aprendizagem:** o responsável desmistifica a programação, reconhece que a rotina da casa já é um algoritmo e vive, num desafio curto, o ciclo de observar, ajustar e testar.
 
-**Objetivo:** ajudar a família a reconhecer no próprio filho um ponto de partida para criar e a usar o interesse dele, inclusive o interesse intenso, como aliado.
+**Crença que muda:** "programação é difícil e não é para o meu filho (nem para mim)." Passa a ser: "programar é organizar passos, e a gente já faz isso em casa."
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| Você reconhece o seu filho? | As seis cenas e o que criar um jogo oferece em cada uma; o cuidado com diagnóstico; o hiperfoco a favor; nem toda criança joga. | Vídeo assistido. |
-| O interesse como ponte | O vídeo do Bernardo; o exercício "Meu filho ama ___"; o que os pais começam a perceber; "uma programação de vida". | Vídeo assistido; exercício à vista. |
+| Você já programa em casa | Blocos coloridos em vez da tela preta; QUANDO, SE e ENTÃO com a rotina da manhã e com a porta e a chave; a ordem dos passos no banho; causa e consequência. | Vídeo assistido. |
+| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. | Vídeo assistido. |
+| Qual é o seu caminho? | Quiz com a sequência do caminho (parte própria, sem vídeo). O que fazer depois do erro é ensinado na parte seguinte. | Quiz respondido. |
+| E se a primeira tentativa não funcionar? | A resposta; observar, mudar uma instrução, testar de novo; o erro como pista; o olhar para o todo e para o ponto importante. | Vídeo assistido; tarefa à vista. |
 
-## Ideias-chave
-
-- Cenas que famílias contam, com o que a criação oferece: o tema do jogo, a previsibilidade da regra, o erro como pista, a sequência, o mesmo tempo com outro papel, um jeito de se expressar.
-- Interesses intensos são fonte de prazer, motivação e regulação (National Autistic Society).
-- O hiperfoco usado a favor facilita ensinar (Vivianne). Vale até os 17 anos.
-- Nem toda criança joga: a Isabela, o adolescente com canal de vídeos. O jogo é a ferramenta.
-- "Não é uma programação de jogo, é uma programação de vida" (Vivianne).
-
-## Para fazer em casa
-
-Completar a frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___."
-
-## Cuidados
-
-As cenas não descrevem todo autista e não são diagnóstico. Sem promessa clínica: cada criança tem o seu caminho e o seu tempo.
+**Ferramenta:** escrever com o filho uma rotina da casa em forma de regra, e usar as três perguntas quando algo der errado.

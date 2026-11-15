@@ -377,10 +377,12 @@ público do resgate; o Kids continua com as chaves de sempre.
   `nome`+`campanha`+`validade`+`link`. `validade` chega formatada (Brasília). O `link` é montado
   pelo referrals sobre a env **`COMMUNITY_URL`** dele (base do app adulto):
   `<COMMUNITY_URL>/redefinir-senha?token=` na conta nova e `<COMMUNITY_URL>/cursos` na existente.
-  Sem `COMMUNITY_URL` o referrals fecha o presente adulto (nenhum desses e-mails sai). O curso
-  liberado é o da env `SCHOLARSHIP_ADULT_COURSE_SLUG` do referrals (default
-  `cade-todo-mundo-adulto`); os templates citam "Cadê Todo Mundo, na versão adulta", então trocar
-  o curso pede revisar a copy.
+  Sem `COMMUNITY_URL` o referrals fecha o presente adulto (nenhum desses e-mails sai). Desde
+  15/11/2026 o presente é uma OFERTA do catálogo: as boas-vindas (adultas e as Kids `-mural-trial`)
+  recebem `curso`, `prazo` e `mural` prontos do referrals, sem curso nem prazo fixos na copy; as
+  Kids `-mural-trial` também recebem `orientacao` (o próximo passo: perfil e aparelho da criança,
+  ou o curso em Cursos para pais), no lugar do `DEVICE_SETUP`/`DEVICE_ALREADY_READY` fixos; e os
+  `gift-*` do members recebem `curso` e `mural`. Seed DEPOIS do deploy de referrals e members.
 - Consumer `members`: `gift-expiry-2d-adult` (`nome`+`data`+`link`) e `gift-expired-adult`
   (`nome`+`link`), as MESMAS variáveis do Kids, com o `link` da continuidade adulta (`/pro/...`).
   Diferente dos `gift-*` Kids, os adultos citam a assinatura da Comunidade como próximo passo. O

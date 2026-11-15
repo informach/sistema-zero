@@ -8,6 +8,7 @@ import type {
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
+  CampaignGiftOfferLockedError,
   type CampaignRecord,
 } from '../../src/domain/campaign'
 import type { CampaignRepository } from '../../src/domain/ports/campaign-repository.port'
@@ -22,6 +23,7 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     const value: CampaignRecord = {
       ...input,
       audience: input.audience ?? 'kids',
+      giftOfferId: input.giftOfferId ?? null,
       id: randomUUID(),
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
@@ -66,8 +68,18 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       this.referrals.redemptions.some((r) => r.codeId === ownCode?.id)
     )
       throw new CampaignAudienceLockedError()
+    // Oferta: espelha a régua do repositório Drizzle (omitida conserva; troca só em rascunho
+    // sem cadastros).
+    const giftOfferId =
+      input.giftOfferId === undefined ? (value.giftOfferId ?? null) : input.giftOfferId
+    if (value.giftOfferId && giftOfferId !== value.giftOfferId) {
+      if (value.status !== 'draft') throw new CampaignGiftOfferLockedError()
+      if (this.referrals.redemptions.some((r) => r.codeId === ownCode?.id))
+        throw new CampaignGiftOfferLockedError()
+    }
     Object.assign(value, input, {
       audience,
+      giftOfferId,
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
       updatedAt: new Date(Math.max(Date.now(), value.updatedAt.getTime() + 1)),

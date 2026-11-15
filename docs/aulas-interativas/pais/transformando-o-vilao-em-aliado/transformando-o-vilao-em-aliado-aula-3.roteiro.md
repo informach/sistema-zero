@@ -1,63 +1,71 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-3
 
-A Helena grava sozinha, com os slides da aula aberta na tela. As ideias da Vivianne entram na voz da Helena, sempre com o nome dela. Fala para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca. A Parte 1 tem uma gravação curta de tela do Estúdio com blocos coloridos; a Parte 2 mostra a grade do desafio.
 
-## Parte 1. Você reconhece o seu filho?
+## Parte 1. Você já programa em casa
 
-**Clipe:** `video-a3-reconhece`
+**Clipe:** `video-a3-rotina`
 
-**Na tela:** Slide 13 da palestra (você reconhece?). Cada cena acende quando é lida, e o lado direito aparece logo depois. Câmera do "Um cuidado importante" até o fim.
-
-**Fala da Helena:**
-
-```text
-Hoje eu quero propor um exercício. Veja se você reconhece o seu filho em alguma destas cenas. São cenas que muitas famílias contam. Ao lado de cada uma, eu mostro o que criar um jogo pode oferecer.
-
-Ele sabe tudo sobre um assunto. Tem criança para quem tudo é dinossauro, ou tudo é o espaço. Esse assunto pode virar o tema do jogo dela, e o interesse aparece naturalmente, porque dá para criar um jogo sobre qualquer coisa.
-
-Ele precisa saber o que vai acontecer. Na programação, a mesma regra dá sempre o mesmo resultado. É previsível.
-
-Ele se frustra quando perde. No jogo dele, o erro vira pista, e quem muda a regra é ele. Motivado pela própria criação, ele fica mais disposto a errar e tentar de novo.
-
-Ele organiza tudo em sequência. A sequência é a base de todo jogo e de todo programa. Essa criança pode se sentir em casa.
-
-Ele não larga a tela. O tempo pode ser o mesmo. O que muda é o papel dele.
-
-Ele mostra mais do que fala. Tem criança mais caladinha, que não fala tanto. Um jogo pronto vira um jeito de contar o que ela pensa e de colocar as ideias de forma concreta, sem precisar de tantas palavras.
-
-Um cuidado importante: essas cenas não descrevem todo autista e não são diagnóstico. São coisas que as famílias contam. E interesses intensos são fonte de prazer, de motivação e de regulação. Não são algo a ser eliminado.
-
-A Vivianne lembra uma coisa muito usada na terapia: o hiperfoco. Se eu uso o interesse da criança a meu favor, eu ensino as habilidades de que ela precisa com muito mais facilidade. Se eu pego um assunto que não é o dela, até consigo ensinar, mas com muito mais dificuldade. Num projeto que é dela, com o tema dela e o personagem dela, ela adere mais, fica mais aberta e aprende mais. E isso vale até os 17 anos.
-
-E não é só para quem gosta de jogar. Cada criança é única, e nem toda criança joga. Uma menina que a gente acompanhou, a Isabela, que você vai conhecer mais adiante, não tinha costume de jogar e se interessou do mesmo jeito. A Vivianne conta de um adolescente que quase não joga, mas tem um canal de vídeos. A pergunta passa a ser: o que eu posso treinar com ele nesse projeto para ele usar lá no canal? O interesse pode ser desenhar, contar histórias ou um canal de vídeos. O jogo é a ferramenta. Clique em Próxima parte.
-```
-
-**Recado na página (não gravar):** Cada criança é única. As cenas não são diagnóstico: são pontos de partida que muitas famílias reconhecem.
-
-## Parte 2. O interesse como ponte
-
-**Clipe:** `video-a3-ponte`
-
-**Na tela:** Slide 14 da palestra (o interesse como ponte) e o vídeo de 21 segundos do Bernardo logo depois de "Veja o que o Bernardo conta". A frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___." fica na tela durante o exercício. Entra o vídeo de depoimentos do slide 15 (Harle, Daniel, Débora e Flávia) depois de "o que os pais começam a perceber". Câmera no fechamento.
+**Na tela:** Helena na câmera. Alguns segundos de blocos coloridos sendo encaixados no Estúdio quando ela fala dos bloquinhos. Uma tela com QUANDO, SE e ENTÃO, primeiro com a rotina da manhã e depois com a porta e a chave. Câmera de novo na parte da causa e da consequência.
 
 **Fala da Helena:**
 
 ```text
-O que o seu filho já ama pode ser o começo, sem mudar a rotina. Veja o que o Bernardo conta.
+Quando eu falo que criar um jogo envolve programar, muita gente imagina uma tela preta cheia de letras e números. Isso ficou no passado. Hoje a criança programa arrastando bloquinhos coloridos. O jeito de pensar é o mesmo dos programadores, só que muito mais fácil de expressar.
 
-O Bernardo usou o que ele já gostava, os jogos que ele joga, para descobrir como eles são feitos. É um jeito de não só jogar.
+E eu tenho uma boa notícia: você já programa em casa. Só não chama assim. Se você já montou uma rotina visual com o seu filho, um quadro de tarefas, a sequência da manhã, você escreveu um algoritmo. Olha só. Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes.
 
-Agora é a sua vez. Complete em voz alta: meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Alguns exemplos para ajudar. Meu filho ama trens, e o jogo poderia ter um trem que precisa chegar na estação sem bater. Minha filha ama bandeiras, e o jogo mostra uma bandeira para ela escolher o país. Ele ama dinossauros, e o dinossauro precisa fugir do vulcão. Todo interesse cabe num jogo. Pode pausar e pensar no do seu filho.
+Num jogo, é a mesma lógica. Quando o personagem tocar na porta, se ele estiver com a chave, então ele pode entrar.
 
-Como a Vivianne explica, a gente não está mudando a rotina, no sentido de você não poder mais ter tela. É fazer um uso funcional, a partir do que essa criança gosta.
+Programar é isso: organizar passos para chegar num objetivo, criar regras, fazer escolhas e testar o resultado.
 
-E o que os pais começam a perceber? Veja.
+Repare que a ordem importa. Primeiro o personagem toca na porta, depois confere a chave, e só então entra. Na vida também: eu só entro no banheiro se abrir a porta, só tomo banho se tirar a roupa antes, e só me visto de novo depois de me enxugar. Quando a criança organiza passos no jogo, ela treina a mesma sequência que usa todo dia. E muitas vezes ela traz o exemplo de volta: fui abrir a porta, estava trancada, e lembrei que a chave estava na mochila. Isso é resolver um problema.
 
-O medo do Harle talvez seja o medo de muita gente. O filho dele é autista, e ele tinha medo de que ele não desse conta. Cada criança tem o seu caminho e o seu tempo. O que eu quero mostrar é que existe uma possibilidade real.
-
-A Vivianne gosta de dizer: não é uma programação de jogo, é uma programação de vida. É o que ela já trabalha com as crianças na terapia, só que agora através de um interesse delas, que não dá para enfrentar de frente, porque o mundo é virtual.
-
-Para esta semana: escreva a frase do seu filho. Meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Ela está aqui embaixo e na apostila. Clique em Próxima parte.
+Tem mais uma coisa que a programação ensina, e que eu acho preciosa: causa e consequência. Muita criança vive como se tudo acontecesse com ela. O jogo é chato, a chuva estragou, a culpa é do outro. Imagine um esconde-esconde num jardim. Quando ela decide que o esconderijo some ao ser tocado, e vê o esconderijo sumir, foi ela que causou aquilo. Ela é quem faz acontecer. E se ela programa um placar, aprende que quanto mais bichinhos acha, mais pontos tem. Na vida, quanto mais eu treino, melhor eu jogo bola. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Para fazer em casa: complete a frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___."
+**Recado na página (não gravar):** Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes. A rotina da sua casa já é um algoritmo.
+
+## Parte 2. Você consegue programar este caminho?
+
+**Clipe:** `video-a3-caminho`
+
+**Na tela:** A grade 4 por 4: a bolinha azul na linha de baixo, à esquerda, a estrela na linha de cima, à direita, e dois quadrados escuros na segunda coluna, nas duas linhas do meio. As quatro instruções aparecem ao lado. A tela fica parada no fim, para a pessoa pensar.
+
+**Fala da Helena:**
+
+```text
+Agora é a sua vez de programar. Olhe a grade. A bolinha azul precisa chegar até a estrela sem passar pelos quadrados escuros. As instruções possíveis são subir, descer, ir para a direita e ir para a esquerda. Quais instruções você daria, uma depois da outra?
+
+É exatamente isso que o seu filho faz quando cria um jogo: passa um passo a passo para o computador, e o computador executa.
+
+Pense com calma. Depois clique em Próxima parte e responda. Se a primeira tentativa não der certo, tudo bem. É justamente disso que a gente fala logo depois.
+```
+
+**Recado na página (não gravar):** Da bolinha azul até a estrela, sem passar pelos quadrados escuros. Pense e responda na próxima parte.
+
+## Parte 3. Qual é o seu caminho? (quiz, sem vídeo)
+
+O quiz `quiz-a3` fica numa parte própria, sem gravação. A grade é descrita no enunciado.
+
+## Parte 4. E se a primeira tentativa não funcionar?
+
+**Clipe:** `video-a3-erro`
+
+**Na tela:** A grade com as setas verdes do caminho certo. Os três passos (observar, mudar uma instrução, testar de novo) acendem quando ela os lê. Câmera no fechamento e na tarefa.
+
+**Fala da Helena:**
+
+```text
+Um caminho que chega é subir, subir, subir e depois direita, direita, direita. E existe outro: ir para a direita até o fim e só depois subir. Agora, se você começou com uma casa para a direita e logo tentou subir, bateu no quadrado escuro. E aí?
+
+No jogo e na programação, a gente faz três coisas. Primeiro, observar: onde a bolinha parou? O que aconteceu de diferente? Depois, mudar uma instrução, uma coisa por vez, para entender o efeito. E testar de novo.
+
+O erro vira uma pista. O computador não fica bravo e não julga. Ele só mostra o que aconteceu. Para a criança que sofre muito com o erro, isso pode ser um treino seguro, com pausas e com desafios menores quando for preciso.
+
+E repare que, para achar o caminho, você precisou olhar a grade inteira e, ao mesmo tempo, prestar atenção no ponto que importava. A criança faz isso o tempo todo: quando entra na sala de aula, ela precisa olhar tudo, as carteiras, os colegas, se a professora está falando, e depois focar no lugar dela. O jogo treina esse olhar.
+
+Para esta semana, eu tenho uma ferramenta: escolham juntos uma rotina da casa e escrevam como regra. Quando chegar da escola, se tiver lição, então lanchar, fazer a lição e só depois brincar. E quando algo der errado no dia a dia, experimente as três perguntas: onde parou? O que dá para mudar? Vamos tentar de novo?
+```
+
+**Recado na página (não gravar):** Observar, mudar uma instrução, testar de novo. O erro é uma pista, dentro e fora da tela.

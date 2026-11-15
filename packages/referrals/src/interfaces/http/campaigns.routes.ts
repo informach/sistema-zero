@@ -37,6 +37,12 @@ const campaignBody = t.Object({
   channel: t.String({ maxLength: 100 }),
   /** Ausente = `kids` na criação; na edição e na duplicata mantém o público gravado. */
   audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
+  /**
+   * UUID da oferta do catálogo dada de presente. Obrigatória na criação (a duplicata herda a da
+   * original se omitida); na edição, ausente mantém a gravada. Precisa estar no DTO: o normalize
+   * do Elysia apaga campo fora dele.
+   */
+  giftOfferId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
   ambassadorId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
   commissionEnabled: t.Optional(t.Boolean()),
   commissionAmountCents: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 }))),

@@ -4,6 +4,7 @@ import { EntitlementAggregate } from '../../src/domain/entitlement/entitlement.a
 import {
   buildApp,
   offerWithCourse,
+  offerWithMural,
   seedSampleCourse,
   signedWebhookHeaders,
   WEBHOOK_SECRET,
@@ -215,15 +216,31 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     seedSampleCourse(courses, 'curso-rascunho', 'draft', 'kids')
     seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
 
+    // O referrals nomeia o curso no e-mail e decide o link do curso para pais.
     expect(await readJson(await getGiftAvailability(app, 'cade-todo-mundo'))).toEqual({
       available: true,
+      title: 'Curso Demo',
+      learner: 'child',
     })
     for (const slug of ['curso-rascunho', 'curso-adulto', 'curso-ausente']) {
       const res = await getGiftAvailability(app, slug)
       expect(res.status).toBe(200)
-      expect(await readJson(res)).toEqual({ available: false })
+      expect(await readJson(res)).toEqual({ available: false, title: null, learner: null })
     }
     expect((await getGiftAvailability(app, 'cade-todo-mundo', false)).status).toBe(401)
+  })
+
+  test('curso para pais publicado: o presente informa learner parents', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'vilao-em-aliado', 'published', 'kids')
+    const course = courses.courses.find((c) => c.slug === 'vilao-em-aliado')!
+    course.title = 'Transformando o vilão em aliado'
+    course.learner = 'parents'
+    expect(await readJson(await getGiftAvailability(app, 'vilao-em-aliado'))).toEqual({
+      available: true,
+      title: 'Transformando o vilão em aliado',
+      learner: 'parents',
+    })
   })
 
   test('concede somente o curso kids publicado sem oferta e com procedência auditável', async () => {
@@ -353,6 +370,88 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     expect(snap.sourceId).toBe('scholarship:red-1') // procedência auditável
     expect(snap.expiresAt).toBeNull() // vitalícia, como a compra
     expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
+  })
+
+  // Presente por OFERTA (15/11/2026): o prazo e a visita ao Mural vêm da própria oferta.
+  test('presente de oferta de 7 dias com o Mural: curso e Mural até o fim, visita permanente', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('cade-todo-mundo-7-dias', {
+      ...offerWithMural('cade-todo-mundo-7-dias', course.slug),
+      accessPolicy: { mode: 'fixed', durationValue: 7, durationUnit: 'days' },
+    })
+    const anchorAt = '2026-11-15T12:00:00.000Z'
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'cade-todo-mundo-7-dias',
+      sourceId: 'scholarship:red-7',
+      useOfferAccessPolicy: true,
+      anchorAt,
+      audience: 'kids',
+    })
+    const res = await post(app, raw, 'gm-oferta-7')
+    expect(res.status).toBe(200)
+    const fim = '2026-11-22T12:00:00.000Z'
+    expect(await readJson(res)).toEqual({ ok: true, granted: 3, expiresAt: fim })
+
+    const todas = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
+    const porRef = new Map(todas.map((s) => [s.courseRef, s]))
+    expect(porRef.get(course.slug)?.expiresAt?.toISOString()).toBe(fim)
+    expect(porRef.get('mural-dos-criadores')?.expiresAt?.toISOString()).toBe(fim)
+    expect(porRef.get('mural-dos-criadores-visitante')?.expiresAt).toBeNull()
+    for (const snap of todas) {
+      expect(snap.sourceKind).toBe('manual')
+      expect(snap.sourceId).toBe('scholarship:red-7')
+    }
+    expect(porRef.get(course.slug)?.snapshot.giftAudience).toBe('kids')
+    expect(porRef.get(course.slug)?.snapshot.accessPolicy).toEqual({
+      mode: 'fixed',
+      durationValue: 7,
+      durationUnit: 'days',
+    })
+  })
+
+  test('presente de oferta vitalícia sem Mural: só o curso, sem prazo e sem visita', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('curso-para-pais', {
+      ...offerWithCourse('curso-para-pais', course.slug),
+      accessPolicy: { mode: 'lifetime', durationValue: null, durationUnit: null },
+    })
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'curso-para-pais',
+      sourceId: 'scholarship:red-pais',
+      useOfferAccessPolicy: true,
+      anchorAt: '2026-11-15T12:00:00.000Z',
+      audience: 'kids',
+    })
+    const res = await post(app, raw, 'gm-oferta-pais')
+    expect(await readJson(res)).toEqual({ ok: true, granted: 1, expiresAt: null })
+    const [snap] = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
+    expect(snap?.courseRef).toBe(course.slug)
+    expect(snap?.expiresAt).toBeNull()
+  })
+
+  test('presente de oferta de assinatura é recusado sem marcar a entrega', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('assinatura', {
+      ...offerWithCourse('assinatura', course.slug),
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null },
+    })
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'assinatura',
+      sourceId: 'scholarship:red-ass',
+      useOfferAccessPolicy: true,
+    })
+    const res = await post(app, raw, 'gm-oferta-ass')
+    expect(res.status).toBe(502)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(0)
   })
 
   test('reentrega do MESMO delivery deduplica; replay é idempotente', async () => {

@@ -5,7 +5,7 @@
 // mesma pessoa, com 18 anos ou mais, e o cadastro é com os dados dela.
 import type { ReferralGiftView } from '@sistemazero/core/referrals'
 import type { EstadoPresente } from '../../content/presente'
-import { PRESENTE_ADULTO as P } from '../../content/presente-adulto'
+import { presenteAdultoDaOferta } from '../../content/presente-adulto'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { ReferralGiftPage } from '../../server/referral-gift-page'
@@ -18,6 +18,9 @@ interface Props {
   preview?: boolean
 }
 const { gift, kind, communityUrl, preview = false } = Astro.props
+// O prazo e o Mural vêm da oferta do presente (sem `gift.gift`, a copy de sempre).
+const P = presenteAdultoDaOferta(gift.gift)
+const mostraMural = gift.gift?.includesMural ?? true
 const ready = kind === 'ready' && !preview
 const campaign = gift.source.kind === 'campaign'
 const lastClaimAt = gift.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
@@ -137,7 +140,7 @@ const tela = P.hero.tela
   </div>
 </section>
 
-<section class="cda-secao cda-secao--fundo-2" aria-labelledby="pa-mural">
+{mostraMural && <section class="cda-secao cda-secao--fundo-2" aria-labelledby="pa-mural">
   <div class="cda-wrap cda-dupla">
     <figure class="pa-figura pa-figura--mural cor-rosa">
       <img src={P.mural.imagem.src} alt={P.mural.imagem.alt} width={P.mural.imagem.width} height={P.mural.imagem.height} loading="lazy" decoding="async" />
@@ -149,7 +152,7 @@ const tela = P.hero.tela
       {P.mural.paragrafos.map((paragrafo) => <p class="cda-suave">{paragrafo}</p>)}
     </div>
   </div>
-</section>
+</section>}
 
 <section class="cda-secao" aria-labelledby="pa-depois">
   <div class="cda-wrap cda-dupla">
@@ -207,7 +210,7 @@ const tela = P.hero.tela
     </div>
     <div class="pa-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" />
       ) : preview ? (
         <div class="pa-estado cor-verde"><p class="cda-suave">{P.resgatar.previa}</p></div>
       ) : (
@@ -223,7 +226,7 @@ const tela = P.hero.tela
             <details id="retomar" class="pa-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p class="cda-suave">{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" retryOnly />
             </details>
           )}
         </div>

@@ -114,14 +114,28 @@ describe('SendAccessEndedMessagesService', () => {
     kind: GiftLifecycleEntitlement['messageKind'],
     userId = 'u1',
     audience: GiftLifecycleEntitlement['audience'] = 'kids',
-  ): GiftLifecycleEntitlement => ({
-    id,
-    userId,
-    sourceId: audience === 'adult' ? 'scholarship:a1' : 'scholarship:r1',
-    expiresAt,
-    messageKind: kind,
-    audience,
-  })
+  ): GiftLifecycleEntitlement => {
+    // `*-mural` = a participação temporária no Mural do resgate; o resto, o curso.
+    const mural = id.endsWith('mural')
+    return {
+      id,
+      userId,
+      sourceId: audience === 'adult' ? 'scholarship:a1' : 'scholarship:r1',
+      expiresAt,
+      messageKind: kind,
+      audience,
+      courseRef: mural
+        ? audience === 'adult'
+          ? 'adult-mural-dos-criadores'
+          : 'mural-dos-criadores'
+        : 'cade-todo-mundo',
+      courseTitle: mural ? null : 'Cadê Todo Mundo?',
+    }
+  }
+  const KIDS_MURAL_2D =
+    'Até lá, a criança também pode publicar o jogo no Mural dos Criadores e mandar o link para a família.'
+  const ADULT_MURAL_2D =
+    'Até lá, você também publica o jogo no Mural adulto e manda o link para quem quiser.'
 
   test('presente: um e-mail por resgate (curso + Mural), com data de São Paulo, e dedupe', async () => {
     const { repo, sent } = fakeRepo(
@@ -137,6 +151,8 @@ describe('SendAccessEndedMessagesService', () => {
     expect(email?.recipient).toEqual({ name: 'Ana', email: 'u1@exemplo.com' })
     expect(email?.variables).toEqual({
       nome: 'Ana',
+      curso: 'Cadê Todo Mundo?',
+      mural: KIDS_MURAL_2D,
       data: '22/10/2026',
       link: accessEndedLink(FUNNEL, 'kids', 'fim-do-presente', '2-dias'),
     })
@@ -147,13 +163,15 @@ describe('SendAccessEndedMessagesService', () => {
     expect(await run.runCycle()).toEqual({ sent: 0, skipped: 0, failed: 0 })
   })
 
-  test('presente no dia: template próprio, só nome e link', async () => {
+  test('presente no dia: template próprio, sem data; presente sem Mural = frase vazia', async () => {
     const { repo } = fakeRepo([gift('e1', 'gift_expired')], [])
     const messaging = fakeMessaging()
     await service(repo, fakeAuth({ u1: identity('u1', '') }), messaging).runCycle()
     expect(messaging.sent[0]?.templateKey).toBe('gift-expired')
     expect(messaging.sent[0]?.variables).toEqual({
       nome: 'Responsável',
+      curso: 'Cadê Todo Mundo?',
+      mural: '',
       link: accessEndedLink(FUNNEL, 'kids', 'fim-do-presente', 'no-dia'),
     })
   })
@@ -183,6 +201,8 @@ describe('SendAccessEndedMessagesService', () => {
     ])
     expect(byKey.get('gift-expiry-2d-adult')?.variables).toEqual({
       nome: 'Bia',
+      curso: 'Cadê Todo Mundo?',
+      mural: ADULT_MURAL_2D,
       data: '22/10/2026',
       link: accessEndedLink(FUNNEL, 'adult', 'fim-do-presente', '2-dias'),
     })
@@ -194,11 +214,15 @@ describe('SendAccessEndedMessagesService', () => {
     )
     expect(byKey.get('gift-expired-adult')?.variables).toEqual({
       nome: 'Aluno(a)',
+      curso: 'Cadê Todo Mundo?',
+      mural: '',
       link: accessEndedLink(FUNNEL, 'adult', 'fim-do-presente', 'no-dia'),
     })
     // O Kids do mesmo ciclo segue igual.
     expect(byKey.get('gift-expiry-2d')?.variables).toEqual({
       nome: 'Ana',
+      curso: 'Cadê Todo Mundo?',
+      mural: '',
       data: '22/10/2026',
       link: accessEndedLink(FUNNEL, 'kids', 'fim-do-presente', '2-dias'),
     })

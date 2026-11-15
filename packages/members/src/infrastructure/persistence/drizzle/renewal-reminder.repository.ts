@@ -272,7 +272,9 @@ export class DrizzleRenewalReminderRepository
     const adultMuralRefs = list([ADULT_MURAL_FULL_REF, ADULT_MURAL_VISITOR_REF])
     const rows = await this.db.execute(sql`
       with gifts as (
-        select e.id, e.user_id, e.source_id, e.expires_at,
+        select e.id, e.user_id, e.source_id, e.expires_at, e.course_ref,
+          -- O título do curso presenteado (15/11/2026): o e-mail nomeia o curso, sem copy fixa.
+          (select c.title from members.courses c where c.slug = e.course_ref limit 1) as course_title,
           case when e.expires_at <= ${nowIso}::timestamptz then 'gift_expired' else 'gift_expiry_2d' end
             as message_kind,
           -- O público é do RESGATE inteiro (curso + Mural do mesmo source_id), lido de dados
@@ -352,6 +354,8 @@ export class DrizzleRenewalReminderRepository
           expiresAt: new Date(row.expires_at as string),
           messageKind: kind as GiftLifecycleKind,
           audience: row.audience === 'adult' ? ('adult' as const) : ('kids' as const),
+          courseRef: typeof row.course_ref === 'string' ? row.course_ref : null,
+          courseTitle: typeof row.course_title === 'string' ? row.course_title : null,
         },
       ]
     })

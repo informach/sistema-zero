@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { ADULT_MURAL_FULL_REF, MURAL_FULL_REF } from '../../domain/entitlement/mural-visitor'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import {
@@ -59,6 +60,29 @@ function ddmmyyyySaoPaulo(date: Date): string {
   }).format(date)
 }
 
+/** Matrículas do Mural COMPLETO (Kids e adulto): o presente que as inclui ganha a frase do Mural. */
+const FULL_MURAL_REFS: ReadonlySet<string> = new Set([MURAL_FULL_REF, ADULT_MURAL_FULL_REF])
+
+/** Curso sem título conhecido (presente sem curso, ou curso removido). */
+const UNKNOWN_GIFT_COURSE = 'do presente'
+
+/**
+ * A frase do Mural nos avisos de fim (o Messaging não tem condicional: vai pronta, ou vazia
+ * quando o presente não incluía o Mural).
+ */
+const GIFT_MURAL_TEXT = {
+  kids: {
+    gift_expiry_2d:
+      'Até lá, a criança também pode publicar o jogo no Mural dos Criadores e mandar o link para a família.',
+    gift_expired: 'A conta continua podendo ver e jogar no Mural dos Criadores.',
+  },
+  adult: {
+    gift_expiry_2d:
+      'Até lá, você também publica o jogo no Mural adulto e manda o link para quem quiser.',
+    gift_expired: 'A sua conta continua podendo ver e jogar no Mural adulto.',
+  },
+} as const
+
 function idempotencyKey(templateKey: string, parts: readonly string[]): string {
   const hash = createHash('sha256').update(parts.join('\u0000')).digest('hex').slice(0, 32)
   return `${templateKey}:${hash}`
@@ -77,10 +101,11 @@ function groupBy<T>(rows: readonly T[], key: (row: T) => string): T[][] {
 /**
  * Avisos de FIM DO ACESSO (20/10/2026), e-mail ao responsável/titular da conta:
  *
- * - Presente de 7 dias (resgate `scholarship:`): `gift-expiry-2d` dois dias antes e
+ * - Presente com prazo (resgate `scholarship:`): `gift-expiry-2d` dois dias antes e
  *   `gift-expired` no dia em que termina. Um e-mail por presente (curso + Mural temporário do
  *   mesmo resgate são um grupo). Presente adulto: `gift-expiry-2d-adult`/`gift-expired-adult`,
- *   mesmas variáveis, link da continuidade adulta.
+ *   mesmas variáveis, link da continuidade adulta. Desde 15/11/2026 levam `curso` (título do
+ *   curso presenteado) e `mural` (frase pronta, vazia sem o Mural): o presente é uma oferta.
  * - Assinatura da Comunidade que venceu: `subscription-ended-kids` ou `-adult`, um e-mail por
  *   conta + assinatura (o combo cria várias matrículas). Só se não houver outro acesso ativo à
  *   Comunidade da mesma audiência (o repositório decide).
@@ -144,12 +169,20 @@ export class SendAccessEndedMessagesService {
       'fim-do-presente',
       expired ? 'no-dia' : '2-dias',
     )
+    // Curso e Mural do PRÓPRIO presente (15/11/2026, presente por oferta): o e-mail não fixa
+    // mais o Cadê Todo Mundo nem os sete dias.
+    const curso = group.find((row) => row.courseTitle)?.courseTitle ?? UNKNOWN_GIFT_COURSE
+    const mural = group.some((row) => row.courseRef && FULL_MURAL_REFS.has(row.courseRef))
+      ? GIFT_MURAL_TEXT[adult ? 'adult' : 'kids'][first.messageKind]
+      : ''
     return this.deliver({
       userId: first.userId,
       templateKey,
       fallbackName: adult ? 'Aluno(a)' : 'Responsável',
       variables: (nome): Record<string, string> =>
-        expired ? { nome, link } : { nome, data: ddmmyyyySaoPaulo(first.expiresAt), link },
+        expired
+          ? { nome, curso, mural, link }
+          : { nome, curso, mural, data: ddmmyyyySaoPaulo(first.expiresAt), link },
       idempotency: [first.userId, first.sourceId, expiresOnKey(first.expiresAt)],
       marks: group.map((row) => ({
         id: row.id,

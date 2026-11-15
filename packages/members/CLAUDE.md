@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/members
 
+## Presente por oferta: curso nomeado e Mural nos avisos (15/11/2026)
+
+- `GET /members/webhooks/gift-course/:slug` devolve `{available, title, learner}` (`giftCourse` no
+  `GrantManualEntitlementService`; título e `learner` só quando disponível, senão nulos). O
+  referrals nomeia o curso no e-mail e manda o curso para pais à área dos pais.
+- Avisos de fim do presente (`gift-expiry-2d[-adult]`, `gift-expired[-adult]`) levam também
+  `curso` (título do curso do grupo, via `members.courses` no SQL) e `mural` (frase pronta quando o
+  grupo inclui o Mural completo, vazia se não). Deploy do members ANTES do seed do messaging.
+
 ## Casa Morada (14/11/2026, implementação local)
 
 - Revisão de ownership: leitura e CAS usam a mesma chave de dados `(userId, audience)`.

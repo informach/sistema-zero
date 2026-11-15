@@ -1,5 +1,63 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Presente por oferta do catálogo (15/11/2026)
+
+O presente deixou de ter curso e prazo fixos no código: é uma OFERTA do catálogo. A campanha
+escolhe a oferta (`campaigns.gift_offer_id`); códigos de embaixador (e campanhas antigas ainda sem
+oferta) usam `DEFAULT_GIFT_OFFER_SLUGS` em `domain/gift-policy.ts` (`cade-todo-mundo-7-dias` /
+`cade-todo-mundo-adulto-7-dias`). Saíram as envs `SCHOLARSHIP_COURSE_SLUG` /
+`SCHOLARSHIP_ADULT_COURSE_SLUG` e a constante dos sete dias.
+
+- **Catálogo:** `GiftOfferCatalogHttpClient` fala DIRETO com o catálogo na rede privada
+  (`CATALOG_BASE_URL`), o mesmo caminho do members e do cupom: `GET /catalog/offers/:ref`
+  (pública: nome, status, `product.audience`, política) + `GET /catalog/offers/:ref/entitlements`
+  com `x-internal-token` = `CATALOG_INTERNAL_TOKEN` (o `INTERNAL_API_TOKEN` do catálogo; sem ele o
+  catálogo de produção responde 401 e o presente fica indisponível). Não há rota S2S no gateway
+  para os entitlements, por isso o caminho direto. Cache de 30 s só de acertos. Curso = `courseRef`
+  do item principal com acesso `course`; Mural = item `community` com a chave do Mural completo.
+- **Campanha:** `giftOfferId` (UUID) no DTO (`campaignBody`/`campaignUpdateBody`), obrigatório na
+  criação; duplicata herda a da original se omitido; edição omitida conserva. A oferta precisa
+  resolver, ser de pagamento único (`fixed` com duração ou `lifetime`) e ter o público da campanha
+  (`product.audience` da oferta) — `giftOfferProblem`. Trocar uma oferta já ligada segue a régua do
+  público (só em rascunho sem cadastros; serviço + repo sob o lock) → 409
+  `CAMPAIGN_GIFT_OFFER_LOCKED`. Ligar oferta a campanha antiga sem oferta é livre. Catálogo fora →
+  503 `CATALOG_UNAVAILABLE`.
+- **Resgate novo:** antes do claim resolve a oferta (`planGift`: oferta existe, serve como presente,
+  curso principal publicado via `gift-course`, app do público configurado). O claim grava
+  `gift_offer_id`, `mural_visitor_policy = 'offer'`, `access_duration_days` (só prazo fixo em dias;
+  vitalícia ou meses = null) e `course_slug` (curso principal, para leitura/e-mail). Sob o lock da
+  campanha, a oferta precisa ser a dela (`GiftOfferChangedError` → 502 e nova tentativa). Grant
+  único: `gateway.grantManualOffer` → `POST /members/webhooks/grant-manual`
+  `{mode:'offer', useOfferAccessPolicy:true, userId, offerRef, sourceId:'scholarship:<id>',
+  anchorAt:<createdAt>, audience}` com `x-delivery-id: scholarship:offer:<offerId>:<id>`. O members
+  concede tudo o que a oferta inclui com o prazo dela (e a visita ao Mural depois, se a oferta de
+  prazo fixo inclui o Mural). 409/503 `COURSE_UNAVAILABLE`/outros 5xx: mesma régua do grant de curso.
+  O fim do presente é recalculado aqui (dias gravados; meses pela conta do members a partir do
+  resgate, `offerGiftExpiresAt`); sem prazo, não expira. `muralAccess` = `trial` se a oferta inclui o
+  Mural, `none` se não. Retomada de resgate por oferta usa a oferta GRAVADA, nunca a atual da campanha.
+- **Resgates antigos** (`trial`/`visitor`/históricos) seguem o caminho antigo
+  (`grantManualCourse` + `grantMuralTrial`/`grantMuralVisitor`) com o curso gravado no resgate
+  (linha sem curso usa o curso da oferta padrão). `gifts:upgrade-mural` lê o curso do resgate.
+- **Leitura pública** `GET internal/codes/:code`: `gift {offerId, offerTitle, courseSlug,
+  courseTitle, learner, accessDays, includesMural}` quando a oferta resolve e o curso está
+  publicado (ausente se não). Título e `learner` vêm do `gift-course` do members. Desde o mesmo
+  dia, a campanha agendada, pausada ou encerrada também traz o `gift` (com `giftAvailable:
+  false`), para o funil mostrar a página do curso certo (curso para pais tem outra); falha do
+  catálogo nesses estados só omite o `gift`, sem 502.
+- **E-mails:** as boas-vindas por oferta usam as chaves `-mural-trial` (Kids) e `-adult`, com
+  `curso`, `prazo` (texto pronto: "por 7 dias, até <data> (horário de Brasília)" ou "sem prazo para
+  terminar"), `mural` (frase pronta ou vazia; o Messaging não tem condicional) e `orientacao`
+  (`giftGuidanceText`, texto puro: no curso da criança, criar o perfil e autorizar o aparelho, com
+  o aviso da autorização antiga na conta existente; no curso para pais, "Entre na área dos pais e
+  abra o curso em Cursos para pais."). `validade` segue no
+  envio por compatibilidade com o seed antigo. Curso para pais (`learner: 'parents'`) com conta
+  existente → `${KIDS_COMMUNITY_URL}/pais/cursos/<slug>`; conta nova → primeiro acesso de sempre.
+  ⚠️ Ordem do deploy: referrals e members ANTES do seed do messaging (os templates novos exigem as
+  variáveis novas; o seed antigo aceita as extras).
+- **Backfill:** `bun run gifts:backfill-offer [plan|apply]` liga campanhas sem oferta à oferta padrão
+  do mesmo público (relatório JSON só com ids/público/estado; idempotente; histórico da campanha
+  ganha a trilha, `updated_at` fica). Migration `0010_gift-offer` (à mão, `ADD COLUMN IF NOT EXISTS`).
+
 ## Nome público de quem oferece o presente (05/11/2026)
 
 `publicGiftSourceName` do Core usa apenas o primeiro nome para origens de pessoa e mantém
@@ -71,7 +129,8 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 ## Conceito central (decisões travadas com a usuária)
 
 1. **Indicação = curso Kids Cadê Todo Mundo? e participação no Mural por 7 dias + visita
-   permanente depois** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`; decisão de 03/10/2026).
+   permanente depois** (decisão de 03/10/2026; desde 15/11/2026 é a oferta padrão do público, ver
+   §Presente por oferta — o texto abaixo descreve o caminho antigo, que os resgates `trial` seguem).
    O curso usa `mode:'course'` com `expiresAt = createdAt + 7 dias`. Novos resgates gravam
    `muralVisitorPolicy:'trial'`; `mode:'mural_trial'` concede o Mural completo com o mesmo vencimento
    e a visita sem vencimento, em lote atômico no Members. O checkpoint `muralVisitorGrantedAt`
@@ -306,7 +365,7 @@ Envs de prod (fail-fast): `NODE_ENV=production`, `APP_ENV`, `PORT=3012`, `HOST=:
 `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `GATEWAY_URL=http://api-gateway.railway.internal:3000`,
 `REFERRALS_HMAC_SECRET` (= o do consumer no gateway), `INTERNAL_API_TOKEN`
 (= `REFERRALS_INTERNAL_TOKEN` do gateway), `METRICS_TOKEN`, `FUNNEL_PUBLIC_URL`,
-`KIDS_COMMUNITY_URL`, `SCHOLARSHIP_COURSE_SLUG=cade-todo-mundo` (default),
+`KIDS_COMMUNITY_URL`, `CATALOG_BASE_URL` + `CATALOG_INTERNAL_TOKEN` (a oferta do presente),
 `SENTRY_DSN` (só prod). No GATEWAY: `REFERRALS_URL`,
 `REFERRALS_INTERNAL_TOKEN`, `REFERRALS_HMAC_SECRET`, `REFERRALS_ALLOWED_CIDRS` —
 ⚠️ **prod não sobe sem elas** (PROD_REQUIRED_SECRETS).
@@ -364,9 +423,8 @@ Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `Ambassad
 - **Unicidade:** `scholarship_redemptions_email_audience_uq (email, audience)` (o mesmo e-mail
   resgata um Kids e um adulto); `codes_ambassador_audience_uq (ambassador_id, audience) WHERE
   ambassador_id is not null` (um código de embaixador por público).
-- **Curso e app por público** (`RedeemScholarshipService.target`): Kids = `SCHOLARSHIP_COURSE_SLUG`
-  + `KIDS_COMMUNITY_URL`; adulto = `SCHOLARSHIP_ADULT_COURSE_SLUG` (default
-  `cade-todo-mundo-adulto`) + `COMMUNITY_URL` (SEM default). **`COMMUNITY_URL` ausente = adulto
+- **App por público** (o curso vem da oferta desde 15/11/2026): Kids = `KIDS_COMMUNITY_URL`;
+  adulto = `COMMUNITY_URL` (SEM default). **`COMMUNITY_URL` ausente = adulto
   fail-closed**: `giftAvailable:false` no `codes/:code`, 503 `GIFT_UNAVAILABLE` no resgate e no
   convite adulto (`adultGiftEnabled:false` no `CreateInviteService`), `shareUrls.adult:null` sem
   criar código (`AmbassadorAdminService`), sem consultar o Members; o Kids segue. Links adultos: conta nova
@@ -408,9 +466,9 @@ Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `Ambassad
   definida lá, o valor precisa ganhar os dois slugs. O consumer escolhe, entre os resgates do
   e-mail, o do público da oferta (`offerGiftAudience`: slug com `adulto`); sem ele, o do outro
   público. Campanha sem acordo explícito segue sem bônus.
-- **Deploy:** `COMMUNITY_URL` (e `SCHOLARSHIP_ADULT_COURSE_SLUG`, se sair do default) precisam ser
-  criadas no painel do Railway do referrals (staging e produção) e declaradas em
-  `.railway/variables.ts` (`common.referrals`), senão o gate lê exclusão.
+- **Deploy:** `COMMUNITY_URL` precisa existir no painel do Railway do referrals (staging e
+  produção) e estar declarada em `.railway/variables.ts` (`common.referrals`), senão o gate lê
+  exclusão. `SCHOLARSHIP_COURSE_SLUG` saiu da lista de produção em 15/11/2026 (o IaC a remove).
 
 ## Calendário e cupom de campanha (05/11/2026)
 

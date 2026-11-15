@@ -5,7 +5,7 @@
 // a ilha o importa, então nada de env aqui (as URLs dos apps chegam por prop).
 // `{{nome}}` = quem deu o presente, `{{email}}` = o e-mail do cadastro, `{{data}}` = o vencimento.
 
-import type { GiftAudience } from '@sistemazero/core/referrals'
+import type { GiftAudience, ReferralGiftOfferView } from '@sistemazero/core/referrals'
 
 /** A continuidade adulta: para onde vai quem já resgatou e quer seguir. */
 export const CONTINUAR_ADULTO_PATH = '/pro/comunidade-dos-criadores/oferta/continuar'
@@ -247,4 +247,139 @@ export function dataBrasilia(iso: string, comHora = true): string {
     })
     .split(':')
   return `${dia}, às ${Number(hora)}h${minuto === '00' ? '' : minuto}`
+}
+
+/** "7 dias" / "1 dia". */
+export const diasDoPresente = (dias: number) => `${dias} ${dias === 1 ? 'dia' : 'dias'}`
+
+/** O prazo do presente numa frase: "por 7 dias" ou "sem prazo". */
+export function prazoDoPresente(gift: Pick<ReferralGiftOfferView, 'accessDays'>): string {
+  return gift.accessDays ? `por ${diasDoPresente(gift.accessDays)}` : 'sem prazo'
+}
+
+/** O nome do curso do presente: o título publicado ou, na falta dele, o nome da oferta. */
+export const cursoDoPresente = (gift: Pick<ReferralGiftOfferView, 'courseTitle' | 'offerTitle'>) =>
+  gift.courseTitle ?? gift.offerTitle
+
+/** Troca o "7 dias"/"sete dias" do texto editorial do Cadê pelo prazo da oferta. */
+export function comDiasDoPresente(texto: string, dias: number): string {
+  if (dias === 7) return texto
+  return texto
+    .replace(/(?<!\d)7 dias/g, diasDoPresente(dias))
+    .replace(/(?<!\d)7 DIAS/g, diasDoPresente(dias).toLocaleUpperCase('pt-BR'))
+    .replace(/\b[Ss]ete dias/g, diasDoPresente(dias))
+}
+
+/** Aplica `comDiasDoPresente` a todo texto de um módulo de copy (objetos e listas). */
+export function copyComDias<T>(copy: T, dias: number | null): T {
+  if (dias === null || dias === 7) return copy
+  const mapear = (valor: unknown): unknown =>
+    typeof valor === 'string'
+      ? comDiasDoPresente(valor, dias)
+      : Array.isArray(valor)
+        ? valor.map(mapear)
+        : valor && typeof valor === 'object'
+          ? Object.fromEntries(Object.entries(valor).map(([chave, v]) => [chave, mapear(v)]))
+          : valor
+  return mapear(copy) as T
+}
+
+/** Curso para pais: a página do curso na área dos pais do app Kids. */
+export function cursoParaPaisHref(communityUrl: string, courseSlug: string): string {
+  return `${communityUrl}/pais/cursos/${encodeURIComponent(courseSlug)}`
+}
+
+/**
+ * A copy do formulário com o que a oferta do presente entrega (15/11/2026). Sem `gift` (leitura
+ * antiga), é a `RESGATE_COPY` de sempre, a do Cadê Todo Mundo. Com `gift`:
+ * - o Cadê mantém a copy dele, só com o prazo e o Mural da oferta;
+ * - curso para pais (`learner: 'parents'`): os dados são do pai ou da mãe, sem perfil do filho e
+ *   sem Mural, e o próximo passo é abrir o curso em Cursos para pais;
+ * - outro curso: o nome e o prazo da oferta no lugar do Cadê.
+ */
+export function resgateCopy(
+  audience: GiftAudience,
+  gift?: ReferralGiftOfferView,
+  variante: 'cade' | 'pais' | 'curso' = 'cade',
+): ResgateCopy {
+  const base = RESGATE_COPY[audience]
+  if (!gift) return base
+  const adulto = audience === 'adult'
+  const curso =
+    variante === 'cade'
+      ? adulto
+        ? 'o curso Cadê Todo Mundo, na versão adulta,'
+        : 'o curso Cadê Todo Mundo'
+      : `o curso ${cursoDoPresente(gift)}`
+  const mural = gift.includesMural ? (adulto ? ' e o Mural adulto' : ' e o Mural Kids') : ''
+  const oQue = `${curso}${mural}`
+  const rodape = gift.accessDays
+    ? `${oQue} por ${diasDoPresente(gift.accessDays)}, sem custo e sem cartão.`
+    : `${oQue.replace(/,$/, '')}, sem prazo, sem custo e sem cartão.`
+  const prazoTerminou = gift.accessDays
+    ? `Os ${diasDoPresente(gift.accessDays)} contados do seu cadastro já terminaram.`
+    : 'O prazo do seu cadastro já terminou.'
+  const copy: ResgateCopy = {
+    ...base,
+    rodape: `Presente de {{nome}}: ${rodape}`,
+    rodapeCampanha: `{{nome}}: ${rodape}`,
+    erros: {
+      ...base.erros,
+      expirado: base.erros.expirado.replace(
+        'Os 7 dias contados do seu cadastro já terminaram.',
+        prazoTerminou,
+      ),
+    },
+    jaResgatado: {
+      ...base.jaResgatado,
+      texto: base.jaResgatado.texto.replace(
+        'Se os 7 dias já terminaram',
+        gift.accessDays
+          ? `Se os ${diasDoPresente(gift.accessDays)} já terminaram`
+          : 'Se o prazo já terminou',
+      ),
+    },
+    concluido: {
+      ...base.concluido,
+      nota: gift.accessDays
+        ? base.concluido.nota
+        : 'Este presente não tem prazo e não gera cobrança.',
+    },
+  }
+  if (variante !== 'pais') return copy
+  return {
+    ...copy,
+    aviso: {
+      destaque: 'Estes dados são seus',
+      texto:
+        ' (mãe, pai ou tutor). O curso fica na área dos pais da sua conta, sem perfil de criança.',
+    },
+    campos: {
+      ...copy.campos,
+      nome: {
+        ...copy.campos.nome,
+        rotulo: 'Seu nome',
+        placeholder: 'Seu nome completo',
+        erro: 'Informe o seu nome, com até 120 caracteres.',
+      },
+      email: { ...copy.campos.email, rotulo: 'Seu e-mail' },
+    },
+    botao: 'Liberar o meu curso',
+    aceite: {
+      ...copy.aceite,
+      antes: 'Ao continuar, você confirma que tem 18 anos ou mais e aceita os ',
+    },
+    concluido: {
+      ...copy.concluido,
+      titulo: 'O seu curso está liberado',
+      proximo:
+        'Entre na área dos pais e abra o curso em Cursos para pais. Se a conta é nova, crie a senha primeiro pelo link do e-mail.',
+      entrar: 'Abrir o curso',
+    },
+    jaResgatado: {
+      ...copy.jaResgatado,
+      texto:
+        'Cada e-mail resgata um presente Kids. Entre com esse e-mail e veja os seus cursos na área dos pais.',
+    },
+  }
 }

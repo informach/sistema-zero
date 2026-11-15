@@ -1,47 +1,48 @@
-# Fontes, depoimentos e cuidados
+# Fontes, depoimentos e cuidados (uso interno)
 
-## De onde veio o conteúdo
+## Base de conhecimento
 
-- Aula aberta "Transformando o vilão em aliado", 13/11/2026, na Laopa, com a Helena e a Vivianne Lima (psicóloga).
-- Slides: `Downloads/Palestra Vivi/Slides/Sistema_Zero_Aula_Aberta_13_Nov_2026_v7.pptx` (e o `.pdf`), 42 slides. As notas de condução de cada slide trazem as entradas combinadas com a Vivianne.
-- Transcrição da noite (anotações do Gemini): `Downloads/Palestra Vivi/Transformando o vilão em Aliado - 2026_11_13 19_36 GMT-03_00 - Anotações do Gemini.docx`. A gravação está no `.mp4` ao lado.
-- Áudios da Vivianne com a direção da conversa: `Downloads/Palestra Vivi/Slides/Transcrição da apresentação da Vivi e dos novos áudios.md`. Quando divergem, os áudios mais recentes (WhatsApp) valem sobre o "ViviApresentação".
+O conteúdo vem do encontro "Transformando o vilão em aliado", de 13/11/2026: a gravação, a transcrição e os slides v7 com as notas de condução (pasta local de origem). Ele é **fonte de conhecimento**, não roteiro. Os argumentos, conceitos, exemplos e depoimentos foram reorganizados numa progressão própria de seis aulas.
 
-Os roteiros não acrescentam ideias que não estavam na noite, nas notas de condução dos slides ou nos áudios de preparação da Vivianne. Nada que não aconteceu na noite é contado como se tivesse acontecido (exemplos de exercício vêm como "exemplos para ajudar", e frases dos áudios vêm como "a Vivianne gosta de dizer"). A organização mudou: a parte comercial e a apresentação da plataforma saíram, a segurança da plataforma também (quem faz o curso já está dentro dela), e o presente ficou só no fim.
+**Regras da autoria:**
+- O curso é da Helena, em primeira pessoa. Ninguém mais é citado como autor ou especialista.
+- O curso não menciona o encontro de origem, a noite, a plateia nem os slides.
+- Histórias que não são da Helena ou da família dela não entram. As dela (o André e a tela que acalmava, a palestra dele na faculdade, o menino calado que hoje precisa ouvir "resume", a Isabela e o mouse, a amiga professora) são contadas por ela.
+- A amiga professora de matemática e física é amiga da Helena (confirmado por ela em 15/11/2026).
+- Nada é contado como se tivesse acontecido sem ter acontecido. Exemplos de exercício vêm como "exemplos para ajudar".
 
 ## Depoimentos em vídeo
 
-Os vídeos já cortados para a palestra estão dentro do pptx v7 (pasta `ppt/media`). Os cortes tiram só repetições e menções a curso, para a conversa ficar na experiência de criar.
+São os cortes já feitos e autorizados, dentro do pptx v7 (pasta `ppt/media`). Os cortes tiram só repetições e menções a curso.
 
-| Aula | Slide de origem | Quem fala |
+| Aula | Tema | Quem fala |
 | --- | --- | --- |
-| 1 | 6 | Flávia (mãe do Fernando), Daniel (pai do Rafael), Débora (mãe do Bernardo) |
-| 2 | 11 | Rafael, Daniel, Fernando, Débora |
-| 3 | 14 | Bernardo (21 segundos) |
-| 3 | 15 | Harle (pai do Jeffrey), Daniel, Débora, Flávia |
-| 5 | 20 | Daniel, Harle, Flávia |
-| 5 | 21 | Isabela (31 segundos) |
-| 6 | 25 | Bernardo, Rafael, Jeffrey e Fernando, sobre o que sentem ao criar |
-| 7 | 28 | Débora, Daniel, Harle |
+| 1 | O medo de aumentar o tempo de tela | Flávia (mãe do Fernando), Daniel (pai do Rafael), Débora (mãe do Bernardo) |
+| 2 | Quando o jogo é dele | Rafael, Daniel, Fernando, Débora |
+| 4 | O interesse como porta de entrada | Bernardo (21 segundos) |
+| 4 | O que os pais começam a perceber | Harle (pai do Jeffrey), Daniel, Débora, Flávia |
+| 5 | Foco | Daniel, Harle, Flávia |
+| 5 | A primeira barreira | Isabela (31 segundos) |
+| 6 | Conversa em família | Débora, Daniel, Harle |
+| 6 | O que as crianças sentem ao criar | Bernardo, Rafael, Jeffrey e Fernando |
 
-⚠️ **Antes de publicar:** confirmar a autorização da família da Isabela para o vídeo dela num curso (a autorização dada foi para a palestra). As frases do André e da Débora, filhos da Helena, são autorizadas.
+⚠️ **Antes de publicar:** confirmar a autorização da família da Isabela para o vídeo dela num curso (a autorização dada foi para uma apresentação). As frases do André, filho da Helena, são autorizadas.
 
 ## Referências científicas
 
-- Scherer, R.; Siddiq, F.; Sánchez Viveros, B. (2019). The cognitive benefits of learning computer programming: A meta-analysis of transfer effects. *Journal of Educational Psychology*. 105 estudos e 539 efeitos: transferência positiva para criatividade, habilidades matemáticas, metacognição e raciocínio, com variações; efeito menor em notas gerais e alfabetização. https://doi.org/10.1037/edu0000314
+- Scherer, R.; Siddiq, F.; Sánchez Viveros, B. (2019). The cognitive benefits of learning computer programming: A meta-analysis of transfer effects. *Journal of Educational Psychology*. 105 estudos: transferência positiva para criatividade, habilidades matemáticas, metacognição e raciocínio, com variações; efeito menor em notas gerais e alfabetização. https://doi.org/10.1037/edu0000314
 - Li, X.; Oon, E. P. T. (2024). Pensamento computacional e aprendizagem em STEM, 37 estudos e 7.832 estudantes. https://doi.org/10.1186/s40594-024-00498-z
 - Giannakoulas, A.; Xinogalos, S. (2024). Jogos educativos e pensamento computacional. https://doi.org/10.1007/s40692-023-00300-z
-- National Autistic Society: interesses focados e intensos no autismo (autism.org.uk, "focused and dedicated interests").
+- National Autistic Society: interesses focados e intensos no autismo (autism.org.uk).
 - Academia Americana de Pediatria: famílias, tecnologia e os 5 Cs da mídia digital (healthychildren.org).
 
 Os estudos não são específicos sobre autismo. Dizer isso sempre que a pesquisa for citada.
 
 ## Cuidados de linguagem
 
-- Sem promessa clínica nem resultado garantido. "Oportunidade de prática", "possibilidade real", "cada criança tem o seu tempo".
-- As cenas da Aula 3 não descrevem todo autista e não são diagnóstico.
-- Interesses intensos são fonte de prazer, motivação e regulação, e não algo a eliminar.
-- O curso fala com todas as famílias; as histórias de autismo entram como exemplos reais.
+- Sem promessa clínica nem resultado ou prazo garantido: "oportunidade de prática", "cada criança tem o seu tempo".
+- As cenas da Aula 4 não são diagnóstico e não descrevem toda criança.
+- Interesses intensos são fonte de prazer, motivação e calma, e não algo a eliminar.
+- O curso fala com todas as famílias; o autismo entra como exemplo real da família da Helena.
 - "Filho" vale para filhos e filhas de 5 a 17 anos.
 - Sem travessão. Nomes de botões em negrito no texto escrito.
-- As ideias da Vivianne sempre com o nome dela.
