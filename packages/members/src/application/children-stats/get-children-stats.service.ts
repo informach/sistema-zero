@@ -98,9 +98,10 @@ export class GetChildrenStatsService {
     const { audience } = opts
     const accountId =
       audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
-    const profileIds = inputProfileIds.map((id) =>
-      audience === 'kids' ? IdentityUuidSchema.parse(id) : id,
-    )
+    // A própria conta nunca é um filho (o responsável faz os cursos para pais, 14/11/2026).
+    const profileIds = inputProfileIds
+      .filter((id) => id !== inputAccountId)
+      .map((id) => (audience === 'kids' ? IdentityUuidSchema.parse(id) : id))
     if (profileIds.length === 0) return []
 
     // 1) AUTORIZA + xp/streak num passo: só perfis da CONTA (account_id). Perfil de

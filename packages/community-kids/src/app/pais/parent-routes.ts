@@ -23,6 +23,8 @@ export type ChildTab = 'progresso' | 'aparelhos' | 'jogo' | 'perfil'
 export const CHILD_TABS: readonly ChildTab[] = ['progresso', 'aparelhos', 'jogo', 'perfil']
 
 export function childTabOf(value: string | null | undefined): ChildTab {
+  // `acesso` era o nome da aba de aparelhos até 14/11/2026: links salvos continuam abrindo nela.
+  if (value === 'acesso') return 'aparelhos'
   return CHILD_TABS.find((tab) => tab === value) ?? 'progresso'
 }
 

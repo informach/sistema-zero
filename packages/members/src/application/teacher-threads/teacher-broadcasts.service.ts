@@ -58,6 +58,9 @@ export class TeacherBroadcastsService {
       const course = await this.courses.findCourseById(input.audience.courseId)
       if (course?.audience !== 'kids' || course.status === 'draft')
         throw new ValidationError('Selecione um curso disponível do Kids.')
+      // Os destinatários são perfis de criança: um curso para pais não chegaria a ninguém.
+      if (course.learner === 'parents')
+        throw new ValidationError('Recado para a turma vale só para curso das crianças.')
     }
     const recipients = new Map<string, TeacherRecipient>()
     for (let offset = 0; ; offset += 200) {

@@ -1,3 +1,5 @@
+import type { LessonDraftIssue } from '../learning'
+
 /**
  * Para quem é o curso (14/11/2026, decisão da dona): no Kids, um curso é para a CRIANÇA (o de
  * sempre) ou para os PAIS (cursos de acompanhamento e desenvolvimento, feitos pelo responsável na
@@ -23,4 +25,24 @@ export function courseLearnerOf(value: unknown): CourseLearner {
 
 export function isParentsCourse(course: { learner?: unknown } | null | undefined): boolean {
   return courseLearnerOf(course?.learner) === 'parents'
+}
+
+/** Blocos que só abrem na sessão de uma criança (precisam do Estúdio ou do Pinta dela). */
+const CHILD_ONLY_BLOCK_KINDS = new Set(['studio', 'pinta'])
+
+/**
+ * A aula de um curso para pais não publica Estúdio nem Pinta: a conta do responsável não abre as
+ * ferramentas da criança. Vídeo, texto, fala do Zappy, quiz, materiais, livro, experiências e
+ * certificado funcionam.
+ */
+export function parentsLessonIssues(
+  blocks: readonly { id: string; content: { kind: string } }[],
+): LessonDraftIssue[] {
+  return blocks
+    .filter((block) => CHILD_ONLY_BLOCK_KINDS.has(block.content.kind))
+    .map((block) => ({
+      blockId: block.id,
+      message:
+        'Curso para pais não usa Estúdio nem Pinta: essas ferramentas abrem só para as crianças. Use vídeo, texto, quiz, materiais ou certificado.',
+    }))
 }

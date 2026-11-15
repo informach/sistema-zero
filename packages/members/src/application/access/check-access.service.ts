@@ -11,6 +11,7 @@ import {
   independentCourseAccessReason,
   parentsCourseAccessReason,
 } from '../../domain/entitlement/independent-course-access'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
@@ -138,9 +139,18 @@ export class CheckAccessService {
     const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
     const state =
       course.audience === 'kids'
-        ? await this.kidsJourney.courseState({ userId: learnerId ?? userId, accountId: userId }, [
-            course.id,
-          ])
+        ? await this.kidsJourney
+            .courseState({ userId: learnerId ?? userId, accountId: userId }, [course.id])
+            .catch((error: unknown) => {
+              // A conta do responsável (sessão sem perfil) não estuda o curso da criança: a
+              // Jornada não a reconhece como perfil. Recusa clara (403), e não o 503 de antes.
+              if (
+                error instanceof KidsJourneyUnavailableError &&
+                (learnerId === undefined || learnerId === userId)
+              )
+                throw new AccessDeniedError()
+              throw error
+            })
         : await this.adultJourney?.courseState(userId, [course.id])
     const lock = state?.locks.get(course.id)
     if (!directAccess && lock?.locked && lock.reason)

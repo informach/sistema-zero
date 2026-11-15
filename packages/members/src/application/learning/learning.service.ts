@@ -471,6 +471,7 @@ export class LearningService {
         this.sections.checkProject(capturedActor, lesson, sectionId, revision, capturedProject, {
           signal,
           audience: course.audience,
+          learner: course.learner,
           privileged: capturedActor.privileged,
           liveContext,
           authorizeLesson: (authorizationSignal) =>

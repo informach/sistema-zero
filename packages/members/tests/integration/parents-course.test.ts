@@ -4,6 +4,7 @@
  * Jornada, não dá XP nem moedas e abre pela chave dos cursos Kids ou por compra avulsa.
  */
 import { describe, expect, test } from 'bun:test'
+import { parentsLessonIssues } from '@sistemazero/core/course/learner'
 import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 type Env = ReturnType<typeof buildApp>
@@ -159,5 +160,51 @@ describe('Curso para pais — vitrines e acesso', () => {
     expect(done.status).toBe(200)
     expect((await readJson(done)).gamification ?? null).toBeNull()
     expect(env.gamification.events).toEqual([])
+  })
+
+  test('a conta do responsável não abre o curso da criança: recusa clara, não 503', async () => {
+    const env = buildApp({ now: NOW })
+    const child = seedSampleCourse(env.courses, 'curso-da-crianca', 'published', 'kids')
+    grantAllKidsCourses(env.entitlements, { userId: ACCOUNT, now: NOW })
+    // Como no registro real: a conta não é um perfil de criança da Jornada.
+    env.kidsJourneySnapshots.unavailableProfiles.add(ACCOUNT)
+    const res = await request(
+      env,
+      `/members/courses/curso-da-crianca/lessons/${child.lessonIds[0]}`,
+      { headers: parentHeaders },
+    )
+    expect(res.status).toBe(403)
+  })
+})
+
+describe('Curso para pais — regras de autoria', () => {
+  test('trocar "Para quem" só com o curso em rascunho', async () => {
+    const env = buildApp({ now: NOW })
+    const { course } = seedParentsCourse(env)
+    const current = await readJson(await request(env, `/members/admin/courses/${course.id}`))
+    const res = await request(env, `/members/admin/courses/${course.id}`, {
+      method: 'PATCH',
+      body: {
+        slug: current.slug,
+        title: current.title,
+        subtitle: null,
+        description: null,
+        coverImageUrl: null,
+        status: 'published',
+        audience: 'kids',
+        learner: 'child',
+        version: current.version,
+      },
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('aula de curso para pais não publica Estúdio nem Pinta', () => {
+    const issues = parentsLessonIssues([
+      { id: 'b1', content: { kind: 'video' } },
+      { id: 'b2', content: { kind: 'studio' } },
+      { id: 'b3', content: { kind: 'pinta' } },
+    ])
+    expect(issues.map((issue) => issue.blockId)).toEqual(['b2', 'b3'])
   })
 })

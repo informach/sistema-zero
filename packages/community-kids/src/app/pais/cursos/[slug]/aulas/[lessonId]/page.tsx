@@ -31,7 +31,7 @@ export default async function ParentLessonPage({
   if (lessonRes.status === 423)
     return (
       <ParentLessonFrame viewerId={session.id} parentName={session.firstName}>
-        <KidsLockedLesson courseSlug={course.slug} />
+        <KidsLockedLesson courseSlug={course.slug} courseHref={parentCourseHref(course.slug)} />
       </ParentLessonFrame>
     )
   if (lessonRes.status === 404) notFound()

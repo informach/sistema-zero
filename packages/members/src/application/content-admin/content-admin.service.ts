@@ -262,6 +262,12 @@ export class CourseAdminService {
     } = fields
     const nextModality = modality ?? existing.modality
     const nextLearner = learner ?? existing.learner
+    // Trocar "Para quem" só com o curso em rascunho: num curso publicado, quem já começou (as
+    // crianças, ou o responsável) perderia o acesso na hora, e o curso sairia da Jornada.
+    if (nextLearner !== existing.learner && existing.status !== 'draft')
+      throw new InvalidContentCommandError(
+        'Para trocar "Para quem", deixe o curso em rascunho primeiro: quem já começou o curso perderia o acesso.',
+      )
     const merged = {
       ...existing,
       ...rest,

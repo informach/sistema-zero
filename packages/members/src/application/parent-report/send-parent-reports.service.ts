@@ -146,7 +146,11 @@ export class SendParentReportsService {
           this.gamification.listProfileIdsByAccount(accountId, 'kids'),
           this.learning.listProfileIdsByAccount(accountId, 'kids'),
         ])
-        const profileIds = [...new Set([...gamificationProfiles, ...learningProfiles])]
+        // A própria conta não é um filho: desde os cursos para pais (14/11/2026) ela também tem
+        // progresso de aula no Kids, e entrar como "perfil" derrubava o resumo da família.
+        const profileIds = [...new Set([...gamificationProfiles, ...learningProfiles])].filter(
+          (id) => id !== accountId,
+        )
         const stats = profileIds.length
           ? await this.childrenStats.execute(accountId, profileIds, { audience: 'kids' })
           : []
