@@ -405,8 +405,8 @@ export class CampaignAdminService {
   }
 
   /**
-   * A oferta do presente precisa existir no catálogo, ser de pagamento único (prazo fixo ou
-   * vitalícia) e ter o público da campanha (público do produto principal da oferta).
+   * A oferta do presente precisa existir no catálogo e servir de presente (`giftOfferProblem`:
+   * pagamento único, sem prazo ou com prazo em dias, não arquivada, do público da campanha).
    */
   private async validateGiftOffer(offerId: string, audience: GiftAudience) {
     if (!this.giftOffers) throw new GiftCatalogUnavailableError()

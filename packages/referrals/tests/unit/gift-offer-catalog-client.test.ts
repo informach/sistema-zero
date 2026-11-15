@@ -101,6 +101,14 @@ describe('GiftOfferCatalogHttpClient', () => {
     })
   })
 
+  test('a situação no Catálogo chega na oferta (arquivada e pausada também)', async () => {
+    for (const status of ['archived', 'paused'] as const)
+      expect(await catalog({ view: { status } }).client.resolve(OFFER_ID)).toMatchObject({
+        status,
+      })
+    await expect(catalog({ view: { status: 'outra' } }).client.resolve(OFFER_ID)).rejects.toThrow()
+  })
+
   test('404 = oferta inexistente; outra falha lança', async () => {
     expect(await catalog({ status: 404 }).client.resolve('nao-existe')).toBeNull()
     await expect(catalog({ status: 401 }).client.resolve('cade')).rejects.toThrow()
