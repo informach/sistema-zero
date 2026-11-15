@@ -1,0 +1,89 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-2",
+  "title": "Consumir ou criar: o que muda por dentro",
+  "blocks": [
+    {
+      "key": "video-a2-por-dentro",
+      "plannedVideo": "Título: O que acontece por dentro\n\nA tela que entretém e a que faz pensar, o tutorial como memorização, as funções executivas explicadas com a manhã da casa e o Lego sem manual. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a2-autoria",
+      "plannedVideo": "Título: Quando o jogo é dele\n\nPor que a criação faz a criança aceitar o erro, escolher é abrir mão, começo, meio e fim, o vídeo de depoimentos (Rafael, Daniel, Fernando e Débora) e a história da Helena com o André. Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "para-casa-a2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer esta semana\n\nPergunte ao seu filho: **que jogo você inventaria se pudesse?** Só escute, sem corrigir, e anote a resposta. Ela vai servir na Aula 4.\n\n**As habilidades que a criança usa quando cria**, com a manhã da sua casa:\n\n- **Memória de trabalho:** lembrar que hoje precisa do tênis.\n- **Planejamento e organização:** vestir, tomar café, escovar os dentes, nessa ordem.\n- **Controle do impulso:** esperar o irmão sair do banheiro.\n- **Controle emocional:** respirar quando o tênis não aparece."
+      }
+    },
+    {
+      "key": "quiz-a2",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Qual destas atividades pede mais flexibilidade da criança?",
+            "choices": [
+              { "id": "a", "label": "Montar um Lego seguindo o manual." },
+              { "id": "b", "label": "Montar com Lego a fazenda de um passeio, sem manual." },
+              { "id": "c", "label": "Assistir a um vídeo de alguém montando Lego." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Sem manual, as peças não encaixam como ela imaginou e ela precisa mudar o plano no caminho. É o mesmo que acontece quando ela cria um jogo."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que a criança costuma aceitar errar mais no jogo que ela mesma está criando?",
+            "choices": [
+              { "id": "a", "label": "Porque o jogo que ela cria é mais fácil." },
+              { "id": "b", "label": "Porque o resultado é dela e ela quer que funcione." },
+              { "id": "c", "label": "Porque ninguém vê os erros dela." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Existe o orgulho de poder dizer: fui eu que fiz. É isso que dá vontade de tentar de novo."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "por-dentro",
+      "title": "O que acontece por dentro",
+      "objective": "Entender a diferença entre a tela que entretém e a que faz pensar, e as habilidades que a criança usa quando cria.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-por-dentro"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a2-por-dentro"] }
+    },
+    {
+      "key": "autoria",
+      "title": "Quando o jogo é dele",
+      "objective": "Ver por que a autoria motiva a criança a enfrentar o erro e conhecer a história que deu origem a este curso.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-autoria", "para-casa-a2"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a2-autoria"] }
+    },
+    {
+      "key": "confira-a2",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a duas situações.",
+      "intent": "application",
+      "blockKeys": ["quiz-a2"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-a2"] }
+    }
+  ]
+}

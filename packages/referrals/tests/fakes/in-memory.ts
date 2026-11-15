@@ -9,10 +9,12 @@ import type {
   EnsureBuyerInput,
   GatewayResult,
   GrantManualCourseInput,
+  GrantManualOfferInput,
   GrantMuralVisitorInput,
   ReferralsGateway,
   SendEmailInput,
 } from '../../src/domain/ports/gateway.port'
+import type { GiftOffer, GiftOfferCatalog } from '../../src/domain/ports/gift-offer-catalog.port'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -24,6 +26,7 @@ import type {
   ConversionStatus,
   ConversionToNotify,
   InviteRecord,
+  RedemptionGift,
   RedemptionRecord,
   ReferralRepository,
 } from '../../src/domain/ports/referral-repository.port'
@@ -358,6 +361,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
     sourceSnapshot?: GiftSource
     courseSlug?: string
     attribution?: GiftAttribution | null
+    gift?: RedemptionGift
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
     // Espelha o UNIQUE (email, audience).
     const existing = this.redemptions.find(
@@ -385,9 +389,12 @@ export class InMemoryReferralRepository implements ReferralRepository {
       lastError: null,
       attemptCount: 0,
       completedAt: null,
-      accessDurationDays: 7,
-      muralVisitorPolicy: 'trial',
+      // Com `gift` (o serviço, desde 15/11/2026): presente por oferta. Sem ele, a linha nasce
+      // na forma ANTIGA (`trial` de sete dias), para semear resgates antigos em andamento.
+      accessDurationDays: input.gift ? input.gift.accessDurationDays : 7,
+      muralVisitorPolicy: input.gift ? 'offer' : 'trial',
       muralVisitorGrantedAt: null,
+      giftOfferId: input.gift?.offerId ?? null,
       createdAt: new Date(),
     }
     this.redemptions.push(redemption)
@@ -714,6 +721,7 @@ export interface RecordedCall {
     | 'getGiftAvailability'
     | 'ensureBuyer'
     | 'createPasswordToken'
+    | 'grantManualOffer'
     | 'grantManualCourse'
     | 'grantMuralVisitor'
     | 'grantMuralTrial'
@@ -725,13 +733,18 @@ export interface RecordedCall {
 /** Gateway fake: respostas configuráveis por chamada + gravação p/ asserts. */
 export class FakeReferralsGateway implements ReferralsGateway {
   calls: RecordedCall[] = []
-  availabilityResult: GatewayResult = { status: 200, body: { available: true } }
+  availabilityResult: GatewayResult = {
+    status: 200,
+    body: { available: true, title: 'Cadê Todo Mundo?', learner: 'child' },
+  }
   ensureBuyerResult: GatewayResult = { status: 201, body: { userId: randomUUID(), created: true } }
   passwordTokenResult: GatewayResult = {
     status: 201,
     body: { token: 'tok-abc', expiresAt: new Date(Date.now() + 14 * 86_400_000).toISOString() },
   }
   grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
+  /** Resposta do grant por oferta; null = a mesma do `grantResult` (o "grant" do presente). */
+  offerGrantResult: GatewayResult | null = null
   muralVisitorResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
   muralTrialResult: GatewayResult = { status: 200, body: { ok: true, granted: 2 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
@@ -752,6 +765,11 @@ export class FakeReferralsGateway implements ReferralsGateway {
   async createPasswordToken(email: string): Promise<GatewayResult> {
     this.calls.push({ kind: 'createPasswordToken', input: { email } })
     return this.passwordTokenResult
+  }
+
+  async grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult> {
+    this.calls.push({ kind: 'grantManualOffer', input })
+    return this.offerGrantResult ?? this.grantResult
   }
 
   async grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult> {
@@ -778,6 +796,50 @@ export class FakeReferralsGateway implements ReferralsGateway {
 
   callsOf(kind: RecordedCall['kind']): RecordedCall[] {
     return this.calls.filter((c) => c.kind === kind)
+  }
+}
+
+export const KIDS_GIFT_OFFER: GiftOffer = {
+  offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d01',
+  offerSlug: 'cade-todo-mundo-7-dias',
+  name: 'Cadê Todo Mundo? · 7 dias',
+  status: 'active',
+  audience: 'kids',
+  accessMode: 'fixed',
+  accessDurationValue: 7,
+  accessDurationUnit: 'days',
+  courseSlug: 'cade-todo-mundo',
+  includesMural: true,
+}
+
+export const ADULT_GIFT_OFFER: GiftOffer = {
+  offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d02',
+  offerSlug: 'cade-todo-mundo-adulto-7-dias',
+  name: 'Cadê Todo Mundo? (adultos) · 7 dias',
+  status: 'active',
+  audience: 'adult',
+  accessMode: 'fixed',
+  accessDurationValue: 7,
+  accessDurationUnit: 'days',
+  courseSlug: 'cade-todo-mundo-adulto',
+  includesMural: true,
+}
+
+/** Catálogo fake: resolve por slug ou UUID; `fail` simula o Catálogo fora do ar. */
+export class FakeGiftOfferCatalog implements GiftOfferCatalog {
+  offers: GiftOffer[] = [KIDS_GIFT_OFFER, ADULT_GIFT_OFFER]
+  calls: string[] = []
+  fail = false
+
+  add(offer: GiftOffer): GiftOffer {
+    this.offers.push(offer)
+    return offer
+  }
+
+  async resolve(offerRef: string): Promise<GiftOffer | null> {
+    this.calls.push(offerRef)
+    if (this.fail) throw new Error('catálogo fora do ar')
+    return this.offers.find((o) => o.offerId === offerRef || o.offerSlug === offerRef) ?? null
   }
 }
 

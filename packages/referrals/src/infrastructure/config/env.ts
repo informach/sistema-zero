@@ -55,20 +55,13 @@ const EnvSchema = z
     S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // ── Produto / links públicos ─────────────────────────────────────────────
-    /** Curso kids concedido exclusivamente por indicação válida. */
-    SCHOLARSHIP_COURSE_SLUG: z
-      .string()
-      .regex(/^[a-z0-9-]{1,100}$/)
-      .default('cade-todo-mundo'),
+    // O presente é uma OFERTA do catálogo (15/11/2026): a campanha escolhe a oferta e os
+    // códigos de embaixador usam `DEFAULT_GIFT_OFFER_SLUGS` (domain/gift-policy.ts). As envs
+    // de curso (`SCHOLARSHIP_COURSE_SLUG`/`SCHOLARSHIP_ADULT_COURSE_SLUG`) saíram.
     /** Base pública do funil (landings /bolsa/<code> e /embaixador/<token>). */
     FUNNEL_PUBLIC_URL: z.string().url().default('http://localhost:4321'),
     /** Base do app kids (link de definir senha do presente Kids). */
     KIDS_COMMUNITY_URL: z.string().url().default('http://localhost:3008'),
-    /** Curso do presente adulto (clone adulto do Cadê Todo Mundo, publicado no Admin). */
-    SCHOLARSHIP_ADULT_COURSE_SLUG: z
-      .string()
-      .regex(/^[a-z0-9-]{1,100}$/)
-      .default('cade-todo-mundo-adulto'),
     /**
      * Base do app adulto (links do presente adulto). SEM default de propósito: ausente, o
      * presente adulto fica indisponível (fail-closed, `giftAvailable:false`/503) e o Kids
@@ -92,8 +85,15 @@ const EnvSchema = z
      */
     PAYMENTS_BASE_URL: z.string().url().default('http://localhost:3001'),
     PAYMENTS_INTERNAL_TOKEN: z.string().min(16).optional(),
-    /** Leitura pública do catalog (classifica a oferta da conversão). */
+    /**
+     * Catálogo direto na rede privada: classifica a oferta da conversão, confere o cupom da
+     * campanha e resolve a OFERTA do presente (leitura pública + entitlements).
+     */
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
+    /**
+     * `INTERNAL_API_TOKEN` do catálogo: exigido pelos entitlements da oferta do presente e
+     * pela política do cupom. Ausente em produção = presente indisponível (o catálogo recusa).
+     */
     CATALOG_INTERNAL_TOKEN: z.string().min(16).optional(),
     /** Ofertas que contam como "assinou a Comunidade" (csv de slugs). */
     CONVERSION_OFFER_SLUGS: z

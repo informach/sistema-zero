@@ -35,6 +35,22 @@ export interface GrantManualCourseInput {
   audience?: 'adult'
 }
 
+/**
+ * Corpo de `POST /members/webhooks/grant-manual` `mode:'offer'` (15/11/2026): o members concede
+ * TODOS os itens da oferta com o prazo da PRÓPRIA oferta contado de `anchorAt` (o resgate), e a
+ * visita permanente ao Mural quando a oferta de prazo fixo inclui o Mural completo.
+ */
+export interface GrantManualOfferInput {
+  userId: string
+  /** UUID (ou slug) da oferta gravada no resgate. */
+  offerRef: string
+  sourceId: string
+  /** Início do prazo: a data do resgate (ISO), estável nas re-entregas. */
+  anchorAt: string
+  audience: GiftAudience
+  deliveryId: string
+}
+
 export interface GrantMuralVisitorInput {
   userId: string
   sourceId: string
@@ -58,12 +74,16 @@ export interface SendEmailInput {
 export interface ReferralsGateway {
   /**
    * `GET /members/webhooks/gift-course/:slug[?audience=adult]` — o curso do público está
-   * publicado? Kids não manda query (a requisição continua idêntica à de antes).
+   * publicado? Kids não manda query (a requisição continua idêntica à de antes). Desde
+   * 15/11/2026 a resposta traz também `title` e `learner` do curso publicado.
    */
   getGiftAvailability(courseRef: string, audience?: GiftAudience): Promise<GatewayResult>
   ensureBuyer(input: EnsureBuyerInput): Promise<GatewayResult>
   /** `POST /auth/internal/password-tokens` — token de definir senha (TTL 14d). */
   createPasswordToken(email: string): Promise<GatewayResult>
+  /** Presente por oferta (resgates com `muralVisitorPolicy: 'offer'`). */
+  grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult>
+  /** Caminho antigo (resgates `trial`/`visitor`/históricos em andamento). */
   grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult>
   grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult>
   grantMuralTrial(input: GrantMuralTrialInput): Promise<GatewayResult>

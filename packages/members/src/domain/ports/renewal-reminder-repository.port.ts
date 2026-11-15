@@ -95,6 +95,10 @@ export interface GiftLifecycleEntitlement {
    * adulto; resgates antigos são `kids`. Escolhe template, link e o "acesso mais forte".
    */
   audience: 'kids' | 'adult'
+  /** A chave da matrícula (curso ou comunidade): o Mural completo no grupo pede a frase do Mural. */
+  courseRef: string | null
+  /** Título do curso desta matrícula (null fora de curso): o e-mail nomeia o curso do presente. */
+  courseTitle: string | null
 }
 
 /** Uma matrícula de assinatura da Comunidade que acabou de vencer. */

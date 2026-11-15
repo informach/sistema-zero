@@ -1,0 +1,92 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-5",
+  "title": "Quando fica difícil: foco, erro e o seu papel",
+  "blocks": [
+    {
+      "key": "video-a5-foco",
+      "plannedVideo": "Título: O foco que eles já têm\n\nO vídeo de depoimentos sobre foco (Daniel, Harle e Flávia), o foco a favor do aprendizado, o vídeo da Isabela e a primeira barreira de toda atividade nova. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a5-suporte",
+      "plannedVideo": "Título: O seu papel: do lado, sem fazer por ele\n\nOs três degraus de apoio, o repertório, o cuidado com a resposta pronta e a ferramenta \"o que você já tentou?\". Fala completa no roteiro, Parte 2."
+    },
+    {
+      "key": "para-casa-a5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para fazer esta semana\n\nQuando o seu filho já tentou alguma coisa, travou e pede **faz para mim**, responda com uma pergunta: **o que você já tentou?** Depois olhem juntos onde parou e o que dá para mudar.\n\n**Os três degraus de apoio:**\n\n1. **Fazer pela criança**, só no comecinho, quando ela nunca viu aquilo, para ela ver que é possível e que é legal.\n2. **Fazer junto**, tirando um pouquinho da ajuda e pedindo um pouquinho mais dela.\n3. **Deixar ela pensar**, até o dia em que ela mesma diz: não fala, deixa eu pensar.\n\nCada criança tem o seu tempo, e pausas fazem parte."
+      }
+    },
+    {
+      "key": "quiz-a5",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O seu filho trava no jogo que está criando e pede: faz para mim. Qual resposta ajuda mais?",
+            "choices": [
+              { "id": "a", "label": "Fazer rapidinho para ele não se frustrar." },
+              { "id": "b", "label": "Perguntar o que ele já tentou e olhar junto onde parou." },
+              { "id": "c", "label": "Desligar o computador, porque ficou difícil demais." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Você fica do lado sem tirar dele a chance de pensar. É assim que ele ganha repertório."
+          },
+          {
+            "id": "q2",
+            "prompt": "No primeiro dia, a sua filha achou a atividade nova difícil. O que isso costuma significar?",
+            "choices": [
+              { "id": "a", "label": "Que isso não é para ela." },
+              {
+                "id": "b",
+                "label": "Que é a primeira barreira de toda atividade nova, e ajuda sentar junto e tentar de novo."
+              },
+              { "id": "c", "label": "Que é melhor esperar ela ficar mais velha." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Toda atividade nova tem uma primeira barreira. Ela costuma passar, no tempo de cada criança, e ter alguém do lado ajuda muito."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "foco",
+      "title": "O foco que eles já têm",
+      "objective": "Responder às dúvidas sobre foco e dificuldade: o interesse leva o foco para o aprendizado, e a primeira barreira costuma passar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-foco"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a5-foco"] }
+    },
+    {
+      "key": "suporte",
+      "title": "O seu papel: do lado, sem fazer por ele",
+      "objective": "Conhecer os três degraus de apoio e trocar a resposta pronta por uma pergunta.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-suporte", "para-casa-a5"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a5-suporte"] }
+    },
+    {
+      "key": "confira-a5",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a duas situações.",
+      "intent": "application",
+      "blockKeys": ["quiz-a5"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-a5"] }
+    }
+  ]
+}

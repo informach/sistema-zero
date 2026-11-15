@@ -5,7 +5,11 @@
 // a ilha o importa, então nada de env aqui (as URLs dos apps chegam por prop).
 // `{{nome}}` = quem deu o presente, `{{email}}` = o e-mail do cadastro, `{{data}}` = o vencimento.
 
-import type { GiftAudience } from '@sistemazero/core/referrals'
+import {
+  type GiftAudience,
+  giftDurationLabel,
+  type ReferralGiftOfferView,
+} from '@sistemazero/core/referrals'
 
 /** A continuidade adulta: para onde vai quem já resgatou e quer seguir. */
 export const CONTINUAR_ADULTO_PATH = '/pro/comunidade-dos-criadores/oferta/continuar'
@@ -68,6 +72,23 @@ const ERROS_COMUNS = {
   rede: 'Não foi possível concluir agora. Confira a conexão e tente de novo.',
 }
 
+/**
+ * A frase do Mural na confirmação do resgate (`muralAccess: 'trial'`). "Até a mesma data" só
+ * quando o presente tem prazo; a aula 2 só no Cadê Kids, o curso que ensina a publicar nela.
+ */
+function muralTrialTexto(
+  audience: GiftAudience,
+  { prazo, aulaDoCade }: { prazo: boolean; aulaDoCade: boolean },
+): string {
+  const liberado = `O Mural ${audience === 'adult' ? 'adulto' : 'Kids'} também está liberado${prazo ? ' até a mesma data' : ''}`
+  const quem = audience === 'adult' ? 'você pode' : 'seu filho pode'
+  const link =
+    'link do jogo publicado continua funcionando enquanto a publicação estiver disponível.'
+  return `${liberado}: ${quem} publicar o jogo do curso, comentar e reagir. ${
+    aulaDoCade ? `A aula 2 ensina como publicar, e o ${link}` : `O ${link}`
+  }`
+}
+
 const ACEITE = {
   termos: 'Termos de Uso',
   meio: ' e a ',
@@ -117,8 +138,7 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
       emailIncerto:
         'O acesso está liberado, mas não conseguimos confirmar o envio do e-mail. Entre com a sua senha ou use Criar ou recuperar a senha com o e-mail acima.',
       proximo: 'No primeiro acesso, crie o perfil do seu filho e abra o curso num computador.',
-      muralTrial:
-        'O Mural Kids também está liberado até a mesma data: seu filho pode publicar o jogo do curso, comentar e reagir. A aula 2 ensina como publicar, e o link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+      muralTrial: muralTrialTexto('kids', { prazo: true, aulaDoCade: true }),
       muralVisitante:
         'O seu resgate inclui a visita ao Mural para ver e jogar enquanto a conta existir. Essa modalidade não libera publicar, comentar ou reagir.',
       entrar: 'Entrar na plataforma',
@@ -188,8 +208,7 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
       emailIncerto:
         'O acesso está liberado, mas não conseguimos confirmar o envio do e-mail. Entre com a sua senha ou use Criar ou recuperar a senha com o e-mail acima.',
       proximo: 'Abra o curso no navegador do computador.',
-      muralTrial:
-        'O Mural adulto também está liberado até a mesma data: você pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+      muralTrial: muralTrialTexto('adult', { prazo: true, aulaDoCade: false }),
       muralVisitante:
         'O seu resgate inclui a visita ao Mural para ver e jogar enquanto a conta existir. Essa modalidade não libera publicar, comentar ou reagir.',
       entrar: 'Entrar na Comunidade',
@@ -247,4 +266,133 @@ export function dataBrasilia(iso: string, comHora = true): string {
     })
     .split(':')
   return `${dia}, às ${Number(hora)}h${minuto === '00' ? '' : minuto}`
+}
+
+/** O nome do curso do presente: o título publicado ou, na falta dele, o nome da oferta. */
+export const cursoDoPresente = (gift: Pick<ReferralGiftOfferView, 'courseTitle' | 'offerTitle'>) =>
+  gift.courseTitle ?? gift.offerTitle
+
+/**
+ * Os marcadores do prazo no texto editorial do Cadê (`presenteKids`/`presenteAdulto`): o prazo em
+ * algarismo ("7 dias", "7 DIAS") e por extenso ("sete dias", "Sete dias"). O texto aprovado fala
+ * dos sete dias por extenso; com outro prazo, o extenso vira algarismo ("14 dias").
+ */
+export interface PrazoDoCade {
+  dias: string
+  diasCaixaAlta: string
+  extenso: string
+  extensoInicial: string
+}
+export function prazoDoCade(dias: number): PrazoDoCade {
+  const rotulo = giftDurationLabel(dias)
+  const extenso = dias === 7 ? 'sete dias' : rotulo
+  return {
+    dias: rotulo,
+    diasCaixaAlta: rotulo.toLocaleUpperCase('pt-BR'),
+    extenso,
+    extensoInicial: `${extenso.charAt(0).toLocaleUpperCase('pt-BR')}${extenso.slice(1)}`,
+  }
+}
+
+/** Curso para pais: a página do curso na área dos pais do app Kids. */
+export function cursoParaPaisHref(communityUrl: string, courseSlug: string): string {
+  return `${communityUrl}/pais/cursos/${encodeURIComponent(courseSlug)}`
+}
+
+/**
+ * A copy do formulário com o que a oferta do presente entrega (15/11/2026). Sem `gift` (leitura
+ * antiga), é a `RESGATE_COPY` de sempre, a do Cadê Todo Mundo. Com `gift`:
+ * - o Cadê mantém a copy dele, só com o prazo e o Mural da oferta;
+ * - curso para pais (`learner: 'parents'`, só no Kids: a área dos pais é do app Kids): os dados
+ *   são do pai ou da mãe, sem perfil do filho e sem Mural, e o próximo passo é abrir o curso em
+ *   Cursos para pais; no adulto a variante `pais` vale como `curso`;
+ * - outro curso: o nome e o prazo da oferta no lugar do Cadê.
+ * A frase do Mural na confirmação só fala da "mesma data" com prazo, e da aula 2 no Cadê Kids.
+ */
+export function resgateCopy(
+  audience: GiftAudience,
+  gift?: ReferralGiftOfferView,
+  variante: 'cade' | 'pais' | 'curso' = 'cade',
+): ResgateCopy {
+  const base = RESGATE_COPY[audience]
+  if (!gift) return base
+  const adulto = audience === 'adult'
+  const dias = gift.accessDays === null ? null : giftDurationLabel(gift.accessDays)
+  const curso =
+    variante === 'cade'
+      ? adulto
+        ? 'o curso Cadê Todo Mundo, na versão adulta,'
+        : 'o curso Cadê Todo Mundo'
+      : `o curso ${cursoDoPresente(gift)}`
+  const mural = gift.includesMural ? (adulto ? ' e o Mural adulto' : ' e o Mural Kids') : ''
+  const oQue = `${curso}${mural}`
+  const rodape = dias
+    ? `${oQue} por ${dias}, sem custo e sem cartão.`
+    : `${oQue.replace(/,$/, '')}, sem prazo, sem custo e sem cartão.`
+  const prazoTerminou = dias
+    ? `Os ${dias} contados do seu cadastro já terminaram.`
+    : 'O prazo do seu cadastro já terminou.'
+  const copy: ResgateCopy = {
+    ...base,
+    rodape: `Presente de {{nome}}: ${rodape}`,
+    rodapeCampanha: `{{nome}}: ${rodape}`,
+    erros: {
+      ...base.erros,
+      expirado: base.erros.expirado.replace(
+        'Os 7 dias contados do seu cadastro já terminaram.',
+        prazoTerminou,
+      ),
+    },
+    jaResgatado: {
+      ...base.jaResgatado,
+      texto: base.jaResgatado.texto.replace(
+        'Se os 7 dias já terminaram',
+        dias ? `Se os ${dias} já terminaram` : 'Se o prazo já terminou',
+      ),
+    },
+    concluido: {
+      ...base.concluido,
+      nota: dias ? base.concluido.nota : 'Este presente não tem prazo e não gera cobrança.',
+      muralTrial: muralTrialTexto(audience, {
+        prazo: dias !== null,
+        aulaDoCade: variante === 'cade' && !adulto,
+      }),
+    },
+  }
+  if (variante !== 'pais' || adulto) return copy
+  return {
+    ...copy,
+    aviso: {
+      destaque: 'Estes dados são seus',
+      texto:
+        ' (mãe, pai ou tutor). O curso fica na área dos pais da sua conta, sem perfil de criança.',
+    },
+    campos: {
+      ...copy.campos,
+      nome: {
+        ...copy.campos.nome,
+        rotulo: 'Seu nome',
+        placeholder: 'Seu nome completo',
+        erro: 'Informe o seu nome, com até 120 caracteres.',
+      },
+      email: { ...copy.campos.email, rotulo: 'Seu e-mail' },
+    },
+    botao: 'Liberar o meu curso',
+    aceite: {
+      ...copy.aceite,
+      antes: 'Ao continuar, você confirma que tem 18 anos ou mais e aceita os ',
+    },
+    concluido: {
+      ...copy.concluido,
+      titulo: 'O seu curso está liberado',
+      proximo:
+        'Entre na área dos pais e abra o curso em Cursos para pais. Se a conta é nova, crie a senha primeiro pelo link do e-mail.',
+      entrar: 'Abrir o curso',
+    },
+    jaResgatado: {
+      ...copy.jaResgatado,
+      texto:
+        'Cada e-mail resgata um presente Kids. Entre com esse e-mail e veja os seus cursos na área dos pais.',
+    },
+  }
 }

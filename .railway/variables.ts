@@ -522,7 +522,7 @@ const extra: Record<string, Record<string, string[]>> = {
     'live-recorder': [],
     hub: ['RELEASE_MAINTENANCE_MODE', 'SENTRY_DSN'],
     catalog: ['SENTRY_DSN'],
-    referrals: ['SCHOLARSHIP_COURSE_SLUG'],
+    referrals: [],
     payments: ['SENTRY_DSN', 'WEBHOOK_DELIVERY_MAX_ATTEMPTS'],
     'api-gateway': ['SENTRY_DSN'],
     fiscal: ['SENTRY_DSN'],

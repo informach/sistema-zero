@@ -12,12 +12,20 @@ OUTPUT = ROOT / 'docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-pas
 
 def main():
     global WORK, OUTPUT
-    cade = len(sys.argv) > 1 and sys.argv[1] == 'cade-todo-mundo'
+    curso = sys.argv[1] if len(sys.argv) > 1 else 'desafio-farol'
+    # Cursos que usam a mesma receita e passam pela mesma conferência (gerador em recursos/<curso>/).
+    outros = {
+        'cade-todo-mundo': 'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf',
+        'transformando-o-vilao-em-aliado': 'docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/apostila.pdf',
+    }
+    if curso != 'desafio-farol' and curso not in outros:
+        raise SystemExit(f'Curso desconhecido: {curso}')
+    cade = curso in outros
     generator = Path(__file__).with_name('gerar-caderno.ts')
     if cade:
-        WORK = ROOT / 'tmp' / 'pdfs' / 'cade-todo-mundo'
-        OUTPUT = ROOT / 'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf'
-        generator = Path(__file__).parent.parent / 'cade-todo-mundo' / 'gerar-caderno.ts'
+        WORK = ROOT / 'tmp' / 'pdfs' / curso
+        OUTPUT = ROOT / outros[curso]
+        generator = Path(__file__).parent.parent / curso / 'gerar-caderno.ts'
     bun = shutil.which('bun')
     if not bun:
         raise RuntimeError('Bun não encontrado.')

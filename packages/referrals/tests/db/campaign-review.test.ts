@@ -12,7 +12,12 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleReferralRepository } from '../../src/infrastructure/persistence/drizzle/referral.repository'
 import { conversions } from '../../src/infrastructure/persistence/drizzle/schema'
-import { FakeReferralsGateway, silentLogger } from '../fakes/in-memory'
+import {
+  FakeGiftOfferCatalog,
+  FakeReferralsGateway,
+  KIDS_GIFT_OFFER,
+  silentLogger,
+} from '../fakes/in-memory'
 
 // Exige banco explicitamente descartável; nunca usa DATABASE_URL da aplicação.
 const url = process.env.TEST_DATABASE_URL
@@ -33,7 +38,14 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     })
     repo = new DrizzleReferralRepository(connection.db)
     campaigns = new DrizzleCampaignRepository(connection.db)
-    admin = new CampaignAdminService(campaigns, repo, 'https://example.test')
+    admin = new CampaignAdminService(
+      campaigns,
+      repo,
+      'https://example.test',
+      undefined,
+      undefined,
+      new FakeGiftOfferCatalog(),
+    )
   })
   afterAll(async () => connection?.close())
 
@@ -115,6 +127,7 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
         code: `review-${suffix}`,
         channel: 'palestra',
         audience: 'kids',
+        giftOfferId: KIDS_GIFT_OFFER.offerId,
         status: 'active',
         startsAt: new Date(Date.now() - 60_000).toISOString(),
         endsAt: new Date(Date.now() + 3_600_000).toISOString(),

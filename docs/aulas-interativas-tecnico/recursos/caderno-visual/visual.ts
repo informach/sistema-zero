@@ -92,11 +92,18 @@ export type CapaDoCaderno = {
   fraseBaixo: string
   /** Classe de cores da capa (`capa--cade`, `capa--farol`). */
   tema: string
+  /**
+   * O nome do material na faixa. Os cursos das crianças usam o padrão; o curso para pais
+   * (15/11/2026) diz "Apostila do curso", porque não tem projeto. Só o nome muda, nunca o visual.
+   */
+  selo?: string
 }
+
+export const MATERIAL_PADRAO = 'Passo a passo do projeto'
 
 /** A capa, medida sobre as capas de referência (folha de 794 × 1123 px). */
 export function capaHtml(capa: CapaDoCaderno): string {
-  return `<section class="page capa ${capa.tema}" data-id="capa"><div class="capa-arte" style="background-image:url(${capa.arte})"></div><div class="capa-painel"></div><div class="capa-selo">${icone(capa.iconeSelo, 'capa-selo-icone')}<span>Passo a passo do projeto</span></div><h1 class="capa-titulo"><span>${capa.linha1}</span><em>${capa.linha2}</em></h1><p class="capa-frase">${capa.frase}</p><p class="capa-frase-baixo">${capa.fraseBaixo}</p>${logoKids()}</section>`
+  return `<section class="page capa ${capa.tema}" data-id="capa"><div class="capa-arte" style="background-image:url(${capa.arte})"></div><div class="capa-painel"></div><div class="capa-selo">${icone(capa.iconeSelo, 'capa-selo-icone')}<span>${capa.selo ?? MATERIAL_PADRAO}</span></div><h1 class="capa-titulo"><span>${capa.linha1}</span><em>${capa.linha2}</em></h1><p class="capa-frase">${capa.frase}</p><p class="capa-frase-baixo">${capa.fraseBaixo}</p>${logoKids()}</section>`
 }
 
 /** Destaca o caminho da paleta ("Jogo 2D &gt; Sprites &gt; Aparência") escrito em negrito. */
@@ -162,8 +169,8 @@ export const cabecalho = ({
 }) =>
   `<div class="cabecalho"><div class="cabecalho-cena"><img src="${cena}" alt="${alt}" style="object-position:${enquadre}"></div><div class="cabecalho-texto"><div class="kicker">${kicker}</div><h2>${titulo}</h2><p>${resumo}</p></div></div>`
 
-export const rodape = (curso: string, numero: string) =>
-  `<div class="page-no"><span class="brand">${curso}&nbsp; | &nbsp;Passo a passo do projeto</span><span>${numero}</span></div>`
+export const rodape = (curso: string, numero: string, material = MATERIAL_PADRAO) =>
+  `<div class="page-no"><span class="brand">${curso}&nbsp; | &nbsp;${material}</span><span>${numero}</span></div>`
 
 type DefinicaoDeBloco = { type: string; colour?: unknown }
 

@@ -54,6 +54,35 @@ export class CampaignAudienceLockedError extends Error {
   }
 }
 
+/**
+ * Oferta do presente só muda em rascunho sem resgates (a mesma régua do público); depois, só
+ * duplicando. Ligar uma oferta a uma campanha antiga que ainda não tinha é permitido.
+ */
+export class CampaignGiftOfferLockedError extends Error {
+  constructor() {
+    super(
+      'A oferta do presente só muda enquanto a campanha está em rascunho e sem cadastros. Duplique a campanha para criar uma edição com outra oferta.',
+    )
+  }
+}
+
+/** O Catálogo não respondeu ao conferir a oferta do presente (tente de novo). */
+export class GiftCatalogUnavailableError extends Error {
+  constructor() {
+    super('Não foi possível conferir a oferta do presente no Catálogo agora. Tente de novo.')
+  }
+}
+
+/**
+ * A oferta resolvida antes do claim não é mais a da campanha (trocada entre a leitura e o lock).
+ * Transitório: a próxima submissão resolve a oferta atual.
+ */
+export class GiftOfferChangedError extends Error {
+  constructor() {
+    super('A oferta do presente mudou durante o cadastro.')
+  }
+}
+
 export class CampaignConflictError extends Error {
   constructor() {
     super(

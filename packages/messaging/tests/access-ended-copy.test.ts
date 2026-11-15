@@ -17,11 +17,12 @@ function readable(key: string): string {
 }
 
 const CONTRACTS = {
-  'gift-expiry-2d': ['nome', 'data', 'link'],
-  'gift-expired': ['nome', 'link'],
+  // Presente por oferta (15/11/2026): o members manda o curso e a frase do Mural prontos.
+  'gift-expiry-2d': ['nome', 'curso', 'mural', 'data', 'link'],
+  'gift-expired': ['nome', 'curso', 'mural', 'link'],
   // Presente adulto (20/10/2026): o members manda as MESMAS variáveis do Kids.
-  'gift-expiry-2d-adult': ['nome', 'data', 'link'],
-  'gift-expired-adult': ['nome', 'link'],
+  'gift-expiry-2d-adult': ['nome', 'curso', 'mural', 'data', 'link'],
+  'gift-expired-adult': ['nome', 'curso', 'mural', 'link'],
   'subscription-ended-kids': ['nome', 'link'],
   'subscription-ended-adult': ['nome', 'link'],
   'profile-turned-18': ['nome', 'nome_perfil', 'link'],
@@ -44,26 +45,26 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
       // O presente é um curso + o Mural por tempo limitado, nunca a assinatura da Comunidade.
       'gift-expiry-2d': [
         "subject: '{{nome}}, o presente do curso termina em {{data}}'",
-        'O acesso de presente ao curso e ao Mural termina em <strong>{{data}}</strong>.',
+        'O acesso de presente ao curso <strong>{{curso}}</strong> termina em <strong>{{data}}</strong>.',
         'O perfil, os projetos e os jogos publicados continuam guardados na conta. Para seguir com os próximos cursos no mesmo perfil, use o mesmo e-mail na assinatura.',
         'Ver como continuar',
       ],
       'gift-expired': [
         "subject: 'O presente do curso terminou, {{nome}}'",
-        'O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
+        'O presente do curso <strong>{{curso}}</strong> terminou. O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
         'Com a assinatura, a criança segue de onde parou, faz os próximos cursos e cria jogos cada vez maiores.',
         'Ver como continuar',
       ],
       // Copy do Canvas aprovado (presente adulto, quadro E-mails).
       'gift-expiry-2d-adult': [
-        "subject: '{{nome}}, o presente de 7 dias termina em {{data}}'",
-        'O acesso de presente ao <strong>Cadê Todo Mundo</strong> e ao <strong>Mural adulto</strong> termina em <strong>{{data}}</strong>.',
-        'Se ainda falta uma parte do jogo, estes dois dias servem para terminar e publicar. Depois do fim, os seus projetos continuam guardados na conta. Para seguir com os próximos cursos, a assinatura usa este mesmo e-mail.',
+        "subject: '{{nome}}, o seu presente termina em {{data}}'",
+        'O acesso de presente ao curso <strong>{{curso}}</strong> termina em <strong>{{data}}</strong>.',
+        'Se ainda falta uma parte, estes dois dias servem para terminar. Depois do fim, os seus projetos continuam guardados na conta. Para seguir com os próximos cursos, a assinatura usa este mesmo e-mail.',
         'Ver como continuar na Comunidade',
       ],
       'gift-expired-adult': [
-        "subject: 'O presente de 7 dias terminou, {{nome}}'",
-        'O que você fez continua na conta: os projetos e o progresso no curso.',
+        "subject: 'O seu presente terminou, {{nome}}'",
+        'O presente do curso <strong>{{curso}}</strong> terminou. O que você fez continua na conta: os projetos e o progresso no curso.',
         'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. Cada curso ensina uma parte nova, e os seus jogos ficam maiores, até o jogo com a sua ideia. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
         'Ver como continuar',
         '7 dias de garantia na assinatura. Cancele quando quiser.',
@@ -103,8 +104,21 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
     expect(source).not.toContain('no dia da aprovação')
   })
 
+  test('o presente não fixa curso nem prazo: nada de Cadê Todo Mundo nem de 7 dias', () => {
+    for (const key of [
+      'gift-expiry-2d',
+      'gift-expired',
+      'gift-expiry-2d-adult',
+      'gift-expired-adult',
+    ] as const) {
+      const text = block(key)
+      expect(text).not.toContain('Cadê Todo Mundo')
+      expect(text).not.toMatch(/presente de 7 dias|sete dias/)
+      expect(text).toContain("p('{{mural}}')")
+    }
+  })
+
   test('o presente adulto fala com a própria pessoa, sem o perfil da criança', () => {
-    expect(readable('gift-expiry-2d-adult')).toContain('Cadê Todo Mundo')
     for (const key of ['gift-expiry-2d-adult', 'gift-expired-adult'] as const) {
       const text = readable(key)
       expect(text).not.toContain('Cadê Todo Mundo?')

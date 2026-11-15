@@ -1,0 +1,108 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-6",
+  "title": "Da criação à conversa, e o primeiro passo",
+  "blocks": [
+    {
+      "key": "video-a6-conversa",
+      "plannedVideo": "Título: O jogo vira assunto na mesa de casa\n\nEntrar no mundo da criança, o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle), as quatro perguntas e a história do André. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1."
+    },
+    {
+      "key": "perguntas-a6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para a mesa de casa\n\nPerguntas sobre o caminho, e não só sobre nota ou tempo de tela. Você não precisa saber programar:\n\n- Me mostra o que você criou?\n- O que foi mais divertido?\n- O que você precisou mudar?\n- O que você vai inventar depois?"
+      }
+    },
+    {
+      "key": "quiz-a6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 50,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você chega em casa e quer conversar com o seu filho sobre o que ele criou. Qual pergunta abre mais conversa?",
+            "choices": [
+              { "id": "a", "label": "Quanto tempo você ficou no computador hoje?" },
+              { "id": "b", "label": "Me mostra o que você criou? O que você precisou mudar?" },
+              { "id": "c", "label": "Já terminou? Então pode desligar." }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Perguntas sobre o caminho convidam a criança a mostrar e a explicar, e é aí que a conversa acontece."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-a6-primeiro-passo",
+      "plannedVideo": "Título: A sua palavra e o primeiro passo\n\nO ciclo de criação, o vídeo das crianças contando o que sentem ao criar, a palavra guardada na Aula 1, a ideia que fica e o presente: o Cadê Todo Mundo por 7 dias. Fala completa no roteiro, Parte 3."
+    },
+    {
+      "key": "presente",
+      "content": {
+        "kind": "materials",
+        "title": "O presente: Cadê Todo Mundo por 7 dias",
+        "items": [
+          {
+            "id": "presente-cade",
+            "kind": "text",
+            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
+          },
+          {
+            "id": "presente-cade-link",
+            "kind": "link",
+            "label": "Pegar o presente do Cadê Todo Mundo",
+            "url": "https://sistemazero.com.br/bolsa/vilao-em-aliado-cade"
+          }
+        ]
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
+        "bodyText": "Aprendeu como a tela que a família já usa pode virar um treino de habilidades para a vida, criando em vez de só consumir."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "conversa",
+      "title": "O jogo vira assunto na mesa de casa",
+      "objective": "Usar a criação do filho como porta de conversa em família, com perguntas sobre o caminho.",
+      "intent": "explanation",
+      "blockKeys": ["video-a6-conversa", "perguntas-a6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a6-conversa"] }
+    },
+    {
+      "key": "confira-a6",
+      "title": "Confira o que ficou",
+      "objective": "Aplicar a ideia da aula a uma situação.",
+      "intent": "application",
+      "blockKeys": ["quiz-a6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["quiz-a6"] }
+    },
+    {
+      "key": "primeiro-passo",
+      "title": "A sua palavra e o primeiro passo",
+      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família viver isso na prática e emitir o certificado.",
+      "intent": "delivery",
+      "blockKeys": ["video-a6-primeiro-passo", "presente", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-a6-primeiro-passo", "certificado"] }
+    }
+  ]
+}

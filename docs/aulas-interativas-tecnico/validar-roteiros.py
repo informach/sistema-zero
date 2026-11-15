@@ -9,6 +9,11 @@ ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas'
 LEGADO = re.compile(r'Concluir fase|Próxima (?:fase|seção|etapa)|Mapa da Aventura|Caderno do Aluno|Enviar para o professor', re.I)
 CLIP = re.compile(r'^\*\*Clipe:\*\* `([^`]+)`\s*$', re.M)
 FALA = re.compile(r'\*\*Fala para ElevenLabs:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\n```')
+# Cursos para pais (15/11/2026): a Helena grava a própria fala, sem ElevenLabs, sem tags de voz e
+# sem o .elevenlabs.txt. O resto da régua (clipes na ordem, Na tela citando a fala) é o mesmo.
+FALA_HELENA = re.compile(r'\*\*Fala da Helena:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\n```')
+PASTA_PAIS = 'pais'
+AULAS_DAS_CRIANCAS = 51
 TAGS = set(json.loads((Path(__file__).resolve().parent / 'qa/direcoes-voz.json').read_text(encoding='utf-8')))
 NA_TELA = re.compile(r'^\*\*Na tela:\*\*\s*(.+)$', re.M)
 # Como o EdiAula separa as frases do Na tela e acha a fala que cada uma espera (ESPEC-ROTEIRO, seção 9).
@@ -76,6 +81,8 @@ def audit(path):
     if not script_path.exists():
         return [f'{script_path.name}: roteiro ausente'], None
     script = script_path.read_text(encoding='utf-8').replace('\r\n', '\n')
+    pais = path.parent.parent.name == PASTA_PAIS
+    fala_re = FALA_HELENA if pais else FALA
     videos = {b['key'] for b in manifest['blocks'] if b.get('plannedVideo')}
     expected = [k for s in manifest['sections'] for k in s['blockKeys'] if k in videos]
     markers = list(CLIP.finditer(script))
@@ -86,7 +93,7 @@ def audit(path):
     falas = []
     for i, marker in enumerate(markers):
         body = script[marker.end():markers[i + 1].start() if i + 1 < len(markers) else len(script)]
-        matches = list(FALA.finditer(body))
+        matches = list(fala_re.finditer(body))
         if len(matches) != 1:
             errors.append(f'{script_path.name}/{marker.group(1)}: precisa de um bloco integral de fala')
             continue
@@ -95,19 +102,27 @@ def audit(path):
             errors.append(f'{script_path.name}/{marker.group(1)}: fala vazia')
         if re.search(r'<\/?(?:break|speak|prosody)\b', texto, re.I):
             errors.append(f'{script_path.name}: SSML indevido no v4')
-        for tag in re.findall(r'\[[^\]\n]+\]', texto):
-            if tag not in TAGS:
-                errors.append(f'{script_path.name}: tag fora do contrato de produção: {tag}')
+        if pais:
+            # A Helena lê a fala: nenhuma tag de voz nem colchete de produção.
+            if '[' in texto or ']' in texto:
+                errors.append(f'{script_path.name}/{marker.group(1)}: colchete na fala da Helena')
+            if '—' in texto or '–' in texto:
+                errors.append(f'{script_path.name}/{marker.group(1)}: travessão na fala')
+        else:
+            for tag in re.findall(r'\[[^\]\n]+\]', texto):
+                if tag not in TAGS:
+                    errors.append(f'{script_path.name}: tag fora do contrato de produção: {tag}')
         sem_tags = re.sub(r'\[[^\]\n]+\]', '', texto)
-        if '[' in sem_tags or ']' in sem_tags:
+        if not pais and ('[' in sem_tags or ']' in sem_tags):
             errors.append(f'{script_path.name}: colchetes de tag incompletos')
-        if re.search(r'^(?:#{1,6}\s|\*\*|Professora:|Professor:|Na tela:|Debinha:|Dedé:)', texto, re.M):
+        if re.search(r'^(?:#{1,6}\s|\*\*|Professora:|Professor:|Na tela:|Debinha:|Dedé:|Helena:)', texto, re.M):
             errors.append(f'{script_path.name}: informação de produção na fala')
         if LEGADO.search(sem_tags):
             errors.append(f'{script_path.name}: rótulo antigo na fala: {LEGADO.search(sem_tags).group(0)}')
-        for paragraph in re.split(r'\n\s*\n', texto):
-            if paragraph.strip() and not paragraph.lstrip().startswith('['):
-                errors.append(f'{script_path.name}: segmento sem direção vocal')
+        if not pais:
+            for paragraph in re.split(r'\n\s*\n', texto):
+                if paragraph.strip() and not paragraph.lstrip().startswith('['):
+                    errors.append(f'{script_path.name}: segmento sem direção vocal')
         for na_tela in NA_TELA.findall(body):
             if na_tela.count('[') != na_tela.count(']'):
                 errors.append(f'{script_path.name}/{marker.group(1)}: colchetes incompletos no Na tela')
@@ -116,7 +131,10 @@ def audit(path):
         falas.append(texto)
     full = '\n\n[long pause]\n\n'.join(falas) + '\n'
     txt = path.with_name(path.name.replace('.manifesto.json', '.elevenlabs.txt'))
-    if not txt.exists() or txt.read_text(encoding='utf-8') != full:
+    if pais:
+        if txt.exists():
+            errors.append(f'{txt.name}: curso para pais não tem fala de ElevenLabs')
+    elif not txt.exists() or txt.read_text(encoding='utf-8') != full:
         errors.append(f'{txt.name}: fala copiável ausente ou desatualizada')
     for section in manifest['sections']:
         if not any(k in videos for k in section['blockKeys']):
@@ -133,8 +151,9 @@ def audit(path):
 if __name__ == '__main__':
     prefix = sys.argv[1] if len(sys.argv) > 1 else ''
     paths = sorted(p for p in ROOT.glob('*/*/*.manifesto.json') if not prefix or p.name.startswith(prefix))
-    if not paths or (not prefix and len(paths) != 51):
-        raise SystemExit(f'ERRO: quantidade de manifestos inesperada: {len(paths)}')
+    criancas = [p for p in paths if p.parent.parent.name != PASTA_PAIS]
+    if not paths or (not prefix and len(criancas) != AULAS_DAS_CRIANCAS):
+        raise SystemExit(f'ERRO: quantidade de manifestos inesperada: {len(criancas)} das crianças ({len(paths)} no total)')
     all_errors = []
     total = 0
     for path in paths:

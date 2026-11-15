@@ -2,7 +2,7 @@
 // Prévia do presente para o Admin (`/bolsa/previa?audience=kids|adult&title=…`): só apresentação
 // escapada e datas, sem buscar campanha nem aceitar cadastro. O código `previa` é reservado no
 // referrals. `audience` ausente ou desconhecido = `kids`.
-import { isGiftAudience, type ReferralGiftView } from '@sistemazero/core/referrals'
+import { isGiftAudience } from '@sistemazero/core/referrals'
 import PresenteAdultoLayout from '../../components/referrals/PresenteAdultoLayout.astro'
 import PresenteAdultoOferta from '../../components/referrals/PresenteAdultoOferta.astro'
 import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
@@ -10,6 +10,7 @@ import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
 import { PRESENTE_KIDS } from '../../content/presente'
 import { PRESENTE_ADULTO } from '../../content/presente-adulto'
 import { getEnv } from '../../lib/env'
+import type { CadeGiftView } from '../../server/referral-gift-page'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
 const params = Astro.url.searchParams
@@ -18,7 +19,7 @@ const audienceParam = params.get('audience')
 const audience = isGiftAudience(audienceParam) ? audienceParam : 'kids'
 const validDate = (value: string | null) =>
   value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null
-const gift: ReferralGiftView = {
+const gift: CadeGiftView = {
   code: '',
   displayName: '',
   ownerKind: 'campaign',

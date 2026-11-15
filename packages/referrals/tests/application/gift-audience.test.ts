@@ -15,15 +15,21 @@ import {
 import { CampaignAudienceLockedError, CampaignValidationError } from '../../src/domain/campaign'
 import { isMuralTrialGranted, offerGiftAudience } from '../../src/domain/gift-policy'
 import type { PaymentSnapshot } from '../../src/domain/ports/clients.port'
-import type { GrantManualCourseInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
+import type { SendEmailInput } from '../../src/domain/ports/gateway.port'
 import { InMemoryCampaignRepository } from '../fakes/campaigns'
-import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
+import {
+  ADULT_GIFT_OFFER,
+  FakeGiftOfferCatalog,
+  FakeReferralsGateway,
+  InMemoryReferralRepository,
+  KIDS_GIFT_OFFER,
+  silentLogger,
+} from '../fakes/in-memory'
 
 const FUNNEL = 'https://sistemazero.com.br'
 const COMMUNITY = 'https://comunidade.sistemazero.com.br'
 const TOKEN = 't'.repeat(43)
-const OPTS: RedeemOptions = {
-  courseSlug: 'cade-todo-mundo',
+const OPTS: Omit<RedeemOptions, 'giftOffers'> = {
   kidsCommunityUrl: 'https://kids.sistemazero.com.br',
   communityUrl: COMMUNITY,
   leaseMs: 90_000,
@@ -49,45 +55,50 @@ async function seedAmbassador(repo: InMemoryReferralRepository) {
 describe('presente adulto: resgate', () => {
   let repo: InMemoryReferralRepository
   let gateway: FakeReferralsGateway
+  let catalog: FakeGiftOfferCatalog
   let service: RedeemScholarshipService
 
   beforeEach(async () => {
     repo = new InMemoryReferralRepository()
     gateway = new FakeReferralsGateway()
-    service = new RedeemScholarshipService(repo, gateway, OPTS, silentLogger)
+    catalog = new FakeGiftOfferCatalog()
+    service = new RedeemScholarshipService(
+      repo,
+      gateway,
+      { ...OPTS, giftOffers: catalog },
+      silentLogger,
+    )
     await seedAmbassador(repo)
   })
 
   const adultInput = { code: 'marta-ad45', name: 'Ana Souza', email: 'ana@example.com' }
 
-  test('conta nova: curso adulto, Mural adulto, e-mail adulto com link do app adulto', async () => {
+  test('conta nova: oferta adulta, e-mail adulto com link do app adulto', async () => {
     const result = await service.execute(adultInput)
     expect(result).toMatchObject({ kind: 'completed', muralAccess: 'trial' })
     const r = repo.redemptions[0]!
     expect(r.audience).toBe('adult')
     expect(r.courseSlug).toBe('cade-todo-mundo-adulto')
+    expect(r.giftOfferId).toBe(ADULT_GIFT_OFFER.offerId)
+    expect(catalog.calls).toEqual(['cade-todo-mundo-adulto-7-dias'])
 
     expect(gateway.callsOf('getGiftAvailability')[0]?.input).toEqual({
       courseRef: 'cade-todo-mundo-adulto',
       audience: 'adult',
     })
-    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
-    expect(grant).toMatchObject({
-      courseRef: 'cade-todo-mundo-adulto',
+    expect(gateway.callsOf('grantManualOffer')[0]?.input).toMatchObject({
+      offerRef: ADULT_GIFT_OFFER.offerId,
       audience: 'adult',
       sourceId: `scholarship:${r.id}`,
-      deliveryId: `scholarship:course:cade-todo-mundo-adulto:${r.id}`,
+      deliveryId: `scholarship:offer:${ADULT_GIFT_OFFER.offerId}:${r.id}`,
     })
-    expect(gateway.callsOf('grantMuralTrial')[0]?.input).toMatchObject({
-      courseRef: 'cade-todo-mundo-adulto',
-      audience: 'adult',
-      expiresAt: grant.expiresAt,
-      deliveryId: `scholarship:mural-trial:${r.id}`,
-    })
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(0)
+    expect(gateway.callsOf('grantMuralTrial')).toHaveLength(0)
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome-adult')
     expect(email.variables).toMatchObject({ nome: 'Ana', indicador: 'Marta' })
     expect(email.variables.validade).toContain('2026')
+    expect(email.variables.mural).toContain('Mural adulto')
     expect(email.variables.link).toBe(`${COMMUNITY}/redefinir-senha?token=tok-abc`)
   })
 
@@ -110,23 +121,24 @@ describe('presente adulto: resgate', () => {
     )
   })
 
-  test('pedidos Kids continuam idênticos (sem o campo audience no fio)', async () => {
+  test('consulta do curso Kids continua sem o campo audience no fio', async () => {
     await service.execute({ ...adultInput, code: 'marta-kd23' })
     expect(gateway.callsOf('getGiftAvailability')[0]?.input).toEqual({
       courseRef: 'cade-todo-mundo',
     })
-    expect(gateway.callsOf('grantManualCourse')[0]?.input).not.toHaveProperty('audience')
-    expect(gateway.callsOf('grantMuralTrial')[0]?.input).not.toHaveProperty('audience')
+    expect(gateway.callsOf('grantManualOffer')[0]?.input).toMatchObject({
+      offerRef: KIDS_GIFT_OFFER.offerId,
+      audience: 'kids',
+    })
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome-mural-trial')
-    expect(email.variables).not.toHaveProperty('validade')
   })
 
   test('sem COMMUNITY_URL o adulto fecha como indisponível e o Kids segue', async () => {
     const closed = new RedeemScholarshipService(
       repo,
       gateway,
-      { ...OPTS, communityUrl: null },
+      { ...OPTS, giftOffers: catalog, communityUrl: null },
       silentLogger,
     )
     expect(await closed.giftAvailability('adult')).toBe('unavailable')
@@ -136,11 +148,23 @@ describe('presente adulto: resgate', () => {
     expect((await closed.execute({ ...adultInput, code: 'marta-kd23' })).kind).toBe('completed')
   })
 
-  test('Mural adulto exige o lote completo (participação + visita), como o Kids', async () => {
+  test('resgate adulto ANTIGO (trial): Mural adulto exige o lote completo', async () => {
+    await repo.insertRedemption({
+      audience: 'adult',
+      codeId: repo.codes.find((c) => c.code === 'marta-ad45')!.id,
+      email: 'ana@example.com',
+      name: 'Ana Souza',
+      phone: null,
+      courseSlug: 'cade-todo-mundo-adulto',
+    })
     gateway.muralTrialResult = { status: 200, body: { ok: true, granted: 1 } }
     expect((await service.execute(adultInput)).kind).toBe('upstream_error')
     expect(repo.redemptions[0]?.lastError).toBe('mural-grant:200')
     expect(gateway.callsOf('sendEmail')).toHaveLength(0)
+    expect(gateway.callsOf('grantManualCourse')[0]?.input).toMatchObject({
+      courseRef: 'cade-todo-mundo-adulto',
+      audience: 'adult',
+    })
     gateway.muralTrialResult = { status: 200, body: { ok: true, deduped: true } }
     expect((await service.execute(adultInput)).kind).toBe('completed')
     expect(isMuralTrialGranted({ status: 200, body: { ok: true, granted: 2 } })).toBe(true)
@@ -152,20 +176,34 @@ describe('presente adulto: resgate', () => {
     expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
   })
 
-  test('env do curso adulto vale para resgates novos; retomada conserva o curso gravado', async () => {
-    const custom = new RedeemScholarshipService(
-      repo,
-      gateway,
-      { ...OPTS, adultCourseSlug: 'cade-todo-mundo-adulto-v2' },
-      silentLogger,
-    )
+  test('oferta Kids no lugar da adulta fecha o presente adulto', async () => {
+    catalog.offers = [
+      KIDS_GIFT_OFFER,
+      { ...KIDS_GIFT_OFFER, offerSlug: 'cade-todo-mundo-adulto-7-dias' },
+    ]
+    expect((await service.execute(adultInput)).kind).toBe('gift_unavailable')
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+
+  test('retomada conserva a oferta GRAVADA no resgate', async () => {
     gateway.grantResult = { status: 502, body: {} }
-    expect((await custom.execute(adultInput)).kind).toBe('upstream_error')
-    expect(repo.redemptions[0]?.courseSlug).toBe('cade-todo-mundo-adulto-v2')
-    gateway.grantResult = { status: 200, body: { ok: true, granted: 1 } }
+    expect((await service.execute(adultInput)).kind).toBe('upstream_error')
+    // A oferta padrão muda no catálogo; o resgate em andamento segue com a gravada.
+    const other = catalog.add({
+      ...ADULT_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d0a',
+      offerSlug: 'outra-oferta',
+    })
+    catalog.offers = catalog.offers.filter((o) => o !== ADULT_GIFT_OFFER)
+    catalog.add({ ...ADULT_GIFT_OFFER, offerSlug: 'cade-todo-mundo-adulto-7-dias' })
+    gateway.grantResult = { status: 200, body: { ok: true, granted: 3 } }
     expect((await service.execute(adultInput)).kind).toBe('completed')
-    const grants = gateway.callsOf('grantManualCourse')
-    expect((grants[1]!.input as GrantManualCourseInput).courseRef).toBe('cade-todo-mundo-adulto-v2')
+    const grants = gateway.callsOf('grantManualOffer')
+    expect(grants.map((g) => (g.input as { offerRef: string }).offerRef)).toEqual([
+      ADULT_GIFT_OFFER.offerId,
+      ADULT_GIFT_OFFER.offerId,
+    ])
+    expect(other.offerId).not.toBe(ADULT_GIFT_OFFER.offerId)
   })
 })
 
@@ -379,12 +417,21 @@ describe('presente adulto: campanhas', () => {
     endsAt: new Date(now.getTime() + 3_600_000).toISOString(),
     status: 'draft',
     channel: 'feira',
+    giftOfferId: KIDS_GIFT_OFFER.offerId,
   }
+  const ADULT = { audience: 'adult', giftOfferId: ADULT_GIFT_OFFER.offerId } as const
 
   function setup() {
     const referrals = new InMemoryReferralRepository()
     const repo = new InMemoryCampaignRepository(referrals)
-    const admin = new CampaignAdminService(repo, referrals, FUNNEL)
+    const admin = new CampaignAdminService(
+      repo,
+      referrals,
+      FUNNEL,
+      undefined,
+      undefined,
+      new FakeGiftOfferCatalog(),
+    )
     return { referrals, repo, admin }
   }
 
@@ -398,7 +445,7 @@ describe('presente adulto: campanhas', () => {
 
   test('rascunho troca o público; publicada trava (409); edição sem o campo mantém', async () => {
     const { admin, referrals } = setup()
-    const created = await admin.create({ ...base, audience: 'adult' }, 'Operador')
+    const created = await admin.create({ ...base, ...ADULT }, 'Operador')
     expect(created?.audience).toBe('adult')
     expect(referrals.codes[0]?.audience).toBe('adult')
 
@@ -410,7 +457,7 @@ describe('presente adulto: campanhas', () => {
     expect(kids?.audience).toBe('kids')
     const active = await admin.update(
       created!.id,
-      { ...base, audience: 'adult', status: 'active', expectedUpdatedAt: kids!.updatedAt },
+      { ...base, ...ADULT, status: 'active', expectedUpdatedAt: kids!.updatedAt },
       'Operador',
     )
     expect(active?.audience).toBe('adult')
@@ -426,13 +473,15 @@ describe('presente adulto: campanhas', () => {
     } catch (error) {
       expect(error).toBeInstanceOf(CampaignAudienceLockedError)
     }
-    // Cliente antigo (sem o campo) não esbarra na trava: mantém o público gravado.
+    // Cliente antigo (sem os campos) não esbarra na trava: mantém o público e a oferta.
+    const { giftOfferId: _omitida, ...semOferta } = base
     const legacy = await admin.update(
       created!.id,
-      { ...base, status: 'paused', expectedUpdatedAt: active!.updatedAt },
+      { ...semOferta, status: 'paused', expectedUpdatedAt: active!.updatedAt },
       'Operador',
     )
     expect(legacy?.audience).toBe('adult')
+    expect(legacy?.giftOfferId).toBe(ADULT_GIFT_OFFER.offerId)
     const history = (await admin.detail(created!.id))?.history ?? []
     expect(history.some((h) => h.changes.audience === 'kids')).toBe(true)
   })
@@ -456,7 +505,7 @@ describe('presente adulto: campanhas', () => {
     await expect(
       admin.update(
         created!.id,
-        { ...base, audience: 'adult', expectedUpdatedAt: draft!.updatedAt },
+        { ...base, ...ADULT, expectedUpdatedAt: draft!.updatedAt },
         'Operador',
       ),
     ).rejects.toBeInstanceOf(CampaignAudienceLockedError)
@@ -465,9 +514,12 @@ describe('presente adulto: campanhas', () => {
 
   test('duplicar mantém o público da original (ou o escolhido no corpo)', async () => {
     const { admin } = setup()
-    const original = await admin.create({ ...base, audience: 'adult', status: 'active' }, 'Op')
-    const copy = await admin.create({ ...base, code: 'feira-adulta-2' }, 'Op', original!.id)
+    const original = await admin.create({ ...base, ...ADULT, status: 'active' }, 'Op')
+    // Sem público nem oferta no corpo: herda os dois da original.
+    const { giftOfferId: _omitida, ...semOferta } = base
+    const copy = await admin.create({ ...semOferta, code: 'feira-adulta-2' }, 'Op', original!.id)
     expect(copy?.audience).toBe('adult')
+    expect(copy?.giftOfferId).toBe(ADULT_GIFT_OFFER.offerId)
     const kids = await admin.create(
       { ...base, code: 'feira-kids-3', audience: 'kids' },
       'Op',
@@ -478,12 +530,12 @@ describe('presente adulto: campanhas', () => {
 
   test('resgate de campanha adulta usa o público da campanha e os e-mails adultos', async () => {
     const { admin, referrals, repo } = setup()
-    await admin.create({ ...base, audience: 'adult', status: 'active' }, 'Op')
+    await admin.create({ ...base, ...ADULT, status: 'active' }, 'Op')
     const gateway = new FakeReferralsGateway()
     const redeem = new RedeemScholarshipService(
       referrals,
       gateway,
-      { ...OPTS, campaigns: repo },
+      { ...OPTS, giftOffers: new FakeGiftOfferCatalog(), campaigns: repo },
       silentLogger,
     )
     const result = await redeem.execute({

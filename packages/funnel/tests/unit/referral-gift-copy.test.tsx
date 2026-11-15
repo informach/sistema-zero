@@ -6,12 +6,16 @@ import {
   GIFT_FAQ,
   GIFT_SECTIONS,
   PRESENTE_KIDS,
+  presenteKidsDaOferta,
 } from '../../src/content/presente'
-import { PRESENTE_ADULTO } from '../../src/content/presente-adulto'
+import { PRESENTE_ADULTO, presenteAdultoDaOferta } from '../../src/content/presente-adulto'
+import { presenteCursoCopy } from '../../src/content/presente-curso'
 import {
   CONTINUAR_ADULTO_PATH,
+  cursoParaPaisHref,
   dataBrasilia,
   RESGATE_COPY,
+  resgateCopy,
   resgateHref,
 } from '../../src/content/presente-resgate'
 import BolsaResgate from '../../src/islands/BolsaResgate'
@@ -232,6 +236,217 @@ describe('BolsaResgate por público', () => {
     expect(dataBrasilia('2026-10-27T17:00:00Z')).toBe('27/10/2026, às 14h')
     expect(dataBrasilia('2026-10-27T17:30:00Z')).toBe('27/10/2026, às 14h30')
     expect(dataBrasilia('2026-10-27T17:30:00Z', false)).toBe('27/10/2026')
+  })
+})
+
+/** A copy pela oferta do presente (15/11/2026): curso, prazo e Mural vêm do `gift`. */
+const OFERTA_CADE = {
+  offerId: '22222222-2222-4222-8222-222222222222',
+  offerTitle: 'Cadê Todo Mundo 7 dias',
+  courseSlug: 'cade-todo-mundo',
+  courseTitle: 'Cadê Todo Mundo',
+  learner: 'child' as const,
+  accessDays: 7,
+  includesMural: true,
+}
+const OFERTA_PAIS = {
+  offerId: '44444444-4444-4444-8444-444444444444',
+  offerTitle: 'Vilão em aliado',
+  courseSlug: 'transformando-o-vilao-em-aliado',
+  courseTitle: 'Transformando o vilão em aliado',
+  learner: 'parents' as const,
+  accessDays: null,
+  includesMural: false,
+}
+const OFERTA_FAROL = {
+  ...OFERTA_CADE,
+  offerTitle: 'A Chave do Farol 30 dias',
+  courseSlug: 'a-chave-do-farol',
+  courseTitle: 'A Chave do Farol',
+  accessDays: 30,
+}
+
+describe('presente pela oferta do catálogo', () => {
+  test('sem gift a copy é a de sempre; o Cadê de 7 dias com Mural repete o texto antigo', () => {
+    expect(resgateCopy('kids')).toBe(RESGATE_COPY.kids)
+    expect(resgateCopy('kids', OFERTA_CADE).rodape).toBe(RESGATE_COPY.kids.rodape)
+    expect(
+      resgateCopy('adult', { ...OFERTA_CADE, courseSlug: 'cade-todo-mundo-adulto' }).rodape,
+    ).toBe(RESGATE_COPY.adult.rodape)
+    expect(presenteKidsDaOferta(undefined)).toBe(PRESENTE_KIDS)
+    expect(JSON.stringify(presenteKidsDaOferta(OFERTA_CADE))).toBe(JSON.stringify(PRESENTE_KIDS))
+    expect(JSON.stringify(presenteAdultoDaOferta(OFERTA_CADE))).toBe(
+      JSON.stringify(PRESENTE_ADULTO),
+    )
+  })
+
+  test('o Cadê com outro prazo troca os 7 dias da página inteira e do formulário', () => {
+    const P = presenteKidsDaOferta({ ...OFERTA_CADE, accessDays: 14 })
+    const texto = JSON.stringify(P)
+    expect(texto).not.toMatch(/(?<!\d)7 dias|sete dias/i)
+    expect(P.hero.beneficios[1]).toBe('14 dias de acesso ao curso e ao Mural')
+    expect(P.barra.titulo).toBe('Presente de 14 dias')
+    expect(texto).toContain('5 a 17 anos')
+    const adulto = JSON.stringify(presenteAdultoDaOferta({ ...OFERTA_CADE, accessDays: 14 }))
+    expect(adulto).not.toMatch(/(?<!\d)7 (dias|DIAS)|sete dias/i)
+    expect(adulto).toContain('CURSO · 14 DIAS')
+    const t = resgateCopy('kids', { ...OFERTA_CADE, accessDays: 14 })
+    expect(t.rodape).toBe(
+      'Presente de {{nome}}: o curso Cadê Todo Mundo e o Mural Kids por 14 dias, sem custo e sem cartão.',
+    )
+    expect(t.erros.expirado).toStartWith('Os 14 dias contados do seu cadastro já terminaram.')
+  })
+
+  test('o Cadê sem o Mural na oferta tira a seção e o cartão do Mural', async () => {
+    const P = presenteKidsDaOferta({ ...OFERTA_CADE, includesMural: false })
+    expect(P.hero.beneficios[1]).toBe('7 dias de acesso ao curso')
+    expect(P.condicoes.cartoes.map((c) => c.titulo)).not.toContain('Mural para compartilhar')
+    expect(resgateCopy('kids', { ...OFERTA_CADE, includesMural: false }).rodape).toBe(
+      'Presente de {{nome}}: o curso Cadê Todo Mundo por 7 dias, sem custo e sem cartão.',
+    )
+    const adulto = presenteAdultoDaOferta({ ...OFERTA_CADE, includesMural: false })
+    expect(adulto.condicoes.cartoes.map((c) => c.rotulo)).toEqual([
+      'CURSO · 7 DIAS',
+      'R$ 0 · SEM CARTÃO',
+    ])
+    for (const pagina of ['PresenteOferta', 'PresenteAdultoOferta'])
+      expect(await src(`components/referrals/${pagina}.astro`)).toContain(
+        '{mostraMural && <section',
+      )
+  })
+
+  test('curso para pais: para o pai ou a mãe, sem perfil do filho, sem Mural, sem prazo', () => {
+    const P = presenteCursoCopy('kids', OFERTA_PAIS, 'pais')
+    const texto = JSON.stringify(P)
+    expect(P.hero.titulo.destaque).toBe('um curso para você, pai ou mãe.')
+    expect(P.hero.beneficios).toEqual([
+      'Um curso para você, pai ou mãe',
+      'Acesso ao curso, sem prazo',
+      'Presente gratuito, sem cartão e sem assinatura automática',
+    ])
+    expect(texto).toContain('Transformando o vilão em aliado')
+    expect(texto).toContain('Cursos para pais')
+    expect(texto).not.toMatch(/Mural|seu filho|perfil|Cadê|7 dias/)
+    expect(P.seoTitle).toBe('Presente para pais: Transformando o vilão em aliado | Sistema Zero')
+
+    const html = renderToStaticMarkup(
+      <BolsaResgate
+        code="pais-1234"
+        referrerName="Encontro de pais"
+        communityUrl="https://kids.example.com"
+        campaign
+        gift={OFERTA_PAIS}
+        variante="pais"
+      />,
+    )
+    expect(html).toContain('Estes dados são seus')
+    expect(html).toContain('Seu nome')
+    expect(html).toContain('Liberar o meu curso')
+    expect(html).toContain(
+      'Encontro de pais: o curso Transformando o vilão em aliado, sem prazo, sem custo e sem cartão.',
+    )
+    expect(html).toContain('você confirma que tem 18 anos ou mais')
+    expect(html).not.toMatch(/Mural|perfil da criança|responsável pela criança|7 dias/)
+    const t = resgateCopy('kids', OFERTA_PAIS, 'pais')
+    expect(t.concluido.proximo).toContain('abra o curso em Cursos para pais')
+    expect(t.concluido.nota).toBe('Este presente não tem prazo e não gera cobrança.')
+    expect(cursoParaPaisHref('https://kids.example.com', 'transformando-o-vilao-em-aliado')).toBe(
+      'https://kids.example.com/pais/cursos/transformando-o-vilao-em-aliado',
+    )
+  })
+
+  test('outro curso: o nome e o prazo da oferta, Kids e adulto', () => {
+    const kids = presenteCursoCopy('kids', OFERTA_FAROL, 'curso')
+    expect(kids.hero.titulo).toEqual({
+      antes: 'A Chave do Farol, ',
+      destaque: 'de presente para o seu filho.',
+    })
+    expect(kids.hero.beneficios[1]).toBe('30 dias de acesso ao curso e ao Mural')
+    expect(kids.condicoes.cartoes.map((c) => c.titulo)).toEqual([
+      'O curso por 30 dias',
+      'Mural para compartilhar',
+      'Gratuito, sem cartão',
+    ])
+    expect(kids.estados.preparing.texto).toContain('O presente vale 30 dias contados do cadastro')
+    expect(resgateCopy('kids', OFERTA_FAROL, 'curso').rodape).toBe(
+      'Presente de {{nome}}: o curso A Chave do Farol e o Mural Kids por 30 dias, sem custo e sem cartão.',
+    )
+    const adulto = presenteCursoCopy('adult', { ...OFERTA_FAROL, includesMural: false }, 'curso')
+    expect(adulto.hero.beneficios[0]).toBe('Para quem tem 18 anos ou mais')
+    expect(JSON.stringify(adulto)).not.toMatch(/seu filho|responsável|5 a 17|Mural/i)
+    expect(adulto.seoTitle).toBe('Presente: A Chave do Farol | Sistema Zero')
+  })
+
+  test('o Cadê com prazo é templating: nenhum "7 dias" ou "sete dias" sobra com outro prazo', () => {
+    for (const accessDays of [1, 10, 30]) {
+      const kids = JSON.stringify(presenteKidsDaOferta({ ...OFERTA_CADE, accessDays }))
+      const adulto = JSON.stringify(presenteAdultoDaOferta({ ...OFERTA_CADE, accessDays }))
+      for (const texto of [kids, adulto]) {
+        expect(texto).not.toMatch(/(?<!\d)7 dias|(?<!\d)7 DIAS|sete dias/i)
+        expect(texto).toContain(accessDays === 1 ? '1 dia' : `${accessDays} dias`)
+      }
+    }
+    expect(presenteKidsDaOferta({ ...OFERTA_CADE, accessDays: 10 }).condicoes.titulo).toBe(
+      '10 dias para conhecer o curso e observar seu filho criando',
+    )
+  })
+
+  test('a frase do Mural na confirmação: "mesma data" só com prazo, aula 2 só no Cadê Kids', () => {
+    // O texto aprovado do Cadê continua o mesmo.
+    expect(RESGATE_COPY.kids.concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado até a mesma data: seu filho pode publicar o jogo do curso, comentar e reagir. A aula 2 ensina como publicar, e o link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(RESGATE_COPY.adult.concluido.muralTrial).toBe(
+      'O Mural adulto também está liberado até a mesma data: você pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(resgateCopy('kids', OFERTA_CADE).concluido.muralTrial).toBe(
+      RESGATE_COPY.kids.concluido.muralTrial,
+    )
+    // Outro curso com prazo: a data sim, a aula 2 do Cadê não.
+    expect(resgateCopy('kids', OFERTA_FAROL, 'curso').concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado até a mesma data: seu filho pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    // Sem prazo (inclusive o Cadê sem prazo, que vai para a variante `curso`): nem data nem aula 2.
+    const semPrazo = { ...OFERTA_FAROL, accessDays: null }
+    expect(resgateCopy('kids', semPrazo, 'curso').concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado: seu filho pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(
+      resgateCopy('kids', { ...OFERTA_CADE, accessDays: null }, 'curso').concluido.muralTrial,
+    ).not.toMatch(/mesma data|aula 2/)
+    expect(resgateCopy('adult', semPrazo, 'curso').concluido.muralTrial).toBe(
+      'O Mural adulto também está liberado: você pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+  })
+
+  test('a variante pais só vale no Kids: no adulto o formulário é o do curso genérico', async () => {
+    expect(resgateCopy('adult', OFERTA_PAIS, 'pais')).toEqual(
+      resgateCopy('adult', OFERTA_PAIS, 'curso'),
+    )
+    expect(resgateCopy('adult', OFERTA_PAIS, 'pais').aviso).toBeNull()
+    expect(await src('islands/BolsaResgate.tsx')).toContain(
+      "variante === 'pais' && audience !== 'adult' && gift?.courseSlug",
+    )
+  })
+
+  test('as variantes seguem as regras de voz da copy do presente', () => {
+    const paginas = [
+      presenteCursoCopy('kids', OFERTA_PAIS, 'pais'),
+      presenteCursoCopy('kids', OFERTA_FAROL, 'curso'),
+      presenteCursoCopy('adult', OFERTA_FAROL, 'curso'),
+    ]
+    const formularios = [
+      resgateCopy('kids', OFERTA_PAIS, 'pais'),
+      resgateCopy('kids', OFERTA_FAROL, 'curso'),
+      resgateCopy('adult', OFERTA_FAROL, 'curso'),
+    ]
+    for (const variante of [...paginas, ...formularios]) {
+      const texto = JSON.stringify(variante)
+      expect(/[—–!]/.test(texto)).toBe(false)
+      expect(/mesmo que|sem precisar|em preparação|carreira/i.test(texto)).toBe(false)
+      expect(texto).not.toContain(',,')
+    }
+    for (const copy of paginas) expect(copy.seoTitle).toMatch(/^[^|·—]+ \| Sistema Zero$/)
   })
 })
 

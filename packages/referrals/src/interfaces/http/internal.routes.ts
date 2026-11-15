@@ -81,10 +81,20 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           ? campaignSource(campaign)
           : { kind: record.ownerKind, name: record.displayName }
         const publicName = publicGiftSourceName(source)
-        // O público vem do código (campanha → público da campanha) e decide qual curso consultar.
+        // O público vem do código (campanha → público da campanha); a oferta vem da campanha
+        // (ou é a padrão do público) e decide o curso consultado e o `gift` devolvido.
         const audience = campaign?.audience ?? record.audience
-        const availability =
-          state === 'active' ? await deps.redeem.giftAvailability(audience) : 'unavailable'
+        // Fora do ar (agendada, pausada, encerrada) não há cadastro novo, mas a página ainda diz
+        // qual curso é o presente (curso para pais tem outra página): o `gift` vem quando a
+        // oferta resolve, e falha do catálogo só o omite (a página cai no texto de sempre).
+        const plan = await deps.redeem.publicGift(campaign ?? null, audience)
+        const { availability, gift } =
+          state === 'active'
+            ? plan
+            : {
+                availability: 'unavailable' as const,
+                gift: plan.availability === 'available' ? plan.gift : undefined,
+              }
         if (availability === 'upstream_error') {
           set.status = 502
           return envelope('UPSTREAM_ERROR', 'Não foi possível consultar o presente agora')
@@ -99,6 +109,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           endsAt: campaign?.endsAt.toISOString() ?? null,
           giftAvailable: availability === 'available',
           audience,
+          // O que a oferta entrega (ausente quando não resolve ou o presente está fechado).
+          ...(gift ? { gift } : {}),
         }
       },
       { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
@@ -269,7 +281,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           case 'failed':
             if (result.reason === 'gift_window_elapsed') {
               set.status = 410
-              return envelope('GIFT_EXPIRED', 'Os sete dias de acesso deste cadastro terminaram.')
+              return envelope('GIFT_EXPIRED', 'O prazo de acesso deste cadastro terminou.')
             }
             // Terminal (ex.: matrícula conflitante) — retry não resolve; suporte.
             set.status = 409

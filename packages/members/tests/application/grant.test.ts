@@ -302,7 +302,7 @@ describe('GrantEntitlementService', () => {
     expect(await grant.execute(cmd)).toEqual({ offerFound: true, granted: 0, itemsResolved: 2 })
   })
 
-  test('a oferta adulta com o Mural Kids não ganha visita (o público vem da oferta)', async () => {
+  test('a visita é a do Mural que a oferta inclui (o público vem do item, não do nome da oferta)', async () => {
     const { catalog, entitlements, grant } = setup()
     const offerSlug = 'desafio-primeiro-jogo-adulto-30-dias'
     catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo-adulto'))
@@ -314,11 +314,13 @@ describe('GrantEntitlementService', () => {
       accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const,
     })
     const ids = (await entitlements.listByUserId('u-misto')).map((e) => e.toSnapshot().productId)
-    expect(ids).not.toContain(MURAL_VISITOR_PRODUCT_ID)
+    expect(ids).toContain(MURAL_VISITOR_PRODUCT_ID)
     expect(ids).not.toContain(ADULT_MURAL_VISITOR_PRODUCT_ID)
   })
 
-  test('o visitante permanente não é concedido a ofertas históricas ou a outras ofertas fixas', async () => {
+  // Regra geral (15/11/2026, no lugar do mapa fixo do Desafio): prazo fixo + Mural completo = visita
+  // permanente, em qualquer oferta e qualquer duração. Sem prazo fixo gravado ou sem Mural, não.
+  test('o visitante permanente segue a regra geral: prazo fixo com o Mural completo', async () => {
     const { catalog, entitlements, grant } = setup()
     catalog.set(
       'desafio-primeiro-jogo',
@@ -363,13 +365,14 @@ describe('GrantEntitlementService', () => {
       grantedAt: at,
       accessPolicy: { mode: 'fixed', durationValue: 31, durationUnit: 'days' },
     })
-    for (const userId of ['legacy', 'other', 'no-mural', 'legacy-event', 'wrong-duration']) {
-      expect(
-        (await entitlements.listByUserId(userId)).some(
-          (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
-        ),
-      ).toBe(false)
-    }
+    const temVisita = async (userId: string) =>
+      (await entitlements.listByUserId(userId)).some(
+        (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
+      )
+    for (const userId of ['legacy', 'no-mural', 'legacy-event'])
+      expect({ userId, visita: await temVisita(userId) }).toEqual({ userId, visita: false })
+    for (const userId of ['other', 'wrong-duration'])
+      expect({ userId, visita: await temVisita(userId) }).toEqual({ userId, visita: true })
   })
 
   test('reentrega completa o visitante quando o primeiro grant falha depois dos itens da oferta', async () => {
