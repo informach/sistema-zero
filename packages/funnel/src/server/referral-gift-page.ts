@@ -13,17 +13,39 @@ import type { GatewayClient } from '../lib/gateway-client'
  */
 export const CADE_COURSE_SLUGS: readonly string[] = ['cade-todo-mundo', 'cade-todo-mundo-adulto']
 
+/** A oferta que veste a página editorial do Cadê: o curso é o Cadê e o prazo é em dias. */
+export type CadeGiftOffer = ReferralGiftOfferView & { accessDays: number }
+/** O presente na página do Cadê: sem `gift` (leitura antiga ou prévia) ou com a oferta do Cadê. */
+export type CadeGiftView = Omit<ReferralGiftView, 'gift'> & { gift?: CadeGiftOffer }
+
+/**
+ * O texto editorial do Cadê fala do prazo em dias o tempo todo (marcadores de `prazoDoCade`):
+ * só a oferta do Cadê COM prazo em dias o usa. O Cadê sem prazo vai para a variante `curso`.
+ */
+export function isCadeGift(gift: ReferralGiftOfferView): gift is CadeGiftOffer {
+  return (
+    gift.accessDays !== null &&
+    gift.courseSlug !== null &&
+    CADE_COURSE_SLUGS.includes(gift.courseSlug)
+  )
+}
+
 /**
  * Qual corpo a página do presente usa (15/11/2026):
- * - `cade`: a página editorial do Cadê Todo Mundo (também sem `gift`, a leitura antiga);
- * - `pais`: curso PARA PAIS (`learner: 'parents'`), variante enxuta para o pai ou a mãe;
- * - `curso`: outro curso, variante genérica com o nome e o prazo.
+ * - `cade`: a página editorial do Cadê Todo Mundo (também sem `gift`, a leitura antiga), só com
+ *   prazo em dias (`isCadeGift`);
+ * - `pais`: curso PARA PAIS (`learner: 'parents'`) numa campanha Kids, variante enxuta para o pai
+ *   ou a mãe (a área dos pais, `/pais/cursos/<slug>`, só existe no app Kids);
+ * - `curso`: outro curso (ou o Cadê sem prazo, ou curso para pais no público adulto), variante
+ *   genérica com o nome e o prazo.
  */
 export type GiftVariant = 'cade' | 'pais' | 'curso'
-export function giftVariant(gift: ReferralGiftOfferView | undefined): GiftVariant {
-  if (!gift) return 'cade'
-  if (gift.courseSlug && CADE_COURSE_SLUGS.includes(gift.courseSlug)) return 'cade'
-  return gift.learner === 'parents' ? 'pais' : 'curso'
+export function giftVariant(
+  gift: ReferralGiftOfferView | undefined,
+  audience: GiftAudience,
+): GiftVariant {
+  if (!gift || isCadeGift(gift)) return 'cade'
+  return gift.learner === 'parents' && audience !== 'adult' ? 'pais' : 'curso'
 }
 
 const nullableString = (value: unknown) => value === null || typeof value === 'string'

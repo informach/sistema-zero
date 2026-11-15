@@ -46,6 +46,7 @@ const OFFER_ADULT = '33333333-3333-4333-8333-333333333333'
 const OFFER_PARENTS = '44444444-4444-4444-8444-444444444444'
 const OFFER_SUBSCRIPTION = '55555555-5555-4555-8555-555555555555'
 const OFFER_DRAFT = '66666666-6666-4666-8666-666666666666'
+const OFFER_MONTHS = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 const MURAL_KIDS = '77777777-7777-4777-8777-777777777777'
 const MURAL_ADULT = '88888888-8888-4888-8888-888888888888'
 const offer = (over: Record<string, unknown>) => ({
@@ -87,6 +88,15 @@ const catalogOffers: Record<string, unknown[]> = {
       accessMode: 'billing_cycle',
     }),
     offer({ id: OFFER_DRAFT, slug: 'rascunho', name: 'Oferta em rascunho', status: 'draft' }),
+    // Prazo em meses não vira presente (o referrals recusa): fica fora da lista.
+    offer({
+      id: OFFER_MONTHS,
+      slug: 'cade-todo-mundo-1-mes',
+      name: 'Cadê Todo Mundo 1 mês',
+      status: 'active',
+      accessDurationValue: 1,
+      accessDurationUnit: 'months',
+    }),
   ],
   adult: [
     offer({
@@ -377,7 +387,7 @@ test('a prévia leva o público', () => {
 
 /** Oferta de presente (15/11/2026): o campo obrigatório, a lista e os erros novos. */
 
-test('nova campanha Kids exige a oferta de presente e lista só pagamento único do público', async () => {
+test('nova campanha Kids exige a oferta de presente e lista só pagamento único em dias ou sem prazo', async () => {
   const { calls, root } = await mount([campaign({ audience: 'kids' })], () =>
     Response.json({ campaign: campaign({ audience: 'kids', giftOfferId: OFFER_KIDS }) }),
   )

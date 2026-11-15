@@ -537,6 +537,40 @@ describe('campanhas institucionais', () => {
     expect(() => validateCampaignInput({ ...input, giftOfferId: 'nao-e-uuid' })).toThrow()
   })
 
+  test('oferta com prazo em meses ou arquivada não vira presente; pausada serve', async () => {
+    const { admin, catalog } = await setup()
+    const emMeses = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d07',
+      offerSlug: 'cade-todo-mundo-1-mes',
+      accessDurationValue: 1,
+      accessDurationUnit: 'months',
+    })
+    await expect(
+      admin.create({ ...input, code: 'oferta-em-meses', giftOfferId: emMeses.offerId }, 'Op'),
+    ).rejects.toThrow(/prazo do presente precisa ser em dias/)
+    const arquivada = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d08',
+      offerSlug: 'cade-todo-mundo-arquivada',
+      status: 'archived',
+    })
+    await expect(
+      admin.create({ ...input, code: 'oferta-arquivada', giftOfferId: arquivada.offerId }, 'Op'),
+    ).rejects.toThrow(/arquivada/)
+    const pausada = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d09',
+      offerSlug: 'cade-todo-mundo-pausada',
+      status: 'paused',
+    })
+    const created = await admin.create(
+      { ...input, code: 'oferta-pausada', giftOfferId: pausada.offerId },
+      'Op',
+    )
+    expect(created?.giftOfferId).toBe(pausada.offerId)
+  })
+
   test('duplicata herda a oferta; troca de oferta trava fora do rascunho e com resgates', async () => {
     const { admin, campaign, referrals, redeem } = await setup()
     const { giftOfferId: _omitida, ...semOferta } = input

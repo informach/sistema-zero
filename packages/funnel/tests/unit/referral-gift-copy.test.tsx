@@ -377,6 +377,58 @@ describe('presente pela oferta do catálogo', () => {
     expect(adulto.seoTitle).toBe('Presente: A Chave do Farol | Sistema Zero')
   })
 
+  test('o Cadê com prazo é templating: nenhum "7 dias" ou "sete dias" sobra com outro prazo', () => {
+    for (const accessDays of [1, 10, 30]) {
+      const kids = JSON.stringify(presenteKidsDaOferta({ ...OFERTA_CADE, accessDays }))
+      const adulto = JSON.stringify(presenteAdultoDaOferta({ ...OFERTA_CADE, accessDays }))
+      for (const texto of [kids, adulto]) {
+        expect(texto).not.toMatch(/(?<!\d)7 dias|(?<!\d)7 DIAS|sete dias/i)
+        expect(texto).toContain(accessDays === 1 ? '1 dia' : `${accessDays} dias`)
+      }
+    }
+    expect(presenteKidsDaOferta({ ...OFERTA_CADE, accessDays: 10 }).condicoes.titulo).toBe(
+      '10 dias para conhecer o curso e observar seu filho criando',
+    )
+  })
+
+  test('a frase do Mural na confirmação: "mesma data" só com prazo, aula 2 só no Cadê Kids', () => {
+    // O texto aprovado do Cadê continua o mesmo.
+    expect(RESGATE_COPY.kids.concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado até a mesma data: seu filho pode publicar o jogo do curso, comentar e reagir. A aula 2 ensina como publicar, e o link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(RESGATE_COPY.adult.concluido.muralTrial).toBe(
+      'O Mural adulto também está liberado até a mesma data: você pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(resgateCopy('kids', OFERTA_CADE).concluido.muralTrial).toBe(
+      RESGATE_COPY.kids.concluido.muralTrial,
+    )
+    // Outro curso com prazo: a data sim, a aula 2 do Cadê não.
+    expect(resgateCopy('kids', OFERTA_FAROL, 'curso').concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado até a mesma data: seu filho pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    // Sem prazo (inclusive o Cadê sem prazo, que vai para a variante `curso`): nem data nem aula 2.
+    const semPrazo = { ...OFERTA_FAROL, accessDays: null }
+    expect(resgateCopy('kids', semPrazo, 'curso').concluido.muralTrial).toBe(
+      'O Mural Kids também está liberado: seu filho pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+    expect(
+      resgateCopy('kids', { ...OFERTA_CADE, accessDays: null }, 'curso').concluido.muralTrial,
+    ).not.toMatch(/mesma data|aula 2/)
+    expect(resgateCopy('adult', semPrazo, 'curso').concluido.muralTrial).toBe(
+      'O Mural adulto também está liberado: você pode publicar o jogo do curso, comentar e reagir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+    )
+  })
+
+  test('a variante pais só vale no Kids: no adulto o formulário é o do curso genérico', async () => {
+    expect(resgateCopy('adult', OFERTA_PAIS, 'pais')).toEqual(
+      resgateCopy('adult', OFERTA_PAIS, 'curso'),
+    )
+    expect(resgateCopy('adult', OFERTA_PAIS, 'pais').aviso).toBeNull()
+    expect(await src('islands/BolsaResgate.tsx')).toContain(
+      "variante === 'pais' && audience !== 'adult' && gift?.courseSlug",
+    )
+  })
+
   test('as variantes seguem as regras de voz da copy do presente', () => {
     const paginas = [
       presenteCursoCopy('kids', OFERTA_PAIS, 'pais'),

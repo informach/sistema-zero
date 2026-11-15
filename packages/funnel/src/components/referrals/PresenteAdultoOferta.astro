@@ -3,15 +3,15 @@
 // RecebimentoAdulto, 20/10/2026). Toda a copy vem de `PRESENTE_ADULTO` (content/presente-adulto.ts);
 // o layout é o da oferta adulta (`.cda`) com as peças de presente-adulto.css. Quem lê e quem usa é a
 // mesma pessoa, com 18 anos ou mais, e o cadastro é com os dados dela.
-import type { ReferralGiftView } from '@sistemazero/core/referrals'
 import type { EstadoPresente } from '../../content/presente'
 import { presenteAdultoDaOferta } from '../../content/presente-adulto'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
-import type { ReferralGiftPage } from '../../server/referral-gift-page'
+import type { CadeGiftView, ReferralGiftPage } from '../../server/referral-gift-page'
 
 interface Props {
-  gift: ReferralGiftView
+  /** A oferta do presente já conferida como a do Cadê com prazo em dias (`isCadeGift`). */
+  gift: CadeGiftView
   kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
   /** Base do app adulto (`COMMUNITY_URL`), sem a barra final. */
   communityUrl: string

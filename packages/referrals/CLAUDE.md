@@ -17,23 +17,23 @@ oferta) usam `DEFAULT_GIFT_OFFER_SLUGS` em `domain/gift-policy.ts` (`cade-todo-m
   do item principal com acesso `course`; Mural = item `community` com a chave do Mural completo.
 - **Campanha:** `giftOfferId` (UUID) no DTO (`campaignBody`/`campaignUpdateBody`), obrigatório na
   criação; duplicata herda a da original se omitido; edição omitida conserva. A oferta precisa
-  resolver, ser de pagamento único (`fixed` com duração ou `lifetime`) e ter o público da campanha
-  (`product.audience` da oferta) — `giftOfferProblem`. Trocar uma oferta já ligada segue a régua do
+  resolver, ser de pagamento único (`lifetime` ou `fixed` com duração em DIAS; prazo em meses é
+  recusado), não estar arquivada (`status` da leitura pública; pausada serve) e ter o público da
+  campanha (`product.audience` da oferta) — `giftOfferProblem`, a mesma régua do `planGift`. Trocar uma oferta já ligada segue a régua do
   público (só em rascunho sem cadastros; serviço + repo sob o lock) → 409
   `CAMPAIGN_GIFT_OFFER_LOCKED`. Ligar oferta a campanha antiga sem oferta é livre. Catálogo fora →
   503 `CATALOG_UNAVAILABLE`.
 - **Resgate novo:** antes do claim resolve a oferta (`planGift`: oferta existe, serve como presente,
   curso principal publicado via `gift-course`, app do público configurado). O claim grava
-  `gift_offer_id`, `mural_visitor_policy = 'offer'`, `access_duration_days` (só prazo fixo em dias;
-  vitalícia ou meses = null) e `course_slug` (curso principal, para leitura/e-mail). Sob o lock da
+  `gift_offer_id`, `mural_visitor_policy = 'offer'`, `access_duration_days` (o prazo fixo, sempre em
+  dias; vitalícia = null) e `course_slug` (curso principal, para leitura/e-mail). Sob o lock da
   campanha, a oferta precisa ser a dela (`GiftOfferChangedError` → 502 e nova tentativa). Grant
   único: `gateway.grantManualOffer` → `POST /members/webhooks/grant-manual`
   `{mode:'offer', useOfferAccessPolicy:true, userId, offerRef, sourceId:'scholarship:<id>',
   anchorAt:<createdAt>, audience}` com `x-delivery-id: scholarship:offer:<offerId>:<id>`. O members
   concede tudo o que a oferta inclui com o prazo dela (e a visita ao Mural depois, se a oferta de
   prazo fixo inclui o Mural). 409/503 `COURSE_UNAVAILABLE`/outros 5xx: mesma régua do grant de curso.
-  O fim do presente é recalculado aqui (dias gravados; meses pela conta do members a partir do
-  resgate, `offerGiftExpiresAt`); sem prazo, não expira. `muralAccess` = `trial` se a oferta inclui o
+  O fim do presente é recalculado aqui (dias gravados contados do resgate); sem prazo, não expira. `muralAccess` = `trial` se a oferta inclui o
   Mural, `none` se não. Retomada de resgate por oferta usa a oferta GRAVADA, nunca a atual da campanha.
 - **Resgates antigos** (`trial`/`visitor`/históricos) seguem o caminho antigo
   (`grantManualCourse` + `grantMuralTrial`/`grantMuralVisitor`) com o curso gravado no resgate
@@ -45,8 +45,9 @@ oferta) usam `DEFAULT_GIFT_OFFER_SLUGS` em `domain/gift-policy.ts` (`cade-todo-m
   false`), para o funil mostrar a página do curso certo (curso para pais tem outra); falha do
   catálogo nesses estados só omite o `gift`, sem 502.
 - **E-mails:** as boas-vindas por oferta usam as chaves `-mural-trial` (Kids) e `-adult`, com
-  `curso`, `prazo` (texto pronto: "por 7 dias, até <data> (horário de Brasília)" ou "sem prazo para
-  terminar"), `mural` (frase pronta ou vazia; o Messaging não tem condicional) e `orientacao`
+  `indicador` (código de pessoa, conta nova ou existente, com ou sem prazo) ou `campanha`, `curso`,
+  `prazo` (texto pronto com `giftDurationLabel` do Core: "por 7 dias, até <data> (horário de
+  Brasília)" ou "sem prazo para terminar"), `mural` (frase pronta ou vazia; o Messaging não tem condicional) e `orientacao`
   (`giftGuidanceText`, texto puro: no curso da criança, criar o perfil e autorizar o aparelho, com
   o aviso da autorização antiga na conta existente; no curso para pais, "Entre na área dos pais e
   abra o curso em Cursos para pais."). `validade` segue no
