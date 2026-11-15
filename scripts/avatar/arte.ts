@@ -45,6 +45,8 @@ export interface ItemDaArte {
   rascunho?: boolean
   festa?: string
   premio_da_festa?: boolean
+  /** Quanto a peça soma à altura do corpo (os patins: as rodas abaixo da sola), em metros. */
+  altura_que_soma_m?: number
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
   /** Objeto de mão: o osso que o segura, a animação de usar e a luz dele. */

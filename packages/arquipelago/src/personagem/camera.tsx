@@ -114,7 +114,13 @@ function gravarDica() {
  * Fora de casa, um raio do avatar até ela contra o que é sólido (troncos, paredes, chão) a traz
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
-export function Camera() {
+export function Camera({
+  chaoDoCenario = alturaDaIlha,
+  baseDoCenario = () => ALTURA_DA_TERRA,
+}: {
+  chaoDoCenario?: (x: number, z: number) => number
+  baseDoCenario?: (x: number, z: number) => number
+} = {}) {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const farol = lojaDoFarol(loja)
   const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' && s.etapa !== 'carregando')
@@ -567,7 +573,7 @@ export function Camera() {
     alvo.current.z += (az - alvo.current.z) * k
     // Lá no alto, o ângulo desce e a câmera chega perto (passa por baixo das copas).
     const alto = pesoNoAlto(
-      rastro.y - CORPO.doCentroAoPe - ALTURA_DA_TERRA,
+      rastro.y - CORPO.doCentroAoPe - baseDoCenario(rastro.x, rastro.z),
       CAMERA_NO_ALTO.acimaDoChao,
     )
     noAlto.current += (alto - noAlto.current) * k
@@ -694,7 +700,7 @@ export function Camera() {
       alvo.current.z + dz * atual.current,
     )
     // Não entra no chão.
-    const chao = alturaDaIlha(desejada.current.x, desejada.current.z) + 0.6
+    const chao = chaoDoCenario(desejada.current.x, desejada.current.z) + 0.6
     if (desejada.current.y < chao) desejada.current.y = chao
     // Encostando numa parede, vai direto (seguir devagar passaria por dentro dela).
     if (atual.current < antes - 0.01) camera.position.copy(desejada.current)
