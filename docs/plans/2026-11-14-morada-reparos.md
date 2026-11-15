@@ -18,7 +18,7 @@ Os seis casos de `.audits/morada-full-review-2026-11-14.md` foram corrigidos pre
 - Jogo completo: execução de 2.032 testes aprovados, um teste de integração de tempo pulado por ausência da variável de banco e zero falhas. Esse número inclui a árvore compartilhada durante trabalho paralelo; o commit separa as alterações de avatar que não são da Morada.
 - Biome: 169 arquivos conferidos sem correções. Tipos dos pacotes afetados passaram. Build independente do jogo passou. Conferência de arte: 3.106 peças e 6.693 arquivos privados íntegros.
 
-Logs locais ficam em `.cache/morada-reparos-*`; imagens em `output/morada-qa/`. Nenhum recurso privado do pack entra no Git. Os oito troféus antigos são preservados em `art/trofeus`. Banco da aplicação, R2 e serviços remotos não foram alterados.
+Logs locais ficam em `.cache/morada-reparos-*`; imagens em `output/morada-qa/`. Nenhum recurso privado do pack entra no Git. Os oito troféus antigos são preservados em `art/trofeus`. Esta etapa de reparos foi local; posteriormente, a [publicação em staging e produção](../operations/2026-11-14-morada-publicacao.md) aplicou a migration, converteu as contas e publicou as artes privadas.
 
 ## Integração
 

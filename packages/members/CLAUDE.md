@@ -27,7 +27,10 @@
 - `bun scripts/swap-morada.ts` faz somente ensaio. `--confirm` aplica a conversão e o reembolso
   histórico uma vez por perfil/público (`morada-refund-v1`). Galeria e troféus são preservados;
   pets mantêm a espécie quando há equivalente, e o pássaro é omitido. Não apagar o extrato nem conquistas.
-  A migration e a operação de dados não foram aplicadas a bancos da aplicação ou de produção.
+  Publicação em 14/11/2026: migration e conversão aplicadas em staging e produção. Em produção,
+  oito quartos Kids foram convertidos e seis perfis receberam 750 moedas; novo ensaio retornou
+  zero pendências. Backups privados verificados precederam a escrita. Evidências e SHA publicado:
+  `docs/operations/2026-11-14-morada-publicacao.md` (na raiz do repositório).
 - SQL real: `MORADA_TEST_DATABASE_URL` deve apontar para banco local descartável `kids_journey_*`;
   sem ela, os dois testes de banco são pulados. Os testes de serviço e HTTP não precisam de Postgres.
   Evidência local: os dois testes SQL passaram em Postgres 16 descartável, incluindo CAS
