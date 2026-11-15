@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { fileURLToPath } from 'node:url'
 import { ITEM_DA_APARENCIA } from '@sistemazero/arquipelago-contracts'
 import { createMoradaHouse } from '@sistemazero/core/morada'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
@@ -21,6 +22,37 @@ afterAll(async () => {
   await connection?.close()
 })
 const now = new Date('2026-11-14T12:00:00Z')
+
+test.skipIf(!url)(
+  'CLI exporta backup consistente sem converter nem alterar carteiras',
+  async () => {
+    const [before] =
+      await connection.sql`select sum(coin_balance)::text as balance from members.gamification_profiles`
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        fileURLToPath(new URL('../../scripts/swap-morada.ts', import.meta.url)),
+        '--backup-json',
+      ],
+      {
+        env: { ...process.env, DATABASE_URL: url!, APP_ENV: 'test' },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    )
+    const output = await new Response(child.stdout).text()
+    const error = await new Response(child.stderr).text()
+    expect(await child.exited, error).toBe(0)
+    const backup = JSON.parse(output)
+    expect(backup.version).toBe(1)
+    expect(backup.environment).toBe('test')
+    for (const table of ['profiles', 'roomState', 'inventory', 'coinEvents', 'houses'])
+      expect(Array.isArray(backup[table])).toBe(true)
+    const [after] =
+      await connection.sql`select sum(coin_balance)::text as balance from members.gamification_profiles`
+    expect(after?.balance).toBe(before?.balance)
+  },
+)
 
 test.skipIf(!url)(
   'perfil infantil com conta responsável diferente avança a revisão migrada e não alcança outro perfil',

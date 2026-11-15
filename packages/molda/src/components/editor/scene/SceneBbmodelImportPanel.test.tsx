@@ -169,6 +169,7 @@ test('bbmodel UI imports animated clips with reasons, playback, complete downloa
     expect(screen.getByText(movement.summary(1, 1)).textContent).toBe(movement.summary(1, 1))
     expect(screen.getByText(BBMODEL_CLIP_PROBLEM_COPY['animator-mode'])).toBeDefined()
     expect(editor.getState().asset).toBe(before)
+    await waitFor(() => expect(ports.length).toBeGreaterThan(0))
     const preview = screen.getByRole('region', { name: copy.preview }),
       port = ports.at(-1)
     if (!port) throw new Error('Preview port expected')

@@ -38,7 +38,7 @@ test('carrega, ajusta de 5 em 5 e salva o limite confirmado pelo servidor', asyn
     ),
   )
   render(<ArquipelagoLimitCard />)
-  await screen.findByText('Tempo livre no Arquipélago')
+  await screen.findByText('Tempo de jogo por dia')
   expect(screen.getByText('30 min')).toBeTruthy()
   const salvar = screen.getByRole('button', { name: 'Salvar' }) as HTMLButtonElement
   expect(salvar.disabled).toBe(true)
@@ -46,7 +46,7 @@ test('carrega, ajusta de 5 em 5 e salva o limite confirmado pelo servidor', asyn
   fireEvent.click(screen.getByRole('button', { name: 'Aumentar 5 minutos' }))
   expect(screen.getByText('40 min')).toBeTruthy()
   fireEvent.click(salvar)
-  await screen.findByText('Pronto. Agora cada criança tem 40 min por dia.')
+  await screen.findByText('Pronto. Agora cada um dos seus filhos pode jogar 40 min por dia.')
   expect(calls.at(-1)).toEqual({ method: 'PUT', body: '{"limiteDiarioMinutos":40}' })
 })
 

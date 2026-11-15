@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
@@ -48,7 +49,10 @@ export class AwardGamificationService {
     privileged: boolean
     /** Curso AO VIVO conclui como `live_course_complete`, nunca como marco da Jornada. */
     modality?: CourseModality
+    /** Curso para pais (14/11/2026) não dá XP, moedas nem marco: o responsável não joga. */
+    learner?: CourseLearner
   }): Promise<GamificationDeltaView | null> {
+    if (input.learner === 'parents') return null
     const events: AwardXpEventInput[] = [
       {
         sourceType: 'lesson_complete',

@@ -1,8 +1,16 @@
 import { DomainError } from '@sistemazero/core/errors'
 import {
+  isMoradaAdultOnly,
+  isMoradaFree,
+  isMoradaFunctionInstance,
+  isMoradaTrophyTier,
+  LEGACY_TROPHY_SHELF,
   MORADA_CATALOG,
+  MORADA_TROPHY_SHELF,
   type MoradaHouse,
   MoradaHouseSchema,
+  moradaInstanceAllowed,
+  moradaPieceAllowed,
   reconcileMoradaHouse,
   validateMoradaHouse,
 } from '@sistemazero/core/morada'
@@ -55,13 +63,11 @@ export class MoradaHouseService {
       if (!Number.isSafeInteger(stored.revision) || stored.revision < 1 || errors.length)
         throw new MoradaInvalidError(`A casa guardada precisa de recuperação: ${errors.join('; ')}`)
     }
-    const owned = inventory
-      .filter((id) => (PRESERVED_ROOM_TROPHIES as readonly string[]).includes(id))
-      .map((id) => `trophy/${id}`)
+    const house = recovered ?? migrateLegacyRoom(raw, inventory)
     return {
-      house: recovered ?? migrateLegacyRoom(raw, inventory),
+      house,
       revision: stored?.revision ?? 0,
-      owned,
+      owned: moradaOwned(inventory, house),
     }
   }
 
@@ -105,11 +111,26 @@ export class MoradaHouseService {
     const migrations = new Set([...(current.house.migrations ?? []), ...(house.migrations ?? [])])
     if (migrations.size) house.migrations = [...migrations]
     const errors = validateMoradaHouse(house)
+    // A posse: troféu conquistado, peça comprada, ou peça que já estava na casa guardada (o
+    // `owned` da leitura inclui as da casa: ninguém perde o que já pôs).
+    const owned = new Set(current.owned)
     for (const instance of house.instances) {
-      const piece = MORADA_CATALOG.pieces[instance.pieceId]
-      if (piece?.tags.includes('trophy') && !current.owned.includes(instance.pieceId))
-        errors.push('Troféu ainda não conquistado.')
+      // Peça só do adulto não entra no Kids, a não ser a que já estava na casa.
+      if (
+        audience !== 'adult' &&
+        isMoradaAdultOnly(instance.pieceId) &&
+        !owned.has(instance.pieceId)
+      )
+        errors.push('Esta peça não está disponível aqui.')
+      else if (!moradaInstanceAllowed(instance, owned))
+        errors.push(
+          isMoradaTrophyTier(instance.pieceId)
+            ? 'Troféu ainda não conquistado.'
+            : `Peça ainda não comprada: ${MORADA_CATALOG.pieces[instance.pieceId]?.label ?? instance.pieceId}.`,
+        )
     }
+    if (house.pet && !moradaPieceAllowed(house.pet, owned))
+      errors.push('Bichinho ainda não comprado.')
     if (errors.length) throw new MoradaInvalidError(errors.join('; '))
     const saved = await this.houses.compareAndSwap(
       userId,
@@ -120,6 +141,37 @@ export class MoradaHouseService {
       this.clock(),
     )
     if (!saved) throw new MoradaConflictError(await this.read(userId, audience))
-    return { ...saved, owned: current.owned }
+    // A posse de depois de salvar (a peça que saiu da casa e não foi comprada deixa de ser dela;
+    // devolver a de antes faria o editor oferecê-la como dela e o próximo salvamento recusar).
+    const inventory = await this.rooms.listInventory(userId, audience)
+    return { ...saved, owned: moradaOwned(inventory, saved.house) }
   }
+}
+
+/**
+ * O que a criança tem na Morada, para o editor, o jogo e o salvamento:
+ * - os troféus conquistados (`trophy/<id>`);
+ * - a estante de troféus, para quem ganhou a `estante-trofeus` com o primeiro troféu;
+ * - as peças compradas (o id Morada no `room_inventory`);
+ * - as peças que já estão na casa (a casa convertida e o que foi posto antes de haver preço),
+ *   menos as funções do jogo, que valem pela função e não viram posse da peça.
+ * Peça grátis não entra: `moradaPieceAllowed` já a aceita.
+ */
+export function moradaOwned(inventory: readonly string[], house: MoradaHouse): string[] {
+  const owned = new Set<string>()
+  for (const id of inventory) {
+    if ((PRESERVED_ROOM_TROPHIES as readonly string[]).includes(id)) owned.add(`trophy/${id}`)
+    else if (id === LEGACY_TROPHY_SHELF) owned.add(MORADA_TROPHY_SHELF)
+    else if (MORADA_CATALOG.pieces[id] && !isMoradaFree(id)) owned.add(id)
+  }
+  for (const instance of house.instances)
+    if (
+      MORADA_CATALOG.pieces[instance.pieceId] &&
+      !isMoradaFree(instance.pieceId) &&
+      !isMoradaFunctionInstance(instance)
+    )
+      owned.add(instance.pieceId)
+  if (house.pet && MORADA_CATALOG.pieces[house.pet] && !isMoradaFree(house.pet))
+    owned.add(house.pet)
+  return [...owned]
 }

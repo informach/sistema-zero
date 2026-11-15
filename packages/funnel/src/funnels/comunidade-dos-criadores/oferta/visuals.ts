@@ -404,21 +404,22 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'A recuperação de senha começa na tela de entrada.',
   },
-  // Área dos pais (entra com a senha da conta). As legendas são as do plano de provas visuais.
+  // Área dos pais (redesenhada em 14/11/2026; fotos do staging de 15/11/2026). As legendas são as
+  // do plano de provas visuais.
   responsavel: {
     mode: 'set',
     frames: [
       tela(
         'pais-painel',
-        'Acompanhamento',
-        'Acompanhamento na Área dos pais: a escolha da criança, o que ela fez nesta semana, o jogo publicado no Mural e os números no total, como pontos, medalhas, cursos e entregas.',
-        1152,
-        640,
+        'A página do filho',
+        'A página de um filho na Área dos pais, com o nome, a conquista atual, o botão Editar perfil e as abas Progresso, Aparelhos, No jogo e Perfil.',
+        1012,
+        254,
       ),
       tela(
         'pais-conversa',
         'Para conversar sobre uma criação',
-        'Perguntas para conversar sobre uma criação e o interruptor Receber o resumo da semana por e-mail, no Acompanhamento da Área dos pais.',
+        'Perguntas para conversar sobre uma criação e o interruptor Receber o resumo da semana por e-mail, na aba Progresso da página do filho.',
         392,
         346,
       ),
@@ -430,9 +431,9 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-perfil',
         'Editar perfil',
-        'Editar o perfil de uma criança na Área dos pais, com o nome, a data de nascimento (embaçada aqui) e a opção Perfil público na comunidade kids.',
-        542,
-        470,
+        'Editar o perfil de um filho na aba Perfil da Área dos pais, com o nome, a data de nascimento, a opção Perfil público na comunidade kids e a opção Falar em vez de escrever.',
+        608,
+        784,
       ),
     ],
     caption: 'O responsável administra a visibilidade do perfil para os colegas.',
@@ -444,8 +445,8 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'pais-atendimento',
         'Atendimento',
         'Atendimento, na Ajuda da Área dos pais, com os botões Atualizar e Abrir chamado.',
-        835,
-        355,
+        784,
+        357,
       ),
       tela(
         'pais-chamado',
@@ -457,12 +458,13 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O atendimento da família reúne dúvidas sobre conta e assinatura.',
   },
-  // As telas da Área dos pais são capturas do staging de 11/10/2026 (páginas próprias), menos
+  // As telas da Área dos pais são capturas do staging de 15/11/2026 (área redesenhada), menos
   // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
   // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
-  // dela é ampliado: não há captura em escala 2.
-  // ⚠️ `creditos`: a captura ainda mostra o título antigo "Ajuda da IA neste mês". A tela passou a
-  // se chamar "Créditos do Zappy e do Pensa neste mês" (20/10/2026): refaça a captura antes de usar.
+  // dela é ampliado: não há captura em escala 2. ⚠️ `compras` e `creditos` são da área ANTIGA:
+  // refaça as duas antes de usar. `creditos` ainda mostra o título "Ajuda da IA neste mês" (hoje
+  // "Créditos do Zappy e do Pensa neste mês") e só sai com a sessão de um CLIENTE: para a equipe o
+  // cartão some (sem teto).
   creditos: {
     frames: [
       tela(
@@ -494,13 +496,13 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-perfis',
         'Família',
-        'Suas crianças, na Família da Área dos pais: o cartão de cada criança com o acesso Liberado, os números da jornada, o que fez na semana e os botões Acesso nos aparelhos e Ver progresso.',
-        1144,
-        550,
+        'Seus filhos, na Família da Área dos pais: o cartão de cada filho com o acesso Liberado, dias seguidos, XP e medalhas, o que fez na semana e os botões Ver a página e Acesso nos aparelhos.',
+        1004,
+        521,
       ),
     ],
     caption:
-      'Cada criança tem o próprio cartão na Área dos pais, com o acesso nos aparelhos e o progresso.',
+      'Cada filho tem o próprio cartão na Família, com o acesso nos aparelhos e a página dele.',
   },
 }
 

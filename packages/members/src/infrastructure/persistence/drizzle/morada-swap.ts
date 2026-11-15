@@ -57,6 +57,16 @@ export async function swapMorada(
       const [existing] =
         await tx`select 1 from members.morada_houses where user_id=${owner.user_id} and audience=${owner.audience}::members.course_audience`
       const removed = inventory.filter((i) => retired.includes(i.item_id)).length
+      const house = existing
+        ? null
+        : migrateLegacyRoom(
+            state?.state ?? null,
+            inventory.map((i) => i.item_id),
+          )
+      if (house) {
+        const errors = validateMoradaHouse(house)
+        if (errors.length) throw new Error(`Casa migrada inválida: ${errors.join('; ')}`)
+      }
       if (options.dryRun) return { coins, removed, created: !existing }
       if (coins > 0) {
         const [profile] = await tx<
@@ -67,13 +77,7 @@ export async function swapMorada(
         await tx`insert into members.coin_events(id,user_id,audience,source_type,source_id,amount,balance_after,created_at) values(${randomUUID()},${owner.user_id},${owner.audience}::members.course_audience,'admin_adjust',${MORADA_REFUND_SOURCE},${coins},${profile.coin_balance},${options.now.toISOString()}::timestamptz)`
       }
       let created = false
-      if (!existing) {
-        const house = migrateLegacyRoom(
-          state?.state ?? null,
-          inventory.map((i) => i.item_id),
-        )
-        const errors = validateMoradaHouse(house)
-        if (errors.length) throw new Error(`Casa migrada inválida: ${errors.join('; ')}`)
+      if (house) {
         const inserted =
           await tx`insert into members.morada_houses(id,user_id,account_id,audience,house,revision,created_at,updated_at) values(${randomUUID()},${owner.user_id},${owner.account_id},${owner.audience}::members.course_audience,${JSON.stringify(house)}::jsonb,1,${options.now.toISOString()}::timestamptz,${options.now.toISOString()}::timestamptz) on conflict(user_id,audience) do nothing returning id`
         created = inserted.length > 0

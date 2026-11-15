@@ -633,9 +633,13 @@ export function buildApp(
         studioSubmissions,
         sectionProgression,
       ),
-      profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
-        defaultMaxProfiles: 1,
-      }),
+      profileAllowance: new GetProfileAllowanceService(
+        entitlements,
+        clock,
+        { defaultMaxProfiles: 1 },
+        undefined,
+        courses,
+      ),
       consumeAiUsage,
       aiCredits,
       zappy: opts.zappy,
@@ -926,9 +930,13 @@ export function buildApp(
         isFenced: async () => false,
       }),
       accessCheck: new AccessCheckService(entitlements, clock),
-      profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
-        defaultMaxProfiles: 1,
-      }),
+      profileAllowance: new GetProfileAllowanceService(
+        entitlements,
+        clock,
+        { defaultMaxProfiles: 1 },
+        undefined,
+        courses,
+      ),
       showcasePayload: new GetShowcasePayloadService(
         checkAccess,
         courses,
@@ -1045,6 +1053,7 @@ export function seedSampleCourse(
     careerSlot,
     journeyRole,
     modality: 'recorded',
+    learner: 'child',
     metadata: null,
     createdAt: now,
     updatedAt: now,

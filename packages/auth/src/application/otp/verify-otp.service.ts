@@ -52,9 +52,9 @@ export class VerifyOtpService {
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
 
-    // No Kids, o OTP autentica diretamente o responsável, inclusive antes de
-    // definir uma senha. Os outros produtos conservam a política de primeiro acesso.
-    if (!user.isPasswordSet() && command.platform !== 'kids') throw new PasswordNotSetError()
+    // A senha é opcional para o CLIENTE (15/11/2026, ver `RequestOtpService`). A equipe
+    // precisa dela para operar: sem senha, o código não abre uma sessão inútil.
+    if (user.role !== 'customer' && !user.isPasswordSet()) throw new PasswordNotSetError()
 
     const consumed = await this.otpCodes.consume(record.id, now)
     if (!consumed) throw new InvalidOtpError()
@@ -64,6 +64,8 @@ export class VerifyOtpService {
       userAgent: command.userAgent,
       ip: command.ip,
     })
+    // A primeira entrada ativa a conta (a senha é opcional desde 15/11/2026).
+    if (!user.firstSignInAt) await this.users.markFirstSignIn(user.id, now)
     return { user: toUserView(user), tokens }
   }
 }

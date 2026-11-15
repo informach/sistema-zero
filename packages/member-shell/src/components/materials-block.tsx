@@ -43,7 +43,7 @@ export function MaterialsBlockView({
   blockId,
   blockRevision,
   content,
-  helpLinks = true,
+  helpLinks: helpLinksProp = true,
 }: {
   /** `false` no app adulto, que não tem `/como-fazer`: o item vira texto, sem link quebrado. */
   helpLinks?: boolean
@@ -52,6 +52,8 @@ export function MaterialsBlockView({
   content: MaterialsBlock
 }) {
   const player = useLessonPlayer()
+  // A aula também pode desligar (cursos para pais: a biblioteca é da área da criança).
+  const helpLinks = helpLinksProp && player?.helpLinks !== false
   const { material, erroDoServidor } = useLessonCopy()
   const [baixando, setBaixando] = useState<string | null>(null)
   const [baixados, setBaixados] = useState<Set<string>>(() => new Set())

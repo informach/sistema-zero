@@ -251,6 +251,8 @@ export interface ListCoursesParams {
   audience?: 'adult' | 'kids'
   /** Gravado × ao vivo (filtro da lista e o painel da Jornada, que só olha gravados). */
   modality?: 'recorded' | 'live'
+  /** Para quem (só Kids): o filtro da lista e o painel da Jornada, que só olha os da criança. */
+  learner?: 'child' | 'parents'
   limit?: number
   offset?: number
 }
@@ -262,6 +264,7 @@ export function listCourses(p: ListCoursesParams): Promise<GatewayResponse<Pagin
       status: p.status,
       audience: p.audience,
       modality: p.modality,
+      learner: p.learner,
       limit: p.limit,
       offset: p.offset,
     },

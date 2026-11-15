@@ -33,7 +33,7 @@ export default function EntryHelpPage() {
           </li>
           <li>
             Na Área dos pais, em <strong>Família</strong>, encontre o cartão da criança. Se ela
-            ainda não tem perfil, use <strong>Adicionar criança</strong>.
+            ainda não tem perfil, use <strong>Adicionar filho(a)</strong>.
           </li>
           <li>
             Clique em <strong>Acesso nos aparelhos</strong> no cartão e, na página da criança, em{' '}

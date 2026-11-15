@@ -80,6 +80,56 @@ export function avancoNaParede(daCasca: number): number {
   return daCasca - NA_PAREDE.aFrente
 }
 
+/** Empurrando: a face do que se empurra fica isto à frente da origem do desenho (0,30 m nativos). */
+export const NO_EMPURRAR = {
+  aFrente: medidaDoLugar('empurrar', 'plano_a_frente_m', 0.3),
+} as const
+
+/**
+ * Empurrando objeto baixo (`empurrar_baixo`, agachada, a cabeça passando por cima): a face fica isto
+ * à frente da origem, e o objeto não pode passar de `objetoAte` de altura (a cabeça bateria).
+ */
+export const NO_EMPURRAR_BAIXO = {
+  aFrente: medidaDoLugar('empurrar_baixo', 'plano_a_frente_m', 0.3),
+  objetoAte: medidaDoLugar('empurrar_baixo', 'objeto_ate_m', 0.25),
+} as const
+
+/**
+ * O que se empurra diz ao jogo como é (no `userData` do corpo dinâmico): a altura dele e, num objeto
+ * redondo, quanto a face fica mais perto para os dedos encostarem (a arte, 15/11/2026: no tronco do
+ * lago, 0,02 m do clipe, já na escala do mundo aqui).
+ */
+export type ComoSeEmpurra = { altura: number; encostaMais?: number }
+
+/** `true` quando o objeto cabe embaixo da cabeça agachada: é o `empurrar_baixo`. */
+export function empurraBaixo(objeto: ComoSeEmpurra | null | undefined): boolean {
+  return !!objeto && objeto.altura <= NO_EMPURRAR_BAIXO.objetoAte
+}
+
+/**
+ * Quanto o desenho anda para a frente empurrando: no jogo a face encosta na cápsula, a `daFace` do
+ * meio do corpo; no clipe, a face fica `aFrente` da origem (a do `empurrar` ou a do `empurrar_baixo`,
+ * menos o `encostaMais` de um objeto redondo). Negativo: recua (mais perto, a cabeça entraria no
+ * objeto; a arte avisou que essa distância quase não pode mudar).
+ */
+export function avancoNoEmpurrao(daFace: number, objeto?: ComoSeEmpurra | null): number {
+  const baixo = empurraBaixo(objeto)
+  const aFrente = baixo
+    ? NO_EMPURRAR_BAIXO.aFrente - (objeto?.encostaMais ?? 0)
+    : NO_EMPURRAR.aFrente
+  return daFace - aFrente
+}
+
+/** Lê o `ComoSeEmpurra` do `userData` de um corpo (qualquer outra coisa: `null`). */
+export function comoSeEmpurra(userData: unknown): ComoSeEmpurra | null {
+  const dado = (userData as { empurrao?: unknown } | null | undefined)?.empurrao as
+    | Partial<ComoSeEmpurra>
+    | undefined
+  if (!dado || typeof dado.altura !== 'number' || !Number.isFinite(dado.altura)) return null
+  const encostaMais = typeof dado.encostaMais === 'number' ? dado.encostaMais : undefined
+  return encostaMais === undefined ? { altura: dado.altura } : { altura: dado.altura, encostaMais }
+}
+
 /**
  * Os patins do pack (só do jogo: fora da loja). A criança calça e o jogo veste esta peça no lugar
  * do calçado; as rodas ficam abaixo da sola, e o desenho sobe o que elas somam à altura do corpo.

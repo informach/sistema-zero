@@ -4,6 +4,7 @@ import {
   AVATAR_CATALOG,
   avatarDoPack,
   avatarFileUrl,
+  withMountedVariants,
 } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import {
   alturaNoComeco,
@@ -16,6 +17,7 @@ import {
   type RefObject,
   Suspense,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -37,6 +39,7 @@ import {
   criarLocomocao,
   criarPoseDosClipes,
   type EntradaDaLocomocao,
+  type PoseDosClipes,
   passoDaLocomocao,
   poseDosClipes,
 } from '../sistemas/locomocao'
@@ -44,7 +47,21 @@ import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-c
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
 import { amplitudeDoPasso } from '../sistemas/ritmo-da-aventura'
-import { BARRA_NAS_MAOS, DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import {
+  type ApoioDasMaos,
+  acharBracos,
+  type BracosDoAvatar,
+  maoAgarrada,
+  maoNoApoio,
+} from './maos-no-apoio'
+import {
+  BracoComObjeto,
+  camadasDoBraco,
+  DedosNoCabo,
+  equipamentoDaMao,
+  type ObjetoDeMao,
+  objetoNaMao,
+} from './objeto-na-mao'
 import { ampliarPassada } from './passada'
 import {
   type AlturaDoChao,
@@ -55,6 +72,7 @@ import {
   suavizarPeso,
 } from './pes-no-chao'
 import { PoseLimpa } from './pose-limpa'
+import { RodasDosPatins } from './rodas-dos-patins'
 
 /** O GLB dos clipes de movimento do jogo (bucket privado, pela rota `/api/avatar3d/`). */
 const CLIPES_URL = avatarFileUrl(AVATAR_CATALOG.base.skeleton.game.file)
@@ -69,14 +87,29 @@ const UMA_VEZ: readonly ClipeDoJogo[] = [
   'subir_borda',
   'entrar_na_agua',
   'sair_da_agua',
+  'acender',
+  'levantar',
+  'levantar_da_cama',
+  'montar',
+  'desmontar',
+  'pegar_do_chao',
+  'plantar',
+  'plantar_alto',
+  'regar',
+  'comemorar',
 ]
 /** O pulo do pack sobe o corpo; no jogo quem sobe é a física (o agachar fica). */
 const NO_PULO: readonly ClipeDoJogo[] = ['pulo_inicio', 'pulo_no_ar', 'pulo_fim']
 /**
- * Sentar e deitar ficam com o deslocamento: o desenho já está no assento (ou no colchão) e é o
- * clipe que leva a bacia de onde ela começa em pé até lá.
+ * Sentar, deitar e levantar ficam com o deslocamento: o desenho está no assento (ou no colchão) e é
+ * o clipe que leva a bacia de onde ela está em pé até lá, e de volta.
  */
-const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = ['sentar', 'deitar']
+const COM_O_DESLOCAMENTO: readonly ClipeDoJogo[] = [
+  'sentar',
+  'deitar',
+  'levantar',
+  'levantar_da_cama',
+]
 /** Subindo (a escada, a borda, a casca), quem sobe é o corpo da física: o clipe fica sem a subida. */
 const SEM_A_SUBIDA: readonly ClipeDoJogo[] = [
   'subir_escada',
@@ -152,7 +185,7 @@ export function clipesDoJogo(doArquivo: readonly AnimationClip[]): AnimationClip
  * reaplica a pose a cada quadro). As mãos no cipó e na borda vêm dos clipes da arte.
  *
  * De patins, o avatar veste os patins do pack no lugar do calçado e sobe o que as rodas somam ao
- * corpo (as rodas ainda não giram). No planador, a barra do pack vai nas duas mãos (e a lanterna,
+ * corpo (as rodas giram pela distância, `RodasDosPatins`). No planador, a barra do pack vai nas duas mãos (e a lanterna,
  * se estava acesa, volta depois de fechar o planador).
  */
 export function AvatarDoJogo({
@@ -161,6 +194,10 @@ export function AvatarDoJogo({
   comPatins = false,
   comLanterna = false,
   planando = false,
+  objetoDoGesto = null,
+  semChapeu = false,
+  apoioDasMaos,
+  montada = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -171,15 +208,29 @@ export function AvatarDoJogo({
   comLanterna?: boolean
   /** No modo planar: a barra do planador nas duas mãos. */
   planando?: boolean
+  /** O objeto do gesto em andamento (o regador ao regar, o balde cheio), no lugar da lanterna. */
+  objetoDoGesto?: ObjetoDeMao | null
+  /** Deitada e levantando da cama, o chapéu sai (`hatOff` dos clipes da arte). */
+  semChapeu?: boolean
+  /** Onde as mãos se seguram agora (a quina, a escada), no mundo; `null` solta. */
+  apoioDasMaos?: RefObject<ApoioDasMaos | null>
+  /** Montada: as peças com variante para montar (a saia assentada na sela) trocam por ela. */
+  montada?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
   const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
   const slots = useMemo(() => {
-    const vestido = avatarDoPack(slotsDoJogo)
-    return deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
-  }, [slotsDoJogo, deRodas])
-  const naMao = planando ? 'mao_barra_planador' : comLanterna ? 'mao_lanterna' : null
+    const doPack = avatarDoPack(slotsDoJogo)
+    const vestido = montada ? withMountedVariants(AVATAR_CATALOG, doPack) : doPack
+    const calcado = deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
+    if (!semChapeu || !calcado.chapeu) return calcado
+    const { chapeu: _fora, ...semOChapeu } = calcado
+    return semOChapeu
+  }, [slotsDoJogo, deRodas, semChapeu, montada])
+  const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
+  const equipamento = equipamentoDaMao(naMao)
+  const comBraco = naMao !== null && camadasDoBraco(naMao).length > 0
   const personagem = useRef<Group>(null)
   const [emPe, setEmPe] = useState(false)
   const visualRef = useRef<Group>(null)
@@ -241,21 +292,38 @@ export function AvatarDoJogo({
               charRef={personagem}
               onStood={aoFicarEmPe}
               onAnimations={aoAnimar}
-              equipment={
-                naMao === 'mao_barra_planador'
-                  ? BARRA_NAS_MAOS
-                  : naMao === 'mao_lanterna'
-                    ? LANTERNA_NA_MAO
-                    : SEM_OBJETO_NA_MAO
-              }
+              equipment={equipamento}
             />
-            {naMao ? <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} /> : null}
+            {naMao && comBraco ? (
+              <BracoComObjeto
+                key={`braco-${naMao}`}
+                corpo={personagem}
+                objeto={naMao}
+                pose={pose}
+              />
+            ) : null}
+            {naMao && equipamento.length > 0 ? (
+              <DedosNoCabo key={naMao} corpo={personagem} objeto={naMao} />
+            ) : null}
+            {deRodas ? (
+              <RodasDosPatins corpo={personagem} movimento={movimento} pausado={pausado} />
+            ) : null}
             {chao ? (
               <PesNoChao
                 chao={chao}
                 movimento={movimento}
                 raiz={visualRef}
                 corpo={personagem}
+                pausado={pausado}
+              />
+            ) : null}
+            {/* Depois dos pés: o quadril que baixou já levou os ombros. */}
+            {apoioDasMaos ? (
+              <MaosNoApoio
+                apoio={apoioDasMaos}
+                raiz={visualRef}
+                corpo={personagem}
+                pose={pose}
                 pausado={pausado}
               />
             ) : null}
@@ -308,6 +376,74 @@ function PesNoChao({
         amplitudeDoPasso(e.velocidade, CORPO.andar, MUNDO.passo.amplitude),
       )
     assentarOsPes(pernas.current, r, chao, peso.current)
+    limpa.current.depois()
+  })
+  return null
+}
+
+/** As medidas de cada clipe do jogo no catálogo (as mãos agarradas, para a IK das mãos). */
+const CLIPE_NO_CATALOGO = new Map(AVATAR_CATALOG.base.skeleton.game.clips.map((c) => [c.id, c]))
+
+/**
+ * As mãos no apoio de verdade (a quina da borda, os montantes da escada), depois da pose e dos pés
+ * (`maos-no-apoio.ts`). Cada mão entra aos poucos quando o clipe a tem agarrada e sai quando solta.
+ */
+function MaosNoApoio({
+  apoio,
+  raiz,
+  corpo,
+  pose,
+  pausado,
+}: {
+  apoio: RefObject<ApoioDasMaos | null>
+  raiz: RefObject<Group | null>
+  corpo: RefObject<Group | null>
+  pose: RefObject<PoseDosClipes>
+  pausado: boolean
+}) {
+  const bracos = useRef<BracosDoAvatar | null>(null)
+  const limpa = useRef<PoseLimpa | null>(null)
+  const peso = useRef({ esquerda: 0, direita: 0 })
+  const ultimo = useRef<ApoioDasMaos | null>(null)
+  useEffect(
+    () => () => {
+      limpa.current?.soltar()
+      limpa.current = null
+    },
+    [],
+  )
+  useFrame((_, dt) => {
+    const r = raiz.current
+    const c = corpo.current
+    const atual = pose.current
+    if (!r?.visible || !c || !atual) return
+    if (!bracos.current?.direita[0].parent) {
+      bracos.current = acharBracos(c)
+      const b = bracos.current
+      limpa.current = b
+        ? new PoseLimpa([...b.esquerda.slice(0, 3), ...b.direita.slice(0, 3)])
+        : null
+    }
+    const b = bracos.current
+    if (!b || !limpa.current) return
+    // O clipe que manda neste quadro (o de maior peso) diz que mão está agarrada.
+    let maior: ClipeDoJogo | null = null
+    for (const id of CLIPES_DO_JOGO) if (!maior || atual[id].peso > atual[maior].peso) maior = id
+    const clipe = maior ? CLIPE_NO_CATALOGO.get(maior) : undefined
+    const tempo = maior ? atual[maior].tempo : 0
+    const sobre = apoio.current
+    // Soltou (subiu a borda, saiu da escada): enquanto o peso cai, a mão segue indo ao último
+    // apoio, para a correção sair aos poucos e não num salto.
+    if (sobre) ultimo.current = sobre
+    const onde = sobre ?? ultimo.current
+    limpa.current.antes()
+    for (const lado of ['esquerda', 'direita'] as const) {
+      const quer = sobre && maoAgarrada(clipe, tempo, lado) ? 1 : 0
+      if (!pausado) peso.current[lado] = suavizarPeso(peso.current[lado], quer, dt)
+      if (onde) maoNoApoio(b, lado, r, onde, peso.current[lado])
+    }
+    if (!sobre && peso.current.esquerda < 0.001 && peso.current.direita < 0.001)
+      ultimo.current = null
     limpa.current.depois()
   })
   return null

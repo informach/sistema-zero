@@ -21,6 +21,10 @@ const MORADA = resolve(
 const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
 const ARTE_FAISCA = resolve(import.meta.dir, '../../../output/faisca-arte')
 const ARQUIVOS_FAISCA = new Set(Object.values(ARTE_DA_FAISCA.pecas).map((p) => p.arquivo as string))
+/** As peças da pista com a arte (`preparar-pista-da-arte.ts`), fora do git. */
+const PISTA = resolve(
+  process.env.ARQUIPELAGO_PISTA_DIR ?? resolve(import.meta.dir, '../.cache/pista-da-arte'),
+)
 /** O glTF mínimo (uma cena sem nada): o carregador do three aceita o JSON no lugar do binário. */
 const GLTF_VAZIO = { asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [] }] }
 const PNG_DE_UM_PONTO = Uint8Array.from(
@@ -108,6 +112,19 @@ Bun.serve({
       return new Response(HTML_DAS_ANIMACOES, {
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
+    // A pista de conferência com as peças reais da arte (`pista-da-arte.tsx`).
+    if (pathname === '/pista-da-arte.js') return compilar('pista-da-arte.tsx')
+    if (pathname === '/pista-da-arte')
+      return new Response(pagina('Arquipélago · pista com as peças da arte', '/pista-da-arte.js'), {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    if (pathname.startsWith('/pista-da-arte/arquivos/')) {
+      const nome = decodeURIComponent(pathname.slice('/pista-da-arte/arquivos/'.length))
+      const alvo = resolve(PISTA, nome)
+      if (!alvo.startsWith(PISTA + sep)) return new Response('fora', { status: 403 })
+      const f = Bun.file(alvo)
+      return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
+    }
     if (pathname === '/movimento.js') return compilar('movimento.tsx')
     if (pathname === '/movimento')
       return new Response(HTML_DO_MOVIMENTO, {
@@ -137,6 +154,12 @@ Bun.serve({
     if (pathname.startsWith('/api/morada3d/')) {
       const file = decodeURIComponent(pathname.slice('/api/morada3d/'.length))
       if (!isMoradaFile(file)) return new Response('Fora do catálogo', { status: 404 })
+      // Provas de estado/física no CI não distribuem o pack privado. A cópia real,
+      // quando solicitada, continua estrita: arquivo ausente responde 404.
+      if (process.env.MORADA_QA_EMPTY_ASSETS === '1' && !process.env.MORADA_QA_DIR)
+        return file.endsWith('.glb')
+          ? Response.json(GLTF_VAZIO, { headers: { 'content-type': 'model/gltf+json' } })
+          : new Response(PNG_DE_UM_PONTO, { headers: { 'content-type': 'image/png' } })
       const path = resolve(MORADA, file)
       if (!path.startsWith(MORADA + sep)) return new Response('Fora da pasta', { status: 403 })
       const f = Bun.file(path)

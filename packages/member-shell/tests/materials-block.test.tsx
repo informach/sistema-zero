@@ -141,6 +141,26 @@ describe('o bloco de materiais complementares', () => {
     expect(texto).not.toContain('target="_blank"')
   })
 
+  test('na aula de um curso para pais (`helpLinks: false`) o "Como fazer" vira texto', () => {
+    const html = renderToStaticMarkup(
+      <LessonPlayerProvider value={{ ...player, helpLinks: false }}>
+        <MaterialsBlockView
+          blockId="block"
+          content={{
+            kind: 'materials',
+            items: [
+              { id: 'l1', kind: 'link', url: '/como-fazer/x', label: 'Passo a passo' },
+              { id: 't1', kind: 'text', markdown: '[Publicar](/como-fazer/publicar)' },
+            ],
+          }}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(html).toContain('Passo a passo')
+    expect(html).toContain('Publicar')
+    expect(html).not.toContain('/como-fazer/')
+  })
+
   test('o nome do bloco aparece quando a autora escreve um, e some quando não', () => {
     expect(render([arquivo], 'Arquivos do Pinta')).toContain('Arquivos do Pinta')
     expect(render([arquivo])).not.toContain('sz-lesson-materials-title')

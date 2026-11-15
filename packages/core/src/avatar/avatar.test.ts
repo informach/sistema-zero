@@ -11,7 +11,11 @@ import {
   isListed,
   ownershipOf,
   removeSlot,
+  setSlots,
+  withCurrentSet,
   withEars,
+  withMountedVariants,
+  wornSet,
 } from './index'
 
 const parts = Object.entries(C.parts)
@@ -165,6 +169,21 @@ describe('o catálogo', () => {
     expect(C.rules.groups[lanterna.socket]).toBeUndefined()
   })
 
+  test('a pegada de cada objeto de mão aponta para camadas de dedos que existem', () => {
+    const dedos = new Set(
+      (C.base.skeleton.game.layers ?? []).filter((c) => c.with === undefined).map((c) => c.id),
+    )
+    for (const [id, objeto] of Object.entries(C.equipment ?? {})) {
+      expect(objeto.fingers?.length, id).toBeGreaterThan(0)
+      for (const clipe of objeto.fingers ?? [])
+        expect(dedos.has(clipe), `${id}: ${clipe}`).toBe(true)
+    }
+    // O balde e o regador fecham a mão na alça como a lanterna no cabo; a barra, com as duas mãos.
+    expect(C.equipment?.mao_balde?.fingers).toEqual(C.equipment?.mao_lanterna?.fingers)
+    expect(C.equipment?.mao_regador?.fingers).toEqual(C.equipment?.mao_lanterna?.fingers)
+    expect(C.equipment?.mao_barra_planador?.fingers?.length).toBe(2)
+  })
+
   test('toda peça citada por grupo, conjunto, orelha e padrão existe', () => {
     for (const [grupo, g] of Object.entries(C.rules.groups))
       for (const id of g.parts) {
@@ -283,6 +302,43 @@ describe('vestir', () => {
     })
     const { rosto: _sem, ...semRosto } = base()
     expect(avatarProblems(C, semRosto)).toContainEqual({ kind: 'missing-required', slot: 'rosto' })
+  })
+})
+
+describe('a variante para montar (a saia assentada na sela)', () => {
+  // A arte ainda não entregou as variantes: um catálogo de exemplo com uma saia e a variante dela.
+  const saia = parts.find(([, p]) => p.slot === 'calca' && isListed(p) && !p.set)
+  if (!saia) throw new Error('sem peça de calça')
+  const [idSaia, pecaSaia] = saia
+  const comVariante = {
+    ...C,
+    parts: {
+      ...C.parts,
+      [idSaia]: { ...pecaSaia, mountedVariant: `${idSaia}_montada` },
+      [`${idSaia}_montada`]: {
+        ...pecaSaia,
+        hidden: true,
+        variantOf: idSaia,
+        variantFor: 'montado',
+      },
+    },
+  }
+
+  test('montada, a peça troca pela variante; o resto fica', () => {
+    const vestida: AvatarSlots = { ...base(), calca: idSaia }
+    const montada = withMountedVariants(comVariante, vestida)
+    expect(montada.calca).toBe(`${idSaia}_montada`)
+    expect(montada.corpo).toBe(vestida.corpo)
+  })
+
+  test('sem variante (ou com a variante fora do catálogo), nada muda', () => {
+    const vestida: AvatarSlots = { ...base(), calca: idSaia }
+    expect(withMountedVariants(C, vestida)).toBe(vestida)
+    const semArquivo = {
+      ...C,
+      parts: { ...C.parts, [idSaia]: { ...pecaSaia, mountedVariant: 'nao_existe' } },
+    }
+    expect(withMountedVariants(semArquivo, vestida)).toBe(vestida)
   })
 })
 
@@ -408,5 +464,91 @@ describe('posse', () => {
     expect(isAvatarOwned(C, parte, new Set([parte]))).toBe(false)
     expect(isAvatarOwned(C, parte, new Set([setId]))).toBe(true)
     expect(isAvatarOwned(C, setId, new Set([setId]))).toBe(true)
+  })
+})
+
+describe('peça nossa dentro da fantasia (trocas_fantasia) e peça reaproveitada', () => {
+  const copias = parts.filter(([, p]) => p.copyOf)
+
+  test('toda parte de uma fantasia é dela (uma peça, uma fantasia)', () => {
+    for (const [setId, conjunto] of Object.entries(C.sets))
+      for (const { part } of conjunto.parts)
+        expect(C.parts[part]?.set, `${setId}: ${part}`).toBe(setId)
+  })
+
+  test('a fantasia usa a cópia (do elmo novo, das botas, do capuz), e a original segue como era', () => {
+    expect(copias.length).toBeGreaterThan(0)
+    for (const [id, copia] of copias) {
+      const original = C.parts[copia.copyOf ?? '']
+      expect(original, id).toBeDefined()
+      expect(copia.file).toBe(original?.file ?? '')
+      expect(copia.set, id).toBeDefined()
+      expect(copia.tier).toBe('set')
+      // A original é vendida sozinha ou é parte de OUTRA fantasia, nunca desta.
+      expect(original?.set, `${copia.copyOf}`).not.toBe(copia.set)
+      const conjunto = C.sets[copia.set ?? '']
+      expect(conjunto?.parts.some((p) => p.part === id)).toBe(true)
+      expect(ownershipOf(C, id)).toBe(copia.set ?? '')
+    }
+    // O elmo novo, fora da fantasia, continua à venda sozinho.
+    expect(C.parts.chapeu_elmo_cavaleiro?.set).toBeUndefined()
+    expect(C.parts.chapeu_elmo_cavaleiro?.hidden).toBeUndefined()
+  })
+
+  test('quem já vestia a fantasia com a peça antiga do pack passa a vestir a nova, válido', () => {
+    let trocas = 0
+    for (const [id, copia] of copias) {
+      const conjunto = C.sets[copia.set ?? '']
+      if (!conjunto) throw new Error(id)
+      // Só as trocas da arte têm peça antiga (a do pack, escondida, na mesma fantasia).
+      const antiga = parts.find(
+        ([pid, p]) => p.set === copia.set && p.slot === copia.slot && p.hidden && pid !== id,
+      )?.[0]
+      if (!antiga) continue
+      trocas += 1
+      const vestida: AvatarSlots = { ...base() }
+      for (const { slot, part } of conjunto.parts) vestida[slot] = part
+      vestida[copia.slot] = antiga
+      const atualizada = withEars(C, withCurrentSet(C, vestida))
+      expect(atualizada[copia.slot]).toBe(id)
+      expect(avatarProblems(C, atualizada)).toEqual([])
+    }
+    expect(trocas).toBeGreaterThan(0)
+  })
+
+  test('as fantasias que reaproveitam botas, capuz e luvas se vestem inteiras, só com o conjunto', () => {
+    for (const setId of ['fantasia_raposa', 'fantasia_gato', 'fantasia_urso_polar']) {
+      const vestida = withEars(C, { ...base(), ...setSlots(C, setId) })
+      expect(wornSet(C, vestida), setId).toBe(setId)
+      expect(avatarProblems(C, vestida), setId).toEqual([])
+      for (const id of Object.values(vestida)) {
+        const chave = ownershipOf(C, id)
+        expect(chave === null || chave === setId, `${setId}: ${id}`).toBe(true)
+      }
+    }
+  })
+
+  test('a parte que saiu da fantasia sai do avatar; sem completar, a fantasia pela metade fica', () => {
+    const setId = 'fantasia_cavaleiro'
+    const conjunto = C.sets[setId]
+    const antiga = 'fantasia_cavaleiro_elmo_chifres_pacote'
+    if (!conjunto || C.parts[antiga]?.set !== setId) throw new Error('sem a troca do cavaleiro')
+    // A peça antiga num encaixe que a fantasia não usa mais (como se a arte a tirasse dali).
+    const vestida: AvatarSlots = { ...base(), ...setSlots(C, setId), costas_extra: antiga }
+    const atualizada = withCurrentSet(C, vestida)
+    expect(Object.values(atualizada)).not.toContain(antiga)
+    // Só uma parte da fantasia: sem completar, continua só ela (a gravação recusa).
+    const parte = conjunto.parts[0]
+    if (!parte) throw new Error('fantasia vazia')
+    const metade: AvatarSlots = { ...base(), [parte.slot]: parte.part }
+    expect(withCurrentSet(C, metade, { completar: false })).toEqual(metade)
+    expect(avatarProblems(C, metade).some((p) => p.kind === 'incomplete-set')).toBe(true)
+    expect(Object.keys(withCurrentSet(C, metade)).length).toBeGreaterThan(
+      Object.keys(metade).length,
+    )
+  })
+
+  test('sem fantasia, withCurrentSet não muda nada', () => {
+    expect(withCurrentSet(C, base())).toEqual(base())
   })
 })

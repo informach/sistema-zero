@@ -30,8 +30,8 @@ export const ESPACO = {
   /** O passarinho sobe quando ela chega mais perto que isto, e desce quando ela passa daquilo (m). */
   passaroSobeDe: 1.4,
   passaroDesceDe: 2,
-  /** O pé do passarinho no alto, acima do pé dela: o topo da cabeça desenhada mais um palmo. */
-  passaroAcimaDoPe: CORPO.desenho.cabeca + CORPO.desenho.raioDaCabeca + 0.15,
+  /** O pé do passarinho no alto, acima do pé dela: o topo da cabeça (o encaixe `cabeca_topo` da arte) mais um palmo. */
+  passaroAcimaDoPe: CORPO.doCentro.topo + CORPO.doCentroAoPe + 0.15,
   /** Quão rápido ele sobe e desce (maior, mais rápido). */
   rapidezDoPassaro: 10,
   /**

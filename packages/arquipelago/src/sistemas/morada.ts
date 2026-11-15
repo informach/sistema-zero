@@ -416,9 +416,14 @@ export function moradaComfort(
   }
 }
 
-/** owned é a autoridade de troféus; peças comuns do catálogo são gratuitas. */
-export function moradaPieceAllowed(pieceId: string, owned: readonly string[]): boolean {
-  return (
-    !!MORADA_CATALOG.pieces[pieceId] && (!pieceId.startsWith('trophy/') || owned.includes(pieceId))
-  )
-}
+/**
+ * A posse é a mesma régua da plataforma e do serviço (`core/morada/pricing`): peça grátis entra;
+ * paga, troféu e a estante de troféus só com `owned` (que a plataforma entrega: compradas,
+ * conquistadas e as que já estavam na casa); as funções do jogo (`behavior: objeto:`) vêm da
+ * conquista no jogo. A compra é no Meu quarto da plataforma: a bandeja do jogo mostra o que é dela.
+ */
+export {
+  isMoradaTrophyTier,
+  moradaInstanceAllowed,
+  moradaPieceAllowed,
+} from '@sistemazero/avatar-quarto/morada/catalog'

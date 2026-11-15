@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:net'
 import { criarSalvamentoInicial, ILHA_IDS } from '@sistemazero/arquipelago-contracts'
+import { MORADA_CATALOG } from '@sistemazero/avatar-quarto/morada/catalog'
 import { chromium, type Page } from 'playwright-core'
 import { PerspectiveCamera, Vector3 } from 'three'
 import { type AmostraDaPausa, conferirPausaNoAr } from './pausa-observada'
@@ -14,7 +15,7 @@ await new Promise<void>((resolve, reject) => {
 })
 await new Promise<void>((resolve, reject) => probe.close((e) => (e ? reject(e) : resolve())))
 const server = spawn('bun', ['playground/servidor.ts'], {
-  env: { ...process.env, PORTA: String(port) },
+  env: { ...process.env, PORTA: String(port), MORADA_QA_EMPTY_ASSETS: '1' },
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 server.stdout.on('data', () => {})
@@ -192,32 +193,49 @@ try {
     'PASS: IndexedDB real, conflito acessível, viewport estreito, isolamento entre abas e liberação da trava após fechar.',
   )
   console.log('PASS: menu pausa a física real e fechar o menu retoma a queda.')
+  await reaberto.setViewportSize({ width: 1280, height: 900 })
   await reaberto.getByRole('button', { name: 'Construir', exact: true }).click()
-  const desfazer = reaberto.getByRole('button', { name: '↶ Desfazer', exact: true })
+  const casa = reaberto.getByRole('region', { name: 'Sua casa', exact: true })
+  const ferramentas = casa.getByRole('region', { name: 'Ferramentas de construir' })
+  const desfazer = ferramentas.getByRole('button', { name: 'Desfazer', exact: true })
   await desfazer.waitFor()
-  await reaberto.waitForFunction(() => {
-    const c = (
-      globalThis as { __arquipelagoDesenho?: { camera: { x: number; y: number; z: number } } }
-    ).__arquipelagoDesenho?.camera
-    return (
-      c &&
-      Math.hypot(c.x, c.y - (1.02 + Math.sin(0.95) * 24), c.z - (-3 + Math.cos(0.95) * 24)) < 0.02
-    )
-  })
-  const canvas = reaberto.locator('canvas')
+  await ferramentas.locator('[data-ferramenta="parede"]').click()
+  const parede = MORADA_CATALOG.pieces['construcao/parede_2m']!
+  await ferramentas.getByRole('searchbox', { name: 'Procurar' }).fill(parede.label)
+  await ferramentas.getByText('Área, cômodos e altura', { exact: true }).click()
+  await ferramentas.getByRole('combobox', { name: /^Área/ }).selectOption('')
+  await ferramentas.getByText('Área, cômodos e altura', { exact: true }).click()
+  const primeiraPeca = ferramentas.locator('.arq-obra-escolhas.rolar button').first()
+  await primeiraPeca.click()
+  if ((await primeiraPeca.getAttribute('aria-pressed')) !== 'true')
+    throw new Error('A peça Morada não foi selecionada.')
+  const canvas = casa.locator('canvas')
+  await reaberto.waitForLoadState('networkidle')
   const ret = await canvas.boundingBox()
   if (!ret) throw new Error('Canvas da obra ausente.')
-  const camera = new PerspectiveCamera(55, ret.width / ret.height, 0.1, 1000)
-  camera.position.set(0, 1.02 + Math.sin(0.95) * 24, -3 + Math.cos(0.95) * 24)
-  camera.lookAt(0, 1.02, -3)
+  const camera = new PerspectiveCamera(50, ret.width / ret.height, 0.1, 1000)
+  camera.position.set(12, 15, 18)
+  camera.lookAt(0, 0, 0)
   camera.updateMatrixWorld()
   const naTela = (z: number) => {
-    const p = new Vector3(-6, 1.02, z).project(camera)
+    const p = new Vector3(-12, 0.05, z).project(camera)
     return { x: ret.x + ((p.x + 1) / 2) * ret.width, y: ret.y + ((1 - p.y) / 2) * ret.height }
   }
-  const inicio = naTela(0),
-    fim = naTela(3)
+  const inicio = naTela(-12),
+    fim = naTela(-12)
+  const alvoLivre = await reaberto.evaluate(
+    ({ x, y }) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+    inicio,
+  )
+  if (!alvoLivre) throw new Error('O alvo de colocação ficou coberto pela interface.')
   const arrastar = async () => {
+    if (
+      !(await reaberto.evaluate(
+        ({ x, y }) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+        inicio,
+      ))
+    )
+      throw new Error('O alvo da colocação foi coberto depois de atualizar a interface.')
     await reaberto.mouse.move(inicio.x, inicio.y)
     await reaberto.mouse.down()
     await reaberto.mouse.move(fim.x, fim.y, { steps: 3 })
@@ -229,12 +247,10 @@ try {
   // Mesmo arrasto, agora confirmado: prova que a região escolhida aceita uma parede.
   await arrastar()
   await reaberto.mouse.up()
-  await reaberto.waitForFunction(() => {
-    const b = [...document.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
-      b.textContent?.includes('Desfazer'),
-    )
-    return b && !b.disabled
-  })
+  await reaberto.waitForFunction(
+    (button) => button instanceof HTMLButtonElement && !button.disabled,
+    await desfazer.elementHandle(),
+  )
   await desfazer.click()
   if (!(await desfazer.isDisabled()))
     throw new Error('Desfazer não retirou a única parede aplicada.')
@@ -247,6 +263,7 @@ try {
   console.error('Erros das páginas:', erros)
   for (const context of browser?.contexts() ?? []) {
     for (const page of context.pages()) {
+      await page.screenshot({ path: '.cache/salvamento-browser-falha.png' }).catch(() => {})
       console.error(
         'Página:',
         page.url(),

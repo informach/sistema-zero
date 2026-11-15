@@ -48,6 +48,43 @@ export const CLIPES_DO_JOGO = [
   'planar',
   'escalar',
   'montado',
+  // Na montaria larga (o dino do Vale), o montado de pernas abertas que a arte mediu em cima dele.
+  'montado_largo',
+  // Andar e correr de lado e de costas (do pack): na virada, o passo acompanha para onde o corpo vai.
+  'andar_tras',
+  'andar_esquerda',
+  'andar_direita',
+  'correr_tras',
+  'correr_esquerda',
+  'correr_direita',
+  // A arte: andar pendurado pela quina, andar na água rasa, acender a lanterna e empurrar (de pé e,
+  // para objeto baixo, agachada).
+  'andar_pendurado_esquerda',
+  'andar_pendurado_direita',
+  'andar_na_agua',
+  'acender',
+  'empurrar',
+  'empurrar_baixo',
+  // A arte: levantar do banco e da cama, subir na sela e descer dela.
+  'levantar',
+  'levantar_da_cama',
+  'montar',
+  'desmontar',
+  // Os gestos do mundo (uma vez, parada): pegar do chão, plantar, regar, comemorar e as danças.
+  'pegar_do_chao',
+  'plantar',
+  'plantar_alto',
+  'regar',
+  'comemorar',
+  'dancar',
+  'dancar_3_33s',
+  'dancar_4_13s',
+  'dancar_4_38s',
+  'dancar_5_83s',
+  'dancar_8_96s',
+  // Os veículos: sentada ao volante e ajoelhada no vagonete.
+  'dirigir',
+  'ajoelhado_no_vagonete',
 ] as const
 export type ClipeDoJogo = (typeof CLIPES_DO_JOGO)[number]
 
@@ -79,6 +116,36 @@ export const ESTADOS = [
   'NoBarco',
   'Acenar',
   'Patinar',
+  'AndarTras',
+  'AndarEsquerda',
+  'AndarDireita',
+  'CorrerTras',
+  'CorrerEsquerda',
+  'CorrerDireita',
+  'PenduradoEsquerda',
+  'PenduradoDireita',
+  'AndarNaAgua',
+  'Acender',
+  'Empurrar',
+  'EmpurrarBaixo',
+  'Levantar',
+  'LevantarDaCama',
+  'Montando',
+  'Desmontar',
+  'PegarDoChao',
+  'Plantar',
+  'PlantarAlto',
+  'Regar',
+  'Comemorar',
+  'Dancar',
+  'Dancar2',
+  'Dancar3',
+  'Dancar4',
+  'Dancar5',
+  'Dancar6',
+  'Segurar',
+  'Dirigir',
+  'NoVagonete',
 ] as const
 export type Estado = (typeof ESTADOS)[number]
 
@@ -130,8 +197,38 @@ const RESERVA_DO_ESTADO: Partial<Record<Estado, PoseDoEstado>> = {
   Escalar: inteiro('subir_escada'),
   Equilibrar: inteiro('parado_relaxado'),
   Escorregar: parada('agachado_frente', AGACHADO_PARADO),
-  Montar: parada('agachado_frente', AGACHADO_PARADO),
+  // Sem o montado largo no catálogo, o montado de sempre (a perna entra um pouco no dino).
+  Montar: inteiro('montado'),
   Patinar: inteiro('andar_frente'),
+  AndarTras: inteiro('andar_frente'),
+  AndarEsquerda: inteiro('andar_frente'),
+  AndarDireita: inteiro('andar_frente'),
+  CorrerTras: inteiro('correr_frente'),
+  CorrerEsquerda: inteiro('correr_frente'),
+  CorrerDireita: inteiro('correr_frente'),
+  PenduradoEsquerda: inteiro('pendurar_borda'),
+  PenduradoDireita: inteiro('pendurar_borda'),
+  AndarNaAgua: inteiro('andar_frente'),
+  Acender: inteiro('parado_relaxado'),
+  Empurrar: inteiro('andar_frente'),
+  EmpurrarBaixo: inteiro('empurrar'),
+  Levantar: inteiro('parado_relaxado'),
+  LevantarDaCama: inteiro('parado_relaxado'),
+  Montando: parada('agachado_frente', AGACHADO_PARADO),
+  Desmontar: inteiro('parado_relaxado'),
+  PegarDoChao: parada('agachado_frente', AGACHADO_PARADO),
+  Plantar: parada('agachado_frente', AGACHADO_PARADO),
+  PlantarAlto: inteiro('parado_relaxado'),
+  Regar: inteiro('parado_relaxado'),
+  Comemorar: { clipe: 'pulo_fim', de: PE_TOCANDO, ate: 1 },
+  Dancar: inteiro('parado_relaxado'),
+  Dancar2: inteiro('parado_relaxado'),
+  Dancar3: inteiro('parado_relaxado'),
+  Dancar4: inteiro('parado_relaxado'),
+  Dancar5: inteiro('parado_relaxado'),
+  Dancar6: inteiro('parado_relaxado'),
+  Dirigir: parada('agachado_frente', AGACHADO_PARADO),
+  NoVagonete: parada('agachado_frente', AGACHADO_PARADO),
 }
 
 const DA_ARTE: Record<Estado, PoseDoEstado> = {
@@ -167,8 +264,45 @@ const DA_ARTE: Record<Estado, PoseDoEstado> = {
   Escalar: inteiro('escalar'),
   Equilibrar: inteiro('equilibrar'),
   Escorregar: inteiro('escorregar'),
-  Montar: inteiro('montado'),
+  Montar: inteiro('montado_largo'),
   Patinar: inteiro('patinar'),
+  // De lado e de costas (o pack): na virada, enquanto o corpo ainda não olha para onde vai.
+  AndarTras: inteiro('andar_tras'),
+  AndarEsquerda: inteiro('andar_esquerda'),
+  AndarDireita: inteiro('andar_direita'),
+  CorrerTras: inteiro('correr_tras'),
+  CorrerEsquerda: inteiro('correr_esquerda'),
+  CorrerDireita: inteiro('correr_direita'),
+  // Pendurada, andando pela quina; andando na água rasa; acendendo a lanterna; empurrando.
+  PenduradoEsquerda: inteiro('andar_pendurado_esquerda'),
+  PenduradoDireita: inteiro('andar_pendurado_direita'),
+  AndarNaAgua: inteiro('andar_na_agua'),
+  Acender: inteiro('acender'),
+  Empurrar: inteiro('empurrar'),
+  EmpurrarBaixo: inteiro('empurrar_baixo'),
+  // Levantar do banco e da cama (uma vez, com o desenho ainda no assento ou no colchão); subir na
+  // sela antes do laço de montada e descer dela ao sair.
+  Levantar: inteiro('levantar'),
+  LevantarDaCama: inteiro('levantar_da_cama'),
+  Montando: inteiro('montar'),
+  Desmontar: inteiro('desmontar'),
+  // Os gestos do mundo (`GESTOS`), parada, no lugar do "Parado".
+  PegarDoChao: inteiro('pegar_do_chao'),
+  Plantar: inteiro('plantar'),
+  PlantarAlto: inteiro('plantar_alto'),
+  Regar: inteiro('regar'),
+  Comemorar: inteiro('comemorar'),
+  Dancar: inteiro('dancar'),
+  Dancar2: inteiro('dancar_3_33s'),
+  Dancar3: inteiro('dancar_4_13s'),
+  Dancar4: inteiro('dancar_4_38s'),
+  Dancar5: inteiro('dancar_5_83s'),
+  Dancar6: inteiro('dancar_8_96s'),
+  // Segurando um objeto parada (o balde cheio): o parado de sempre, com a camada do braço afastado.
+  Segurar: inteiro('parado_relaxado'),
+  // Os veículos (o modo especial de cada um).
+  Dirigir: inteiro('dirigir'),
+  NoVagonete: inteiro('ajoelhado_no_vagonete'),
 }
 
 export const POSE_DO_ESTADO: Record<Estado, PoseDoEstado> = Object.fromEntries(
@@ -232,6 +366,21 @@ export const CICLO_DE_ESCALAR = cicloDoEstado('Escalar', 'rise')
 export const CICLO_DE_EQUILIBRAR = cicloDoEstado('Equilibrar', 'stride')
 /** De patins: o corpo desliza `passada` por ciclo de impulsos. */
 export const CICLO_DE_PATINAR = cicloDoEstado('Patinar', 'stride')
+/** Pendurada, andando pela quina: um passo das mãos leva o corpo `passada` de lado. */
+export const CICLO_PENDURADO = cicloDoEstado('PenduradoDireita', 'stride')
+/** Na água rasa: `passada` por ciclo, passos mais pesados. */
+export const CICLO_NA_AGUA_RASA = cicloDoEstado('AndarNaAgua', 'stride')
+/** Empurrando: `passada` por ciclo, curvada contra o que empurra. */
+export const CICLO_DE_EMPURRAR = cicloDoEstado('Empurrar', 'stride')
+/** Empurrando objeto baixo, agachada: `passada` por ciclo. */
+export const CICLO_DE_EMPURRAR_BAIXO = cicloDoEstado('EmpurrarBaixo', 'stride')
+/**
+ * A água rasa: a profundidade nos pés (m, na escala do mundo) a partir da qual ela anda como na
+ * água. A arte fez o clipe para `parte_rasa_m` (0,3 m nativos); da metade disso para cima, os
+ * passos já são os da água.
+ */
+export const AGUA_RASA_A_PARTIR_DE =
+  ((doCatalogo('andar_na_agua').place?.parte_rasa_m as number | undefined) ?? 0.3) * escala * 0.5
 /** Nadar: as braçadas de um ciclo levam o corpo `passada` metros. */
 export const CICLO_DE_NADO = {
   passada: doCatalogo('nadar').stride * escala,
@@ -284,6 +433,96 @@ export const DURACAO_DA_ATERRISSAGEM = duracaoDoEstado('Aterrissagem') * 0.7
 export const DURACAO_DA_SAIDA_DA_AGUA = duracaoDoEstado('SaindoDaAgua')
 /** Nadando, acima disto (m/s) nada; abaixo, boia. */
 export const NADANDO_ACIMA_DE = 0.5
+/** Pendurada, acima disto (m/s) pela quina anda de lado; abaixo, fica parada pendurada. */
+export const PENDURADA_ANDANDO = 0.1
+
+/**
+ * Os gestos: o que o corpo faz parada, no lugar do "Parado" (o mundo pede, `pedirGesto`; o
+ * personagem também, ao levantar do banco e da cama e ao descer da sela). Andar, pular ou sair do
+ * chão cortam o gesto na hora: quem quer andar não espera uma animação.
+ */
+export const GESTOS = [
+  'Levantar',
+  'LevantarDaCama',
+  'Desmontar',
+  'PegarDoChao',
+  'Plantar',
+  'PlantarAlto',
+  'Regar',
+  'Comemorar',
+  'Dancar',
+  'Dancar2',
+  'Dancar3',
+  'Dancar4',
+  'Dancar5',
+  'Dancar6',
+  'Segurar',
+] as const satisfies readonly Estado[]
+export type Gesto = (typeof GESTOS)[number]
+
+/** As danças (laços): a festa e a banda trocam de dança a cada vez (`dancaDaVez`). */
+export const DANCAS = [
+  'Dancar',
+  'Dancar2',
+  'Dancar3',
+  'Dancar4',
+  'Dancar5',
+  'Dancar6',
+] as const satisfies readonly Gesto[]
+export function dancaDaVez(n: number): Gesto {
+  const i = ((Math.floor(n) % DANCAS.length) + DANCAS.length) % DANCAS.length
+  return DANCAS[i] ?? 'Dancar'
+}
+const EM_LACO: ReadonlySet<Gesto> = new Set<Gesto>([...DANCAS, 'Segurar'])
+/** Quanto tempo (s) um gesto fica: os de uma vez, o clipe inteiro; os laços, pelo menos 5 s. */
+export function duracaoDoGesto(gesto: Gesto): number {
+  if (gesto === 'Segurar') return 2.5
+  const d = duracaoDoEstado(gesto)
+  return EM_LACO.has(gesto) ? Math.max(5, d) : d
+}
+
+const PASSOS_PARA_OS_LADOS = [
+  'AndarTras',
+  'AndarEsquerda',
+  'AndarDireita',
+  'CorrerTras',
+  'CorrerEsquerda',
+  'CorrerDireita',
+] as const satisfies readonly Estado[]
+
+/**
+ * Para onde vão os passos, no referencial do corpo: a frente, as costas e os dois lados, cada um
+ * com o seu peso (o quadrado do cosseno de cada lado: somam 1). Sem velocidade, para a frente.
+ */
+export function pesosDaDirecao(frente: number, deLado: number) {
+  const v = Math.hypot(frente, deLado)
+  if (v < 1e-6) return { frente: 1, tras: 0, direita: 0, esquerda: 0 }
+  const c = frente / v
+  const s = deLado / v
+  return {
+    frente: Math.max(0, c) ** 2,
+    tras: Math.max(0, -c) ** 2,
+    direita: Math.max(0, s) ** 2,
+    esquerda: Math.max(0, -s) ** 2,
+  }
+}
+
+/** Reparte o andar e o correr pelos passos de frente, de costas e de lado (sem criar lixo). */
+function repartirPelaDirecao(alvo: Record<Estado, number>, e: EntradaDaLocomocao): void {
+  if (e.frente === undefined || e.deLado === undefined) return
+  const p = pesosDaDirecao(e.frente, e.deLado)
+  if (p.frente >= 1) return
+  const andar = alvo.Andar
+  const correr = alvo.Correr
+  alvo.Andar = andar * p.frente
+  alvo.AndarTras += andar * p.tras
+  alvo.AndarDireita += andar * p.direita
+  alvo.AndarEsquerda += andar * p.esquerda
+  alvo.Correr = correr * p.frente
+  alvo.CorrerTras += correr * p.tras
+  alvo.CorrerDireita += correr * p.direita
+  alvo.CorrerEsquerda += correr * p.esquerda
+}
 
 /**
  * Quantos ciclos por segundo, andando pela distância: a velocidade pela passada, até `RITMO_MAXIMO`
@@ -317,6 +556,28 @@ export interface EntradaDaLocomocao {
    * de verdade (os impulsos andam pela distância).
    */
   patinando?: boolean
+  /**
+   * Para onde o corpo anda, no referencial dele (m/s): `frente` para onde ele olha, `deLado` para a
+   * direita dele (negativo, a esquerda). No chão, andar para o lado ou para trás (a virada) toca os
+   * passos de lado e de costas; pendurada na borda, o `deLado` é andar pela quina. Sem eles, para
+   * a frente.
+   */
+  frente?: number
+  deLado?: number
+  /** No chão com a água nos pés acima de `AGUA_RASA_A_PARTIR_DE`: os passos são os da água. */
+  naAguaRasa?: boolean
+  /** Acabou de acender a lanterna: parada, faz o gesto uma vez. */
+  acendendo?: boolean
+  /** Andando contra algo que se mexe (o caixote, o tronco do lago): os passos de quem empurra. */
+  empurrando?: boolean
+  /** O que ela empurra é baixo (até `NO_EMPURRAR_BAIXO.objetoAte`): agachada, mãos embaixo. */
+  empurrandoBaixo?: boolean
+  /** Um gesto (`GESTOS`) em andamento: parada no chão, ele no lugar do "Parado". */
+  gesto?: Gesto | null
+  /** Quantas vezes um gesto já começou: muda a cada pedido, inclusive do mesmo gesto. */
+  gestoVez?: number
+  /** Montada numa sela baixa: o subir na sela toca antes do laço (na alta, o corte direto). */
+  selaBaixa?: boolean
 }
 
 export type ModoEspecial =
@@ -331,6 +592,8 @@ export type ModoEspecial =
   | 'montar'
   | 'planar'
   | 'barco'
+  | 'dirigir'
+  | 'vagonete'
 
 export interface Locomocao {
   pesos: Record<Estado, number>
@@ -351,6 +614,12 @@ export interface Locomocao {
   /** Quanto falta do movimento de sair da água (s) e o quanto ele pesa. */
   saindoDaAgua: number
   forcaDaSaidaDaAgua: number
+  /** Montada desde o quadro anterior (para o subir na sela tocar uma vez). */
+  naSela: boolean
+  /** O gesto do quadro anterior (um gesto novo começa do início). */
+  gesto: Gesto | null
+  /** A vez do gesto do quadro anterior (`EntradaDaLocomocao.gestoVez`). */
+  gestoVez: number
 }
 
 const zeros = (): Record<Estado, number> =>
@@ -372,6 +641,9 @@ export function criarLocomocao(): Locomocao {
     naAgua: false,
     saindoDaAgua: 0,
     forcaDaSaidaDaAgua: 0,
+    naSela: false,
+    gesto: null,
+    gestoVez: 0,
   }
 }
 
@@ -428,6 +700,16 @@ export function passoDaLocomocao(
   }
   if (e.nadando || e.especial || !e.noChao) l.saindoDaAgua = 0
   if (!e.acenando) l.tempos.Acenar = 0
+  if (!e.acendendo) l.tempos.Acender = 0
+  // Um gesto novo, ou o mesmo pedido de novo (outra concha logo depois), começa do início.
+  const gesto = e.gesto ?? null
+  const vez = e.gestoVez ?? 0
+  if (gesto !== l.gesto || vez !== l.gestoVez) {
+    if (gesto) l.tempos[gesto] = 0
+    l.gesto = gesto
+    l.gestoVez = vez
+  }
+  if (e.especial !== 'montar') l.naSela = false
 
   if (e.especial) {
     // O corpo é levado por outra regra: um estado por modo. Subir (tronco, escada) anda pela
@@ -456,9 +738,23 @@ export function passoDaLocomocao(
       transicao = TRANSICAO.agua
       laco('NoBarco')
     } else if (e.especial === 'montar') {
-      // Montar entra devagar, como quem se acomoda.
+      // Montar: na sela baixa, o subir na sela uma vez (a perna passa por cima), depois o laço de
+      // quem já subiu; na alta (o dino), direto no laço, como no vagonete.
       transicao = TRANSICAO.agua
-      laco('Montar')
+      if (!l.naSela) {
+        l.naSela = true
+        l.tempos.Montando = e.selaBaixa ? 0 : 1
+      }
+      if (l.tempos.Montando < 1) {
+        alvo.Montando = 1
+        l.tempos.Montando = Math.min(1, l.tempos.Montando + dt / duracaoDoEstado('Montando'))
+      } else laco('Montar')
+    } else if (e.especial === 'dirigir') {
+      transicao = TRANSICAO.agua
+      laco('Dirigir')
+    } else if (e.especial === 'vagonete') {
+      transicao = TRANSICAO.agua
+      laco('NoVagonete')
     } else if (e.especial === 'sentar' || e.especial === 'deitar') {
       // Sentar e deitar: o movimento de se acomodar uma vez (a arte o fez começando em pé, junto do
       // assento ou em cima do colchão) e depois o laço de quem ficou. Levantar é a troca de volta
@@ -482,9 +778,16 @@ export function passoDaLocomocao(
     } else {
       // Na borda: pendurada, ou subindo (o tempo do estado é o progresso que o modo dá).
       const subindo = e.subindo ?? 0
+      const deLado = e.deLado ?? 0
       if (subindo > 0) {
         alvo.SubirBorda = 1
         l.tempos.SubirBorda = subindo
+      } else if (Math.abs(deLado) > PENDURADA_ANDANDO) {
+        // Andando pela quina: as mãos passam uma pela outra, pela distância.
+        const estado: Estado = deLado > 0 ? 'PenduradoDireita' : 'PenduradoEsquerda'
+        alvo[estado] = 1
+        l.tempos[estado] =
+          (l.tempos[estado] + ciclosPelaDistancia(Math.abs(deLado), CICLO_PENDURADO) * dt) % 1
       } else laco('PendurarBorda')
     }
   } else if (e.nadando) {
@@ -584,18 +887,60 @@ export function passoDaLocomocao(
 
   // De patins, o andar e o correr viram deslizar: o peso dos dois passa para o `Patinar`, que anda
   // pela distância, como os passos (parada, o "Parado" de sempre; no ar, o pulo de sempre).
-  if (e.patinando && !e.nadando && !e.especial) {
-    alvo.Patinar += alvo.Andar + alvo.Correr
-    alvo.Andar = 0
-    alvo.Correr = 0
-    l.tempos.Patinar =
-      (l.tempos.Patinar + ciclosPelaDistancia(e.velocidade, CICLO_DE_PATINAR) * dt) % 1
+  // No chão, o andar e o correr trocam de passo pelo que acontece: empurrando, na água rasa, de
+  // patins ou andando de lado e de costas. Cada troca passa o peso dos dois para o estado dela,
+  // que anda pela distância como os passos.
+  if (!e.nadando && !e.especial) {
+    const passos = alvo.Andar + alvo.Correr
+    const trocar = (estado: Estado, ciclo: { passada: number; duracao: number }) => {
+      alvo[estado] += passos
+      alvo.Andar = 0
+      alvo.Correr = 0
+      l.tempos[estado] = (l.tempos[estado] + ciclosPelaDistancia(e.velocidade, ciclo) * dt) % 1
+    }
+    if (e.empurrando && e.noChao && e.empurrandoBaixo)
+      trocar('EmpurrarBaixo', CICLO_DE_EMPURRAR_BAIXO)
+    else if (e.empurrando && e.noChao) trocar('Empurrar', CICLO_DE_EMPURRAR)
+    else if (e.naAguaRasa && e.noChao) trocar('AndarNaAgua', CICLO_NA_AGUA_RASA)
+    else if (e.patinando) trocar('Patinar', CICLO_DE_PATINAR)
+    else repartirPelaDirecao(alvo, e)
+  }
+  // Acendendo a lanterna, parada: o gesto uma vez, no lugar do "Parado".
+  if (e.acendendo && !e.nadando && !e.especial && alvo.Parado > 0) {
+    alvo.Acender = alvo.Parado
+    alvo.Parado = 0
+    l.tempos.Acender = Math.min(1, l.tempos.Acender + dt / duracaoDoEstado('Acender'))
+  }
+  if (gesto === 'Desmontar' && !e.nadando && !e.especial) {
+    // Descendo da sela (o pulinho para o lado do dino): o corpo inteiro, no ar e no chão, sem o
+    // pulo nem a aterrissagem de quem pulou.
+    for (const c of ESTADOS) alvo[c] = 0
+    alvo.Desmontar = 1
+    l.noAr = 0
+    l.pulou = false
+    l.aterrissando = 0
+    transicao = TRANSICAO.ar
+    l.tempos.Desmontar = Math.min(1, l.tempos.Desmontar + dt / duracaoDoEstado('Desmontar'))
+  } else if (gesto && e.noChao && !e.nadando && !e.especial) {
+    // Um gesto, parada no chão: no lugar do "Parado" (andar o tira, como no acender). O clipe
+    // anda sempre no relógio do gesto (o do personagem), mesmo enquanto não aparece (ela ainda
+    // freando, a lanterna acendendo): os dois acabam juntos.
+    if (alvo.Parado > 0) {
+      alvo[gesto] = alvo.Parado
+      alvo.Parado = 0
+    }
+    const d = duracaoDoEstado(gesto)
+    const t = l.tempos[gesto] + (d > 0 ? dt / d : 1)
+    l.tempos[gesto] = EM_LACO.has(gesto) ? t % 1 : Math.min(1, t)
   }
 
   // O "Parado" respira no tempo dele, sempre (assim volta ao meio do laço, sem pular de pose).
   l.tempos.Parado = (l.tempos.Parado + dt / duracaoDoEstado('Parado')) % 1
   if (!e.nadando && !e.especial) {
     l.fase = (l.fase + ciclosPorSegundo(e.velocidade, medidas) * dt) % 1
+    // Os passos de lado e de costas na mesma fase do andar e do correr (na mistura, os pés caem
+    // juntos, como no andar com o correr).
+    for (const estado of PASSOS_PARA_OS_LADOS) l.tempos[estado] = l.fase
     l.tempos.Andar = l.fase
     l.tempos.Correr = l.fase
   }

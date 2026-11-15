@@ -8,7 +8,7 @@ import {
   useRapier,
 } from '@react-three/rapier'
 import type { Obra, QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
-import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
@@ -36,12 +36,29 @@ import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
 import { ESCALADA } from '../sistemas/escalada'
 import { corpoQueSegura } from '../sistemas/espaco-dos-bichos'
+import {
+  alturaNaSela,
+  comecarGesto,
+  criarGestoEmAndamento,
+  type ObjetoDoGesto,
+  passoDoGesto,
+  progressoDoGesto,
+  selaBaixa,
+} from '../sistemas/gestos'
 import { comandoCancela, passoDaIda } from '../sistemas/ir-tocando'
-import { DURACAO_DO_CLIPE, type EntradaDaLocomocao } from '../sistemas/locomocao'
+import {
+  AGUA_RASA_A_PARTIR_DE,
+  DURACAO_DO_CLIPE,
+  type EntradaDaLocomocao,
+} from '../sistemas/locomocao'
 import {
   avancoNaParede,
+  avancoNoEmpurrao,
+  type ComoSeEmpurra,
+  comoSeEmpurra,
   DESENHO_NA_AGUA,
   desenhoPenduradoNaBorda,
+  empurraBaixo,
 } from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
@@ -64,6 +81,7 @@ import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, obraVisivel, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
 import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from './bracos'
+import { type ApoioDasMaos, apoioDaEscada } from './maos-no-apoio'
 import { AJUSTE_MAXIMO, type AlturaDoChao } from './pes-no-chao'
 import { PlanadorAberto } from './planador-aberto'
 
@@ -100,8 +118,18 @@ const INCLINACAO_NO_PLANADOR = 0.25
 const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** Escalando, quanto o desenho anda para a casca (o corpo fica a raio + folga dela). */
 const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
+/**
+ * Empurrando, quanto o desenho anda (recua): a face encosta na cápsula, a raio + folga do meio; o
+ * clipe (de pé ou agachada) e o objeto redondo mudam onde a face fica no desenho.
+ */
+const avancoNoEmpurraoDe = (objeto: ComoSeEmpurra | null) =>
+  avancoNoEmpurrao(CORPO.raio + FOLGA_DO_CONTROLADOR, objeto)
+/** A sela do dino é baixa o bastante para o montar e o desmontar da arte? (Não: 0,70 m nativos.) */
+const SELA_BAIXA = selaBaixa(MONTARIA.sela)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
+/** Depois do último contato, os passos de quem empurra seguram isto (s): sem piscar entre passos. */
+const SEGURA_O_EMPURRAO = 0.25
 /**
  * Para onde ir quando o ponto pedido, dentro de casa, cai em cima de um móvel: o lugar livre mais
  * perto dele (ou a frente da porta, com o quarto todo tomado: na casa construída, a da porta de
@@ -148,10 +176,12 @@ export function Personagem({
   const colisor = useRef<RapierCollider>(null)
   /** Montada no dino do Vale, o colisor maior (dela com ele) que o controlador usa no lugar do dela. */
   const colisorMontado = useRef<RapierCollider>(null)
-  /** De 0 (de pé) a 1 (na sela), para o desenho subir e descer suave. */
+  /** Quanto o desenho está acima do chão por causa da sela (m), para subir e descer suave. */
   const naSela = useRef(0)
   /** De 0 (no chão) a 1 (agarrada na casca), para o desenho chegar à casca suave. */
   const naCasca = useRef(0)
+  /** De 0 a 1, empurrando: o desenho recua para a face do objeto (`avancoNoEmpurraoDe`). */
+  const naEmpurrao = useRef(0)
   const planando = useEstado((s) => s.modo === 'planar')
   const visual = useRef<Group>(null)
   const usosAtendidos = useRef(controle.usar)
@@ -178,7 +208,31 @@ export function Personagem({
   const rumoDaIda = useRef({ x: 0, z: 0, correr: false }).current
   const acenosVistos = useRef(movimento.acenos)
   const acenando = useRef(0)
+  /** O gesto de acender a lanterna (s que faltam) e se ela estava acesa no passo anterior. */
+  const acendendo = useRef(0)
+  const lanternaAgora = useRef(lanterna)
+  lanternaAgora.current = lanterna
+  const lanternaAntes = useRef(lanterna)
+  /** Quanto falta (s) dos passos de quem empurra, depois do último contato. */
+  const empurrando = useRef(0)
+  /** O último objeto empurrado (a altura dele escolhe o clipe; `null`: não disse como é). */
+  const empurrado = useRef<ComoSeEmpurra | null>(null)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
+  /** O gesto em andamento (`sistemas/gestos`) e o modo do passo anterior (levantar, descer da sela). */
+  const [gesto] = useState(() => criarGestoEmAndamento(movimento.gestos))
+  const modoAntes = useRef(v.modo)
+  const jeitoAntes = useRef<'sentar' | 'deitar'>('sentar')
+  /** O objeto do gesto na mão (o regador, o balde): muda só quando o gesto começa e acaba. */
+  const [objetoDoGesto, setObjetoDoGesto] = useState<ObjetoDoGesto | null>(null)
+  const objetoMostrado = useRef<ObjetoDoGesto | null>(null)
+  /** O apoio das mãos neste passo (`maos-no-apoio.ts`), lido pelo desenho depois da pose. */
+  const apoioDasMaos = useRef<ApoioDasMaos | null>(null)
+  const apoioDe = useRef<object | null>(null)
+  const apoioFeito = useRef<ApoioDasMaos | null>(null)
+  /** Deitada e levantando da cama, sem o chapéu (os clipes da arte tiram o chapéu). */
+  const deitada = useEstado((s) => s.descanso === 'deitar')
+  const [levantandoDaCama, setLevantandoDaCama] = useState(false)
+  const levantandoMostrado = useRef(false)
 
   const inicial = useMemo(() => {
     if (partida) return partida
@@ -320,6 +374,8 @@ export function Personagem({
 
     if (pedidos.teleporte) {
       if (v.modo !== 'chao') mudarModo(v, 'chao', agora, aviso)
+      // Levada para outro lugar não é levantar nem descer da sela: nenhum gesto de saída.
+      modoAntes.current = v.modo
       b.setNextKinematicTranslation(pedidos.teleporte)
       v.velY = 0
       v.embalo.x = 0
@@ -411,6 +467,8 @@ export function Personagem({
     if (!modo.valendo(v, movimento)) {
       mudarModo(v, 'chao', agora, aviso)
       modo = MODOS.chao
+      // O assento ou a sela sumiram: sem levantar (o desenho ficaria onde o assento estava).
+      modoAntes.current = 'chao'
     }
     // Todo percurso consulta o mundo, inclusive escada, borda e escalada. Os guiados
     // usam o controlador sem snap/degrau; sensores e o bicho não bloqueiam o caminho.
@@ -462,6 +520,7 @@ export function Personagem({
     m.velY = v.velY
     m.nadando = nadando
     m.patinando = e.patins && v.modo === 'chao' && !nadando
+    m.selaBaixa = SELA_BAIXA
     // Na viagem de barco ela vai sentada no piso dele (embarcando e desembarcando, de pé).
     const viajando =
       v.modo === 'barco' && (v.barco?.fase === 'viagem' || v.barco?.fase === 'espera')
@@ -480,6 +539,83 @@ export function Personagem({
     acenando.current = Math.max(0, acenando.current - dt)
     m.acenando = acenando.current > 0
     m.subindo = v.modo === 'borda' ? v.subindoNaBorda : 0
+    // Para onde o corpo anda no referencial dele (a frente é para onde o desenho olha): na virada,
+    // os passos de lado e de costas; pendurada, andar pela quina.
+    const giro = visual.current?.rotation.y ?? v.direcao
+    const vx = (prox.x - p.x) / dt
+    const vz = (prox.z - p.z) / dt
+    const frente = vx * Math.sin(giro) + vz * Math.cos(giro)
+    const deLado = -vx * Math.cos(giro) + vz * Math.sin(giro)
+    const suave = Math.min(1, dt * 14)
+    m.frente = (m.frente ?? frente) + (frente - (m.frente ?? frente)) * suave
+    m.deLado = (m.deLado ?? deLado) + (deLado - (m.deLado ?? deLado)) * suave
+    // Na água rasa (até onde ela ainda anda), os passos da água.
+    m.naAguaRasa = v.modo === 'chao' && !nadando && v.noChao && v.aguaNosPes > AGUA_RASA_A_PARTIR_DE
+    // Acendeu a lanterna agora: o gesto de acender, uma vez.
+    if (lanternaAgora.current && !lanternaAntes.current)
+      acendendo.current = DURACAO_DO_CLIPE.acender
+    lanternaAntes.current = lanternaAgora.current
+    acendendo.current = Math.max(0, acendendo.current - dt)
+    m.acendendo = acendendo.current > 0
+    // Andando contra algo que se mexe (o caixote, o tronco do lago): os passos de quem empurra. O
+    // contato vem do controlador do chão neste passo; segura um pouco para não piscar.
+    let empurrou = false
+    if (v.modo === 'chao' && v.noChao && !nadando && real > 0.2) {
+      for (let i = 0; i < kcc.numComputedCollisions(); i++) {
+        const contato = kcc.computedCollision(i)
+        const tocado = contato?.collider?.parent()
+        if (tocado?.isDynamic() && Math.abs(contato?.normal1.y ?? 1) < 0.5) {
+          empurrou = true
+          empurrado.current = comoSeEmpurra(tocado.userData)
+          break
+        }
+      }
+    }
+    empurrando.current = empurrou ? SEGURA_O_EMPURRAO : Math.max(0, empurrando.current - dt)
+    m.empurrando = empurrando.current > 0
+    m.empurrandoBaixo = m.empurrando && empurraBaixo(empurrado.current)
+    // Os gestos: saindo do banco ou da cama sem andar, ela levanta (o desenho fica no assento até o
+    // fim do clipe); descendo da sela, o desmontar; e o que o mundo pedir. Andar corta.
+    const andou = Math.hypot(ix, iz) > 0.3 || e.pulou
+    if (modoAntes.current === 'descanso' && v.modo === 'chao' && !andou && !nadando)
+      comecarGesto(gesto, jeitoAntes.current === 'deitar' ? 'LevantarDaCama' : 'Levantar')
+    // Descer da sela com o desmontar só na sela baixa; na alta (o dino), o corte, como subir.
+    if (modoAntes.current === 'montar' && v.modo === 'chao' && !nadando && SELA_BAIXA)
+      comecarGesto(gesto, 'Desmontar')
+    modoAntes.current = v.modo
+    if (v.descanso) jeitoAntes.current = v.descanso.jeito
+    // Pausado (um painel aberto), o gesto espera: começa ou continua quando o jogo volta. Com a
+    // Morada aberta este passo nem roda; o corpo da casa consome o pedido que fizer.
+    passoDoGesto(gesto, movimento, {
+      dt: parado ? 0 : dt,
+      andou,
+      livre: v.modo === 'chao' && !nadando,
+    })
+    m.gesto = gesto.qual
+    m.gestoVez = gesto.vez
+    // Onde as mãos se seguram (a IK das mãos): a quina da borda pendurada, os montantes da escada.
+    // Um apoio por borda ou escada (feito quando ela pega), sem criar lixo a cada passo.
+    const borda = v.modo === 'borda' && v.subindoNaBorda === 0 ? v.borda : null
+    const escada = v.modo === 'escada' ? v.escada : null
+    const fonte = borda ?? escada
+    if (fonte !== apoioDe.current) {
+      apoioDe.current = fonte
+      apoioFeito.current = borda
+        ? { segmentos: [{ a: borda.a, b: borda.b }] }
+        : escada
+          ? apoioDaEscada(escada)
+          : null
+    }
+    apoioDasMaos.current = apoioFeito.current
+    if (gesto.objeto !== objetoMostrado.current) {
+      objetoMostrado.current = gesto.objeto
+      setObjetoDoGesto(gesto.objeto)
+    }
+    const daCama = gesto.qual === 'LevantarDaCama'
+    if (daCama !== levantandoMostrado.current) {
+      levantandoMostrado.current = daCama
+      setLevantandoDaCama(daCama)
+    }
 
     estado.definirLugar({ dentroDeCasa: interior(prox.x, prox.z), nadando })
     if (v.correnteza >= CORRENTEZA.aviso && !avisouDaCorrenteza.current) {
@@ -583,11 +719,15 @@ export function Personagem({
     }
     // Descansando, o desenho vai para o assento ou o colchão (o corpo do Rapier fica de pé ao
     // lado, fora do móvel): a origem do desenho (os pés no clipe) no lugar do descanso.
+    // Levantando, o desenho fica no assento ou no colchão até o fim do clipe (o `levantar` da arte
+    // começa sentado e termina de pé um pouco à frente); depois volta ao corpo.
     const lugar = v.descanso
+    const levantando = gesto.qual === 'Levantar' || gesto.qual === 'LevantarDaCama'
     if (lugar) {
       ultimoDescanso.current = lugar
       emDescanso.current += (1 - emDescanso.current) * Math.min(1, dt * 6)
-    } else emDescanso.current += (0 - emDescanso.current) * Math.min(1, dt * 8)
+    } else if (levantando) emDescanso.current = 1
+    else emDescanso.current += (0 - emDescanso.current) * Math.min(1, dt * 8)
     const d = emDescanso.current
     const ultimo = ultimoDescanso.current
     if (ultimo && d > 0.001) {
@@ -596,13 +736,26 @@ export function Personagem({
       vis.position.z += (ultimo.desenho.z - centro.z - vis.position.z) * d
     }
     // Montada, o desenho sobe até a sela (a origem do clipe `montado` é a sela, com a bacia logo
-    // acima): o corpo do Rapier continua no chão, dentro do colisor de montada.
-    naSela.current += ((v.modo === 'montar' ? 1 : 0) - naSela.current) * Math.min(1, dt * 8)
-    if (naSela.current > 0.001) vis.position.y += MONTARIA.subidaDoDesenho * naSela.current
+    // acima): o corpo do Rapier continua no chão, dentro do colisor de montada. Subindo e descendo,
+    // acompanha o `montar` e o `desmontar` (`alturaNaSela`).
+    const sela = alturaNaSela(MONTARIA.subidaDoDesenho, {
+      montada: v.modo === 'montar',
+      noModo: v.noModo,
+      desmontando: gesto.qual === 'Desmontar' ? progressoDoGesto(gesto) : null,
+    })
+    naSela.current += (sela - naSela.current) * Math.min(1, dt * 8)
+    if (naSela.current > 0.001) vis.position.y += naSela.current
     // Escalando, o desenho vai para a casca a distância que o clipe `escalar` tem da parede.
     naCasca.current += ((v.modo === 'escalada' ? 1 : 0) - naCasca.current) * Math.min(1, dt * 8)
     if (naCasca.current > 0.001) {
       const c = naCasca.current * AVANCO_NA_CASCA
+      vis.position.x += Math.sin(vis.rotation.y) * c
+      vis.position.z += Math.cos(vis.rotation.y) * c
+    }
+    // Empurrando, o desenho recua até a face do objeto cair onde o clipe `empurrar` a espera.
+    naEmpurrao.current += ((m.empurrando ? 1 : 0) - naEmpurrao.current) * Math.min(1, dt * 8)
+    if (naEmpurrao.current > 0.001) {
+      const c = naEmpurrao.current * avancoNoEmpurraoDe(empurrado.current)
       vis.position.x += Math.sin(vis.rotation.y) * c
       vis.position.z += Math.cos(vis.rotation.y) * c
     }
@@ -684,6 +837,10 @@ export function Personagem({
             comPatins={calcados}
             comLanterna={lanterna}
             planando={planando && comPlanador}
+            objetoDoGesto={objetoDoGesto}
+            semChapeu={deitada || levantandoDaCama}
+            apoioDasMaos={apoioDasMaos}
+            montada={montado}
           />
           {comPlanador ? (
             <Suspense fallback={null}>

@@ -842,15 +842,18 @@ async function main() {
       },
       /**
        * Só roda com `KIDS_SO=pais` SOZINHO e com a sessão do RESPONSÁVEL (cookies exportados
-       * logado como responsável). As páginas da Área dos pais (11/10/2026): Acompanhamento,
-       * Editar perfil, Ajuda › Atendimento, Conta e Família. Nada é salvo nem enviado.
+       * logado como responsável). As páginas da Área dos pais redesenhada (15/11/2026): a página
+       * do filho (abas Progresso e Perfil), Ajuda › Atendimento, Conta e Família. Nada é salvo nem
+       * enviado.
        */
       pais: {
         nomes: ['pais'],
         rodar: async () => {
           if (!so?.includes('pais')) return
+          // O Acompanhamento virou a aba Progresso do filho (14/11/2026): o endereço antigo leva
+          // ao Progresso do primeiro filho.
           const onde = await abrir('/pais/acompanhamento', 4000)
-          if (!onde.includes('/pais/acompanhamento'))
+          if (!onde.includes('/pais/crianca/'))
             throw new Error(
               `A Área dos pais pede a sessão do responsável (caiu em ${onde}). Exporte os cookies logado como responsável e rode só KIDS_SO=pais.`,
             )
@@ -874,11 +877,16 @@ async function main() {
           }
           altura = 1000
           await tamanho(altura, 1)
-          // O que a criança fez na semana e os números no total.
+          // A página do filho: o cabeçalho e as abas (15/11/2026). O aviso "Falta a data de
+          // nascimento" é do perfil de teste e sai da foto; a Jornada fica de fora porque o staging
+          // mostra cursos da trilha ainda não publicados.
+          await avaliar(
+            `[...document.querySelectorAll('main *')].filter((d) => d.textContent.includes('Falta a data de nascimento') && d.textContent.includes('Informar a data')).slice(-1).forEach((d) => { d.style.display = 'none' })`,
+          )
           await foto(
             'tela-pais-painel',
             await caixaDe(
-              `[document.querySelector('main h1'), secao('Esta semana'), secao('No total')]`,
+              `[document.querySelector('main h1')?.closest('section, header, div.kids-carta') ?? document.querySelector('main h1'), document.querySelector('main [role=tablist]')]`,
               24,
             ),
           )
@@ -891,20 +899,18 @@ async function main() {
           )
           // Editar perfil (a visibilidade para os colegas): só abre, nunca salva. ⚠️ A data de
           // nascimento aparece no formulário: embace-a antes de publicar a foto.
-          await abrir('/pais', 3000)
+          await abrir('/pais/familia', 3000)
           const crianca = String(
             await avaliar(
               `document.querySelector('main a[href^="/pais/crianca/"]')?.getAttribute('href')?.split('?')[0] ?? ''`,
             ),
           )
           if (!crianca) throw new Error('Não achei uma criança na Família.')
-          await abrir(`${crianca}/editar`, 3000)
+          await abrir(`${crianca}?aba=perfil`, 3000)
+          // Só o cartão do formulário (o título "Editar o perfil de…" mora dentro dele).
           await foto(
             'tela-pais-perfil',
-            await caixaDe(
-              `[document.querySelector('main h1'), document.querySelector('main form')]`,
-              24,
-            ),
+            await caixaDe(`[document.querySelector('main form')?.parentElement]`, 16, 24),
           )
           // Atendimento e o formulário de chamado ABERTO (enviar seria um chamado real).
           await abrir('/pais/ajuda/atendimento', 3500)
@@ -928,19 +934,28 @@ async function main() {
             'tela-pais-indicacao',
             await caixaDe(`[document.querySelector('#embaixador')]`, 16),
           )
-          await foto(
-            'tela-pais-creditos',
-            await caixaDe(
-              `[document.querySelector('section[aria-labelledby="parents-ai"]')]`,
-              16,
-              110,
-            ),
+          // Os créditos só aparecem para CLIENTE (a equipe não tem teto e o cartão some): com a
+          // conta da equipe a foto fica para depois, sem derrubar o resto.
+          if (
+            await avaliar(
+              `Boolean(document.querySelector('section[aria-labelledby="parents-ai"]'))`,
+            )
           )
-          // Família: os cartões das crianças, sem a frase do limite de perfis do plano.
-          await abrir('/pais', 3000)
+            await foto(
+              'tela-pais-creditos',
+              await caixaDe(
+                `[document.querySelector('section[aria-labelledby="parents-ai"]')]`,
+                16,
+                110,
+              ),
+            )
+          else
+            console.warn('tela-pais-creditos: pulada (a conta é da equipe, sem cartão de créditos)')
+          // Família: os cartões dos filhos, sem a frase do limite de perfis do plano.
+          await abrir('/pais/familia', 3000)
           await foto(
             'tela-pais-perfis',
-            await caixaDe(`[secao('Suas crianças')?.querySelector('ul')]`, 20),
+            await caixaDe(`[secao('Seus filhos')?.querySelector('ul')]`, 20),
           )
           altura = 800
         },

@@ -11,6 +11,7 @@ import {
   guideWelcomeSeenKey,
   hasActionableWelcomeStep,
   type ParentGuideInput,
+  parentPurpose,
   parentWelcomeSteps,
   readGuideFlag,
   readSessionGuideFlag,
@@ -60,6 +61,15 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
     ])
       expect(copy).toContain(`"${label}"`)
     expect(copy).not.toContain('Libere este navegador')
+    // Redesenho de 14/11/2026: os cartões moram em "Família" (a seção é "Seus filhos"), o acesso na
+    // aba "Aparelhos" e o "Ir para a área da criança" fica embaixo do menu, não no alto da página.
+    expect(copy).toContain('"Família"')
+    expect(copy).toContain('"Aparelhos"')
+    expect(copy).not.toContain('Suas crianças')
+    expect(copy).not.toContain('no alto da página')
+    expect(parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })[0]?.text).toContain(
+      '"Adicionar filho(a)"',
+    )
     // Botão se clica; "toque" sai do fluxo dos pais.
     expect(copy).not.toMatch(/\btoqu?e\b/i)
     expect(existing.map((step) => step.title)).toEqual([
@@ -70,6 +80,25 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
     // Sem criança, o primeiro passo não fala em escolher uma que não existe.
     expect(parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })[0]?.title).toBe(
       '1. Adicione a criança',
+    )
+  })
+  it('para quem é a área: segue a compra, sem perguntar', () => {
+    const base = {
+      profilesCount: 0,
+      allowanceKind: 'limited' as const,
+      hasParentCourses: false,
+    }
+    // Comprou para a criança (ou não dá para saber): o guia de sempre.
+    expect(parentPurpose(base)).toBe('filhos')
+    expect(parentPurpose({ ...base, allowanceKind: 'unavailable', hasParentCourses: true })).toBe(
+      'filhos',
+    )
+    // Só um curso para pais: o Início leva ao curso.
+    expect(parentPurpose({ ...base, allowanceKind: 'none', hasParentCourses: true })).toBe('curso')
+    // As duas coisas, ou um filho já cadastrado: o acesso da criança vem primeiro.
+    expect(parentPurpose({ ...base, hasParentCourses: true })).toBe('filhos')
+    expect(parentPurpose({ profilesCount: 1, allowanceKind: 'none', hasParentCourses: true })).toBe(
+      'filhos',
     )
   })
   it('criação pede o nome e a data de nascimento, sem compartilhar senha', () => {

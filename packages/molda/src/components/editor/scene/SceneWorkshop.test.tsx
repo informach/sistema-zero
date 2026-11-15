@@ -1956,7 +1956,11 @@ describe('scene workshop integration', () => {
       fireEvent.click(modal.getByRole('checkbox', { name: `Antebraço ${copy.locator}` }))
       fireEvent.click(modal.getByRole('button', { name: copy.prepare }))
       await waitFor(() => expect(modal.queryByRole('button', { name: copy.apply })).not.toBeNull())
-      expect(document.activeElement).toBe(modal.getByRole('heading', { name: copy.review }))
+      await waitFor(() =>
+        expect(document.activeElement === modal.getByRole('heading', { name: copy.review })).toBe(
+          true,
+        ),
+      )
       expect(editor.getState().asset).toBe(source)
       expect(editor.getState().canUndo).toBe(false)
       fireEvent.keyDown(dialog, { key: 'Delete' })

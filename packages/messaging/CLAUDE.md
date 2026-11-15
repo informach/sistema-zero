@@ -84,7 +84,8 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    **Desafio do Primeiro Jogo (09/2026):** `challenge-access-approved` (e-mail + WhatsApp;
    `nome`+`link`+`expira_em`+`acao`+`orientacao`) confirma os 30 dias no funil;
    `challenge-not-activated`, `challenge-not-started`, `challenge-day-one-complete` e
-   `challenge-completed` (e-mail; `nome`+`link`) cobrem ativação/progresso; `challenge-expiry-7d`,
+   `challenge-completed` (e-mail; `nome`+`link`) cobrem ativação/progresso (o "não ativou" leva
+   ao login com código desde 15/11/2026: a senha é opcional); `challenge-expiry-7d`,
    `challenge-expiry-3d` e `challenge-expired` (e-mail; `nome`+`data`+`link`) cobrem o vencimento.
    Os envios pós-compra partem do MEMBERS com idempotência por matrícula+vencimento+marco.
    NÃO renomeie sem mudar os chamadores. Template novo → o `db:deploy` do Railway roda
@@ -399,7 +400,7 @@ pessoa (sem criança, responsável ou Área dos pais), pelo `templates:seed` do 
 `challenge-not-started-adult`, `challenge-day-one-complete-adult` e `challenge-completed-adult`
 (`nome`+`link`), e `challenge-expiry-7d-adult`, `challenge-expiry-3d-adult` e `challenge-expired-adult`
 (`nome`+`data`+`link`), só e-mail, enviados pelo MEMBERS. O link chega pronto: app adulto
-(`/esqueci-senha`, `/cursos/desafio-primeiro-jogo-adulto`, `/progresso`) ou a continuidade adulta do funil
+(`/login`, `/cursos/desafio-primeiro-jogo-adulto`, `/progresso`) ou a continuidade adulta do funil
 com UTM. Enquanto o seed não roda, o funil cai em `welcome`/`new-access` (404 `TEMPLATE_NOT_FOUND`); o
 members não tem reserva e o envio falha e é tentado de novo no ciclo seguinte. Teste:
 `tests/challenge-adult-copy.test.ts` (contrato, canais, botões, segunda pessoa e Light Copy na fonte).

@@ -5,6 +5,8 @@ import {
   createMoradaHouse,
   isMoradaFile,
   MORADA_CATALOG,
+  MORADA_TROPHY_SHELF,
+  moradaPrice,
   validateMoradaHouse,
 } from '../../packages/core/src/morada'
 import { MoradaHouseSchema } from '../../packages/core/src/morada/schema'
@@ -43,7 +45,11 @@ const script = build.outputs.find((o) => o.kind === 'entry-point')
 if (!script) throw new Error('Sem entrada do editor')
 let house = createMoradaHouse(),
   revision = 0
-const owned = Object.keys(MORADA_CATALOG.pieces).filter((id) => id.startsWith('trophy/'))
+const owned = [
+  ...Object.keys(MORADA_CATALOG.pieces).filter((id) => id.startsWith('trophy/')),
+  MORADA_TROPHY_SHELF,
+]
+let balance = 250
 const envelope = () => ({ house, revision, owned })
 const server = Bun.serve({
   hostname: '127.0.0.1',
@@ -57,7 +63,20 @@ const server = Bun.serve({
         headers: { 'content-type': 'text/css' },
       })
     if (url.pathname === '/api/members/room')
-      return Response.json({ balance: 250, balanceUnlimited: false })
+      return Response.json({ balance, balanceUnlimited: false })
+    // A compra de peça paga, como o Members: grátis e troféu não se compram, sem saldo é 402.
+    if (url.pathname === '/api/members/house/buy' && req.method === 'POST') {
+      const { pieceId } = (await req.json()) as { pieceId: string }
+      const price = moradaPrice(pieceId)
+      if (!MORADA_CATALOG.pieces[pieceId] || price.tier !== 'coins')
+        return Response.json({ code: 'ROOM_ITEM_FREE' }, { status: 400 })
+      if (owned.includes(pieceId)) return Response.json({ alreadyOwned: true, balance })
+      if (balance < price.price)
+        return Response.json({ code: 'INSUFFICIENT_COINS' }, { status: 402 })
+      balance -= price.price
+      owned.push(pieceId)
+      return Response.json({ alreadyOwned: false, balance })
+    }
     if (url.pathname === '/api/members/house') {
       if (req.method === 'GET') return Response.json(envelope())
       if (req.method === 'PUT') {

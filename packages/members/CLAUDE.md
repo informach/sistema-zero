@@ -18,7 +18,17 @@
 - `morada_houses` (migration gerada `0149_morada_house`) é a fonte canônica. `room_state`
   permanece como leitura histórica. Cliente antigo não grava nem compra depois de existir casa nova.
   A carteira também confere a retirada sob a trava usada pelo reembolso, cobrindo compras em voo.
-- Catálogo inicial Morada é grátis; somente os oito troféus exigem posse conquistada.
+- **Preço (14/11/2026, a dona):** a Morada tem preço pela régua do avatar (`core/morada/pricing.ts` e
+  `prices.generated.ts`, editorial, fora do catálogo gerado; proposta por `scripts/morada/propor-precos.ts`).
+  Construção, a casa inicial e os canteiros são grátis; troféus e a estante de troféus
+  (`MORADA_TROPHY_SHELF`, dada a quem tem a `estante-trofeus`) são por conquista. `owned` = troféus +
+  estante + compradas (`room_inventory`) + as peças que já estão na casa (ninguém perde o que já pôs).
+  `save` recusa peça paga ou bichinho sem posse; as funções do jogo (`behavior: objeto:`) passam.
+  Compra: `POST /house/buy {pieceId}` (`BuyMoradaPieceService`, o mesmo `spendCoins` do quarto antigo,
+  chave `morada-buy:<user>:<peça>`). `scripts/conceder-morada.ts` (ensaio; `--confirm`) grava no
+  inventário as pagas que já estavam nas casas quando o preço chegou.
+  Preços conferidos pela dona em 14/11 (sem `review`). `adultOnly` (as duas peças de cassino): no
+  Kids não aparece no Meu quarto e a compra responde 404, como o chapéu de cerveja do avatar.
   A projeção `state.house` do quarto e do perfil público contém somente o cômodo do quarto.
   A porta interna `/casa` e o `house` do `/quarto` interno entregam a casa completa para visitas autorizadas.
 - O contrato puro está em `core/morada/schema`: 600 instâncias e 512 KB, sem truncar.
@@ -2039,7 +2049,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (`drizzle/challenge-master-key.ts`), então `all_kids_courses` não encobre o curso adulto. O candidato
   traz `audience`. No adulto, a chave é a mesma com o sufixo `-adult` (mesmas variáveis), o nome
   reserva é `Aluno(a)` e os links são do app adulto (env opcional **`COMMUNITY_URL`**): não ativou →
-  `/esqueci-senha`; não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
+  `/login` (no Kids, `/login/responsavel`, que abre no código; a senha é opcional desde 15/11/2026 e
+  "ativou" = criou senha OU já entrou); não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
   `/progresso`; concluiu e expirou → `accessEndedLink(funnelUrl, 'adult', 'desafio-concluido' |
   'desafio-encerrado')` (continuidade adulta do funil, com UTM). Sem `COMMUNITY_URL`, os avisos que levam
   ao app não saem nem são marcados (log `challenge_lifecycle.adult_url_missing` /

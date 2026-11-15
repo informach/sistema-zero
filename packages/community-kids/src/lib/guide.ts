@@ -1,3 +1,5 @@
+import type { ProfileAllowance } from './profile-allowance'
+
 /**
  * Tutorial guiado de primeiro acesso — o CÉREBRO puro (testável, sem DOM).
  *
@@ -171,9 +173,9 @@ export function parentWelcomeSteps({
   /** A fala da criança está ligada no servidor: o passo de adicionar orienta a ligá-la. */
   voiceAvailable?: boolean
 }): readonly GuideWelcomeStep[] {
-  // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (a Família em `/pais` e a
-  // página da criança, desde o redesenho de 11/10/2026). Sem criança cadastrada, o primeiro passo
-  // é adicionar, não escolher.
+  // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (redesenho de 14/11/2026: o
+  // guia abre no Início, os cartões dos filhos moram na Família, em `/pais/familia`, e o acesso na
+  // aba Aparelhos da página de cada filho). Sem criança cadastrada, o primeiro passo é adicionar.
   return [
     {
       id: 'parent-1',
@@ -181,24 +183,24 @@ export function parentWelcomeSteps({
       title: profilesCount > 0 ? '1. Escolha a criança' : '1. Adicione a criança',
       text:
         profilesCount > 0
-          ? 'Use o perfil que já existe: em "Suas crianças", clique em "Acesso nos aparelhos" no cartão dela. O progresso continua guardado.'
+          ? 'Use o perfil que já existe: em "Família", no menu, clique em "Acesso nos aparelhos" no cartão da criança. O progresso continua guardado.'
           : canCreateProfile
             ? voiceAvailable
-              ? 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
-              : 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela.'
+              ? 'Em "Família", use "Adicionar filho(a)" e coloque o nome e a data de nascimento. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
+              : 'Em "Família", use "Adicionar filho(a)" e coloque o nome e a data de nascimento.'
             : 'Confira o acesso da família antes de adicionar um perfil.',
     },
     {
       id: 'parent-2',
       emoji: '2️⃣',
       title: '2. Autorize o aparelho',
-      text: 'Na página da criança, clique em "Autorizar aparelho". Escolha "Neste aparelho" ou "Em outro aparelho" e o prazo, e clique em "Autorizar este aparelho" ou "Gerar código".',
+      text: 'Na página da criança, na aba "Aparelhos", clique em "Autorizar aparelho". Escolha "Neste aparelho" ou "Em outro aparelho" e o prazo, e clique em "Autorizar este aparelho" ou "Gerar código".',
     },
     {
       id: 'parent-3',
       emoji: '3️⃣',
       title: '3. A criança entra',
-      text: 'No aparelho autorizado, a criança entra em "Eu sou criador(a)" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área da criança", no alto da página.',
+      text: 'No aparelho autorizado, a criança entra em "Eu sou criador(a)" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área da criança": no computador, ele fica embaixo do menu; no celular, no alto da tela.',
     },
   ]
 }
@@ -221,6 +223,32 @@ export const guideWelcomeSeenKey = (accountId: string) =>
 /** O pai concluiu ("Entendi" na bolinha) ou pulou o guia. */
 export const guideDismissedKey = (accountId: string) =>
   guideKey('parent', accountId, 'tour-complete')
+/** O guia "Seu curso está pronto" (quem comprou só um curso para pais) já abriu uma vez. */
+export const guideCourseSeenKey = (accountId: string) =>
+  guideKey('parent', accountId, 'course-seen')
+/** O responsável fechou o guia do curso ou clicou em começar. */
+export const guideCourseDoneKey = (accountId: string) =>
+  guideKey('parent', accountId, 'course-done')
+
+/**
+ * Para quem é a área dos pais desta conta (15/11/2026, decisão da dona). Vem do que a família
+ * comprou, sem perguntar nada:
+ * - `filhos`: comprou algo para a criança (Comunidade, curso Kids, Desafio) ou já tem filho
+ *   cadastrado. O guia é o de sempre: cadastrar, autorizar o aparelho, a criança entra.
+ * - `curso`: comprou só um curso para pais (avulso ou de presente). Sem perfil de filho para
+ *   criar, o Início leva ao curso e convida a conhecer a Comunidade.
+ * Quem tem as duas coisas fica em `filhos`: o acesso da criança é o que trava o uso.
+ */
+export type ParentPurpose = 'filhos' | 'curso'
+export function parentPurpose(input: {
+  profilesCount: number
+  /** O tipo do limite de perfis (`none` = a conta não libera perfil de filho). */
+  allowanceKind: ProfileAllowance['kind']
+  hasParentCourses: boolean
+}): ParentPurpose {
+  if (input.profilesCount > 0) return 'filhos'
+  return input.allowanceKind === 'none' && input.hasParentCourses ? 'curso' : 'filhos'
+}
 
 /** O modal de boas-vindas da CRIANÇA já auto-abriu para este perfil neste navegador. */
 export const childGuideWelcomeSeenKey = (profileId: string) =>

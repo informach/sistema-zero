@@ -3,6 +3,9 @@ import { ITEM_DA_APARENCIA } from '@sistemazero/arquipelago-contracts'
 import {
   createMoradaHouse,
   MORADA_CATALOG,
+  MORADA_PECAS_DAS_FUNCOES,
+  MORADA_PRICES,
+  MORADA_TROPHY_SHELF,
   type MoradaHouse,
   validateMoradaHouse,
 } from '@sistemazero/core/morada'
@@ -10,6 +13,7 @@ import {
   MoradaConflictError,
   MoradaHouseService,
   MoradaInvalidError,
+  moradaOwned,
 } from '../../src/application/room/morada-house.service'
 import type { CourseAudience } from '../../src/domain/course/course'
 import type {
@@ -206,6 +210,167 @@ describe('casa canônica Members', () => {
     expect(house.instances.some((i) => i.pieceId === 'trophy/trofeu-chama')).toBe(true)
     expect(house.instances.some((i) => i.pieceId === 'trophy/trofeu-diploma')).toBe(false)
     expect(validateMoradaHouse(house, catalog)).toEqual([])
+  })
+  test('peça paga só entra comprada; a que já estava na casa continua dela', async () => {
+    // Uma peça paga pequena, de chão (cabe no meio do quarto).
+    const paga = Object.keys(MORADA_PRICES).find((id) => {
+      const p = MORADA_CATALOG.pieces[id]
+      return (
+        MORADA_PRICES[id]?.tier === 'coins' &&
+        p?.mount === 'floor' &&
+        p.size[0] < 0.8 &&
+        p.size[2] < 0.8
+      )
+    })
+    if (!paga) throw new Error('sem peça paga')
+    const sofa = (id: string) => ({
+      id,
+      pieceId: paga,
+      position: [1, 0, 1] as [number, number, number],
+      rotation: 0,
+      roomId: 'quarto',
+    })
+    // Sem comprar: recusa.
+    const { repo, service } = setup()
+    const initial = await service.read('pessoa', 'kids')
+    expect(initial.owned).not.toContain(paga)
+    initial.house.instances.push(sofa('sofa-novo'))
+    await expect(service.save('pessoa', 'conta', 'kids', initial)).rejects.toThrow(
+      /ainda não comprada/,
+    )
+    // Comprada (no inventário): entra.
+    const comprada = setup([paga])
+    const lida = await comprada.service.read('pessoa', 'kids')
+    expect(lida.owned).toContain(paga)
+    lida.house.instances.push(sofa('sofa-comprado'))
+    await comprada.service.save('pessoa', 'conta', 'kids', lida)
+    // Casa convertida (ou posta antes de haver preço) com a peça: continua dela, e ela pode tirar
+    // e pôr de novo no mesmo salvamento.
+    const antiga = createMoradaHouse()
+    antiga.instances.push(sofa('sofa-antigo'))
+    repo.rows.set('pessoa:kids', { house: antiga, revision: 3 })
+    const relida = await service.read('pessoa', 'kids')
+    expect(relida.owned).toContain(paga)
+    relida.house.instances = relida.house.instances.filter((i) => i.id !== 'sofa-antigo')
+    relida.house.instances.push(sofa('sofa-de-volta'))
+    expect((await service.save('pessoa', 'conta', 'kids', relida)).revision).toBe(4)
+  })
+  test('a estante de troféus vem com a estante-trofeus do primeiro troféu', async () => {
+    const sem = await setup().service.read('pessoa', 'kids')
+    expect(sem.owned).not.toContain(MORADA_TROPHY_SHELF)
+    const com = await setup(['trofeu-chama', 'estante-trofeus']).service.read('pessoa', 'kids')
+    expect(com.owned).toEqual(expect.arrayContaining(['trophy/trofeu-chama', MORADA_TROPHY_SHELF]))
+    const { service } = setup(['trofeu-chama', 'estante-trofeus'])
+    const casa = await service.read('pessoa', 'kids')
+    casa.house.instances.push({
+      id: 'estante',
+      pieceId: MORADA_TROPHY_SHELF,
+      position: [-2, 0, -2],
+      rotation: 0,
+      roomId: 'quarto',
+    })
+    await service.save('pessoa', 'conta', 'kids', casa)
+    const semEstante = setup(['trofeu-chama'])
+    const outra = await semEstante.service.read('pessoa', 'kids')
+    outra.house.instances.push({
+      id: 'estante',
+      pieceId: MORADA_TROPHY_SHELF,
+      position: [-2, 0, -2],
+      rotation: 0,
+      roomId: 'quarto',
+    })
+    await expect(semEstante.service.save('pessoa', 'conta', 'kids', outra)).rejects.toThrow(
+      /Troféu ainda não conquistado/,
+    )
+  })
+  test('behavior falso não libera peça paga nem vira posse; a função de verdade passa', async () => {
+    const pequena = (id: string) => {
+      const p = MORADA_CATALOG.pieces[id]
+      return p?.mount === 'floor' && p.size[0] < 0.8 && p.size[2] < 0.8
+    }
+    const paga = Object.keys(MORADA_PRICES).find(
+      (id) =>
+        MORADA_PRICES[id]?.tier === 'coins' &&
+        pequena(id) &&
+        !Object.values(MORADA_PECAS_DAS_FUNCOES).some((l) => l.includes(id)),
+    )
+    if (!paga) throw new Error('sem peça paga pequena')
+    const { service } = setup()
+    const casa = await service.read('pessoa', 'kids')
+    casa.house.instances.push({
+      id: 'trapaca',
+      pieceId: paga,
+      behavior: 'objeto:geladeira',
+      position: [1, 0, 1],
+      rotation: 0,
+      roomId: 'quarto',
+    })
+    await expect(service.save('pessoa', 'conta', 'kids', casa)).rejects.toThrow(
+      /ainda não comprada/,
+    )
+    // A função de verdade (a geladeira com o behavior dela) passa e não vira posse da peça.
+    const funcao = {
+      pieceId: MORADA_PECAS_DAS_FUNCOES.geladeira![0]!,
+      behavior: 'objeto:geladeira',
+    }
+    const house = createMoradaHouse()
+    house.instances.push({ ...house.instances[0]!, id: 'geladeira', ...funcao })
+    expect(moradaOwned([], house)).not.toContain(funcao.pieceId)
+  })
+  test('peça só do adulto não entra no Kids; no adulto, comprada, entra', async () => {
+    const id = 'moveis/livros/livro_cassino_pacote'
+    const livro = {
+      id: 'livro',
+      pieceId: id,
+      position: [1, 0, 1] as [number, number, number],
+      rotation: 0,
+      roomId: 'quarto',
+    }
+    // No Kids sem tê-la (o inventário é por público: não há como comprar lá).
+    const kids = setup([])
+    const k = await kids.service.read('pessoa', 'kids')
+    k.house.instances.push(livro)
+    await expect(kids.service.save('pessoa', 'conta', 'kids', k)).rejects.toThrow(
+      /não está disponível/,
+    )
+    const adulto = setup([id])
+    const a = await adulto.service.read('pessoa', 'adult')
+    a.house.instances.push(livro)
+    expect((await adulto.service.save('pessoa', 'conta', 'adult', a)).revision).toBe(1)
+  })
+  test('depois de salvar, a posse é a da casa salva (a que saiu e não foi comprada sai)', async () => {
+    const paga = Object.keys(MORADA_PRICES).find((id) => {
+      const p = MORADA_CATALOG.pieces[id]
+      return (
+        MORADA_PRICES[id]?.tier === 'coins' &&
+        p?.mount === 'floor' &&
+        p.size[0] < 0.8 &&
+        p.size[2] < 0.8
+      )
+    })
+    if (!paga) throw new Error('sem peça paga')
+    const { repo, service } = setup()
+    const antiga = createMoradaHouse()
+    antiga.instances.push({
+      id: 'antiga',
+      pieceId: paga,
+      position: [1, 0, 1],
+      rotation: 0,
+      roomId: antiga.roomId,
+    })
+    repo.rows.set('pessoa:kids', { house: antiga, revision: 2 })
+    const lida = await service.read('pessoa', 'kids')
+    expect(lida.owned).toContain(paga)
+    lida.house.instances = lida.house.instances.filter((i) => i.id !== 'antiga')
+    const salva = await service.save('pessoa', 'conta', 'kids', lida)
+    expect(salva.owned).not.toContain(paga)
+  })
+  test('moradaOwned: troféus, estante, compradas e as da casa; nunca as grátis', () => {
+    const house = createMoradaHouse()
+    const owned = moradaOwned(['trofeu-foguete', 'estante-trofeus', 'sofa', 'nao-existe'], house)
+    expect(owned).toEqual(expect.arrayContaining(['trophy/trofeu-foguete', MORADA_TROPHY_SHELF]))
+    expect(owned).not.toContain('sofa')
+    for (const i of house.instances) expect(owned).not.toContain(i.pieceId)
   })
   test('não retira direitos da Galeria nem troféus e não aceita documento corrompido', async () => {
     const ids = retiredRoomIds()

@@ -62,6 +62,7 @@ describe('UserAggregate', () => {
       signupSource: 'admin',
       avatarUrl: 'https://cdn.example.com/a.webp',
       passwordSetAt: now,
+      firstSignInAt: now,
       createdAt: now,
       updatedAt: now,
     }

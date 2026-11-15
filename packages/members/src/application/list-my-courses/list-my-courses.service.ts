@@ -1,6 +1,10 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseAudience, ModuleWithLessons } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
-import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
+import {
+  independentCourseAccessReason,
+  parentsCourseAccessReason,
+} from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
@@ -39,7 +43,11 @@ export class ListMyCoursesService {
     privileged = false,
     audience: CourseAudience = 'adult',
     accountId?: string,
+    learner: CourseLearner = 'child',
   ): Promise<MyCourseView[]> {
+    // Curso para pais (14/11/2026): só Kids, fora da Jornada; quem pede é a conta do responsável.
+    if (learner === 'parents' && audience !== 'kids') return []
+    const parents = learner === 'parents'
     // Acesso (matrícula) pela CONTA do responsável (sessão de perfil → accountId);
     // progresso/última-aula pelo userId (o perfil). Equipe interna (`privileged`) =
     // chave-mestra VIRTUAL: lista todos os publicados sem consultar matrículas.
@@ -70,18 +78,18 @@ export class ListMyCoursesService {
     // Chave-mestra → todos os PUBLICADOS da audiência; matrículas específicas
     // ainda incluem cursos `archived` (quem matriculou mantém acesso). Dedupe por id.
     const courses = master
-      ? await this.courses.listPublishedCourses(audience)
-      : await this.courses.findAccessibleCoursesBySlugs([...byCourseRef.keys()])
+      ? await this.courses.listPublishedCourses(audience, learner)
+      : await this.courses.findAccessibleCoursesBySlugs([...byCourseRef.keys()], learner)
     if (master && byCourseRef.size > 0) {
       const have = new Set(courses.map((c) => c.slug))
       const missing = [...byCourseRef.keys()].filter((slug) => !have.has(slug))
       if (missing.length > 0) {
-        courses.push(...(await this.courses.findAccessibleCoursesBySlugs(missing)))
+        courses.push(...(await this.courses.findAccessibleCoursesBySlugs(missing, learner)))
       }
     }
 
     const journeyState =
-      audience === 'kids' && !privileged
+      audience === 'kids' && !privileged && !parents
         ? await this.kidsJourney.courseState(
             { userId, accountId: accountId ?? userId },
             courses.map((course) => course.id),
@@ -95,7 +103,7 @@ export class ListMyCoursesService {
     // Team bypass retains its actual ledger badges, without the previous qualification engine.
     const milestones =
       journeyState?.milestones ??
-      (audience === 'kids' && privileged
+      (audience === 'kids' && privileged && !parents
         ? await this.gamification.listCourseMilestones(userId, audience)
         : new Map())
     const journeyLocks = journeyLockViews(courses, journeyState?.locks ?? null)
@@ -159,6 +167,15 @@ export class ListMyCoursesService {
             lockedSet,
           )
         }
+      }
+      if (parents) {
+        views.push({
+          ...toMyCourseView(course, entitlement, progress, continueLessonId, { locked: false }),
+          accessReason: privileged
+            ? 'staff'
+            : parentsCourseAccessReason(course.slug, active, this.clock()),
+        })
+        continue
       }
       const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
       views.push({

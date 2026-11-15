@@ -4,9 +4,14 @@ import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/prof
 import { requestedStudyDestination } from '@/lib/entry-destination'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
-import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
+import {
+  getProfileAllowanceReadonly,
+  listAvatarsByProfileIdsReadonly,
+  listParentCourses,
+} from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { resolveParentArea } from './parent-access'
 import { childHref } from './parent-routes'
 import { ParentsClient } from './parents-client'
 
@@ -19,23 +24,28 @@ export default async function ParentsPage({
   const session = await getSession()
   if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   const params = await searchParams
-  const [profilesRes, allowanceRes] = await Promise.all([
+  const [profilesRes, allowanceRes, parentCourses] = await Promise.all([
     listReadonly(),
     getProfileAllowanceReadonly(),
+    // Os cursos para pais da conta: best-effort, nunca derrubam o Início.
+    listParentCourses().catch(() => null),
   ])
   if (profilesRes.status !== 200) return <ProfilesUnavailable />
   const profiles = profilesRes.body?.profiles ?? []
   // O atalho antigo de reautenticação (`?child=`) abre a página da criança, onde mora o acesso.
   const studentDestination = requestedStudyDestination(params.aluno) ?? undefined
   if (params.child && profiles.some((profile) => profile.id === params.child))
-    redirect(childHref(params.child, undefined, studentDestination))
+    redirect(childHref(params.child, 'aparelhos', studentDestination))
   const allowance = resolveProfileAllowance({
     status: allowanceRes.status,
     maxProfiles: allowanceRes.body?.maxProfiles,
   })
-  if (!profiles.length && allowance.kind === 'unavailable')
-    return <ProfilesUnavailable reason="allowance" />
-  if (!profiles.length && allowance.kind === 'none') return <ProfilesNotIncluded />
+  // A régua única do Início e da Família (`resolveParentArea`): quem comprou só um curso para
+  // pais (15/11/2026) entra no Início, que leva ao curso.
+  const area = resolveParentArea({ profilesCount: profiles.length, allowance, parentCourses })
+  if (area.tela === 'indisponivel') return <ProfilesUnavailable reason="allowance" />
+  if (area.tela === 'nao-incluido') return <ProfilesNotIncluded />
+  const { purpose, courses } = area
   const ids = profiles.map((profile) => profile.id)
   // As autorizações de cada criança: o guia e o aviso de vencimento seguem o estado REAL da
   // família desde o primeiro quadro, não só o painel que o responsável abrir.
@@ -43,6 +53,10 @@ export default async function ParentsPage({
     ids.length ? listAvatarsByProfileIdsReadonly(ids).catch(() => null) : null,
     listFamilyGrantsReadonly(ids),
   ])
+  const parentCourse =
+    courses.find((course) => course.progress.percent > 0 && course.progress.percent < 100) ??
+    courses.find((course) => course.progress.percent < 100) ??
+    null
   const photos = Object.fromEntries(
     Object.entries(avatars?.status === 200 ? (avatars.body?.avatars ?? {}) : {}).map(
       ([id, view]) => [id, view.photoUrl ?? null],
@@ -58,6 +72,8 @@ export default async function ParentsPage({
       initialAccess={access}
       studentDestination={studentDestination}
       voiceAvailable={isVoiceInputConfigured()}
+      parentCourse={parentCourse}
+      purpose={purpose}
     />
   )
 }

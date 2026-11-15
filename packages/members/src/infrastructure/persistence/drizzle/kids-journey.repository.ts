@@ -174,6 +174,8 @@ async function readCatalog(tx: Transaction): Promise<KidsJourneyCatalogCourse[]>
       hasShowcaseBlock: exists(showcase),
     })
     .from(courses)
+    // Curso para pais (14/11/2026) nunca entra na Jornada da criança.
+    .where(eq(courses.learner, 'child'))
     .orderBy(asc(courses.id))
   return CatalogSchema.parse(
     rows.map((row) => {

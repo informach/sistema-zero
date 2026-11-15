@@ -1,4 +1,5 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type {
@@ -233,6 +234,10 @@ export const courses = members.table(
     // de enum não pode ser usado na mesma transação que o cria. Mesma régua de autoria do
     // `audience`: o UPDATE sem o campo PRESERVA o valor atual.
     modality: text('modality').$type<CourseModality>().notNull().default('recorded'),
+    // Para quem (14/11/2026, migration 0150): CRIANÇA (o curso de sempre) ou PAIS (feito pelo
+    // responsável na área dos pais, fora da Jornada e da gamificação). Texto + CHECK, como a
+    // modalidade; o UPDATE sem o campo PRESERVA o valor atual.
+    learner: text('learner').$type<CourseLearner>().notNull().default('child'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -261,6 +266,12 @@ export const courses = members.table(
     check(
       'courses_live_off_journey_check',
       sql`${t.modality} = 'recorded' or ${t.careerSlot} is null`,
+    ),
+    check('courses_learner_check', sql`${t.learner} in ('child', 'parents')`),
+    // Curso para pais: só Kids, só gravado e nunca na Jornada (espelha `assertParentsOffJourney`).
+    check(
+      'courses_parents_off_journey_check',
+      sql`${t.learner} = 'child' or (${t.audience} = 'kids' and ${t.modality} = 'recorded' and ${t.careerSlot} is null)`,
     ),
   ],
 )

@@ -1,8 +1,7 @@
-// Shim: PATCH do perfil da CONTA (nome/telefone). No Kids fica atrás do PORTÃO DOS
-// PAIS: uma criança numa sessão de CONTA (ex.: OTP no e-mail do responsável, ou pai
-// que ficou logado num aparelho compartilhado) não desfigura a identidade do
-// responsável sem provar a senha. Em sessão de PERFIL o auth recusa (claim `pfl`) e o
-// requireParentGate deixa o perfil passar — o gate só vale p/ a sessão da conta.
+// Shim: PATCH do perfil da CONTA (nome/telefone). Desde 10/10/2026 a criança tem o próprio
+// acesso (o aparelho autorizado) e a sessão da conta só nasce da senha ou do código do e-mail
+// do responsável (a senha é opcional desde 15/11/2026). Em sessão de PERFIL o auth recusa
+// (claim `pfl`).
 import { requireParentGate } from '@/server/parent-gate'
 import { shell } from '@/server/shell'
 

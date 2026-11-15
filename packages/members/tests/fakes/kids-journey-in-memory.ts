@@ -46,20 +46,23 @@ export class InMemoryKidsJourneySnapshots
     this.snapshotReads++
     const owners = inputOwners.map((owner) => ({ ...owner }))
     const catalog: KidsJourneyCatalogCourse[] = await Promise.all(
-      this.courses.courses.map(async (course) => ({
-        id: course.id,
-        level: course.level,
-        track: course.track,
-        audience: course.audience,
-        modality: course.modality,
-        status: course.status,
-        graduationOnly: course.level === 'lenda',
-        tier:
-          JOURNEY_COURSE_TIERS.find((tier) => tier === `${course.level}-${course.track}`) ?? null,
-        slot: course.careerSlot,
-        journeyRole: course.journeyRole,
-        hasShowcaseBlock: (await this.courses.listShowcaseLessonIds(course.id)).length > 0,
-      })),
+      // Espelha o Drizzle: curso para pais nunca entra na Jornada.
+      this.courses.courses
+        .filter((course) => course.learner !== 'parents')
+        .map(async (course) => ({
+          id: course.id,
+          level: course.level,
+          track: course.track,
+          audience: course.audience,
+          modality: course.modality,
+          status: course.status,
+          graduationOnly: course.level === 'lenda',
+          tier:
+            JOURNEY_COURSE_TIERS.find((tier) => tier === `${course.level}-${course.track}`) ?? null,
+          slot: course.careerSlot,
+          journeyRole: course.journeyRole,
+          hasShowcaseBlock: (await this.courses.listShowcaseLessonIds(course.id)).length > 0,
+        })),
     )
     const events: KidsJourneyEventFact[] = this.gamification.events.flatMap((event) =>
       event.audience === 'kids' &&

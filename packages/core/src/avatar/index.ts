@@ -36,7 +36,9 @@ export {
   REQUIRED_SLOTS,
   removeSlot,
   setSlots,
+  withCurrentSet,
   withEars,
+  withMountedVariants,
   wornSet,
 } from './rules'
 export type * from './types'

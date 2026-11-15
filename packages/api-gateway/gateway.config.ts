@@ -2461,6 +2461,18 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: MORADA_LIMITS.bytes + 1024,
     },
+    // Compra de peça paga da Morada com moedas (o id da peça vai no corpo: tem barras).
+    {
+      id: 'members-house-buy',
+      methods: ['POST'],
+      pathPattern: '/members/house/buy',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-room-get',
       methods: ['GET'],

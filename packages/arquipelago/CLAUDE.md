@@ -41,8 +41,9 @@ teleporte como caminhada; usa tempo ativo sem o truncamento de dt das animaçõe
 ## Morada canônica (14/11/2026)
 
 A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
-`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` contém somente troféus conquistados;
-peças comuns do catálogo são gratuitas. A leitura/edição tem escopos próprios e de visita
+`salvarCasaMorada`, com revisão CAS e cópia local recuperável. `owned` traz troféus, a estante de troféus, as compradas
+e as que já estão na casa; peça paga sem posse não entra (`moradaInstanceAllowed` do core, a mesma
+régua do serviço; a compra é no Meu quarto, e a bandeja do jogo mostra só o que é dela). A leitura/edição tem escopos próprios e de visita
 separados, com epoch para rejeitar respostas antigas. Sair independe da rede e preserva
 o rascunho próprio até confirmação; visitas nunca substituem sua casa ou seu pet. O quarto é `house.roomId`,
 um recorte estável da mesma casa; visitas leem `visita.quarto.house`. Hosts sem essas
@@ -144,8 +145,17 @@ O avatar da plataforma virou o do pack Cute Characters (plano
   `calcado_patins` do pack é SÓ do jogo (`hidden`, fora da loja e do sorteio: `SO_NO_JOGO` em
   `scripts/avatar/catalogo.ts`); calçados, o `AvatarDoJogo` a veste no lugar do calçado e sobe o
   desenho `PATINS_NOS_PES.sobe` (o `lift` do catálogo, as rodas). ⚠️ O rig mede o chão uma vez, ao
-  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins); as rodas ainda não
-  giram (a arte deu os eixos). O `empurrar` ainda não tem quem o use.
+  ficar de pé (com o calçado de sempre, já que o jogo abre descalço de patins). As rodas e o
+  empurrar: veja o item seguinte.
+- **O que a arte e o pack já tinham (15/11/2026):** andar e correr de lado e de costas (na virada, pela
+  direção no referencial do corpo: `frente`/`deLado` da entrada, `pesosDaDirecao`); pendurada andando
+  pela quina (`andar_pendurado_*`); água rasa (`aguaNosPes` do modo chão acima de
+  `AGUA_RASA_A_PARTIR_DE`); o gesto de acender ao acender a lanterna; empurrar (contato do controlador
+  com corpo dinâmico); o braço com a lanterna pelas camadas da arte (`BracoComObjeto`); as rodas dos
+  patins girando (`rodas-dos-patins.tsx`; ⚠️ a peça traz 8 ossos `Roda_*` que o esqueleto não tem:
+  o `PackPart` agora os acrescenta, como os da lanterna); a câmera mira o encaixe `olhos` e o
+  passarinho pousa sobre o `cabeca_topo`. Sem uso ainda: `costas` (não há mochila nem planador
+  fechado na arte), a P3 (comemorar, pegar do chão, plantar, regar, dançar) e o `dirigir`.
 - **Depois da pose (passo 5):** `personagem/ik.ts` (dois ossos, pela direção até o FILHO, sem supor o
   eixo do osso); os pés assentam no chão parado ou devagar (`pes-no-chao.ts`, o raio do Rapier pelo
   `chao` que o `personagem.tsx` passa; chão mais longe que 70% do joelho é beirada). As mãos no cipó
@@ -960,19 +970,30 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre, enfeites que seguram o corpo).
 
-## Animações do avatar (Mixamo, 29/10/2026)
+## Animações do avatar (pack da arte; a do Mixamo saiu em 14/11/2026)
 
-- Clipes em `src/assets/avatar/locomocao.glb`, vindos do Mixamo pelo `arte/avatar/mixamo.py`
-  (os FBX ficam fora do repositório, em `MIXAMO_DIR`): Parado, Andar, Correr, Pulo, Queda,
-  Aterrissagem, Nado, NadoParado, Corda (cipó), Planar, Escalar, SubirEscada, Equilibrar,
-  PendurarBorda, SubirBorda, Escorregar, Sentar, Montar e Deitar. O "Idle" da plataforma não é
-  mais usado. O script tira o deslocamento (o corpo do jogo anda), encaixa assento, sela, barra,
-  borda e colchão, e enxuga o GLB (só giros e a posição da bacia). O README de `arte/avatar` diz o
-  que vem de cada arquivo do Mixamo.
-- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe, com
-  as durações e passadas do `RESUMO` do script. Andar e correr na MESMA fase (os dois começam no
-  pé esquerdo), que anda pela distância dividida pela passada. Na água, Nado acima de
-  `NADANDO_ACIMA_DE` e NadoParado abaixo; no tronco caído, Equilibrar parada e Andar andando.
+- Os clipes vêm do arquivo do jogo do catálogo do avatar (`base/animacoes-do-jogo.<digital>.glb`,
+  bucket privado, `skeleton.game` no catálogo): os de locomoção do pack e as animações que a arte
+  fez para este corpo, com as medidas de cada uma (passada, mãos, `place`). O `locomocao.glb` e o
+  `arte/avatar/mixamo.py` não existem mais.
+- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): ESTADOS → pedaço de clipe
+  (`POSE_DO_ESTADO`, com reserva para catálogo sem o clipe). Andar e correr na MESMA fase, que anda
+  pela distância dividida pela passada. Na água, Nado acima de `NADANDO_ACIMA_DE` e NadoParado
+  abaixo.
+- **Gestos (15/11/2026, `sistemas/gestos.ts`, `tests/gestos.test.ts`):** o mundo chama
+  `pedirGesto(movimento, gesto, objeto?)` e ela faz parada, no lugar do Parado; andar corta, pausado
+  espera. Pegar do chão (coleções, chaves, cristal, fóssil, instrumento, colher), comemorar (coleção
+  fechada, desafio feito), plantar e plantar alto (pela altura da terra, `gestoDePlantar`), regar
+  com o regador, o balde (`Segurar`) na pesca e no banho do bicho, e dançar ("Dançar na festa",
+  "Dançar com a banda", `dancaDaVez`). O personagem pede sozinho o levantar do banco e da cama (o
+  desenho fica no assento até o fim) e o desmontar na sela baixa.
+- **Sela:** o `montar` e o `desmontar` da arte são de sela baixa (`selaBaixa`). A do dino é alta
+  (0,70 m nativos): a arte pediu o corte direto, como no vagonete. Dirigir e ajoelhada no vagonete
+  são modos especiais prontos para os veículos.
+- **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no
+  planador, o do gesto, a lanterna acesa. Os dedos fecham pela `pegada` da arte (`fingers` no
+  catálogo); o braço afasta pelas camadas largas do balde. Deitada e levantando da cama, o chapéu
+  sai (`hatOff`). Visualizador: `/animacoes?gesto=Regar&objeto=mao_regador&atraso=1.4`.
 - Os clipes de nadar e de deitar já vêm deitados: o personagem não inclina mais o desenho nesses
   casos. No cipó o Corda faz as pernas e o `depoisDaPose` ainda fecha as mãos na corda
   (`personagem/bracos.ts`, `INCLINACAO_NO_CIPO` 0). O planador põe a barra nas mãos do Planar

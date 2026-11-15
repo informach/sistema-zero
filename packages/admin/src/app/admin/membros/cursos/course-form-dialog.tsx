@@ -1,5 +1,6 @@
 'use client'
 
+import { type CourseLearner, courseLearnerOf } from '@sistemazero/core/course/learner'
 import { type CourseModality, courseModalityOf } from '@sistemazero/core/course/modality'
 import { pythonCourseUnlockIssue } from '@sistemazero/studio/python-course-unlocks'
 import { Button } from '@sistemazero/ui/button'
@@ -31,6 +32,7 @@ import { COMMUNITY_NAMES } from '@/lib/platform'
 import { slugify } from '@/lib/slug'
 import {
   COURSE_AUDIENCES,
+  COURSE_LEARNER_LABELS,
   COURSE_MODALITY_LABELS,
   COURSE_STATUSES,
   COURSE_TIER_OPTIONS,
@@ -43,6 +45,8 @@ export interface CoursePrefill {
   audience?: string
   /** Oficinas ao vivo: "Criar curso ao vivo" abre o formulário já em Ao vivo. */
   modality?: CourseModality
+  /** "Cursos para pais" abre o formulário já em Para pais. */
+  learner?: CourseLearner
   level?: string
   track?: string
   careerSlot?: number
@@ -59,6 +63,8 @@ interface FormState {
   audience: string
   /** Gravado ou ao vivo. Ao vivo não ocupa posição na Jornada. */
   modality: CourseModality
+  /** Para quem (só Kids). Curso para pais é gravado e fica fora da Jornada. */
+  learner: CourseLearner
   level: string
   track: string
   careerSlot: string
@@ -82,6 +88,8 @@ const EMPTY: FormState = {
   audience: 'kids',
   // Padrão GRAVADO: o curso ao vivo é escolhido de propósito (ou pelo atalho das Oficinas).
   modality: 'recorded',
+  // Padrão: o curso é para a criança; o curso para pais é escolhido de propósito.
+  learner: 'child',
   // Padrão: todo curso nasce Iniciante 2D (espelha os defaults das colunas no members).
   level: 'iniciante',
   track: '2d',
@@ -122,6 +130,7 @@ function formFromCourse(c: CourseView): FormState {
     status: c.status,
     audience: c.audience ?? 'adult',
     modality: courseModalityOf(c.modality),
+    learner: courseLearnerOf(c.learner),
     level: c.level ?? 'iniciante',
     track: c.track ?? '2d',
     careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
@@ -138,6 +147,7 @@ function formFromPrefill(prefill: CoursePrefill | undefined): FormState {
     ...EMPTY,
     audience: prefill.audience ?? EMPTY.audience,
     modality: prefill.modality ?? EMPTY.modality,
+    learner: prefill.learner ?? EMPTY.learner,
     level: prefill.level ?? EMPTY.level,
     track: prefill.track ?? EMPTY.track,
     careerSlot: prefill.careerSlot != null ? String(prefill.careerSlot) : '',
@@ -223,6 +233,9 @@ export function CourseFormDialog({
   const curriculumActive = Boolean(curriculumState.curriculum)
   // Curso ao vivo não entra na Jornada: sem posição e sem trava sequencial de aula.
   const isLive = form.modality === 'live'
+  // Curso para pais (14/11/2026): feito pelo responsável, fora da Jornada e do Estúdio da criança.
+  const isParents = isKids && form.learner === 'parents'
+  const offJourney = isLive || isParents
   const studioUnlockRule = isLive
     ? 'A conclusão da oficina concede estes blocos, sem exigir publicação no Mural. O uso no Estúdio Completo depende do acesso ao produto.'
     : !isKids
@@ -263,7 +276,7 @@ export function CourseFormDialog({
       // `hasShowcaseBlock` vem na listagem — aberto pelo editor ele é undefined e o
       // server cobre com o 409).
       if (
-        !isLive &&
+        !offJourney &&
         !curriculumActive &&
         form.careerSlot === '1' &&
         editing?.hasShowcaseBlock === false
@@ -302,7 +315,7 @@ export function CourseFormDialog({
   }
 
   async function save() {
-    if (!isLive && curriculumState.status !== 'ready') {
+    if (!offJourney && curriculumState.status !== 'ready') {
       toast.error('Carregue a política da jornada antes de salvar este curso.')
       return
     }
@@ -320,7 +333,7 @@ export function CourseFormDialog({
       return
     }
     if (
-      !isLive &&
+      !offJourney &&
       !curriculumActive &&
       form.audience === 'kids' &&
       form.journeyRole === 'positioned' &&
@@ -353,9 +366,9 @@ export function CourseFormDialog({
   async function doSave() {
     setSaving(true)
     try {
-      const journey = isLive
-        ? // ⚠️ Curso ao vivo NUNCA leva posição nem papel na Jornada (o members recusa os dois):
-          // `careerSlot: null` limpa e `journeyRole` fica de fora.
+      const journey = offJourney
+        ? // ⚠️ Curso ao vivo ou para pais NUNCA leva posição nem papel na Jornada (o members
+          // recusa os dois): `careerSlot: null` limpa e `journeyRole` fica de fora.
           { careerSlot: null }
         : {
             careerSlot:
@@ -375,6 +388,8 @@ export function CourseFormDialog({
         // SEMPRE enviado: o members antigo descarta o campo; o novo só recusa a TROCA de
         // modalidade de um curso que já tem turma (409 com o recado, mostrado no toast).
         modality: form.modality,
+        // SEMPRE enviado: curso para pais só existe no Kids (no adulto vai sempre `child`).
+        learner: isKids ? form.learner : 'child',
         level: form.level,
         track: form.track,
         ...journey,
@@ -440,7 +455,7 @@ export function CourseFormDialog({
           </Button>
           <Button
             onClick={save}
-            disabled={saving || (!isLive && curriculumState.status !== 'ready')}
+            disabled={saving || (!offJourney && curriculumState.status !== 'ready')}
           >
             {saving ? <Spinner /> : null}
             Salvar
@@ -515,6 +530,8 @@ export function CourseFormDialog({
                 // Posição na jornada só existe p/ Kids; limpa ao virar adulto.
                 careerSlot: e.target.value === 'kids' ? f.careerSlot : '',
                 journeyRole: e.target.value === 'kids' ? f.journeyRole : 'reward',
+                // Curso para pais só existe no Kids.
+                learner: e.target.value === 'kids' ? f.learner : 'child',
               }))
             }
           >
@@ -525,6 +542,33 @@ export function CourseFormDialog({
             ))}
           </Select>
         </Field>
+        {isKids ? (
+          <Field
+            label="Para quem"
+            htmlFor="clearner"
+            hint="Curso para pais aparece só em Cursos para pais, na área dos pais. É gravado, fica fora da Jornada e não dá XP."
+          >
+            <Select
+              id="clearner"
+              value={form.learner}
+              onChange={(e) => {
+                const learner: CourseLearner = e.target.value === 'parents' ? 'parents' : 'child'
+                setForm((f) => ({
+                  ...f,
+                  learner,
+                  // Curso para pais é gravado, sem posição na Jornada e sem ferramentas do Estúdio.
+                  modality: learner === 'parents' ? 'recorded' : f.modality,
+                  careerSlot: learner === 'parents' ? '' : f.careerSlot,
+                  journeyRole: learner === 'parents' ? 'reward' : f.journeyRole,
+                  studioUnlockBlocks: learner === 'parents' ? [] : f.studioUnlockBlocks,
+                }))
+              }}
+            >
+              <option value="child">{COURSE_LEARNER_LABELS.child}</option>
+              <option value="parents">{COURSE_LEARNER_LABELS.parents}</option>
+            </Select>
+          </Field>
+        ) : null}
         <Field
           label="Modalidade"
           htmlFor="cmodality"
@@ -549,7 +593,9 @@ export function CourseFormDialog({
             }}
           >
             <option value="recorded">{COURSE_MODALITY_LABELS.recorded}</option>
-            <option value="live">{COURSE_MODALITY_LABELS.live}</option>
+            <option value="live" disabled={isParents}>
+              {COURSE_MODALITY_LABELS.live}
+            </option>
           </Select>
         </Field>
         <Field
@@ -594,7 +640,7 @@ export function CourseFormDialog({
             </option>
           </Select>
         </Field>
-        {isLive ? null : curriculumState.curriculum ? (
+        {offJourney ? null : curriculumState.curriculum ? (
           <CourseCurriculumPlacement
             curriculum={curriculumState.curriculum}
             courseId={editing?.id}
@@ -673,39 +719,42 @@ export function CourseFormDialog({
         ) : null}
         {/* Cursos e oficinas concedem os IDs configurados. A conclusão ao vivo não
             exige Mural nem altera a elegibilidade dos cursos gravados. */}
-        <Field
-          label="Ferramentas que este curso libera no Estúdio"
-          tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
-        >
-          <StudioCourseBlocksPicker
-            key={editing ? `${editing.id}:${editing.version}` : 'new-course'}
-            value={form.studioUnlockBlocks}
-            onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
-          />
-          <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
-          <p className="mt-1 text-muted-foreground text-xs">
-            {form.studioUnlockBlocks.length === 0
-              ? isKids
-                ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
-                : 'Nenhum bloco: este curso não acrescenta ferramentas à paleta do aluno.'
-              : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
-          </p>
-          {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
+        {/* Curso para pais não mexe no Estúdio da criança: sem ferramentas a liberar. */}
+        {isParents ? null : (
+          <Field
+            label="Ferramentas que este curso libera no Estúdio"
+            tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
+          >
+            <StudioCourseBlocksPicker
+              key={editing ? `${editing.id}:${editing.version}` : 'new-course'}
+              value={form.studioUnlockBlocks}
+              onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
+            />
+            <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              {form.studioUnlockBlocks.length === 0
+                ? isKids
+                  ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
+                  : 'Nenhum bloco: este curso não acrescenta ferramentas à paleta do aluno.'
+                : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
+            </p>
+            {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
                 repetição dos fundamentos é o normal, não um erro. A paleta deduplica e a
                 comemoração compara com o que a CRIANÇA tem: ela só festeja o que é novo
                 para ela. */}
-          <p className="mt-1 text-muted-foreground text-xs">
-            {isKids
-              ? 'Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda não tem.'
-              : 'Pode repetir blocos de outros cursos: o aluno recebe apenas os que ainda não tem.'}
-          </p>
-          {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
+            <p className="mt-1 text-muted-foreground text-xs">
+              {isKids
+                ? 'Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda não tem.'
+                : 'Pode repetir blocos de outros cursos: o aluno recebe apenas os que ainda não tem.'}
+            </p>
+            {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
                 que recebe quem ainda não ganhou a ferramenta, nunca revoga um grant existente. */}
-          <p className="mt-1 text-muted-foreground text-xs">
-            Tirar um bloco daqui vale para quem ainda não recebeu a ferramenta. Quem já recebeu não
-            perde.
-          </p>
-        </Field>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Tirar um bloco daqui vale para quem ainda não recebeu a ferramenta. Quem já recebeu
+              não perde.
+            </p>
+          </Field>
+        )}
         {/* No curso ao vivo a aula abre pela vaga na turma e pela data do encontro: a trava
             sequencial e o "vídeo antes da atividade" (não há bloco de vídeo) não se aplicam. */}
         {isLive ? null : (

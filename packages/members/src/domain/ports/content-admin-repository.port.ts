@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
@@ -72,6 +73,11 @@ export interface CourseFields {
    * UPDATE **preserva a atual** (régua do `audience`). Trocar exige um curso SEM turma.
    */
   modality: CourseModality | null
+  /**
+   * Para quem (14/11/2026). `null` = "não informado": no CREATE vira `child`; no UPDATE
+   * **preserva o atual** (régua do `audience`).
+   */
+  learner: CourseLearner | null
 }
 
 export interface ModuleFields {
@@ -101,6 +107,7 @@ export interface ListCoursesAdminFilter {
   status?: CourseStatus
   audience?: CourseAudience
   modality?: CourseModality
+  learner?: CourseLearner
   limit: number
   offset: number
 }
@@ -115,6 +122,8 @@ export interface CloneCourseOverrides {
   audience: CourseAudience
   /** Modalidade do clone (o service resolve: ausente no pedido = a da origem). */
   modality: CourseModality
+  /** Para quem do clone: curso para pais só existe no Kids, então o clone nasce `child`. */
+  learner: CourseLearner
 }
 
 /**
@@ -161,6 +170,11 @@ export interface ContentAdminRepository {
    * usa isso para avisar o operador).
    */
   listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>
+  /**
+   * Títulos das aulas PUBLICADAS do curso com bloco de Estúdio ou Pinta (ferramentas que só abrem
+   * na sessão de uma criança). Um curso só vira "Para pais" sem nenhuma.
+   */
+  listPublishedLessonTitlesWithChildOnlyBlocks(courseId: string): Promise<string[]>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

@@ -1,4 +1,4 @@
-import { chaveAchada } from '@sistemazero/arquipelago-contracts'
+import { COMODOS_DA_IRIS, chaveAchada } from '@sistemazero/arquipelago-contracts'
 import { useMemo } from 'react'
 import modeloDaChave from '../assets/itens/chave.glb'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -8,10 +8,12 @@ import {
   type ChaveDaCasa,
   falaDaChave,
   guardarChave,
+  quantasChaves,
   TEXTOS_DAS_CHAVES,
 } from '../sistemas/chaves-da-casa'
 import { alcancaNaPraia } from '../sistemas/colecoes-da-praia'
 import { CORPO } from '../sistemas/corpo'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
 import { jogoPausado } from '../sistemas/pausa'
 import { useInterativo } from './interativos'
 import { alturaDaIlha } from './medidas'
@@ -45,7 +47,9 @@ function Chave({ c }: { c: ChaveDaCasa }) {
       if (!podePegar(s) || !perto() || chaveAchada(s.salvamento.chaves, c.comodo)) return
       s.mudar((v) => guardarChave(v, c.comodo))
       const depois = loja.getState().salvamento.chaves
-      if (chaveAchada(depois, c.comodo)) s.dizer(falaDaChave(c.comodo, depois))
+      if (!chaveAchada(depois, c.comodo)) return
+      pedirGesto(movimento, gestoDoAchado(quantasChaves(depois) === COMODOS_DA_IRIS.length))
+      s.dizer(falaDaChave(c.comodo, depois))
     },
   })
   if (achada) return null

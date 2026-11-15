@@ -30,6 +30,8 @@ export function studentLessonLink(
     slug: string
     audience: 'adult' | 'kids'
     modality?: string | null
+    /** Curso para pais (14/11/2026) abre na área dos pais, em `/pais/cursos`. */
+    learner?: string | null
     status: string
     lessonPublished: boolean
   } | null,
@@ -40,9 +42,16 @@ export function studentLessonLink(
   const base = course.audience === 'kids' ? urls?.kids : urls?.adult
   if (!base) return null
   return {
-    url: `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(lessonId)}`,
+    url: `${base.replace(/\/+$/, '')}${course.learner === 'parents' ? '/pais/cursos' : '/cursos'}/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(lessonId)}`,
     enabled: course.status === 'published' && course.lessonPublished,
   }
+}
+
+/** O filtro "para quem" da lista de cursos: só valores do contrato chegam ao servidor. */
+export function learnerFilterParam(
+  value: string | null | undefined,
+): 'child' | 'parents' | undefined {
+  return value === 'child' || value === 'parents' ? value : undefined
 }
 
 /** O filtro da lista de cursos: só valores do contrato chegam ao servidor. */

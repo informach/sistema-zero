@@ -132,6 +132,49 @@ export function removeSlot(catalog: AvatarCatalog, slots: AvatarSlots, slot: str
   return withEars(catalog, resultado)
 }
 
+/**
+ * Atualiza a fantasia vestida para as partes de agora: quando a arte troca uma parte do conjunto
+ * (o elmo do cavaleiro, `trocas_fantasia`), quem já vestia a fantasia passa a vestir a parte nova,
+ * em vez de ficar com uma "fantasia incompleta". A parte que saiu da fantasia sai do avatar, mesmo
+ * num encaixe que a fantasia já não usa. `completar` (padrão, na leitura do avatar guardado) põe
+ * também as partes que faltam; na gravação, `false`: só troca o que era antigo, e um pedido com
+ * a fantasia pela metade continua sendo recusado ("Fantasia incompleta"). Sem fantasia, nada muda.
+ */
+export function withCurrentSet(
+  catalog: AvatarCatalog,
+  slots: AvatarSlots,
+  opcoes: { completar?: boolean } = {},
+): AvatarSlots {
+  const set = wornSet(catalog, slots)
+  const inteiro = set ? setSlots(catalog, set) : null
+  if (!set || !inteiro) return slots
+  const deAgora = new Set(Object.values(inteiro))
+  const atualizado: AvatarSlots = {}
+  for (const [slot, id] of Object.entries(slots)) {
+    if (partOf(catalog, id)?.set !== set || deAgora.has(id)) atualizado[slot] = id
+    else if (inteiro[slot]) atualizado[slot] = inteiro[slot]
+  }
+  return opcoes.completar === false ? atualizado : { ...atualizado, ...inteiro }
+}
+
+/**
+ * O avatar montado: cada peça que tem variante para montar (`mountedVariant`, a saia com a barra
+ * assentada na sela) troca pela variante, se ela estiver no catálogo. Só no desenho do jogo: o avatar
+ * guardado continua com a peça original.
+ */
+export function withMountedVariants(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+  let trocou = false
+  const montado: AvatarSlots = {}
+  for (const [slot, id] of Object.entries(slots)) {
+    const variante = partOf(catalog, id)?.mountedVariant
+    if (variante && partOf(catalog, variante)?.slot === slot) {
+      montado[slot] = variante
+      trocou = true
+    } else montado[slot] = id
+  }
+  return trocou ? montado : slots
+}
+
 /** Põe as orelhas da cor do corpo, ou tira, quando um capuz ou a fantasia cobrem a cabeça. */
 export function withEars(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
   const { [SLOT_DAS_ORELHAS]: _orelhas, ...resto } = slots

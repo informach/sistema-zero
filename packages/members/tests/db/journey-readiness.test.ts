@@ -47,6 +47,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       track: '2d',
       careerSlot: null,
       modality: null,
+      learner: null,
     })
     ownedCourses.push(course.id)
     const mod = await repo.createModule(course.id, { title: 'Mundo', summary: null })
@@ -87,6 +88,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       track: '2d',
       careerSlot: null,
       modality: null,
+      learner: null,
     })
     ownedCourses.push(course.id)
     expect(course.videoBeforeActivity).toBe(true)
@@ -108,6 +110,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       title: 'Primeiros passos (adulto)',
       audience: 'adult',
       modality: 'recorded',
+      learner: 'child',
     })
     if (!clone) throw new Error('O clone não nasceu')
     ownedCourses.push(clone.id)

@@ -296,12 +296,14 @@ function RichText({ content }: { content: RichTextBlock }) {
   // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
   // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
   const pathname = usePathname()
+  const player = useLessonPlayer()
   const markdown = content.markdown ?? ''
   if (!markdown) return null
   return (
     <div className="lesson-prose">
       {renderMarkdown(markdown, {
         ...(isLessonPath(pathname) ? { helpReturnPath: pathname } : {}),
+        ...(player?.helpLinks === false ? { helpLinks: false } : {}),
       })}
     </div>
   )

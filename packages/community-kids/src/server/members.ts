@@ -4,6 +4,8 @@ import { shell } from './shell'
 export const {
   listMyCourses,
   listCatalog,
+  listParentCourses,
+  listParentCatalog,
   checkStudioAccessReadonly,
   checkChallengeAccessReadonly,
   checkPensaAccessReadonly,

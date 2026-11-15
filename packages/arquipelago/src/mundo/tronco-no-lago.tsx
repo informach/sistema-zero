@@ -7,7 +7,9 @@ import {
 import { useEffect, useMemo, useRef } from 'react'
 import propsGlb from '../assets/ilhas/bosque-props.glb'
 import type { AguaRasa } from '../estado/contexto'
+import { CORPO } from '../sistemas/corpo'
 import { EMPUXO, forcaDaAgua, pontosDoTronco, type Vetor } from '../sistemas/empuxo'
+import type { ComoSeEmpurra } from '../sistemas/lugares-dos-clipes'
 import { MATERIAIS, massaDe } from '../sistemas/materiais-fisicos'
 import { type CampoDeVento, ventoEm } from '../sistemas/vento'
 import { dentroDaAgua } from './bosque'
@@ -23,6 +25,14 @@ const MASSA = massaDe('madeira', VOLUME)
 /** Os quatro pontos de flutuação, ao longo do X do corpo (o exemplo prático do levantamento). */
 const PONTOS = pontosDoTronco(TRONCO_QUE_BOIA.comprimento)
 const VOLUME_DO_PONTO = VOLUME / PONTOS.length
+/**
+ * Como a criança empurra o tronco: deitado, ele é baixo (o `empurrar_baixo`, agachada) e redondo.
+ * A arte mediu (15/11/2026) que, com a face a 0,30 m, os dedos ficam a 2 cm da casca, que já
+ * recuou na altura das mãos: a face vem 0,02 m (do clipe) mais perto e os dedos encostam.
+ */
+const EMPURRAO: { empurrao: ComoSeEmpurra } = {
+  empurrao: { altura: 2 * TRONCO_QUE_BOIA.raio, encostaMais: 0.02 * CORPO.medidas.scale },
+}
 /** Mais baixo que isto abaixo da superfície do lago, ele caiu da ilha (o lago tem 0,85 de fundo). */
 const CAIU_DA_ILHA = 3
 /** O giro freado no ar (na água soma o `EMPUXO.giroNaAgua`). */
@@ -148,6 +158,7 @@ export function TroncoNoLago({ agua, vento }: { agua: AguaRasa; vento?: CampoDeV
       rotation={[0.15, agua.giro + 0.6, 0]}
       angularDamping={GIRO_NO_AR}
       canSleep
+      userData={EMPURRAO}
     >
       {/* O cilindro do Rapier fica em pé (Y): deitado ao longo do X do corpo. */}
       <CylinderCollider

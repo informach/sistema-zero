@@ -6,6 +6,7 @@ import {
   avatarProblems,
   drawAvatar,
   ownershipOf,
+  withCurrentSet,
   withEars,
 } from '@sistemazero/core/avatar'
 import { AvatarInvalidError, AvatarPartNotOwnedError } from './avatar.errors'
@@ -79,7 +80,8 @@ export function canonicalizeAvatarConfig(
   const filter = isAvatarFilter(cru?.filter) ? cru.filter : undefined
   const slots = cru?.version === 3 ? slotsCrus(cru.slots) : null
   if (slots) {
-    const comOrelhas = withEars(catalog, slots)
+    // A fantasia vestida acompanha as trocas de parte que a arte fizer (o elmo do cavaleiro).
+    const comOrelhas = withEars(catalog, withCurrentSet(catalog, slots))
     if (avatarProblems(catalog, comOrelhas).length === 0)
       return {
         version: 3,

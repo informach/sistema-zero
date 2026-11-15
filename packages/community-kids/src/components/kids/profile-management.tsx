@@ -159,7 +159,7 @@ export function ProfileForm({
       {/* O formulário num cartão branco, dentro da moldura da área dos pais. */}
       <section className="kids-carta flex flex-col gap-6 px-6 py-8 md:px-10 md:py-10">
         <h1 className="sz-display text-[clamp(1.75rem,3vw,2.25rem)]">
-          {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar criança'}
+          {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar filho(a)'}
         </h1>
         {/* `noValidate`: sem ele, o aviso do próprio navegador ("Preencha este campo.") barra o
             envio antes do `onSubmit` e a mensagem da plataforma nunca aparece. */}
@@ -325,6 +325,9 @@ export function ProfileForm({
  * Troca a senha da CONTA do responsável (Área dos pais — sessão da conta). É da
  * CONTA, não do perfil: por isso fica aqui e NÃO na página "Meu perfil" da criança.
  * Trocar a senha revoga TODAS as sessões no auth → re-login (navegação de documento).
+ * A senha é opcional (15/11/2026): quem entra só pelo código do e-mail e nunca criou uma
+ * (ou esqueceu a atual) cria pelo código do e-mail, em "Esqueci minha senha", que prova o
+ * e-mail de novo. Por isso o link fica aqui, em vez de deixar criar sem a senha atual.
  */
 export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -376,8 +379,8 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
       onClose={() => {
         if (!saving) onCancel()
       }}
-      title="Alterar senha do responsável"
-      description="Por segurança, você será desconectado de todos os dispositivos."
+      title="Senha do responsável"
+      description="A senha é opcional: você também entra pelo código enviado ao seu e-mail. Ao trocar, você sai de todos os dispositivos."
       className="max-w-sm rounded-2xl"
       footer={
         <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
@@ -391,6 +394,13 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
       }
     >
       <form id={formId} className="flex flex-col gap-4" onSubmit={onSubmit}>
+        <p className="text-muted-foreground text-sm">
+          Nunca criou uma senha ou esqueceu a atual?{' '}
+          <a href="/esqueci-senha" className="font-bold text-primary underline underline-offset-4">
+            Crie pelo código do e-mail
+          </a>
+          .
+        </p>
         <Field label="Senha atual" htmlFor="currentPassword">
           <PasswordInput
             id="currentPassword"

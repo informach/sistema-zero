@@ -1091,7 +1091,8 @@ themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` g
 > Usuários** (listar com busca/filtros — q/papel/status + **busca avançada 06/2026**: origem do
 > cadastro + janela `createdFrom/createdTo` — + **criar via convite por e-mail** + editar
 > status/papel/perfil, guards hierárquicos e concorrência otimista; **acesso/senha (07/2026)**:
-> badge "Acesso pendente" quando `UserView.passwordSet===false` (convite/compra sem senha) + ação
+> chip neutro "Entra só por código" quando `UserView.passwordSet===false` (a senha do cliente é
+> opcional desde 15/11/2026; antes era o badge "Acesso pendente") + ação
 > por linha **"Acesso"** (`LockKeyhole`, gated `canEdit && !self`) → dialog com **Reenviar link**
 > (POST `/api/admin/users/:id/resend-invite?platform=`, link de 1º acesso 14 dias) e **Definir senha
 > manual** (POST `/api/admin/users/:id/set-password`); ações por linha **Conceder
