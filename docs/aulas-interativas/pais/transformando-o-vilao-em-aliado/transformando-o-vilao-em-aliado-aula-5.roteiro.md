@@ -25,7 +25,7 @@ São funções executivas: planejar, seguir uma sequência, lidar com a frustra�
 
 Uma pergunta que muitos pais me fazem é esta: será que o meu filho vai conseguir prestar atenção? Veja o que outros pais achavam no começo e o que aconteceu.
 
-Muitos pais de crianças autistas conhecem os dois lados: a dificuldade de manter a atenção no que não interessa e a concentração enorme no que interessa. A Vivianne diz: foco nas telas e nos jogos eles têm. A gente queria era foco para as outras coisas. Quando a criança está diante do próprio interesse, ela presta mais atenção. Quando a gente explica uma atividade de matemática, é mais difícil. Pelo jogo dá para ensinar até a matemática, e quando ela aprende no jogo, generaliza para outras coisas. Já que vai focar, que foque aprendendo.
+Muitos pais conhecem os dois lados: a dificuldade de manter a atenção no que não interessa e a concentração enorme no que interessa. A Vivianne diz: foco nas telas e nos jogos eles têm. A gente queria era foco para as outras coisas. Quando a criança está diante do próprio interesse, ela presta mais atenção. Quando a gente explica uma atividade de matemática, é mais difícil. Pelo jogo dá para ensinar até a matemática, e o que ela aprende no jogo pode levar para outras coisas. Já que vai focar, que foque aprendendo.
 
 E ainda tem a interação social: ela vai querer contar para os amigos e mostrar o que fez. Cada criança tem o seu tempo, e pausas fazem parte. Clique em Próxima parte.
 ```
@@ -45,13 +45,13 @@ Outra pergunta comum: não vai ser difícil demais? Será que o meu filho dá co
 
 A Isabela não tinha costume de jogar. Ela gostava mesmo era de assistir. A mãe dela achava que isso não era para ela. A Isabela nunca tinha mexido no computador e não sabia pegar no mouse. A gente mostrou onde coloca a mão, onde clica e como faz, e em menos de dez minutos ela já estava à vontade. Num ambiente totalmente novo, ela deu conta e saiu explicando o que aprendeu.
 
-Tudo que é novo pode ser difícil no começo. Mas não é aquele difícil que leva um ano para ficar fácil. É o difícil da primeira barreira. Em um dia, uma semana no máximo, a criança se acostuma com o jeito novo. Ajuda muito a gente sentar junto: vamos ver como é? Não entendi? Então vamos ver de novo.
+Tudo que é novo pode ser difícil no começo. Mas não é aquele difícil que leva um ano para ficar fácil. É o difícil da primeira barreira. Para muitas crianças, essa barreira passa rápido, às vezes em poucos dias. Cada uma tem o seu tempo. Ajuda muito a gente sentar junto: vamos ver como é? Não entendi? Então vamos ver de novo.
 
 A Vivianne diz que a frase final da Isabela é a que mais pesa: quando eu consegui, eu fiquei feliz. Quando consegue, a criança quer continuar e quer criar outras coisas. A partir daí dá para aumentar um pouco a dificuldade e exigir um pouco mais de concentração, de interpretação e de levantar hipóteses. Ela vai ampliando as estratégias. Pense num adulto diante de um problema. Se ele só conhece um caminho e esse caminho não serve naquele momento, acabou. Com um repertório amplo, ele resolve.
 
 Isso tem a ver com o que a Vivianne chama de níveis de suporte. Primeiro ela faz pela criança, para ela ver que é legal. Depois faz junto, tirando um pouquinho do suporte e aumentando um pouquinho a exigência. Até chegar o momento mais bonito, quando a criança diz: não fala, deixa eu pensar. Ela já tem um saquinho de ideias, mais fichinhas, mais hipóteses, e testa sabendo que, se errar, está amparada.
 
-É como aprender a andar. Quantas vezes a criança cai? E quem está do lado para ajudar? É o mesmo processo. Às vezes, o que a gente acha que não é para o nosso filho é justamente o que mostra do que ele é capaz.
+A Vivianne compara com aprender a andar. Quantas vezes a criança cai? E quem está do lado para ajudar? É o mesmo processo. Às vezes, o que a gente acha que não é para o nosso filho é justamente o que mostra do que ele é capaz.
 
 Para esta semana: lembre de uma coisa nova que o seu filho achou difícil e depois conseguiu. Como foi a primeira barreira, e quem estava do lado? Clique em Próxima parte.
 ```

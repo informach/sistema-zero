@@ -15,7 +15,7 @@ Oi! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. E
 
 Antes de falar de tela, eu quero começar pelo que importa. O que você mais deseja para o futuro do seu filho? Pense com calma. Se quiser, pause o vídeo um pouquinho.
 
-Naquela noite apareceram palavras como autonomia, que é dar conta das próprias escolhas, um passo de cada vez. Coragem para tentar: arriscar, errar e tentar de novo sem desistir. Prazer de aprender: querer saber mais porque descobrir é bom. E um jeito de se expressar: mostrar ao mundo o que pensa, do jeito dele. Para mim, sempre pesou muito a autonomia. Eu pensava: quero que os meus filhos consigam lidar com a vida quando eu não estiver por perto.
+Alguns exemplos para ajudar: autonomia, que é dar conta das próprias escolhas, um passo de cada vez. Coragem para tentar: arriscar, errar e tentar de novo sem desistir. Prazer de aprender: querer saber mais porque descobrir é bom. E um jeito de se expressar: mostrar ao mundo o que pensa, do jeito dele. Para mim, sempre pesou muito a autonomia. Eu pensava: quero que os meus filhos consigam lidar com a vida quando eu não estiver por perto.
 
 Guarde a palavra que veio à sua cabeça. A gente volta nela no fim do curso.
 
@@ -39,7 +39,7 @@ Por isso muita família faz uma pergunta que cansa: como eu tiro a tela da vida 
 
 Então eu proponho trocar a pergunta. Em vez de como eu tiro a tela, o que eu posso oferecer dentro dessa tela?
 
-E preste atenção nisto: a gente não está falando de colocar mais tempo de tela. Se o seu filho já usa meia hora por dia, a ideia é tornar essa meia hora produtiva. A rotina da casa não muda. Muda o que acontece dentro daquele tempo. Ele pode construir alguma coisa e aumentar o repertório de imaginação, de estratégia e de interpretação. E pode aprender a lidar com a frustração. A Vivianne lembra que as crianças de hoje têm um limiar muito baixo diante do erro.
+E preste atenção nisto: a gente não está falando de colocar mais tempo de tela. A Vivianne dá um exemplo. Se o seu filho já usa meia hora por dia, a ideia é tornar essa meia hora produtiva. A rotina da casa não muda. Muda o que acontece dentro daquele tempo. Ele pode construir alguma coisa e aumentar o repertório de imaginação, de estratégia e de interpretação. E pode aprender a lidar com a frustração. Ela lembra que as crianças de hoje têm um limiar muito baixo diante do erro.
 
 A mesma tela pode afastar ou aproximar. Quando a tela só entretém, tudo chega pronto. Tem briga na hora de desligar, porque a criança quer mais, mais e mais. E sobra pouca paciência para tentar de novo. Você já viveu a briga na hora de desligar? Muita gente já.
 
@@ -75,7 +75,7 @@ O segundo é jogar: explorar regras e desafios que outra pessoa criou. Tem jogo 
 
 O terceiro é criar: inventar as próprias regras e ver tudo funcionar.
 
-Em qual desses o seu filho passa mais tempo hoje? Na palestra, quase ninguém levantou a mão no criar. E tudo bem, porque é exatamente esse o ponto. Eu não estou aqui para tirar os jogos dos nossos filhos. Jogar é bom. Eu quero mostrar uma terceira possibilidade que muita família ainda não conhece, e é dela que a gente fala na próxima aula.
+Em qual desses o seu filho passa mais tempo hoje? Na maioria das casas, quase ninguém está no criar. E tudo bem, porque é exatamente esse o ponto. Eu não estou aqui para tirar os jogos dos nossos filhos. Jogar é bom. Eu quero mostrar uma terceira possibilidade que muita família ainda não conhece, e é dela que a gente fala na próxima aula.
 
 Antes, uma tarefa simples para esta semana: observe em qual dos três usos o seu filho passa mais tempo. Sem julgar, só observar. A tarefa está aqui embaixo, junto com a apostila do curso, que reúne as ideias de todas as aulas para você consultar quando quiser. Clique em Próxima parte.
 ```

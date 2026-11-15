@@ -6,20 +6,20 @@
 
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
-| O jogo vira assunto na mesa de casa | Depoimentos sobre conversa; entrar no mundo da criança; as quatro perguntas; a história do Dé (troca de turno e leitura do ambiente). | Vídeo assistido; perguntas à vista. |
+| O jogo vira assunto na mesa de casa | Depoimentos sobre conversa; entrar no mundo da criança; as quatro perguntas; a história do André com a Vivianne (troca de turno e leitura do ambiente). | Vídeo assistido; perguntas à vista. |
 | A palavra que você guardou e um presente | A palavra guardada; a ideia que fica; o presente do Cadê Todo Mundo por 7 dias; o certificado. | Vídeo assistido e certificado emitido. |
 
 ## Ideias-chave
 
-- Os pais dos depoimentos não sabem programar: perguntam, olham e celebram.
+- Os pais dos depoimentos não precisaram programar: perguntam, olham e celebram.
 - Quando você entra no mundo da criança, ela abre portas para o seu (Vivianne).
 - Perguntas sobre o processo, e não só sobre nota ou tempo de uso.
-- O jogo como pontapé inicial da conversa: do hiperfoco ao ponto de interesse (Vivianne, sobre o Dé).
+- O jogo como pontapé inicial da conversa: do hiperfoco ao ponto de interesse (Vivianne, sobre o André).
 - O vilão pode virar aliado. Tudo depende de como a tela é usada.
 
 ## O presente
 
-O Cadê Todo Mundo por 7 dias, gratuito e sem cartão, de 5 a 17 anos (abaixo de 9, com um adulto do lado). O bloco de materiais tem um texto provisório: **antes de publicar, trocar pelo link da campanha** (`/bolsa/<código>`), criada no Admin em Embaixadores. Ver [README](README.md).
+O Cadê Todo Mundo por 7 dias, gratuito e sem cartão, de 5 a 17 anos (abaixo de 9, com um adulto do lado). O bloco de materiais `presente` traz o texto do presente, que os pais podem ler. **Antes de publicar, acrescente a ele o item de link da campanha** (`/bolsa/<código>`), criada no Admin em Embaixadores. Ver [README](README.md).
 
 ## Certificado
 

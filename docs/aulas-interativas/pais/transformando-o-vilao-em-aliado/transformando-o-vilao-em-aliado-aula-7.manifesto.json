@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-a7-conversa",
-      "plannedVideo": "Título: O jogo vira assunto na mesa de casa\n\nVídeo de depoimentos do slide 28 da aula aberta (Débora, Daniel e Harle), as quatro perguntas do slide 29 e a história do Dé. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 1."
+      "plannedVideo": "Título: O jogo vira assunto na mesa de casa\n\nVídeo de depoimentos do slide 28 da aula aberta (Débora, Daniel e Harle), as quatro perguntas do slide 29 e a história do André com a Vivianne. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 1."
     },
     {
       "key": "perguntas-a7",
@@ -28,7 +28,7 @@
           {
             "id": "presente-cade",
             "kind": "text",
-            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado.\n\nPENDENTE ANTES DE PUBLICAR: trocar este texto pelo item de link da campanha do presente (/bolsa/<código>), criada no Admin em Embaixadores."
+            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
           }
         ]
       }
@@ -59,7 +59,7 @@
     {
       "key": "presente",
       "title": "A palavra que você guardou e um presente",
-      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família experimentar e emitir o certificado.",
+      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família experimentar e emitir o certificado. Antes de publicar, acrescente ao bloco do presente o item de link da campanha (/bolsa/<código>), criada no Admin em Embaixadores.",
       "intent": "delivery",
       "blockKeys": ["video-a7-presente", "presente", "certificado"],
       "workspaceKey": null,

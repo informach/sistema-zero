@@ -7,7 +7,8 @@
 | Parte | O que acontece | Saída |
 | --- | --- | --- |
 | Você já programa em casa | Blocos coloridos em vez da tela preta; a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO; a sequenciação na vida (Vivianne). | Vídeo assistido. |
-| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela; quiz com a sequência e com o que fazer depois do erro. | Vídeo assistido e quiz respondido. |
+| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. A tela fica parada para a pessoa pensar. | Vídeo assistido. |
+| Qual é o seu caminho? | Quiz com a sequência e com o que fazer depois do erro, numa parte própria (o quiz não divide parte com vídeo). | Quiz respondido. |
 | E se a primeira tentativa não funcionar? | A resposta (há mais de um caminho); observar, mudar uma instrução, testar de novo; a percepção do ambiente na sala de aula; o "que horrível" que virou legal. | Vídeo assistido; tarefa à vista. |
 
 ## Ideias-chave

@@ -58,7 +58,7 @@
         "tone": "azul",
         "icon": "brilho",
         "title": "A pergunta do começo",
-        "text": "O que você mais deseja para o futuro do seu filho?<br/>Algumas palavras que apareceram na conversa com as famílias: <b>autonomia</b>, dar conta das próprias escolhas, um passo de cada vez; <b>coragem para tentar</b>, arriscar, errar e tentar de novo; <b>prazer de aprender</b>, querer saber mais porque descobrir é bom; <b>um jeito de se expressar</b>, mostrar ao mundo o que pensa, do jeito dele."
+        "text": "O que você mais deseja para o futuro do seu filho?<br/>Alguns exemplos para ajudar: <b>autonomia</b>, dar conta das próprias escolhas, um passo de cada vez; <b>coragem para tentar</b>, arriscar, errar e tentar de novo; <b>prazer de aprender</b>, querer saber mais porque descobrir é bom; <b>um jeito de se expressar</b>, mostrar ao mundo o que pensa, do jeito dele."
       },
       {
         "kind": "box",
@@ -203,7 +203,7 @@
         "tone": "azul",
         "icon": "livro",
         "title": "Como tudo começou",
-        "text": "A Helena e o Júlio são formados em Sistemas de Informação e têm dois filhos autistas. O André sempre amou jogos, e muitas vezes era na tela que ele se regulava. Em vez de brigar com esse interesse, eles usaram uma parte do tempo que ele já passava na tela para ensinar ele a criar os próprios jogos.<br/>Neste semestre, o André deu uma palestra numa faculdade, ensinando a turma de tecnologia a criar jogos."
+        "text": "A Helena e o Júlio são formados em Sistemas de Informação e têm dois filhos autistas. O André sempre amou jogos, e muitas vezes era na tela que ele se regulava. Em vez de brigar com esse interesse, eles usaram uma parte do tempo que ele já passava na tela para ensinar ele a criar os próprios jogos.<br/>Em 2026, o André deu uma palestra numa faculdade, ensinando a turma de tecnologia a criar jogos."
       },
       {
         "kind": "quote",
@@ -215,7 +215,7 @@
         "tone": "lilas",
         "icon": "pessoa",
         "title": "O olhar da Vivianne",
-        "text": "Repare nas crianças que criam: estão pensando mais, mais criativas, mais pacientes e mais resilientes."
+        "text": "Sobre a criança do vídeo, a Vivianne observou: ela está pensando mais, está mais criativa, mais paciente e mais resiliente."
       },
       {
         "kind": "box",
@@ -286,7 +286,7 @@
         "kind": "box",
         "tone": "azul",
         "icon": "lista",
-        "title": "Exemplos que saíram na conversa",
+        "title": "Alguns exemplos para ajudar",
         "text": "Ama trens: um trem que precisa chegar na estação sem bater.<br/>Ama bandeiras: o jogo mostra uma bandeira e ela escolhe o país.<br/>Ama dinossauros: o dinossauro precisa fugir do vulcão."
       },
       {
@@ -338,7 +338,7 @@
     "id": "a4-caminho",
     "theme": "verde",
     "slide": "slide-17.jpg",
-    "kicker": "Aula 4 · Parte 2",
+    "kicker": "Aula 4 · Partes 2 e 3",
     "title": "Você consegue programar este caminho?",
     "subtitle": "Da bolinha azul até a estrela, sem passar pelos quadrados escuros.",
     "items": [
@@ -360,7 +360,7 @@
     "id": "a4-descoberta",
     "theme": "verde",
     "slide": "slide-18.jpg",
-    "kicker": "Aula 4 · Parte 3",
+    "kicker": "Aula 4 · Parte 4",
     "title": "E se a primeira tentativa não funcionar?",
     "subtitle": "No jogo e na programação, a gente observa, ajusta e testa de novo.",
     "items": [
@@ -381,7 +381,7 @@
         "tone": "lilas",
         "icon": "pessoa",
         "title": "O olhar da Vivianne",
-        "text": "É um treino de percepção do ambiente: olhar o cenário todo, como na sala de aula, e depois focar no ponto importante. E caminhos diferentes levam a lugares diferentes: o \"que horrível\" de um paciente virou \"vamos continuar, ficou legal\"."
+        "text": "É um treino de percepção do ambiente: olhar o cenário todo, como na sala de aula, e depois focar no ponto importante. E caminhos diferentes levam a lugares diferentes: o \"que horrível\" de um paciente virou \"a gente pode continuar, porque foi muito legal\"."
       },
       {
         "kind": "box",
@@ -426,7 +426,7 @@
         "tone": "lilas",
         "icon": "pessoa",
         "title": "O olhar da Vivianne",
-        "text": "Foco nas telas e nos jogos eles têm. Diante do próprio interesse, a criança presta mais atenção, e o que aprende no jogo ela generaliza para outras coisas. Já que vai focar, que foque aprendendo."
+        "text": "Foco nas telas e nos jogos eles têm. Diante do próprio interesse, a criança presta mais atenção, e o que aprende no jogo ela pode levar para outras coisas. Já que vai focar, que foque aprendendo."
       },
       {
         "kind": "note",
@@ -440,7 +440,7 @@
     "slide": "slide-21.jpg",
     "kicker": "Aula 5 · Parte 2",
     "title": "Quando estava difícil, eu consegui",
-    "subtitle": "Toda atividade nova tem uma primeira barreira. Ela é curta, e alguém pode estar do lado.",
+    "subtitle": "Toda atividade nova tem uma primeira barreira. Costuma passar rápido, e alguém pode estar do lado.",
     "items": [
       {
         "kind": "quote",
@@ -553,7 +553,7 @@
     "slide": "slide-29.jpg",
     "kicker": "Aula 7 · Parte 1",
     "title": "O jogo vira assunto na mesa de casa",
-    "subtitle": "Os pais dos depoimentos não sabem programar. Eles perguntam, olham e celebram.",
+    "subtitle": "Os pais dos depoimentos não precisaram programar. Eles perguntam, olham e celebram.",
     "items": [
       {
         "kind": "box",
@@ -567,7 +567,7 @@
         "tone": "lilas",
         "icon": "pessoa",
         "title": "O olhar da Vivianne",
-        "text": "Quando você entra no mundo da criança, ela abre portas para vir ao seu. Pelo jogo, o Dé aprendeu a troca de turno e a ler o ambiente: se a pessoa baixa a cabeça ou olha para o lado, talvez seja hora de mudar de assunto. Hoje ele conversa sobre todos os assuntos, com prazer."
+        "text": "Quando você entra no mundo da criança, ela abre portas para vir ao seu. Pelo jogo, o André aprendeu com ela a troca de turno e a ler o ambiente: se a pessoa baixa a cabeça ou olha para o lado, talvez seja hora de mudar de assunto. Hoje ele conversa sobre todos os assuntos, com prazer."
       },
       {
         "kind": "delivery",
