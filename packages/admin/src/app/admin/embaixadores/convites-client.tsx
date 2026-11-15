@@ -37,6 +37,17 @@ import { isCanceledCommunityRequest } from '@/lib/community-query'
 import type { Platform } from '@/lib/platform'
 import { type CampaignCouponDraft, CampaignCouponDraftSchema } from '@/lib/prepare-campaign-coupon'
 import { CampaignCouponFields } from './campaign-coupon-fields'
+import {
+  campaignGiftOfferName,
+  GIFT_CATALOG_UNAVAILABLE_MESSAGE,
+  GIFT_OFFER_LOCKED_MESSAGE,
+  GIFT_OFFER_REQUIRED_MESSAGE,
+  GiftOfferField,
+  type GiftOffersState,
+  giftOfferIncludes,
+  giftOfferShareDescription,
+  useGiftOffers,
+} from './campaign-gift-offer'
 import { CampaignScheduleFields } from './campaign-schedule-fields'
 import { EmbaixadoresClient } from './embaixadores-client'
 
@@ -58,53 +69,6 @@ const labels: Record<CampaignState, string> = {
  */
 export const AUDIENCE_LOCKED_MESSAGE =
   'O público só muda enquanto a campanha está em rascunho. Para trocar, duplique a campanha como nova edição.'
-/**
- * Curso do presente adulto (padrão do referrals, `SCHOLARSHIP_ADULT_COURSE_SLUG`). Enquanto ele não
- * estiver publicado na plataforma adulta, o referrals responde `giftAvailable: false` e o link
- * adulto não entrega o presente. O editor confere pela lista de cursos que o painel já tem.
- */
-export const ADULT_GIFT_COURSE_SLUG = 'cade-todo-mundo-adulto'
-export const ADULT_COURSE_UNPUBLISHED_MESSAGE =
-  'O curso Cadê Todo Mundo na versão adulta (cade-todo-mundo-adulto) ainda não está publicado. Até ele ser publicado em Cursos, o link desta campanha mostra o presente como indisponível.'
-type CourseCheck = 'published' | 'unpublished' | 'unknown'
-/**
- * Lê `/api/members/courses` (a mesma lista de Cursos do painel) e procura o slug exato. Qualquer
- * falha (sem permissão, members fora, resposta torta) é `unknown` e não mostra aviso: o aviso só
- * aparece quando a lista DIZ que o curso não está publicado. `fetch` direto e não `apiGet`, para
- * um 401 desta consulta lateral não tirar a pessoa do editor.
- */
-function useAdultGiftCourse(enabled: boolean): CourseCheck {
-  const [check, setCheck] = useState<CourseCheck>('unknown')
-  useEffect(() => {
-    if (!enabled) return
-    const controller = new AbortController()
-    const params = new URLSearchParams({
-      q: ADULT_GIFT_COURSE_SLUG,
-      audience: 'adult',
-      limit: '20',
-    })
-    fetch(`/api/members/courses?${params}`, {
-      cache: 'no-store',
-      headers: { accept: 'application/json' },
-      signal: controller.signal,
-    })
-      .then(async (res) => {
-        if (!res.ok) return 'unknown' as const
-        const body = (await res.json().catch(() => null)) as {
-          items?: { slug?: unknown; status?: unknown }[]
-        } | null
-        if (!Array.isArray(body?.items)) return 'unknown' as const
-        const course = body.items.find((item) => item.slug === ADULT_GIFT_COURSE_SLUG)
-        return course?.status === 'published' ? ('published' as const) : ('unpublished' as const)
-      })
-      .then((next) => {
-        if (!controller.signal.aborted) setCheck(next)
-      })
-      .catch(() => {})
-    return () => controller.abort()
-  }, [enabled])
-  return enabled ? check : 'unknown'
-}
 /** Campanha anterior a 20/10/2026 (ou serviço antigo) chega sem `audience`: é Kids. */
 const audienceOf = (value: { audience?: unknown }): GiftAudience =>
   isGiftAudience(value.audience) ? value.audience : 'kids'
@@ -136,12 +100,19 @@ const conversionLabels: Record<string, string> = {
   unrewarded: 'Sem comissão',
   superseded: 'Compra substituída por uma anterior elegível',
 }
-const message = (err: unknown) =>
-  err && typeof err === 'object' && 'code' in err && err.code === 'CAMPAIGN_AUDIENCE_LOCKED'
-    ? AUDIENCE_LOCKED_MESSAGE
-    : err && typeof err === 'object' && 'message' in err
-      ? String(err.message)
-      : 'Não deu certo. Tente de novo.'
+const codeMessages: Record<string, string> = {
+  CAMPAIGN_AUDIENCE_LOCKED: AUDIENCE_LOCKED_MESSAGE,
+  CAMPAIGN_GIFT_OFFER_LOCKED: GIFT_OFFER_LOCKED_MESSAGE,
+  CATALOG_UNAVAILABLE: GIFT_CATALOG_UNAVAILABLE_MESSAGE,
+}
+const message = (err: unknown) => {
+  const code =
+    err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' ? err.code : ''
+  if (codeMessages[code]) return codeMessages[code]
+  return err && typeof err === 'object' && 'message' in err
+    ? String(err.message)
+    : 'Não deu certo. Tente de novo.'
+}
 type Editing = {
   value: CampaignInput
   id?: string
@@ -250,6 +221,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
   const [detail, setDetail] = useState<CampaignDetailView | null>(null)
   const loadSequence = useRef(0)
   const detailSequence = useRef(0)
+  const giftOffers = useGiftOffers(audience)
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current
     setLoading(true)
@@ -296,8 +268,8 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
           <h2 className="font-display text-xl font-bold">Campanhas de presente</h2>
           <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
             Anúncios, palestras e outras ações do Sistema Zero. Cada campanha tem seu link, seu
-            público e seu prazo para novos cadastros. Quem se cadastra recebe 7 dias de curso e de
-            Mural, contados do cadastro.
+            público e seu prazo para novos cadastros. Quem se cadastra recebe a oferta de presente
+            escolhida na campanha, com o prazo dela contado a partir do cadastro.
           </p>
         </div>
         {canWrite && (
@@ -341,6 +313,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
               <TableHead>Campanha</TableHead>
               <TableHead>Público</TableHead>
               <TableHead>Situação</TableHead>
+              <TableHead>Presente</TableHead>
               <TableHead>Inscrições até (Brasília)</TableHead>
               <TableHead className="text-right">Resgates</TableHead>
               <TableHead className="text-right">Conversões</TableHead>
@@ -350,7 +323,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-6 text-muted-foreground" role="status">
+                <TableCell colSpan={8} className="py-6 text-muted-foreground" role="status">
                   Carregando campanhas…
                 </TableCell>
               </TableRow>
@@ -365,6 +338,9 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                     <AudienceBadge audience={audienceOf(item)} />
                   </TableCell>
                   <TableCell>{labels[item.state]}</TableCell>
+                  <TableCell>
+                    <GiftOfferSummary campaign={item} offers={giftOffers} />
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{dateLabel(item.endsAt)}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {item.stats.redemptions}
@@ -405,7 +381,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
             )}
             {!loading && !error && items.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                   Ainda não há campanhas com essa busca. Crie uma para divulgar o presente com um
                   link próprio.
                 </TableCell>
@@ -424,6 +400,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
       {editing && (
         <CampaignEditor
           audience={audience}
+          giftOffers={giftOffers}
           editing={editing}
           onClose={() => setEditing(null)}
           onSaved={(value) => {
@@ -502,6 +479,9 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
               )}
             </div>
             <p className="text-sm">
+              Presente: <GiftOfferSummary campaign={detail.campaign} offers={giftOffers} inline />
+            </p>
+            <p className="text-sm">
               Início: {dateLabel(detail.campaign.startsAt)} · Encerramento:{' '}
               {dateLabel(detail.campaign.endsAt)} (Brasília). Pausar ou encerrar impede novos
               cadastros; os acessos já aceitos mantêm seu vencimento.
@@ -561,7 +541,12 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                       ? 'Um presente para adultos'
                       : 'Um presente para famílias · Kids'
                   }
-                  description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                  description={giftOfferShareDescription(
+                    detail.campaign.giftOfferId
+                      ? (giftOffers.byId.get(detail.campaign.giftOfferId) ?? null)
+                      : null,
+                    !detail.campaign.giftOfferId,
+                  )}
                   notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${cardDateLabel(detail.campaign.startsAt)} até ${cardDateLabel(new Date(Date.parse(detail.campaign.endsAt) - 1).toISOString())} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para pessoas de 18 anos ou mais.' : 'Para crianças de 5 a 17 anos; abaixo de 9, com acompanhante. Cadastro pelo responsável.'}`}
                 />
               </div>
@@ -772,6 +757,28 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
   )
 }
 
+/** A oferta de presente da campanha: nome e, quando conhecida, o que inclui e o prazo. */
+function GiftOfferSummary({
+  campaign,
+  offers,
+  inline = false,
+}: {
+  campaign: Pick<CampaignView, 'giftOfferId'>
+  offers: GiftOffersState
+  inline?: boolean
+}) {
+  const option = campaign.giftOfferId ? offers.byId.get(campaign.giftOfferId) : undefined
+  const name = campaignGiftOfferName(campaign, offers)
+  const details = option ? `${giftOfferIncludes(option)} · ${option.duration}` : null
+  if (inline) return <>{details ? `${name} (${details}).` : `${name}.`}</>
+  return (
+    <>
+      <div>{name}</div>
+      {details ? <div className="text-xs text-muted-foreground">{details}</div> : null}
+    </>
+  )
+}
+
 export function previewUrl(campaign: CampaignView) {
   const url = new URL('/bolsa/previa', campaign.shareUrl)
   url.search = new URLSearchParams({
@@ -788,11 +795,13 @@ export function previewUrl(campaign: CampaignView) {
 
 function CampaignEditor({
   audience,
+  giftOffers,
   editing,
   onClose,
   onSaved,
 }: {
   audience: Platform
+  giftOffers: GiftOffersState
   editing: Editing
   onClose: () => void
   onSaved: (value: CampaignView) => void
@@ -857,7 +866,19 @@ function CampaignEditor({
       if (request === partnerRequest.current) setPartnerLoading(false)
     }
   }
-  const adultCourse = useAdultGiftCourse(audience === 'adult')
+  // Campanha antiga (gravada sem oferta) segue com a oferta padrão do Cadê até escolher outra.
+  // A duplicata precisa de oferta: o referrals não aceita campanha nova sem ela.
+  const giftOfferLegacy = Boolean(editing.id) && !editing.duplicate && !editing.value.giftOfferId
+  const original = editing.value as Partial<CampaignView>
+  const giftOfferLocked =
+    Boolean(editing.id) &&
+    !editing.duplicate &&
+    Boolean(editing.value.giftOfferId) &&
+    (original.status !== 'draft' ||
+      (original.stats?.redemptions ?? 0) +
+        (original.stats?.pending ?? 0) +
+        (original.stats?.failed ?? 0) >
+        0)
   const [start, setStart] = useState(campaignLocalDate(value.startsAt))
   const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
   const [saving, setSaving] = useState(false)
@@ -873,6 +894,7 @@ function CampaignEditor({
     try {
       if (value.commissionEnabled && (commissionAmount === '' || commissionAnnualAmount === ''))
         throw new Error('Informe a comissão dos planos mensal e anual.')
+      if (!value.giftOfferId && !giftOfferLegacy) throw new Error(GIFT_OFFER_REQUIRED_MESSAGE)
       if (couponDraft) {
         if (!value.schedule)
           throw new Error('Ative o calendário da campanha para cadastrar seu cupom.')
@@ -896,6 +918,8 @@ function CampaignEditor({
         status: value.status,
         // Sempre explícito: um PATCH sem o campo não pode virar Kids por omissão.
         audience,
+        // Vazia só na campanha antiga: omitida, o referrals conserva a gravada (nenhuma).
+        giftOfferId: value.giftOfferId || undefined,
         startsAt: windows?.startsAt ?? campaignIsoDate(start),
         endsAt: windows?.giftEndsAt ?? campaignIsoDate(end),
         ambassadorId: value.ambassadorId ?? null,
@@ -969,19 +993,21 @@ function CampaignEditor({
             <AudienceBadge audience={audience} />
             <p className="text-sm text-muted-foreground">
               {audience === 'kids'
-                ? 'Família com criança de 5 a 17 anos. Cadê Todo Mundo e Mural Kids.'
-                : '18 anos ou mais. Cadê Todo Mundo na versão adulta e Mural adulto.'}
+                ? 'Comunidade Kids: famílias com criança de 5 a 17 anos. O presente pode ser um curso da criança ou um curso para os pais.'
+                : 'Comunidade adulta: pessoas de 18 anos ou mais.'}
             </p>
             <p id="campaign-audience-help" className="text-sm text-muted-foreground">
               Esta campanha pertence à comunidade selecionada no Admin. Para criar para outro
               público, troque a comunidade antes de abrir o formulário.
             </p>
-            {adultCourse === 'unpublished' ? (
-              <p role="status" className="rounded-md bg-warning-tint p-3 text-sm text-warning">
-                {ADULT_COURSE_UNPUBLISHED_MESSAGE}
-              </p>
-            ) : null}
           </fieldset>
+          <GiftOfferField
+            value={value.giftOfferId}
+            onChange={(next) => change('giftOfferId', next)}
+            offers={giftOffers}
+            legacy={giftOfferLegacy}
+            locked={giftOfferLocked}
+          />
           <p className="text-sm text-muted-foreground">
             O nome é interno. O título e a apresentação aparecem para quem recebe o link. O código
             permanece fixo depois de criado.
@@ -1332,8 +1358,8 @@ function CampaignEditor({
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            O prazo acima controla novos cadastros. Cada cadastro aceito mantém os 7 dias de curso e
-            de Mural, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não
+            O prazo acima controla novos cadastros. Cada cadastro aceito mantém o prazo da oferta de
+            presente, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não
             confere presença no evento. A comissão tem seu próprio prazo, definido acima.
           </p>
           {error && (
