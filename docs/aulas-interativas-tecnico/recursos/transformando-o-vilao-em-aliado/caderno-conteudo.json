@@ -1,0 +1,664 @@
+[
+  {
+    "id": "abertura",
+    "kicker": "Apostila do curso",
+    "title": "O vilão pode virar aliado",
+    "subtitle": "Esta apostila acompanha as sete aulas do curso. Ela reúne as ideias de cada parte, o olhar da psicóloga Vivianne Lima e as atividades para fazer em casa. Consulte quando quiser, na ordem que quiser.",
+    "items": [
+      {
+        "kind": "map",
+        "title": "O que você vai encontrar",
+        "cards": [
+          {
+            "title": "Aula 1. O que você deseja para o seu filho",
+            "text": "A palavra guardada, a tela que já existe e os três usos. Páginas {{pagina:a1-desejo}} a {{pagina:a1-usos}}."
+          },
+          {
+            "title": "Aula 2. A virada: de jogar para criar",
+            "text": "As funções executivas, o Lego sem manual e a história do André. Páginas {{pagina:a2-virada}} e {{pagina:a2-autoria}}."
+          },
+          {
+            "title": "Aula 3. O interesse como ponte",
+            "text": "Você reconhece o seu filho? O hiperfoco a favor. Páginas {{pagina:a3-reconhece}} e {{pagina:a3-ponte}}."
+          },
+          {
+            "title": "Aula 4. Programar é organizar passos",
+            "text": "A rotina que já é um algoritmo e o desafio do caminho. Páginas {{pagina:a4-rotina}} a {{pagina:a4-descoberta}}."
+          },
+          {
+            "title": "Aula 5. Foco e a coragem de errar",
+            "text": "O foco que eles já têm e os níveis de suporte. Páginas {{pagina:a5-foco}} e {{pagina:a5-erro}}."
+          },
+          {
+            "title": "Aula 6. A ponte com a escola e com a vida",
+            "text": "A conta que ganha sentido, a pesquisa e o ciclo de criação. Páginas {{pagina:a6-escola}} e {{pagina:a6-ciclo}}."
+          },
+          {
+            "title": "Aula 7. A criação vira conversa de família",
+            "text": "As perguntas para a mesa de casa e o presente. Páginas {{pagina:a7-conversa}} e {{pagina:a7-presente}}."
+          }
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "As ideias da Vivianne Lima aparecem nos cards com o título <b>O olhar da Vivianne</b>. As atividades da semana ficam nos cards amarelos <b>Para fazer em casa</b>."
+      }
+    ]
+  },
+  {
+    "id": "a1-desejo",
+    "theme": "azul",
+    "slide": "slide-03.jpg",
+    "kicker": "Aula 1 · Parte 1",
+    "title": "O que você mais deseja",
+    "subtitle": "Antes de falar de tela, comece pelo que importa: o futuro do seu filho.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "brilho",
+        "title": "A pergunta do começo",
+        "text": "O que você mais deseja para o futuro do seu filho?<br/>Algumas palavras que apareceram na conversa com as famílias: <b>autonomia</b>, dar conta das próprias escolhas, um passo de cada vez; <b>coragem para tentar</b>, arriscar, errar e tentar de novo; <b>prazer de aprender</b>, querer saber mais porque descobrir é bom; <b>um jeito de se expressar</b>, mostrar ao mundo o que pensa, do jeito dele."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "etiqueta",
+        "title": "Guarde a sua palavra",
+        "text": "Escreva aqui a palavra que veio à sua cabeça. Ela volta na última aula, na página {{pagina:a7-presente}}.<br/>_______________________________"
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "Este curso não é sobre tela. É sobre a pessoa que o seu filho está se tornando e sobre um desenvolvimento saudável. A tela é só a porta por onde a gente entra."
+      }
+    ]
+  },
+  {
+    "id": "a1-realidade",
+    "theme": "azul",
+    "slide": "slide-05.jpg",
+    "kicker": "Aula 1 · Parte 2",
+    "title": "A tela que já existe",
+    "subtitle": "A mesma tela pode afastar ou aproximar. Tudo depende de como ela é usada.",
+    "items": [
+      {
+        "kind": "compare",
+        "left": {
+          "title": "A pergunta que cansa",
+          "text": "Como eu tiro a tela da vida do meu filho?"
+        },
+        "right": {
+          "title": "A pergunta que abre caminhos",
+          "text": "O que eu posso oferecer dentro dessa tela?"
+        }
+      },
+      {
+        "kind": "compare",
+        "left": {
+          "title": "Quando a tela só entretém",
+          "text": "Tudo chega pronto.<br/>Briga na hora de desligar.<br/>Pouca paciência para tentar de novo."
+        },
+        "right": {
+          "title": "Quando a tela faz pensar",
+          "text": "Raciocínio lógico.<br/>Resolver problemas.<br/>Foco e planejamento.<br/>Lidar com o erro."
+        }
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Tirar a tela não dá: o mundo em que a gente vive é assim. Dá para usar a tela a seu favor.<br/>O jogo com tutorial leva só à memorização, uma cópia que a criança não leva para outros momentos da vida. Já uma atividade com começo, meio e fim deixa a criança terminar no tempo certo, satisfeita e com orgulho do que construiu."
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "Não é colocar mais tempo de tela. Se o seu filho já usa meia hora por dia, a ideia é tornar essa meia hora produtiva. As famílias que viveram isso contam que houve uma substituição, e não um aumento."
+      }
+    ]
+  },
+  {
+    "id": "a1-usos",
+    "theme": "azul",
+    "slide": "slide-08.jpg",
+    "kicker": "Aula 1 · Parte 3",
+    "title": "O fogo e os três usos da tela",
+    "subtitle": "A ferramenta é a mesma. A diferença está no uso.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "info",
+        "title": "Uma ideia simples",
+        "text": "O fogo aquece a casa e ajuda a preparar a comida da família. O mesmo fogo pode destruir uma floresta inteira. Ninguém diz que o fogo é um vilão: a gente aprende a usar. Com a tela é igual."
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "<b>Assistir.</b> Receber histórias e conteúdos prontos. Dá para aprender alguma coisa, mas é o uso que menos desenvolve.",
+          "<b>Jogar.</b> Explorar regras e desafios que outra pessoa criou. Tem jogo que faz mal e tem muito jogo que ajuda.",
+          "<b>Criar.</b> Inventar as próprias regras e ver tudo funcionar. É dele que o curso fala daqui em diante."
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "olho",
+        "title": "Para fazer em casa",
+        "text": "Durante uma semana, observe em qual dos três usos o seu filho passa mais tempo. Sem julgar e sem mudar nada ainda. Só observar.<br/>Assistir: ____ &nbsp; Jogar: ____ &nbsp; Criar: ____"
+      }
+    ]
+  },
+  {
+    "id": "a2-virada",
+    "theme": "ambar",
+    "slide": "slide-09.jpg",
+    "kicker": "Aula 2 · Parte 1",
+    "title": "E se ele criasse os próprios jogos?",
+    "subtitle": "Em vez de só seguir as regras de outra pessoa, a criança passa a inventar as dela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Isso não é um jogo. É um treinamento de habilidades cognitivas muito importantes para a vida, usando o que o mundo de hoje não deixa a gente escapar: os jogos e as telas."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "engrenagem",
+        "title": "Funções executivas, em poucas palavras",
+        "text": "<b>Memória de trabalho:</b> guardar uma informação para usar depois e adaptar ao contexto.<br/><b>Planejamento e organização:</b> pensar os passos e a ordem.<br/><b>Controle inibitório:</b> segurar um impulso.<br/><b>Controle emocional:</b> lidar com o que sente no caminho."
+      },
+      {
+        "kind": "compare",
+        "left": {
+          "title": "O Lego com manual",
+          "text": "Olha a figura e monta. Treina atenção e memória de curto prazo. Terminou o foguete, acabou."
+        },
+        "right": {
+          "title": "O Lego sem manual",
+          "text": "Vamos montar a fazenda do passeio? As peças não encaixam como ela queria, uma pecinha vira cavalo. Isso é flexibilidade cognitiva."
+        }
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "Do \"o jogo decidiu\" para o \"eu posso decidir\". Criar dá espaço para escolher, e escolher uma coisa é abrir mão de outra: a criança aprende a pensar melhor nas próprias escolhas."
+      }
+    ]
+  },
+  {
+    "id": "a2-autoria",
+    "theme": "ambar",
+    "slide": "slide-12.jpg",
+    "kicker": "Aula 2 · Parte 2",
+    "title": "Quando o jogo é dele",
+    "subtitle": "A criação motiva a enfrentar o erro, porque existe orgulho: fui eu que fiz.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "livro",
+        "title": "Como tudo começou",
+        "text": "A Helena e o Júlio são formados em Sistemas de Informação e têm dois filhos autistas. O André sempre amou jogos, e muitas vezes era na tela que ele se regulava. Em vez de brigar com esse interesse, eles usaram uma parte do tempo que ele já passava na tela para ensinar ele a criar os próprios jogos.<br/>Neste semestre, o André deu uma palestra numa faculdade, ensinando a turma de tecnologia a criar jogos."
+      },
+      {
+        "kind": "quote",
+        "text": "Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.",
+        "author": "André"
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Repare nas crianças que criam: estão pensando mais, mais criativas, mais pacientes e mais resilientes."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "mensagem",
+        "title": "Para fazer em casa",
+        "text": "Pergunte ao seu filho: que jogo você inventaria se pudesse? Só ouça a resposta, sem corrigir nada, e anote aqui.<br/>_______________________________"
+      }
+    ]
+  },
+  {
+    "id": "a3-reconhece",
+    "theme": "roxo",
+    "slide": "slide-13.jpg",
+    "kicker": "Aula 3 · Parte 1",
+    "title": "Você reconhece o seu filho?",
+    "subtitle": "Cenas que muitas famílias contam e o que criar um jogo pode oferecer em cada uma.",
+    "items": [
+      {
+        "kind": "pairs",
+        "pairs": [
+          ["Ele sabe tudo sobre um assunto.", "Esse assunto pode virar o tema do jogo dele."],
+          [
+            "Ele precisa saber o que vai acontecer.",
+            "Na programação, a mesma regra dá sempre o mesmo resultado."
+          ],
+          [
+            "Ele se frustra quando perde.",
+            "No jogo dele, o erro vira pista, e quem muda a regra é ele."
+          ],
+          ["Ele organiza tudo em sequência.", "Sequência é a base de todo programa."],
+          ["Ele não larga a tela.", "O tempo pode ser o mesmo. O que muda é o papel dele."],
+          [
+            "Ele mostra mais do que fala.",
+            "Um jogo pronto vira um jeito de contar o que ele pensa."
+          ]
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "Essas cenas não descrevem todo autista e não são diagnóstico. Interesses intensos são fonte de prazer, motivação e regulação, e não algo a ser eliminado."
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Usando o hiperfoco a favor, a gente ensina as habilidades de que a criança precisa com muito mais facilidade. E não é só para quem joga: o interesse pode ser desenhar, contar histórias ou um canal de vídeos."
+      }
+    ]
+  },
+  {
+    "id": "a3-ponte",
+    "theme": "roxo",
+    "slide": "slide-14.jpg",
+    "kicker": "Aula 3 · Parte 2",
+    "title": "O interesse como ponte",
+    "subtitle": "O que o seu filho já ama pode ser o começo, sem mudar a rotina.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "brilho",
+        "title": "Para fazer em casa",
+        "text": "Complete a frase pensando no seu filho:<br/>Meu filho ama _______________. Um jogo sobre isso poderia ter _______________."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "lista",
+        "title": "Exemplos que saíram na conversa",
+        "text": "Ama trens: um trem que precisa chegar na estação sem bater.<br/>Ama bandeiras: o jogo mostra uma bandeira e ela escolhe o país.<br/>Ama dinossauros: o dinossauro precisa fugir do vulcão."
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Não é uma programação de jogo, é uma programação de vida. É o que já se trabalha com as crianças, só que agora através de um interesse delas."
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "Todo interesse cabe num jogo. Cada criança tem o seu caminho e o seu tempo, e existe uma possibilidade real."
+      }
+    ]
+  },
+  {
+    "id": "a4-rotina",
+    "theme": "verde",
+    "slide": "slide-16.jpg",
+    "kicker": "Aula 4 · Parte 1",
+    "title": "Você já programa em casa",
+    "subtitle": "Programar é organizar passos, criar regras, fazer escolhas e testar o resultado.",
+    "items": [
+      {
+        "kind": "rule",
+        "title": "Na rotina de casa",
+        "when": "o despertador tocar",
+        "if": "for dia de escola",
+        "then": "trocar de roupa, tomar café, escovar os dentes"
+      },
+      {
+        "kind": "rule",
+        "title": "Num jogo",
+        "when": "o personagem tocar na porta",
+        "if": "ele estiver com a chave",
+        "then": "ele pode entrar"
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "É a sequenciação: primeiro abrir a porta, depois tirar a roupa, depois o banho, depois enxugar e só então se vestir. O que o personagem faz no jogo vira repertório para a vida, como lembrar da chave esquecida dentro da mochila."
+      }
+    ]
+  },
+  {
+    "id": "a4-caminho",
+    "theme": "verde",
+    "slide": "slide-17.jpg",
+    "kicker": "Aula 4 · Parte 2",
+    "title": "Você consegue programar este caminho?",
+    "subtitle": "Da bolinha azul até a estrela, sem passar pelos quadrados escuros.",
+    "items": [
+      { "kind": "grid" },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "toque",
+        "title": "Sua vez",
+        "text": "As instruções possíveis são <b>subir</b>, <b>descer</b>, <b>ir para a direita</b> e <b>ir para a esquerda</b>. Escreva a sua sequência:<br/>_______________________________________________"
+      },
+      {
+        "kind": "note",
+        "text": "Existe mais de um caminho certo. A resposta está na página {{pagina:a4-descoberta}}."
+      }
+    ]
+  },
+  {
+    "id": "a4-descoberta",
+    "theme": "verde",
+    "slide": "slide-18.jpg",
+    "kicker": "Aula 4 · Parte 3",
+    "title": "E se a primeira tentativa não funcionar?",
+    "subtitle": "No jogo e na programação, a gente observa, ajusta e testa de novo.",
+    "items": [
+      {
+        "kind": "note",
+        "text": "Resposta: subir, subir, subir e depois direita, direita, direita. Ou ir pela direita até o fim e só depois subir. Começar com uma casa para a direita e logo subir bate no quadrado escuro."
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          "<b>Observar.</b> Onde o personagem parou? O que aconteceu de diferente?",
+          "<b>Mudar uma instrução.</b> Trocar só uma coisa por vez para entender o efeito.",
+          "<b>Testar de novo.</b> Rodar outra vez e ver se agora chega na estrela."
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "É um treino de percepção do ambiente: olhar o cenário todo, como na sala de aula, e depois focar no ponto importante. E caminhos diferentes levam a lugares diferentes: o \"que horrível\" de um paciente virou \"vamos continuar, ficou legal\"."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "repetir",
+        "title": "Para fazer em casa",
+        "text": "Quando algo der errado, experimente as três perguntas com o seu filho: Onde parou? O que dá para mudar? Vamos tentar de novo?"
+      }
+    ]
+  },
+  {
+    "id": "a5-foco",
+    "theme": "vermelho",
+    "slide": "slide-19.jpg",
+    "kicker": "Aula 5 · Parte 1",
+    "title": "O foco que eles já têm",
+    "subtitle": "Quando nada vem pronto, aparecem decisões, desafios e descobertas.",
+    "items": [
+      {
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Raciocínio lógico",
+            "Causa e efeito: se acontecer isto, o jogo faz aquilo. Igual à rotina da manhã."
+          ],
+          [
+            "Resolver problemas",
+            "Investigar por que algo não funcionou, em vez de esperar a resposta pronta."
+          ],
+          [
+            "Foco e planejamento",
+            "Dividir o jogo em começo, desafio e final, uma parte de cada vez."
+          ],
+          [
+            "Lidar com o erro",
+            "Tentar, ver que não deu certo e tentar de novo vira parte da brincadeira."
+          ]
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Foco nas telas e nos jogos eles têm. Diante do próprio interesse, a criança presta mais atenção, e o que aprende no jogo ela generaliza para outras coisas. Já que vai focar, que foque aprendendo."
+      },
+      {
+        "kind": "note",
+        "text": "São oportunidades de prática, e não promessa de melhora clínica. Cada criança tem o seu tempo, e pausas fazem parte."
+      }
+    ]
+  },
+  {
+    "id": "a5-erro",
+    "theme": "vermelho",
+    "slide": "slide-21.jpg",
+    "kicker": "Aula 5 · Parte 2",
+    "title": "Quando estava difícil, eu consegui",
+    "subtitle": "Toda atividade nova tem uma primeira barreira. Ela é curta, e alguém pode estar do lado.",
+    "items": [
+      {
+        "kind": "quote",
+        "text": "Quando estava difícil, eu consegui. Cada vez eu vou achando mais fácil.",
+        "author": "Isabela"
+      },
+      {
+        "kind": "steps",
+        "title": "Os níveis de suporte, como a Vivianne explica",
+        "steps": [
+          "<b>Fazer pela criança</b>, para ela ver que é legal.",
+          "<b>Fazer junto</b>, tirando um pouquinho do suporte e aumentando um pouquinho a exigência.",
+          "<b>Deixar ela pensar</b>, até o dia em que ela diz: não fala, deixa eu pensar."
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "pegadas",
+        "title": "Para fazer em casa",
+        "text": "Lembre de uma coisa nova que o seu filho achou difícil e depois conseguiu. Como foi a primeira barreira? Quem estava do lado?<br/>_______________________________"
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "É como aprender a andar: a criança cai, levanta, e alguém está do lado. Às vezes, o que a gente acha que não é para o nosso filho é justamente o que mostra do que ele é capaz."
+      }
+    ]
+  },
+  {
+    "id": "a6-escola",
+    "theme": "azul",
+    "slide": "slide-22.jpg",
+    "kicker": "Aula 6 · Parte 1",
+    "title": "Quando o conceito ganha sentido",
+    "subtitle": "Fazer a conta porque a própria ideia precisa dela muda tudo.",
+    "items": [
+      {
+        "kind": "compare",
+        "left": {
+          "title": "Quando parece abstrato",
+          "text": "2 + 5 = ?<br/>A criança vê uma conta no papel."
+        },
+        "right": {
+          "title": "Quando vira uma criação",
+          "text": "O personagem está na casa 2. Quantos passos faltam para chegar na estrela, na casa 7?"
+        }
+      },
+      {
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Português",
+            "Escrever diálogos e criar escolhas: quero uma personagem que peça ajuda ao jogador."
+          ],
+          ["Ciências", "Testar movimento e gravidade: quero que o foguete suba e volte."],
+          ["Arte", "Dar vida a personagens e cenários: meu mundo é uma floresta à noite."],
+          ["Planejamento", "Organizar começo, desafio e final: o meu jogo precisa ter um final."]
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Para ser feliz a longo prazo, a criança precisa dar conta de pegar uma tarefa e realizar, seguindo um passo a passo. Memória de trabalho, lidar com a frustração e controle emocional são pré-requisitos da vida adulta."
+      },
+      {
+        "kind": "note",
+        "text": "Uma grande análise de 105 estudos encontrou ganhos em criatividade, pensamento matemático e raciocínio quando se aprende a programar. Os estudos não são específicos sobre autismo, e não é fórmula mágica. Referências na página {{pagina:referencias}}."
+      }
+    ]
+  },
+  {
+    "id": "a6-ciclo",
+    "theme": "azul",
+    "slide": "slide-26.jpg",
+    "kicker": "Aula 6 · Parte 2",
+    "title": "Do interesse à autoria",
+    "subtitle": "Um ciclo que se repete, com desafios que crescem aos poucos.",
+    "items": [
+      {
+        "kind": "cycle",
+        "steps": [
+          ["Imaginar", "Personagens, mundo e objetivo."],
+          ["Planejar", "Começo, desafio e final."],
+          ["Criar", "As regras montadas em blocos."],
+          ["Testar", "Jogar e ver o que acontece."],
+          ["Melhorar", "Ajustar o que ainda não funciona."],
+          ["Compartilhar", "Mostrar para a família e os amigos."]
+        ]
+      },
+      {
+        "kind": "drawing",
+        "name": "cade-regra",
+        "title": "A regra do esconde-esconde, como na demonstração"
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Quando a criança clica e o esconderijo some, foi ela que causou isso. É causa e consequência: ela é agente. E quanto mais descobre, mais pontos tem, como na vida: quanto mais eu estudo, melhor a nota."
+      }
+    ]
+  },
+  {
+    "id": "a7-conversa",
+    "theme": "ambar",
+    "slide": "slide-29.jpg",
+    "kicker": "Aula 7 · Parte 1",
+    "title": "O jogo vira assunto na mesa de casa",
+    "subtitle": "Os pais dos depoimentos não sabem programar. Eles perguntam, olham e celebram.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "mensagem",
+        "title": "Para a mesa de casa",
+        "text": "Me mostra o que você criou?<br/>O que foi mais divertido?<br/>O que você precisou mudar?<br/>O que vai inventar depois?"
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "icon": "pessoa",
+        "title": "O olhar da Vivianne",
+        "text": "Quando você entra no mundo da criança, ela abre portas para vir ao seu. Pelo jogo, o Dé aprendeu a troca de turno e a ler o ambiente: se a pessoa baixa a cabeça ou olha para o lado, talvez seja hora de mudar de assunto. Hoje ele conversa sobre todos os assuntos, com prazer."
+      },
+      {
+        "kind": "delivery",
+        "title": "Para levar para casa",
+        "text": "Para muitas crianças, mostrar algo que criaram é uma porta mais fácil do que responder como foi o seu dia. E você participa mesmo sem saber resolver nada técnico."
+      }
+    ]
+  },
+  {
+    "id": "a7-presente",
+    "theme": "ambar",
+    "slide": "slide-35.jpg",
+    "kicker": "Aula 7 · Parte 2",
+    "title": "A palavra que você guardou",
+    "subtitle": "A tela também pode ser o lugar onde o seu filho descobre que é capaz de criar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "etiqueta",
+        "title": "Volte à sua palavra",
+        "text": "Releia a palavra que você guardou na página {{pagina:a1-desejo}}. Depois de tudo o que a gente conversou, o que ela significa para você agora?"
+      },
+      {
+        "kind": "box",
+        "tone": "verde",
+        "icon": "presente",
+        "title": "Um presente para a sua família",
+        "text": "O Cadê Todo Mundo por 7 dias, gratuito e sem cartão: o primeiro jogo do seu filho, um esconde-esconde como o da demonstração, no ritmo dele. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado. O link está no fim da Aula 7."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "medalha",
+        "title": "Seu certificado",
+        "text": "Ao terminar a Aula 7, emita o certificado do curso na própria aula."
+      },
+      {
+        "kind": "delivery",
+        "title": "A ideia que fica",
+        "text": "O vilão pode virar aliado. Tudo depende de como a tela é usada."
+      }
+    ]
+  },
+  {
+    "id": "referencias",
+    "kicker": "Para consultar depois",
+    "title": "Referências",
+    "subtitle": "As pesquisas e orientações que embasam a conversa deste curso.",
+    "items": [
+      {
+        "kind": "refs",
+        "refs": [
+          [
+            "Scherer, Siddiq e Sánchez Viveros, 2019",
+            "Uma análise de 105 estudos sobre aprender a programar: ganhos em criatividade, habilidades matemáticas e raciocínio, com variações entre as pesquisas.",
+            "doi.org/10.1037/edu0000314"
+          ],
+          [
+            "Li e Oon, 2024",
+            "Pensamento computacional e aprendizagem em ciências e matemática.",
+            "doi.org/10.1186/s40594-024-00498-z"
+          ],
+          [
+            "Giannakoulas e Xinogalos, 2024",
+            "Jogos educativos e pensamento computacional.",
+            "doi.org/10.1007/s40692-023-00300-z"
+          ],
+          [
+            "National Autistic Society",
+            "Interesses focados e intensos no autismo.",
+            "autism.org.uk"
+          ],
+          [
+            "Academia Americana de Pediatria",
+            "Famílias, tecnologia e os 5 Cs da mídia digital.",
+            "healthychildren.org"
+          ]
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "Os estudos sobre programação não são específicos sobre autismo. Este curso apresenta oportunidades de prática, e não promessa de resultado clínico."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "pessoa",
+        "title": "Quem fez este curso",
+        "text": "<b>Helena</b>, engenheira de software, mãe do André e da Débora.<br/><b>Vivianne Lima</b>, psicóloga, que trouxe o olhar sobre o desenvolvimento das crianças e dos adolescentes."
+      }
+    ]
+  }
+]

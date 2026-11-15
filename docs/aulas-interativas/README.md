@@ -12,6 +12,7 @@ Uma fonte editorial para as comunidades adulta e infantojuvenil, organizada em *
 | [Arquiteto(a) de Mundos](arquiteto/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
 | [Gênio da Criação](genio/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
 | [Lenda](lenda/README.md) | Especialização e participação; sem nova missão obrigatória |
+| [Para pais](pais/README.md) | Cursos para os responsáveis, na área dos pais: Transformando o vilão em aliado (a Helena grava, sem ElevenLabs) |
 
 Os papéis seguem a [Jornada do Criador](../jornada-do-criador.md). Pastas e propostas não significam curso publicado. Fontes geradoras e orientações comuns continuam em `docs/aulas-interativas-tecnico/`; o acervo histórico continua em `docs/aulas-interativas-legado/`. Preservam-se slugs, nomes dos arquivos, IDs das aulas, certificados e conteúdo dos projetos.
 
@@ -23,6 +24,7 @@ Os papéis seguem a [Jornada do Criador](../jornada-do-criador.md). Pastas e pro
 | Nave Contra Asteroides | 9 | [Abrir](construtor/nave-contra-asteroides/README.md) | [PDF](construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf) |
 | Corre, Dino! | 13 | [Abrir](inventor/corre-dino/README.md) | [PDF](inventor/corre-dino/passo-a-passo-do-projeto.pdf) |
 | O Jogo do Meu Jeito | 8 | [Abrir](construtor/o-jogo-do-meu-jeito/README.md) | [PDF](construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf) |
+| Transformando o vilão em aliado (para pais) | 7 | [Abrir](pais/transformando-o-vilao-em-aliado/README.md) | [Apostila](pais/transformando-o-vilao-em-aliado/apostila.pdf) |
 
 Em cada aula:
 
