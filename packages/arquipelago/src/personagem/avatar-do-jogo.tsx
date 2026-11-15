@@ -29,6 +29,7 @@ import {
   Vector3,
 } from 'three'
 import { useEstado } from '../estado/contexto'
+import { MUNDO } from '../mundo/mundo-escolhido'
 import { CORPO } from '../sistemas/corpo'
 import {
   CLIPES_DO_JOGO,
@@ -42,7 +43,9 @@ import {
 import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
+import { amplitudeDoPasso } from '../sistemas/ritmo-da-aventura'
 import { BARRA_NAS_MAOS, DedosNoCabo, LANTERNA_NA_MAO, SEM_OBJETO_NA_MAO } from './objeto-na-mao'
+import { ampliarPassada } from './passada'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -297,6 +300,13 @@ function PesNoChao({
     if (!pausado) peso.current = suavizarPeso(peso.current, pesoDosPes(movimento.current), dt)
     // Parte da pose do mixer (na pausa ele não reescreve: o ajuste do quadro anterior somaria).
     limpa.current.antes()
+    const e = movimento.current
+    if (e.noChao && !e.nadando && !e.especial && !e.patinando && MUNDO.passo)
+      ampliarPassada(
+        pernas.current,
+        r,
+        amplitudeDoPasso(e.velocidade, CORPO.andar, MUNDO.passo.amplitude),
+      )
     assentarOsPes(pernas.current, r, chao, peso.current)
     limpa.current.depois()
   })

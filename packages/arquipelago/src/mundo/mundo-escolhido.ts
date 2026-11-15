@@ -8,12 +8,23 @@
  * mundo com o jogo aberto chega com os mundos novos.
  */
 import { MUNDO_DA_AVENTURA } from '../sistemas/mundo-pela-animacao'
+import { RITMOS_DA_AVENTURA, ritmoDaAventura } from '../sistemas/ritmo-da-aventura'
 import { MUNDO_ATUAL, type MundoDoJogo } from './mundo-do-jogo'
 
 /** Os mundos que o playground pode pedir, pelo nome em `?mundo=`. */
+const ritmo =
+  RITMOS_DA_AVENTURA[
+    ritmoDaAventura((globalThis as { __arquipelagoRitmo?: unknown }).__arquipelagoRitmo)
+  ]
 export const MUNDOS_DO_PLAYGROUND: Readonly<Record<string, MundoDoJogo>> = {
   aventura: MUNDO_DA_AVENTURA,
-  macro: { ...MUNDO_DA_AVENTURA, id: 'arquipelago-2' },
+  macro: {
+    ...MUNDO_DA_AVENTURA,
+    id: 'arquipelago-2',
+    andar: ritmo.andar,
+    correr: ritmo.correr,
+    passo: { amplitude: ritmo.passada, cadencia: ritmo.cadencia },
+  },
 }
 
 export function mundoPedido(pedido: unknown): MundoDoJogo {

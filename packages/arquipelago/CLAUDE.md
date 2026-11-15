@@ -13,6 +13,31 @@ Preservar identidade e estilo visuais das interfaces adulta e Kids; organizaçã
 podem ser adaptados à nova aventura. O painel técnico do playground não é uma proposta de HUD.
 Plano e aceite: `docs/plans/2026-11-15-arquipelago-macro-design.md`.
 
+## Faísca: mapa e piloto artístico (15/11/2026)
+
+`sistemas/faisca.ts` declara seis distritos, lugares, anel, atalhos e o relevo da Faísca; os ramais
+costeiros usam as âncoras já testadas. Lugares de chegada são externos aos volumes dos modelos.
+`mundo/faisca/` monta caminhos, piloto, coelha e medição; não é a campanha nem a Morada integrada.
+O lote da casa permanece reservado. O palco de conversa usa as classes existentes da Capi e a
+posição real do osso Head da coelha; a ferramenta técnica fica oculta durante a conversa.
+
+`scripts/exportar-arte-faisca.ts` lê objetos Git do commit aprovado, exporta 23 GLBs privados em
+`output/faisca-arte` e gera `arte.generated.ts`, com origem, digest, dimensões, caixas e clipes.
+O servidor local só serve nomes do manifesto. O carregador valida SHA-256, deduplica texturas,
+cancela e libera recursos na saída; uma falha parcial mantém o bloco e permite tentar novamente.
+Peças repetidas usam instâncias, incluindo o buffer de morph dos modelos que o possuem.
+
+A pedido do usuário, a velocidade também está em teste: Exploração 1,5/3,4 m/s, Ágil 1,7/3,9;
+`?ritmo=referencia` reproduz o perfil anterior. `ritmo-da-aventura.ts`, `MUNDO.passo` e
+`personagem/passada.ts` sincronizam fase e amplitude por IK, sem escalar os ossos. A lógica extra
+só vale no perfil macro. Pulo, água, patins e modos especiais mantêm seus clipes; a passada extra
+não se aplica a eles. O teste com GLB real é pulado quando o arquivo privado não está disponível.
+
+Persistência de ensaio: `arquipelago:faisca:ensaio`, sem migração. Guardar último ponto de terreno
+livre, não o chão sob um sólido ou sob a ponte dos Campos. `medicao-de-percurso.ts` não conta
+teleporte como caminhada; usa tempo ativo sem o truncamento de dt das animações. Plano atual:
+`docs/plans/2026-11-15-faisca-blockout-artistico-design.md`.
+
 ## Morada canônica (14/11/2026)
 
 A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e

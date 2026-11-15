@@ -1,11 +1,18 @@
 import { type ComponentProps, useState } from 'react'
+import { useEstado } from '../src/estado/contexto'
+import type { SituacaoDoPiloto } from '../src/mundo/faisca/piloto'
 import { CORPO } from '../src/sistemas/corpo'
+import type { LugarDaFaiscaId } from '../src/sistemas/faisca'
+import { ROTAS_DA_FAISCA } from '../src/sistemas/faisca'
 import {
   ARQUIPELAGO,
   conexaoDaIlha,
   DISTRITOS_DA_FAISCA,
 } from '../src/sistemas/geografia-do-arquipelago'
+import type { MedicaoDePercurso } from '../src/sistemas/medicao-de-percurso'
 import type { EstadoDaPonte } from '../src/sistemas/ponte-do-arquipelago'
+import { RITMOS_DA_AVENTURA, ritmoDaAventura } from '../src/sistemas/ritmo-da-aventura'
+import { MapaDaFaisca } from './faisca-mapa'
 
 const PONTE_DO_BOSQUE = conexaoDaIlha('bosque')
 
@@ -18,6 +25,7 @@ export interface MedidaMacro {
   chamadas: number
   triangulos: number
   geometrias: number
+  texturas: number
   setores: number
 }
 
@@ -43,6 +51,12 @@ export function InterfaceMacro({
   aoReiniciar,
   noite,
   aoNoite,
+  arte,
+  aoTentarArte,
+  visitados,
+  aoVoltar,
+  medicao,
+  aoMedirRota,
 }: {
   medida: MedidaMacro
   ponte: EstadoDaPonte
@@ -54,16 +68,27 @@ export function InterfaceMacro({
   aoReiniciar: () => void
   noite: boolean
   aoNoite: () => void
+  arte: SituacaoDoPiloto
+  aoTentarArte: () => void
+  visitados: readonly string[]
+  aoVoltar: (id: LugarDaFaiscaId) => void
+  medicao: MedicaoDePercurso | null
+  aoMedirRota: (id: string) => void
 }) {
   const [mapa, setMapa] = useState(false)
+  const conversando = useEstado((s) => s.painelAberto === 'faisca-iris')
+  const [local, setLocal] = useState(true)
   const formatar = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
   const nome = ARQUIPELAGO.find((i) => i.id === medida.ilha)?.nome ?? 'Travessia'
   return (
-    <div className="macro-interface">
+    <div className="macro-interface" style={{ visibility: conversando ? 'hidden' : undefined }}>
       <header className="macro-topo">
         <div>
-          <strong>Arquipélago · estudo de escala</strong>
-          <span>{nome} · avatar nativo · geografia provisória</span>
+          <strong>Faísca V2 · blockout artístico</strong>
+          <span>
+            {nome} · escala nativa · arte{' '}
+            {arte.estado === 'pronto' ? `${arte.modelos}/23` : arte.estado}
+          </span>
         </div>
         <BotaoMacro type="button" onClick={() => setMapa(!mapa)} aria-expanded={mapa}>
           Mapa
@@ -83,67 +108,97 @@ export function InterfaceMacro({
           </BotaoMacro>
         </div>
       ) : null}
+      {arte.estado === 'erro' ? (
+        <div className="macro-erro" role="alert">
+          {arte.erro}{' '}
+          <BotaoMacro type="button" onClick={aoTentarArte}>
+            Tentar carregar a arte
+          </BotaoMacro>
+        </div>
+      ) : null}
       {mapa ? (
         <section className="macro-mapa" aria-label="Mapa do novo arquipélago">
-          <h2>Sete territórios, seis conexões</h2>
-          <svg
-            viewBox="-1040 -1040 2080 2080"
-            role="img"
-            aria-label="Faísca no centro, com seis ilhas ao redor"
-          >
-            {ARQUIPELAGO.slice(1).map((i) => (
-              <line
-                key={i.id}
-                x1={0}
-                y1={0}
-                x2={i.centro.x}
-                y2={i.centro.z}
-                stroke={i.id === 'bosque' && ponte === 'aberta' ? '#eac669' : '#8eaaa9'}
-                strokeWidth="6"
-                strokeDasharray={i.id === 'bosque' && ponte === 'aberta' ? undefined : '18 14'}
-              />
-            ))}
-            {ARQUIPELAGO.map((i) => (
-              <g key={i.id}>
-                <circle
-                  cx={i.centro.x}
-                  cy={i.centro.z}
-                  r={i.raio}
-                  fill={i.cor}
-                  fillOpacity=".65"
-                  stroke="#e0e9df"
-                  strokeWidth="3"
-                />
-                <text
-                  x={i.centro.x}
-                  y={i.centro.z - 16}
-                  textAnchor="middle"
-                  fill="white"
-                  fontSize="34"
-                >
-                  {i.nome}
-                </text>
-                <text
-                  x={i.centro.x}
-                  y={i.centro.z + 32}
-                  textAnchor="middle"
-                  fill="#ecf1dd"
-                  fontSize="28"
-                >
-                  {i.raio * 2} m
-                </text>
-              </g>
-            ))}
-            <circle
-              cx={medida.x}
-              cy={medida.z}
-              r={14}
-              fill="#ffe381"
-              stroke="#263e47"
-              strokeWidth="5"
+          <div className="macro-pontos">
+            <BotaoMacro type="button" onClick={() => setLocal(true)}>
+              Faísca
+            </BotaoMacro>
+            <BotaoMacro type="button" onClick={() => setLocal(false)}>
+              Arquipélago
+            </BotaoMacro>
+          </div>
+          {local ? (
+            <MapaDaFaisca
+              x={medida.x}
+              z={medida.z}
+              visitados={visitados}
+              aoVoltar={(id) => {
+                setMapa(false)
+                aoVoltar(id)
+              }}
             />
-          </svg>
-          <p>Os círculos mostram envelopes de estudo. Os terrenos têm costas próprias.</p>
+          ) : (
+            <>
+              <h2>Sete territórios, seis conexões</h2>
+              <svg
+                viewBox="-1040 -1040 2080 2080"
+                role="img"
+                aria-label="Faísca no centro, com seis ilhas ao redor"
+              >
+                {ARQUIPELAGO.slice(1).map((i) => (
+                  <line
+                    key={i.id}
+                    x1={0}
+                    y1={0}
+                    x2={i.centro.x}
+                    y2={i.centro.z}
+                    stroke={i.id === 'bosque' && ponte === 'aberta' ? '#eac669' : '#8eaaa9'}
+                    strokeWidth="6"
+                    strokeDasharray={i.id === 'bosque' && ponte === 'aberta' ? undefined : '18 14'}
+                  />
+                ))}
+                {ARQUIPELAGO.map((i) => (
+                  <g key={i.id}>
+                    <circle
+                      cx={i.centro.x}
+                      cy={i.centro.z}
+                      r={i.raio}
+                      fill={i.cor}
+                      fillOpacity=".65"
+                      stroke="#e0e9df"
+                      strokeWidth="3"
+                    />
+                    <text
+                      x={i.centro.x}
+                      y={i.centro.z - 16}
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize="34"
+                    >
+                      {i.nome}
+                    </text>
+                    <text
+                      x={i.centro.x}
+                      y={i.centro.z + 32}
+                      textAnchor="middle"
+                      fill="#ecf1dd"
+                      fontSize="28"
+                    >
+                      {i.raio * 2} m
+                    </text>
+                  </g>
+                ))}
+                <circle
+                  cx={medida.x}
+                  cy={medida.z}
+                  r={14}
+                  fill="#ffe381"
+                  stroke="#263e47"
+                  strokeWidth="5"
+                />
+              </svg>
+              <p>Os círculos mostram envelopes de estudo. Os terrenos têm costas próprias.</p>
+            </>
+          )}
           <BotaoMacro type="button" onClick={() => setMapa(false)}>
             Fechar mapa
           </BotaoMacro>
@@ -180,7 +235,50 @@ export function InterfaceMacro({
           <dd>{formatar(medida.triangulos)}</dd>
           <dt>Geometrias</dt>
           <dd>{medida.geometrias}</dd>
+          <dt>Texturas</dt>
+          <dd>{medida.texturas}</dd>
         </dl>
+        <fieldset>
+          <legend>Ritmo de exploração</legend>
+          <div className="macro-pontos">
+            {Object.entries(RITMOS_DA_AVENTURA).map(([id, r]) => (
+              <BotaoMacro
+                key={id}
+                type="button"
+                aria-pressed={
+                  ritmoDaAventura(new URLSearchParams(location.search).get('ritmo')) === id
+                }
+                onClick={() => {
+                  const url = new URL(location.href)
+                  url.searchParams.set('ritmo', id)
+                  location.href = url.href
+                }}
+              >
+                {r.nome} · {r.andar.toFixed(1)} / {r.correr.toFixed(1)}
+              </BotaoMacro>
+            ))}
+          </div>
+        </fieldset>
+        <details>
+          <summary>Medir um percurso com o avatar</summary>
+          <p>
+            A ferramenta posiciona na saída. Caminhe até o destino; o relógio conta só o tempo ativo
+            e o deslocamento real. Atalhos de ferramenta cancelam a medida.
+          </p>
+          <div className="macro-pontos">
+            {ROTAS_DA_FAISCA.filter((r) => r.tipo === 'cotidiano').map((r) => (
+              <BotaoMacro type="button" key={r.id} onClick={() => aoMedirRota(r.id)}>
+                {r.nome}
+              </BotaoMacro>
+            ))}
+          </div>
+          {medicao ? (
+            <p role="status">
+              Percurso {medicao.estado} · {medicao.metros.toFixed(1)} m ·{' '}
+              {medicao.segundos.toFixed(1)} s
+            </p>
+          ) : null}
+        </details>
         <p>
           Salvamento deste ensaio: posição local em terra e estado da ponte. Nenhum progresso de
           conta é concedido.

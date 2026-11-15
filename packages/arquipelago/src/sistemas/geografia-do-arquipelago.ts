@@ -1,4 +1,7 @@
 import type { IlhaId } from '@sistemazero/arquipelago-contracts'
+import { relevoDaFaisca } from './faisca'
+
+export { DISTRITOS_DA_FAISCA } from './faisca'
 
 export type TerritorioId = Exclude<IlhaId, 'farol'>
 export interface PontoDoTerritorio {
@@ -124,6 +127,8 @@ function suave(a: number, b: number, valor: number): number {
 export function alturaDoTerritorio(ilha: IlhaDoArquipelago, x: number, z: number): number {
   const distancia = Math.hypot(x, z)
   const margem = raioDoContorno(ilha, Math.atan2(z, x)) - distancia
+  if (ilha.id === 'sua-ilha')
+    return FUNDO_DO_ARQUIPELAGO + suave(-16, 24, margem) * (12 + relevoDaFaisca(x, z))
   const costa = suave(-12, 20, margem)
   const interior = suave(36, 120, margem)
   const ondas = (Math.sin(x / 65 + ilha.fase) * Math.cos(z / 73) + 1) / 2
@@ -182,12 +187,3 @@ export function conexaoDaIlha(id: TerritorioId): ConexaoDoArquipelago {
     largura: 5,
   }
 }
-
-export const DISTRITOS_DA_FAISCA = [
-  { id: 'vila', nome: 'Vila dos Criadores', x: 0, z: 60, cor: '#cfaa6b' },
-  { id: 'campos', nome: 'Campos da Íris', x: 110, z: 0, cor: '#a0b45c' },
-  { id: 'costa', nome: 'Costa do Nico', x: -80, z: 170, cor: '#e2ca8f' },
-  { id: 'oficina', nome: 'Pátio das Invenções', x: -110, z: -40, cor: '#bc8c74' },
-  { id: 'farol', nome: 'Colina do Farol', x: 0, z: -170, cor: '#f0d781' },
-  { id: 'bosque', nome: 'Bosque das Lanternas', x: 130, z: -110, cor: '#78a88b' },
-] as const

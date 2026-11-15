@@ -4,6 +4,7 @@ import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { AVATAR_CATALOG, drawAvatar } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Object3D, PCFShadowMap } from 'three'
 import { criarControle, ligarTeclado } from '../src/controles/controle'
 import { ligarGamepad } from '../src/controles/gamepad'
 import {
@@ -16,6 +17,9 @@ import {
 import { criarLoja } from '../src/estado/loja'
 import { ESTILOS } from '../src/interface/estilos'
 import { ControlesDeToque } from '../src/interface/toque'
+import { CaminhosDaFaisca } from '../src/mundo/faisca/caminhos'
+import { MedirPercurso, type PedidoDeMedicao } from '../src/mundo/faisca/medir-percurso'
+import { PilotoDaFaisca, type SituacaoDoPiloto } from '../src/mundo/faisca/piloto'
 import { criarRegistro } from '../src/mundo/interativos'
 import { OceanoMacro } from '../src/mundo/macro/oceano'
 import { PonteMacro } from '../src/mundo/macro/ponte'
@@ -25,20 +29,23 @@ import { Camera } from '../src/personagem/camera'
 import { Personagem } from '../src/personagem/personagem'
 import { Zappy } from '../src/personagem/zappy'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { pontoLivreParaRetomar } from '../src/sistemas/composicao-faisca'
 import { CORPO } from '../src/sistemas/corpo'
+import { LUGAR_DA_FAISCA, type LugarDaFaiscaId, ROTAS_DA_FAISCA } from '../src/sistemas/faisca'
 import {
   ARQUIPELAGO,
   alturaDoArquipelago,
   alturaDoTerritorio,
   conexaoDaIlha,
   DISTRITOS_DA_FAISCA,
-  ilhaDoArquipelago,
   type PontoDoTerritorio,
   paraLocal,
   territorioEm,
 } from '../src/sistemas/geografia-do-arquipelago'
+import type { MedicaoDePercurso } from '../src/sistemas/medicao-de-percurso'
 import { estadoDaPonte, SEGUNDOS_PARA_RECONSTRUIR } from '../src/sistemas/ponte-do-arquipelago'
 import { LADO_DO_SETOR } from '../src/sistemas/setores-do-arquipelago'
+import { ConversaDaIrisDeEstudo } from './faisca-interface'
 import { CHAVE_DO_ENSAIO, ensaioInicial, lerEnsaio, partidaDoEnsaio } from './macro-estado'
 import { ESTILOS_MACRO, InterfaceMacro, type MedidaMacro } from './macro-interface'
 
@@ -55,27 +62,8 @@ const VAZIA: MedidaMacro = {
   chamadas: 0,
   triangulos: 0,
   geometrias: 0,
+  texturas: 0,
   setores: 0,
-}
-
-function Marcos() {
-  const ilha = ilhaDoArquipelago('sua-ilha')
-  return DISTRITOS_DA_FAISCA.map((d) => (
-    <group key={d.id} position={[d.x, alturaDoTerritorio(ilha, d.x, d.z), d.z]}>
-      <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[9, 9.25, 40]} />
-        <meshBasicMaterial color={d.cor} />
-      </mesh>
-      <mesh position={[7, 2, 0]}>
-        <cylinderGeometry args={[0.3, 0.5, 4, 8]} />
-        <meshStandardMaterial color={d.cor} />
-      </mesh>
-      <mesh position={[7, 4.5, 0]}>
-        <sphereGeometry args={[0.8, 12, 8]} />
-        <meshStandardMaterial color={d.cor} emissive={d.cor} emissiveIntensity={0.2} />
-      </mesh>
-    </group>
-  ))
 }
 
 function MundoMacro({
@@ -87,6 +75,10 @@ function MundoMacro({
   aoConcluir,
   aoMedir,
   noite,
+  aoArte,
+  tentativaArte,
+  pedidoMedicao,
+  aoMedicao,
 }: {
   partida: PontoDoTerritorio
   instalado: boolean
@@ -96,9 +88,18 @@ function MundoMacro({
   aoConcluir: () => void
   aoMedir: (m: MedidaMacro) => void
   noite: boolean
+  aoArte: (s: SituacaoDoPiloto) => void
+  tentativaArte: number
+  pedidoMedicao: PedidoDeMedicao | null
+  aoMedicao: (m: MedicaoDePercurso | null) => void
 }) {
   const { rastro, loja } = useJogo()
   const gl = useThree((s) => s.gl)
+  const sol = useMemo(() => {
+    const alvo = new Object3D()
+    alvo.position.set(0, 4, 140)
+    return alvo
+  }, [])
   const pausado = useEstado((s) => s.menuAberto)
   const [tempo, setTempo] = useState(0)
   const tempoAtual = useRef(0)
@@ -127,6 +128,7 @@ function MundoMacro({
       chamadas: gl.info.render.calls,
       triangulos: gl.info.render.triangles,
       geometrias: gl.info.memory.geometries,
+      texturas: gl.info.memory.textures,
       setores: setores.current,
     })
     a.tempo = 0
@@ -148,8 +150,20 @@ function MundoMacro({
       <hemisphereLight
         args={[noite ? '#b9cdeb' : '#fff6df', noite ? '#7f91a3' : '#758c71', noite ? 1.2 : 1.5]}
       />
+      <primitive object={sol} />
       <directionalLight
-        position={[300, 500, -100]}
+        target={sol}
+        position={[70, 120, 180]}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-95}
+        shadow-camera-right={95}
+        shadow-camera-top={95}
+        shadow-camera-bottom={-95}
+        shadow-camera-near={1}
+        shadow-camera-far={300}
+        shadow-normalBias={0.04}
         intensity={noite ? 0.8 : 2}
         color={noite ? '#a9bddf' : '#fff0d0'}
       />
@@ -171,7 +185,9 @@ function MundoMacro({
               progresso={progresso}
             />
           ))}
-          <Marcos />
+          <CaminhosDaFaisca />
+          <MedirPercurso pedido={pedidoMedicao} aoMudar={aoMedicao} />
+          <PilotoDaFaisca key={tentativaArte} aoMudar={aoArte} />
           <Personagem partida={partida} interior={FORA_DE_CASA} />
           <Camera chaoDoCenario={alturaDoArquipelago} baseDoCenario={ALTURA_BASE} />
         </Physics>
@@ -199,6 +215,11 @@ function Blockout() {
   const [construindoDesde, setConstruindoDesde] = useState<number | null>(null)
   const [foco, setFoco] = useState<PontoDoTerritorio | null>(null)
   const [noite, setNoite] = useState(new URLSearchParams(location.search).get('noite') === '1')
+  const [arte, setArte] = useState<SituacaoDoPiloto>({ estado: 'carregando', modelos: 0 })
+  const [tentativaArte, setTentativaArte] = useState(0)
+  const [pedidoMedicao, setPedidoMedicao] = useState<PedidoDeMedicao | null>(null)
+  const [medicao, setMedicao] = useState<MedicaoDePercurso | null>(null)
+  const [visitados, setVisitados] = useState<string[]>(inicial.ensaio.visitados)
   const contexto = useMemo<ContextoDoJogo>(() => {
     const partida = partidaDoEnsaio(inicial.ensaio, CORPO.doCentroAoPe)
     const loja = criarLoja({
@@ -219,7 +240,7 @@ function Blockout() {
       rastro: {
         ...partida,
         giro: 0,
-        inclinacao: 0.5,
+        inclinacao: 0.3,
         direcao: Math.PI,
         velocidade: 0,
         zappy: { x: 0, y: 0, z: 0 },
@@ -245,6 +266,12 @@ function Blockout() {
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [pausar])
+  useEffect(() => {
+    contexto.movimento.aguas = [
+      { id: 'lago-dos-campos', x: 58, z: 127, raioX: 8, raioZ: 4, giro: 0, y: 3.65 },
+    ]
+    contexto.ambiente.noite = noite
+  }, [contexto, noite])
   useEffect(() => {
     contexto.movimento.rodasDeNado = ARQUIPELAGO.filter(
       (i) => i.id === 'sua-ilha' || (i.id === 'bosque' && instalado),
@@ -275,11 +302,25 @@ function Blockout() {
   const medir = useCallback(
     (m: MedidaMacro) => {
       setMedida(m)
+      const novos = Object.entries(LUGAR_DA_FAISCA)
+        .filter(
+          ([id, p]) =>
+            !ensaio.current.visitados.includes(id) && Math.hypot(p.x - m.x, p.z - m.z) < 6,
+        )
+        .map(([id]) => id)
+      if (novos.length) {
+        ensaio.current.visitados.push(...novos)
+        setVisitados([...ensaio.current.visitados])
+      }
       const ilha = territorioEm(m.x, m.z)
       if (ilha && (ilha.id !== 'bosque' || ensaio.current.ponteInstalada)) {
         const local = paraLocal(ilha, m)
         const y = alturaDoTerritorio(ilha, local.x, local.z)
-        if (y > 0 && m.y - CORPO.doCentroAoPe >= y - 0.5)
+        if (
+          y > 0 &&
+          m.y - CORPO.doCentroAoPe >= y - 0.5 &&
+          (ilha.id !== 'sua-ilha' || pontoLivreParaRetomar(m, CORPO.raio))
+        )
           ensaio.current.posicao = { ilha: ilha.id, local: { x: local.x, y, z: local.z } }
       }
       if (foco && Math.hypot(m.x - foco.x, m.z - foco.z) < 3) setFoco(null)
@@ -303,8 +344,13 @@ function Blockout() {
   const ir = (id: string) => {
     const d = DISTRITOS_DA_FAISCA.find((d) => d.id === id)
     let p: PontoDoTerritorio
-    if (d) p = { x: d.x, y: alturaDoArquipelago(d.x, d.z), z: d.z }
-    else if (id === 'ponte') p = { ...PONTE.origem, z: PONTE.origem.z + 4 }
+    if (id.startsWith('lugar:') && Object.hasOwn(LUGAR_DA_FAISCA, id.slice(6))) {
+      const lugar = LUGAR_DA_FAISCA[id.slice(6) as LugarDaFaiscaId]
+      p = { ...lugar, y: alturaDoArquipelago(lugar.x, lugar.z) }
+    } else if (d) {
+      const marco = LUGAR_DA_FAISCA[d.marco]
+      p = { ...marco, y: alturaDoArquipelago(marco.x, marco.z) }
+    } else if (id === 'ponte') p = { ...PONTE.origem, z: PONTE.origem.z + 4 }
     else if (id === 'bosque-chegada' && instalado) p = { ...PONTE.destino, z: PONTE.destino.z - 4 }
     else return
     contexto.movimento.ida = null
@@ -320,6 +366,7 @@ function Blockout() {
   return (
     <Contexto.Provider value={contexto}>
       <Canvas
+        shadows={{ type: PCFShadowMap }}
         className="arq-canvas"
         dpr={[1, 1.5]}
         gl={{ antialias: true }}
@@ -334,9 +381,14 @@ function Blockout() {
           aoConcluir={concluir}
           aoMedir={medir}
           noite={noite}
+          aoArte={setArte}
+          tentativaArte={tentativaArte}
+          pedidoMedicao={pedidoMedicao}
+          aoMedicao={setMedicao}
         />
       </Canvas>
       <ControlesDeToque />
+      <ConversaDaIrisDeEstudo />
       <InterfaceMacro
         medida={medida}
         ponte={instalado ? 'aberta' : construindoDesde !== null ? 'reconstruindo' : 'quebrada'}
@@ -351,6 +403,22 @@ function Blockout() {
         }}
         noite={noite}
         aoNoite={() => setNoite(!noite)}
+        arte={arte}
+        aoTentarArte={() => setTentativaArte((n) => n + 1)}
+        visitados={visitados}
+        aoVoltar={(id) => {
+          if (visitados.includes(id)) ir(`lugar:${id}`)
+        }}
+        medicao={medicao}
+        aoMedirRota={(id) => {
+          const r = ROTAS_DA_FAISCA.find((r) => r.id === id)
+          if (!r) return
+          const p = r.pontos[0]!
+          contexto.movimento.ida = null
+          contexto.pedidos.chaoChegando.add('macro')
+          setFoco({ ...p, y: alturaDoArquipelago(p.x, p.z) + CORPO.doCentroAoPe + 0.25 })
+          setPedidoMedicao({ rota: id, numero: Date.now() })
+        }}
       />
     </Contexto.Provider>
   )

@@ -42,7 +42,7 @@ function Setor({ ilha, setor }: { ilha: IlhaDoArquipelago; setor: SetorDoTerrito
   const geometria = useGeometria(dados, ilha)
   return (
     <RigidBody type="fixed" colliders={false}>
-      <mesh geometry={geometria}>
+      <mesh geometry={geometria} receiveShadow>
         <meshStandardMaterial vertexColors roughness={0.95} />
       </mesh>
       <TrimeshCollider args={[dados.vertices, dados.indices]} />

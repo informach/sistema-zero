@@ -14,7 +14,9 @@
  * pela distância percorrida dividida pela passada, então o pé não patina no chão.
  */
 import { AVATAR_CATALOG, type AvatarGameClip } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
+import { MUNDO } from '../mundo/mundo-escolhido'
 import { CORPO } from './corpo'
+import { amplitudeDoPasso } from './ritmo-da-aventura'
 
 /** Os clipes que o jogo usa (os do GLB `game.file`): os de movimento do pack e os que a arte fez. */
 export const CLIPES_DO_JOGO = [
@@ -249,11 +251,13 @@ export interface MedidasDaLocomocao {
   escala: number
   andar: number
   correr: number
+  passo?: { amplitude: number; cadencia: number }
 }
 export const LOCOMOCAO_DO_MUNDO: MedidasDaLocomocao = {
   escala,
   andar: VELOCIDADE_DO_ANDAR,
   correr: VELOCIDADE_DO_CORRER,
+  passo: MUNDO.passo,
 }
 
 /** Abaixo disto o avatar está parado (só o "Parado"). */
@@ -396,7 +400,8 @@ export function ciclosPorSegundo(v: number, medidas = LOCOMOCAO_DO_MUNDO): numbe
       medidas.escala) /
     escala
   const cadencia = (p.Andar / CICLO_DE_ANDAR.duracao + p.Correr / CICLO_DE_CORRER.duracao) / andando
-  return Math.min(v / passada, RITMO_MAXIMO * cadencia)
+  const amplitude = amplitudeDoPasso(v, medidas.andar, medidas.passo?.amplitude ?? 1)
+  return Math.min(v / (passada * amplitude), (medidas.passo?.cadencia ?? RITMO_MAXIMO) * cadencia)
 }
 
 /**

@@ -25,3 +25,14 @@ test('dados incompatíveis, mar, ilha fechada e corrupção são erros explícit
   expect(() => lerEnsaio('{')).toThrow()
   expect(lerEnsaio(null)).toEqual(inicial)
 })
+test('retomada em terra não usa o chão sob construções, canteiros ou ponte de arte', () => {
+  for (const [x, z] of [
+    [-3, 100],
+    [24, 133],
+    [58, 127],
+  ]) {
+    const s = ensaioInicial()
+    s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }
+    expect(() => lerEnsaio(JSON.stringify(s))).toThrow('chão acessível')
+  }
+})
