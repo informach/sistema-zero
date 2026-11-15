@@ -7,7 +7,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+    "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
     "syncedAt": "2026-11-15",
     "rulesBlob": "af256ec361452c18b50b257c859e2c96557bea76"
   },
@@ -6537,14 +6537,17 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/costas_capa_cavaleiro.9e7ad5a02e08.webp",
       "tris": 1144,
       "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
         "empurrar_baixo",
         "empurrar_meio"
       ],
       "origin": {
         "blob": "2d00d52448349c10bfc6420fa9c858ae8ea01950",
         "thumbBlob": "d06cf83256d28284623198195cb73583353032ec",
-        "meta": "24713b38490989e6",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "16acca96431767fe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6559,14 +6562,17 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
       "tris": 1684,
       "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
         "empurrar_baixo",
         "empurrar_meio"
       ],
       "origin": {
         "blob": "946e456af53458e5c38e20b1e59776a9216b5ff3",
         "thumbBlob": "8a722480a668243a1cc3d438d8c1484e8e70612b",
-        "meta": "bdcce01b37b9b027",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "46fcf7cb79bc1beb",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       }
     },
@@ -8862,7 +8868,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "deitado",
         "levantar_da_cama",
         "empurrar_baixo",
-        "empurrar_meio"
+        "empurrar_meio",
+        "nadar",
+        "boiar"
       ],
       "armLayers": {
         "correr_tras": "costas_braco_esq_planador_correr_tras",
@@ -8936,8 +8944,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "df86a50ca10d0b5af800c249a324ffb4ce9793b2",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "47c999cf942a1b77",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "2b2dfc5960246abe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       }
     },
@@ -8955,8 +8963,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "fca0a8179092afca7f0c9256737db6123dfc5f47",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "47c999cf942a1b77",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "2b2dfc5960246abe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9059,8 +9067,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "ca29e4a58f39d4bcda157715cc2c8f1680a693a6",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "47c999cf942a1b77",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "2b2dfc5960246abe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9079,8 +9087,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "7815df79a45e8aa4b8d84b1a1c7f5a541a1999cb",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "47c999cf942a1b77",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "2b2dfc5960246abe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"
@@ -9099,8 +9107,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "origin": {
         "blob": "601c1e2965d7ecb6b861e8412a0cdd573a1484d1",
         "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
-        "meta": "47c999cf942a1b77",
-        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
+        "meta": "2b2dfc5960246abe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       },
       "situationOf": "planador_dobrado"

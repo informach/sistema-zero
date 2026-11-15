@@ -81,4 +81,16 @@ describe('o que vai nas costas do avatar no jogo', () => {
     if (!capa) return
     expect(vestirAsCostas({ ...base(), costas: capa }, situacao).slots[slotDoFardo]).toBeUndefined()
   })
+
+  test('nadando, o planador sai; deitada, a capa sai', () => {
+    const nadando = clipesDoCorpo({ deitada: false, empurrandoComo: null, nadando: true })
+    expect(
+      vestirAsCostas(base(), { ...situacao, clipes: nadando }).slots[slotDoFardo],
+    ).toBeUndefined()
+    const capa = Object.keys(C.parts).find(
+      (id) => C.parts[id]?.slot === 'costas' && s?.hiddenWith?.includes(id),
+    )
+    if (!capa) return
+    expect(vestirAsCostas({ ...base(), costas: capa }, deitada).slots.costas).toBeUndefined()
+  })
 })
