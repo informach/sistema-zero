@@ -1,13 +1,19 @@
-# Prints a refazer: área dos pais redesenhada (15/11/2026)
+# Prints da área dos pais redesenhada (15/11/2026)
 
 A área dos pais ganhou menu lateral (Início, Família, Cursos para pais, Oficinas, Conta, Ajuda) e
-a página de cada filho virou abas (Progresso, Aparelhos, No jogo, Perfil). Os textos dos dois
-tutoriais abaixo já descrevem a tela nova no `como-fazer.json`; os prints ainda são da área antiga.
+a página de cada filho virou abas (Progresso, Aparelhos, No jogo, Perfil).
 
-**Quando:** depois do deploy da área nova na staging (PR #260). Conta do responsável com dois
-filhos (Leninha e Débora), 1440 de largura, como os prints de 02/10 e 26/10. Publicar em produção
-só quando a área nova estiver em produção: antes disso, o texto descreveria uma tela que a
-produção ainda não tem.
+**FEITO em 15/11/2026.** Os 11 prints foram tirados na staging com a área nova (conta de
+superadmin de staging, filhos André Rocha e Débora; a Débora é um perfil de teste criado para os
+prints, com o Notebook do quarto Liberado e o Computador de casa Encerrado), em 1280x800 com escala
+2 (2560x1600), no estilo dos anteriores (tela escurecida, alvo com anel laranja e cursor). WebP no
+R2 público (`kids/como-fazer/<slug>/<passo>-<sha16>.webp`, conferidos byte a byte pelo CDN) e os
+dois tutoriais publicados pelo BFF do Admin nos bancos de STAGING e PRODUÇÃO, a pedido da dona,
+depois de conferir que cada banco batia com o lote anterior (sem edição do Admin pendente).
+⚠️ A produção publicou antes do deploy de produção da área nova (pedido dela): até esse deploy,
+os dois tutoriais descrevem a área nova.
+
+O que cada print mostra:
 
 ## plataforma-preparar-acesso-da-crianca
 
