@@ -54,6 +54,7 @@ import {
 } from '../sistemas/locomocao'
 import {
   avancoNaParede,
+  avancoNoEmpurrao,
   DESENHO_NA_AGUA,
   desenhoPenduradoNaBorda,
 } from '../sistemas/lugares-dos-clipes'
@@ -114,6 +115,8 @@ const INCLINACAO_NO_PLANADOR = 0.25
 const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** Escalando, quanto o desenho anda para a casca (o corpo fica a raio + folga dela). */
 const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
+/** Empurrando, quanto o desenho anda (recua): a face encosta na cápsula, a raio + folga do meio. */
+const AVANCO_NO_EMPURRAO = avancoNoEmpurrao(CORPO.raio + FOLGA_DO_CONTROLADOR)
 /** A sela do dino é baixa o bastante para o montar e o desmontar da arte? (Não: 0,70 m nativos.) */
 const SELA_BAIXA = selaBaixa(MONTARIA.sela)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
@@ -164,6 +167,8 @@ export function Personagem() {
   const naSela = useRef(0)
   /** De 0 (no chão) a 1 (agarrada na casca), para o desenho chegar à casca suave. */
   const naCasca = useRef(0)
+  /** De 0 a 1, empurrando: o desenho recua para a face do objeto (`AVANCO_NO_EMPURRAO`). */
+  const naEmpurrao = useRef(0)
   const planando = useEstado((s) => s.modo === 'planar')
   const visual = useRef<Group>(null)
   const usosAtendidos = useRef(controle.usar)
@@ -704,6 +709,13 @@ export function Personagem() {
     naCasca.current += ((v.modo === 'escalada' ? 1 : 0) - naCasca.current) * Math.min(1, dt * 8)
     if (naCasca.current > 0.001) {
       const c = naCasca.current * AVANCO_NA_CASCA
+      vis.position.x += Math.sin(vis.rotation.y) * c
+      vis.position.z += Math.cos(vis.rotation.y) * c
+    }
+    // Empurrando, o desenho recua até a face do objeto cair onde o clipe `empurrar` a espera.
+    naEmpurrao.current += ((m.empurrando ? 1 : 0) - naEmpurrao.current) * Math.min(1, dt * 8)
+    if (naEmpurrao.current > 0.001) {
+      const c = naEmpurrao.current * AVANCO_NO_EMPURRAO
       vis.position.x += Math.sin(vis.rotation.y) * c
       vis.position.z += Math.cos(vis.rotation.y) * c
     }
