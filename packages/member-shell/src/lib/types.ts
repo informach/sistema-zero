@@ -114,6 +114,8 @@ export interface UserView {
   phone?: string
   signupSource?: string
   avatarUrl?: string
+  /** Já definiu uma senha? A senha é opcional (entra pelo código do e-mail). */
+  passwordSet?: boolean
 }
 
 // ── Members (área do aluno) ─────────────────────────────────────────────────

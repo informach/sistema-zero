@@ -544,10 +544,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
       const { status, body } = await gateway.verifyOtpRequest(parsed.data.email, parsed.data.code)
       if (status === 403) {
-        // O auth distingue dois 403: conta INATIVA × conta que nunca definiu a
-        // senha (gate do login por código). Repassar o code real deixa a UI
-        // orientar "crie sua senha em Esqueci minha senha" em vez do enganoso
-        // "conta inativa".
+        // O auth distingue dois 403: conta INATIVA × conta da EQUIPE sem senha (a senha é
+        // opcional para o cliente desde 15/11/2026, mas a equipe precisa dela para operar).
+        // Repassar o code real deixa a UI orientar "crie sua senha em Esqueci minha senha".
         const upstreamCode =
           body?.error && typeof body.error === 'object' && 'code' in body.error
             ? (body.error as { code?: unknown }).code

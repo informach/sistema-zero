@@ -36,14 +36,14 @@ export class UserNotActiveError extends DomainError {
 }
 
 /**
- * Conta ainda NÃO definiu a própria senha (convite/compra pendente): o login por
- * CÓDIGO (OTP) é recusado — senão a pessoa entra numa sessão que a área dos pais
- * (que valida a senha real) nunca deixa passar. Ela precisa definir a senha pelo
- * link de 1º acesso (ou "esqueci minha senha"). → 403 */
+ * Conta da EQUIPE que ainda não definiu a senha tentou entrar pelo código. Para o cliente a
+ * senha é opcional (15/11/2026); a equipe precisa dela para operar (`StaffOperationsService`
+ * a exige), então o código não abre uma sessão que falharia em toda operação. → 403
+ */
 export class PasswordNotSetError extends DomainError {
   readonly code = 'PASSWORD_NOT_SET'
   constructor() {
-    super('Defina sua senha pelo link de primeiro acesso antes de entrar')
+    super('Crie a sua senha em "Esqueci minha senha" antes de entrar')
   }
 }
 

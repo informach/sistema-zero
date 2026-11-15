@@ -21,8 +21,8 @@ const CATALOG: Record<string, string> = {
 const ACCOUNT: Record<string, string> = {
   active: 'Ativa',
   // No auth, `pending` é "conta pendente de ativação": a pessoa ainda não consegue entrar. O
-  // "Convite sem resposta" é outra coisa (conta ativa sem senha criada) e mora só no chip da
-  // lista de Contas (`users-client`).
+  // "Entra só por código" é outra coisa (conta ativa sem senha, que é opcional) e mora só no
+  // chip da lista de Contas (`users-client`).
   pending: 'Ativação pendente',
   suspended: 'Suspensa',
   blocked: 'Bloqueada',

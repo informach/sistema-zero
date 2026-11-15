@@ -25,8 +25,9 @@ const SUBJECTS = [
 /**
  * Ajuda para entrar (direção de arte de 18/10/2026): pública e fora dos buscadores, para quem não
  * consegue entrar e por isso não alcança o Como fazer nem o portal de chamados. Cada resposta segue
- * o comportamento de hoje (mensagem de boas-vindas por e-mail e WhatsApp, link de uso único, código
- * de 6 números, senha de 10 caracteres). Os nomes em negrito são os rótulos reais das telas.
+ * o comportamento de hoje (senha opcional desde 15/11/2026: o código de 6 números entra sem ela;
+ * mensagem de boas-vindas com link de uso único; senha de 10 caracteres). Os nomes em negrito são
+ * os rótulos reais das telas.
  * ⚠️ Mora debaixo do `/ajuda` logado: o `proxy.ts` a declara em `publicPaths`.
  */
 export default async function EntryHelpPage() {
@@ -64,14 +65,25 @@ export default async function EntryHelpPage() {
         <HelpSection id="primeiro" title="Primeiro acesso">
           <Answer title="É o meu primeiro acesso. Qual é a minha senha?">
             <p>
-              A senha ainda não existe: você cria. Depois da compra, mandamos por e-mail e WhatsApp
-              a mensagem de boas-vindas com o botão para criar a senha.
+              Você não precisa de senha para entrar. A senha é opcional: dá para entrar sempre com
+              um código de 6 números enviado ao e-mail da compra.
             </p>
             <ol>
-              <li>Toque no botão da mensagem.</li>
-              <li>Escolha uma senha com 10 caracteres ou mais.</li>
-              <li>Volte aqui e entre com o e-mail da compra e a senha.</li>
+              <li>
+                Em Entrar, toque em <strong>Com código no e-mail</strong>.
+              </li>
+              <li>
+                Digite o e-mail da compra e toque em <strong>Enviar código</strong>.
+              </li>
+              <li>Digite os 6 números que chegaram no e-mail.</li>
             </ol>
+            <p>
+              Prefere ter uma senha? Use o botão da mensagem de boas-vindas ou{' '}
+              <Link href="/esqueci-senha" className="sz-link">
+                Esqueci minha senha
+              </Link>{' '}
+              e escolha uma com 10 caracteres ou mais.
+            </p>
           </Answer>
           <Answer title="Não encontro a mensagem de boas-vindas">
             <p>
@@ -79,17 +91,18 @@ export default async function EntryHelpPage() {
               olhando o e-mail que você usou na compra.
             </p>
             <p>
-              Não achou? Use{' '}
+              Ela não é obrigatória: entre com <strong>Com código no e-mail</strong>. Para criar a
+              primeira senha, use{' '}
               <Link href="/esqueci-senha" className="sz-link">
                 Esqueci minha senha
               </Link>
-              . O código também serve para criar a primeira senha.
+              .
             </p>
           </Answer>
           <Answer title="O botão da mensagem diz que o link não vale">
             <p>
-              Cada link funciona uma vez e por um tempo limitado. Se você já criou a senha, é só
-              entrar. Se não, peça um código em{' '}
+              Cada link funciona uma vez e por um tempo limitado. Você pode entrar com o código no
+              e-mail, sem senha. Se quiser criar a senha, peça um código em{' '}
               <Link href="/esqueci-senha" className="sz-link">
                 Esqueci minha senha
               </Link>
@@ -130,7 +143,7 @@ export default async function EntryHelpPage() {
           <Answer title="Dá para entrar sem digitar a senha?">
             <p>
               Dá. Em Entrar, toque em <strong>Com código no e-mail</strong> e use o código de 6
-              números. Isso vale depois que a senha foi criada uma vez.
+              números. Vale também para quem nunca criou uma senha.
             </p>
           </Answer>
           <Answer title="Aparece “E-mail ou senha incorretos”">

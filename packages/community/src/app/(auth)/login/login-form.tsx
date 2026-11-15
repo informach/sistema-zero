@@ -41,11 +41,11 @@ const SERVER_MESSAGES: Record<string, ReactNode> = {
       <strong>Esta conta está inativa.</strong> Veja na ajuda para entrar como falar com a equipe.
     </>
   ),
-  // Conta comprada que ainda não criou a senha: o código não entra por ela.
+  // Só a conta da EQUIPE ainda exige senha para receber o código; a de cliente entra sem ela.
   PASSWORD_NOT_SET: (
     <>
-      <strong>Você ainda não criou a sua senha.</strong> Abra o link da mensagem de boas-vindas ou
-      use “Esqueci minha senha”.
+      <strong>Você ainda não criou a sua senha.</strong> Contas da equipe precisam de senha: use
+      “Esqueci minha senha” para criar a sua pelo código do e-mail.
     </>
   ),
   TOO_MANY_ATTEMPTS: 'Muitas tentativas seguidas. Espere um minuto e tente de novo.',
@@ -309,16 +309,12 @@ export function LoginForm({ notice }: { notice?: ReactNode }) {
               </TextButton>
             </div>
           ) : null}
-          <p className="m-0 text-muted-foreground text-xs">
-            O código entra pela conta que já tem senha criada. No primeiro acesso, crie a senha pelo
-            link do e-mail de boas-vindas.
-          </p>
         </form>
       )}
 
       <AuthAlert tone="info" live={false}>
-        <strong>Primeiro acesso.</strong> Depois da compra, enviamos por e-mail e WhatsApp um link
-        para você criar a sua senha. Abra o link e escolha a senha antes de entrar aqui.
+        <strong>Primeiro acesso.</strong> Entre com o código no e-mail da compra. A senha é
+        opcional: se quiser, crie uma depois no seu perfil.
       </AuthAlert>
 
       <LiveMessage message={announcement} />

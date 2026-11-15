@@ -13,7 +13,10 @@ export interface ChangePasswordOptions {
 }
 
 /**
- * Troca de senha LOGADO (`POST /auth/me/password`): exige a senha atual.
+ * Troca de senha LOGADO (`POST /auth/me/password`): exige a senha atual. Quem nunca definiu
+ * senha (a senha é opcional desde 15/11/2026) CRIA a primeira pelo código `password_reset`
+ * do e-mail (`/auth/password/reset-otp`), nunca por aqui: uma sessão aberta num aparelho
+ * compartilhado não pode fixar a senha da conta sem provar o e-mail de novo.
  * Revoga TODAS as sessões (inclusive a atual — escolha deliberada por segurança e
  * simplicidade); o cliente deve re-autenticar com a senha nova.
  */
