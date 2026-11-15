@@ -36,7 +36,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "O seu filho passa uma hora por dia assistindo vídeos. Qual é o primeiro passo que este curso propõe?",
+            "prompt": "O seu filho passa uma hora por dia assistindo vídeos. O que este curso propõe para esse tempo de tela?",
             "choices": [
               { "id": "a", "label": "Cortar esse tempo pela metade." },
               {

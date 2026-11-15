@@ -6,7 +6,7 @@ A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá
 
 **Clipe:** `video-a4-interesse`
 
-**Na tela:** Helena na câmera. Uma tela com as seis cenas, cada uma acendendo quando ela lê, com o que o jogo oferece ao lado. Entra o vídeo do Bernardo logo depois de "Escute o Bernardo". A frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___." fica na tela durante o exercício.
+**Na tela:** Helena na câmera. Uma tela com as seis cenas, cada uma acendendo quando ela lê, com o que o jogo oferece ao lado. Entra o vídeo do Bernardo logo depois de "Escute o Bernardo", com legenda de nome em todos os depoimentos. A frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___." fica na tela durante o exercício.
 
 **Fala da Helena:**
 
@@ -27,13 +27,13 @@ Ele não larga a tela. O tempo pode ser o mesmo. O que muda é o papel dele.
 
 Ele mostra mais do que fala. Um jogo pronto vira um jeito de mostrar o que ele pensa, sem precisar de tantas palavras.
 
-Essas cenas não são diagnóstico e não descrevem toda criança. São coisas que muitas famílias contam. E um interesse forte, desses que parecem não ter fim, é fonte de prazer, de motivação e muitas vezes de calma. Não é algo para eliminar. Quando a gente usa o interesse da criança a favor, ensinar fica muito mais fácil, porque ela adere, se abre e aprende mais. E isso vale dos 5 aos 17 anos.
-
-Nem toda criança é dos jogos, e tudo bem. O interesse pode ser desenhar, contar histórias, fazer vídeos. O jogo é só a ferramenta. Escute o Bernardo.
+Essas cenas não são diagnóstico e não descrevem toda criança. São coisas que muitas famílias contam. E um interesse forte, desses que parecem não ter fim, é fonte de prazer, de motivação e muitas vezes de calma. Não é algo para eliminar. Quando a gente usa o interesse da criança a favor, ensinar fica muito mais fácil, porque ela se envolve, se abre e aprende mais. E isso vale dos 5 aos 17 anos. Escute o Bernardo.
 
 Ele usou o que já gostava, os jogos que ele joga, para descobrir como eles são feitos.
 
-Agora complete em voz alta, pensando no seu filho: meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Alguns exemplos para ajudar. Ama trens? O trem precisa chegar na estação sem bater. Ama bandeiras? O jogo mostra uma bandeira e ela escolhe o país. Ama dinossauros? O dinossauro precisa fugir do vulcão. Lembra da resposta do seu filho na aula passada, sobre o jogo que ele inventaria? Ela pode ser o ponto de partida. Clique em Próxima parte.
+E nem toda criança é dos jogos, e tudo bem. O interesse pode ser desenhar, contar histórias, fazer vídeos. O jogo é só a ferramenta.
+
+Agora complete em voz alta, pensando no seu filho: meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Alguns exemplos para ajudar. Ama trens? O trem precisa chegar na estação sem bater. Ama bandeiras? O jogo mostra uma bandeira e ele escolhe o país. Ama dinossauros? O dinossauro precisa fugir do vulcão. Lembra da resposta do seu filho na Aula 2, sobre o jogo que ele inventaria? Ela pode ser o ponto de partida. Clique em Próxima parte.
 ```
 
 **Recado na página (não gravar):** Meu filho ama ___. Um jogo sobre isso poderia ter ___.

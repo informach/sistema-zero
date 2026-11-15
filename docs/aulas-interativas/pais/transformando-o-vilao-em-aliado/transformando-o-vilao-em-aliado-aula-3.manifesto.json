@@ -27,21 +27,7 @@
               { "id": "c", "label": "Subir, direita, subir, direita, subir, direita." }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. As outras duas sequências batem num quadrado escuro. E existe outro caminho certo: ir pela direita até o fim e só depois subir."
-          },
-          {
-            "id": "q2",
-            "prompt": "A primeira tentativa bateu num quadrado escuro. O que fazer?",
-            "choices": [
-              { "id": "a", "label": "Apagar tudo e começar do zero." },
-              {
-                "id": "b",
-                "label": "Observar onde a bolinha parou, mudar uma instrução e testar de novo."
-              },
-              { "id": "c", "label": "Desistir desse desafio e procurar outro." }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "O erro é uma pista. Observar e trocar uma coisa por vez mostra o efeito de cada mudança. Vale também fora da tela."
+            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. As outras duas sequências batem num quadrado escuro. E existe outro caminho certo: ir pela direita até o fim e só depois subir. Se você errou, tudo bem: é disso que a próxima parte fala."
           }
         ]
       }

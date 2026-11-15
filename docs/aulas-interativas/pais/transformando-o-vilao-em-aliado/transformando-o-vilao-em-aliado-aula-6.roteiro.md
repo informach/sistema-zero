@@ -6,7 +6,7 @@ A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá
 
 **Clipe:** `video-a6-conversa`
 
-**Na tela:** Helena na câmera. Entra o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle) logo depois de "Veja o que contam estes pais". Uma tela com as quatro perguntas, uma por linha, quando ela as lê. Câmera na história do André.
+**Na tela:** Helena na câmera. Entra o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle) logo depois de "Veja o que contam estes pais". Uma tela com as quatro perguntas, uma por linha, quando ela as lê. Câmera na história do André. Os depoimentos têm legenda de nome e vínculo ("Débora, mãe do Bernardo").
 
 **Fala da Helena:**
 
@@ -15,13 +15,13 @@ Você chega cansado do trabalho, pergunta como foi o dia, e a resposta é: bom. 
 
 Agora imagine chegar e perguntar do jogo que ele está criando. Ele foge ou ele vem? Quando a gente entra no mundo da criança, ela abre a porta para o nosso. Para te mostrar o jogo, ela precisa organizar o pensamento e se esforçar para ser entendida. E vocês ganham um assunto em comum. Veja o que contam estes pais.
 
-Repararam que esses pais não precisaram programar nada? O que eles fazem é perguntar, olhar e celebrar.
+Reparou que esses pais não precisaram programar nada? O que eles fazem é perguntar, olhar e celebrar.
 
 Para isso, eu deixo quatro perguntas para a mesa de casa. Me mostra o que você criou? O que foi mais divertido? O que você precisou mudar? O que você vai inventar depois? São perguntas sobre o caminho, e não sobre nota ou tempo de tela.
 
-E dá para ir além do jogo. Hoje no meu trabalho também deu errado uma coisa. Como o seu personagem fez para consertar? Quando a criança responde, ela está levando uma estratégia do jogo para outra situação. É assim que o repertório cresce.
+E dá para ir além do jogo. Depois que o seu filho contar o que deu errado no jogo e como ele resolveu, você pode dizer: hoje, no meu trabalho, também deu uma coisa errada. Como o seu personagem fez para consertar? Quando a criança responde, ela está levando uma estratégia do jogo para outra situação. É assim que o repertório cresce.
 
-Na minha casa, foi o jogo que abriu a porta. O André era um menino muito difícil de conversar. Depois ele passou a conversar muito, mas só sobre jogos. E foi justamente falando de jogo que ele começou a perceber a troca de turno: agora eu falo, agora você fala. Começou a notar os sinais do outro: se a pessoa olha para o lado ou pega o celular, talvez seja hora de mudar de assunto. Hoje a gente conversa com ele sobre qualquer assunto. O jogo foi o pontapé inicial. Clique em Próxima parte.
+Na minha casa, foi o jogo que abriu a porta. Quem vê o André hoje não imagina, mas ele não era de conversar. Hoje eu é que preciso pedir: calma, resume, porque ele quer falar o tempo todo sobre o que está criando. O assunto dos jogos foi o pontapé inicial, e a partir dele a gente passou a conversar sobre qualquer assunto. Clique em Próxima parte.
 ```
 
 **Recado na página (não gravar):** Me mostra o que você criou? O que foi mais divertido? O que você precisou mudar? O que você vai inventar depois?
@@ -43,7 +43,9 @@ Tudo o que a gente viu cabe num ciclo simples, que se repete a cada novo jogo. I
 
 E tem uma coisa que eu não quero que se perca no meio de tantas habilidades: o prazer de criar. Escute como as crianças se sentem.
 
-Lembra da palavra que você guardou na primeira aula? Eu falei da autonomia, mas, pensando bem, o que eu mais desejo para os meus filhos é que eles sejam felizes. E ser feliz, lá na frente, passa por dar conta da própria vida: pegar uma tarefa e levar até o fim, lidar com a frustração, controlar a ansiedade, esperar a sua vez. São as mesmas habilidades que a criança treina quando cria. Pense na sua palavra agora, depois de tudo o que a gente conversou.
+Lembra da palavra que você guardou na primeira aula? A minha era autonomia. Mas, pensando bem, o que eu mais desejo para os meus filhos é que eles sejam felizes. E ser feliz, lá na frente, passa por dar conta da própria vida: pegar uma tarefa e levar até o fim, lidar com a frustração, esperar a sua vez. São habilidades que a criança pode exercitar quando cria. Pense na sua palavra agora, depois de tudo o que a gente conversou.
+
+E olhe de novo o mapa da semana que você fez na primeira aula. Onde cabe um pouco de criar, dentro do tempo que já existe?
 
 A tela não precisa ser só o lugar onde o seu filho encontra jogos. Ela também pode ser o lugar onde ele descobre que é capaz de criar os seus. O vilão pode virar aliado. Tudo depende de como a tela é usada.
 
