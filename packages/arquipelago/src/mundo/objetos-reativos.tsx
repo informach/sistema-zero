@@ -11,6 +11,7 @@ import { Box3, type Mesh, type Object3D } from 'three'
 import propsGlb from '../assets/ilhas/bosque-props.glb'
 import { useJogo } from '../estado/contexto'
 import { CORPO } from '../sistemas/corpo'
+import type { ComoSeEmpurra } from '../sistemas/lugares-dos-clipes'
 import { MATERIAIS, massaDe } from '../sistemas/materiais-fisicos'
 import { passoDoGalho } from '../sistemas/mundo-reativo'
 import { GRUPO_SO_DO_CORPO } from './grupos'
@@ -25,6 +26,14 @@ export interface PecaSolta {
 }
 const URL_DAS_PECAS = new URL(propsGlb, import.meta.url).href
 const RAIO_DA_PEDRA = 0.18
+/**
+ * Como a criança empurra as peças soltas: a pedra (0,36 m) é baixa e redonda; o cogumelo (0,75 m,
+ * 0,41 m do clipe), de meia altura. A pedra encosta 0,02 m do clipe mais perto, como o tronco.
+ */
+const EMPURRAO_DA_PEDRA: { empurrao: ComoSeEmpurra } = {
+  empurrao: { altura: 2 * RAIO_DA_PEDRA, encostaMais: 0.02 * CORPO.medidas.scale },
+}
+const EMPURRAO_DO_COGUMELO: { empurrao: ComoSeEmpurra } = { empurrao: { altura: 0.75 } }
 export const reativosAgora = {
   montado: false,
   pecas: Array.from({ length: 4 }, () => ({ x: 0, y: 0, z: 0, dormindo: false })),
@@ -103,6 +112,7 @@ function Peca({ p, indice, modelo }: { p: PecaSolta; indice: number; modelo: Obj
       linearDamping={1}
       angularDamping={1.5}
       canSleep
+      userData={p.tipo === 'pedra' ? EMPURRAO_DA_PEDRA : EMPURRAO_DO_COGUMELO}
     >
       {p.tipo === 'pedra' ? (
         <>

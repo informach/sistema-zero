@@ -12,9 +12,8 @@ import { alvoDoAlcapao, caixaNaPlaca, MECANISMOS } from '../sistemas/mecanismos'
 import { GRUPO_SO_DO_CORPO } from './grupos'
 
 /**
- * Como a criança empurra o caixote: ele tem 0,72 m (0,39 m do clipe), alto demais para o
- * `empurrar_baixo` (a cabeça passaria por ele) e baixo para as mãos do `empurrar` (0,48 m do clipe):
- * fica o `empurrar` até a arte entregar o de meia altura.
+ * Como a criança empurra o caixote: ele tem 0,72 m (0,39 m do clipe), a meia altura do
+ * `empurrar_meio` (mãos a 0,31 m do clipe, a arte fez para ele em 15/11/2026).
  */
 const EMPURRAO_DO_CAIXOTE: { empurrao: ComoSeEmpurra } = { empurrao: { altura: 0.72 } }
 export const mecanismosAgora = {

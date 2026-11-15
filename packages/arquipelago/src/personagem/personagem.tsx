@@ -58,7 +58,7 @@ import {
   comoSeEmpurra,
   DESENHO_NA_AGUA,
   desenhoPenduradoNaBorda,
-  empurraBaixo,
+  jeitoDeEmpurrar,
 } from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
@@ -231,6 +231,7 @@ export function Personagem({
   const apoioFeito = useRef<ApoioDasMaos | null>(null)
   /** Deitada e levantando da cama, sem o chapéu (os clipes da arte tiram o chapéu). */
   const deitada = useEstado((s) => s.descanso === 'deitar')
+  const sentada = useEstado((s) => s.descanso === 'sentar')
   const [levantandoDaCama, setLevantandoDaCama] = useState(false)
   const levantandoMostrado = useRef(false)
 
@@ -573,7 +574,7 @@ export function Personagem({
     }
     empurrando.current = empurrou ? SEGURA_O_EMPURRAO : Math.max(0, empurrando.current - dt)
     m.empurrando = empurrando.current > 0
-    m.empurrandoBaixo = m.empurrando && empurraBaixo(empurrado.current)
+    m.empurrandoComo = m.empurrando ? jeitoDeEmpurrar(empurrado.current) : 'alto'
     // Os gestos: saindo do banco ou da cama sem andar, ela levanta (o desenho fica no assento até o
     // fim do clipe); descendo da sela, o desmontar; e o que o mundo pedir. Andar corta.
     const andou = Math.hypot(ix, iz) > 0.3 || e.pulou
@@ -841,6 +842,8 @@ export function Personagem({
             semChapeu={deitada || levantandoDaCama}
             apoioDasMaos={apoioDasMaos}
             montada={montado}
+            planadorNasCostas={comPlanador && !planando}
+            sentada={sentada}
           />
           {comPlanador ? (
             <Suspense fallback={null}>

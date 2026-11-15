@@ -990,6 +990,18 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - **Sela:** o `montar` e o `desmontar` da arte são de sela baixa (`selaBaixa`). A do dino é alta
   (0,70 m nativos): a arte pediu o corte direto, como no vagonete. Dirigir e ajoelhada no vagonete
   são modos especiais prontos para os veículos.
+- **Empurrar em três alturas (15/11/2026):** o corpo dinâmico diz a altura no `userData`
+  (`{ empurrao: { altura, encostaMais? } }`, `comoSeEmpurra`); `jeitoDeEmpurrar` escolhe
+  `empurrar_baixo` (até 0,25 m do clipe: o tronco do lago e a pedra solta, redondos, com a face
+  0,02 m do clipe mais perto), `empurrar_meio` (até 0,45 m: o caixote e o cogumelo solto) ou o
+  `empurrar` de pé. A faixa de 0,25 a 0,34 m não tem variação na arte e fica com o meio; nenhum
+  objeto do jogo cai nela. Objeto novo que se empurra declara a altura.
+- **Costas (15/11/2026, `personagem/costas.ts`):** com o planador e fora do voo, o planador dobrado
+  vai nas costas (`vestirAsCostas`, o arquivo pela peça de costas vestida, `situationFor` do core);
+  sai deitada, sentada (o encosto cortaria) e debaixo de cabelo comprido. Deitada, a mochila sai
+  (`offIn`). O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
+  (`armLayers`, o mesmo `BracoComObjeto` da lanterna). A peça de baixo fixa, as variantes montadas e
+  a troca dos vestidos do pack pelos nossos com shortinho são do desenho comum (`PackAvatarRig`).
 - **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no
   planador, o do gesto, a lanterna acesa. Os dedos fecham pela `pegada` da arte (`fingers` no
   catálogo); o braço afasta pelas camadas largas do balde. Deitada e levantando da cama, o chapéu

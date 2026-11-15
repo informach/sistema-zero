@@ -101,22 +101,45 @@ export const NO_EMPURRAR_BAIXO = {
  */
 export type ComoSeEmpurra = { altura: number; encostaMais?: number }
 
-/** `true` quando o objeto cabe embaixo da cabeça agachada: é o `empurrar_baixo`. */
-export function empurraBaixo(objeto: ComoSeEmpurra | null | undefined): boolean {
-  return !!objeto && objeto.altura <= NO_EMPURRAR_BAIXO.objetoAte
+/**
+ * Empurrando objeto de meia altura (`empurrar_meio`, o caixote): mãos a 0,31 m do clipe. Serve até
+ * `objetoAte`; acima disso, o `empurrar` de pé.
+ */
+export const NO_EMPURRAR_MEIO = {
+  aFrente: medidaDoLugar('empurrar_meio', 'plano_a_frente_m', 0.3),
+  objetoAte: medidaDoLugar('empurrar_meio', 'objeto_ate_m', 0.45),
+} as const
+
+/** De que jeito se empurra: agachada (`baixo`), de meia altura (`meio`) ou de pé (`alto`). */
+export type JeitoDeEmpurrar = 'baixo' | 'meio' | 'alto'
+
+/**
+ * O jeito pela altura do objeto (`objeto_ate_m` de cada variação da arte). Entre o teto do baixo e
+ * o começo do meio (0,25 a 0,34 m do clipe) nenhuma serve bem; o jogo não tem objeto nessa faixa e
+ * fica com o meio (as mãos perto do alto do objeto, a cabeça longe dele). Objeto que não diz a
+ * altura: de pé, como sempre.
+ */
+export function jeitoDeEmpurrar(objeto: ComoSeEmpurra | null | undefined): JeitoDeEmpurrar {
+  if (!objeto) return 'alto'
+  if (objeto.altura <= NO_EMPURRAR_BAIXO.objetoAte) return 'baixo'
+  if (objeto.altura <= NO_EMPURRAR_MEIO.objetoAte) return 'meio'
+  return 'alto'
 }
 
 /**
  * Quanto o desenho anda para a frente empurrando: no jogo a face encosta na cápsula, a `daFace` do
- * meio do corpo; no clipe, a face fica `aFrente` da origem (a do `empurrar` ou a do `empurrar_baixo`,
- * menos o `encostaMais` de um objeto redondo). Negativo: recua (mais perto, a cabeça entraria no
- * objeto; a arte avisou que essa distância quase não pode mudar).
+ * meio do corpo; no clipe, a face fica `aFrente` da origem (a da variação do jeito, menos o
+ * `encostaMais` de um objeto redondo nas variações de mão baixa). Negativo: recua (mais perto, a
+ * cabeça entraria no objeto; a arte avisou que essa distância quase não pode mudar).
  */
 export function avancoNoEmpurrao(daFace: number, objeto?: ComoSeEmpurra | null): number {
-  const baixo = empurraBaixo(objeto)
-  const aFrente = baixo
-    ? NO_EMPURRAR_BAIXO.aFrente - (objeto?.encostaMais ?? 0)
-    : NO_EMPURRAR.aFrente
+  const jeito = jeitoDeEmpurrar(objeto)
+  const aFrente =
+    jeito === 'baixo'
+      ? NO_EMPURRAR_BAIXO.aFrente - (objeto?.encostaMais ?? 0)
+      : jeito === 'meio'
+        ? NO_EMPURRAR_MEIO.aFrente - (objeto?.encostaMais ?? 0)
+        : NO_EMPURRAR.aFrente
   return daFace - aFrente
 }
 
