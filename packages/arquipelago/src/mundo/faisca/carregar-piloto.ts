@@ -8,7 +8,10 @@ export interface ArteDoPiloto {
   soltar(): void
 }
 /** Um lote pequeno, com texturas deduplicadas e sem cache global que impeça descarregar. */
-export async function carregarPiloto(signal: AbortSignal): Promise<ArteDoPiloto> {
+export async function carregarPiloto(
+  signal: AbortSignal,
+  curadoria = false,
+): Promise<ArteDoPiloto> {
   const modelos = new Map<string, GLTF>(),
     raiz = new Group(),
     loader = new GLTFLoader()
@@ -24,6 +27,7 @@ export async function carregarPiloto(signal: AbortSignal): Promise<ArteDoPiloto>
   try {
     // Sequencial para limitar os picos de decodificação e memória na entrada.
     for (const meta of Object.values(ARTE_DA_FAISCA.pecas)) {
+      if (meta.ensaio && !curadoria) continue
       if (signal.aborted) throw Error('Carga da Faísca cancelada')
       const response = await fetch(`/api/faisca3d/${meta.arquivo}`, { signal })
       if (!response.ok)

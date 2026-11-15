@@ -27,7 +27,7 @@ page.on('pageerror', (e) => erros.push(e.message))
 try {
   await page.goto(`${base}/macro`)
   await page.waitForFunction(
-    () => document.querySelector('.macro-topo')?.textContent.includes('23/23'),
+    () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
     {},
     { timeout: 60000 },
   )
@@ -94,7 +94,7 @@ try {
   await falha.unroute('**/api/faisca3d/coelho.*.glb')
   await erroPage.getByRole('button', { name: 'Tentar carregar a arte', exact: true }).click()
   await erroPage.waitForFunction(
-    () => document.querySelector('.macro-topo')?.textContent.includes('23/23'),
+    () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
     {},
     { timeout: 60000 },
   )

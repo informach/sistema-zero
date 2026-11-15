@@ -61,7 +61,7 @@ async function andar(x, z) {
 try {
   await page.goto(`${base}/macro?ritmo=explorar`)
   await page.waitForFunction(
-    () => document.querySelector('.macro-topo')?.textContent.includes('23/23'),
+    () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
     {},
     { timeout: 60000 },
   )
@@ -120,23 +120,26 @@ try {
     const longe = await dados()
     await page.getByRole('button', { name: 'Vila dos Criadores', exact: true }).click()
     await page.waitForFunction(
-      () => document.querySelector('.macro-topo')?.textContent.includes('23/23'),
+      () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
       {},
       { timeout: 60000 },
     )
     await page.waitForTimeout(1200)
     ciclos.push({ longe, perto: await dados() })
+    console.log(JSON.stringify({ ciclo: i + 1, ...ciclos.at(-1) }))
+    writeFileSync(resolve(saida, 'ciclos-recursos.json'), JSON.stringify(ciclos, null, 2))
     assert.ok(
       Number(ciclos.at(-1).perto.Texturas) > Number(longe.Texturas),
       'As texturas do piloto devem sair da GPU ao afastar',
     )
   }
+  // O contrato é ausência de crescimento. Uma queda (liberação) não é vazamento.
   assert.ok(
-    Math.abs(Number(ciclos[2].perto.Geometrias) - Number(ciclos[1].perto.Geometrias)) <= 2,
+    Number(ciclos[2].perto.Geometrias) - Number(ciclos[1].perto.Geometrias) <= 2,
     'Geometrias não devem crescer a cada recarga',
   )
   assert.ok(
-    Math.abs(Number(ciclos[2].perto.Texturas) - Number(ciclos[1].perto.Texturas)) <= 2,
+    Number(ciclos[2].perto.Texturas) - Number(ciclos[1].perto.Texturas) <= 2,
     'Texturas não devem crescer a cada recarga',
   )
   evidencias.push({ caso: 'Descarga e reentrada', ciclos })

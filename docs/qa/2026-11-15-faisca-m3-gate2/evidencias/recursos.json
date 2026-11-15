@@ -1,0 +1,94 @@
+{
+  "evidencias": [
+    {
+      "caso": "Descarga e reentrada",
+      "ciclos": [
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "60 / s",
+            "Giro da câmera": "6.233 rad",
+            "Setores com física": "25",
+            "Chamadas de desenho": "47",
+            "Triângulos": "34.845",
+            "Geometrias": "75",
+            "Texturas": "33"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,68, 137 m",
+            "Quadros": "60 / s",
+            "Giro da câmera": "6.216 rad",
+            "Setores com física": "24",
+            "Chamadas de desenho": "85",
+            "Triângulos": "143.253",
+            "Geometrias": "119",
+            "Texturas": "42"
+          }
+        },
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "60 / s",
+            "Giro da câmera": "6.213 rad",
+            "Setores com física": "25",
+            "Chamadas de desenho": "45",
+            "Triângulos": "30.685",
+            "Geometrias": "78",
+            "Texturas": "34"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,68, 137 m",
+            "Quadros": "58 / s",
+            "Giro da câmera": "6.178 rad",
+            "Setores com física": "24",
+            "Chamadas de desenho": "87",
+            "Triângulos": "143.599",
+            "Geometrias": "118",
+            "Texturas": "42"
+          }
+        },
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "60 / s",
+            "Giro da câmera": "6.233 rad",
+            "Setores com física": "25",
+            "Chamadas de desenho": "37",
+            "Triângulos": "34.193",
+            "Geometrias": "78",
+            "Texturas": "34"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,68, 137 m",
+            "Quadros": "60 / s",
+            "Giro da câmera": "6.175 rad",
+            "Setores com física": "24",
+            "Chamadas de desenho": "85",
+            "Triângulos": "142.937",
+            "Geometrias": "119",
+            "Texturas": "42"
+          }
+        }
+      ]
+    }
+  ],
+  "erros": []
+}

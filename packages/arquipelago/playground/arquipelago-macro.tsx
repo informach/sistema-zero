@@ -17,9 +17,10 @@ import {
 import { criarLoja } from '../src/estado/loja'
 import { ESTILOS } from '../src/interface/estilos'
 import { ControlesDeToque } from '../src/interface/toque'
-import { CaminhosDaFaisca } from '../src/mundo/faisca/caminhos'
+import { CaminhosDaFaisca, ROTAS_COMPLETAS_DA_FAISCA } from '../src/mundo/faisca/caminhos'
 import { MedirPercurso, type PedidoDeMedicao } from '../src/mundo/faisca/medir-percurso'
 import { PilotoDaFaisca, type SituacaoDoPiloto } from '../src/mundo/faisca/piloto'
+import { PinturaDoSolo } from '../src/mundo/faisca/pintura-do-solo'
 import { criarRegistro } from '../src/mundo/interativos'
 import { OceanoMacro } from '../src/mundo/macro/oceano'
 import { PonteMacro } from '../src/mundo/macro/ponte'
@@ -44,10 +45,31 @@ import {
 } from '../src/sistemas/geografia-do-arquipelago'
 import type { MedicaoDePercurso } from '../src/sistemas/medicao-de-percurso'
 import { estadoDaPonte, SEGUNDOS_PARA_RECONSTRUIR } from '../src/sistemas/ponte-do-arquipelago'
+import {
+  INICIO_DA_PROVA,
+  ROTA_DA_PROVA,
+  tipoDaCuradoria,
+} from '../src/sistemas/prova-curadoria-faisca'
 import { LADO_DO_SETOR } from '../src/sistemas/setores-do-arquipelago'
 import { ConversaDaIrisDeEstudo } from './faisca-interface'
+import { CameraDaCaptura, vistaDaFaisca } from './faisca-vistas'
 import { CHAVE_DO_ENSAIO, ensaioInicial, lerEnsaio, partidaDoEnsaio } from './macro-estado'
 import { ESTILOS_MACRO, InterfaceMacro, type MedidaMacro } from './macro-interface'
+
+const VISTA = vistaDaFaisca(new URLSearchParams(location.search).get('vista'))
+const CURADORIA = tipoDaCuradoria(new URLSearchParams(location.search).get('curadoria'))
+const ROTAS_DO_SOLO =
+  CURADORIA === 'a'
+    ? [
+        ...ROTAS_COMPLETAS_DA_FAISCA,
+        {
+          id: 'prova-curadoria',
+          nome: 'Ensaio de caminhos',
+          tipo: 'cotidiano' as const,
+          pontos: ROTA_DA_PROVA,
+        },
+      ]
+    : ROTAS_COMPLETAS_DA_FAISCA
 
 const CONEXOES = ARQUIPELAGO.slice(1).map((i) => conexaoDaIlha(i.id))
 const PONTE = conexaoDaIlha('bosque')
@@ -64,6 +86,7 @@ const VAZIA: MedidaMacro = {
   geometrias: 0,
   texturas: 0,
   setores: 0,
+  giroCamera: 0,
 }
 
 function MundoMacro({
@@ -130,6 +153,7 @@ function MundoMacro({
       geometrias: gl.info.memory.geometries,
       texturas: gl.info.memory.textures,
       setores: setores.current,
+      giroCamera: rastro.giro,
     })
     a.tempo = 0
     a.quadros = 0
@@ -176,7 +200,9 @@ function MundoMacro({
           updatePriority={-1}
         >
           <OceanoMacro />
-          <TerrenosMacro aoMudar={medirSetores} foco={foco} aoPronto={aoPronto} />
+          <PinturaDoSolo rotas={ROTAS_DO_SOLO}>
+            <TerrenosMacro aoMudar={medirSetores} foco={foco} aoPronto={aoPronto} />
+          </PinturaDoSolo>
           {CONEXOES.map((c) => (
             <PonteMacro
               key={c.id}
@@ -185,11 +211,15 @@ function MundoMacro({
               progresso={progresso}
             />
           ))}
-          <CaminhosDaFaisca />
+          <CaminhosDaFaisca marcos={!VISTA} />
           <MedirPercurso pedido={pedidoMedicao} aoMudar={aoMedicao} />
-          <PilotoDaFaisca key={tentativaArte} aoMudar={aoArte} />
+          <PilotoDaFaisca key={tentativaArte} aoMudar={aoArte} curadoria={CURADORIA} />
           <Personagem partida={partida} interior={FORA_DE_CASA} />
-          <Camera chaoDoCenario={alturaDoArquipelago} baseDoCenario={ALTURA_BASE} />
+          {VISTA ? (
+            <CameraDaCaptura vista={VISTA} />
+          ) : (
+            <Camera chaoDoCenario={alturaDoArquipelago} baseDoCenario={ALTURA_BASE} />
+          )}
         </Physics>
         <Zappy />
       </Suspense>
@@ -199,6 +229,12 @@ function MundoMacro({
 
 function Blockout() {
   const [inicial] = useState(() => {
+    if (VISTA || CURADORIA) {
+      const ensaio = ensaioInicial()
+      const [x, z] = VISTA?.avatar ?? [INICIO_DA_PROVA.x, INICIO_DA_PROVA.z]
+      ensaio.posicao.local = { x, z, y: alturaDoArquipelago(x, z) }
+      return { ensaio, erro: null }
+    }
     try {
       return { ensaio: lerEnsaio(localStorage.getItem(CHAVE_DO_ENSAIO)), erro: null }
     } catch (e) {
@@ -278,7 +314,7 @@ function Blockout() {
     ).map((i) => ({ ...i.centro, livre: i.raio + 12 }))
   }, [contexto, instalado])
   const guardar = useCallback(() => {
-    if (inicial.erro) return
+    if (inicial.erro || VISTA || CURADORIA) return
     try {
       localStorage.setItem(CHAVE_DO_ENSAIO, JSON.stringify(ensaio.current))
     } catch (e) {
@@ -387,39 +423,41 @@ function Blockout() {
           aoMedicao={setMedicao}
         />
       </Canvas>
-      <ControlesDeToque />
-      <ConversaDaIrisDeEstudo />
-      <InterfaceMacro
-        medida={medida}
-        ponte={instalado ? 'aberta' : construindoDesde !== null ? 'reconstruindo' : 'quebrada'}
-        erro={erro}
-        pausado={pausado}
-        aoPausar={pausar}
-        aoReconstruir={() => setConstruindoDesde(0)}
-        aoIr={ir}
-        aoReiniciar={() => {
-          localStorage.removeItem(CHAVE_DO_ENSAIO)
-          location.reload()
-        }}
-        noite={noite}
-        aoNoite={() => setNoite(!noite)}
-        arte={arte}
-        aoTentarArte={() => setTentativaArte((n) => n + 1)}
-        visitados={visitados}
-        aoVoltar={(id) => {
-          if (visitados.includes(id)) ir(`lugar:${id}`)
-        }}
-        medicao={medicao}
-        aoMedirRota={(id) => {
-          const r = ROTAS_DA_FAISCA.find((r) => r.id === id)
-          if (!r) return
-          const p = r.pontos[0]!
-          contexto.movimento.ida = null
-          contexto.pedidos.chaoChegando.add('macro')
-          setFoco({ ...p, y: alturaDoArquipelago(p.x, p.z) + CORPO.doCentroAoPe + 0.25 })
-          setPedidoMedicao({ rota: id, numero: Date.now() })
-        }}
-      />
+      <div style={{ visibility: VISTA ? 'hidden' : undefined }}>
+        <ControlesDeToque />
+        <ConversaDaIrisDeEstudo />
+        <InterfaceMacro
+          medida={medida}
+          ponte={instalado ? 'aberta' : construindoDesde !== null ? 'reconstruindo' : 'quebrada'}
+          erro={erro}
+          pausado={pausado}
+          aoPausar={pausar}
+          aoReconstruir={() => setConstruindoDesde(0)}
+          aoIr={ir}
+          aoReiniciar={() => {
+            localStorage.removeItem(CHAVE_DO_ENSAIO)
+            location.reload()
+          }}
+          noite={noite}
+          aoNoite={() => setNoite(!noite)}
+          arte={arte}
+          aoTentarArte={() => setTentativaArte((n) => n + 1)}
+          visitados={visitados}
+          aoVoltar={(id) => {
+            if (visitados.includes(id)) ir(`lugar:${id}`)
+          }}
+          medicao={medicao}
+          aoMedirRota={(id) => {
+            const r = ROTAS_DA_FAISCA.find((r) => r.id === id)
+            if (!r) return
+            const p = r.pontos[0]!
+            contexto.movimento.ida = null
+            contexto.pedidos.chaoChegando.add('macro')
+            setFoco({ ...p, y: alturaDoArquipelago(p.x, p.z) + CORPO.doCentroAoPe + 0.25 })
+            setPedidoMedicao({ rota: id, numero: Date.now() })
+          }}
+        />
+      </div>
     </Contexto.Provider>
   )
 }
