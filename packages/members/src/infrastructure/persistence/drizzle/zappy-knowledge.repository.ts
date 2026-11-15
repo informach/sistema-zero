@@ -298,6 +298,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         and ${courses.audience} = 'kids'
         and ${courses.status} = 'published'
         and ${courses.modality} = 'recorded'
+        and ${courses.learner} = 'child'
         and ${lessons.isPublished} = true
         and (
           (${zappyKnowledgeSources.sourceType} = 'rich-text' and ${lessonBlocks.content}->>'kind' in ('rich_text', 'dialogue'))
@@ -314,6 +315,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         and ${courses.audience} = 'kids'
         and ${courses.status} = 'published'
         and ${courses.modality} = 'recorded'
+        and ${courses.learner} = 'child'
         and ${lessons.isPublished} = true
         and ${lessonAttachments.zappyStudentNotebook} = true
         and (
@@ -411,6 +413,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           eq(lessons.isPublished, true),
           eq(courses.status, 'published'),
           eq(courses.modality, 'recorded'),
+          eq(courses.learner, 'child'),
           or(
             sql`${vector} @@ ${tsQuery}`,
             sql`${zappyKnowledgeChunks.normalizedText} ilike ${`%${query}%`}`,
@@ -440,6 +443,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       eq(courses.audience, 'kids'),
       eq(courses.status, 'published'),
       eq(courses.modality, 'recorded'),
+      eq(courses.learner, 'child'),
       eq(lessons.isPublished, true),
       // Aula EM PRODUÇÃO ("em breve") fica FORA da base didática: o conteúdo dela não
       // é servido ao aluno, então o tutor também não pode falar dele. Aqui a aula só
@@ -476,6 +480,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       eq(courses.audience, 'kids'),
       eq(courses.status, 'published'),
       eq(courses.modality, 'recorded'),
+      eq(courses.learner, 'child'),
       eq(lessons.isPublished, true),
       eq(lessonAttachments.zappyStudentNotebook, true),
       sql`(lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
@@ -522,6 +527,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
             eq(courses.modality, 'recorded'),
+            eq(courses.learner, 'child'),
             eq(lessons.isPublished, true),
           ),
         ),
@@ -555,6 +561,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
             eq(courses.modality, 'recorded'),
+            eq(courses.learner, 'child'),
             eq(lessons.isPublished, true),
             or(
               and(

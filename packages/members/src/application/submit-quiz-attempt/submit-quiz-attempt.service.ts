@@ -1,3 +1,4 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import {
   LessonNotFoundError,
   QuizBlockNotFoundError,
@@ -149,16 +150,18 @@ export class SubmitQuizAttemptService {
 
     // XP só no quiz APROVADO (reprovar não pune nem premia). Re-aprovação não
     // re-premia (ledger por blockId) — mas nota 100 ainda destrava a badge.
-    const gamification = grade.passed
-      ? await this.gamification.awardQuizPassed({
-          userId,
-          accountId: accountId ?? userId,
-          blockId,
-          score: grade.score,
-          audience: course.audience,
-          privileged,
-        })
-      : null
+    // Curso para pais (14/11/2026) não dá XP: o responsável não participa da gamificação.
+    const gamification =
+      grade.passed && !isParentsCourse(course)
+        ? await this.gamification.awardQuizPassed({
+            userId,
+            accountId: accountId ?? userId,
+            blockId,
+            score: grade.score,
+            audience: course.audience,
+            privileged,
+          })
+        : null
 
     return {
       score: grade.score,

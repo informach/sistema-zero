@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomUUID } from 'node:crypto'
+import { type CourseLearner, courseLearnerOf } from '@sistemazero/core/course/learner'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
@@ -458,10 +459,19 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.lessons.find((l) => l.id === lessonId) ?? null
   }
 
-  async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+  async findAccessibleCoursesBySlugs(
+    slugs: string[],
+    learner: CourseLearner = 'child',
+  ): Promise<Course[]> {
     const set = new Set(slugs)
     return this.courses
-      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status) && c.modality === 'recorded')
+      .filter(
+        (c) =>
+          set.has(c.slug) &&
+          isCourseAccessible(c.status) &&
+          c.modality === 'recorded' &&
+          courseLearnerOf(c.learner) === learner,
+      )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
@@ -475,11 +485,18 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.courses.filter((c) => set.has(c.id))
   }
 
-  async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
+  async listPublishedCourses(
+    audience: CourseAudience,
+    learner: CourseLearner = 'child',
+  ): Promise<Course[]> {
     // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
       .filter(
-        (c) => c.status === 'published' && c.audience === audience && c.modality === 'recorded',
+        (c) =>
+          c.status === 'published' &&
+          c.audience === audience &&
+          c.modality === 'recorded' &&
+          courseLearnerOf(c.learner) === learner,
       )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
@@ -661,6 +678,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (filter.status) all = all.filter((c) => c.status === filter.status)
     if (filter.audience) all = all.filter((c) => c.audience === filter.audience)
     if (filter.modality) all = all.filter((c) => c.modality === filter.modality)
+    if (filter.learner) all = all.filter((c) => courseLearnerOf(c.learner) === filter.learner)
     all.sort((a, b) => a.title.localeCompare(b.title))
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
@@ -707,6 +725,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       status: 'draft',
       audience: overrides.audience,
       modality: overrides.modality,
+      learner: overrides.learner,
       careerSlot: null,
       journeyRole: 'reward',
       metadata,
@@ -772,6 +791,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       careerSlot,
       journeyRole,
       modality,
+      learner,
       ...rest
     } = fields
     // Mirror do `buildCourseMetadata` do repo Drizzle: as DUAS chaves geridas pelo form
@@ -797,6 +817,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       careerSlot: careerSlot ?? null,
       journeyRole: journeyRole ?? (careerSlot == null ? 'reward' : 'positioned'),
       modality: modality ?? 'recorded',
+      learner: learner ?? 'child',
       metadata: Object.keys(metadata).length > 0 ? metadata : null,
       createdAt: now,
       updatedAt: now,

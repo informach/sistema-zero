@@ -23,6 +23,27 @@ export function independentCourseAccessReason(
   now: Date,
 ): IndependentCourseAccessReason | undefined {
   if (!INDEPENDENT_JOURNEY_COURSES.has(courseSlug)) return undefined
+  return specificCourseAccessReason(courseSlug, entitlements, now)
+}
+
+/**
+ * Curso para pais (14/11/2026): fica fora da Jornada, então o motivo vem da matrícula específica
+ * fora de assinatura (compra, presente, concessão) ou, sem ela, da própria regra do curso
+ * (`parents`, a chave dos cursos Kids ou a equipe).
+ */
+export function parentsCourseAccessReason(
+  courseSlug: string,
+  entitlements: readonly EntitlementAggregate[],
+  now: Date,
+): IndependentCourseAccessReason | 'parents' {
+  return specificCourseAccessReason(courseSlug, entitlements, now) ?? 'parents'
+}
+
+function specificCourseAccessReason(
+  courseSlug: string,
+  entitlements: readonly EntitlementAggregate[],
+  now: Date,
+): IndependentCourseAccessReason | undefined {
   for (const entitlement of entitlements) {
     if (
       entitlement.accessType !== 'course' ||

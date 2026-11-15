@@ -1,3 +1,4 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import { type Course, isCourseAccessible } from '../../domain/course/course'
 import {
   CourseJourneyLockedError,
@@ -6,7 +7,10 @@ import {
 } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import { independentCourseAccessReason } from '../../domain/entitlement/independent-course-access'
+import {
+  independentCourseAccessReason,
+  parentsCourseAccessReason,
+} from '../../domain/entitlement/independent-course-access'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
@@ -108,6 +112,12 @@ export class CheckAccessService {
         accessReason: 'staff',
       }
     }
+    // Curso para pais (14/11/2026) é da CONTA do responsável (sessão sem perfil): o perfil de
+    // uma criança não o abre. (O curso da criança pedido pela conta segue a régua de sempre:
+    // a Jornada não acha o perfil e recusa.)
+    const parentsCourse = isParentsCourse(course)
+    if (parentsCourse && learnerId !== undefined && learnerId !== userId)
+      throw new AccessDeniedError()
     // Chave-mestra da AUDIÊNCIA do curso: `all_courses` cobre só `adult`,
     // `all_kids_courses` só `kids`. A do outro tipo não entra no OR.
     const entitlement = await this.entitlements.findActiveForCourse(
@@ -117,11 +127,15 @@ export class CheckAccessService {
       { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
-    const directAccess = independentCourseAccessReason(
-      course.slug,
-      await this.entitlements.listActiveByUser(userId, this.clock()),
-      this.clock(),
-    )
+    const active = await this.entitlements.listActiveByUser(userId, this.clock())
+    // Curso para pais fica fora da Jornada: sem trava de posto, sem currículo.
+    if (parentsCourse)
+      return {
+        course,
+        entitlement,
+        accessReason: parentsCourseAccessReason(course.slug, active, this.clock()),
+      }
+    const directAccess = independentCourseAccessReason(course.slug, active, this.clock())
     const state =
       course.audience === 'kids'
         ? await this.kidsJourney.courseState({ userId: learnerId ?? userId, accountId: userId }, [

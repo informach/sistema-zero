@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
@@ -110,6 +111,12 @@ export interface Course {
    * blocos configurados, sem conceder o produto Estúdio Completo.
    */
   modality: CourseModality
+  /**
+   * Para quem (14/11/2026): `child` (o de sempre) ou `parents` (curso para pais, feito pela
+   * conta do responsável na área dos pais). O curso para pais é só Kids e só gravado, fica fora
+   * das listagens da criança, da Jornada, da gamificação e da base do Zappy.
+   */
+  learner: CourseLearner
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
   metadata: Record<string, unknown> | null
   createdAt: Date

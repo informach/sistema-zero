@@ -124,6 +124,7 @@ describe.skipIf(!target)('creator curriculum editorial seed (real local migratio
       title: 'Clone planejado',
       audience: 'adult',
       modality: 'recorded',
+      learner: 'child',
     })
     if (!clone) throw new Error('Expected cloned course')
     ownedIds.push(clone.id)

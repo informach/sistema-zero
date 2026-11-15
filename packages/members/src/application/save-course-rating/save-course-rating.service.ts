@@ -1,3 +1,4 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import type {
   CourseRatingRepository,
   CourseRatingUpsert,
@@ -41,13 +42,15 @@ export class SaveCourseRatingService {
     const rating = await this.ratings.upsert(userId, course.id, fields, this.clock())
     // Marco de missão "classificar um curso" (amount 0, idempotente por curso —
     // reclassificar/reabrir o modal NÃO refarma). Fail-open (não derruba o rating).
-    await this.gamification.awardCourseRated({
-      userId,
-      accountId: accountId ?? userId,
-      courseId: course.id,
-      audience: course.audience,
-      privileged,
-    })
+    // Curso para pais (14/11/2026) não conta para as missões: o responsável não joga.
+    if (!isParentsCourse(course))
+      await this.gamification.awardCourseRated({
+        userId,
+        accountId: accountId ?? userId,
+        courseId: course.id,
+        audience: course.audience,
+        privileged,
+      })
     return toCourseRatingView(rating)
   }
 }
