@@ -61,6 +61,13 @@ interface Props {
   lessonDraftsEnabled?: boolean
   /** A criança pode falar em vez de escrever para a equipe (14/10/2026). */
   voiceInput?: boolean
+  /**
+   * Onde moram as páginas de curso: `/cursos` na área da criança e `/pais/cursos` nos cursos
+   * para pais (14/11/2026), que usam este MESMO player.
+   */
+  courseBasePath?: string
+  /** Onde aparece a resposta do "Preciso de ajuda" (cursos para pais: a Ajuda dos pais). */
+  helpThread?: LessonPlayerContextValue['helpThread']
 }
 
 export function LessonPlayer({
@@ -73,6 +80,8 @@ export function LessonPlayer({
   shareUrl,
   lessonDraftsEnabled = false,
   voiceInput = false,
+  courseBasePath = '/cursos',
+  helpThread,
 }: Props) {
   const router = useRouter()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
@@ -134,7 +143,7 @@ export function LessonPlayer({
     publicationPending: boolean
     gamification: GamificationDelta | null
   } | null>(null)
-  const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
+  const courseHref = `${courseBasePath}/${encodeURIComponent(course.slug)}`
 
   // Numeração global da aula nos círculos da mini-trilha.
   const flatLessons = useMemo(() => course.modules.flatMap((m) => m.lessons), [course.modules])
@@ -210,6 +219,7 @@ export function LessonPlayer({
       viewerWatermark,
       viewerId,
       voiceInput,
+      helpThread,
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
@@ -243,6 +253,7 @@ export function LessonPlayer({
       viewerWatermark,
       viewerId,
       voiceInput,
+      helpThread,
       refreshLesson,
       lessonDrafts,
     ],

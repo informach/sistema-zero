@@ -75,6 +75,11 @@ export interface LessonPlayerContextValue {
    * servidor; o adulto e o Admin nunca passam.
    */
   voiceInput?: boolean
+  /**
+   * Onde a resposta do "Preciso de ajuda" aparece. Ausente = os Recados (`/recados/<id>`); nos
+   * cursos para pais do Kids (14/11/2026) é a Ajuda da área dos pais.
+   */
+  helpThread?: { href: (threadId: string) => string; label: string }
   /** Posição salva do vídeo (segundos) para retomar de onde parou. */
   initialPositionSeconds: number | null
   /** A cada `timeupdate` do vídeo (o consumidor faz o throttle de persistência). */
