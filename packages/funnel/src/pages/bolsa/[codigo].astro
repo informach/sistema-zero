@@ -4,14 +4,19 @@
 // PresenteAdultoLayout + PresenteAdultoOferta (a própria pessoa cadastra, app adulto). Código
 // inexistente ou referrals fora do ar não revela público: a tela de status usa o tema Kids, o de
 // antes do presente adulto.
+// O curso vem da OFERTA do presente (15/11/2026, `gift` da leitura pública, `giftVariant`): o Cadê
+// Todo Mundo (ou leitura antiga, sem `gift`) usa a página editorial de cada público; curso para
+// pais e outro curso usam o corpo enxuto `PresenteCursoOferta`, com o nome e o prazo da oferta.
 import PresenteAdultoLayout from '../../components/referrals/PresenteAdultoLayout.astro'
 import PresenteAdultoOferta from '../../components/referrals/PresenteAdultoOferta.astro'
+import PresenteCursoOferta from '../../components/referrals/PresenteCursoOferta.astro'
 import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
 import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
-import { PRESENTE_KIDS } from '../../content/presente'
-import { PRESENTE_ADULTO } from '../../content/presente-adulto'
+import { PRESENTE_KIDS, presenteKidsDaOferta } from '../../content/presente'
+import { presenteAdultoDaOferta } from '../../content/presente-adulto'
+import { presenteCursoCopy } from '../../content/presente-curso'
 import { getDeps } from '../../server/deps'
-import { resolveReferralGiftPage } from '../../server/referral-gift-page'
+import { giftVariant, resolveReferralGiftPage } from '../../server/referral-gift-page'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
 const codigo = (Astro.params.codigo ?? '').trim().toLowerCase()
@@ -22,14 +27,37 @@ if (page.kind === 'unavailable') Astro.response.status = 503
 const semBarra = (url: string) => url.replace(/\/$/, '')
 const status =
   page.kind === 'not_found' ? PRESENTE_KIDS.estados.naoEncontrado : PRESENTE_KIDS.estados.foraDoAr
+const oferta = 'gift' in page ? page.gift.gift : undefined
+const variante = giftVariant(oferta)
+// Curso enxuto (pais ou outro curso): título, descrição e barra vêm da oferta.
+const curso =
+  'gift' in page && oferta && variante !== 'cade'
+    ? {
+        gift: { ...page.gift, gift: oferta },
+        copy: presenteCursoCopy(page.audience, oferta, variante),
+        variante,
+      }
+    : null
+const cadeKids = presenteKidsDaOferta(oferta)
+const cadeAdulto = presenteAdultoDaOferta(oferta)
 ---
 {'gift' in page ? (
   page.audience === 'adult' ? (
-    <PresenteAdultoLayout title={PRESENTE_ADULTO.seoTitle} description={PRESENTE_ADULTO.description} ready={page.kind === 'ready'}>
-      <PresenteAdultoOferta gift={page.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} />
-    </PresenteAdultoLayout>
+    curso ? (
+      <PresenteAdultoLayout title={curso.copy.seoTitle} description={curso.copy.description} ready={page.kind === 'ready'} barra={curso.copy.barra} secoes={false}>
+        <PresenteCursoOferta gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} variante={curso.variante} />
+      </PresenteAdultoLayout>
+    ) : (
+      <PresenteAdultoLayout title={cadeAdulto.seoTitle} description={cadeAdulto.description} ready={page.kind === 'ready'} barra={cadeAdulto.barra}>
+        <PresenteAdultoOferta gift={page.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} />
+      </PresenteAdultoLayout>
+    )
+  ) : curso ? (
+    <PresenteLayout title={curso.copy.seoTitle} description={curso.copy.description} ready={page.kind === 'ready'} barra={curso.copy.barra} secoes={false}>
+      <PresenteCursoOferta gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} variante={curso.variante} />
+    </PresenteLayout>
   ) : (
-    <PresenteLayout title={PRESENTE_KIDS.seoTitle} description={PRESENTE_KIDS.description} ready={page.kind === 'ready'}>
+    <PresenteLayout title={cadeKids.seoTitle} description={cadeKids.description} ready={page.kind === 'ready'} barra={cadeKids.barra}>
       <PresenteOferta gift={page.gift} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} />
     </PresenteLayout>
   )

@@ -19,8 +19,10 @@ interface Props {
   ready?: boolean
   /** Sem o corpo do presente (link inválido, referrals fora do ar): sem os atalhos das seções. */
   secoes?: boolean
+  /** A barra fixa do celular com o prazo da oferta do presente (padrão: a do Cadê). */
+  barra?: { titulo: string; texto: string; cta: string }
 }
-const { title, description, ready = false, secoes = true } = Astro.props
+const { title, description, ready = false, secoes = true, barra = P.barra } = Astro.props
 ---
 <BaseLayout title={title} description={description} noindex htmlClass="theme-kids">
   <div class="c917 pk-corpo">
@@ -41,8 +43,8 @@ const { title, description, ready = false, secoes = true } = Astro.props
     <main id="conteudo"><slot /></main>
     {ready && (
       <div class="kof-mobar c9-barra" data-presente-barra aria-hidden="true">
-        <span class="c9-barra__preco"><strong>{P.barra.titulo}</strong><span>{P.barra.texto}</span></span>
-        <a class="c9-btn" href="#resgatar" tabindex="-1">{P.barra.cta}</a>
+        <span class="c9-barra__preco"><strong>{barra.titulo}</strong><span>{barra.texto}</span></span>
+        <a class="c9-btn" href="#resgatar" tabindex="-1">{barra.cta}</a>
       </div>
     )}
   </div>
