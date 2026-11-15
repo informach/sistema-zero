@@ -32,10 +32,37 @@ export function pontosDaPeca(raw: Record<string, unknown>): MoradaPiece['points'
   if (Array.isArray(raw.pontos_de_jogo))
     raw.pontos_de_jogo.forEach((v, i) => {
       const p = objeto(v)
-      if (!p || typeof p.tipo !== 'string' || !ehVetor(p.ponto)) return
+      if (!p || typeof p.tipo !== 'string') return
+      const posicao = posicaoDoPonto(p)
+      if (!posicao) return
       const nome = `${p.tipo}_${typeof p.nome === 'string' && p.nome ? p.nome : i}`
       if (pontos[nome]) return
-      pontos[nome] = { position: p.ponto, ...(ehVetor(p.direcao) ? { direction: p.direcao } : {}) }
+      const direcao = ehVetor(p.direcao) ? p.direcao : ehVetor(p.fora) ? p.fora : null
+      pontos[nome] = { position: posicao, ...(direcao ? { direction: direcao } : {}) }
     })
   return pontos
+}
+
+/**
+ * Onde fica um ponto de jogo, pelo formato do tipo: `ponto` (sentar, deitar) ou `posicao` (a porta);
+ * o meio da linha `de`–`ate` (a quina, a tora); o canteiro (`plantar`), o meio dele na altura da
+ * terra (`altura_m`, com as `celulas` no plano). Tipos sem um ponto só (a escada, o escorregador)
+ * ficam de fora.
+ */
+function posicaoDoPonto(p: Record<string, unknown>): Vetor | null {
+  if (ehVetor(p.ponto)) return p.ponto
+  if (ehVetor(p.posicao)) return p.posicao
+  if (ehVetor(p.de) && ehVetor(p.ate))
+    return [(p.de[0] + p.ate[0]) / 2, (p.de[1] + p.ate[1]) / 2, (p.de[2] + p.ate[2]) / 2]
+  if (typeof p.altura_m === 'number' && Array.isArray(p.celulas)) {
+    const celulas = p.celulas.filter(
+      (c): c is [number, number] =>
+        Array.isArray(c) && c.length === 2 && c.every((n) => typeof n === 'number'),
+    )
+    if (celulas.length === 0) return null
+    const x = celulas.reduce((s, c) => s + c[0], 0) / celulas.length
+    const z = celulas.reduce((s, c) => s + c[1], 0) / celulas.length
+    return [x, p.altura_m, z]
+  }
+  return null
 }
