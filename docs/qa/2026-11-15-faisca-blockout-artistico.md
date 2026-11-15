@@ -101,6 +101,8 @@ Este parecer registra os pontos a avaliar. Não acrescenta conteúdo ao jogo nem
 
 ## Limites e continuação
 
+Próxima avaliação: [parecer original da coordenação](./2026-11-15-faisca-m3-parecer-coordenacao.md) e [proposta de composição do M3, com mapas e conferência técnica](../plans/2026-11-15-faisca-m3-composicao-design.md). Esses documentos propõem a próxima passada; não alteram o estado implementado descrito neste relatório.
+
 Não houve migração de coordenadas ou alteração de contas, inventário, avatar compartilhado, Morada ou projetos. Este layout usa apenas `arquipelago:faisca:ensaio`. A identidade visual de adulto/Kids permanece preservada; mapa e medições são ferramentas internas, e a conversa reaproveita o estilo do jogo.
 
 Ainda faltam aceite humano do ritmo/composição, testes com crianças e aparelhos físicos, terreno/material definitivo, densidade final, Íris completa e outros moradores, Morada integrada, campanha e salvamento da plataforma. A reconstrução da ponte neste ensaio é uma ferramenta administrativa e não concede progresso narrativo. O próximo marco de conteúdo depende da avaliação deste mapa jogável.
