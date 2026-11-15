@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+    "commit": "7124870145d61244ac08b982532dbe0d9497983e",
     "syncedAt": "2026-11-15",
-    "rulesBlob": "67f9878c1f245e04c0ec4a18c5f01ba86b6859ca"
+    "rulesBlob": "a91d17d847b69031aae6472708fb5cb40116667d"
   },
   "base": {
     "skeleton": {
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "33a736f1f3495daa64ef54c46d9180bfc58c1c1d",
-      "tree": "bd5cd510abe559d49d56ba103d8d7503bf8f1f16",
+      "catalogBlob": "9d0f94b2ba966b007575b62db4419a5e5b672de7",
+      "tree": "990367569420c377b386107853f765fb32b40b2d",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.4a40ad6644dd.glb",
+        "file": "base/animacoes-do-jogo.6c9ce0dd180f.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -2042,6 +2042,63 @@ export const AVATAR_CATALOG: AvatarCatalog = {
                 0,
                 0
               ]
+            }
+          },
+          {
+            "id": "regar_alto",
+            "duration": 3,
+            "loop": false,
+            "stride": 0,
+            "rise": 0,
+            "frames": 91,
+            "feet": [
+              {
+                "foot": "right",
+                "on": 0,
+                "off": 91
+              },
+              {
+                "foot": "left",
+                "on": 0,
+                "off": 91
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0
+            ],
+            "place": {
+              "alca_m": [
+                -0.12,
+                0.68,
+                0.28
+              ],
+              "inclina_graus": 42,
+              "faixa_da_terra_m": [
+                0.25,
+                0.51
+              ],
+              "beira_a_frente_min_m": 0.441,
+              "boca_do_crivo_ao_despejar_m_a_frente": 0.479,
+              "boca_do_crivo_ao_despejar_m_altura": 0.54,
+              "terra_mais_alta_que_serve_m": 0.51,
+              "beira_a_frente_max_m": 0.459,
+              "beira_a_frente_min_por_terra_m_0.00": 0.005,
+              "beira_a_frente_min_por_terra_m_0.05": 0.005,
+              "beira_a_frente_min_por_terra_m_0.10": 0.262,
+              "beira_a_frente_min_por_terra_m_0.15": 0.326,
+              "beira_a_frente_min_por_terra_m_0.20": 0.326,
+              "beira_a_frente_min_por_terra_m_0.25": 0.371,
+              "beira_a_frente_min_por_terra_m_0.30": 0.412,
+              "beira_a_frente_min_por_terra_m_0.35": 0.412,
+              "beira_a_frente_min_por_terra_m_0.40": 0.437,
+              "beira_a_frente_min_por_terra_m_0.45": 0.437,
+              "beira_a_frente_min_por_terra_m_0.50": 0.441,
+              "beira_a_frente_min_so_com_o_regador_em_cima_m_0.19": 0.005,
+              "beira_a_frente_min_so_com_o_regador_em_cima_m_0.49": 0.005,
+              "bico_graus_acima_da_horizontal_ao_despejar": 9.7
             }
           }
         ],
@@ -4693,6 +4750,45 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 1718
     },
+    "chapeu_capuz_gato_preto_pacote__na_fantasia_gato": {
+      "audience": "both",
+      "file": "pecas/chapeu_capuz_gato_preto_pacote.83d72fc224de.glb",
+      "group": "capuz",
+      "label": "Gato: capuz de gato preto",
+      "origin": {
+        "blob": "ef12c93785ae4ebcdf539985083be50aa935e69d",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "360b80d6e9b4220d",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "5ede7bee77d19810c8868fa29d0cee90a0274480"
+      },
+      "price": 0,
+      "slot": "chapeu",
+      "thumb": "miniaturas/chapeu_capuz_gato_preto_pacote.742c4aef60c6.webp",
+      "tier": "set",
+      "tris": 1718,
+      "set": "fantasia_gato",
+      "copyOf": "chapeu_capuz_gato_preto_pacote"
+    },
+    "chapeu_capuz_morsa": {
+      "slot": "chapeu",
+      "group": "capuz",
+      "label": "Capuz de morsa",
+      "audience": "both",
+      "tier": "coins",
+      "price": 120,
+      "band": "raro",
+      "file": "pecas/chapeu_capuz_morsa.753556e8ca54.glb",
+      "thumb": "miniaturas/chapeu_capuz_morsa.e160e6a9d687.webp",
+      "tris": 1810,
+      "origin": {
+        "blob": "e2a20771a28416c605a9554e56ef20d922886b7b",
+        "thumbBlob": "7f704f9f86b3faa3a32691340e3d23e34a0b67c9",
+        "meta": "d331564ecb18c436",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "chapeu_capuz_raposa_pacote": {
       "audience": "both",
       "band": "raro",
@@ -4712,6 +4808,26 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 1618
     },
+    "chapeu_capuz_raposa_pacote__na_fantasia_raposa": {
+      "audience": "both",
+      "file": "pecas/chapeu_capuz_raposa_pacote.118e8a412423.glb",
+      "group": "capuz",
+      "label": "Raposa: capuz de raposa",
+      "origin": {
+        "blob": "9030291bd0e4aa9c0cb30749068464e81208832b",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "0f3c6b7e8903dee4",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "40deeffc3191779b407889eeee09219fa903479f"
+      },
+      "price": 0,
+      "slot": "chapeu",
+      "thumb": "miniaturas/chapeu_capuz_raposa_pacote.242cf4bf7074.webp",
+      "tier": "set",
+      "tris": 1618,
+      "set": "fantasia_raposa",
+      "copyOf": "chapeu_capuz_raposa_pacote"
+    },
     "chapeu_capuz_tubarao_pacote": {
       "audience": "both",
       "band": "raro",
@@ -4730,6 +4846,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/chapeu_capuz_tubarao_pacote.4ca9afd7574c.webp",
       "tier": "coins",
       "tris": 1080
+    },
+    "chapeu_capuz_urso_polar": {
+      "slot": "chapeu",
+      "group": "capuz",
+      "label": "Capuz de urso polar",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/chapeu_capuz_urso_polar.385cea1f1c43.glb",
+      "thumb": "miniaturas/chapeu_capuz_urso_polar.bfe7e42baac8.webp",
+      "tris": 1290,
+      "set": "fantasia_urso_polar",
+      "origin": {
+        "blob": "0142f9bc89f42e203a256746080ef6282810d4b1",
+        "thumbBlob": "d67fd5f0c32b8de586e540987ff656370771e788",
+        "meta": "d60ccc674b070d1a",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
     },
     "chapeu_caracol_cabeca_pacote": {
       "audience": "both",
@@ -4922,6 +5057,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 298
     },
+    "chapeu_coroa_bala": {
+      "slot": "chapeu",
+      "group": "chapeu",
+      "label": "Coroa de bala",
+      "audience": "both",
+      "tier": "coins",
+      "price": 100,
+      "band": "especial",
+      "file": "pecas/chapeu_coroa_bala.52dbe6cacc16.glb",
+      "thumb": "miniaturas/chapeu_coroa_bala.38056f92c1f2.webp",
+      "tris": 2004,
+      "origin": {
+        "blob": "8a9658f534d7c9d0bc52ebb27ede72a06ea4e0bb",
+        "thumbBlob": "a3a9de42767ec1f519c0ab8b1b57c50c0741a783",
+        "meta": "689203254691e2e7",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "chapeu_coroa_flores": {
       "audience": "both",
       "band": "especial",
@@ -4976,6 +5130,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "thumbBlob": "d1f8d45ace2f8a35b7ddc82b9e15d71e40f757b7",
         "meta": "9bae533062f4aacd",
         "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "chapeu_cupcake": {
+      "slot": "chapeu",
+      "group": "chapeu",
+      "label": "Chapéu de cupcake",
+      "audience": "both",
+      "tier": "coins",
+      "price": 110,
+      "band": "raro",
+      "file": "pecas/chapeu_cupcake.84aaa60af5b1.glb",
+      "thumb": "miniaturas/chapeu_cupcake.0824232beed7.webp",
+      "tris": 1644,
+      "origin": {
+        "blob": "f3683f68bd035327820f3be2acf8eafa6f27b347",
+        "thumbBlob": "38e92947cb1a52e832776728ae0f6cc5031c45ac",
+        "meta": "9768200b6c238b21",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
         "migratedAt": "2026-11-15"
       }
     },
@@ -5998,6 +6171,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "free",
       "tris": 3404
     },
+    "costas_bolsa_saco": {
+      "slot": "costas",
+      "group": "costas",
+      "label": "Bolsinha de saco",
+      "audience": "both",
+      "tier": "coins",
+      "price": 50,
+      "band": "comum",
+      "file": "pecas/costas_bolsa_saco.3b671829a8ed.glb",
+      "thumb": "miniaturas/costas_bolsa_saco.2836a1d4e17d.webp",
+      "tris": 1930,
+      "origin": {
+        "blob": "6e862645c2ca08dbf06051aea6c96b04a47b065a",
+        "thumbBlob": "74143cb79664bb44252d8c9b5fe2b565543da67b",
+        "meta": "19c821cf8710858c",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "costas_capa_cavaleiro": {
       "slot": "costas",
       "group": "costas",
@@ -6034,6 +6226,44 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
       "tier": "festa",
       "tris": 1684
+    },
+    "costas_mochila_bolso": {
+      "slot": "costas",
+      "group": "costas",
+      "label": "Mochila de explorador",
+      "audience": "both",
+      "tier": "coins",
+      "price": 80,
+      "band": "especial",
+      "file": "pecas/costas_mochila_bolso.dc217d3b9f6e.glb",
+      "thumb": "miniaturas/costas_mochila_bolso.5a6411d974db.webp",
+      "tris": 1090,
+      "origin": {
+        "blob": "4705016c65c3354ccbf15d3620f1f1bee05c8854",
+        "thumbBlob": "bd93706414c33ac1ff02a2189ea8a1b21b090ae0",
+        "meta": "c32c502bf513d1d0",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "costas_mochila_pequena": {
+      "slot": "costas",
+      "group": "costas",
+      "label": "Mochilinha",
+      "audience": "both",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "file": "pecas/costas_mochila_pequena.1c22473e179f.glb",
+      "thumb": "miniaturas/costas_mochila_pequena.27f57174f102.webp",
+      "tris": 848,
+      "origin": {
+        "blob": "13f6c913a47003d4d36f6a04faa77647a67da2c1",
+        "thumbBlob": "dbf51397661bb5aaedef152a40f4bac7835fc0a0",
+        "meta": "80339c1c5972d200",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
     },
     "fantasia_abelha_asas_pacote": {
       "audience": "both",
@@ -6358,6 +6588,66 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/fantasia_coelho_roxo_botas_pacote.34ac40f1a312.webp",
       "tier": "set",
       "tris": 454
+    },
+    "fantasia_coelho_roxo_botas_pacote__na_fantasia_gato": {
+      "audience": "both",
+      "file": "pecas/fantasia_coelho_roxo_botas_pacote.a22f5d9d8f14.glb",
+      "group": "fantasia",
+      "label": "Gato: botas",
+      "origin": {
+        "blob": "2f1c7705d3d131f2f809258049a655904896557d",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "f2f26252bf8b06f9",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "7612a89f06980d3640e09e45055d45c50f5a43b2"
+      },
+      "price": 0,
+      "set": "fantasia_gato",
+      "slot": "calcado",
+      "thumb": "miniaturas/fantasia_coelho_roxo_botas_pacote.34ac40f1a312.webp",
+      "tier": "set",
+      "tris": 454,
+      "copyOf": "fantasia_coelho_roxo_botas_pacote"
+    },
+    "fantasia_coelho_roxo_botas_pacote__na_fantasia_raposa": {
+      "audience": "both",
+      "file": "pecas/fantasia_coelho_roxo_botas_pacote.a22f5d9d8f14.glb",
+      "group": "fantasia",
+      "label": "Raposa: botas",
+      "origin": {
+        "blob": "2f1c7705d3d131f2f809258049a655904896557d",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "f2f26252bf8b06f9",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "7612a89f06980d3640e09e45055d45c50f5a43b2"
+      },
+      "price": 0,
+      "set": "fantasia_raposa",
+      "slot": "calcado",
+      "thumb": "miniaturas/fantasia_coelho_roxo_botas_pacote.34ac40f1a312.webp",
+      "tier": "set",
+      "tris": 454,
+      "copyOf": "fantasia_coelho_roxo_botas_pacote"
+    },
+    "fantasia_coelho_roxo_botas_pacote__na_fantasia_urso_polar": {
+      "audience": "both",
+      "file": "pecas/fantasia_coelho_roxo_botas_pacote.a22f5d9d8f14.glb",
+      "group": "fantasia",
+      "label": "Urso polar: botas",
+      "origin": {
+        "blob": "2f1c7705d3d131f2f809258049a655904896557d",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "f2f26252bf8b06f9",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "7612a89f06980d3640e09e45055d45c50f5a43b2"
+      },
+      "price": 0,
+      "set": "fantasia_urso_polar",
+      "slot": "calcado",
+      "thumb": "miniaturas/fantasia_coelho_roxo_botas_pacote.34ac40f1a312.webp",
+      "tier": "set",
+      "tris": 454,
+      "copyOf": "fantasia_coelho_roxo_botas_pacote"
     },
     "fantasia_coelho_roxo_capuz_coelho_pacote": {
       "audience": "both",
@@ -7137,6 +7427,26 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 978
     },
+    "luvas_laranja_pacote__na_fantasia_raposa": {
+      "audience": "both",
+      "file": "pecas/luvas_laranja_pacote.0244cc9bb1f7.glb",
+      "group": "luvas",
+      "label": "Raposa: luvas laranja",
+      "origin": {
+        "blob": "bcc757c6603f4903cb5c2a91081580ce99e56309",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "d16afbe4a7e37cef",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "1664945d1633e5fd6afbff43b57612d24cc56f15"
+      },
+      "price": 0,
+      "slot": "luvas",
+      "thumb": "miniaturas/luvas_laranja_pacote.657232e8fc62.webp",
+      "tier": "set",
+      "tris": 978,
+      "set": "fantasia_raposa",
+      "copyOf": "luvas_laranja_pacote"
+    },
     "luvas_listradas_vermelhas_pacote": {
       "audience": "both",
       "band": "especial",
@@ -7174,6 +7484,26 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/luvas_pretas_pacote.19eb354b1fa0.webp",
       "tier": "coins",
       "tris": 562
+    },
+    "luvas_pretas_pacote__na_fantasia_gato": {
+      "audience": "both",
+      "file": "pecas/luvas_pretas_pacote.f67695380dc0.glb",
+      "group": "luvas",
+      "label": "Gato: luvas pretas",
+      "origin": {
+        "blob": "bef18cd642336fd6ca130c4795eaffa954d41b86",
+        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
+        "meta": "15c6336db50fd920",
+        "migratedAt": "2026-11-14",
+        "thumbBlob": "ecaa4b23a5c74f357ba63560dea53adfdc2b1355"
+      },
+      "price": 0,
+      "slot": "luvas",
+      "thumb": "miniaturas/luvas_pretas_pacote.19eb354b1fa0.webp",
+      "tier": "set",
+      "tris": 562,
+      "set": "fantasia_gato",
+      "copyOf": "luvas_pretas_pacote"
     },
     "luvas_pretas_sem_dedos_pacote": {
       "audience": "both",
@@ -10252,6 +10582,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 386
     },
+    "roupa_inteira_avental_confeiteiro": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Avental de confeiteiro",
+      "audience": "both",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_avental_confeiteiro.18c325ef85fd.glb",
+      "thumb": "miniaturas/roupa_inteira_avental_confeiteiro.9516644366c2.webp",
+      "tris": 1292,
+      "origin": {
+        "blob": "5a2f062b8866dd66228509ac48917f3ccaad08ac",
+        "thumbBlob": "de6d4738d9b91652d1d2244ccff7ade11fc6c919",
+        "meta": "5b2bb559455cca92",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "roupa_inteira_camisa_branca_saia_escura_pacote": {
       "audience": "girl",
       "band": "especial",
@@ -10365,6 +10714,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "tris": 1252
     },
+    "roupa_inteira_macacao_gato": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Macacão de gato",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/roupa_inteira_macacao_gato.7da5f151c596.glb",
+      "thumb": "miniaturas/roupa_inteira_macacao_gato.c8b4bc8adb7f.webp",
+      "tris": 1852,
+      "set": "fantasia_gato",
+      "origin": {
+        "blob": "51ea1382452af955f9395cff36ccf35429b19322",
+        "thumbBlob": "2cca72f71f25f64282f304bf17f64c9787d4adce",
+        "meta": "cd1209c625612c45",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "roupa_inteira_macacao_piloto_azul_pacote": {
       "audience": "both",
       "band": "especial",
@@ -10383,6 +10751,44 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/roupa_inteira_macacao_piloto_azul_pacote.19e7f46291c2.webp",
       "tier": "coins",
       "tris": 2202
+    },
+    "roupa_inteira_macacao_raposa": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Macacão de raposa",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/roupa_inteira_macacao_raposa.97aec7a61d88.glb",
+      "thumb": "miniaturas/roupa_inteira_macacao_raposa.a05a2453df96.webp",
+      "tris": 1832,
+      "set": "fantasia_raposa",
+      "origin": {
+        "blob": "15c9fb2f53b1233dd3146f3904957a4e3c541a11",
+        "thumbBlob": "3c542db13bf91c45681a63af03756c3e40d09373",
+        "meta": "6746887cb5ca8e90",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_macacao_urso_polar": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Macacão de urso polar",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/roupa_inteira_macacao_urso_polar.0d3fd20b808d.glb",
+      "thumb": "miniaturas/roupa_inteira_macacao_urso_polar.67669816853d.webp",
+      "tris": 1792,
+      "set": "fantasia_urso_polar",
+      "origin": {
+        "blob": "c3d38d6c1d35906efec40ce8cb1c0a2f9b753731",
+        "thumbBlob": "c964cc82f73b3073aa12ea1abf0b865b0490f0a3",
+        "meta": "d0540170cff28498",
+        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_vestido_alcinha": {
       "audience": "girl",
@@ -10648,6 +11054,29 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "price": 250
     },
+    "fantasia_gato": {
+      "label": "Gato",
+      "parts": [
+        {
+          "slot": "chapeu",
+          "part": "chapeu_capuz_gato_preto_pacote__na_fantasia_gato"
+        },
+        {
+          "slot": "roupa_inteira",
+          "part": "roupa_inteira_macacao_gato"
+        },
+        {
+          "slot": "luvas",
+          "part": "luvas_pretas_pacote__na_fantasia_gato"
+        },
+        {
+          "slot": "calcado",
+          "part": "fantasia_coelho_roxo_botas_pacote__na_fantasia_gato"
+        }
+      ],
+      "tier": "coins",
+      "price": 250
+    },
     "fantasia_papai_noel": {
       "label": "Papai Noel",
       "parts": [
@@ -10723,6 +11152,29 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "tier": "coins",
       "price": 200
+    },
+    "fantasia_raposa": {
+      "label": "Raposa",
+      "parts": [
+        {
+          "slot": "chapeu",
+          "part": "chapeu_capuz_raposa_pacote__na_fantasia_raposa"
+        },
+        {
+          "slot": "roupa_inteira",
+          "part": "roupa_inteira_macacao_raposa"
+        },
+        {
+          "slot": "luvas",
+          "part": "luvas_laranja_pacote__na_fantasia_raposa"
+        },
+        {
+          "slot": "calcado",
+          "part": "fantasia_coelho_roxo_botas_pacote__na_fantasia_raposa"
+        }
+      ],
+      "tier": "coins",
+      "price": 250
     },
     "fantasia_robo_amarelo": {
       "label": "Robô amarelo",
@@ -10815,6 +11267,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         {
           "slot": "luvas",
           "part": "fantasia_traje_neon_luvas_pacote"
+        }
+      ],
+      "tier": "coins",
+      "price": 250
+    },
+    "fantasia_urso_polar": {
+      "label": "Urso polar",
+      "parts": [
+        {
+          "slot": "chapeu",
+          "part": "chapeu_capuz_urso_polar"
+        },
+        {
+          "slot": "roupa_inteira",
+          "part": "roupa_inteira_macacao_urso_polar"
+        },
+        {
+          "slot": "calcado",
+          "part": "fantasia_coelho_roxo_botas_pacote__na_fantasia_urso_polar"
         }
       ],
       "tier": "coins",
@@ -11218,6 +11689,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "chapeu_capacete_aviador_pacote",
           "chapeu_bobo_pacote",
           "chapeu_cauboi",
+          "chapeu_coroa_bala",
+          "chapeu_cupcake",
           "chapeu_elmo_cavaleiro"
         ]
       },
@@ -11232,7 +11705,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "chapeu_saco_papel_pacote",
           "chapeu_escafandro_pacote",
           "chapeu_capacete_corrida_pacote",
-          "chapeu_mascara_gas_pacote"
+          "chapeu_mascara_gas_pacote",
+          "chapeu_capuz_morsa",
+          "chapeu_capuz_urso_polar"
         ]
       },
       "chapeu_sobre_cabelo": {
@@ -11270,7 +11745,11 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "roupa_inteira_jardineira_azul_pacote",
           "roupa_inteira_macacao_piloto_azul_pacote",
           "roupa_inteira_camiseta_branca_saia_vermelha_pacote",
+          "roupa_inteira_avental_confeiteiro",
           "roupa_inteira_jardineira_saia",
+          "roupa_inteira_macacao_gato",
+          "roupa_inteira_macacao_raposa",
+          "roupa_inteira_macacao_urso_polar",
           "roupa_inteira_vestido_alcinha",
           "roupa_inteira_vestido_chita",
           "roupa_inteira_vestido_longo",
@@ -11429,14 +11908,20 @@ export const AVATAR_CATALOG: AvatarCatalog = {
           "fantasia_soldado",
           "fantasia_dinossauro_listrado",
           "fantasia_pombo",
-          "fantasia_pirata"
+          "fantasia_pirata",
+          "fantasia_raposa",
+          "fantasia_gato",
+          "fantasia_urso_polar"
         ]
       },
       "costas": {
         "label": "Costas (capa, mochila)",
         "parts": [
+          "costas_bolsa_saco",
           "costas_capa_cavaleiro",
-          "costas_capa_estrelas"
+          "costas_capa_estrelas",
+          "costas_mochila_bolso",
+          "costas_mochila_pequena"
         ]
       }
     },
@@ -11456,6 +11941,60 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "costas"
     ],
     "incompatible": {
+      "barba_cavanhaque_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "barba_cheia_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "barba_dentes_vampiro_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_01_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_02_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_03_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_04_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_05_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_06_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_07_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_08_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_09_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_10_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_11_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_12_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_13_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_14_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "bigode_15_pacote": [
+        "chapeu_capuz_morsa"
+      ],
       "cabelo_arco_iris_pacote": [
         "chapeu_protetor_orelha"
       ],
@@ -11609,6 +12148,30 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "cabelo_solto_sob_chapeu",
         "cabelo_trancas_sob_chapeu"
       ],
+      "chapeu_capuz_morsa": [
+        "barba_cavanhaque_pacote",
+        "barba_cheia_pacote",
+        "barba_dentes_vampiro_pacote",
+        "bigode_01_pacote",
+        "bigode_02_pacote",
+        "bigode_03_pacote",
+        "bigode_04_pacote",
+        "bigode_05_pacote",
+        "bigode_06_pacote",
+        "bigode_07_pacote",
+        "bigode_08_pacote",
+        "bigode_09_pacote",
+        "bigode_10_pacote",
+        "bigode_11_pacote",
+        "bigode_12_pacote",
+        "bigode_13_pacote",
+        "bigode_14_pacote",
+        "bigode_15_pacote",
+        "chupeta_pacote",
+        "mascara_cirurgica_pacote",
+        "mascara_pano_preta_pacote",
+        "nariz_palhaco_pacote"
+      ],
       "chapeu_cartola_listrada_estrelas_pacote": [
         "cabelo_crespo_sob_chapeu"
       ],
@@ -11633,6 +12196,23 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "cabelo_solto_sob_chapeu",
         "cabelo_trancas_sob_chapeu"
       ],
+      "chupeta_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "costas_bolsa_saco": [
+        "fantasia_cavaleiro_peitoral_pacote",
+        "roupa_cima_camisa_amarela_aberta_pacote",
+        "roupa_cima_camisa_roxa_aberta_pacote",
+        "roupa_cima_jaqueta_azul_acolchoada_pacote",
+        "roupa_cima_jaqueta_laranja_acolchoada_pacote",
+        "roupa_cima_jaqueta_rosa_pacote",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_inteira_macacao_gato",
+        "roupa_inteira_macacao_raposa",
+        "roupa_inteira_macacao_urso_polar"
+      ],
       "costas_capa_cavaleiro": [
         "cabelo_cacheado_grisalho_pacote",
         "cabelo_coque_alto_loiro_pacote",
@@ -11650,7 +12230,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_jaqueta_rosa_pacote",
         "roupa_cima_jaqueta_universitaria_vermelha_pacote",
         "roupa_cima_jaqueta_vermelha_pacote",
-        "roupa_cima_moletom_laranja_pacote"
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_inteira_macacao_gato",
+        "roupa_inteira_macacao_raposa"
       ],
       "costas_capa_estrelas": [
         "cabelo_cacheado_grisalho_pacote",
@@ -11669,7 +12251,38 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_jaqueta_rosa_pacote",
         "roupa_cima_jaqueta_universitaria_vermelha_pacote",
         "roupa_cima_jaqueta_vermelha_pacote",
-        "roupa_cima_moletom_laranja_pacote"
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_inteira_macacao_gato",
+        "roupa_inteira_macacao_raposa"
+      ],
+      "costas_mochila_bolso": [
+        "fantasia_cavaleiro_peitoral_pacote",
+        "roupa_cima_camisa_amarela_aberta_pacote",
+        "roupa_cima_camisa_roxa_aberta_pacote",
+        "roupa_cima_jaqueta_azul_acolchoada_pacote",
+        "roupa_cima_jaqueta_bege_pacote",
+        "roupa_cima_jaqueta_laranja_acolchoada_pacote",
+        "roupa_cima_jaqueta_rosa_pacote",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_inteira_macacao_gato",
+        "roupa_inteira_macacao_raposa",
+        "roupa_inteira_macacao_urso_polar"
+      ],
+      "costas_mochila_pequena": [
+        "fantasia_cavaleiro_peitoral_pacote",
+        "roupa_cima_camisa_amarela_aberta_pacote",
+        "roupa_cima_camisa_roxa_aberta_pacote",
+        "roupa_cima_jaqueta_azul_acolchoada_pacote",
+        "roupa_cima_jaqueta_bege_pacote",
+        "roupa_cima_jaqueta_laranja_acolchoada_pacote",
+        "roupa_cima_jaqueta_rosa_pacote",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_moletom_laranja_pacote",
+        "roupa_inteira_macacao_gato",
+        "roupa_inteira_macacao_raposa"
       ],
       "fantasia_abelha_asas_pacote": [
         "costas_capa_cavaleiro",
@@ -11682,6 +12295,11 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
         "lenco_pescoco"
+      ],
+      "fantasia_cavaleiro_peitoral_pacote": [
+        "costas_bolsa_saco",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena"
       ],
       "fantasia_dinossauro_listrado_laco_rosa_pacote": [
         "lenco_pescoco"
@@ -11726,7 +12344,19 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_inteira_macacao_piloto_azul_pacote",
         "roupa_inteira_vestido_azul_pacote"
       ],
+      "mascara_cirurgica_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "mascara_pano_preta_pacote": [
+        "chapeu_capuz_morsa"
+      ],
+      "nariz_palhaco_pacote": [
+        "chapeu_capuz_morsa"
+      ],
       "roupa_cima_camisa_amarela_aberta_pacote": [
+        "costas_bolsa_saco",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_camisa_azul_botao_pacote": [
@@ -11745,6 +12375,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_camisa_roxa_aberta_pacote": [
+        "costas_bolsa_saco",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_camisa_verde_aberta_pacote": [
@@ -11782,13 +12415,18 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_azul_acolchoada_pacote": [
+        "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_bege_pacote": [
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_cinza_aberta_pacote": [
@@ -11806,11 +12444,17 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_laranja_acolchoada_pacote": [
+        "costas_bolsa_saco",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_rosa_pacote": [
+        "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_rosa_ziper_pacote": [
@@ -11819,8 +12463,11 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_cima_jaqueta_universitaria_vermelha_pacote": [
         "calca_saia_babados",
         "calca_saia_rodada",
+        "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_verde_cinto_pacote": [
@@ -11833,16 +12480,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "calca_saia_babados",
         "calca_saia_reta",
         "calca_saia_rodada",
+        "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_moletom_cinza_capuz_pacote": [
         "lenco_pescoco"
       ],
       "roupa_cima_moletom_laranja_pacote": [
+        "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena",
         "lenco_pescoco"
       ],
       "roupa_cima_polo_amarela_pacote": [
@@ -11870,8 +12523,26 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_inteira_jardineira_saia": [
         "lenco_pescoco"
       ],
+      "roupa_inteira_macacao_gato": [
+        "costas_bolsa_saco",
+        "costas_capa_cavaleiro",
+        "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena"
+      ],
       "roupa_inteira_macacao_piloto_azul_pacote": [
         "lenco_pescoco"
+      ],
+      "roupa_inteira_macacao_raposa": [
+        "costas_bolsa_saco",
+        "costas_capa_cavaleiro",
+        "costas_capa_estrelas",
+        "costas_mochila_bolso",
+        "costas_mochila_pequena"
+      ],
+      "roupa_inteira_macacao_urso_polar": [
+        "costas_bolsa_saco",
+        "costas_mochila_bolso"
       ],
       "roupa_inteira_vestido_azul_pacote": [
         "lenco_pescoco"
