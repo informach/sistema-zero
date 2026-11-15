@@ -31,6 +31,14 @@ conferência das peças; a textura compartilhada vem dentro dos GLBs das peças.
 
 Sai com código 1 quando há o que migrar e diz "Tudo migrado." quando não há.
 
+**Peça nossa dentro de uma fantasia (`trocas_fantasia` no `regras.json`, desde 15/11/2026):** a
+arte pode trocar uma parte do pack dentro de uma fantasia por uma peça nossa (o Elmo de cavaleiro no
+lugar do elmo de chifres). Como a peça nossa também é vendida sozinha, a migração cria uma CÓPIA dela
+para dentro do conjunto (`<peça>__na_<fantasia>`, com `copyOf`, `set` e `tier: 'set'`, o mesmo
+arquivo) e põe a cópia na lista do conjunto; a peça do pack fica `hidden`. A cópia não está na arte e
+a conferência não a conta como peça que saiu. Quem já vestia a fantasia com a parte antiga passa a
+vestir a nova na leitura do Members (`withCurrentSet` do core), sem cair no sorteio.
+
 **As animações do jogo e os objetos de mão (desde 14/11/2026):**
 
 - A arte entrega as animações dela uma por arquivo (`pacote: false` com `arquivo` na lista
