@@ -54,8 +54,11 @@ import {
 import {
   avancoNaParede,
   avancoNoEmpurrao,
+  type ComoSeEmpurra,
+  comoSeEmpurra,
   DESENHO_NA_AGUA,
   desenhoPenduradoNaBorda,
+  empurraBaixo,
 } from '../sistemas/lugares-dos-clipes'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
@@ -115,8 +118,12 @@ const INCLINACAO_NO_PLANADOR = 0.25
 const NA_BORDA = desenhoPenduradoNaBorda(BORDA)
 /** Escalando, quanto o desenho anda para a casca (o corpo fica a raio + folga dela). */
 const AVANCO_NA_CASCA = avancoNaParede(CORPO.raio + ESCALADA.folga)
-/** Empurrando, quanto o desenho anda (recua): a face encosta na cápsula, a raio + folga do meio. */
-const AVANCO_NO_EMPURRAO = avancoNoEmpurrao(CORPO.raio + FOLGA_DO_CONTROLADOR)
+/**
+ * Empurrando, quanto o desenho anda (recua): a face encosta na cápsula, a raio + folga do meio; o
+ * clipe (de pé ou agachada) e o objeto redondo mudam onde a face fica no desenho.
+ */
+const avancoNoEmpurraoDe = (objeto: ComoSeEmpurra | null) =>
+  avancoNoEmpurrao(CORPO.raio + FOLGA_DO_CONTROLADOR, objeto)
 /** A sela do dino é baixa o bastante para o montar e o desmontar da arte? (Não: 0,70 m nativos.) */
 const SELA_BAIXA = selaBaixa(MONTARIA.sela)
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
@@ -167,7 +174,7 @@ export function Personagem() {
   const naSela = useRef(0)
   /** De 0 (no chão) a 1 (agarrada na casca), para o desenho chegar à casca suave. */
   const naCasca = useRef(0)
-  /** De 0 a 1, empurrando: o desenho recua para a face do objeto (`AVANCO_NO_EMPURRAO`). */
+  /** De 0 a 1, empurrando: o desenho recua para a face do objeto (`avancoNoEmpurraoDe`). */
   const naEmpurrao = useRef(0)
   const planando = useEstado((s) => s.modo === 'planar')
   const visual = useRef<Group>(null)
@@ -202,6 +209,8 @@ export function Personagem() {
   const lanternaAntes = useRef(lanterna)
   /** Quanto falta (s) dos passos de quem empurra, depois do último contato. */
   const empurrando = useRef(0)
+  /** O último objeto empurrado (a altura dele escolhe o clipe; `null`: não disse como é). */
+  const empurrado = useRef<ComoSeEmpurra | null>(null)
   const ultimoDescanso = useRef<LugarDeDescanso | null>(null)
   /** O gesto em andamento (`sistemas/gestos`) e o modo do passo anterior (levantar, descer da sela). */
   const [gesto] = useState(() => criarGestoEmAndamento(movimento.gestos))
@@ -550,12 +559,14 @@ export function Personagem() {
         const tocado = contato?.collider?.parent()
         if (tocado?.isDynamic() && Math.abs(contato?.normal1.y ?? 1) < 0.5) {
           empurrou = true
+          empurrado.current = comoSeEmpurra(tocado.userData)
           break
         }
       }
     }
     empurrando.current = empurrou ? SEGURA_O_EMPURRAO : Math.max(0, empurrando.current - dt)
     m.empurrando = empurrando.current > 0
+    m.empurrandoBaixo = m.empurrando && empurraBaixo(empurrado.current)
     // Os gestos: saindo do banco ou da cama sem andar, ela levanta (o desenho fica no assento até o
     // fim do clipe); descendo da sela, o desmontar; e o que o mundo pedir. Andar corta.
     const andou = Math.hypot(ix, iz) > 0.3 || e.pulou
@@ -737,7 +748,7 @@ export function Personagem() {
     // Empurrando, o desenho recua até a face do objeto cair onde o clipe `empurrar` a espera.
     naEmpurrao.current += ((m.empurrando ? 1 : 0) - naEmpurrao.current) * Math.min(1, dt * 8)
     if (naEmpurrao.current > 0.001) {
-      const c = naEmpurrao.current * AVANCO_NO_EMPURRAO
+      const c = naEmpurrao.current * avancoNoEmpurraoDe(empurrado.current)
       vis.position.x += Math.sin(vis.rotation.y) * c
       vis.position.z += Math.cos(vis.rotation.y) * c
     }

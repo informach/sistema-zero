@@ -7,8 +7,16 @@ import {
 } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
 import type { MeshStandardMaterial } from 'three'
+import type { ComoSeEmpurra } from '../sistemas/lugares-dos-clipes'
 import { alvoDoAlcapao, caixaNaPlaca, MECANISMOS } from '../sistemas/mecanismos'
 import { GRUPO_SO_DO_CORPO } from './grupos'
+
+/**
+ * Como a criança empurra o caixote: ele tem 0,72 m (0,39 m do clipe), alto demais para o
+ * `empurrar_baixo` (a cabeça passaria por ele) e baixo para as mãos do `empurrar` (0,48 m do clipe):
+ * fica o `empurrar` até a arte entregar o de meia altura.
+ */
+const EMPURRAO_DO_CAIXOTE: { empurrao: ComoSeEmpurra } = { empurrao: { altura: 0.72 } }
 export const mecanismosAgora = {
   montado: false,
   placa: false,
@@ -193,6 +201,7 @@ export function Mecanismos({
         linearDamping={1}
         angularDamping={2}
         canSleep
+        userData={EMPURRAO_DO_CAIXOTE}
       >
         <CuboidCollider
           collisionGroups={GRUPO_SO_DO_CORPO}

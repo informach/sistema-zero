@@ -13,6 +13,13 @@ import {
   passoDaLocomocao,
   pesosDaDirecao,
 } from '../src/sistemas/locomocao'
+import {
+  avancoNoEmpurrao,
+  comoSeEmpurra,
+  empurraBaixo,
+  NO_EMPURRAR,
+  NO_EMPURRAR_BAIXO,
+} from '../src/sistemas/lugares-dos-clipes'
 
 const soma = (p: Record<string, number>) => Object.values(p).reduce((a, b) => a + b, 0)
 const chao = (velocidade: number, extra: Partial<EntradaDaLocomocao> = {}): EntradaDaLocomocao => ({
@@ -39,6 +46,7 @@ describe('os movimentos que a arte e o pack já tinham', () => {
       ['AndarNaAgua', 'andar_na_agua'],
       ['Acender', 'acender'],
       ['Empurrar', 'empurrar'],
+      ['EmpurrarBaixo', 'empurrar_baixo'],
     ] as const) {
       expect(POSE_DO_ESTADO[estado].clipe, estado).toBe(clipe)
       expect(doCatalogo.has(clipe), clipe).toBe(true)
@@ -84,6 +92,14 @@ describe('os movimentos que a arte e o pack já tinham', () => {
     expect(
       rodar(undefined, chao(1.5, { empurrando: true, naAguaRasa: true }), 1).pesos.Empurrar,
     ).toBeCloseTo(1)
+    // Objeto baixo: agachada, o empurrar_baixo (também dentro da água rasa).
+    expect(
+      rodar(undefined, chao(1.5, { empurrando: true, empurrandoBaixo: true }), 1).pesos
+        .EmpurrarBaixo,
+    ).toBeCloseTo(1)
+    expect(
+      rodar(undefined, chao(1.5, { empurrandoBaixo: true }), 1).pesos.EmpurrarBaixo,
+    ).toBeCloseTo(0)
     // Acender: parada, o gesto no lugar do "Parado", uma vez (o tempo para no fim).
     const l = rodar(undefined, chao(0, { acendendo: true }), duracaoDoEstado('Acender') + 0.5)
     expect(l.pesos.Acender).toBeCloseTo(1)
@@ -128,5 +144,39 @@ describe('as rodas dos patins, o braço com a lanterna e os encaixes', () => {
       9,
     )
     expect(CORPO.doCentro.olhos).toBeLessThan(CORPO.doCentro.topo)
+  })
+})
+
+describe('empurrar de pé ou agachada', () => {
+  const escala = CORPO.medidas.scale
+  const tronco = { altura: 0.32, encostaMais: 0.02 * escala }
+  const caixote = { altura: 0.72 }
+
+  test('o tronco deitado é baixo; o caixote, não (a cabeça agachada passaria por ele)', () => {
+    expect(NO_EMPURRAR_BAIXO.objetoAte).toBeCloseTo(0.25 * escala, 9)
+    expect(empurraBaixo(tronco)).toBe(true)
+    expect(empurraBaixo(caixote)).toBe(false)
+    expect(empurraBaixo(null)).toBe(false)
+  })
+
+  test('agachada, a face do tronco fica 2 cm (do clipe) mais perto, para os dedos encostarem', () => {
+    const daFace = 0.5
+    expect(avancoNoEmpurrao(daFace)).toBeCloseTo(daFace - NO_EMPURRAR.aFrente, 9)
+    expect(avancoNoEmpurrao(daFace, caixote)).toBeCloseTo(daFace - NO_EMPURRAR.aFrente, 9)
+    expect(avancoNoEmpurrao(daFace, tronco)).toBeCloseTo(
+      daFace - (NO_EMPURRAR_BAIXO.aFrente - 0.02 * escala),
+      9,
+    )
+  })
+
+  test('o que o objeto diz de si vem do userData do corpo; o resto não conta', () => {
+    expect(comoSeEmpurra({ empurrao: { altura: 0.3, encostaMais: 0.04 } })).toEqual({
+      altura: 0.3,
+      encostaMais: 0.04,
+    })
+    expect(comoSeEmpurra({ empurrao: { altura: 0.72 } })).toEqual({ altura: 0.72 })
+    expect(comoSeEmpurra({ empurrao: { altura: 'alto' } })).toBeNull()
+    expect(comoSeEmpurra(undefined)).toBeNull()
+    expect(comoSeEmpurra({})).toBeNull()
   })
 })

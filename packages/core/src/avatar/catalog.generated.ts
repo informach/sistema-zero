@@ -7,7 +7,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+    "commit": "6231f55963327a3c13c63533017dbdeb77dba80f",
     "syncedAt": "2026-11-15",
     "rulesBlob": "a91d17d847b69031aae6472708fb5cb40116667d"
   },
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "3d9aded168ffe01c7f031c51da431bc9a40a3b0c",
-      "tree": "5eb672c04d4cfd73e50173548aeeada39a13b858",
+      "catalogBlob": "c8fb8e42c728686ad777080b89509c752c4cddbc",
+      "tree": "48c1070c9d8dff044c5dabc1ac1889fb40f3ae1e",
       "bones": {
         "Root": {
           "parent": null,
@@ -518,7 +518,7 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.def37ebf5c64.glb",
+        "file": "base/animacoes-do-jogo.444229264946.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -2123,6 +2123,39 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               "tornozelo_abaixo_do_assento_m": 0.06,
               "medido_no_dino_as_pernas_descem_ate_m": 0.113,
               "medido_no_dino_sela_do_chao_m": 0.695
+            }
+          },
+          {
+            "id": "empurrar_baixo",
+            "duration": 1.6,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 49,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 8,
+                "off": 38
+              },
+              {
+                "foot": "right",
+                "on": 34,
+                "off": 14
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "plano_a_frente_m": 0.3,
+              "maos_m": 0.12,
+              "maos_para_o_lado_m": 0.1,
+              "palma_aquem_do_plano_m": 0.067,
+              "objeto_ate_m": 0.25
             }
           }
         ],

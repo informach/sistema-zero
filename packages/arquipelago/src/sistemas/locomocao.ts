@@ -55,12 +55,14 @@ export const CLIPES_DO_JOGO = [
   'correr_tras',
   'correr_esquerda',
   'correr_direita',
-  // A arte: andar pendurado pela quina, andar na água rasa, acender a lanterna e empurrar.
+  // A arte: andar pendurado pela quina, andar na água rasa, acender a lanterna e empurrar (de pé e,
+  // para objeto baixo, agachada).
   'andar_pendurado_esquerda',
   'andar_pendurado_direita',
   'andar_na_agua',
   'acender',
   'empurrar',
+  'empurrar_baixo',
   // A arte: levantar do banco e da cama, subir na sela e descer dela.
   'levantar',
   'levantar_da_cama',
@@ -123,6 +125,7 @@ export const ESTADOS = [
   'AndarNaAgua',
   'Acender',
   'Empurrar',
+  'EmpurrarBaixo',
   'Levantar',
   'LevantarDaCama',
   'Montando',
@@ -206,6 +209,7 @@ const RESERVA_DO_ESTADO: Partial<Record<Estado, PoseDoEstado>> = {
   AndarNaAgua: inteiro('andar_frente'),
   Acender: inteiro('parado_relaxado'),
   Empurrar: inteiro('andar_frente'),
+  EmpurrarBaixo: inteiro('empurrar'),
   Levantar: inteiro('parado_relaxado'),
   LevantarDaCama: inteiro('parado_relaxado'),
   Montando: parada('agachado_frente', AGACHADO_PARADO),
@@ -273,6 +277,7 @@ const DA_ARTE: Record<Estado, PoseDoEstado> = {
   AndarNaAgua: inteiro('andar_na_agua'),
   Acender: inteiro('acender'),
   Empurrar: inteiro('empurrar'),
+  EmpurrarBaixo: inteiro('empurrar_baixo'),
   // Levantar do banco e da cama (uma vez, com o desenho ainda no assento ou no colchão); subir na
   // sela antes do laço de montada e descer dela ao sair.
   Levantar: inteiro('levantar'),
@@ -365,6 +370,8 @@ export const CICLO_PENDURADO = cicloDoEstado('PenduradoDireita', 'stride')
 export const CICLO_NA_AGUA_RASA = cicloDoEstado('AndarNaAgua', 'stride')
 /** Empurrando: `passada` por ciclo, curvada contra o que empurra. */
 export const CICLO_DE_EMPURRAR = cicloDoEstado('Empurrar', 'stride')
+/** Empurrando objeto baixo, agachada: `passada` por ciclo. */
+export const CICLO_DE_EMPURRAR_BAIXO = cicloDoEstado('EmpurrarBaixo', 'stride')
 /**
  * A água rasa: a profundidade nos pés (m, na escala do mundo) a partir da qual ela anda como na
  * água. A arte fez o clipe para `parte_rasa_m` (0,3 m nativos); da metade disso para cima, os
@@ -559,6 +566,8 @@ export interface EntradaDaLocomocao {
   acendendo?: boolean
   /** Andando contra algo que se mexe (o caixote, o tronco do lago): os passos de quem empurra. */
   empurrando?: boolean
+  /** O que ela empurra é baixo (até `NO_EMPURRAR_BAIXO.objetoAte`): agachada, mãos embaixo. */
+  empurrandoBaixo?: boolean
   /** Um gesto (`GESTOS`) em andamento: parada no chão, ele no lugar do "Parado". */
   gesto?: Gesto | null
   /** Quantas vezes um gesto já começou: muda a cada pedido, inclusive do mesmo gesto. */
@@ -884,7 +893,9 @@ export function passoDaLocomocao(
       alvo.Correr = 0
       l.tempos[estado] = (l.tempos[estado] + ciclosPelaDistancia(e.velocidade, ciclo) * dt) % 1
     }
-    if (e.empurrando && e.noChao) trocar('Empurrar', CICLO_DE_EMPURRAR)
+    if (e.empurrando && e.noChao && e.empurrandoBaixo)
+      trocar('EmpurrarBaixo', CICLO_DE_EMPURRAR_BAIXO)
+    else if (e.empurrando && e.noChao) trocar('Empurrar', CICLO_DE_EMPURRAR)
     else if (e.naAguaRasa && e.noChao) trocar('AndarNaAgua', CICLO_NA_AGUA_RASA)
     else if (e.patinando) trocar('Patinar', CICLO_DE_PATINAR)
     else repartirPelaDirecao(alvo, e)
