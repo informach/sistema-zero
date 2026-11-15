@@ -37,11 +37,13 @@ import {
 } from '../src/sistemas/locomocao'
 import {
   avancoNaParede,
+  avancoNoEmpurrao,
   DESENHO_NA_AGUA,
   descidaDoEntrarNaAgua,
   desenhoPenduradoNaBorda,
   medidaDoLugar,
   NA_PAREDE,
+  NO_EMPURRAR,
   NO_PLANADOR,
   PATINS_NOS_PES,
   PENDURADO_NA_BORDA,
@@ -548,6 +550,11 @@ describe('as animações da arte no lugar', () => {
     expect(BARRA_NO_AVATAR).toEqual({ y: NO_PLANADOR.barra, z: NO_PLANADOR.aFrente })
     // Na escalada, o desenho chega à casca: a parede do clipe cai onde a casca está.
     expect(avancoNaParede(0.5) + NA_PAREDE.aFrente).toBeCloseTo(0.5, 9)
+    // Empurrando, a face fica a 0,30 m nativos da origem do desenho: o corpo encosta mais perto
+    // (raio + folga), então o desenho recua.
+    expect(NO_EMPURRAR.aFrente).toBeCloseTo(medidaDoLugar('empurrar', 'plano_a_frente_m'), 9)
+    expect(avancoNoEmpurrao(CORPO.raio + CORPO.folga)).toBeLessThan(0)
+    expect(avancoNoEmpurrao(0.4) + NO_EMPURRAR.aFrente).toBeCloseTo(0.4, 9)
     // Montada, a origem do desenho (a sela do clipe `montado`) vai à sela do dino.
     expect(MONTARIA.subidaDoDesenho).toBeCloseTo(MONTARIA.sela, 9)
     // Os patins: peça do pack só do jogo (fora da loja), que soma as rodas à altura do corpo.
