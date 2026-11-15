@@ -54,6 +54,16 @@ describe('pontos da peça', () => {
     })
   })
 
+  test('campo em formato errado pára a migração; célula com NaN não vale', () => {
+    expect(() => pontosDaPeca({ id: 'x', pontos: 'lixo' })).toThrow()
+    expect(() => pontosDaPeca({ id: 'x', pontos_de_jogo: { tipo: 'sentar' } })).toThrow()
+    expect(
+      pontosDaPeca({
+        pontos_de_jogo: [{ tipo: 'plantar', celulas: [[Number.NaN, 0]], altura_m: 0.19 }],
+      }),
+    ).toEqual({})
+  })
+
   test('nome antigo vence o de jogo igual; peça sem pontos dá vazio', () => {
     expect(
       pontosDaPeca({

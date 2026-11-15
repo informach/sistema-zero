@@ -12,7 +12,6 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
-import { PAINEL_DA_MORADA } from '../estado/morada'
 import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
 import { IrTocando } from '../mundo/ir-tocando'
@@ -213,6 +212,8 @@ export function Personagem() {
   const objetoMostrado = useRef<ObjetoDoGesto | null>(null)
   /** O apoio das mãos neste passo (`maos-no-apoio.ts`), lido pelo desenho depois da pose. */
   const apoioDasMaos = useRef<ApoioDasMaos | null>(null)
+  const apoioDe = useRef<object | null>(null)
+  const apoioFeito = useRef<ApoioDasMaos | null>(null)
   /** Deitada e levantando da cama, sem o chapéu (os clipes da arte tiram o chapéu). */
   const deitada = useEstado((s) => s.descanso === 'deitar')
   const [levantandoDaCama, setLevantandoDaCama] = useState(false)
@@ -357,6 +358,8 @@ export function Personagem() {
 
     if (pedidos.teleporte) {
       if (v.modo !== 'chao') mudarModo(v, 'chao', agora, aviso)
+      // Levada para outro lugar não é levantar nem descer da sela: nenhum gesto de saída.
+      modoAntes.current = v.modo
       b.setNextKinematicTranslation(pedidos.teleporte)
       v.velY = 0
       v.embalo.x = 0
@@ -448,6 +451,8 @@ export function Personagem() {
     if (!modo.valendo(v, movimento)) {
       mudarModo(v, 'chao', agora, aviso)
       modo = MODOS.chao
+      // O assento ou a sela sumiram: sem levantar (o desenho ficaria onde o assento estava).
+      modoAntes.current = 'chao'
     }
     // Todo percurso consulta o mundo, inclusive escada, borda e escalada. Os guiados
     // usam o controlador sem snap/degrau; sensores e o bicho não bloqueiam o caminho.
@@ -562,21 +567,28 @@ export function Personagem() {
     modoAntes.current = v.modo
     if (v.descanso) jeitoAntes.current = v.descanso.jeito
     // Pausado (um painel aberto), o gesto espera: começa ou continua quando o jogo volta. Com a
-    // casa da Morada aberta, quem faz o gesto é o corpo de lá: aqui o pedido passa.
+    // Morada aberta este passo nem roda; o corpo da casa consome o pedido que fizer.
     passoDoGesto(gesto, movimento, {
       dt: parado ? 0 : dt,
       andou,
-      livre: v.modo === 'chao' && !nadando && estado.painelAberto !== PAINEL_DA_MORADA,
+      livre: v.modo === 'chao' && !nadando,
     })
     m.gesto = gesto.qual
     m.gestoVez = gesto.vez
     // Onde as mãos se seguram (a IK das mãos): a quina da borda pendurada, os montantes da escada.
-    apoioDasMaos.current =
-      v.modo === 'borda' && v.borda && v.subindoNaBorda === 0
-        ? { segmentos: [{ a: v.borda.a, b: v.borda.b }] }
-        : v.modo === 'escada' && v.escada
-          ? apoioDaEscada(v.escada)
+    // Um apoio por borda ou escada (feito quando ela pega), sem criar lixo a cada passo.
+    const borda = v.modo === 'borda' && v.subindoNaBorda === 0 ? v.borda : null
+    const escada = v.modo === 'escada' ? v.escada : null
+    const fonte = borda ?? escada
+    if (fonte !== apoioDe.current) {
+      apoioDe.current = fonte
+      apoioFeito.current = borda
+        ? { segmentos: [{ a: borda.a, b: borda.b }] }
+        : escada
+          ? apoioDaEscada(escada)
           : null
+    }
+    apoioDasMaos.current = apoioFeito.current
     if (gesto.objeto !== objetoMostrado.current) {
       objetoMostrado.current = gesto.objeto
       setObjetoDoGesto(gesto.objeto)

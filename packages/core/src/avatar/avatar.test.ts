@@ -490,6 +490,26 @@ describe('peça nossa dentro da fantasia (trocas_fantasia) e peça reaproveitada
     }
   })
 
+  test('a parte que saiu da fantasia sai do avatar; sem completar, a fantasia pela metade fica', () => {
+    const setId = 'fantasia_cavaleiro'
+    const conjunto = C.sets[setId]
+    const antiga = 'fantasia_cavaleiro_elmo_chifres_pacote'
+    if (!conjunto || C.parts[antiga]?.set !== setId) throw new Error('sem a troca do cavaleiro')
+    // A peça antiga num encaixe que a fantasia não usa mais (como se a arte a tirasse dali).
+    const vestida: AvatarSlots = { ...base(), ...setSlots(C, setId), costas_extra: antiga }
+    const atualizada = withCurrentSet(C, vestida)
+    expect(Object.values(atualizada)).not.toContain(antiga)
+    // Só uma parte da fantasia: sem completar, continua só ela (a gravação recusa).
+    const parte = conjunto.parts[0]
+    if (!parte) throw new Error('fantasia vazia')
+    const metade: AvatarSlots = { ...base(), [parte.slot]: parte.part }
+    expect(withCurrentSet(C, metade, { completar: false })).toEqual(metade)
+    expect(avatarProblems(C, metade).some((p) => p.kind === 'incomplete-set')).toBe(true)
+    expect(Object.keys(withCurrentSet(C, metade)).length).toBeGreaterThan(
+      Object.keys(metade).length,
+    )
+  })
+
   test('sem fantasia, withCurrentSet não muda nada', () => {
     expect(withCurrentSet(C, base())).toEqual(base())
   })

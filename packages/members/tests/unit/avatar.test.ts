@@ -115,6 +115,22 @@ describe('avatar do pack: gravar com a parte antiga da fantasia', () => {
     expect(config.slots.chapeu).toBe('chapeu_elmo_cavaleiro__na_fantasia_cavaleiro')
     expect((gravado as { slots: Record<string, string> }).slots.chapeu).toBe(config.slots.chapeu)
   })
+
+  test('a fantasia pela metade continua recusada (o servidor não completa sozinho)', async () => {
+    const conjunto = C.sets.fantasia_cavaleiro
+    const parte = conjunto?.parts.find((p) => p.slot !== 'chapeu')
+    if (!parte) throw new Error('sem a fantasia de cavaleiro')
+    const repo = {
+      getConfig: async () => null,
+      listInventory: async () => ['fantasia_cavaleiro'],
+      upsertConfig: async () => {},
+    } as unknown as ConstructorParameters<typeof EquipAvatarService>[0]
+    await expect(
+      new EquipAvatarService(repo, () => new Date()).execute('u', 'a', 'kids', {
+        slots: { ...base(), [parte.slot]: parte.part },
+      }),
+    ).rejects.toThrow(AvatarInvalidError)
+  })
 })
 
 describe('avatar do pack: escrita estrita', () => {

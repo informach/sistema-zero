@@ -49,7 +49,8 @@ export class EquipAvatarService {
     const atual = canonicalizeAvatarConfig(anterior, userId)
     const filter = input.filter ?? atual.filter
     // Uma tela aberta antes da troca de parte da fantasia ainda manda a parte antiga: vira a nova.
-    const slots = withCurrentSet(AVATAR_CATALOG, input.slots)
+    // Só troca o que era antigo; a fantasia pela metade continua recusada (não completa).
+    const slots = withCurrentSet(AVATAR_CATALOG, input.slots, { completar: false })
     assertEquippableConfig({ slots, filter }, new Set(owned))
     // Personalizado = a pessoa mudou alguma peça. Só responder o filtro (a pergunta da primeira
     // vez) grava o filtro, mas o avatar continua o sorteado: a ação de aula ainda não passa.

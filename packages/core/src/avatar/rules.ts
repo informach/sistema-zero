@@ -135,12 +135,26 @@ export function removeSlot(catalog: AvatarCatalog, slots: AvatarSlots, slot: str
 /**
  * Atualiza a fantasia vestida para as partes de agora: quando a arte troca uma parte do conjunto
  * (o elmo do cavaleiro, `trocas_fantasia`), quem já vestia a fantasia passa a vestir a parte nova,
- * em vez de ficar com uma "fantasia incompleta". Sem fantasia, nada muda.
+ * em vez de ficar com uma "fantasia incompleta". A parte que saiu da fantasia sai do avatar, mesmo
+ * num encaixe que a fantasia já não usa. `completar` (padrão, na leitura do avatar guardado) põe
+ * também as partes que faltam; na gravação, `false`: só troca o que era antigo, e um pedido com
+ * a fantasia pela metade continua sendo recusado ("Fantasia incompleta"). Sem fantasia, nada muda.
  */
-export function withCurrentSet(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+export function withCurrentSet(
+  catalog: AvatarCatalog,
+  slots: AvatarSlots,
+  opcoes: { completar?: boolean } = {},
+): AvatarSlots {
   const set = wornSet(catalog, slots)
   const inteiro = set ? setSlots(catalog, set) : null
-  return inteiro ? { ...slots, ...inteiro } : slots
+  if (!set || !inteiro) return slots
+  const deAgora = new Set(Object.values(inteiro))
+  const atualizado: AvatarSlots = {}
+  for (const [slot, id] of Object.entries(slots)) {
+    if (partOf(catalog, id)?.set !== set || deAgora.has(id)) atualizado[slot] = id
+    else if (inteiro[slot]) atualizado[slot] = inteiro[slot]
+  }
+  return opcoes.completar === false ? atualizado : { ...atualizado, ...inteiro }
 }
 
 /** Põe as orelhas da cor do corpo, ou tira, quando um capuz ou a fantasia cobrem a cabeça. */
