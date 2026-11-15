@@ -174,7 +174,9 @@ function linkFor(
   courseRef: string,
   opts: ChallengeLifecycleOptions,
 ): string {
-  if (kind === 'not_activated') return `${opts.kidsUrl}/esqueci-senha`
+  // A senha é opcional desde 15/11/2026: quem nunca entrou vai ao login do responsável, que abre
+  // no código do e-mail.
+  if (kind === 'not_activated') return `${opts.kidsUrl}/login/responsavel`
   // O responsável prepara o computador da criança na Área dos pais antes da 1ª fase.
   if (kind === 'not_started') return `${opts.kidsUrl}/pais`
   if (kind === 'completed')
@@ -190,6 +192,6 @@ function adultLinkFor(
 ): string | null {
   if (kind === 'completed') return accessEndedLink(opts.funnelUrl, 'adult', 'desafio-concluido')
   if (!opts.adultUrl) return null
-  if (kind === 'not_activated') return `${opts.adultUrl}/esqueci-senha`
+  if (kind === 'not_activated') return `${opts.adultUrl}/login`
   return `${opts.adultUrl}/cursos/${encodeURIComponent(courseRef)}`
 }
