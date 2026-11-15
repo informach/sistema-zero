@@ -5,6 +5,7 @@ import {
   ladrilhosDaSemana,
   tempoPorExtenso,
 } from '../src/app/pais/_components/arquipelago-familia'
+import { ArquipelagoDoFilho } from '../src/app/pais/_components/arquipelago-do-filho'
 import { ArquipelagoLimitCard } from '../src/app/pais/_components/arquipelago-limit-card'
 
 const LIA = '11111111-1111-4111-8111-111111111111'
@@ -146,24 +147,17 @@ test('a volta ao curso só aparece com a leitura dos cursos e com tempo de jogo'
     expect(curso(parte)).toBeUndefined()
 })
 
-test('o cartão mostra a semana de cada criança, o limite e as três permissões', async () => {
+test('as regras da família: o tempo de jogo e as três permissões, sem a semana', async () => {
   servidor({
     '/limite': () => Response.json(LIMITE),
     '/semana': () => Response.json(SEMANA),
     '/permissoes': () => Response.json(PADRAO),
   })
   render(<ArquipelagoLimitCard />)
-  const semana = await screen.findByRole('region', { name: 'A semana no jogo' })
-  expect(within(semana).getByText('Dos últimos 7 dias, de 22/10 a 28/10.')).toBeTruthy()
-  expect(within(semana).getByText('Lia')).toBeTruthy()
-  expect(within(semana).getByText('desafios do Estúdio aprovados')).toBeTruthy()
-  expect(within(semana).getByText('1 de ilhas anteriores')).toBeTruthy()
-  expect(within(semana).getByText('1 h 10 min')).toBeTruthy()
-  expect(within(semana).getByText('Tom')).toBeTruthy()
-  expect(
-    within(semana).getByText('Ainda sem números do jogo. Eles aparecem quando a criança jogar.'),
-  ).toBeTruthy()
-  expect(screen.getByRole('region', { name: 'Tempo livre no Arquipélago' })).toBeTruthy()
+  await screen.findByRole('region', { name: 'Arquipélago Vagalume: as regras da família' })
+  expect(screen.getByRole('region', { name: 'Tempo de jogo por dia' })).toBeTruthy()
+  // A semana de cada filho mora na aba "No jogo" da página dele (redesenho de 14/11/2026).
+  expect(screen.queryByRole('region', { name: 'A semana no jogo' })).toBeNull()
   const irmaos = screen.getByRole('switch', { name: /Visitas de irmãos/ }) as HTMLInputElement
   const outras = screen.getByRole('switch', {
     name: /Visitas de outras crianças/,
@@ -218,12 +212,39 @@ test('semana ou permissões fora do ar: só aquela parte some, o limite fica', a
     '/permissoes': () => Response.json({ visitasDeIrmaos: 'sim' }),
   })
   render(<ArquipelagoLimitCard />)
-  await screen.findByRole('region', { name: 'Tempo livre no Arquipélago' })
-  await waitFor(() => expect(calls.length).toBe(4)) // Minijogos é uma leitura independente da semana.
+  await screen.findByRole('region', { name: 'Tempo de jogo por dia' })
+  await waitFor(() => expect(calls.length).toBe(2)) // o limite e as permissões
   await act(async () => await new Promise((r) => setTimeout(r, 0)))
   expect(screen.queryByRole('switch')).toBeNull()
-  expect(screen.queryByRole('region', { name: 'A semana no jogo' })).toBeNull()
   expect(screen.queryByRole('alert')).toBeNull()
+})
+
+test('a aba No jogo mostra só a semana do filho dela', async () => {
+  servidor({
+    '/semana': () => Response.json(SEMANA),
+    '/minijogos': () => Response.json({ minijogos: [] }),
+  })
+  render(<ArquipelagoDoFilho perfilId={LIA} nome="Lia" />)
+  const semana = await screen.findByRole('region', { name: 'A semana no jogo' })
+  expect(within(semana).getByText('Dos últimos 7 dias, de 22/10 a 28/10.')).toBeTruthy()
+  expect(within(semana).getByText('Lia')).toBeTruthy()
+  expect(within(semana).getByText('desafios do Estúdio aprovados')).toBeTruthy()
+  expect(within(semana).getByText('1 de ilhas anteriores')).toBeTruthy()
+  expect(within(semana).getByText('1 h 10 min')).toBeTruthy()
+  expect(within(semana).queryByText('Tom')).toBeNull()
+})
+
+test('a aba No jogo de quem ainda não jogou diz que os números chegam quando jogar', async () => {
+  servidor({
+    '/semana': () => Response.json(SEMANA),
+    '/minijogos': () => Response.json({ minijogos: [] }),
+  })
+  render(<ArquipelagoDoFilho perfilId={TOM} nome="Tom" />)
+  const semana = await screen.findByRole('region', { name: 'A semana no jogo' })
+  expect(
+    within(semana).getByText('Ainda sem números do jogo. Eles aparecem quando a criança jogar.'),
+  ).toBeTruthy()
+  expect(within(semana).queryByText('Lia')).toBeNull()
 })
 
 test('jogo fechado para a família: nem a semana nem as permissões são pedidas', async () => {

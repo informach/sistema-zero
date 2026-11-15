@@ -1,25 +1,13 @@
-import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
-import { ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
-import { listReadonly } from '@/server/profiles'
-import { getSession } from '@/server/session'
-import { ProfileEditor } from '../../../_components/profile-editor'
+import { childHref } from '../../../parent-routes'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * Editar o perfil virou a aba Perfil da página do filho (redesenho de 14/11/2026). O endereço
+ * antigo continua valendo para os links já enviados e leva direto à aba.
+ */
 export default async function EditChildPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession()
-  if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   const { id } = await params
-  const profilesRes = await listReadonly()
-  if (profilesRes.status !== 200) return <ProfilesUnavailable />
-  const profile = (profilesRes.body?.profiles ?? []).find((item) => item.id === id)
-  if (!profile) redirect('/pais')
-  return (
-    <ProfileEditor
-      parentName={session.firstName}
-      profile={profile}
-      voiceAvailable={isVoiceInputConfigured()}
-    />
-  )
+  redirect(childHref(id, 'perfil'))
 }

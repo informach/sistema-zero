@@ -1,7 +1,7 @@
 'use client'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
-import { ChevronRight, Info } from 'lucide-react'
+import { BookOpen, ChevronRight, Info } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -15,10 +15,10 @@ import {
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
-import type { ProfileView } from '@/lib/types'
-import { ArquipelagoLimitCard } from './_components/arquipelago-limit-card'
+import type { MyCourseView, ProfileView } from '@/lib/types'
+import { FamilyAiCredits } from './_components/ai-credits-card'
 import { AttentionList, attentionItems } from './_components/attention-list'
-import { AddChildCard, ChildCard } from './_components/child-card'
+import { ChildSummaryRow } from './_components/child-card'
 import { ParentShell } from './_components/parent-shell'
 import {
   ParentPageTitle,
@@ -28,46 +28,73 @@ import {
 } from './_components/parent-ui'
 import { useChildrenStats } from './_components/use-children-stats'
 import { VoiceNewsCard } from './_components/voice-news-card'
-import { childHref, NEW_CHILD_HREF, studentEntryFor } from './parent-routes'
-import { ProfileAllowanceNote } from './profile-allowance-note'
+import { childHref, NEW_CHILD_HREF, PARENT_COURSES_HREF, studentEntryFor } from './parent-routes'
 
-const HOW_IT_WORKS = [
-  {
-    title: 'Crie o perfil',
-    text: 'Cada criança tem o próprio perfil, com o progresso guardado nele.',
-  },
-  {
-    title: 'Autorize o aparelho',
-    text: 'Neste computador ou em outro, com um código que vale 10 minutos.',
-  },
-  {
-    title: 'A criança entra sozinha',
-    text: 'Ela clica em Eu sou criador(a) e no próprio nome, sem a sua senha.',
-  },
-] as const
-
-function NumberedSteps({ steps }: { steps: readonly { title: string; text: string }[] }) {
+/**
+ * O curso para pais no Início: o que está em andamento continua; sem curso, o convite para
+ * conhecer os cursos para pais.
+ */
+function ParentCourseCard({ course }: { course: MyCourseView | null }) {
   return (
-    <ol className="grid gap-3 md:grid-cols-3">
-      {steps.map((step, index) => (
-        <li key={step.title} className="kids-carta flex gap-4 p-5">
-          <span className="kids-marca sz-display flex size-10 shrink-0 items-center justify-center rounded-full text-lg">
-            {index + 1}
-          </span>
-          <span>
-            <strong className="block">{step.title}</strong>
-            <span className="text-muted-foreground text-sm">{step.text}</span>
-          </span>
-        </li>
-      ))}
-    </ol>
+    <section aria-labelledby="parent-course" className="kids-carta flex flex-col gap-3 p-5 sm:p-6">
+      <span className="flex items-center gap-2 font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
+        <BookOpen className="size-4" aria-hidden="true" /> Seu curso
+      </span>
+      {course ? (
+        <>
+          <h2 id="parent-course" className="sz-display text-[1.375rem] leading-tight">
+            {course.title}
+          </h2>
+          <div
+            className="h-2.5 overflow-hidden rounded-full bg-(--band-ceu)"
+            role="progressbar"
+            aria-valuenow={course.progress.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${course.progress.completedLessons} de ${course.progress.totalLessons} aulas concluídas`}
+          >
+            <span
+              className="block h-full rounded-full bg-primary"
+              style={{ width: `${course.progress.percent}%` }}
+            />
+          </div>
+          <p className="text-muted-foreground text-sm">
+            {course.progress.completedLessons} de {course.progress.totalLessons} aulas concluídas
+          </p>
+          <Link
+            href={
+              course.continueLessonId
+                ? `${PARENT_COURSES_HREF}/${encodeURIComponent(course.courseSlug)}/aulas/${encodeURIComponent(course.continueLessonId)}`
+                : `${PARENT_COURSES_HREF}/${encodeURIComponent(course.courseSlug)}`
+            }
+            className={PRIMARY_ACTION}
+          >
+            {course.progress.percent > 0 ? 'Continuar de onde parei' : 'Começar o curso'}
+          </Link>
+        </>
+      ) : (
+        <>
+          <h2 id="parent-course" className="sz-display text-[1.375rem] leading-tight">
+            Cursos para pais
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Seus filhos aprendem a criar jogos aqui, e estes cursos são para você: como ajudar sem
+            fazer por eles e como transformar o que eles criam em conversa.
+          </p>
+          <Link href={PARENT_COURSES_HREF} className={SECONDARY_ACTION}>
+            Conhecer os cursos
+          </Link>
+        </>
+      )}
+    </section>
   )
 }
 
 /**
- * A Família, o início da área dos pais (11/10/2026): o que pede atenção primeiro, um cartão por
- * criança e, no primeiro acesso, o guia de como preparar a entrada. O acesso de cada criança e o
- * progresso detalhado moram na página dela; conta e ajuda têm páginas próprias na barra.
+ * O Início da área dos pais (redesenho de 14/11/2026; era a Família de 11/10/2026): o que pede
+ * atenção primeiro, o resumo da semana de cada filho, o curso para pais e os créditos. No
+ * primeiro acesso, o guia de como preparar a entrada. Os cartões completos dos filhos e as regras
+ * do Arquipélago ficam na Família; o acesso e o progresso, na página de cada filho.
  */
 export function ParentsClient({
   accountId,
@@ -78,6 +105,7 @@ export function ParentsClient({
   initialAccess = {},
   studentDestination,
   voiceAvailable = false,
+  parentCourse = null,
 }: {
   accountId: string
   parentName?: string
@@ -90,6 +118,8 @@ export function ParentsClient({
   studentDestination?: string
   /** A fala da criança está ligada no servidor (14/10/2026): mostra a novidade e o passo. */
   voiceAvailable?: boolean
+  /** O curso para pais em andamento (ou o primeiro liberado); `null` convida a conhecer. */
+  parentCourse?: MyCourseView | null
 }) {
   const profiles = initialProfiles
   const access = initialAccess
@@ -159,15 +189,11 @@ export function ParentsClient({
   const firstWithoutAccess = allAttention.find((item) => item.kind === 'none')?.profile
   const attention =
     guideStep === 'access' ? allAttention.filter((item) => item.kind !== 'none') : allAttention
-  const limited = profileAllowance.kind === 'limited'
-  const addNote = limited
-    ? `${profiles.length} de ${profileAllowance.maxProfiles} perfis do seu plano`
-    : undefined
   return (
-    <ParentShell active="familia" parentName={parentName} studentDestination={studentEntry}>
+    <ParentShell active="inicio" parentName={parentName} studentDestination={studentEntry}>
       <ParentPageTitle
         title={parentName ? `Olá, ${parentName}` : 'Área dos pais'}
-        text="Aqui você prepara o acesso das crianças e acompanha o que elas estão criando."
+        text="Veja o que precisa de você, como foi a semana dos seus filhos e continue o seu curso."
       />
       {studentDestination ? (
         <section role="status" className="kids-carta flex gap-4 p-5">
@@ -218,7 +244,7 @@ export function ParentsClient({
             ) : null}
             {guideStep === 'access' && firstWithoutAccess ? (
               <Link
-                href={childHref(firstWithoutAccess.id, undefined, studentDestination)}
+                href={childHref(firstWithoutAccess.id, 'aparelhos', studentDestination)}
                 className={PRIMARY_ACTION}
               >
                 Preparar o acesso de {firstWithoutAccess.name}
@@ -249,42 +275,47 @@ export function ParentsClient({
         photoByProfile={avatarPhotoByProfile}
         studentDestination={studentDestination}
       />
-      <ParentSection title="Suas crianças" id="children-title">
-        <ul className="kids-grade-centrada [--grade-vao:1.25rem] md:[--grade-colunas:2] xl:[--grade-colunas:3]">
-          {profiles.map((profile) => (
-            <ChildCard
-              key={profile.id}
-              profile={profile}
-              photoUrl={avatarPhotoByProfile[profile.id] ?? null}
-              grants={access[profile.id]}
-              stats={stats}
-              studentDestination={studentDestination}
-            />
-          ))}
-          {canCreateProfile ? <AddChildCard note={addNote} /> : null}
-        </ul>
-        {/* O limite do plano já mora no cartão de adicionar; o recado só aparece no limite,
-            ilimitado ou quando a consulta falhou. */}
-        {!canCreateProfile || !limited ? (
-          <ProfileAllowanceNote allowance={profileAllowance} profilesCount={profiles.length} />
-        ) : null}
-      </ParentSection>
-      <ArquipelagoLimitCard />
-      {guideStep ? null : (
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <ParentSection
-          title="Como funciona o acesso"
+          title="Seus filhos esta semana"
+          id="children-title"
           action={
             <Link
-              href="/pais/ajuda"
+              href="/pais/familia"
               className="inline-flex min-h-11 items-center gap-1 font-bold text-primary text-sm"
             >
-              Ver o passo a passo completo <ChevronRight className="size-4" aria-hidden="true" />
+              Ver a família <ChevronRight className="size-4" aria-hidden="true" />
             </Link>
           }
         >
-          <NumberedSteps steps={HOW_IT_WORKS} />
+          {profiles.length ? (
+            <ul className="kids-carta flex flex-col px-5 py-1 sm:px-6">
+              {profiles.map((profile) => (
+                <ChildSummaryRow
+                  key={profile.id}
+                  profile={profile}
+                  photoUrl={avatarPhotoByProfile[profile.id] ?? null}
+                  stats={stats}
+                  studentDestination={studentDestination}
+                />
+              ))}
+            </ul>
+          ) : canCreateProfile ? (
+            <div className="kids-carta flex flex-col items-start gap-3 p-5 sm:p-6">
+              <p className="text-muted-foreground text-sm">
+                Comece criando o perfil do seu filho ou da sua filha.
+              </p>
+              <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
+                Adicionar filho(a)
+              </Link>
+            </div>
+          ) : null}
         </ParentSection>
-      )}
+        <aside className="flex flex-col gap-6">
+          <ParentCourseCard course={parentCourse} />
+          <FamilyAiCredits />
+        </aside>
+      </div>
     </ParentShell>
   )
 }

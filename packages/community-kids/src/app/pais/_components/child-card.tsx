@@ -46,7 +46,51 @@ function Numbers({ child, stats }: { child: ChildDashboardView | null; stats: Ch
   )
 }
 
-/** O cartão de uma criança na Família: quem é, se pode entrar e como foi a semana. */
+/**
+ * Uma linha por filho no Início (redesenho de 14/11/2026): nome, nível, a frase da semana e os
+ * números, levando à página dele.
+ */
+export function ChildSummaryRow({
+  profile,
+  photoUrl,
+  stats,
+  studentDestination,
+}: {
+  profile: ProfileView
+  photoUrl: string | null
+  stats: ChildrenStats
+  studentDestination?: string
+}) {
+  const child = statsFor(stats, profile.id)
+  const level = child?.career ? levelInfo(child.career.level) : null
+  const week = weekSentence(child)
+  return (
+    <li className="border-(--linha-carta) border-t first:border-t-0">
+      <Link
+        href={childHref(profile.id, undefined, studentDestination)}
+        className="flex items-center gap-4 py-4 text-foreground"
+      >
+        <UserAvatar avatarUrl={photoUrl} firstName={profile.name} size="lg" />
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <strong className="sz-display text-xl leading-tight">{profile.name}</strong>
+            {level ? (
+              <LevelChip label={level.label} color={level.colorVar} icon={level.icon} />
+            ) : null}
+          </span>
+          {stats.state === 'ready' && child ? (
+            <span className="text-muted-foreground text-sm">
+              {week ? `Esta semana: ${week}` : 'Nenhuma atividade esta semana ainda.'}
+            </span>
+          ) : null}
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </Link>
+    </li>
+  )
+}
+
+/** O cartão de um filho na Família: quem é, se pode entrar e como foi a semana. */
 export function ChildCard({
   profile,
   photoUrl,
@@ -92,18 +136,18 @@ export function ChildCard({
       <div className="mt-auto flex flex-col gap-2">
         <Link
           href={childHref(profile.id, undefined, studentDestination)}
-          data-access-for={profile.id}
           className={PRIMARY_ACTION}
+        >
+          Ver a página de {profile.name}
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </Link>
+        <Link
+          href={childHref(profile.id, 'aparelhos', studentDestination)}
+          data-access-for={profile.id}
+          className={SECONDARY_ACTION}
         >
           <Monitor className="size-4" aria-hidden="true" />
           Acesso nos aparelhos
-        </Link>
-        <Link
-          href={childHref(profile.id, 'progresso', studentDestination)}
-          className={SECONDARY_ACTION}
-        >
-          Ver progresso
-          <ChevronRight className="size-4" aria-hidden="true" />
         </Link>
       </div>
     </li>
@@ -121,7 +165,7 @@ export function AddChildCard({ note }: { note?: string }) {
         <span className="flex size-14 items-center justify-center rounded-full bg-card">
           <Plus className="size-6" aria-hidden="true" />
         </span>
-        <span className="font-extrabold text-foreground">Adicionar criança</span>
+        <span className="font-extrabold text-foreground">Adicionar filho(a)</span>
         {note ? <span className="text-sm">{note}</span> : null}
       </Link>
     </li>

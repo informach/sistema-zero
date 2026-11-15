@@ -3,7 +3,15 @@
 import { saoPauloDayKey } from '@sistemazero/core/time'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
-import { ArrowLeft, ArrowUpRight, CalendarDays, Monitor, Pencil, Sparkles } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CalendarDays,
+  Monitor,
+  Pencil,
+  Sparkles,
+  TreePalm,
+} from 'lucide-react'
 import Link from 'next/link'
 import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -15,27 +23,33 @@ import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { profileAgeOn } from '@/lib/profile-age'
 import { grantIsLive } from '@/lib/study-access-view'
 import type { ProfileView } from '@/lib/types'
+import { ArquipelagoDoFilho } from '../../_components/arquipelago-do-filho'
 import { ChildProgress } from '../../_components/child-progress'
 import { ParentShell } from '../../_components/parent-shell'
 import { LevelChip, PRIMARY_ACTION, SECONDARY_ACTION } from '../../_components/parent-ui'
+import { ProfileEditor } from '../../_components/profile-editor'
 import {
   archiveProfile,
   RemoveProfileDialog,
   showProfileActionError,
 } from '../../_components/remove-profile'
 import { statsFor, useChildrenStats } from '../../_components/use-children-stats'
-import { childEditHref, familyHref, studentEntryFor } from '../../parent-routes'
+import { WeeklyReportToggle } from '../../_components/weekly-report-toggle'
+import { type ChildTab, childEditHref, familyHref, studentEntryFor } from '../../parent-routes'
 
-export type ChildTab = 'acesso' | 'progresso'
+export type { ChildTab }
 
 const TABS: { id: ChildTab; label: string; icon: typeof Monitor }[] = [
-  { id: 'acesso', label: 'Acesso nos aparelhos', icon: Monitor },
   { id: 'progresso', label: 'Progresso', icon: Sparkles },
+  { id: 'aparelhos', label: 'Aparelhos', icon: Monitor },
+  { id: 'jogo', label: 'No jogo', icon: TreePalm },
+  { id: 'perfil', label: 'Perfil', icon: Pencil },
 ]
 
 /**
- * A página de uma criança (11/10/2026): quem ela é, onde pode entrar e o que anda criando. Era o
- * painel que tomava o lugar da lista na área dos pais, sem endereço próprio.
+ * A página de um filho (11/10/2026; abas novas em 14/11/2026): o que ele aprendeu (era o
+ * Acompanhamento), onde pode entrar, o que fez no Arquipélago e o perfil (era a página de
+ * editar). Todos os painéis ficam montados: trocar de aba não apaga o código gerado.
  */
 export function ChildClient({
   accountId,
@@ -45,6 +59,7 @@ export function ChildClient({
   initialTab,
   familyReady,
   studentDestination,
+  voiceAvailable = false,
 }: {
   accountId: string
   parentName?: string
@@ -55,11 +70,15 @@ export function ChildClient({
   familyReady: boolean | null
   /** A aula do link que trouxe o responsável (`?aluno=`): abre depois da troca para a criança. */
   studentDestination?: string
+  /** A fala está ligada no servidor: o formulário do perfil oferece "Falar em vez de escrever". */
+  voiceAvailable?: boolean
 }) {
   const [tab, setTab] = useState<ChildTab>(initialTab)
   const tabRefs = useRef<Record<ChildTab, HTMLButtonElement | null>>({
-    acesso: null,
     progresso: null,
+    aparelhos: null,
+    jogo: null,
+    perfil: null,
   })
   const studentEntry = studentEntryFor(studentDestination)
   const stats = useChildrenStats()
@@ -74,7 +93,7 @@ export function ChildClient({
     setArchiving(true)
     try {
       await archiveProfile(profile.id)
-      window.location.assign('/pais')
+      window.location.assign('/pais/familia')
     } catch (error) {
       showProfileActionError(error)
       setArchiving(false)
@@ -116,8 +135,8 @@ export function ChildClient({
     setTab(next)
     // O endereço acompanha a aba (voltar e recarregar abrem a mesma), sem nova navegação.
     const url = new URL(window.location.href)
-    if (next === 'progresso') url.searchParams.set('aba', 'progresso')
-    else url.searchParams.delete('aba')
+    if (next === 'progresso') url.searchParams.delete('aba')
+    else url.searchParams.set('aba', next)
     window.history.replaceState(window.history.state, '', url)
   }
   /** O padrão de abas do ARIA: setas e Home/End andam entre as abas e já as abrem. */
@@ -150,7 +169,12 @@ export function ChildClient({
     profile.voiceInputEnabled === true ? 'fala liberada' : null,
   ].filter(Boolean)
   return (
-    <ParentShell active="familia" parentName={parentName} studentDestination={studentEntry}>
+    <ParentShell
+      active="familia"
+      activeChildId={profile.id}
+      parentName={parentName}
+      studentDestination={studentEntry}
+    >
       <Link
         href={familyHref(studentDestination)}
         className="-mb-4 inline-flex min-h-11 items-center gap-2 self-start font-bold text-muted-foreground text-sm hover:text-foreground"
@@ -168,9 +192,9 @@ export function ChildClient({
             <span className="text-muted-foreground text-sm">{details.join(' · ')}</span>
           </div>
         </div>
-        <Link href={childEditHref(profile.id)} className={SECONDARY_ACTION}>
+        <button type="button" onClick={() => choose('perfil')} className={SECONDARY_ACTION}>
           <Pencil className="size-4" aria-hidden="true" /> Editar perfil
-        </Link>
+        </button>
       </section>
       {age !== null && age >= 18 ? (
         // O perfil Kids não é cortado aos 18 (regra aprovada): ele segue funcionando, e a área
@@ -202,19 +226,20 @@ export function ChildClient({
         <p className="flex flex-wrap items-center gap-x-2 rounded-2xl bg-[#fff3c4] px-4 py-2 text-sm text-[#5c3200]">
           <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
           <span>
-            Falta a data de nascimento de {profile.name}. Ela é obrigatória: mostra a idade para a
-            equipe e faz a plataforma avisar você quando {profile.name} completar 18 anos.
+            Falta a data de nascimento de {profile.name}. Com ela, a nossa equipe sabe a idade e
+            avisamos você quando {profile.name} fizer 18 anos.
           </span>
-          <Link
-            href={childEditHref(profile.id)}
+          <button
+            type="button"
+            onClick={() => choose('perfil')}
             className="inline-flex min-h-11 items-center font-bold text-primary underline-offset-4 hover:underline"
           >
             Informar a data
-          </Link>
+          </button>
         </p>
       )}
-      {/* No celular as duas abas dividem a largura (o rótulo longo quebra dentro da aba, não a
-          fileira); do `sm` em diante, a pílula de sempre. */}
+      {/* No celular as quatro abas dividem a largura em duas linhas; do `sm` em diante, a
+          pílula de sempre. */}
       <div
         role="tablist"
         aria-label={`Sobre ${profile.name}`}
@@ -244,13 +269,22 @@ export function ChildClient({
           </button>
         ))}
       </div>
-      {/* Os dois painéis ficam montados: trocar de aba não pode apagar o código gerado nem a
+      {/* Os painéis ficam montados: trocar de aba não pode apagar o código gerado nem a
           espera de "a criança já entrou" do painel de aparelhos. */}
       <div
         role="tabpanel"
-        id="painel-acesso"
-        aria-labelledby="tab-acesso"
-        hidden={tab !== 'acesso'}
+        id="painel-progresso"
+        aria-labelledby="tab-progresso"
+        hidden={tab !== 'progresso'}
+      >
+        {/* O resumo da semana por e-mail fica aqui: é onde o próprio e-mail manda desligá-lo. */}
+        <ChildProgress profileId={profile.id} stats={stats} aside={<WeeklyReportToggle />} />
+      </div>
+      <div
+        role="tabpanel"
+        id="painel-aparelhos"
+        aria-labelledby="tab-aparelhos"
+        hidden={tab !== 'aparelhos'}
       >
         <StudyDeviceManager
           profileId={profile.id}
@@ -260,13 +294,16 @@ export function ChildClient({
           studentDestination={studentEntry}
         />
       </div>
+      <div role="tabpanel" id="painel-jogo" aria-labelledby="tab-jogo" hidden={tab !== 'jogo'}>
+        {tab === 'jogo' ? <ArquipelagoDoFilho perfilId={profile.id} nome={profile.name} /> : null}
+      </div>
       <div
         role="tabpanel"
-        id="painel-progresso"
-        aria-labelledby="tab-progresso"
-        hidden={tab !== 'progresso'}
+        id="painel-perfil"
+        aria-labelledby="tab-perfil"
+        hidden={tab !== 'perfil'}
       >
-        <ChildProgress profileId={profile.id} stats={stats} />
+        <ProfileEditor profile={profile} voiceAvailable={voiceAvailable} embedded />
       </div>
       <RemoveProfileDialog
         name={profile.name}

@@ -331,6 +331,34 @@ O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da crian�
 
 Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
 
+## Área dos pais redesenhada + cursos para pais (14/11/2026)
+
+Proposta aprovada no Canvas (artifact `KaXaNyGugcbxPLy1GUVZdi`, v2). ⚠️ Partes da seção de
+11/10/2026 abaixo ficaram históricas: a barra do topo, a página Acompanhamento e a edição em
+página própria.
+
+- **Moldura:** `_components/parent-shell.tsx` virou MENU LATERAL escuro (`aside.kids-menu` dentro
+  de `.kids-shell-row`, o visual do `AppSidebar`): Início (`/pais`), Família (`/pais/familia`, com
+  os filhos lidos de `/api/profiles`), Cursos para pais (`/pais/cursos`), Oficinas ao vivo, Conta e
+  Ajuda; no pé, "Ir para a área da criança", Trocar senha e Sair. No celular, barra no alto e barra
+  embaixo (Início, Família, Cursos, Oficinas, Mais). `variant="lesson"` é o regime de aula.
+- **Início** (`parents-client.tsx`): guia v3, aviso `?aluno=`, novidade da fala, "Precisa da sua
+  atenção", "Seus filhos esta semana" (`ChildSummaryRow`), "Seu curso" e créditos.
+- **Família** (`familia/`): os `ChildCard` (botão principal "Ver a página de X"; "Acesso nos
+  aparelhos" vai a `?aba=aparelhos`), "Adicionar filho(a)" e o `ArquipelagoLimitCard`, que agora é
+  SÓ as regras da família (tempo de jogo, permissões, convites).
+- **Página do filho:** abas Progresso (padrão, sem `?aba`), Aparelhos, No jogo
+  (`arquipelago-do-filho.tsx`: a semana DELE + minijogos) e Perfil (`ProfileEditor embedded`). Os
+  painéis ficam montados. `/pais/acompanhamento` e `/pais/crianca/<id>/editar` só redirecionam.
+- **Cursos para pais:** curso Kids com `learner: 'parents'` (members). `/pais/cursos` (catálogo +
+  progresso por `listParentCatalog`/`listParentCourses`), `/pais/cursos/<slug>` (formato da página
+  do adulto; fechado = "Como liberar este curso") e `/pais/cursos/<slug>/aulas/<id>`: o MESMO
+  `LessonPlayer` da criança com `courseBasePath="/pais/cursos"` e `helpThreadPath`, dentro de
+  `ParentLessonFrame` (FocusMode, LessonCompletionRefresh, KidsLessonCopy). A dúvida da aula
+  aparece em Ajuda › "Suas dúvidas sobre os cursos" (`/pais/ajuda/duvidas/<id>`).
+- ⚠️ `parentCourseHref`/`childHref` moram em `parent-routes.ts` (sem `'use client'`): função
+  exportada de módulo de cliente não pode ser chamada em Server Component.
+
 ## A área dos pais com páginas próprias (11/10/2026)
 
 Pedido dela, como diretor de arte: a área dos pais estava muito abaixo da área da criança, e o

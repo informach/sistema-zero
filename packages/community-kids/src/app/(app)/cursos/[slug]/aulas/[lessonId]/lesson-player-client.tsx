@@ -66,8 +66,11 @@ interface Props {
    * para pais (14/11/2026), que usam este MESMO player.
    */
   courseBasePath?: string
-  /** Onde aparece a resposta do "Preciso de ajuda" (cursos para pais: a Ajuda dos pais). */
-  helpThread?: LessonPlayerContextValue['helpThread']
+  /**
+   * Onde aparece a resposta do "Preciso de ajuda": ausente = os Recados da criança; nos cursos
+   * para pais, a lista de dúvidas da Ajuda (`/pais/ajuda/duvidas`).
+   */
+  helpThreadPath?: string
 }
 
 export function LessonPlayer({
@@ -81,8 +84,18 @@ export function LessonPlayer({
   lessonDraftsEnabled = false,
   voiceInput = false,
   courseBasePath = '/cursos',
-  helpThread,
+  helpThreadPath,
 }: Props) {
+  const helpThread = useMemo<LessonPlayerContextValue['helpThread']>(
+    () =>
+      helpThreadPath
+        ? {
+            href: (threadId: string) => `${helpThreadPath}/${encodeURIComponent(threadId)}`,
+            label: 'em Ajuda, na parte Suas dúvidas sobre os cursos',
+          }
+        : undefined,
+    [helpThreadPath],
+  )
   const router = useRouter()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
   const refreshLesson = useLessonRefresh(() => router.refresh())

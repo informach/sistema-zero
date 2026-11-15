@@ -4,7 +4,11 @@ import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/prof
 import { requestedStudyDestination } from '@/lib/entry-destination'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
-import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
+import {
+  getProfileAllowanceReadonly,
+  listAvatarsByProfileIdsReadonly,
+  listParentCourses,
+} from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { childHref } from './parent-routes'
@@ -28,7 +32,7 @@ export default async function ParentsPage({
   // O atalho antigo de reautenticação (`?child=`) abre a página da criança, onde mora o acesso.
   const studentDestination = requestedStudyDestination(params.aluno) ?? undefined
   if (params.child && profiles.some((profile) => profile.id === params.child))
-    redirect(childHref(params.child, undefined, studentDestination))
+    redirect(childHref(params.child, 'aparelhos', studentDestination))
   const allowance = resolveProfileAllowance({
     status: allowanceRes.status,
     maxProfiles: allowanceRes.body?.maxProfiles,
@@ -39,10 +43,17 @@ export default async function ParentsPage({
   const ids = profiles.map((profile) => profile.id)
   // As autorizações de cada criança: o guia e o aviso de vencimento seguem o estado REAL da
   // família desde o primeiro quadro, não só o painel que o responsável abrir.
-  const [avatars, access] = await Promise.all([
+  const [avatars, access, parentCourses] = await Promise.all([
     ids.length ? listAvatarsByProfileIdsReadonly(ids).catch(() => null) : null,
     listFamilyGrantsReadonly(ids),
+    // O curso para pais em andamento (ou o primeiro liberado): best-effort, nunca derruba o Início.
+    listParentCourses().catch(() => null),
   ])
+  const courses = parentCourses?.status === 200 ? (parentCourses.body?.courses ?? []) : []
+  const parentCourse =
+    courses.find((course) => course.progress.percent > 0 && course.progress.percent < 100) ??
+    courses.find((course) => course.progress.percent < 100) ??
+    null
   const photos = Object.fromEntries(
     Object.entries(avatars?.status === 200 ? (avatars.body?.avatars ?? {}) : {}).map(
       ([id, view]) => [id, view.photoUrl ?? null],
@@ -58,6 +69,7 @@ export default async function ParentsPage({
       initialAccess={access}
       studentDestination={studentDestination}
       voiceAvailable={isVoiceInputConfigured()}
+      parentCourse={parentCourse}
     />
   )
 }
