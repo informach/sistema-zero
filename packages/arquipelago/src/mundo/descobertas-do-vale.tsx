@@ -13,6 +13,7 @@ import {
   NOME_DO_FOSSIL,
   TEXTOS_DOS_FOSSEIS,
 } from '../sistemas/fosseis'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
 import {
   caminhoDaOnda,
   comecarOndas,
@@ -111,6 +112,11 @@ export function DescobertasDoVale({
       const r = escavarFossil(loja.getState().salvamento, new Date(), true)
       if (r) {
         loja.getState().mudar((s) => escavarFossil(s, new Date(), true)?.salvamento ?? s)
+        // Tira o fóssil da areia; o sexto fecha a coleção e ela comemora.
+        pedirGesto(
+          movimento,
+          gestoDoAchado(fosseisAchados(loja.getState().salvamento).length === 6),
+        )
         loja.getState().dizer(TEXTOS_DOS_FOSSEIS.achou(NOME_DO_FOSSIL[r.fossil]))
         return
       }

@@ -14,6 +14,7 @@ import { useEstado, useJogo } from '../estado/contexto'
 import { casaMoradaStore, PAINEL_DA_MORADA, useCasaMorada } from '../estado/morada'
 import { CenaMorada } from '../mundo/morada'
 import { climaEfetivo, regarComSede } from '../sistemas/clima'
+import { gestoDePlantar, pedirGesto } from '../sistemas/gestos'
 import { estagio, falaDeQuandoColhe, geladeiraEm, plantar, regar } from '../sistemas/horta'
 import { ITENS, remover } from '../sistemas/itens'
 import { PAINEL_DA_FOTO } from '../sistemas/modo-foto'
@@ -789,7 +790,7 @@ function SeatActions({ instance, readonly }: { instance: MoradaInstance; readonl
 }
 
 function PlotAction({ instance, readonly }: { instance: MoradaInstance; readonly: boolean }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const garden = useEstado((s) => s.salvamento.horta)
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
@@ -801,6 +802,7 @@ function PlotAction({ instance, readonly }: { instance: MoradaInstance; readonly
   if (!plot) return <p>Guarde a casa para preparar este canteiro.</p>
   const phase = estagio(plot, now, geladeiraEm(loja.getState().salvamento))
   function act() {
+    const antes = loja.getState().salvamento.horta[index]
     loja.getState().mudar((save) => {
       const c = save.horta[index]
       if (!c) return save
@@ -842,6 +844,15 @@ function PlotAction({ instance, readonly }: { instance: MoradaInstance; readonly
       }
       return save
     })
+    // O gesto do que mudou no canteiro: plantou (na terra baixa ou na alta), regou com o regador,
+    // ou colheu (pega do chão).
+    const depois = loja.getState().salvamento.horta[index]
+    if (!antes || !depois || antes === depois) return
+    if (!antes.semente && depois.semente) {
+      const terra = MORADA_CATALOG.pieces[instance.pieceId]?.max.y ?? 0
+      pedirGesto(movimento, gestoDePlantar(terra))
+    } else if (antes.semente && !depois.semente) pedirGesto(movimento, 'PegarDoChao')
+    else if (depois.regadoEm !== antes.regadoEm) pedirGesto(movimento, 'Regar', 'mao_regador')
   }
   return (
     <>

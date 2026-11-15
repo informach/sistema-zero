@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { falaDaCorDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
+import { pedirGesto } from '../sistemas/gestos'
 import {
   desafioDeHoje,
   ondeAprender,
@@ -279,7 +280,7 @@ function Falta({ d }: { d: NonNullable<Quadro['desafio']> }) {
  * curso se aprende) e o botão que abre o Estúdio de desafio por cima do jogo.
  */
 export function PainelDoQuadro() {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, movimento } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
   const painel = useEstado((s) => s.painelAberto)
   const ilhaId = ilhaDoPainel(painel)
@@ -332,6 +333,8 @@ export function PainelDoQuadro() {
       setAviso('Não deu para abrir o desafio agora. Tente de novo daqui a pouco.')
     // Cor nova: o painel sai da frente para a pessoa ver a mancha colorir no quadro.
     if (r === 'feito' && desafios.getState().festa) loja.getState().abrirPainel(null)
+    // Desafio feito: ela comemora (aparece quando o painel fecha).
+    if (r === 'feito') pedirGesto(movimento, 'Comemorar')
   }
 
   return (
