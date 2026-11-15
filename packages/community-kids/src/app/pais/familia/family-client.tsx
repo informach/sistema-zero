@@ -22,6 +22,7 @@ export function FamilyClient({
   avatarPhotoByProfile,
   access,
   studentDestination,
+  semAreaDaCrianca = false,
 }: {
   parentName?: string
   profiles: ProfileView[]
@@ -31,6 +32,8 @@ export function FamilyClient({
   access: Record<string, StudyGrantView[] | null>
   /** A aula do link que trouxe o responsável: segue até a página do filho. */
   studentDestination?: string
+  /** Quem comprou só um curso para pais: sem área da criança para abrir. */
+  semAreaDaCrianca?: boolean
 }) {
   const stats = useChildrenStats()
   const canCreateProfile = canAddProfile(profileAllowance, profiles.length)
@@ -43,6 +46,7 @@ export function FamilyClient({
       active="familia"
       parentName={parentName}
       studentDestination={studentEntryFor(studentDestination)}
+      semAreaDaCrianca={semAreaDaCrianca}
     >
       <ParentPageTitle
         title="Família"

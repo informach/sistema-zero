@@ -8,6 +8,7 @@ import {
   ParentCourseView,
 } from '../src/app/pais/cursos/[slug]/parent-course-view'
 import { ParentCoursesView } from '../src/app/pais/cursos/parent-courses-view'
+import { resolveParentArea } from '../src/app/pais/parent-access'
 import { childTabOf, parentCourseHref, parentDoubtHref } from '../src/app/pais/parent-routes'
 import { ParentsClient } from '../src/app/pais/parents-client'
 import type {
@@ -241,6 +242,55 @@ describe('a página do curso para pais', () => {
     ).toBe('https://exemplo.com/curso')
     expect(within(main).getByRole('link', { name: /Conhecer a Comunidade/ })).toBeTruthy()
     expect(within(main).getByRole('button', { name: /Atualizar o acesso/ })).toBeTruthy()
+  })
+})
+
+describe('a régua do Início e da Família (resolveParentArea)', () => {
+  const lidos = (courses: MyCourseView[]) => ({ status: 200, body: { courses } })
+  test('sem perfil liberado: curso para pais entra; nada entra em "não incluído"', () => {
+    const nenhum = { kind: 'none' } as const
+    expect(
+      resolveParentArea({ profilesCount: 0, allowance: nenhum, parentCourses: lidos([mine()]) }),
+    ).toEqual({ tela: 'area', purpose: 'curso', courses: [mine()] })
+    expect(
+      resolveParentArea({ profilesCount: 0, allowance: nenhum, parentCourses: lidos([]) }),
+    ).toEqual({ tela: 'nao-incluido' })
+  })
+  test('falha ao ler os cursos (ou o limite) nunca diz que nada está incluído', () => {
+    const nenhum = { kind: 'none' } as const
+    expect(resolveParentArea({ profilesCount: 0, allowance: nenhum, parentCourses: null })).toEqual(
+      { tela: 'indisponivel' },
+    )
+    expect(
+      resolveParentArea({
+        profilesCount: 0,
+        allowance: nenhum,
+        parentCourses: { status: 503, body: null },
+      }),
+    ).toEqual({ tela: 'indisponivel' })
+    expect(
+      resolveParentArea({
+        profilesCount: 0,
+        allowance: { kind: 'unavailable' },
+        parentCourses: lidos([mine()]),
+      }),
+    ).toEqual({ tela: 'indisponivel' })
+  })
+  test('com filho, ou com perfil liberado, é a área dos filhos', () => {
+    expect(
+      resolveParentArea({
+        profilesCount: 1,
+        allowance: { kind: 'none' },
+        parentCourses: null,
+      }),
+    ).toEqual({ tela: 'area', purpose: 'filhos', courses: [] })
+    expect(
+      resolveParentArea({
+        profilesCount: 0,
+        allowance: { kind: 'limited', maxProfiles: 2 },
+        parentCourses: lidos([mine()]),
+      }),
+    ).toEqual({ tela: 'area', purpose: 'filhos', courses: [mine()] })
   })
 })
 

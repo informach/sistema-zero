@@ -83,7 +83,11 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
     )
   })
   it('para quem é a área: segue a compra, sem perguntar', () => {
-    const base = { profilesCount: 0, allowanceKind: 'limited', hasParentCourses: false }
+    const base = {
+      profilesCount: 0,
+      allowanceKind: 'limited' as const,
+      hasParentCourses: false,
+    }
     // Comprou para a criança (ou não dá para saber): o guia de sempre.
     expect(parentPurpose(base)).toBe('filhos')
     expect(parentPurpose({ ...base, allowanceKind: 'unavailable', hasParentCourses: true })).toBe(

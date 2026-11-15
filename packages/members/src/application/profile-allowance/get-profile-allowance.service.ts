@@ -1,3 +1,4 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
@@ -38,41 +39,48 @@ export class GetProfileAllowanceService {
     private readonly clock: () => Date,
     private readonly opts: GetProfileAllowanceOptions,
     private readonly live?: Pick<LiveBenefitsPort, 'maxProfiles'>,
-    private readonly courses?: Pick<CourseRepository, 'findAccessibleCoursesBySlugs'>,
+    private readonly courses?: Pick<CourseRepository, 'findCoursesBySlugs'>,
   ) {}
 
   async execute(accountId: string): Promise<ProfileAllowance> {
     const now = this.clock()
-    const [all, liveProfiles] = await Promise.all([
+    const [active, liveProfiles] = await Promise.all([
       this.entitlements.listActiveByUser(accountId, now),
       this.live?.maxProfiles(accountId, now) ?? 0,
     ])
-    const active = await this.withoutParentsCourses(all)
     if (active.length === 0) return { maxProfiles: liveProfiles }
     let max = 0
     for (const e of active) {
       const m = e.snapshot.fulfillment?.maxProfiles
       if (typeof m === 'number' && m > max) max = m
     }
-    return { maxProfiles: Math.max(liveProfiles, max > 0 ? max : this.opts.defaultMaxProfiles) }
+    if (max > 0) return { maxProfiles: Math.max(liveProfiles, max) }
+    // Nenhuma compra define o teto. Só agora importa se elas são todas de curso para pais: aí
+    // não há perfil de filho a liberar (e o teto do legado não vale).
+    if (await this.onlyParentsCourses(active)) return { maxProfiles: liveProfiles }
+    return { maxProfiles: Math.max(liveProfiles, this.opts.defaultMaxProfiles) }
   }
 
-  /** Tira as matrículas de UM curso para pais (as da chave-mestra continuam valendo). */
-  private async withoutParentsCourses<T extends { accessType: string; courseRef: string | null }>(
-    active: T[],
-  ): Promise<T[]> {
-    if (!this.courses) return active
-    const slugs = [
-      ...new Set(
-        active.flatMap((e) => (e.accessType === 'course' && e.courseRef ? [e.courseRef] : [])),
-      ),
-    ]
-    if (slugs.length === 0) return active
-    const parents = new Set(
-      (await this.courses.findAccessibleCoursesBySlugs(slugs, 'parents')).map((c) => c.slug),
-    )
-    return active.filter(
-      (e) => !(e.accessType === 'course' && e.courseRef && parents.has(e.courseRef)),
-    )
+  /**
+   * Todas as matrículas são de UM curso para pais? O curso conta em QUALQUER status (a compra
+   * pode vir antes da publicação). Falha na leitura vale "não": a régua de antes, para nunca
+   * travar a criação de perfil de quem comprou para a criança.
+   */
+  private async onlyParentsCourses(
+    active: readonly { accessType: string; courseRef: string | null }[],
+  ): Promise<boolean> {
+    if (!this.courses) return false
+    const slugs: string[] = []
+    for (const e of active) {
+      if (e.accessType !== 'course' || !e.courseRef) return false
+      slugs.push(e.courseRef)
+    }
+    try {
+      const found = await this.courses.findCoursesBySlugs([...new Set(slugs)])
+      const parents = new Set(found.filter((c) => isParentsCourse(c)).map((c) => c.slug))
+      return slugs.every((slug) => parents.has(slug))
+    } catch {
+      return false
+    }
   }
 }

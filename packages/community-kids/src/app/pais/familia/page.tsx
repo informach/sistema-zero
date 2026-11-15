@@ -10,6 +10,7 @@ import {
 } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { resolveParentArea } from '../parent-access'
 import { FamilyClient } from './family-client'
 
 export const dynamic = 'force-dynamic'
@@ -26,9 +27,10 @@ export default async function FamilyPage({
   const session = await getSession()
   if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   const params = await searchParams
-  const [profilesRes, allowanceRes] = await Promise.all([
+  const [profilesRes, allowanceRes, parentCourses] = await Promise.all([
     listReadonly(),
     getProfileAllowanceReadonly(),
+    listParentCourses().catch(() => null),
   ])
   if (profilesRes.status !== 200) return <ProfilesUnavailable />
   const profiles = profilesRes.body?.profiles ?? []
@@ -36,14 +38,11 @@ export default async function FamilyPage({
     status: allowanceRes.status,
     maxProfiles: allowanceRes.body?.maxProfiles,
   })
-  if (!profiles.length && allowance.kind === 'unavailable')
-    return <ProfilesUnavailable reason="allowance" />
-  // Sem perfil liberado: quem comprou um curso para pais (15/11/2026) vê a Família vazia com o
-  // convite do limite; quem não tem nada aqui vê o recado de sempre.
-  if (!profiles.length && allowance.kind === 'none') {
-    const cursos = await listParentCourses().catch(() => null)
-    if (!(cursos?.status === 200 && cursos.body?.courses?.length)) return <ProfilesNotIncluded />
-  }
+  // A mesma régua do Início (`resolveParentArea`): quem comprou só um curso para pais
+  // (15/11/2026) vê a Família vazia com o convite do limite.
+  const area = resolveParentArea({ profilesCount: profiles.length, allowance, parentCourses })
+  if (area.tela === 'indisponivel') return <ProfilesUnavailable reason="allowance" />
+  if (area.tela === 'nao-incluido') return <ProfilesNotIncluded />
   const ids = profiles.map((profile) => profile.id)
   const [avatars, access] = await Promise.all([
     ids.length ? listAvatarsByProfileIdsReadonly(ids).catch(() => null) : null,
@@ -62,6 +61,7 @@ export default async function FamilyPage({
       avatarPhotoByProfile={photos}
       access={access}
       studentDestination={requestedStudyDestination(params.aluno) ?? undefined}
+      semAreaDaCrianca={area.purpose === 'curso'}
     />
   )
 }

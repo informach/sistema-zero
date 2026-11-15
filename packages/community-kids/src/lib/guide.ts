@@ -1,3 +1,5 @@
+import type { ProfileAllowance } from './profile-allowance'
+
 /**
  * Tutorial guiado de primeiro acesso — o CÉREBRO puro (testável, sem DOM).
  *
@@ -241,7 +243,7 @@ export type ParentPurpose = 'filhos' | 'curso'
 export function parentPurpose(input: {
   profilesCount: number
   /** O tipo do limite de perfis (`none` = a conta não libera perfil de filho). */
-  allowanceKind: string
+  allowanceKind: ProfileAllowance['kind']
   hasParentCourses: boolean
 }): ParentPurpose {
   if (input.profilesCount > 0) return 'filhos'

@@ -96,14 +96,40 @@ describe('GetProfileAllowanceService', () => {
   })
 
   describe('curso para pais', () => {
+    // O curso para pais conta em QUALQUER status (a compra pode vir antes de publicar).
     const cursos = {
-      findAccessibleCoursesBySlugs: async (slugs: string[], learner?: string) =>
-        learner === 'parents'
-          ? slugs.filter((slug) => slug === 'curso-pais').map((slug) => ({ slug }) as never)
-          : [],
+      findCoursesBySlugs: async (slugs: string[]) =>
+        slugs.map(
+          (slug) =>
+            ({
+              slug,
+              status: slug === 'curso-pais' ? 'draft' : 'published',
+              learner: slug === 'curso-pais' ? 'parents' : 'child',
+            }) as never,
+        ),
     }
-    const comCursos = (repo: InMemoryEntitlementRepository) =>
-      new GetProfileAllowanceService(repo, () => NOW, { defaultMaxProfiles: 3 }, undefined, cursos)
+    const comCursos = (
+      repo: InMemoryEntitlementRepository,
+      repositorio: { findCoursesBySlugs: (slugs: string[]) => Promise<never[]> } = cursos,
+    ) =>
+      new GetProfileAllowanceService(
+        repo,
+        () => NOW,
+        { defaultMaxProfiles: 3 },
+        undefined,
+        repositorio,
+      )
+
+    test('falha na leitura dos cursos vale a régua de antes (nunca trava a criação)', async () => {
+      const repo = new InMemoryEntitlementRepository()
+      repo.seed(grant({ userId: 'pai', courseRef: 'curso-pais' }))
+      const quebrado = {
+        findCoursesBySlugs: async (): Promise<never[]> => {
+          throw new Error('banco fora')
+        },
+      }
+      expect(await comCursos(repo, quebrado).execute('pai')).toEqual({ maxProfiles: 3 })
+    })
 
     test('quem comprou só um curso para pais não libera perfil de filho (nem o teto do legado)', async () => {
       const repo = new InMemoryEntitlementRepository()

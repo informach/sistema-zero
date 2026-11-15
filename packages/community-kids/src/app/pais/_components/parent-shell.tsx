@@ -45,9 +45,8 @@ const ITEM =
  * sair) já na página seguinte. Falha na leitura mantém a lista que havia.
  */
 let lastFamily: ProfileView[] | null = null
-/** `null` até a primeira leitura: a família vazia só é afirmada depois de lida. */
-function useFamily(): ProfileView[] | null {
-  const [profiles, setProfiles] = useState<ProfileView[] | null>(() => lastFamily)
+function useFamily(): ProfileView[] {
+  const [profiles, setProfiles] = useState<ProfileView[]>(() => lastFamily ?? [])
   useEffect(() => {
     let alive = true
     apiGet<{ profiles?: ProfileView[] }>('/api/profiles')
@@ -162,6 +161,7 @@ export function ParentShell({
   parentName,
   studentDestination,
   variant = 'page',
+  semAreaDaCrianca = false,
   children,
 }: {
   /** A parte acesa no menu; `null` nas páginas que não são de uma parte só. */
@@ -172,15 +172,17 @@ export function ParentShell({
   /** A entrada da criança com o `next` de uma aula, quando o responsável chegou por um link dela. */
   studentDestination?: string
   variant?: 'page' | 'lesson'
+  /**
+   * Quem comprou só um curso para pais (`parentPurpose === 'curso'`, decidido no servidor pelo
+   * Início e pela Família): sem filho cadastrado, não há área da criança para abrir.
+   */
+  semAreaDaCrianca?: boolean
   children: ReactNode
 }) {
   const [password, setPassword] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
-  const lida = useFamily()
-  const family = lida ?? []
-  // Sem filho cadastrado (quem comprou só um curso para pais), não há área da criança para abrir.
-  const semFilhos = lida !== null && lida.length === 0
+  const family = useFamily()
   async function leave() {
     setLeaving(true)
     try {
@@ -239,7 +241,7 @@ export function ParentShell({
           <MenuSections active={active} activeChildId={activeChildId} family={family} />
         </nav>
         <div className="flex shrink-0 flex-col gap-3 pt-4 pb-7">
-          {semFilhos ? null : (
+          {semAreaDaCrianca ? null : (
             <StudentAreaButton
               destination={studentDestination}
               disabled={leaving}
@@ -268,7 +270,7 @@ export function ParentShell({
           <Link href="/pais" prefetch={false} aria-label="Área dos pais, início">
             <KidsLogo className="w-24" />
           </Link>
-          {semFilhos ? null : (
+          {semAreaDaCrianca ? null : (
             <StudentAreaButton
               destination={studentDestination}
               disabled={leaving}

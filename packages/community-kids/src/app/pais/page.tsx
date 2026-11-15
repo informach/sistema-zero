@@ -2,7 +2,6 @@ import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrou
 import { redirect } from 'next/navigation'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { requestedStudyDestination } from '@/lib/entry-destination'
-import { parentPurpose } from '@/lib/guide'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
 import {
@@ -12,6 +11,7 @@ import {
 } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { resolveParentArea } from './parent-access'
 import { childHref } from './parent-routes'
 import { ParentsClient } from './parents-client'
 
@@ -40,18 +40,12 @@ export default async function ParentsPage({
     status: allowanceRes.status,
     maxProfiles: allowanceRes.body?.maxProfiles,
   })
-  if (!profiles.length && allowance.kind === 'unavailable')
-    return <ProfilesUnavailable reason="allowance" />
-  const courses = parentCourses?.status === 200 ? (parentCourses.body?.courses ?? []) : []
-  // Sem perfil liberado e sem curso para pais, a conta não tem nada aqui. Quem comprou só um
-  // curso para pais (15/11/2026) entra no Início, que leva ao curso.
-  if (!profiles.length && allowance.kind === 'none' && !courses.length)
-    return <ProfilesNotIncluded />
-  const purpose = parentPurpose({
-    profilesCount: profiles.length,
-    allowanceKind: allowance.kind,
-    hasParentCourses: courses.length > 0,
-  })
+  // A régua única do Início e da Família (`resolveParentArea`): quem comprou só um curso para
+  // pais (15/11/2026) entra no Início, que leva ao curso.
+  const area = resolveParentArea({ profilesCount: profiles.length, allowance, parentCourses })
+  if (area.tela === 'indisponivel') return <ProfilesUnavailable reason="allowance" />
+  if (area.tela === 'nao-incluido') return <ProfilesNotIncluded />
+  const { purpose, courses } = area
   const ids = profiles.map((profile) => profile.id)
   // As autorizações de cada criança: o guia e o aviso de vencimento seguem o estado REAL da
   // família desde o primeiro quadro, não só o painel que o responsável abrir.

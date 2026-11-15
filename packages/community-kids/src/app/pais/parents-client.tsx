@@ -245,12 +245,22 @@ export function ParentsClient({
   const attention =
     guideStep === 'access' ? allAttention.filter((item) => item.kind !== 'none') : allAttention
   return (
-    <ParentShell active="inicio" parentName={parentName} studentDestination={studentEntry}>
+    <ParentShell
+      active="inicio"
+      parentName={parentName}
+      studentDestination={studentEntry}
+      semAreaDaCrianca={soCurso}
+    >
       <ParentPageTitle
         title={parentName ? `Olá, ${parentName}` : 'Área dos pais'}
-        text="Veja o que precisa de você, como foi a semana dos seus filhos e continue o seu curso."
+        text={
+          soCurso
+            ? 'Aqui ficam os seus cursos, as oficinas ao vivo e a sua conta.'
+            : 'Veja o que precisa de você, como foi a semana dos seus filhos e continue o seu curso.'
+        }
       />
-      {studentDestination ? (
+      {/* O aviso manda clicar em "Ir para a área da criança", que não existe sem filho. */}
+      {studentDestination && !soCurso ? (
         <section role="status" className="kids-carta flex gap-4 p-5">
           <Info className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
           <div>
