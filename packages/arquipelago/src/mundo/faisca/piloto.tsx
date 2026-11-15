@@ -27,11 +27,19 @@ import {
 import { alturaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
 import { jogoPausado } from '../../sistemas/pausa'
 import { PECAS_DO_ACERVO, PECAS_DO_CAMINHO } from '../../sistemas/prova-curadoria-faisca'
+import {
+  LAGO_DE_CATALOGO,
+  PISOS_DO_REFINO,
+  type PisoDaFaisca,
+} from '../../sistemas/refino-da-faisca'
 import { useInterativo } from '../interativos'
 import { AmbienteDaVila } from './ambiente'
 import { ARTE_DA_FAISCA } from './arte.generated'
+import { TextosNasPlacas } from './caminhos'
 import { type ArteDoPiloto, carregarPiloto } from './carregar-piloto'
 import { preencherInstancias } from './instancias'
+import { LagoComFormaAtual, LagoDaFaisca } from './lago'
+import { PisosDeCatalogo } from './pisos-de-catalogo'
 
 type IdDaPeca = keyof typeof ARTE_DA_FAISCA.pecas
 const itens = COMPOSICAO_DA_FAISCA
@@ -99,10 +107,13 @@ function Decoracao({ arte, colecao }: { arte: ArteDoPiloto; colecao: PecaNaFaisc
 function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: PecaNaFaisca[] }) {
   const malhas = useMemo(() => {
     const mapa = new Map<string, { id: string; vertices: Float32Array; indices: Uint32Array }[]>()
-    for (const id of new Set(
-      colecao.filter((p) => p.solida === 'ponte' || p.solida === 'malha').map((p) => p.peca),
-    )) {
-      const g = arte?.modelos.get(id)
+    const tipos = new Map(
+      colecao
+        .filter((p) => p.solida === 'ponte' || p.solida === 'malha')
+        .map((p) => [`${p.peca}:${p.escala}`, p]),
+    )
+    for (const [id, p] of tipos) {
+      const g = arte?.modelos.get(p.peca)
       if (!g) continue
       g.scene.updateMatrixWorld(true)
       const lista: { id: string; vertices: Float32Array; indices: Uint32Array }[] = []
@@ -113,7 +124,7 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
           vertices = new Float32Array(attr.count * 3),
           v = new Vector3()
         for (let i = 0; i < attr.count; i++) {
-          v.fromBufferAttribute(attr, i).applyMatrix4(m.matrixWorld)
+          v.fromBufferAttribute(attr, i).applyMatrix4(m.matrixWorld).multiplyScalar(p.escala)
           vertices.set(v.toArray(), i * 3)
         }
         const indices = m.geometry.index
@@ -171,7 +182,7 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
               >
                 {arte ? (
                   malhas
-                    .get(p.peca)
+                    .get(`${p.peca}:${s}`)
                     ?.map((m) => <TrimeshCollider key={m.id} args={[m.vertices, m.indices]} />)
                 ) : p.solida === 'ponte' ? (
                   <CuboidCollider args={[1.9, 0.12, 6.18]} position={[0, 0.45, 0]} />
@@ -309,9 +320,15 @@ function Iris({ arte }: { arte: ArteDoPiloto }) {
 export function PilotoDaFaisca({
   aoMudar,
   curadoria,
+  piso,
+  aguaAventura,
+  noite,
 }: {
   aoMudar: (s: SituacaoDoPiloto) => void
   curadoria: 'a' | 'b' | null
+  piso: PisoDaFaisca | null
+  aguaAventura: boolean
+  noite: boolean
 }) {
   const { rastro, pedidos } = useJogo()
   const [perto, setPerto] = useState(true),
@@ -336,7 +353,12 @@ export function PilotoDaFaisca({
     let lote: ArteDoPiloto | null = null
     pedidos.chaoChegando.add('arte-faisca')
     aoMudar({ estado: 'carregando', modelos: 0 })
-    carregarPiloto(abort.signal, Boolean(curadoria))
+    carregarPiloto(abort.signal, [
+      ...colecao.map((p) => p.peca),
+      ...(LAGO_DE_CATALOGO ? ['lago_nadavel'] : []),
+      ...(piso ? [PISOS_DO_REFINO[piso]] : []),
+      ...(!LAGO_DE_CATALOGO || aguaAventura ? ['agua_ilha_pacote'] : []),
+    ])
       .then((chegou) => {
         lote = chegou
         if (abort.signal.aborted) {
@@ -357,7 +379,7 @@ export function PilotoDaFaisca({
       lote?.soltar()
       pedidos.chaoChegando.delete('arte-faisca')
     }
-  }, [perto, aoMudar, pedidos, curadoria])
+  }, [perto, aoMudar, pedidos, colecao, piso, aguaAventura])
   useLayoutEffect(() => {
     if (arte) pedidos.chaoChegando.delete('arte-faisca')
   }, [arte, pedidos])
@@ -369,17 +391,43 @@ export function PilotoDaFaisca({
       {arte ? (
         <>
           <Decoracao arte={arte} colecao={colecao} />
+          <TextosNasPlacas colecao={colecao} />
+          {LAGO_DE_CATALOGO ? (
+            <LagoDaFaisca arte={arte} aventura={aguaAventura} />
+          ) : (
+            <LagoComFormaAtual arte={arte} />
+          )}
+          {piso && <PisosDeCatalogo arte={arte} piso={piso} />}
           <Iris arte={arte} />
+          {noite &&
+            colecao
+              .filter((p) => p.peca === 'lampiao_01_pacote' && Math.hypot(p.x, p.z - 140) < 65)
+              .slice(0, 4)
+              .map((p) => (
+                <pointLight
+                  key={p.id}
+                  position={[p.x, altura(p) + 1.4, p.z]}
+                  color="#ffcb85"
+                  intensity={12}
+                  distance={9}
+                  decay={2}
+                />
+              ))}
         </>
       ) : (
-        itens
-          .filter((p) => p.id === 'ponte-lago' || p.id === 'oficina' || p.id === 'farol')
-          .map((p) => (
-            <mesh key={p.id} position={[p.x, altura(p) + (p.solida === 'ponte' ? 0.45 : 2), p.z]}>
-              <boxGeometry args={p.solida === 'ponte' ? [4, 0.24, 12.35] : [5, 4, 5]} />
-              <meshStandardMaterial color="#b8a580" wireframe />
-            </mesh>
-          ))
+        <>
+          <RigidBody type="fixed" colliders={false} position={[58, 2.4, 127]}>
+            <CuboidCollider args={[5.5, 0.05, 4]} />
+          </RigidBody>
+          {itens
+            .filter((p) => p.id === 'ponte-lago' || p.id === 'oficina' || p.id === 'farol')
+            .map((p) => (
+              <mesh key={p.id} position={[p.x, altura(p) + (p.solida === 'ponte' ? 0.45 : 2), p.z]}>
+                <boxGeometry args={p.solida === 'ponte' ? [4, 0.24, 12.35] : [5, 4, 5]} />
+                <meshStandardMaterial color="#b8a580" wireframe />
+              </mesh>
+            ))}
+        </>
       )}
     </>
   )

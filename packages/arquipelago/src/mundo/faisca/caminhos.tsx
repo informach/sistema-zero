@@ -1,8 +1,16 @@
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
-import { CanvasTexture, type Sprite } from 'three'
+import {
+  CanvasTexture,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  type Sprite,
+  SRGBColorSpace,
+} from 'three'
 import { useJogo } from '../../estado/contexto'
+import { assentamentoDaPeca } from '../../sistemas/assentamento-da-faisca'
+import type { PecaNaFaisca } from '../../sistemas/composicao-faisca'
 import {
   BASE_DO_FAROL,
   LUGAR_DA_FAISCA,
@@ -80,6 +88,71 @@ function Placa({ p, nome }: { p: PontoDaFaisca; nome: string }) {
     </sprite>
   )
 }
+
+/** Texto preso às duas faces da placa real. A frente do GLB aponta para +Z; a seta para +X. */
+export function TextosNasPlacas({ colecao }: { colecao: readonly PecaNaFaisca[] }) {
+  const recursos = useMemo(() => {
+    const textos = new Set(colecao.flatMap((p) => (p.sinal ? [p.sinal.texto] : []))),
+      estilos = new Map<string, { textura: CanvasTexture; material: MeshStandardMaterial }>()
+    for (const texto of textos) {
+      const c = document.createElement('canvas')
+      c.width = 512
+      c.height = 128
+      const g = c.getContext('2d')!
+      g.font = '700 98px sans-serif'
+      g.fillStyle = '#352211'
+      g.textAlign = 'center'
+      g.textBaseline = 'middle'
+      g.fillText(texto, 256, 67, 470)
+      const textura = new CanvasTexture(c)
+      textura.colorSpace = SRGBColorSpace
+      textura.anisotropy = 4
+      const material = new MeshStandardMaterial({
+        map: textura,
+        transparent: true,
+        alphaTest: 0.08,
+        depthWrite: false,
+        roughness: 1,
+      })
+      estilos.set(texto, { textura, material })
+    }
+    return { estilos, geo: new PlaneGeometry(0.8, 0.2) }
+  }, [colecao])
+  useEffect(
+    () => () => {
+      for (const r of recursos.estilos.values()) {
+        r.textura.dispose()
+        r.material.dispose()
+      }
+      recursos.geo.dispose()
+    },
+    [recursos],
+  )
+  return colecao
+    .filter((p) => p.sinal)
+    .map((p) => (
+      <group
+        key={p.id}
+        position={[p.x, assentamentoDaPeca(p).y, p.z]}
+        rotation={[0, p.giro, 0]}
+        scale={p.escala}
+      >
+        <mesh
+          geometry={recursos.geo}
+          material={recursos.estilos.get(p.sinal!.texto)!.material}
+          position={[0.02, 1.44, 0.173]}
+          dispose={null}
+        />
+        <mesh
+          geometry={recursos.geo}
+          material={recursos.estilos.get(p.sinal!.texto)!.material}
+          position={[0.02, 1.44, 0.067]}
+          rotation={[0, Math.PI, 0]}
+          dispose={null}
+        />
+      </group>
+    ))
+}
 export function CaminhosDaFaisca({ marcos = true }: { marcos?: boolean }) {
   return (
     <>
@@ -87,10 +160,6 @@ export function CaminhosDaFaisca({ marcos = true }: { marcos?: boolean }) {
         Object.entries(nomes).map(([id, nome]) => (
           <Placa key={id} p={LUGAR_DA_FAISCA[id as keyof typeof LUGAR_DA_FAISCA]} nome={nome} />
         ))}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[58, 3.65, 127]} scale={[8, 4, 1]}>
-        <circleGeometry args={[1, 48]} />
-        <meshStandardMaterial color="#69b4b9" transparent opacity={0.8} roughness={0.25} />
-      </mesh>
       <RigidBody type="fixed" colliders={false} position={[8, 4, 230]}>
         <mesh position={[0, -0.15, 0]}>
           <boxGeometry args={[3, 0.3, 18]} />

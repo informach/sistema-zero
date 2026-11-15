@@ -7,7 +7,11 @@ import { chromium } from 'playwright-core'
 const base = process.env.ARQUIPELAGO_QA_URL ?? 'http://127.0.0.1:4530'
 const momento = process.argv[2] ?? 'depois'
 assert.ok(['antes', 'depois'].includes(momento))
-const saida = resolve(import.meta.dirname, '../../../output/faisca-gate2', momento)
+const saida = resolve(
+  import.meta.dirname,
+  process.env.FAISCA_CAPTURAS_DIR ?? '../../../output/faisca-gate2',
+  momento,
+)
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({
   channel: 'chrome',
@@ -39,7 +43,9 @@ try {
     'farol-noite',
   ]) {
     const vista = nome.replace('-noite', '')
-    await page.goto(`${base}/macro?vista=${vista}${nome.endsWith('-noite') ? '&noite=1' : ''}`)
+    await page.goto(
+      `${base}/macro?vista=${vista}${nome.endsWith('-noite') ? '&noite=1' : ''}${process.env.FAISCA_CAPTURAS_QUERY ? `&${process.env.FAISCA_CAPTURAS_QUERY}` : ''}`,
+    )
     await page.waitForFunction(
       () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
       {},

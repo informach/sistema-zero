@@ -59,7 +59,9 @@ async function andar(x, z) {
   throw Error(`Não chegou em ${x},${z}: ${JSON.stringify(await posicao())}`)
 }
 try {
-  await page.goto(`${base}/macro?ritmo=explorar`)
+  await page.goto(
+    `${base}/macro?ritmo=explorar${process.env.ARQUIPELAGO_QA_QUERY ? `&${process.env.ARQUIPELAGO_QA_QUERY}` : ''}`,
+  )
   await page.waitForFunction(
     () => document.querySelector('.macro-topo')?.getAttribute('data-arte') === 'pronto',
     {},

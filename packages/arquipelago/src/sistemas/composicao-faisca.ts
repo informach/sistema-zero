@@ -1,6 +1,5 @@
 import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
 import {
-  BASE_DA_OFICINA,
   BASE_DO_FAROL,
   LUGAR_DA_FAISCA as L,
   ligarCabeceiras,
@@ -9,6 +8,7 @@ import {
 } from './faisca'
 import { ARQUIPELAGO, conexaoDaIlha } from './geografia-do-arquipelago'
 import { distanciaAosCaminhos, sobreVolumeDaVila } from './implantacao-da-faisca'
+import { LAGO_DA_FAISCA, pontoNoContorno } from './lago-da-faisca'
 
 export interface PecaNaFaisca {
   id: string
@@ -22,6 +22,7 @@ export interface PecaNaFaisca {
   deslocamentoY?: number
   apoio?: string
   raioDoTronco?: number
+  sinal?: { texto: string; destino: keyof typeof L; via: { x: number; z: number } }
 }
 export const COMPOSICAO_DA_FAISCA: PecaNaFaisca[] = []
 function por(id: string, peca: string, x: number, z: number, op: Partial<PecaNaFaisca> = {}) {
@@ -40,11 +41,25 @@ por('correio', 'casa_01_pacote', PATAMARES_DA_FAISCA.correio.x, PATAMARES_DA_FAI
   escala: 0.4,
   solida: 'caixa',
 })
-por('oficina', 'casa_01_pacote', BASE_DA_OFICINA.x, BASE_DA_OFICINA.z, {
-  escala: 0.7,
+// Oficina aberta de bambu, interrompida/lacrada. A silhueta não repete as casas de vizinhos.
+for (const [i, x] of [-48.2, -43.8].entries()) {
+  por(`oficina-estrutura-${i}`, 'andaime_bambu_01_pacote', x, 120, { solida: 'malha' })
+  por(`oficina-cobertura-${i}`, 'plataforma_bambu_01_pacote', -47.86 + i * 3.726, 120, {
+    escala: 1.5,
+    altura: 8,
+    solida: 'malha',
+  })
+}
+por('oficina-mesa', 'mesa_01_pacote', -46, 121.5, { escala: 0.35, solida: 'caixa' })
+por('oficina-pecas', 'caixote_aberto', -49.5, 123, { solida: 'caixa', escala: 0.8 })
+por('correio-mesa', 'mesa_02_pacote', -21, 125.6, {
+  escala: 0.34,
+  giro: Math.PI / 2,
   solida: 'caixa',
 })
+por('correio-aberto', 'caixote_aberto', -22.5, 123.5, { solida: 'caixa', escala: 0.6 })
 por('poco', 'poco_manivela_baixa', -6, 143, { solida: 'caixa' })
+por('mesa-convivio', 'mesa_01_pacote', -10, 144, { escala: 0.35, solida: 'caixa' })
 por('farol', 'farol_01_pacote', BASE_DO_FAROL.x, BASE_DO_FAROL.z, { solida: 'caixa' })
 por('moinho', 'moinho_01_pacote', PATAMARES_DA_FAISCA.moinho.x, PATAMARES_DA_FAISCA.moinho.z, {
   escala: 0.6,
@@ -70,7 +85,6 @@ for (const [i, x, z] of [
   por(`caixa-${i}`, 'caixote_medio', x, z, { solida: 'caixa' })
 por('barril', 'barril_em_pe', -30, 126, { solida: 'caixa' })
 por('bancada-caixa', 'caixote_pequeno', -44, 112, { solida: 'caixa' })
-por('encomenda-1', 'caixote_pequeno', -22.5, 123.5, { solida: 'caixa', escala: 0.7 })
 por('encomenda-2', 'caixote_pequeno', -22.5, 122.3, { solida: 'caixa', escala: 0.6 })
 por('pecas-recolhidas', 'caixote_medio', -51.5, 126, { solida: 'caixa' })
 for (const [i, x, z] of [
@@ -80,15 +94,18 @@ for (const [i, x, z] of [
   [3, 20, 128],
 ] as const)
   por(`lampiao-${i}`, 'lampiao_01_pacote', x, z, { escala: 0.55 })
-for (const [i, x, z] of [
-  [0, 5, 140],
-  [1, 16, 139],
-  [2, -20, 135],
-  [3, -7, 120],
-  [4, 35, 143],
-  [5, 22, 166],
+for (const [i, x, z, texto, destino, via] of [
+  [0, 5, 140, 'Costa', 'costa', L.costa],
+  [1, 16, 139, 'Horta', 'horta', L.horta],
+  [2, -20, 135, 'Pátio', 'patio', L.patio],
+  [3, -7, 120, 'Farol', 'farol', L.farol],
+  [4, 35, 143, 'Lago', 'lago', { x: 58, z: 135 }],
+  [5, 22, 166, 'Píer', 'pier', L.descida],
 ] as const)
-  por(`placa-${i}`, 'placa_seta', x, z, { giro: i % 2 ? Math.PI / 2 : -Math.PI / 2 })
+  por(`placa-${i}`, 'placa_seta', x, z, {
+    giro: -Math.atan2(via.z - z, via.x - x),
+    sinal: { texto, destino, via },
+  })
 const arvores = [
   [-29, 150],
   [-26, 151],
@@ -213,6 +230,15 @@ export const IRIS_DE_ESTUDO = {
 
 /** Retomar no terreno sob uma caixa ou ponte colocaria o avatar dentro do objeto. */
 export function pontoLivreParaRetomar(p: { x: number; z: number }, raio: number): boolean {
+  if (pontoNoContorno(LAGO_DA_FAISCA.furo, p.x, p.z)) return false
+  for (let i = 0; i < LAGO_DA_FAISCA.furo.length; i++) {
+    const a = LAGO_DA_FAISCA.furo[i]!,
+      b = LAGO_DA_FAISCA.furo[(i + 1) % LAGO_DA_FAISCA.furo.length]!,
+      dx = b.x - a.x,
+      dz = b.z - a.z
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz)))
+    if (Math.hypot(p.x - a.x - t * dx, p.z - a.z - t * dz) < raio) return false
+  }
   if (sobreVolumeDaVila(p, raio)) return false
   for (const o of COMPOSICAO_DA_FAISCA) {
     if (!o.solida) continue

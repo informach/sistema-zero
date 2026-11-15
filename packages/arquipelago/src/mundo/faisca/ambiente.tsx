@@ -19,6 +19,7 @@ interface Bloco {
 function partesDaVila() {
   const partes: Bloco[] = []
   for (const v of VOLUMES_DA_VILA) {
+    if (v.id === 'correio' || v.id === 'bancada') continue
     const y = baseDoVolume(v).alto
     const por = (
       x: number,
@@ -55,24 +56,14 @@ function partesDaVila() {
       por(0, 0.84, 0.21, 0.4, 0.16, 0.03, '#e1b34b')
       for (const x of [-0.15, 0, 0.15]) por(x, 1, 0.21, 0.09, 0.18, 0.03, '#e1b34b')
     } else {
-      const bancada = v.id === 'correio' || v.id === 'bancada',
-        h = bancada ? 0.78 : 0.44
+      const h = 0.44
       por(0, h, 0, v.largura, 0.15, v.profundidade)
       for (const x of [-v.largura / 2 + 0.2, v.largura / 2 - 0.2]) {
         const base = pisoDaFaisca(v.x + x, v.z),
           altura = y + h - base
         por(x, base - y + altura / 2, 0, 0.16, altura, v.profundidade * 0.7, '#644b34')
       }
-      if (!bancada) por(0, 0.8, -0.28, v.largura, 0.32, 0.12, '#b58b52')
-      else if (v.id === 'correio')
-        for (let i = 0; i < 3; i++) {
-          por((i - 1) * 0.7, 0.98, 0, 0.55, 0.25, 0.55, '#e1c895')
-          por((i - 1) * 0.7, 1.12, 0, 0.4, 0.03, 0.3, '#eee3c8')
-        }
-      else {
-        por(-0.55, 0.94, 0, 0.7, 0.18, 0.45, '#7a8580')
-        por(0.55, 1.02, 0, 0.16, 0.4, 0.65, '#bba06c', 0.3)
-      }
+      por(0, 0.8, -0.28, v.largura, 0.32, 0.12, '#b58b52')
     }
   }
   // Selo ambiental da coroa nas peças recolhidas, sem conceder objetos ou missão.
@@ -140,7 +131,7 @@ export function AmbienteDaVila() {
       {[...grupos].map(([cor, partes]) => (
         <Blocos key={cor} cor={cor} partes={partes} geometria={geo} />
       ))}
-      {VOLUMES_DA_VILA.map((v) => {
+      {VOLUMES_DA_VILA.filter((v) => v.id !== 'correio' && v.id !== 'bancada').map((v) => {
         const b = baseDoVolume(v),
           h = v.altura + b.alto - b.baixo
         return (

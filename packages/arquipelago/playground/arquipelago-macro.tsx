@@ -43,6 +43,7 @@ import {
   paraLocal,
   territorioEm,
 } from '../src/sistemas/geografia-do-arquipelago'
+import { LAGO_DA_FAISCA } from '../src/sistemas/lago-da-faisca'
 import type { MedicaoDePercurso } from '../src/sistemas/medicao-de-percurso'
 import { estadoDaPonte, SEGUNDOS_PARA_RECONSTRUIR } from '../src/sistemas/ponte-do-arquipelago'
 import {
@@ -50,6 +51,7 @@ import {
   ROTA_DA_PROVA,
   tipoDaCuradoria,
 } from '../src/sistemas/prova-curadoria-faisca'
+import { LAGO_DE_CATALOGO, pisoDoRefino } from '../src/sistemas/refino-da-faisca'
 import { LADO_DO_SETOR } from '../src/sistemas/setores-do-arquipelago'
 import { ConversaDaIrisDeEstudo } from './faisca-interface'
 import { CameraDaCaptura, vistaDaFaisca } from './faisca-vistas'
@@ -58,10 +60,19 @@ import { ESTILOS_MACRO, InterfaceMacro, type MedidaMacro } from './macro-interfa
 
 const VISTA = vistaDaFaisca(new URLSearchParams(location.search).get('vista'))
 const CURADORIA = tipoDaCuradoria(new URLSearchParams(location.search).get('curadoria'))
+const PISO = pisoDoRefino(new URLSearchParams(location.search).get('refino'))
+const AGUA_AVENTURA = new URLSearchParams(location.search).get('agua') === 'aventura'
+const ROTAS_SEM_PILOTO = PISO
+  ? ROTAS_COMPLETAS_DA_FAISCA.filter((r) => r.id !== 'praca-horta')
+  : ROTAS_COMPLETAS_DA_FAISCA
+const CHAVE_ATIVA =
+  PISO || new URLSearchParams(location.search).has('lago')
+    ? `${CHAVE_DO_ENSAIO}:gate21:${PISO ?? 'base'}:${LAGO_DE_CATALOGO ? 'l2' : 'l1'}`
+    : CHAVE_DO_ENSAIO
 const ROTAS_DO_SOLO =
   CURADORIA === 'a'
     ? [
-        ...ROTAS_COMPLETAS_DA_FAISCA,
+        ...ROTAS_SEM_PILOTO,
         {
           id: 'prova-curadoria',
           nome: 'Ensaio de caminhos',
@@ -69,7 +80,7 @@ const ROTAS_DO_SOLO =
           pontos: ROTA_DA_PROVA,
         },
       ]
-    : ROTAS_COMPLETAS_DA_FAISCA
+    : ROTAS_SEM_PILOTO
 
 const CONEXOES = ARQUIPELAGO.slice(1).map((i) => conexaoDaIlha(i.id))
 const PONTE = conexaoDaIlha('bosque')
@@ -87,6 +98,7 @@ const VAZIA: MedidaMacro = {
   texturas: 0,
   setores: 0,
   giroCamera: 0,
+  nadando: false,
 }
 
 function MundoMacro({
@@ -154,6 +166,7 @@ function MundoMacro({
       texturas: gl.info.memory.textures,
       setores: setores.current,
       giroCamera: rastro.giro,
+      nadando: loja.getState().nadando,
     })
     a.tempo = 0
     a.quadros = 0
@@ -211,9 +224,18 @@ function MundoMacro({
               progresso={progresso}
             />
           ))}
-          <CaminhosDaFaisca marcos={!VISTA} />
+          <CaminhosDaFaisca
+            marcos={!VISTA && new URLSearchParams(location.search).get('debug') === 'lugares'}
+          />
           <MedirPercurso pedido={pedidoMedicao} aoMudar={aoMedicao} />
-          <PilotoDaFaisca key={tentativaArte} aoMudar={aoArte} curadoria={CURADORIA} />
+          <PilotoDaFaisca
+            key={tentativaArte}
+            aoMudar={aoArte}
+            curadoria={CURADORIA}
+            piso={PISO}
+            aguaAventura={AGUA_AVENTURA}
+            noite={noite}
+          />
           <Personagem partida={partida} interior={FORA_DE_CASA} />
           {VISTA ? (
             <CameraDaCaptura vista={VISTA} />
@@ -236,7 +258,7 @@ function Blockout() {
       return { ensaio, erro: null }
     }
     try {
-      return { ensaio: lerEnsaio(localStorage.getItem(CHAVE_DO_ENSAIO)), erro: null }
+      return { ensaio: lerEnsaio(localStorage.getItem(CHAVE_ATIVA)), erro: null }
     } catch (e) {
       return {
         ensaio: ensaioInicial(),
@@ -304,7 +326,9 @@ function Blockout() {
   }, [pausar])
   useEffect(() => {
     contexto.movimento.aguas = [
-      { id: 'lago-dos-campos', x: 58, z: 127, raioX: 8, raioZ: 4, giro: 0, y: 3.65 },
+      LAGO_DE_CATALOGO
+        ? LAGO_DA_FAISCA.agua
+        : { id: 'lago-dos-campos', x: 58, z: 127, raioX: 8, raioZ: 4, giro: 0, y: 3.65 },
     ]
     contexto.ambiente.noite = noite
   }, [contexto, noite])
@@ -316,7 +340,7 @@ function Blockout() {
   const guardar = useCallback(() => {
     if (inicial.erro || VISTA || CURADORIA) return
     try {
-      localStorage.setItem(CHAVE_DO_ENSAIO, JSON.stringify(ensaio.current))
+      localStorage.setItem(CHAVE_ATIVA, JSON.stringify(ensaio.current))
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível guardar este ensaio.')
     }
@@ -435,7 +459,7 @@ function Blockout() {
           aoReconstruir={() => setConstruindoDesde(0)}
           aoIr={ir}
           aoReiniciar={() => {
-            localStorage.removeItem(CHAVE_DO_ENSAIO)
+            localStorage.removeItem(CHAVE_ATIVA)
             location.reload()
           }}
           noite={noite}

@@ -6,7 +6,11 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const base = process.env.ARQUIPELAGO_QA_URL ?? 'http://127.0.0.1:4530'
-const saida = resolve(import.meta.dirname, '../../../output/faisca-gate2/movimento')
+const saida = resolve(
+  import.meta.dirname,
+  process.env.FAISCA_MOVIMENTO_DIR ?? '../../../output/faisca-gate2/movimento',
+)
+const extra = process.env.FAISCA_MOVIMENTO_QUERY ?? ''
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({
   channel: 'chrome',
@@ -30,10 +34,15 @@ async function iniciar(x, z, ritmo = 'explorar', curadoria = false) {
     recordVideo: { dir: resolve(saida, 'brutos'), size: { width: 960, height: 600 } },
   })
   await contexto.addInitScript(
-    ({ x, z }) => {
-      if (!localStorage.getItem('arquipelago:faisca:ensaio'))
+    ({ x, z, extra }) => {
+      const q = new URLSearchParams(extra),
+        chave =
+          q.has('refino') || q.has('lago')
+            ? `arquipelago:faisca:ensaio:gate21:${q.get('refino') ?? 'base'}:${q.get('lago') === 'l2' ? 'l2' : 'l1'}`
+            : 'arquipelago:faisca:ensaio'
+      if (!localStorage.getItem(chave))
         localStorage.setItem(
-          'arquipelago:faisca:ensaio',
+          chave,
           JSON.stringify({
             versao: 2,
             ponteInstalada: false,
@@ -42,12 +51,14 @@ async function iniciar(x, z, ritmo = 'explorar', curadoria = false) {
           }),
         )
     },
-    { x, z },
+    { x, z, extra },
   )
   const page = await contexto.newPage(),
     t0 = Date.now()
   page.on('pageerror', (e) => erros.push(e.message))
-  await page.goto(`${base}/macro?ritmo=${ritmo}${curadoria ? '&curadoria=b' : ''}`)
+  await page.goto(
+    `${base}/macro?ritmo=${ritmo}${curadoria ? '&curadoria=b' : ''}${extra ? `&${extra}` : ''}`,
+  )
   await pronto(page)
   await page.addStyleTag({
     content: '.macro-topo,.macro-painel,.macro-conexao{visibility:hidden!important} ',

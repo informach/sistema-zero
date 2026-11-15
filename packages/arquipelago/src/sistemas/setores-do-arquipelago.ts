@@ -1,4 +1,7 @@
+import { ShapeUtils, Vector2 } from 'three'
 import { alturaDoTerritorio, type IlhaDoArquipelago } from './geografia-do-arquipelago'
+import { LAGO_DA_FAISCA } from './lago-da-faisca'
+import { LAGO_DE_CATALOGO } from './refino-da-faisca'
 
 export const LADO_DO_SETOR = 80
 export const RAIO_DE_SETORES = 2
@@ -49,12 +52,13 @@ export function malhaDoSetor(
   setorX: number,
   setorZ: number,
   passo = PASSO_DO_TERRENO,
+  lagoDeCatalogo = LAGO_DE_CATALOGO,
 ) {
   if (!Number.isFinite(passo) || passo <= 0 || LADO_DO_SETOR % passo !== 0)
     throw new Error('O passo deve dividir o lado do setor')
   const n = LADO_DO_SETOR / passo
   const vertices = new Float32Array((n + 1) ** 2 * 3)
-  const indices = new Uint32Array(n * n * 6)
+  const indices: number[] = []
   for (let z = 0; z <= n; z++)
     for (let x = 0; x <= n; x++) {
       const px = setorX * LADO_DO_SETOR + x * passo
@@ -62,15 +66,53 @@ export function malhaDoSetor(
       const i = (z * (n + 1) + x) * 3
       vertices.set([px, alturaDoTerritorio(ilha, px, pz), pz], i)
     }
-  let i = 0
+  const recorte = ilha.id === 'sua-ilha' && lagoDeCatalogo ? LAGO_DA_FAISCA.retangulo : null
+  const temRecorte =
+    recorte &&
+    recorte.minX >= setorX * LADO_DO_SETOR &&
+    recorte.maxX <= (setorX + 1) * LADO_DO_SETOR &&
+    recorte.minZ >= setorZ * LADO_DO_SETOR &&
+    recorte.maxZ <= (setorZ + 1) * LADO_DO_SETOR
   for (let z = 0; z < n; z++)
     for (let x = 0; x < n; x++) {
+      if (
+        temRecorte &&
+        x * passo + setorX * LADO_DO_SETOR >= recorte.minX &&
+        (x + 1) * passo + setorX * LADO_DO_SETOR <= recorte.maxX &&
+        z * passo + setorZ * LADO_DO_SETOR >= recorte.minZ &&
+        (z + 1) * passo + setorZ * LADO_DO_SETOR <= recorte.maxZ
+      )
+        continue
       const a = z * (n + 1) + x
       const b = a + n + 1
-      indices.set([a, b, a + 1, a + 1, b, b + 1], i)
-      i += 6
+      indices.push(a, b, a + 1, a + 1, b, b + 1)
     }
-  return { vertices, indices }
+  if (temRecorte) {
+    const r = recorte,
+      borda: Vector2[] = []
+    for (let x = r.minX; x < r.maxX; x += passo) borda.push(new Vector2(x, r.minZ))
+    for (let z = r.minZ; z < r.maxZ; z += passo) borda.push(new Vector2(r.maxX, z))
+    for (let x = r.maxX; x > r.minX; x -= passo) borda.push(new Vector2(x, r.maxZ))
+    for (let z = r.maxZ; z > r.minZ; z -= passo) borda.push(new Vector2(r.minX, z))
+    const furo = LAGO_DA_FAISCA.furo.map((p) => new Vector2(p.x, p.z))
+    const faces = ShapeUtils.triangulateShape(borda, [furo]),
+      pontos = [...borda, ...furo]
+    const base = vertices.length / 3,
+      adicionais = pontos.flatMap((p) => [p.x, alturaDoTerritorio(ilha, p.x, p.y), p.y])
+    for (const face of faces) {
+      const [a, b, c] = face as [number, number, number],
+        p = pontos[a]!,
+        q = pontos[b]!,
+        s = pontos[c]!
+      const cima = (q.y - p.y) * (s.x - p.x) - (q.x - p.x) * (s.y - p.y)
+      indices.push(base + a, base + (cima > 0 ? b : c), base + (cima > 0 ? c : b))
+    }
+    return {
+      vertices: new Float32Array([...vertices, ...adicionais]),
+      indices: new Uint32Array(indices),
+    }
+  }
+  return { vertices, indices: new Uint32Array(indices) }
 }
 
 /** Leque simplificado com bordas na mesma grade de 4 m do detalhe: não abre emendas de LOD. */

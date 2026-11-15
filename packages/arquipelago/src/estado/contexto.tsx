@@ -88,6 +88,8 @@ export interface AguaRasa {
   giro: number
   /** A altura da superfície. */
   y: number
+  /** Contorno local extraído do modelo; sem ele continua a elipse existente. */
+  contorno?: readonly { x: number; z: number }[]
 }
 
 export interface TroncoVivo {

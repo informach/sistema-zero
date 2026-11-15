@@ -207,8 +207,9 @@ function relevoNaturalDaFaisca(x: number, z: number): number {
   const colina = 6 * (1 - suave(6, 40, Math.hypot(x - BASE_DO_FAROL.x, z - BASE_DO_FAROL.z)))
   const longe = suave(85, 150, Math.hypot(x, z - 140))
   const norte = 8 * longe * (0.5 + 0.5 * Math.sin(x / 67) * Math.cos(z / 81))
+  // A bacia agora é a malha do lago de catálogo, num furo do setor, não uma depressão paralela.
   const lago = Math.hypot((x - l.lago.x) / 9, (z - l.lago.z) / 4.8)
-  return colina + norte - 2.4 * (1 - suave(0.45, 1, lago))
+  return colina + norte - (LAGO_DE_CATALOGO ? 0 : 2.4 * (1 - suave(0.45, 1, lago)))
 }
 const patamaresComAltura = Object.values(PATAMARES_DA_FAISCA).map((p) => ({
   ...p,
@@ -223,3 +224,5 @@ export function relevoDaFaisca(x: number, z: number): number {
   }
   return h
 }
+
+import { LAGO_DE_CATALOGO } from './refino-da-faisca'

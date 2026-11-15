@@ -28,6 +28,7 @@ export interface MedidaMacro {
   texturas: number
   setores: number
   giroCamera: number
+  nadando: boolean
 }
 
 function BotaoMacro({ onClick, ...props }: ComponentProps<'button'>) {
@@ -230,6 +231,8 @@ export function InterfaceMacro({
           <dd>{medida.fps} / s</dd>
           <dt>Giro da câmera</dt>
           <dd>{medida.giroCamera.toFixed(3)} rad</dd>
+          <dt>Nadando</dt>
+          <dd>{medida.nadando ? 'sim' : 'não'}</dd>
           <dt>Setores com física</dt>
           <dd>{medida.setores}</dd>
           <dt>Chamadas de desenho</dt>
