@@ -80,6 +80,20 @@ export function avancoNaParede(daCasca: number): number {
   return daCasca - NA_PAREDE.aFrente
 }
 
+/** Empurrando: a face do que se empurra fica isto à frente da origem do desenho (0,30 m nativos). */
+export const NO_EMPURRAR = {
+  aFrente: medidaDoLugar('empurrar', 'plano_a_frente_m', 0.3),
+} as const
+
+/**
+ * Quanto o desenho anda para a frente empurrando: no jogo a face encosta na cápsula, a `daFace` do
+ * meio do corpo; no clipe, a `NO_EMPURRAR.aFrente` da origem. Negativo: recua (mais perto, a
+ * cabeça entraria no objeto; a arte avisou que essa distância quase não pode mudar).
+ */
+export function avancoNoEmpurrao(daFace: number): number {
+  return daFace - NO_EMPURRAR.aFrente
+}
+
 /**
  * Os patins do pack (só do jogo: fora da loja). A criança calça e o jogo veste esta peça no lugar
  * do calçado; as rodas ficam abaixo da sola, e o desenho sobe o que elas somam à altura do corpo.

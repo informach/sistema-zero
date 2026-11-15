@@ -49,6 +49,15 @@ export interface ItemDaArte {
   altura_que_soma_m?: number
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
+  /**
+   * Objeto de mão: como a mão fecha nele (o clipe dos dedos, o ponto da palma, o eixo do cabo) e,
+   * na barra do planador, a segunda mão.
+   */
+  pegada?: {
+    clipe_dedos?: string
+    mao?: string
+    segunda_mao?: { clipe_dedos?: string; mao?: string }
+  }
   /** Objeto de mão: o osso que o segura, a animação de usar e a luz dele. */
   segura?: {
     osso: string
@@ -93,6 +102,11 @@ export interface RegrasDaArte {
   fora_do_sorteio?: string[]
   /** Peça do pack → a peça nossa que entra no lugar dela. */
   substituicoes?: { pares: Record<string, string> }
+  /**
+   * Dentro de uma fantasia, a peça nossa (chave) entra no lugar da peça do pack (valor): fantasia →
+   * { nossa: do pack }. A do pack fica na biblioteca, fora da fantasia e do sorteio.
+   */
+  trocas_fantasia?: { pares: Record<string, Record<string, string>> }
   nao_combina?: { pares: Record<string, string[]> }
   festas?: Record<string, { rotulo: string; premio: string; pecas_do_tema: string[] } | string>
 }

@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Object3D } from 'three'
 import plantasGlb from '../assets/itens/plantas-do-ceu.glb'
 import { useEstado, useJogo } from '../estado/contexto'
+import { pedirGesto } from '../sistemas/gestos'
 import {
   colherNoJardim,
   painelDoCanteiroDoCeu,
@@ -77,7 +78,7 @@ function CanteiroDoCeu({
   giro: number
   agora: number
 }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const ceu = useEstado((s) => (s.visita ? null : s.salvamento.ceu))
   const planta = ceu ? plantaNoCanteiro(ceu, k) : null
   const fase = ceu ? estagioNoCeu(ceu, k, agora) : 'vazio'
@@ -110,6 +111,7 @@ function CanteiroDoCeu({
         const novo = colherNoJardim(s.salvamento, k, Date.now())
         if (!novo) return
         s.mudar(() => novo)
+        pedirGesto(movimento, 'PegarDoChao')
         s.dizer(TEXTOS_DO_JARDIM_DO_CEU.colheu(novo.florada))
         return
       }

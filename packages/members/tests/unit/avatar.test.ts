@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { AVATAR_CATALOG as C, equipPart, ownershipOf, withEars } from '@sistemazero/core/avatar'
+import { EquipAvatarService } from '../../src/application/avatar/equip-avatar.service'
 import { AvatarInvalidError, AvatarPartNotOwnedError } from '../../src/domain/avatar/avatar.errors'
 import {
   assertEquippableConfig,
@@ -75,6 +76,44 @@ describe('avatar do pack: leitura tolerante', () => {
     expect(canonicalizeAvatarConfig({ version: 3, slots: semOrelhas }, 'x').slots.orelhas).toBe(
       base().orelhas,
     )
+  })
+
+  test('quem vestia a fantasia de cavaleiro com o elmo antigo continua de cavaleiro, com o elmo novo', () => {
+    const conjunto = C.sets.fantasia_cavaleiro
+    if (!conjunto) throw new Error('sem a fantasia de cavaleiro')
+    const vestida = { ...base() } as Record<string, string>
+    for (const { slot, part } of conjunto.parts) vestida[slot] = part
+    vestida.chapeu = 'fantasia_cavaleiro_elmo_chifres_pacote'
+    const lido = canonicalizeAvatarConfig(
+      { version: 3, style: 'cute-v1', slots: vestida, customized: true },
+      'x',
+    )
+    expect(lido.customized).toBe(true)
+    expect(lido.slots.chapeu).toBe('chapeu_elmo_cavaleiro__na_fantasia_cavaleiro')
+    expect(lido.slots.fantasia).toBe(vestida.fantasia ?? '')
+  })
+})
+
+describe('avatar do pack: gravar com a parte antiga da fantasia', () => {
+  test('a tela que ainda manda o elmo antigo grava a fantasia com o elmo novo (sem 400)', async () => {
+    const conjunto = C.sets.fantasia_cavaleiro
+    if (!conjunto) throw new Error('sem a fantasia de cavaleiro')
+    const vestida = { ...base() } as Record<string, string>
+    for (const { slot, part } of conjunto.parts) vestida[slot] = part
+    vestida.chapeu = 'fantasia_cavaleiro_elmo_chifres_pacote'
+    let gravado: unknown = null
+    const repo = {
+      getConfig: async () => null,
+      listInventory: async () => ['fantasia_cavaleiro'],
+      upsertConfig: async (_u: string, _a: string, _au: string, config: unknown) => {
+        gravado = config
+      },
+    } as unknown as ConstructorParameters<typeof EquipAvatarService>[0]
+    const config = await new EquipAvatarService(repo, () => new Date()).execute('u', 'a', 'kids', {
+      slots: vestida,
+    })
+    expect(config.slots.chapeu).toBe('chapeu_elmo_cavaleiro__na_fantasia_cavaleiro')
+    expect((gravado as { slots: Record<string, string> }).slots.chapeu).toBe(config.slots.chapeu)
   })
 })
 

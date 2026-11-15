@@ -20,6 +20,7 @@ import {
   rotuloDaCompanhia,
 } from '../sistemas/companhia'
 import { type Cuidado, cuidar } from '../sistemas/cuidar'
+import { pedirGesto } from '../sistemas/gestos'
 import { ITENS, itensVisiveis } from '../sistemas/itens'
 import { diaDe } from '../sistemas/moradores'
 import { petDaMorada } from '../sistemas/pet-morada'
@@ -75,6 +76,9 @@ export function PainelDoBicho() {
     const s = loja.getState()
     const r = cuidar(s.salvamento, c, diaDe(new Date()))
     if (r.salvamento !== s.salvamento) s.mudar(() => r.salvamento)
+    // O banho: ela traz o balde com água (aparece quando o painel fecha).
+    if (c.tipo === 'banho' && r.salvamento !== s.salvamento)
+      pedirGesto(movimento, 'Segurar', 'mao_balde')
     bicho.getState().responder(r.falas, r.reacao)
   }
 

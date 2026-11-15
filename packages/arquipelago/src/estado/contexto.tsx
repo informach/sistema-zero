@@ -11,7 +11,9 @@ import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
+import type { ObjetoDoGesto } from '../sistemas/gestos'
 import type { Ida } from '../sistemas/ir-tocando'
+import type { Gesto } from '../sistemas/locomocao'
 import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
 import type { FilaDeSalvamento } from '../sistemas/salvar'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
@@ -241,6 +243,15 @@ export interface Movimento {
   corpoDesenhado: CorpoQueEmpurra | null
   /** Quantas vezes um morador acenou para ela (cada aceno novo, ela acena de volta, parada). */
   acenos: number
+  /**
+   * O último gesto que o mundo pediu (colher, plantar, regar, comemorar, dançar) e quantos já pediu:
+   * cada pedido novo, ela faz o gesto parada (`pedirGesto`), com o objeto dele na mão.
+   */
+  gesto: {
+    qual: Gesto
+    objeto: ObjetoDoGesto | null
+  } | null
+  gestos: number
   /** Ela tocou num lugar do chão e está indo para lá sozinha (`sistemas/ir-tocando.ts`). */
   ida: Ida | null
   /** O "Agora" pediu para levar até uma tarefa: os lugares dela (`LUGARES_DOS_LEMBRETES`). */
@@ -286,6 +297,8 @@ export function criarMovimento(): Movimento {
     foco: { x: 0, y: 0, z: 0 },
     corpoDesenhado: null,
     acenos: 0,
+    gesto: null,
+    gestos: 0,
     ida: null,
     levarAte: null,
     corrida: null,

@@ -2,6 +2,7 @@ import { ILHA_DO_PEDIDO, type MoradorDoPedido } from '@sistemazero/arquipelago-c
 import { useEffect, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
+import { pedirGesto } from '../sistemas/gestos'
 import {
   estadoDoPedidoDoEstudio,
   pedidoDoEstudio,
@@ -13,7 +14,7 @@ import {
  * abre o Estúdio de desafio por cima do jogo. Sem pedido publicado para a ilha, nada aparece.
  */
 export function PedidoDoEstudio({ quem }: { quem: MoradorDoPedido }) {
-  const { loja, plataforma } = useJogo()
+  const { loja, plataforma, movimento } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
   const dados = useDesafios(desafios, (s) => s.dados)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
@@ -33,6 +34,8 @@ export function PedidoDoEstudio({ quem }: { quem: MoradorDoPedido }) {
     setAviso(null)
     const r = await desafios.getState().jogar(pedido.id, pedido.revisao)
     if (r === 'nao-abriu') setAviso(TEXTOS_DO_PEDIDO_DO_ESTUDIO.naoAbriu)
+    // Voltou do Estúdio com o desafio feito: ela comemora.
+    if (r === 'feito') pedirGesto(movimento, 'Comemorar')
   }
 
   return (

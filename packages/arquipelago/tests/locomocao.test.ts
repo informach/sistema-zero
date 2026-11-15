@@ -17,11 +17,15 @@ import {
   ciclosPorSegundo,
   criarLocomocao,
   criarPoseDosClipes,
+  DANCAS,
   DURACAO_DA_SAIDA_DA_AGUA,
   DURACAO_DO_CLIPE,
+  dancaDaVez,
   duracaoDoEstado,
+  duracaoDoGesto,
   type EntradaDaLocomocao,
   ESTADOS,
+  GESTOS,
   POSE_DO_ESTADO,
   passoDaLocomocao,
   pesosNoChao,
@@ -33,11 +37,13 @@ import {
 } from '../src/sistemas/locomocao'
 import {
   avancoNaParede,
+  avancoNoEmpurrao,
   DESENHO_NA_AGUA,
   descidaDoEntrarNaAgua,
   desenhoPenduradoNaBorda,
   medidaDoLugar,
   NA_PAREDE,
+  NO_EMPURRAR,
   NO_PLANADOR,
   PATINS_NOS_PES,
   PENDURADO_NA_BORDA,
@@ -111,6 +117,121 @@ describe('os clipes do pack no catálogo', () => {
     expect(POSE_DO_ESTADO.Escorregar.clipe).toBe('escorregar')
     expect(POSE_DO_ESTADO.Montar.clipe).toBe('montado')
     expect(POSE_DO_ESTADO.Patinar.clipe).toBe('patinar')
+  })
+})
+
+describe('os gestos, a sela e os veículos (as animações novas da arte)', () => {
+  const parada = (gesto: EntradaDaLocomocao['gesto']): EntradaDaLocomocao => ({
+    ...chao(0),
+    gesto,
+  })
+
+  test('cada animação nova tem o estado dela, tocando o clipe da arte', () => {
+    const esperado: Record<string, string> = {
+      Levantar: 'levantar',
+      LevantarDaCama: 'levantar_da_cama',
+      Montando: 'montar',
+      Desmontar: 'desmontar',
+      PegarDoChao: 'pegar_do_chao',
+      Plantar: 'plantar',
+      PlantarAlto: 'plantar_alto',
+      Regar: 'regar',
+      Comemorar: 'comemorar',
+      Dirigir: 'dirigir',
+      NoVagonete: 'ajoelhado_no_vagonete',
+    }
+    for (const [estado, clipe] of Object.entries(esperado))
+      expect(POSE_DO_ESTADO[estado as keyof typeof POSE_DO_ESTADO].clipe).toBe(clipe as never)
+    // As seis danças, uma por estado, sem repetir.
+    expect(new Set(DANCAS.map((d) => POSE_DO_ESTADO[d].clipe)).size).toBe(6)
+    for (const g of GESTOS) expect(ESTADOS).toContain(g)
+  })
+
+  test('um gesto, parada, fica no lugar do Parado e toca uma vez (até o fim do clipe)', () => {
+    const l = rodar(undefined, parada('PegarDoChao'), 0.5)
+    expect(l.pesos.PegarDoChao).toBeCloseTo(1)
+    expect(l.pesos.Parado).toBeCloseTo(0)
+    expect(l.tempos.PegarDoChao).toBeCloseTo(0.5 / DURACAO_DO_CLIPE.pegar_do_chao, 1)
+    rodar(l, parada('PegarDoChao'), DURACAO_DO_CLIPE.pegar_do_chao)
+    expect(l.tempos.PegarDoChao).toBe(1)
+    expect(soma(l.pesos)).toBeCloseTo(1)
+    // Acabou: o Parado de volta.
+    rodar(l, chao(0), 0.5)
+    expect(l.pesos.Parado).toBeCloseTo(1)
+  })
+
+  test('o mesmo gesto pedido de novo (outra concha logo depois) recomeça o clipe', () => {
+    const l = rodar(undefined, { ...parada('PegarDoChao'), gestoVez: 1 }, 1)
+    expect(l.tempos.PegarDoChao).toBeGreaterThan(0.4)
+    rodar(l, { ...parada('PegarDoChao'), gestoVez: 2 }, 1 / 60)
+    expect(l.tempos.PegarDoChao).toBeLessThan(0.05)
+  })
+
+  test('o clipe do gesto anda no relógio do gesto mesmo antes de aparecer (ela ainda freando)', () => {
+    const l = rodar(undefined, { ...parada('PegarDoChao'), velocidade: VELOCIDADE_DO_ANDAR }, 0.5)
+    expect(l.pesos.PegarDoChao).toBeCloseTo(0)
+    expect(l.tempos.PegarDoChao).toBeCloseTo(0.5 / DURACAO_DO_CLIPE.pegar_do_chao, 1)
+  })
+
+  test('andar corta o gesto; um gesto novo começa do início', () => {
+    const l = rodar(undefined, parada('Regar'), 1)
+    rodar(l, { ...parada('Regar'), velocidade: VELOCIDADE_DO_ANDAR }, 0.5)
+    expect(l.pesos.Regar).toBeCloseTo(0)
+    expect(l.pesos.Andar).toBeCloseTo(1)
+    rodar(l, parada('Plantar'), 1 / 60)
+    expect(l.tempos.Plantar).toBeLessThan(0.05)
+  })
+
+  test('dançar é um laço; a festa troca de dança a cada vez', () => {
+    const l = rodar(undefined, parada('Dancar'), DURACAO_DO_CLIPE.dancar * 1.5)
+    expect(l.pesos.Dancar).toBeCloseTo(1)
+    expect(l.tempos.Dancar).toBeCloseTo(0.5, 1)
+    expect([0, 1, 2, 3, 4, 5, 6].map(dancaDaVez)).toEqual([...DANCAS, 'Dancar'])
+    expect(duracaoDoGesto('Dancar')).toBeGreaterThanOrEqual(5)
+    expect(duracaoDoGesto('PegarDoChao')).toBe(DURACAO_DO_CLIPE.pegar_do_chao)
+  })
+
+  test('nadando, no ar ou num modo especial, o gesto de chão não aparece', () => {
+    const agua = { ...parada('Comemorar'), nadando: true, noChao: false }
+    expect(rodar(undefined, agua, 0.5).pesos.Comemorar).toBe(0)
+    expect(rodar(undefined, { ...ar(-2), gesto: 'Comemorar' }, 0.5).pesos.Comemorar).toBe(0)
+    const cipo = { ...parada('Comemorar'), especial: 'cipo' as const }
+    expect(rodar(undefined, cipo, 0.5).pesos.Comemorar).toBe(0)
+  })
+
+  test('descendo da sela: o desmontar inteiro, no pulinho e no chão, sem pulo nem aterrissagem', () => {
+    const l = rodar(undefined, { ...ar(4), gesto: 'Desmontar' }, 0.3)
+    expect(l.pesos.Desmontar).toBeCloseTo(1, 1)
+    expect(l.pesos.Pulo).toBeCloseTo(0, 1)
+    passoDaLocomocao(l, parada('Desmontar'), 1 / 60)
+    expect(l.pesos.Aterrissagem).toBe(0)
+    rodar(l, parada('Desmontar'), 0.5)
+    expect(l.pesos.Desmontar).toBeCloseTo(1)
+  })
+
+  test('na sela alta (o dino), direto no laço de montada, como no vagonete', () => {
+    const l = rodar(undefined, { ...chao(0), especial: 'montar' }, 0.5)
+    expect(l.pesos.Montando).toBe(0)
+    expect(l.pesos.Montar).toBeGreaterThan(0.8)
+  })
+
+  test('na sela baixa: o subir na sela uma vez, depois o laço de montada', () => {
+    const montada = { ...chao(0), especial: 'montar' as const, selaBaixa: true }
+    const l = rodar(undefined, montada, 0.5)
+    expect(l.pesos.Montando).toBeGreaterThan(0.8)
+    rodar(l, montada, DURACAO_DO_CLIPE.montar + 1)
+    expect(l.pesos.Montar).toBeCloseTo(1)
+    // Desceu e subiu de novo: o montar toca outra vez.
+    rodar(l, chao(0), 0.5)
+    rodar(l, montada, 0.3)
+    expect(l.pesos.Montando).toBeGreaterThan(0.5)
+  })
+
+  test('os veículos: ao volante e ajoelhada no vagonete', () => {
+    const veiculo = (especial: 'dirigir' | 'vagonete') =>
+      rodar(undefined, { ...chao(0), especial }, 1).pesos
+    expect(veiculo('dirigir').Dirigir).toBeCloseTo(1)
+    expect(veiculo('vagonete').NoVagonete).toBeCloseTo(1)
   })
 })
 
@@ -227,7 +348,6 @@ describe('máquina de estados', () => {
     const modo = (especial: EntradaDaLocomocao['especial'], velocidade = 0) =>
       rodar(undefined, { velocidade, noChao: true, velY: 0, nadando: false, especial }, 1).pesos
     expect(modo('planar').Planar).toBeCloseTo(1)
-    expect(modo('montar').Montar).toBeCloseTo(1)
     expect(modo('escalada', 0.5).Escalar).toBeCloseTo(1)
     expect(modo('cipo').Corda).toBeCloseTo(1)
     expect(modo('borda').PendurarBorda).toBeCloseTo(1)
@@ -430,6 +550,11 @@ describe('as animações da arte no lugar', () => {
     expect(BARRA_NO_AVATAR).toEqual({ y: NO_PLANADOR.barra, z: NO_PLANADOR.aFrente })
     // Na escalada, o desenho chega à casca: a parede do clipe cai onde a casca está.
     expect(avancoNaParede(0.5) + NA_PAREDE.aFrente).toBeCloseTo(0.5, 9)
+    // Empurrando, a face fica a 0,30 m nativos da origem do desenho: o corpo encosta mais perto
+    // (raio + folga), então o desenho recua.
+    expect(NO_EMPURRAR.aFrente).toBeCloseTo(medidaDoLugar('empurrar', 'plano_a_frente_m'), 9)
+    expect(avancoNoEmpurrao(CORPO.raio + CORPO.folga)).toBeLessThan(0)
+    expect(avancoNoEmpurrao(0.4) + NO_EMPURRAR.aFrente).toBeCloseTo(0.4, 9)
     // Montada, a origem do desenho (a sela do clipe `montado`) vai à sela do dino.
     expect(MONTARIA.subidaDoDesenho).toBeCloseTo(MONTARIA.sela, 9)
     // Os patins: peça do pack só do jogo (fora da loja), que soma as rodas à altura do corpo.
