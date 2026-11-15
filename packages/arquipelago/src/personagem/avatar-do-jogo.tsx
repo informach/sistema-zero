@@ -16,6 +16,7 @@ import {
   type RefObject,
   Suspense,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -36,12 +37,20 @@ import {
   criarLocomocao,
   criarPoseDosClipes,
   type EntradaDaLocomocao,
+  type PoseDosClipes,
   passoDaLocomocao,
   poseDosClipes,
 } from '../sistemas/locomocao'
 import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
+import {
+  type ApoioDasMaos,
+  acharBracos,
+  type BracosDoAvatar,
+  maoAgarrada,
+  maoNoApoio,
+} from './maos-no-apoio'
 import {
   BracoComObjeto,
   camadasDoBraco,
@@ -183,6 +192,7 @@ export function AvatarDoJogo({
   planando = false,
   objetoDoGesto = null,
   semChapeu = false,
+  apoioDasMaos,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -197,6 +207,8 @@ export function AvatarDoJogo({
   objetoDoGesto?: ObjetoDeMao | null
   /** Deitada e levantando da cama, o chapéu sai (`hatOff` dos clipes da arte). */
   semChapeu?: boolean
+  /** Onde as mãos se seguram agora (a quina, a escada), no mundo; `null` solta. */
+  apoioDasMaos?: RefObject<ApoioDasMaos | null>
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
   const pausado = useEstado(jogoPausado)
@@ -297,6 +309,16 @@ export function AvatarDoJogo({
                 pausado={pausado}
               />
             ) : null}
+            {/* Depois dos pés: o quadril que baixou já levou os ombros. */}
+            {apoioDasMaos ? (
+              <MaosNoApoio
+                apoio={apoioDasMaos}
+                raiz={visualRef}
+                corpo={personagem}
+                pose={pose}
+                pausado={pausado}
+              />
+            ) : null}
           </Suspense>
         </PackRigBoundary>
       </group>
@@ -339,6 +361,67 @@ function PesNoChao({
     // Parte da pose do mixer (na pausa ele não reescreve: o ajuste do quadro anterior somaria).
     limpa.current.antes()
     assentarOsPes(pernas.current, r, chao, peso.current)
+    limpa.current.depois()
+  })
+  return null
+}
+
+/** As medidas de cada clipe do jogo no catálogo (as mãos agarradas, para a IK das mãos). */
+const CLIPE_NO_CATALOGO = new Map(AVATAR_CATALOG.base.skeleton.game.clips.map((c) => [c.id, c]))
+
+/**
+ * As mãos no apoio de verdade (a quina da borda, os montantes da escada), depois da pose e dos pés
+ * (`maos-no-apoio.ts`). Cada mão entra aos poucos quando o clipe a tem agarrada e sai quando solta.
+ */
+function MaosNoApoio({
+  apoio,
+  raiz,
+  corpo,
+  pose,
+  pausado,
+}: {
+  apoio: RefObject<ApoioDasMaos | null>
+  raiz: RefObject<Group | null>
+  corpo: RefObject<Group | null>
+  pose: RefObject<PoseDosClipes>
+  pausado: boolean
+}) {
+  const bracos = useRef<BracosDoAvatar | null>(null)
+  const limpa = useRef<PoseLimpa | null>(null)
+  const peso = useRef({ esquerda: 0, direita: 0 })
+  useEffect(
+    () => () => {
+      limpa.current?.soltar()
+      limpa.current = null
+    },
+    [],
+  )
+  useFrame((_, dt) => {
+    const r = raiz.current
+    const c = corpo.current
+    const atual = pose.current
+    if (!r?.visible || !c || !atual) return
+    if (!bracos.current?.direita[0].parent) {
+      bracos.current = acharBracos(c)
+      const b = bracos.current
+      limpa.current = b
+        ? new PoseLimpa([...b.esquerda.slice(0, 3), ...b.direita.slice(0, 3)])
+        : null
+    }
+    const b = bracos.current
+    if (!b || !limpa.current) return
+    // O clipe que manda neste quadro (o de maior peso) diz que mão está agarrada.
+    let maior: ClipeDoJogo | null = null
+    for (const id of CLIPES_DO_JOGO) if (!maior || atual[id].peso > atual[maior].peso) maior = id
+    const clipe = maior ? CLIPE_NO_CATALOGO.get(maior) : undefined
+    const tempo = maior ? atual[maior].tempo : 0
+    const sobre = apoio.current
+    limpa.current.antes()
+    for (const lado of ['esquerda', 'direita'] as const) {
+      const quer = sobre && maoAgarrada(clipe, tempo, lado) ? 1 : 0
+      if (!pausado) peso.current[lado] = suavizarPeso(peso.current[lado], quer, dt)
+      if (sobre) maoNoApoio(b, lado, r, sobre, peso.current[lado])
+    }
     limpa.current.depois()
   })
   return null

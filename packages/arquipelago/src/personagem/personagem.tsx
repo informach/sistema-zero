@@ -79,6 +79,7 @@ import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, obraVisivel, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
 import { CORDA_NO_CORPO, INCLINACAO_NO_CIPO } from './bracos'
+import { type ApoioDasMaos, apoioDaEscada } from './maos-no-apoio'
 import { AJUSTE_MAXIMO, type AlturaDoChao } from './pes-no-chao'
 import { PlanadorAberto } from './planador-aberto'
 
@@ -210,6 +211,8 @@ export function Personagem() {
   /** O objeto do gesto na mão (o regador, o balde): muda só quando o gesto começa e acaba. */
   const [objetoDoGesto, setObjetoDoGesto] = useState<ObjetoDoGesto | null>(null)
   const objetoMostrado = useRef<ObjetoDoGesto | null>(null)
+  /** O apoio das mãos neste passo (`maos-no-apoio.ts`), lido pelo desenho depois da pose. */
+  const apoioDasMaos = useRef<ApoioDasMaos | null>(null)
   /** Deitada e levantando da cama, sem o chapéu (os clipes da arte tiram o chapéu). */
   const deitada = useEstado((s) => s.descanso === 'deitar')
   const [levantandoDaCama, setLevantandoDaCama] = useState(false)
@@ -567,6 +570,13 @@ export function Personagem() {
     })
     m.gesto = gesto.qual
     m.gestoVez = gesto.vez
+    // Onde as mãos se seguram (a IK das mãos): a quina da borda pendurada, os montantes da escada.
+    apoioDasMaos.current =
+      v.modo === 'borda' && v.borda && v.subindoNaBorda === 0
+        ? { segmentos: [{ a: v.borda.a, b: v.borda.b }] }
+        : v.modo === 'escada' && v.escada
+          ? apoioDaEscada(v.escada)
+          : null
     if (gesto.objeto !== objetoMostrado.current) {
       objetoMostrado.current = gesto.objeto
       setObjetoDoGesto(gesto.objeto)
@@ -799,6 +809,7 @@ export function Personagem() {
             planando={planando && comPlanador}
             objetoDoGesto={objetoDoGesto}
             semChapeu={deitada || levantandoDaCama}
+            apoioDasMaos={apoioDasMaos}
           />
           {comPlanador ? (
             <Suspense fallback={null}>
