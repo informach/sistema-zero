@@ -1,6 +1,6 @@
 # Transformando o vilão em aliado
 
-Minicurso gratuito para pais, feito a partir da aula aberta de 13/11/2026 com a Vivianne Lima, psicóloga. Sete aulas curtas, de 8 a 12 minutos, com a Helena na câmera e as ideias da Vivianne na voz da Helena. Fica em **Cursos para pais**, na área dos pais do Kids. A família recebe o curso de presente por uma campanha, pelo mesmo caminho do presente do Cadê Todo Mundo, e no fim ganha o Cadê por 7 dias.
+Minicurso gratuito para pais, feito a partir da aula aberta de 13/11/2026 com a Vivianne Lima, psicóloga. Sete aulas curtas, de 6 a 10 minutos (a confirmar depois da gravação), com a Helena na câmera e as ideias da Vivianne na voz da Helena. Fica em **Cursos para pais**, na área dos pais do Kids. A família recebe o curso de presente por uma campanha, pelo mesmo caminho do presente do Cadê Todo Mundo, e no fim ganha o Cadê por 7 dias.
 
 | Material | Arquivo |
 | --- | --- |
@@ -32,12 +32,12 @@ Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as
 1. No Admin, criar o curso com audiência Kids e **Para quem: Pais** (fica fora da Jornada; só gravado). Título e descrições em [Módulos](modulos.md).
 2. Criar as sete aulas e importar cada manifesto. Os vídeos entram como vídeo planejado; depois, vincular cada gravação.
 3. Anexar a [apostila](apostila.pdf) no bloco de materiais da Aula 1 (`apostila`, com prévia em livro).
-4. **Presente do fim (Aula 7):** criar no Admin, em Embaixadores, uma campanha Kids (entrega o Cadê Todo Mundo por 7 dias e o teste do Mural) e trocar o texto provisório do bloco `presente` pelo link `/bolsa/<código>`.
+4. **Presente do fim (Aula 7):** criar no Admin, em Embaixadores, uma campanha Kids (entrega o Cadê Todo Mundo por 7 dias e o teste do Mural) e acrescentar ao bloco `presente` o item de link `/bolsa/<código>` (o texto que já está nele continua).
 5. **O minicurso de presente:** hoje a campanha só entrega o Cadê (o curso do presente é o mesmo para todas as campanhas). Para uma campanha entregar este minicurso, a campanha precisa passar a escolher o curso e o prazo. É a Fase 2 do plano, ainda não implementada.
 
 ## Pendências de produção
 
-- Gravar os 15 clipes e editar com os slides e os depoimentos.
+- Gravar os 16 clipes e editar com os slides e os depoimentos. A Aula 4 tem ainda uma parte só com o quiz, sem gravação.
 - Confirmar a autorização da família da Isabela para o vídeo num curso.
 - Arte da capa da apostila e do curso: a provisória usa a ilustração do slide 9 da aula aberta (880 px). A receita pede pelo menos 1300 px de largura: trocar quando houver a arte final.
 - Link do presente na Aula 7 (passo 4 acima).

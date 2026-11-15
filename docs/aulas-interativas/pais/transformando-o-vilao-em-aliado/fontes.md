@@ -7,7 +7,7 @@
 - Transcrição da noite (anotações do Gemini): `Downloads/Palestra Vivi/Transformando o vilão em Aliado - 2026_11_13 19_36 GMT-03_00 - Anotações do Gemini.docx`. A gravação está no `.mp4` ao lado.
 - Áudios da Vivianne com a direção da conversa: `Downloads/Palestra Vivi/Slides/Transcrição da apresentação da Vivi e dos novos áudios.md`. Quando divergem, os áudios mais recentes (WhatsApp) valem sobre o "ViviApresentação".
 
-Os roteiros não acrescentam ideias que não estavam na noite. A organização mudou: a parte comercial e a apresentação da plataforma saíram, a segurança da plataforma também (quem faz o curso já está dentro dela), e o presente ficou só no fim.
+Os roteiros não acrescentam ideias que não estavam na noite, nas notas de condução dos slides ou nos áudios de preparação da Vivianne. Nada que não aconteceu na noite é contado como se tivesse acontecido (exemplos de exercício vêm como "exemplos para ajudar", e frases dos áudios vêm como "a Vivianne gosta de dizer"). A organização mudou: a parte comercial e a apresentação da plataforma saíram, a segurança da plataforma também (quem faz o curso já está dentro dela), e o presente ficou só no fim.
 
 ## Depoimentos em vídeo
 
@@ -21,6 +21,7 @@ Os vídeos já cortados para a palestra estão dentro do pptx v7 (pasta `ppt/med
 | 3 | 15 | Harle (pai do Jeffrey), Daniel, Débora, Flávia |
 | 5 | 20 | Daniel, Harle, Flávia |
 | 5 | 21 | Isabela (31 segundos) |
+| 6 | 25 | Bernardo, Rafael, Jeffrey e Fernando, sobre o que sentem ao criar |
 | 7 | 28 | Débora, Daniel, Harle |
 
 ⚠️ **Antes de publicar:** confirmar a autorização da família da Isabela para o vídeo dela num curso (a autorização dada foi para a palestra). As frases do André e da Débora, filhos da Helena, são autorizadas.

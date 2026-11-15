@@ -35,16 +35,20 @@ Muita criança diz: eu fiz isso porque o meu personagem fez. A Vivianne dá um e
 **Fala da Helena:**
 
 ```text
-Agora um desafio de noventa segundos, o mesmo que eu fiz com a plateia. Olhe a grade. A bolinha azul precisa chegar até a estrela sem passar pelos quadrados escuros. As instruções possíveis são subir, descer, ir para a direita e ir para a esquerda. Quais instruções você daria, uma depois da outra?
+Agora um desafio de noventa segundos, o mesmo que eu mostrei na palestra. Olhe a grade. A bolinha azul precisa chegar até a estrela sem passar pelos quadrados escuros. As instruções possíveis são subir, descer, ir para a direita e ir para a esquerda. Quais instruções você daria, uma depois da outra?
 
 Isso é programar: passar um passo a passo para que alguém, ou um programa, execute e chegue a um objetivo. Em cada parte de um jogo é assim.
 
-Pense na sua sequência e responda logo abaixo. Se a primeira tentativa não der certo, tudo bem. Esse é justamente o assunto da próxima parte.
+Pense na sua sequência com calma. Depois clique em Próxima parte e responda. Se a primeira tentativa não der certo, tudo bem: é justamente disso que a gente fala logo depois.
 ```
 
-**Recado na página (não gravar):** Da bolinha azul até a estrela, sem passar pelos quadrados escuros. Quais instruções você daria?
+**Recado na página (não gravar):** Da bolinha azul até a estrela, sem passar pelos quadrados escuros. Quais instruções você daria? Pense e responda na próxima parte.
 
-## Parte 3. E se a primeira tentativa não funcionar?
+## Parte 3. Qual é o seu caminho? (quiz, sem vídeo)
+
+O quiz `quiz-caminho` fica numa parte própria, sem gravação. A grade é descrita no enunciado da primeira pergunta. Não há fala.
+
+## Parte 4. E se a primeira tentativa não funcionar?
 
 **Clipe:** `video-a4-descoberta`
 
@@ -61,7 +65,7 @@ O erro é uma pista. O computador não fica bravo e não julga. Ele só mostra o
 
 A Vivianne vê nisso um treino de percepção do ambiente. Para achar o caminho, a criança precisa olhar o cenário todo, entender de onde parte e por onde seguir, e ao mesmo tempo notar o ponto importante. Pense numa sala de aula. A criança chega e precisa olhar tudo: onde estão as carteiras, onde está o colega, se a professora está falando, se pode entrar ou se precisa esperar. É assim que ela constrói o caminho até a carteira. Lá, o foco muda para um ponto só: pegar o caderno e colocar na mesa. Quando a aula começa, ela precisa equilibrar os dois.
 
-Observar, mudar a instrução, flexibilizar e testar de novo é difícil, principalmente para muitas crianças autistas. Elas se esforçam demais e, quando dá errado no final, se desmotivam e não querem repetir. Quando é o personagem dela e o assunto dela, fica muito mais fácil voltar e tentar.
+A Vivianne observa que observar, mudar a instrução, flexibilizar e testar de novo é difícil para muitas crianças. Elas se esforçam demais e, quando dá errado no final, se desmotivam e não querem repetir. Quando é o personagem dela e o assunto dela, fica muito mais fácil voltar e tentar.
 
 A Vivianne contou de um pacientezinho. Quando ela mostrou a atividade, ele disse: que horrível. Ela respondeu: é horrível mesmo, mas a gente está treinando, vamos lá. No fim, ele pediu para continuar, porque tinha ficado muito legal. O horrível virou legal. Ele aprendeu que caminhos diferentes levam a lugares diferentes, e que um lugar diferente pode ser encantador. Ele não precisa ficar preso a um único caminho.
 
