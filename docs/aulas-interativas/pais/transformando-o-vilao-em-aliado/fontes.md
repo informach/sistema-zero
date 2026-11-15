@@ -8,7 +8,7 @@ O conteúdo vem do encontro "Transformando o vilão em aliado", de 13/11/2026: a
 - O curso é da Helena, em primeira pessoa. Ninguém mais é citado como autor ou especialista.
 - O curso não menciona o encontro de origem, a noite, a plateia nem os slides.
 - Histórias que não são da Helena ou da família dela não entram. As dela (o André e a tela que acalmava, a palestra dele na faculdade, o menino calado que hoje precisa ouvir "resume", a Isabela e o mouse, a amiga professora) são contadas por ela.
-- ⚠️ Confirmar com a Helena a história da amiga professora: na gravação ela a conta como amiga dela, mas as notas de condução a atribuem a outra pessoa.
+- A amiga professora de matemática e física é amiga da Helena (confirmado por ela em 15/11/2026).
 - Nada é contado como se tivesse acontecido sem ter acontecido. Exemplos de exercício vêm como "exemplos para ajudar".
 
 ## Depoimentos em vídeo
