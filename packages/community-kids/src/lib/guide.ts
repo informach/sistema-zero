@@ -221,6 +221,32 @@ export const guideWelcomeSeenKey = (accountId: string) =>
 /** O pai concluiu ("Entendi" na bolinha) ou pulou o guia. */
 export const guideDismissedKey = (accountId: string) =>
   guideKey('parent', accountId, 'tour-complete')
+/** O guia "Seu curso está pronto" (quem comprou só um curso para pais) já abriu uma vez. */
+export const guideCourseSeenKey = (accountId: string) =>
+  guideKey('parent', accountId, 'course-seen')
+/** O responsável fechou o guia do curso ou clicou em começar. */
+export const guideCourseDoneKey = (accountId: string) =>
+  guideKey('parent', accountId, 'course-done')
+
+/**
+ * Para quem é a área dos pais desta conta (15/11/2026, decisão da dona). Vem do que a família
+ * comprou, sem perguntar nada:
+ * - `filhos`: comprou algo para a criança (Comunidade, curso Kids, Desafio) ou já tem filho
+ *   cadastrado. O guia é o de sempre: cadastrar, autorizar o aparelho, a criança entra.
+ * - `curso`: comprou só um curso para pais (avulso ou de presente). Sem perfil de filho para
+ *   criar, o Início leva ao curso e convida a conhecer a Comunidade.
+ * Quem tem as duas coisas fica em `filhos`: o acesso da criança é o que trava o uso.
+ */
+export type ParentPurpose = 'filhos' | 'curso'
+export function parentPurpose(input: {
+  profilesCount: number
+  /** O tipo do limite de perfis (`none` = a conta não libera perfil de filho). */
+  allowanceKind: string
+  hasParentCourses: boolean
+}): ParentPurpose {
+  if (input.profilesCount > 0) return 'filhos'
+  return input.allowanceKind === 'none' && input.hasParentCourses ? 'curso' : 'filhos'
+}
 
 /** O modal de boas-vindas da CRIANÇA já auto-abriu para este perfil neste navegador. */
 export const childGuideWelcomeSeenKey = (profileId: string) =>

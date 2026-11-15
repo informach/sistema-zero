@@ -11,6 +11,7 @@ import {
   guideWelcomeSeenKey,
   hasActionableWelcomeStep,
   type ParentGuideInput,
+  parentPurpose,
   parentWelcomeSteps,
   readGuideFlag,
   readSessionGuideFlag,
@@ -79,6 +80,21 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
     // Sem criança, o primeiro passo não fala em escolher uma que não existe.
     expect(parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })[0]?.title).toBe(
       '1. Adicione a criança',
+    )
+  })
+  it('para quem é a área: segue a compra, sem perguntar', () => {
+    const base = { profilesCount: 0, allowanceKind: 'limited', hasParentCourses: false }
+    // Comprou para a criança (ou não dá para saber): o guia de sempre.
+    expect(parentPurpose(base)).toBe('filhos')
+    expect(parentPurpose({ ...base, allowanceKind: 'unavailable', hasParentCourses: true })).toBe(
+      'filhos',
+    )
+    // Só um curso para pais: o Início leva ao curso.
+    expect(parentPurpose({ ...base, allowanceKind: 'none', hasParentCourses: true })).toBe('curso')
+    // As duas coisas, ou um filho já cadastrado: o acesso da criança vem primeiro.
+    expect(parentPurpose({ ...base, hasParentCourses: true })).toBe('filhos')
+    expect(parentPurpose({ profilesCount: 1, allowanceKind: 'none', hasParentCourses: true })).toBe(
+      'filhos',
     )
   })
   it('criação pede o nome e a data de nascimento, sem compartilhar senha', () => {

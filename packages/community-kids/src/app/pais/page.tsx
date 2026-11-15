@@ -2,6 +2,7 @@ import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrou
 import { redirect } from 'next/navigation'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { requestedStudyDestination } from '@/lib/entry-destination'
+import { parentPurpose } from '@/lib/guide'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
 import {
@@ -23,9 +24,11 @@ export default async function ParentsPage({
   const session = await getSession()
   if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   const params = await searchParams
-  const [profilesRes, allowanceRes] = await Promise.all([
+  const [profilesRes, allowanceRes, parentCourses] = await Promise.all([
     listReadonly(),
     getProfileAllowanceReadonly(),
+    // Os cursos para pais da conta: best-effort, nunca derrubam o Início.
+    listParentCourses().catch(() => null),
   ])
   if (profilesRes.status !== 200) return <ProfilesUnavailable />
   const profiles = profilesRes.body?.profiles ?? []
@@ -39,17 +42,23 @@ export default async function ParentsPage({
   })
   if (!profiles.length && allowance.kind === 'unavailable')
     return <ProfilesUnavailable reason="allowance" />
-  if (!profiles.length && allowance.kind === 'none') return <ProfilesNotIncluded />
+  const courses = parentCourses?.status === 200 ? (parentCourses.body?.courses ?? []) : []
+  // Sem perfil liberado e sem curso para pais, a conta não tem nada aqui. Quem comprou só um
+  // curso para pais (15/11/2026) entra no Início, que leva ao curso.
+  if (!profiles.length && allowance.kind === 'none' && !courses.length)
+    return <ProfilesNotIncluded />
+  const purpose = parentPurpose({
+    profilesCount: profiles.length,
+    allowanceKind: allowance.kind,
+    hasParentCourses: courses.length > 0,
+  })
   const ids = profiles.map((profile) => profile.id)
   // As autorizações de cada criança: o guia e o aviso de vencimento seguem o estado REAL da
   // família desde o primeiro quadro, não só o painel que o responsável abrir.
-  const [avatars, access, parentCourses] = await Promise.all([
+  const [avatars, access] = await Promise.all([
     ids.length ? listAvatarsByProfileIdsReadonly(ids).catch(() => null) : null,
     listFamilyGrantsReadonly(ids),
-    // O curso para pais em andamento (ou o primeiro liberado): best-effort, nunca derruba o Início.
-    listParentCourses().catch(() => null),
   ])
-  const courses = parentCourses?.status === 200 ? (parentCourses.body?.courses ?? []) : []
   const parentCourse =
     courses.find((course) => course.progress.percent > 0 && course.progress.percent < 100) ??
     courses.find((course) => course.progress.percent < 100) ??
@@ -70,6 +79,7 @@ export default async function ParentsPage({
       studentDestination={studentDestination}
       voiceAvailable={isVoiceInputConfigured()}
       parentCourse={parentCourse}
+      purpose={purpose}
     />
   )
 }

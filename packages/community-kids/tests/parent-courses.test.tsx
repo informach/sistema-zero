@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { isLessonPath } from '@sistemazero/member-shell/lib/lesson-path'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { HelpContent } from '../src/app/pais/ajuda/help-content'
 import { ParentLessonFrame } from '../src/app/pais/cursos/[slug]/aulas/[lessonId]/parent-lesson-frame'
 import {
@@ -9,6 +9,7 @@ import {
 } from '../src/app/pais/cursos/[slug]/parent-course-view'
 import { ParentCoursesView } from '../src/app/pais/cursos/parent-courses-view'
 import { childTabOf, parentCourseHref, parentDoubtHref } from '../src/app/pais/parent-routes'
+import { ParentsClient } from '../src/app/pais/parents-client'
 import type {
   CatalogCourseView,
   CourseDetailView,
@@ -240,6 +241,62 @@ describe('a página do curso para pais', () => {
     ).toBe('https://exemplo.com/curso')
     expect(within(main).getByRole('link', { name: /Conhecer a Comunidade/ })).toBeTruthy()
     expect(within(main).getByRole('button', { name: /Atualizar o acesso/ })).toBeTruthy()
+  })
+})
+
+describe('o Início de quem comprou só um curso para pais', () => {
+  const inicio = (over: Partial<Parameters<typeof ParentsClient>[0]> = {}) =>
+    render(
+      <ParentsClient
+        accountId="conta-curso"
+        parentName="Helena"
+        initialProfiles={[]}
+        avatarPhotoByProfile={{}}
+        profileAllowance={{ kind: 'none' }}
+        parentCourse={mine({ progress: progress(0, 5), continueLessonId: 'l1' })}
+        purpose="curso"
+        {...over}
+      />,
+    )
+
+  afterEach(() => localStorage.clear())
+  beforeEach(() => {
+    // O menu lê os filhos em /api/profiles: esta conta não tem nenhum.
+    globalThis.fetch = Object.assign(
+      mock(async () => Response.json({ profiles: [] })),
+      { preconnect: originalFetch.preconnect },
+    )
+  })
+
+  test('o guia leva ao curso e o convite toma o lugar dos filhos', async () => {
+    inicio()
+    const guia = await screen.findByRole('region', { name: 'Seu curso está pronto' })
+    expect(within(guia).getByRole('link', { name: 'Começar o curso' }).getAttribute('href')).toBe(
+      '/pais/cursos/ajudar-sem-fazer-por-eles/aulas/l1',
+    )
+    expect(screen.getByRole('region', { name: 'Seus filhos também podem criar' })).toBeTruthy()
+    expect(screen.queryByText('Seus filhos esta semana')).toBeNull()
+    // Nada de cadastrar filho nem autorizar aparelho.
+    expect(screen.queryByText(/Vamos preparar/)).toBeNull()
+    // Sem filho na conta, não há área da criança para abrir.
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Ir para a área da criança' })).toBeNull(),
+    )
+  })
+
+  test('fechar o guia guarda a escolha; curso começado não abre o guia', async () => {
+    const primeiro = inicio()
+    fireEvent.click(await screen.findByRole('button', { name: 'Fechar orientação' }))
+    expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
+    primeiro.unmount()
+    inicio()
+    await waitFor(() => expect(screen.getByText('Seus filhos também podem criar')).toBeTruthy())
+    expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
+    localStorage.clear()
+    cleanup()
+    inicio({ parentCourse: mine() })
+    await waitFor(() => expect(screen.getByText('Seus filhos também podem criar')).toBeTruthy())
+    expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
   })
 })
 

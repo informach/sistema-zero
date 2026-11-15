@@ -1,3 +1,4 @@
+import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
 
@@ -25,6 +26,11 @@ export interface GetProfileAllowanceOptions {
  * sem precisar consultar a audiência do curso. Conta SEM matrícula ativa → 0
  * (não comprou, não cria perfil). Conta COM matrícula ativa mas todas sem o campo
  * (legado) → `defaultMaxProfiles`.
+ *
+ * Curso PARA PAIS (15/11/2026, decisão da dona): a compra avulsa (ou de presente) de um curso
+ * para pais é do responsável, não da criança. Ela não libera perfil de filho nem cai no teto do
+ * legado: quem comprou só isso fica com 0 perfis (a área dos pais mostra o curso e o convite para
+ * a Comunidade). A chave dos cursos Kids e as outras compras seguem a régua acima.
  */
 export class GetProfileAllowanceService {
   constructor(
@@ -32,14 +38,16 @@ export class GetProfileAllowanceService {
     private readonly clock: () => Date,
     private readonly opts: GetProfileAllowanceOptions,
     private readonly live?: Pick<LiveBenefitsPort, 'maxProfiles'>,
+    private readonly courses?: Pick<CourseRepository, 'findAccessibleCoursesBySlugs'>,
   ) {}
 
   async execute(accountId: string): Promise<ProfileAllowance> {
     const now = this.clock()
-    const [active, liveProfiles] = await Promise.all([
+    const [all, liveProfiles] = await Promise.all([
       this.entitlements.listActiveByUser(accountId, now),
       this.live?.maxProfiles(accountId, now) ?? 0,
     ])
+    const active = await this.withoutParentsCourses(all)
     if (active.length === 0) return { maxProfiles: liveProfiles }
     let max = 0
     for (const e of active) {
@@ -47,5 +55,24 @@ export class GetProfileAllowanceService {
       if (typeof m === 'number' && m > max) max = m
     }
     return { maxProfiles: Math.max(liveProfiles, max > 0 ? max : this.opts.defaultMaxProfiles) }
+  }
+
+  /** Tira as matrículas de UM curso para pais (as da chave-mestra continuam valendo). */
+  private async withoutParentsCourses<T extends { accessType: string; courseRef: string | null }>(
+    active: T[],
+  ): Promise<T[]> {
+    if (!this.courses) return active
+    const slugs = [
+      ...new Set(
+        active.flatMap((e) => (e.accessType === 'course' && e.courseRef ? [e.courseRef] : [])),
+      ),
+    ]
+    if (slugs.length === 0) return active
+    const parents = new Set(
+      (await this.courses.findAccessibleCoursesBySlugs(slugs, 'parents')).map((c) => c.slug),
+    )
+    return active.filter(
+      (e) => !(e.accessType === 'course' && e.courseRef && parents.has(e.courseRef)),
+    )
   }
 }

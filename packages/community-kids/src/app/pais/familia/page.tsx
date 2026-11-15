@@ -3,7 +3,11 @@ import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/prof
 import { requestedStudyDestination } from '@/lib/entry-destination'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
-import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
+import {
+  getProfileAllowanceReadonly,
+  listAvatarsByProfileIdsReadonly,
+  listParentCourses,
+} from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { FamilyClient } from './family-client'
@@ -34,7 +38,12 @@ export default async function FamilyPage({
   })
   if (!profiles.length && allowance.kind === 'unavailable')
     return <ProfilesUnavailable reason="allowance" />
-  if (!profiles.length && allowance.kind === 'none') return <ProfilesNotIncluded />
+  // Sem perfil liberado: quem comprou um curso para pais (15/11/2026) vê a Família vazia com o
+  // convite do limite; quem não tem nada aqui vê o recado de sempre.
+  if (!profiles.length && allowance.kind === 'none') {
+    const cursos = await listParentCourses().catch(() => null)
+    if (!(cursos?.status === 200 && cursos.body?.courses?.length)) return <ProfilesNotIncluded />
+  }
   const ids = profiles.map((profile) => profile.id)
   const [avatars, access] = await Promise.all([
     ids.length ? listAvatarsByProfileIdsReadonly(ids).catch(() => null) : null,

@@ -12,19 +12,21 @@ function grant(opts: {
   userId: string
   maxProfiles?: number
   expiresAt?: Date | null
+  courseRef?: string
 }): EntitlementAggregate {
   seq += 1
+  const courseRef = opts.courseRef ?? 'kids-curso'
   const fulfillment: FulfillmentSpec | null =
     opts.maxProfiles === undefined
       ? null
-      : { accessType: 'course', courseRef: 'kids-curso', maxProfiles: opts.maxProfiles }
+      : { accessType: 'course', courseRef, maxProfiles: opts.maxProfiles }
   return EntitlementAggregate.grant({
     id: `e${seq}`,
     userId: opts.userId,
     productId: `p${seq}`,
     productKind: 'course',
     accessType: 'course',
-    courseRef: 'kids-curso',
+    courseRef,
     offerId: `o${seq}`,
     snapshot: {
       offerId: `o${seq}`,
@@ -34,7 +36,7 @@ function grant(opts: {
       name: 'n',
       kind: 'course',
       accessType: 'course',
-      courseRef: 'kids-curso',
+      courseRef,
       fulfillment,
       resolvedAt: NOW.toISOString(),
     },
@@ -91,6 +93,34 @@ describe('GetProfileAllowanceService', () => {
     const repo = new InMemoryEntitlementRepository()
     repo.seed(grant({ userId: 'pai', maxProfiles: 4, expiresAt: T('2026-01-10') }))
     expect(await service(repo).execute('pai')).toEqual({ maxProfiles: 0 })
+  })
+
+  describe('curso para pais', () => {
+    const cursos = {
+      findAccessibleCoursesBySlugs: async (slugs: string[], learner?: string) =>
+        learner === 'parents'
+          ? slugs.filter((slug) => slug === 'curso-pais').map((slug) => ({ slug }) as never)
+          : [],
+    }
+    const comCursos = (repo: InMemoryEntitlementRepository) =>
+      new GetProfileAllowanceService(repo, () => NOW, { defaultMaxProfiles: 3 }, undefined, cursos)
+
+    test('quem comprou só um curso para pais não libera perfil de filho (nem o teto do legado)', async () => {
+      const repo = new InMemoryEntitlementRepository()
+      repo.seed(grant({ userId: 'pai', courseRef: 'curso-pais' }))
+      expect(await comCursos(repo).execute('pai')).toEqual({ maxProfiles: 0 })
+    })
+
+    test('com uma compra para a criança, vale a régua de sempre', async () => {
+      const repo = new InMemoryEntitlementRepository()
+      repo.seed(grant({ userId: 'pai', courseRef: 'curso-pais' }))
+      repo.seed(grant({ userId: 'pai', maxProfiles: 2 }))
+      expect(await comCursos(repo).execute('pai')).toEqual({ maxProfiles: 2 })
+      const legado = new InMemoryEntitlementRepository()
+      legado.seed(grant({ userId: 'pai', courseRef: 'curso-pais' }))
+      legado.seed(grant({ userId: 'pai' }))
+      expect(await comCursos(legado).execute('pai')).toEqual({ maxProfiles: 3 })
+    })
   })
 
   test('só a matrícula de outra conta tem o campo → não vaza', async () => {

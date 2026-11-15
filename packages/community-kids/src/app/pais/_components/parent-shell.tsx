@@ -45,8 +45,9 @@ const ITEM =
  * sair) já na página seguinte. Falha na leitura mantém a lista que havia.
  */
 let lastFamily: ProfileView[] | null = null
-function useFamily(): ProfileView[] {
-  const [profiles, setProfiles] = useState<ProfileView[]>(() => lastFamily ?? [])
+/** `null` até a primeira leitura: a família vazia só é afirmada depois de lida. */
+function useFamily(): ProfileView[] | null {
+  const [profiles, setProfiles] = useState<ProfileView[] | null>(() => lastFamily)
   useEffect(() => {
     let alive = true
     apiGet<{ profiles?: ProfileView[] }>('/api/profiles')
@@ -176,7 +177,10 @@ export function ParentShell({
   const [password, setPassword] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
-  const family = useFamily()
+  const lida = useFamily()
+  const family = lida ?? []
+  // Sem filho cadastrado (quem comprou só um curso para pais), não há área da criança para abrir.
+  const semFilhos = lida !== null && lida.length === 0
   async function leave() {
     setLeaving(true)
     try {
@@ -235,11 +239,13 @@ export function ParentShell({
           <MenuSections active={active} activeChildId={activeChildId} family={family} />
         </nav>
         <div className="flex shrink-0 flex-col gap-3 pt-4 pb-7">
-          <StudentAreaButton
-            destination={studentDestination}
-            disabled={leaving}
-            className="sz-btn-gradient h-12 w-full gap-2 px-4 text-[0.9375rem]"
-          />
+          {semFilhos ? null : (
+            <StudentAreaButton
+              destination={studentDestination}
+              disabled={leaving}
+              className="sz-btn-gradient h-12 w-full gap-2 px-4 text-[0.9375rem]"
+            />
+          )}
           <div className="flex flex-col gap-1 rounded-[0.875rem] bg-(--menu-2) p-2">
             <div className="flex items-center gap-2.5 px-2 py-1.5">
               <UserAvatar firstName={name} avatarUrl={null} size="sm" />
@@ -262,12 +268,14 @@ export function ParentShell({
           <Link href="/pais" prefetch={false} aria-label="Área dos pais, início">
             <KidsLogo className="w-24" />
           </Link>
-          <StudentAreaButton
-            destination={studentDestination}
-            disabled={leaving}
-            shortLabel="Área da criança"
-            className="sz-btn-gradient ml-auto h-10 gap-1.5 px-3.5 text-sm"
-          />
+          {semFilhos ? null : (
+            <StudentAreaButton
+              destination={studentDestination}
+              disabled={leaving}
+              shortLabel="Área da criança"
+              className="sz-btn-gradient ml-auto h-10 gap-1.5 px-3.5 text-sm"
+            />
+          )}
         </header>
         {variant === 'lesson' ? (
           <main
