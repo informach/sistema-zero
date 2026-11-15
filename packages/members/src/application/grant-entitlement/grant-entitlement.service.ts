@@ -298,7 +298,12 @@ function permanentMuralVisitorGrant(
   cmd: GrantEntitlementCommand,
   resolvedPolicy: PurchasedAccessPolicy,
 ): MuralVisitorGrant | null {
-  // A assinatura Kids (Mural Kids pleno) ganha a visita permanente; a adulta não (fora do escopo).
+  // Duas regras, nesta ordem:
+  // 1) ASSINATURA: só a assinatura Kids (Mural Kids pleno) ganha a visita permanente; a assinatura
+  //    adulta não ganha (fora do escopo). Esta exceção vale só para assinatura.
+  // 2) PRAZO FIXO (regra geral, Kids E adulto): oferta de prazo fixo que inclui o Mural completo
+  //    como ITEM da oferta (não como componente de um produto pacote) deixa a visita permanente ao
+  //    Mural do mesmo público depois do prazo, como já valia no Desafio de 30 dias.
   if (
     resolvedPolicy.mode === 'billing_cycle' &&
     cmd.subscription &&
