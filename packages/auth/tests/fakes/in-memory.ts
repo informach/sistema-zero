@@ -139,8 +139,18 @@ export class InMemoryUserRepository implements UserRepository {
   async update(user: UserAggregate, expectedVersion: number): Promise<boolean> {
     const existing = this.byId.get(user.id)
     if (!existing || existing.version !== expectedVersion) return false
-    this.byId.set(user.id, UserAggregate.restore(user.toSnapshot()))
+    // Como o SQL: o `update` nunca escreve a primeira entrada (só `markFirstSignIn`).
+    this.byId.set(
+      user.id,
+      UserAggregate.restore({ ...user.toSnapshot(), firstSignInAt: existing.firstSignInAt }),
+    )
     return true
+  }
+
+  async markFirstSignIn(userId: string, at: Date): Promise<void> {
+    const existing = this.byId.get(userId)
+    if (!existing || existing.firstSignInAt) return
+    this.byId.set(userId, UserAggregate.restore({ ...existing.toSnapshot(), firstSignInAt: at }))
   }
 
   async prepareDeletion(id: string): Promise<{ profileIds: string[] } | null> {

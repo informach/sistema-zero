@@ -143,6 +143,7 @@ export function fixture(): Snapshot {
     sequentialLock: true,
     videoBeforeActivity: true,
     modality: 'recorded' as const,
+    learner: 'child' as const,
     metadata: {
       studioUnlockBlocks: ['sz_frame_start'],
       salesPageUrl: 'https://sistemazero.com.br/kids/busca',

@@ -30,6 +30,7 @@ Direção comum de 21/10/2026: simplicidade para uma criança compreender, trata
 - TXT de cada personagem presente e `.edicao.json`: derivados do roteiro pelo exportador. A fala do personagem tem de ser idêntica à frase substituída. Na edição kids, silenciar somente esse intervalo da professora.
 - `[long pause]` entre partes; alvo de cerca de três segundos conferido na edição. Sem SSML `<break>`. Audicionar a voz selecionada antes do lote.
 - Atualizar fonte, proposta, roteiro, manifesto e PDF juntos. Preservar IDs, projetos, critérios, mídia e progresso. `plannedVideo` não é vídeo publicado.
+- O Passo a passo do projeto segue a receita visual de `docs/aulas-interativas-tecnico/recursos/caderno-visual/README.md` (capa com a arte do curso, cards coloridos, passos numerados, blocos como no Estúdio, texto em `caderno-conteudo.json`). Curso antigo refeito passa para ela.
 
 ## Conferência
 

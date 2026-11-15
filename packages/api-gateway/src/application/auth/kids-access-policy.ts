@@ -45,6 +45,9 @@ export function kidsMayAccess(
       pathname.startsWith('/auth/') ||
       pathname.startsWith('/payments/my') ||
       pathname.startsWith('/members/parents/') ||
+      // Cursos para pais (14/11/2026): o responsável lista, abre e faz as aulas e lê as próprias
+      // dúvidas. O members garante que na conta só o curso PARA PAIS abre.
+      /^\/members\/(courses|catalog|lessons|teacher-threads)(\/|$)/.test(pathname) ||
       pathname.startsWith('/helpdesk/portal/') ||
       pathname === '/referrals/me/ambassador' ||
       // Arquipélago Vagalume: o responsável muda o tempo livre e as permissões de visita da

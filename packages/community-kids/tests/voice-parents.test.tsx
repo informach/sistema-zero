@@ -149,7 +149,7 @@ describe('novidade na Família', () => {
     const desligada = perfil({ id: 'b', name: 'Caio' })
     render(<VoiceNewsCard accountId={ACCOUNT} profiles={[ligada, desligada]} />)
     const atalho = await screen.findByRole('link', { name: 'Ligar a fala de Caio' })
-    expect(atalho.getAttribute('href')).toBe('/pais/crianca/b/editar')
+    expect(atalho.getAttribute('href')).toBe('/pais/crianca/b?aba=perfil')
     expect(screen.queryByRole('link', { name: 'Ligar a fala de Bia' })).toBeNull()
     expect(screen.getByRole('heading').textContent).toContain('pode falar em vez de escrever')
 
@@ -230,6 +230,6 @@ describe('criar a criança com a fala marcada e login antigo', () => {
     expect(corpos[0]?.requestId).toMatch(/^[a-f0-9-]{36}$/)
     expect(corpos[1]?.requestId).toBe(corpos[0]?.requestId)
     expect(corpos[1]?.name).toBe('Sofia')
-    expect(destinos[0]).toBe('/pais/crianca/nova?aviso=fala-entrar')
+    expect(destinos[0]).toBe('/pais/crianca/nova?aba=aparelhos&aviso=fala-entrar')
   })
 })

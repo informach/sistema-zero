@@ -4,6 +4,7 @@ import arcoIris from '../assets/icones/semente-arco-iris-de-petala.png'
 import estrela from '../assets/icones/semente-estrela-trepadeira.png'
 import flor from '../assets/icones/semente-flor-de-nuvem.png'
 import { useEstado, useJogo } from '../estado/contexto'
+import { pedirGesto } from '../sistemas/gestos'
 import {
   canteiroDoPainel,
   NOME_DA_PLANTA_DO_CEU,
@@ -26,7 +27,7 @@ export function PainelDoJardimDoCeu() {
 }
 
 function JardimAberto({ k }: { k: number }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const titulo = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     titulo.current?.focus({ preventScroll: true })
@@ -37,6 +38,7 @@ function JardimAberto({ k }: { k: number }) {
     s.abrirPainel(null)
     if (!novo) return
     s.mudar(() => novo)
+    pedirGesto(movimento, 'Plantar')
     s.dizer(TEXTOS_DO_JARDIM_DO_CEU.plantado(semente))
   }
   return (

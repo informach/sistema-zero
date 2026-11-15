@@ -602,6 +602,8 @@ export type CourseAccessReason =
   | 'manual-grant'
   | 'retained'
   | 'staff'
+  /** Curso para pais aberto pela chave dos cursos Kids (fora da Jornada). */
+  | 'parents'
 
 /** Identity comes from the published curriculum, never from mutable course titles/tags. */
 export type CourseCurriculumView = import('@sistemazero/core/journey').CreatorCoursePlacement

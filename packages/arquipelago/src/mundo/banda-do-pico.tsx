@@ -20,6 +20,8 @@ import {
   TODA_A_BANDA,
 } from '../sistemas/banda'
 import type { Ponto } from '../sistemas/cipo'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
+import { dancaDaVez } from '../sistemas/locomocao'
 import { jogoPausado } from '../sistemas/pausa'
 import { trocarClipe, useCopiaAnimada } from './animado'
 import { paraOMundo } from './bosque'
@@ -109,9 +111,30 @@ export function BandaDoPico({
         ))}
       </ComReserva>
       <NotasDoFestival meio={lugares.meioDoPalco} />
+      <DancarComABanda meio={lugares.meioDoPalco} troca={troca} />
       <Fogareiro lugar={lugares.fogareiro} troca={troca} />
     </>
   )
+}
+
+/** Com a banda completa, ela dança na frente do palco: a cada vez, uma das seis danças da arte. */
+function DancarComABanda({ meio, troca }: { meio: Ponto; troca: Troca }) {
+  const { loja, movimento } = useJogo()
+  const podeAgir = usePodeAgir(troca)
+  const vezes = useRef(0)
+  const completa = () => loja.getState().salvamento.pico.banda === TODA_A_BANDA
+  useInterativo('pico:dancar', {
+    x: meio.x,
+    z: meio.z,
+    raio: 3,
+    rotulo: () => (podeAgir() && completa() ? 'Dançar com a banda' : null),
+    agir() {
+      if (!podeAgir() || !completa()) return
+      pedirGesto(movimento, dancaDaVez(vezes.current))
+      vezes.current += 1
+    },
+  })
+  return null
 }
 
 /** Quem pode mexer no salvamento agora: a ilha inteira, sem somente leitura, andando no chão. */
@@ -139,7 +162,7 @@ function InstrumentoDaBanda({
   lugares: LugaresDaBanda
   troca: Troca
 }) {
-  const { loja } = useJogo()
+  const { loja, movimento } = useJogo()
   const podeAgir = usePodeAgir(troca)
   const voltou = useEstado((s) => instrumentoDeVolta(s.salvamento.pico.banda, i))
   const piece = MORADA_CATALOG.pieces[INSTRUMENTO_MORADA[id]]
@@ -174,6 +197,8 @@ function InstrumentoDaBanda({
       if (!podeAgir() || instrumentoDeVolta(s.salvamento.pico.banda, i)) return
       const novo = devolverInstrumento(s.salvamento, i)
       s.mudar(() => novo)
+      // Pega o instrumento do chão; o último completa a banda e ela comemora.
+      pedirGesto(movimento, gestoDoAchado(novo.pico.banda === TODA_A_BANDA))
       s.dizer(falaDaVolta(i, novo.pico.banda))
     },
   })

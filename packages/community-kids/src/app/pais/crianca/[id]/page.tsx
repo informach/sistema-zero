@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
 import { ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { requestedStudyDestination } from '@/lib/entry-destination'
@@ -6,7 +7,7 @@ import { listFamilyGrantsReadonly } from '@/server/family-access'
 import { listAvatarsByProfileIdsReadonly } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
-import { familyHref } from '../../parent-routes'
+import { childTabOf, familyHref } from '../../parent-routes'
 import { ChildClient } from './child-client'
 
 export const dynamic = 'force-dynamic'
@@ -45,8 +46,9 @@ export default async function ChildPage({
       parentName={session.firstName}
       profile={profile}
       photoUrl={photoUrl}
-      initialTab={query.aba === 'progresso' ? 'progresso' : 'acesso'}
+      initialTab={childTabOf(query.aba)}
       familyReady={familyReady}
+      voiceAvailable={isVoiceInputConfigured()}
       studentDestination={studentDestination}
     />
   )

@@ -19,6 +19,18 @@ describe('permissões Kids na borda local', () => {
     ])
       expect(kidsMayUseBff(parent, path, 'POST', 'parent')).toBe(false)
   })
+  test('responsável faz os cursos para pais pelos endereços da aula', () => {
+    const parent = { kind: 'parent', sessionId: 'session', authenticatedAt: 1 } as const
+    for (const path of [
+      '/api/members/courses',
+      '/api/members/lessons/l1/complete',
+      '/api/members/lessons/l1/section-help',
+      '/api/members/teacher-threads/t1/read',
+      '/api/cursos/curso/aulas/l1/anexos/a1',
+    ])
+      expect(kidsMayUseBff(parent, path, 'POST', 'parent')).toBe(true)
+    expect(kidsMayUseBff(parent, '/api/members/gamification/me', 'GET', 'parent')).toBe(false)
+  })
   test('aluno estuda e edita o próprio perfil, sem editar irmãos ou abrir compras', () => {
     const child = {
       kind: 'student',

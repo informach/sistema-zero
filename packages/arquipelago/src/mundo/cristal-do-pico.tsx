@@ -11,6 +11,7 @@ import {
   pegarOCristalRaro,
   temOCristalRaro,
 } from '../sistemas/cristal-raro'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
 import { paraOMundo } from './bosque'
 import { useInterativo } from './interativos'
 
@@ -58,6 +59,7 @@ export function CristalDoPico({
       s.mudar((v) => pegarOCristalRaro(v))
       const depois = loja.getState().salvamento
       if (!temOCristalRaro(depois)) return
+      pedirGesto(movimento, gestoDoAchado(grupoCompleto(depois, 'cristais')))
       // O rosa também é uma das quatro peças da coleção de cristais (30/10/2026).
       s.dizer(
         grupoCompleto(depois, 'cristais')

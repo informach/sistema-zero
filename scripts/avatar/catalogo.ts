@@ -408,8 +408,10 @@ export function comparar(arte: Arte, catalogo: AvatarCatalog): Comparacao {
     equipamentosQueSairam: Object.keys(catalogo.equipment ?? {}).filter((id) => !idsDoJogo.has(id)),
     novas,
     mudaram,
+    // A cópia de uma peça para dentro da fantasia (`copyOf`) não existe na arte: quem a escreve é a
+    // migração. Não conta como peça que saiu.
     sairam: Object.entries(catalogo.parts)
-      .filter(([id, p]) => !ids.has(id) && !p.retired)
+      .filter(([id, p]) => !ids.has(id) && !p.retired && !p.copyOf)
       .map(([id]) => id),
     iguais,
     esqueletoMudou: esqueletoMudou(arte, catalogo, esqueleto.arquivo),

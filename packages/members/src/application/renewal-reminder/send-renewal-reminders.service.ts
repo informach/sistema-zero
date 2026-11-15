@@ -190,9 +190,9 @@ export class SendRenewalRemindersService {
             ? 'challenge-expiry-3d'
             : 'challenge-expiry-7d'
         const templateKey = adult ? `${baseKey}-adult` : baseKey
-        // Kids: o aviso é do responsável. Faltando 7 dias ele mostra onde a criança parou (o
-        // Acompanhamento); faltando 3, o acesso do computador (a Família, onde o aviso de
-        // vencimento pede renovar). A fase em si abre no perfil da criança. Adulto (21/10/2026):
+        // Kids: o aviso é do responsável. Faltando 7 dias ele mostra onde a criança parou (a
+        // Família, de onde se abre o Progresso de cada filho); faltando 3, o Início da área
+        // dos pais, onde o aviso de vencimento pede renovar. A fase em si abre no perfil da criança. Adulto (21/10/2026):
         // 7 dias leva ao Seu progresso, 3 dias ao curso e o fim à continuidade adulta.
         const link = adult
           ? expired
@@ -205,7 +205,7 @@ export class SendRenewalRemindersService {
           : expired
             ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
             : first.messageKind === 'expiry_7d'
-              ? `${this.opts.kidsUrl}/pais/acompanhamento`
+              ? `${this.opts.kidsUrl}/pais/familia`
               : `${this.opts.kidsUrl}/pais`
         if (!link) {
           // Sem a URL do app adulto não há para onde levar; tenta de novo no próximo ciclo.

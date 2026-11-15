@@ -224,6 +224,7 @@ export class IssueCertificateService {
       courseCompleted: total > 0 && completed === total,
       privileged: input.privileged,
       modality: course.modality,
+      learner: course.learner,
     })
   }
 }

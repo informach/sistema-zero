@@ -15,6 +15,34 @@ export const LANTERNA_NA_MAO: readonly string[] = ['mao_lanterna']
 export const BARRA_NAS_MAOS: readonly string[] = ['mao_barra_planador']
 export const SEM_OBJETO_NA_MAO: readonly string[] = []
 
+/** Os objetos de mão que o jogo usa (os da pasta `maos/` da arte, em `equipment` no catálogo). */
+export type ObjetoDeMao =
+  | 'mao_lanterna'
+  | 'mao_barra_planador'
+  | 'mao_regador'
+  | 'mao_balde'
+  | 'mao_varinha_luz'
+/** O que vai preso ao esqueleto para um objeto (um por vez; nenhum, se o catálogo não o tem). */
+export function equipamentoDaMao(objeto: ObjetoDeMao | null): readonly string[] {
+  if (!objeto || !AVATAR_CATALOG.equipment?.[objeto]) return SEM_OBJETO_NA_MAO
+  if (objeto === 'mao_lanterna') return LANTERNA_NA_MAO
+  if (objeto === 'mao_barra_planador') return BARRA_NAS_MAOS
+  return [objeto]
+}
+/**
+ * Qual objeto vai na mão: a barra no planador; senão o do gesto (o regador ao regar, o balde cheio);
+ * senão a lanterna acesa (que volta depois do gesto). A varinha de luz entra quando o jogo a der.
+ */
+export function objetoNaMao(o: {
+  planando: boolean
+  doGesto: ObjetoDeMao | null
+  comLanterna: boolean
+}): ObjetoDeMao | null {
+  if (o.planando) return 'mao_barra_planador'
+  if (o.doGesto) return o.doGesto
+  return o.comLanterna ? 'mao_lanterna' : null
+}
+
 type CamadaDoJogo = NonNullable<typeof AVATAR_CATALOG.base.skeleton.game.layers>[number]
 
 /** As camadas dos dedos (as que não acompanham uma animação: valem sempre). */
@@ -33,10 +61,15 @@ export function camadaDosDedos(objeto: string) {
  */
 export function camadasDosDedos(objeto: string): CamadaDoJogo[] {
   const todas = camadasDosDedosDoCatalogo()
+  // A pegada que a arte declarou para o objeto (`fingers`) vale primeiro.
+  const daPegada = AVATAR_CATALOG.equipment?.[objeto]?.fingers
+  if (daPegada?.length) return todas.filter((c) => daPegada.includes(c.id))
   const doObjeto = todas.filter((c) => c.objects.includes(objeto))
-  if (doObjeto.length === 0) return doObjeto
   const fechaADireita = (c: CamadaDoJogo) => c.bones.some((o) => o.startsWith('RightHand'))
   if (doObjeto.some(fechaADireita)) return doObjeto
+  // Objeto de mão sem a pegada dele (o balde e o regador, pela alça): a da mão direita no cilindro
+  // fino. Um id que não é objeto do jogo não fecha a mão.
+  if (doObjeto.length === 0 && !AVATAR_CATALOG.equipment?.[objeto]) return doObjeto
   const direita = todas.find(fechaADireita)
   return direita ? [direita, ...doObjeto] : doObjeto
 }

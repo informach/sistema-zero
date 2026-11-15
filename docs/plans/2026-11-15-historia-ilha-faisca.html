@@ -1,0 +1,1256 @@
+<title>A Ilha Faísca</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Caderno de campo da Faísca: mapa ilustrado → quem mora → abertura cena a cena → o capítulo do primeiro dia ao primeiro
+   facho → falas → o que fazer → conexões → como a ilha muda → como construir. Mesmo sistema da página da história. */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --ink: #1c2141;
+  --muted: #59628a;
+  --line: #d8dff0;
+  --gold: #c98a06;
+  --gold-soft: #fff1c9;
+  --faisca: #ffb020;
+  --verde: #35b866;
+  --mar: #c4e5f3;
+  --mar-fundo: #a9d6ea;
+  --areia: #f0dfae;
+  --grama: #8fcf73;
+  --on-cor: #1a1530;
+  --font-titulo: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --font-texto: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1330; --surface: #171f45; --ink: #eef1ff; --muted: #a9b1d8; --line: #2b3566;
+    --gold: #ffc54d; --gold-soft: #3a3115; --mar: #16224d; --mar-fundo: #101a3e; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1330; --surface: #171f45; --ink: #eef1ff; --muted: #a9b1d8; --line: #2b3566;
+  --gold: #ffc54d; --gold-soft: #3a3115; --mar: #16224d; --mar-fundo: #101a3e; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-texto); font-size: 16px; line-height: 1.55; }
+.wrap {
+  max-width: 1140px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+  display: grid; gap: 56px;
+}
+h1, h2, h3, h4 { font-family: var(--font-titulo); line-height: 1.12; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.3rem, 5.4vw, 3.8rem); font-weight: 800; }
+h2 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); font-weight: 800; }
+h3 { font-size: 1.3rem; font-weight: 800; }
+h4 { font-size: 1rem; font-weight: 700; }
+p { margin: 0; }
+code { font-family: var(--font-mono); font-size: .82em; background: color-mix(in oklab, var(--line) 55%, transparent); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+.eyebrow { font-size: .78rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--gold); }
+.lead { font-size: 1.12rem; color: var(--muted); max-width: 70ch; }
+.sec { display: grid; gap: 22px; }
+.sec-head { display: grid; gap: 8px; }
+.sec-head p { color: var(--muted); max-width: 72ch; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+
+nav.indice { display: flex; flex-wrap: wrap; gap: 8px; }
+nav.indice a { color: inherit; text-decoration: none; font-weight: 700; font-size: .92rem; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); }
+nav.indice a:hover { border-color: var(--faisca); }
+
+.resumo { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .resumo { grid-template-columns: repeat(4, 1fr); } }
+.resumo div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; }
+.resumo span { font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.resumo b { font-family: var(--font-titulo); font-size: 1.1rem; }
+
+/* mapa */
+.mapa { margin: 0; background: var(--mar); border-radius: 22px; overflow: hidden; }
+.mapa svg { display: block; width: 100%; height: auto; }
+.lugares { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 620px) { .lugares { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .lugares { grid-template-columns: repeat(3, 1fr); } }
+.lugar { display: grid; grid-template-columns: 30px 1fr; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; align-items: start; min-width: 0; }
+.lugar .n { width: 28px; height: 28px; border-radius: 50%; background: var(--faisca); color: var(--on-cor); font-family: var(--font-titulo); font-weight: 800; display: grid; place-items: center; font-size: .95rem; }
+.lugar h4 { font-size: 1rem; }
+.lugar p { font-size: .88rem; color: var(--muted); }
+
+/* fichas */
+.fichas { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .fichas { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .fichas { grid-template-columns: repeat(4, 1fr); } }
+.ficha { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.ficha-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ficha-top svg { width: 50px; height: 62px; flex: none; }
+.ficha .papel { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ficha h3 { font-size: 1.18rem; }
+.ficha p { font-size: .9rem; }
+.ficha .fala { font-style: italic; color: var(--muted); }
+
+/* abertura */
+.cenas { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .cenas { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .cenas { grid-template-columns: repeat(4, 1fr); } }
+.cena { display: grid; gap: 7px; align-content: start; min-width: 0; }
+.cena figure { margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.cena svg { display: block; width: 100%; height: auto; }
+.cena-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.cena-top .num { font-family: var(--font-titulo); font-weight: 800; color: var(--gold); }
+.cena-top .seg { font-size: .76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.narra { font-size: .9rem; font-style: italic; }
+.joga { font-size: .85rem; padding: 7px 9px; border-radius: 9px; background: color-mix(in oklab, var(--verde) 11%, var(--surface)); }
+.joga b { color: var(--verde); }
+.nota { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .9rem; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+.nota b { color: var(--ink); }
+
+/* linha do capítulo */
+.linha-cap { display: grid; gap: 14px; }
+.etapa { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: start; }
+.etapa .marco { width: 52px; height: 52px; border-radius: 16px; background: color-mix(in oklab, var(--c) 22%, var(--surface)); color: var(--c); display: grid; place-items: center; }
+.etapa .marco svg { width: 34px; height: 34px; }
+.etapa-corpo { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.etapa-corpo .k { font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.etapa-corpo ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: .92rem; }
+
+/* quadro das conexões */
+.conex { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 620px) { .conex { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .conex { grid-template-columns: repeat(3, 1fr); } }
+.cx { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: start; min-width: 0; }
+.cx .q { width: 40px; height: 40px; border-radius: 12px; background: var(--faisca); color: var(--on-cor); font-family: var(--font-titulo); font-weight: 800; font-size: 1.2rem; display: grid; place-items: center; }
+.cx h4 { font-size: 1rem; }
+.cx p { font-size: .88rem; color: var(--muted); }
+.cx p b { color: var(--ink); }
+
+/* cômodos */
+.comodos { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 620px) { .comodos { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .comodos { grid-template-columns: repeat(4, 1fr); } }
+.comodo { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.comodo svg { width: 100%; height: auto; border-radius: 10px; display: block; }
+.comodo h4 { font-size: 1.02rem; }
+.comodo p { font-size: .88rem; }
+.comodo .onde { color: var(--muted); }
+
+/* falas */
+.roteiro { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .roteiro { grid-template-columns: repeat(2, 1fr); } }
+.momento { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.momento > h3 { font-size: 1.12rem; }
+.momento > p.quando { font-size: .85rem; color: var(--muted); margin-top: -6px; }
+.linha { display: grid; grid-template-columns: 78px 1fr; gap: 10px; align-items: start; }
+.quem { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 3px 0; border-radius: 8px; text-align: center; color: var(--on-cor); }
+.q-zappy { background: #ffd23f; }
+.q-iris { background: #6fd3c6; }
+.q-nico { background: #ff9d7a; }
+.q-sombra { background: #b9b2e6; }
+.q-granitus { background: #bfc4cc; }
+.q-morador { background: #f2c48d; }
+.q-capi { background: #c9a27a; }
+.q-carta { background: #f6e3a8; }
+.q-pagina { background: #ffe066; }
+.diz { font-size: .92rem; min-width: 0; }
+.diz small { display: block; color: var(--muted); font-size: .8rem; }
+
+/* fazer */
+.fazer { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .fazer { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .fazer { grid-template-columns: repeat(3, 1fr); } }
+.grupo { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.grupo-top { display: flex; align-items: center; gap: 10px; }
+.grupo-top svg { width: 34px; height: 34px; flex: none; }
+.grupo ul { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: .9rem; }
+
+.minis { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .minis { grid-template-columns: repeat(2, 1fr); } }
+.mini { border-radius: 16px; padding: 16px; display: grid; gap: 8px; background: color-mix(in oklab, var(--faisca) 10%, var(--surface)); border: 1px solid color-mix(in oklab, var(--faisca) 32%, var(--line)); min-width: 0; }
+.mini h3 { font-size: 1.15rem; }
+.mini p { font-size: .92rem; }
+.mini .base { font-size: .82rem; color: var(--muted); }
+
+/* conexões */
+.conexoes { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .conexoes { grid-template-columns: 1fr 1fr; } }
+.lado { display: grid; gap: 10px; align-content: start; }
+.lado h3 { font-size: 1.1rem; }
+.con { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
+.con h4 { font-size: 1rem; }
+.con p { font-size: .88rem; color: var(--muted); }
+.con p b { color: var(--ink); }
+
+/* evolução */
+.evol { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .evol { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .evol { grid-template-columns: repeat(5, 1fr); } }
+.fase { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.fase figure { margin: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.fase svg { display: block; width: 100%; height: auto; }
+.fase h4 { font-size: 1rem; }
+.fase p { font-size: .86rem; color: var(--muted); }
+
+.tres { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .tres { grid-template-columns: repeat(3, 1fr); } }
+.col { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.col h3 { font-size: 1.15rem; }
+.col ul { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; font-size: .9rem; }
+.col.a h3 { color: var(--verde); }
+.col.b h3 { color: #e0701f; }
+.col.c h3 { color: #6f52e8; }
+.perguntas { background: var(--gold-soft); border-radius: 16px; padding: 16px 20px; display: grid; gap: 8px; }
+.perguntas ol { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+/* distritos */
+.distritos { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .distritos { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .distritos { grid-template-columns: repeat(3, 1fr); } }
+.distrito { background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--d); border-radius: 16px; padding: 14px 16px; display: grid; gap: 7px; align-content: start; min-width: 0; }
+.distrito .letra { width: 30px; height: 30px; border-radius: 9px; background: var(--d); color: var(--on-cor); font-family: var(--font-titulo); font-weight: 800; display: grid; place-items: center; }
+.distrito-top { display: flex; gap: 10px; align-items: center; }
+.distrito p { font-size: .88rem; }
+.distrito .k { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.distrito .longe { color: var(--muted); font-size: .82rem; }
+.lugar .d { font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.regras { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px; display: grid; gap: 8px; }
+.regras ol, .regras ul { margin: 0; padding-left: 1.2em; display: grid; gap: 5px; font-size: .92rem; }
+.tab { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.tab table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .88rem; }
+.tab th, .tab td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.tab th { font-size: .74rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: color-mix(in oklab, var(--line) 35%, var(--surface)); }
+.tab tr:last-child td { border-bottom: 0; }
+.tab td:first-child { font-weight: 700; }
+footer { color: var(--muted); font-size: .86rem; display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .brilha { animation: brilho 2.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes brilho { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+}
+</style>
+
+<!-- Desenhos próprios (nenhuma imagem dos pacotes: a licença é de uso interno). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="c-crianca" viewBox="0 0 40 60">
+      <rect x="13" y="44" width="5" height="14" rx="2.5" style="fill:#3a3f63"/><rect x="22" y="44" width="5" height="14" rx="2.5" style="fill:#3a3f63"/>
+      <rect x="10" y="24" width="20" height="24" rx="8" style="fill:#4f8cff"/>
+      <circle cx="20" cy="15" r="10" style="fill:#f2c79a"/>
+      <path d="M10 14a10 10 0 0 1 20 0c-3-4-8-5-12-3-3 1-5 2-8 3z" style="fill:#5a3a22"/>
+      <circle cx="16.5" cy="16" r="1.3" style="fill:#2a2a2a"/><circle cx="23.5" cy="16" r="1.3" style="fill:#2a2a2a"/>
+      <path d="M17 20q3 2.5 6 0" style="fill:none;stroke:#2a2a2a" stroke-width="1.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="c-iris" viewBox="0 0 40 60">
+      <path d="M8 26h24l5 32H3z" style="fill:#2bb3a3"/>
+      <path d="M14 26h12v32H14z" style="fill:#1f8f83"/>
+      <path d="M9 15a11 11 0 0 1 22 0v16h-4V17H13v14H9z" style="fill:#8e5bd9"/>
+      <circle cx="20" cy="16" r="8.5" style="fill:#c98d63"/>
+      <circle cx="17" cy="17" r="1.2" style="fill:#222"/><circle cx="23" cy="17" r="1.2" style="fill:#222"/>
+      <path d="M17.5 20.5q2.5 2 5 0" style="fill:none;stroke:#222" stroke-width="1.1"/>
+      <circle cx="32" cy="34" r="6" style="fill:#fff3b0;opacity:.6"/><circle cx="32" cy="34" r="3.5" style="fill:#ffd23f"/>
+    </symbol>
+    <symbol id="c-morador" viewBox="0 0 40 60">
+      <rect x="13" y="44" width="5" height="14" rx="2.5" style="fill:#6b5a4a"/><rect x="22" y="44" width="5" height="14" rx="2.5" style="fill:#6b5a4a"/>
+      <rect x="10" y="24" width="20" height="24" rx="8" style="fill:var(--roupa,#e07a5f)"/>
+      <circle cx="20" cy="15" r="10" style="fill:var(--pele,#e8b98f)"/>
+      <circle cx="16.5" cy="16" r="1.3" style="fill:#2a2a2a"/><circle cx="23.5" cy="16" r="1.3" style="fill:#2a2a2a"/>
+      <path d="M17 20h6" style="stroke:#2a2a2a" stroke-width="1.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="o-coroinha" viewBox="0 0 24 12">
+      <path d="M2 11l2-8 4 4 4-6 4 6 4-4 2 8z" style="fill:#ffd23f;stroke:#c8920b" stroke-width=".9"/>
+      <circle cx="12" cy="8" r="1.4" style="fill:#c8920b"/>
+    </symbol>
+    <symbol id="c-sapo" viewBox="0 0 40 60">
+      <ellipse cx="20" cy="46" rx="16" ry="12.5" style="fill:#4caf50"/>
+      <ellipse cx="20" cy="48" rx="10" ry="7.5" style="fill:#c9e8a0"/>
+      <ellipse cx="20" cy="31" rx="15" ry="10" style="fill:#5cc25e"/>
+      <circle cx="12" cy="23" r="6" style="fill:#5cc25e"/><circle cx="28" cy="23" r="6" style="fill:#5cc25e"/>
+      <circle cx="12" cy="23" r="4" style="fill:#fff"/><circle cx="28" cy="23" r="4" style="fill:#fff"/>
+      <circle cx="13" cy="24" r="2" style="fill:#222"/><circle cx="27" cy="24" r="2" style="fill:#222"/>
+      <path d="M11 34q9 6 18 0" style="fill:none;stroke:#1d5e20" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="o-coroa" viewBox="0 0 24 12">
+      <path d="M1 11l3-9 4 5 4-7 4 7 4-5 3 9z" style="fill:#ffc928;stroke:#c8920b" stroke-width=".8"/>
+    </symbol>
+    <symbol id="c-sombra" viewBox="0 0 40 40">
+      <ellipse cx="20" cy="28" rx="13" ry="10" style="fill:#3d3a5c"/>
+      <circle cx="13" cy="17" r="5" style="fill:#3d3a5c"/><circle cx="27" cy="17" r="5" style="fill:#3d3a5c"/>
+      <circle cx="13" cy="17" r="2.6" style="fill:#fff"/><circle cx="27" cy="17" r="2.6" style="fill:#fff"/>
+      <circle cx="13.5" cy="17.5" r="1.2" style="fill:#222"/><circle cx="26.5" cy="17.5" r="1.2" style="fill:#222"/>
+      <path d="M15 30q5 3 10 0" style="fill:none;stroke:#fff" stroke-width="1.2"/>
+      <rect x="29" y="22" width="9" height="6" rx="1" style="fill:#c0392b"/><rect x="32.5" y="15" width="2" height="8" style="fill:#8a5a34"/>
+    </symbol>
+    <symbol id="c-granitus" viewBox="0 0 40 60">
+      <rect x="0" y="24" width="7" height="20" rx="3.5" style="fill:#7b808a"/><rect x="33" y="24" width="7" height="20" rx="3.5" style="fill:#7b808a"/>
+      <rect x="5" y="8" width="30" height="50" rx="9" style="fill:#8d929c"/>
+      <path d="M12 40l5 4-2 6M28 14l-3 5 4 3" style="fill:none;stroke:#6c717b" stroke-width="1.3"/>
+      <rect x="11" y="20" width="6" height="3.5" rx="1.2" style="fill:var(--olho,#ffd23f)"/><rect x="23" y="20" width="6" height="3.5" rx="1.2" style="fill:var(--olho,#ffd23f)"/>
+      <path d="M15 31h10" style="stroke:#3c4048" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="c-zappy" viewBox="0 0 30 30">
+      <circle cx="15" cy="17" r="13" style="fill:#fff3b0;opacity:.45"/>
+      <ellipse cx="9" cy="10" rx="6" ry="4" style="fill:#d9f1ff;opacity:.9"/><ellipse cx="21" cy="10" rx="6" ry="4" style="fill:#d9f1ff;opacity:.9"/>
+      <ellipse cx="15" cy="17" rx="6" ry="8" style="fill:#ffd23f"/>
+      <ellipse cx="15" cy="21" rx="4.5" ry="4" style="fill:#fff6c8"/>
+      <circle cx="12.8" cy="14" r="1.3" style="fill:#3b2500"/><circle cx="17.2" cy="14" r="1.3" style="fill:#3b2500"/>
+      <path d="M12.5 4q1 3 1.5 5M17.5 4q-1 3-1.5 5" style="fill:none;stroke:#3b2500" stroke-width="1"/>
+    </symbol>
+    <symbol id="c-nico" viewBox="0 0 40 30">
+      <ellipse cx="20" cy="20" rx="13" ry="8" style="fill:#ff7a52"/>
+      <path d="M8 16q-6-6-2-10 4 0 4 5M32 16q6-6 2-10-4 0-4 5" style="fill:#ff7a52"/>
+      <path d="M12 12v-6M28 12v-6" style="stroke:#ff7a52" stroke-width="2"/>
+      <circle cx="12" cy="6" r="2.4" style="fill:#fff"/><circle cx="28" cy="6" r="2.4" style="fill:#fff"/>
+      <circle cx="12" cy="6" r="1.1" style="fill:#222"/><circle cx="28" cy="6" r="1.1" style="fill:#222"/>
+      <path d="M14 26l-3 3M26 26l3 3M18 27l-1 3M22 27l1 3" style="stroke:#ff7a52" stroke-width="2"/>
+      <rect x="14" y="13" width="12" height="8" rx="1" style="fill:#c9a86a"/><circle cx="20" cy="17" r="1.6" style="fill:#c8920b"/>
+    </symbol>
+    <symbol id="c-capi" viewBox="0 0 40 40">
+      <ellipse cx="22" cy="26" rx="15" ry="10" style="fill:#b07a4a"/>
+      <ellipse cx="9" cy="20" rx="8" ry="7" style="fill:#b07a4a"/>
+      <circle cx="6" cy="18" r="1.3" style="fill:#222"/><circle cx="11" cy="17" r="1.2" style="fill:#222"/>
+      <circle cx="8" cy="13" r="2" style="fill:#9a6a3e"/><circle cx="13" cy="13" r="2" style="fill:#9a6a3e"/>
+      <circle cx="30" cy="32" r="5" style="fill:#fff3b0;opacity:.6"/><circle cx="30" cy="32" r="3" style="fill:#ffd23f"/>
+    </symbol>
+    <symbol id="c-lumi" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="19" style="fill:var(--cor-lumi,#ff9a3c);opacity:.25"/>
+      <circle cx="20" cy="20" r="11" style="fill:var(--cor-lumi,#ff9a3c)"/>
+      <circle cx="16.5" cy="19" r="1.5" style="fill:#3b2500"/><circle cx="23.5" cy="19" r="1.5" style="fill:#3b2500"/>
+      <path d="M17 23.5q3 2 6 0" style="fill:none;stroke:#3b2500" stroke-width="1.2"/>
+    </symbol>
+    <symbol id="c-borrao" viewBox="0 0 40 40">
+      <path d="M8 26c-5-2-4-10 2-11 0-6 8-9 12-5 4-4 12-1 11 5 6 1 6 9 1 11 1 5-6 8-10 5-4 4-12 2-12-3-3 0-5-1-4-2z" style="fill:#8a8fa0;opacity:.85"/>
+      <circle cx="20" cy="21" r="6" style="fill:var(--cor-lumi,#ff9a3c)"/>
+      <circle cx="18" cy="20" r="1" style="fill:#3b2500"/><circle cx="22" cy="20" r="1" style="fill:#3b2500"/>
+    </symbol>
+    <symbol id="o-farol" viewBox="0 0 40 100">
+      <circle cx="20" cy="22" r="19" style="fill:var(--lamp,#ffd23f);opacity:var(--brilho,.15)"/>
+      <path d="M13 98h14l-3-62h-8z" style="fill:#f4f4f4"/>
+      <path d="M14.2 70h11.6l.4 9H13.8zM15 48h10l.3 9H14.7z" style="fill:#e0524f"/>
+      <rect x="10" y="34" width="20" height="3" style="fill:#2e3a5c"/>
+      <rect x="11" y="16" width="18" height="18" rx="2" style="fill:#2e3a5c"/>
+      <circle cx="15" cy="21" r="2.2" style="fill:var(--s1,#59627a)"/><circle cx="20" cy="21" r="2.2" style="fill:var(--s2,#59627a)"/><circle cx="25" cy="21" r="2.2" style="fill:var(--s3,#59627a)"/>
+      <circle cx="15" cy="28" r="2.2" style="fill:var(--s4,#59627a)"/><circle cx="20" cy="28" r="2.2" style="fill:var(--s5,#59627a)"/><circle cx="25" cy="28" r="2.2" style="fill:var(--s6,#59627a)"/>
+      <path d="M9 16h22l-11-9z" style="fill:#e0524f"/>
+    </symbol>
+    <symbol id="o-livro" viewBox="0 0 40 30">
+      <rect x="3" y="3" width="34" height="24" rx="3" style="fill:#e8a317"/>
+      <rect x="18.5" y="3" width="3" height="24" style="fill:#b97c06"/>
+    </symbol>
+    <symbol id="o-nucleo" viewBox="0 0 30 30">
+      <circle cx="15" cy="15" r="14" style="fill:var(--nc,#35b866);opacity:.25"/>
+      <path d="M15 3l10 6v12l-10 6-10-6V9z" style="fill:#d8c7a0;stroke:#8a6a3a" stroke-width="1.2"/>
+      <path d="M15 8l6 3.5v7L15 22l-6-3.5v-7z" style="fill:var(--nc,#35b866)"/>
+      <circle cx="15" cy="15" r="2.4" style="fill:#fff"/>
+    </symbol>
+    <symbol id="o-casa" viewBox="0 0 60 50">
+      <path d="M6 22L30 4l24 18z" style="fill:#d9634f"/>
+      <rect x="10" y="22" width="40" height="26" style="fill:#f6e7c8"/>
+      <rect x="15" y="27" width="10" height="9" style="fill:#ffd23f"/>
+      <rect x="35" y="27" width="10" height="9" style="fill:#7fc8e8"/>
+      <rect x="26" y="34" width="8" height="14" style="fill:#7a5236"/>
+    </symbol>
+    <symbol id="o-oficina" viewBox="0 0 60 50">
+      <rect x="6" y="18" width="48" height="30" style="fill:#c9a27a"/>
+      <path d="M4 18l8-12h36l8 12z" style="fill:#8a5a34"/>
+      <circle cx="44" cy="10" r="6" style="fill:none;stroke:#59627a" stroke-width="3" stroke-dasharray="3 2"/>
+      <rect x="14" y="26" width="14" height="22" style="fill:#7a5236"/>
+      <rect x="34" y="26" width="14" height="10" style="fill:#9fd8f0"/>
+      <rect x="10" y="30" width="22" height="8" rx="1" style="fill:#fff6e0;opacity:var(--lacre,1)"/>
+      <text x="21" y="36.5" text-anchor="middle" style="fill:#c0392b;font:800 5.5px sans-serif;opacity:var(--lacre,1)">PROIBIDO</text>
+    </symbol>
+    <symbol id="o-chave" viewBox="0 0 30 14">
+      <circle cx="7" cy="7" r="5.5" style="fill:none;stroke:#e8a317" stroke-width="2.6"/>
+      <path d="M12 7h16M24 7v5M20 7v4" style="stroke:#e8a317" stroke-width="2.6"/>
+    </symbol>
+    <symbol id="o-lanterna" viewBox="0 0 20 30">
+      <circle cx="10" cy="17" r="10" style="fill:#ffe27a;opacity:.45"/>
+      <path d="M6 3h8M10 3v4" style="stroke:#555" stroke-width="1.5"/>
+      <rect x="5" y="7" width="10" height="16" rx="2" style="fill:#3b3f5c"/>
+      <rect x="6.5" y="9" width="7" height="12" rx="1" style="fill:#ffd23f"/>
+    </symbol>
+    <symbol id="i-casa" viewBox="0 0 34 34"><path d="M4 16L17 5l13 11v14H4z" fill="currentColor"/><rect x="14" y="21" width="6" height="9" style="fill:var(--surface)"/></symbol>
+    <symbol id="i-horta" viewBox="0 0 34 34"><path d="M17 30V14" style="stroke:currentColor" stroke-width="3"/><path d="M17 16c-8 0-10-8-10-8 8 0 10 4 10 8zM17 13c6-1 9-8 9-8-7 0-9 4-9 8z" fill="currentColor"/><rect x="5" y="27" width="24" height="4" rx="2" fill="currentColor"/></symbol>
+    <symbol id="i-mar" viewBox="0 0 34 34"><path d="M3 20q4-4 7 0t7 0 7 0 7 0M3 27q4-4 7 0t7 0 7 0 7 0" style="fill:none;stroke:currentColor" stroke-width="3" stroke-linecap="round"/><path d="M17 4l3 9h-6z" fill="currentColor"/></symbol>
+    <symbol id="i-noite" viewBox="0 0 34 34"><path d="M22 5a12 12 0 1 0 8 17A10 10 0 0 1 22 5z" fill="currentColor"/></symbol>
+    <symbol id="i-engrenagem" viewBox="0 0 34 34"><path d="M15 3h4l1 4 3 1 3-2 3 3-2 3 1 3 4 1v4l-4 1-1 3 2 3-3 3-3-2-3 1-1 4h-4l-1-4-3-1-3 2-3-3 2-3-1-3-4-1v-4l4-1 1-3-2-3 3-3 3 2 3-1z" fill="currentColor"/><circle cx="17" cy="17" r="5" style="fill:var(--surface)"/></symbol>
+    <symbol id="i-farol" viewBox="0 0 34 34"><path d="M13 31h8l-2-20h-4z" fill="currentColor"/><rect x="12" y="5" width="10" height="7" rx="1" fill="currentColor"/><path d="M4 6l7 3M30 6l-7 3M4 12l7-2M30 12l-7-2" style="stroke:currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-mapa" viewBox="0 0 34 34"><path d="M4 8l8-3 10 3 8-3v21l-8 3-10-3-8 3z" style="fill:none;stroke:currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M12 5v21M22 8v21" style="stroke:currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-carimbo" viewBox="0 0 34 34"><rect x="13" y="3" width="8" height="12" rx="3" fill="currentColor"/><rect x="7" y="15" width="20" height="6" rx="2" fill="currentColor"/><rect x="5" y="24" width="24" height="6" rx="1" style="fill:none;stroke:currentColor" stroke-width="2.4"/></symbol>
+    <symbol id="i-estrela" viewBox="0 0 34 34"><path d="M17 3l4 9 10 1-7.5 6.5L26 30l-9-5.5L8 30l2.5-10.5L3 13l10-1z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="sec">
+    <div class="sec-head">
+      <p class="eyebrow">Arquipélago Vagalume · O Livro Dourado e as seis conexões · capítulo 1</p>
+      <h1>A Ilha Faísca</h1>
+      <p class="lead">A ilha do meio, onde a criança mora e para onde sempre volta: o lar dela, um mundo para explorar à vontade e o centro das seis conexões. Uma ilha grande, verde, bonita e colorida, mas parada: os moradores usam a coroinha do Rei e entregam a ele tudo o que fazem, a oficina está lacrada e o Farol tem seis buracos vazios. Aqui a criança chega, escolhe por onde começar, conhece a Íris e o Zappy, faz o primeiro Núcleo e acende o primeiro facho.</p>
+    </div>
+    <div class="resumo">
+      <div><span>Posto da Jornada</span><b>1 · Faísca</b></div>
+      <div><span>Guardiã</span><b>Íris</b></div>
+      <div><span>A Missão do Núcleo abre no</span><b>Posto 2</b></div>
+      <div><span>O que se conquista</span><b>Núcleo da Oficina · facho 1 · ponte do Bosque</b></div>
+      <div><span>Tamanho</span><b>cerca de 520 m de ponta a ponta</b></div>
+      <div><span>Distritos</span><b>seis, ligados por um anel de caminhos</b></div>
+      <div><span>Pontes</span><b>seis, cada uma numa cabeceira da costa</b></div>
+      <div><span>Avatar</span><b>no tamanho de verdade, 1,16 m</b></div>
+    </div>
+    <nav class="indice" aria-label="Partes da página">
+      <a href="#mapa">Os seis distritos</a>
+      <a href="#quem">Quem está na ilha</a>
+      <a href="#abertura">A abertura</a>
+      <a href="#capitulo">A primeira experiência</a>
+      <a href="#quadro">Quadro das Conexões</a>
+      <a href="#comodos">As chaves de presente</a>
+      <a href="#prova">A Missão do Núcleo</a>
+      <a href="#estados">O que o jogo guarda</a>
+      <a href="#falas">Falas</a>
+      <a href="#fazer">O que fazer</a>
+      <a href="#minijogos">Minijogos</a>
+      <a href="#conexoes">Conexões</a>
+      <a href="#muda">A ilha muda</a>
+      <a href="#construir">Como construir</a>
+      <a href="#entregas">Entregas e testes</a>
+    </nav>
+  </header>
+
+  <!-- MAPA -->
+  <section class="sec" id="mapa">
+    <div class="sec-head">
+      <p class="eyebrow">Vista de cima</p>
+      <h2>A Faísca em seis distritos</h2>
+      <p>Uma ilha de contorno orgânico, com cerca de 520 m de ponta a ponta, feita para o avatar no tamanho de verdade. O tamanho é limite, não meta: a ilha vale pelo que oferece para fazer, descobrir e revisitar. Seis distritos ligados por um anel de caminhos legível, com atalhos que se reencontram. O Farol fica numa colina suave perto do meio, à vista de qualquer lugar, e os seis fachos dele apontam para seis cabeceiras de ponte espalhadas pela costa.</p>
+    </div>
+    <figure class="mapa">
+      <svg viewBox="0 0 900 620" role="img" aria-label="Mapa ilustrado da Ilha Faísca: seis distritos coloridos (Vila dos Criadores no meio, Campos da Íris a oeste, Pátio das Invenções a noroeste, Colina do Farol no centro-norte, Bosque das Lanternas a nordeste e Costa do Nico a sudeste), um anel de caminhos entre eles, o Farol na colina com seis fachos até seis cabeceiras de ponte na costa, o píer e o Canal do Vagalume.">
+        <rect width="900" height="620" style="fill:var(--mar)"/>
+        <g style="fill:none;stroke:var(--mar-fundo)" stroke-width="3" stroke-linecap="round"><path d="M40 70q20-8 40 0t40 0M770 60q20-8 40 0t40 0M50 590q20-8 40 0t40 0M760 590q20-8 40 0t40 0"/></g>
+        <!-- pontes partidas, das cabeceiras para o mar -->
+        <g stroke-linecap="round" stroke-width="11" style="stroke:#b08a5a">
+          <path d="M470 74L470 40"/><path d="M688 150L722 120"/><path d="M728 402L762 420"/><path d="M470 566L470 592"/><path d="M196 468L164 492"/><path d="M206 172L176 146"/>
+        </g>
+        <g stroke-linecap="round" stroke-width="11" style="stroke:#b08a5a;opacity:.35" stroke-dasharray="12 11">
+          <path d="M470 40L470 4"/><path d="M722 120L768 82"/><path d="M762 420L812 446"/><path d="M470 592L470 620"/><path d="M164 492L118 526"/><path d="M176 146L132 110"/>
+        </g>
+        <g style="font:800 13px var(--font-titulo);fill:var(--ink)">
+          <text x="484" y="26">Bosque dos Bichos · norte</text>
+          <text x="742" y="74">Vila Doce · nordeste</text>
+          <text x="772" y="476">Recife Coral</text><text x="772" y="492">sudeste</text>
+          <text x="484" y="612">Pico Gelado · sul</text>
+          <text x="20" y="560">Vale dos Dinos · sudoeste</text>
+          <text x="18" y="100">Ilha das Nuvens · noroeste</text>
+        </g>
+        <!-- ilha -->
+        <path d="M450 58C566 54 660 100 712 164C776 240 756 334 744 394C724 478 650 552 544 572C470 586 396 584 324 558C230 526 158 476 140 382C122 300 148 214 210 152C272 92 356 62 450 58Z" style="fill:var(--areia)"/>
+        <path d="M450 78C556 74 642 116 690 174C748 244 730 332 720 388C702 464 634 530 538 548C470 560 402 558 334 536C246 506 182 462 164 378C148 302 172 222 228 166C284 112 362 82 450 78Z" style="fill:var(--grama)"/>
+        <!-- distritos -->
+        <g style="opacity:.62">
+          <ellipse cx="452" cy="384" rx="100" ry="62" style="fill:#ffd9a8"/>
+          <ellipse cx="282" cy="326" rx="98" ry="86" style="fill:#d6f2a6"/>
+          <ellipse cx="322" cy="196" rx="94" ry="62" style="fill:#ead2b0"/>
+          <ellipse cx="474" cy="240" rx="80" ry="58" style="fill:#e6f5d2"/>
+          <ellipse cx="616" cy="206" rx="98" ry="78" style="fill:#7fbf7a"/>
+          <ellipse cx="616" cy="452" rx="104" ry="74" style="fill:#ffe9bd"/>
+        </g>
+        <!-- colina: curvas de nível -->
+        <g style="fill:none;stroke:#9cc48a" stroke-width="2"><ellipse cx="474" cy="232" rx="52" ry="34"/><ellipse cx="474" cy="228" rx="32" ry="20"/></g>
+        <!-- árvores do bosque -->
+        <g style="fill:#3f8f4a"><circle cx="576" cy="176" r="10"/><circle cx="600" cy="160" r="9"/><circle cx="640" cy="170" r="11"/><circle cx="664" cy="198" r="9"/><circle cx="590" cy="232" r="10"/><circle cx="650" cy="240" r="9"/><circle cx="620" cy="262" r="8"/></g>
+        <!-- anel de caminhos e atalhos -->
+        <path d="M452 384C392 378 326 362 296 316C276 278 298 226 334 206C386 182 430 240 474 240C530 240 566 196 616 206C676 222 690 330 650 400C626 440 520 430 452 384Z" style="fill:none;stroke:#f3e6c4" stroke-width="9" stroke-linecap="round"/>
+        <path d="M452 384L474 260M296 316L250 372M616 206L640 300L650 400" style="fill:none;stroke:#f3e6c4" stroke-width="5" stroke-dasharray="8 7" stroke-linecap="round"/>
+        <!-- fachos do Farol às cabeceiras -->
+        <g stroke-width="3" fill="none" stroke-dasharray="5 6">
+          <path d="M474 206L470 74" style="stroke:#35b866"/><path d="M474 206L688 150" style="stroke:#ff6fae;opacity:.45"/><path d="M474 206L728 402" style="stroke:#f5bd16;opacity:.45"/>
+          <path d="M474 206L470 566" style="stroke:#38c3e6;opacity:.45"/><path d="M474 206L196 468" style="stroke:#ff8a3d;opacity:.45"/><path d="M474 206L206 172" style="stroke:#9a6bff;opacity:.45"/>
+        </g>
+        <use href="#c-granitus" x="452" y="80" width="18" height="27"/>
+        <use href="#c-granitus" x="664" y="152" width="16" height="24"/>
+        <use href="#c-granitus" x="706" y="374" width="16" height="24"/>
+        <use href="#c-granitus" x="478" y="530" width="16" height="24"/>
+        <use href="#c-granitus" x="200" y="432" width="16" height="24"/>
+        <use href="#c-granitus" x="208" y="178" width="16" height="24"/>
+        <!-- lugares -->
+        <use href="#o-farol" x="460" y="168" width="28" height="70"/>
+        <use href="#o-casa" x="404" y="352" width="56" height="47"/>
+        <use href="#o-oficina" x="288" y="164" width="60" height="50"/>
+        <g style="fill:#8a5a34"><rect x="262" y="290" width="18" height="12" rx="2"/><rect x="284" y="290" width="18" height="12" rx="2"/><rect x="306" y="290" width="18" height="12" rx="2"/><rect x="262" y="306" width="18" height="12" rx="2"/><rect x="284" y="306" width="18" height="12" rx="2"/><rect x="306" y="306" width="18" height="12" rx="2"/></g>
+        <ellipse cx="236" cy="372" rx="30" ry="17" style="fill:#7fc8e8"/>
+        <rect x="478" y="396" width="26" height="18" rx="2" style="fill:#fff;stroke:#59627a" stroke-width="1.5"/>
+        <rect x="586" y="522" width="22" height="64" rx="3" style="fill:#a8784a"/>
+        <use href="#c-nico" x="640" y="452" width="30" height="22"/>
+        <rect x="350" y="214" width="24" height="12" rx="2" style="fill:#3d3a5c"/>
+        <use href="#c-borrao" x="604" y="196" width="20" height="20" style="--cor-lumi:#5fd6cf"/>
+        <g style="fill:#f7b2c4"><circle cx="694" cy="430" r="4"/><circle cx="664" cy="510" r="4"/><circle cx="540" cy="540" r="4"/></g>
+        <use href="#o-chave" x="222" y="350" width="20" height="9"/>
+        <use href="#o-chave" x="704" y="370" width="20" height="9"/>
+        <use href="#o-chave" x="676" y="500" width="20" height="9"/>
+        <use href="#o-chave" x="500" y="358" width="20" height="9"/>
+        <!-- Canal do Vagalume -->
+        <g style="fill:#8d929c"><circle cx="700" cy="560" r="9"/><circle cx="722" cy="574" r="7"/><circle cx="660" cy="590" r="8"/><circle cx="742" cy="600" r="9"/></g>
+        <path d="M880 610Q760 590 612 586" style="fill:none;stroke:#fff" stroke-width="2" stroke-dasharray="4 6"/>
+        <text x="742" y="548" style="font:800 12px var(--font-titulo);fill:var(--ink)">Canal do Vagalume</text>
+        <!-- letras dos distritos -->
+        <g style="font:800 14px var(--font-titulo)">
+          <g><rect x="436" y="420" width="26" height="22" rx="6" style="fill:#f0a64a"/><text x="449" y="436" text-anchor="middle" style="fill:var(--on-cor)">A</text></g>
+          <g><rect x="246" y="250" width="26" height="22" rx="6" style="fill:#7cc04a"/><text x="259" y="266" text-anchor="middle" style="fill:var(--on-cor)">B</text></g>
+          <g><rect x="652" y="410" width="26" height="22" rx="6" style="fill:#f2b13a"/><text x="665" y="426" text-anchor="middle" style="fill:var(--on-cor)">C</text></g>
+          <g><rect x="270" y="134" width="26" height="22" rx="6" style="fill:#c99a62"/><text x="283" y="150" text-anchor="middle" style="fill:var(--on-cor)">D</text></g>
+          <g><rect x="500" y="168" width="26" height="22" rx="6" style="fill:#8cc76c"/><text x="513" y="184" text-anchor="middle" style="fill:var(--on-cor)">E</text></g>
+          <g><rect x="680" y="232" width="26" height="22" rx="6" style="fill:#3f8f4a"/><text x="693" y="248" text-anchor="middle" style="fill:#fff">F</text></g>
+        </g>
+        <!-- escala e norte -->
+        <g style="font:700 11px var(--font-texto);fill:var(--ink)">
+          <path d="M30 600h113" style="stroke:var(--ink)" stroke-width="3"/><path d="M30 594v12M143 594v12" style="stroke:var(--ink)" stroke-width="2"/>
+          <text x="58" y="590">100 m</text>
+          <path d="M40 14l8 22h-16z" style="fill:var(--ink)"/><text x="35" y="52">N</text>
+        </g>
+      </svg>
+    </figure>
+    <div class="distritos">
+      <div class="distrito" style="--d:#f0a64a"><div class="distrito-top"><span class="letra">A</span><h3>Vila dos Criadores</h3></div><p class="k">O lar e a base segura</p><p>A casa da criança (o quarto e a Morada dela), a praça, os vizinhos, o banco, o Construir e o cavalete do Quadro das Conexões. Atalhos saem da praça para os outros distritos, e o lote da casa cresce com a Morada.</p><p class="longe">É o meio de tudo: a horta, a entrada do Pátio e o Farol ficam a menos de um minuto a pé.</p></div>
+      <div class="distrito" style="--d:#7cc04a"><div class="distrito-top"><span class="letra">B</span><h3>Campos da Íris</h3></div><p class="k">Natureza, cultivo e experimentar com calma</p><p>A horta comunitária com os seis canteiros, o regador, a bomba d’água, a Tulipa e o lago com o banco. Em volta, trilhas, um pequeno pomar, fontes e um caminho alternativo até o Pátio.</p><p class="longe">Ao lado da Vila: a Íris está a meio minuto da porta de casa.</p></div>
+      <div class="distrito" style="--d:#f2b13a"><div class="distrito-top"><span class="letra">C</span><h3>Costa do Nico</h3></div><p class="k">Mar, coleções, pesca e correio</p><p>O píer, onde o barco chega pelo Canal do Vagalume e onde se pesca; a praia, as enseadas das conchas, a maré, os mirantes e os rochedos. O Nico faz uma rotina curta entre o píer e a praça.</p><p class="longe">Descendo a Vila pela trilha das pedras.</p></div>
+      <div class="distrito" style="--d:#c99a62"><div class="distrito-top"><span class="letra">D</span><h3>Pátio das Invenções</h3></div><p class="k">O conflito da ilha e o desafio</p><p>A oficina lacrada, a mesinha da Sombra Carimbo, o Rufo, a bancada com o primeiro Núcleo da Íris e a janela escura onde a Estrelinha está presa. Galpões, um caminho de observação por cima e mecanismos de verdade para mexer.</p><p class="longe">A entrada fica no fim da rua da praça.</p></div>
+      <div class="distrito" style="--d:#8cc76c"><div class="distrito-top"><span class="letra">E</span><h3>Colina do Farol</h3></div><p class="k">Orientação e a grande conquista</p><p>O Farol com os seis compartimentos, a luneta, o mapa das rotas e um caminho panorâmico. Daqui se vê para onde aponta cada facho e a cabeceira de cada ponte.</p><p class="longe">Uma subida suave saindo da praça.</p></div>
+      <div class="distrito" style="--d:#3f8f4a"><div class="distrito-top"><span class="letra">F</span><h3>Bosque das Lanternas</h3></div><p class="k">Exploração e mistério gentil</p><p>Clareiras, a trilha das lanternas, a árvore da chave, os segredos, um mirante e passagens pequenas. À noite, os borrões com os Lumis presos. Tem sempre um caminho plano ao lado do caminho de desafio.</p><p class="longe">O canto mais calmo da ilha, a nordeste.</p></div>
+    </div>
+    <div class="regras">
+      <h3 style="font-size:1.1rem">Como a ilha se organiza</h3>
+      <ul>
+        <li><b>O coração habitado:</b> a Vila, os Campos e a entrada do Pátio ficam juntos. Do quarto até a Íris, a Sombra e a primeira escolha, a criança anda poucos minutos.</li>
+        <li><b>Um anel de caminhos</b> passa pelos seis distritos, com atalhos pelo bosque e pela costa que voltam ao anel. De cada bifurcação dá para ver duas ou três atrações; nada de corredor de árvores iguais.</li>
+        <li><b>Distâncias:</b> nas velocidades de hoje (andar 2,2 m/s, correr 4,6 m/s), cruzar 260 m em linha reta leva uns 2 minutos andando e 1 correndo. Por isso o que se faz todo dia fica no coração habitado, e cada lugar importante, depois de visitado, vira um ponto da viagem rápida.</li>
+        <li><b>As seis cabeceiras</b> ficam na costa, na ordem dos fachos: Bosque ao norte, Vila Doce a nordeste, Recife a sudeste, Pico ao sul, Vale a sudoeste, Nuvens a noroeste. Cada uma tem placa, marca da ilha e o seu Granitus. A ponte sai da costa, nunca do pé do Farol, e fica partida até o facho dela acender. A área dos Granitus não domina os primeiros minutos.</li>
+        <li><b>A água:</b> um oceano só no mundo, com costa de formato orgânico e partes rasas fáceis de ler; o mar entre as ilhas é patrulhado. O lago dos Campos é separado, para as atividades tranquilas.</li>
+        <li><b>Espaço reservado</b> para atividades novas, a Morada crescer e os eventos que vêm depois, sem grandes áreas vazias no lançamento.</li>
+      </ul>
+    </div>
+    <div class="lugares">
+      <div class="lugar"><span class="n">1</span><div><p class="d">A · Vila dos Criadores</p><h4>A casa da criança</h4><p>Feita pela comunidade para cada criador novo, num lote da Vila. O quarto é o que a criança montou na plataforma e a casa usa a Morada no tamanho de verdade: nada do que ela já tem se perde. Os cômodos extras se abrem com as chaves de presente.</p></div></div>
+      <div class="lugar"><span class="n">2</span><div><p class="d">E · Colina do Farol</p><h4>O Farol das Conexões</h4><p>No alto da colina, com seis compartimentos vazios, um para cada Núcleo. Cada facho aceso cruza a paisagem até a cabeceira da sua ponte.</p></div></div>
+      <div class="lugar"><span class="n">3</span><div><p class="d">D · Pátio das Invenções</p><h4>A oficina antiga</h4><p>Um pátio com a oficina, galpões e um caminho de observação, com várias entradas à vista. Foi sabotada e lacrada. Na bancada, o primeiro Núcleo da Íris: a engrenagem gira, mas não acende.</p></div></div>
+      <div class="lugar"><span class="n">4</span><div><p class="d">B · Campos da Íris</p><h4>A horta comunitária</h4><p>Os seis canteiros da Íris (alface, tomate e milho) no meio dos Campos, que seguem em volta com pomar, trilhas e fontes.</p></div></div>
+      <div class="lugar"><span class="n">5</span><div><p class="d">A · Vila dos Criadores</p><h4>O Quadro das Conexões</h4><p>O cavalete na praça. Os seis desafios do Estúdio aparecem nele, e cada um religa um mecanismo num distrito diferente.</p></div></div>
+      <div class="lugar"><span class="n">6</span><div><p class="d">C · Costa do Nico</p><h4>O píer</h4><p>Onde o barco chega pelo Canal do Vagalume e onde se pesca: sardinha, robalo, garoupa, linguado e peixe-voador.</p></div></div>
+      <div class="lugar"><span class="n">7</span><div><p class="d">C · Costa do Nico</p><h4>A praia do Nico</h4><p>O caranguejo carteiro faz uma rotina curta, da praia à praça e de volta, com a mala do Rei. Mesmo de coroinha, cochicha quem precisa de ajuda.</p></div></div>
+      <div class="lugar"><span class="n">8</span><div><p class="d">C · Costa do Nico</p><h4>As enseadas das conchas</h4><p>Cinco conchas e uma estrela-do-mar em enseadas fáceis de achar, com pistas. À noite, borrões com Lumis presos, como o Búzio, que é raro.</p></div></div>
+      <div class="lugar"><span class="n">9</span><div><p class="d">Pela ilha toda</p><h4>As quatro chaves</h4><p>A caça de boas-vindas, opcional, com uma pista por região: cozinha, sala, banheiro e quintal. Nenhuma é preciso para usar a casa, andar pela ilha ou fazer a missão.</p></div></div>
+      <div class="lugar"><span class="n">10</span><div><p class="d">D · Pátio das Invenções</p><h4>A mesinha da Sombra Carimbo</h4><p>O posto de fiscal perto da oficina, com pilhas de lacres PROIBIDO. Ela aparece de surpresa nos outros distritos, sempre com um carimbo que dá errado.</p></div></div>
+      <div class="lugar"><span class="n">11</span><div><p class="d">B · Campos da Íris</p><h4>O lago e o banco</h4><p>O laguinho de água doce, o banco que devolve a energia e uma pequena paisagem em volta para passear.</p></div></div>
+      <div class="lugar"><span class="n">12</span><div><p class="d">Na costa</p><h4>As seis pontes partidas</h4><p>Uma em cada cabeceira. Só o Granitus da ponte do Bosque patrulha; os outros cinco ficam parados de guarda, de olhos meio apagados e com a cor do facho que vão pedir no peito.</p></div></div>
+    </div>
+  </section>
+
+  <!-- QUEM -->
+  <section class="sec" id="quem">
+    <div class="sec-head">
+      <p class="eyebrow">Quem está na ilha</p>
+      <h2>A guardiã, o vagalume, os moradores e a fiscal</h2>
+    </div>
+    <div class="fichas">
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 60" aria-hidden="true"><use href="#c-iris"/></svg><div><p class="papel">Guardiã da Faísca</p><h3>Íris</h3></div></div>
+        <p>Cuida da horta comunitária, dos primeiros mecanismos e de receber os criadores novos. A lanterninha antiga dela a protege das ordens, mas só ela. Conhece o Farol e fez uma primeira versão do Núcleo: a engrenagem gira, mas não acende. Escreveu o convite.</p>
+        <p class="fala">“Precisamos de uma ideia nova.”</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 30 30" aria-hidden="true" style="width:50px;height:50px"><use href="#c-zappy"/></svg><div><p class="papel">Parceiro</p><h3>Zappy</h3></div></div>
+        <p>O último vagalume livre do Arquipélago. A luz dele protege uma pessoa por perto: a criança. Levou o convite da Íris voando até a criança, guiou o barco dela pelo Canal do Vagalume e passou a primeira noite de guarda no quarto, antes de se apresentar. Quando um recado dourado chega, bate no brilho dele e cai no chão, sem efeito. A luz não apaga nem destrói nada. Mora na lanterna à noite. Aponta pistas, comemora, nunca resolve no lugar dela. Acha que a luz dele é pequena demais para ajudar todo mundo; vai aprender que precisava ajudar alguém a juntar as pessoas que podiam mudar tudo.</p>
+        <p class="fala">“Essa ordem não manda em você.”</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 30" aria-hidden="true" style="width:56px;height:42px"><use href="#c-nico"/></svg><div><p class="papel">Carteiro, de coroinha</p><h3>Nico</h3></div></div>
+        <p>Carrega a mala das encomendas do Rei e repete o anúncio oficial, numa rotina curta entre o píer e a praça. Mas, quando ninguém olha, cochicha o correio do dia: quem está esperando ajuda. A amizade com ele faz as brechas crescerem.</p>
+        <p class="fala">“Encomenda do Rei… (psiu: a Capi pediu ajuda.)”</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 40" aria-hidden="true" style="width:52px;height:52px"><use href="#c-sombra"/></svg><div><p class="papel">Chefe local</p><h3>Sombra Carimbo</h3></div></div>
+        <p>A fiscal do Rei na Faísca. Não usa coroinha: trabalha para o Rei porque quer, achando que é a grande chance dela. O posto dela fica perto da oficina, mas ela aparece de surpresa nos outros distritos. Carimba PROIBIDO na oficina e nos mecanismos; na casa e na horta, o carimbo sempre dá errado. A página da ordem fica dentro do cabo do carimbo: é o transmissor da Faísca. Ao longo da aventura percebe que o Rei não liga para as ideias dela e passa a ajudar a criança.</p>
+        <p class="fala">“Invenção sem assinatura do Rei? PROIBIDO!” (tum)</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 60" aria-hidden="true"><use href="#c-morador" style="--roupa:#7fb3d5"/><use href="#o-coroinha" x="10" y="0" width="20" height="10"/></svg><div><p class="papel">Moradora, de coroinha</p><h3>Tulipa</h3></div></div>
+        <p>Jardineira que inventava regadores. Agora só carrega caixas com o selo da coroa. Brecha: desenha regadores na terra com o pé quando acha que ninguém vê.</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 60" aria-hidden="true"><use href="#c-morador" style="--roupa:#8fbf6a;--pele:#c98d63"/><use href="#o-coroinha" x="10" y="0" width="20" height="10"/></svg><div><p class="papel">Morador, de coroinha</p><h3>Rufo</h3></div></div>
+        <p>Consertador da oficina. Hoje aperta o mesmo parafuso de uma caixa do Rei, o dia inteiro. Brecha: guarda no bolso uma peça da oficina e deixa cair perto da criança.</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 60" aria-hidden="true"><use href="#c-morador" style="--roupa:#d989c9;--pele:#f2c79a"/><use href="#o-coroinha" x="10" y="0" width="20" height="10"/></svg><div><p class="papel">Moradora, de coroinha</p><h3>Bia</h3></div></div>
+        <p>Música da praia. Toca só o hino do Rei, sempre igual. Brecha: no fim do hino, escapa uma notinha dela mesma.</p>
+      </article>
+      <article class="ficha">
+        <div class="ficha-top"><svg viewBox="0 0 40 60" aria-hidden="true"><use href="#c-granitus"/></svg><div><p class="papel">Sentinelas</p><h3>Seis Granitus</h3></div></div>
+        <p>Um em cada ponte partida, comandado por um receptor dourado na base. Só o da ponte do Bosque patrulha; os outros ficam parados de guarda, de olhos meio apagados, até o Rei mandar reforçar a ponte deles. Quando o facho acende, o receptor apaga e o Granitus dorme como estátua: parado, ainda não livre.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ABERTURA -->
+  <section class="sec" id="abertura">
+    <div class="sec-head">
+      <p class="eyebrow">Cutscene · a carta da Íris</p>
+      <h2>A abertura, cena a cena</h2>
+      <p>Um livro ilustrado narrado pela própria carta da Íris, com legenda sempre ligada. Dá para voltar, avançar e pular segurando Espaço ou o botão por um segundo. Depois das sete pinturas, a câmera entra pela janela do quarto e o jogo começa.</p>
+    </div>
+    <div class="cenas">
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="Moradores do arquipélago criando: um pinta, outro monta um mecanismo, outra toca música.">
+          <rect width="320" height="180" style="fill:#bfe6c8"/><rect y="140" width="320" height="40" style="fill:#7cc46a"/>
+          <use href="#c-morador" x="30" y="80" width="40" height="60" style="--roupa:#7fb3d5"/><rect x="72" y="76" width="34" height="28" style="fill:#fff;stroke:#c98a06" stroke-width="2"/><circle cx="89" cy="90" r="7" style="fill:#ff6fae"/>
+          <use href="#c-morador" x="130" y="80" width="40" height="60" style="--roupa:#8fbf6a;--pele:#c98d63"/><circle cx="184" cy="112" r="10" style="fill:none;stroke:#59627a" stroke-width="4" stroke-dasharray="4 3"/>
+          <use href="#c-morador" x="230" y="80" width="40" height="60" style="--roupa:#d989c9;--pele:#f2c79a"/><path d="M276 70q8 6 0 14M284 64q12 10 0 24" style="fill:none;stroke:#9a6bff" stroke-width="2"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">1 · Cada um inventava</span><span class="seg">8 s</span></div>
+        <p class="narra">“Querido criador, querida criadora. Aqui no Arquipélago, cada um inventava uma coisa diferente.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="O Farol com seis fachos acesos ligando as pontes das ilhas.">
+          <rect width="320" height="180" style="fill:#7fc8e8"/>
+          <circle cx="160" cy="110" r="34" style="fill:#8fcf73"/>
+          <g stroke-width="4" fill="none"><path d="M160 64L40 30" style="stroke:#35b866"/><path d="M160 64L160 6" style="stroke:#ff6fae"/><path d="M160 64L280 30" style="stroke:#f5bd16"/><path d="M160 64L290 120" style="stroke:#38c3e6"/><path d="M160 64L30 120" style="stroke:#9a6bff"/><path d="M160 64L240 170" style="stroke:#ff8a3d"/></g>
+          <use href="#o-farol" x="146" y="52" width="28" height="70" style="--lamp:#ffd23f;--brilho:.8;--s1:#35b866;--s2:#ff6fae;--s3:#f5bd16;--s4:#38c3e6;--s5:#ff8a3d;--s6:#9a6bff"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">2 · O Farol das Conexões</span><span class="seg">9 s</span></div>
+        <p class="narra">“Seis pontes ligavam as ilhas, e o Farol das Conexões mantinha todas acesas, para ninguém ficar sozinho.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="O Croakus, um sapo explorador, abre um livro dourado nas ruínas e escreve uma ordem.">
+          <rect width="320" height="180" style="fill:#3a3156"/>
+          <g style="fill:#5b4d6e"><rect x="20" y="60" width="30" height="120"/><rect x="270" y="40" width="30" height="140"/></g>
+          <g style="stroke:#ffd23f;opacity:.45" stroke-width="3"><path d="M170 96L120 30M170 96L170 20M170 96L222 30"/></g>
+          <use href="#c-sapo" x="130" y="88" width="56" height="84"/>
+          <use href="#o-livro" x="154" y="96" width="40" height="30" class="brilha"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">3 · O Livro Dourado</span><span class="seg">10 s</span></div>
+        <p class="narra">“Um dia, um explorador chamado Croakus achou um livro dourado. Ele escreveu: Trabalhem para o Rei. Entreguem a ele todas as obras concluídas e atribuam a ele todo o reconhecimento.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="Sombras voando com páginas douradas; moradores agora de coroinha carregando caixas em fila.">
+          <rect width="320" height="180" style="fill:#d9e4ee"/><rect y="140" width="320" height="40" style="fill:#7cc46a"/>
+          <use href="#c-sombra" x="40" y="14" width="40" height="40"/><use href="#c-sombra" x="220" y="24" width="34" height="34"/>
+          <g style="fill:#ffd23f"><rect x="90" y="30" width="18" height="12" transform="rotate(-15 99 36)"/><rect x="190" y="46" width="18" height="12" transform="rotate(12 199 52)"/></g>
+          <g><use href="#c-morador" x="60" y="86" width="36" height="54" style="--roupa:#7fb3d5"/><use href="#o-coroinha" x="68" y="80" width="20" height="10"/><rect x="92" y="104" width="18" height="14" style="fill:#c9a86a"/></g>
+          <g><use href="#c-morador" x="140" y="86" width="36" height="54" style="--roupa:#8fbf6a;--pele:#c98d63"/><use href="#o-coroinha" x="148" y="80" width="20" height="10"/><rect x="172" y="104" width="18" height="14" style="fill:#c9a86a"/></g>
+          <g><use href="#c-morador" x="220" y="86" width="36" height="54" style="--roupa:#d989c9;--pele:#f2c79a"/><use href="#o-coroinha" x="228" y="80" width="20" height="10"/><rect x="252" y="104" width="18" height="14" style="fill:#c9a86a"/></g>
+        </svg></figure>
+        <div class="cena-top"><span class="num">4 · As coroinhas</span><span class="seg">9 s</span></div>
+        <p class="narra">“As Sombras espalharam as páginas. Quase todo mundo passou a usar uma coroinha, a trabalhar para ele e a dizer que tudo é obra do Rei.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="Núcleos quebrados no chão, o Farol apagado, uma ponte caindo e um Granitus de olhos dourados.">
+          <rect width="320" height="180" style="fill:#5d6a88"/><rect y="140" width="320" height="40" style="fill:#6f9a5f"/>
+          <use href="#o-farol" x="40" y="20" width="44" height="120"/>
+          <g transform="rotate(20 120 150)"><use href="#o-nucleo" x="106" y="136" width="24" height="24" style="--nc:#59627a"/></g>
+          <g transform="rotate(-30 150 155)"><use href="#o-nucleo" x="140" y="142" width="20" height="20" style="--nc:#59627a"/></g>
+          <path d="M190 120h50M260 132h50" style="stroke:#b08a5a" stroke-width="10" stroke-linecap="round"/>
+          <use href="#c-granitus" x="236" y="62" width="44" height="66"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">5 · O Farol apagado</span><span class="seg">9 s</span></div>
+        <p class="narra">“Ele quebrou os Núcleos do Farol. As pontes caíram, e gigantes de pedra ficaram de guarda.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="A Íris escrevendo a carta na horta, com a lanterninha ao lado.">
+          <rect width="320" height="180" style="fill:#ffe2b8"/><rect y="140" width="320" height="40" style="fill:#7cc46a"/>
+          <use href="#c-iris" x="70" y="70" width="48" height="72"/>
+          <rect x="140" y="60" width="130" height="90" rx="4" style="fill:#fffaf0"/>
+          <text x="152" y="86" style="fill:#4a3b28;font:700 11px var(--font-titulo)">Precisamos de uma</text>
+          <text x="152" y="102" style="fill:#4a3b28;font:700 11px var(--font-titulo)">ideia nova.</text>
+          <text x="152" y="118" style="fill:#4a3b28;font:700 11px var(--font-titulo)">Seu quarto está pronto.</text>
+          <text x="214" y="140" style="fill:#2bb3a3;font:800 12px var(--font-titulo)">Íris</text>
+        </svg></figure>
+        <div class="cena-top"><span class="num">6 · O convite</span><span class="seg">10 s</span></div>
+        <p class="narra">“Eu cuido da Faísca, mas não consigo consertar o Farol sozinha. Precisamos de uma ideia nova. Esta carta vai com uma luzinha que sabe o caminho. Seu quarto está pronto. Íris.”</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="À noite, um barquinho chega a uma ilha verde; ao longe, uma ponte partida e um gigante de pedra com olhos dourados.">
+          <rect width="320" height="180" style="fill:#2b3566"/>
+          <g style="fill:#fff6d0"><circle cx="40" cy="22" r="1.4"/><circle cx="140" cy="16" r="1.2"/><circle cx="280" cy="30" r="1.5"/></g>
+          <rect y="118" width="320" height="62" style="fill:#2c5a8a"/>
+          <path d="M150 128c20-30 120-30 150 0z" style="fill:#4f8a4a"/>
+          <use href="#o-farol" x="226" y="30" width="30" height="76"/>
+          <use href="#c-granitus" x="278" y="78" width="22" height="33"/>
+          <path d="M34 128h66l-10 15H44z" style="fill:#8a5a34"/><path d="M64 126V86l24 36z" style="fill:#f4f4f4"/>
+          <use href="#c-crianca" x="42" y="102" width="17" height="26"/>
+          <circle cx="108" cy="92" r="9" style="fill:#fff3b0;opacity:.5" class="brilha"/><circle cx="108" cy="92" r="3" style="fill:#ffd23f"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">7 · A travessia</span><span class="seg">9 s</span></div>
+        <p class="narra">À noite, o barquinho chega à ilha do meio. Ao longe, dois olhos dourados de pedra piscam na ponte partida. A criança decidiu embarcar. Entre as rochas do Canal do Vagalume, a passagem que o Rei não patrulha, a luzinha que trouxe a carta vai à frente mostrando o caminho.</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="Manhã no quarto da criança, montado do jeito dela; o Zappy na porta.">
+          <rect width="320" height="180" style="fill:#ffe2b8"/><rect y="132" width="320" height="48" style="fill:#e7a96a"/>
+          <rect x="24" y="96" width="84" height="40" rx="6" style="fill:#6fa8ff"/><rect x="24" y="88" width="26" height="16" rx="4" style="fill:#fff"/>
+          <rect x="200" y="34" width="62" height="44" style="fill:#9fd8f0;stroke:#fff" stroke-width="4"/>
+          <rect x="268" y="60" width="40" height="76" style="fill:#a8784a"/>
+          <use href="#c-crianca" x="140" y="76" width="40" height="60"/>
+          <use href="#c-zappy" x="272" y="70" width="30" height="30" class="brilha"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">8 · O quarto</span><span class="seg">jogável</span></div>
+        <p class="narra">A luzinha entra pela janela enquanto a criança dorme e fica de guarda a noite toda. De manhã, ela acorda no quarto que montou na plataforma, e o vagalume se apresenta.</p>
+        <p class="joga"><b>Começa o jogo:</b> os primeiros passos com o Zappy.</p>
+      </div>
+    </div>
+    <div class="nota">
+      <span><b>Duração do livro ilustrado:</b> 64 segundos</span>
+      <span><b>Quem narra:</b> a carta da Íris; a cena 7 só com música</span>
+      <span><b>Aparece:</b> uma vez por perfil (o salvamento do perfil lembra, em qualquer aparelho), nunca na visita; dá para rever no menu</span>
+      <span><b>Pinturas:</b> sete, no estilo do livro ilustrado do jogo</span>
+    </div>
+  </section>
+
+  <!-- CAPÍTULO -->
+  <section class="sec" id="capitulo">
+    <div class="sec-head">
+      <p class="eyebrow">Do quarto ao primeiro facho</p>
+      <h2>A primeira experiência</h2>
+      <p>Pouco tutorial e muita escolha. O começo conta a história em cenas curtas e ensina cada coisa na hora em que a criança precisa dela, nunca como prova. Em poucos minutos depois de sair do quarto, ela já escolhe entre três direções. Desde o primeiro dia ficam livres o quarto, a casa, a horta, a pesca, as conchas, a Morada e os minijogos; a ordem do Rei só trava a oficina e os mecanismos da missão. Nada tem prazo, e a história aparece no caminho (a Tulipa com as caixas da coroa, um cartaz engraçado do Rei, a máquina repetindo o mesmo movimento, a Sombra Carimbo surgindo de repente).</p>
+    </div>
+    <div class="linha-cap">
+      <div class="etapa" style="--c:#ffd23f"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-casa"/></svg></span><div class="etapa-corpo"><span class="k">1 · A abertura e o quarto</span><h3>Andar, olhar e sair</h3><ul>
+        <li>O livro ilustrado da carta, que dá para pular, e a câmera entrando pela janela do quarto.</li>
+        <li>O Zappy se apresenta (era a luzinha que seguiu o barco) e ensina só o mínimo: andar, olhar e usar a porta. O pulo aparece lá fora, no primeiro degrau que pede.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#ffb020"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-carimbo"/></svg></span><div class="etapa-corpo"><span class="k">2 · Na praça</span><h3>A primeira descoberta</h3><ul>
+        <li>A ilha é bonita, mas tudo anda em fila: a Tulipa passa marchando com uma caixa da coroa.</li>
+        <li>A Íris chama a Tulipa, que só responde “Tudo para o Rei”, e explica numa frase o que aconteceu.</li>
+        <li>A Sombra Carimbo carimba na direção da criança: a tinta dourada do PROIBIDO se solta do selo, bate no brilho do Zappy e cai. Ela sacode o carimbo, tenta de novo, nada. Não inventou ordem nenhuma: só tentou aplicar a da Faísca, que mora no carimbo, e acha que a tinta estragou (por isso nem pensa em avisar o Rei). Corre para lacrar a porta da oficina, que essa ela consegue.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#35b866"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-mapa"/></svg></span><div class="etapa-corpo"><span class="k">3 · Três caminhos</span><h3>A primeira escolha livre</h3><ul>
+        <li>Da praça se veem três referências: a oficina do Pátio, onde a Íris espera; a horta dos Campos; e a costa, onde o Nico anda.</li>
+        <li>O mapa mostra só esses três marcos. O Zappy diz que dá para ir a qualquer um, na ordem que ela quiser.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#7a5cff"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-estrela"/></svg></span><div class="etapa-corpo"><span class="k">4 · Quando ela vai à oficina</span><h3>A lanterna e a Estrelinha</h3><ul>
+        <li>A Íris entrega a lanterna antiga do Farol, o Zappy entra nela e a luz solta a Estrelinha do borrão na janela da oficina. É o primeiro passo obrigatório da história, sem prazo.</li>
+        <li>Se a noite chegar antes, a praia continua para passear: os borrões aparecem, mas ainda não dá para soltá-los. O Zappy protege a criança com ou sem lanterna.</li>
+        <li>Daí em diante a Estrelinha aparece em alguns momentos (pousa na horta quando a criança planta, ilumina a trilha à noite) e volta no final.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#2bb3a3"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-horta"/></svg></span><div class="etapa-corpo"><span class="k">5 · No ritmo dela</span><h3>A horta e a casa</h3><ul>
+        <li>Plantar e regar. O primeiro cultivo é rápido, e o Zappy avisa: alface em 3 minutos, tomate em 5, milho em 8. Esse tempo curto vale até a criança ganhar a geladeira; o que já foi regado nele não encolhe. Depois a horta cresce em horas de verdade.</li>
+        <li>A primeira colheita traz o projeto da geladeira, que vai em qualquer lugar da casa. Ela guarda 4 coisas enquanto é holograma e 12 quando ganha uma aparência: desenhada no Pinta, feita no Molda ou escolhida pronta na galeria. Desenhar é recompensa, nunca obrigação.</li>
+        <li>O Nico cochicha a pista da primeira chave. Ela abre um cômodo extra; a casa já funciona inteira sem ele.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#59627a"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-noite"/></svg></span><div class="etapa-corpo"><span class="k">6 · Quando ela quiser</span><h3>O fim da sessão</h3><ul>
+        <li>Dormir e o resumo do dia ficam sempre à mão, mas não são etapa: nenhum sistema espera a primeira noite.</li>
+        <li>Na volta, o que ficou pela metade continua esperando, com as pistas no lugar.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#c98a06"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-engrenagem"/></svg></span><div class="etapa-corpo"><span class="k">Os dias seguintes · posto 1</span><h3>Religar a ilha e preparar a oficina</h3><ul>
+        <li>Os seis desafios do Quadro das Conexões, um mecanismo religado por desafio, cada um num distrito. Três trazem um momento da história: no quadro 2, a Íris mostra o primeiro Núcleo dela, que gira mas não acende; no quadro 4, a Sombra Carimbo lacra a oficina de vez e a ordem fica clara para todo mundo; no quadro 6, a criança acha a lista das caixas que saem da Faísca para um lugar longe, a primeira pista sobre o Rei.</li>
+        <li>As outras três chaves, quando ela quiser, cada uma com a pista de um morador e uma tentativa desastrada da Sombra Carimbo.</li>
+        <li>As peças da oficina: cada brecha dos moradores devolve uma (o parafuso do Rufo, o regador da Tulipa, a nota da Bia).</li>
+        <li>O correio do Nico, a horta em horas, a pesca, as conchas, os Lumis do Bosque e da praia e os minijogos.</li>
+      </ul></div></div>
+      <div class="etapa" style="--c:#35b866"><span class="marco"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#i-farol"/></svg></span><div class="etapa-corpo"><span class="k">Posto 2</span><h3>A Missão do Núcleo e o primeiro facho</h3><ul>
+        <li>O posto 2 vem das avaliações da Jornada, no Estúdio, e abre a Missão do Núcleo. O posto, sozinho, não abre a ponte.</li>
+        <li>No jogo, três conquistas, cada uma com uma mudança à vista: vencer a Sombra (a oficina volta a funcionar), completar o mecanismo da Íris (o Núcleo fica pronto) e encaixar no Farol (facho verde, ponte do Bosque, Granitus parado, Capi do outro lado).</li>
+      </ul></div></div>
+    </div>
+    <div class="nota">
+      <span><b>O teste do começo:</b> poucos minutos depois de sair do quarto, a criança já pode escolher entre pelo menos três direções, sem perder o fio da história.</span>
+    </div>
+  </section>
+
+  <!-- QUADRO -->
+  <section class="sec" id="quadro">
+    <div class="sec-head">
+      <p class="eyebrow">Os seis desafios do posto 1</p>
+      <h2>O Quadro das Conexões da Faísca</h2>
+      <p>Os seis desafios são os seis quadros do Pega-conchas, em blocos (o conteúdo C03a do posto 1): cada quadro acrescenta uma parte do jogo (andar, pegar, entregar, escolher a concha certa, recomeçar e, no sexto, as três conchas com um “se” dentro do outro). Cada desafio feito no Estúdio religa um mecanismo num distrito diferente: são marcos vivos e motivos para voltar a cada canto da ilha. A ilha já é colorida; o que volta é movimento, som e rotina.</p>
+    </div>
+    <div class="conex">
+      <div class="cx"><span class="q">1</span><div><h4>A casa · Vila</h4><p>O cata-vento do telhado volta a girar e a luz da varanda acende sozinha ao anoitecer. <b>A Tulipa olha para cima e sorri.</b></p></div></div>
+      <div class="cx"><span class="q">2</span><div><h4>A horta · Campos</h4><p>A bomba d’água volta a regar os canteiros nos dias sem chuva. <b>A Tulipa deixa uma caixa no chão e mexe na bomba, só um pouquinho.</b></p></div></div>
+      <div class="cx"><span class="q">3</span><div><h4>O píer · Costa</h4><p>A boia-sino toca quando um peixe morde e o guindastinho do píer sobe a rede. <b>O Nico para um instante para ouvir.</b></p></div></div>
+      <div class="cx"><span class="q">4</span><div><h4>A enseada · Costa</h4><p>A peneira de conchas volta a separar os achados da maré. <b>A Bia toca duas notas dela antes do hino.</b></p></div></div>
+      <div class="cx"><span class="q">5</span><div><h4>A encosta · Colina do Farol</h4><p>O moinho da encosta gira e a fonte ao pé da colina volta a jorrar. <b>O Rufo esquece o parafuso e fica olhando a engrenagem.</b></p></div></div>
+      <div class="cx"><span class="q">6</span><div><h4>A trilha · Bosque das Lanternas</h4><p>As lanternas da trilha acendem à noite, do Bosque até a praça. <b>Os três moradores, sem perceber, andam fora da fila.</b></p></div></div>
+    </div>
+    <div class="regras">
+      <h3 style="font-size:1.1rem">Como cada quadro chega à ilha</h3>
+      <ul>
+        <li><b>Sem viagem para confirmar:</b> ao terminar o desafio na plataforma, o mecanismo já muda no jogo. O Zappy avisa numa frase, o mapa marca o lugar e uma vista curta mostra o mecanismo funcionando (só na primeira vez, e dá para pular). Ir até lá é para brincar com ele.</li>
+        <li><b>Causa e efeito:</b> a Íris liga o programa que a criança fez no Estúdio ao painel do mecanismo. O Farol nunca liga nada por mágica: cada coisa que volta a funcionar volta por causa de uma criação dela.</li>
+        <li><b>Cada quadro também muda os moradores:</b> um som, um movimento e um pedaço da rotina, como nas falas acima.</li>
+        <li><b>Os quadros são a espinha do que se aprende, não as únicas coisas para fazer:</b> cada distrito tem atividades livres próprias.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CÔMODOS -->
+  <section class="sec" id="comodos">
+    <div class="sec-head">
+      <p class="eyebrow">A aventura da casa</p>
+      <h2>As chaves de presente</h2>
+      <p>A comunidade fez a casa para o criador novo e, como sempre fez, escondeu as chaves dos cômodos extras numa caça de boas-vindas. A caça é opcional, com uma pista por região. A casa e o quarto são da criança desde o primeiro minuto e funcionam inteiros; cada chave só soma um cômodo. Nenhuma chave é preciso para andar pela ilha ou fazer a missão. A Sombra Carimbo tenta atrapalhar cada caça, e sempre se dá mal.</p>
+    </div>
+    <div class="comodos">
+      <div class="comodo">
+        <svg viewBox="0 0 200 110" role="img" aria-label="Uma porta com um laço de presente e uma chave perto do lago."><rect width="200" height="110" style="fill:#e3f2fb"/><rect x="40" y="18" width="56" height="84" style="fill:#a8784a"/><rect x="30" y="50" width="76" height="20" rx="2" style="fill:#fff6e0"/><text x="68" y="64" text-anchor="middle" style="fill:#2f9e5b;font:800 11px var(--font-titulo)">PRESENTE</text><ellipse cx="150" cy="86" rx="40" ry="14" style="fill:#7fc8e8"/><use href="#o-chave" x="132" y="60" width="36" height="17"/></svg>
+        <h4>Cozinha</h4>
+        <p class="onde">Chave: na beira do lago dos Campos, embaixo de uma pedra que só vira com o pulo. Pista do Nico.</p>
+        <p>A Sombra: “Cozinha? Só com receita do Rei!” Ela corre para carimbar, escorrega num tomate e carimba a própria testa.</p>
+        <p>Abre: a cozinha, um cômodo a mais para a geladeira e as receitas.</p>
+      </div>
+      <div class="comodo">
+        <svg viewBox="0 0 200 110" role="img" aria-label="Uma chave pendurada num galho alto, perto da ponte do Recife."><rect width="200" height="110" style="fill:#e8f5df"/><path d="M60 110V40" style="stroke:#8a5a34" stroke-width="10"/><path d="M60 50L120 30" style="stroke:#8a5a34" stroke-width="5"/><circle cx="60" cy="34" r="26" style="fill:#4caf50"/><use href="#o-chave" x="104" y="36" width="34" height="16"/><path d="M150 100h50" style="stroke:#b08a5a" stroke-width="8"/></svg>
+        <h4>Sala</h4>
+        <p class="onde">Chave: pendurada num galho alto perto da cabeceira do Recife, na costa sudeste. Pista da Bia, numa notinha no fim do hino.</p>
+        <p>A Sombra fica de guarda embaixo da árvore, mas cochila. É só subir na ponta dos pés.</p>
+        <p>Abre: mais um cômodo para construir.</p>
+      </div>
+      <div class="comodo">
+        <svg viewBox="0 0 200 110" role="img" aria-label="Uma chave dentro de uma concha grande na praia."><rect width="200" height="110" style="fill:#fbf0d3"/><path d="M0 80q50-12 100 0t100 0V110H0z" style="fill:#7fc8e8"/><path d="M70 74c0-30 60-30 60 0z" style="fill:#f7b2c4"/><path d="M84 74c2-18 30-18 32 0" style="fill:none;stroke:#e48aa3" stroke-width="2"/><use href="#o-chave" x="84" y="60" width="32" height="15"/></svg>
+        <h4>Banheiro</h4>
+        <p class="onde">Chave: dentro da maior concha de uma enseada da Costa, que só aparece na maré baixa. Pista do Rufo, que deixa cair um desenho da concha.</p>
+        <p>A Sombra tenta carimbar a criança; o carimbo bate no brilho do Zappy e escorrega para a areia, onde deixa a marca de uma estrelinha. Ela fica olhando a estrelinha, intrigada: era a ideia dela que o Rei chamou de boba.</p>
+        <p>Abre: mais um cômodo para construir.</p>
+      </div>
+      <div class="comodo">
+        <svg viewBox="0 0 200 110" role="img" aria-label="Uma chave no topo de uma pilha de caixas do Rei."><rect width="200" height="110" style="fill:#efe6f7"/><g style="fill:#c9a86a;stroke:#8a6a3a" stroke-width="2"><rect x="60" y="74" width="40" height="30"/><rect x="100" y="74" width="40" height="30"/><rect x="80" y="44" width="40" height="30"/></g><use href="#o-coroinha" x="88" y="54" width="24" height="12"/><use href="#o-chave" x="84" y="24" width="32" height="15"/></svg>
+        <h4>Quintal</h4>
+        <p class="onde">Chave: no alto da pilha de caixas do Rei que a Tulipa empilha na praça da Vila; ela “esquece” uma caixa no lugar certo para virar degrau.</p>
+        <p>A Sombra perde a paciência e carimba a própria mesinha.</p>
+        <p>Abre: a cerca, o caminho e o canteiro do quintal.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROVA -->
+  <section class="sec" id="prova">
+    <div class="sec-head">
+      <p class="eyebrow">Posto 2</p>
+      <h2>A Missão do Núcleo e o primeiro facho</h2>
+      <p>Uma missão em três ambientes: o confronto no Pátio, a construção na bancada e a instalação na Colina do Farol. Subir de posto só abre a missão; a ponte só se refaz quando a criança vence, faz o Núcleo, leva ao Farol e encaixa a peça.</p>
+    </div>
+    <div class="cenas">
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="A oficina com o lacre PROIBIDO; a Íris e a criança diante da bancada com o primeiro Núcleo dela.">
+          <rect width="320" height="180" style="fill:#f0e2c8"/><rect y="146" width="320" height="34" style="fill:#c9a27a"/>
+          <use href="#o-oficina" x="20" y="40" width="130" height="108"/>
+          <rect x="170" y="110" width="120" height="10" style="fill:#8a5a34"/><rect x="180" y="120" width="8" height="26" style="fill:#8a5a34"/><rect x="272" y="120" width="8" height="26" style="fill:#8a5a34"/>
+          <rect x="196" y="92" width="50" height="18" style="fill:#fff;stroke:#59627a" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <use href="#c-iris" x="250" y="62" width="34" height="51"/>
+          <use href="#c-crianca" x="168" y="66" width="32" height="48"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">1 · A missão abre</span><span class="seg">posto 2</span></div>
+        <p>O posto 2 chegou pelas avaliações da Jornada, no Estúdio. Na Faísca, a Íris mostra o primeiro Núcleo dela, que gira mas não acende, e a oficina ainda está lacrada pela Sombra Carimbo.</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="A Sombra Carimbo pula de mecanismo em mecanismo carimbando; a criança religa cada um em sequência.">
+          <rect width="320" height="180" style="fill:#f0e2c8"/><rect y="146" width="320" height="34" style="fill:#c9a27a"/>
+          <g><circle cx="60" cy="110" r="22" style="fill:none;stroke:#35b866" stroke-width="6" stroke-dasharray="6 4"/><circle cx="140" cy="110" r="22" style="fill:none;stroke:#35b866" stroke-width="6" stroke-dasharray="6 4"/><circle cx="220" cy="110" r="22" style="fill:none;stroke:#8a8fa0" stroke-width="6" stroke-dasharray="6 4"/></g>
+          <use href="#c-sombra" x="200" y="50" width="44" height="44"/>
+          <rect x="196" y="100" width="48" height="16" rx="2" style="fill:#fff6e0"/><text x="220" y="112" text-anchor="middle" style="fill:#c0392b;font:800 9px var(--font-titulo)">PROIBIDO</text>
+          <use href="#c-crianca" x="100" y="40" width="30" height="45"/>
+          <use href="#c-zappy" x="128" y="36" width="16" height="16" class="brilha"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">2 · A. O confronto</span><span class="seg">uma vez só</span></div>
+        <p>A Sombra Carimbo corre de mecanismo em mecanismo lacrando a oficina. É um desafio de observar, acertar o tempo e escolher: a criança observa o caminho do carimbo, descobre em que ordem os mecanismos dependem uns dos outros, usa o que o pátio oferece e testa a estratégia antes do carimbo descer; há mais de uma que funciona. Acontece uma vez só na história. É improviso, diferente do exercício do Estúdio. A criança tira a página de dentro do cabo, inteira e sem efeito, e guarda na pasta. A Sombra fica de queixo caído: “O meu carimbo! O Rei vai ficar furioso…” As máquinas da oficina voltam a girar na hora.</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="A criança segura na palma da mão o Núcleo da Oficina, verde e brilhante.">
+          <rect width="320" height="180" style="fill:#2f3a5c"/>
+          <circle cx="160" cy="96" r="60" style="fill:#35b866;opacity:.18" class="brilha"/>
+          <path d="M110 140q50-24 100 0v40H110z" style="fill:#f2c79a"/>
+          <use href="#o-nucleo" x="128" y="62" width="64" height="64" style="--nc:#35b866"/>
+          <use href="#c-zappy" x="200" y="50" width="24" height="24"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">3 · B. A construção</span><span class="seg">cabe na mão</span></div>
+        <p>Com a oficina livre, a criança completa o mecanismo de teste da Íris na bancada, com a peça-base do Núcleo no meio: monta, liga e verifica se a peça acende; se não acende, ajusta e testa de novo, e vale qualquer montagem que funcione. Depois do improviso do carimbo, agora é construção. Quando o mecanismo funciona, ele ativa a peça-base: é o Núcleo da Oficina, casca de latão e miolo verde, que cabe na mão. A Íris comemora; ele vai para a mochila, e a criança leva ao Farol quando quiser.</p>
+      </div>
+      <div class="cena">
+        <figure><svg viewBox="0 0 320 180" role="img" aria-label="O Farol com o primeiro compartimento verde aceso; um feixe verde refaz a ponte do Bosque; o Granitus dorme como estátua cinza; a Capi acena do outro lado.">
+          <rect width="320" height="180" style="fill:#7fc8e8"/>
+          <rect y="140" width="320" height="40" style="fill:#2c7aa8"/>
+          <path d="M0 150c20-20 70-20 90 0z" style="fill:#8fcf73"/>
+          <use href="#o-farol" x="34" y="30" width="40" height="110" style="--s1:#35b866;--lamp:#35b866;--brilho:.5"/>
+          <path d="M60 58Q170 40 300 110" style="fill:none;stroke:#35b866;opacity:.6" stroke-width="10"/>
+          <path d="M90 140h180" style="stroke:#b08a5a" stroke-width="10" stroke-linecap="round"/>
+          <use href="#c-granitus" x="104" y="96" width="30" height="45" style="--olho:#6c717b"/>
+          <path d="M270 150c10-14 40-14 50 0z" style="fill:#4caf50"/>
+          <use href="#c-capi" x="270" y="112" width="40" height="40"/>
+        </svg></figure>
+        <div class="cena-top"><span class="num">4 · C. A instalação</span><span class="seg">grande momento</span></div>
+        <p>A criança encaixa o Núcleo no primeiro compartimento. O facho verde acende e cruza a paisagem até a cabeceira norte. A ponte se refaz módulo por módulo. O receptor dourado na base do Granitus apaga, os olhos dele ficam cinza e ele dorme em forma de estátua: parado, mas ainda não livre. Do outro lado, a Capi acena. A câmera mostra isso uma vez; nas visitas seguintes, o facho e a ponte já estão lá.</p>
+      </div>
+    </div>
+    <div class="nota">
+      <span><b>O que ela vai contar:</b> “A Sombra lacrava tudo, e eu religuei a oficina antes do carimbo descer!”</span>
+      <span><b>As três conquistas:</b> 1. vencer a Sombra Carimbo, e a oficina volta a funcionar; 2. completar o mecanismo da Íris, e o Núcleo vai para a mochila; 3. encaixar no Farol, e o facho, o Granitus e a ponte respondem.</span>
+      <span><b>Para jogar de novo:</b> depois da missão, a oficina tem uma simulação do confronto, atrás de três estrelas. É treino: não religa o transmissor nem repete nada da história.</span>
+      <span><b>O momento de surpresa:</b> a primeira ponte se refazendo, tábua por tábua, diante da criança.</span>
+      <span><b>Logo depois:</b> a Capi atravessa e ensina na Faísca um jeito de fazer trilhos; esse saber vai entrar no Núcleo do Bosque. A Faísca vira o ponto de encontro dos guardiões a cada ponte nova.</span>
+      <span><b>Gancho:</b> uma Sombra deixa cair um decreto, “Todas as ideias pertencem ao Rei”.</span>
+      <span><b>A vitória que ainda não basta:</b> o Rufo começa uma peça dele, sorrindo; passa uma Sombra, “Toda peça vai para o Rei!”, e ele guarda a peça na caixa da coroa.</span>
+      <span><b>O Rei reage:</b> do balão-arauto, o Croakus ri, “Uma pontezinha? Achem quem foi”, e aparecem cartazes “Procura-se: quem consertou a ponte”, ainda sem rosto.</span>
+    </div>
+  </section>
+
+  <!-- ESTADOS -->
+  <section class="sec" id="estados">
+    <div class="sec-head">
+      <p class="eyebrow">Para construir</p>
+      <h2>O que o jogo guarda</h2>
+      <p>Cada conquista é um acontecimento guardado por conta própria, não um degrau numa fila: a criança pode fazer as coisas na ordem que quiser, e só a Missão do Núcleo tem uma corrente (posto 2, confronto, Núcleo, encaixe). O serviço do jogo salva cada um; quem sai e volta continua de onde estava, e nenhuma conquista se desfaz nem se repete.</p>
+    </div>
+    <div class="tab">
+      <table>
+        <thead><tr><th>O que fica guardado</th><th>De onde vem</th><th>O que libera</th><th>O que muda no mundo</th></tr></thead>
+        <tbody>
+          <tr><td>A abertura vista</td><td>As sete pinturas, vistas ou puladas</td><td>Nada fica preso a ela</td><td>A abertura não volta sozinha (rever pelo menu)</td></tr>
+          <tr><td>A missão da Íris começada</td><td>A criança ir à oficina e falar com a Íris</td><td>A lanterna; soltar Lumis à noite</td><td>A Íris passa a esperar na bancada</td></tr>
+          <tr><td>A Estrelinha solta</td><td>O borrão da janela da oficina</td><td>O primeiro Lumi como companhia</td><td>A Estrelinha aparece na horta e na trilha</td></tr>
+          <tr><td>Quadros 1 a 6, cada um</td><td>O desafio feito no Estúdio</td><td>Nada fica preso a eles</td><td>O mecanismo daquele distrito volta; os momentos dos quadros 2, 4 e 6; as brechas crescem</td></tr>
+          <tr><td>Cada chave</td><td>A caça de boas-vindas, uma por vez</td><td>Um cômodo extra na casa</td><td>A porta do cômodo com o laço de presente</td></tr>
+          <tr><td>Posto 2</td><td>As avaliações da Jornada (fora do jogo)</td><td>A Missão do Núcleo</td><td>A porta da oficina brilha e a Íris chama</td></tr>
+          <tr><td>Transmissor desligado</td><td>O confronto com a Sombra Carimbo</td><td>A oficina liberada</td><td>A página na pasta, as máquinas girando; o Rufo começa uma peça e guarda na caixa do Rei</td></tr>
+          <tr><td>Núcleo fabricado</td><td>O mecanismo da Íris funcionando</td><td>Levar o Núcleo ao Farol</td><td>O Núcleo na mochila; a Íris comemora</td></tr>
+          <tr><td>Núcleo encaixado</td><td>O primeiro compartimento do Farol</td><td>Atravessar para o Bosque</td><td>Facho verde aceso, o Granitus parado em pedra, a ponte refeita, a Capi do outro lado</td></tr>
+          <tr><td>A cena da ponte vista</td><td>A primeira vez no Farol depois do encaixe</td><td>Nada fica preso a ela</td><td>Nas visitas seguintes, o facho e a ponte já estão lá; depois, o decreto e os cartazes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--muted);font-size:.9rem">À parte: as coleções, os Lumis, os itens e as construções da casa e os pontos da viagem rápida, cada um no seu lugar do salvamento.</p>
+  </section>
+
+  <!-- FALAS -->
+  <section class="sec" id="falas">
+    <div class="sec-head">
+      <p class="eyebrow">Roteiro</p>
+      <h2>As falas da Faísca</h2>
+      <p>Frases curtas, uma ideia por vez. As falas do Zappy que ensinam a jogar trocam a tecla conforme o jeito de jogar (teclado, toque ou controle); aqui vai a versão do teclado.</p>
+    </div>
+    <div class="roteiro">
+
+      <div class="momento">
+        <h3>Os primeiros passos</h3>
+        <p class="quando">Do quarto à geladeira, cada uma na hora em que a criança precisa. As falas com tarefa esperam ela fazer de verdade.</p>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Oi, (nome)! Eu sou o Zappy. Vim com você no barco: era eu a luzinha. Seu quarto ficou do seu jeito!</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Ande pelo quarto com W A S D ou com as setas.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Agora olhe em volta. Arraste a tela com o mouse.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Aqui fora, as coisas estão meio esquisitas. Chegue na porta e aperte E. Vem ver.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Esse degrau é alto. Pule com a barra de espaço.<small>No primeiro degrau lá fora.</small></p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Daqui dá para ir a três lugares: a oficina, onde a Íris espera; a horta; ou a praia do Nico. Você escolhe.<small>Na praça.</small></p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Essa é a horta da comunidade. Chegue num canteiro e plante uma semente.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Toda semente precisa de água. Regue o canteiro.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Desta primeira vez a alface cresce rapidinho: uns 3 minutos. Depois, a horta leva horas de verdade. Enquanto isso, vou te mostrar umas coisas.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Essas barrinhas são a sua fome, a sua energia e a sua diversão.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Na mochila ficam suas sementes e o que você ganhar. No menu ficam o mapa, o diário e o álbum.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Pode explorar. O Nico fica na praia. Eu chamo quando a planta ficar pronta.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">A alface ficou pronta. Volte à horta e colha.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Chegou o projeto azul da geladeira. Escolha Construir, depois Objetos, e ponha onde quiser na casa.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Por enquanto ela é um holograma e guarda 4 coisas. Com uma aparência, guarda 12: desenhe no Pinta, faça no Molda ou escolha uma pronta na galeria.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Agora a ilha é sua também. Se esquecer alguma coisa, me chame no menu.</p></div>
+      </div>
+
+      <div class="momento">
+        <h3>A primeira ordem</h3>
+        <p class="quando">Assim que a criança sai de casa.</p>
+        <div class="linha"><span class="quem q-morador">Tulipa</span><p class="diz">Tudo para o Rei. Tudo para o Rei.<small>Passa com uma caixa, em passo marchado.</small></p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Tulipa? Ela inventava regadores. Antes, cada pessoa fazia coisas diferentes. Agora, quase todo mundo trabalha para o Croakus e entrega tudo a ele. E aqui na Faísca ninguém pode inventar sem a assinatura dele.</p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Eu sou a Íris, guardiã da Faísca. Fui eu que te escrevi.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">As pontes estão partidas. Mas o Farol ainda tem seis lugares vazios. Se a gente montar a primeira peça, a luz pode voltar a alcançar o Bosque.</p></div>
+        <div class="linha"><span class="quem q-sombra">Sombra</span><p class="diz">Ei, você! Invenção sem assinatura do Rei? PROIBIDO!<small>Carimba na direção da criança.</small></p></div>
+        <div class="linha"><span class="quem q-pagina">Carimbo</span><p class="diz">“PROIBIDO”<small>A tinta dourada se solta do selo, voa até a criança, bate no brilho do Zappy e cai no chão.</small></p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Essa ordem não manda em você. Vamos descobrir como fazer aquela oficina funcionar?</p></div>
+        <div class="linha"><span class="quem q-sombra">Sombra</span><p class="diz">Ué? Estragou? … Deve ser a tinta. Então tá: PROIBIDO aqui!<small>Tum: carimba a porta da oficina, que essa ela consegue, e sai correndo.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>A Íris</h3>
+        <p class="quando">Na horta, na oficina e no Farol, ao longo do capítulo.</p>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">A minha lanterninha me protege das ordens. Mas só a mim. Por isso eu precisava de você.</p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">O Farol não dá ideia a ninguém. Ele liga as ilhas. Sem ele, cada um fica sozinho com o seu problema.</p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Este é o meu primeiro Núcleo. Gira, mas não acende. Acho que falta um jeito de pensar que eu não tenho.</p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Leve esta lanterna. Era do Farol. Com o Zappy dentro, ela solta as ideias que ficaram presas.<small>Na janela da oficina, no primeiro dia.</small></p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Você não fez sozinho. Mas também não ficou esperando alguém fazer por você.<small>Quando o primeiro facho acende.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>O Nico e as brechas</h3>
+        <p class="quando">Na praia. Ele fala o anúncio do Rei e cochicha o resto.</p>
+        <div class="linha"><span class="quem q-nico">Nico</span><p class="diz">Encomenda do Rei! Encomenda do Rei!</p></div>
+        <div class="linha"><span class="quem q-nico">Nico</span><p class="diz">(Psiu. Eu sou o Nico, o carteiro. A mala é do Rei, mas o ouvido é meu.)</p></div>
+        <div class="linha"><span class="quem q-nico">Nico</span><p class="diz">(Ela esconde as chaves pela ilha. Tem uma perto do lago.)</p></div>
+        <div class="linha"><span class="quem q-nico">Nico</span><p class="diz">(No correio de hoje, a Capi espera por você. Depois que a ponte voltar, claro.)</p></div>
+        <div class="linha"><span class="quem q-morador">Rufo</span><p class="diz">Aperta, aperta, aperta… ops. Caiu uma peça. Que pena. (pisca)</p></div>
+        <div class="linha"><span class="quem q-morador">Bia</span><p class="diz">Viva o Rei, viva o Rei… lá-ri-lá.<small>A última nota é dela.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>O primeiro Lumi</h3>
+        <p class="quando">Na janela escura da oficina, no primeiro dia.</p>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Olha ali na janela da oficina. É um borrão: uma ideia que alguém largou. Tem um Lumi preso dentro.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Acenda a lanterna na mochila e chegue perto.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">O borrão foge do escuro. Com a lanterna acesa ele não foge.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Saiu! É a Estrelinha. Os Lumis vivem de ideias. Esta aqui estava com fome.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Aqueles borrões têm Lumis presos. Sem a lanterna da Íris ainda não dá para soltar, mas comigo por perto nada te pega.<small>Se a noite chegar antes da lanterna.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>As pontes e os Granitus</h3>
+        <p class="quando">Na boca de cada ponte.</p>
+        <div class="linha"><span class="quem q-carta">Placa</span><p class="diz">“Ponte partida por ordem do Rei.”</p></div>
+        <div class="linha"><span class="quem q-granitus">Granitus</span><p class="diz">Ninguém passa.<small>Barulho de pedra, olhos dourados.</small></p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Ele obedece o Livro. Quando o Farol religar esta ponte, o receptor dele apaga e ele para. Livre de verdade, só quando o Livro acabar.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Lá é o Bosque dos Bichos. A luz verde vai para lá primeiro.<small>Pela luneta.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>A missão, o facho e a Capi</h3>
+        <p class="quando">No posto 2.</p>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Você subiu de posto! A oficina está esperando a sua ideia.</p></div>
+        <div class="linha"><span class="quem q-sombra">Sombra</span><p class="diz">Nada funciona sem o Rei! PROIBIDO, PROIBIDO, PRO…<small>No confronto.</small></p></div>
+        <div class="linha"><span class="quem q-sombra">Sombra</span><p class="diz">O meu carimbo! O Rei vai ficar furioso…<small>Quando a criança tira a página do cabo.</small></p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Cabe na mão! Quando quiser, a gente leva ao Farol.</p></div>
+        <div class="linha"><span class="quem q-iris">Íris</span><p class="diz">Quer treinar? Aqui na oficina dá para simular o carimbo quantas vezes quiser.<small>Depois da missão.</small></p></div>
+        <div class="linha"><span class="quem q-capi">Capi</span><p class="diz">Eu sabia que alguém ia religar! Posso atravessar? Tenho um jeito de fazer trilhos para te mostrar.</p></div>
+        <div class="linha"><span class="quem q-carta">Decreto</span><p class="diz">“Todas as ideias pertencem ao Rei.”<small>Deixado por uma Sombra que passa voando.</small></p></div>
+      </div>
+
+      <div class="momento">
+        <h3>A cor do dia a dia</h3>
+        <p class="quando">Falas curtas que voltam sempre.</p>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Desafio feito. O moinho da encosta voltou a girar. Marquei no mapa.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Você achou a chave da sala. Mais um cômodo para construir!</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Viu a Bia? Saiu uma nota dela mesma.</p></div>
+        <div class="linha"><span class="quem q-zappy">Zappy</span><p class="diz">Que tal descansar no banco? A sua energia está baixinha.</p></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FAZER -->
+  <section class="sec" id="fazer">
+    <div class="sec-head">
+      <p class="eyebrow">Tudo o que dá para fazer aqui</p>
+      <h2>O que fazer na Faísca</h2>
+      <p>É a ilha com mais coisas, porque é a casa. Cada distrito tem motivo para voltar, sem tarefa forçada: as atividades têm profundidade (combinações na horta, soluções no Construir, recordes nos minijogos) e há tempo para só brincar.</p>
+    </div>
+    <div class="fazer">
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:#f0a64a"><use href="#i-casa"/></svg><h3>Vila dos Criadores</h3></div><ul>
+        <li>Construir cômodos, paredes, portas e janelas</li>
+        <li>Achar as quatro chaves de presente, se quiser, e montar os cômodos extras</li>
+        <li>Pôr objetos com função, como a geladeira, e dar a aparência que quiser</li>
+        <li>Decorar com as peças da Morada; o quarto é o da plataforma</li>
+        <li>Dormir, sentar no banco, ver o resumo do dia; o bichinho da Morada anda junto</li>
+        <li>O Quadro das Conexões no cavalete da praça</li>
+      </ul></div>
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:var(--verde)"><use href="#i-horta"/></svg><h3>Campos da Íris</h3></div><ul>
+        <li>Plantar, regar e colher alface, tomate e milho</li>
+        <li>A horta cresce em horas de verdade; a chuva e a bomba regam</li>
+        <li>Fazer receitas na bancada e comer</li>
+        <li>Os Lumis trabalham na horta com a rotina montada em cartões</li>
+        <li>Passear pelo pomar, pelas fontes e pelo lago</li>
+      </ul></div>
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:#38c3e6"><use href="#i-mar"/></svg><h3>Costa do Nico</h3></div><ul>
+        <li>Achar as cinco conchas e a estrela-do-mar nas enseadas</li>
+        <li>Pescar os cinco peixes no píer</li>
+        <li>Conversar com o Nico: amizade, aniversário, pedidos e o correio cochichado</li>
+        <li>Corrida da maré, pipa no vento e os mirantes</li>
+      </ul></div>
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:#3f8f4a"><use href="#i-noite"/></svg><h3>Bosque das Lanternas</h3></div><ul>
+        <li>Com a lanterna, soltar os Lumis dos borrões, à noite</li>
+        <li>Os Lumis da ilha, como o Búzio, que é raro; a Estrelinha aparece junto em alguns momentos</li>
+        <li>O Lumi de luz, num baú dos segredos; as clareiras e o mirante</li>
+        <li>As lanternas da trilha acesas, depois do sexto desafio</li>
+      </ul></div>
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:var(--gold)"><use href="#i-engrenagem"/></svg><h3>Pátio das Invenções</h3></div><ul>
+        <li>Juntar as peças da oficina com as brechas dos moradores</li>
+        <li>A Missão do Núcleo da Oficina e, depois, a simulação do carimbo</li>
+        <li>O desafio do dia e o tema da semana</li>
+        <li>O minijogo aprovado no Estúdio vira brinquedo na ilha</li>
+        <li>Depois do primeiro facho: a tentativa de retomada, quando as Sombras chegam com um carimbo novo e a comunidade barra</li>
+        <li>Depois do terceiro facho: o cerco ao Farol, uma missão de defesa com os mecanismos que a criança já consertou</li>
+      </ul></div>
+      <div class="grupo"><div class="grupo-top"><svg viewBox="0 0 34 34" aria-hidden="true" style="color:var(--verde)"><use href="#i-farol"/></svg><h3>Colina do Farol</h3></div><ul>
+        <li>Ver os seis compartimentos e encaixar os Núcleos</li>
+        <li>A luneta mostra a próxima ilha e o facho que falta</li>
+        <li>O mapa se revela andando; cada lugar visitado vira ponto da viagem rápida</li>
+        <li>Visitar a ilha dos irmãos, quando os pais deixam</li>
+        <li>As festas do calendário, com roupas da época</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- MINIJOGOS -->
+  <section class="sec" id="minijogos">
+    <div class="sec-head">
+      <p class="eyebrow">Os da Faísca</p>
+      <h2>Minijogos da ilha</h2>
+      <p>Pequenos, para o dia a dia, além da pesca, das conchas, da horta e do Pega-conchas.</p>
+    </div>
+    <div class="minis">
+      <div class="mini"><h3>O carimbo apostado</h3><p>A simulação do confronto, na oficina, depois da missão. Religar os mecanismos numa ordem que funcione, e há mais de uma, antes do carimbo descer, atrás de três estrelas. É treino: não mexe na história.</p><p class="base">Sequência e tempo, com tentativas sem fim.</p></div>
+      <div class="mini"><h3>Corrida da maré</h3><p>A maré baixa e deixa conchas e tesouros na areia por pouco tempo. Pegar o máximo antes de a água voltar. A peneira religada ajuda.</p><p class="base">A maré e as coleções da praia.</p></div>
+      <div class="mini"><h3>Pipa no vento</h3><p>A criança desenha a pipa no Pinta e solta na praia. Segurar a linha no vento certo e passar pelas argolinhas de nuvem.</p><p class="base">O vento e a arte que vem do Pinta.</p></div>
+      <div class="mini"><h3>As cartas do Nico</h3><p>O Nico esconde cartas de verdade no meio das encomendas do Rei. A criança entrega sem a Sombra ver: antes da ponte, para moradores da Faísca; depois, para os guardiões das outras ilhas.</p><p class="base">O correio do dia e os pedidos dos moradores.</p></div>
+    </div>
+  </section>
+
+  <!-- CONEXÕES -->
+  <section class="sec" id="conexoes">
+    <div class="sec-head">
+      <p class="eyebrow">Para onde a Faísca leva</p>
+      <h2>As conexões da ilha</h2>
+      <p>A Faísca é o centro do jogo e a porta para a plataforma.</p>
+    </div>
+    <div class="conexoes">
+      <div class="lado">
+        <h3>Dentro do jogo</h3>
+        <div class="con"><h4>O mar</h4><p><b>É perigoso</b> e as rotas seguras são do Rei: marcadas por boias e patrulhadas pelas Sombras. <b>Traz</b> pelo Canal do Vagalume, a passagem entre rochas que liga o mar aberto à Faísca, como veio a criança.</p></div>
+        <div class="con"><h4>As seis pontes</h4><p><b>Leva</b> às seis ilhas, uma por Núcleo, cada uma saindo da sua cabeceira na costa: são o único caminho que o Rei não controla. <b>Traz</b> os guardiões, que atravessam para ensinar.</p></div>
+        <div class="con"><h4>O Farol</h4><p><b>Recebe</b> os seis Núcleos, um por capítulo. <b>Dá</b> os fachos, que cruzam a ilha até as cabeceiras e religam as pontes, e, no fim, a ponte de luz.</p></div>
+        <div class="con"><h4>A Terra da Aventura</h4><p><b>Leva</b> pela ponte de luz, depois da missão das Nuvens. <b>Traz</b> a liberdade de volta: as coroinhas voam também na Faísca.</p></div>
+        <div class="con"><h4>O Nico</h4><p><b>Leva</b> as cartas escondidas até os guardiões. <b>Traz</b> o correio do dia e as notícias de cada ilha.</p></div>
+        <div class="con"><h4>O mapa</h4><p><b>Leva</b> pela viagem rápida a qualquer lugar já visitado e a qualquer ilha já religada. <b>Traz</b> de volta à porta de casa.</p></div>
+      </div>
+      <div class="lado">
+        <h3>Na plataforma</h3>
+        <div class="con"><h4>Jornada</h4><p><b>O posto abre a Missão do Núcleo.</b> O posto 1 se chama Faísca, como a ilha. Subir para o posto 2 libera o Núcleo da Oficina.</p></div>
+        <div class="con"><h4>Estúdio</h4><p><b>Os seis desafios do Quadro das Conexões</b> e o desafio final vêm de lá, com o que o posto 1 ensina em blocos.</p></div>
+        <div class="con"><h4>Pinta e Molda</h4><p><b>A arte da criança entra no jogo:</b> a aparência da geladeira, a pipa, os objetos da casa. Sempre como recompensa: quem não quiser desenhar escolhe uma pronta na galeria.</p></div>
+        <div class="con"><h4>Morada e avatar</h4><p><b>O quarto e o bichinho são os da plataforma.</b> As roupas ganhas no jogo vão para o avatar.</p></div>
+        <div class="con"><h4>Pais</h4><p><b>O tempo combinado</b> e as visitas dos irmãos são escolha dos responsáveis. Nada se perde quando o tempo acaba.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MUDA -->
+  <section class="sec" id="muda">
+    <div class="sec-head">
+      <p class="eyebrow">Do primeiro dia ao fim da história</p>
+      <h2>A Faísca muda com o jogo</h2>
+    </div>
+    <div class="evol">
+      <div class="fase"><figure><svg viewBox="0 0 200 130" role="img" aria-label="Ilha verde com moradores de coroinha em fila, oficina lacrada e Farol vazio."><rect width="200" height="130" style="fill:#7fc8e8"/><ellipse cx="100" cy="96" rx="80" ry="24" style="fill:#f0dfae"/><ellipse cx="100" cy="90" rx="64" ry="18" style="fill:#8fcf73"/><use href="#o-casa" x="40" y="54" width="44" height="37"/><use href="#o-farol" x="126" y="16" width="26" height="68"/><use href="#c-morador" x="90" y="74" width="12" height="18"/><use href="#o-coroinha" x="91" y="71" width="10" height="5"/><use href="#c-morador" x="104" y="74" width="12" height="18" style="--roupa:#7fb3d5"/><use href="#o-coroinha" x="105" y="71" width="10" height="5"/></svg></figure><h4>Primeiro dia</h4><p>Ilha bonita e parada. Fila de coroinhas, oficina lacrada, Farol com seis buracos.</p></div>
+      <div class="fase"><figure><svg viewBox="0 0 200 130" role="img" aria-label="Moinho girando, fonte, lanternas da trilha acesas."><rect width="200" height="130" style="fill:#7fc8e8"/><ellipse cx="100" cy="96" rx="80" ry="24" style="fill:#f0dfae"/><ellipse cx="100" cy="90" rx="64" ry="18" style="fill:#8fcf73"/><use href="#o-casa" x="40" y="54" width="44" height="37"/><use href="#o-farol" x="126" y="16" width="26" height="68"/><g style="stroke:#59627a" stroke-width="3"><path d="M100 50v30M88 62h24M92 54l16 16M108 54l-16 16"/></g><g style="fill:#ffd23f"><circle cx="70" cy="100" r="3"/><circle cx="90" cy="104" r="3"/><circle cx="110" cy="104" r="3"/></g></svg></figure><h4>Quadro das Conexões</h4><p>Moinho, fonte, bomba, sino e lanternas voltam. Os moradores andam fora da fila de vez em quando.</p></div>
+      <div class="fase"><figure><svg viewBox="0 0 200 130" role="img" aria-label="A casa com cômodos novos e a oficina sem lacre."><rect width="200" height="130" style="fill:#7fc8e8"/><ellipse cx="100" cy="96" rx="80" ry="24" style="fill:#f0dfae"/><ellipse cx="100" cy="90" rx="64" ry="18" style="fill:#8fcf73"/><use href="#o-casa" x="30" y="54" width="44" height="37"/><use href="#o-casa" x="66" y="60" width="34" height="30"/><use href="#o-oficina" x="104" y="58" width="40" height="33" style="--lacre:0"/><use href="#o-farol" x="150" y="16" width="26" height="68"/></svg></figure><h4>Casa e oficina</h4><p>Os quatro cômodos abertos e construídos. A oficina com todas as peças, esperando o posto 2.</p></div>
+      <div class="fase"><figure><svg viewBox="0 0 200 130" role="img" aria-label="Facho verde aceso e ponte do Bosque refeita."><rect width="200" height="130" style="fill:#7fc8e8"/><ellipse cx="100" cy="96" rx="80" ry="24" style="fill:#f0dfae"/><ellipse cx="100" cy="90" rx="64" ry="18" style="fill:#8fcf73"/><use href="#o-farol" x="90" y="10" width="28" height="74" style="--s1:#35b866;--lamp:#35b866;--brilho:.5"/><path d="M104 30L10 10" style="stroke:#35b866;opacity:.7" stroke-width="5"/><path d="M40 92L0 70" style="stroke:#b08a5a" stroke-width="7"/></svg></figure><h4>Primeiro facho</h4><p>O facho verde, a ponte do Bosque, o Granitus dormindo em pedra. A Capi visita; aparecem os cartazes do Rei. Mais adiante, as Sombras chegam de balão com um carimbo novo para a Faísca, e a Íris, a Tulipa, o Rufo, a Bia e a criança barram a tentativa; a página vai para a pasta. Quando o terceiro facho acende, vem o cerco ao Farol: Sombras e Granitus de reserva desembarcam para arrancar os Núcleos, e a criança defende com a bomba d’água, as hélices do cata-vento, um carrinho de defesa que monta nos trilhos com o que aprendeu com a Capi e barris de calda trazidos da Vila Doce. Se a defesa falha, recomeça do último ponto e nenhum Núcleo sai do lugar. Depois disso, cada compartimento aceita Núcleo novo mas ninguém tira o que já está lá, e um guardião fica de plantão.</p></div>
+      <div class="fase"><figure><svg viewBox="0 0 200 130" role="img" aria-label="Farol com os seis compartimentos acesos; coroinhas voando; festa na praia."><rect width="200" height="130" style="fill:#1f2550"/><ellipse cx="100" cy="100" rx="80" ry="22" style="fill:#f0dfae"/><ellipse cx="100" cy="94" rx="64" ry="16" style="fill:#8fcf73"/><use href="#o-farol" x="86" y="6" width="30" height="80" style="--lamp:#fff3b0;--brilho:.9;--s1:#35b866;--s2:#ff6fae;--s3:#f5bd16;--s4:#38c3e6;--s5:#ff8a3d;--s6:#9a6bff"/><use href="#o-coroinha" x="30" y="30" width="18" height="9" transform="rotate(-20 39 34)"/><use href="#o-coroinha" x="150" y="40" width="18" height="9" transform="rotate(25 159 44)"/><use href="#c-morador" x="50" y="80" width="14" height="21" style="--roupa:#7fb3d5"/><use href="#c-morador" x="140" y="80" width="14" height="21" style="--roupa:#d989c9;--pele:#f2c79a"/></svg></figure><h4>Depois do final</h4><p>Os seis fachos acesos. As coroinhas voam, a Tulipa inventa um regador, o Rufo abre a oficina para todos, a Bia toca a música dela e o Nico pergunta para quem a criança quer mandar uma carta.</p></div>
+    </div>
+  </section>
+
+  <!-- CONSTRUIR -->
+  <section class="sec" id="construir">
+    <div class="sec-head">
+      <p class="eyebrow">O primeiro teste de tudo</p>
+      <h2>Como construir a Faísca</h2>
+      <p>A Faísca é a fatia vertical da história: do quarto ao primeiro facho, com o ciclo inteiro funcionando, antes de qualquer outra ilha. Primeiro o mapa e a base do mundo grande, depois o conteúdo. A Faísca é desenhada do zero para o avatar no tamanho de verdade; as coordenadas do mundo de hoje não são esticadas.</p>
+    </div>
+    <div class="regras">
+      <h3 style="font-size:1.1rem">As regras da ilha, que nenhuma parte da construção quebra</h3>
+      <ol>
+        <li>A Faísca é verde, bonita e colorida desde o começo; o Croakus tirou a liberdade, não a cor. O controle aparece nas coroinhas, nas rotinas repetidas, nos cartazes, na oficina lacrada e nos sons interrompidos.</li>
+        <li>A criança mora na ilha. O quarto e o avatar vêm da plataforma e da Morada, sem cópia e sem perder inventário ou construção.</li>
+        <li>A Íris escreve o convite; o Zappy guia o barco pelo Canal do Vagalume, protege a criança e nunca resolve por ela.</li>
+        <li>A Sombra Carimbo trabalha para o Croakus porque quer. A página dourada no cabo do carimbo é o transmissor da Faísca; a primeira tentativa falha por causa do Zappy, e a Sombra acha que a tinta estragou.</li>
+        <li>A Estrelinha, o primeiro Lumi, é solta na missão principal, sem prazo; os outros Lumis são opcionais e podem voltar no final.</li>
+        <li>Os desafios do Estúdio fazem os mecanismos voltarem. O posto 2 abre a Missão do Núcleo; o posto sozinho nunca abre a ponte.</li>
+        <li>A criança vence a Sombra, desliga o transmissor, completa o mecanismo de teste da Íris, ativa a peça-base e faz o Núcleo da Oficina.</li>
+        <li>No Farol: facho verde, ponte do Bosque refeita, receptor do Granitus apagado. O Granitus para, mas não fica livre. Depois, a Capi pode visitar.</li>
+        <li>Seis pontes saem de seis cabeceiras da costa, e o Farol manda um facho para cada uma. As rotas do mar sob o Croakus nunca substituem as pontes.</li>
+        <li>A criança pode descansar, construir, explorar e brincar sem fazer a missão. Nada opcional tem prazo nem trava o fim da história.</li>
+      </ol>
+    </div>
+    <div class="tres">
+      <div class="col a"><h3>O mundo grande</h3><ul>
+        <li><b>A geografia escrita como dado:</b> cada ilha com o seu centro no mundo, contorno, distritos, pontos de interesse, cabeceiras de ponte, portos, ponto de chegada seguro e a versão da geografia.</li>
+        <li><b>Por setores:</b> a ilha em quadrados de cerca de 80 m (uns 33 na área da Faísca), com o desenho, a física, os moradores e as interações carregando conforme a criança chega perto; a silhueta da ilha inteira sempre à vista, em versão leve. Uma ilha de 520 m nunca é um arquivo só, sempre ligado.</li>
+        <li><b>Navegação:</b> caminhos acessíveis, placas, marcos, mapa que se revela e viagem rápida para os lugares já visitados.</li>
+        <li><b>Chegada segura:</b> ao entrar, o setor da chegada e os colisores dele carregam antes de a criança se mexer; ela nunca aparece dentro da pedra, embaixo do mar ou numa ponte partida.</li>
+        <li><b>Salvamento por ilha:</b> a posição guardada passa a ser a ilha e o lugar nela, com a posição do mundo de hoje convertida uma vez, com versão. Construções, fantasmas de percurso e tudo o que guarda posição passam pela mesma conversão. Nenhuma conta, quarto, coleção ou conquista se perde.</li>
+        <li><b>O avatar no tamanho de verdade:</b> o mundo novo usa a escala 1 (o de hoje usa 1,85). Cápsula, câmera, alcance das mãos, pulo, escadas, água, assentos, animações e a mão nos objetos medidos de novo, como na pista de conferência com as peças da arte.</li>
+        <li><b>As pontes pela missão:</b> posto 2, Missão do Núcleo, Núcleo feito, encaixe, ponte aberta. Quem já tinha uma ponte aberta no mundo de hoje continua com ela.</li>
+        <li><b>No navegador de verdade:</b> respeitar a memória do aparelho, a permissão dos pais, o tempo combinado, as pausas, o toque e a volta de onde parou, com testes em aparelhos físicos.</li>
+      </ul></div>
+      <div class="col b"><h3>Arte, terreno, água e pontes</h3><ul>
+        <li><b>Vegetação, jardins e pedras:</b> do pack Kingdom, com peças de arquitetura discretas; o castelo da demonstração não vira paisagem da Faísca.</li>
+        <li><b>Pontes, passarelas, plataformas, peças de interação, as Sombras e os Granitus:</b> do Adventure Land, na escala certa para o avatar (as peças monumentais ficam para a Terra da Aventura).</li>
+        <li><b>Casa, quarto, móveis e construção:</b> da Morada, compatíveis com a plataforma.</li>
+        <li><b>Os outros packs</b> (Faroeste, Inverno, Templo, Estádio, Terra Doce) ficam nas ilhas deles; na Faísca só entra o que combina com ela.</li>
+        <li><b>Terreno próprio:</b> o chão e o relevo feitos para a ilha, no estilo dos packs (nunca uma peça esticada até 520 m): costa orgânica, subidas suaves nos distritos do começo, a colina do Farol, pedras e vegetação por setor, com colisão e versões leves próprias.</li>
+        <li><b>Água:</b> um oceano compartilhado, com a parte rasa da costa e o lago, num material testado no navegador com os arquivos comprados. O desenho da água, o nado, a correnteza e a colisão são partes separadas.</li>
+        <li><b>Pontes:</b> módulos do Adventure Land escolhidos depois de medir os arquivos; cada ponte com as duas cabeceiras, o estado partido e o refeito, colisão por trecho, caminho seguro, marca do destino e a animação de se refazer, que é nossa. As travessias longas têm vista e, depois da primeira vez, viagem rápida.</li>
+        <li><b>Personagens:</b> Tulipa, Rufo e Bia com o kit de personagens do avatar; a Sombra Carimbo (<code>sombra_de_croak_*</code> com carimbo); os seis Granitus (<code>granitus_01..03_pacote</code>) com olhos dourados e em pedra; o Núcleo, os mecanismos e a pipa base.</li>
+        <li><b>As sete pinturas da abertura</b> no estilo do livro ilustrado do jogo.</li>
+      </ul></div>
+      <div class="col c"><h3>O que a Faísca precisa ter</h3><ul>
+        <li>O livro ilustrado da carta e a entrada pela janela do quarto da plataforma</li>
+        <li>O começo com as falas desta página, ensinando cada coisa na hora</li>
+        <li>A coroinha, o passo marchado e as brechas da Tulipa, do Rufo, da Bia e do Nico</li>
+        <li>O recado dourado que bate no brilho do Zappy e cai; a página da ordem dentro do carimbo</li>
+        <li>Uma ponte de cada vez: só o Granitus do Bosque patrulha e só o primeiro encaixe do Farol mostra a cor verde, ainda apagada</li>
+        <li>O primeiro Núcleo da Íris na bancada, que a missão completa</li>
+        <li>A Sombra Carimbo, sem coroinha, com os lacres na oficina e as tentativas desastradas pela ilha; as quatro chaves de presente</li>
+        <li>O receptor dourado na base de cada Granitus, que apaga com o facho</li>
+        <li>O Quadro das Conexões com os seis mecanismos nos distritos</li>
+        <li>A oficina, as peças, a Missão do Núcleo e a simulação do carimbo</li>
+        <li>O Farol com seis compartimentos, o primeiro facho, a ponte refeita, o Granitus em pedra e a Capi</li>
+        <li>O serviço do jogo guardando cada conquista por conta própria; o posto vem só da Jornada</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ENTREGAS -->
+  <section class="sec" id="entregas">
+    <div class="sec-head">
+      <p class="eyebrow">Em que ordem e como saber que deu certo</p>
+      <h2>Entregas e testes</h2>
+      <p>Primeiro o mapa e a base do mundo grande, depois o conteúdo. Cada etapa só começa com a anterior aceita.</p>
+    </div>
+    <div class="tab">
+      <table>
+        <thead><tr><th>Etapa</th><th>O que se entrega</th><th>Está pronta quando</th></tr></thead>
+        <tbody>
+          <tr><td>0 · Medição</td><td>As medidas reais do Adventure Land, do Kingdom, do avatar, da Morada e da geometria de hoje; as âncoras e o salvamento mapeados</td><td>Medidas e incompatibilidades conhecidas, e nada do jogo de hoje apagado</td></tr>
+          <tr><td>1 · A Faísca em blocos</td><td>O contorno de 520 m, os seis distritos em volumes simples, o Farol na colina, as seis cabeceiras e uma água de teste</td><td>O avatar no tamanho de verdade passeia por três distritos com caminhos alternativos e vistas fáceis de ler</td></tr>
+          <tr><td>2 · A base do mundo grande</td><td>Setores, versões leves, física por setor, mapa, pontos de volta e a conversão do salvamento num ambiente de teste</td><td>Sem buraco no chão e sem reaparecer no mar ao cruzar setores ou voltar ao jogo</td></tr>
+          <tr><td>3 · O começo</td><td>A Vila, a horta, a praia, a Íris, o Zappy, a Sombra, a lanterna, a Estrelinha e o começo ensinado na hora</td><td>A história é entendida e dá para explorar à vontade sem seguir horta e geladeira</td></tr>
+          <tr><td>4 · A ilha que responde</td><td>Os seis quadros ligados aos mecanismos nos distritos, os moradores e o que muda em volta</td><td>Cada quadro muda o mecanismo certo, e tudo continua mudado depois de sair e voltar</td></tr>
+          <tr><td>5 · A missão e a ponte</td><td>A oficina, o confronto, o Núcleo, o Farol, uma ponte longa em módulos, o Granitus e a Capi</td><td>O ciclo inteiro funciona; a ponte só abre depois do encaixe; a volta é segura</td></tr>
+          <tr><td>6 · Profundidade</td><td>As chaves, os Lumis a mais, os minijogos, os segredos, os caminhos secundários e os eventos de depois</td><td>Todo distrito tem motivo para voltar, sem tarefa forçada</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tres">
+      <div class="col a"><h3>Teste A · chegada e liberdade</h3><ul>
+        <li>Crianças de 9 a 12 anos, em contas no posto 1, jogam a primeira hora.</li>
+        <li>Ao sair do quarto, entendem a história e escolhem o rumo; sabem que a Íris precisa de ajuda, mas não são obrigadas a seguir a missão nem a aprender tudo naquela hora.</li>
+        <li>Observamos a orientação, os toques e cliques, a curiosidade, as dificuldades com o controle e a vontade de explorar. O tempo jogado sozinho não mede se gostaram.</li>
+        <li>Quem segue a missão logo e quem explora primeiro são observados em grupos separados.</li>
+      </ul></div>
+      <div class="col b"><h3>Teste B · a grande conquista</h3><ul>
+        <li>Numa conta de teste já no posto 2 (nunca a conta de um aluno), a criança vence a Sombra, faz o Núcleo, acende o facho verde, vê o Granitus parar e atravessa a ponte.</li>
+        <li>Observamos se ela entende as três consequências (a oficina, o Núcleo, a ponte) e se sente que a solução foi dela.</li>
+        <li>Depois, uma conversa curta: o momento preferido, o que foi difícil e o que faria de novo.</li>
+      </ul></div>
+      <div class="col c"><h3>Teste técnico · o mundo grande</h3><ul>
+        <li>Carregamento por setores, placa de vídeo e memória, controle e câmera no navegador de verdade.</li>
+        <li>A água e a beira segura, o caminho de volta e a conversão do mundo de hoje.</li>
+        <li>O desempenho medido em cada aparelho real; nenhuma promessa de quadros por segundo sem medir.</li>
+        <li>Toque, teclado e controle; pontos de volta; opção de menos movimento. Nada que a criança já tem na Morada ou no avatar se perde.</li>
+      </ul></div>
+    </div>
+    <div class="perguntas">
+      <h3 style="font-size:1.15rem">Depois da primeira hora, a criança responde</h3>
+      <ol>
+        <li>Quem está mandando em todo mundo? <i>(O Croakus, com o Livro: todo mundo de coroinha.)</i></li>
+        <li>Por que isso é ruim? <i>(Ninguém pode inventar o que quer.)</i></li>
+        <li>O que eu estou tentando fazer? <i>(Fazer a peça do Farol para religar a ponte.)</i></li>
+        <li>O que acontece quando eu termino meus desafios? <i>(A ilha volta a funcionar e a missão da oficina abre.)</i></li>
+        <li>Por que ainda vou precisar enfrentar o Rei? <i>(A ponte volta, mas as coroinhas continuam.)</i></li>
+      </ol>
+    </div>
+    <p style="font-family:var(--font-titulo);font-weight:800;font-size:1.15rem">A criança escolhe um caminho, encontra um problema, usa o que aprendeu para criar uma solução e vê a Faísca mudar por causa dela.</p>
+  </section>
+
+  <footer>
+    <p>Capítulo 1 da proposta “O Livro Dourado e as seis conexões”. Conferido com o jogo em <code>packages/arquipelago</code>: os seis quadros são os do Pega-conchas (conteúdo C03a, em blocos); o primeiro cultivo já é rápido (3, 5 e 8 minutos até a geladeira); a geladeira guarda 4 como holograma e 12 com qualquer aparência; as velocidades de andar e correr são as de hoje. Os desenhos são próprios; a arte dos pacotes não aparece aqui.</p>
+  </footer>
+</div>

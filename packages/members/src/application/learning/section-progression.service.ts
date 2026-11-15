@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal } from '@sistemazero/core/http'
@@ -718,6 +719,8 @@ export class SectionProgressionService {
     context: {
       audience: CourseAudience
       privileged: boolean
+      /** Curso para pais (14/11/2026): verificar a parte não dá XP nem moedas. */
+      learner?: CourseLearner
       signal?: AbortSignal
       liveContext?: SectionProjectLiveContext
       authorizeLesson?(signal: AbortSignal): Promise<LessonWithContent>
@@ -979,7 +982,7 @@ export class SectionProgressionService {
       .map((r) => r.checkId)
     const requiredPassed = evaluation.passed
     const gamification =
-      this.rewards && (requiredPassed || extraPassed.length)
+      this.rewards && context.learner !== 'parents' && (requiredPassed || extraPassed.length)
         ? await owned(() =>
             this.rewards!.awardSectionObjectives({
               userId: owner.userId,

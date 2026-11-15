@@ -2,6 +2,7 @@ import {
   AVATAR_CATALOG,
   type AvatarFilter,
   type AvatarSlots,
+  withCurrentSet,
   withEars,
 } from '@sistemazero/core/avatar'
 import {
@@ -47,15 +48,18 @@ export class EquipAvatarService {
     ])
     const atual = canonicalizeAvatarConfig(anterior, userId)
     const filter = input.filter ?? atual.filter
-    assertEquippableConfig({ slots: input.slots, filter }, new Set(owned))
+    // Uma tela aberta antes da troca de parte da fantasia ainda manda a parte antiga: vira a nova.
+    // Só troca o que era antigo; a fantasia pela metade continua recusada (não completa).
+    const slots = withCurrentSet(AVATAR_CATALOG, input.slots, { completar: false })
+    assertEquippableConfig({ slots, filter }, new Set(owned))
     // Personalizado = a pessoa mudou alguma peça. Só responder o filtro (a pergunta da primeira
     // vez) grava o filtro, mas o avatar continua o sorteado: a ação de aula ainda não passa.
-    const mudou = !mesmasPecas(withEars(AVATAR_CATALOG, input.slots), atual.slots)
+    const mudou = !mesmasPecas(withEars(AVATAR_CATALOG, slots), atual.slots)
     const config = canonicalizeAvatarConfig(
       {
         version: 3,
         style: AVATAR_CHAR_STYLE,
-        slots: input.slots,
+        slots,
         ...(filter ? { filter } : {}),
         ...(atual.customized || mudou ? { customized: true } : {}),
       },

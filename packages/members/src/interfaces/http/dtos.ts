@@ -1,3 +1,4 @@
+import { COURSE_LEARNERS } from '@sistemazero/core/course/learner'
 import { COURSE_MODALITIES } from '@sistemazero/core/course/modality'
 import { CONTENT_FINGERPRINT_PATTERN } from '@sistemazero/core/creations'
 import {
@@ -85,6 +86,15 @@ const AUDIENCE = t.Union([t.Literal('adult'), t.Literal('kids')])
  * valor inválido → 400 na borda.
  */
 export const AudienceQuery = t.Object({ audience: t.Optional(AUDIENCE) })
+
+/**
+ * Query de `GET /members/courses` e `/members/catalog`: a vitrine (`audience`) e para quem
+ * (`learner`, 14/11/2026). Ausente → `child`; `parents` lista os cursos para pais da conta.
+ */
+export const CourseListQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  learner: t.Optional(t.Union([t.Literal('child'), t.Literal('parents')])),
+})
 
 /**
  * Query de `GET /members/gamification/me`: a gamificação é SEGREGADA por
@@ -810,6 +820,7 @@ const COURSE_LEVEL = t.Union([
 const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
 // Modalidade (14/10/2026) — deriva de `COURSE_MODALITIES` do core (fonte única).
 const COURSE_MODALITY = t.Union(COURSE_MODALITIES.map((modality) => t.Literal(modality)))
+const COURSE_LEARNER = t.Union(COURSE_LEARNERS.map((learner) => t.Literal(learner)))
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -860,6 +871,9 @@ const CourseBodyProperties = {
   // audience). ⚠️ Declarado aqui de propósito: o `normalize` do Elysia descarta campo que o
   // schema não conhece, e a modalidade nunca chegaria ao serviço.
   modality: t.Optional(t.Union([COURSE_MODALITY, t.Null()])),
+  // Para quem (14/11/2026): criança ou pais. AUSENTE: create → `child`; update → PRESERVA.
+  // ⚠️ Declarado aqui pelo mesmo motivo da modalidade (o `normalize` do Elysia).
+  learner: t.Optional(t.Union([COURSE_LEARNER, t.Null()])),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
   // bônus Kids e Adult exigem conclusão; curso Kids com posição exige também Mural.
   // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira
@@ -893,6 +907,7 @@ export const ListCoursesQuery = t.Object({
   status: t.Optional(COURSE_STATUS),
   audience: t.Optional(AUDIENCE),
   modality: t.Optional(COURSE_MODALITY),
+  learner: t.Optional(COURSE_LEARNER),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })

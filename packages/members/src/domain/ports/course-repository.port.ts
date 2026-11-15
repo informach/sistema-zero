@@ -1,3 +1,4 @@
+import type { CourseLearner } from '@sistemazero/core/course/learner'
 import type {
   Course,
   CourseAudience,
@@ -24,7 +25,8 @@ export interface CourseRepository {
    * Cursos GRAVADOS ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos".
    * Curso AO VIVO nunca volta: ele não se libera por matrícula, só pela vaga na turma.
    */
-  findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
+  /** `learner` padrão `child`: o curso para pais só sai quando pedido explicitamente. */
+  findAccessibleCoursesBySlugs(slugs: string[], learner?: CourseLearner): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por IDS, qualquer status (ficha admin: resolve os cursos com atividade). */
@@ -34,7 +36,8 @@ export interface CourseRepository {
    * ordenados por título. O param é obrigatório: cada vitrine (community/community-kids)
    * decide. Curso AO VIVO fica de fora: ele só aparece em Oficinas.
    */
-  listPublishedCourses(audience: CourseAudience): Promise<Course[]>
+  /** `learner` padrão `child`: o curso para pais só sai quando pedido explicitamente. */
+  listPublishedCourses(audience: CourseAudience, learner?: CourseLearner): Promise<Course[]>
   /**
    * Existe um curso-base (`careerSlot=1`) PUBLICADO nesta etapa (audiência+nível+
    * eixo)? A trava `foundation-first` só vale quando há base alcançável — senão a

@@ -171,6 +171,8 @@ export class CourseAdminService {
       title: input.title?.trim() || source.title,
       audience: input.audience,
       modality,
+      // Curso para pais só existe no Kids e começa do zero: o clone sempre nasce para a criança.
+      learner: 'child',
     })
     if (!cloned) throw new ContentNotFoundError('Curso não encontrado')
     return toCourseView(cloned)
@@ -192,8 +194,10 @@ export class CourseAdminService {
       careerSlot: fields.careerSlot ?? null,
       journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
       modality: fields.modality ?? 'recorded',
+      learner: fields.learner ?? 'child',
     }
     assertLiveOffJourney(normalized)
+    assertParentsOffJourney(normalized)
     assertJourneySlot(normalized)
     return toCourseView(await this.content.createCourse(normalized))
   }
@@ -252,10 +256,32 @@ export class CourseAdminService {
       careerSlot,
       journeyRole,
       modality,
+      learner,
       version: _version,
       ...rest
     } = fields
     const nextModality = modality ?? existing.modality
+    const nextLearner = learner ?? existing.learner
+    // Trocar "Para quem" só com o curso em rascunho: num curso publicado, quem já começou (as
+    // crianças, ou o responsável) perderia o acesso na hora, e o curso sairia da Jornada.
+    if (nextLearner !== existing.learner && existing.status !== 'draft')
+      throw new InvalidContentCommandError(
+        'Para trocar "Para quem", deixe o curso em rascunho primeiro: quem já começou o curso perderia o acesso.',
+      )
+    if (nextLearner === 'parents' && existing.learner !== 'parents') {
+      // Curso da Jornada do Criador (aulas planejadas do currículo) não sai dela.
+      if (creatorSeedRequiredLessonIds(existing.metadata))
+        throw new InvalidContentCommandError(
+          'Este curso faz parte do currículo da Jornada do Criador e não pode virar curso para pais.',
+        )
+      // As aulas JÁ publicadas não passam de novo pela conferência da publicação: um Estúdio ou
+      // Pinta nelas travaria o responsável na aula (essas ferramentas só abrem para a criança).
+      const childOnly = await this.content.listPublishedLessonTitlesWithChildOnlyBlocks(id)
+      if (childOnly.length)
+        throw new InvalidContentCommandError(
+          `Curso para pais não usa Estúdio nem Pinta. Tire essas atividades destas aulas antes: ${childOnly.join('; ')}.`,
+        )
+    }
     const merged = {
       ...existing,
       ...rest,
@@ -270,7 +296,7 @@ export class CourseAdminService {
       // explicitamente é conferido (`assertLiveOffJourney`).
       journeyRole:
         journeyRole ??
-        (nextModality === 'live'
+        (nextModality === 'live' || nextLearner === 'parents'
           ? 'reward'
           : careerSlot !== undefined && careerSlot !== existing.careerSlot
             ? careerSlot === null
@@ -281,9 +307,12 @@ export class CourseAdminService {
       // turma: quem confere é o `updateCourse`, sob a trava do curso (mandar o MESMO valor, como o
       // Admin faz em todo PATCH, nunca é troca).
       modality: nextModality,
+      // `learner` AUSENTE preserva o atual (régua do audience).
+      learner: nextLearner,
       metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
     assertLiveOffJourney(merged)
+    assertParentsOffJourney(merged)
     assertJourneySlot(merged)
     // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
     // de vitrine — sem ela o aluno nunca qualifica o slot e a etapa trava (armadilha do
@@ -332,6 +361,43 @@ function assertLiveOffJourney(course: {
   if (course.journeyRole !== 'reward')
     throw new InvalidContentCommandError(
       'Curso ao vivo fica fora da Jornada do Criador e não tem papel nela.',
+    )
+}
+
+/**
+ * Curso para pais (14/11/2026) é só Kids, só gravado e fica fora da Jornada do Criador: sem
+ * posição, papel neutro e sem liberar blocos do Estúdio (quem faz é o responsável, não a criança).
+ */
+function assertParentsOffJourney(course: {
+  learner: string
+  audience: string
+  modality: string
+  careerSlot: number | null
+  journeyRole: string
+  studioUnlockBlocks?: readonly string[] | null
+  metadata?: Record<string, unknown> | null
+}): void {
+  if (course.learner !== 'parents') return
+  if (course.audience !== 'kids')
+    throw new InvalidContentCommandError('Curso para pais existe só no Kids.')
+  if (course.modality !== 'recorded')
+    throw new InvalidContentCommandError('Curso para pais é sempre gravado.')
+  if (course.careerSlot !== null)
+    throw new InvalidContentCommandError(
+      'Curso para pais não ocupa posição na Jornada do Criador. Tire a posição para continuar.',
+    )
+  if (course.journeyRole !== 'reward')
+    throw new InvalidContentCommandError(
+      'Curso para pais fica fora da Jornada do Criador e não tem papel nela.',
+    )
+  const unlocks =
+    course.studioUnlockBlocks ??
+    (Array.isArray(course.metadata?.studioUnlockBlocks)
+      ? (course.metadata?.studioUnlockBlocks as unknown[])
+      : [])
+  if (unlocks.length > 0)
+    throw new InvalidContentCommandError(
+      'Curso para pais não libera blocos no Estúdio das crianças. Tire os blocos para continuar.',
     )
 }
 

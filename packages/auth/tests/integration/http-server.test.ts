@@ -841,6 +841,65 @@ describe('Password reset + perfil self-service', () => {
     ).toBe(200)
   })
 
+  test('quem entra só pelo código fica ATIVADO; a primeira senha nasce do código do e-mail', async () => {
+    const { app, messaging } = buildApp()
+    const comprador = (await (
+      await app.handle(
+        post('/auth/internal/ensure-buyer', REGISTER_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
+      )
+    ).json()) as { userId: string }
+    const ativado = async () => {
+      const res = await app.handle(
+        post(
+          '/auth/internal/users/emails',
+          { ids: [comprador.userId] },
+          { 'x-internal-token': INTERNAL_TOKEN },
+        ),
+      )
+      return ((await res.json()) as { users: { activated: boolean }[] }).users[0]?.activated
+    }
+    expect(await ativado()).toBe(false)
+    const pedirCodigo = async (purpose: 'sign_in' | 'password_reset') => {
+      await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose }))
+      return messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)?.variables.codigo
+    }
+    const code = await pedirCodigo('sign_in')
+    const verificado = await app.handle(
+      post('/auth/otp/verify', { email: 'maria@example.com', code }),
+    )
+    expect(verificado.status).toBe(200)
+    // Entrou pelo código, sem senha: a conta conta como ativada (o Desafio não pede senha).
+    expect(await ativado()).toBe(true)
+    const entrou = (await verificado.json()) as { tokens: Tokens }
+    // Sem senha atual, a troca logada é recusada: a primeira senha prova o e-mail de novo.
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/me/password',
+            { newPassword: 'minha-senha-nova-123' },
+            { authorization: `Bearer ${entrou.tokens.accessToken}` },
+          ),
+        )
+      ).status,
+    ).toBe(400)
+    const reset = await pedirCodigo('password_reset')
+    expect(
+      (
+        await app.handle(
+          post('/auth/password/reset-otp', {
+            email: 'maria@example.com',
+            code: reset,
+            newPassword: 'minha-senha-nova-123',
+          }),
+        )
+      ).status,
+    ).toBe(200)
+    const login = await app.handle(
+      post('/auth/login', { email: 'maria@example.com', password: 'minha-senha-nova-123' }),
+    )
+    expect(((await login.json()) as { user: { passwordSet: boolean } }).user.passwordSet).toBe(true)
+  })
   test('POST /auth/internal/password-tokens exige o token interno e emite token utilizável', async () => {
     const { app } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -1031,7 +1090,7 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     expect(body.tokens.accessToken.length).toBeGreaterThan(0)
     expect(body.tokens.refreshToken.length).toBeGreaterThan(0)
   })
-  test('responsável Kids pode entrar por e-mail antes de definir senha, sem mudar a regra dos outros produtos', async () => {
+  test('a senha é opcional: conta sem senha entra pelo código no Kids e na Comunidade adulta', async () => {
     const { app, messaging } = buildApp()
     expect(
       (
@@ -1055,19 +1114,14 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(200)
     const code = messaging.sent.find((email) => email.templateKey === 'otp')?.variables.codigo
     expect(code).toMatch(/^\d{6}$/)
-    expect(
-      (
-        await app.handle(
-          post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'main' }),
-        )
-      ).status,
-    ).toBe(403)
     const accepted = await app.handle(
       post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'kids' }),
     )
     expect(accepted.status).toBe(200)
-    const body = (await accepted.json()) as { tokens: Tokens }
+    const body = (await accepted.json()) as { user: { passwordSet: boolean }; tokens: Tokens }
     expect(decodeJwt(body.tokens.accessToken).kids).toMatchObject({ kind: 'parent' })
+    // A tela de senha sabe que a conta ainda não tem uma ("Criar senha").
+    expect(body.user.passwordSet).toBe(false)
     expect(
       (
         await app.handle(
@@ -1075,6 +1129,18 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
         )
       ).status,
     ).toBe(401)
+
+    // Na Comunidade adulta, o mesmo: um código novo entra sem senha definida.
+    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
+    const adulto = messaging.sent.filter((email) => email.templateKey === 'otp').at(-1)
+      ?.variables.codigo
+    expect(
+      (
+        await app.handle(
+          post('/auth/otp/verify', { email: 'maria@example.com', code: adulto, platform: 'main' }),
+        )
+      ).status,
+    ).toBe(200)
   })
 
   test('código de uso único: o mesmo código não loga duas vezes', async () => {
@@ -1154,18 +1220,24 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     )
   }
 
-  test('conta sem senha definida NÃO recebe código de LOGIN (o verify o recusaria)', async () => {
+  test('conta da EQUIPE sem senha não recebe código de login (precisa de senha para operar)', async () => {
+    const { app, users, messaging } = buildApp()
+    seedSemSenha(users, 'equipe@example.com')
+    const conta = await users.findByEmail('equipe@example.com')
+    if (!conta) throw new Error('sem conta')
+    conta.changeRole('staff')
+    await users.update(conta, 0)
+
+    expect(await requestCode(app, messaging, 'equipe@example.com', 'sign_in')).toBeUndefined()
+  })
+
+  test('conta sem senha definida RECEBE código de LOGIN (a senha é opcional)', async () => {
     const { app, users, messaging } = buildApp()
     seedSemSenha(users, 'convidado@example.com')
 
-    const before = messaging.sent.length
-    const res = await app.handle(
-      post('/auth/otp/request', { email: 'convidado@example.com', purpose: 'sign_in' }),
-    )
+    const code = await requestCode(app, messaging, 'convidado@example.com', 'sign_in')
 
-    // Resposta genérica (anti-enumeração) e nenhum e-mail com código inútil.
-    expect(res.status).toBe(200)
-    expect(messaging.sent.slice(before)).toHaveLength(0)
+    expect(code).toMatch(/^\d{6}$/)
   })
 
   test('conta sem senha definida RECEBE código de password_reset (caminho de criar a senha)', async () => {

@@ -21,12 +21,14 @@ import {
   alcancaNaIlha,
   descobriuNaIlha,
   falaDaDescoberta,
+  grupoCompleto,
   type IlhaDaColecao,
   LEMBRANCAS_DAS_ILHAS,
   type PecaDaColecao,
   registrarNaIlha,
 } from '../sistemas/colecoes-das-ilhas'
 import { CORPO } from '../sistemas/corpo'
+import { gestoDoAchado, pedirGesto } from '../sistemas/gestos'
 import { jogoPausado } from '../sistemas/pausa'
 import { paraOMundo } from './bosque'
 import { useInterativo } from './interativos'
@@ -100,6 +102,7 @@ function Peca({ p, ponto }: { p: PecaDaColecao; ponto: Ponto }) {
       s.mudar((v) => registrarNaIlha(v, p.id))
       const depois = loja.getState().salvamento
       if (!descobriuNaIlha(depois, p.id)) return
+      pedirGesto(movimento, gestoDoAchado(grupoCompleto(depois, p.grupo)))
       s.dizer(falaDaDescoberta(p, depois))
     },
   })

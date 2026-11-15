@@ -2,7 +2,8 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { archiveProfile } from '../src/app/pais/_components/remove-profile'
-import { ChildClient } from '../src/app/pais/crianca/[id]/child-client'
+import { ChildClient, type ChildTab } from '../src/app/pais/crianca/[id]/child-client'
+import { FamilyClient } from '../src/app/pais/familia/family-client'
 import { PARENT_SECTIONS } from '../src/app/pais/parent-routes'
 import { ParentsClient } from '../src/app/pais/parents-client'
 import { guideDismissedKey, guideWelcomeSeenKey } from '../src/lib/guide'
@@ -107,11 +108,35 @@ function renderFamily({
   )
 }
 
+/** A página Família (redesenho de 14/11/2026): os cartões dos filhos e o limite do plano. */
+function renderFamilyPage({
+  profiles = [andre],
+  access = {},
+  allowance = { kind: 'limited', maxProfiles: 2 },
+  studentDestination,
+}: {
+  profiles?: ProfileView[]
+  access?: Record<string, StudyGrantView[] | null>
+  allowance?: ProfileAllowance
+  studentDestination?: string
+} = {}) {
+  return render(
+    <FamilyClient
+      parentName="Helena"
+      profiles={profiles}
+      profileAllowance={allowance}
+      avatarPhotoByProfile={{}}
+      access={access}
+      studentDestination={studentDestination}
+    />,
+  )
+}
+
 describe('o guia v3 dos pais segue o acesso REAL da família', () => {
   test('família que já preparou não lê "Vamos preparar" e nenhum evento sai', async () => {
     const events = install(() => [grant()])
     renderFamily({ access: { [profileId]: [grant()] } })
-    await waitFor(() => expect(screen.getByText('Suas crianças')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Seus filhos esta semana')).toBeTruthy())
     expect(screen.queryByText(/Vamos preparar/)).toBeNull()
     expect(screen.queryByText('O acesso está preparado')).toBeNull()
     expect(events).toEqual([])
@@ -121,20 +146,20 @@ describe('o guia v3 dos pais segue o acesso REAL da família', () => {
     const events = install()
     const first = renderFamily({ access: { [profileId]: [] } })
     expect(
-      await screen.findByText('Seu filho já tem perfil. Vamos preparar o acesso?'),
+      await screen.findByText('O perfil já está pronto. Vamos preparar o acesso?'),
     ).toBeTruthy()
     await waitFor(() => expect(events.map((event) => event.action)).toContain('welcome_opened'))
     // O guia leva direto à página da criança, e o mesmo pedido não se repete logo abaixo.
     expect(
       screen.getByRole('link', { name: 'Preparar o acesso de André' }).getAttribute('href'),
-    ).toBe(`/pais/crianca/${profileId}`)
+    ).toBe(`/pais/crianca/${profileId}?aba=aparelhos`)
     expect(screen.queryByRole('region', { name: 'Precisa da sua atenção' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Fechar orientação' }))
     await waitFor(() => expect(events.map((event) => event.action)).toContain('tour_skipped'))
     expect(localStorage.getItem(guideDismissedKey('parent'))).toBe('1')
     first.unmount()
     renderFamily({ access: { [profileId]: [] } })
-    await waitFor(() => expect(screen.getByText('Suas crianças')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Seus filhos esta semana')).toBeTruthy())
     expect(screen.queryByText(/Vamos preparar/)).toBeNull()
   })
 
@@ -164,7 +189,7 @@ describe('o guia v3 dos pais segue o acesso REAL da família', () => {
   test('consulta que falhou não pede para preparar o que talvez exista', async () => {
     const events = install()
     renderFamily({ access: { [profileId]: null } })
-    await waitFor(() => expect(screen.getByText('Suas crianças')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Seus filhos esta semana')).toBeTruthy())
     expect(screen.queryByText(/Vamos preparar/)).toBeNull()
     expect(screen.queryByText('Precisa da sua atenção')).toBeNull()
     expect(events).toEqual([])
@@ -178,13 +203,13 @@ describe('o guia v3 dos pais segue o acesso REAL da família', () => {
     expect(screen.queryByText('1. Escolha a criança')).toBeNull()
     const guide = screen.getByRole('region', { name: 'Vamos preparar a primeira entrada?' })
     expect(
-      within(guide).getByRole('link', { name: 'Adicionar criança' }).getAttribute('href'),
+      within(guide).getByRole('link', { name: 'Adicionar filho(a)' }).getAttribute('href'),
     ).toBe('/pais/nova-crianca')
   })
 })
 
-describe('a Família', () => {
-  test('a barra leva às quatro seções e o passo a passo não sai da área dos pais', async () => {
+describe('o Início e a Família', () => {
+  test('o menu leva às seis seções e o Início leva à Família', async () => {
     install()
     renderFamily({ access: { [profileId]: [grant()] } })
     const nav = screen.getAllByRole('navigation', { name: 'Área dos pais' })[0] as HTMLElement
@@ -192,14 +217,13 @@ describe('a Família', () => {
       expect(within(nav).getByRole('link', { name: section.label }).getAttribute('href')).toBe(
         section.href,
       )
-    expect(within(nav).getByRole('link', { name: 'Família' }).getAttribute('aria-current')).toBe(
+    expect(within(nav).getByRole('link', { name: 'Início' }).getAttribute('aria-current')).toBe(
       'page',
     )
-    // O relato de 11/10/2026: o passo a passo levava à ajuda do LOGIN, sem caminho de volta.
-    expect(
-      screen.getByRole('link', { name: /Ver o passo a passo completo/ }).getAttribute('href'),
-    ).toBe('/pais/ajuda')
-    expect(screen.getByRole('button', { name: /Ir para a área da criança/ })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Ver a família/ }).getAttribute('href')).toBe(
+      '/pais/familia',
+    )
+    expect(screen.getAllByRole('button', { name: /Ir para a área da criança/ }).length).toBe(2)
   })
 
   test('o que pede ação vem primeiro: sem aparelho, vencendo e vencido', () => {
@@ -211,7 +235,7 @@ describe('a Família', () => {
     expect(within(attention).getByText('André ainda não tem aparelho autorizado.')).toBeTruthy()
     expect(
       within(attention).getByRole('link', { name: 'Preparar acesso' }).getAttribute('href'),
-    ).toBe(`/pais/crianca/${profileId}`)
+    ).toBe(`/pais/crianca/${profileId}?aba=aparelhos`)
     view.unmount()
     renderFamily({
       access: { [profileId]: [grant({ expiresAt: new Date(Date.now() + 3 * DAY).toISOString() })] },
@@ -221,9 +245,9 @@ describe('a Família', () => {
     expect(within(attention).getByRole('link', { name: 'Renovar prazo' })).toBeTruthy()
   })
 
-  test('o cartão da criança avisa o vencimento e mostra a semana', async () => {
+  test('o cartão do filho avisa o vencimento e mostra a semana', async () => {
     install(() => [], [stats])
-    renderFamily({
+    renderFamilyPage({
       access: { [profileId]: [grant({ expiresAt: new Date(Date.now() + 3 * DAY).toISOString() })] },
     })
     const card = screen.getByRole('heading', { name: 'André' }).closest('li') as HTMLElement
@@ -235,59 +259,52 @@ describe('a Família', () => {
       within(card)
         .getByRole('link', { name: /Acesso nos aparelhos/ })
         .getAttribute('href'),
-    ).toBe(`/pais/crianca/${profileId}`)
+    ).toBe(`/pais/crianca/${profileId}?aba=aparelhos`)
     expect(
       within(card)
-        .getByRole('link', { name: /Ver progresso/ })
+        .getByRole('link', { name: /Ver a página de André/ })
         .getAttribute('href'),
-    ).toBe(`/pais/crianca/${profileId}?aba=progresso`)
+    ).toBe(`/pais/crianca/${profileId}`)
   })
 
   test('o cartão diz Vencido quando nenhum acesso segue valendo', () => {
     install()
-    renderFamily({
+    renderFamilyPage({
       access: { [profileId]: [grant({ expiresAt: new Date(Date.now() - DAY).toISOString() })] },
     })
     expect(screen.getByText('Vencido')).toBeTruthy()
   })
 
-  test('a aula do link que trouxe o responsável segue até a página da criança', () => {
+  test('a aula do link que trouxe o responsável segue até a página do filho', () => {
     install()
-    render(
-      <ParentsClient
-        accountId="parent"
-        parentName="Helena"
-        initialProfiles={[andre]}
-        avatarPhotoByProfile={{}}
-        profileAllowance={{ kind: 'limited', maxProfiles: 2 }}
-        initialAccess={{ [profileId]: [grant()] }}
-        studentDestination="/cursos/cade/aulas/1"
-      />,
-    )
+    renderFamilyPage({
+      access: { [profileId]: [grant()] },
+      studentDestination: '/cursos/cade/aulas/1',
+    })
     expect(screen.getByRole('link', { name: /Acesso nos aparelhos/ }).getAttribute('href')).toBe(
-      `/pais/crianca/${profileId}?aluno=%2Fcursos%2Fcade%2Faulas%2F1`,
+      `/pais/crianca/${profileId}?aba=aparelhos&aluno=%2Fcursos%2Fcade%2Faulas%2F1`,
     )
   })
 
   test('o limite de perfis explica o plano e oferece o caminho', () => {
     install()
-    const free = renderFamily({ allowance: { kind: 'limited', maxProfiles: 2 } })
-    expect(screen.getByRole('link', { name: /Adicionar criança/ }).getAttribute('href')).toBe(
+    const free = renderFamilyPage({ allowance: { kind: 'limited', maxProfiles: 2 } })
+    expect(screen.getByRole('link', { name: /Adicionar filho/ }).getAttribute('href')).toBe(
       '/pais/nova-crianca',
     )
-    expect(screen.getByText('1 de 2 perfis do seu plano')).toBeTruthy()
+    expect(screen.getByText('Seu plano tem 2 perfis. Você usa 1.')).toBeTruthy()
     free.unmount()
-    const unlimited = renderFamily({ allowance: { kind: 'unlimited' } })
+    const unlimited = renderFamilyPage({ allowance: { kind: 'unlimited' } })
     expect(screen.getByText('Perfis ilimitados neste acesso.')).toBeTruthy()
     unlimited.unmount()
-    const atLimit = renderFamily({ allowance: { kind: 'limited', maxProfiles: 1 } })
-    expect(screen.queryByRole('link', { name: /Adicionar criança/ })).toBeNull()
+    const atLimit = renderFamilyPage({ allowance: { kind: 'limited', maxProfiles: 1 } })
+    expect(screen.queryByRole('link', { name: /Adicionar filho/ })).toBeNull()
     expect(screen.getByRole('link', { name: 'amplie o seu acesso' }).getAttribute('href')).toBe(
       comunidadeContinuarUrl('pais-limite-perfis'),
     )
     atLimit.unmount()
     // No teto da Comunidade (o assinante), assinar de novo não abre vaga: o caminho é o Atendimento.
-    const comunidade = renderFamily({
+    const comunidade = renderFamilyPage({
       profiles: [andre, { ...andre, id: 'outra-crianca', name: 'Bia' }],
       allowance: { kind: 'limited', maxProfiles: 2 },
     })
@@ -296,13 +313,13 @@ describe('a Família', () => {
       screen.getByRole('link', { name: 'fale com a gente no Atendimento' }).getAttribute('href'),
     ).toBe('/pais/ajuda/atendimento')
     comunidade.unmount()
-    renderFamily({ allowance: { kind: 'unavailable' } })
+    renderFamilyPage({ allowance: { kind: 'unavailable' } })
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeTruthy()
   })
 })
 
-describe('a página da criança', () => {
-  function renderChild(familyReady: boolean | null, initialTab: 'acesso' | 'progresso' = 'acesso') {
+describe('a página do filho', () => {
+  function renderChild(familyReady: boolean | null, initialTab: ChildTab = 'aparelhos') {
     return render(
       <ChildClient
         accountId="parent"
@@ -337,34 +354,45 @@ describe('a página da criança', () => {
     expect(events.map((event) => event.action)).not.toContain('access_prepared')
   })
 
-  test('as abas trocam entre o acesso e o progresso, e o endereço acompanha', async () => {
+  test('as abas trocam entre aparelhos e progresso, e o endereço acompanha', async () => {
     install(() => [], [stats])
     renderChild(true)
-    expect(
-      screen.getByRole('tab', { name: /Acesso nos aparelhos/ }).getAttribute('aria-selected'),
-    ).toBe('true')
+    expect(screen.getByRole('tab', { name: /Aparelhos/ }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
     fireEvent.click(screen.getByRole('tab', { name: /Progresso/ }))
     expect(await screen.findByText('Esta semana')).toBeTruthy()
-    expect(window.location.search).toBe('?aba=progresso')
-    fireEvent.click(screen.getByRole('tab', { name: /Acesso nos aparelhos/ }))
     expect(window.location.search).toBe('')
+    fireEvent.click(screen.getByRole('tab', { name: /Aparelhos/ }))
+    expect(window.location.search).toBe('?aba=aparelhos')
   })
 
-  test('as setas trocam de aba e os dois painéis ficam montados', async () => {
+  test('as quatro abas: Progresso, Aparelhos, No jogo e Perfil', () => {
+    install()
+    renderChild(true, 'progresso')
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'Progresso',
+      'Aparelhos',
+      'No jogo',
+      'Perfil',
+    ])
+  })
+
+  test('as setas trocam de aba e os painéis ficam montados', async () => {
     install(() => [grant()], [stats])
     renderChild(true)
-    const acesso = screen.getByRole('tab', { name: /Acesso nos aparelhos/ })
-    expect(acesso.getAttribute('tabindex')).toBe('0')
-    fireEvent.keyDown(acesso, { key: 'ArrowRight' })
+    const aparelhos = screen.getByRole('tab', { name: /Aparelhos/ })
+    expect(aparelhos.getAttribute('tabindex')).toBe('0')
+    fireEvent.keyDown(aparelhos, { key: 'ArrowLeft' })
     const progresso = screen.getByRole('tab', { name: /Progresso/ })
     expect(progresso.getAttribute('aria-selected')).toBe('true')
     expect(document.activeElement).toBe(progresso)
     // O painel de aparelhos segue montado (escondido): trocar de aba não apaga o código gerado.
-    const painelAcesso = document.getElementById('painel-acesso') as HTMLElement
-    expect(painelAcesso.hidden).toBe(true)
-    expect(await within(painelAcesso).findByText('Computador de casa')).toBeTruthy()
-    fireEvent.keyDown(progresso, { key: 'Home' })
-    expect(acesso.getAttribute('aria-selected')).toBe('true')
+    const painelAparelhos = document.getElementById('painel-aparelhos') as HTMLElement
+    expect(painelAparelhos.hidden).toBe(true)
+    expect(await within(painelAparelhos).findByText('Computador de casa')).toBeTruthy()
+    fireEvent.keyDown(progresso, { key: 'End' })
+    expect(screen.getByRole('tab', { name: /Perfil/ }).getAttribute('aria-selected')).toBe('true')
   })
 
   test('com a aula do link, a volta à Família a leva junto', () => {
@@ -375,28 +403,28 @@ describe('a página da criança', () => {
         parentName="Helena"
         profile={andre}
         photoUrl={null}
-        initialTab="acesso"
+        initialTab="aparelhos"
         familyReady={true}
         studentDestination="/cursos/cade/aulas/1"
       />,
     )
     const main = screen.getByRole('main')
     expect(within(main).getByRole('link', { name: 'Família' }).getAttribute('href')).toBe(
-      '/pais?aluno=%2Fcursos%2Fcade%2Faulas%2F1',
+      '/pais/familia?aluno=%2Fcursos%2Fcade%2Faulas%2F1',
     )
   })
 
-  test('perfil antigo sem data de nascimento: o aviso pede a data obrigatória e leva ao formulário', () => {
+  test('perfil antigo sem data de nascimento: o aviso pede a data e abre a aba Perfil', () => {
     install()
     renderChild(true)
     expect(
       screen.getByText(
-        'Falta a data de nascimento de André. Ela é obrigatória: mostra a idade para a equipe e faz a plataforma avisar você quando André completar 18 anos.',
+        'Falta a data de nascimento de André. Com ela, a nossa equipe sabe a idade e avisamos você quando André fizer 18 anos.',
       ),
     ).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Informar a data' }).getAttribute('href')).toBe(
-      `/pais/crianca/${profileId}/editar`,
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Informar a data' }))
+    expect(screen.getByRole('tab', { name: /Perfil/ }).getAttribute('aria-selected')).toBe('true')
+    expect(window.location.search).toBe('?aba=perfil')
     expect(screen.queryByRole('region', { name: 'Aviso dos 18 anos' })).toBeNull()
   })
 
@@ -421,7 +449,7 @@ describe('a página da criança', () => {
         parentName="Helena"
         profile={{ ...andre, birthDate: `${year}-01-01` }}
         photoUrl={null}
-        initialTab="acesso"
+        initialTab="aparelhos"
         familyReady={true}
       />,
     )
@@ -476,15 +504,15 @@ describe('a página da criança', () => {
     )
   })
 
-  test('volta à Família e edita o perfil por endereços próprios', () => {
+  test('volta à Família, e editar o perfil abre a aba Perfil', () => {
     install()
     renderChild(true)
     const main = screen.getByRole('main')
-    expect(within(main).getByRole('link', { name: 'Família' }).getAttribute('href')).toBe('/pais')
-    expect(
-      within(main)
-        .getByRole('link', { name: /Editar perfil/ })
-        .getAttribute('href'),
-    ).toBe(`/pais/crianca/${profileId}/editar`)
+    expect(within(main).getByRole('link', { name: 'Família' }).getAttribute('href')).toBe(
+      '/pais/familia',
+    )
+    fireEvent.click(within(main).getByRole('button', { name: /Editar perfil/ }))
+    expect(screen.getByRole('tab', { name: /Perfil/ }).getAttribute('aria-selected')).toBe('true')
+    expect(window.location.search).toBe('?aba=perfil')
   })
 })

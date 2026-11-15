@@ -1,3 +1,4 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
 import { UnitNotCompletedError } from '../../domain/gamification/gamification.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
@@ -54,6 +55,8 @@ export class ClaimUnitChestService {
     if (lessonIds.length === 0 || !lessonIds.every((id) => completed.has(id)))
       throw new UnitNotCompletedError()
 
+    // Curso para pais (14/11/2026): o responsável não abre baú nem ganha XP.
+    if (isParentsCourse(course)) return null
     return this.gamification.awardUnitChest({
       userId,
       accountId: accountId ?? userId,

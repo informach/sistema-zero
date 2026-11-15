@@ -1,0 +1,132 @@
+{
+  "paginas": [
+    {
+      "id": "guia-aula",
+      "parte": 1,
+      "titulo": "A tela da aula",
+      "texto": "Toda parte da aula tem o mesmo jeito: o vídeo e o recado do Zappy de um lado, a atividade do outro. Comece pelo vídeo, leia ou ouça o recado e depois faça a atividade.",
+      "telas": ["aula"],
+      "nota": "A atividade muda de uma parte para outra: jogar, ler, experimentar ou criar no Estúdio. Nas próximas páginas você conhece cada uma."
+    },
+    {
+      "id": "guia-modo-focado",
+      "parte": 1,
+      "titulo": "Mais espaço para jogar",
+      "texto": "Clique em <b>Ampliar jogo</b> e só o jogo fica na tela, bem grande. É o modo focado: nada em volta tira a sua atenção.",
+      "telas": ["modo-focado"],
+      "nota": "As outras atividades também têm modo focado: <b>Ampliar experiência</b>, na experiência, e <b>Expandir</b>, no Estúdio. Para sair, clique em <b>Voltar à aula</b> ou <b>Reduzir</b>."
+    },
+    {
+      "id": "guia-passo-a-passo",
+      "parte": 2,
+      "titulo": "Seu passo a passo",
+      "texto": "Este Passo a passo do projeto, que você está lendo agora, também fica dentro da aula. Leia ali mesmo, quando precisar, ou baixe para guardar.",
+      "telas": ["passo-a-passo"]
+    },
+    {
+      "id": "guia-experiencia",
+      "parte": 3,
+      "titulo": "Como usar a experiência",
+      "texto": "Na experiência, você testa uma ideia antes de montar no seu jogo. Cada experiência tem os seus botões, mas estes aparecem em todas.",
+      "telas": ["experiencia"],
+      "nota": "Pode errar e repetir quantas vezes quiser: na experiência, testar é o jeito de descobrir."
+    },
+    {
+      "id": "guia-estudio",
+      "parte": 4,
+      "titulo": "Conheça o Estúdio",
+      "texto": "O Estúdio é onde você programa as regras do seu jogo com blocos. Cada bloco é uma ordem para o jogo. Dentro da aula, ele mostra uma aba de cada vez.",
+      "telas": ["estudio"]
+    },
+    {
+      "id": "guia-estudio-expandido",
+      "parte": 4,
+      "titulo": "O Estúdio grande",
+      "texto": "Clique em <b>Expandir</b> e o Estúdio ocupa a tela toda. Numa tela grande, como a do computador, os blocos ficam de um lado e o jogo do outro: você muda um bloco e já vê o jogo mudar.",
+      "telas": ["estudio-expandido"],
+      "nota": "Em telas pequenas, como a do celular, o Estúdio continua em abas, mesmo expandido: toque em <b>Blocos</b> para programar e em <b>Jogo</b> para jogar."
+    }
+  ],
+  "telas": {
+    "aula": {
+      "formato": "larga",
+      "legenda": "Assim fica a tela na Parte 1 da Aula 1.",
+      "marcas": {
+        "progresso": "A barra mostra em que parte da aula você está.",
+        "video": "<b>Assista</b>: o vídeo da parte. Comece sempre por ele.",
+        "zappy": "<b>O Zappy fala</b>: o recado diz o que fazer. Clique em <b>Ouvir</b> para escutar.",
+        "atividade": "<b>Jogue</b>: a atividade desta parte. Aqui é o jogo pronto.",
+        "ampliar-jogo": "<b>Ampliar jogo</b>: deixa o jogo grande, no modo focado.",
+        "jogar-de-novo": "<b>Jogar de novo</b>: começa o jogo do início.",
+        "menu": "Abre o menu da plataforma: Início, Cursos, Criar e mais.",
+        "lista-de-aulas": "Abre a lista das aulas do curso.",
+        "ajuda": "<b>Preciso de ajuda</b>: conte para a equipe onde você parou.",
+        "proxima-parte": "<b>Próxima parte</b>: quando terminar, siga por aqui. <b>Anterior</b>, à esquerda, volta uma parte."
+      }
+    },
+    "modo-focado": {
+      "formato": "larga",
+      "legenda": "O jogo pronto no modo focado.",
+      "marcas": {
+        "voltar-a-aula": "<b>Voltar à aula</b>: sai do modo focado.",
+        "video-no-foco": "<b>Vídeo</b>: abre o vídeo da parte numa janelinha, sem sair do jogo.",
+        "jogar-de-novo": "<b>Jogar de novo</b>: começa o jogo do início."
+      }
+    },
+    "passo-a-passo": {
+      "formato": "larga",
+      "legenda": "A Parte 2 da Aula 1, com o passo a passo.",
+      "marcas": {
+        "leia": "<b>Leia</b>: o seu Passo a passo do projeto, aberto na aula.",
+        "modos-do-livro": "<b>Livro 3D</b> mostra um livro que vira as páginas. <b>Ler por páginas</b> mostra uma página de cada vez.",
+        "paginas": "As setas viram as páginas.",
+        "livro-tela-cheia": "Abre o livro na tela toda.",
+        "baixar": "<b>Baixar</b>: guarda o passo a passo no seu aparelho, para ler quando quiser."
+      }
+    },
+    "experiencia": {
+      "formato": "lado",
+      "largura": 78,
+      "legenda": "A experiência da Parte 3 da Aula 1.",
+      "marcas": {
+        "ampliar-experiencia": "<b>Ampliar experiência</b>: deixa a experiência grande, no modo focado.",
+        "balao": "O Zappy diz o que testar. O alto-falante do balão lê em voz alta.",
+        "sua-vez": "<b>Sua vez</b>: chegou a hora de testar. As estrelas acendem a cada descoberta.",
+        "som": "Liga e desliga o som e a voz do Zappy.",
+        "recomecar-experiencia": "Começa a experiência de novo, do início.",
+        "descobertas": "<b>Suas descobertas</b>: o que você vai descobrir testando.",
+        "testes": "<b>Seus testes</b>: cada teste que você fizer aparece aqui."
+      }
+    },
+    "estudio": {
+      "formato": "lado",
+      "largura": 92,
+      "legenda": "O Estúdio na Parte 4 da Aula 1.",
+      "marcas": {
+        "abas": "<b>Blocos</b>, <b>Jogo</b> e <b>Mensagens</b>: uma aba de cada vez. Em <b>Blocos</b> você programa; em <b>Jogo</b> você joga o que programou.",
+        "paleta": "A paleta de comandos: cada categoria guarda blocos. Abra uma e arraste o bloco que precisa.",
+        "area-do-projeto": "A área do projeto: os blocos do seu jogo ficam aqui, nas áreas <b>Ao iniciar</b>, <b>Quando acontecer</b> e <b>Enquanto estiver rodando</b>.",
+        "salvo": "<b>Salvo</b>: o Estúdio guarda o projeto sozinho enquanto você monta.",
+        "recomecar": "<b>Recomeçar</b>: abre de novo o projeto do começo. O Estúdio pergunta antes de trocar.",
+        "expandir": "<b>Expandir</b>: abre o Estúdio grande, no modo focado.",
+        "enviar": "<b>Enviar meu projeto</b>: manda o seu jogo para a equipe ver.",
+        "rodar": "<b>Rodar de novo</b>: começa o jogo outra vez, com os blocos de agora.",
+        "objetivos": "<b>Objetivos do projeto</b>: o que o jogo precisa fazer nesta parte.",
+        "verificar": "<b>Verificar projeto</b>: confere se o jogo já cumpre os objetivos."
+      }
+    },
+    "estudio-expandido": {
+      "formato": "larga",
+      "legenda": "O Estúdio expandido, numa tela de computador.",
+      "marcas": {
+        "lado-dos-blocos": "Os blocos ficam deste lado, com a paleta de comandos.",
+        "lado-do-jogo": "O jogo fica deste lado, rodando com os blocos de agora.",
+        "jogo-maior": "<b>Jogo maior</b>: aumenta o lado do jogo. Para voltar, clique em <b>Jogo menor</b>.",
+        "rodar-parar": "<b>Rodar de novo</b> começa o jogo outra vez. <b>Parar</b> para o jogo.",
+        "desfazer": "<b>Desfazer</b> volta o último passo. <b>Refazer</b> faz de novo.",
+        "video-no-estudio": "<b>Vídeo</b>: abre o vídeo da parte numa janelinha, sem sair do Estúdio.",
+        "reduzir": "<b>Reduzir</b>: volta para a aula."
+      }
+    }
+  }
+}

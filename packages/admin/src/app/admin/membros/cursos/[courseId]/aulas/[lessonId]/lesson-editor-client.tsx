@@ -298,6 +298,8 @@ function LessonEditorSession({
     audience: 'adult' | 'kids'
     /** Curso ao vivo: transmissão no lugar do vídeo, anotações da professora por parte. */
     modality: CourseModality
+    /** Curso para pais: o "Ver aula publicada" abre na área dos pais. */
+    learner?: 'child' | 'parents'
     status: string
     lessonPublished: boolean
   } | null>(null)
@@ -466,6 +468,7 @@ function LessonEditorSession({
         slug: tree.slug,
         audience: (tree.audience ?? 'adult') as 'adult' | 'kids',
         modality: courseModalityOf(tree.modality),
+        learner: tree.learner,
         status: tree.status,
         lessonPublished: treeLesson?.isPublished ?? false,
       })
@@ -484,6 +487,7 @@ function LessonEditorSession({
           slug: tree.slug,
           audience: tree.audience === 'kids' ? 'kids' : 'adult',
           modality: courseModalityOf(tree.modality),
+          learner: tree.learner,
           status: tree.status,
           lessonPublished: treeLesson?.isPublished ?? false,
         })

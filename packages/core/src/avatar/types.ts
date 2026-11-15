@@ -78,6 +78,23 @@ export interface AvatarPartEntry {
   review?: boolean
   /** Saiu da arte depois de migrada: quem tem continua com ela, mas ela some da loja. */
   retired?: boolean
+  /**
+   * Cópia de uma peça nossa para dentro de uma fantasia (`trocas_fantasia` da arte): o mesmo arquivo
+   * da peça `copyOf`, mas como parte do conjunto (`set`). A peça original continua vendida sozinha;
+   * a cópia só existe vestida com a fantasia. Quem escreve é a migração, não a arte.
+   */
+  copyOf?: string
+  /**
+   * A variante desta peça para quando a criança está montada (`variante_montado` da arte: a saia
+   * com a barra assentada na sela). O jogo troca a peça pela variante enquanto ela monta.
+   */
+  mountedVariant?: string
+  /**
+   * Esta peça é a variante de outra (`variante_de` da arte), para usar numa situação (`usar_em`,
+   * como `montado`). Não se vende nem sai no sorteio: aparece só no lugar da original.
+   */
+  variantOf?: string
+  variantFor?: string
   origin: AvatarPartOrigin
 }
 
@@ -206,6 +223,11 @@ export interface AvatarEquipment {
   use?: string
   /** A luz do objeto: o osso que acende, as escalas de acesa e apagada, a cor e o alcance (m). */
   light?: { bone: string; on: number; off: number; color: string; range: number }
+  /**
+   * Os clipes de camada que fecham os dedos no cabo (a `pegada` da arte: a mão que segura e, na
+   * barra do planador, a segunda mão), em `skeleton.game.layers`.
+   */
+  fingers?: string[]
   origin: AvatarPartOrigin
 }
 

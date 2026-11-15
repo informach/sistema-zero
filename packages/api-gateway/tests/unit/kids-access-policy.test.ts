@@ -110,6 +110,22 @@ describe('áreas separadas no servidor', () => {
     expect(kidsMayAccess(parent, '/members/parents/children-stats', 'GET', 'pai')).toBe(true)
     expect(kidsMayAccess(parent, '/payments/my', 'GET', 'pai')).toBe(true)
   })
+  test('responsável faz os cursos para pais pelos endereços da aula', () => {
+    for (const [method, path] of [
+      ['GET', '/members/courses'],
+      ['GET', '/members/catalog'],
+      ['GET', '/members/courses/ajudar-sem-fazer-por-eles'],
+      ['GET', '/members/courses/ajudar-sem-fazer-por-eles/lessons/l1'],
+      ['POST', '/members/lessons/l1/complete'],
+      ['POST', '/members/lessons/l1/section-help'],
+      ['PUT', '/members/courses/ajudar-sem-fazer-por-eles/rating'],
+      ['GET', '/members/teacher-threads'],
+      ['POST', '/members/teacher-threads/t1/messages'],
+    ] as const)
+      expect(kidsMayAccess(parent, path, method, 'pai')).toBe(true)
+    for (const path of ['/members/room', '/members/gamification/me', '/members/coursesx'])
+      expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(false)
+  })
 })
 
 describe('Arquipélago Vagalume', () => {
