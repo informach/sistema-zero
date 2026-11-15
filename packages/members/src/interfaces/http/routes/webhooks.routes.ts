@@ -160,12 +160,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     .get(
       '/gift-course/:slug',
       // `audience` ausente = `kids` (contrato anterior a 20/10/2026, chamadas antigas iguais).
-      async ({ params, query }) => ({
-        available: await deps.grantManual.isPublishedGiftCourse(
-          params.slug,
-          query.audience ?? 'kids',
-        ),
-      }),
+      // Desde 15/11/2026 traz também `title` e `learner` do curso publicado (nulos se não).
+      async ({ params, query }) =>
+        deps.grantManual.giftCourse(params.slug, query.audience ?? 'kids'),
       {
         params: t.Object({ slug: t.String({ minLength: 1, maxLength: 200 }) }),
         query: GiftCourseQuery,

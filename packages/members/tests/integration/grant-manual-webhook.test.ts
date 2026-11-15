@@ -216,15 +216,31 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     seedSampleCourse(courses, 'curso-rascunho', 'draft', 'kids')
     seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
 
+    // O referrals nomeia o curso no e-mail e decide o link do curso para pais.
     expect(await readJson(await getGiftAvailability(app, 'cade-todo-mundo'))).toEqual({
       available: true,
+      title: 'Curso Demo',
+      learner: 'child',
     })
     for (const slug of ['curso-rascunho', 'curso-adulto', 'curso-ausente']) {
       const res = await getGiftAvailability(app, slug)
       expect(res.status).toBe(200)
-      expect(await readJson(res)).toEqual({ available: false })
+      expect(await readJson(res)).toEqual({ available: false, title: null, learner: null })
     }
     expect((await getGiftAvailability(app, 'cade-todo-mundo', false)).status).toBe(401)
+  })
+
+  test('curso para pais publicado: o presente informa learner parents', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'vilao-em-aliado', 'published', 'kids')
+    const course = courses.courses.find((c) => c.slug === 'vilao-em-aliado')!
+    course.title = 'Transformando o vilão em aliado'
+    course.learner = 'parents'
+    expect(await readJson(await getGiftAvailability(app, 'vilao-em-aliado'))).toEqual({
+      available: true,
+      title: 'Transformando o vilão em aliado',
+      learner: 'parents',
+    })
   })
 
   test('concede somente o curso kids publicado sem oferta e com procedência auditável', async () => {
