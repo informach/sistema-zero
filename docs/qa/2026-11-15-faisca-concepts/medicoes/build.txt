@@ -1,0 +1,2 @@
+$ bun scripts/build.ts
+Arquipélago 20261116030845: 188 arquivos, 49.14 MB

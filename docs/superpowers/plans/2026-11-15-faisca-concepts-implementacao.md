@@ -25,9 +25,9 @@
 Arquivos: `scripts/exportar-arte-faisca.ts`, `scripts/pecas-morada-faisca.ts`, `src/mundo/faisca/arte.generated.ts` do pacote.
 
 - [x] Conferir `staging` local e remota em `16c3f719b` e mudanças externas.
-- [ ] Exportar a seleção do acervo fixado em `67b72d4a1a90c0e95c6217341dccfc723ebe8c49`; manter procedência individual da Morada.
-- [ ] Acrescentar pontes arqueadas, vegetação baixa, copas, rochas, componentes de água e carpintaria necessários.
-- [ ] Preparar acabamentos restritos às peças/partes identificadas, sem modificar o original ou a paleta de outros objetos.
+- [x] Exportar a seleção do acervo fixado em `67b72d4a1a90c0e95c6217341dccfc723ebe8c49`; manter procedência individual da Morada.
+- [x] Acrescentar pontes arqueadas, vegetação baixa, copas, rochas, componentes de água e carpintaria necessários.
+- [x] Preparar acabamentos restritos às peças/partes identificadas, sem modificar o original ou a paleta de outros objetos.
 
 Comando: `bun scripts/exportar-arte-faisca.ts` em `packages/arquipelago`.
 
@@ -35,11 +35,11 @@ Comando: `bun scripts/exportar-arte-faisca.ts` em `packages/arquipelago`.
 
 Arquivos: `vila-catalogo-faisca.ts`, `composicao-faisca.ts`, `passeios-da-faisca.ts`, `solo-da-praca.ts`, `faisca.ts`, `pisos-de-catalogo.tsx`.
 
-- [ ] Montar fachadas com os módulos reais de construção, em frente coerente à praça; gables, molduras, madeira e portas com função legível.
-- [ ] Fazer praça contínua com os mesmos módulos de pedra e recorte das juntas; retirar o piso laranja da praça.
-- [ ] Centralizar o encontro do poço sem bloquear a circulação; manter os acessos cotidianos próximos.
-- [ ] Ligar caminhos a fachadas, oficina, horta, Costa e Farol; atualizar rotas/placas nos mesmos dados.
-- [ ] Reservar implantação rígida pelo apoio de toda a construção, sem fundações flutuantes.
+- [x] Montar fachadas com os módulos reais de construção, em frente coerente à praça; gables, molduras, madeira e portas com função legível.
+- [x] Fazer praça contínua com os mesmos módulos de pedra e recorte das juntas; retirar o piso laranja da praça.
+- [x] Centralizar o encontro do poço sem bloquear a circulação; manter os acessos cotidianos próximos.
+- [x] Ligar caminhos a fachadas, oficina, horta, Costa e Farol; atualizar rotas/placas nos mesmos dados.
+- [x] Reservar implantação rígida pelo apoio de toda a construção, sem fundações flutuantes.
 
 Interfaces preservadas: `casasDaVila(): PecaNaFaisca[]`, `passeiosDaFaisca(piso): ModuloDePasseio[]`, `assentamentoDaPeca(p)`.
 
@@ -47,20 +47,20 @@ Interfaces preservadas: `casasDaVila(): PecaNaFaisca[]`, `passeiosDaFaisca(piso)
 
 Arquivos: `composicao-faisca.ts`, `lago-da-faisca.ts`, `lago.tsx`, `faisca.ts`, `setores-do-arquipelago.ts`, componentes ambientais em `mundo/faisca/`.
 
-- [ ] Integrar a ponte selecionada ao lago e à chegada da horta; usar piso e apoios reais para assentar o modelo.
-- [ ] Manter contorno visual, furo no terreno, bacia, nível de nado e colisores correspondentes.
-- [ ] Compor margem rochosa, queda/riacho, jardins e vegetação em camadas; não sobrepor águas nem criar barragens invisíveis.
-- [ ] Enquadrar a vila e a colina com copas; proteger vistas, circulação e lote da Morada.
-- [ ] Montar apoio rochoso do Farol e chegada legível; manter altura/modelo.
-- [ ] Usar iluminação e materiais coerentes de dia/noite; sem luz artificial nas letras das placas.
+- [x] Integrar a ponte selecionada ao lago e à chegada da horta; usar piso e apoios reais para assentar o modelo.
+- [x] Manter contorno visual, furo no terreno, bacia, nível de nado e colisores correspondentes.
+- [x] Compor margem rochosa, queda/riacho, jardins e vegetação em camadas; não sobrepor águas nem criar barragens invisíveis.
+- [x] Enquadrar a vila e a colina com copas; proteger vistas, circulação e lote da Morada.
+- [x] Montar apoio rochoso do Farol e chegada legível; manter altura/modelo.
+- [x] Usar iluminação e materiais coerentes de dia/noite; sem luz artificial nas letras das placas.
 
 ## 4. Verificação e refinamento visual
 
-- [ ] Capturar as mesmas vistas do antes e do depois, mais aproximações pela câmera normal.
-- [ ] Percorrer praça, horta, ponte nos dois sentidos, margem/nado e subida com o controlador real.
-- [ ] Corrigir causas de flutuação, sobreposição, z-fighting e bloqueios encontrados.
-- [ ] Verificar toque, retomada local, entrada/saída dos setores e três ciclos de recursos.
-- [ ] Gravar vídeos curtos dos percursos e registrar métricas do renderer.
+- [x] Capturar as mesmas vistas do antes e do depois, mais aproximações pela câmera normal.
+- [x] Percorrer praça, horta, ponte nos dois sentidos, margem/nado e subida com o controlador real.
+- [x] Corrigir causas de flutuação, sobreposição, z-fighting e bloqueios encontrados.
+- [x] Verificar toque, retomada local, entrada/saída dos setores e três ciclos de recursos.
+- [x] Gravar vídeos curtos dos percursos e registrar métricas do renderer.
 
 Verificações do pacote:
 
@@ -75,7 +75,7 @@ Os testes que possuem coordenadas da composição anterior deverão acompanhar a
 
 ## 5. Entrega
 
-- [ ] Registrar relatório com implementação, correções, limites e evidências, sem declarar aprovação artística humana.
-- [ ] Versionar código, plano, relatório, capturas e vídeos; manter binários licenciados em `output/`.
+- [x] Registrar relatório com implementação, correções, limites e evidências, sem declarar aprovação artística humana.
+- [x] Versionar código, plano, relatório, capturas e vídeos; manter binários licenciados em `output/`.
 - [ ] Commitar em `staging`, fazer push e conferir SHA remoto.
-- [ ] Manter `http://127.0.0.1:4530/macro` disponível para a avaliação do conjunto pronto.
+- [x] Manter `http://127.0.0.1:4530/macro` disponível para a avaliação do conjunto pronto.

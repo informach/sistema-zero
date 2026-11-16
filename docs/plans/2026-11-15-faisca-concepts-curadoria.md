@@ -2,6 +2,8 @@
 
 **Estado:** estudo de composição e seleção de candidatas. Não é uma nova implantação no jogo nem um aceite artístico.
 
+**Continuidade em 16/11/2026:** a usuária autorizou montar o conjunto inteiro antes de avaliá-lo. A composição foi implementada no `/macro`; [entrega, capturas, vídeos e verificações](../qa/2026-11-15-faisca-concepts.md). As descrições abaixo preservam o estudo original, anterior à execução. O aceite artístico humano permanece pendente.
+
 **Base conferida:** `staging` e `origin/staging` em `441203f9fcff134ed00c1271a4287fc1e1b1681f`, em 15/11/2026. A alteração preexistente no roteiro da aula dos pais foi preservada e não faz parte deste trabalho.
 
 **Biblioteca consultada:** `informach/artes-3d`, commit `67b72d4a1a90c0e95c6217341dccfc723ebe8c49`. O cenário anterior continua usando os pins registrados no [relatório do Gate 2.1](../qa/2026-11-15-faisca-gate21.md): `7816a7aca0ba6f7d93a90fe4c15f40638b01525f` e, para as peças da Morada, `ec8c27c6013ab0ff6f333e0927c68583df477ec0`. Consultar uma versão mais recente do acervo não atualiza o manifesto do jogo automaticamente.

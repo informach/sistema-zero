@@ -2,6 +2,7 @@
 ## Projeto artístico de produção — Praça dos Criadores → Horta da Íris → Lago dos Campos
 
 **Situação:** proposta de direção de arte e level design, **não implementada nem aprovada artisticamente**.  
+**Continuidade:** este é o projeto original. Após o pedido para montar tudo antes da avaliação e o recebimento das imagens, o recorte foi recomposto; ver [entrega de 16/11/2026](../qa/2026-11-15-faisca-concepts.md). A posição do lago e a ponte evoluíram conforme a curadoria posterior; âncoras do coração habitado e contratos protegidos foram preservados. O aceite artístico humano ainda não foi declarado.
 **Objetivo:** produzir uma mudança visual inequívoca em um trecho jogável existente, sem refazer sistemas que já passaram por QA.  
 **Fontes verificadas:** `informach/sistema-zero`, `staging` em `a300c5f2e23bb888417baf29f3581e530f323aef`; `informach/artes-3d`, catálogos e miniaturas disponíveis em `main` em 15/11/2026. O `main` da biblioteca avançou depois das primeiras exportações: **manter o pin e verificar SHA-256** dos GLBs usados na implementação.  
 **Documento anterior:** [`docs/qa/2026-11-15-faisca-m3-gate2.md`](https://github.com/informach/sistema-zero/blob/staging/docs/qa/2026-11-15-faisca-m3-gate2.md).

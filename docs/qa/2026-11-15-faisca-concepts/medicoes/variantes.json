@@ -1,0 +1,50 @@
+{
+  "evidencias": [
+    {
+      "nome": "caminho-t1-reino",
+      "query": "vista=trilha-catalogo-baixa&refino=reino",
+      "viewport": [
+        1280,
+        800
+      ],
+      "noite": false
+    },
+    {
+      "nome": "caminho-t2-faroeste",
+      "query": "vista=trilha-catalogo-baixa&refino=faroeste",
+      "viewport": [
+        1280,
+        800
+      ],
+      "noite": false
+    },
+    {
+      "nome": "caminho-t3-templo",
+      "query": "vista=trilha-catalogo-baixa&refino=templo",
+      "viewport": [
+        1280,
+        800
+      ],
+      "noite": false
+    },
+    {
+      "nome": "lago-l1-aventura",
+      "query": "vista=concept-lago&lago=l1&agua=aventura",
+      "viewport": [
+        1280,
+        800
+      ],
+      "noite": false
+    },
+    {
+      "nome": "lago-l2-reino",
+      "query": "vista=concept-lago&lago=l2",
+      "viewport": [
+        1280,
+        800
+      ],
+      "noite": false
+    }
+  ],
+  "erros": []
+}

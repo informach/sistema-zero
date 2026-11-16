@@ -12,6 +12,8 @@ A primeira visita noturna aos Campos bloqueava a thread principal por cerca de 2
 
 São observações destas duas execuções, sujeitas a cache do driver, instrumentação e sistema operacional; não demonstram ausência universal de travadas. O objetivo foi retirar o custo de compilação da primeira exploração. Os resumos mantêm todos os intervalos acima de 50 ms e tarefas longas, inclusive os que ocorrem durante o carregamento.
 
+Evidências: [perfil frio anterior](./medicoes/cpu-antes-resumo.json), [perfil frio posterior](./medicoes/cpu-depois-resumo.json), [renderer anterior](./medicoes/perfil-antes.json), [renderer posterior](./medicoes/perfil.json) e [ciclos de recursos](./medicoes/recursos.json).
+
 O ensaio posterior de renderer, sem profiler de CPU, registrou 58–60 FPS nos três pontos de dia e noite. A preparação mantém antecipadamente texturas que antes só seriam enviadas à GPU ao entrar em vista: no ciclo comparável da Vila, 38 texturas residentes versus 26 antes da preparação. Em outros pontos a contagem chega a 44. Isso é contagem de recursos, não medição de VRAM em bytes. Os três retornos à Vila ficaram em 164 geometrias / 38 texturas; fora do piloto, 65–68 / 14. Não houve crescimento contínuo nesses ciclos.
 
 ## Prova de preservação

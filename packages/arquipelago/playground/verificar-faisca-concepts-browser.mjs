@@ -7,6 +7,7 @@ import { chromium } from 'playwright-core'
 const base = process.env.ARQUIPELAGO_QA_URL ?? 'http://127.0.0.1:4530',
   saida = resolve(import.meta.dirname, '../../../output/faisca-concepts/qa'),
   grupo = process.argv.find((a) => a.startsWith('--parte='))?.split('=')[1] ?? 'movimento',
+  vistaPedida = process.argv.find((a) => a.startsWith('--vista='))?.split('=')[1],
   erros = [],
   evidencias = []
 mkdirSync(resolve(saida, 'videos/brutos'), { recursive: true })
@@ -192,10 +193,11 @@ try {
       'concept-horta',
       'escadas-farol',
       'ponte-proxima',
+      'ponte-chegada-norte',
       'placa-costa',
       'placa-horta',
       'placa-patio',
-    ]) {
+    ].filter((v) => !vistaPedida || v === vistaPedida)) {
       await p.goto(`${base}/macro?vista=${vista}`)
       await pronto(p)
       await p.screenshot({ path: resolve(saida, `depois/${vista}.png`) })
@@ -207,7 +209,9 @@ try {
       })
       console.log('FOTO', vista)
     }
-    for (const vista of ['concept-praca', 'concept-lago', 'escadas-farol', 'placa-costa']) {
+    for (const vista of ['concept-praca', 'concept-lago', 'escadas-farol', 'placa-costa'].filter(
+      (v) => !vistaPedida || v === vistaPedida,
+    )) {
       await p.goto(`${base}/macro?vista=${vista}&noite=1`)
       await pronto(p)
       await p.screenshot({ path: resolve(saida, `depois/${vista}-noite.png`) })
@@ -218,6 +222,26 @@ try {
         noite: true,
       })
       console.log('FOTO noite', vista)
+    }
+    await c.close()
+  }
+  if (grupo === 'variantes') {
+    const c = await browser.newContext({ viewport: { width: 1280, height: 800 } }),
+      p = await c.newPage()
+    ouvir(p)
+    const variantes = [
+      ['caminho-t1-reino', 'vista=trilha-catalogo-baixa&refino=reino'],
+      ['caminho-t2-faroeste', 'vista=trilha-catalogo-baixa&refino=faroeste'],
+      ['caminho-t3-templo', 'vista=trilha-catalogo-baixa&refino=templo'],
+      ['lago-l1-aventura', 'vista=concept-lago&lago=l1&agua=aventura'],
+      ['lago-l2-reino', 'vista=concept-lago&lago=l2'],
+    ]
+    for (const [nome, query] of variantes) {
+      await p.goto(`${base}/macro?${query}`)
+      await pronto(p)
+      await p.screenshot({ path: resolve(saida, `depois/${nome}.png`) })
+      evidencias.push({ nome, query, viewport: [1280, 800], noite: false })
+      console.log('VARIANTE', nome)
     }
     await c.close()
   }
@@ -335,6 +359,21 @@ try {
       )
       return { pontos, nado, saida, retomada }
     })
+  if (grupo === 'luzes') {
+    const c = await browser.newContext({ viewport: { width: 1280, height: 800 } }),
+      p = await c.newPage()
+    ouvir(p)
+    await p.goto(`${base}/macro`)
+    await pronto(p)
+    for (let i = 0; i < 2; i++) {
+      await p.getByRole('button', { name: 'Ver à noite', exact: true }).click()
+      await pronto(p)
+      await p.getByRole('button', { name: 'Ver de dia', exact: true }).click()
+      await pronto(p)
+    }
+    evidencias.push({ nome: 'duas trocas completas dia/noite', erros: [] })
+    await c.close()
+  }
   if (grupo === 'perfil') {
     const c = await browser.newContext({
         viewport: { width: 1280, height: 800 },
@@ -410,7 +449,10 @@ try {
     await c.close()
   }
   assert.equal(erros.length, 0, erros.join('\n'))
-  writeFileSync(resolve(saida, `${grupo}.json`), JSON.stringify({ evidencias, erros }, null, 2))
+  writeFileSync(
+    resolve(saida, `${grupo}${vistaPedida ? `-${vistaPedida}` : ''}.json`),
+    JSON.stringify({ evidencias, erros }, null, 2),
+  )
 } finally {
   await browser.close()
 }

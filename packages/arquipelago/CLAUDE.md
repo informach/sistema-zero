@@ -1,6 +1,37 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
-## M3, Gate 2: implantação e revisão visual (15/11/2026)
+## Composição pelas imagens: estado atual (16/11/2026)
+
+O `/macro` padrão monta o piloto completo para avaliação do conjunto: praça contínua de lajes do
+Templo, quatro fachadas Fantasy/Cidade, oficina Adventure Land interrompida, seis canteiros, lago
+de catálogo no centro `(39,127)`, ponte arqueada Templo e três lances de escada do Farol. As três
+imagens de referência orientam a composição; não se afirma reprodução pixel a pixel nem aceite
+artístico humano. Entrega e evidências: `docs/qa/2026-11-15-faisca-concepts.md`.
+
+O manifesto prepara 93 modelos a partir do pin `67b72d4a1a90c0e95c6217341dccfc723ebe8c49`; a seleção
+padrão carrega 44. Peças da Morada conservam seu pin individual. O exportador deriva os acabamentos
+com origem e digest próprios; nunca altera o GLB original. Madeira violeta/pedra da ponte e solo
+cultivado têm acabamentos identificados. Reino e complementos autorais não são modelos oficiais Kingdom.
+
+Lajes e praça usam malha/UV de catálogo, recortadas nas juntas e assentadas no relevo. A mesma malha
+gera o Trimesh físico. Sob a escada, terreno e amostragem usam o contorno recortado real: não voltar
+à interpolação do grid de 4 m nessa região. Escada em escala uniforme 0,65; ponte 0,75, verificadas
+com o controlador nativo. Todos os volumes de colisão dos prefabs são preservados, incluindo telhados.
+
+Contorno visual do lago, furo do terreno, bacia e nado são compartilhados. A queda pequena deriva de
+componentes e materiais existentes, assentados nas rochas reais; não é uma cachoeira pronta do kit.
+`preparar-gpu.ts` antecipa texturas e compileAsync da cena montada antes de liberar locomoção. As luzes
+noturnas ficam fora do grupo temporariamente oculto para que a preparação considere a iluminação.
+
+As seis placas físicas recebem texto nas duas faces, ligado ao modelo e iluminado pelo ambiente.
+Etiquetas flutuantes são somente inspeção. Lote Morada 24 × 24 m livre, sem integração da casa da conta.
+Chave de ensaio: `arquipelago:faisca:ensaio:concepts:templo:l2`; demais variantes têm chaves separadas.
+Patins/mochila permanecem no recorte próprio; não mudar campanha, recompensas, inventário, velocidades
+ou identidades Kids/adulta para esta composição. Não ampliar aos seis distritos antes da avaliação.
+
+## Histórico M3, Gate 2: implantação inicial (15/11/2026)
+
+O registro abaixo descreve o marco anterior; a seção de composição pelas imagens prevalece para a cena atual.
 
 O Gate 1 foi liberado com ajustes pelo usuário; a primeira passada ambiental é em `/macro`, ainda
 sem aceite artístico final. `implantacao-da-faisca.ts` declara os volumes de estudo e áreas de solo.
@@ -52,7 +83,7 @@ costeiros usam as âncoras já testadas. Lugares de chegada são externos aos vo
 O lote da casa permanece reservado. O palco de conversa usa as classes existentes da Capi e a
 posição real do osso Head da coelha; a ferramenta técnica fica oculta durante a conversa.
 
-`scripts/exportar-arte-faisca.ts` lê objetos Git do commit aprovado, exporta 23 GLBs de base e 8 de ensaio em
+`scripts/exportar-arte-faisca.ts` lê objetos Git do commit aprovado, prepara a seleção atual em
 `output/faisca-arte` e gera `arte.generated.ts`, com origem, digest, dimensões, caixas e clipes.
 O servidor local só serve nomes do manifesto. O carregador valida SHA-256, deduplica texturas,
 cancela e libera recursos na saída; uma falha parcial mantém o bloco e permite tentar novamente.
@@ -64,7 +95,7 @@ A pedido do usuário, a velocidade também está em teste: Exploração 1,5/3,4 
 só vale no perfil macro. Pulo, água, patins e modos especiais mantêm seus clipes; a passada extra
 não se aplica a eles. O teste com GLB real é pulado quando o arquivo privado não está disponível.
 
-Persistência de ensaio: `arquipelago:faisca:ensaio`, sem migração. Guardar último ponto de terreno
+Persistência de ensaio: usar a chave da variante ativa, sem migração. Guardar último ponto de terreno
 livre, não o chão sob um sólido ou sob a ponte dos Campos. `medicao-de-percurso.ts` não conta
 teleporte como caminhada; usa tempo ativo sem o truncamento de dt das animações. Plano atual:
 `docs/plans/2026-11-15-faisca-blockout-artistico-design.md`.
