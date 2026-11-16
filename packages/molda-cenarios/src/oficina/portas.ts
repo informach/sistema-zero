@@ -121,6 +121,12 @@ export interface CenarioAberto {
   resumo: ResumoDeCenario
   documento: DocumentoDeCenario
   revisao: number
+  historico: { revisao: number; desfazer: number; refazer: number }
+}
+export interface PaginaDeRevisoes {
+  inicio: number | null
+  itens: Array<{ revisao: number; criadoEm: string }>
+  proximo: number | null
 }
 
 /** O cenário mudou em outro lugar: a revisão que quem editava conhecia ficou para trás. */
@@ -172,6 +178,19 @@ export interface CenariosHost {
   listarCenarios(mundoId: string): Promise<ResumoDeCenario[]>
   criarCenario(mundoId: string, nome: string): Promise<ResumoDeCenario>
   abrirCenario(id: string): Promise<CenarioAberto>
+  moverHistorico(
+    id: string,
+    revisaoEsperada: number,
+    acao: 'desfazer' | 'refazer',
+    operacaoId: string,
+  ): Promise<CenarioAberto>
+  listarRevisoes(id: string, antes?: number): Promise<PaginaDeRevisoes>
+  restaurarRevisao(
+    id: string,
+    revisaoEsperada: number,
+    revisao: number,
+    operacaoId: string,
+  ): Promise<CenarioAberto>
   /** Aplica um lote. Recusa com `CenarioDesatualizado` quando a revisão esperada ficou para trás. */
   editarCenario(
     id: string,

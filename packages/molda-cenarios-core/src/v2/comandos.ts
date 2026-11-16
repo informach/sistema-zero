@@ -6,6 +6,7 @@ import {
   BaseSchema,
   CaminhoSchema,
   type DocumentoDeCenario,
+  DocumentoDeCenarioSchema,
   GrupoSchema,
   IluminacaoSchema,
   InstanciaSchema,
@@ -19,6 +20,8 @@ const id = z.string().min(1).max(240)
 
 /** A mesma lista serve à edição pela mão e aos agentes. */
 export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
+  /** Restauração atômica de uma versão; conserva a identidade do cenário. */
+  z.object({ tipo: z.literal('cenario.restaurar'), documento: DocumentoDeCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
   z.object({ tipo: z.literal('instancia.criar'), instancia: InstanciaSchema }).strict(),
@@ -122,9 +125,14 @@ export function executarLote(
 ): EstadoDeCenario {
   const lote = LoteDeCenarioSchema.parse(entrada)
   if (lote.revisaoEsperada !== estado.revisao) throw new ConflitoDeCenario(estado.revisao)
-  const d = validarDocumento(estado.documento, opcoes)
+  let d = validarDocumento(estado.documento, opcoes)
   for (const c of lote.comandos) {
     switch (c.tipo) {
+      case 'cenario.restaurar':
+        if (c.documento.id !== d.id)
+          throw new CenarioInvalido(['A restauração precisa ser deste cenário'])
+        d = validarDocumento(c.documento, opcoes)
+        break
       case 'modelo.definir':
         definir(d.modelos, c.modelo)
         break

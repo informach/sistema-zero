@@ -3,6 +3,7 @@ import {
   criarDocumentoVazio,
   type DocumentoDeCenario,
   executarLote,
+  inverterLote,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
@@ -19,6 +20,17 @@ interface CenarioGuardado {
   resumo: ResumoDeCenario
   documento: DocumentoDeCenario
   operacoes: Map<string, number>
+  passado: number[]
+  futuro: number[]
+  lotes: Map<
+    number,
+    {
+      comandos: Parameters<CenariosHost['editarCenario']>[2]
+      inversos: Parameters<CenariosHost['editarCenario']>[2]
+      criadoEm: string
+    }
+  >
+  versoes: Map<number, DocumentoDeCenario>
 }
 
 export interface OpcoesDoHostEmMemoria {
@@ -84,7 +96,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const semAcento = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const copia = <T>(valor: T): T => structuredClone(valor)
 
-  return {
+  const host: CenariosHost = {
     async espacos() {
       await esperar()
       return copia(espacos)
@@ -303,6 +315,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         resumo,
         documento: criarDocumentoVazio(id, resumo.nome),
         operacoes: new Map(),
+        passado: [],
+        futuro: [],
+        lotes: new Map(),
+        versoes: new Map(),
       })
       mundo.cenarios++
       mundo.atualizadoEm = agora()
@@ -311,7 +327,16 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async abrirCenario(id): Promise<CenarioAberto> {
       await esperar()
       const c = exigir(cenarios, id, 'O cenário')
-      return copia({ resumo: c.resumo, documento: c.documento, revisao: c.resumo.revisao })
+      return copia({
+        resumo: c.resumo,
+        documento: c.documento,
+        revisao: c.resumo.revisao,
+        historico: {
+          revisao: c.resumo.revisao,
+          desfazer: c.passado.length,
+          refazer: c.futuro.length,
+        },
+      })
     },
     async editarCenario(id, revisaoEsperada, comandos, operacaoId) {
       await esperar()
@@ -324,7 +349,16 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           { documento: c.documento, revisao: c.resumo.revisao },
           { revisaoEsperada, comandos },
         )
+        const inversos = inverterLote(c.documento, depois.documento)
+        if (!c.versoes.size) c.versoes.set(c.resumo.revisao, copia(c.documento))
+        c.lotes.set(depois.revisao, { comandos: copia(comandos), inversos, criadoEm: agora() })
+        if (inversos.length) {
+          c.passado.push(depois.revisao)
+          c.passado = c.passado.slice(-200)
+          c.futuro = []
+        }
         c.documento = depois.documento
+        if (depois.revisao % 50 === 0) c.versoes.set(depois.revisao, copia(depois.documento))
         c.resumo.revisao = depois.revisao
         c.resumo.nome = depois.documento.nome
         c.resumo.atualizadoEm = agora()
@@ -336,6 +370,76 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizado(erro.revisaoAtual)
         throw erro
       }
+    },
+    async moverHistorico(id, revisaoEsperada, acao, operacaoId) {
+      await esperar()
+      const c = exigir(cenarios, id, 'O cenário')
+      if (c.operacoes.has(operacaoId)) return host.abrirCenario(id)
+      if (c.resumo.revisao !== revisaoEsperada) throw new CenarioDesatualizado(c.resumo.revisao)
+      const de = acao === 'desfazer' ? c.passado : c.futuro
+      const alvo = de.at(-1),
+        passo = alvo === undefined ? undefined : c.lotes.get(alvo)
+      if (alvo === undefined || !passo) throw Error('Não há outro passo para esta ação')
+      const passado = [...c.passado],
+        futuro = [...c.futuro]
+      await host.editarCenario(
+        id,
+        revisaoEsperada,
+        acao === 'desfazer' ? passo.inversos : passo.comandos,
+        operacaoId,
+      )
+      c.passado = passado
+      c.futuro = futuro
+      const origem = acao === 'desfazer' ? c.passado : c.futuro
+      const destino = acao === 'desfazer' ? c.futuro : c.passado
+      origem.pop()
+      destino.push(alvo)
+      return host.abrirCenario(id)
+    },
+    async listarRevisoes(id, antes) {
+      await esperar()
+      const c = exigir(cenarios, id, 'O cenário')
+      const itens = [...c.lotes]
+        .filter(([r]) => antes === undefined || r < antes)
+        .reverse()
+        .slice(0, 50)
+        .map(([revisao, l]) => ({ revisao, criadoEm: l.criadoEm }))
+      return {
+        inicio: [...c.versoes.keys()][0] ?? null,
+        itens,
+        proximo: itens.length === 50 ? itens.at(-1)!.revisao : null,
+      }
+    },
+    async restaurarRevisao(id, revisaoEsperada, revisao, operacaoId) {
+      const c = exigir(cenarios, id, 'O cenário')
+      if (c.operacoes.has(operacaoId)) return host.abrirCenario(id)
+      if (c.resumo.revisao !== revisaoEsperada) throw new CenarioDesatualizado(c.resumo.revisao)
+      const fotografia = [...c.versoes].filter(([r]) => r <= revisao).at(-1)
+      if (
+        !Number.isInteger(revisao) ||
+        revisao < 0 ||
+        revisao > c.resumo.revisao ||
+        (!fotografia && revisao !== c.resumo.revisao)
+      )
+        throw Error('Revisão fora do histórico deste cenário')
+      let documento = revisao === c.resumo.revisao ? c.documento : copia(fotografia![1])
+      for (
+        let r = fotografia ? fotografia[0] + 1 : revisao + 1;
+        r <= revisao && revisao !== c.resumo.revisao;
+        r++
+      )
+        documento = executarLote(
+          { documento, revisao: r - 1 },
+          { revisaoEsperada: r - 1, comandos: c.lotes.get(r)!.comandos },
+        ).documento
+      const comandos = inverterLote(documento, c.documento)
+      await host.editarCenario(
+        id,
+        revisaoEsperada,
+        comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
+        operacaoId,
+      )
+      return host.abrirCenario(id)
     },
     async duplicarCenario(id) {
       await esperar()
@@ -352,6 +456,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         resumo,
         documento: { ...copia(original.documento), id: novo, nome: resumo.nome },
         operacoes: new Map(),
+        passado: [],
+        futuro: [],
+        lotes: new Map(),
+        versoes: new Map(),
       })
       const mundo = mundos.get(resumo.mundoId)
       if (mundo) mundo.cenarios++
@@ -373,4 +481,5 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (mundo) mundo.capa = endereco
     },
   }
+  return host
 }

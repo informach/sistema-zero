@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { ComandoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import { type DocumentoDeCenario, inverterLote } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
   buscaDoModelo,
@@ -9,6 +9,11 @@ import {
   type Mundo,
   type TipoDeBlob,
 } from '../../src/domain/cenarios/cenarios'
+import {
+  avancarHistorico,
+  type PassoDoHistorico,
+  type PilhasDoHistorico,
+} from '../../src/domain/cenarios/historico'
 import type {
   BlobReservado,
   CenariosRepository,
@@ -20,7 +25,7 @@ interface BlobGuardado extends BlobReservado {
 }
 interface CenarioGuardado extends Cenario {
   criadoPor: string
-  lotes: { revisao: number; operacaoId: string; comandos: ComandoDeCenario[]; autorId: string }[]
+  lotes: PassoDoHistorico[]
 }
 
 /** Repositório em memória com a MESMA régua do Drizzle: cota, tetos, CAS e operação repetida. */
@@ -31,6 +36,11 @@ export class CenariosEmMemoria implements CenariosRepository {
   readonly blobs = new Map<string, BlobGuardado>()
   readonly mundosGuardados = new Map<string, Mundo>()
   readonly cenariosGuardados = new Map<string, CenarioGuardado>()
+  private readonly pilhas = new Map<string, PilhasDoHistorico>()
+  private readonly fotografias = new Map<
+    string,
+    Array<{ revisao: number; documento: DocumentoDeCenario }>
+  >()
 
   private chave = (espacoId: string, digest: string) => `${espacoId}|${digest}`
   private copia = <T>(valor: T): T => structuredClone(valor)
@@ -56,6 +66,13 @@ export class CenariosEmMemoria implements CenariosRepository {
     for (const c of this.cenariosGuardados.values()) {
       if (this.mundosGuardados.get(c.mundoId)?.espacoId !== espacoId) continue
       for (const m of c.documento.modelos) usados.add(m.digest)
+      for (const l of c.lotes)
+        for (const comando of [...l.comandos, ...(l.inversos ?? [])])
+          if (comando.tipo === 'modelo.definir') usados.add(comando.modelo.digest)
+          else if (comando.tipo === 'cenario.restaurar')
+            for (const m of comando.documento.modelos) usados.add(m.digest)
+      for (const r of this.fotografias.get(c.id) ?? [])
+        for (const m of r.documento.modelos) usados.add(m.digest)
       if (c.capa) usados.add(c.capa)
     }
     const orfaos = [...new Set(digests)].filter((d) => !usados.has(d))
@@ -381,6 +398,16 @@ export class CenariosEmMemoria implements CenariosRepository {
     const repetido = c.lotes.find((l) => l.operacaoId === dados.operacaoId)
     if (repetido) return { revisao: repetido.revisao, repetido: true }
     if (c.revisao !== dados.revisaoEsperada) return null
+    const inversos = inverterLote(c.documento, dados.documento)
+    const atual = await this.pilhasDoHistorico(c.id)
+    const historico =
+      inversos.length || dados.movimento
+        ? avancarHistorico(atual, c.revisao + 1, dados.movimento)
+        : atual
+    if (!historico) return null
+    if (!this.fotografias.has(c.id))
+      this.fotografias.set(c.id, [{ revisao: c.revisao, documento: this.copia(c.documento) }])
+    this.pilhas.set(c.id, historico)
     c.revisao += 1
     c.documento = this.copia(dados.documento)
     c.nome = dados.documento.nome
@@ -389,11 +416,50 @@ export class CenariosEmMemoria implements CenariosRepository {
       revisao: c.revisao,
       operacaoId: dados.operacaoId,
       comandos: this.copia(dados.comandos),
+      inversos,
       autorId: dados.autorId,
+      criadoEm: agora,
     })
+    if (c.revisao % 50 === 0)
+      this.fotografias.get(c.id)!.push({ revisao: c.revisao, documento: this.copia(c.documento) })
     const mundo = this.mundosGuardados.get(c.mundoId)
     if (mundo) mundo.atualizadoEm = agora
     return { revisao: c.revisao, repetido: false }
+  }
+  async pilhasDoHistorico(id: string) {
+    return this.copia(this.pilhas.get(id) ?? { passado: [], futuro: [] })
+  }
+  async inicioDoHistorico(id: string) {
+    return this.fotografias.get(id)?.[0]?.revisao ?? null
+  }
+  async passoDoHistorico(id: string, revisao: number) {
+    return this.copia(
+      this.cenariosGuardados.get(id)?.lotes.find((l) => l.revisao === revisao) ?? null,
+    )
+  }
+  async revisoes(id: string, antes: number | undefined, limite: number) {
+    return this.copia(
+      (this.cenariosGuardados.get(id)?.lotes ?? [])
+        .filter((l) => antes === undefined || l.revisao < antes)
+        .toReversed()
+        .slice(0, limite)
+        .map(({ revisao, autorId, criadoEm }) => ({ revisao, autorId, criadoEm })),
+    )
+  }
+  async fotografia(id: string, revisao: number) {
+    return this.copia(
+      this.fotografias
+        .get(id)
+        ?.filter((r) => r.revisao <= revisao)
+        .at(-1) ?? null,
+    )
+  }
+  async lotesEntre(id: string, depois: number, ate: number) {
+    return this.copia(
+      (this.cenariosGuardados.get(id)?.lotes ?? [])
+        .filter((l) => l.revisao > depois && l.revisao <= ate)
+        .map(({ revisao, comandos }) => ({ revisao, comandos })),
+    )
   }
   async definirCapa(cenarioId: string, digest: string, agora: Date) {
     const c = this.cenariosGuardados.get(cenarioId)

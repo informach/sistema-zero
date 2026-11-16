@@ -3370,6 +3370,10 @@ export const cenarioCenarios = members.table(
     revisao: integer('revisao').notNull().default(0),
     /** O cenário como está agora (formato `molda-cenario`, versão 2). */
     documento: jsonb('documento').$type<DocumentoDeCenario>().notNull(),
+    historico: jsonb('historico')
+      .$type<{ passado: number[]; futuro: number[] }>()
+      .notNull()
+      .default({ passado: [], futuro: [] }),
     capa: varchar('capa', { length: 64 }),
     criadoPor: uuid('criado_por').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -3389,6 +3393,7 @@ export const cenarioLotes = members.table(
     revisao: integer('revisao').notNull(),
     operacaoId: varchar('operacao_id', { length: 80 }).notNull(),
     comandos: jsonb('comandos').$type<ComandoDeCenario[]>().notNull(),
+    inversos: jsonb('inversos').$type<ComandoDeCenario[]>(),
     autorId: uuid('autor_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
@@ -3396,6 +3401,20 @@ export const cenarioLotes = members.table(
     primaryKey({ columns: [t.cenarioId, t.revisao] }),
     uniqueIndex('cenario_lotes_operacao_uq').on(t.cenarioId, t.operacaoId),
   ],
+)
+
+/** Fotografias esparsas: inicial e a cada 50 lotes. O restante é reconstruído pelo registro. */
+export const cenarioRevisoes = members.table(
+  'cenario_revisoes',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    documento: jsonb('documento').$type<DocumentoDeCenario>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.cenarioId, t.revisao] })],
 )
 
 export const schema = {
@@ -3520,6 +3539,7 @@ export const schema = {
   cenarioMundoBibliotecas,
   cenarioCenarios,
   cenarioLotes,
+  cenarioRevisoes,
 }
 
 // Linha-tipo (importado por testes/seed se útil).

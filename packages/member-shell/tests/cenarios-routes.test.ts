@@ -160,6 +160,27 @@ describe('BFF do Molda Cenários: repasse', () => {
     expect(await r.json()).toMatchObject({ details: { revisaoAtual: 7 } })
     expect(t.chamadas[0]).toMatchObject({ method: 'POST', body: lote })
   })
+  test('histórico e versões passam pelos caminhos explícitos e filtram a consulta', async () => {
+    const t = montar()
+    expect((await t.pedir('GET', `cenarios/${CENARIO}/historico`)).status).toBe(200)
+    expect(
+      (await t.pedir('GET', `cenarios/${CENARIO}/revisoes?antes=20&outra=ignorada`)).status,
+    ).toBe(200)
+    expect(t.chamadas.at(-1)?.query).toEqual({ antes: '20' })
+    const pedido = { acao: 'desfazer', revisaoEsperada: 20, operacaoId: 'desfazer-0001' }
+    expect((await t.pedir('POST', `cenarios/${CENARIO}/historico`, pedido)).status).toBe(200)
+    expect(t.chamadas.at(-1)?.body).toEqual(pedido)
+    expect(
+      (
+        await t.pedir('POST', `cenarios/${CENARIO}/restaurar`, {
+          revisao: 2,
+          revisaoEsperada: 21,
+          operacaoId: 'restaurar-0001',
+        })
+      ).status,
+    ).toBe(200)
+    expect((await t.pedir('DELETE', `cenarios/${CENARIO}/historico`)).status).toBe(404)
+  })
 
   test('resposta sem corpo do members vira um ok que o cliente consegue ler', async () => {
     const t = montar({ responder: () => ({ status: 204, body: null }) })

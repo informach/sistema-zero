@@ -12,7 +12,8 @@ export function tamanhoLegivel(bytes: number): string {
 export const COPY = {
   inicio: {
     titulo: 'Cenários',
-    subtitulo: 'Monte os mundos dos seus mundos: o chão, a água, as casas e tudo o que mora neles.',
+    subtitulo:
+      'Crie os cenários dos seus mundos: o chão, a água, as casas e tudo o que mora neles.',
     abaMundos: 'Meus mundos',
     abaBibliotecas: 'Bibliotecas',
     criarMundo: 'Criar mundo',

@@ -81,6 +81,32 @@ function idaEVolta(antes: DocumentoDeCenario, comandos: ComandoDeCenario[]) {
 }
 
 describe('desfazer (inverso de um lote)', () => {
+  test('uma restauração conserva a identidade e não altera a entrada', () => {
+    const antes = base()
+    expect(() =>
+      executarLote(
+        { documento: antes, revisao: 0 },
+        {
+          revisaoEsperada: 0,
+          comandos: [{ tipo: 'cenario.restaurar', documento: { ...antes, id: 'outra-fase' } }],
+        },
+      ),
+    ).toThrow('deste cenário')
+    expect(antes.id).toBe('fase')
+  })
+  test('um lote de 500 objetos bloqueados continua podendo ser desfeito atomicamente', () => {
+    const antes = { ...criarDocumentoVazio('fase', 'Fase'), modelos: [modelo('arvore')] }
+    const comandos: ComandoDeCenario[] = Array.from({ length: 500 }, (_, i) => ({
+      tipo: 'instancia.criar',
+      instancia: objeto(`o-${i}`, { bloqueado: true }),
+    }))
+    const depois = executarLote({ documento: antes, revisao: 0 }, { revisaoEsperada: 0, comandos })
+    const inversos = inverterLote(antes, depois.documento)
+    expect(inversos.length).toBeLessThanOrEqual(500)
+    expect(executarLote(depois, { revisaoEsperada: 1, comandos: inversos }).documento).toEqual(
+      antes,
+    )
+  })
   test('nada mudou, nada a desfazer', () => {
     expect(inverterLote(base(), base())).toEqual([])
   })

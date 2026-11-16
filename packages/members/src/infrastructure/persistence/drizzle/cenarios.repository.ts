@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, eq, inArray, isNotNull, type SQL, sql } from 'drizzle-orm'
+import { inverterLote } from '@sistemazero/molda-cenarios-core/v2'
+import { and, asc, desc, eq, gt, inArray, isNotNull, lt, lte, type SQL, sql } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 import {
   type Biblioteca,
@@ -11,6 +12,8 @@ import {
   type ResumoDeCenario,
   type TipoDeBlob,
 } from '../../../domain/cenarios/cenarios'
+import { CenarioArquivoAusenteError } from '../../../domain/cenarios/cenarios.errors'
+import { avancarHistorico } from '../../../domain/cenarios/historico'
 import type {
   BlobReservado,
   CenariosRepository,
@@ -26,6 +29,7 @@ import {
   cenarioModelos,
   cenarioMundoBibliotecas,
   cenarioMundos,
+  cenarioRevisoes,
 } from './schema'
 
 type Transacao = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -282,6 +286,25 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             join ${cenarioBibliotecas} b on b.id = m.biblioteca_id
             where b.espaco_id = ${espacoId}
               and (m.digest = ${cenarioBlobs.digest} or m.miniatura = ${cenarioBlobs.digest})
+          )`,
+          sql`not exists (
+            select 1 from ${cenarioLotes} l
+            join ${cenarioCenarios} c on c.id = l.cenario_id
+            join ${cenarioMundos} w on w.id = c.mundo_id
+            where w.espaco_id = ${espacoId}
+              and exists (
+                select 1 from jsonb_array_elements(l.comandos || coalesce(l.inversos, '[]'::jsonb)) e
+                where e -> 'modelo' ->> 'digest' = ${cenarioBlobs.digest}
+                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
+              )
+          )`,
+          sql`not exists (
+            select 1 from ${cenarioRevisoes} r
+            join ${cenarioCenarios} c on c.id = r.cenario_id
+            join ${cenarioMundos} w on w.id = c.mundo_id
+            where w.espaco_id = ${espacoId}
+              and exists (select 1 from jsonb_array_elements(r.documento -> 'modelos') e
+                where e ->> 'digest' = ${cenarioBlobs.digest})
           )`,
           sql`not exists (
             select 1 from ${cenarioCenarios} c
@@ -654,6 +677,82 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     })
   }
 
+  async pilhasDoHistorico(cenarioId: string) {
+    const [c] = await this.db
+      .select({ historico: cenarioCenarios.historico })
+      .from(cenarioCenarios)
+      .where(eq(cenarioCenarios.id, cenarioId))
+      .limit(1)
+    return c?.historico ?? { passado: [], futuro: [] }
+  }
+  async inicioDoHistorico(cenarioId: string) {
+    const [r] = await this.db
+      .select({ revisao: cenarioRevisoes.revisao })
+      .from(cenarioRevisoes)
+      .where(eq(cenarioRevisoes.cenarioId, cenarioId))
+      .orderBy(asc(cenarioRevisoes.revisao))
+      .limit(1)
+    return r?.revisao ?? null
+  }
+
+  async passoDoHistorico(cenarioId: string, revisao: number) {
+    const [l] = await this.db
+      .select({
+        revisao: cenarioLotes.revisao,
+        operacaoId: cenarioLotes.operacaoId,
+        comandos: cenarioLotes.comandos,
+        inversos: cenarioLotes.inversos,
+        autorId: cenarioLotes.autorId,
+        criadoEm: cenarioLotes.createdAt,
+      })
+      .from(cenarioLotes)
+      .where(and(eq(cenarioLotes.cenarioId, cenarioId), eq(cenarioLotes.revisao, revisao)))
+      .limit(1)
+    return l ?? null
+  }
+
+  revisoes(cenarioId: string, antes: number | undefined, limite: number) {
+    return this.db
+      .select({
+        revisao: cenarioLotes.revisao,
+        autorId: cenarioLotes.autorId,
+        criadoEm: cenarioLotes.createdAt,
+      })
+      .from(cenarioLotes)
+      .where(
+        and(
+          eq(cenarioLotes.cenarioId, cenarioId),
+          antes === undefined ? undefined : lt(cenarioLotes.revisao, antes),
+        ),
+      )
+      .orderBy(desc(cenarioLotes.revisao))
+      .limit(limite)
+  }
+
+  async fotografia(cenarioId: string, revisao: number) {
+    const [r] = await this.db
+      .select({ revisao: cenarioRevisoes.revisao, documento: cenarioRevisoes.documento })
+      .from(cenarioRevisoes)
+      .where(and(eq(cenarioRevisoes.cenarioId, cenarioId), lte(cenarioRevisoes.revisao, revisao)))
+      .orderBy(desc(cenarioRevisoes.revisao))
+      .limit(1)
+    return r ?? null
+  }
+
+  lotesEntre(cenarioId: string, depois: number, ate: number) {
+    return this.db
+      .select({ revisao: cenarioLotes.revisao, comandos: cenarioLotes.comandos })
+      .from(cenarioLotes)
+      .where(
+        and(
+          eq(cenarioLotes.cenarioId, cenarioId),
+          gt(cenarioLotes.revisao, depois),
+          lte(cenarioLotes.revisao, ate),
+        ),
+      )
+      .orderBy(asc(cenarioLotes.revisao))
+  }
+
   async operacaoAplicada(cenarioId: string, operacaoId: string): Promise<number | null> {
     const [linha] = await this.db
       .select({ revisao: cenarioLotes.revisao })
@@ -663,11 +762,79 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return linha?.revisao ?? null
   }
 
-  gravarLote(
+  async gravarLote(
     dados: Parameters<CenariosRepository['gravarLote']>[0],
     agora: Date,
   ): Promise<LoteGravado | null> {
-    return this.db.transaction(async (tx) => {
+    const [dono] = await this.db
+      .select({ espacoId: cenarioMundos.espacoId })
+      .from(cenarioCenarios)
+      .innerJoin(cenarioMundos, eq(cenarioMundos.id, cenarioCenarios.mundoId))
+      .where(eq(cenarioCenarios.id, dados.cenarioId))
+      .limit(1)
+    if (!dono) return null
+    return this.comTrava(dono.espacoId, async (tx) => {
+      const [repetido] = await tx
+        .select({ revisao: cenarioLotes.revisao })
+        .from(cenarioLotes)
+        .where(
+          and(
+            eq(cenarioLotes.cenarioId, dados.cenarioId),
+            eq(cenarioLotes.operacaoId, dados.operacaoId),
+          ),
+        )
+        .limit(1)
+      if (repetido) return { revisao: repetido.revisao, repetido: true }
+      const [antes] = await tx
+        .select({
+          documento: cenarioCenarios.documento,
+          revisao: cenarioCenarios.revisao,
+          historico: cenarioCenarios.historico,
+        })
+        .from(cenarioCenarios)
+        .where(eq(cenarioCenarios.id, dados.cenarioId))
+        .for('update')
+      if (!antes || antes.revisao !== dados.revisaoEsperada) return null
+      // A biblioteca pode ter sido apagada entre a conferência do serviço e esta trava.
+      const conhecidos = new Set(antes.documento.modelos.map((m) => m.digest))
+      const novos = [...new Set(dados.documento.modelos.map((m) => m.digest))].filter(
+        (d) => !conhecidos.has(d),
+      )
+      if (novos.length) {
+        const confirmados = await tx
+          .select({ digest: cenarioBlobs.digest })
+          .from(cenarioBlobs)
+          .where(
+            and(
+              eq(cenarioBlobs.espacoId, dono.espacoId),
+              inArray(cenarioBlobs.digest, novos),
+              isNotNull(cenarioBlobs.confirmadoEm),
+              eq(cenarioBlobs.tipo, 'modelo'),
+            ),
+          )
+        const presentes = new Set(confirmados.map((b) => b.digest))
+        const ausentes = novos.filter((d) => !presentes.has(d))
+        if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
+      }
+      const inversos = inverterLote(antes.documento, dados.documento)
+      const historico =
+        inversos.length || dados.movimento
+          ? avancarHistorico(antes.historico, antes.revisao + 1, dados.movimento)
+          : antes.historico
+      if (!historico) return null
+      // Adota a cabeça anterior de projetos existentes; não presume um começo vazio.
+      const [fotografia] = await tx
+        .select({ revisao: cenarioRevisoes.revisao })
+        .from(cenarioRevisoes)
+        .where(eq(cenarioRevisoes.cenarioId, dados.cenarioId))
+        .limit(1)
+      if (!fotografia)
+        await tx.insert(cenarioRevisoes).values({
+          cenarioId: dados.cenarioId,
+          revisao: antes.revisao,
+          documento: antes.documento,
+          createdAt: agora,
+        })
       // Troca só se a revisão guardada ainda é a que quem editava conhecia.
       const [linha] = await tx
         .update(cenarioCenarios)
@@ -675,6 +842,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
           documento: dados.documento,
           nome: dados.documento.nome,
           revisao: dados.revisaoEsperada + 1,
+          historico,
           updatedAt: agora,
         })
         .where(
@@ -684,28 +852,26 @@ export class DrizzleCenariosRepository implements CenariosRepository {
           ),
         )
         .returning({ revisao: cenarioCenarios.revisao, mundoId: cenarioCenarios.mundoId })
-      if (!linha) {
-        // Perdeu a vez. Se foi para a MESMA operação (resposta perdida e reenvio), está feito.
-        const [repetido] = await tx
-          .select({ revisao: cenarioLotes.revisao })
-          .from(cenarioLotes)
-          .where(
-            and(
-              eq(cenarioLotes.cenarioId, dados.cenarioId),
-              eq(cenarioLotes.operacaoId, dados.operacaoId),
-            ),
-          )
-          .limit(1)
-        return repetido ? { revisao: repetido.revisao, repetido: true } : null
-      }
+      if (!linha) return null
       await tx.insert(cenarioLotes).values({
         cenarioId: dados.cenarioId,
         revisao: linha.revisao,
         operacaoId: dados.operacaoId,
         comandos: dados.comandos,
+        inversos,
         autorId: dados.autorId,
         createdAt: agora,
       })
+      if (linha.revisao % 50 === 0)
+        await tx
+          .insert(cenarioRevisoes)
+          .values({
+            cenarioId: dados.cenarioId,
+            revisao: linha.revisao,
+            documento: dados.documento,
+            createdAt: agora,
+          })
+          .onConflictDoNothing()
       await tx
         .update(cenarioMundos)
         .set({ updatedAt: agora })

@@ -13,6 +13,7 @@ import {
   CloudOff,
   Copy,
   Flag,
+  History,
   Loader2,
   type LucideIcon,
   Magnet,
@@ -68,6 +69,7 @@ import type {
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
 import { Painel } from './Painel'
+import { Versoes } from './Versoes'
 
 type Aba = 'terreno' | 'agua' | 'objetos' | 'caminhos' | 'jogo' | 'luz'
 
@@ -220,6 +222,7 @@ function OficinaAberta({
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
   const [escolhendo, setEscolhendo] = useState(false)
   const [saindo, setSaindo] = useState(false)
+  const [versoesAbertas, setVersoesAbertas] = useState(false)
   const { documento, selecao, ferramenta, encaixe } = estado
 
   const executar = useCallback(
@@ -254,8 +257,10 @@ function OficinaAberta({
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
   useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
   useEffect(() => {
-    palco.current?.definirFerramenta(aba === 'objetos' ? ferramenta : 'selecionar')
-  }, [ferramenta, aba])
+    palco.current?.definirFerramenta(
+      aba === 'objetos' && !estado.ocupado ? ferramenta : 'selecionar',
+    )
+  }, [ferramenta, aba, estado.ocupado])
   useEffect(
     () => palco.current?.definirEncaixe(encaixe ? ENCAIXE_LIGADO : ENCAIXE_DESLIGADO),
     [encaixe],
@@ -362,8 +367,12 @@ function OficinaAberta({
   const sair = async () => {
     if (saindo) return
     setSaindo(true)
+    await controlador.terminar()
+    if (controlador.getState().salvamento !== 'guardado') {
+      setSaindo(false)
+      return
+    }
     try {
-      await controlador.terminar()
       const retrato = await palco.current?.capturar(640)
       if (retrato) await host.guardarCapa(aberto.resumo.id, retrato)
     } catch {
@@ -481,6 +490,16 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            aria-label="Versões do cenário"
+            title="Versões do cenário"
+            disabled={estado.ocupado || estado.salvamento !== 'guardado'}
+            onClick={() => setVersoesAbertas(true)}
+          >
+            <History aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="sz-tool-icon-btn"
@@ -667,6 +686,15 @@ function OficinaAberta({
           mundo={mundo}
           aoFechar={() => setEscolhendo(false)}
           aoGuardar={aoMudarBibliotecas}
+        />
+      ) : null}
+      {versoesAbertas ? (
+        <Versoes
+          host={host}
+          cenarioId={aberto.resumo.id}
+          revisaoAtual={estado.revisao}
+          controlador={controlador}
+          aoFechar={() => setVersoesAbertas(false)}
         />
       ) : null}
     </section>

@@ -1,5 +1,5 @@
 import { type ComandoDeCenario, igual } from './comandos'
-import type { DocumentoDeCenario, GrupoDeCenario } from './documento'
+import { type DocumentoDeCenario, type GrupoDeCenario, LIMITES_CENARIO_V2 } from './documento'
 
 type Travavel = { id: string; bloqueado: boolean; grupo: string | null }
 const ENTIDADES = [
@@ -139,5 +139,9 @@ export function inverterLote(
   if (!igual(antes.iluminacao, depois.iluminacao))
     comandos.push({ tipo: 'iluminacao.definir', iluminacao: antes.iluminacao })
   if (antes.nome !== depois.nome) comandos.push({ tipo: 'cenario.renomear', nome: antes.nome })
-  return comandos
+  // Restaurar uma versão grande continua sendo uma ação atômica, sem exceder o teto de
+  // comandos nem criar dezenas de revisões artificiais para um único desfazer.
+  return comandos.length > LIMITES_CENARIO_V2.comandos
+    ? [{ tipo: 'cenario.restaurar', documento: structuredClone(antes) }]
+    : comandos
 }

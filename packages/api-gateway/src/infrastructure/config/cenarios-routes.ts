@@ -84,6 +84,10 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     ler('cenarios', '/mundos/:id/cenarios'),
     escrever('cenario-criar', 'POST', '/mundos/:id/cenarios'),
     ler('cenario', '/cenarios/:id'),
+    ler('cenario-historico', '/cenarios/:id/historico'),
+    ler('cenario-revisoes', '/cenarios/:id/revisoes'),
+    escrever('cenario-historico-mover', 'POST', '/cenarios/:id/historico'),
+    escrever('cenario-restaurar', 'POST', '/cenarios/:id/restaurar'),
     // A edição: cada gesto vira um lote. O editor junta os gestos numa fila, mas arrastar e
     // pintar rápido passa fácil de dois por segundo.
     escrever('cenario-lotes', 'POST', '/cenarios/:id/lotes', {

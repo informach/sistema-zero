@@ -12,6 +12,7 @@ import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
+import { CenariosService } from '../../src/application/cenarios/cenarios.service'
 import type {
   CenariosRepository,
   NovoModelo,
@@ -92,6 +93,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       'utf8',
     )
     for (const comando of capaDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
+    const historicoDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0154_cloudy_the_twelve.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of historicoDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
@@ -362,6 +372,19 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       10,
       AGORA,
     )
+    // A árvore sai da cabeça, mas continua necessária para desfazer e para a fotografia inicial.
+    await repo.gravarLote(
+      {
+        cenarioId,
+        revisaoEsperada: 0,
+        documento: criarDocumentoVazio(cenarioId, 'Praia'),
+        comandos: [{ tipo: 'modelo.remover', id: 'arvore' }],
+        operacaoId: 'remover-arvore',
+        autorId: CONTA,
+      },
+      DEPOIS,
+    )
+    expect((await repo.cenario(cenarioId))!.documento.modelos).toHaveLength(0)
     const orfaos = await repo.apagarModelos(
       biblioteca.id,
       [arvore!.id, pedra!.id, cerca!.id],
@@ -454,5 +477,57 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect(await repo.operacaoAplicada(id, 'nunca')).toBeNull()
     expect(await lote('op-c', 'Três', 1)).toEqual({ revisao: 2, repetido: false })
     expect((await repo.cenarios(mundo.id))[0]).toMatchObject({ nome: 'Três', revisao: 2 })
+    expect(await repo.pilhasDoHistorico(id)).toEqual({ passado: [1, 2], futuro: [] })
+    expect((await repo.passoDoHistorico(id, 2))!.inversos).toEqual([
+      { tipo: 'cenario.renomear', nome: guardado.nome },
+    ])
+    expect((await repo.fotografia(id, 2))!.revisao).toBe(0)
+    expect((await repo.lotesEntre(id, 0, 2)).map((l) => l.revisao)).toEqual([1, 2])
+    const desfaz = await repo.gravarLote(
+      {
+        cenarioId: id,
+        revisaoEsperada: 2,
+        documento: guardado.documento,
+        comandos: [{ tipo: 'cenario.renomear', nome: guardado.nome }],
+        operacaoId: 'op-desfaz',
+        autorId: CONTA,
+        movimento: { acao: 'desfazer', alvo: 2 },
+      },
+      DEPOIS,
+    )
+    expect(desfaz).toEqual({ revisao: 3, repetido: false })
+    expect(await repo.pilhasDoHistorico(id)).toEqual({ passado: [1], futuro: [2] })
+    expect((await repo.revisoes(id, 3, 1)).map((l) => l.revisao)).toEqual([2])
+  })
+  test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const montarServico = () =>
+      new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const servico = montarServico()
+    const [espaco] = await servico.espacos(ator)
+    const mundo = await servico.criarMundo(ator, espaco!.id, 'Mundo')
+    const cenario = await servico.criarCenario(ator, mundo.id, 'Começo')
+    for (let i = 0; i < 51; i++)
+      await servico.editarCenario(ator, cenario.id, {
+        revisaoEsperada: i,
+        operacaoId: `editar-${i.toString().padStart(8, '0')}`,
+        comandos: [{ tipo: 'cenario.renomear', nome: `Etapa ${i + 1}` }],
+      })
+    expect((await repo.fotografia(cenario.id, 51))!.revisao).toBe(50)
+    expect(await repo.lotesEntre(cenario.id, 50, 51)).toHaveLength(1)
+    const [quantidade] =
+      await conn.sql`select count(*)::int as n from members.cenario_revisoes where cenario_id = ${cenario.id}`
+    expect(quantidade!.n).toBe(2)
+    const novoServico = montarServico()
+    expect((await novoServico.documentoNaRevisao(ator, cenario.id, 13)).nome).toBe('Etapa 13')
+    expect((await novoServico.documentoNaRevisao(ator, cenario.id, 0)).nome).toBe('Começo')
+    const desfeito = await novoServico.moverHistorico(ator, cenario.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 51,
+      operacaoId: 'desfazer-0001',
+    })
+    expect(desfeito.nome).toBe('Etapa 50')
+    expect(desfeito.historico).toEqual({ revisao: 52, desfazer: 50, refazer: 1 })
+    expect((await novoServico.revisoes(ator, cenario.id)).proximo).toBe(3)
   })
 })

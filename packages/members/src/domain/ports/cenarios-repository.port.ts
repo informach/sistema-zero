@@ -9,6 +9,11 @@ import type {
   ResumoDeCenario,
   TipoDeBlob,
 } from '../cenarios/cenarios'
+import type {
+  MovimentoDoHistorico,
+  PassoDoHistorico,
+  PilhasDoHistorico,
+} from '../cenarios/historico'
 
 export interface BlobReservado {
   digest: string
@@ -148,6 +153,24 @@ export interface CenariosRepository {
   ): Promise<ResumoDeCenario | null>
   /** A revisão que uma operação já aplicada produziu, ou nulo. */
   operacaoAplicada(cenarioId: string, operacaoId: string): Promise<number | null>
+  pilhasDoHistorico(cenarioId: string): Promise<PilhasDoHistorico>
+  inicioDoHistorico(cenarioId: string): Promise<number | null>
+  passoDoHistorico(cenarioId: string, revisao: number): Promise<PassoDoHistorico | null>
+  /** Resumos paginados; comandos só são lidos para desfazer, refazer ou restaurar. */
+  revisoes(
+    cenarioId: string,
+    antes: number | undefined,
+    limite: number,
+  ): Promise<Array<{ revisao: number; autorId: string; criadoEm: Date }>>
+  fotografia(
+    cenarioId: string,
+    revisao: number,
+  ): Promise<{ revisao: number; documento: DocumentoDeCenario } | null>
+  lotesEntre(
+    cenarioId: string,
+    depois: number,
+    ate: number,
+  ): Promise<Array<{ revisao: number; comandos: ComandoDeCenario[] }>>
   /**
    * Grava o lote se a revisão guardada ainda é a esperada. Nulo = outra edição chegou antes.
    * A mesma operação mandada duas vezes devolve a revisão da primeira, sem gravar de novo.
@@ -160,6 +183,7 @@ export interface CenariosRepository {
       comandos: ComandoDeCenario[]
       operacaoId: string
       autorId: string
+      movimento?: MovimentoDoHistorico
     },
     agora: Date,
   ): Promise<LoteGravado | null>

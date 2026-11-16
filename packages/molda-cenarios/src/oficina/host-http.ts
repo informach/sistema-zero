@@ -72,6 +72,11 @@ type BibliotecaDoServidor = Omit<Biblioteca, 'capa'> & { capa: string | null }
 type ModeloDoServidor = Omit<ModeloDeBiblioteca, 'miniatura'> & { miniatura: string | null }
 type MundoDoServidor = Omit<Mundo, 'capa'> & { capa: string | null }
 type ResumoDoServidor = Omit<ResumoDeCenario, 'capa'> & { capa: string | null }
+type CenarioDoServidor = ResumoDoServidor & {
+  espacoId: string
+  documento: CenarioAberto['documento']
+  historico: CenarioAberto['historico']
+}
 
 const objeto = (valor: unknown): Record<string, unknown> | null =>
   valor && typeof valor === 'object' && !Array.isArray(valor)
@@ -164,6 +169,18 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     capa: retrato(espacoId, c.capa),
     atualizadoEm: c.atualizadoEm,
   })
+  const cenarioAberto = (aberto: CenarioDoServidor): CenarioAberto => {
+    espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
+    // Arquivos fixados continuam autorizados mesmo depois de apagar a biblioteca de origem.
+    for (const ref of aberto.documento.modelos)
+      espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
+    return {
+      resumo: resumo(aberto, aberto.espacoId),
+      documento: aberto.documento,
+      revisao: aberto.revisao,
+      historico: aberto.historico,
+    }
+  }
 
   /** O espaço de uma biblioteca que esta página ainda não listou (endereço aberto direto). */
   async function acharEspacoDaBiblioteca(bibliotecaId: string): Promise<string> {
@@ -377,19 +394,28 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       return resumo(await pedir<ResumoDoServidor>('POST', `mundos/${mundoId}/cenarios`, { nome }))
     },
     async abrirCenario(id): Promise<CenarioAberto> {
-      const aberto = await pedir<
-        ResumoDoServidor & { espacoId: string; documento: CenarioAberto['documento'] }
-      >('GET', `cenarios/${id}`)
-      espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
-      // As cópias fixadas continuam no cenário mesmo depois de apagar a biblioteca.
-      // O documento autorizado já identifica o espaço dos seus arquivos históricos.
-      for (const ref of aberto.documento.modelos)
-        espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
-      return {
-        resumo: resumo(aberto, aberto.espacoId),
-        documento: aberto.documento,
-        revisao: aberto.revisao,
-      }
+      return cenarioAberto(await pedir<CenarioDoServidor>('GET', `cenarios/${id}`))
+    },
+    async moverHistorico(id, revisaoEsperada, acao, operacaoId) {
+      return cenarioAberto(
+        await pedir<CenarioDoServidor>('POST', `cenarios/${id}/historico`, {
+          revisaoEsperada,
+          acao,
+          operacaoId,
+        }),
+      )
+    },
+    async listarRevisoes(id, antes) {
+      return pedir('GET', `cenarios/${id}/revisoes${antes === undefined ? '' : `?antes=${antes}`}`)
+    },
+    async restaurarRevisao(id, revisaoEsperada, revisao, operacaoId) {
+      return cenarioAberto(
+        await pedir<CenarioDoServidor>('POST', `cenarios/${id}/restaurar`, {
+          revisaoEsperada,
+          revisao,
+          operacaoId,
+        }),
+      )
     },
     async editarCenario(id, revisaoEsperada, comandos, operacaoId) {
       const { revisao } = await pedir<{ revisao: number }>('POST', `cenarios/${id}/lotes`, {

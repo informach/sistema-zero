@@ -312,6 +312,52 @@ describe('Molda Cenários: mundos e cenários', () => {
       details: { revisaoAtual: 1 },
     })
   })
+  test('histórico por HTTP permite desfazer, refazer e restaurar sem expor a outra conta', async () => {
+    const { ctx, cenario } = await comCenario()
+    const caminho = `/members/cenarios/cenarios/${cenario.id}`
+    await pedir(
+      ctx.app,
+      'POST',
+      `${caminho}/lotes`,
+      lote(0, 'operacao-0001', [{ tipo: 'cenario.renomear', nome: 'Outra vila' }]),
+    )
+    expect(await json(await pedir(ctx.app, 'GET', `${caminho}/historico`))).toEqual({
+      revisao: 1,
+      desfazer: 1,
+      refazer: 0,
+    })
+    const volta = await pedir(ctx.app, 'POST', `${caminho}/historico`, {
+      revisaoEsperada: 1,
+      operacaoId: 'desfazer-0001',
+      acao: 'desfazer',
+    })
+    expect(volta.status).toBe(200)
+    expect((await json(volta)).nome).toBe('Vila da praia')
+    expect(
+      (
+        await pedir(ctx.app, 'POST', `${caminho}/historico`, {
+          revisaoEsperada: 1,
+          operacaoId: 'refazer-0001',
+          acao: 'refazer',
+        })
+      ).status,
+    ).toBe(409)
+    expect((await pedir(ctx.app, 'GET', `${caminho}/historico`, undefined, doCliente)).status).toBe(
+      403,
+    )
+    expect(
+      (
+        await pedir(ctx.app, 'POST', `${caminho}/restaurar`, {
+          revisao: 1,
+          revisaoEsperada: 2,
+          operacaoId: 'restaurar-0001',
+        })
+      ).status,
+    ).toBe(200)
+    const revisoes = await json(await pedir(ctx.app, 'GET', `${caminho}/revisoes?antes=3`))
+    expect(revisoes.itens.map((r: { revisao: number }) => r.revisao)).toEqual([2, 1])
+    expect(revisoes.itens[0].autorId).toBeUndefined()
+  })
   test('lote que não vale responde 422 com os problemas e não grava nada', async () => {
     const { ctx, cenario } = await comCenario()
     const caminho = `/members/cenarios/cenarios/${cenario.id}`

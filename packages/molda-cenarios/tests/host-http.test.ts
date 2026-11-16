@@ -93,6 +93,44 @@ async function modeloParaImportar(nome: string, bytes: number[]): Promise<Modelo
 }
 
 describe('a oficina falando com o app', () => {
+  test('histórico devolve a cabeça diretamente e preserva a leitura dos modelos fixados', async () => {
+    const documento = criarDocumentoVazio(CENARIO, 'Praia')
+    documento.modelos = [
+      { id: 'arvore', biblioteca: BIBLIOTECA, modelo: 'arvore', digest: digest('a') },
+    ]
+    const resposta = {
+      id: CENARIO,
+      mundoId: MUNDO,
+      espacoId: ESPACO,
+      nome: 'Praia',
+      revisao: 5,
+      capa: null,
+      atualizadoEm: '2026-11-16T12:00:00Z',
+      documento,
+      historico: { revisao: 5, desfazer: 2, refazer: 1 },
+    }
+    const { host, pedidos } = montar((p) =>
+      p.caminho.endsWith('/historico') || p.caminho.endsWith('/restaurar')
+        ? { corpo: resposta }
+        : p.caminho.includes('/arquivos/')
+          ? { corpo: { url: 'https://r2/modelo' } }
+          : undefined,
+    )
+    expect((await host.moverHistorico(CENARIO, 4, 'desfazer', 'op-desfaz')).historico).toEqual(
+      resposta.historico,
+    )
+    expect(pedidos).toHaveLength(1)
+    expect(pedidos[0]?.corpo).toEqual({
+      revisaoEsperada: 4,
+      acao: 'desfazer',
+      operacaoId: 'op-desfaz',
+    })
+    await host.conteudoDoModelo({ biblioteca: BIBLIOTECA, digest: digest('a') })
+    expect(pedidos.at(-1)?.caminho).toBe(
+      `espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo&como=endereco`,
+    )
+    expect((await host.restaurarRevisao(CENARIO, 5, 1, 'op-restaura')).documento).toEqual(documento)
+  })
   test('reabrir preserva o espaço dos modelos de uma biblioteca apagada', async () => {
     const documento = criarDocumentoVazio(CENARIO, 'Ilha')
     documento.modelos = [

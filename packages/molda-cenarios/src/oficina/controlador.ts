@@ -21,12 +21,9 @@ export interface EstadoDaOficina {
   recusa: string | null
   podeDesfazer: boolean
   podeRefazer: boolean
+  ocupado: boolean
 }
 
-interface Passo {
-  desfazer: ComandoDeCenario[]
-  refazer: ComandoDeCenario[]
-}
 interface Envio {
   revisaoEsperada: number
   comandos: ComandoDeCenario[]
@@ -40,8 +37,9 @@ export interface ControladorDaOficina {
   subscribe(ouvinte: () => void): () => void
   /** Aplica um lote na hora e o põe na fila de gravação. Falso quando o lote é recusado. */
   executar(comandos: ComandoDeCenario[]): boolean
-  desfazer(): void
-  refazer(): void
+  desfazer(): Promise<void>
+  refazer(): Promise<void>
+  restaurar(revisao: number): Promise<void>
   selecionar(ids: readonly string[]): void
   /** Toque num objeto: troca a escolha ou, somando, põe e tira da escolha. */
   tocar(id: string | null, somar: boolean): void
@@ -73,10 +71,17 @@ export function criarControlador(
 ): ControladorDaOficina {
   const id = aberto.resumo.id
   const ouvintes = new Set<() => void>()
-  const passado: Passo[] = [],
-    futuro: Passo[] = [],
-    fila: Envio[] = []
+  const fila: Envio[] = []
+  let historico = { ...aberto.historico }
   let enviando: Promise<void> | null = null
+  let movendo: Promise<void> | null = null
+  let reabrindo: Promise<void> | null = null
+  let precisaReabrir = false
+  let pendente: {
+    revisaoEsperada: number
+    operacaoId: string
+    acao: 'desfazer' | 'refazer' | number
+  } | null = null
   let estado: EstadoDaOficina = {
     documento: aberto.documento,
     revisao: aberto.revisao,
@@ -85,16 +90,21 @@ export function criarControlador(
     encaixe: true,
     salvamento: 'guardado',
     recusa: null,
-    podeDesfazer: false,
-    podeRefazer: false,
+    podeDesfazer: historico.desfazer > 0,
+    podeRefazer: historico.refazer > 0,
+    ocupado: false,
   }
 
   const emitir = (mudanca: Partial<EstadoDaOficina>) => {
+    const disponivel =
+      !['erro', 'desatualizado'].includes(mudanca.salvamento ?? estado.salvamento) &&
+      !(mudanca.ocupado ?? estado.ocupado) &&
+      !pendente
     estado = {
       ...estado,
       ...mudanca,
-      podeDesfazer: passado.length > 0,
-      podeRefazer: futuro.length > 0,
+      podeDesfazer: historico.desfazer > 0 && disponivel,
+      podeRefazer: historico.refazer > 0 && disponivel,
     }
     for (const ouvinte of ouvintes) ouvinte()
   }
@@ -124,7 +134,14 @@ export function criarControlador(
 
   /** Aplica localmente e enfileira. Devolve o documento de antes, ou nulo na recusa. */
   const aplicar = (comandos: ComandoDeCenario[]): DocumentoDeCenario | null => {
-    if (!comandos.length || estado.salvamento === 'desatualizado') return null
+    if (
+      !comandos.length ||
+      estado.salvamento === 'desatualizado' ||
+      estado.ocupado ||
+      pendente ||
+      precisaReabrir
+    )
+      return null
     const antes = estado.documento
     let depois: { documento: DocumentoDeCenario; revisao: number }
     try {
@@ -150,12 +167,86 @@ export function criarControlador(
     return antes
   }
 
-  const andar = (de: Passo[], para: Passo[], lado: 'desfazer' | 'refazer') => {
-    const passo = de.pop()
-    if (!passo) return
-    if (aplicar(passo[lado])) para.push(passo)
-    // Um passo que não vale mais (o cenário mudou por baixo) não tem como voltar: sai da pilha.
-    emitir({})
+  const receber = (novo: CenarioAberto) => {
+    historico = { ...novo.historico }
+    const vivos = new Set(novo.documento.instancias.map((o) => o.id))
+    emitir({
+      documento: novo.documento,
+      revisao: novo.revisao,
+      selecao: estado.selecao.filter((id) => vivos.has(id)),
+      salvamento: 'guardado',
+      recusa: null,
+    })
+  }
+
+  const andar = (acao?: 'desfazer' | 'refazer' | number): Promise<void> => {
+    if (movendo) return movendo
+    if (reabrindo || precisaReabrir) return Promise.resolve()
+    if (estado.salvamento === 'desatualizado' || (estado.salvamento === 'erro' && !pendente))
+      return Promise.resolve()
+    if (
+      acao !== undefined &&
+      ((acao === 'desfazer' && !estado.podeDesfazer) || (acao === 'refazer' && !estado.podeRefazer))
+    )
+      return Promise.resolve()
+    emitir({ ocupado: true })
+    movendo = (async () => {
+      await enviar()
+      if (estado.salvamento !== 'guardado') return
+      if (!pendente && acao !== undefined)
+        pendente = { acao, revisaoEsperada: estado.revisao, operacaoId: novaOperacao() }
+      const pedido = pendente
+      if (!pedido) return
+      emitir({ salvamento: 'guardando' })
+      try {
+        const novo =
+          typeof pedido.acao === 'number'
+            ? await host.restaurarRevisao(
+                id,
+                pedido.revisaoEsperada,
+                pedido.acao,
+                pedido.operacaoId,
+              )
+            : await host.moverHistorico(id, pedido.revisaoEsperada, pedido.acao, pedido.operacaoId)
+        pendente = null
+        receber(novo)
+      } catch (erro) {
+        if (erro instanceof CenarioDesatualizado) {
+          pendente = null
+          emitir({ salvamento: 'desatualizado' })
+        } else emitir({ salvamento: 'erro', recusa: mensagemDaRecusa(erro) })
+      }
+    })().finally(() => {
+      movendo = null
+      emitir({ ocupado: false })
+    })
+    return movendo
+  }
+
+  const recarregar = (): Promise<void> => {
+    if (reabrindo) return reabrindo
+    precisaReabrir = true
+    emitir({ ocupado: true })
+    reabrindo = (async () => {
+      if (movendo) await movendo
+      if (enviando) await enviando
+      emitir({ ocupado: true, salvamento: 'guardando' })
+      try {
+        const novo = await host.abrirCenario(id)
+        fila.length = 0
+        pendente = null
+        precisaReabrir = false
+        receber(novo)
+        emitir({ selecao: [] })
+      } catch (erro) {
+        emitir({ salvamento: 'erro', recusa: mensagemDaRecusa(erro) })
+      } finally {
+        emitir({ ocupado: false })
+      }
+    })().finally(() => {
+      reabrindo = null
+    })
+    return reabrindo
   }
 
   return {
@@ -169,15 +260,18 @@ export function criarControlador(
       if (!antes) return false
       const desfazer = inverterLote(antes, estado.documento)
       if (desfazer.length) {
-        passado.push({ desfazer, refazer: comandos })
-        if (passado.length > HISTORICO_MAXIMO) passado.shift()
-        futuro.length = 0
+        historico = {
+          revisao: estado.revisao,
+          desfazer: Math.min(HISTORICO_MAXIMO, historico.desfazer + 1),
+          refazer: 0,
+        }
       }
       emitir({})
       return true
     },
-    desfazer: () => andar(passado, futuro, 'desfazer'),
-    refazer: () => andar(futuro, passado, 'refazer'),
+    desfazer: () => andar('desfazer'),
+    refazer: () => andar('refazer'),
+    restaurar: (revisao) => andar(revisao),
     selecionar(ids) {
       const vivos = new Set(estado.documento.instancias.map((o) => o.id))
       emitir({ selecao: [...new Set(ids)].filter((s) => vivos.has(s)) })
@@ -204,23 +298,21 @@ export function criarControlador(
     },
     tentarDeNovo() {
       if (estado.salvamento !== 'erro') return
+      if (precisaReabrir) {
+        void recarregar()
+        return
+      }
+      if (pendente) {
+        void andar()
+        return
+      }
       emitir({ salvamento: fila.length ? 'guardando' : 'guardado' })
       void enviar()
     },
-    async recarregar() {
-      fila.length = 0
-      passado.length = 0
-      futuro.length = 0
-      const novo = await host.abrirCenario(id)
-      emitir({
-        documento: novo.documento,
-        revisao: novo.revisao,
-        selecao: [],
-        salvamento: 'guardado',
-        recusa: null,
-      })
-    },
+    recarregar,
     async terminar() {
+      if (reabrindo) await reabrindo
+      if (movendo) await movendo
       if (estado.salvamento === 'guardando') await enviar()
     },
   }

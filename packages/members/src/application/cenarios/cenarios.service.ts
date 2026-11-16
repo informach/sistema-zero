@@ -5,6 +5,7 @@ import {
   ConflitoDeCenario,
   criarDocumentoVazio,
   executarLote,
+  inverterLote,
   LIMITES_CENARIO_V2,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -34,6 +35,7 @@ import {
   CenariosFechadosError,
   CenariosSemEspacoError,
 } from '../../domain/cenarios/cenarios.errors'
+import type { MovimentoDoHistorico, ResumoDoHistorico } from '../../domain/cenarios/historico'
 import type { BlobReservado, CenariosRepository } from '../../domain/ports/cenarios-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 
@@ -55,6 +57,7 @@ export interface ResumoDeCenarioView extends Omit<ResumoDeCenario, 'atualizadoEm
 export interface CenarioView extends ResumoDeCenarioView {
   espacoId: string
   documento: Cenario['documento']
+  historico: ResumoDoHistorico
 }
 
 /** Um arquivo a enviar: onde pôr no bucket e com que tipo e tamanho exatos. */
@@ -520,7 +523,93 @@ export class CenariosService {
 
   async abrirCenario(ator: Ator, id: string): Promise<CenarioView> {
     const { cenario, espaco } = await this.cenarioDe(ator, id)
-    return { ...resumoView(cenario), espacoId: espaco.id, documento: cenario.documento }
+    return {
+      ...resumoView(cenario),
+      espacoId: espaco.id,
+      documento: cenario.documento,
+      historico: await this.historico(ator, id),
+    }
+  }
+
+  async historico(ator: Ator, id: string): Promise<ResumoDoHistorico> {
+    const { cenario } = await this.cenarioDe(ator, id)
+    const pilhas = await this.repo.pilhasDoHistorico(id)
+    return {
+      revisao: cenario.revisao,
+      desfazer: pilhas.passado.length,
+      refazer: pilhas.futuro.length,
+    }
+  }
+
+  async revisoes(ator: Ator, id: string, antes?: number) {
+    await this.cenarioDe(ator, id)
+    const itens = await this.repo.revisoes(id, antes, 50)
+    const inicio = await this.repo.inicioDoHistorico(id)
+    return {
+      inicio,
+      itens: itens.map((r) => ({ revisao: r.revisao, criadoEm: r.criadoEm.toISOString() })),
+      proximo: itens.length === 50 ? itens.at(-1)!.revisao : null,
+    }
+  }
+
+  async moverHistorico(
+    ator: Ator,
+    id: string,
+    pedido: { acao: 'desfazer' | 'refazer'; revisaoEsperada: number; operacaoId: string },
+  ): Promise<CenarioView> {
+    const { cenario } = await this.cenarioDe(ator, id)
+    if ((await this.repo.operacaoAplicada(id, pedido.operacaoId)) !== null)
+      return this.abrirCenario(ator, id)
+    if (cenario.revisao !== pedido.revisaoEsperada)
+      throw new CenarioDesatualizadoError(cenario.revisao)
+    const pilhas = await this.repo.pilhasDoHistorico(id)
+    const alvo = (pedido.acao === 'desfazer' ? pilhas.passado : pilhas.futuro).at(-1)
+    const passo = alvo === undefined ? null : await this.repo.passoDoHistorico(id, alvo)
+    if (!passo?.inversos?.length || alvo === undefined)
+      throw new CenarioInvalidoError(['Não há outro passo para esta ação'])
+    await this.aplicarMudanca(
+      ator,
+      id,
+      { ...pedido, comandos: pedido.acao === 'desfazer' ? passo.inversos : passo.comandos },
+      { acao: pedido.acao, alvo },
+    )
+    return this.abrirCenario(ator, id)
+  }
+
+  async documentoNaRevisao(ator: Ator, id: string, revisao: number) {
+    const { cenario } = await this.cenarioDe(ator, id)
+    if (!Number.isInteger(revisao) || revisao < 0 || revisao > cenario.revisao)
+      throw new CenarioInvalidoError(['Revisão fora do histórico deste cenário'])
+    if (revisao === cenario.revisao) return cenario.documento
+    const foto = await this.repo.fotografia(id, revisao)
+    if (!foto) throw new CenarioInvalidoError(['Esta revisão é anterior ao histórico disponível'])
+    let estado = foto
+    for (const lote of await this.repo.lotesEntre(id, foto.revisao, revisao)) {
+      if (lote.revisao !== estado.revisao + 1)
+        throw new CenarioInvalidoError(['O histórico está incompleto'])
+      estado = executarLote(estado, { revisaoEsperada: estado.revisao, comandos: lote.comandos })
+    }
+    if (estado.revisao !== revisao) throw new CenarioInvalidoError(['O histórico está incompleto'])
+    return estado.documento
+  }
+
+  async restaurarRevisao(
+    ator: Ator,
+    id: string,
+    pedido: { revisao: number; revisaoEsperada: number; operacaoId: string },
+  ): Promise<CenarioView> {
+    const { cenario } = await this.cenarioDe(ator, id)
+    if ((await this.repo.operacaoAplicada(id, pedido.operacaoId)) !== null)
+      return this.abrirCenario(ator, id)
+    if (cenario.revisao !== pedido.revisaoEsperada)
+      throw new CenarioDesatualizadoError(cenario.revisao)
+    const documento = await this.documentoNaRevisao(ator, id, pedido.revisao)
+    const comandos = inverterLote(documento, cenario.documento)
+    await this.editarCenario(ator, id, {
+      ...pedido,
+      comandos: comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
+    })
+    return this.abrirCenario(ator, id)
   }
 
   /**
@@ -531,6 +620,15 @@ export class CenariosService {
     ator: Ator,
     id: string,
     lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
+  ): Promise<{ revisao: number }> {
+    return this.aplicarMudanca(ator, id, lote)
+  }
+
+  private async aplicarMudanca(
+    ator: Ator,
+    id: string,
+    lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
+    movimento?: MovimentoDoHistorico,
   ): Promise<{ revisao: number }> {
     const { cenario, espaco } = await this.cenarioDe(ator, id)
     const feita = await this.repo.operacaoAplicada(id, lote.operacaoId)
@@ -544,7 +642,10 @@ export class CenariosService {
 
     // Modelo novo na tabela do cenário precisa ser um arquivo guardado NESTE espaço.
     const novos = new Set<string>()
-    for (const c of lote.comandos) if (c.tipo === 'modelo.definir') novos.add(c.modelo.digest)
+    for (const c of lote.comandos) {
+      if (c.tipo === 'modelo.definir') novos.add(c.modelo.digest)
+      if (c.tipo === 'cenario.restaurar') for (const m of c.documento.modelos) novos.add(m.digest)
+    }
     const guardados = novos.size
       ? await this.repo.blobsConfirmados(espaco.id, [...novos])
       : new Map<string, { tipo: TipoDeBlob }>()
@@ -571,6 +672,7 @@ export class CenariosService {
         comandos: lote.comandos,
         operacaoId: lote.operacaoId,
         autorId: ator.usuarioId,
+        movimento,
       },
       this.clock(),
     )

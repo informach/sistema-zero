@@ -1,0 +1,101 @@
+{
+  "catalogo": "fabfd86be3bcbaaf84ddf6360ff2f4960135ed079fb1cf7a527454fb59403d21",
+  "total": 3218,
+  "conferidos": 3218,
+  "recusados": 0,
+  "completo": true,
+  "colecoes": [
+    {
+      "origem": "reino",
+      "esperados": 125,
+      "registrados": 125
+    },
+    {
+      "origem": "faroeste",
+      "esperados": 135,
+      "registrados": 135
+    },
+    {
+      "origem": "templo",
+      "esperados": 136,
+      "registrados": 136
+    },
+    {
+      "origem": "adventure_land",
+      "esperados": 246,
+      "registrados": 246
+    },
+    {
+      "origem": "Fantasy",
+      "esperados": 5,
+      "registrados": 5
+    },
+    {
+      "origem": "acervo-cidade",
+      "esperados": 2,
+      "registrados": 2
+    },
+    {
+      "origem": "parque",
+      "esperados": 126,
+      "registrados": 126
+    },
+    {
+      "origem": "Morada",
+      "esperados": 19,
+      "registrados": 19
+    },
+    {
+      "origem": "cidade",
+      "esperados": 889,
+      "registrados": 889
+    },
+    {
+      "origem": "corrida",
+      "esperados": 58,
+      "registrados": 58
+    },
+    {
+      "origem": "camping",
+      "esperados": 363,
+      "registrados": 363
+    },
+    {
+      "origem": "halloween",
+      "esperados": 125,
+      "registrados": 125
+    },
+    {
+      "origem": "fazenda",
+      "esperados": 113,
+      "registrados": 113
+    },
+    {
+      "origem": "escola",
+      "esperados": 19,
+      "registrados": 19
+    },
+    {
+      "origem": "saude",
+      "esperados": 9,
+      "registrados": 9
+    },
+    {
+      "origem": "doce",
+      "esperados": 255,
+      "registrados": 255
+    },
+    {
+      "origem": "estadio",
+      "esperados": 426,
+      "registrados": 426
+    },
+    {
+      "origem": "inverno",
+      "esperados": 167,
+      "registrados": 167
+    }
+  ],
+  "capas": 18,
+  "capasCarregadas": true
+}

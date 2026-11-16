@@ -228,6 +228,45 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         .get('/cenarios/:id', ({ headers, params }) => s.abrirCenario(atorDe(headers), params.id), {
           params: Id,
         })
+        .get(
+          '/cenarios/:id/historico',
+          ({ headers, params }) => s.historico(atorDe(headers), params.id),
+          { params: Id },
+        )
+        .get(
+          '/cenarios/:id/revisoes',
+          ({ headers, params, query }) => s.revisoes(atorDe(headers), params.id, query.antes),
+          {
+            params: Id,
+            query: t.Object({
+              antes: t.Optional(t.Numeric({ minimum: 1, maximum: 2147483647, multipleOf: 1 })),
+            }),
+          },
+        )
+        .post(
+          '/cenarios/:id/historico',
+          ({ headers, params, body }) => s.moverHistorico(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              acao: t.Union([t.Literal('desfazer'), t.Literal('refazer')]),
+              revisaoEsperada: t.Integer({ minimum: 0 }),
+              operacaoId: t.String({ minLength: 8, maxLength: 80, pattern: '^[A-Za-z0-9_-]+$' }),
+            }),
+          },
+        )
+        .post(
+          '/cenarios/:id/restaurar',
+          ({ headers, params, body }) => s.restaurarRevisao(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              revisao: t.Integer({ minimum: 0 }),
+              revisaoEsperada: t.Integer({ minimum: 0 }),
+              operacaoId: t.String({ minLength: 8, maxLength: 80, pattern: '^[A-Za-z0-9_-]+$' }),
+            }),
+          },
+        )
         // A porta única de edição: a mão e os agentes mandam os mesmos lotes de comandos.
         // O formato de cada comando é conferido pelo núcleo dos cenários, no serviço.
         .post(

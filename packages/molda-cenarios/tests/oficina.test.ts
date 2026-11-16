@@ -116,6 +116,95 @@ describe('ações da aba Objetos', () => {
 })
 
 describe('controlador da oficina', () => {
+  test('falha ao reabrir mantém o erro e tentar de novo busca a cabeça real', async () => {
+    const real = criarHostEmMemoria()
+    let falhar = false,
+      leituras = 0
+    const host: CenariosHost = {
+      ...real,
+      async abrirCenario(id) {
+        leituras++
+        if (falhar) throw Error('Sem conexão')
+        return real.abrirCenario(id)
+      },
+    }
+    const { controlador, cenario } = await abrir(host)
+    await real.editarCenario(
+      cenario.id,
+      0,
+      [{ tipo: 'cenario.renomear', nome: 'Mudou fora' }],
+      'edicao-fora',
+    )
+    falhar = true
+    await controlador.recarregar()
+    expect(controlador.getState().salvamento).toBe('erro')
+    expect(controlador.executar([{ tipo: 'cenario.renomear', nome: 'Ainda não pode' }])).toBe(false)
+    falhar = false
+    controlador.tentarDeNovo()
+    await controlador.terminar()
+    expect(leituras).toBe(3)
+    expect(controlador.getState().documento.nome).toBe('Mudou fora')
+    expect(controlador.getState().salvamento).toBe('guardado')
+  })
+  test('desfazer e refazer continuam disponíveis depois de criar outro controlador', async () => {
+    const { host, cenario, controlador } = await abrir()
+    por(controlador, ids())
+    await controlador.terminar()
+    const reaberto = criarControlador(host, await host.abrirCenario(cenario.id))
+    expect(reaberto.getState().podeDesfazer).toBe(true)
+    await reaberto.desfazer()
+    expect(reaberto.getState().documento.instancias).toHaveLength(0)
+    const maisUmaVez = criarControlador(host, await host.abrirCenario(cenario.id))
+    expect(maisUmaVez.getState().podeRefazer).toBe(true)
+    await maisUmaVez.refazer()
+    expect(maisUmaVez.getState().documento.instancias).toHaveLength(1)
+    expect(maisUmaVez.getState().revisao).toBe(3)
+  })
+  test('resposta perdida de desfazer repete a mesma operação, sem desfazer duas vezes', async () => {
+    const real = criarHostEmMemoria()
+    let perder = true
+    const operacoes: string[] = []
+    const host: CenariosHost = {
+      ...real,
+      async moverHistorico(...args) {
+        operacoes.push(args[3])
+        const resposta = await real.moverHistorico(...args)
+        if (perder) {
+          perder = false
+          throw Error('A resposta se perdeu')
+        }
+        return resposta
+      },
+    }
+    const { cenario, controlador } = await abrir(host)
+    por(controlador, ids())
+    await controlador.desfazer()
+    expect(controlador.getState().salvamento).toBe('erro')
+    expect(
+      controlador.executar([
+        { tipo: 'cenario.renomear', nome: 'Não pode enquanto o resultado está incerto' },
+      ]),
+    ).toBe(false)
+    controlador.tentarDeNovo()
+    await controlador.terminar()
+    expect(operacoes).toHaveLength(2)
+    expect(operacoes[1]).toBe(operacoes[0])
+    expect(controlador.getState().documento.instancias).toHaveLength(0)
+    expect((await host.abrirCenario(cenario.id)).revisao).toBe(2)
+  })
+  test('restaurar uma versão também vira um passo que pode ser desfeito', async () => {
+    const { controlador, host, cenario } = await abrir()
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Primeira' }])
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Segunda' }])
+    await controlador.restaurar(1)
+    expect(controlador.getState().documento.nome).toBe('Primeira')
+    expect(controlador.getState().revisao).toBe(3)
+    await controlador.desfazer()
+    expect(controlador.getState().documento.nome).toBe('Segunda')
+    expect((await host.listarRevisoes(cenario.id)).itens.map((r) => r.revisao)).toEqual([
+      4, 3, 2, 1,
+    ])
+  })
   test('a edição aparece na hora e é guardada no host, na ordem', async () => {
     const { host, cenario, controlador } = await abrir()
     const novoId = ids()
@@ -133,14 +222,14 @@ describe('controlador da oficina', () => {
     const novoId = ids()
     const a = por(controlador, novoId)
     por(controlador, novoId, 3)
-    controlador.desfazer()
+    await controlador.desfazer()
     expect(controlador.getState().documento.instancias.map((o) => o.id)).toEqual([a])
     expect(controlador.getState()).toMatchObject({ podeDesfazer: true, podeRefazer: true })
-    controlador.desfazer()
+    await controlador.desfazer()
     expect(controlador.getState().documento.instancias).toHaveLength(0)
     expect(controlador.getState().documento.modelos).toHaveLength(0)
-    controlador.refazer()
-    controlador.refazer()
+    await controlador.refazer()
+    await controlador.refazer()
     expect(controlador.getState().documento.instancias).toHaveLength(2)
     expect(controlador.getState().podeRefazer).toBe(false)
     await controlador.terminar()
@@ -150,7 +239,7 @@ describe('controlador da oficina', () => {
     const { controlador } = await abrir()
     const novoId = ids()
     por(controlador, novoId)
-    controlador.desfazer()
+    await controlador.desfazer()
     por(controlador, novoId, 9)
     expect(controlador.getState().podeRefazer).toBe(false)
   })
@@ -215,7 +304,7 @@ describe('controlador da oficina', () => {
     await controlador.recarregar()
     expect(controlador.getState()).toMatchObject({ salvamento: 'guardado', revisao: 1 })
     expect(controlador.getState().documento.nome).toBe('De outro lugar')
-    expect(controlador.getState().podeDesfazer).toBe(false)
+    expect(controlador.getState().podeDesfazer).toBe(true)
   })
 })
 
