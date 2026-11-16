@@ -378,6 +378,44 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
       },
     },
   },
+  // O curso Cadê Todo Mundo como produto (15/11/2026): o presente das campanhas passou a ser uma
+  // oferta do catálogo, e a oferta precisa do produto do curso.
+  {
+    audience: 'kids',
+    sku: 'cade-todo-mundo',
+    slug: 'cade-todo-mundo',
+    name: 'Cadê Todo Mundo?',
+    kind: 'course',
+    status: 'active',
+    sellable: true,
+    description:
+      'O primeiro jogo da criança: um esconde-esconde num jardim, em que ela monta as regras com blocos e conta os personagens encontrados.',
+    fulfillment: {
+      accessType: 'course',
+      courseRef: 'cade-todo-mundo',
+      release: {
+        mode: 'immediate',
+      },
+    },
+  },
+  {
+    audience: 'adult',
+    sku: 'cade-todo-mundo-adulto',
+    slug: 'cade-todo-mundo-adulto',
+    name: 'Cadê Todo Mundo? (adultos)',
+    kind: 'course',
+    status: 'active',
+    sellable: true,
+    description:
+      'O primeiro jogo da pessoa adulta: um esconde-esconde num jardim, com as regras montadas em blocos no Estúdio do Sistema Zero.',
+    fulfillment: {
+      accessType: 'course',
+      courseRef: 'cade-todo-mundo-adulto',
+      release: {
+        mode: 'immediate',
+      },
+    },
+  },
 ]
 
 export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
@@ -602,5 +640,54 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
       },
     ],
     productSku: 'desafio-primeiro-jogo-adulto',
+  },
+  // Cadê Todo Mundo por 7 dias (15/11/2026, decisão da dona): o curso + o Mural completo de bônus
+  // pelo mesmo prazo; depois do prazo fica a visita ao Mural (regra do members para oferta de prazo
+  // fixo com o Mural). É a oferta que as campanhas dão de presente, sem cobrar; comprada, custa R$ 37.
+  {
+    code: 'cade-7-dias',
+    slug: 'cade-todo-mundo-7-dias',
+    name: 'Cadê Todo Mundo? · 7 dias',
+    priceCents: 3700,
+    currency: 'BRL',
+    pricingMode: 'one_time',
+    accessMode: 'fixed',
+    accessDurationValue: 7,
+    accessDurationUnit: 'days',
+    guaranteeDays: 7,
+    status: 'active',
+    content: {
+      badge: 'O primeiro jogo',
+      ctaLabel: 'Quero o Cadê Todo Mundo',
+    },
+    items: [
+      {
+        productSku: 'mural-dos-criadores',
+      },
+    ],
+    productSku: 'cade-todo-mundo',
+  },
+  {
+    code: 'cade-adulto-7-dias',
+    slug: 'cade-todo-mundo-adulto-7-dias',
+    name: 'Cadê Todo Mundo? (adultos) · 7 dias',
+    priceCents: 3700,
+    currency: 'BRL',
+    pricingMode: 'one_time',
+    accessMode: 'fixed',
+    accessDurationValue: 7,
+    accessDurationUnit: 'days',
+    guaranteeDays: 7,
+    status: 'active',
+    content: {
+      badge: 'O primeiro jogo',
+      ctaLabel: 'Quero o Cadê Todo Mundo',
+    },
+    items: [
+      {
+        productSku: 'adult-mural-dos-criadores',
+      },
+    ],
+    productSku: 'cade-todo-mundo-adulto',
   },
 ]

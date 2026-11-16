@@ -6,7 +6,14 @@ import { CreateInviteService } from '../../src/application/invites/create-invite
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
 import { createServer } from '../../src/interfaces/http/server'
 import { InMemoryCampaignRepository } from '../fakes/campaigns'
-import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
+import {
+  ADULT_GIFT_OFFER,
+  FakeGiftOfferCatalog,
+  FakeReferralsGateway,
+  InMemoryReferralRepository,
+  KIDS_GIFT_OFFER,
+  silentLogger,
+} from '../fakes/in-memory'
 
 const INTERNAL_TOKEN = 'internal-token-32-chars-ok-xxxxx'
 const METRICS_TOKEN = 'metrics-token-32-chars-okay-xxxx'
@@ -18,12 +25,20 @@ function buildApp(
   const repo = new InMemoryReferralRepository()
   const gateway = new FakeReferralsGateway()
   const campaignRepo = new InMemoryCampaignRepository(repo)
-  const campaigns = new CampaignAdminService(campaignRepo, repo, FUNNEL_URL)
+  const catalog = new FakeGiftOfferCatalog()
+  const campaigns = new CampaignAdminService(
+    campaignRepo,
+    repo,
+    FUNNEL_URL,
+    undefined,
+    undefined,
+    catalog,
+  )
   const redeem = new RedeemScholarshipService(
     repo,
     gateway,
     {
-      courseSlug: 'cade-todo-mundo',
+      giftOffers: catalog,
       kidsCommunityUrl: 'https://kids.sistemazero.com.br',
       communityUrl: opts.communityUrl ?? null,
       leaseMs: 90_000,
@@ -58,7 +73,7 @@ function buildApp(
     metricsToken: opts.metricsToken,
     readiness: async () => {},
   })
-  return { app, repo, gateway, campaigns }
+  return { app, repo, gateway, campaigns, catalog }
 }
 
 const ADMIN_HEADERS = {
@@ -100,6 +115,7 @@ describe('campanhas no HTTP', () => {
       commissionAmountCents: 3000,
       commissionAnnualAmountCents: 8000,
       commissionWindowDays: 45,
+      giftOfferId: KIDS_GIFT_OFFER.offerId,
     }
     await campaigns.create(
       { ...input, code: 'outro-parceiro', ambassadorId: other.ambassador.id },
@@ -164,7 +180,7 @@ describe('campanhas no HTTP', () => {
     )
     expect(result.status).toBe(410)
     expect(await result.json()).toMatchObject({ error: { code: 'GIFT_EXPIRED' } })
-    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(1)
   })
   const input = {
     name: 'Ação de outubro',
@@ -176,7 +192,72 @@ describe('campanhas no HTTP', () => {
     endsAt: '2099-01-01T00:00:00Z',
     status: 'draft',
     channel: 'palestra',
+    giftOfferId: KIDS_GIFT_OFFER.offerId,
   }
+  test('oferta do presente: obrigatória na criação, travada depois de publicar, Catálogo fora = 503', async () => {
+    const { app, catalog } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const { giftOfferId: _omitida, ...semOferta } = input
+    const missing = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify(semOferta),
+      }),
+    )
+    expect(missing.status).toBe(400)
+    expect(await missing.json()).toMatchObject({ error: { code: 'CAMPAIGN_INVALID' } })
+    const wrongAudience = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, giftOfferId: ADULT_GIFT_OFFER.offerId }),
+      }),
+    )
+    expect(wrongAudience.status).toBe(400)
+    const created = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'active' }),
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { campaign } = (await created.json()) as {
+      campaign: { id: string; giftOfferId: string; updatedAt: string }
+    }
+    // O DTO conserva o campo (o normalize do Elysia apagaria campo fora dele).
+    expect(campaign.giftOfferId).toBe(KIDS_GIFT_OFFER.offerId)
+    const other = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d07',
+      offerSlug: 'outra-oferta-kids',
+    })
+    const locked = await app.handle(
+      req(`/referrals/admin/campaigns/${campaign.id}`, {
+        method: 'PATCH',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({
+          ...input,
+          status: 'active',
+          giftOfferId: other.offerId,
+          expectedUpdatedAt: campaign.updatedAt,
+        }),
+      }),
+    )
+    expect(locked.status).toBe(409)
+    expect(await locked.json()).toMatchObject({ error: { code: 'CAMPAIGN_GIFT_OFFER_LOCKED' } })
+    catalog.fail = true
+    const down = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, code: 'catalogo-fora' }),
+      }),
+    )
+    expect(down.status).toBe(503)
+    expect(await down.json()).toMatchObject({ error: { code: 'CATALOG_UNAVAILABLE' } })
+  })
+
   test('HTTP aceita comissão explícita, rejeita valor fracionado e mantém termos privados', async () => {
     const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
     const person = await repo.createAmbassadorWithCode({
@@ -303,6 +384,38 @@ describe('campanhas no HTTP', () => {
       state: 'active',
       source: { kind: 'campaign', name: input.publicTitle },
       giftAvailable: true,
+      // O que a oferta da campanha entrega (leitura pública do funil).
+      gift: {
+        offerId: KIDS_GIFT_OFFER.offerId,
+        offerTitle: KIDS_GIFT_OFFER.name,
+        courseSlug: 'cade-todo-mundo',
+        courseTitle: 'Cadê Todo Mundo?',
+        learner: 'child',
+        accessDays: 7,
+        includesMural: true,
+      },
+    })
+  })
+  test('campanha encerrada ainda diz qual é o presente, sem abrir cadastro', async () => {
+    const { app } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const created = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'ended' }),
+      }),
+    )
+    expect(created.status).toBe(201)
+    const page = await app.handle(
+      req(`/referrals/internal/codes/${input.code}`, {
+        headers: { 'x-internal-token': INTERNAL_TOKEN },
+      }),
+    )
+    expect(page.status).toBe(200)
+    expect(await page.json()).toMatchObject({
+      state: 'ended',
+      giftAvailable: false,
+      gift: { offerId: KIDS_GIFT_OFFER.offerId, courseSlug: 'cade-todo-mundo', accessDays: 7 },
     })
   })
   test('datas inválidas retornam 400 e encerramento retorna 410 antes de criar conta', async () => {
@@ -601,6 +714,16 @@ describe('borda HTTP do referrals', () => {
         startsAt: null,
         endsAt: null,
         audience: 'kids',
+        // Código de embaixador: a oferta padrão do público.
+        gift: {
+          offerId: KIDS_GIFT_OFFER.offerId,
+          offerTitle: KIDS_GIFT_OFFER.name,
+          courseSlug: 'cade-todo-mundo',
+          courseTitle: 'Cadê Todo Mundo?',
+          learner: 'child',
+          accessDays: 7,
+          includesMural: true,
+        },
       })
 
       const missing = await app.handle(req('/referrals/internal/codes/nao-existe', { headers }))
@@ -630,7 +753,9 @@ describe('borda HTTP do referrals', () => {
         req(`/referrals/internal/codes/${ambassador.code}`, { headers }),
       )
       expect(page.status).toBe(200)
-      expect(await page.json()).toMatchObject({ giftAvailable: false })
+      const closed = (await page.json()) as Record<string, unknown>
+      expect(closed).toMatchObject({ giftAvailable: false })
+      expect(closed).not.toHaveProperty('gift')
 
       const res = await app.handle(
         req('/referrals/internal/redemptions', {
@@ -917,6 +1042,7 @@ describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
       status: 'active',
       channel: 'feira',
       audience: 'adult',
+      giftOfferId: ADULT_GIFT_OFFER.offerId,
     }
     const created = await app.handle(
       req('/referrals/admin/campaigns', {
@@ -937,7 +1063,12 @@ describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
       req(`/referrals/admin/campaigns/${campaign.id}`, {
         method: 'PATCH',
         headers: ADMIN_HEADERS,
-        body: JSON.stringify({ ...body, audience: 'kids', expectedUpdatedAt: campaign.updatedAt }),
+        body: JSON.stringify({
+          ...body,
+          audience: 'kids',
+          giftOfferId: KIDS_GIFT_OFFER.offerId,
+          expectedUpdatedAt: campaign.updatedAt,
+        }),
       }),
     )
     expect(locked.status).toBe(409)

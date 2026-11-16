@@ -8,6 +8,7 @@ import { ParentShell } from '../_components/parent-shell'
 import { ParentPageTitle, ParentSection } from '../_components/parent-ui'
 import { ParentSubscriptions, PasswordCard, PurchaseHistory } from '../_components/purchase-history'
 import { StudioOpenRouterCard } from '../_components/studio-openrouter-card'
+import { WeeklyReportToggle } from '../_components/weekly-report-toggle'
 
 /**
  * A Conta (11/10/2026): assinatura, créditos do Zappy e do Pensa, compras, senha e indicação num lugar só. Antes
@@ -19,7 +20,7 @@ export function AccountClient({ parentName }: { parentName?: string }) {
     <ParentShell active="conta" parentName={parentName}>
       <ParentPageTitle
         title="Conta"
-        text="Assinatura, compras, créditos do Zappy e do Pensa, e a segurança da sua conta."
+        text="Sua assinatura e suas compras, os créditos que seus filhos usam com o Zappy e o Pensa, e a segurança da sua conta."
       />
       {/* Duas colunas que se acomodam quando um cartão some (sem assinatura, equipe sem teto de
           créditos): a da esquerda é o dinheiro, a da direita o uso e a segurança. */}
@@ -34,6 +35,9 @@ export function AccountClient({ parentName }: { parentName?: string }) {
           <FamilyAiCredits />
           <AiTransparencyNotice />
           <StudioOpenRouterCard />
+          {/* E-mails que você recebe (redesenho de 14/11/2026): o resumo da semana também mora
+              na aba Progresso de cada filho, onde o próprio e-mail manda desligar. */}
+          <WeeklyReportToggle />
           <PasswordCard onChange={() => setPassword(true)} />
         </aside>
       </div>

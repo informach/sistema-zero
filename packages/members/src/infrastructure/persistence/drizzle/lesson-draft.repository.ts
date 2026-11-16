@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { parentsLessonIssues } from '@sistemazero/core/course/learner'
 import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
@@ -563,6 +564,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       ...(course?.modality === 'live'
         ? liveLessonCompletionIssues(draft.document.blocks, draft.document.sections)
         : []),
+      ...(course?.learner === 'parents' ? parentsLessonIssues(draft.document.blocks) : []),
       ...(await this.artSlotIssues(lessonId, draft.document)),
     ]
   }
@@ -622,6 +624,8 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         )
         if (publishingCourse?.modality === 'live')
           issues.push(...liveLessonCompletionIssues(draft.document.blocks, draft.document.sections))
+        if (publishingCourse?.learner === 'parents')
+          issues.push(...parentsLessonIssues(draft.document.blocks))
         if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
         const content = new DrizzleContentAdminRepository(tx, this.studioPolicy)
         const hadShowcase =

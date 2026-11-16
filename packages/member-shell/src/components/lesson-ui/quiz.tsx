@@ -48,9 +48,12 @@ export function LessonQuiz(props: Props) {
 }
 function ClassicLessonQuiz({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()
-  const helpReturnPath = player
-    ? `/cursos/${encodeURIComponent(player.courseSlug)}/aulas/${encodeURIComponent(player.lessonId)}`
-    : undefined
+  // Nos cursos para pais (`helpLinks: false`) o "Como fazer" vira texto: sem caminho de volta.
+  const helpLinks = player?.helpLinks !== false
+  const helpReturnPath =
+    player && helpLinks
+      ? `/cursos/${encodeURIComponent(player.courseSlug)}/aulas/${encodeURIComponent(player.lessonId)}`
+      : undefined
   const [phase, setPhase] = useState<'intro' | 'steps'>('intro')
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -79,8 +82,9 @@ function ClassicLessonQuiz({ blockId, content, quizState }: Props) {
   // mas não re-parseia o enunciado/opções (só muda ao avançar de pergunta).
   const activeQuestion = questions[step]
   const promptNode = useMemo(
-    () => (activeQuestion ? renderMarkdown(activeQuestion.prompt, { helpReturnPath }) : null),
-    [activeQuestion, helpReturnPath],
+    () =>
+      activeQuestion ? renderMarkdown(activeQuestion.prompt, { helpReturnPath, helpLinks }) : null,
+    [activeQuestion, helpReturnPath, helpLinks],
   )
   const choiceNodes = useMemo(
     () =>
@@ -188,6 +192,7 @@ function ClassicLessonQuiz({ blockId, content, quizState }: Props) {
             result={result}
             answers={answers}
             helpReturnPath={helpReturnPath}
+            helpLinks={helpLinks}
           />
         ) : null}
       </div>
@@ -217,6 +222,7 @@ function ClassicLessonQuiz({ blockId, content, quizState }: Props) {
           result={result}
           answers={answers}
           helpReturnPath={helpReturnPath}
+          helpLinks={helpLinks}
         />
         {cooldownLeft !== null ? (
           <div className="flex flex-col gap-1">

@@ -93,7 +93,7 @@ export function AttentionList({
               <strong>{item.title}</strong> {item.text}
             </p>
             <Link
-              href={childHref(item.profile.id, undefined, studentDestination)}
+              href={childHref(item.profile.id, 'aparelhos', studentDestination)}
               className={index === 0 ? PRIMARY_ACTION : SECONDARY_ACTION}
             >
               {item.action}

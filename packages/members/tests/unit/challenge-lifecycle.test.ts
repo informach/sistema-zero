@@ -118,7 +118,7 @@ function adulto(over: Partial<ChallengeLifecycleCandidate> = {}): ChallengeLifec
 }
 
 describe('SendChallengeLifecycleService', () => {
-  test('24h sem senha envia o lembrete de ativação uma única vez', async () => {
+  test('24h sem entrar envia o lembrete de ativação uma única vez, com o login por código', async () => {
     const { repo, marks } = fakeRepo([candidate()])
     const messaging = fakeMessaging()
     const lifecycle = service(repo, fakeAuth([identity(false)]), messaging.gateway)
@@ -128,7 +128,7 @@ describe('SendChallengeLifecycleService', () => {
       templateKey: 'challenge-not-activated',
       variables: {
         nome: 'Marcos',
-        link: 'https://kids.sistemazero.com.br/esqueci-senha',
+        link: 'https://kids.sistemazero.com.br/login/responsavel',
       },
       idempotencyKey: 'challenge-not-activated:ent-1:2026-10-16',
     })
@@ -253,7 +253,7 @@ describe('SendChallengeLifecycleService no Desafio adulto', () => {
         templateKey: 'challenge-not-activated-adult',
         variables: {
           nome: 'Aluno(a)',
-          link: 'https://comunidade.sistemazero.com.br/esqueci-senha',
+          link: 'https://comunidade.sistemazero.com.br/login',
         },
         idempotencyKey: 'challenge-not-activated-adult:sem-senha:2026-10-16',
       }),

@@ -331,6 +331,37 @@ O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da crian�
 
 Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
 
+## Área dos pais redesenhada + cursos para pais (14/11/2026)
+
+Proposta aprovada no Canvas (artifact `KaXaNyGugcbxPLy1GUVZdi`, v2). ⚠️ Partes da seção de
+11/10/2026 abaixo ficaram históricas: a barra do topo, a página Acompanhamento e a edição em
+página própria.
+
+- **Moldura:** `_components/parent-shell.tsx` virou MENU LATERAL escuro (`aside.kids-menu` dentro
+  de `.kids-shell-row`, o visual do `AppSidebar`): Início (`/pais`), Família (`/pais/familia`, com
+  os filhos lidos de `/api/profiles`), Cursos para pais (`/pais/cursos`), Oficinas ao vivo, Conta e
+  Ajuda; no pé, "Ir para a área da criança", Trocar senha e Sair. No celular, barra no alto e barra
+  embaixo (Início, Família, Cursos, Oficinas, Mais). `variant="lesson"` é o regime de aula.
+- **Início** (`parents-client.tsx`): guia v3, aviso `?aluno=`, novidade da fala, "Precisa da sua
+  atenção", "Seus filhos esta semana" (`ChildSummaryRow`), "Seu curso" e créditos.
+- **Família** (`familia/`): os `ChildCard` (botão principal "Ver a página de X"; "Acesso nos
+  aparelhos" vai a `?aba=aparelhos`), "Adicionar filho(a)" e o `ArquipelagoLimitCard`, que agora é
+  SÓ as regras da família (tempo de jogo, permissões, convites).
+- **Página do filho:** abas Progresso (padrão, sem `?aba`), Aparelhos, No jogo
+  (`arquipelago-do-filho.tsx`: a semana DELE + minijogos) e Perfil (`ProfileEditor embedded`). Os
+  painéis ficam montados. `/pais/crianca/<id>/editar` foi APAGADA (nada apontava para ela).
+  `/pais/acompanhamento` só redireciona ao Progresso (`?crianca=` ou o primeiro filho) e vive
+  apenas para os e-mails enviados antes do redesenho: o resumo da semana e o lembrete de 7 dias
+  (members) e o `/responsavel` hoje apontam para `/pais/familia`. Pode sair alguns meses depois.
+- **Cursos para pais:** curso Kids com `learner: 'parents'` (members). `/pais/cursos` (catálogo +
+  progresso por `listParentCatalog`/`listParentCourses`), `/pais/cursos/<slug>` (formato da página
+  do adulto; fechado = "Como liberar este curso") e `/pais/cursos/<slug>/aulas/<id>`: o MESMO
+  `LessonPlayer` da criança com `courseBasePath="/pais/cursos"` e `helpThreadPath`, dentro de
+  `ParentLessonFrame` (FocusMode, LessonCompletionRefresh, KidsLessonCopy). A dúvida da aula
+  aparece em Ajuda › "Suas dúvidas sobre os cursos" (`/pais/ajuda/duvidas/<id>`).
+- ⚠️ `parentCourseHref`/`childHref` moram em `parent-routes.ts` (sem `'use client'`): função
+  exportada de módulo de cliente não pode ser chamada em Server Component.
+
 ## A área dos pais com páginas próprias (11/10/2026)
 
 Pedido dela, como diretor de arte: a área dos pais estava muito abaixo da área da criança, e o
@@ -372,9 +403,9 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
 - **Conta:** "Minhas compras" (assinatura + histórico), créditos do Zappy e do Pensa, senha e o cartão de embaixador
   (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
   venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).
-- **Endereços antigos:** `/responsavel` → `/pais/acompanhamento` e `/responsavel/ajuda` →
+- **Endereços antigos:** `/responsavel` → `/pais/familia` (desde 14/11/2026) e `/responsavel/ajuda` →
   `/pais/ajuda/atendimento` (redirecionamentos, para e-mails já enviados). Os serviços apontam
-  direto para as páginas novas: o resumo da semana (members) para o Acompanhamento, a falha de
+  direto para as páginas novas: o resumo da semana (members) para a Família, a falha de
   cobrança (funil) para a Conta, a resposta do atendimento (helpdesk) para o atendimento, o
   convite de embaixador (funil) para `/pais/conta#embaixador`.
 - `PurchasesView`, `ChildrenDashboard`, `ParentSupportCard` e `ParentAreaBack` não existem mais;
@@ -1038,9 +1069,11 @@ identidade do responsável); a troca de senha **FECHA o portão no sucesso** (`w
 `/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). ⚠️ **Botão "Sair" na grade (07/2026):**
 `perfis-client.tsx` tem um `logout()` (POST `/api/auth/logout` + `window.location.replace('/login')`)
 SEMPRE visível na barra de ações — sem ele, quem entra (ex.: por CÓDIGO) e não sabe a senha da área
-dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Casa com a trava do login por código
-(o auth recusa OTP de conta sem senha definida → `login-form` mostra "crie sua senha em Esqueci minha
-senha"). O limite de perfis é do plano (criar acima → 409 no
+dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Desde 15/11/2026 a senha do
+responsável é OPCIONAL: o código do e-mail entra com ou sem senha definida (só a conta da equipe sem
+senha recebe `PASSWORD_NOT_SET`). Quem nunca criou senha cria pelo código do e-mail
+(`/esqueci-senha`); o "Senha do responsável" do perfil continua exigindo a atual e aponta para lá.
+O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 **Card "Indique e ganhe" (embaixador, 09/2026):** a Área dos pais (modo gestão) mostra o

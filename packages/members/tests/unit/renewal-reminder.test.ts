@@ -296,11 +296,11 @@ describe('SendRenewalRemindersService', () => {
       'challenge-expired',
     ])
     // Avisos de 7 e 3 dias vão ao responsável: Área dos pais, não a fase da criança. O de 7 mostra
-    // onde a criança parou (Acompanhamento); o de 3, o acesso do computador (Família).
+    // onde a criança parou (Família, com o Progresso de cada filho); o de 3, o Início.
     expect(msg.sent[0]?.variables).toEqual({
       nome: 'Ana',
       data: '30/05/2027',
-      link: 'https://kids.sistemazero.com.br/pais/acompanhamento',
+      link: 'https://kids.sistemazero.com.br/pais/familia',
     })
     expect(msg.sent[1]?.variables?.link).toBe('https://kids.sistemazero.com.br/pais')
     expect(msg.sent[2]?.variables?.link).toBe(

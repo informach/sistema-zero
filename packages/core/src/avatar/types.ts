@@ -84,6 +84,17 @@ export interface AvatarPartEntry {
    * a cópia só existe vestida com a fantasia. Quem escreve é a migração, não a arte.
    */
   copyOf?: string
+  /**
+   * A variante desta peça para quando a criança está montada (`variante_montado` da arte: a saia
+   * com a barra assentada na sela). O jogo troca a peça pela variante enquanto ela monta.
+   */
+  mountedVariant?: string
+  /**
+   * Esta peça é a variante de outra (`variante_de` da arte), para usar numa situação (`usar_em`,
+   * como `montado`). Não se vende nem sai no sorteio: aparece só no lugar da original.
+   */
+  variantOf?: string
+  variantFor?: string
   origin: AvatarPartOrigin
 }
 

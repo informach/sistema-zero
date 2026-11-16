@@ -3,6 +3,7 @@ import type {
   EnsureBuyerInput,
   GatewayResult,
   GrantManualCourseInput,
+  GrantManualOfferInput,
   GrantMuralVisitorInput,
   ReferralsGateway,
   SendEmailInput,
@@ -132,6 +133,18 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
       })
     },
 
+    async grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult> {
+      const { deliveryId, ...rest } = input
+      // O prazo é o da PRÓPRIA oferta, contado do resgate (`anchorAt`).
+      const rawBody = JSON.stringify({ mode: 'offer', useOfferAccessPolicy: true, ...rest })
+      const path = '/members/webhooks/grant-manual'
+      return requestJson(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody, undefined, deliveryId),
+        body: rawBody,
+      })
+    },
+
     async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
       const { deliveryId, ...rest } = input
       const rawBody = JSON.stringify({ mode: 'mural_visitor', ...rest })
@@ -181,6 +194,7 @@ export function createNullReferralsGateway(): ReferralsGateway {
     getGiftAvailability: async () => unavailable,
     ensureBuyer: async () => unavailable,
     createPasswordToken: async () => unavailable,
+    grantManualOffer: async () => unavailable,
     grantManualCourse: async () => unavailable,
     grantMuralVisitor: async () => unavailable,
     grantMuralTrial: async () => unavailable,

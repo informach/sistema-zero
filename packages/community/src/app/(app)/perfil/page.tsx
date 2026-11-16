@@ -145,7 +145,10 @@ export default async function ProfilePage() {
             }
           />
           {ambassadorView ? <AmbassadorSection initial={ambassadorView} /> : null}
-          <PasswordSection impersonating={Boolean(session?.act)} />
+          <PasswordSection
+            impersonating={Boolean(session?.act)}
+            passwordSet={user.passwordSet !== false}
+          />
         </div>
       </PageBody>
     </>

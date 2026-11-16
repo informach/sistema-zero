@@ -78,6 +78,8 @@ export function missingAdultTarget(
       id: newId(source.id, 'adult-course', `${environment}:${slug}`),
       slug,
       audience: 'adult',
+      // Curso para pais só existe no Kids: o destino adulto é sempre da criança/aluno.
+      learner: 'child',
       status: 'draft',
       version: 0,
       careerSlot: null,
@@ -102,6 +104,7 @@ export function missingKidsTarget(
       ...target.course,
       id: newId(source.id, 'kids-course', `${environment}:${slug}`),
       audience: 'kids',
+      learner: source.learner,
       careerSlot: source.careerSlot,
       journeyRole: source.journeyRole,
     },
@@ -205,6 +208,8 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     target.course.modality !== 'recorded'
   )
     throw new Error('A origem precisa ser um curso gravado publicado e o destino gravado')
+  if (operation !== 'promote-kids' && source.course.learner === 'parents')
+    throw new Error('Curso para pais existe só no Kids e não é copiado para o adulto')
   if (
     !source.lessons.length ||
     source.lessons.some((l) => !l.row.isPublished || !l.published.blocks.length)
@@ -380,6 +385,7 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     id: targetId,
     slug: target.course.slug,
     audience: operation === 'promote-kids' ? 'kids' : 'adult',
+    learner: operation === 'promote-kids' ? source.course.learner : 'child',
     careerSlot: operation === 'promote-kids' ? source.course.careerSlot : target.course.careerSlot,
     journeyRole:
       operation === 'promote-kids' || source.course.careerSlot === null

@@ -7,6 +7,7 @@ import {
 import type {
   CatalogGateway,
   ResolvedOffer,
+  ResolvedOfferAccessPolicy,
   ResolvedOfferItem,
 } from '../../domain/ports/catalog-gateway.port'
 
@@ -105,7 +106,26 @@ function parseResolvedOffer(
       fulfillment: parseFulfillment(it.fulfillment),
     })
   }
-  return { offerId: b.offerId, offerSlug: b.offerSlug, items }
+  const accessPolicy = parseAccessPolicy(b)
+  return {
+    offerId: b.offerId,
+    offerSlug: b.offerSlug,
+    items,
+    ...(accessPolicy ? { accessPolicy } : {}),
+  }
+}
+
+/** `accessMode` + duração da oferta (o presente da campanha usa o prazo da própria oferta). */
+function parseAccessPolicy(b: Record<string, unknown>): ResolvedOfferAccessPolicy | null {
+  const mode = b.accessMode
+  if (mode !== 'lifetime' && mode !== 'fixed' && mode !== 'billing_cycle') return null
+  const value = b.accessDurationValue
+  const unit = b.accessDurationUnit
+  return {
+    mode,
+    durationValue: typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null,
+    durationUnit: unit === 'days' || unit === 'months' ? unit : null,
+  }
 }
 
 function parseFulfillment(value: unknown): FulfillmentSpec | null {

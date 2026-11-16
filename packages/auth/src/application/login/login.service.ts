@@ -58,6 +58,8 @@ export class LoginService {
       userAgent: command.userAgent,
       ip: command.ip,
     })
+    // A primeira entrada ativa a conta (a senha é opcional desde 15/11/2026).
+    if (!user.firstSignInAt) await this.users.markFirstSignIn(user.id, new Date())
     return { user: toUserView(user), tokens }
   }
 }

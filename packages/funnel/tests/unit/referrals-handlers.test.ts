@@ -46,6 +46,17 @@ describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
     ).toBe(410)
   })
 
+  test('presente sem prazo (curso para pais) repassa a confirmação sem vencimento e sem Mural', async () => {
+    const fake = createFakeGateway()
+    const done = { status: 'completed', expiresAt: null, emailStatus: 'accepted' }
+    fake.setRedeemResult(201, done)
+    const res = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {
+      gateway: fake.gateway,
+    })
+    expect(res.status).toBe(201)
+    expect(await readJson(res)).toEqual(done)
+  })
+
   test('feliz: repassa completed 201 e traduz os campos PT → API', async () => {
     const fake = createFakeGateway()
     const res = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {

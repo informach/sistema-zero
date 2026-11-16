@@ -1,3 +1,5 @@
+import { isParentsCourse } from '@sistemazero/core/course/learner'
+import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
 
@@ -25,6 +27,11 @@ export interface GetProfileAllowanceOptions {
  * sem precisar consultar a audiência do curso. Conta SEM matrícula ativa → 0
  * (não comprou, não cria perfil). Conta COM matrícula ativa mas todas sem o campo
  * (legado) → `defaultMaxProfiles`.
+ *
+ * Curso PARA PAIS (15/11/2026, decisão da dona): a compra avulsa (ou de presente) de um curso
+ * para pais é do responsável, não da criança. Ela não libera perfil de filho nem cai no teto do
+ * legado: quem comprou só isso fica com 0 perfis (a área dos pais mostra o curso e o convite para
+ * a Comunidade). A chave dos cursos Kids e as outras compras seguem a régua acima.
  */
 export class GetProfileAllowanceService {
   constructor(
@@ -32,6 +39,7 @@ export class GetProfileAllowanceService {
     private readonly clock: () => Date,
     private readonly opts: GetProfileAllowanceOptions,
     private readonly live?: Pick<LiveBenefitsPort, 'maxProfiles'>,
+    private readonly courses?: Pick<CourseRepository, 'findCoursesBySlugs'>,
   ) {}
 
   async execute(accountId: string): Promise<ProfileAllowance> {
@@ -46,6 +54,33 @@ export class GetProfileAllowanceService {
       const m = e.snapshot.fulfillment?.maxProfiles
       if (typeof m === 'number' && m > max) max = m
     }
-    return { maxProfiles: Math.max(liveProfiles, max > 0 ? max : this.opts.defaultMaxProfiles) }
+    if (max > 0) return { maxProfiles: Math.max(liveProfiles, max) }
+    // Nenhuma compra define o teto. Só agora importa se elas são todas de curso para pais: aí
+    // não há perfil de filho a liberar (e o teto do legado não vale).
+    if (await this.onlyParentsCourses(active)) return { maxProfiles: liveProfiles }
+    return { maxProfiles: Math.max(liveProfiles, this.opts.defaultMaxProfiles) }
+  }
+
+  /**
+   * Todas as matrículas são de UM curso para pais? O curso conta em QUALQUER status (a compra
+   * pode vir antes da publicação). Falha na leitura vale "não": a régua de antes, para nunca
+   * travar a criação de perfil de quem comprou para a criança.
+   */
+  private async onlyParentsCourses(
+    active: readonly { accessType: string; courseRef: string | null }[],
+  ): Promise<boolean> {
+    if (!this.courses) return false
+    const slugs: string[] = []
+    for (const e of active) {
+      if (e.accessType !== 'course' || !e.courseRef) return false
+      slugs.push(e.courseRef)
+    }
+    try {
+      const found = await this.courses.findCoursesBySlugs([...new Set(slugs)])
+      const parents = new Set(found.filter((c) => isParentsCourse(c)).map((c) => c.slug))
+      return slugs.every((slug) => parents.has(slug))
+    } catch {
+      return false
+    }
   }
 }

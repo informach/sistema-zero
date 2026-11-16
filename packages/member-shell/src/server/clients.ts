@@ -526,6 +526,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch('/members/catalog', { query: { audience } })
     },
 
+    /**
+     * Cursos para pais (14/11/2026), na sessão do responsável do Kids: os que a conta já pode
+     * fazer, com o progresso dela. O members só lista para a conta (perfil recebe lista vazia).
+     */
+    listParentCourses(): Promise<GatewayResponse<{ courses: MyCourseView[] }>> {
+      return gw.gatewayFetch('/members/courses', { query: { audience, learner: 'parents' } })
+    },
+
+    /** Todos os cursos para pais publicados, com `hasAccess` da conta (os fechados também). */
+    listParentCatalog(): Promise<GatewayResponse<{ courses: CatalogCourseView[] }>> {
+      return gw.gatewayFetch('/members/catalog', { query: { audience, learner: 'parents' } })
+    },
+
     getCreatorMasteriesReadonly(): Promise<GatewayResponse<CreatorMasteriesResponse>> {
       return gw.gatewayFetchReadonly('/members/journey/masteries', { query: { audience } })
     },

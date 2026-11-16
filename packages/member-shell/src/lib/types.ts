@@ -114,6 +114,8 @@ export interface UserView {
   phone?: string
   signupSource?: string
   avatarUrl?: string
+  /** Já definiu uma senha? A senha é opcional (entra pelo código do e-mail). */
+  passwordSet?: boolean
 }
 
 // ── Members (área do aluno) ─────────────────────────────────────────────────
@@ -166,7 +168,15 @@ export interface CourseMilestonesView {
  */
 export interface CatalogCourseView {
   curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
-  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
+  accessReason?:
+    | 'journey'
+    | 'direct-purchase'
+    | 'gift'
+    | 'manual-grant'
+    | 'retained'
+    | 'staff'
+    // Curso para pais aberto pela chave dos cursos Kids (14/11/2026).
+    | 'parents'
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -276,7 +286,15 @@ export interface CertificateValidationView {
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
   curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
-  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
+  accessReason?:
+    | 'journey'
+    | 'direct-purchase'
+    | 'gift'
+    | 'manual-grant'
+    | 'retained'
+    | 'staff'
+    // Curso para pais aberto pela chave dos cursos Kids (14/11/2026).
+    | 'parents'
   /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
   courseId: string
   courseSlug: string
@@ -374,7 +392,15 @@ export interface CourseRatingView {
 /** `GET /members/courses/:slug` — detalhe com módulos/aulas (outline). */
 export interface CourseDetailView {
   curriculum?: import('@sistemazero/core/journey').CreatorCoursePlacement
-  accessReason?: 'journey' | 'direct-purchase' | 'gift' | 'manual-grant' | 'retained' | 'staff'
+  accessReason?:
+    | 'journey'
+    | 'direct-purchase'
+    | 'gift'
+    | 'manual-grant'
+    | 'retained'
+    | 'staff'
+    // Curso para pais aberto pela chave dos cursos Kids (14/11/2026).
+    | 'parents'
   careerLock?: JourneyCourseLockView
   /** Stable catalog ID; optional while rolling out the Members upgrade. */
   id?: string

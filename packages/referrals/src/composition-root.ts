@@ -12,6 +12,7 @@ import {
   createNullReferralsGateway,
   createReferralsGatewayClient,
 } from './infrastructure/gateways/gateway.client'
+import { GiftOfferCatalogHttpClient } from './infrastructure/gateways/gift-offer-catalog.client'
 import { PaymentsHttpClient } from './infrastructure/gateways/payments-http.client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleCampaignRepository } from './infrastructure/persistence/drizzle/campaign.repository'
@@ -34,6 +35,12 @@ export function createApplication(env: Env): Application {
   const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
   const repo = new DrizzleReferralRepository(connection.db)
   const campaignRepo = new DrizzleCampaignRepository(connection.db)
+  // A oferta do presente vem do catálogo direto (rede privada + token interno), como o cupom.
+  const giftOffers = new GiftOfferCatalogHttpClient({
+    baseUrl: env.CATALOG_BASE_URL,
+    internalToken: env.CATALOG_INTERNAL_TOKEN,
+    timeoutMs: env.S2S_TIMEOUT_MS,
+  })
   const campaigns = new CampaignAdminService(
     campaignRepo,
     repo,
@@ -44,6 +51,7 @@ export function createApplication(env: Env): Application {
       internalToken: env.CATALOG_INTERNAL_TOKEN,
       timeoutMs: env.S2S_TIMEOUT_MS,
     }),
+    giftOffers,
   )
 
   // Todas as integrações via gateway (consumer HMAC `referrals`). Sem
@@ -64,10 +72,9 @@ export function createApplication(env: Env): Application {
     repo,
     gateway,
     {
-      courseSlug: env.SCHOLARSHIP_COURSE_SLUG,
       kidsCommunityUrl: env.KIDS_COMMUNITY_URL,
-      adultCourseSlug: env.SCHOLARSHIP_ADULT_COURSE_SLUG,
       communityUrl: env.COMMUNITY_URL ?? null,
+      giftOffers,
       leaseMs: env.REDEMPTION_LEASE_MS,
       campaigns: campaignRepo,
       bonusAmounts: { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS },

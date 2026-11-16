@@ -26,8 +26,8 @@ function postVerify(body: unknown): Request {
   })
 }
 
-describe('authOtpVerify: gate de conta sem senha definida', () => {
-  test('403 do auth com PASSWORD_NOT_SET é repassado (a UI orienta criar a senha)', async () => {
+describe('authOtpVerify: conta inativa × conta da equipe sem senha', () => {
+  test('403 com PASSWORD_NOT_SET (equipe sem senha) é repassado: a UI orienta criar a senha', async () => {
     const routes = makeRoutes({ status: 403, body: { error: { code: 'PASSWORD_NOT_SET' } } })
 
     const res = await routes.authOtpVerify.POST(

@@ -16,7 +16,16 @@ export const ONBOARDING_ACTIONS = [
   /** A família passou a ter uma autorização viva enquanto o responsável estava na tela. */
   'access_prepared',
 ] as const
-export const ONBOARDING_STEPS = ['welcome', 'avatar', 'start', 'profile', 'tile', 'access'] as const
+/** `course`: o guia de quem comprou só um curso para pais (15/11/2026). */
+export const ONBOARDING_STEPS = [
+  'welcome',
+  'avatar',
+  'start',
+  'profile',
+  'tile',
+  'access',
+  'course',
+] as const
 
 export type OnboardingAudience = (typeof ONBOARDING_AUDIENCES)[number]
 export type OnboardingAction = (typeof ONBOARDING_ACTIONS)[number]

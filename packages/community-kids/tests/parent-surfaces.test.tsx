@@ -424,7 +424,7 @@ describe('a Ajuda mora dentro da área dos pais', () => {
   // apontam para eles.
   test('os endereços antigos levam às páginas novas', () => {
     const read = (path: string) => readFileSync(join(import.meta.dir, '../src/app', path), 'utf8')
-    expect(read('responsavel/page.tsx')).toContain("redirect('/pais/acompanhamento')")
+    expect(read('responsavel/page.tsx')).toContain("redirect('/pais/familia')")
     expect(read('responsavel/ajuda/page.tsx')).toContain("redirect('/pais/ajuda/atendimento')")
   })
 })

@@ -94,7 +94,10 @@ export const UpdateMeBody = t.Object({
   avatarUrl: t.Optional(t.Union([t.String({ maxLength: 2000, pattern: '^https?://' }), t.Null()])),
 })
 
-/** Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). */
+/**
+ * Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). A PRIMEIRA senha
+ * nasce do código `password_reset` do e-mail (`/auth/password/reset-otp`).
+ */
 export const ChangeMyPasswordBody = t.Object({
   currentPassword: t.String({ minLength: 1, maxLength: 200 }),
   newPassword: t.String({ minLength: 1, maxLength: 200 }),

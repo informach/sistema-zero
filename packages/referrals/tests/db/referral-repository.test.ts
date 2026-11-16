@@ -17,6 +17,7 @@ import {
 import { isUniqueViolation } from '../../src/infrastructure/persistence/drizzle/pg-errors'
 import { DrizzleReferralRepository } from '../../src/infrastructure/persistence/drizzle/referral.repository'
 import { codes } from '../../src/infrastructure/persistence/drizzle/schema'
+import { FakeGiftOfferCatalog, KIDS_GIFT_OFFER } from '../fakes/in-memory'
 
 /**
  * Invariantes que SÓ o Postgres real prova — o fake em memória é single-thread:
@@ -114,7 +115,14 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   test('campanha congela beneficiário e acordo; edição e novo link não reatribuem cadastro', async () => {
     const { ambassador } = await seedCode()
     const campaigns = new DrizzleCampaignRepository(connection.db)
-    const admin = new CampaignAdminService(campaigns, repo, 'https://funil.test')
+    const admin = new CampaignAdminService(
+      campaigns,
+      repo,
+      'https://funil.test',
+      undefined,
+      undefined,
+      new FakeGiftOfferCatalog(),
+    )
     const input: CampaignInput = {
       name: 'Palestra La Opa',
       publicTitle: 'Presente da palestra',
@@ -126,6 +134,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
       status: 'active',
       channel: 'palestra',
       audience: 'kids',
+      giftOfferId: KIDS_GIFT_OFFER.offerId,
       ambassadorId: ambassador.id,
       commissionEnabled: true,
       commissionAmountCents: 4500,
@@ -252,7 +261,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
       courseSlug: 'cade-todo-mundo',
     })
     const started = new Date(Date.now() - 2 * 86_400_000)
-    await connection.sql`update referrals.scholarship_redemptions set status = 'completed', mural_visitor_policy = 'visitor', user_id = ${crypto.randomUUID()}, granted_at = ${started.toISOString()}, created_at = ${started.toISOString()}, welcome_sent_at = ${started.toISOString()} where id = ${redemption.id}`
+    await connection.sql`update referrals.scholarship_redemptions set status = 'completed', mural_visitor_policy = 'visitor', access_duration_days = 7, user_id = ${crypto.randomUUID()}, granted_at = ${started.toISOString()}, created_at = ${started.toISOString()}, welcome_sent_at = ${started.toISOString()} where id = ${redemption.id}`
     const calls: unknown[] = []
     let upstreamStatus = 202
     const server = Bun.serve({
@@ -495,8 +504,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     ])
     const created = results.filter((r) => r.created)
     expect(created).toHaveLength(1)
-    expect(created[0]?.redemption.accessDurationDays).toBe(7)
-    expect(created[0]?.redemption.muralVisitorPolicy).toBe('trial')
+    // Sem `gift` (usos internos), a linha nasce na forma histórica sem prazo.
+    expect(created[0]?.redemption.accessDurationDays).toBeNull()
+    expect(created[0]?.redemption.muralVisitorPolicy).toBeNull()
     expect(created[0]?.redemption.muralVisitorGrantedAt).toBeNull()
     const ids = new Set(results.map((r) => r.redemption.id))
     expect(ids.size).toBe(1) // todos veem a MESMA linha
@@ -505,6 +515,35 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     const historical = await repo.findRedemptionByEmail('paula@example.com', 'kids')
     expect(historical?.accessDurationDays).toBeNull()
     expect(historical?.muralVisitorPolicy).toBeNull()
+  })
+
+  test('resgate por oferta grava a oferta, os dias e a política offer (0010)', async () => {
+    const { code } = await seedCode()
+    const { redemption } = await repo.insertRedemption({
+      codeId: code.id,
+      email: 'oferta@example.com',
+      audience: 'kids',
+      name: 'Oferta',
+      phone: null,
+      courseSlug: 'cade-todo-mundo',
+      gift: { offerId: KIDS_GIFT_OFFER.offerId, accessDurationDays: 7 },
+    })
+    expect(redemption).toMatchObject({
+      giftOfferId: KIDS_GIFT_OFFER.offerId,
+      accessDurationDays: 7,
+      muralVisitorPolicy: 'offer',
+      courseSlug: 'cade-todo-mundo',
+    })
+    const lifetime = await repo.insertRedemption({
+      codeId: code.id,
+      email: 'vitalicia@example.com',
+      audience: 'kids',
+      name: 'Vitalícia',
+      phone: null,
+      gift: { offerId: KIDS_GIFT_OFFER.offerId, accessDurationDays: null },
+    })
+    expect(lifetime.redemption.accessDurationDays).toBeNull()
+    expect(lifetime.redemption.muralVisitorPolicy).toBe('offer')
   })
 
   test('curso e visita ao Mural têm checkpoints persistidos independentes', async () => {

@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/members
 
+## Presente por oferta: curso nomeado e Mural nos avisos (15/11/2026)
+
+- `GET /members/webhooks/gift-course/:slug` devolve `{available, title, learner}` (`giftCourse` no
+  `GrantManualEntitlementService`; título e `learner` só quando disponível, senão nulos). O
+  referrals nomeia o curso no e-mail e manda o curso para pais à área dos pais.
+- `POST /members/webhooks/grant-manual` `mode:'offer'` responde só `{ok, granted}` (sem prazo): o
+  fim do presente é conta do referrals, a partir dos dias gravados no resgate.
+- Avisos de fim do presente (`gift-expiry-2d[-adult]`, `gift-expired[-adult]`) levam também
+  `curso` (título do curso do grupo, via `members.courses` no SQL) e `mural` (frase pronta quando o
+  grupo inclui o Mural completo, vazia se não). Deploy do members ANTES do seed do messaging.
+
 ## Casa Morada (14/11/2026, implementação local)
 
 - Revisão de ownership: leitura e CAS usam a mesma chave de dados `(userId, audience)`.
@@ -2049,7 +2060,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (`drizzle/challenge-master-key.ts`), então `all_kids_courses` não encobre o curso adulto. O candidato
   traz `audience`. No adulto, a chave é a mesma com o sufixo `-adult` (mesmas variáveis), o nome
   reserva é `Aluno(a)` e os links são do app adulto (env opcional **`COMMUNITY_URL`**): não ativou →
-  `/esqueci-senha`; não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
+  `/login` (no Kids, `/login/responsavel`, que abre no código; a senha é opcional desde 15/11/2026 e
+  "ativou" = criou senha OU já entrou); não começou, Dia 1 e 3 dias → `/cursos/desafio-primeiro-jogo-adulto`; 7 dias →
   `/progresso`; concluiu e expirou → `accessEndedLink(funnelUrl, 'adult', 'desafio-concluido' |
   'desafio-encerrado')` (continuidade adulta do funil, com UTM). Sem `COMMUNITY_URL`, os avisos que levam
   ao app não saem nem são marcados (log `challenge_lifecycle.adult_url_missing` /

@@ -137,8 +137,19 @@ export function PersonalDataSection({ user, readOnly }: { user: UserView; readOn
   )
 }
 
-/** "Alterar senha": a troca encerra todas as sessões, e a pessoa entra de novo com a senha nova. */
-export function PasswordSection({ impersonating }: { impersonating: boolean }) {
+/**
+ * "Alterar senha": a troca encerra todas as sessões, e a pessoa entra de novo com a senha nova.
+ * A senha é opcional (15/11/2026): quem entra só pelo código do e-mail e nunca criou uma vê
+ * "Criar senha", que leva ao código do e-mail ("Esqueci minha senha"), o caminho que prova o
+ * e-mail de novo. Nunca se cria a senha sem a atual por aqui.
+ */
+export function PasswordSection({
+  impersonating,
+  passwordSet = true,
+}: {
+  impersonating: boolean
+  passwordSet?: boolean
+}) {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -186,6 +197,33 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
       setSaving(false)
     }
   }
+
+  if (!passwordSet)
+    return (
+      <section
+        id="senha"
+        aria-labelledby="perfil-senha"
+        className="sz-card scroll-mt-28 flex flex-col gap-4 p-6 md:p-8"
+      >
+        <h2 id="perfil-senha" className="sz-h3">
+          Criar senha
+        </h2>
+        <p className="text-[0.9rem] text-muted-foreground">
+          A senha é opcional: você já entra pelo código enviado ao seu e-mail. Se quiser uma senha,
+          crie pelo mesmo código, em “Esqueci minha senha”. Depois disso, você sai de todos os
+          aparelhos e entra de novo.
+        </p>
+        {impersonating ? (
+          <p className="text-[0.9rem] text-muted-foreground">
+            Numa sessão de suporte a senha não pode ser criada.
+          </p>
+        ) : (
+          <a href="/esqueci-senha" className="sz-btn self-start">
+            Criar senha pelo código do e-mail
+          </a>
+        )}
+      </section>
+    )
 
   return (
     <section id="senha" aria-labelledby="perfil-senha" className="sz-card scroll-mt-28 p-6 md:p-8">
@@ -237,7 +275,15 @@ export function PasswordSection({ impersonating }: { impersonating: boolean }) {
         <p className="text-[0.9rem] text-muted-foreground">
           {impersonating
             ? 'Numa sessão de suporte a senha não pode ser trocada.'
-            : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}
+            : 'Ao trocar a senha, você sai de todos os aparelhos e entra de novo com a senha nova.'}{' '}
+          Esqueceu a senha atual?{' '}
+          <a
+            href="/esqueci-senha"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Crie outra pelo código do e-mail
+          </a>
+          .
         </p>
         <button type="submit" disabled={saving || impersonating} className="sz-btn self-start">
           {saving ? <Spinner /> : null}

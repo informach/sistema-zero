@@ -18,6 +18,10 @@ const MORADA = resolve(
   process.env.MORADA_QA_DIR ?? resolve(import.meta.dir, '../../../output/morada-assets/morada'),
 )
 const PACK = process.env.AVATAR_QA_DIR ? resolve(process.env.AVATAR_QA_DIR) : null
+/** As peças da pista com a arte (`preparar-pista-da-arte.ts`), fora do git. */
+const PISTA = resolve(
+  process.env.ARQUIPELAGO_PISTA_DIR ?? resolve(import.meta.dir, '../.cache/pista-da-arte'),
+)
 /** O glTF mínimo (uma cena sem nada): o carregador do three aceita o JSON no lugar do binário. */
 const GLTF_VAZIO = { asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [] }] }
 const PNG_DE_UM_PONTO = Uint8Array.from(
@@ -84,6 +88,19 @@ Bun.serve({
       return new Response(HTML_DAS_ANIMACOES, {
         headers: { 'content-type': 'text/html; charset=utf-8' },
       })
+    // A pista de conferência com as peças reais da arte (`pista-da-arte.tsx`).
+    if (pathname === '/pista-da-arte.js') return compilar('pista-da-arte.tsx')
+    if (pathname === '/pista-da-arte')
+      return new Response(pagina('Arquipélago · pista com as peças da arte', '/pista-da-arte.js'), {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    if (pathname.startsWith('/pista-da-arte/arquivos/')) {
+      const nome = decodeURIComponent(pathname.slice('/pista-da-arte/arquivos/'.length))
+      const alvo = resolve(PISTA, nome)
+      if (!alvo.startsWith(PISTA + sep)) return new Response('fora', { status: 403 })
+      const f = Bun.file(alvo)
+      return (await f.exists()) ? new Response(f) : new Response('não achei', { status: 404 })
+    }
     if (pathname === '/movimento.js') return compilar('movimento.tsx')
     if (pathname === '/movimento')
       return new Response(HTML_DO_MOVIMENTO, {

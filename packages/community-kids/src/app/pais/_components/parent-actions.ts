@@ -7,5 +7,3 @@
  */
 export const PRIMARY_ACTION = 'sz-btn-gradient h-11 gap-2 px-5 text-sm'
 export const SECONDARY_ACTION = 'sz-btn-gradient sz-btn-contorno h-11 gap-2 px-5 text-sm'
-/** O "Ir para a área da criança" da barra: mais estreito no celular, onde a barra é apertada. */
-export const HEADER_ACTION = 'sz-btn-gradient h-11 gap-2 whitespace-nowrap px-3 text-sm sm:px-5'

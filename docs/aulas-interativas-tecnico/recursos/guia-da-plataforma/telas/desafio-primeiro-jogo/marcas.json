@@ -1,0 +1,380 @@
+{
+  "aula": {
+    "arquivo": "aula.jpg",
+    "largura": 1440,
+    "altura": 900,
+    "marcas": {
+      "progresso": {
+        "x": 24.24,
+        "y": 5.94,
+        "w": 0.07,
+        "h": 0.11,
+        "ancora": "b",
+        "nome": "Parte 1 de 6"
+      },
+      "video": {
+        "x": 2.22,
+        "y": 11.11,
+        "w": 46.25,
+        "h": 48.11,
+        "ancora": "tr",
+        "nome": "ASSISTA"
+      },
+      "zappy": {
+        "x": 3.68,
+        "y": 64.22,
+        "w": 43.33,
+        "h": 20.0,
+        "ancora": "tl",
+        "nome": "O ZAPPY FALA Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem a"
+      },
+      "atividade": {
+        "x": 52.99,
+        "y": 13.44,
+        "w": 43.33,
+        "h": 65.11,
+        "ancora": "tl",
+        "nome": "JOGUE Jogue A Chave do Farol Jogar de novo Ampliar jogo Jogo pronto."
+      },
+      "ampliar-jogo": {
+        "x": 87.6,
+        "y": 13.44,
+        "w": 8.72,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Ampliar jogo"
+      },
+      "jogar-de-novo": {
+        "x": 77.66,
+        "y": 13.44,
+        "w": 9.1,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Jogar de novo"
+      },
+      "menu": {
+        "x": 0.0,
+        "y": 10.22,
+        "w": 2.5,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Mostrar menu"
+      },
+      "lista-de-aulas": {
+        "x": 97.5,
+        "y": 10.22,
+        "w": 2.5,
+        "h": 4.89,
+        "ancora": "l",
+        "nome": "Mostrar lista de aulas"
+      },
+      "ajuda": {
+        "x": 69.81,
+        "y": 93.78,
+        "w": 12.47,
+        "h": 4.89,
+        "ancora": "t",
+        "nome": "Preciso de ajuda"
+      },
+      "proxima-parte": {
+        "x": 82.84,
+        "y": 93.78,
+        "w": 11.6,
+        "h": 4.89,
+        "ancora": "t",
+        "nome": "Próxima parte"
+      }
+    }
+  },
+  "modo-focado": {
+    "arquivo": "modo-focado.jpg",
+    "largura": 1440,
+    "altura": 900,
+    "marcas": {
+      "voltar-a-aula": {
+        "x": 89.08,
+        "y": 3.67,
+        "w": 8.63,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Voltar à aula"
+      },
+      "video-no-foco": {
+        "x": 72.55,
+        "y": 3.67,
+        "w": 5.77,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Vídeo"
+      },
+      "jogar-de-novo": {
+        "x": 79.15,
+        "y": 3.67,
+        "w": 9.1,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Jogar de novo"
+      }
+    }
+  },
+  "passo-a-passo": {
+    "arquivo": "passo-a-passo.jpg",
+    "largura": 1440,
+    "altura": 1180,
+    "marcas": {
+      "leia": {
+        "x": 51.53,
+        "y": 8.47,
+        "w": 46.25,
+        "h": 45.51,
+        "ancora": "tl",
+        "nome": "LEIA Passo a passo do projeto: A Chave do Farol Livro 3D Ler por páginas Capa Pa"
+      },
+      "modos-do-livro": {
+        "x": 52.99,
+        "y": 16.69,
+        "w": 14.34,
+        "h": 2.71,
+        "ancora": "r",
+        "nome": "Livro 3D | Ler por páginas"
+      },
+      "paginas": {
+        "x": 68.26,
+        "y": 46.36,
+        "w": 12.78,
+        "h": 2.71,
+        "ancora": "b",
+        "nome": "Página anterior | Próxima página"
+      },
+      "livro-tela-cheia": {
+        "x": 93.19,
+        "y": 21.53,
+        "w": 2.22,
+        "h": 2.71,
+        "ancora": "l",
+        "nome": "Tela cheia"
+      },
+      "baixar": {
+        "x": 3.68,
+        "y": 78.56,
+        "w": 43.33,
+        "h": 5.56,
+        "ancora": "r",
+        "nome": "Baixar Caderno do Aluno - A chave do Farol"
+      }
+    }
+  },
+  "experiencia": {
+    "arquivo": "experiencia.jpg",
+    "largura": 640,
+    "altura": 1237.5,
+    "marcas": {
+      "ampliar-experiencia": {
+        "x": 71.87,
+        "y": 0.65,
+        "w": 26.88,
+        "h": 3.56,
+        "ancora": "l",
+        "nome": "Ampliar experiência"
+      },
+      "balao": {
+        "x": 3.28,
+        "y": 8.19,
+        "w": 93.44,
+        "h": 4.53,
+        "ancora": "tl",
+        "nome": "Faça o personagem andar. Segure a seta! Ouvir"
+      },
+      "sua-vez": {
+        "x": 3.28,
+        "y": 13.75,
+        "w": 12.36,
+        "h": 2.13,
+        "ancora": "b",
+        "nome": "SUA VEZ"
+      },
+      "som": {
+        "x": 83.28,
+        "y": 13.2,
+        "w": 6.25,
+        "h": 3.23,
+        "ancora": "b",
+        "nome": "Desligar o som e a voz automática"
+      },
+      "recomecar-experiencia": {
+        "x": 90.47,
+        "y": 13.2,
+        "w": 6.25,
+        "h": 3.23,
+        "ancora": "r",
+        "nome": "Recomeçar experiência"
+      },
+      "descobertas": {
+        "x": 3.91,
+        "y": 78.66,
+        "w": 92.19,
+        "h": 1.51,
+        "ancora": "l",
+        "nome": "SUAS DESCOBERTAS 0 DE 3"
+      },
+      "testes": {
+        "x": 3.91,
+        "y": 92.04,
+        "w": 14.22,
+        "h": 1.51,
+        "ancora": "l",
+        "nome": "SEUS TESTES"
+      }
+    }
+  },
+  "estudio": {
+    "arquivo": "estudio.jpg",
+    "largura": 640,
+    "altura": 874,
+    "marcas": {
+      "abas": {
+        "x": 4.06,
+        "y": 18.19,
+        "w": 91.88,
+        "h": 4.81,
+        "ancora": "r",
+        "nome": "Blocos Jogo Mensagens"
+      },
+      "paleta": {
+        "x": 4.06,
+        "y": 23.11,
+        "w": 30.98,
+        "h": 62.01,
+        "ancora": "l",
+        "nome": "🔎 Pesquisar 🗂️ Áreas do projeto 🧰 Blocos deste jogo Programação Jogo 2D"
+      },
+      "area-do-projeto": {
+        "x": 35.05,
+        "y": 23.11,
+        "w": 60.89,
+        "h": 62.01,
+        "ancora": "bl",
+        "nome": ""
+      },
+      "salvo": {
+        "x": 34.67,
+        "y": 13.5,
+        "w": 12.53,
+        "h": 3.2,
+        "ancora": "r",
+        "nome": "Salvo"
+      },
+      "recomecar": {
+        "x": 38.06,
+        "y": 7.44,
+        "w": 16.49,
+        "h": 3.2,
+        "ancora": "t",
+        "nome": "Recomeçar"
+      },
+      "expandir": {
+        "x": 55.8,
+        "y": 7.44,
+        "w": 14.56,
+        "h": 3.2,
+        "ancora": "t",
+        "nome": "Expandir"
+      },
+      "enviar": {
+        "x": 71.61,
+        "y": 7.44,
+        "w": 24.49,
+        "h": 3.2,
+        "ancora": "t",
+        "nome": "Enviar meu projeto"
+      },
+      "rodar": {
+        "x": 65.34,
+        "y": 77.35,
+        "w": 28.1,
+        "h": 5.95,
+        "ancora": "l",
+        "nome": "Rodar de novo"
+      },
+      "objetivos": {
+        "x": 9.84,
+        "y": 88.82,
+        "w": 24.91,
+        "h": 2.92,
+        "ancora": "l",
+        "nome": "Objetivos do projeto"
+      },
+      "verificar": {
+        "x": 73.7,
+        "y": 88.44,
+        "w": 20.21,
+        "h": 3.66,
+        "ancora": "t",
+        "nome": "Verificar projeto"
+      }
+    }
+  },
+  "estudio-expandido": {
+    "arquivo": "estudio-expandido.jpg",
+    "largura": 1440,
+    "altura": 900,
+    "marcas": {
+      "lado-dos-blocos": {
+        "x": 15.02,
+        "y": 14.0,
+        "w": 49.35,
+        "h": 67.0,
+        "ancora": "tr",
+        "nome": ""
+      },
+      "lado-do-jogo": {
+        "x": 65.6,
+        "y": 15.61,
+        "w": 2.31,
+        "h": 1.67,
+        "ancora": "b",
+        "nome": "Jogo"
+      },
+      "jogo-maior": {
+        "x": 93.19,
+        "y": 14.67,
+        "w": 2.22,
+        "h": 3.56,
+        "ancora": "b",
+        "nome": "Jogo maior"
+      },
+      "rodar-parar": {
+        "x": 40.25,
+        "y": 7.72,
+        "w": 19.26,
+        "h": 4.89,
+        "ancora": "b",
+        "nome": "Rodar de novo | Parar"
+      },
+      "desfazer": {
+        "x": 87.08,
+        "y": 7.94,
+        "w": 6.53,
+        "h": 4.44,
+        "ancora": "b",
+        "nome": "Desfazer | Refazer"
+      },
+      "video-no-estudio": {
+        "x": 67.59,
+        "y": 1.89,
+        "w": 5.4,
+        "h": 3.11,
+        "ancora": "b",
+        "nome": "Vídeo"
+      },
+      "reduzir": {
+        "x": 81.43,
+        "y": 1.89,
+        "w": 5.95,
+        "h": 3.11,
+        "ancora": "b",
+        "nome": "Reduzir"
+      }
+    }
+  }
+}

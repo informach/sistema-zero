@@ -5,8 +5,11 @@ if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const { ADULT_COURSE_UNPUBLISHED_MESSAGE, AUDIENCE_LOCKED_MESSAGE, ConvitesClient, previewUrl } =
-  await import('../src/app/admin/embaixadores/convites-client')
+const { AUDIENCE_LOCKED_MESSAGE, ConvitesClient, previewUrl } = await import(
+  '../src/app/admin/embaixadores/convites-client'
+)
+const { GIFT_CATALOG_UNAVAILABLE_MESSAGE, GIFT_OFFER_LOCKED_MESSAGE, GIFT_OFFER_REQUIRED_MESSAGE } =
+  await import('../src/app/admin/embaixadores/campaign-gift-offer')
 
 /** Público do presente nas campanhas (20/10/2026): coluna, editor, trava e prévia. */
 
@@ -38,10 +41,90 @@ const campaign = (over: Record<string, unknown> = {}) => ({
 })
 
 type Call = { url: string; method: string; body: unknown }
+const OFFER_KIDS = '22222222-2222-4222-8222-222222222222'
+const OFFER_ADULT = '33333333-3333-4333-8333-333333333333'
+const OFFER_PARENTS = '44444444-4444-4444-8444-444444444444'
+const OFFER_SUBSCRIPTION = '55555555-5555-4555-8555-555555555555'
+const OFFER_DRAFT = '66666666-6666-4666-8666-666666666666'
+const OFFER_MONTHS = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+const MURAL_KIDS = '77777777-7777-4777-8777-777777777777'
+const MURAL_ADULT = '88888888-8888-4888-8888-888888888888'
+const offer = (over: Record<string, unknown>) => ({
+  status: 'paused',
+  productId: '99999999-9999-4999-8999-999999999999',
+  productName: 'Cadê Todo Mundo',
+  pricingMode: 'one_time',
+  accessMode: 'fixed',
+  accessDurationValue: 7,
+  accessDurationUnit: 'days',
+  items: [],
+  ...over,
+})
+/** As ofertas de cada público, como o `/api/catalog/offers?audience=` devolve. */
+const catalogOffers: Record<string, unknown[]> = {
+  kids: [
+    offer({
+      id: OFFER_KIDS,
+      slug: 'cade-todo-mundo-7-dias',
+      name: 'Cadê Todo Mundo 7 dias',
+      items: [{ productId: MURAL_KIDS, sortOrder: 0 }],
+    }),
+    offer({
+      id: OFFER_PARENTS,
+      slug: 'vilao-em-aliado',
+      name: 'Vilão em aliado',
+      status: 'active',
+      productName: 'Transformando o vilão em aliado',
+      accessMode: 'lifetime',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+    }),
+    offer({
+      id: OFFER_SUBSCRIPTION,
+      slug: 'comunidade-mensal',
+      name: 'Comunidade mensal',
+      status: 'active',
+      pricingMode: 'subscription',
+      accessMode: 'billing_cycle',
+    }),
+    offer({ id: OFFER_DRAFT, slug: 'rascunho', name: 'Oferta em rascunho', status: 'draft' }),
+    // Prazo em meses não vira presente (o referrals recusa): fica fora da lista.
+    offer({
+      id: OFFER_MONTHS,
+      slug: 'cade-todo-mundo-1-mes',
+      name: 'Cadê Todo Mundo 1 mês',
+      status: 'active',
+      accessDurationValue: 1,
+      accessDurationUnit: 'months',
+    }),
+  ],
+  adult: [
+    offer({
+      id: OFFER_ADULT,
+      slug: 'cade-todo-mundo-adulto-7-dias',
+      name: 'Cadê Todo Mundo adulto 7 dias',
+      productName: 'Cadê Todo Mundo adulto',
+      items: [{ productId: MURAL_ADULT, sortOrder: 0 }],
+    }),
+  ],
+}
+/** A busca `q=mural-dos-criadores` traz os dois; só o do público da campanha conta. */
+const muralProducts = [
+  {
+    id: MURAL_KIDS,
+    slug: 'mural-dos-criadores',
+    fulfillment: { accessType: 'community', courseRef: 'mural-dos-criadores' },
+  },
+  {
+    id: MURAL_ADULT,
+    slug: 'adult-mural-dos-criadores',
+    fulfillment: { accessType: 'community', courseRef: 'adult-mural-dos-criadores' },
+  },
+]
 async function mount(
   items: unknown[],
   save: (call: Call) => Response,
-  courses?: (call: Call) => Response,
+  options: { catalogDown?: boolean; detail?: (call: Call) => Response } = {},
 ) {
   const audience =
     (items[0] as { audience?: string } | undefined)?.audience === 'kids' ? 'kids' : 'adult'
@@ -68,8 +151,17 @@ async function mount(
         ],
         total: 1,
       })
-    if (call.method === 'GET' && courses && call.url.startsWith('/api/members/courses?'))
-      return courses(call)
+    if (call.method === 'GET' && call.url.startsWith('/api/catalog/') && options.catalogDown)
+      return Response.json({ error: { message: 'Catálogo fora' } }, { status: 503 })
+    if (call.method === 'GET' && call.url.startsWith('/api/catalog/offers?')) {
+      const audience = new URL(call.url, 'https://admin.test').searchParams.get('audience') ?? ''
+      const list = catalogOffers[audience] ?? []
+      return Response.json({ items: list, total: list.length })
+    }
+    if (call.method === 'GET' && call.url.startsWith('/api/catalog/products?'))
+      return Response.json({ items: muralProducts, total: muralProducts.length })
+    if (call.method === 'GET' && options.detail && call.url.includes('/campaigns/'))
+      return options.detail(call)
     if (call.method === 'GET') return Response.json({ error: { message: 'x' } }, { status: 503 })
     return save(call)
   }) as typeof fetch
@@ -87,6 +179,17 @@ async function mount(
 }
 const button = (label: string) =>
   [...document.querySelectorAll('button')].find((b) => b.textContent === label)!
+const giftSelect = () =>
+  document.querySelector<HTMLSelectElement>('[role="dialog"] select[name="campaign-gift-offer"]')!
+const choose = (offerId: string) =>
+  act(async () => {
+    const select = giftSelect()
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(
+      select,
+      offerId,
+    )
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
 const submit = () =>
   act(async () =>
     document
@@ -238,6 +341,7 @@ test('nova campanha nasce na comunidade selecionada e envia o público explícit
   expect(document.body.textContent).toContain('Público do presente')
   expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Adulto')
   expect(document.querySelector('input[name="campaign-audience"]')).toBeNull()
+  await choose(OFFER_ADULT)
   await submit()
   const post = calls.find((call) => call.method === 'POST')!
   expect(post.url).toBe('/api/admin/referrals/campaigns?audience=adult')
@@ -281,51 +385,163 @@ test('a prévia leva o público', () => {
   ).toBe('kids')
 })
 
-const courseList = (status: string | null) => () =>
-  Response.json({
-    items:
-      status === null
-        ? [{ slug: 'cade-todo-mundo-adulto-rascunho', status: 'draft' }]
-        : [
-            { slug: 'cade-todo-mundo-adulto-2', status: 'published' },
-            { slug: 'cade-todo-mundo-adulto', status },
-          ],
-    total: 1,
-  })
-const courseCalls = (calls: Call[]) =>
-  calls.filter((c) => c.url.startsWith('/api/members/courses?'))
+/** Oferta de presente (15/11/2026): o campo obrigatório, a lista e os erros novos. */
 
-test('público adulto com o curso adulto em rascunho: o editor avisa', async () => {
-  const { calls, root } = await mount([campaign()], () => Response.json({}), courseList('draft'))
-  await act(async () => button('Editar').click())
-  const status = [...document.querySelectorAll('[role="dialog"] [role="status"]')].map(
-    (el) => el.textContent,
+test('nova campanha Kids exige a oferta de presente e lista só pagamento único em dias ou sem prazo', async () => {
+  const { calls, root } = await mount([campaign({ audience: 'kids' })], () =>
+    Response.json({ campaign: campaign({ audience: 'kids', giftOfferId: OFFER_KIDS }) }),
   )
-  expect(status).toContain(ADULT_COURSE_UNPUBLISHED_MESSAGE)
-  const url = new URL(courseCalls(calls)[0]!.url, 'https://admin.test')
-  expect(url.searchParams.get('q')).toBe('cade-todo-mundo-adulto')
-  expect(url.searchParams.get('audience')).toBe('adult')
-  await act(async () => root.unmount())
-})
+  try {
+    await act(async () => button('Nova campanha').click())
+    const options = [...giftSelect().options].map((o) => ({
+      value: o.value,
+      text: o.textContent,
+      disabled: o.disabled,
+    }))
+    expect(options.map((o) => o.value)).toEqual(['', OFFER_KIDS, OFFER_PARENTS, OFFER_DRAFT])
+    expect(options[1]!.text).toBe(
+      'Cadê Todo Mundo 7 dias · Cadê Todo Mundo + Mural · 7 dias · Pausada',
+    )
+    expect(options[2]!.text).toBe('Vilão em aliado · Transformando o vilão em aliado · sem prazo')
+    // Rascunho aparece com a situação, mas o Catálogo não entrega oferta em rascunho.
+    expect(options[3]!.disabled).toBe(true)
+    expect(options[3]!.text).toContain('Rascunho')
+    expect(
+      calls.some((c) => c.url.includes('/api/catalog/offers?') && c.url.includes('audience=kids')),
+    ).toBe(true)
 
-test('curso adulto ausente da lista também avisa; só o slug exato conta', async () => {
-  const { root } = await mount([campaign()], () => Response.json({}), courseList(null))
-  await act(async () => button('Editar').click())
-  expect(document.body.textContent).toContain(ADULT_COURSE_UNPUBLISHED_MESSAGE)
-  await act(async () => root.unmount())
-})
+    await submit()
+    expect(calls.some((c) => c.method === 'POST')).toBe(false)
+    expect(document.querySelector('[role="dialog"] [role="alert"]')?.textContent).toBe(
+      GIFT_OFFER_REQUIRED_MESSAGE,
+    )
 
-test('curso adulto publicado, lista sem permissão ou público Kids: sem aviso', async () => {
-  for (const [audience, courses] of [
-    ['adult', courseList('published')],
-    ['adult', () => Response.json({ error: { code: 'FORBIDDEN' } }, { status: 403 })],
-    ['kids', courseList('draft')],
-  ] as const) {
-    const { calls, root } = await mount([campaign({ audience })], () => Response.json({}), courses)
-    await act(async () => button('Editar').click())
-    expect(document.body.textContent).not.toContain(ADULT_COURSE_UNPUBLISHED_MESSAGE)
-    if (audience === 'kids') expect(courseCalls(calls)).toHaveLength(0)
+    await choose(OFFER_KIDS)
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Inclui Cadê Todo Mundo + Mural. Prazo: 7 dias. Situação no Catálogo: Pausada.',
+    )
+    await submit()
+    expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
+      audience: 'kids',
+      giftOfferId: OFFER_KIDS,
+    })
+  } finally {
     await act(async () => root.unmount())
-    document.body.innerHTML = ''
+  }
+})
+
+test('a lista e o detalhe mostram a oferta, e a campanha antiga mostra a oferta padrão', async () => {
+  const { container, calls, root } = await mount(
+    [
+      campaign({ audience: 'kids', giftOfferId: OFFER_PARENTS }),
+      campaign({ id: 'c2', name: 'Feira', code: 'feira', audience: 'kids', giftOfferId: null }),
+    ],
+    () => Response.json({ campaign: campaign({ audience: 'kids', giftOfferId: OFFER_PARENTS }) }),
+    {
+      detail: () =>
+        Response.json({
+          campaign: campaign({ audience: 'kids', giftOfferId: OFFER_PARENTS }),
+          history: [],
+          redemptions: [],
+        }),
+    },
+  )
+  try {
+    const headers = [...container.querySelectorAll('th')].map((th) => th.textContent)
+    const column = headers.indexOf('Presente')
+    const rows = [...container.querySelectorAll('tbody tr')]
+    expect(rows[0]!.children[column]!.textContent).toBe(
+      'Vilão em aliadoTransformando o vilão em aliado · sem prazo',
+    )
+    expect(rows[1]!.children[column]!.textContent).toBe('Oferta padrão do Cadê')
+
+    await act(async () => button('Detalhes').click())
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Presente: Vilão em aliado (Transformando o vilão em aliado · sem prazo).',
+    )
+    await act(async () => button('Duplicar como nova edição').click())
+    expect(giftSelect().value).toBe(OFFER_PARENTS)
+    const code = [...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input')].find(
+      (input) => input.pattern === '[a-z0-9-]{4,32}',
+    )!
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+        code,
+        'feira-2',
+      )
+      code.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await submit()
+    const duplicate = calls.find((c) => c.url.includes('/duplicate'))
+    expect(duplicate?.method).toBe('POST')
+    expect(duplicate?.body).toMatchObject({ giftOfferId: OFFER_PARENTS })
+  } finally {
+    await act(async () => root.unmount())
+  }
+})
+
+test('campanha antiga sem oferta salva sem mandar a oferta (o referrals conserva)', async () => {
+  const { calls, root } = await mount(
+    [campaign({ audience: 'kids', status: 'active', state: 'active', giftOfferId: null })],
+    () => Response.json({ campaign: campaign() }),
+  )
+  try {
+    await act(async () => button('Editar').click())
+    expect(giftSelect().value).toBe('')
+    expect(giftSelect().disabled).toBe(false)
+    expect(giftSelect().options[0]!.textContent).toBe('Oferta padrão do Cadê (campanha antiga)')
+    await submit()
+    const patch = calls.find((c) => c.method === 'PATCH')!
+    expect(patch.body as object).not.toHaveProperty('giftOfferId')
+  } finally {
+    await act(async () => root.unmount())
+  }
+})
+
+test('fora do rascunho a oferta trava, e os erros novos viram recados claros', async () => {
+  for (const [code, status, expected] of [
+    ['CAMPAIGN_GIFT_OFFER_LOCKED', 409, GIFT_OFFER_LOCKED_MESSAGE],
+    ['CATALOG_UNAVAILABLE', 503, GIFT_CATALOG_UNAVAILABLE_MESSAGE],
+  ] as const) {
+    const { calls, root } = await mount(
+      [
+        campaign({
+          audience: 'adult',
+          status: 'active',
+          state: 'active',
+          giftOfferId: OFFER_ADULT,
+        }),
+      ],
+      () => Response.json({ error: { code, message: 'x' } }, { status }),
+    )
+    try {
+      await act(async () => button('Editar').click())
+      expect(giftSelect().disabled).toBe(true)
+      expect(giftSelect().value).toBe(OFFER_ADULT)
+      expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+        GIFT_OFFER_LOCKED_MESSAGE,
+      )
+      await submit()
+      expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
+        giftOfferId: OFFER_ADULT,
+      })
+      expect(document.querySelector('[role="dialog"] [role="alert"]')?.textContent).toBe(expected)
+    } finally {
+      await act(async () => root.unmount())
+      document.body.innerHTML = ''
+    }
+  }
+})
+
+test('catálogo fora: o campo avisa e deixa tentar de novo', async () => {
+  const { root } = await mount([campaign()], () => Response.json({}), { catalogDown: true })
+  try {
+    await act(async () => button('Nova campanha').click())
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+      'As ofertas do Catálogo não carregaram.',
+    )
+    expect(button('Tentar de novo')).toBeDefined()
+  } finally {
+    await act(async () => root.unmount())
   }
 })

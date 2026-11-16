@@ -63,7 +63,7 @@ describe('Desafio do Primeiro Jogo para adultos (21/10/2026)', () => {
         "ctaButton('{{acao}}', '{{link}}')",
         'Não há renovação automática.',
       ],
-      'challenge-not-activated-adult': ["ctaButton('Criar senha e entrar', '{{link}}')"],
+      'challenge-not-activated-adult': ["ctaButton('Entrar com o código do e-mail', '{{link}}')"],
       'challenge-not-started-adult': ["ctaButton('Abrir a primeira aula', '{{link}}')"],
       'challenge-day-one-complete-adult': ["ctaButton('Continuar o Desafio', '{{link}}')"],
       // O link do aviso de 7 dias é a página Seu progresso do app adulto.

@@ -265,10 +265,12 @@ function Visualizador() {
 }
 
 if (QUADRO_A_QUADRO) {
-  let agora = performance.now()
+  // O `advance` do react-three-fiber conta em SEGUNDOS (o relógio dele começa em 0): 1/30 por
+  // quadro. Em milissegundos, cada quadro virava um salto (o jogo corta em 0,1 s).
+  let agora = 0
   ;(globalThis as { __quadros?: (n: number) => void }).__quadros = (n) => {
     for (let i = 0; i < n; i++) {
-      agora += 1000 / 30
+      agora += 1 / 30
       advance(agora)
     }
   }

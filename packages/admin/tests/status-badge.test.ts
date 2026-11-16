@@ -6,9 +6,9 @@ describe('statusLabel: a situação de uma conta', () => {
     expect(statusLabel('pending', 'account')).toBe('Ativação pendente')
   })
 
-  test('"Convite sem resposta" não é situação de conta (é o chip de quem não criou a senha)', () => {
+  test('"Entra só por código" não é situação de conta (é o chip de quem não criou senha)', () => {
     for (const status of ['active', 'pending', 'suspended', 'blocked', 'inactive']) {
-      expect(statusLabel(status, 'account')).not.toBe('Convite sem resposta')
+      expect(statusLabel(status, 'account')).not.toBe('Entra só por código')
     }
   })
 

@@ -40,6 +40,11 @@ export interface UserRepository {
    */
   update(user: UserAggregate, expectedVersion: number): Promise<boolean>
   /**
+   * Carimba a PRIMEIRA entrada do dono, só se ainda não houver (idempotente, sem mexer na
+   * `version`: não disputa com edições da conta, e o `update` nunca escreve esta coluna).
+   */
+  markFirstSignIn(userId: string, at: Date): Promise<void>
+  /**
    * Cerca uma exclusão: bloqueia a conta e devolve TODOS os perfis, inclusive
    * arquivados. Usa o mesmo advisory lock da criação de perfil.
    */

@@ -46,6 +46,8 @@ export const CLIPES_DO_JOGO = [
   'planar',
   'escalar',
   'montado',
+  // Na montaria larga (o dino do Vale), o montado de pernas abertas que a arte mediu em cima dele.
+  'montado_largo',
   // Andar e correr de lado e de costas (do pack): na virada, o passo acompanha para onde o corpo vai.
   'andar_tras',
   'andar_esquerda',
@@ -190,7 +192,8 @@ const RESERVA_DO_ESTADO: Partial<Record<Estado, PoseDoEstado>> = {
   Escalar: inteiro('subir_escada'),
   Equilibrar: inteiro('parado_relaxado'),
   Escorregar: parada('agachado_frente', AGACHADO_PARADO),
-  Montar: parada('agachado_frente', AGACHADO_PARADO),
+  // Sem o montado largo no catálogo, o montado de sempre (a perna entra um pouco no dino).
+  Montar: inteiro('montado'),
   Patinar: inteiro('andar_frente'),
   AndarTras: inteiro('andar_frente'),
   AndarEsquerda: inteiro('andar_frente'),
@@ -255,7 +258,7 @@ const DA_ARTE: Record<Estado, PoseDoEstado> = {
   Escalar: inteiro('escalar'),
   Equilibrar: inteiro('equilibrar'),
   Escorregar: inteiro('escorregar'),
-  Montar: inteiro('montado'),
+  Montar: inteiro('montado_largo'),
   Patinar: inteiro('patinar'),
   // De lado e de costas (o pack): na virada, enquanto o corpo ainda não olha para onde vai.
   AndarTras: inteiro('andar_tras'),

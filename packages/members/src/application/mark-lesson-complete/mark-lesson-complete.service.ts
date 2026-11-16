@@ -172,6 +172,7 @@ export class MarkLessonCompleteService {
       courseCompleted,
       privileged,
       modality: course.modality,
+      learner: course.learner,
     })
 
     // Vitrine (Mural): a aula tem um bloco de estúdio marcado p/ publicação? Então o

@@ -38,6 +38,7 @@ export {
   setSlots,
   withCurrentSet,
   withEars,
+  withMountedVariants,
   wornSet,
 } from './rules'
 export type * from './types'

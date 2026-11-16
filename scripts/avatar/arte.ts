@@ -47,6 +47,11 @@ export interface ItemDaArte {
   premio_da_festa?: boolean
   /** Quanto a peça soma à altura do corpo (os patins: as rodas abaixo da sola), em metros. */
   altura_que_soma_m?: number
+  /** A variante da peça para quando a criança monta (a saia assentada na sela). */
+  variante_montado?: string
+  /** Esta peça é variante de outra, para usar numa situação (`usar_em`: `montado`). */
+  variante_de?: string
+  usar_em?: string
   /** A caixa da peça na pose de descanso (metros, Y para cima). */
   caixa?: { min: [number, number, number]; max: [number, number, number] }
   /**

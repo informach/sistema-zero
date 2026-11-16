@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { isParentsCourse } from '@sistemazero/core/course/learner'
 import { ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal, PayloadTooLargeError } from '@sistemazero/core/http'
 import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/learning'
@@ -374,15 +375,17 @@ export class SubmitStudioProjectService {
       ),
     )
     if (write?.duplicateGallery) return write.receipt
-    await owned(() =>
-      this.gamification.awardStudioSubmitted({
-        userId,
-        accountId: accountId ?? userId,
-        blockId,
-        audience: course.audience,
-        privileged,
-      }),
-    )
+    // Curso para pais (14/11/2026): enviar não conta para missões nem XP do responsável.
+    if (!isParentsCourse(course))
+      await owned(() =>
+        this.gamification.awardStudioSubmitted({
+          userId,
+          accountId: accountId ?? userId,
+          blockId,
+          audience: course.audience,
+          privileged,
+        }),
+      )
     return { submittedAt: submittedAt.toISOString() }
   }
 

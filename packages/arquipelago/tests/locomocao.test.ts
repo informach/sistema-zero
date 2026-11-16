@@ -115,7 +115,8 @@ describe('os clipes do pack no catálogo', () => {
     expect(POSE_DO_ESTADO.Escalar.clipe).toBe('escalar')
     expect(POSE_DO_ESTADO.Equilibrar.clipe).toBe('equilibrar')
     expect(POSE_DO_ESTADO.Escorregar.clipe).toBe('escorregar')
-    expect(POSE_DO_ESTADO.Montar.clipe).toBe('montado')
+    // O dino é montaria larga: o montado de pernas abertas, medido em cima dele.
+    expect(POSE_DO_ESTADO.Montar.clipe).toBe('montado_largo')
     expect(POSE_DO_ESTADO.Patinar.clipe).toBe('patinar')
   })
 })

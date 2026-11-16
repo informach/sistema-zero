@@ -82,6 +82,35 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     })
   })
 
+  test('grantManualOffer: mode offer + prazo da oferta a partir do resgate; delivery no header', async () => {
+    const { client, seen } = capture()
+    await client.grantManualOffer({
+      userId: 'u-1',
+      offerRef: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d01',
+      sourceId: 'scholarship:r-1',
+      anchorAt: '2026-11-15T12:00:00.000Z',
+      audience: 'kids',
+      deliveryId: 'scholarship:offer:7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d01:r-1',
+    })
+    const call = seen[0]!
+    expect(call.url).toBe('http://gateway.test/members/webhooks/grant-manual')
+    // O corpo exato que o DTO `mode:'offer'` do members aceita.
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      mode: 'offer',
+      useOfferAccessPolicy: true,
+      userId: 'u-1',
+      offerRef: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d01',
+      sourceId: 'scholarship:r-1',
+      anchorAt: '2026-11-15T12:00:00.000Z',
+      audience: 'kids',
+    })
+    const headers = call.init.headers as Record<string, string>
+    expect(headers['x-delivery-id']).toBe(
+      'scholarship:offer:7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d01:r-1',
+    )
+    expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
+  })
+
   test('grantManualCourse envia mode:"course" no corpo (DTO do members exige)', async () => {
     const { client, seen } = capture()
     const res = await client.grantManualCourse({

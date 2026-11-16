@@ -51,6 +51,11 @@ export const campaigns = referralsSchema.table(
     coupon: jsonb().$type<CampaignInput['coupon']>(),
     /** Público do presente (0005). Só muda em rascunho; depois, só duplicando. */
     audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
+    /**
+     * Oferta do catálogo dada de presente (0010, UUID sem FK: o catálogo é outro schema).
+     * Nula só em campanhas antigas, que o `scripts/backfill-gift-offer.ts` liga à oferta padrão.
+     */
+    giftOfferId: uuid(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
@@ -206,10 +211,18 @@ export const scholarshipRedemptions = referralsSchema.table(
     processingUntil: timestamp({ withTimezone: true }),
     attemptCount: integer().notNull().default(0),
     completedAt: timestamp({ withTimezone: true }),
-    /** Null nos resgates históricos; novos inserts gravam sete dias na aplicação. */
+    /**
+     * Dias do presente. Null nos resgates históricos sem prazo e nos resgates por oferta
+     * vitalícia ou com prazo em meses (o fim sai da própria oferta, contado do resgate).
+     */
     accessDurationDays: integer(),
-    /** Null legado; visitor = só visita; trial = participação no prazo do curso + visita depois. */
+    /**
+     * Null legado; visitor = só visita; trial = participação no prazo do curso + visita depois;
+     * offer (0010) = o members concede a oferta `gift_offer_id` (curso, prazo e Mural dela).
+     */
     muralVisitorPolicy: varchar({ length: 16 }),
+    /** Oferta concedida pelo resgate `offer` (0010); null nos resgates anteriores. */
+    giftOfferId: uuid(),
     muralVisitorGrantedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

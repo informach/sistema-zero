@@ -1,10 +1,15 @@
-import type { GiftAudience, GiftMuralAccess } from '@sistemazero/core/referrals'
+import type {
+  GiftAudience,
+  GiftMuralAccess,
+  ReferralGiftOfferView,
+} from '@sistemazero/core/referrals'
 import { formatTelefone } from '@sistemazero/ui/phone'
 import { useEffect, useId, useRef, useState } from 'react'
 import {
+  cursoParaPaisHref,
   dataBrasilia,
-  RESGATE_COPY,
   type ResgateCopy,
+  resgateCopy,
   resgateHref,
 } from '../content/presente-resgate'
 import { ApiError, apiPost } from '../lib/api-fetch'
@@ -29,6 +34,13 @@ export interface BolsaResgateProps {
   audience?: GiftAudience
   campaign?: boolean
   retryOnly?: boolean
+  /**
+   * O que a oferta do presente entrega (leitura pública). Ausente = a copy do Cadê de sempre.
+   * Com `variante: 'pais'` no Kids, o "Abrir o curso" leva à página do curso na área dos pais (que
+   * só existe no app Kids; no adulto, `pais` vale como `curso`).
+   */
+  gift?: ReferralGiftOfferView
+  variante?: 'cade' | 'pais' | 'curso'
 }
 
 type Phase = 'form' | 'processing' | 'done'
@@ -44,8 +56,16 @@ export default function BolsaResgate({
   audience = 'kids',
   campaign = false,
   retryOnly = false,
+  gift,
+  variante = 'cade',
 }: BolsaResgateProps) {
-  const t = RESGATE_COPY[audience]
+  const t = resgateCopy(audience, gift, variante)
+  // Curso para pais (Kids): depois do resgate, a página do curso na área dos pais. Conta nova cria
+  // a senha antes (o "Criar ou recuperar a senha"); o login do responsável cai na área dos pais.
+  const entrarHref =
+    variante === 'pais' && audience !== 'adult' && gift?.courseSlug
+      ? cursoParaPaisHref(communityUrl, gift.courseSlug)
+      : resgateHref('login', communityUrl)
   const [phase, setPhase] = useState<Phase>('form')
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -161,7 +181,7 @@ export default function BolsaResgate({
           {confirmation?.muralAccess === 'visitor' && ` ${c.muralVisitante}`}
         </p>
         <div className="bz-acoes">
-          <a className="bz-btn" href={href('login')}>
+          <a className="bz-btn" href={entrarHref}>
             {c.entrar}
           </a>
           <a className="bz-link" href={href('senha')}>

@@ -14,6 +14,7 @@ import {
   setSlots,
   withCurrentSet,
   withEars,
+  withMountedVariants,
   wornSet,
 } from './index'
 
@@ -301,6 +302,43 @@ describe('vestir', () => {
     })
     const { rosto: _sem, ...semRosto } = base()
     expect(avatarProblems(C, semRosto)).toContainEqual({ kind: 'missing-required', slot: 'rosto' })
+  })
+})
+
+describe('a variante para montar (a saia assentada na sela)', () => {
+  // A arte ainda não entregou as variantes: um catálogo de exemplo com uma saia e a variante dela.
+  const saia = parts.find(([, p]) => p.slot === 'calca' && isListed(p) && !p.set)
+  if (!saia) throw new Error('sem peça de calça')
+  const [idSaia, pecaSaia] = saia
+  const comVariante = {
+    ...C,
+    parts: {
+      ...C.parts,
+      [idSaia]: { ...pecaSaia, mountedVariant: `${idSaia}_montada` },
+      [`${idSaia}_montada`]: {
+        ...pecaSaia,
+        hidden: true,
+        variantOf: idSaia,
+        variantFor: 'montado',
+      },
+    },
+  }
+
+  test('montada, a peça troca pela variante; o resto fica', () => {
+    const vestida: AvatarSlots = { ...base(), calca: idSaia }
+    const montada = withMountedVariants(comVariante, vestida)
+    expect(montada.calca).toBe(`${idSaia}_montada`)
+    expect(montada.corpo).toBe(vestida.corpo)
+  })
+
+  test('sem variante (ou com a variante fora do catálogo), nada muda', () => {
+    const vestida: AvatarSlots = { ...base(), calca: idSaia }
+    expect(withMountedVariants(C, vestida)).toBe(vestida)
+    const semArquivo = {
+      ...C,
+      parts: { ...C.parts, [idSaia]: { ...pecaSaia, mountedVariant: 'nao_existe' } },
+    }
+    expect(withMountedVariants(semArquivo, vestida)).toBe(vestida)
   })
 })
 

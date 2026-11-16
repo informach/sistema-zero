@@ -157,6 +157,24 @@ export function withCurrentSet(
   return opcoes.completar === false ? atualizado : { ...atualizado, ...inteiro }
 }
 
+/**
+ * O avatar montado: cada peça que tem variante para montar (`mountedVariant`, a saia com a barra
+ * assentada na sela) troca pela variante, se ela estiver no catálogo. Só no desenho do jogo: o avatar
+ * guardado continua com a peça original.
+ */
+export function withMountedVariants(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+  let trocou = false
+  const montado: AvatarSlots = {}
+  for (const [slot, id] of Object.entries(slots)) {
+    const variante = partOf(catalog, id)?.mountedVariant
+    if (variante && partOf(catalog, variante)?.slot === slot) {
+      montado[slot] = variante
+      trocou = true
+    } else montado[slot] = id
+  }
+  return trocou ? montado : slots
+}
+
 /** Põe as orelhas da cor do corpo, ou tira, quando um capuz ou a fantasia cobrem a cabeça. */
 export function withEars(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
   const { [SLOT_DAS_ORELHAS]: _orelhas, ...resto } = slots
