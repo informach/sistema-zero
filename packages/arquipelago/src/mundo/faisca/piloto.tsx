@@ -255,12 +255,26 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
     </>
   )
 }
-function Iris({ arte }: { arte: ArteDoPiloto }) {
+export function Iris({
+  arte,
+  origem = IRIS_DE_ESTUDO,
+  piso = pisoDaFaisca,
+  ativo = true,
+  escala = 1,
+  giro = 0,
+}: {
+  arte: ArteDoPiloto
+  origem?: { x: number; z: number }
+  piso?: (x: number, z: number) => number
+  ativo?: boolean
+  escala?: number
+  giro?: number
+}) {
   const { loja, pedidos } = useJogo(),
     pausado = useEstado(jogoPausado)
   const grupo = useRef<Group>(null),
     corpo = useRef<RapierRigidBody>(null)
-  const p = useRef({ x: IRIS_DE_ESTUDO.x as number, z: IRIS_DE_ESTUDO.z as number })
+  const p = useRef({ x: origem.x, z: origem.z })
   const original = arte.modelos.get('coelho')!
   const cena = useMemo(() => {
     const c = clone(original.scene)
@@ -312,20 +326,20 @@ function Iris({ arte }: { arte: ArteDoPiloto }) {
   useFrame((_, dt) => {
     if (!grupo.current) return
     const falando = loja.getState().painelAberto === 'faisca-iris'
-    if (!pausado) tempo.current += Math.min(dt, 0.1)
+    if (!pausado && ativo) tempo.current += Math.min(dt, 0.1)
     const fase = tempo.current % 28,
-      movendo = fase < 10 || (fase >= 14 && fase < 24)
+      movendo = ativo && (fase < 10 || (fase >= 14 && fase < 24))
     const distancia =
       fase < 10 ? fase * 0.488 : fase < 14 ? 4.88 : fase < 24 ? (24 - fase) * 0.488 : 0
-    p.current.x = IRIS_DE_ESTUDO.x
-    p.current.z = IRIS_DE_ESTUDO.z + distancia
-    const y = pisoDaFaisca(p.current.x, p.current.z)
+    p.current.x = origem.x + Math.sin(giro) * distancia
+    p.current.z = origem.z + Math.cos(giro) * distancia
+    const y = piso(p.current.x, p.current.z)
     grupo.current.position.set(p.current.x, y, p.current.z)
-    grupo.current.rotation.y = fase < 14 ? 0 : Math.PI
+    grupo.current.rotation.y = (fase < 14 ? 0 : Math.PI) + giro
     corpo.current?.setNextKinematicTranslation({ x: p.current.x, y, z: p.current.z })
     anim.andar.setEffectiveWeight(movendo && !falando ? 1 : 0)
     anim.parado.setEffectiveWeight(movendo && !falando ? 0 : 1)
-    if (!pausado) anim.mixer.update(Math.min(dt, 0.1))
+    if (!pausado && ativo) anim.mixer.update(Math.min(dt, 0.1))
     if (osso) {
       osso.getWorldPosition(vetor)
       cabeca.x = vetor.x
@@ -336,7 +350,7 @@ function Iris({ arte }: { arte: ArteDoPiloto }) {
   })
   return (
     <>
-      <group ref={grupo} dispose={null}>
+      <group ref={grupo} dispose={null} scale={escala}>
         <primitive object={cena} />
       </group>
       <RigidBody

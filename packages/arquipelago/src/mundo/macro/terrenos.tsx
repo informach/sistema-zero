@@ -14,6 +14,10 @@ import {
 import { MaterialDoSolo } from '../faisca/pintura-do-solo'
 
 type DadosDaMalha = { vertices: Float32Array; indices: Uint32Array }
+export interface FonteDoTerreno {
+  setor(ilha: IlhaDoArquipelago, x: number, z: number): DadosDaMalha
+  distante(ilha: IlhaDoArquipelago, excluir: ReadonlySet<string>): DadosDaMalha
+}
 function useGeometria(dados: DadosDaMalha, ilha: IlhaDoArquipelago) {
   const geometria = useMemo(() => {
     const geo = new BufferGeometry()
@@ -44,12 +48,23 @@ function useGeometria(dados: DadosDaMalha, ilha: IlhaDoArquipelago) {
   return geometria
 }
 
-function Setor({ ilha, setor }: { ilha: IlhaDoArquipelago; setor: SetorDoTerritorio }) {
-  const dados = useMemo(() => malhaDoSetor(ilha, setor.x, setor.z), [ilha, setor.x, setor.z])
+function Setor({
+  ilha,
+  setor,
+  fonte,
+}: {
+  ilha: IlhaDoArquipelago
+  setor: SetorDoTerritorio
+  fonte?: FonteDoTerreno
+}) {
+  const dados = useMemo(
+    () => (fonte ? fonte.setor(ilha, setor.x, setor.z) : malhaDoSetor(ilha, setor.x, setor.z)),
+    [ilha, setor.x, setor.z, fonte],
+  )
   const geometria = useGeometria(dados, ilha)
   return (
     <RigidBody type="fixed" colliders={false}>
-      <mesh geometry={geometria} receiveShadow>
+      <mesh geometry={geometria} receiveShadow userData={{ chao: true }}>
         <MaterialDoSolo faisca={ilha.id === 'sua-ilha'} />
       </mesh>
       <TrimeshCollider args={[dados.vertices, dados.indices]} />
@@ -60,13 +75,15 @@ function Setor({ ilha, setor }: { ilha: IlhaDoArquipelago; setor: SetorDoTerrito
 function Territorio({
   ilha,
   setores,
+  fonte,
 }: {
   ilha: IlhaDoArquipelago
   setores: readonly SetorDoTerritorio[]
+  fonte?: FonteDoTerreno
 }) {
   const dados = useMemo(
-    () => malhaDistante(ilha, new Set(setores.map((s) => s.id))),
-    [ilha, setores],
+    () => (fonte?.distante ?? malhaDistante)(ilha, new Set(setores.map((s) => s.id))),
+    [ilha, setores, fonte],
   )
   const geometria = useGeometria(dados, ilha)
   return (
@@ -75,7 +92,7 @@ function Territorio({
         <MaterialDoSolo faisca={ilha.id === 'sua-ilha'} />
       </mesh>
       {setores.map((setor) => (
-        <Setor key={setor.id} ilha={ilha} setor={setor} />
+        <Setor key={setor.id} ilha={ilha} setor={setor} fonte={fonte} />
       ))}
     </group>
   )
@@ -85,10 +102,12 @@ export function TerrenosMacro({
   aoMudar,
   foco,
   aoPronto,
+  fonte,
 }: {
   aoMudar: (quantidade: number) => void
   foco: { x: number; z: number } | null
   aoPronto: (x: number, z: number) => void
+  fonte?: FonteDoTerreno
 }) {
   const { rastro } = useJogo()
   const [celula, setCelula] = useState(() => ({
@@ -116,5 +135,5 @@ export function TerrenosMacro({
     [territorios, aoMudar],
   )
   useEffect(() => aoPronto(celula.x, celula.z), [celula, aoPronto])
-  return territorios.map((t) => <Territorio key={t.ilha.id} {...t} />)
+  return territorios.map((t) => <Territorio key={t.ilha.id} {...t} fonte={fonte} />)
 }

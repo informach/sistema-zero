@@ -17,6 +17,7 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
+    "@sistemazero/molda-cenarios": "workspace:*",
     "@sistemazero/molda-cenarios-core": "workspace:*",
     "@aws-sdk/client-s3": "^3.1032.0",
     "@aws-sdk/s3-request-presigner": "^3.1032.0",

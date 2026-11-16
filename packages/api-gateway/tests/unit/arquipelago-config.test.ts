@@ -19,7 +19,7 @@ describe('Arquipélago Vagalume no gateway', () => {
       resilience: { timeoutMs: 15_000 },
     })
     const rotas = jogo.routes.filter((r) => r.id.startsWith('arquipelago-cenarios-'))
-    expect(rotas).toHaveLength(10)
+    expect(rotas).toHaveLength(19)
     for (const rota of rotas) {
       expect(routeConfigSchema.safeParse(rota).success).toBe(true)
       expect(rota.authorize).toEqual({ roles: ['superadmin', 'admin'], statuses: ['active'] })

@@ -100,6 +100,7 @@ export function malhaDoSetor(
   setorZ: number,
   passo = PASSO_DO_TERRENO,
   lagoDeCatalogo = LAGO_DE_CATALOGO,
+  altura: ((x: number, z: number) => number) | null = null,
 ) {
   if (!Number.isFinite(passo) || passo <= 0 || LADO_DO_SETOR % passo !== 0)
     throw new Error('O passo deve dividir o lado do setor')
@@ -111,10 +112,10 @@ export function malhaDoSetor(
       const px = setorX * LADO_DO_SETOR + x * passo
       const pz = setorZ * LADO_DO_SETOR + z * passo
       const i = (z * (n + 1) + x) * 3
-      vertices.set([px, alturaDoTerritorio(ilha, px, pz), pz], i)
+      vertices.set([px, altura ? altura(px, pz) : alturaDoTerritorio(ilha, px, pz), pz], i)
     }
   const abertura =
-    ilha.id === 'sua-ilha'
+    !altura && ilha.id === 'sua-ilha'
       ? [...(lagoDeCatalogo ? [LAGO_DA_FAISCA] : []), RECORTE_DA_COLINA].find(
           ({ retangulo: r }) =>
             r.minX >= setorX * LADO_DO_SETOR &&

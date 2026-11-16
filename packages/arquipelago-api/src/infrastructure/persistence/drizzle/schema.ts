@@ -13,7 +13,13 @@ import {
   type PostoDaVila,
   type PublicoJogo,
 } from '@sistemazero/arquipelago-contracts'
-import type { DocumentoDeCenario, ModeloDeCatalogo } from '@sistemazero/molda-cenarios-core'
+import type {
+  DocumentoDeCenario,
+  EstadoDeSessao,
+  ModeloDeCatalogo,
+  PedidoDeViewport,
+  ResultadoDeViewport,
+} from '@sistemazero/molda-cenarios-core'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -87,6 +93,47 @@ export const cenarioRevisoes = arquipelagoSchema.table(
     primaryKey({ columns: [t.projetoId, t.revisao] }),
     uniqueIndex('cenario_revisoes_operacao_idx').on(t.projetoId, t.operacaoId),
     check('cenario_revisoes_revisao_check', sql`${t.revisao} >= 0`),
+  ],
+)
+
+export const cenarioAplicacoes = arquipelagoSchema.table('cenario_aplicacoes', {
+  base: varchar({ length: 240 }).primaryKey(),
+  projetoId: uuid()
+    .notNull()
+    .references(() => cenarioProjetos.id),
+  revisao: integer().notNull(),
+  autorId: uuid().notNull(),
+  aplicadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+})
+export const cenarioSessoes = arquipelagoSchema.table(
+  'cenario_sessoes',
+  {
+    id: uuid().primaryKey(),
+    projetoId: uuid()
+      .notNull()
+      .references(() => cenarioProjetos.id, { onDelete: 'cascade' }),
+    autorId: uuid().notNull(),
+    estado: jsonb().$type<EstadoDeSessao>().notNull(),
+    expiraEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [index('cenario_sessoes_expira_idx').on(t.expiraEm)],
+)
+export const cenarioTarefas = arquipelagoSchema.table(
+  'cenario_tarefas_viewport',
+  {
+    id: uuid().primaryKey(),
+    sessaoId: uuid()
+      .notNull()
+      .references(() => cenarioSessoes.id, { onDelete: 'cascade' }),
+    autorId: uuid().notNull(),
+    pedido: jsonb().$type<PedidoDeViewport>().notNull(),
+    estado: varchar({ length: 16 }).$type<'pendente' | 'executando' | 'concluido'>().notNull(),
+    resultado: jsonb().$type<ResultadoDeViewport>(),
+    expiraEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [
+    index('cenario_tarefas_sessao_idx').on(t.sessaoId, t.estado),
+    index('cenario_tarefas_expira_idx').on(t.expiraEm),
   ],
 )
 
@@ -765,6 +812,9 @@ export const vendasNaFeira = arquipelagoSchema.table(
 )
 
 export const schema = {
+  cenarioAplicacoes,
+  cenarioSessoes,
+  cenarioTarefas,
   cenarioCatalogos,
   cenarioProjetos,
   cenarioRevisoes,

@@ -32,10 +32,16 @@ const entidade = z.object({
 export const InstanciaSchema = entidade
   .extend({
     modelo: id,
+    ator: z.literal('iris').optional(),
     transformacao: TransformacaoSchema,
     apoio: z.discriminatedUnion('tipo', [
       z
-        .object({ tipo: z.literal('terreno'), deslocamento: numero, inclinar: z.boolean() })
+        .object({
+          tipo: z.literal('terreno'),
+          deslocamento: numero,
+          inclinar: z.boolean(),
+          referencia: z.enum(['pivo', 'volume']).optional(),
+        })
         .strict(),
       z.object({ tipo: z.literal('absoluto') }).strict(),
       z.object({ tipo: z.literal('objeto'), objeto: id, deslocamento: numero }).strict(),

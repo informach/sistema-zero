@@ -204,6 +204,13 @@
       "when": 1794819608338,
       "tag": "0028_serious_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794824539855,
+      "tag": "0029_right_legion",
+      "breakpoints": true
     }
   ]
 }

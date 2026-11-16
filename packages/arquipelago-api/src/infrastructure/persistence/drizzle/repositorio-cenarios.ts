@@ -1,7 +1,11 @@
 import { and, desc, eq, lt } from 'drizzle-orm'
 import type { RepositorioDeCenarios, RevisaoDeCenario } from '../../../domain/cenarios.port'
 import type { Database } from './db'
-import { cenarioProjetos as projetos, cenarioRevisoes as revisoes } from './schema'
+import {
+  cenarioAplicacoes as aplicacoes,
+  cenarioProjetos as projetos,
+  cenarioRevisoes as revisoes,
+} from './schema'
 
 const iso = <T extends { criadoEm: string }>(r: T): T => ({
   ...r,
@@ -99,12 +103,35 @@ export class DrizzleRepositorioDeCenarios implements RepositorioDeCenarios {
       return true
     })
   }
-  async aplicar(id: string, revisao: number) {
-    const alterados = await this.db
-      .update(projetos)
-      .set({ revisaoAplicada: revisao })
-      .where(and(eq(projetos.id, id), eq(projetos.revisao, revisao)))
-      .returning({ id: projetos.id })
-    return alterados.length === 1
+  async aplicar(id: string, revisao: number, autorId?: string) {
+    return this.db.transaction(async (tx) => {
+      const alterados = await tx
+        .update(projetos)
+        .set({ revisaoAplicada: revisao })
+        .where(and(eq(projetos.id, id), eq(projetos.revisao, revisao)))
+        .returning({ id: projetos.id })
+      if (!alterados.length) return false
+      const [r] = await tx
+        .select()
+        .from(revisoes)
+        .where(and(eq(revisoes.projetoId, id), eq(revisoes.revisao, revisao)))
+      if (!r) throw Error('Revisão de aplicação ausente')
+      const valor = {
+        base: r.documento.base.id,
+        projetoId: id,
+        revisao,
+        autorId: autorId ?? r.autorId,
+        aplicadoEm: new Date().toISOString(),
+      }
+      await tx
+        .insert(aplicacoes)
+        .values(valor)
+        .onConflictDoUpdate({ target: aplicacoes.base, set: valor })
+      return true
+    })
+  }
+  async aplicado(base: string) {
+    const [a] = await this.db.select().from(aplicacoes).where(eq(aplicacoes.base, base))
+    return a ? this.ler(a.projetoId, a.revisao) : null
   }
 }

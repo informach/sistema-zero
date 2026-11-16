@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "../src/styles.css";
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}

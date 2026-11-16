@@ -91,6 +91,18 @@ function Placa({ p, nome }: { p: PontoDaFaisca; nome: string }) {
 
 /** Texto preso às duas faces da placa real. A frente do GLB aponta para +Z; a seta para +X. */
 export function TextosNasPlacas({ colecao }: { colecao: readonly PecaNaFaisca[] }) {
+  return <TextoSobreMadeira colecao={colecao} assentar={assentamentoDaPeca} />
+}
+export function TextoSobreMadeira<
+  T extends {
+    id: string
+    x: number
+    z: number
+    giro: number
+    escala: number
+    sinal?: { texto: string }
+  },
+>({ colecao, assentar }: { colecao: readonly T[]; assentar: (p: T) => { y: number } }) {
   const recursos = useMemo(() => {
     const textos = new Set(colecao.flatMap((p) => (p.sinal ? [p.sinal.texto] : []))),
       estilos = new Map<string, { textura: CanvasTexture; material: MeshStandardMaterial }>()
@@ -133,7 +145,7 @@ export function TextosNasPlacas({ colecao }: { colecao: readonly PecaNaFaisca[] 
     .map((p) => (
       <group
         key={p.id}
-        position={[p.x, assentamentoDaPeca(p).y, p.z]}
+        position={[p.x, assentar(p).y, p.z]}
         rotation={[0, p.giro, 0]}
         scale={p.escala}
       >

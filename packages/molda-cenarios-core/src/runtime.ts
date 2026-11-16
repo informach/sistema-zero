@@ -25,21 +25,34 @@ export interface EstadoDeViewport {
   }
 }
 export interface CenarioRuntimePort {
+  posicionarCamera?(
+    posicao: { x: number; y: number; z: number },
+    alvo: { x: number; y: number; z: number },
+  ): void
   atualizar(documento: DocumentoDeCenario, estado: EstadoDeViewport, revisao: number): Promise<void>
   enquadrar(ids?: readonly string[]): void
   testar(iniciar: boolean): Promise<void>
   capturar(revisaoEsperada?: number): Promise<Blob>
-  estado(): { revisao: number; revisaoPronta: number; modo: 'editando' | 'testando' }
+  estado(): {
+    revisao: number
+    revisaoPronta: number
+    modo: 'editando' | 'testando'
+    avatar?: { x: number; y: number; z: number }
+    nadando?: boolean
+  }
   colocar(modeloId: string, x: number, y: number): Promise<void>
   desmontar(): void
 }
 export interface CenarioRuntimeMontagem {
+  miniatura?(modelo: ModeloDeCatalogo, url: string, sinal: AbortSignal): Promise<Blob>
+  liberarMiniaturas?(): void
   montar(
     elemento: HTMLElement,
     opcoes: {
       documento: DocumentoDeCenario
       revisao: number
       catalogo: readonly ModeloDeCatalogo[]
+      urlDaArte: (modelo: ModeloDeCatalogo) => string
       estado: EstadoDeViewport
       aoSelecionar: (ids: string[]) => void
       aoGesto: (ativo: boolean) => void

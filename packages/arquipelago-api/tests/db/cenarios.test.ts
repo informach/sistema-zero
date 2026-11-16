@@ -3,12 +3,14 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
 import { CatalogosDeCenarios } from '../../src/application/catalogo-de-cenarios'
 import { ServicoDeCenarios } from '../../src/application/servico-de-cenarios'
+import { SessoesDeCenarios } from '../../src/application/sessoes-de-cenarios'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDeCatalogos } from '../../src/infrastructure/persistence/drizzle/repositorio-catalogos-cenarios'
 import { DrizzleRepositorioDeCenarios } from '../../src/infrastructure/persistence/drizzle/repositorio-cenarios'
+import { DrizzleSessoesDeCenarios } from '../../src/infrastructure/persistence/drizzle/repositorio-sessoes-cenarios'
 import { rotasDosCenarios } from '../../src/interfaces/http/rotas-dos-cenarios'
 import { migrarBancoDeTeste } from '../fakes/banco-migrado'
 
@@ -31,6 +33,91 @@ beforeAll(async () => {
 afterAll(async () => {
   await db?.close()
 })
+
+test.skipIf(!url)(
+  'sessões reais: dono, gesto, revisão e fila atômica entre dois consumidores',
+  async () => {
+    const autor = { id: randomUUID(), podeEscrever: true, podeRevisar: true },
+      outro = { ...autor, id: randomUUID() },
+      catalogo = { id: 'fila-qa', digest: 'a'.repeat(64) }
+    const cenarios = new ServicoDeCenarios(new DrizzleRepositorioDeCenarios(db.db), async () => ({
+      ...catalogo,
+      modelos: new Map(),
+    }))
+    const p = await cenarios.criar(autor, {
+      nome: 'Fila QA',
+      operacaoId: randomUUID(),
+      documento: {
+        formato: 'molda-cenario',
+        versao: 1,
+        id: 'fila-qa',
+        nome: 'Fila QA',
+        unidade: 'metro',
+        eixoVertical: 'y',
+        base: { id: 'faisca-v2', versao: '1' },
+        catalogo,
+        grupos: [],
+        instancias: [],
+        caminhos: [],
+        aguas: [],
+        relevo: [],
+        marcos: [],
+        iluminacao: { noite: false },
+      },
+    })
+    const repo = new DrizzleSessoesDeCenarios(db.db),
+      sessoes = new SessoesDeCenarios(repo, cenarios),
+      sessao = await sessoes.criar(autor, { projetoId: p.projetoId })
+    const estado = {
+      revisao: 0,
+      revisaoPronta: 0,
+      gesto: false,
+      ocupado: false,
+      modo: 'editando' as const,
+      selecionados: [],
+    }
+    let erro: unknown
+    try {
+      await sessoes.pulso(outro, sessao.id, estado)
+    } catch (e) {
+      erro = e
+    }
+    expect(String(erro)).toContain('outro operador')
+    await sessoes.pulso(autor, sessao.id, { ...estado, gesto: true })
+    const pedido = { id: randomUUID(), revisaoEsperada: 0, acao: { tipo: 'estado' as const } }
+    erro = null
+    try {
+      await sessoes.pedir(autor, sessao.id, pedido)
+    } catch (e) {
+      erro = e
+    }
+    expect(String(erro)).toContain('ocupado')
+    await sessoes.pulso(autor, sessao.id, estado)
+    erro = null
+    try {
+      await sessoes.pedir(autor, sessao.id, { ...pedido, revisaoEsperada: 1 })
+    } catch (e) {
+      erro = e
+    }
+    expect(String(erro)).toContain('revisão')
+    const t = await sessoes.pedir(autor, sessao.id, pedido),
+      retry = await sessoes.pedir(autor, sessao.id, pedido)
+    expect(retry.id).toBe(t.id)
+    const claims = await Promise.all([
+      sessoes.proxima(autor, sessao.id),
+      sessoes.proxima(autor, sessao.id),
+    ])
+    expect(claims.filter(Boolean)).toHaveLength(1)
+    await sessoes.concluir(autor, sessao.id, t.id, {
+      ok: true,
+      revisao: 0,
+      dados: { origem: 'viewport' },
+    })
+    expect((await sessoes.tarefa(autor, sessao.id, t.id)).resultado?.dados?.origem).toBe('viewport')
+    await cenarios.aplicar(autor, p.projetoId, 0)
+    expect((await cenarios.aplicado(autor, 'faisca-v2')).projetoId).toBe(p.projetoId)
+  },
+)
 test.skipIf(!url)(
   'catálogo remoto imutável: digest, versões antigas e permissão administrativa',
   async () => {

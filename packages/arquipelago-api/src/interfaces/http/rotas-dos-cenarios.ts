@@ -9,6 +9,7 @@ import {
   OperacaoDeCenarioReutilizada,
   type ServicoDeCenarios,
 } from '../../application/servico-de-cenarios'
+import type { SessoesDeCenarios } from '../../application/sessoes-de-cenarios'
 import { exigirGateway, lerEquipe } from './identidade'
 
 const aplicacao = z.object({ revisao: z.number().int().nonnegative() }).strict()
@@ -17,6 +18,7 @@ const leitura = z.object({ revisao: z.coerce.number().int().nonnegative().option
 export function rotasDosCenarios(deps: {
   cenarios: ServicoDeCenarios
   catalogos?: CatalogosDeCenarios
+  sessoes?: SessoesDeCenarios
   tokenInterno?: string
 }) {
   const s = deps.cenarios
@@ -86,6 +88,56 @@ export function rotasDosCenarios(deps: {
       return deps.catalogos.registrar(equipe, body)
     })
     .get('/projetos', ({ headers }) => s.listar(lerEquipe(headers)))
+    .get('/aplicado/:base', ({ headers, params }) =>
+      s.aplicado(
+        lerEquipe(headers),
+        z
+          .string()
+          .regex(/^[a-z0-9-]{1,120}$/)
+          .parse(params.base),
+      ),
+    )
+    .get('/sessoes', ({ headers }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.listar(lerEquipe(headers))
+    })
+    .post('/sessoes', ({ headers, body }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.criar(lerEquipe(headers), body)
+    })
+    .post('/sessoes/:id/pulso', ({ headers, params, body }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.pulso(lerEquipe(headers), z.uuid().parse(params.id), body)
+    })
+    .post('/sessoes/:id/fechar', ({ headers, params }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.fechar(lerEquipe(headers), z.uuid().parse(params.id))
+    })
+    .post('/sessoes/:id/pedidos', ({ headers, params, body }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.pedir(lerEquipe(headers), z.uuid().parse(params.id), body)
+    })
+    .get('/sessoes/:id/proxima', async ({ headers, params }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return { tarefa: await deps.sessoes.proxima(lerEquipe(headers), z.uuid().parse(params.id)) }
+    })
+    .get('/sessoes/:id/pedidos/:pedidoId', ({ headers, params }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.tarefa(
+        lerEquipe(headers),
+        z.uuid().parse(params.id),
+        z.uuid().parse(params.pedidoId),
+      )
+    })
+    .post('/sessoes/:id/pedidos/:pedidoId/resultado', ({ headers, params, body }) => {
+      if (!deps.sessoes) throw new CenarioNaoEncontrado('Sessões indisponíveis')
+      return deps.sessoes.concluir(
+        lerEquipe(headers),
+        z.uuid().parse(params.id),
+        z.uuid().parse(params.pedidoId),
+        body,
+      )
+    })
     .post('/projetos', async ({ headers, body, set }) => {
       const r = await s.criar(lerEquipe(headers), body)
       set.status = 201

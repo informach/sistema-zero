@@ -125,9 +125,15 @@ export class ServicoDeCenarios {
     z.number().int().nonnegative().parse(revisao)
     const r = await this.ler(equipe, id, revisao)
     await this.validar(r.documento)
-    if (!(await this.repo.aplicar(id, revisao)))
+    if (!(await this.repo.aplicar(id, revisao, equipe.id)))
       throw new ConflitoDeCenario((await this.ler(equipe, id)).revisao)
     return { projetoId: id, revisao }
+  }
+  async aplicado(equipe: Equipe, base: string) {
+    this.autor(equipe)
+    const r = await this.repo.aplicado?.(base)
+    if (!r) throw new CenarioNaoEncontrado('Nenhuma revisão aplicada a este ensaio')
+    return r
   }
   async restaurar(equipe: Equipe, id: string, entrada: unknown) {
     const autorId = this.autor(equipe),

@@ -366,6 +366,15 @@ export function arquipelagoGateway(opts: {
           ['projetos-comandos', '/projetos/:id/comandos', ['POST']],
           ['projetos-restaurar', '/projetos/:id/restaurar', ['POST']],
           ['projetos-aplicar', '/projetos/:id/aplicar', ['POST']],
+          ['aplicado', '/aplicado/:base', ['GET']],
+          ['sessoes-listar', '/sessoes', ['GET']],
+          ['sessoes-criar', '/sessoes', ['POST']],
+          ['sessoes-pulso', '/sessoes/:id/pulso', ['POST']],
+          ['sessoes-fechar', '/sessoes/:id/fechar', ['POST']],
+          ['sessoes-pedir', '/sessoes/:id/pedidos', ['POST']],
+          ['sessoes-proxima', '/sessoes/:id/proxima', ['GET']],
+          ['sessoes-pedido', '/sessoes/:id/pedidos/:pedidoId', ['GET']],
+          ['sessoes-resultado', '/sessoes/:id/pedidos/:pedidoId/resultado', ['POST']],
         ] as const
       ).map(([id, path, methods]) => ({
         ...leituraDaEquipe,

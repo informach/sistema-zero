@@ -81,7 +81,12 @@ export function validarDocumento(valor: unknown, catalogo?: CatalogoDeCenario): 
       pai = grupos.get(pai)?.grupo ?? null
     }
   }
+  const atores = new Set<string>()
   for (const o of d.instancias) {
+    if (o.ator) {
+      if (atores.has(o.ator)) erros.push(`Ator duplicado: ${o.ator}`)
+      atores.add(o.ator)
+    }
     if (catalogo && !catalogo.has(o.modelo)) erros.push(`Modelo ausente: ${o.modelo}`)
     const vistos = new Set([o.id])
     let apoio = o.apoio

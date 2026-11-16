@@ -10,6 +10,7 @@
     "./assets": "./src/assets/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
     "./tools": "./src/core/toolFamilies.ts",
+    "./ui": "./src/components/ui/public.ts",
     "./styles.css": "./src/styles/molda.css"
   },
   "scripts": {

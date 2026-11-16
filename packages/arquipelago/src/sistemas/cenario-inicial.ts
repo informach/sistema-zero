@@ -5,7 +5,7 @@ import {
 } from '@sistemazero/molda-cenarios-core'
 import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
 import { assentamentoDaPeca, pisoDaFaisca } from './assentamento-da-faisca'
-import { COMPOSICAO_DA_FAISCA } from './composicao-faisca'
+import { COMPOSICAO_DA_FAISCA, IRIS_DE_ESTUDO } from './composicao-faisca'
 import { LUGAR_DA_FAISCA } from './faisca'
 import { LAGO_DA_FAISCA } from './lago-da-faisca'
 import { CONTORNO_DA_PRACA, PERCURSO_DO_PILOTO } from './passeios-da-faisca'
@@ -36,6 +36,11 @@ export function catalogoInicialDaFaisca(): ModeloDeCatalogo[] {
     triangulos: m.tris,
     arquivo: m.arquivo,
     categoria: m.caminho.split('/').at(-3) ?? m.origem,
+    imagens: [...m.imagens],
+    colisao: m.colisao.map((b) => ({
+      min: [...b.min] as [number, number, number],
+      max: [...b.max] as [number, number, number],
+    })),
   }))
 }
 /** Uma importação do estado atual, sem modificar a composição nem os arquivos de arte. */
@@ -83,7 +88,8 @@ export function cenarioInicialDaFaisca(catalogoDigest: string): DocumentoDeCenar
             ? { tipo: 'absoluto' as const }
             : {
                 tipo: 'terreno' as const,
-                deslocamento: a.y - pisoDaFaisca(p.x, p.z),
+                deslocamento: p.deslocamentoY ?? (f ? 0.025 : 0),
+                referencia: p.deslocamentoY !== undefined ? ('pivo' as const) : ('volume' as const),
                 inclinar: false,
               },
         fisica: p.solida ?? 'nenhuma',
@@ -93,8 +99,8 @@ export function cenarioInicialDaFaisca(catalogoDigest: string): DocumentoDeCenar
         ...(f
           ? {
               fundacao: {
-                min: { x: f.minX, y: f.baixo - a.y, z: f.minZ },
-                max: { x: f.maxX, y: f.topo - a.y, z: f.maxZ },
+                min: { x: f.minX / p.escala, y: (f.baixo - a.y) / p.escala, z: f.minZ / p.escala },
+                max: { x: f.maxX / p.escala, y: (f.topo - a.y) / p.escala, z: f.maxZ / p.escala },
               },
             }
           : {}),
@@ -153,5 +159,23 @@ export function cenarioInicialDaFaisca(catalogoDigest: string): DocumentoDeCenar
     })),
     iluminacao: { noite: false },
   }
+  documento.instancias.push({
+    id: 'iris',
+    nome: 'Íris — estudo',
+    ...propriedades,
+    modelo: meta('coelho'),
+    ator: 'iris',
+    transformacao: {
+      posicao: {
+        x: IRIS_DE_ESTUDO.x,
+        y: pisoDaFaisca(IRIS_DE_ESTUDO.x, IRIS_DE_ESTUDO.z),
+        z: IRIS_DE_ESTUDO.z,
+      },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: 1,
+    },
+    apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'pivo' },
+    fisica: 'nenhuma',
+  })
   return validarDocumento(documento, new Map(catalogoInicialDaFaisca().map((m) => [m.id, m])))
 }

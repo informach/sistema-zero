@@ -63,6 +63,7 @@ import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasma
 import type { ServicoDosInsumos } from '../../application/servico-dos-insumos'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
 import type { ServicoDosPedidos } from '../../application/servico-dos-pedidos'
+import type { SessoesDeCenarios } from '../../application/sessoes-de-cenarios'
 import { RecordeDoFantasmaMudouError } from '../../domain/fantasmas.port'
 import {
   CompraDesatualizadaError,
@@ -115,6 +116,7 @@ import { rotasDosPedidos } from './rotas-dos-pedidos'
 export interface DependenciasHttp {
   cenarios?: ServicoDeCenarios
   catalogos?: CatalogosDeCenarios
+  sessoesDeCenarios?: SessoesDeCenarios
   /** Visitas de outras crianças (N08a); sem ele, as rotas não existem. */
   amigos?: ServicoDasVisitasDeAmigos
   visitasAdultas?: ServicoDasVisitasAdultas
@@ -523,6 +525,7 @@ export function createServer(deps: DependenciasHttp): AnyElysia {
         ? rotasDosCenarios({
             cenarios: deps.cenarios,
             catalogos: deps.catalogos,
+            sessoes: deps.sessoesDeCenarios,
             tokenInterno: deps.tokenInterno,
           })
         : new Elysia(),

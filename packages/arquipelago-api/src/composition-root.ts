@@ -22,6 +22,7 @@ import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
 import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
+import { SessoesDeCenarios } from './application/sessoes-de-cenarios'
 import type { Env } from './infrastructure/config/env'
 import repertorioPlanejado from './infrastructure/config/repertorio-planejado.json'
 import { AvatarHttp } from './infrastructure/members/avatar-http'
@@ -46,6 +47,7 @@ import { DrizzleRepositorioDaObraEstendida } from './infrastructure/persistence/
 import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { DrizzleRepositorioDasRevisoesHumanas } from './infrastructure/persistence/drizzle/repositorio-revisoes-humanas'
+import { DrizzleSessoesDeCenarios } from './infrastructure/persistence/drizzle/repositorio-sessoes-cenarios'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { DrizzleRepositorioDasVendas } from './infrastructure/persistence/drizzle/repositorio-vendas'
 import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
@@ -139,6 +141,7 @@ export function createApplication(env: Env): Application {
   const app = createServer({
     cenarios,
     catalogos,
+    sessoesDeCenarios: new SessoesDeCenarios(new DrizzleSessoesDeCenarios(connection.db), cenarios),
     amigos: new ServicoDasVisitasDeAmigos({
       repo: new DrizzleRepositorioDasVisitasDeAmigos(connection.db),
       familia: repositorioDaFamilia,
