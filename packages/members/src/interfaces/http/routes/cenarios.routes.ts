@@ -104,14 +104,26 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         .post(
           '/espacos/:espacoId/bibliotecas',
           ({ headers, params, body }) => s.criarBiblioteca(atorDe(headers), params.espacoId, body),
-          { params: EspacoId, body: t.Object({ nome: NOME, licenca: LICENCA }) },
+          {
+            params: EspacoId,
+            body: t.Object({
+              nome: NOME,
+              licenca: LICENCA,
+              descricao: t.Optional(t.String({ maxLength: 1000 })),
+            }),
+          },
         )
         .patch(
           '/bibliotecas/:id',
           ({ headers, params, body }) => s.editarBiblioteca(atorDe(headers), params.id, body),
           {
             params: Id,
-            body: t.Object({ nome: t.Optional(NOME), licenca: t.Optional(LICENCA) }),
+            body: t.Object({
+              nome: t.Optional(NOME),
+              licenca: t.Optional(LICENCA),
+              descricao: t.Optional(t.String({ maxLength: 1000 })),
+              capaModelo: t.Optional(t.Union([UUID, t.Null()])),
+            }),
           },
         )
         .delete(

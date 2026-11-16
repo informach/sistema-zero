@@ -86,6 +86,7 @@ export function Inicio({
   const [busca, setBusca] = useState('')
   const [janela, setJanela] = useState<Janela>(null)
   const [licenca, setLicenca] = useState<Licenca>('propria')
+  const [descricao, setDescricao] = useState('')
   const mundos = useCarga(() => host.listarMundos(espaco.id), [host, espaco.id])
   const bibliotecas = useCarga(async () => {
     const lista = await host.listarBibliotecas(espaco.id)
@@ -331,11 +332,21 @@ export function Inicio({
           acao={COPY.nome.criar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            const biblioteca = await host.criarBiblioteca(espaco.id, { nome, licenca })
+            const biblioteca = await host.criarBiblioteca(espaco.id, { nome, licenca, descricao })
             aoAbrirBiblioteca(biblioteca.id)
           }}
         >
           <SeletorDeLicenca valor={licenca} aoMudar={setLicenca} />
+          <label className="mcn-campo">
+            Descrição
+            <textarea
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              maxLength={1000}
+              rows={3}
+              placeholder="O que você vai guardar nesta biblioteca?"
+            />
+          </label>
         </DialogoDeNome>
       ) : null}
       {janela?.tipo === 'nome-do-mundo' ? (
@@ -395,6 +406,11 @@ export function CartaoDaBiblioteca({
           ? 'Sempre atualizado com o Molda'
           : COPY.biblioteca.modelos(biblioteca.modelos)}
       </span>
+      {biblioteca.descricao ? (
+        <p className="line-clamp-2 text-sm text-mld-muted" title={biblioteca.descricao}>
+          {biblioteca.descricao}
+        </p>
+      ) : null}
     </li>
   )
 }

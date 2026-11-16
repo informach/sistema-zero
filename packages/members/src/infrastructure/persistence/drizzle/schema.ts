@@ -3275,6 +3275,11 @@ export const cenarioBibliotecas = members.table(
     nome: varchar('nome', { length: 120 }).notNull(),
     /** Biblioteca derivada de uma fonte da própria conta; só o serviço atribui. */
     fonte: varchar('fonte', { length: 120 }),
+    descricao: varchar('descricao', { length: 1000 }).notNull().default(''),
+    /** Miniatura de um modelo existente, sem duplicar imagens nem criar arquivos órfãos. */
+    capaModelo: uuid('capa_modelo').references((): AnyPgColumn => cenarioModelos.id, {
+      onDelete: 'set null',
+    }),
     licenca: text('licenca').$type<'livre' | 'propria' | 'restrita'>().notNull(),
     criadoPor: uuid('criado_por').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),

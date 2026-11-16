@@ -204,7 +204,7 @@ export class CenariosService {
   async criarBiblioteca(
     ator: Ator,
     espacoId: string,
-    dados: { nome: string; licenca: Licenca },
+    dados: { nome: string; licenca: Licenca; descricao?: string },
   ): Promise<BibliotecaView> {
     await this.espacoDe(ator, espacoId)
     const criada = await this.repo.criarBiblioteca(
@@ -212,6 +212,7 @@ export class CenariosService {
         id: this.novoId(),
         espacoId,
         nome: texto(dados.nome, 'O nome'),
+        descricao: (dados.descricao ?? '').trim().slice(0, 1000),
         licenca: dados.licenca,
         criadoPor: ator.usuarioId,
       },
@@ -225,14 +226,24 @@ export class CenariosService {
   async editarBiblioteca(
     ator: Ator,
     id: string,
-    dados: { nome?: string; licenca?: Licenca },
+    dados: { nome?: string; licenca?: Licenca; descricao?: string; capaModelo?: string | null },
   ): Promise<BibliotecaView> {
-    await this.bibliotecaDe(ator, id)
+    const { espaco } = await this.bibliotecaDe(ator, id)
+    if (dados.capaModelo) {
+      const modelo = await this.repo.modelo(dados.capaModelo)
+      const origem = modelo ? await this.repo.biblioteca(modelo.bibliotecaId) : null
+      if (!modelo?.miniatura || origem?.espacoId !== espaco.id)
+        throw new CenarioNaoEncontradoError('O retrato do modelo')
+    }
     const editada = await this.repo.editarBiblioteca(
       id,
       {
         ...(dados.nome !== undefined ? { nome: texto(dados.nome, 'O nome') } : {}),
         ...(dados.licenca !== undefined ? { licenca: dados.licenca } : {}),
+        ...(dados.descricao !== undefined
+          ? { descricao: dados.descricao.trim().slice(0, 1000) }
+          : {}),
+        ...(dados.capaModelo !== undefined ? { capaModelo: dados.capaModelo } : {}),
       },
       this.clock(),
     )

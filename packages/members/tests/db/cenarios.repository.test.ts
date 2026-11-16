@@ -84,6 +84,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of fonteDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const capaDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0153_silky_the_hand.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of capaDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -129,6 +138,53 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     await repo.editarBiblioteca(a!.id, { nome: 'Outro nome' }, DEPOIS)
     expect((await criar())?.id).toBe(a!.id)
     expect(await repo.bibliotecas(espaco.id)).toHaveLength(1)
+  })
+
+  test('capa usa miniatura existente e volta à automática quando o modelo sai, sem reter bytes', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    await repo.reservarBlobs(
+      espaco.id,
+      ['a', 'b', 'c', 'd'].map((l) => ({
+        digest: digest(l),
+        bytes: 1000,
+        tipo: l < 'c' ? ('modelo' as const) : ('miniatura' as const),
+      })),
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(espaco.id, ['a', 'b', 'c', 'd'].map(digest), AGORA)
+    const [a, b] = (await repo.criarModelos(
+      biblioteca.id,
+      [
+        modelo('a', 'Árvore', { miniatura: digest('c') }),
+        modelo('b', 'Pedra', { miniatura: digest('d') }),
+      ],
+      10,
+      CONTA,
+      AGORA,
+    ))!
+    const editada = await repo.editarBiblioteca(
+      biblioteca.id,
+      { descricao: 'Coisas da vila', capaModelo: b!.id },
+      AGORA,
+    )
+    expect(editada).toMatchObject({
+      descricao: 'Coisas da vila',
+      capaModelo: b!.id,
+      capa: digest('d'),
+    })
+    const soltos = await repo.apagarModelos(biblioteca.id, [b!.id], DEPOIS)
+    expect(soltos.sort()).toEqual([digest('b'), digest('d')].sort())
+    expect(await repo.biblioteca(biblioteca.id)).toMatchObject({
+      capaModelo: null,
+      capa: digest('c'),
+    })
+    expect((await repo.modelo(a!.id))?.miniatura).toBe(digest('c'))
+    await repo.editarBiblioteca(biblioteca.id, { capaModelo: a!.id }, DEPOIS)
+    expect((await repo.apagarBiblioteca(biblioteca.id, DEPOIS)).sort()).toEqual(
+      [digest('a'), digest('c')].sort(),
+    )
+    expect(await repo.biblioteca(biblioteca.id)).toBeNull()
   })
   async function guardar(espacoId: string, ...letras: string[]) {
     await repo.reservarBlobs(

@@ -56,17 +56,21 @@ const colunasDaBiblioteca = {
   espacoId: cenarioBibliotecas.espacoId,
   nome: cenarioBibliotecas.nome,
   fonte: cenarioBibliotecas.fonte,
+  descricao: cenarioBibliotecas.descricao,
+  capaModelo: cenarioBibliotecas.capaModelo,
   licenca: cenarioBibliotecas.licenca,
   atualizadaEm: cenarioBibliotecas.updatedAt,
   modelos: sql<number>`(
     select count(*) from ${cenarioModelos} m
     where m.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')}
   )::int`,
-  capa: sql<string | null>`(
+  capa: sql<string | null>`coalesce((
+    select m.miniatura from ${cenarioModelos} m where m.id = ${deFora(cenarioBibliotecas, 'capa_modelo')}
+  ), (
     select m.miniatura from ${cenarioModelos} m
     where m.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')} and m.miniatura is not null
     order by m.busca collate "C", m.id limit 1
-  )`,
+  ))`,
 }
 
 const colunasDoMundo = {
@@ -232,12 +236,31 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     dados: Parameters<CenariosRepository['editarBiblioteca']>[1],
     agora: Date,
   ): Promise<Biblioteca | null> {
-    const [linha] = await this.db
-      .update(cenarioBibliotecas)
-      .set({ ...dados, updatedAt: agora })
-      .where(eq(cenarioBibliotecas.id, id))
-      .returning({ id: cenarioBibliotecas.id })
-    return linha ? this.lerBiblioteca(this.db, id) : null
+    const biblioteca = await this.biblioteca(id)
+    if (!biblioteca) return null
+    return this.comTrava(biblioteca.espacoId, async (tx) => {
+      if (dados.capaModelo) {
+        const [modelo] = await tx
+          .select({ id: cenarioModelos.id })
+          .from(cenarioModelos)
+          .innerJoin(cenarioBibliotecas, eq(cenarioBibliotecas.id, cenarioModelos.bibliotecaId))
+          .where(
+            and(
+              eq(cenarioModelos.id, dados.capaModelo),
+              eq(cenarioBibliotecas.espacoId, biblioteca.espacoId),
+              isNotNull(cenarioModelos.miniatura),
+            ),
+          )
+          .limit(1)
+        if (!modelo) return null
+      }
+      const [linha] = await tx
+        .update(cenarioBibliotecas)
+        .set({ ...dados, updatedAt: agora })
+        .where(eq(cenarioBibliotecas.id, id))
+        .returning({ id: cenarioBibliotecas.id })
+      return linha ? this.lerBiblioteca(tx, id) : null
+    })
   }
 
   /** Dos digests dados, apaga do espaço os que nenhum modelo nem cenário usa mais. */

@@ -67,13 +67,14 @@ export interface CenariosRepository {
       licenca: Licenca
       criadoPor: string
       fonte?: string
+      descricao?: string
     },
     teto: number,
     agora: Date,
   ): Promise<Biblioteca | null>
   editarBiblioteca(
     id: string,
-    dados: { nome?: string; licenca?: Licenca },
+    dados: { nome?: string; licenca?: Licenca; descricao?: string; capaModelo?: string | null },
     agora: Date,
   ): Promise<Biblioteca | null>
   /** Apaga a biblioteca e os modelos dela; devolve os digests que ficaram sem dono. */

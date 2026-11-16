@@ -68,7 +68,14 @@ export class CenariosEmMemoria implements CenariosRepository {
     if (!biblioteca) return
     const dela = [...this.modelosGuardados.values()].filter((m) => m.bibliotecaId === bibliotecaId)
     biblioteca.modelos = dela.length
-    biblioteca.capa = dela.find((m) => m.miniatura)?.miniatura ?? null
+    if (biblioteca.capaModelo && !this.modelosGuardados.has(biblioteca.capaModelo))
+      biblioteca.capaModelo = null
+    biblioteca.capa =
+      (biblioteca.capaModelo
+        ? this.modelosGuardados.get(biblioteca.capaModelo)?.miniatura
+        : null) ??
+      dela.find((m) => m.miniatura)?.miniatura ??
+      null
   }
 
   async espacoDaConta(contaId: string, limiteBytes: number): Promise<Espaco> {
@@ -96,6 +103,7 @@ export class CenariosEmMemoria implements CenariosRepository {
   }
 
   async bibliotecas(espacoId: string) {
+    for (const b of this.bibliotecasGuardadas.values()) this.contar(b.id)
     return this.copia(
       [...this.bibliotecasGuardadas.values()]
         .filter((b) => b.espacoId === espacoId)
@@ -103,6 +111,7 @@ export class CenariosEmMemoria implements CenariosRepository {
     )
   }
   async biblioteca(id: string) {
+    this.contar(id)
     const b = this.bibliotecasGuardadas.get(id)
     if (!b) return null
     const { criadoPor: _c, ...resto } = b
@@ -124,6 +133,8 @@ export class CenariosEmMemoria implements CenariosRepository {
       espacoId: dados.espacoId,
       nome: dados.nome,
       fonte: dados.fonte ?? null,
+      descricao: dados.descricao ?? '',
+      capaModelo: null,
       licenca: dados.licenca,
       modelos: 0,
       capa: null,
@@ -141,6 +152,8 @@ export class CenariosEmMemoria implements CenariosRepository {
     if (!b) return null
     if (dados.nome !== undefined) b.nome = dados.nome
     if (dados.licenca !== undefined) b.licenca = dados.licenca
+    if (dados.descricao !== undefined) b.descricao = dados.descricao
+    if (dados.capaModelo !== undefined) b.capaModelo = dados.capaModelo
     b.atualizadaEm = agora
     return this.biblioteca(id)
   }

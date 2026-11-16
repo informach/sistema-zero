@@ -70,7 +70,8 @@
     font-weight: 800;
     font-size: 0.875rem;
   }
-  .mcn-campo > input {
+  .mcn-campo > input,
+  .mcn-campo > textarea {
     min-height: 44px;
     padding: 0 14px;
     border: 2px solid var(--color-mld-border);
@@ -82,6 +83,7 @@
     font-size: 1rem;
   }
   .mcn-campo > input:focus-visible,
+  .mcn-campo > textarea:focus-visible,
   .mcn-numero input:focus-visible {
     outline: 2px solid var(--color-mld-accent);
     outline-offset: 1px;
@@ -89,6 +91,10 @@
   }
   .mcn-campo > input[aria-invalid="true"] {
     border-color: var(--color-mld-danger);
+  }
+  .mcn-campo > textarea {
+    padding: 10px 14px;
+    resize: vertical;
   }
   .mcn-opcoes {
     display: flex;

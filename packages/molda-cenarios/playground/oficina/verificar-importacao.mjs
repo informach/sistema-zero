@@ -182,6 +182,7 @@ try {
   await p.getByRole('button', { name: 'Bibliotecas', exact: true }).click()
   await p.getByRole('button', { name: 'Criar biblioteca', exact: true }).first().click()
   await p.getByRole('dialog').getByLabel('Nome', { exact: true }).fill('Biblioteca de teste')
+  await p.getByRole('dialog').getByLabel('Descrição', { exact: true }).fill('Vegetação para a vila')
   await p.getByRole('dialog').getByRole('button', { name: 'Criar', exact: true }).click()
   await p.getByRole('heading', { name: 'Biblioteca de teste', exact: true }).waitFor()
   await p.getByRole('button', { name: 'Trazer modelos', exact: true }).click()
@@ -205,6 +206,9 @@ try {
   await editar.getByLabel('Nome', { exact: true }).fill('Árvore da praça')
   await editar.getByLabel('Pasta', { exact: true }).fill('Natureza/Árvores')
   await editar.getByLabel('Etiquetas, separadas por vírgulas', { exact: true }).fill('verde, vila')
+  await editar
+    .getByRole('checkbox', { name: 'Usar esta miniatura como capa da biblioteca', exact: true })
+    .check()
   await editar.getByRole('button', { name: 'Guardar', exact: true }).click()
   await p.getByText('Árvore da praça', { exact: true }).waitFor()
   await p
@@ -215,6 +219,11 @@ try {
   await p.getByRole('searchbox', { name: 'Buscar modelo', exact: true }).fill('arvore')
   await p.getByText('Árvore da praça', { exact: true }).waitFor()
   await p.getByRole('progressbar', { name: 'Armazenamento usado', exact: true }).waitFor()
+  const biblioteca = await p.evaluate(
+    async () => (await window.__cenarios.host.listarBibliotecas('conta'))[0],
+  )
+  assert.equal(biblioteca.descricao, 'Vegetação para a vila')
+  assert.ok(biblioteca.capaModelo)
   await p.screenshot({ path: resolve(saida, 'biblioteca-importada.png') })
   writeFileSync(resolve(saida, 'resultado.json'), JSON.stringify({ ...r, erros }, null, 2))
   assert.equal(erros.length, 0)

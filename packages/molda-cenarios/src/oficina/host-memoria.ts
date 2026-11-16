@@ -74,6 +74,11 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     let total = 0
     for (const m of modelos.values()) if (m.bibliotecaId === bibliotecaId) total++
     biblioteca.modelos = total
+    if (biblioteca.capaModelo && !modelos.has(biblioteca.capaModelo)) biblioteca.capaModelo = null
+    biblioteca.capa =
+      (biblioteca.capaModelo ? modelos.get(biblioteca.capaModelo)?.miniatura : null) ??
+      [...modelos.values()].find((m) => m.bibliotecaId === bibliotecaId)?.miniatura ??
+      null
     biblioteca.atualizadaEm = agora()
   }
   const semAcento = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -87,6 +92,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
 
     async listarBibliotecas(espacoId) {
       await esperar()
+      for (const b of bibliotecas.values()) contar(b.id)
       return copia([...bibliotecas.values()].filter((b) => b.espacoId === espacoId))
     },
     async criarBiblioteca(espacoId, dados) {
@@ -97,6 +103,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         espacoId,
         nome: dados.nome.trim(),
         licenca: dados.licenca,
+        descricao: dados.descricao ?? '',
+        capaModelo: null,
         modelos: 0,
         capa: null,
         atualizadaEm: agora(),
@@ -129,6 +137,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       const biblioteca = exigir(bibliotecas, id, 'A biblioteca')
       if (dados.nome !== undefined) biblioteca.nome = dados.nome.trim()
       if (dados.licenca !== undefined) biblioteca.licenca = dados.licenca
+      if (dados.descricao !== undefined) biblioteca.descricao = dados.descricao.trim()
+      if (dados.capaModelo !== undefined) biblioteca.capaModelo = dados.capaModelo
+      contar(id)
       biblioteca.atualizadaEm = agora()
       return copia(biblioteca)
     },

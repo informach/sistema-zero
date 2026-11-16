@@ -57,6 +57,7 @@ export const COPY = {
     apagarCenarioTexto: (nome: string) => `"${nome}" vai sumir para sempre.`,
   },
   biblioteca: {
+    editar: 'Editar biblioteca',
     voltar: 'Voltar às bibliotecas',
     trazer: 'Trazer modelos',
     soltar: 'Solte os modelos aqui',

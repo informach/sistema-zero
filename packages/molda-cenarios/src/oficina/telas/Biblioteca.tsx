@@ -47,6 +47,8 @@ export function Biblioteca({
   const [arrastando, setArrastando] = useState(false)
   const [janela, setJanela] = useState<Janela>(null)
   const [licenca, setLicenca] = useState<Licenca>('propria')
+  const [descricao, setDescricao] = useState('')
+  const [capaAutomatica, setCapaAutomatica] = useState(false)
   const entrada = useRef<HTMLInputElement>(null)
   const pasta = useRef<HTMLInputElement>(null)
   const trabalho = useRef<AbortController | null>(null)
@@ -235,6 +237,14 @@ export function Biblioteca({
                         ? `${COPY.biblioteca.modelos(biblioteca.modelos)} · ${COPY.biblioteca.licenca[biblioteca.licenca]}`
                         : ' '}
                     </p>
+                    {biblioteca?.descricao ? (
+                      <p
+                        className="sz-tool-subtitle line-clamp-2 max-w-xl"
+                        title={biblioteca.descricao}
+                      >
+                        {biblioteca.descricao}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="sz-tool-header__actions">
@@ -243,12 +253,16 @@ export function Biblioteca({
                     className="sz-tool-pill sz-tool-pill--quiet"
                     disabled={!biblioteca}
                     onClick={() => {
-                      if (biblioteca) setLicenca(biblioteca.licenca)
+                      if (biblioteca) {
+                        setLicenca(biblioteca.licenca)
+                        setDescricao(biblioteca.descricao ?? '')
+                        setCapaAutomatica(false)
+                      }
                       setJanela({ tipo: 'nome' })
                     }}
                   >
                     <Pencil aria-hidden="true" />
-                    {COPY.mundo.renomear}
+                    {COPY.biblioteca.editar}
                   </button>
                   <button
                     type="button"
@@ -447,9 +461,14 @@ export function Biblioteca({
       {janela?.tipo === 'modelo' && (
         <EditarModelo
           modelo={janela.modelo}
+          capaAtual={biblioteca?.capaModelo === janela.modelo.id}
           aoFechar={() => setJanela(null)}
-          aoGuardar={async (dados) => {
+          aoGuardar={async (dados, capa) => {
             await host.editarModelo(janela.modelo.id, dados)
+            if (capa || biblioteca?.capaModelo === janela.modelo.id)
+              await host.editarBiblioteca(bibliotecaId, {
+                capaModelo: capa ? janela.modelo.id : null,
+              })
             setVolta((v) => v + 1)
           }}
         />
@@ -499,16 +518,40 @@ export function Biblioteca({
       )}
       {janela?.tipo === 'nome' && biblioteca ? (
         <DialogoDeNome
-          titulo={COPY.mundo.renomear}
+          titulo={COPY.biblioteca.editar}
           inicial={biblioteca.nome}
           acao={COPY.nome.guardar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            await host.editarBiblioteca(biblioteca.id, { nome, licenca })
+            await host.editarBiblioteca(biblioteca.id, {
+              nome,
+              licenca,
+              descricao,
+              ...(capaAutomatica ? { capaModelo: null } : {}),
+            })
             setVolta((v) => v + 1)
           }}
         >
           <SeletorDeLicenca valor={licenca} aoMudar={setLicenca} />
+          <label className="mcn-campo">
+            Descrição
+            <textarea
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              maxLength={1000}
+              rows={3}
+            />
+          </label>
+          {biblioteca.capaModelo ? (
+            <label className="mcn-opcao">
+              <input
+                type="checkbox"
+                checked={capaAutomatica}
+                onChange={(e) => setCapaAutomatica(e.target.checked)}
+              />
+              Voltar à capa automática
+            </label>
+          ) : null}
         </DialogoDeNome>
       ) : null}
       {janela?.tipo === 'apagar' && biblioteca ? (
@@ -530,13 +573,19 @@ function EditarModelo({
   modelo,
   aoGuardar,
   aoFechar,
+  capaAtual,
 }: {
   modelo: ModeloDeBiblioteca
-  aoGuardar(dados: { nome: string; pasta: string; etiquetas: string[] }): Promise<void>
+  aoGuardar(
+    dados: { nome: string; pasta: string; etiquetas: string[] },
+    capa: boolean,
+  ): Promise<void>
   aoFechar(): void
+  capaAtual: boolean
 }): JSX.Element {
   const [pasta, setPasta] = useState(modelo.pasta)
   const [etiquetas, setEtiquetas] = useState(modelo.etiquetas.join(', '))
+  const [capa, setCapa] = useState(capaAtual)
   return (
     <DialogoDeNome
       titulo="Editar modelo"
@@ -561,7 +610,7 @@ function EditarModelo({
           caminho.startsWith('/')
         )
           throw Error('Escolha uma pasta dentro da biblioteca')
-        await aoGuardar({ nome, pasta: caminho, etiquetas: lista })
+        await aoGuardar({ nome, pasta: caminho, etiquetas: lista }, capa)
       }}
     >
       <label className="mcn-campo">
@@ -581,6 +630,15 @@ function EditarModelo({
           maxLength={670}
           placeholder="Ex.: árvore, floresta"
         />
+      </label>
+      <label className="mcn-opcao">
+        <input
+          type="checkbox"
+          checked={capa}
+          disabled={!modelo.miniatura}
+          onChange={(e) => setCapa(e.target.checked)}
+        />
+        Usar esta miniatura como capa da biblioteca
       </label>
       <p className="text-sm text-mld-muted">
         {modelo.max

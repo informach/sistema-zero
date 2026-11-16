@@ -93,6 +93,8 @@ export interface Biblioteca {
   espacoId: string
   nome: string
   fonte?: string | null
+  descricao?: string
+  capaModelo?: string | null
   licenca: Licenca
   modelos: number
   /** Digest do retrato que serve de capa (o do primeiro modelo). */

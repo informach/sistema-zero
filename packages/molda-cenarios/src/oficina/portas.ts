@@ -20,6 +20,8 @@ export interface Biblioteca {
   espacoId: string
   nome: string
   fonte?: string | null
+  descricao?: string
+  capaModelo?: string | null
   licenca: Licenca
   modelos: number
   /** Endereço da imagem de capa, ou nulo. */
@@ -136,8 +138,14 @@ export interface CenariosHost {
   obterBibliotecaDoMolda(espacoId: string): Promise<Biblioteca>
   /** Fonte viva do perfil. As cópias só viram modelos guardados quando escolhidas. */
   molda?: FonteDeMoldes
-  criarBiblioteca(espacoId: string, dados: { nome: string; licenca: Licenca }): Promise<Biblioteca>
-  editarBiblioteca(id: string, dados: { nome?: string; licenca?: Licenca }): Promise<Biblioteca>
+  criarBiblioteca(
+    espacoId: string,
+    dados: { nome: string; licenca: Licenca; descricao?: string },
+  ): Promise<Biblioteca>
+  editarBiblioteca(
+    id: string,
+    dados: { nome?: string; licenca?: Licenca; descricao?: string; capaModelo?: string | null },
+  ): Promise<Biblioteca>
   apagarBiblioteca(id: string): Promise<void>
 
   listarModelos(bibliotecaId: string, filtro?: FiltroDeModelos): Promise<PaginaDeModelos>

@@ -142,6 +142,32 @@ describe('quem entra', () => {
 })
 
 describe('trazer modelos', () => {
+  test('descrição e capa editáveis só usam o retrato de um modelo do mesmo espaço', async () => {
+    const base = await comBiblioteca(ana, 'aberto')
+    const [m] = await trazerArvore(base)
+    expect(
+      await base.servico.editarBiblioteca(ana, base.biblioteca.id, {
+        descricao: '  Vila  ',
+        capaModelo: m!.id,
+      }),
+    ).toMatchObject({ descricao: 'Vila', capaModelo: m!.id, capa: digest('b') })
+    const [outroEspaco] = await base.servico.espacos(cliente)
+    const outra = await base.servico.criarBiblioteca(cliente, outroEspaco!.id, {
+      nome: 'Outra',
+      licenca: 'propria',
+    })
+    const [estrangeiro] = await trazerArvore(
+      { ...base, espaco: outroEspaco!, biblioteca: outra },
+      cliente,
+    )
+    await expect(
+      base.servico.editarBiblioteca(ana, base.biblioteca.id, { capaModelo: estrangeiro!.id }),
+    ).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
+    expect(
+      (await base.servico.editarBiblioteca(ana, base.biblioteca.id, { capaModelo: null }))
+        .capaModelo,
+    ).toBeNull()
+  })
   test('reserva diz o que subir, com a chave do espaço e o tipo exato', async () => {
     const base = await comBiblioteca()
     const reserva = await base.servico.reservarModelos(ana, base.biblioteca.id, [
