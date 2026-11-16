@@ -1,3 +1,4 @@
+import { conferirGlb, digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import {
   Box3,
   type BufferGeometry,
@@ -10,6 +11,19 @@ import {
   Vector3,
 } from 'three'
 import { GLTFLoader, type GLTFParser } from 'three/addons/loaders/GLTFLoader.js'
+import { ArquivoDoConjunto, RecursosDoConjunto } from './importacao/recursos'
+
+/** Confere o conteúdo fixado no documento antes de entregar qualquer dado ao carregador 3D. */
+export async function conferirConteudoDoModelo(
+  bytes: ArrayBuffer,
+  digest: string,
+): Promise<ArrayBuffer> {
+  const dados = new Uint8Array(bytes)
+  conferirGlb(dados)
+  if ((await digestDosBytes(dados)) !== digest)
+    throw Error('O arquivo do modelo não corresponde à versão guardada no cenário')
+  return bytes
+}
 
 /** Um pedaço do modelo: uma malha com um material, já no lugar dentro do modelo. */
 export interface ParteDoModelo {
@@ -32,6 +46,10 @@ function novoLeitor(): GLTFLoader {
   // segurança dos apps recusa (connect-src não libera blob:), e o modelo sairia sem textura,
   // em silêncio. Pela <img>, que o img-src blob: deixa, funciona em qualquer host.
   leitor.register((parser: GLTFParser) => {
+    parser.fileLoader = new ArquivoDoConjunto(
+      parser.options.manager,
+      new RecursosDoConjunto(new Map(), 'modelo.glb'),
+    )
     const alvo = parser as unknown as {
       textureLoader?: { isImageBitmapLoader?: boolean } | TextureLoader
       options: { manager: ConstructorParameters<typeof TextureLoader>[0]; crossOrigin: string }

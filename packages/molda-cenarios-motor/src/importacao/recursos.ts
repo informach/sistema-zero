@@ -63,7 +63,7 @@ export class RecursosDoConjunto {
   }
 }
 
-class ArquivoDoConjunto extends FileLoader {
+export class ArquivoDoConjunto extends FileLoader {
   constructor(
     manager: LoadingManager,
     private recursos: RecursosDoConjunto,

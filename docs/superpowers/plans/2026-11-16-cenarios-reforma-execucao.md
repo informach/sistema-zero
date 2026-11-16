@@ -44,6 +44,8 @@ Lotes 1/2 em execução: [primeira revisão e evidências locais](../../plans/20
 
 Cada lote deve registrar: requisitos cobertos (com referência às seções da especificação), arquivos/contratos alterados, testes pertinentes, tipagem, prova no navegador, capturas, riscos/dependências externas e commit. Não converter um bloqueio de publicação em alegação de conclusão. Ao final, conferir a especificação linha por linha, testar os fluxos integrados e publicar as evidências e o guia na staging.
 
+**Prova remota acrescentada:** [persistência no staging adulto e leitura de GLB sob CSP](../../plans/2026-11-16-cenarios-reforma/revisao-staging-importacao.md). Conta da equipe autenticada, envio assinado, edição, recarga e conferência do hash aprovados; entidades temporárias removidas. Credenciais externas não versionadas. Isso valida o fluxo básico implantado, sem presumir o restante do plano pronto.
+
 ## Estado inicial auditado
 
 Base `dbe99040e`, árvore limpa. Commits do Claude implementaram grande parte de 0/1 e parte do cliente de agentes. 125 testes direcionados passaram nesta sessão de conferência (core 42, motor 9, UI 24, Members 28, gateway 5, BFF 17). A imagem Members falhou no CI porque `qa/image-smoke.mjs` ainda espera a lista anterior de workspaces. Os watchPatterns não incluem os novos pacotes; migração e rollout remoto ainda precisam de prova. O PDF tem três páginas de capturas reais e foi inspecionado visualmente; manter sua composição de quatro telas, seis abas superiores, ferramentas à esquerda, palco central, painel recolhível à direita e gaveta inferior.

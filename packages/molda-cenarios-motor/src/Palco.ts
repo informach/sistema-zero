@@ -47,7 +47,7 @@ import {
   matrizDoObjeto,
   transformacaoDaMatriz,
 } from './matematica'
-import { lerGlb, type ModeloCarregado } from './modelos'
+import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import type {
   Encaixe,
   Ferramenta,
@@ -509,6 +509,7 @@ class PalcoThree implements Palco {
     this.modelos.set(modelo.digest, { estado: 'carregando' })
     this.opcoes
       .carregarModelo(modelo)
+      .then((bytes) => conferirConteudoDoModelo(bytes, modelo.digest))
       .then((bytes) => lerGlb(bytes))
       .then((carregado) => {
         if (this.destruido || this.modelos.get(modelo.digest)?.estado !== 'carregando') {

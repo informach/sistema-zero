@@ -100,6 +100,20 @@ try {
           },
         ],
       }
+      // GLB autocontido também pode guardar buffers em data URI, sem bloco BIN.
+      const embutido = structuredClone(gltf)
+      embutido.buffers[0].uri = `data:application/octet-stream;base64,${btoa(String.fromCharCode(...new Uint8Array(posicoes.buffer)))}`
+      const jsonBytes = new TextEncoder().encode(JSON.stringify(embutido))
+      const tamanhoJson = Math.ceil(jsonBytes.length / 4) * 4
+      const glbInline = new Uint8Array(20 + tamanhoJson)
+      const header = new DataView(glbInline.buffer)
+      header.setUint32(0, 0x46546c67, true)
+      header.setUint32(4, 2, true)
+      header.setUint32(8, glbInline.length, true)
+      header.setUint32(12, tamanhoJson, true)
+      header.setUint32(16, 0x4e4f534a, true)
+      glbInline.fill(32, 20)
+      glbInline.set(jsonBytes, 20)
       const resultado = await prepararArquivos([
         new File([new Uint8Array(zip)], 'natureza.zip'),
         {
@@ -117,6 +131,7 @@ try {
           ],
           'centimetros.fbx',
         ),
+        new File([glbInline], 'embutido.glb'),
       ])
       const faltante = await prepararArquivos([
         new File(['mtllib sumiu.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3'], 'incompleto.obj'),
@@ -173,7 +188,7 @@ try {
   assert.equal(r.remoto.length, 1)
   assert.equal(r.cancelado, true)
   assert.ok(workersConferidos > 0, 'O teste precisa aplicar a CSP ao worker real')
-  assert.equal(r.modelos.length, 4)
+  assert.equal(r.modelos.length, 5)
   assert.deepEqual(r.modelos[3].max, [0.01, 0.01, 0])
   assert.ok(r.modelos.every((m) => m.triangulos === 1 && m.miniatura > 0))
   assert.equal(r.modelos[0].comTextura, true)

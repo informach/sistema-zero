@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
 import { abrirConjunto, LIMITE_DO_CONJUNTO } from './conjunto'
-import { RecursosDoConjunto, recursosDoGltf } from './recursos'
+import { ArquivoDoConjunto, RecursosDoConjunto, recursosDoGltf } from './recursos'
 
 export interface ModeloConvertido {
   caminho: string
@@ -180,10 +180,13 @@ export async function converterConjunto(
         throw Error('Os modelos convertidos passam de 512 MB. Traga o pacote em partes')
       // Para medir, basta a geometria; imagens serão decodificadas uma vez ao fotografar.
       const medidor = new GLTFLoader()
-      medidor.register(() => ({
-        name: 'sz_medida_sem_imagens',
-        loadTexture: () => Promise.resolve(new Texture()),
-      }))
+      medidor.register((parser) => {
+        parser.fileLoader = new ArquivoDoConjunto(parser.options.manager, recursos)
+        return {
+          name: 'sz_medida_sem_imagens',
+          loadTexture: () => Promise.resolve(new Texture()),
+        }
+      })
       const medido = await medidor.parseAsync(bytes.buffer, '')
       let triangulos = 0
       medido.scene.updateMatrixWorld(true)
