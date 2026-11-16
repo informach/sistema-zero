@@ -13,6 +13,7 @@ import {
   type PostoDaVila,
   type PublicoJogo,
 } from '@sistemazero/arquipelago-contracts'
+import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -37,6 +38,42 @@ import type { SituacaoDaCompra } from '../../../domain/insumos.port'
  * jogo lê e grava aqui; a plataforma nunca toca estas tabelas (e o jogo nunca toca as dela).
  */
 export const arquipelagoSchema = pgSchema('arquipelago')
+
+/** Autoria da equipe, separada dos salvamentos e do inventário dos jogadores. */
+export const cenarioProjetos = arquipelagoSchema.table(
+  'cenario_projetos',
+  {
+    id: uuid().primaryKey(),
+    nome: varchar({ length: 120 }).notNull(),
+    revisao: integer().notNull().default(0),
+    revisaoAplicada: integer(),
+    atualizadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    autorId: uuid().notNull(),
+  },
+  (t) => [
+    check('cenario_projetos_revisao_check', sql`${t.revisao} >= 0`),
+    index('cenario_projetos_atualizado_idx').on(t.atualizadoEm),
+  ],
+)
+export const cenarioRevisoes = arquipelagoSchema.table(
+  'cenario_revisoes',
+  {
+    projetoId: uuid()
+      .notNull()
+      .references(() => cenarioProjetos.id, { onDelete: 'cascade' }),
+    revisao: integer().notNull(),
+    documento: jsonb().$type<DocumentoDeCenario>().notNull(),
+    autorId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    operacaoId: uuid().notNull(),
+    impressao: varchar({ length: 64 }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projetoId, t.revisao] }),
+    uniqueIndex('cenario_revisoes_operacao_idx').on(t.projetoId, t.operacaoId),
+    check('cenario_revisoes_revisao_check', sql`${t.revisao} >= 0`),
+  ],
+)
 
 /** Uma cópia aprovada por jogador e desafio; a primeira aprovação é preservada para medição. */
 export const minijogos = arquipelagoSchema.table(
@@ -713,6 +750,8 @@ export const vendasNaFeira = arquipelagoSchema.table(
 )
 
 export const schema = {
+  cenarioProjetos,
+  cenarioRevisoes,
   mudancasDeAparencia,
   convitesAdultos,
   convitesDeAmigos,
