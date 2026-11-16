@@ -14,7 +14,7 @@ Módulo com identidade do Molda, acesso administrativo na plataforma, projetos c
 - [x] 4. Terreno, caminhos, água, margens e vínculos funcionais.
 - [x] 5. Runtime real: editar/testar/retornar e aplicar revisão ao ensaio.
 - [x] 6. CLI/MCP, sessões de viewport e sincronização manual/programática.
-- [ ] 7. Recompor Faísca pela ferramenta, comparar referências, full review, evidências e push.
+- [x] 7. Recompor Faísca pela ferramenta, comparar referências, full review, evidências e push.
 
 Cada lote exige testes pertinentes, tipagem, revisão do diff e commit na staging. Não anunciar entrega completa antes de todos os lotes. GLBs/texturas privados permanecem fora do Git. Não introduzir dependência do host no código do jogo: runtime compilado separadamente, contrato compartilhado.
 
@@ -25,3 +25,5 @@ Cada lote exige testes pertinentes, tipagem, revisão do diff e commit na stagin
 ## Aceite
 
 Abrir a Faísca completa; editar objetos, grupos, relevo, caminhos e água; salvar e reabrir em outro cliente; testar com avatar real e voltar preservando o documento; alterar por agente e observar no editor; conflitos nunca sobrescrevem silenciosamente. Demonstração final usa os comandos do editor para compor uma cópia da Faísca conforme as três imagens. Testes e evidências devem distinguir implementação, validação técnica e aceite artístico humano.
+
+Execução e revisão registradas em `docs/qa/2026-11-16-molda-cenarios/revisao-final.md`. Uso e ativação remota em `docs/molda-cenarios.md`. A publicação de arte no R2 retornou 403; o ambiente local está validado, sem declarar deploy remoto ou aprovação artística final.
