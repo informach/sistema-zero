@@ -430,6 +430,7 @@ function Blockout() {
     [foco, contexto],
   )
   const ir = (id: string) => {
+    if (arte.estado === 'carregando') return
     const d = DISTRITOS_DA_FAISCA.find((d) => d.id === id)
     let p: PontoDoTerritorio
     if (id.startsWith('lugar:') && Object.hasOwn(LUGAR_DA_FAISCA, id.slice(6))) {
@@ -491,7 +492,9 @@ function Blockout() {
             location.reload()
           }}
           noite={noite}
-          aoNoite={() => setNoite(!noite)}
+          aoNoite={() => {
+            if (arte.estado !== 'carregando') setNoite(!noite)
+          }}
           arte={arte}
           aoTentarArte={() => setTentativaArte((n) => n + 1)}
           visitados={visitados}
@@ -500,6 +503,7 @@ function Blockout() {
           }}
           medicao={medicao}
           aoMedirRota={(id) => {
+            if (arte.estado === 'carregando') return
             const r = ROTAS_DA_FAISCA.find((r) => r.id === id)
             if (!r) return
             const p = r.pontos[0]!

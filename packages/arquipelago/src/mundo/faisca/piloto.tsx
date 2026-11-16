@@ -1,4 +1,4 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import {
   CuboidCollider,
   CylinderCollider,
@@ -42,6 +42,7 @@ import { type ArteDoPiloto, carregarPiloto } from './carregar-piloto'
 import { preencherInstancias } from './instancias'
 import { LagoComFormaAtual, LagoDaFaisca } from './lago'
 import { PisosDeCatalogo } from './pisos-de-catalogo'
+import { prepararGpuDaFaisca } from './preparar-gpu'
 
 type IdDaPeca = keyof typeof ARTE_DA_FAISCA.pecas
 const itens = COMPOSICAO_DA_FAISCA
@@ -364,8 +365,10 @@ export function PilotoDaFaisca({
   noite: boolean
 }) {
   const { rastro, pedidos } = useJogo()
+  const { gl, scene, camera } = useThree()
   const [perto, setPerto] = useState(true),
-    [arte, setArte] = useState<ArteDoPiloto | null>(null)
+    [arte, setArte] = useState<ArteDoPiloto | null>(null),
+    [gpuPronta, setGpuPronta] = useState(false)
   const colecao = useMemo(
     () =>
       curadoria
@@ -384,6 +387,7 @@ export function PilotoDaFaisca({
     }
     const abort = new AbortController()
     let lote: ArteDoPiloto | null = null
+    setGpuPronta(false)
     pedidos.chaoChegando.add('arte-faisca')
     aoMudar({ estado: 'carregando', modelos: 0 })
     carregarPiloto(abort.signal, [
@@ -401,7 +405,6 @@ export function PilotoDaFaisca({
           return
         }
         setArte(chegou)
-        aoMudar({ estado: 'pronto', modelos: chegou.modelos.size })
       })
       .catch((e) => {
         if (abort.signal.aborted) return
@@ -415,9 +418,29 @@ export function PilotoDaFaisca({
       pedidos.chaoChegando.delete('arte-faisca')
     }
   }, [perto, aoMudar, pedidos, colecao, piso, aguaAventura])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: noite troca as luzes da cena e as variantes dos shaders.
   useLayoutEffect(() => {
-    if (arte) pedidos.chaoChegando.delete('arte-faisca')
-  }, [arte, pedidos])
+    if (!arte || !perto) return
+    let ativo = true
+    setGpuPronta(false)
+    pedidos.chaoChegando.add('arte-faisca')
+    aoMudar({ estado: 'carregando', modelos: arte.modelos.size })
+    prepararGpuDaFaisca(gl, scene, camera)
+      .then(() => {
+        if (!ativo) return
+        setGpuPronta(true)
+        pedidos.chaoChegando.delete('arte-faisca')
+        aoMudar({ estado: 'pronto', modelos: arte.modelos.size })
+      })
+      .catch((e) => {
+        if (!ativo) return
+        pedidos.chaoChegando.delete('arte-faisca')
+        aoMudar({ estado: 'erro', erro: e instanceof Error ? e.message : String(e), modelos: 0 })
+      })
+    return () => {
+      ativo = false
+    }
+  }, [arte, perto, gl, scene, camera, noite, pedidos, aoMudar])
   if (!perto) return null
   return (
     <>
@@ -425,15 +448,17 @@ export function PilotoDaFaisca({
       <AmbienteDaVila />
       {arte ? (
         <>
-          <Decoracao arte={arte} colecao={colecao} />
-          <TextosNasPlacas colecao={colecao} />
-          {LAGO_DE_CATALOGO ? (
-            <LagoDaFaisca arte={arte} aventura={aguaAventura} />
-          ) : (
-            <LagoComFormaAtual arte={arte} />
-          )}
-          {piso && <PisosDeCatalogo arte={arte} piso={piso} />}
-          <Iris arte={arte} />
+          <group visible={gpuPronta}>
+            <Decoracao arte={arte} colecao={colecao} />
+            <TextosNasPlacas colecao={colecao} />
+            {LAGO_DE_CATALOGO ? (
+              <LagoDaFaisca arte={arte} aventura={aguaAventura} />
+            ) : (
+              <LagoComFormaAtual arte={arte} />
+            )}
+            {piso && <PisosDeCatalogo arte={arte} piso={piso} />}
+            <Iris arte={arte} />
+          </group>
           {noite &&
             colecao
               .filter((p) => p.peca === 'lampiao')

@@ -96,7 +96,7 @@ export function InterfaceMacro({
         <BotaoMacro type="button" onClick={() => setMapa(!mapa)} aria-expanded={mapa}>
           Mapa
         </BotaoMacro>
-        <BotaoMacro type="button" onClick={aoNoite}>
+        <BotaoMacro type="button" onClick={aoNoite} disabled={arte.estado === 'carregando'}>
           {noite ? 'Ver de dia' : 'Ver à noite'}
         </BotaoMacro>
         <BotaoMacro type="button" onClick={aoPausar}>
@@ -276,7 +276,12 @@ export function InterfaceMacro({
           </p>
           <div className="macro-pontos">
             {ROTAS_DA_FAISCA.filter((r) => r.tipo === 'cotidiano').map((r) => (
-              <BotaoMacro type="button" key={r.id} onClick={() => aoMedirRota(r.id)}>
+              <BotaoMacro
+                type="button"
+                key={r.id}
+                onClick={() => aoMedirRota(r.id)}
+                disabled={arte.estado === 'carregando'}
+              >
                 {r.nome}
               </BotaoMacro>
             ))}
@@ -294,15 +299,28 @@ export function InterfaceMacro({
         </p>
         <div className="macro-pontos">
           {DISTRITOS_DA_FAISCA.map((d) => (
-            <BotaoMacro key={d.id} type="button" onClick={() => aoIr(d.id)}>
+            <BotaoMacro
+              key={d.id}
+              type="button"
+              onClick={() => aoIr(d.id)}
+              disabled={arte.estado === 'carregando'}
+            >
               {d.nome}
             </BotaoMacro>
           ))}
-          <BotaoMacro type="button" onClick={() => aoIr('ponte')}>
+          <BotaoMacro
+            type="button"
+            onClick={() => aoIr('ponte')}
+            disabled={arte.estado === 'carregando'}
+          >
             Cabeceira da ponte
           </BotaoMacro>
           {ponte === 'aberta' ? (
-            <BotaoMacro type="button" onClick={() => aoIr('bosque-chegada')}>
+            <BotaoMacro
+              type="button"
+              onClick={() => aoIr('bosque-chegada')}
+              disabled={arte.estado === 'carregando'}
+            >
               Chegada do Bosque
             </BotaoMacro>
           ) : null}
