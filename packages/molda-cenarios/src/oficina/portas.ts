@@ -112,10 +112,12 @@ export interface CenariosHost {
   apagarBiblioteca(id: string): Promise<void>
 
   listarModelos(bibliotecaId: string, filtro?: FiltroDeModelos): Promise<PaginaDeModelos>
+  organizacaoDaBiblioteca(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }>
   importarModelos(
     bibliotecaId: string,
     modelos: ModeloParaImportar[],
     aoAndar?: (feitos: number, total: number) => void,
+    sinal?: AbortSignal,
   ): Promise<ModeloDeBiblioteca[]>
   editarModelo(
     id: string,

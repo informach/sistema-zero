@@ -76,6 +76,7 @@ export interface CenariosRepository {
     filtro: FiltroDeModelos,
   ): Promise<{ itens: Modelo[]; total: number }>
   modelo(id: string): Promise<Modelo | null>
+  organizacao(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }>
   /**
    * Reserva arquivos no espaço. Devolve os que ainda precisam subir (os já confirmados não
    * sobem de novo) ou nulo quando a cota não comporta a reserva inteira.

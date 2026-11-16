@@ -85,6 +85,17 @@ describe('Molda Cenários: quem entra', () => {
     )
     expect(alheia.status).toBe(404)
     expect((await json(alheia)).error.code).toBe('CENARIO_NAO_ENCONTRADO')
+    expect(
+      (
+        await pedir(
+          ctx.app,
+          'GET',
+          `/members/cenarios/bibliotecas/${biblioteca.id}/organizacao`,
+          undefined,
+          doCliente,
+        )
+      ).status,
+    ).toBe(404)
   })
   test('sem identidade não entra, e id que não é uuid é recusado na borda', async () => {
     const { app } = buildApp()

@@ -230,6 +230,10 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     expect(editado).toMatchObject({ nome: 'Rocha', pasta: 'chão' })
     expect(await achar(['dura'])).toEqual(['Rocha'])
+    expect(await repo.organizacao(biblioteca.id)).toEqual({
+      pastas: ['chão', 'natureza'],
+      etiquetas: ['dura', 'verde'],
+    })
   })
 
   test('apagar modelos solta só os arquivos que ninguém mais usa', async () => {

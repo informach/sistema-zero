@@ -121,6 +121,15 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         mundo.bibliotecas = mundo.bibliotecas.filter((b) => b !== id)
     },
 
+    async organizacaoDaBiblioteca(bibliotecaId) {
+      await esperar()
+      exigir(bibliotecas, bibliotecaId, 'A biblioteca')
+      const lista = [...modelos.values()].filter((m) => m.bibliotecaId === bibliotecaId)
+      return {
+        pastas: [...new Set(lista.map((m) => m.pasta))].sort(),
+        etiquetas: [...new Set(lista.flatMap((m) => m.etiquetas))].sort(),
+      }
+    },
     async listarModelos(bibliotecaId, filtro = {}) {
       await esperar()
       const busca = semAcento(filtro.busca?.trim() ?? '')
@@ -143,12 +152,14 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         proximo: inicio + limite < todos.length ? String(inicio + limite) : null,
       })
     },
-    async importarModelos(bibliotecaId, lista, aoAndar) {
+    async importarModelos(bibliotecaId, lista, aoAndar, sinal) {
+      sinal?.throwIfAborted()
       const biblioteca = exigir(bibliotecas, bibliotecaId, 'A biblioteca')
       const espaco = espacoDe(biblioteca.espacoId)
       const criados: ModeloDeBiblioteca[] = []
       for (let i = 0; i < lista.length; i++) {
         await esperar()
+        sinal?.throwIfAborted()
         const m = lista[i]!
         if (espaco.usadoBytes + m.conteudo.length > espaco.limiteBytes)
           throw new Error('O espaço está cheio: apague modelos que não usa para trazer mais')

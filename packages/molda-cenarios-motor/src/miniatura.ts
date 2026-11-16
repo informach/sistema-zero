@@ -110,8 +110,12 @@ export function fotografarModelo(bytes: ArrayBuffer, lado = 256): Promise<FotoDo
 }
 
 /** Solta o desenhista das fotos (ao sair da tela de bibliotecas, por exemplo). */
-export function encerrarFotografo(): void {
-  fotografo?.renderer.dispose()
-  fotografo?.renderer.forceContextLoss()
-  fotografo = null
+export function encerrarFotografo(): Promise<void> {
+  const encerramento = fila.then(() => {
+    fotografo?.renderer.dispose()
+    fotografo?.renderer.forceContextLoss()
+    fotografo = null
+  })
+  fila = encerramento.catch(() => undefined)
+  return encerramento
 }

@@ -3,6 +3,7 @@
 export const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 
 export function tamanhoLegivel(bytes: number): string {
+  if (bytes === 0) return '0 KB'
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
   if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1).replace('.', ',')} MB`
   return `${(bytes / 1024 ** 3).toFixed(1).replace('.', ',')} GB`
@@ -59,15 +60,14 @@ export const COPY = {
     voltar: 'Voltar às bibliotecas',
     trazer: 'Trazer modelos',
     soltar: 'Solte os modelos aqui',
-    soltarDica: 'Arquivos .glb do seu computador',
-    vazia: 'Esta biblioteca está vazia. Traga os seus modelos 3D (arquivos .glb) para começar.',
+    soltarDica: 'Modelos, pastas ou pacotes ZIP do seu computador',
+    vazia: 'Esta biblioteca está vazia. Traga os seus modelos 3D ou um pacote ZIP para começar.',
     buscar: 'Buscar modelo',
     trazendo: (feitos: number, total: number) => `Trazendo ${feitos} de ${total}`,
     preparando: (feitos: number, total: number) => `Conferindo ${feitos} de ${total}`,
     trouxe: (n: number) => plural(n, 'modelo novo na biblioteca', 'modelos novos na biblioteca'),
     nadaNovo: 'Esses modelos já estavam na biblioteca.',
     recusados: (n: number) => plural(n, 'arquivo ficou de fora', 'arquivos ficaram de fora'),
-    soGlb: 'Só modelos .glb entram aqui',
     apagarTitulo: 'Apagar esta biblioteca?',
     apagarTexto: (nome: string, n: number) =>
       `"${nome}" e ${plural(n, 'modelo dela vai', 'modelos dela vão')} sair de todos os mundos.`,
@@ -84,7 +84,8 @@ export const COPY = {
     },
     licencaRotulo: 'De onde vêm estes modelos',
     modelos: (n: number) => plural(n, 'modelo', 'modelos'),
-    triangulos: (n: number) => `${n.toLocaleString('pt-BR')} triângulos`,
+    triangulos: (n: number) =>
+      `${n.toLocaleString('pt-BR')} ${n === 1 ? 'triângulo' : 'triângulos'}`,
   },
   nome: {
     rotulo: 'Nome',

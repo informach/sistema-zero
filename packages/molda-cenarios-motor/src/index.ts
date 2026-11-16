@@ -1,3 +1,4 @@
+export { converterArquivos, type EntradaDeImportacao } from './importacao/cliente'
 export * from './matematica'
 export { encerrarFotografo, type FotoDoModelo, fotografarModelo } from './miniatura'
 export { criarPalco, estaTrancado } from './Palco'

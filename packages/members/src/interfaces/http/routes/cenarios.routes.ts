@@ -116,6 +116,11 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         )
 
         .get(
+          '/bibliotecas/:id/organizacao',
+          ({ headers, params }) => s.organizacao(atorDe(headers), params.id),
+          { params: Id },
+        )
+        .get(
           '/bibliotecas/:id/modelos',
           ({ headers, params, query }) => s.modelos(atorDe(headers), params.id, query),
           {

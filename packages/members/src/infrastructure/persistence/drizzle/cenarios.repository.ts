@@ -314,6 +314,17 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return linha ? paraModelo(linha) : null
   }
 
+  async organizacao(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }> {
+    const linhas = await this.db
+      .select({ pasta: cenarioModelos.pasta, etiquetas: cenarioModelos.etiquetas })
+      .from(cenarioModelos)
+      .where(eq(cenarioModelos.bibliotecaId, bibliotecaId))
+    return {
+      pastas: [...new Set(linhas.map((l) => l.pasta))].sort(),
+      etiquetas: [...new Set(linhas.flatMap((l) => l.etiquetas))].sort(),
+    }
+  }
+
   reservarBlobs(
     espacoId: string,
     blobs: readonly BlobReservado[],

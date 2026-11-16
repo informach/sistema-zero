@@ -188,11 +188,11 @@ async function* blobChunks(blob: Blob): AsyncIterable<Uint8Array> {
   }
 }
 
-async function readEntryText(
+async function readEntryBytes(
   file: File,
   entry: ZipEntryLocation,
   maxBytes: number,
-): Promise<MoldaBackupReadResult> {
+): Promise<{ ok: true; bytes: Uint8Array } | { ok: false; reason: MoldaBackupReadFailure }> {
   const headerEnd = entry.localHeaderOffset + LOCAL_HEADER_FIXED_BYTES
   const header = await readRange(file, entry.localHeaderOffset, headerEnd)
   if (!header) return { ok: false, reason: 'invalid-zip' }
@@ -226,8 +226,7 @@ async function readEntryText(
     return { ok: false, reason: 'invalid-zip' }
   }
 
-  const decoder = new TextDecoder('utf-8', { fatal: true })
-  const textParts: string[] = []
+  const parts: Uint8Array[] = []
   let checksum = 0
   let outputBytes = 0
   let complete = entry.compression === 0
@@ -241,12 +240,8 @@ async function readEntryText(
       return
     }
     checksum = crc32(chunk, checksum)
-    try {
-      textParts.push(decoder.decode(chunk, { stream: !final }))
-      if (final) complete = true
-    } catch {
-      failure = 'invalid-zip'
-    }
+    parts.push(chunk.slice())
+    if (final) complete = true
   }
 
   const compressed = file.slice(metadataEnd, dataEnd)
@@ -271,7 +266,77 @@ async function readEntryText(
   if (!complete || outputBytes !== entry.uncompressedSize || checksum !== entry.crc) {
     return { ok: false, reason: 'invalid-zip' }
   }
-  return { ok: true, source: 'zip', text: textParts.join('') }
+  const bytes = new Uint8Array(outputBytes)
+  let offset = 0
+  for (const part of parts) {
+    bytes.set(part, offset)
+    offset += part.byteLength
+  }
+  return { ok: true, bytes }
+}
+
+async function readEntryText(
+  file: File,
+  entry: ZipEntryLocation,
+  maxBytes: number,
+): Promise<MoldaBackupReadResult> {
+  const r = await readEntryBytes(file, entry, maxBytes)
+  if (!r.ok) return r
+  try {
+    return {
+      ok: true,
+      source: 'zip',
+      text: new TextDecoder('utf-8', { fatal: true }).decode(r.bytes),
+    }
+  } catch {
+    return { ok: false, reason: 'invalid-zip' }
+  }
+}
+
+/** Leitor binário limitado compartilhado com bibliotecas de modelos. Nunca extrai no filesystem. */
+export async function readZipFiles(
+  file: File,
+  options: { maxBytes: number; maxEntries: number; include?: (name: string) => boolean },
+): Promise<
+  | { ok: true; files: { path: string; bytes: Uint8Array }[] }
+  | { ok: false; reason: MoldaBackupReadFailure }
+> {
+  try {
+    if (
+      !Number.isSafeInteger(options.maxBytes) ||
+      options.maxBytes <= 0 ||
+      !Number.isSafeInteger(options.maxEntries) ||
+      options.maxEntries <= 0
+    )
+      return { ok: false, reason: 'too-large' }
+    const entries = await locateEntries(
+      file,
+      options.maxBytes,
+      (name) => !name.replaceAll('\\', '/').endsWith('/') && (options.include?.(name) ?? true),
+    )
+    if (typeof entries === 'string') return { ok: false, reason: entries }
+    if (entries.length > options.maxEntries) return { ok: false, reason: 'too-large' }
+    const paths = new Set<string>(),
+      files: { path: string; bytes: Uint8Array }[] = []
+    for (const entry of entries) {
+      const path = entry.name.replaceAll('\\', '/').normalize('NFC')
+      if (
+        path.startsWith('/') ||
+        /^[a-z][a-z0-9+.-]*:/i.test(path) ||
+        path.split('/').some((p) => !p || p === '.' || p === '..') ||
+        [...path].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)
+      )
+        return { ok: false, reason: 'invalid-zip' }
+      if (paths.has(path)) return { ok: false, reason: 'duplicate-backup' }
+      paths.add(path)
+      const read = await readEntryBytes(file, entry, options.maxBytes)
+      if (!read.ok) return read
+      files.push({ path, bytes: read.bytes })
+    }
+    return { ok: true, files }
+  } catch {
+    return { ok: false, reason: 'invalid-zip' }
+  }
 }
 
 function isZipFile(file: File): boolean {

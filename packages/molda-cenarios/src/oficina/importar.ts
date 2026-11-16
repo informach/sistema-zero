@@ -1,5 +1,5 @@
-import { conferirGlb, digestDosBytes, GlbInvalido } from '@sistemazero/molda-cenarios-core/v2'
-import { COPY } from './copy'
+import { conferirGlb, GlbInvalido } from '@sistemazero/molda-cenarios-core/v2'
+import type { EntradaDeImportacao } from '@sistemazero/molda-cenarios-motor'
 import type { ModeloParaImportar } from './portas'
 
 export interface ArquivoRecusado {
@@ -10,6 +10,17 @@ export interface ArquivoRecusado {
 export interface ArquivosPreparados {
   prontos: ModeloParaImportar[]
   recusados: ArquivoRecusado[]
+}
+
+let motor: Promise<typeof import('@sistemazero/molda-cenarios-motor')> | null = null
+/** Não baixa o motor apenas para sair de uma biblioteca que não importou nada. */
+export function encerrarPreparacao(): Promise<void> {
+  return (
+    motor?.then(
+      (m) => m.encerrarFotografo(),
+      () => undefined,
+    ) ?? Promise.resolve()
+  )
 }
 
 /** "arvore_grande-02.glb" vira "Arvore grande 02". */
@@ -32,43 +43,54 @@ export function pastaDoArquivo(caminho: string): string {
  * motivo, e o resto segue: um arquivo ruim não derruba a importação inteira.
  */
 export async function prepararArquivos(
-  arquivos: readonly File[],
+  arquivos: readonly EntradaDeImportacao[],
   aoAndar?: (feitos: number, total: number) => void,
+  sinal?: AbortSignal,
 ): Promise<ArquivosPreparados> {
   // O motor 3D só é baixado quando alguém traz um modelo.
-  const { fotografarModelo } = await import('@sistemazero/molda-cenarios-motor')
+  sinal?.throwIfAborted()
+  motor ??= import('@sistemazero/molda-cenarios-motor')
+  const { fotografarModelo, converterArquivos } = await motor
   const prontos: ModeloParaImportar[] = [],
     recusados: ArquivoRecusado[] = [],
     vistos = new Set<string>()
-  for (let i = 0; i < arquivos.length; i++) {
-    const arquivo = arquivos[i]!
+  sinal?.throwIfAborted()
+  const convertidos = await converterArquivos(arquivos, aoAndar, sinal)
+  recusados.push(...convertidos.recusados)
+  for (let i = 0; i < convertidos.modelos.length; i++) {
+    sinal?.throwIfAborted()
+    const arquivo = convertidos.modelos[i]!
     try {
-      if (!/\.glb$/i.test(arquivo.name)) throw new GlbInvalido(COPY.biblioteca.soGlb)
-      const conteudo = new Uint8Array(await arquivo.arrayBuffer())
+      const conteudo = arquivo.bytes
       conferirGlb(conteudo)
-      const digest = await digestDosBytes(conteudo)
+      const digest = arquivo.digest
       if (!vistos.has(digest)) {
+        const pasta = arquivo.caminho.split('/').slice(0, -1).join('/')
+        if (pasta.length > 240)
+          throw new GlbInvalido('O nome completo da pasta passa de 240 caracteres')
         vistos.add(digest)
         const foto = await fotografarModelo(conteudo.slice().buffer)
+        sinal?.throwIfAborted()
         prontos.push({
-          nome: nomeDoArquivo(arquivo.name),
-          pasta: pastaDoArquivo(arquivo.webkitRelativePath || arquivo.name),
+          nome: nomeDoArquivo(arquivo.caminho.split('/').at(-1)!),
+          pasta,
           etiquetas: [],
           conteudo,
           digest,
           miniatura: foto.miniatura,
-          min: foto.min,
-          max: foto.max,
-          triangulos: foto.triangulos,
+          min: arquivo.min,
+          max: arquivo.max,
+          triangulos: arquivo.triangulos,
         })
       }
     } catch (erro) {
+      sinal?.throwIfAborted()
       recusados.push({
-        arquivo: arquivo.name,
+        arquivo: arquivo.caminho,
         motivo: erro instanceof GlbInvalido ? erro.message : 'Não foi possível ler este modelo',
       })
     }
-    aoAndar?.(i + 1, arquivos.length)
+    aoAndar?.(i + 1, convertidos.modelos.length)
   }
   return { prontos, recusados }
 }

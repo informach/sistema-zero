@@ -68,6 +68,7 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     escrever('biblioteca-apagar', 'DELETE', '/bibliotecas/:id'),
 
     ler('modelos', '/bibliotecas/:id/modelos'),
+    ler('biblioteca-organizacao', '/bibliotecas/:id/organizacao'),
     // Até 50 arquivos por chamada: 120 chamadas por minuto cobrem um pacote de milhares.
     escrever('modelos-reservar', 'POST', '/bibliotecas/:id/modelos/reservar'),
     escrever('modelos-apagar', 'POST', '/bibliotecas/:id/modelos/apagar'),

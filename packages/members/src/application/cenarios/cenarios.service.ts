@@ -227,6 +227,14 @@ export class CenariosService {
     return { apagar: orfaos.map((digest) => chaveDoBlob(espaco.id, digest)) }
   }
 
+  async organizacao(
+    ator: Ator,
+    bibliotecaId: string,
+  ): Promise<{ pastas: string[]; etiquetas: string[] }> {
+    await this.bibliotecaDe(ator, bibliotecaId)
+    return this.repo.organizacao(bibliotecaId)
+  }
+
   async modelos(
     ator: Ator,
     bibliotecaId: string,

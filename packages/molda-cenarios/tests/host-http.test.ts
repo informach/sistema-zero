@@ -93,6 +93,50 @@ async function modeloParaImportar(nome: string, bytes: number[]): Promise<Modelo
 }
 
 describe('a oficina falando com o app', () => {
+  test('cancelamento durante upload não registra modelos nem inicia o próximo lote', async () => {
+    const controle = new AbortController()
+    const caminhos: string[] = []
+    const m = await modeloParaImportar('Árvore', [1, 2, 3])
+    const host = criarHostHttp({
+      buscar: async (url) => {
+        caminhos.push(url)
+        if (url.endsWith('/espacos'))
+          return Response.json([{ id: ESPACO, tipo: 'conta', usadoBytes: 0, limiteBytes: 100 }])
+        if (url.endsWith('/bibliotecas')) return Response.json([bibliotecaDoServidor])
+        return Response.json({
+          espacoId: ESPACO,
+          enviar: [
+            { digest: m.digest, tipoDoConteudo: 'model/gltf-binary', url: 'https://r2/modelo' },
+          ],
+        })
+      },
+      enviar: async (_url, init) => {
+        expect(init?.signal).toBe(controle.signal)
+        controle.abort()
+        throw controle.signal.reason
+      },
+    })
+    await expect(
+      host.importarModelos(BIBLIOTECA, [m], undefined, controle.signal),
+    ).rejects.toHaveProperty('name', 'AbortError')
+    expect(caminhos.some((p) => p.endsWith('/modelos'))).toBe(false)
+    const n = caminhos.length
+    await expect(
+      host.importarModelos(BIBLIOTECA, [m], undefined, controle.signal),
+    ).rejects.toHaveProperty('name', 'AbortError')
+    expect(caminhos).toHaveLength(n)
+  })
+
+  test('organização consulta o índice da biblioteca inteira', async () => {
+    const { host, pedidos } = montar(() => ({
+      corpo: { pastas: ['Natureza/Árvores'], etiquetas: ['verde'] },
+    }))
+    expect(await host.organizacaoDaBiblioteca(BIBLIOTECA)).toEqual({
+      pastas: ['Natureza/Árvores'],
+      etiquetas: ['verde'],
+    })
+    expect(pedidos[0]?.caminho).toBe(`bibliotecas/${BIBLIOTECA}/organizacao`)
+  })
   test('espaços ganham nome e as capas viram endereços do próprio app', async () => {
     const { host, pedidos } = montar((p) => {
       if (p.caminho === 'espacos')

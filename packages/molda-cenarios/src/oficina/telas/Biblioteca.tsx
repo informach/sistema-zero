@@ -1,8 +1,10 @@
-import { ArrowLeft, Box, Pencil, Search, Trash2, Upload, X } from 'lucide-react'
+import type { EntradaDeImportacao } from '@sistemazero/molda-cenarios-motor'
+import { ArrowLeft, Box, FolderOpen, Pencil, Search, Trash2, Upload, X } from 'lucide-react'
 import { type DragEvent, type JSX, useEffect, useRef, useState } from 'react'
-import { COPY } from '../copy'
-import { prepararArquivos } from '../importar'
-import { Capa, Chegando, DialogoDeApagar, DialogoDeNome, Falhou, useCarga } from '../pecas'
+import { arquivosDoDrop } from '../arquivos-do-drop'
+import { COPY, tamanhoLegivel } from '../copy'
+import { encerrarPreparacao, prepararArquivos } from '../importar'
+import { Capa, Chegando, Dialogo, DialogoDeApagar, DialogoDeNome, Falhou, useCarga } from '../pecas'
 import type { CenariosHost, Licenca, ModeloDeBiblioteca } from '../portas'
 import { SeletorDeLicenca } from './Inicio'
 
@@ -11,7 +13,13 @@ type Andamento =
   | { fase: 'pronto'; novos: number; recusados: { arquivo: string; motivo: string }[] }
   | null
 
-type Janela = { tipo: 'nome' } | { tipo: 'apagar' } | null
+type Janela =
+  | { tipo: 'nome' }
+  | { tipo: 'apagar' }
+  | { tipo: 'trazer' }
+  | { tipo: 'modelo'; modelo: ModeloDeBiblioteca }
+  | { tipo: 'tirar-modelo'; modelo: ModeloDeBiblioteca }
+  | null
 
 const PAGINA = 60
 
@@ -28,6 +36,8 @@ export function Biblioteca({
 }): JSX.Element {
   const [busca, setBusca] = useState('')
   const [buscaAplicada, setBuscaAplicada] = useState('')
+  const [pastaEscolhida, setPastaEscolhida] = useState('*')
+  const [erroDaAcao, setErroDaAcao] = useState<string | null>(null)
   const [modelos, setModelos] = useState<ModeloDeBiblioteca[]>([])
   const [proximo, setProximo] = useState<string | null>(null)
   const [total, setTotal] = useState<number | null>(null)
@@ -38,6 +48,21 @@ export function Biblioteca({
   const [janela, setJanela] = useState<Janela>(null)
   const [licenca, setLicenca] = useState<Licenca>('propria')
   const entrada = useRef<HTMLInputElement>(null)
+  const pasta = useRef<HTMLInputElement>(null)
+  const trabalho = useRef<AbortController | null>(null)
+  const requisicao = useRef(0)
+  const paginando = useRef(false)
+
+  // Uma troca de biblioteca ou perfil encerra a conversão e os envios da tela anterior.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: bibliotecaId delimita a vida do trabalho
+  useEffect(
+    () => () => {
+      trabalho.current?.abort()
+      trabalho.current = null
+      void encerrarPreparacao()
+    },
+    [host, bibliotecaId],
+  )
 
   const cabecalho = useCarga(async () => {
     const lista = await host.listarBibliotecas(espacoId)
@@ -46,6 +71,14 @@ export function Biblioteca({
     return biblioteca
   }, [host, espacoId, bibliotecaId, volta])
   const biblioteca = cabecalho.dados
+  const organizacao = useCarga(
+    () => host.organizacaoDaBiblioteca(bibliotecaId),
+    [host, bibliotecaId, volta],
+  )
+  const cota = useCarga(
+    async () => (await host.espacos()).find((e) => e.id === espacoId),
+    [host, espacoId, volta],
+  )
 
   // A busca espera a pessoa parar de digitar.
   useEffect(() => {
@@ -55,40 +88,66 @@ export function Biblioteca({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `volta` recarrega depois de trazer ou apagar
   useEffect(() => {
+    const versao = ++requisicao.current
+    paginando.current = false
     let vivo = true
     setFalhou(false)
     setTotal(null)
-    host.listarModelos(bibliotecaId, { busca: buscaAplicada, limite: PAGINA }).then(
-      (pagina) => {
-        if (!vivo) return
-        setModelos(pagina.itens)
-        setProximo(pagina.proximo)
-        setTotal(pagina.total)
-      },
-      () => vivo && setFalhou(true),
-    )
+    host
+      .listarModelos(bibliotecaId, {
+        busca: buscaAplicada,
+        limite: PAGINA,
+        ...(pastaEscolhida === '*' ? {} : { pasta: pastaEscolhida }),
+      })
+      .then(
+        (pagina) => {
+          if (!vivo) return
+          setModelos(pagina.itens)
+          setProximo(pagina.proximo)
+          setTotal(pagina.total)
+        },
+        () => vivo && setFalhou(true),
+      )
     return () => {
       vivo = false
+      if (requisicao.current === versao) requisicao.current++
     }
-  }, [host, bibliotecaId, buscaAplicada, volta])
+  }, [host, bibliotecaId, buscaAplicada, pastaEscolhida, volta])
 
   const mostrarMais = async () => {
-    if (!proximo) return
-    const pagina = await host.listarModelos(bibliotecaId, {
-      busca: buscaAplicada,
-      limite: PAGINA,
-      cursor: proximo,
-    })
-    setModelos((atuais) => [...atuais, ...pagina.itens])
-    setProximo(pagina.proximo)
+    if (!proximo || paginando.current) return
+    paginando.current = true
+    const versao = requisicao.current
+    try {
+      const pagina = await host.listarModelos(bibliotecaId, {
+        busca: buscaAplicada,
+        limite: PAGINA,
+        cursor: proximo,
+        ...(pastaEscolhida === '*' ? {} : { pasta: pastaEscolhida }),
+      })
+      if (requisicao.current !== versao) return
+      setModelos((atuais) => [...atuais, ...pagina.itens])
+      setProximo(pagina.proximo)
+    } catch (e) {
+      if (requisicao.current === versao)
+        setErroDaAcao(e instanceof Error ? e.message : COPY.inicio.falhou)
+    } finally {
+      if (requisicao.current === versao) paginando.current = false
+    }
   }
 
-  const trazer = async (arquivos: File[]) => {
-    if (!arquivos.length || (andamento && andamento.fase !== 'pronto')) return
+  const trazer = async (arquivos: EntradaDeImportacao[]) => {
+    if (!arquivos.length || trabalho.current) return
+    const controle = new AbortController()
+    trabalho.current = controle
     setAndamento({ fase: 'conferindo', feitos: 0, total: arquivos.length })
     try {
-      const preparados = await prepararArquivos(arquivos, (feitos, quantos) =>
-        setAndamento({ fase: 'conferindo', feitos, total: quantos }),
+      const preparados = await prepararArquivos(
+        arquivos,
+        (feitos, quantos) => {
+          if (!controle.signal.aborted) setAndamento({ fase: 'conferindo', feitos, total: quantos })
+        },
+        controle.signal,
       )
       let novos = 0
       if (preparados.prontos.length) {
@@ -96,30 +155,46 @@ export function Biblioteca({
         const criados = await host.importarModelos(
           bibliotecaId,
           preparados.prontos,
-          (feitos, quantos) => setAndamento({ fase: 'trazendo', feitos, total: quantos }),
+          (feitos, quantos) => {
+            if (!controle.signal.aborted) setAndamento({ fase: 'trazendo', feitos, total: quantos })
+          },
+          controle.signal,
         )
         novos = criados.length
       }
-      setAndamento({ fase: 'pronto', novos, recusados: preparados.recusados })
+      if (!controle.signal.aborted)
+        setAndamento({ fase: 'pronto', novos, recusados: preparados.recusados })
     } catch (erro) {
-      setAndamento({
-        fase: 'pronto',
-        novos: 0,
-        recusados: [
-          {
-            arquivo: '',
-            motivo: erro instanceof Error ? erro.message : COPY.inicio.falhou,
-          },
-        ],
-      })
+      if (!controle.signal.aborted)
+        setAndamento({
+          fase: 'pronto',
+          novos: 0,
+          recusados: [
+            {
+              arquivo: '',
+              motivo: erro instanceof Error ? erro.message : COPY.inicio.falhou,
+            },
+          ],
+        })
     }
-    setVolta((v) => v + 1)
+    if (trabalho.current === controle) {
+      trabalho.current = null
+      setVolta((v) => v + 1)
+    }
   }
 
   const aoSoltar = (evento: DragEvent) => {
     evento.preventDefault()
     setArrastando(false)
-    void trazer(Array.from(evento.dataTransfer.files))
+    void arquivosDoDrop(evento.dataTransfer).then(trazer, (e) =>
+      setAndamento({
+        fase: 'pronto',
+        novos: 0,
+        recusados: [
+          { arquivo: '', motivo: e instanceof Error ? e.message : 'Não consegui ler esta pasta' },
+        ],
+      }),
+    )
   }
 
   return (
@@ -188,7 +263,7 @@ export function Biblioteca({
                     type="button"
                     className="sz-tool-pill sz-tool-pill--primary"
                     disabled={!biblioteca || (andamento !== null && andamento.fase !== 'pronto')}
-                    onClick={() => entrada.current?.click()}
+                    onClick={() => setJanela({ tipo: 'trazer' })}
                   >
                     <Upload aria-hidden="true" />
                     {COPY.biblioteca.trazer}
@@ -196,7 +271,7 @@ export function Biblioteca({
                   <input
                     ref={entrada}
                     type="file"
-                    accept=".glb,model/gltf-binary"
+                    accept=".glb,.gltf,.obj,.mtl,.fbx,.bin,.png,.jpg,.jpeg,.webp,.bmp,.zip"
                     multiple
                     className="hidden"
                     onChange={(evento) => {
@@ -207,9 +282,45 @@ export function Biblioteca({
                 </div>
               </div>
               <div className="sz-tool-toolbar mt-7">
+                <input
+                  ref={(el) => {
+                    pasta.current = el
+                    el?.setAttribute('webkitdirectory', '')
+                  }}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  aria-label="Pasta de modelos"
+                  onChange={(e) => {
+                    void trazer(Array.from(e.target.files ?? []))
+                    e.target.value = ''
+                  }}
+                />
                 <div className="sz-tool-toolbar__start">
+                  <select
+                    className="sz-tool-select"
+                    aria-label="Pasta da biblioteca"
+                    value={pastaEscolhida}
+                    onChange={(e) => setPastaEscolhida(e.target.value)}
+                  >
+                    <option value="*">Todas as pastas</option>
+                    {(organizacao.dados?.pastas ?? []).map((p) => (
+                      <option key={p} value={p}>
+                        {p || 'Sem pasta'}
+                      </option>
+                    ))}
+                  </select>
                   {andamento ? (
-                    <FaixaDeAndamento andamento={andamento} aoFechar={() => setAndamento(null)} />
+                    <FaixaDeAndamento
+                      andamento={andamento}
+                      aoFechar={() => setAndamento(null)}
+                      aoCancelar={() => {
+                        trabalho.current?.abort()
+                        trabalho.current = null
+                        setAndamento(null)
+                        setVolta((v) => v + 1)
+                      }}
+                    />
                   ) : null}
                 </div>
                 <div className="sz-tool-toolbar__end">
@@ -232,6 +343,34 @@ export function Biblioteca({
 
           <div className="sz-tool-band sz-tool-band--ceu">
             <div className="sz-tool-band__inner">
+              {cota.dados ? (
+                <section className="mcn-cota" aria-label="Uso do espaço">
+                  <span>
+                    {tamanhoLegivel(cota.dados.usadoBytes)} de{' '}
+                    {tamanhoLegivel(cota.dados.limiteBytes)}
+                  </span>
+                  <progress
+                    value={cota.dados.usadoBytes}
+                    max={cota.dados.limiteBytes}
+                    aria-label="Armazenamento usado"
+                  />
+                </section>
+              ) : null}
+              {erroDaAcao ? <p role="alert">{erroDaAcao}</p> : null}
+              {organizacao.dados?.etiquetas.length ? (
+                <section className="mcn-etiquetas" aria-label="Etiquetas da biblioteca">
+                  {organizacao.dados.etiquetas.map((e) => (
+                    <button
+                      key={e}
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--quiet"
+                      onClick={() => setBusca(e)}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </section>
+              ) : null}
               {falhou || cabecalho.falhou ? (
                 <Falhou aoTentar={() => setVolta((v) => v + 1)} />
               ) : total === null ? (
@@ -254,15 +393,25 @@ export function Biblioteca({
                         <span className="mcn-modelo-detalhe">
                           {COPY.biblioteca.triangulos(modelo.triangulos)}
                         </span>
+                        {modelo.pasta ? (
+                          <small className="mcn-modelo-detalhe" title={modelo.pasta}>
+                            {modelo.pasta}
+                          </small>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="mcn-modelo-tirar mcn-modelo-editar"
+                          aria-label={`Editar ${modelo.nome}`}
+                          onClick={() => setJanela({ tipo: 'modelo', modelo })}
+                        >
+                          <Pencil aria-hidden className="size-4" />
+                        </button>
                         <button
                           type="button"
                           className="mcn-modelo-tirar"
                           aria-label={COPY.biblioteca.apagarModelo(modelo.nome)}
                           title={COPY.biblioteca.apagarModelo(modelo.nome)}
-                          onClick={async () => {
-                            await host.apagarModelos(bibliotecaId, [modelo.id])
-                            setVolta((v) => v + 1)
-                          }}
+                          onClick={() => setJanela({ tipo: 'tirar-modelo', modelo })}
                         >
                           <X aria-hidden="true" className="size-4" />
                         </button>
@@ -295,6 +444,59 @@ export function Biblioteca({
         </div>
       ) : null}
 
+      {janela?.tipo === 'modelo' && (
+        <EditarModelo
+          modelo={janela.modelo}
+          aoFechar={() => setJanela(null)}
+          aoGuardar={async (dados) => {
+            await host.editarModelo(janela.modelo.id, dados)
+            setVolta((v) => v + 1)
+          }}
+        />
+      )}
+      {janela?.tipo === 'tirar-modelo' && (
+        <DialogoDeApagar
+          titulo={`Tirar ${janela.modelo.nome}?`}
+          texto="As cópias já usadas nos cenários continuam lá."
+          aoFechar={() => setJanela(null)}
+          aoConfirmar={async () => {
+            await host.apagarModelos(bibliotecaId, [janela.modelo.id])
+            setVolta((v) => v + 1)
+          }}
+        />
+      )}
+      {janela?.tipo === 'trazer' && (
+        <Dialogo titulo={COPY.biblioteca.trazer} aoFechar={() => setJanela(null)}>
+          <div className="flex flex-col gap-3">
+            <p>
+              Traga modelos GLB, GLTF, OBJ ou FBX. Para manter as texturas, escolha a pasta completa
+              ou o pacote ZIP.
+            </p>
+            <button
+              type="button"
+              className="sz-tool-pill sz-tool-pill--primary"
+              onClick={() => {
+                setJanela(null)
+                entrada.current?.click()
+              }}
+            >
+              <Upload aria-hidden />
+              Arquivos ou pacote ZIP
+            </button>
+            <button
+              type="button"
+              className="sz-tool-pill sz-tool-pill--quiet"
+              onClick={() => {
+                setJanela(null)
+                pasta.current?.click()
+              }}
+            >
+              <FolderOpen aria-hidden />
+              Pasta com modelos
+            </button>
+          </div>
+        </Dialogo>
+      )}
       {janela?.tipo === 'nome' && biblioteca ? (
         <DialogoDeNome
           titulo={COPY.mundo.renomear}
@@ -324,12 +526,80 @@ export function Biblioteca({
   )
 }
 
+function EditarModelo({
+  modelo,
+  aoGuardar,
+  aoFechar,
+}: {
+  modelo: ModeloDeBiblioteca
+  aoGuardar(dados: { nome: string; pasta: string; etiquetas: string[] }): Promise<void>
+  aoFechar(): void
+}): JSX.Element {
+  const [pasta, setPasta] = useState(modelo.pasta)
+  const [etiquetas, setEtiquetas] = useState(modelo.etiquetas.join(', '))
+  return (
+    <DialogoDeNome
+      titulo="Editar modelo"
+      inicial={modelo.nome}
+      acao={COPY.nome.guardar}
+      aoFechar={aoFechar}
+      aoConfirmar={async (nome) => {
+        const lista = [
+          ...new Set(
+            etiquetas
+              .split(',')
+              .map((e) => e.trim())
+              .filter(Boolean),
+          ),
+        ]
+        if (lista.length > 16 || lista.some((e) => e.length > 40))
+          throw Error('Use até 16 etiquetas de até 40 letras')
+        const caminho = pasta.trim().replaceAll('\\', '/')
+        if (
+          caminho.length > 240 ||
+          caminho.split('/').some((p) => p === '..' || p === '.') ||
+          caminho.startsWith('/')
+        )
+          throw Error('Escolha uma pasta dentro da biblioteca')
+        await aoGuardar({ nome, pasta: caminho, etiquetas: lista })
+      }}
+    >
+      <label className="mcn-campo">
+        Pasta
+        <input
+          value={pasta}
+          onChange={(e) => setPasta(e.target.value)}
+          maxLength={240}
+          placeholder="Ex.: Natureza/Árvores"
+        />
+      </label>
+      <label className="mcn-campo">
+        Etiquetas, separadas por vírgulas
+        <input
+          value={etiquetas}
+          onChange={(e) => setEtiquetas(e.target.value)}
+          maxLength={670}
+          placeholder="Ex.: árvore, floresta"
+        />
+      </label>
+      <p className="text-sm text-mld-muted">
+        {modelo.max
+          .map((v, i) => (v - modelo.min[i]!).toLocaleString('pt-BR', { maximumFractionDigits: 2 }))
+          .join(' × ')}{' '}
+        m · {tamanhoLegivel(modelo.bytes)}
+      </p>
+    </DialogoDeNome>
+  )
+}
+
 function FaixaDeAndamento({
   andamento,
   aoFechar,
+  aoCancelar,
 }: {
   andamento: NonNullable<Andamento>
   aoFechar(): void
+  aoCancelar(): void
 }): JSX.Element {
   if (andamento.fase !== 'pronto') {
     const texto =
@@ -340,6 +610,9 @@ function FaixaDeAndamento({
       <div className="mcn-andamento" role="status">
         <span>{texto}</span>
         <progress value={andamento.feitos} max={Math.max(1, andamento.total)} />
+        <button type="button" onClick={aoCancelar}>
+          Parar importação
+        </button>
       </div>
     )
   }

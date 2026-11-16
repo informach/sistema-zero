@@ -100,11 +100,13 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     metodo: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     caminho: string,
     corpo?: unknown,
+    sinal?: AbortSignal,
   ): Promise<T> {
     let resposta: Response
     try {
       resposta = await buscar(`${base}/${caminho}`, {
         method: metodo,
+        signal: sinal,
         headers: {
           accept: 'application/json',
           ...(corpo === undefined ? {} : { 'content-type': 'application/json' }),
@@ -113,6 +115,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
       })
     } catch {
+      sinal?.throwIfAborted()
       throw new ErroDaOficina('Sem conexão agora. Tente de novo.', 0, null, null)
     }
     const lido: unknown = await resposta.json().catch(() => null)
@@ -175,18 +178,25 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   }
 
   /** Põe no armazenamento os arquivos que a reserva pediu. */
-  async function subir(reserva: Reserva, conteudos: ReadonlyMap<string, Blob | Uint8Array>) {
+  async function subir(
+    reserva: Reserva,
+    conteudos: ReadonlyMap<string, Blob | Uint8Array>,
+    sinal?: AbortSignal,
+  ) {
     await emFila(reserva.enviar, ENVIOS_JUNTOS, async (arquivo) => {
+      sinal?.throwIfAborted()
       const conteudo = conteudos.get(arquivo.digest)
       if (!conteudo) throw new ErroDaOficina('O arquivo a enviar se perdeu', 0, null, null)
       let resposta: Response
       try {
         resposta = await enviar(arquivo.url, {
           method: 'PUT',
+          signal: sinal,
           headers: { 'content-type': arquivo.tipoDoConteudo },
           body: conteudo as BodyInit,
         })
       } catch {
+        sinal?.throwIfAborted()
         throw new ErroDaOficina('O envio parou no meio. Tente de novo.', 0, null, null)
       }
       if (!resposta.ok)
@@ -222,6 +232,9 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       espacoDaBiblioteca.delete(id)
     },
 
+    async organizacaoDaBiblioteca(bibliotecaId) {
+      return pedir('GET', `bibliotecas/${bibliotecaId}/organizacao`)
+    },
     async listarModelos(bibliotecaId, filtro = {}) {
       await acharEspacoDaBiblioteca(bibliotecaId)
       const consulta = new URLSearchParams()
@@ -237,12 +250,14 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       return { ...pagina, itens: pagina.itens.map(modelo) }
     },
 
-    async importarModelos(bibliotecaId, modelos, aoAndar) {
+    async importarModelos(bibliotecaId, modelos, aoAndar, sinal) {
+      sinal?.throwIfAborted()
       await acharEspacoDaBiblioteca(bibliotecaId)
       const criados: ModeloDeBiblioteca[] = []
       let feitos = 0
       aoAndar?.(0, modelos.length)
       for (let inicio = 0; inicio < modelos.length; inicio += POR_LOTE) {
+        sinal?.throwIfAborted()
         const lote = modelos.slice(inicio, inicio + POR_LOTE)
         // O retrato também é guardado por conteúdo; grande demais, o modelo entra sem ele.
         const preparados = await Promise.all(
@@ -274,8 +289,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
                   : null,
             })),
           },
+          sinal,
         )
-        await subir(reserva, conteudos)
+        await subir(reserva, conteudos, sinal)
+        sinal?.throwIfAborted()
         const registrados = await pedir<ModeloDoServidor[]>(
           'POST',
           `bibliotecas/${bibliotecaId}/modelos`,
@@ -292,6 +309,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
               miniatura: p.digestDoRetrato,
             })),
           },
+          sinal,
         )
         criados.push(...registrados.map(modelo))
         feitos += lote.length

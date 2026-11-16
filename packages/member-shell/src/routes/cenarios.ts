@@ -44,6 +44,7 @@ const REPASSES: readonly Repasse[] = [
   { metodo: 'GET', caminho: exato(`espacos/${U}/bibliotecas`) },
   { metodo: 'POST', caminho: exato(`espacos/${U}/bibliotecas`) },
   { metodo: 'PATCH', caminho: exato(`bibliotecas/${U}`) },
+  { metodo: 'GET', caminho: exato(`bibliotecas/${U}/organizacao`) },
   {
     metodo: 'GET',
     caminho: exato(`bibliotecas/${U}/modelos`),
