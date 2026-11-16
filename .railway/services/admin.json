@@ -5,6 +5,9 @@
     "watchPatterns": [
       "/packages/admin/**",
       "/packages/core/**",
+      "/packages/molda-cenarios-core/**",
+      "/packages/molda-cenarios/**",
+      "/packages/molda-cenarios-motor/**",
       "/packages/edisvg/**",
       "/packages/member-shell/**",
       "/packages/avatar-quarto/**",

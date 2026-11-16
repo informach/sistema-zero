@@ -5,6 +5,7 @@
     "watchPatterns": [
       "/packages/api-gateway/**",
       "/packages/core/**",
+      "/packages/molda-cenarios-core/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore",

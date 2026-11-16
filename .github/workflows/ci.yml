@@ -218,9 +218,10 @@ jobs:
 
       # Pacotes puros e rápidos: documento, comandos e migração dos cenários 3D, o
       # controlador do editor e o cliente dos agentes. Nenhum outro job os executava.
-      - name: Cenários 3D (núcleo, editor e agente)
+      - name: Cenários 3D (núcleo, motor, editor e agente)
         run: |
           bun test --cwd packages/molda-cenarios-core
+          bun test --cwd packages/molda-cenarios-motor
           bun test --cwd packages/molda-cenarios
           bun test --cwd packages/molda-cenarios-agente
 

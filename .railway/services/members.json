@@ -5,6 +5,7 @@
     "watchPatterns": [
       "/packages/members/**",
       "/packages/core/**",
+      "/packages/molda-cenarios-core/**",
       "/packages/pinta/**",
       "/packages/studio/**",
       "/bun.lock",
