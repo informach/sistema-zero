@@ -30,6 +30,8 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('instancia.remover'), id }).strict(),
+  /** Grava o objeto inteiro por cima (ou cria). É o que o desfazer usa para devolver um estado. */
+  z.object({ tipo: z.literal('instancia.definir'), instancia: InstanciaSchema }).strict(),
   z.object({ tipo: z.literal('grupo.definir'), grupo: GrupoSchema }).strict(),
   z.object({ tipo: z.literal('grupo.remover'), id }).strict(),
   z.object({ tipo: z.literal('caminho.definir'), caminho: CaminhoSchema }).strict(),
@@ -81,7 +83,7 @@ function definir<T extends { id: string }>(lista: T[], valor: T) {
   else lista[i] = valor
 }
 /** Comparação estrutural que não depende da ordem das chaves. */
-function igual(a: unknown, b: unknown): boolean {
+export function igual(a: unknown, b: unknown): boolean {
   if (a === b) return true
   if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false
   if (Array.isArray(a) !== Array.isArray(b)) return false
@@ -148,6 +150,9 @@ export function executarLote(
       }
       case 'instancia.remover':
         d.instancias = removerTravavel(d, d.instancias, c.id)
+        break
+      case 'instancia.definir':
+        definirTravavel(d, d.instancias, c.instancia)
         break
       case 'grupo.definir':
         definirTravavel(d, d.grupos, c.grupo)
