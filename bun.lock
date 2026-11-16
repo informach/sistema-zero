@@ -901,6 +901,7 @@
       "dependencies": {
         "@sistemazero/molda": "workspace:*",
         "@sistemazero/molda-cenarios-core": "workspace:*",
+        "@sistemazero/molda-cenarios-motor": "workspace:*",
         "lucide-react": "^0.546.0",
       },
       "devDependencies": {

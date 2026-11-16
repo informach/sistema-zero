@@ -5,17 +5,21 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./oficina": "./src/oficina/index.ts",
+    "./oficina.css": "./src/oficina/oficina.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "check": "biome check ."
+    "check": "biome check .",
+    "dev:oficina": "vite --config playground/oficina/vite.config.ts"
   },
   "dependencies": {
     "@sistemazero/molda": "workspace:*",
     "@sistemazero/molda-cenarios-core": "workspace:*",
-    "lucide-react": "^0.546.0"
+    "lucide-react": "^0.546.0",
+    "@sistemazero/molda-cenarios-motor": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19",

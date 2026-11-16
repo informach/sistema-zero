@@ -1,0 +1,147 @@
+import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+
+/**
+ * Tudo o que a oficina de cenários pede a quem a hospeda. A ferramenta não sabe de sessão, de
+ * rede nem de onde os arquivos moram: o app (ou o playground, ou um teste) entrega um host.
+ */
+
+export type Licenca = 'livre' | 'propria' | 'restrita'
+
+export interface Espaco {
+  id: string
+  tipo: 'conta' | 'equipe'
+  nome: string
+  usadoBytes: number
+  limiteBytes: number
+}
+
+export interface Biblioteca {
+  id: string
+  espacoId: string
+  nome: string
+  licenca: Licenca
+  modelos: number
+  /** Endereço da imagem de capa, ou nulo. */
+  capa: string | null
+  atualizadaEm: string
+}
+
+export interface ModeloDeBiblioteca {
+  id: string
+  bibliotecaId: string
+  nome: string
+  /** Caminho dentro da biblioteca, com `/` entre os níveis. Vazio = raiz. */
+  pasta: string
+  etiquetas: string[]
+  digest: string
+  bytes: number
+  triangulos: number
+  min: [number, number, number]
+  max: [number, number, number]
+  /** Endereço do retrato, ou nulo. */
+  miniatura: string | null
+}
+
+export interface PaginaDeModelos {
+  itens: ModeloDeBiblioteca[]
+  total: number
+  /** Passe de volta em `cursor` para a página seguinte; nulo no fim. */
+  proximo: string | null
+}
+
+export interface FiltroDeModelos {
+  busca?: string
+  pasta?: string
+  cursor?: string | null
+  limite?: number
+}
+
+/** Um modelo já conferido, medido e fotografado no navegador, pronto para subir. */
+export interface ModeloParaImportar {
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  conteudo: Uint8Array
+  digest: string
+  miniatura: Blob
+  min: [number, number, number]
+  max: [number, number, number]
+  triangulos: number
+}
+
+export interface Jogo {
+  id: string
+  espacoId: string
+  nome: string
+  cenarios: number
+  /** Bibliotecas que este jogo usa. */
+  bibliotecas: string[]
+  capa: string | null
+  atualizadoEm: string
+}
+
+export interface ResumoDeCenario {
+  id: string
+  jogoId: string
+  nome: string
+  revisao: number
+  capa: string | null
+  atualizadoEm: string
+}
+
+export interface CenarioAberto {
+  resumo: ResumoDeCenario
+  documento: DocumentoDeCenario
+  revisao: number
+}
+
+/** O cenário mudou em outro lugar: a revisão que quem editava conhecia ficou para trás. */
+export class CenarioDesatualizado extends Error {
+  constructor(public readonly revisaoAtual: number) {
+    super('O cenário mudou em outro lugar')
+    this.name = 'CenarioDesatualizado'
+  }
+}
+
+export interface CenariosHost {
+  espacos(): Promise<Espaco[]>
+
+  listarBibliotecas(espacoId: string): Promise<Biblioteca[]>
+  criarBiblioteca(espacoId: string, dados: { nome: string; licenca: Licenca }): Promise<Biblioteca>
+  editarBiblioteca(id: string, dados: { nome?: string; licenca?: Licenca }): Promise<Biblioteca>
+  apagarBiblioteca(id: string): Promise<void>
+
+  listarModelos(bibliotecaId: string, filtro?: FiltroDeModelos): Promise<PaginaDeModelos>
+  importarModelos(
+    bibliotecaId: string,
+    modelos: ModeloParaImportar[],
+    aoAndar?: (feitos: number, total: number) => void,
+  ): Promise<ModeloDeBiblioteca[]>
+  editarModelo(
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[] },
+  ): Promise<ModeloDeBiblioteca>
+  apagarModelos(ids: string[]): Promise<void>
+  /** O arquivo `.glb` de um modelo, pelo conteúdo. */
+  conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
+
+  listarJogos(espacoId: string): Promise<Jogo[]>
+  criarJogo(espacoId: string, nome: string): Promise<Jogo>
+  editarJogo(id: string, dados: { nome?: string; bibliotecas?: string[] }): Promise<Jogo>
+  apagarJogo(id: string): Promise<void>
+
+  listarCenarios(jogoId: string): Promise<ResumoDeCenario[]>
+  criarCenario(jogoId: string, nome: string): Promise<ResumoDeCenario>
+  abrirCenario(id: string): Promise<CenarioAberto>
+  /** Aplica um lote. Recusa com `CenarioDesatualizado` quando a revisão esperada ficou para trás. */
+  editarCenario(
+    id: string,
+    revisaoEsperada: number,
+    comandos: ComandoDeCenario[],
+    operacaoId: string,
+  ): Promise<{ revisao: number }>
+  duplicarCenario(id: string): Promise<ResumoDeCenario>
+  apagarCenario(id: string): Promise<void>
+  /** Guarda o retrato do cenário que aparece nos cartões. */
+  guardarCapa(cenarioId: string, imagem: Blob): Promise<void>
+}

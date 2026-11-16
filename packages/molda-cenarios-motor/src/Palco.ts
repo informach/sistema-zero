@@ -22,7 +22,7 @@ import {
   Mesh,
   MeshStandardMaterial,
   Object3D,
-  PCFSoftShadowMap,
+  PCFShadowMap,
   PerspectiveCamera,
   Plane,
   PlaneGeometry,
@@ -148,7 +148,7 @@ class PalcoThree implements Palco {
     })
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2))
     this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = PCFSoftShadowMap
+    this.renderer.shadowMap.type = PCFShadowMap
 
     this.camera.position.set(16, 13, 20)
     this.cena.fog = this.nevoa
@@ -342,7 +342,8 @@ class PalcoThree implements Palco {
   // ---- desenho ------------------------------------------------------------
 
   private readonly pedirQuadro = (): void => {
-    if (!this.destruido) this.laco.request()
+    // As alças avisam "mudou" já ao serem configuradas, antes de o laço de desenho existir.
+    if (!this.destruido) (this.laco as DemandRenderLoop | undefined)?.request()
   }
 
   private readonly quadro = (): boolean => {
