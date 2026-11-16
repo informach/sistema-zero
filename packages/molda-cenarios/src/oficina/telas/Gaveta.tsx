@@ -10,7 +10,7 @@ export const ARRASTO_DE_MODELO = 'application/x-sz-modelo'
 const PAGINA = 40
 
 /**
- * A caixa de brinquedos: os modelos das bibliotecas do jogo, para tocar e pôr no cenário ou
+ * A caixa de brinquedos: os modelos das bibliotecas do mundo, para tocar e pôr no cenário ou
  * arrastar até o lugar.
  */
 export function Gaveta({

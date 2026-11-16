@@ -32,12 +32,12 @@ function ids() {
   return () => `o-${++n}`
 }
 async function abrir(host: CenariosHost = criarHostEmMemoria()) {
-  const jogo = await host.criarJogo('conta', 'Meu jogo')
-  const cenario = await host.criarCenario(jogo.id, 'Fase 1')
+  const mundo = await host.criarMundo('conta', 'Meu mundo')
+  const cenario = await host.criarCenario(mundo.id, 'Fase 1')
   const aberto = await host.abrirCenario(cenario.id)
   let operacao = 0
   const controlador = criarControlador(host, aberto, () => `op-${++operacao}`)
-  return { host, jogo, cenario, controlador }
+  return { host, mundo, cenario, controlador }
 }
 const por = (
   controlador: Awaited<ReturnType<typeof abrir>>['controlador'],
@@ -222,15 +222,15 @@ describe('controlador da oficina', () => {
 describe('host em memória', () => {
   test('a mesma operação mandada duas vezes vale uma só', async () => {
     const host = criarHostEmMemoria()
-    const jogo = await host.criarJogo('conta', 'Jogo')
-    const cenario = await host.criarCenario(jogo.id, 'Fase')
+    const mundo = await host.criarMundo('conta', 'Jogo')
+    const cenario = await host.criarCenario(mundo.id, 'Fase')
     const comandos: ComandoDeCenario[] = [{ tipo: 'cenario.renomear', nome: 'Outro nome' }]
     expect(await host.editarCenario(cenario.id, 0, comandos, 'op')).toEqual({ revisao: 1 })
     expect(await host.editarCenario(cenario.id, 0, comandos, 'op')).toEqual({ revisao: 1 })
     await expect(host.editarCenario(cenario.id, 0, comandos, 'outra')).rejects.toBeInstanceOf(
       CenarioDesatualizado,
     )
-    expect((await host.listarCenarios(jogo.id))[0]!.nome).toBe('Outro nome')
+    expect((await host.listarCenarios(mundo.id))[0]!.nome).toBe('Outro nome')
   })
   test('espaço da equipe só existe quando pedido, e bibliotecas ficam em cada espaço', async () => {
     expect((await criarHostEmMemoria().espacos()).map((e) => e.tipo)).toEqual(['conta'])
@@ -244,13 +244,13 @@ describe('host em memória', () => {
       modelos: 0,
     })
   })
-  test('apagar uma biblioteca a tira dos jogos que a usavam', async () => {
+  test('apagar uma biblioteca a tira dos mundos que a usavam', async () => {
     const host = criarHostEmMemoria()
     const biblioteca = await host.criarBiblioteca('conta', { nome: 'Cidade', licenca: 'livre' })
-    const jogo = await host.criarJogo('conta', 'Jogo')
-    await host.editarJogo(jogo.id, { bibliotecas: [biblioteca.id, 'inexistente'] })
-    expect((await host.listarJogos('conta'))[0]!.bibliotecas).toEqual([biblioteca.id])
+    const mundo = await host.criarMundo('conta', 'Jogo')
+    await host.editarMundo(mundo.id, { bibliotecas: [biblioteca.id, 'inexistente'] })
+    expect((await host.listarMundos('conta'))[0]!.bibliotecas).toEqual([biblioteca.id])
     await host.apagarBiblioteca(biblioteca.id)
-    expect((await host.listarJogos('conta'))[0]!.bibliotecas).toEqual([])
+    expect((await host.listarMundos('conta'))[0]!.bibliotecas).toEqual([])
   })
 })

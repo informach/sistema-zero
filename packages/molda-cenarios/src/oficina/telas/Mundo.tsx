@@ -12,7 +12,7 @@ import {
   Falhou,
   useCarga,
 } from '../pecas'
-import type { Biblioteca, CenariosHost, Jogo as JogoDoHost, ResumoDeCenario } from '../portas'
+import type { Biblioteca, CenariosHost, Mundo as MundoDoHost, ResumoDeCenario } from '../portas'
 
 type Janela =
   | { tipo: 'novo' }
@@ -23,17 +23,17 @@ type Janela =
 
 export function EscolherBibliotecas({
   host,
-  jogo,
+  mundo,
   aoFechar,
   aoGuardar,
 }: {
   host: CenariosHost
-  jogo: JogoDoHost
+  mundo: MundoDoHost
   aoFechar(): void
   aoGuardar(): void
 }): JSX.Element {
-  const bibliotecas = useCarga(() => host.listarBibliotecas(jogo.espacoId), [host, jogo.espacoId])
-  const [escolhidas, setEscolhidas] = useState(() => new Set(jogo.bibliotecas))
+  const bibliotecas = useCarga(() => host.listarBibliotecas(mundo.espacoId), [host, mundo.espacoId])
+  const [escolhidas, setEscolhidas] = useState(() => new Set(mundo.bibliotecas))
   const [ocupado, setOcupado] = useState(false)
   const alternar = (id: string) =>
     setEscolhidas((atual) => {
@@ -43,15 +43,17 @@ export function EscolherBibliotecas({
       return novo
     })
   return (
-    <Dialogo titulo={COPY.jogo.escolherTitulo} aoFechar={aoFechar}>
-      <p className="text-mld-muted text-sm">{COPY.jogo.bibliotecasDica}</p>
+    <Dialogo titulo={COPY.mundo.escolherTitulo} aoFechar={aoFechar}>
+      <p className="text-mld-muted text-sm">{COPY.mundo.bibliotecasDica}</p>
       <div className="mt-3 flex max-h-72 flex-col gap-1 overflow-y-auto">
         {bibliotecas.falhou ? (
           <Falhou aoTentar={bibliotecas.recarregar} />
         ) : bibliotecas.dados === null ? (
           <Chegando />
         ) : bibliotecas.dados.length === 0 ? (
-          <p className="font-semibold text-mld-muted text-sm">{COPY.jogo.semBibliotecasNoEspaco}</p>
+          <p className="font-semibold text-mld-muted text-sm">
+            {COPY.mundo.semBibliotecasNoEspaco}
+          </p>
         ) : (
           bibliotecas.dados.map((biblioteca) => (
             <label key={biblioteca.id} className="mcn-opcao">
@@ -78,7 +80,7 @@ export function EscolherBibliotecas({
           onClick={async () => {
             setOcupado(true)
             try {
-              await host.editarJogo(jogo.id, { bibliotecas: [...escolhidas] })
+              await host.editarMundo(mundo.id, { bibliotecas: [...escolhidas] })
               aoGuardar()
               aoFechar()
             } finally {
@@ -93,16 +95,16 @@ export function EscolherBibliotecas({
   )
 }
 
-export function Jogo({
+export function Mundo({
   host,
-  jogoId,
+  mundoId,
   espacoId,
   aoVoltar,
   aoAbrirCenario,
   aoAbrirBiblioteca,
 }: {
   host: CenariosHost
-  jogoId: string
+  mundoId: string
   espacoId: string
   aoVoltar(): void
   aoAbrirCenario(id: string): void
@@ -110,27 +112,27 @@ export function Jogo({
 }): JSX.Element {
   const [janela, setJanela] = useState<Janela>(null)
   const dados = useCarga(async () => {
-    const [jogos, cenarios, bibliotecas] = await Promise.all([
-      host.listarJogos(espacoId),
-      host.listarCenarios(jogoId),
+    const [mundos, cenarios, bibliotecas] = await Promise.all([
+      host.listarMundos(espacoId),
+      host.listarCenarios(mundoId),
       host.listarBibliotecas(espacoId),
     ])
-    const jogo = jogos.find((j) => j.id === jogoId)
-    if (!jogo) throw new Error('O jogo não existe mais')
-    return { jogo, cenarios, bibliotecas }
-  }, [host, espacoId, jogoId])
+    const mundo = mundos.find((j) => j.id === mundoId)
+    if (!mundo) throw new Error('O mundo não existe mais')
+    return { mundo, cenarios, bibliotecas }
+  }, [host, espacoId, mundoId])
 
-  const jogo = dados.dados?.jogo
+  const mundo = dados.dados?.mundo
   const cenarios = [...(dados.dados?.cenarios ?? [])].sort((a, b) =>
     a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true }),
   )
   const ligadas: Biblioteca[] = (dados.dados?.bibliotecas ?? []).filter((b) =>
-    jogo?.bibliotecas.includes(b.id),
+    mundo?.bibliotecas.includes(b.id),
   )
   const cartaoNovo = (
     <CartaoNovo
-      titulo={COPY.jogo.novoCenarioTitulo}
-      dica={COPY.jogo.novoCenarioDica}
+      titulo={COPY.mundo.novoCenarioTitulo}
+      dica={COPY.mundo.novoCenarioDica}
       aoCriar={() => setJanela({ tipo: 'novo' })}
     />
   )
@@ -148,16 +150,16 @@ export function Jogo({
                       type="button"
                       className="sz-tool-back"
                       onClick={aoVoltar}
-                      aria-label={COPY.jogo.voltar}
-                      title={COPY.jogo.voltar}
+                      aria-label={COPY.mundo.voltar}
+                      title={COPY.mundo.voltar}
                     >
                       <ArrowLeft aria-hidden="true" />
                     </button>
                   </div>
                   <div className="sz-tool-header__title">
-                    <h1 className="sz-tool-title">{jogo?.nome ?? ' '}</h1>
+                    <h1 className="sz-tool-title">{mundo?.nome ?? ' '}</h1>
                     <p className="sz-tool-subtitle">
-                      {jogo ? plural(cenarios.length, 'cenário', 'cenários') : ' '}
+                      {mundo ? plural(cenarios.length, 'cenário', 'cenários') : ' '}
                     </p>
                   </div>
                 </div>
@@ -165,20 +167,20 @@ export function Jogo({
                   <button
                     type="button"
                     className="sz-tool-pill sz-tool-pill--quiet"
-                    disabled={!jogo}
+                    disabled={!mundo}
                     onClick={() => setJanela({ tipo: 'nome' })}
                   >
                     <Pencil aria-hidden="true" />
-                    {COPY.jogo.renomear}
+                    {COPY.mundo.renomear}
                   </button>
                   <button
                     type="button"
                     className="sz-tool-pill sz-tool-pill--primary"
-                    disabled={!jogo}
+                    disabled={!mundo}
                     onClick={() => setJanela({ tipo: 'novo' })}
                   >
                     <Plus aria-hidden="true" />
-                    {COPY.jogo.criarCenario}
+                    {COPY.mundo.criarCenario}
                   </button>
                 </div>
               </div>
@@ -189,14 +191,14 @@ export function Jogo({
             <div className="sz-tool-band__inner">
               {dados.falhou ? (
                 <Falhou aoTentar={dados.recarregar} />
-              ) : !jogo ? (
+              ) : !mundo ? (
                 <Chegando />
               ) : (
                 <>
-                  <h2 className="sz-tool-section-title">{COPY.jogo.cenarios}</h2>
+                  <h2 className="sz-tool-section-title">{COPY.mundo.cenarios}</h2>
                   {cenarios.length === 0 ? (
                     <p className="mt-2 mb-5 font-semibold text-base text-mld-muted">
-                      {COPY.jogo.semCenarios}
+                      {COPY.mundo.semCenarios}
                     </p>
                   ) : null}
                   <ul className="sz-tool-grid mt-4">
@@ -209,14 +211,14 @@ export function Jogo({
                         <button
                           type="button"
                           onClick={() => aoAbrirCenario(cenario.id)}
-                          aria-label={`${COPY.jogo.abrir} ${cenario.nome}`}
+                          aria-label={`${COPY.mundo.abrir} ${cenario.nome}`}
                           className="sz-tool-cover aspect-[4/3] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
                         >
                           <Capa endereco={cenario.capa} reserva={<Mapa />} />
                         </button>
                         <div className="flex items-center justify-end gap-1">
                           <IconButton
-                            aria-label={`${COPY.jogo.duplicar}: ${cenario.nome}`}
+                            aria-label={`${COPY.mundo.duplicar}: ${cenario.nome}`}
                             onClick={async () => {
                               await host.duplicarCenario(cenario.id)
                               dados.recarregar()
@@ -225,7 +227,7 @@ export function Jogo({
                             <Copy aria-hidden="true" className="size-4" />
                           </IconButton>
                           <IconButton
-                            aria-label={`${COPY.jogo.apagar} ${cenario.nome}`}
+                            aria-label={`${COPY.mundo.apagar} ${cenario.nome}`}
                             onClick={() => setJanela({ tipo: 'apagar', cenario })}
                             className="hover:text-mld-danger"
                           >
@@ -240,13 +242,13 @@ export function Jogo({
             </div>
           </div>
 
-          {jogo ? (
+          {mundo ? (
             <div className="sz-tool-band sz-tool-band--lilas">
               <div className="sz-tool-band__inner">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <h2 className="sz-tool-section-title">{COPY.jogo.bibliotecas}</h2>
-                    <p className="sz-tool-section-text">{COPY.jogo.bibliotecasDica}</p>
+                    <h2 className="sz-tool-section-title">{COPY.mundo.bibliotecas}</h2>
+                    <p className="sz-tool-section-text">{COPY.mundo.bibliotecasDica}</p>
                   </div>
                   <button
                     type="button"
@@ -254,12 +256,12 @@ export function Jogo({
                     onClick={() => setJanela({ tipo: 'bibliotecas' })}
                   >
                     <Boxes aria-hidden="true" />
-                    {COPY.jogo.escolherBibliotecas}
+                    {COPY.mundo.escolherBibliotecas}
                   </button>
                 </div>
                 {ligadas.length === 0 ? (
                   <p className="mt-4 font-semibold text-base text-mld-muted">
-                    {COPY.jogo.semBibliotecas}
+                    {COPY.mundo.semBibliotecas}
                   </p>
                 ) : (
                   <ul className="mt-4 flex flex-wrap gap-2">
@@ -284,34 +286,34 @@ export function Jogo({
         </div>
       </div>
 
-      {janela?.tipo === 'novo' && jogo ? (
+      {janela?.tipo === 'novo' && mundo ? (
         <DialogoDeNome
-          titulo={COPY.jogo.criarCenario}
+          titulo={COPY.mundo.criarCenario}
           inicial={`Fase ${cenarios.length + 1}`}
           acao={COPY.nome.criar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            const cenario = await host.criarCenario(jogo.id, nome)
+            const cenario = await host.criarCenario(mundo.id, nome)
             aoAbrirCenario(cenario.id)
           }}
         />
       ) : null}
-      {janela?.tipo === 'nome' && jogo ? (
+      {janela?.tipo === 'nome' && mundo ? (
         <DialogoDeNome
-          titulo={COPY.jogo.renomear}
-          inicial={jogo.nome}
+          titulo={COPY.mundo.renomear}
+          inicial={mundo.nome}
           acao={COPY.nome.guardar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            await host.editarJogo(jogo.id, { nome })
+            await host.editarMundo(mundo.id, { nome })
             dados.recarregar()
           }}
         />
       ) : null}
       {janela?.tipo === 'apagar' ? (
         <DialogoDeApagar
-          titulo={COPY.jogo.apagarCenarioTitulo}
-          texto={COPY.jogo.apagarCenarioTexto(janela.cenario.nome)}
+          titulo={COPY.mundo.apagarCenarioTitulo}
+          texto={COPY.mundo.apagarCenarioTexto(janela.cenario.nome)}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async () => {
             await host.apagarCenario(janela.cenario.id)
@@ -319,10 +321,10 @@ export function Jogo({
           }}
         />
       ) : null}
-      {janela?.tipo === 'bibliotecas' && jogo ? (
+      {janela?.tipo === 'bibliotecas' && mundo ? (
         <EscolherBibliotecas
           host={host}
-          jogo={jogo}
+          mundo={mundo}
           aoFechar={() => setJanela(null)}
           aoGuardar={dados.recarregar}
         />

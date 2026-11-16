@@ -10,8 +10,8 @@ import {
   CenarioDesatualizado,
   type CenariosHost,
   type Espaco,
-  type Jogo,
   type ModeloDeBiblioteca,
+  type Mundo,
   type ResumoDeCenario,
 } from './portas'
 
@@ -55,7 +55,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const bibliotecas = new Map<string, Biblioteca>()
   const modelos = new Map<string, ModeloDeBiblioteca>()
   const conteudos = new Map<string, Uint8Array>()
-  const jogos = new Map<string, Jogo>()
+  const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
 
   const exigir = <T>(mapa: Map<string, T>, id: string, oque: string): T => {
@@ -117,7 +117,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       exigir(bibliotecas, id, 'A biblioteca')
       for (const m of [...modelos.values()]) if (m.bibliotecaId === id) modelos.delete(m.id)
       bibliotecas.delete(id)
-      for (const jogo of jogos.values()) jogo.bibliotecas = jogo.bibliotecas.filter((b) => b !== id)
+      for (const mundo of mundos.values())
+        mundo.bibliotecas = mundo.bibliotecas.filter((b) => b !== id)
     },
 
     async listarModelos(bibliotecaId, filtro = {}) {
@@ -207,15 +208,15 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       return conteudo.slice().buffer
     },
 
-    async listarJogos(espacoId) {
+    async listarMundos(espacoId) {
       await esperar()
-      return copia([...jogos.values()].filter((j) => j.espacoId === espacoId))
+      return copia([...mundos.values()].filter((j) => j.espacoId === espacoId))
     },
-    async criarJogo(espacoId, nome) {
+    async criarMundo(espacoId, nome) {
       await esperar()
       espacoDe(espacoId)
-      const jogo: Jogo = {
-        id: novoId('jogo'),
+      const mundo: Mundo = {
+        id: novoId('mundo'),
         espacoId,
         nome: nome.trim(),
         cenarios: 0,
@@ -223,39 +224,39 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         capa: null,
         atualizadoEm: agora(),
       }
-      jogos.set(jogo.id, jogo)
-      return copia(jogo)
+      mundos.set(mundo.id, mundo)
+      return copia(mundo)
     },
-    async editarJogo(id, dados) {
+    async editarMundo(id, dados) {
       await esperar()
-      const jogo = exigir(jogos, id, 'O jogo')
-      if (dados.nome !== undefined) jogo.nome = dados.nome.trim()
+      const mundo = exigir(mundos, id, 'O mundo')
+      if (dados.nome !== undefined) mundo.nome = dados.nome.trim()
       if (dados.bibliotecas !== undefined)
-        jogo.bibliotecas = dados.bibliotecas.filter((b) => bibliotecas.has(b))
-      jogo.atualizadoEm = agora()
-      return copia(jogo)
+        mundo.bibliotecas = dados.bibliotecas.filter((b) => bibliotecas.has(b))
+      mundo.atualizadoEm = agora()
+      return copia(mundo)
     },
-    async apagarJogo(id) {
+    async apagarMundo(id) {
       await esperar()
-      exigir(jogos, id, 'O jogo')
+      exigir(mundos, id, 'O mundo')
       for (const c of [...cenarios.values()])
-        if (c.resumo.jogoId === id) cenarios.delete(c.resumo.id)
-      jogos.delete(id)
+        if (c.resumo.mundoId === id) cenarios.delete(c.resumo.id)
+      mundos.delete(id)
     },
 
-    async listarCenarios(jogoId) {
+    async listarCenarios(mundoId) {
       await esperar()
       return copia(
-        [...cenarios.values()].filter((c) => c.resumo.jogoId === jogoId).map((c) => c.resumo),
+        [...cenarios.values()].filter((c) => c.resumo.mundoId === mundoId).map((c) => c.resumo),
       )
     },
-    async criarCenario(jogoId, nome) {
+    async criarCenario(mundoId, nome) {
       await esperar()
-      const jogo = exigir(jogos, jogoId, 'O jogo')
+      const mundo = exigir(mundos, mundoId, 'O mundo')
       const id = novoId('cen')
       const resumo: ResumoDeCenario = {
         id,
-        jogoId,
+        mundoId,
         nome: nome.trim(),
         revisao: 0,
         capa: null,
@@ -266,8 +267,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         documento: criarDocumentoVazio(id, resumo.nome),
         operacoes: new Map(),
       })
-      jogo.cenarios++
-      jogo.atualizadoEm = agora()
+      mundo.cenarios++
+      mundo.atualizadoEm = agora()
       return copia(resumo)
     },
     async abrirCenario(id): Promise<CenarioAberto> {
@@ -291,8 +292,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         c.resumo.nome = depois.documento.nome
         c.resumo.atualizadoEm = agora()
         c.operacoes.set(operacaoId, depois.revisao)
-        const jogo = jogos.get(c.resumo.jogoId)
-        if (jogo) jogo.atualizadoEm = c.resumo.atualizadoEm
+        const mundo = mundos.get(c.resumo.mundoId)
+        if (mundo) mundo.atualizadoEm = c.resumo.atualizadoEm
         return { revisao: depois.revisao }
       } catch (erro) {
         if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizado(erro.revisaoAtual)
@@ -315,24 +316,24 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         documento: { ...copia(original.documento), id: novo, nome: resumo.nome },
         operacoes: new Map(),
       })
-      const jogo = jogos.get(resumo.jogoId)
-      if (jogo) jogo.cenarios++
+      const mundo = mundos.get(resumo.mundoId)
+      if (mundo) mundo.cenarios++
       return copia(resumo)
     },
     async apagarCenario(id) {
       await esperar()
       const c = exigir(cenarios, id, 'O cenário')
       cenarios.delete(id)
-      const jogo = jogos.get(c.resumo.jogoId)
-      if (jogo) jogo.cenarios = Math.max(0, jogo.cenarios - 1)
+      const mundo = mundos.get(c.resumo.mundoId)
+      if (mundo) mundo.cenarios = Math.max(0, mundo.cenarios - 1)
     },
     async guardarCapa(cenarioId, imagem) {
       const c = cenarios.get(cenarioId)
       if (!c) return
       const endereco = URL.createObjectURL(imagem)
       c.resumo.capa = endereco
-      const jogo = jogos.get(c.resumo.jogoId)
-      if (jogo) jogo.capa = endereco
+      const mundo = mundos.get(c.resumo.mundoId)
+      if (mundo) mundo.capa = endereco
     },
   }
 }

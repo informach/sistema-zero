@@ -3,16 +3,16 @@ import { Chegando, Falhou, useCarga } from './pecas'
 import type { CenariosHost } from './portas'
 import { Biblioteca } from './telas/Biblioteca'
 import { Inicio } from './telas/Inicio'
-import { Jogo } from './telas/Jogo'
+import { Mundo } from './telas/Mundo'
 
 // O editor traz o motor 3D junto: só é baixado quando um cenário abre.
 const Oficina = lazy(() => import('./telas/Oficina'))
 
 export type RotaDosCenarios =
-  | { tela: 'inicio'; aba: 'jogos' | 'bibliotecas' }
-  | { tela: 'jogo'; jogoId: string }
-  | { tela: 'biblioteca'; bibliotecaId: string; voltarAoJogo?: string }
-  | { tela: 'oficina'; jogoId: string; cenarioId: string }
+  | { tela: 'inicio'; aba: 'mundos' | 'bibliotecas' }
+  | { tela: 'mundo'; mundoId: string }
+  | { tela: 'biblioteca'; bibliotecaId: string; voltarAoMundo?: string }
+  | { tela: 'oficina'; mundoId: string; cenarioId: string }
 
 export interface CenariosOficinaProps {
   host: CenariosHost
@@ -26,13 +26,13 @@ export interface CenariosOficinaProps {
 }
 
 /**
- * Molda Cenários: a oficina de cenários 3D. Jogos com os seus cenários, bibliotecas de modelos
+ * Molda Cenários: a oficina de cenários 3D. Mundos com os seus cenários, bibliotecas de modelos
  * e o editor. Tudo o que é dado vem do `host`.
  */
 export function CenariosOficina({
   host,
   tema = 'light',
-  rotaInicial = { tela: 'inicio', aba: 'jogos' },
+  rotaInicial = { tela: 'inicio', aba: 'mundos' },
   espacoInicial,
   aoNavegar,
   cabecalho,
@@ -80,27 +80,29 @@ export function CenariosOficina({
         <Oficina
           host={host}
           espacoId={espaco.id}
-          jogoId={rota.jogoId}
+          mundoId={rota.mundoId}
           cenarioId={rota.cenarioId}
           tema={tema}
           aoVoltar={() => {
             espacos.recarregar()
-            setRota({ tela: 'jogo', jogoId: rota.jogoId })
+            setRota({ tela: 'mundo', mundoId: rota.mundoId })
           }}
         />
       </Suspense>,
     )
 
-  if (rota.tela === 'jogo')
+  if (rota.tela === 'mundo')
     return raiz(
-      <Jogo
+      <Mundo
         host={host}
-        jogoId={rota.jogoId}
+        mundoId={rota.mundoId}
         espacoId={espaco.id}
-        aoVoltar={() => setRota({ tela: 'inicio', aba: 'jogos' })}
-        aoAbrirCenario={(cenarioId) => setRota({ tela: 'oficina', jogoId: rota.jogoId, cenarioId })}
+        aoVoltar={() => setRota({ tela: 'inicio', aba: 'mundos' })}
+        aoAbrirCenario={(cenarioId) =>
+          setRota({ tela: 'oficina', mundoId: rota.mundoId, cenarioId })
+        }
         aoAbrirBiblioteca={(bibliotecaId) =>
-          setRota({ tela: 'biblioteca', bibliotecaId, voltarAoJogo: rota.jogoId })
+          setRota({ tela: 'biblioteca', bibliotecaId, voltarAoMundo: rota.mundoId })
         }
       />,
     )
@@ -114,8 +116,8 @@ export function CenariosOficina({
         aoVoltar={() => {
           espacos.recarregar()
           setRota(
-            rota.voltarAoJogo
-              ? { tela: 'jogo', jogoId: rota.voltarAoJogo }
+            rota.voltarAoMundo
+              ? { tela: 'mundo', mundoId: rota.voltarAoMundo }
               : { tela: 'inicio', aba: 'bibliotecas' },
           )
         }}
@@ -130,7 +132,7 @@ export function CenariosOficina({
       aoTrocarEspaco={setEspacoId}
       aba={rota.aba}
       aoTrocarAba={(aba) => setRota({ tela: 'inicio', aba })}
-      aoAbrirJogo={(jogoId) => setRota({ tela: 'jogo', jogoId })}
+      aoAbrirMundo={(mundoId) => setRota({ tela: 'mundo', mundoId })}
       aoAbrirBiblioteca={(bibliotecaId) => setRota({ tela: 'biblioteca', bibliotecaId })}
       cabecalho={cabecalho}
     />,

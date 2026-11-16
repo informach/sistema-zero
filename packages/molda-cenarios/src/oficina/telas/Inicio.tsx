@@ -21,14 +21,14 @@ import {
   Falhou,
   useCarga,
 } from '../pecas'
-import type { Biblioteca, CenariosHost, Espaco, Jogo, Licenca } from '../portas'
+import type { Biblioteca, CenariosHost, Espaco, Licenca, Mundo } from '../portas'
 
-type Aba = 'jogos' | 'bibliotecas'
+type Aba = 'mundos' | 'bibliotecas'
 type Janela =
-  | { tipo: 'novo-jogo' }
+  | { tipo: 'novo-mundo' }
   | { tipo: 'nova-biblioteca' }
-  | { tipo: 'nome-do-jogo'; jogo: Jogo }
-  | { tipo: 'apagar-jogo'; jogo: Jogo }
+  | { tipo: 'nome-do-mundo'; mundo: Mundo }
+  | { tipo: 'apagar-mundo'; mundo: Mundo }
   | null
 
 const semAcento = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -68,7 +68,7 @@ export function Inicio({
   aoTrocarEspaco,
   aba,
   aoTrocarAba,
-  aoAbrirJogo,
+  aoAbrirMundo,
   aoAbrirBiblioteca,
   cabecalho,
 }: {
@@ -78,24 +78,24 @@ export function Inicio({
   aoTrocarEspaco(id: string): void
   aba: Aba
   aoTrocarAba(aba: Aba): void
-  aoAbrirJogo(id: string): void
+  aoAbrirMundo(id: string): void
   aoAbrirBiblioteca(id: string): void
   cabecalho?: ReactNode
 }): JSX.Element {
   const [busca, setBusca] = useState('')
   const [janela, setJanela] = useState<Janela>(null)
   const [licenca, setLicenca] = useState<Licenca>('propria')
-  const jogos = useCarga(() => host.listarJogos(espaco.id), [host, espaco.id])
+  const mundos = useCarga(() => host.listarMundos(espaco.id), [host, espaco.id])
   const bibliotecas = useCarga(() => host.listarBibliotecas(espaco.id), [host, espaco.id])
-  const carga = aba === 'jogos' ? jogos : bibliotecas
+  const carga = aba === 'mundos' ? mundos : bibliotecas
   const termo = semAcento(busca.trim())
 
-  const jogosVisiveis = useMemo(
+  const mundosVisiveis = useMemo(
     () =>
-      (jogos.dados ?? [])
+      (mundos.dados ?? [])
         .filter((j) => !termo || semAcento(j.nome).includes(termo))
         .sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm)),
-    [jogos.dados, termo],
+    [mundos.dados, termo],
   )
   const bibliotecasVisiveis = useMemo(
     () =>
@@ -104,14 +104,14 @@ export function Inicio({
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
     [bibliotecas.dados, termo],
   )
-  const vazio = aba === 'jogos' ? jogos.dados?.length === 0 : bibliotecas.dados?.length === 0
+  const vazio = aba === 'mundos' ? mundos.dados?.length === 0 : bibliotecas.dados?.length === 0
 
   const cartaoNovo =
-    aba === 'jogos' ? (
+    aba === 'mundos' ? (
       <CartaoNovo
-        titulo={COPY.inicio.novoJogoTitulo}
-        dica={COPY.inicio.novoJogoDica}
-        aoCriar={() => setJanela({ tipo: 'novo-jogo' })}
+        titulo={COPY.inicio.novoMundoTitulo}
+        dica={COPY.inicio.novoMundoDica}
+        aoCriar={() => setJanela({ tipo: 'novo-mundo' })}
       />
     ) : (
       <CartaoNovo
@@ -163,11 +163,11 @@ export function Inicio({
                     type="button"
                     className="sz-tool-pill sz-tool-pill--primary"
                     onClick={() =>
-                      setJanela({ tipo: aba === 'jogos' ? 'novo-jogo' : 'nova-biblioteca' })
+                      setJanela({ tipo: aba === 'mundos' ? 'novo-mundo' : 'nova-biblioteca' })
                     }
                   >
                     <Plus aria-hidden="true" />
-                    {aba === 'jogos' ? COPY.inicio.criarJogo : COPY.inicio.criarBiblioteca}
+                    {aba === 'mundos' ? COPY.inicio.criarMundo : COPY.inicio.criarBiblioteca}
                   </button>
                 </div>
               </div>
@@ -178,11 +178,11 @@ export function Inicio({
                     <button
                       type="button"
                       className="sz-tool-chip"
-                      aria-pressed={aba === 'jogos'}
-                      onClick={() => aoTrocarAba('jogos')}
+                      aria-pressed={aba === 'mundos'}
+                      onClick={() => aoTrocarAba('mundos')}
                     >
                       <Globe aria-hidden="true" />
-                      {COPY.inicio.abaJogos}
+                      {COPY.inicio.abaMundos}
                     </button>
                     <button
                       type="button"
@@ -238,45 +238,45 @@ export function Inicio({
               ) : vazio ? (
                 <div className="flex flex-col gap-6">
                   <p className="font-semibold text-base text-mld-muted">
-                    {aba === 'jogos' ? COPY.inicio.semJogos : COPY.inicio.semBibliotecas}
+                    {aba === 'mundos' ? COPY.inicio.semMundos : COPY.inicio.semBibliotecas}
                   </p>
                   <div className="sz-tool-grid">{cartaoNovo}</div>
                 </div>
-              ) : aba === 'jogos' ? (
-                jogosVisiveis.length === 0 ? (
+              ) : aba === 'mundos' ? (
+                mundosVisiveis.length === 0 ? (
                   <p className="font-semibold text-base text-mld-muted">
                     {COPY.inicio.semResultado}
                   </p>
                 ) : (
                   <ul className="sz-tool-grid">
                     {termo ? null : <li className="flex">{cartaoNovo}</li>}
-                    {jogosVisiveis.map((jogo) => (
-                      <li key={jogo.id} className="sz-tool-card gap-2.5 p-3">
-                        <span className="sz-tool-card-title truncate" title={jogo.nome}>
-                          {jogo.nome}
+                    {mundosVisiveis.map((mundo) => (
+                      <li key={mundo.id} className="sz-tool-card gap-2.5 p-3">
+                        <span className="sz-tool-card-title truncate" title={mundo.nome}>
+                          {mundo.nome}
                         </span>
                         <button
                           type="button"
-                          onClick={() => aoAbrirJogo(jogo.id)}
-                          aria-label={`${COPY.jogo.abrir} ${jogo.nome}`}
+                          onClick={() => aoAbrirMundo(mundo.id)}
+                          aria-label={`${COPY.mundo.abrir} ${mundo.nome}`}
                           className="sz-tool-cover aspect-[4/3] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
                         >
-                          <Capa endereco={jogo.capa} reserva={<Mapa />} />
+                          <Capa endereco={mundo.capa} reserva={<Mapa />} />
                         </button>
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-semibold text-mld-muted text-sm">
-                            {plural(jogo.cenarios, 'cenário', 'cenários')}
+                            {plural(mundo.cenarios, 'cenário', 'cenários')}
                           </span>
                           <span className="flex">
                             <IconButton
-                              aria-label={`${COPY.jogo.renomear}: ${jogo.nome}`}
-                              onClick={() => setJanela({ tipo: 'nome-do-jogo', jogo })}
+                              aria-label={`${COPY.mundo.renomear}: ${mundo.nome}`}
+                              onClick={() => setJanela({ tipo: 'nome-do-mundo', mundo })}
                             >
                               <Pencil aria-hidden="true" className="size-4" />
                             </IconButton>
                             <IconButton
-                              aria-label={`${COPY.jogo.apagar} ${jogo.nome}`}
-                              onClick={() => setJanela({ tipo: 'apagar-jogo', jogo })}
+                              aria-label={`${COPY.mundo.apagar} ${mundo.nome}`}
+                              onClick={() => setJanela({ tipo: 'apagar-mundo', mundo })}
                               className="hover:text-mld-danger"
                             >
                               <Trash2 aria-hidden="true" className="size-4" />
@@ -306,15 +306,15 @@ export function Inicio({
         </div>
       </div>
 
-      {janela?.tipo === 'novo-jogo' ? (
+      {janela?.tipo === 'novo-mundo' ? (
         <DialogoDeNome
-          titulo={COPY.inicio.criarJogo}
-          inicial={COPY.nome.jogoPadrao}
+          titulo={COPY.inicio.criarMundo}
+          inicial={COPY.nome.mundoPadrao}
           acao={COPY.nome.criar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            const jogo = await host.criarJogo(espaco.id, nome)
-            aoAbrirJogo(jogo.id)
+            const mundo = await host.criarMundo(espaco.id, nome)
+            aoAbrirMundo(mundo.id)
           }}
         />
       ) : null}
@@ -332,26 +332,26 @@ export function Inicio({
           <SeletorDeLicenca valor={licenca} aoMudar={setLicenca} />
         </DialogoDeNome>
       ) : null}
-      {janela?.tipo === 'nome-do-jogo' ? (
+      {janela?.tipo === 'nome-do-mundo' ? (
         <DialogoDeNome
-          titulo={COPY.jogo.renomear}
-          inicial={janela.jogo.nome}
+          titulo={COPY.mundo.renomear}
+          inicial={janela.mundo.nome}
           acao={COPY.nome.guardar}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async (nome) => {
-            await host.editarJogo(janela.jogo.id, { nome })
-            jogos.recarregar()
+            await host.editarMundo(janela.mundo.id, { nome })
+            mundos.recarregar()
           }}
         />
       ) : null}
-      {janela?.tipo === 'apagar-jogo' ? (
+      {janela?.tipo === 'apagar-mundo' ? (
         <DialogoDeApagar
-          titulo={COPY.jogo.apagarJogoTitulo}
-          texto={COPY.jogo.apagarJogoTexto(janela.jogo.nome, janela.jogo.cenarios)}
+          titulo={COPY.mundo.apagarMundoTitulo}
+          texto={COPY.mundo.apagarMundoTexto(janela.mundo.nome, janela.mundo.cenarios)}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async () => {
-            await host.apagarJogo(janela.jogo.id)
-            jogos.recarregar()
+            await host.apagarMundo(janela.mundo.id)
+            mundos.recarregar()
           }}
         />
       ) : null}
@@ -379,7 +379,7 @@ export function CartaoDaBiblioteca({
       <button
         type="button"
         onClick={aoAbrir}
-        aria-label={`${COPY.jogo.abrir} ${biblioteca.nome}`}
+        aria-label={`${COPY.mundo.abrir} ${biblioteca.nome}`}
         className="sz-tool-cover aspect-[4/3] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
       >
         <Capa endereco={biblioteca.capa} reserva={<Boxes />} />

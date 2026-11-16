@@ -69,12 +69,12 @@ export interface ModeloParaImportar {
   triangulos: number
 }
 
-export interface Jogo {
+export interface Mundo {
   id: string
   espacoId: string
   nome: string
   cenarios: number
-  /** Bibliotecas que este jogo usa. */
+  /** Bibliotecas que este mundo usa. */
   bibliotecas: string[]
   capa: string | null
   atualizadoEm: string
@@ -82,7 +82,7 @@ export interface Jogo {
 
 export interface ResumoDeCenario {
   id: string
-  jogoId: string
+  mundoId: string
   nome: string
   revisao: number
   capa: string | null
@@ -125,13 +125,13 @@ export interface CenariosHost {
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
   conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
 
-  listarJogos(espacoId: string): Promise<Jogo[]>
-  criarJogo(espacoId: string, nome: string): Promise<Jogo>
-  editarJogo(id: string, dados: { nome?: string; bibliotecas?: string[] }): Promise<Jogo>
-  apagarJogo(id: string): Promise<void>
+  listarMundos(espacoId: string): Promise<Mundo[]>
+  criarMundo(espacoId: string, nome: string): Promise<Mundo>
+  editarMundo(id: string, dados: { nome?: string; bibliotecas?: string[] }): Promise<Mundo>
+  apagarMundo(id: string): Promise<void>
 
-  listarCenarios(jogoId: string): Promise<ResumoDeCenario[]>
-  criarCenario(jogoId: string, nome: string): Promise<ResumoDeCenario>
+  listarCenarios(mundoId: string): Promise<ResumoDeCenario[]>
+  criarCenario(mundoId: string, nome: string): Promise<ResumoDeCenario>
   abrirCenario(id: string): Promise<CenarioAberto>
   /** Aplica um lote. Recusa com `CenarioDesatualizado` quando a revisão esperada ficou para trás. */
   editarCenario(

@@ -11,16 +11,16 @@ export function tamanhoLegivel(bytes: number): string {
 export const COPY = {
   inicio: {
     titulo: 'Cenários',
-    subtitulo: 'Monte os mundos dos seus jogos: o chão, a água, as casas e tudo o que mora neles.',
-    abaJogos: 'Meus mundos',
+    subtitulo: 'Monte os mundos dos seus mundos: o chão, a água, as casas e tudo o que mora neles.',
+    abaMundos: 'Meus mundos',
     abaBibliotecas: 'Bibliotecas',
-    criarJogo: 'Criar mundo',
+    criarMundo: 'Criar mundo',
     criarBiblioteca: 'Criar biblioteca',
-    novoJogoTitulo: 'Criar mundo',
-    novoJogoDica: 'Cada mundo guarda os cenários dele',
+    novoMundoTitulo: 'Criar mundo',
+    novoMundoDica: 'Cada mundo guarda os cenários dele',
     novaBibliotecaTitulo: 'Criar biblioteca',
     novaBibliotecaDica: 'Uma caixa de modelos para usar nos cenários',
-    semJogos: 'Você ainda não tem nenhum mundo. Crie o primeiro para começar um cenário.',
+    semMundos: 'Você ainda não tem nenhum mundo. Crie o primeiro para começar um cenário.',
     semBibliotecas:
       'Você ainda não tem nenhuma biblioteca. Crie uma e traga os seus modelos 3D para dentro dela.',
     espacos: 'De quem são',
@@ -31,7 +31,7 @@ export const COPY = {
     tentar: 'Tentar de novo',
     uso: (usado: string, limite: string) => `${usado} de ${limite} usados`,
   },
-  jogo: {
+  mundo: {
     voltar: 'Voltar aos mundos',
     cenarios: 'Cenários',
     criarCenario: 'Criar cenário',
@@ -49,8 +49,8 @@ export const COPY = {
     renomear: 'Mudar o nome',
     duplicar: 'Fazer uma cópia',
     apagar: 'Apagar',
-    apagarJogoTitulo: 'Apagar este mundo?',
-    apagarJogoTexto: (nome: string, n: number) =>
+    apagarMundoTitulo: 'Apagar este mundo?',
+    apagarMundoTexto: (nome: string, n: number) =>
       `"${nome}" e ${plural(n, 'cenário dele vai', 'cenários dele vão')} sumir para sempre.`,
     apagarCenarioTitulo: 'Apagar este cenário?',
     apagarCenarioTexto: (nome: string) => `"${nome}" vai sumir para sempre.`,
@@ -93,7 +93,7 @@ export const COPY = {
     cancelar: 'Cancelar',
     apagar: 'Apagar',
     vazio: 'Escreva um nome',
-    jogoPadrao: 'Meu mundo',
+    mundoPadrao: 'Meu mundo',
     cenarioPadrao: 'Fase 1',
     bibliotecaPadrao: 'Meus modelos',
   },

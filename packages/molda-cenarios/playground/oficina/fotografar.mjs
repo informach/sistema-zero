@@ -1,6 +1,6 @@
 // Fotografa as telas da oficina no playground (http://127.0.0.1:4541), para conferir o visual.
 // Uso: node playground/oficina/fotografar.mjs <pasta de saída> [tela ...]
-// Telas: inicio, bibliotecas, jogo, oficina, oficina-escolha, oficina-luz, celular, escuro.
+// Telas: inicio, bibliotecas, mundo, oficina, oficina-escolha, oficina-luz, celular, escuro.
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright-core'
@@ -46,7 +46,7 @@ async function palcoPronto(pagina) {
 
 if (quer('inicio')) {
   const p = await abrir('', 1440, 900)
-  await foto(p, '01-meus-jogos')
+  await foto(p, '01-meus-mundos')
   await p.close()
 }
 if (quer('bibliotecas')) {
@@ -56,9 +56,9 @@ if (quer('bibliotecas')) {
   await foto(p, '03-biblioteca-aventura', 1500)
   await p.close()
 }
-if (quer('jogo')) {
-  const p = await abrir('?tela=jogo', 1440, 900)
-  await foto(p, '04-o-jogo')
+if (quer('mundo')) {
+  const p = await abrir('?tela=mundo', 1440, 900)
+  await foto(p, '04-o-mundo')
   await p.close()
 }
 if (quer('oficina')) {
@@ -111,7 +111,7 @@ if (quer('tablet')) {
 }
 if (quer('celular')) {
   const p = await abrir('', 390, 844)
-  await foto(p, '11-meus-jogos-celular')
+  await foto(p, '11-meus-mundos-celular')
   await p.close()
   const o = await abrir('?tela=oficina', 390, 844)
   await palcoPronto(o)
@@ -120,7 +120,7 @@ if (quer('celular')) {
 }
 if (quer('escuro')) {
   const p = await abrir('?tema=dark', 1440, 900)
-  await foto(p, '13-meus-jogos-escuro')
+  await foto(p, '13-meus-mundos-escuro')
   await p.close()
   const o = await abrir('?tela=oficina&tema=dark', 1440, 900)
   await palcoPronto(o)

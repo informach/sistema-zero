@@ -61,7 +61,7 @@ export function Falhou({ aoTentar, texto }: { aoTentar(): void; texto?: string }
   )
 }
 
-/** O cartão amarelo que abre a grade: criar um jogo, um cenário ou uma biblioteca. */
+/** O cartão amarelo que abre a grade: criar um mundo, um cenário ou uma biblioteca. */
 export function CartaoNovo({
   titulo,
   dica,

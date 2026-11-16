@@ -173,7 +173,7 @@ export function Biblioteca({
                     }}
                   >
                     <Pencil aria-hidden="true" />
-                    {COPY.jogo.renomear}
+                    {COPY.mundo.renomear}
                   </button>
                   <button
                     type="button"
@@ -182,7 +182,7 @@ export function Biblioteca({
                     onClick={() => setJanela({ tipo: 'apagar' })}
                   >
                     <Trash2 aria-hidden="true" />
-                    {COPY.jogo.apagar}
+                    {COPY.mundo.apagar}
                   </button>
                   <button
                     type="button"
@@ -297,7 +297,7 @@ export function Biblioteca({
 
       {janela?.tipo === 'nome' && biblioteca ? (
         <DialogoDeNome
-          titulo={COPY.jogo.renomear}
+          titulo={COPY.mundo.renomear}
           inicial={biblioteca.nome}
           acao={COPY.nome.guardar}
           aoFechar={() => setJanela(null)}

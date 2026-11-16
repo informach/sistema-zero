@@ -55,9 +55,9 @@ import {
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
 import { Chegando, Falhou, useCarga } from '../pecas'
-import type { Biblioteca, CenarioAberto, CenariosHost, Jogo, ModeloDeBiblioteca } from '../portas'
+import type { Biblioteca, CenarioAberto, CenariosHost, ModeloDeBiblioteca, Mundo } from '../portas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
-import { EscolherBibliotecas } from './Jogo'
+import { EscolherBibliotecas } from './Mundo'
 import { Painel } from './Painel'
 
 type Aba = 'terreno' | 'agua' | 'objetos' | 'caminhos' | 'jogo' | 'luz'
@@ -165,7 +165,7 @@ function SeloDeGuardar({
 function OficinaAberta({
   host,
   aberto,
-  jogo,
+  mundo,
   bibliotecas,
   tema,
   aoVoltar,
@@ -173,7 +173,7 @@ function OficinaAberta({
 }: {
   host: CenariosHost
   aberto: CenarioAberto
-  jogo: Jogo
+  mundo: Mundo
   bibliotecas: readonly Biblioteca[]
   tema: 'light' | 'dark'
   aoVoltar(): void
@@ -550,7 +550,7 @@ function OficinaAberta({
       {escolhendo ? (
         <EscolherBibliotecas
           host={host}
-          jogo={jogo}
+          mundo={mundo}
           aoFechar={() => setEscolhendo(false)}
           aoGuardar={aoMudarBibliotecas}
         />
@@ -568,49 +568,49 @@ function centroDaVista(
   return palco.pontoNoChao(caixa.left + caixa.width / 2, caixa.top + caixa.height * 0.58)
 }
 
-/** A oficina de um cenário: abre o cenário e o jogo dele e monta o editor. */
+/** A oficina de um cenário: abre o cenário e o mundo dele e monta o editor. */
 export default function Oficina({
   host,
   espacoId,
-  jogoId,
+  mundoId,
   cenarioId,
   tema,
   aoVoltar,
 }: {
   host: CenariosHost
   espacoId: string
-  jogoId: string
+  mundoId: string
   cenarioId: string
   tema: 'light' | 'dark'
   aoVoltar(): void
 }): JSX.Element {
   const aberto = useCarga(() => host.abrirCenario(cenarioId), [host, cenarioId])
-  const jogo = useCarga(async () => {
-    const [jogos, bibliotecas] = await Promise.all([
-      host.listarJogos(espacoId),
+  const mundo = useCarga(async () => {
+    const [mundos, bibliotecas] = await Promise.all([
+      host.listarMundos(espacoId),
       host.listarBibliotecas(espacoId),
     ])
-    const doJogo = jogos.find((j) => j.id === jogoId)
-    if (!doJogo) throw new Error('O jogo não existe mais')
+    const doMundo = mundos.find((j) => j.id === mundoId)
+    if (!doMundo) throw new Error('O mundo não existe mais')
     return {
-      jogo: doJogo,
-      bibliotecas: bibliotecas.filter((b) => doJogo.bibliotecas.includes(b.id)),
+      mundo: doMundo,
+      bibliotecas: bibliotecas.filter((b) => doMundo.bibliotecas.includes(b.id)),
     }
-  }, [host, espacoId, jogoId])
+  }, [host, espacoId, mundoId])
 
-  if (aberto.falhou || jogo.falhou)
+  if (aberto.falhou || mundo.falhou)
     return (
       <div className="mcn-centro" data-molda-theme={tema}>
         <Falhou
           texto={COPY.oficina.falhouAbrir}
           aoTentar={() => {
             aberto.recarregar()
-            jogo.recarregar()
+            mundo.recarregar()
           }}
         />
       </div>
     )
-  if (!aberto.dados || !jogo.dados)
+  if (!aberto.dados || !mundo.dados)
     return (
       <div className="mcn-centro" data-molda-theme={tema}>
         <Chegando texto={COPY.oficina.abrindo} />
@@ -621,11 +621,11 @@ export default function Oficina({
       key={cenarioId}
       host={host}
       aberto={aberto.dados}
-      jogo={jogo.dados.jogo}
-      bibliotecas={jogo.dados.bibliotecas}
+      mundo={mundo.dados.mundo}
+      bibliotecas={mundo.dados.bibliotecas}
       tema={tema}
       aoVoltar={aoVoltar}
-      aoMudarBibliotecas={jogo.recarregar}
+      aoMudarBibliotecas={mundo.recarregar}
     />
   )
 }

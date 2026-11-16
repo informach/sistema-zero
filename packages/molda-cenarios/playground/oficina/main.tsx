@@ -13,7 +13,7 @@ import './styles.css'
 /**
  * Playground da oficina de cenários. Parâmetros do endereço:
  *   ?vazio=1        começa sem nada (sem a demonstração)
- *   ?tela=oficina   abre direto no cenário da demonstração (também `jogo` e `bibliotecas`)
+ *   ?tela=oficina   abre direto no cenário da demonstração (também `mundo` e `bibliotecas`)
  *   ?tema=dark      tema escuro
  */
 const parametros = new URLSearchParams(location.search)
@@ -83,11 +83,11 @@ async function montarDemonstracao(host: CenariosHost): Promise<RotaDosCenarios |
     (resposta) => (resposta.ok ? resposta.json() : []),
     () => [],
   )
-  const jogo = await host.criarJogo('conta', 'Ilha do Farol')
-  const cenario = await host.criarCenario(jogo.id, 'Vila da praia')
-  await host.criarCenario(jogo.id, 'Bosque')
-  await host.criarJogo('conta', 'Corrida na cidade')
-  if (!lista.length) return { tela: 'jogo', jogoId: jogo.id }
+  const mundo = await host.criarMundo('conta', 'Ilha do Farol')
+  const cenario = await host.criarCenario(mundo.id, 'Vila da praia')
+  await host.criarCenario(mundo.id, 'Bosque')
+  await host.criarMundo('conta', 'Corrida na cidade')
+  if (!lista.length) return { tela: 'mundo', mundoId: mundo.id }
 
   const bibliotecas: string[] = []
   let aventura: ModeloDeBiblioteca[] = []
@@ -100,7 +100,7 @@ async function montarDemonstracao(host: CenariosHost): Promise<RotaDosCenarios |
     if (indice === 0) aventura = modelos
     bibliotecas.push(biblioteca.id)
   }
-  await host.editarJogo(jogo.id, { bibliotecas })
+  await host.editarMundo(mundo.id, { bibliotecas })
 
   // Um cenário de exemplo: árvores e pedras em volta, casas no meio.
   const aberto = await host.abrirCenario(cenario.id)
@@ -134,21 +134,21 @@ async function montarDemonstracao(host: CenariosHost): Promise<RotaDosCenarios |
     const angulo = (i / 6) * Math.PI * 2
     await por(modelo, Math.round(Math.cos(angulo) * 6), Math.round(Math.sin(angulo) * 6), -angulo)
   }
-  return { tela: 'oficina', jogoId: jogo.id, cenarioId: cenario.id }
+  return { tela: 'oficina', mundoId: mundo.id, cenarioId: cenario.id }
 }
 
 const host = criarHostEmMemoria({ equipe: true })
 const raiz = createRoot(document.getElementById('root')!)
 
 async function abrir() {
-  let rota: RotaDosCenarios = { tela: 'inicio', aba: 'jogos' }
+  let rota: RotaDosCenarios = { tela: 'inicio', aba: 'mundos' }
   if (!parametros.has('vazio')) {
     raiz.render(<p style={{ padding: 24, fontWeight: 700 }}>Montando a demonstração…</p>)
     const daDemonstracao = await montarDemonstracao(host)
     const tela = parametros.get('tela')
     if (tela === 'oficina' && daDemonstracao?.tela === 'oficina') rota = daDemonstracao
-    else if (tela === 'jogo' && daDemonstracao && 'jogoId' in daDemonstracao)
-      rota = { tela: 'jogo', jogoId: daDemonstracao.jogoId }
+    else if (tela === 'mundo' && daDemonstracao && 'mundoId' in daDemonstracao)
+      rota = { tela: 'mundo', mundoId: daDemonstracao.mundoId }
     else if (tela === 'bibliotecas') rota = { tela: 'inicio', aba: 'bibliotecas' }
   }
   Object.assign(globalThis, { __cenarios: { host } })
