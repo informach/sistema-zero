@@ -1,6 +1,26 @@
 import { BufferGeometry, Float32BufferAttribute } from 'three'
 
 type Vertice = Record<string, number[]>
+type Ponto = { x: number; z: number }
+/** Envelope convexo para recortar uma peça inteira, sem subtrair milhares de triângulos internos. */
+export function contornoConvexo(pontos: readonly Ponto[]): Ponto[] {
+  const ordenados = [
+    ...new Map(pontos.map((p) => [`${p.x.toFixed(5)},${p.z.toFixed(5)}`, p])).values(),
+  ].sort((a, b) => a.x - b.x || a.z - b.z)
+  if (ordenados.length < 3) return ordenados
+  const produto = (a: Ponto, b: Ponto, c: Ponto) =>
+    (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x)
+  const metade = (ps: readonly Ponto[]) => {
+    const r: Ponto[] = []
+    for (const p of ps) {
+      while (r.length > 1 && produto(r[r.length - 2]!, r[r.length - 1]!, p) <= 1e-8) r.pop()
+      r.push(p)
+    }
+    r.pop()
+    return r
+  }
+  return [...metade(ordenados), ...metade([...ordenados].reverse())]
+}
 export interface PlanoDeRecorte {
   x: number
   z: number
@@ -63,18 +83,16 @@ export function recortarMalha(
       poligonos = poligonos.map((p) => cortar(p, plano)).filter((p) => p.length >= 3)
     for (const triangulo of excluir) {
       if (!poligonos.length) break
-      const [a, b, c] = triangulo as readonly [
-          { x: number; z: number },
-          { x: number; z: number },
-          { x: number; z: number },
-        ],
-        area = (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x),
+      const area = triangulo.reduce((s, a, i) => {
+          const b = triangulo[(i + 1) % triangulo.length]!
+          return s + a.x * b.z - b.x * a.z
+        }, 0),
         sentido = area > 0 ? 1 : -1
       if (Math.abs(area) < 1e-8) continue
-      const minX = Math.min(a.x, b.x, c.x),
-        maxX = Math.max(a.x, b.x, c.x),
-        minZ = Math.min(a.z, b.z, c.z),
-        maxZ = Math.max(a.z, b.z, c.z)
+      const minX = Math.min(...triangulo.map((p) => p.x)),
+        maxX = Math.max(...triangulo.map((p) => p.x)),
+        minZ = Math.min(...triangulo.map((p) => p.z)),
+        maxZ = Math.max(...triangulo.map((p) => p.z))
       const fora: Vertice[][] = []
       for (const poligono of poligonos) {
         const xs = poligono.map((v) => v.position![0]!),
@@ -89,9 +107,9 @@ export function recortarMalha(
           continue
         }
         let dentro = poligono
-        for (let j = 0; j < 3 && dentro.length >= 3; j++) {
+        for (let j = 0; j < triangulo.length && dentro.length >= 3; j++) {
           const p = triangulo[j]!,
-            q = triangulo[(j + 1) % 3]!,
+            q = triangulo[(j + 1) % triangulo.length]!,
             x = sentido * (q.z - p.z),
             z = -sentido * (q.x - p.x),
             plano = { x, z, limite: x * p.x + z * p.z }

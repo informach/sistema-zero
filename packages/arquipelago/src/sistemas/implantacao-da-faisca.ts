@@ -1,12 +1,12 @@
 /** Volumes de estudo do Gate 2. Não são itens do inventário nem atividades prontas. */
 export const VOLUMES_DA_VILA = [
-  { id: 'quadro', x: -10, z: 137, largura: 1.9, profundidade: 0.9, altura: 1.8 },
-  { id: 'descanso', x: -10, z: 147, largura: 2.5, profundidade: 0.8, altura: 1 },
-  { id: 'correio', x: -21, z: 125.6, largura: 2.6, profundidade: 0.8, altura: 1 },
-  { id: 'lacre', x: -46, z: 125, largura: 6, profundidade: 0.35, altura: 1.6 },
-  { id: 'bancada', x: -42.5, z: 114, largura: 2.4, profundidade: 1, altura: 0.9 },
-  { id: 'pausa-lago', x: 43, z: 146.5, largura: 2.5, profundidade: 0.8, altura: 1 },
-  { id: 'pausa-encosta', x: -31, z: 103, largura: 2.5, profundidade: 0.8, altura: 1 },
+  { id: 'quadro', x: -10.8, z: 137, largura: 1.9, profundidade: 0.9, altura: 1.8 },
+  { id: 'descanso', x: -10, z: 145, largura: 2.5, profundidade: 0.8, altura: 1 },
+  { id: 'correio', x: -11.7, z: 125.7, largura: 1, profundidade: 0.8, altura: 1 },
+  { id: 'lacre', x: -30, z: 129, largura: 5.6, profundidade: 0.35, altura: 1.6 },
+  { id: 'bancada', x: -30, z: 126.7, largura: 1.6, profundidade: 1.6, altura: 0.9 },
+  { id: 'pausa-lago', x: 32, z: 151, largura: 2.5, profundidade: 0.8, altura: 1 },
+  { id: 'pausa-encosta', x: -29, z: 105, largura: 2.5, profundidade: 0.8, altura: 1 },
 ] as const
 
 export function sobreVolumeDaVila(p: { x: number; z: number }, raio: number): boolean {

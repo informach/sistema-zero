@@ -2,13 +2,14 @@ import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useEffect, useMemo } from 'react'
 import { type BufferGeometry, Matrix4, type Mesh, Vector3 } from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { RECORTE_DA_COLINA } from '../../sistemas/colina-da-faisca'
 import { ilhaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
 import { passeiosDaFaisca } from '../../sistemas/passeios-da-faisca'
 import type { PisoDaFaisca } from '../../sistemas/refino-da-faisca'
 import { alturaNaMalhaDoSetor } from '../../sistemas/setores-do-arquipelago'
 import { TRIANGULOS_DA_PRACA } from '../../sistemas/solo-da-praca'
 import type { ArteDoPiloto } from './carregar-piloto'
-import { recortarMalha } from './recortar-malha'
+import { contornoConvexo, recortarMalha } from './recortar-malha'
 
 /** Rede do trecho piloto: juntas recortadas de verdade e a mesma malha no desenho/Rapier. */
 export function PisosDeCatalogo({ arte, piso }: { arte: ArteDoPiloto; piso: PisoDaFaisca }) {
@@ -20,7 +21,10 @@ export function PisosDeCatalogo({ arte, piso }: { arte: ArteDoPiloto; piso: Piso
       vertices: Float32Array
       indices: Uint32Array
     }[] = []
-    const ocupados: (readonly { x: number; z: number }[])[] = [...TRIANGULOS_DA_PRACA]
+    const ocupados: (readonly { x: number; z: number }[])[] = [
+      contornoConvexo(TRIANGULOS_DA_PRACA.flat()),
+      RECORTE_DA_COLINA.furo,
+    ]
     let referencia = Infinity
     for (const id of new Set(rede.map((p) => p.modelo))) {
       const glb = arte.modelos.get(id)!
@@ -61,20 +65,10 @@ export function PisosDeCatalogo({ arte, piso }: { arte: ArteDoPiloto; piso: Piso
         geo.computeVertexNormals()
         geo.computeBoundingBox()
         geo.computeBoundingSphere()
-        for (let i = 0; i < pos.count; i += 3) {
-          const ax = pos.getX(i),
-            az = pos.getZ(i),
-            bx = pos.getX(i + 1),
-            bz = pos.getZ(i + 1),
-            cx = pos.getX(i + 2),
-            cz = pos.getZ(i + 2)
-          if ((bz - az) * (cx - ax) - (bx - ax) * (cz - az) > 1e-7)
-            ocupados.push([
-              { x: ax, z: az },
-              { x: bx, z: bz },
-              { x: cx, z: cz },
-            ])
-        }
+        const envelope = contornoConvexo(
+          Array.from({ length: pos.count }, (_, i) => ({ x: pos.getX(i), z: pos.getZ(i) })),
+        )
+        if (envelope.length >= 3) ocupados.push(envelope)
         partes.push({
           geo,
           material: mesh.material,

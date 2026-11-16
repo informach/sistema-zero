@@ -1,9 +1,17 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useEffect, useMemo } from 'react'
-import { CircleGeometry, type Material, type Mesh, type Texture, Vector3 } from 'three'
+import {
+  CircleGeometry,
+  type Material,
+  type Mesh,
+  MeshStandardMaterial,
+  type Texture,
+  Vector3,
+} from 'three'
 import { LAGO_DA_FAISCA, materialSolidoDoLago } from '../../sistemas/lago-da-faisca'
 import type { ArteDoPiloto } from './carregar-piloto'
+import { QuedaDoLago } from './queda-do-lago'
 
 /** L1 conserva a forma/nível anteriores e usa somente o material de água do catálogo. */
 export function LagoComFormaAtual({ arte }: { arte: ArteDoPiloto }) {
@@ -27,7 +35,7 @@ export function LagoComFormaAtual({ arte }: { arte: ArteDoPiloto }) {
     <mesh
       geometry={geo}
       material={material}
-      position={[58, 3.65, 127]}
+      position={[LAGO_DA_FAISCA.x, 3.65, LAGO_DA_FAISCA.z]}
       rotation={[-Math.PI / 2, 0, 0]}
       scale={[8, 4, 1]}
       dispose={null}
@@ -60,6 +68,15 @@ export function LagoDaFaisca({ arte, aventura }: { arte: ArteDoPiloto; aventura:
         nome === 'agua' && alternativa ? alternativa : original
       ).clone() as Material & { map?: Texture; normalMap?: Texture; depthWrite: boolean }
       materiais.push(material)
+      if (materialSolidoDoLago(nome) && material instanceof MeshStandardMaterial) {
+        material.onBeforeCompile = (s) => {
+          s.fragmentShader = s.fragmentShader.replace(
+            '#include <map_fragment>',
+            '#include <map_fragment>\nfloat margemVerde=smoothstep(0.015,0.09,diffuseColor.g-diffuseColor.r)*smoothstep(0.02,0.12,diffuseColor.g-diffuseColor.b);\nfloat margemValor=dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722));\ndiffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.28,0.40,0.15)*(0.75+0.5*margemValor),margemVerde*0.8);',
+          )
+        }
+        material.customProgramCacheKey = () => 'faisca-margens-integradas-1'
+      }
       m.material = material
       m.receiveShadow = materialSolidoDoLago(nome)
       m.castShadow = false
@@ -108,15 +125,18 @@ export function LagoDaFaisca({ arte, aventura }: { arte: ArteDoPiloto; aventura:
     for (const m of preparado.ondas) m.morphTargetInfluences![0] = peso
   })
   return (
-    <RigidBody
-      type="fixed"
-      colliders={false}
-      position={[LAGO_DA_FAISCA.x, LAGO_DA_FAISCA.origem, LAGO_DA_FAISCA.z]}
-    >
-      <primitive object={preparado.raiz} dispose={null} />
-      {preparado.colisores.map((p) => (
-        <TrimeshCollider key={p.id} args={[p.vertices, p.indices]} />
-      ))}
-    </RigidBody>
+    <>
+      <RigidBody
+        type="fixed"
+        colliders={false}
+        position={[LAGO_DA_FAISCA.x, LAGO_DA_FAISCA.origem, LAGO_DA_FAISCA.z]}
+      >
+        <primitive object={preparado.raiz} dispose={null} />
+        {preparado.colisores.map((p) => (
+          <TrimeshCollider key={p.id} args={[p.vertices, p.indices]} />
+        ))}
+      </RigidBody>
+      <QuedaDoLago arte={arte} />
+    </>
   )
 }

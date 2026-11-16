@@ -1,8 +1,9 @@
 import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
+import { LUGAR_DA_FAISCA } from './faisca'
 
 const meta = ARTE_DA_FAISCA.pecas.lago_nadavel.lago
-const x = 58,
-  z = 127,
+const x = LUGAR_DA_FAISCA.lago.x,
+  z = LUGAR_DA_FAISCA.lago.z,
   chao = 4,
   origem = chao - meta.borda
 const global = (p: readonly number[]) => ({ x: x + p[0]!, z: z + p[1]! })

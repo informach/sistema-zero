@@ -14,7 +14,7 @@ function partesDaVila() {
   const partes: Bloco[] = []
   // Selo ambiental da coroa nas peças recolhidas, sem conceder objetos ou missão.
   for (const p of COMPOSICAO_DA_FAISCA.filter(
-    (p) => p.id.startsWith('caixa-') || p.id === 'pecas-recolhidas',
+    (p) => !p.apoio && (p.id.startsWith('caixa-') || p.id === 'pecas-recolhidas'),
   )) {
     const caixa = ARTE_DA_FAISCA.pecas[p.peca as keyof typeof ARTE_DA_FAISCA.pecas].colisao[0]
     const y = assentamentoDaPeca(p).y + 0.45,

@@ -25,6 +25,7 @@ import {
   type PecaNaFaisca,
 } from '../../sistemas/composicao-faisca'
 import { alturaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
+import { LAGO_DA_FAISCA } from '../../sistemas/lago-da-faisca'
 import { jogoPausado } from '../../sistemas/pausa'
 import { PECAS_DO_ACERVO, PECAS_DO_CAMINHO } from '../../sistemas/prova-curadoria-faisca'
 import {
@@ -123,7 +124,13 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
     const mapa = new Map<string, { id: string; vertices: Float32Array; indices: Uint32Array }[]>()
     const tipos = new Map(
       colecao
-        .filter((p) => p.solida === 'ponte' || p.solida === 'malha' || p.solida === 'solo')
+        .filter(
+          (p) =>
+            p.solida === 'ponte' ||
+            p.solida === 'escada' ||
+            p.solida === 'malha' ||
+            p.solida === 'solo',
+        )
         .map((p) => [`${p.peca}:${p.escala}`, p]),
     )
     for (const [id, p] of tipos) {
@@ -183,9 +190,13 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
         .filter((p) => p.solida)
         .map((p) => {
           const meta = ARTE_DA_FAISCA.pecas[p.peca as IdDaPeca],
-            caixa = meta.colisao[0],
             s = p.escala
-          if (p.solida === 'ponte' || p.solida === 'malha' || p.solida === 'solo')
+          if (
+            p.solida === 'ponte' ||
+            p.solida === 'escada' ||
+            p.solida === 'malha' ||
+            p.solida === 'solo'
+          )
             return (
               <RigidBody
                 key={p.id}
@@ -203,16 +214,6 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
                 ) : null}
               </RigidBody>
             )
-          const meio = caixa.min.map((v, i) => ((v + caixa.max[i]!) * s) / 2) as [
-            number,
-            number,
-            number,
-          ]
-          const metade = caixa.min.map((v, i) => ((caixa.max[i]! - v) * s) / 2) as [
-            number,
-            number,
-            number,
-          ]
           return (
             <RigidBody
               key={p.id}
@@ -227,7 +228,25 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
                   position={[0, 0.9 * s, 0]}
                 />
               ) : (
-                <CuboidCollider args={metade} position={meio} />
+                meta.colisao.map((caixa) => {
+                  const meio: [number, number, number] = [
+                      ((caixa.min[0] + caixa.max[0]) * s) / 2,
+                      ((caixa.min[1] + caixa.max[1]) * s) / 2,
+                      ((caixa.min[2] + caixa.max[2]) * s) / 2,
+                    ],
+                    metade: [number, number, number] = [
+                      ((caixa.max[0] - caixa.min[0]) * s) / 2,
+                      ((caixa.max[1] - caixa.min[1]) * s) / 2,
+                      ((caixa.max[2] - caixa.min[2]) * s) / 2,
+                    ]
+                  return (
+                    <CuboidCollider
+                      key={`${caixa.min.join(',')}:${caixa.max.join(',')}`}
+                      args={metade}
+                      position={meio}
+                    />
+                  )
+                })
               )}
             </RigidBody>
           )
@@ -372,6 +391,7 @@ export function PilotoDaFaisca({
       ...colecao.map((p) => p.peca),
       ...(LAGO_DE_CATALOGO ? ['lago_nadavel'] : []),
       ...(piso ? [PISOS_DO_REFINO[piso], CURVAS_DO_REFINO[piso]] : []),
+      ...(piso ? ['caminho_lajes_reto'] : []),
       ...(!LAGO_DE_CATALOGO || aguaAventura ? ['agua_ilha_pacote'] : []),
     ])
       .then((chegou) => {
@@ -416,22 +436,25 @@ export function PilotoDaFaisca({
           <Iris arte={arte} />
           {noite &&
             colecao
-              .filter((p) => p.peca === 'lampiao_01_pacote' && Math.hypot(p.x, p.z - 140) < 65)
-              .slice(0, 4)
+              .filter((p) => p.peca === 'lampiao')
               .map((p) => (
                 <pointLight
                   key={p.id}
-                  position={[p.x, altura(p) + 1.4, p.z]}
+                  position={[p.x, altura(p) + 0.22, p.z]}
                   color="#ffcb85"
-                  intensity={12}
-                  distance={9}
+                  intensity={18}
+                  distance={11}
                   decay={2}
                 />
               ))}
         </>
       ) : (
         <>
-          <RigidBody type="fixed" colliders={false} position={[58, 2.4, 127]}>
+          <RigidBody
+            type="fixed"
+            colliders={false}
+            position={[LAGO_DA_FAISCA.x, 2.4, LAGO_DA_FAISCA.z]}
+          >
             <CuboidCollider args={[5.5, 0.05, 4]} />
           </RigidBody>
           {itens

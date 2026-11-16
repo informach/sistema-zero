@@ -7,6 +7,13 @@ import { MORADA_CATALOG } from '../../avatar-quarto/src/morada/catalog'
 
 export const PECAS_MORADA_FAISCA = {
   morada_parede: 'construcao/parede_4m',
+  morada_parede_2m: 'construcao/parede_2m',
+  morada_pilar: 'construcao/pilar',
+  morada_viga: 'construcao/viga_4m',
+  morada_viga_2m: 'construcao/viga_2m',
+  morada_empena: 'construcao/telhado_empena_v4_i50',
+  morada_telhado_alto: 'construcao/telhado_duas_aguas_v4_i75_1m',
+  morada_oitao_alto: 'construcao/telhado_oitao_v4_i75',
   morada_portal: 'construcao/porta_2m',
   morada_janela: 'construcao/janela_arco_2m',
   morada_caixilho: 'construcao/janela_arco_folhas_branca',
@@ -31,16 +38,51 @@ export async function prepararPecasMorada() {
     if (!meta.file.includes(hash.slice(0, 24))) throw Error(`Cache Morada divergente: ${peca}`)
     const doc = await io.readBinary(origem),
       textures = new Map<string, ReturnType<typeof doc.createTexture>>()
+    const acabamentos: { parte: string; corSRGB: string; rugosidade: number }[] = []
     for (const mat of doc.getRoot().listMaterials()) {
+      const linear = (n: number) => (n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4)
       if (
-        ['morada_parede', 'morada_portal', 'morada_janela', 'morada_oitao'].includes(id) &&
+        mat.getName() === 'borda' &&
+        [
+          'morada_pilar',
+          'morada_viga',
+          'morada_viga_2m',
+          'morada_telhado',
+          'morada_telhado_alto',
+          'morada_oitao',
+          'morada_oitao_alto',
+        ].includes(id)
+      ) {
+        mat
+          .setBaseColorTexture(null)
+          .setBaseColorFactor([linear(111 / 255), linear(77 / 255), linear(48 / 255), 1])
+          .setRoughnessFactor(0.85)
+        acabamentos.push({ parte: mat.getName(), corSRGB: '#6f4d30', rugosidade: 0.85 })
+        continue
+      }
+      if (id === 'morada_caixilho' && mat.getName() === 'vidro') {
+        mat
+          .setBaseColorFactor([linear(121 / 255), linear(158 / 255), linear(147 / 255), 1])
+          .setRoughnessFactor(0.28)
+        acabamentos.push({ parte: mat.getName(), corSRGB: '#799e93', rugosidade: 0.28 })
+        continue
+      }
+      if (
+        [
+          'morada_parede',
+          'morada_parede_2m',
+          'morada_portal',
+          'morada_janela',
+          'morada_oitao',
+          'morada_oitao_alto',
+        ].includes(id) &&
         ['face_a', 'face_b'].includes(mat.getName())
       ) {
-        const linear = (n: number) => (n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4)
         mat
           .setBaseColorTexture(null)
           .setBaseColorFactor([linear(247 / 255), linear(228 / 255), linear(189 / 255), 1])
           .setRoughnessFactor(0.9)
+        acabamentos.push({ parte: mat.getName(), corSRGB: '#f7e4bd', rugosidade: 0.9 })
         continue
       }
       const dados = meta.materials.find((m) => m.name === mat.getName())
@@ -88,9 +130,7 @@ export async function prepararPecasMorada() {
         sourcePiece: peca,
         sourceCommit: MORADA_CATALOG.source.commit,
         sourceDigest: hash,
-        acabamento: ['morada_parede', 'morada_portal', 'morada_janela', 'morada_oitao'].includes(id)
-          ? { faces: ['face_a', 'face_b'], corSRGB: '#f7e4bd', rugosidade: 0.9 }
-          : null,
+        acabamento: acabamentos.length ? acabamentos : null,
         digest,
         arquivo: `${id}.${digest.slice(0, 12)}.glb`,
         dims: [meta.size[0], meta.size[2], meta.size[1]],

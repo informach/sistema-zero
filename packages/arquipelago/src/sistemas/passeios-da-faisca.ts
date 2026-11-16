@@ -117,14 +117,41 @@ export const PERCURSO_DO_PILOTO = [
   { x: 0, z: 137 },
   { x: 20, z: 139 },
   { x: 20, z: 147 },
-  { x: 35, z: 147 },
-  { x: 58, z: 139 },
-  { x: 58, z: 133.5 },
+  { x: 32, z: 147 },
+  { x: 39, z: 136 },
+  { x: 39, z: 131.9 },
 ]
+
+/** Contorno comum da praça. O preenchimento usa os GLBs/UV do caminho, sem tapete pintado. */
+export const CONTORNO_DA_PRACA = [
+  { x: -14, z: 134 },
+  { x: -10, z: 129 },
+  { x: 7, z: 127.5 },
+  { x: 15, z: 132 },
+  { x: 14, z: 145 },
+  { x: 8, z: 150 },
+  { x: -7, z: 150 },
+  { x: -14, z: 145 },
+] as const
+export function pisoDaPraca(): ModuloDePasseio[] {
+  const modulos: ModuloDePasseio[] = []
+  for (let z = 128; z < 151; z += 2.3)
+    for (let x = -10.5; x < 16; x += 6.92) {
+      const planos = CONTORNO_DA_PRACA.map((a, i) => {
+        const b = CONTORNO_DA_PRACA[(i + 1) % CONTORNO_DA_PRACA.length]!,
+          nx = b.z - a.z,
+          nz = a.x - b.x
+        return { x: nx, z: nz, limite: nx * (a.x - x) + nz * (a.z - z) }
+      })
+      modulos.push({ modelo: 'caminho_lajes_reto', x, z, giro: 0, planos })
+    }
+  return modulos
+}
 
 /** A rede usada pelo desenho, pela física e pelo registro de arte é a mesma. */
 export function passeiosDaFaisca(piso: PisoDaFaisca): ModuloDePasseio[] {
   return [
+    ...pisoDaPraca(),
     ...montarPasseio(PERCURSO_DO_PILOTO, piso),
     ...montarPasseio(
       [
@@ -143,8 +170,24 @@ export function passeiosDaFaisca(piso: PisoDaFaisca): ModuloDePasseio[] {
     ),
     ...montarPasseio(
       [
-        { x: -14, z: 145 },
-        { x: -9, z: 143 },
+        { x: -24, z: 132 },
+        { x: -28, z: 132 },
+      ],
+      piso,
+    ),
+    ...montarPasseio(
+      [
+        { x: 0, z: 137 },
+        { x: -3, z: 120 },
+        { x: -3, z: 106 },
+      ],
+      piso,
+    ),
+    ...montarPasseio(
+      [
+        { x: 39, z: 122.1 },
+        { x: 39, z: 115 },
+        { x: 46, z: 108 },
       ],
       piso,
     ),

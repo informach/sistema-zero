@@ -47,7 +47,7 @@ export function assentamentoDaPeca(p: PecaNaFaisca) {
       amostras.push(local(minX + ((maxX - minX) * i) / 4, minZ + ((maxZ - minZ) * j) / 4))
   const baixo = Math.min(...amostras),
     alto = Math.max(...amostras)
-  if (predios.has(p.id)) {
+  if (predios.has(p.id) || p.id.endsWith('-piso')) {
     const topo = alto + 0.025
     return {
       y: topo - box.min[1] * s,
@@ -62,7 +62,10 @@ export function assentamentoDaPeca(p: PecaNaFaisca) {
     }
   }
   return {
-    y: (raiz || p.peca === 'rocha_pequena' ? baixo - 0.025 : alto) - box.min[1] * s,
+    y:
+      (raiz || p.peca.startsWith('rocha_') || p.enterrada ? baixo - 0.025 : alto) -
+      box.min[1] * s -
+      (p.enterrada ?? 0) * (box.max[1] - box.min[1]) * s,
     fundacao: null,
   }
 }

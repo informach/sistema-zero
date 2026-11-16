@@ -1,4 +1,5 @@
 import { ShapeUtils, Vector2 } from 'three'
+import { RECORTE_DA_COLINA } from './colina-da-faisca'
 import { alturaDoTerritorio, type IlhaDoArquipelago } from './geografia-do-arquipelago'
 import { LAGO_DA_FAISCA } from './lago-da-faisca'
 import { LAGO_DE_CATALOGO } from './refino-da-faisca'
@@ -6,9 +7,55 @@ import { LAGO_DE_CATALOGO } from './refino-da-faisca'
 export const LADO_DO_SETOR = 80
 export const RAIO_DE_SETORES = 2
 export const PASSO_DO_TERRENO = 4
+const malhasDeApoio = new WeakMap<IlhaDoArquipelago, Map<string, ReturnType<typeof malhaDoSetor>>>()
 
-/** Altura baricêntrica do mesmo triângulo de 4 m desenhado e usado pelo Rapier. */
+/** Inclui a triangulação dos recortes, que substitui a grade nas bordas da água e das escadas. */
 export function alturaNaMalhaDoSetor(ilha: IlhaDoArquipelago, x: number, z: number): number {
+  const abertura =
+    ilha.id === 'sua-ilha'
+      ? [...(LAGO_DE_CATALOGO ? [LAGO_DA_FAISCA] : []), RECORTE_DA_COLINA].find(
+          ({ retangulo: r }) => x >= r.minX && x <= r.maxX && z >= r.minZ && z <= r.maxZ,
+        )
+      : undefined
+  if (abertura) {
+    let cache = malhasDeApoio.get(ilha)
+    if (!cache) {
+      cache = new Map()
+      malhasDeApoio.set(ilha, cache)
+    }
+    // O contorno da escada termina em X=0, limite entre dois setores. O ponto de borda
+    // precisa consultar também o setor da abertura, sem escolher somente floor(0/80).
+    const sx = Math.floor(abertura.retangulo.minX / LADO_DO_SETOR),
+      sz = Math.floor(abertura.retangulo.minZ / LADO_DO_SETOR),
+      chave = `${sx},${sz}`
+    let m = cache.get(chave)
+    if (!m) {
+      m = malhaDoSetor(ilha, sx, sz)
+      cache.set(chave, m)
+    }
+    for (let i = 0; i < m.indices.length; i += 3) {
+      const a = m.indices[i]! * 3,
+        b = m.indices[i + 1]! * 3,
+        c = m.indices[i + 2]! * 3,
+        ax = m.vertices[a]!,
+        az = m.vertices[a + 2]!,
+        bx = m.vertices[b]!,
+        bz = m.vertices[b + 2]!,
+        cx = m.vertices[c]!,
+        cz = m.vertices[c + 2]!,
+        det = (bx - ax) * (cz - az) - (cx - ax) * (bz - az)
+      if (Math.abs(det) < 1e-9) continue
+      const u = ((x - ax) * (cz - az) - (cx - ax) * (z - az)) / det,
+        v = ((bx - ax) * (z - az) - (x - ax) * (bz - az)) / det
+      if (u >= -1e-7 && v >= -1e-7 && u + v <= 1 + 1e-7)
+        return (
+          m.vertices[a + 1]! +
+          u * (m.vertices[b + 1]! - m.vertices[a + 1]!) +
+          v * (m.vertices[c + 1]! - m.vertices[a + 1]!)
+        )
+    }
+    return alturaDoTerritorio(ilha, x, z)
+  }
   const p = PASSO_DO_TERRENO,
     x0 = Math.floor(x / p) * p,
     z0 = Math.floor(z / p) * p
@@ -66,7 +113,17 @@ export function malhaDoSetor(
       const i = (z * (n + 1) + x) * 3
       vertices.set([px, alturaDoTerritorio(ilha, px, pz), pz], i)
     }
-  const recorte = ilha.id === 'sua-ilha' && lagoDeCatalogo ? LAGO_DA_FAISCA.retangulo : null
+  const abertura =
+    ilha.id === 'sua-ilha'
+      ? [...(lagoDeCatalogo ? [LAGO_DA_FAISCA] : []), RECORTE_DA_COLINA].find(
+          ({ retangulo: r }) =>
+            r.minX >= setorX * LADO_DO_SETOR &&
+            r.maxX <= (setorX + 1) * LADO_DO_SETOR &&
+            r.minZ >= setorZ * LADO_DO_SETOR &&
+            r.maxZ <= (setorZ + 1) * LADO_DO_SETOR,
+        )
+      : null
+  const recorte = abertura?.retangulo
   const temRecorte =
     recorte &&
     recorte.minX >= setorX * LADO_DO_SETOR &&
@@ -94,7 +151,7 @@ export function malhaDoSetor(
     for (let z = r.minZ; z < r.maxZ; z += passo) borda.push(new Vector2(r.maxX, z))
     for (let x = r.maxX; x > r.minX; x -= passo) borda.push(new Vector2(x, r.maxZ))
     for (let z = r.maxZ; z > r.minZ; z -= passo) borda.push(new Vector2(r.minX, z))
-    const furo = LAGO_DA_FAISCA.furo.map((p) => new Vector2(p.x, p.z))
+    const furo = abertura!.furo.map((p) => new Vector2(p.x, p.z))
     const faces = ShapeUtils.triangulateShape(borda, [furo]),
       pontos = [...borda, ...furo]
     const base = vertices.length / 3,

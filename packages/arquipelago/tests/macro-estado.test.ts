@@ -29,10 +29,10 @@ test('retomada em terra não usa o chão sob construções, canteiros ou ponte d
   for (const [x, z] of [
     [-3, 100],
     [24, 133],
-    [58, 127],
-    [-10, 137],
-    [-10, 147],
-    [43, 146.5],
+    [39, 127],
+    [-10.8, 137],
+    [-10, 145],
+    [32, 151],
   ]) {
     const s = ensaioInicial()
     s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }
@@ -44,7 +44,7 @@ test('retomada em terra não usa o chão sob construções, canteiros ou ponte d
 test('retomada aceita a passagem liberada e o chão artístico caminhável', () => {
   for (const [x, z] of [
     [43, 145],
-    [-5, 140],
+    [0, 137],
   ]) {
     const s = ensaioInicial()
     s.posicao = { ilha: 'sua-ilha', local: { x: x!, y: 4, z: z! } }

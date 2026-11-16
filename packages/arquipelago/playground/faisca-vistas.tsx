@@ -1,13 +1,37 @@
 import { useFrame } from '@react-three/fiber'
 import { Vector3 } from 'three'
+import { assentamentoDaPeca } from '../src/sistemas/assentamento-da-faisca'
+import { COMPOSICAO_DA_FAISCA } from '../src/sistemas/composicao-faisca'
+
+function vistaDePlaca(
+  id: string,
+  verso = false,
+): { avatar: [number, number]; camera: [number, number, number]; alvo: [number, number, number] } {
+  const p = COMPOSICAO_DA_FAISCA.find((p) => p.id === id)
+  if (!p?.sinal) throw Error(`Placa de revisão ausente: ${id}`)
+  const y = assentamentoDaPeca(p).y,
+    s = verso ? -1 : 1,
+    dx = Math.sin(p.giro) * s,
+    dz = Math.cos(p.giro) * s
+  return {
+    avatar: [p.x + dx * 2.4, p.z + dz * 2.4],
+    camera: [p.x + dx * 3.3, y + 1.6, p.z + dz * 3.3],
+    alvo: [p.x, y + 1.4, p.z],
+  }
+}
 
 /** Fotografia de revisão. FOV/posições são iguais no antes/depois; não é a câmera de jogo. */
 export const VISTAS_DA_FAISCA = {
+  'concept-praca': { avatar: [0, 150], camera: [0, 16, 178], alvo: [0, 8, 127] },
+  'concept-lago': { avatar: [31, 142], camera: [27, 9, 146], alvo: [38, 5, 126] },
+  'concept-horta': { avatar: [20, 139], camera: [18, 8, 148], alvo: [28, 4.8, 135] },
+  'escadas-farol': { avatar: [-3, 119], camera: [8, 13, 121], alvo: [-3, 7.3, 111] },
+  'ponte-proxima': { avatar: [39, 133], camera: [43, 7, 138], alvo: [39, 4.5, 126] },
   horta: { avatar: [20, 139], camera: [12, 7.5, 150], alvo: [28, 4.8, 136] },
-  'placa-horta-verso': { avatar: [14.5, 137], camera: [16, 6.1, 134.7], alvo: [16, 5.38, 139] },
-  'placa-costa': { avatar: [3, 141], camera: [2.8, 6.1, 142.5], alvo: [5, 5.38, 140] },
-  'placa-horta': { avatar: [14.5, 141], camera: [16, 6.1, 143.3], alvo: [16, 5.38, 139] },
-  'placa-patio': { avatar: [-18, 133], camera: [-17.6, 6.3, 131.8], alvo: [-20, 5.5, 135] },
+  'placa-horta-verso': vistaDePlaca('placa-1', true),
+  'placa-costa': vistaDePlaca('placa-0'),
+  'placa-horta': vistaDePlaca('placa-1'),
+  'placa-patio': vistaDePlaca('placa-2'),
   piso: { avatar: [10, 138], camera: [1, 6, 147], alvo: [12, 4.1, 138] },
   'piso-baixo': { avatar: [10, 138], camera: [5, 4.8, 143], alvo: [12, 4.1, 138] },
   'lago-lateral': { avatar: [64, 127], camera: [70, 5.4, 127], alvo: [58, 3.6, 127] },

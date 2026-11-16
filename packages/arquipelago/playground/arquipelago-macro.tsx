@@ -67,12 +67,20 @@ const AGUA_AVENTURA = new URLSearchParams(location.search).get('agua') === 'aven
 const ROTAS_SEM_PILOTO = PISO
   ? ROTAS_COMPLETAS_DA_FAISCA.filter(
       (r) =>
-        !['casa-praca', 'praca-horta', 'praca-patio', 'praca-costa', 'lago-horta'].includes(r.id),
+        ![
+          'casa-praca',
+          'praca-horta',
+          'praca-patio',
+          'praca-costa',
+          'praca-farol',
+          'patio-oficina',
+          'lago-horta',
+        ].includes(r.id),
     ).map((r) => (r.id === 'costa-pier' ? { ...r, pontos: r.pontos.slice(1) } : r))
   : ROTAS_COMPLETAS_DA_FAISCA
 const CHAVE_ATIVA =
   PISO || new URLSearchParams(location.search).has('lago')
-    ? `${CHAVE_DO_ENSAIO}:gate21:${PISO ?? 'base'}:${LAGO_DE_CATALOGO ? 'l2' : 'l1'}`
+    ? `${CHAVE_DO_ENSAIO}:concepts:${PISO ?? 'base'}:${LAGO_DE_CATALOGO ? 'l2' : 'l1'}`
     : CHAVE_DO_ENSAIO
 const ROTAS_DO_SOLO =
   CURADORIA === 'a'
@@ -197,19 +205,19 @@ function MundoMacro({
       <color attach="background" args={[noite ? '#233349' : '#c6dce0']} />
       <fog attach="fog" args={[noite ? '#233349' : '#c6dce0', 1600, 3100]} />
       <hemisphereLight
-        args={[noite ? '#b9cdeb' : '#fff6df', noite ? '#7f91a3' : '#758c71', noite ? 1.2 : 1.5]}
+        args={[noite ? '#b9cdeb' : '#fff1d3', noite ? '#7f91a3' : '#65755a', noite ? 1.2 : 1.15]}
       />
       <primitive object={sol} />
       <directionalLight
         target={sol}
         position={[70, 120, 180]}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-left={-95}
-        shadow-camera-right={95}
-        shadow-camera-top={95}
-        shadow-camera-bottom={-95}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-70}
+        shadow-camera-right={70}
+        shadow-camera-top={70}
+        shadow-camera-bottom={-70}
         shadow-camera-near={1}
         shadow-camera-far={300}
         shadow-normalBias={0.04}
@@ -340,7 +348,15 @@ function Blockout() {
     contexto.movimento.aguas = [
       LAGO_DE_CATALOGO
         ? LAGO_DA_FAISCA.agua
-        : { id: 'lago-dos-campos', x: 58, z: 127, raioX: 8, raioZ: 4, giro: 0, y: 3.65 },
+        : {
+            id: 'lago-dos-campos',
+            x: LAGO_DA_FAISCA.x,
+            z: LAGO_DA_FAISCA.z,
+            raioX: 8,
+            raioZ: 4,
+            giro: 0,
+            y: 3.65,
+          },
     ]
     contexto.ambiente.noite = noite
   }, [contexto, noite])

@@ -4,10 +4,11 @@ import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 import { NodeIO } from '@gltf-transform/core'
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
+import { prepararPonteFaisca } from './acabamento-ponte-faisca'
 import { prepararPecasMorada } from './pecas-morada-faisca'
 
 const repo = process.env.ARQUIPELAGO_ARTE_REPO ?? resolve(import.meta.dir, '../../../../artes-3d')
-const pedido = process.argv[2] ?? '7816a7aca0ba6f7d93a90fe4c15f40638b01525f'
+const pedido = process.argv[2] ?? '67b72d4a1a90c0e95c6217341dccfc723ebe8c49'
 const destino = resolve(import.meta.dir, '../../../output/faisca-arte')
 function git(...args: string[]) {
   const r = spawnSync('git', ['-C', repo, ...args], { maxBuffer: 32 * 1024 * 1024 })
@@ -15,14 +16,22 @@ function git(...args: string[]) {
   return r.stdout
 }
 const commit = git('rev-parse', `${pedido}^{commit}`).toString().trim()
-const ler = (p: string) => git('show', `${commit}:biblioteca_aventura/${p}`)
+const ler = (p: string) => git('show', `${commit}:${p}`)
 const escolhas: Record<string, string[]> = {
   'reino/natureza': [
     'arvore_redonda_01',
     'arvore_redonda_02',
+    'arvore_redonda_03',
     'arvore_duas_copas',
     'arbusto_redondo_02',
     'flor_margarida_branca',
+    'flor_margarida_azul',
+    'flor_campanula_azul',
+    'flor_tulipa_branca',
+    'rocha_larga',
+    'rocha_media',
+    'pedra_02',
+    'seixo',
     'tufo_grama',
     'rocha_pequena',
     'rocha_seta',
@@ -43,9 +52,15 @@ const escolhas: Record<string, string[]> = {
     'caminho_terra_reto',
     'caminho_terra_curvo',
     'lago_nadavel',
+    'pontilhao_tabuas',
   ],
   'faroeste/terreno': ['trilha_terra_reta', 'trilha_terra_curva', 'praca_terra_14x14'],
-  'templo/terreno': ['caminho_lajes_reto', 'caminho_lajes_curvo'],
+  'templo/terreno': ['caminho_lajes_reto', 'caminho_lajes_curvo', 'bica_agua_templo'],
+  'templo/objetos': ['ponte_arco_madeira'],
+  'templo/templo': ['escadaria_pedra_3m'],
+  'templo/natureza': ['arvore_folhas_largas', 'arvore_raizes', 'arbusto_selva_02', 'tufo_selva_03'],
+  'templo/rochas': ['seixos_claros', 'rochedo_selva_medio', 'rochedo_selva_pequeno'],
+  'faroeste/objetos': ['lampiao'],
   'reino/castelo': ['poco_manivela_baixa'],
   'reino/personagens': ['coelho'],
   decoracao: ['farol_01_pacote', 'moinho_01_pacote', 'moinho_pas_01_pacote'],
@@ -62,6 +77,14 @@ const escolhas: Record<string, string[]> = {
   vegetacao: ['arvore_04_pacote', 'arbusto_04_pacote', 'folhagem_01_pacote'],
   tesouros: ['barril_01_pacote'],
   terreno: ['agua_ilha_pacote'],
+  'biblioteca/cidade/predios_magicos': [
+    'casa_vila_fantasia_pacote',
+    'casa_telhas_rosa_fantasia_pacote',
+    'casa_estreita_enxaimel',
+    'casinha_telhado_vermelho',
+  ],
+  'biblioteca/cidade/fantasia': ['arvore_pacote', 'guindaste_pacote', 'toras_empilhadas_pacote'],
+  'biblioteca/cidade/parque_paisagem': ['rochedo_grande_b', 'paredao_rocha_reto'],
 }
 const ensaio = new Set([
   'caminho_terra_reto',
@@ -90,20 +113,21 @@ const ensaio = new Set([
 interface Item {
   id: string
   arquivo: string
-  origem: string
+  origem?: string
+  pacote_origem?: string
   pacote: boolean
   rotulo: string
   dims: number[]
   tris: number
-  colisao: { min: number[]; max: number[] }[]
+  colisao: ({ min: number[]; max: number[] } | { centro: number[]; tamanho: number[] })[]
   animacoes?: { id: string; duracao_s: number; velocidade_m_s?: number }[]
   encaixe?: { grade_m: number; raio_m?: number; pontos: { nome: string; posicao: number[] }[] }
 }
 const pecas: Record<string, unknown> = {},
   arquivos: { nome: string; dados: Buffer }[] = []
 for (const [categoria, ids] of Object.entries(escolhas)) {
-  const itens = (JSON.parse(ler(`${categoria}/catalogo.json`).toString()) as { itens: Item[] })
-    .itens
+  const base = categoria.startsWith('biblioteca/') ? categoria : `biblioteca_aventura/${categoria}`
+  const itens = (JSON.parse(ler(`${base}/catalogo.json`).toString()) as { itens: Item[] }).itens
   for (const id of ids) {
     const item = itens.find((i) => i.id === id)
     if (
@@ -112,7 +136,8 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
     )
       throw Error(`Item inválido: ${id}`)
     const caminho = `${categoria}/${item.arquivo}`,
-      dados = ler(caminho)
+      fonte = ler(`${base}/${item.arquivo}`),
+      dados = id === 'ponte_arco_madeira' ? await prepararPonteFaisca(fonte) : fonte
     if (dados.toString('utf8', 0, 4) !== 'glTF' || dados.readUInt32LE(8) !== dados.length)
       throw Error(`GLB inválido: ${id}`)
     const json = JSON.parse(dados.toString('utf8', 20, 20 + dados.readUInt32LE(12)).trim())
@@ -221,15 +246,32 @@ for (const [categoria, ids] of Object.entries(escolhas)) {
       id,
       ensaio: ensaio.has(id),
       rotulo: item.rotulo,
-      origem: item.origem,
+      origem: item.origem ?? item.pacote_origem ?? 'acervo-cidade',
       pacote: item.pacote,
       caminho,
+      sourcePath: `${base}/${item.arquivo}`,
+      sourceDigest: createHash('sha256').update(fonte).digest('hex'),
+      acabamento:
+        id === 'ponte_arco_madeira'
+          ? {
+              madeira: 'violeta por luminância; atlas/UV preservados',
+              pilares: 'pedra dessaturada',
+              geometria: 'faces particionadas, sem deformação',
+            }
+          : null,
       digest,
       arquivo: nome,
       dims: item.dims,
       tris: item.tris,
       bytes: dados.length,
-      colisao: item.colisao,
+      colisao: item.colisao.map((b) =>
+        'min' in b
+          ? b
+          : {
+              min: b.centro.map((v, i) => v - b.tamanho[i]! / 2),
+              max: b.centro.map((v, i) => v + b.tamanho[i]! / 2),
+            },
+      ),
       clipes: item.animacoes?.map((a) => ({
         id: a.id,
         duracao: a.duracao_s,

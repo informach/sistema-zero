@@ -3,26 +3,29 @@ export interface PontoDaFaisca {
   x: number
   z: number
 }
+
+import { RAMPA_DA_COLINA } from './colina-da-faisca'
+
 const p = (x: number, z: number): PontoDaFaisca => ({ x, z })
 export const BASE_DO_FAROL = p(-3, 100)
-export const BASE_DA_OFICINA = p(-46, 120)
+export const BASE_DA_OFICINA = p(-30, 126)
 /** Implantação local: margem de uma célula de terreno além da base; não altera o envelope da ilha. */
 export const PATAMARES_DA_FAISCA = {
-  moinho: { x: -24, z: 92, meiaLargura: 8, meiaProfundidade: 8 },
-  correio: { x: -17, z: 123, meiaLargura: 7, meiaProfundidade: 7 },
-  vizinhoLeste: { x: 13, z: 124, meiaLargura: 7, meiaProfundidade: 7 },
+  moinho: { x: -24, z: 92, meiaLargura: 4, meiaProfundidade: 4 },
+  correio: { x: -8.5, z: 122, meiaLargura: 4, meiaProfundidade: 4 },
+  vizinhoLeste: { x: 13, z: 129, meiaLargura: 4, meiaProfundidade: 4 },
 } as const
 export const LUGAR_DA_FAISCA = {
   casa: p(0, 150),
   praca: p(0, 137),
   horta: p(20, 139),
   patio: p(-24, 132),
-  oficina: p(-40, 126),
+  oficina: p(-28, 132),
   costa: p(20, 153),
   pier: p(8, 225),
   farol: p(-3, 109),
   bosque: p(112, -55),
-  lago: p(58, 127),
+  lago: p(39, 127),
   pomar: p(58, 153),
   bancada: p(-39, 114),
   galpao: p(-57, 110),
@@ -93,22 +96,35 @@ export const ROTAS_DA_FAISCA: RotaDaFaisca[] = [
   r('praca-costa', 'Praça → Descida da Costa', 'cotidiano', l.praca, l.costa),
   r('praca-farol', 'Praça → Farol', 'cotidiano', l.praca, p(-3, 120), l.farol),
   r('patio-oficina', 'Entrada da oficina', 'anel', l.patio, l.oficina),
-  r('oficina-farol', 'Encosta das invenções', 'anel', l.oficina, p(-35, 96), l.farol),
+  r(
+    'oficina-farol',
+    'Encosta das invenções',
+    'anel',
+    l.oficina,
+    p(-37, 135),
+    p(-40, 119),
+    p(-28, 115),
+    p(-18, 117),
+    p(-3, 117),
+    l.farol,
+  ),
   r(
     'farol-bosque',
     'Anel das lanternas',
     'anel',
     l.farol,
-    p(-15, 109),
-    p(-18, 86),
+    p(-3, 116),
+    p(-21, 116),
+    p(-33, 112),
+    p(-33, 84),
     p(-30, 35),
     l.miranteNorte,
     p(95, -100),
     l.bosque,
   ),
-  r('bosque-campos', 'Anel do pomar', 'anel', l.bosque, p(105, 15), p(90, 80), p(58, 119)),
-  r('ponte-lago', 'Ponte dos Campos', 'ponte-interna', p(58, 119), p(58, 135)),
-  r('lago-horta', 'Caminho dos canteiros', 'anel', p(58, 135), p(35, 147), p(20, 147), l.horta),
+  r('bosque-campos', 'Anel do pomar', 'anel', l.bosque, p(105, 15), p(90, 80), p(39, 121)),
+  r('ponte-lago', 'Ponte dos Campos', 'ponte-interna', p(39, 121), p(39, 133)),
+  r('lago-horta', 'Caminho dos canteiros', 'anel', p(39, 133), p(32, 147), p(20, 147), l.horta),
   r(
     'horta-costa',
     'Anel das fontes',
@@ -138,8 +154,7 @@ export const ROTAS_DA_FAISCA: RotaDaFaisca[] = [
     l.horta,
     p(20, 119),
     p(0, 116),
-    p(0, 129),
-    p(-20, 130),
+    p(-20, 117),
     l.patio,
   ),
   r(
@@ -204,14 +219,31 @@ export function suave(a: number, b: number, v: number) {
 }
 /** Colina suave, relevo opcional ao norte e bacia real do lago. */
 function relevoNaturalDaFaisca(x: number, z: number): number {
-  const colina = 6 * (1 - suave(6, 40, Math.hypot(x - BASE_DO_FAROL.x, z - BASE_DO_FAROL.z)))
+  const colina = 6 * (1 - suave(7, 23, Math.hypot(x - BASE_DO_FAROL.x, z - BASE_DO_FAROL.z)))
   const longe = suave(85, 150, Math.hypot(x, z - 140))
   const norte = 8 * longe * (0.5 + 0.5 * Math.sin(x / 67) * Math.cos(z / 81))
+  const encostas =
+    (1 - suave(112, 123, z)) *
+    (2.3 * Math.exp(-(((x + 40) / 18) ** 2 + ((z - 105) / 21) ** 2)) +
+      3 * Math.exp(-(((x - 35) / 20) ** 2 + ((z - 96) / 21) ** 2)))
   // A bacia agora é a malha do lago de catálogo, num furo do setor, não uma depressão paralela.
   const lago = Math.hypot((x - l.lago.x) / 9, (z - l.lago.z) / 4.8)
-  return colina + norte - (LAGO_DE_CATALOGO ? 0 : 2.4 * (1 - suave(0.45, 1, lago)))
+  let altura = colina + norte + encostas
+  // Base rígida do Farol: sua caixa ocupa ~9,7 × 9,4 m. A margem até os vértices
+  // da grade de 4 m mantém a implantação inteira no mesmo patamar, também nos cantos.
+  const apoioDoFarol =
+    1 - suave(0, 6, Math.max(Math.abs(x - BASE_DO_FAROL.x) - 8, Math.abs(z - BASE_DO_FAROL.z) - 8))
+  altura += (6 - altura) * apoioDoFarol
+  // A malha sob os lances é aberta pelo setor; esta base contínua acompanha as laterais e a câmera.
+  const r = RAMPA_DA_COLINA,
+    aoLongo = suave(r.fim - 2, r.fim, z) * (1 - suave(r.inicio, r.inicio + 4, z)),
+    transversal = 1 - suave(3.5, 6.5, Math.abs(x + 3)),
+    peso = aoLongo * transversal,
+    perfil = Math.max(0, Math.min(r.subida, (r.inicio - z) * r.inclinacao)) - 0.12
+  altura += (perfil - altura) * peso
+  return altura - (LAGO_DE_CATALOGO ? 0 : 2.4 * (1 - suave(0.45, 1, lago)))
 }
-const patamaresComAltura = Object.values(PATAMARES_DA_FAISCA).map((p) => ({
+const patamaresComAltura = [PATAMARES_DA_FAISCA.moinho].map((p) => ({
   ...p,
   altura: relevoNaturalDaFaisca(p.x, p.z),
 }))

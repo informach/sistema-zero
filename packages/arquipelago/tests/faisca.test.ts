@@ -1,6 +1,9 @@
 import { expect, test } from 'bun:test'
+import { AVATAR_CATALOG } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { ARTE_DA_FAISCA } from '../src/mundo/faisca/arte.generated'
+import { assentamentoDaPeca, pisoDaFaisca } from '../src/sistemas/assentamento-da-faisca'
 import { COMPOSICAO_DA_FAISCA } from '../src/sistemas/composicao-faisca'
+import { corpoDoMundo } from '../src/sistemas/corpo'
 import {
   comprimentoDaRota,
   DISTRITOS_DA_FAISCA,
@@ -23,11 +26,15 @@ const ROTAS_DA_FAISCA = [
 ]
 test('os caminhos cotidianos mantêm passagem para o corpo entre os modelos reais', () => {
   const bloqueios = new Set<string>()
+  const alturaDoJogador = corpoDoMundo(AVATAR_CATALOG, MUNDO_DA_AVENTURA).medidas.height
+  const objetos = COMPOSICAO_DA_FAISCA.filter(
+      (p) => p.solida && p.solida !== 'ponte' && p.solida !== 'escada' && p.solida !== 'solo',
+    ),
+    alturas = new Map(objetos.map((p) => [p.id, assentamentoDaPeca(p).y]))
   for (const r of ROTAS_DA_FAISCA.filter((r) => r.tipo !== 'ponte-interna'))
-    for (const a of pontosAoLongo(r.pontos, 0.25))
-      for (const objeto of COMPOSICAO_DA_FAISCA.filter(
-        (p) => p.solida && p.solida !== 'ponte' && p.solida !== 'solo',
-      )) {
+    for (const a of pontosAoLongo(r.pontos, 0.25)) {
+      const chao = pisoDaFaisca(a.x, a.z)
+      for (const objeto of objetos) {
         const dx = a.x - objeto.x,
           dz = a.z - objeto.z,
           s = objeto.escala
@@ -37,17 +44,26 @@ test('os caminhos cotidianos mantêm passagem para o corpo entre os modelos reai
           continue
         }
         const meta = ARTE_DA_FAISCA.pecas[objeto.peca as keyof typeof ARTE_DA_FAISCA.pecas],
-          box = meta.colisao[0]
+          origemY = alturas.get(objeto.id)!
         const x = Math.cos(objeto.giro) * dx - Math.sin(objeto.giro) * dz,
           z = Math.sin(objeto.giro) * dx + Math.cos(objeto.giro) * dz
-        if (
-          x > box.min[0] * s - 0.16 &&
-          x < box.max[0] * s + 0.16 &&
-          z > box.min[2] * s - 0.16 &&
-          z < box.max[2] * s + 0.16
-        )
-          bloqueios.add(`${r.id}:${objeto.id}`)
+        for (const box of meta.colisao) {
+          // Vigas e telhados devem permitir a passagem sob a folga real, além de colidir com a câmera.
+          if (
+            origemY + box.min[1] * s > chao + alturaDoJogador ||
+            origemY + box.max[1] * s < chao + 0.025
+          )
+            continue
+          if (
+            x > box.min[0] * s - 0.16 &&
+            x < box.max[0] * s + 0.16 &&
+            z > box.min[2] * s - 0.16 &&
+            z < box.max[2] * s + 0.16
+          )
+            bloqueios.add(`${r.id}:${objeto.id}`)
+        }
       }
+    }
   expect([...bloqueios]).toEqual([])
 })
 

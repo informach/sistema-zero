@@ -2,7 +2,6 @@ import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
 
 const solo = ARTE_DA_FAISCA.pecas.praca_terra_14x14.solo
 export const SOLOS_DE_CATALOGO = [
-  { id: 'solo-da-praca', x: -6, z: 140, giro: 0, y: 4 - solo.minimo + 0.025 },
   { id: 'solo-da-horta', x: 28, z: 138, giro: Math.PI / 2, y: 4 - solo.minimo + 0.025 },
 ] as const
 /** Os mesmos triângulos do chão artístico orientam os apoios de poço, móveis e vegetação. */
