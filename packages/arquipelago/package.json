@@ -17,6 +17,7 @@
     "test:salvamento-browser": "bun build playground/verificar-salvamento-browser.ts --target=node --external playwright-core --outfile .cache/verificar-salvamento-browser.mjs && node .cache/verificar-salvamento-browser.mjs"
   },
   "dependencies": {
+    "@sistemazero/molda-cenarios-core": "workspace:*",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@react-three/rapier": "^2.1.0",

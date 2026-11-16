@@ -6,7 +6,7 @@ import ts from 'typescript'
 /**
  * A regra que mantém o jogo separado da plataforma (decisão da dona, 27/10/2026):
  * - o jogo só importa three, React Three Fiber, Rapier, React, zustand, o contrato e o
- *   avatar-quarto (avatar e quarto são os únicos pedaços divididos de propósito);
+ *   avatar-quarto e o núcleo puro de documentos/comandos do editor de cenários;
  * - nenhum pacote da plataforma importa o jogo nem o serviço do jogo (a página carrega o jogo
  *   publicado por URL, nunca por import);
  * - o avatar-quarto, dividido com a plataforma, não importa nada da plataforma; e o contrato não
@@ -23,6 +23,7 @@ const PERMITIDOS_NO_JOGO = [
   '@react-three/rapier',
   '@sistemazero/arquipelago-contracts',
   '@sistemazero/avatar-quarto',
+  '@sistemazero/molda-cenarios-core',
 ]
 
 function arquivos(dir: string): string[] {
@@ -80,6 +81,14 @@ describe('fronteira do jogo', () => {
       for (const alvo of importsDe(readFileSync(f, 'utf8')))
         if (externo(alvo) && !casa(alvo, PERMITIDOS_NO_JOGO))
           fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+    expect(fora).toEqual([])
+  })
+
+  test('o núcleo de cenários é puro e só depende de seus módulos e zod', () => {
+    const fora: string[] = []
+    for (const f of arquivos(join(PACOTES, 'molda-cenarios-core', 'src')))
+      for (const alvo of importsDe(readFileSync(f, 'utf8')))
+        if (!alvo.startsWith('.') && alvo !== 'zod') fora.push(`${relative(PACOTES, f)} → ${alvo}`)
     expect(fora).toEqual([])
   })
 
