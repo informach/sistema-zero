@@ -32,6 +32,7 @@ function montar(
 ) {
   const pedidos: Pedido[] = []
   const enviados: Array<{ url: string; tipo: string | null; bytes: number }> = []
+  const baixados: string[] = []
   const host = criarHostHttp({
     pessoaId: PERFIL,
     buscar: async (entrada: string, init: RequestInit = {}) => {
@@ -48,6 +49,12 @@ function montar(
       return Response.json(resposta?.corpo ?? { ok: true }, { status: resposta?.status ?? 200 })
     },
     enviar: async (entrada: string, init: RequestInit = {}) => {
+      if (init.method !== 'PUT') {
+        // Baixar um arquivo: sem cabeçalho nenhum além do que o navegador põe.
+        expect(init.headers).toBeUndefined()
+        baixados.push(String(entrada))
+        return new Response(new Uint8Array([1, 2, 3]))
+      }
       const corpo = init.body as Uint8Array | Blob
       enviados.push({
         url: String(entrada),
@@ -57,7 +64,7 @@ function montar(
       return new Response(null, { status: 200 })
     },
   })
-  return { host, pedidos, enviados }
+  return { host, pedidos, enviados, baixados }
 }
 
 const bibliotecaDoServidor = {
@@ -342,17 +349,22 @@ describe('a oficina falando com o app', () => {
     })
   })
 
-  test('o arquivo do modelo vem do endereço do app, marcado como modelo', async () => {
-    const { host, pedidos } = montar((p) => {
+  test('o arquivo do modelo: o app diz onde está e a busca vai direto ao armazenamento', async () => {
+    const { host, pedidos, baixados } = montar((p) => {
       if (p.caminho === 'espacos')
         return { corpo: [{ id: ESPACO, tipo: 'conta', usadoBytes: 0, limiteBytes: 1 }] }
       if (p.caminho === `espacos/${ESPACO}/bibliotecas`) return { corpo: [bibliotecaDoServidor] }
-      if (p.caminho.includes('/arquivos/')) return new Response(new Uint8Array([1, 2, 3]))
+      if (p.caminho.includes('/arquivos/')) return { corpo: { url: 'https://r2/modelo-a' } }
       return undefined
     })
     // A página abriu direto no editor: a biblioteca ainda não tinha sido listada.
     const bytes = await host.conteudoDoModelo({ biblioteca: BIBLIOTECA, digest: digest('a') })
     expect(new Uint8Array(bytes)).toEqual(new Uint8Array([1, 2, 3]))
-    expect(pedidos.at(-1)?.caminho).toBe(`espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo`)
+    expect(pedidos.at(-1)).toMatchObject({
+      caminho: `espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo&como=endereco`,
+      headers: { 'x-sz-viewer': PERFIL },
+    })
+    // A busca do arquivo vai direto ao armazenamento, sem nenhum cabeçalho da sessão.
+    expect(baixados).toEqual(['https://r2/modelo-a'])
   })
 })

@@ -32,7 +32,7 @@ export interface OpcoesDoHostHttp {
   buscar?: Buscar
   /** Quem está usando (o perfil no Kids): o app recusa se a sessão trocou de pessoa no meio. */
   pessoaId?: string
-  /** Envio dos arquivos ao armazenamento (só os testes trocam). */
+  /** Pedidos diretos ao armazenamento, para enviar e baixar arquivos (só os testes trocam). */
   enviar?: Buscar
 }
 
@@ -133,8 +133,8 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     )
   }
 
-  const enderecoDoArquivo = (espacoId: string, digest: string, tipo?: 'modelo') =>
-    `${base}/espacos/${espacoId}/arquivos/${digest}${tipo ? '?tipo=modelo' : ''}`
+  const enderecoDoArquivo = (espacoId: string, digest: string) =>
+    `${base}/espacos/${espacoId}/arquivos/${digest}`
   const retrato = (espacoId: string | undefined, digest: string | null) =>
     espacoId && digest ? enderecoDoArquivo(espacoId, digest) : null
 
@@ -311,12 +311,15 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     },
     async conteudoDoModelo(ref) {
       const espacoId = await acharEspacoDaBiblioteca(ref.biblioteca)
+      // O app diz onde o arquivo está; a busca vai direto ao armazenamento, sem os cabeçalhos da
+      // sessão (com eles o navegador barraria o pedido a outra origem).
+      const { url } = await pedir<{ url: string }>(
+        'GET',
+        `espacos/${espacoId}/arquivos/${ref.digest}?tipo=modelo&como=endereco`,
+      )
       let resposta: Response
       try {
-        // O app responde com um redirecionamento para o armazenamento; o navegador segue sozinho.
-        resposta = await buscar(enderecoDoArquivo(espacoId, ref.digest, 'modelo'), {
-          headers: opcoes.pessoaId ? { 'x-sz-viewer': opcoes.pessoaId } : {},
-        })
+        resposta = await enviar(url)
       } catch {
         throw new ErroDaOficina('Sem conexão agora. Tente de novo.', 0, null, null)
       }

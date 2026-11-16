@@ -185,8 +185,9 @@ function leiturasLembradas(): Map<string, number> {
  *   armazenamento, com o tamanho e o tipo exatos presos na assinatura;
  * - quem afirma ao members que o arquivo chegou é este servidor, depois de olhar o
  *   armazenamento (rotas internas com HMAC). O navegador não tem como afirmar isso;
- * - ler um arquivo é um redirecionamento para um endereço assinado, igual dentro da mesma
- *   janela de 6 horas, para a gaveta de modelos sair do cache do navegador.
+ * - ler um arquivo é um redirecionamento para um endereço assinado (ou o próprio endereço, com
+ *   `?como=endereco`), igual dentro da mesma janela de 6 horas, para a gaveta de modelos e os
+ *   modelos do cenário saírem do cache do navegador.
  */
 export function createCenariosRoutes(deps: {
   gateway: Pick<GatewayModule, 'gatewayFetch' | 'gatewayFetchHmac'>
@@ -311,7 +312,8 @@ export function createCenariosRoutes(deps: {
   async function lerArquivo(req: Request, user: SessionUser, espacoId: string, digest: string) {
     const permitido = await podeLer(user, espacoId)
     if (permitido !== true) return permitido === false ? semRota() : permitido
-    const tipo = new URL(req.url).searchParams.get('tipo') === 'modelo' ? 'modelo' : 'imagem'
+    const consulta = new URL(req.url).searchParams
+    const tipo = consulta.get('tipo') === 'modelo' ? 'modelo' : 'imagem'
     const janela = avatarLinkWindow(agora())
     const url = await armazenamento.presignGet(chaveDoArquivoDoCenario(espacoId, digest), {
       expiresInSeconds: janela.expiresInSeconds,
@@ -320,7 +322,13 @@ export function createCenariosRoutes(deps: {
       // Tipo fixo por pedido: o que está guardado nunca é servido como página.
       responseContentType: TIPO_DA_LEITURA[tipo],
     })
-    const resposta = NextResponse.redirect(url, 302)
+    // A imagem segue o redirecionamento. O modelo é baixado por `fetch`, que levaria os
+    // cabeçalhos da sessão ao armazenamento (e o navegador barraria): a oficina pede o endereço
+    // e busca o arquivo sem eles.
+    const resposta =
+      consulta.get('como') === 'endereco'
+        ? NextResponse.json({ url })
+        : NextResponse.redirect(url, 302)
     resposta.headers.set('cache-control', `private, max-age=${janela.redirectMaxAgeSeconds}`)
     return resposta
   }

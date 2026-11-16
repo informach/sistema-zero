@@ -6,8 +6,10 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "cli": "bun src/cli.ts",
-    "mcp": "bun src/mcp.ts"
+    "cli": "bun src/oficina/cli.ts",
+    "mcp": "bun src/oficina/mcp.ts",
+    "cli:piloto": "bun src/cli.ts",
+    "mcp:piloto": "bun src/mcp.ts"
   },
   "dependencies": {
     "@sistemazero/molda-cenarios-core": "workspace:*",

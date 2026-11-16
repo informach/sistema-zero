@@ -11,6 +11,9 @@
    regra é inválido (o CSS o descarta em silêncio e o editor sai sem cor). */
 @import "../../../pinta/src/styles/pinta.css";
 @import "../../../molda/src/styles/molda.css";
+/* Molda Cenários (a oficina de cenários 3D): só as regras próprias dela (`mcn-`); os tokens e as
+   receitas são os do Molda, importados logo acima. O arquivo registra as próprias fontes. */
+@import "../../../molda-cenarios/src/oficina/oficina-regras.css";
 @import "@sistemazero/ui/tool-chrome.css";
 @import "../../../member-shell/src/styles/help.css";
 @import "../../../pensa/src/styles/pensa.css";

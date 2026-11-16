@@ -15,7 +15,7 @@ COPY patches ./patches
 RUN bun install --frozen-lockfile --production --filter '@sistemazero/members...' \
     && mkdir -p packages/members/node_modules packages/core/node_modules \
        packages/studio/node_modules packages/pinta/node_modules packages/ui/node_modules \
-       packages/arquipelago-contracts/node_modules
+       packages/arquipelago-contracts/node_modules packages/molda-cenarios-core/node_modules
 
 FROM base AS runtime
 # Preserva a store e os links do Bun, sem copiar o cache global do instalador.
@@ -26,6 +26,7 @@ COPY --from=dependencies /app/packages/studio/node_modules ./packages/studio/nod
 COPY --from=dependencies /app/packages/pinta/node_modules ./packages/pinta/node_modules
 COPY --from=dependencies /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=dependencies /app/packages/arquipelago-contracts/node_modules ./packages/arquipelago-contracts/node_modules
+COPY --from=dependencies /app/packages/molda-cenarios-core/node_modules ./packages/molda-cenarios-core/node_modules
 COPY package.json tsconfig.base.json ./
 COPY packages/members/package.json packages/members/tsconfig.json packages/members/drizzle.config.ts ./packages/members/
 # Inclui schema, SQL e journal das migrations, além do grafo real de inicialização.
@@ -40,6 +41,9 @@ COPY packages/ui/package.json packages/ui/tsconfig.json ./packages/ui/
 COPY packages/ui/src ./packages/ui/src
 COPY packages/arquipelago-contracts/package.json packages/arquipelago-contracts/tsconfig.json ./packages/arquipelago-contracts/
 COPY packages/arquipelago-contracts/src ./packages/arquipelago-contracts/src
+# Molda Cenários: o documento do cenário e os comandos, que o members roda a cada lote do editor.
+COPY packages/molda-cenarios-core/package.json packages/molda-cenarios-core/tsconfig.json ./packages/molda-cenarios-core/
+COPY packages/molda-cenarios-core/src ./packages/molda-cenarios-core/src
 # Entradas operacionais existentes; não são executadas durante o build.
 COPY packages/members/scripts/bootstrap-kids-journey.ts \
      packages/members/scripts/adopt-arquipelago-gallery.ts \

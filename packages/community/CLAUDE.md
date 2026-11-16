@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/community
 
+## Molda Cenários: a oficina de cenários 3D (16/11/2026)
+
+`/molda/cenarios` monta o mesmo `CenariosClient` do member-shell que o Kids (mundos, cenários e
+bibliotecas de modelos guardados na conta). Quem decide se abre é o members (`CENARIOS_MODO`; hoje
+só a equipe): sem acesso, 404. É rota de tela cheia como o `/molda` (sem a moldura da
+comunidade), e a seta do topo volta ao Molda. API em `app/api/cenarios/[...caminho]/route.ts`
+(`shell.routes.cenarios`); `globals.css` importa `oficina-regras.css` depois do `molda.css`;
+`transpilePackages` com `@sistemazero/molda-cenarios`, `-core` e `-motor`. Sem item no menu
+enquanto for só da equipe. Detalhes no CLAUDE.md do member-shell.
+
 ## Aula idêntica ao Kids, 31/10/2026
 
 A apresentação da aula vem de `member-shell/components/lesson-ui`: blocos, quiz, mascote,

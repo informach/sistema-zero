@@ -414,8 +414,15 @@ describe('BFF do Molda Cenários: apagar e ler arquivos', () => {
       `https://armazenamento.exemplo/leitura/cenarios/${ESPACO}/blobs/${digest('b')}`,
     )
     expect(retrato.headers.get('cache-control')).toMatch(/^private, max-age=\d+$/)
-    const modelo = await t.pedir('GET', `espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo`)
-    expect(modelo.status).toBe(302)
+    // O modelo é baixado por `fetch`: a oficina recebe o endereço e busca sem os cabeçalhos da sessão.
+    const modelo = await t.pedir(
+      'GET',
+      `espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo&como=endereco`,
+    )
+    expect(modelo.status).toBe(200)
+    expect(await modelo.json()).toEqual({
+      url: `https://armazenamento.exemplo/leitura/cenarios/${ESPACO}/blobs/${digest('a')}`,
+    })
     // A gaveta pede centenas de retratos: o members é consultado uma vez só.
     expect(t.chamadas.map((c) => c.path)).toEqual(['/members/cenarios/espacos'])
     expect(t.lidos.map((l) => l.opcoes.responseContentType)).toEqual([

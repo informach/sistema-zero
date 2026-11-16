@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Cenários 3D: atalho para a oficina na plataforma (16/11/2026)
+
+A oficina de cenários mora na plataforma (`/molda/cenarios` no Kids e na comunidade adulta) e
+guarda tudo na conta. A página `/molda/cenarios` DESTE painel virou o atalho: dois botões que
+abrem a oficina em outra aba (`KIDS_COMMUNITY_URL` e `COMMUNITY_URL`; sem as envs, a página diz
+o caminho). O login da comunidade é separado do deste painel. O editor antigo do piloto só abre
+quando `CENARIOS_RUNTIME_URL` existe (máquina com o ambiente local montado) e sai no lote de
+limpeza da reforma, com as rotas `api/molda-cenarios`.
+
 ## Campanhas ligadas a embaixadores (04/11/2026)
 
 `ConvitesClient` permite buscar um embaixador por nome/e-mail com paginação e vinculá-lo à

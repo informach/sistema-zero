@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Molda Cenários: a oficina de cenários 3D (16/11/2026)
+
+`/molda/cenarios` (`app/(app)/molda/cenarios/page.tsx`) monta o `CenariosClient` do member-shell:
+mundos, cenários e bibliotecas de modelos, guardados na CONTA (members), com os arquivos no
+armazenamento. Nada fica só no navegador.
+
+- **Quem abre**: o members decide (`CENARIOS_MODO`; hoje só a equipe). A página pergunta com
+  `checkCenariosAccessReadonly()` e, sem acesso, responde 404 (sem cartaz de "em breve"). Não há
+  item no menu enquanto a ferramenta é só da equipe: o endereço e o atalho do Admin levam até ela.
+- **Rota de tela cheia**: `/molda/cenarios` cai no regime do `/molda` (`isEmbeddedAppPath`, o
+  `proxy.ts` e o foco). O menu recolhe quando um cenário abre no editor.
+- **API**: `app/api/cenarios/[...caminho]/route.ts` exporta os quatro métodos de
+  `shell.routes.cenarios` (o BFF do member-shell). As chamadas levam a prova da sessão
+  (`sessionFetch`) e o perfil em `x-sz-viewer`.
+- **CSS**: `globals.css` importa `molda-cenarios/src/oficina/oficina-regras.css` logo depois do
+  `molda.css` (só as regras `mcn-`; os tokens e as receitas são os do Molda).
+- **Next**: `transpilePackages` ganhou `@sistemazero/molda-cenarios`, `-core` e `-motor`. O deploy
+  deste app acompanha os três pacotes (mapa do `ci.yml`).
+
 ## Presente Kids: 5 a 17 anos (13/11/2026)
 
 O cartão "Seja um embaixador" diz "família com criança de 5 a 17 anos" e o cartão de divulgação

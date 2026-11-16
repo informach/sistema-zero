@@ -27,6 +27,9 @@
 /* Tokens do Molda (--color-mld-…) — MESMO gotcha: registra as cores p/ o @source
    gerar as utilitárias mld-*. */
 @import "../../../molda/src/styles/molda.css";
+/* Molda Cenários (a oficina de cenários 3D): só as regras próprias dela (`mcn-`); os tokens e as
+   receitas são os do Molda, importados logo acima. O arquivo registra as próprias fontes. */
+@import "../../../molda-cenarios/src/oficina/oficina-regras.css";
 @import "@sistemazero/ui/styles/creator-theme.css";
 /* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
    o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */

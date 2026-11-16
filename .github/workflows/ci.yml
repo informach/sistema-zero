@@ -1006,8 +1006,11 @@ jobs:
                   # Contrato dos cenários 3D: o gateway limita o corpo por ele, o serviço do jogo
                   # valida os lotes e o Admin monta o editor. Sem esta linha, um contrato novo
                   # ficava só no repositório e os três seguiam servindo o antigo.
-                  packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin ;;
-                  packages/molda-cenarios/*) add admin ;; # editor de cenários, hoje montado só pelo Admin
+                  # Molda Cenários (a oficina de cenários 3D): o documento vai no members (roda os lotes), no gateway e
+                  # no piloto do Arquipélago; as telas e o motor 3D vão nos dois apps de aluno e no Admin.
+                  packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin; add members; add community-kids; add_palco; add community ;;
+                  packages/molda-cenarios-motor/*) add community-kids; add_palco; add community ;;
+                  packages/molda-cenarios/*) add admin; add community-kids; add_palco; add community ;;
                 esac
               done <<< "$CHANGED"
             fi

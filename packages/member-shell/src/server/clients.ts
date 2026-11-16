@@ -944,6 +944,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return moldaAccessReadonlyCached()
     },
     /**
+     * Molda Cenários (a oficina de cenários 3D): está aberta para esta pessoa? Quem decide é o
+     * members (`CENARIOS_MODO`: desligado, só a equipe, uma lista de contas ou todos). RSC-safe.
+     */
+    checkCenariosAccessReadonly(): Promise<GatewayResponse<{ aberto: boolean }>> {
+      return gw.gatewayFetchReadonly('/members/cenarios/acesso')
+    },
+    /**
      * As TRÊS ferramentas de criação numa ida só, para a página /estudio decidir de
      * uma vez o gate (`estudio-completo`) e as bibliotecas "Trazer do Pinta" /
      * "Trazer do Molda" (produtos vendidos à parte: só com a posse de cada um).

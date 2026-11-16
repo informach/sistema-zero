@@ -1,5 +1,54 @@
 # Molda — Cenários 3D
 
+## A oficina na plataforma (reforma em andamento, 16/11/2026)
+
+A ferramenta está sendo refeita em lotes (plano aprovado em 16/11/2026). O que já existe no código:
+
+- **Onde abre**: `/molda/cenarios` no Kids e na comunidade adulta. Quem pode abrir é o `members`
+  que decide (`CENARIOS_MODO`: `desligado`, `equipe`, `lista` ou `aberto`); hoje, só a equipe. A
+  página `/molda/cenarios` do Admin virou um atalho para ela.
+- **Como se organiza**: espaço (o da conta, ou o da Equipe Sistema Zero) → bibliotecas de modelos
+  (com licença: livre, própria ou restrita) → mundos → cenários. Tudo guardado na conta; os
+  arquivos (`.glb`, retratos e capas) ficam no armazenamento, por conteúdo, dentro do espaço.
+- **Pacotes**: `molda-cenarios-core` (`/v2`: documento, comandos em lote, desfazer), `molda-cenarios-motor`
+  (palco 3D), `molda-cenarios` (`/oficina`: telas e o cliente HTTP), módulo `cenarios` do `members`,
+  rotas `members-cenarios-*` no gateway e o BFF `/api/cenarios` do `member-shell`.
+- **Ver sem a plataforma**: `bun run dev:oficina` em `packages/molda-cenarios` (porta 4541), com
+  dados em memória.
+
+### Agentes (CLI e MCP) na oficina nova
+
+O agente usa as mesmas rotas e os mesmos comandos em lote da edição à mão, direto no servidor,
+sem aba aberta. Acesso por variáveis de ambiente (nunca em arquivo do repositório):
+
+```powershell
+$env:MOLDA_CENARIOS_URL='https://<gateway do ambiente>'
+$env:MOLDA_CENARIOS_EMAIL='<conta da equipe>'
+$env:MOLDA_CENARIOS_SENHA='<senha>'
+bun packages/molda-cenarios-agente/src/oficina/cli.ts espacos
+bun packages/molda-cenarios-agente/src/oficina/cli.ts mundos <espaço>
+bun packages/molda-cenarios-agente/src/oficina/cli.ts modelos <biblioteca> arvore
+bun packages/molda-cenarios-agente/src/oficina/cli.ts cenario <cenário>
+bun packages/molda-cenarios-agente/src/oficina/cli.ts editar <cenário> lote.json
+```
+
+`lote.json` é `{ "revisaoEsperada": 3, "comandos": [ ... ] }`, com os comandos do documento v2
+(`modelo.definir`, `instancia.criar`, `instancia.atualizar`, `caminho.definir`, `agua.definir`,
+`marcador.definir`, `base.definir`, `iluminacao.definir`, `cenario.renomear` e os `remover`). O
+lote entra inteiro ou não entra; com a revisão vencida, a resposta traz `revisaoAtual`.
+
+MCP por stdio: `bun packages/molda-cenarios-agente/src/oficina/mcp.ts` com as mesmas variáveis.
+Ferramentas: `listar_espacos`, `listar_bibliotecas`, `buscar_modelos`, `listar_mundos`,
+`criar_mundo`, `ligar_bibliotecas`, `listar_cenarios`, `criar_cenario`, `ler_cenario`,
+`duplicar_cenario` e `editar_cenario` (o contrato da ferramenta traz o formato de cada comando).
+Nenhuma ferramenta apaga. Captura de imagem e comandos de intenção (gerar terreno, espalhar,
+encher de água) entram no lote dos agentes.
+
+O resto deste documento descreve o **piloto** (o editor local preso ao Arquipélago), que continua
+funcionando numa máquina com o ambiente local até o lote de limpeza.
+
+## O piloto
+
 Editor de composição do Arquipélago V2. A autoria é um documento versionado; a interface e os agentes usam os mesmos comandos. O teste executa o avatar, câmera, toque e Rapier do jogo, sem escrever progresso da plataforma.
 
 ## Abrir localmente
