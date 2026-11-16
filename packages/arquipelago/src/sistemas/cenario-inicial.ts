@@ -177,5 +177,18 @@ export function cenarioInicialDaFaisca(catalogoDigest: string): DocumentoDeCenar
     apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'pivo' },
     fisica: 'nenhuma',
   })
+  const ponte = documento.instancias.find((p) => p.id === 'ponte-lago')!,
+    agua = documento.aguas[0]!
+  ponte.apoio = {
+    tipo: 'agua',
+    agua: agua.id,
+    local: {
+      x: ponte.transformacao.posicao.x - agua.centro.x,
+      z: ponte.transformacao.posicao.z - agua.centro.z,
+    },
+    deslocamento: ponte.transformacao.posicao.y - agua.nivel,
+    giro: ponte.transformacao.rotacao.y,
+    escala: ponte.transformacao.escala,
+  }
   return validarDocumento(documento, new Map(catalogoInicialDaFaisca().map((m) => [m.id, m])))
 }

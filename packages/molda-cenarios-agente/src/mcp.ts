@@ -17,7 +17,29 @@ const cliente = criarClienteCenarios(await lerAcesso()),
 const vazio = z.object({}).strict(),
   projeto = z.object({ id: z.uuid() }).strict(),
   comando = z.object({ sessaoId: z.uuid(), pedido: PedidoDeViewportSchema }).strict()
+const busca = projeto
+    .extend({ consulta: z.string().max(120), limite: z.number().int().min(1).max(200).default(40) })
+    .strict(),
+  copia = projeto.extend({ nome: z.string().min(1).max(120), operacaoId: z.uuid() }).strict(),
+  aplicar = projeto.extend({ revisao: z.number().int().nonnegative() }).strict()
 const definicoes = [
+  {
+    name: 'buscar_modelos',
+    description:
+      'Busca no catálogo fixado pelo projeto. Retorna identificadores e dimensões reais, sem baixar arte.',
+    schema: busca,
+  },
+  {
+    name: 'criar_copia',
+    description: 'Cria uma cópia editável do documento existente. Não aplica ao jogo.',
+    schema: copia,
+  },
+  {
+    name: 'aplicar_ao_ensaio',
+    description:
+      'Seleciona a revisão atual salva como fonte do ensaio /macro. Não concede progresso de campanha.',
+    schema: aplicar,
+  },
   {
     name: 'listar_cenarios',
     description: 'Lista os projetos compartilhados de cenários.',
@@ -65,6 +87,31 @@ servidor.setRequestHandler(CallToolRequestSchema, async (request) => {
       return texto(await cliente.sessoes())
     }
     if (name === 'ler_cenario') return texto(await cliente.projeto(projeto.parse(args).id))
+    if (name === 'buscar_modelos') {
+      const p = busca.parse(args),
+        d = await cliente.projeto(p.id),
+        modelos = await cliente.catalogo(d.documento.catalogo.id, d.documento.catalogo.digest),
+        normalizar = (s: string) =>
+          s
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .toLowerCase(),
+        filtro = normalizar(p.consulta)
+      return texto(
+        modelos
+          .filter((m) => normalizar(`${m.nome} ${m.origem} ${m.categoria}`).includes(filtro))
+          .slice(0, p.limite),
+      )
+    }
+    if (name === 'criar_copia') {
+      const p = copia.parse(args),
+        d = await cliente.projeto(p.id)
+      return texto(await cliente.criar(p.nome, d.documento, p.operacaoId))
+    }
+    if (name === 'aplicar_ao_ensaio') {
+      const p = aplicar.parse(args)
+      return texto(await cliente.aplicar(p.id, p.revisao))
+    }
     if (name !== 'comandar_editor') return { ...texto('Ferramenta desconhecida'), isError: true }
     const p = comando.parse(args),
       r = await cliente.executar(p.sessaoId, p.pedido),

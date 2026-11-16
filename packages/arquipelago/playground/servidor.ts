@@ -2,6 +2,7 @@ import { basename, resolve, sep } from 'node:path'
 import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 import { ARTE_DA_FAISCA } from '../src/mundo/faisca/arte.generated'
+import { pedidoAoEditorLocal } from './cenario-editor-local'
 
 await conferirPortosDaArte()
 
@@ -67,6 +68,20 @@ Bun.serve({
   port: PORTA,
   async fetch(req) {
     const { pathname } = new URL(req.url)
+    if (pathname === '/api/cenario-aplicado') {
+      const aplicado = await pedidoAoEditorLocal('/aplicado/faisca-v2')
+      if (!aplicado.ok) return aplicado
+      const revisao = await aplicado.json()
+      if (!revisao) return new Response('Nenhuma revisão aplicada', { status: 404 })
+      const c = revisao.documento.catalogo
+      const catalogo = await pedidoAoEditorLocal(
+        `/catalogos/${encodeURIComponent(c.id)}/${c.digest}`,
+      )
+      if (!catalogo.ok) return catalogo
+      return Response.json({ revisao, modelos: (await catalogo.json()).modelos })
+    }
+    if (/^\/api\/cenario-arte\/[a-f0-9]{64}\.glb$/.test(pathname))
+      return pedidoAoEditorLocal(`/arte/${pathname.split('/').at(-1)}`)
     if (pathname.startsWith('/api/faisca3d/')) {
       const arquivo = pathname.slice('/api/faisca3d/'.length)
       if (!ARQUIVOS_FAISCA.has(arquivo))
@@ -103,10 +118,19 @@ Bun.serve({
       })
     if (pathname === '/jogo.js') return compilar('playground.tsx')
     if (pathname === '/macro.js') return compilar('arquipelago-macro.tsx')
+    if (pathname === '/cenario-aplicado.js') return compilar('cenario-aplicado.ts')
     if (pathname === '/macro')
-      return new Response(pagina('Arquipélago · estudo de escala', '/macro.js'), {
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-      })
+      return new Response(
+        pagina(
+          'Arquipélago · estudo de escala',
+          new URL(req.url).searchParams.get('referencia') === '1'
+            ? '/macro.js'
+            : '/cenario-aplicado.js',
+        ),
+        {
+          headers: { 'content-type': 'text/html; charset=utf-8' },
+        },
+      )
     if (pathname === '/animacoes.js') return compilar('animacoes.tsx')
     if (pathname === '/animacoes')
       return new Response(HTML_DAS_ANIMACOES, {

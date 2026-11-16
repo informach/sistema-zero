@@ -34,6 +34,28 @@ function documento(): DocumentoDeCenario {
   }
 }
 describe('transações de cenário', () => {
+  test('recusa hierarquias e carimbos que excedem o orçamento de processamento', () => {
+    const d = documento()
+    d.grupos = Array.from({ length: 66 }, (_, i) => ({
+      id: `g${i}`,
+      nome: `Grupo ${i}`,
+      grupo: i ? `g${i - 1}` : null,
+      bloqueado: false,
+      oculto: false,
+    }))
+    d.instancias[0]!.grupo = 'g65'
+    expect(() => validarDocumento(d)).toThrow('64 níveis')
+    const relevo = documento()
+    relevo.relevo = Array.from({ length: 40 }, (_, i) => ({
+      id: `r${i}`,
+      tipo: 'elevar',
+      centro: { x: 0, z: 0 },
+      raio: 500,
+      valor: 1,
+      intensidade: 1,
+    }))
+    expect(() => validarDocumento(relevo)).toThrow('orçamento de amostragem')
+  })
   test('altera uma instância sem mutar a entrada e incrementa uma revisão por lote', () => {
     const d = documento(),
       r = executarLote(

@@ -10,6 +10,7 @@ import { criarRegistro } from '../mundo/interativos'
 import { criarPlataformaFalsa } from '../plataforma/falsa'
 import { CORPO } from '../sistemas/corpo'
 import { ARQUIPELAGO } from '../sistemas/geografia-do-arquipelago'
+import { estadoHerdado } from './apoio'
 
 export function criarContextoDoEnsaio(altura: (x: number, z: number) => number): ContextoDoJogo {
   const partida = { x: 0, y: altura(0, 149) + CORPO.doCentroAoPe + 0.12, z: 149 }
@@ -55,7 +56,7 @@ export function ContextoDoCenario({
   useEffect(() => {
     contexto.ambiente.noite = doc.iluminacao.noite
     contexto.movimento.aguas = doc.aguas
-      .filter((a) => !a.oculto)
+      .filter((a) => !estadoHerdado(doc, a).oculto)
       .map((a) => ({
         id: a.id,
         x: a.centro.x,

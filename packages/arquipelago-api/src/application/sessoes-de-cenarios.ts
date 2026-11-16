@@ -14,6 +14,7 @@ import type { ServicoDeCenarios } from './servico-de-cenarios'
 import { CenarioNaoEncontrado } from './servico-de-cenarios'
 
 export interface RepositorioDeSessoesDeCenario {
+  limpar(antes: string): Promise<void>
   listar(agora: string): Promise<SessaoDeCenario[]>
   criar(s: SessaoDeCenario): Promise<void>
   ler(id: string): Promise<SessaoDeCenario | null>
@@ -24,6 +25,7 @@ export interface RepositorioDeSessoesDeCenario {
   concluir(id: string, sessaoId: string, r: ResultadoDeViewport): Promise<boolean>
 }
 export class SessoesDeCenarios {
+  private ultimaLimpeza = 0
   constructor(
     private readonly repo: RepositorioDeSessoesDeCenario,
     private readonly cenarios: ServicoDeCenarios,
@@ -35,10 +37,12 @@ export class SessoesDeCenarios {
   }
   async listar(e: Equipe) {
     this.exigir(e)
+    await this.limpar()
     return this.repo.listar(this.agora().toISOString())
   }
   async criar(e: Equipe, body: unknown) {
     this.exigir(e)
+    await this.limpar()
     const p = CriarSessaoSchema.parse(body),
       projeto = await this.cenarios.ler(e, p.projetoId),
       s: SessaoDeCenario = {
@@ -70,7 +74,19 @@ export class SessoesDeCenarios {
     await this.sessao(e, id, true)
     const estado = EstadoDeSessaoSchema.parse(body)
     await this.repo.pulso(id, e.id, estado, new Date(this.agora().getTime() + 30000).toISOString())
+    await this.limpar()
     return { ok: true }
+  }
+  private async limpar() {
+    const agora = this.agora().getTime()
+    if (agora - this.ultimaLimpeza < 60_000) return
+    this.ultimaLimpeza = agora
+    try {
+      await this.repo.limpar(new Date(agora - 600_000).toISOString())
+    } catch (e) {
+      this.ultimaLimpeza = 0
+      throw e
+    }
   }
   async fechar(e: Equipe, id: string) {
     const s = await this.sessao(e, id, true)

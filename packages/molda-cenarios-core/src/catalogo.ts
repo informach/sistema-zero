@@ -37,9 +37,11 @@ export const ModeloDeCatalogoSchema = z
       .optional(),
   })
   .strict()
-  .superRefine((m,ctx)=>{
-    if(m.dimensoes.some(n=>n<0)||m.max.some((n,i)=>n<m.min[i]!))ctx.addIssue({code:'custom',message:'Volume e dimensões inválidos'})
-    if(m.bytes>64*1024*1024)ctx.addIssue({code:'custom',message:'Modelo acima de 64 MiB'})
+  .superRefine((m, ctx) => {
+    if (m.dimensoes.some((n) => n < 0) || m.max.some((n, i) => n < m.min[i]!))
+      ctx.addIssue({ code: 'custom', message: 'Volume e dimensões inválidos' })
+    if (m.bytes > 64 * 1024 * 1024)
+      ctx.addIssue({ code: 'custom', message: 'Modelo acima de 64 MiB' })
   })
 export type ModeloDeCatalogo = z.infer<typeof ModeloDeCatalogoSchema>
 export type CatalogoDeCenario = ReadonlyMap<string, ModeloDeCatalogo>

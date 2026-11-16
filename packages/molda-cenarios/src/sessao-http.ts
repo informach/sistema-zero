@@ -12,6 +12,7 @@ export function ligarSessaoHttp(
   base: string,
   editor: CenariosController,
   runtime: () => CenarioRuntimePort | null,
+  aoLigar?: (id: string) => void,
 ) {
   const abort = new AbortController()
   let sessao: SessaoDeCenario | null = null,
@@ -21,6 +22,7 @@ export function ligarSessaoHttp(
     const p = editor.getState().projeto
     if (!p) return
     sessao = await pedidoCenarios(`${base}/sessoes`, { projetoId: p.projetoId }, abort.signal)
+    if (sessao) aoLigar?.(sessao.id)
   }
   const pulso = async () => {
     if (pulsando || abort.signal.aborted) return

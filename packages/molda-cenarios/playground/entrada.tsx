@@ -8,4 +8,9 @@ await fetch('/api/molda-cenarios/local', { credentials: 'same-origin' })
 const runtimeUrl = '/runtime/entrada.js'
 const runtime = (await import(/* @vite-ignore */ runtimeUrl)) as CenarioRuntimeMontagem
 const host = criarHostHttp({ runtime, tema: 'light' })
-createRoot(document.getElementById('app')!).render(<CenariosApp host={host} />)
+createRoot(document.getElementById('app')!).render(
+  <CenariosApp
+    host={host}
+    projetoInicial={new URLSearchParams(location.search).get('projeto') ?? undefined}
+  />,
+)

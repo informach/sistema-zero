@@ -45,6 +45,16 @@ export const InstanciaSchema = entidade
         .strict(),
       z.object({ tipo: z.literal('absoluto') }).strict(),
       z.object({ tipo: z.literal('objeto'), objeto: id, deslocamento: numero }).strict(),
+      z
+        .object({
+          tipo: z.literal('agua'),
+          agua: id,
+          local: PontoSchema,
+          deslocamento: numero,
+          giro: numero,
+          escala: z.number().finite().positive().max(100),
+        })
+        .strict(),
     ]),
     fisica: z.enum(['nenhuma', 'caixa', 'tronco', 'ponte', 'escada', 'malha', 'solo']),
     raioDoTronco: z.number().finite().positive().max(100).optional(),
@@ -82,7 +92,7 @@ export const RelevoSchema = z
     id,
     tipo: z.enum(['elevar', 'aplainar', 'suavizar']),
     centro: PontoSchema,
-    raio: z.number().finite().min(0.5).max(500),
+    raio: z.number().finite().min(4).max(500),
     valor: numero,
     intensidade: z.number().finite().min(0).max(1),
   })

@@ -11,9 +11,9 @@ Módulo com identidade do Molda, acesso administrativo na plataforma, projetos c
 - [x] 1. Núcleo puro: documento, catálogo, comandos atômicos, revisão, validação e importação fiel da Faísca.
 - [x] 2. Projetos e revisões compartilhados no serviço, autorização e catálogo remoto.
 - [x] 3. Editor visual com seleção, transformações, grupos, apoio e identidade Molda.
-- [ ] 4. Terreno, caminhos, água, margens e vínculos funcionais.
-- [ ] 5. Runtime real: editar/testar/retornar e aplicar revisão ao ensaio.
-- [ ] 6. CLI/MCP, sessões de viewport e sincronização manual/programática.
+- [x] 4. Terreno, caminhos, água, margens e vínculos funcionais.
+- [x] 5. Runtime real: editar/testar/retornar e aplicar revisão ao ensaio.
+- [x] 6. CLI/MCP, sessões de viewport e sincronização manual/programática.
 - [ ] 7. Recompor Faísca pela ferramenta, comparar referências, full review, evidências e push.
 
 Cada lote exige testes pertinentes, tipagem, revisão do diff e commit na staging. Não anunciar entrega completa antes de todos os lotes. GLBs/texturas privados permanecem fora do Git. Não introduzir dependência do host no código do jogo: runtime compilado separadamente, contrato compartilhado.

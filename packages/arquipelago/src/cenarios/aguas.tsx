@@ -4,6 +4,7 @@ import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
 import { useEffect, useMemo } from 'react'
 import {
   BufferGeometry,
+  DoubleSide,
   Float32BufferAttribute,
   type Mesh,
   ShapeUtils,
@@ -11,16 +12,20 @@ import {
   Vector3,
 } from 'three'
 import { ARTE_DA_FAISCA } from '../mundo/faisca/arte.generated'
+import { estadoHerdado } from './apoio'
 import type { ArteDeCenario } from './arte'
+import { geometriaDaBacia } from './bacia'
 
 function Agua({
   a,
   arte,
   escolher,
+  altura,
 }: {
   a: DocumentoDeCenario['aguas'][number]
   arte: ArteDeCenario
   escolher: (id: string) => void
+  altura: (x: number, z: number) => number
 }) {
   const preparada = useMemo(() => {
     const g = a.modelo ? arte.modelos.get(a.modelo) : null
@@ -37,7 +42,14 @@ function Agua({
       )
       geo.setIndex(faces.flatMap((f) => [f[0]!, f[2]!, f[1]!]))
       geo.computeVertexNormals()
-      return { raiz: null, geo, nivel: 0, colisores: [] }
+      const bacia = geometriaDaBacia(a, altura)
+      return {
+        raiz: null,
+        geo,
+        bacia: bacia.geo,
+        nivel: 0,
+        colisores: [{ id: 'bacia', vertices: bacia.vertices, indices: bacia.indices }],
+      }
     }
     const raiz = g.scene.clone(true),
       colisores: { id: string; vertices: Float32Array; indices: Uint32Array }[] = []
@@ -72,9 +84,15 @@ function Agua({
     )
     if (referencia && 'lago' in referencia && referencia.lago) nivel = referencia.lago.nivel
     if (!Number.isFinite(nivel)) throw Error('Modelo de lago sem superfície de água identificável')
-    return { raiz, geo: null, nivel, colisores }
-  }, [a.modelo, a.contorno, arte])
-  useEffect(() => () => preparada.geo?.dispose(), [preparada])
+    return { raiz, geo: null, bacia: null, nivel, colisores }
+  }, [a, arte, altura])
+  useEffect(
+    () => () => {
+      preparada.geo?.dispose()
+      preparada.bacia?.dispose()
+    },
+    [preparada],
+  )
   const y = a.nivel - preparada.nivel * a.escala
   return (
     <RigidBody
@@ -98,6 +116,11 @@ function Agua({
           </mesh>
         )}
       </group>
+      {preparada.bacia && (
+        <mesh geometry={preparada.bacia} receiveShadow dispose={null}>
+          <meshStandardMaterial color="#9a8b68" roughness={1} side={DoubleSide} />
+        </mesh>
+      )}
       {preparada.colisores.map((m) => (
         <TrimeshCollider key={m.id} args={[m.vertices, m.indices]} />
       ))}
@@ -108,12 +131,14 @@ export function AguasDoCenario({
   doc,
   arte,
   escolher,
+  altura,
 }: {
   doc: DocumentoDeCenario
   arte: ArteDeCenario
   escolher: (id: string) => void
+  altura: (x: number, z: number) => number
 }) {
   return doc.aguas
-    .filter((a) => !a.oculto)
-    .map((a) => <Agua key={a.id} a={a} arte={arte} escolher={escolher} />)
+    .filter((a) => !estadoHerdado(doc, a).oculto)
+    .map((a) => <Agua key={a.id} a={a} arte={arte} escolher={escolher} altura={altura} />)
 }

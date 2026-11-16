@@ -48,6 +48,19 @@ export function assentarInstancias(
         pai = doc.instancias.find((i) => i.id === id)!
       t.posicao.y = resolver(pai).transformacao.posicao.y + p.apoio.deslocamento
     }
+    if (p.apoio.tipo === 'agua') {
+      const apoio = p.apoio,
+        a = doc.aguas.find((a) => a.id === apoio.agua)!,
+        c = Math.cos(a.giro),
+        s = Math.sin(a.giro)
+      t.posicao = {
+        x: a.centro.x + a.escala * (c * apoio.local.x + s * apoio.local.z),
+        z: a.centro.z + a.escala * (-s * apoio.local.x + c * apoio.local.z),
+        y: a.nivel + a.escala * apoio.deslocamento,
+      }
+      t.rotacao.y = a.giro + apoio.giro
+      t.escala = a.escala * apoio.escala
+    }
     if (p.apoio.tipo === 'terreno') {
       // O offset inicial é um contrato do importador. Recalcular a diferença de base
       // permite manter as proporções originais e assentar depois de mover/rotacionar/escalar.
@@ -85,6 +98,29 @@ export function assentarInstancias(
         q.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), t.rotacao.y))
         const e = new Euler().setFromQuaternion(q)
         t.rotacao = { x: e.x, y: e.y, z: e.z }
+      }
+      if (
+        p.apoio.referencia !== 'pivo' &&
+        (Math.abs(t.rotacao.x) > 1e-6 || Math.abs(t.rotacao.z) > 1e-6)
+      ) {
+        const q = new Quaternion().setFromEuler(new Euler(t.rotacao.x, t.rotacao.y, t.rotacao.z))
+        const contatos: number[] = []
+        for (const y of [m.min[1], m.max[1]])
+          for (let i = 0; i <= 4; i++)
+            for (let j = 0; j <= 4; j++) {
+              const v = new Vector3(
+                minX + ((maxX - minX) * i) / 4,
+                y,
+                minZ + ((maxZ - minZ) * j) / 4,
+              )
+                .multiplyScalar(t.escala)
+                .applyQuaternion(q)
+              contatos.push(altura(t.posicao.x + v.x, t.posicao.z + v.z) - v.y)
+            }
+        t.posicao.y =
+          Math.max(...contatos) +
+          p.apoio.deslocamento -
+          (p.enterrada ?? 0) * (m.max[1] - m.min[1]) * t.escala
       }
     }
     const pronta = { ...p, transformacao: t }

@@ -1,4 +1,7 @@
 import {
+  CriarCenarioSchema,
+  type DocumentoDeCenario,
+  type ModeloDeCatalogo,
   type PedidoDeViewport,
   PedidoDeViewportSchema,
   type ProjetoDeCenario,
@@ -47,6 +50,19 @@ export function criarClienteCenarios(acesso: AcessoCenarios) {
   return {
     projetos: () => pedir<ProjetoDeCenario[]>('/projetos'),
     projeto: (id: string) => pedir<RevisaoDeCenario>(`/projetos/${encodeURIComponent(id)}`),
+    criar: (nome: string, documento: DocumentoDeCenario, operacaoId: string) =>
+      pedir<RevisaoDeCenario>(
+        '/projetos',
+        CriarCenarioSchema.parse({ nome, documento, operacaoId }),
+      ),
+    catalogo: async (id: string, digest: string) =>
+      (
+        await pedir<{ modelos: ModeloDeCatalogo[] }>(
+          `/catalogos/${encodeURIComponent(id)}/${encodeURIComponent(digest)}`,
+        )
+      ).modelos,
+    aplicar: (id: string, revisao: number) =>
+      pedir(`/projetos/${encodeURIComponent(id)}/aplicar`, { revisao }),
     sessoes: () => pedir<SessaoDeCenario[]>('/sessoes'),
     async executar(sessaoId: string, entrada: PedidoDeViewport): Promise<ResultadoDeViewport> {
       const p = PedidoDeViewportSchema.parse(entrada)
@@ -60,7 +76,7 @@ export function criarClienteCenarios(acesso: AcessoCenarios) {
           if (!t.resultado) throw Error('Pedido concluído sem resultado')
           return t.resultado
         }
-        await Bun.sleep(350)
+        await new Promise((resolve) => setTimeout(resolve, 350))
       }
       throw Error('O viewport não confirmou o pedido. Consulte a revisão antes de repetir.')
     },

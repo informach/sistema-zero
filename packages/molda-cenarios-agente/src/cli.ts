@@ -15,6 +15,25 @@ switch (acao) {
     if (!alvo) throw Error('Informe o projeto')
     console.log(JSON.stringify(await cliente.projeto(alvo), null, 2))
     break
+  case 'catalogo': {
+    if (!alvo) throw Error('Use catalogo <projeto> [busca]')
+    const p = await cliente.projeto(alvo),
+      c = await cliente.catalogo(p.documento.catalogo.id, p.documento.catalogo.digest)
+    console.log(
+      JSON.stringify(
+        c
+          .filter(
+            (m) =>
+              !arquivo ||
+              `${m.nome} ${m.origem} ${m.caminho}`.toLowerCase().includes(arquivo.toLowerCase()),
+          )
+          .slice(0, 100),
+        null,
+        2,
+      ),
+    )
+    break
+  }
   case 'executar': {
     if (!alvo || !arquivo) throw Error('Use executar <sessão> <arquivo.json> [captura.png]')
     const pedido = PedidoDeViewportSchema.parse(await Bun.file(resolve(arquivo)).json()),
@@ -35,6 +54,6 @@ switch (acao) {
   }
   default:
     throw Error(
-      'Comandos: projetos | sessoes | projeto <id> | executar <sessão> <pedido.json> [captura.png]',
+      'Comandos: projetos | sessoes | projeto <id> | catalogo <projeto> [busca] | executar <sessão> <pedido.json> [captura.png]',
     )
 }

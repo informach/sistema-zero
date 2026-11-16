@@ -1,3 +1,4 @@
+export * from './apoios'
 export * from './catalogo'
 export * from './comandos'
 export * from './documento'

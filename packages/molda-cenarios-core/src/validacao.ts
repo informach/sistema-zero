@@ -57,6 +57,8 @@ export function validarDocumento(valor: unknown, catalogo?: CatalogoDeCenario): 
     objetos = new Map(d.instancias.map((o) => [o.id, o]))
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO.bytes)
     erros.push('Documento excede o orçamento de bytes')
+  if (d.relevo.reduce((s, c) => s + Math.ceil((c.raio * 2) / 4 + 2) ** 2, 0) > 2_000_000)
+    erros.push('Relevo excede o orçamento de amostragem; divida a edição em regiões menores')
   for (const e of [
     ...d.grupos,
     ...d.instancias,
@@ -78,11 +80,20 @@ export function validarDocumento(valor: unknown, catalogo?: CatalogoDeCenario): 
         break
       }
       vistos.add(pai)
+      if (vistos.size > 64) {
+        erros.push(`Hierarquia de grupos excede 64 níveis: ${e.id}`)
+        break
+      }
       pai = grupos.get(pai)?.grupo ?? null
     }
   }
   const atores = new Set<string>()
   for (const o of d.instancias) {
+    if (
+      o.apoio.tipo === 'agua' &&
+      !d.aguas.some((a) => a.id === (o.apoio.tipo === 'agua' ? o.apoio.agua : null))
+    )
+      erros.push(`Água de apoio ausente: ${o.id}`)
     if (o.ator) {
       if (atores.has(o.ator)) erros.push(`Ator duplicado: ${o.ator}`)
       atores.add(o.ator)
@@ -96,6 +107,10 @@ export function validarDocumento(valor: unknown, catalogo?: CatalogoDeCenario): 
         break
       }
       vistos.add(apoio.objeto)
+      if (vistos.size > 64) {
+        erros.push(`Hierarquia de apoios excede 64 níveis: ${o.id}`)
+        break
+      }
       const base = objetos.get(apoio.objeto)
       if (!base) {
         erros.push(`Apoio ausente: ${o.id}`)

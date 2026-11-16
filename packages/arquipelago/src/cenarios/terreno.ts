@@ -9,6 +9,7 @@ import {
   type IlhaDoArquipelago,
 } from '../sistemas/geografia-do-arquipelago'
 import { LADO_DO_SETOR, malhaDistante, malhaDoSetor } from '../sistemas/setores-do-arquipelago'
+import { estadoHerdado } from './apoio'
 
 export const paraMundo = (p: Ponto, centro: Ponto, giro: number, escala: number): Ponto => ({
   x: centro.x + escala * (p.x * Math.cos(giro) + p.z * Math.sin(giro)),
@@ -71,7 +72,7 @@ export function criarTerrenoDeCenario(
   const _ilha = ARQUIPELAGO[0]!
   const altura = alturaComRelevo(doc, alturaDoArquipelago)
   const furos = doc.aguas
-    .filter((a) => !a.oculto)
+    .filter((a) => !estadoHerdado(doc, a).oculto)
     .flatMap((a) => triangulos(a.recorte.map((p) => paraMundo(p, a.centro, a.giro, a.escala))))
   // O recorte nativo só acompanha os lances ainda presentes nas posições originais.
   if (

@@ -7,7 +7,12 @@ import type {
   DocumentoDeCenario,
   InstanciaDeCenario,
 } from '@sistemazero/molda-cenarios-core'
-import { validarDocumento } from '@sistemazero/molda-cenarios-core'
+import {
+  apoioDepoisDeTransformar,
+  escalaUniformeDoGesto,
+  type Transformacao,
+  validarDocumento,
+} from '@sistemazero/molda-cenarios-core'
 import type {
   CenarioRuntimeMontagem,
   CenarioRuntimePort,
@@ -38,6 +43,7 @@ import {
   type WebGLRenderer,
 } from 'three'
 import { ConversaDaIrisDeEstudo } from '../interface/conversa-iris-estudo'
+import { ESTILOS } from '../interface/estilos'
 import { ControlesDeToque } from '../interface/toque'
 import { TextoSobreMadeira } from '../mundo/faisca/caminhos'
 import { Iris } from '../mundo/faisca/piloto'
@@ -54,9 +60,12 @@ import { AguasDoCenario } from './aguas'
 import { assentarInstancias, estadoHerdado, matrizDaInstancia } from './apoio'
 import { type ArteDeCenario, carregarArteDeCenario } from './arte'
 import { ContextoDoCenario, criarContextoDoEnsaio } from './ensaio'
+import { GizmoDaAgua } from './gizmo-agua'
 import { FundacoesDoCenario, ObjetosDoCenario } from './objetos'
 import { prepararPasseios } from './passeios'
+import { PincelDeTerreno } from './pincel'
 import { PontosDeCaminho } from './pontos'
+import { CaixasDaSelecao } from './selecao'
 import { criarTerrenoDeCenario } from './terreno'
 
 interface Snapshot {
@@ -64,6 +73,7 @@ interface Snapshot {
   viewport: EstadoDeViewport
   revisao: number
   testando: boolean
+  ponteEnsaio: boolean
 }
 class FalhaDoPalco extends Component<
   { children: ReactNode; aoErro: (e: Error) => void; revisao: number },
@@ -92,9 +102,16 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
   if (opcoes.documento.base.id !== 'faisca-v2')
     throw Error('Este runtime não oferece a base solicitada')
   const host = document.createElement('div')
+  host.className = 'arq-raiz'
   host.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden'
   elemento.append(host)
-  const root = createRoot(host),
+  const estilo = document.createElement('style')
+  estilo.textContent = ESTILOS
+  host.append(estilo)
+  const palco = document.createElement('div')
+  palco.style.cssText = 'position:absolute;inset:0'
+  host.append(palco)
+  const root = createRoot(palco),
     ouvintes = new Set<() => void>(),
     abort = new AbortController()
   let snapshot: Snapshot = {
@@ -102,6 +119,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       viewport: opcoes.estado,
       revisao: opcoes.revisao,
       testando: false,
+      ponteEnsaio: false,
     },
     desmontado = false,
     gesto = false,
@@ -112,6 +130,9 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
     enquadrar: ((ids?: readonly string[]) => void) | null = null,
     colocar: ((id: string, x: number, y: number) => Promise<void>) | null = null
   let contextoAtivo: ReturnType<typeof criarContextoDoEnsaio> | null = null
+  let lerTransformacoes: (ids: readonly string[]) => Record<string, Transformacao> = () => ({})
+  let lerAlvo: () => Vector3 = () => new Vector3(0, 4, 137)
+  let cameraDeEdicao: { posicao: Vector3; alvo: Vector3 } | null = null
   let cameraAutoral:
     | ((p: { x: number; y: number; z: number }, a: { x: number; y: number; z: number }) => void)
     | null = null
@@ -234,6 +255,16 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
           <>
             <ControlesDeToque />
             <ConversaDaIrisDeEstudo />
+            <button
+              type="button"
+              className="arq-botao"
+              style={{ position: 'absolute', right: 12, top: 12 }}
+              onClick={() => emitir({ ponteEnsaio: !s.ponteEnsaio })}
+            >
+              {s.ponteEnsaio
+                ? 'Partir ponte do Bosque · ensaio'
+                : 'Reconstruir ponte do Bosque · ensaio'}
+            </button>
           </>
         )}
       </ContextoDoCenario>
@@ -253,10 +284,29 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       transform = useRef<ComponentRef<typeof TransformControls>>(null),
       proxy = useMemo(() => new Group(), [])
     const [preview, setPreview] = useState<Map<string, InstanciaDeCenario> | null>(null)
+    const [aguaPrevia, setAguaPrevia] = useState<DocumentoDeCenario['aguas'][number] | null>(null)
+    const [relevosPrevios, setRelevosPrevios] = useState<DocumentoDeCenario['relevo']>([])
+    const documentoVisual = useMemo(
+      () =>
+        aguaPrevia || relevosPrevios.length
+          ? {
+              ...s.documento,
+              aguas: aguaPrevia
+                ? s.documento.aguas.map((a) => (a.id === aguaPrevia.id ? aguaPrevia : a))
+                : s.documento.aguas,
+              relevo: [...s.documento.relevo, ...relevosPrevios],
+            }
+          : s.documento,
+      [aguaPrevia, s.documento, relevosPrevios],
+    )
+    const fonteVisual = useMemo(
+      () => (documentoVisual !== s.documento ? criarTerrenoDeCenario(documentoVisual) : terreno),
+      [documentoVisual, s.documento, terreno],
+    )
     const catalogo = useMemo(() => new Map(opcoes.catalogo.map((m) => [m.id, m])), [])
     const assentadas = useMemo(
-      () => assentarInstancias(s.documento, catalogo, terreno.exata),
-      [s.documento, terreno, catalogo],
+      () => assentarInstancias(documentoVisual, catalogo, fonteVisual.exata),
+      [documentoVisual, fonteVisual, catalogo],
     )
     const objetos = useMemo(
       () =>
@@ -273,8 +323,8 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       [objetos, s.viewport.selecionados, s.documento],
     )
     const pisos = useMemo(
-      () => prepararPasseios(s.documento, opcoes.catalogo, arte, terreno.exata),
-      [s.documento, arte, terreno],
+      () => prepararPasseios(documentoVisual, opcoes.catalogo, arte, fonteVisual.exata),
+      [documentoVisual, arte, fonteVisual],
     )
     const placas = useMemo(
       () =>
@@ -312,7 +362,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
     }
     useEffect(() => {
       let ativo = true
-      prepararGpuDaFaisca(g, scene, c)
+      prepararGpuDaFaisca(g, scene, c, { cenaMutavel: true })
         .then(() => {
           if (ativo) {
             g.render(scene, c)
@@ -372,7 +422,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       if (!a) return
       proxy.updateMatrixWorld(true)
       if (s.viewport.ferramenta === 'escala') {
-        const f = Math.max(0.01, proxy.scale.x, proxy.scale.y, proxy.scale.z)
+        const f = escalaUniformeDoGesto(proxy.scale, 1)
         proxy.scale.setScalar(f)
         proxy.updateMatrixWorld(true)
       }
@@ -407,9 +457,12 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       const comandos: ComandoDeCenario[] = [...preview.values()].map((p) => {
         const original = s.documento.instancias.find((i) => i.id === p.id)!,
           antiga = a.objetos.find((i) => i.id === p.id)!,
-          apoio = structuredClone(original.apoio)
-        if (apoio.tipo !== 'absoluto')
-          apoio.deslocamento += p.transformacao.posicao.y - antiga.transformacao.posicao.y
+          apoio = apoioDepoisDeTransformar(
+            original,
+            p.transformacao,
+            antiga.transformacao,
+            s.documento,
+          )
         return {
           tipo: 'instancia.atualizar',
           id: p.id,
@@ -423,6 +476,12 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       }
     }
     useEffect(() => {
+      lerTransformacoes = (ids) =>
+        Object.fromEntries(
+          objetos
+            .filter((p) => ids.includes(p.id))
+            .map((p) => [p.id, structuredClone(p.transformacao)]),
+        )
       cameraAutoral = (p, a) => {
         if (snapshot.testando) throw Error('Retorne à edição')
         c.position.set(p.x, p.y, p.z)
@@ -430,6 +489,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
         c.lookAt(a.x, a.y, a.z)
         orbit.current?.update()
       }
+      lerAlvo = () => orbit.current?.target.clone() ?? new Vector3(0, 4, 137)
       enquadrar = (ids) => {
         const ps = ids?.length ? objetos.filter((p) => ids.includes(p.id)) : objetos
         const box = new Box3()
@@ -511,20 +571,6 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
       if (s.testando || gesto) return
       if (s.viewport.ferramenta === 'terreno') {
         e.stopPropagation()
-        const b = s.viewport.pincel
-        void editar([
-          {
-            tipo: 'relevo.definir',
-            relevo: {
-              id: `pincel-${crypto.randomUUID()}`,
-              tipo: b.tipo,
-              centro: { x: e.point.x, z: e.point.z },
-              raio: b.raio,
-              valor: b.valor,
-              intensidade: b.intensidade,
-            },
-          },
-        ])
         return
       }
       if (!e.shiftKey) opcoes.aoSelecionar([])
@@ -551,6 +597,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
           shadow-normalBias={0.04}
         />
         <Physics
+          debug={!s.testando && s.viewport.inspecao}
           paused={!s.testando}
           gravity={[0, -GRAVIDADE, 0]}
           timeStep={PASSO_DA_FISICA}
@@ -558,18 +605,36 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
           updatePriority={-1}
         >
           <OceanoMacro />
-          <group onClick={terrenoClick}>
-            <TerrenosMacro
-              fonte={terreno}
-              foco={s.testando ? null : foco}
-              aoMudar={(n) => {
-                setores.current = n
-              }}
-              aoPronto={() => {}}
-            />
-          </group>
+          <PincelDeTerreno
+            ativo={!s.testando && s.viewport.ferramenta === 'terreno'}
+            pincel={s.viewport.pincel}
+            altura={fonteVisual.exata}
+            gesto={(ativo) => {
+              gesto = ativo
+              opcoes.aoGesto(ativo)
+              if (orbit.current) orbit.current.enabled = !ativo
+            }}
+            previa={setRelevosPrevios}
+            salvar={(r) => editar(r.map((relevo) => ({ tipo: 'relevo.definir', relevo })))}
+          >
+            <group onClick={terrenoClick}>
+              <TerrenosMacro
+                fonte={fonteVisual}
+                foco={s.testando ? null : foco}
+                aoMudar={(n) => {
+                  setores.current = n
+                }}
+                aoPronto={() => {}}
+              />
+            </group>
+          </PincelDeTerreno>
           {ARQUIPELAGO.slice(1).map((i) => (
-            <PonteMacro key={i.id} conexao={conexaoDaIlha(i.id)} estado="quebrada" progresso={0} />
+            <PonteMacro
+              key={i.id}
+              conexao={conexaoDaIlha(i.id)}
+              estado={s.ponteEnsaio && i.id === ARQUIPELAGO[1]!.id ? 'aberta' : 'quebrada'}
+              progresso={0}
+            />
           ))}
           <ObjetosDoCenario
             objetos={objetos.filter((p) => !p.ator)}
@@ -601,8 +666,13 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
               </group>
             ))}
           <TextoSobreMadeira colecao={placas} assentar={(p) => ({ y: p.altura })} />
-          <AguasDoCenario doc={s.documento} arte={arte} escolher={escolher} />
-          <FundacoesDoCenario objetos={objetos} catalogo={catalogo} altura={terreno.exata} />
+          <AguasDoCenario
+            doc={documentoVisual}
+            arte={arte}
+            escolher={escolher}
+            altura={fonteVisual.exata}
+          />
+          <FundacoesDoCenario objetos={objetos} catalogo={catalogo} altura={fonteVisual.exata} />
           <RigidBody type="fixed" colliders={false}>
             {pisos.map((p) => (
               <group key={p.geo.uuid}>
@@ -632,6 +702,28 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
         </Physics>
         {!s.testando && (
           <>
+            <CaixasDaSelecao objetos={selecionadas} catalogo={catalogo} />
+            {s.documento.aguas
+              .filter(
+                (a) =>
+                  s.viewport.selecionados.includes(a.id) &&
+                  !estadoHerdado(s.documento, a).bloqueado &&
+                  !a.oculto,
+              )
+              .map((a) => (
+                <GizmoDaAgua
+                  key={a.id}
+                  agua={a}
+                  ferramenta={s.viewport.ferramenta}
+                  encaixe={s.viewport.encaixe}
+                  gesto={(ativo) => {
+                    gesto = ativo
+                    opcoes.aoGesto(ativo)
+                  }}
+                  previa={setAguaPrevia}
+                  salvar={(a) => editar([{ tipo: 'agua.definir', agua: a }])}
+                />
+              ))}
             <PontosDeCaminho
               doc={s.documento}
               estado={s.viewport}
@@ -685,6 +777,7 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
   }
   root.render(<App />)
   return {
+    transformacoes: (ids) => lerTransformacoes(ids),
     posicionarCamera(p, a) {
       if (!cameraAutoral) throw Error('Viewport indisponível')
       cameraAutoral(p, a)
@@ -705,8 +798,12 @@ export const montar: CenarioRuntimeMontagem['montar'] = async (elemento, opcoes)
     async testar(iniciar) {
       if (gesto) throw Error('Finalize o gesto')
       await aguardar(snapshot.revisao)
+      if (iniciar && !snapshot.testando && camera)
+        cameraDeEdicao = { posicao: camera.position.clone(), alvo: lerAlvo() }
       emitir({ testando: iniciar })
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+      if (!iniciar && cameraDeEdicao && cameraAutoral)
+        cameraAutoral(cameraDeEdicao.posicao, cameraDeEdicao.alvo)
     },
     async capturar(revisaoEsperada = snapshot.revisao) {
       if (gesto) throw Error('Gesto em andamento')

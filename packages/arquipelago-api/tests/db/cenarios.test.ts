@@ -114,8 +114,31 @@ test.skipIf(!url)(
       dados: { origem: 'viewport' },
     })
     expect((await sessoes.tarefa(autor, sessao.id, t.id)).resultado?.dados?.origem).toBe('viewport')
+    await sessoes.concluir(autor, sessao.id, t.id, {
+      ok: true,
+      revisao: 0,
+      dados: { origem: 'viewport' },
+    })
     await cenarios.aplicar(autor, p.projetoId, 0)
     expect((await cenarios.aplicado(autor, 'faisca-v2')).projetoId).toBe(p.projetoId)
+    const app = rotasDosCenarios({ cenarios, sessoes, tokenInterno: 'fila-qa' })
+    const vazio = await app.handle(
+      new Request(`http://localhost/arquipelago/admin/cenarios/sessoes/${sessao.id}/proxima`, {
+        headers: {
+          'x-internal-token': 'fila-qa',
+          'x-auth-user-id': autor.id,
+          'x-auth-user-role': 'admin',
+          'x-auth-user-status': 'active',
+        },
+      }),
+    )
+    expect(vazio.status).toBe(200)
+    expect(await vazio.json()).toEqual({ tarefa: null })
+    await sessoes.fechar(autor, sessao.id)
+    expect((await sessoes.listar(autor)).some((s) => s.id === sessao.id)).toBe(false)
+    await repo.limpar(new Date(Date.now() + 3600_000).toISOString())
+    expect(await repo.lerTarefa(t.id)).toBeNull()
+    expect(await repo.ler(sessao.id)).toBeNull()
   },
 )
 test.skipIf(!url)(

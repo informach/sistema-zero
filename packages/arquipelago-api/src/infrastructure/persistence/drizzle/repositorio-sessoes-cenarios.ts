@@ -5,13 +5,40 @@ import type {
   SessaoDeCenario,
   TarefaDeViewport,
 } from '@sistemazero/molda-cenarios-core'
-import { and, asc, eq, gt } from 'drizzle-orm'
+import { and, asc, eq, gt, inArray, lt } from 'drizzle-orm'
 import type { RepositorioDeSessoesDeCenario } from '../../../application/sessoes-de-cenarios'
 import type { Database } from './db'
 import { cenarioSessoes as sessoes, cenarioTarefas as tarefas } from './schema'
 
 export class DrizzleSessoesDeCenarios implements RepositorioDeSessoesDeCenario {
   constructor(private readonly db: Database) {}
+  async limpar(antes: string) {
+    // Capturas e filas são efêmeras. Remove por lotes para não monopolizar o banco.
+    await this.db
+      .delete(tarefas)
+      .where(
+        inArray(
+          tarefas.id,
+          this.db
+            .select({ id: tarefas.id })
+            .from(tarefas)
+            .where(lt(tarefas.expiraEm, antes))
+            .limit(200),
+        ),
+      )
+    await this.db
+      .delete(sessoes)
+      .where(
+        inArray(
+          sessoes.id,
+          this.db
+            .select({ id: sessoes.id })
+            .from(sessoes)
+            .where(lt(sessoes.expiraEm, antes))
+            .limit(200),
+        ),
+      )
+  }
   async listar(agora: string) {
     return this.db.select().from(sessoes).where(gt(sessoes.expiraEm, agora)).limit(200)
   }
@@ -95,6 +122,12 @@ export class DrizzleSessoesDeCenarios implements RepositorioDeSessoesDeCenario {
         and(eq(tarefas.id, id), eq(tarefas.sessaoId, sessaoId), eq(tarefas.estado, 'executando')),
       )
       .returning({ id: tarefas.id })
-    return r.length === 1
+    if (r.length === 1) return true
+    const existente = await this.lerTarefa(id)
+    return (
+      existente?.sessaoId === sessaoId &&
+      existente.estado === 'concluido' &&
+      isDeepStrictEqual(existente.resultado, resultado)
+    )
   }
 }

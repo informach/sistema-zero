@@ -6,7 +6,10 @@ import type {
   ModeloDeCatalogo,
   ProjetoDeCenario,
 } from '@sistemazero/molda-cenarios-core'
-import { DocumentoDeCenarioSchema } from '@sistemazero/molda-cenarios-core'
+import {
+  apoioDepoisDeTransformar,
+  DocumentoDeCenarioSchema,
+} from '@sistemazero/molda-cenarios-core'
 import {
   Box,
   Camera,
@@ -33,9 +36,27 @@ import { Paisagem } from './Paisagem'
 import type { CenarioRuntimePort, CenariosHostAdapter, FerramentaDeCenario } from './portas'
 
 function Miniatura({ modelo, host }: { modelo: ModeloDeCatalogo; host: CenariosHostAdapter }) {
+  const container = useRef<HTMLSpanElement>(null)
+  const [visivel, setVisivel] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [falha, setFalha] = useState(false)
   useEffect(() => {
+    const elemento = container.current
+    if (!elemento) return
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) {
+          setVisivel(true)
+          observador.disconnect()
+        }
+      },
+      { rootMargin: '100px' },
+    )
+    observador.observe(elemento)
+    return () => observador.disconnect()
+  }, [])
+  useEffect(() => {
+    if (!visivel) return
     const a = new AbortController()
     let recurso: string | null = null
     host
@@ -52,13 +73,17 @@ function Miniatura({ modelo, host }: { modelo: ModeloDeCatalogo; host: CenariosH
       a.abort()
       if (recurso) URL.revokeObjectURL(recurso)
     }
-  }, [modelo, host])
-  return url ? (
-    <img src={url} alt="" loading="lazy" />
-  ) : (
-    <span title={falha ? 'Miniatura indisponível' : 'Preparando miniatura'}>
-      <Box aria-hidden />
-      {falha && <small>Sem miniatura</small>}
+  }, [modelo, host, visivel])
+  return (
+    <span ref={container} title={falha ? 'Miniatura indisponível' : modelo.nome}>
+      {url ? (
+        <img src={url} alt="" loading="lazy" />
+      ) : (
+        <>
+          <Box aria-hidden />
+          {falha && <small>Sem miniatura</small>}
+        </>
+      )}
     </span>
   )
 }
@@ -86,8 +111,10 @@ function CampoNumero({
         }}
         onBlur={() => {
           const n = Number(texto)
-          if (texto.trim() && Number.isFinite(n) && n !== valor) alterar(n)
-          else setTexto(String(valor))
+          if (texto.trim() && Number.isFinite(n) && n !== valor) {
+            setTexto(String(valor))
+            alterar(n)
+          } else setTexto(String(valor))
         }}
       />
     </label>
@@ -130,12 +157,14 @@ export function CenariosApp({
     arquivo = useRef<HTMLInputElement>(null)
   const [nomeDaCopia, setNomeDaCopia] = useState('')
   const [viewportPronto, setViewportPronto] = useState(false)
+  const [sessaoId, setSessaoId] = useState<string | null>(null)
   const tentar = useCallback(
     (p: Promise<unknown>) => {
       void p.catch((e) => editor.erro(e instanceof Error ? e.message : String(e)))
     },
     [editor],
   )
+  useEffect(() => () => host.runtime.liberarMiniaturas?.(), [host])
   useEffect(() => {
     let ativo = true
     host
@@ -156,7 +185,8 @@ export function CenariosApp({
     projetoId = projeto?.projetoId
   useEffect(() => {
     if (!projetoId) return
-    return host.ligarSessao?.(editor, () => runtime.current)
+    setSessaoId(null)
+    return host.ligarSessao?.(editor, () => runtime.current, setSessaoId)
   }, [projetoId, host, editor])
   useEffect(() => {
     if (!projetoId) return
@@ -238,6 +268,9 @@ export function CenariosApp({
   const selecionados =
       doc?.instancias.filter((o) => estado.viewport.selecionados.includes(o.id)) ?? [],
     objeto = selecionados.length === 1 ? selecionados[0] : null
+  const transformacaoExibida = objeto
+    ? (runtime.current?.transformacoes?.([objeto.id])[objeto.id] ?? objeto.transformacao)
+    : null
   const editar = (c: ComandoDeCenario[]) => tentar(editor.executar(c))
   const filtrar = (v: string) =>
     v
@@ -256,20 +289,15 @@ export function CenariosApp({
   }
   const transformar = (tipo: 'posicao' | 'rotacao', eixo: 'x' | 'y' | 'z', valor: number) => {
     if (!objeto) return
+    const antes = runtime.current?.transformacoes?.([objeto.id])[objeto.id] ?? objeto.transformacao
     const t = {
-      ...objeto.transformacao,
+      ...antes,
       [tipo]: {
-        ...objeto.transformacao[tipo],
+        ...antes[tipo],
         [eixo]: tipo === 'rotacao' ? (valor * Math.PI) / 180 : valor,
       },
     }
-    const apoio =
-      tipo === 'posicao' && eixo === 'y' && objeto.apoio.tipo !== 'absoluto'
-        ? {
-            ...objeto.apoio,
-            deslocamento: objeto.apoio.deslocamento + valor - objeto.transformacao.posicao.y,
-          }
-        : objeto.apoio
+    const apoio = apoioDepoisDeTransformar(objeto, t, antes, doc!)
     editar([
       { tipo: 'instancia.atualizar', id: objeto.id, alteracoes: { transformacao: t, apoio } },
     ])
@@ -335,6 +363,7 @@ export function CenariosApp({
       aria-label="Molda — editor de cenários"
       data-runtime-pronto={viewportPronto}
       data-revisao={projeto?.revisao}
+      data-sessao={sessaoId ?? undefined}
       onKeyDown={(e) => {
         if (
           estado.testando ||
@@ -763,6 +792,7 @@ export function CenariosApp({
                 >
                   <option value="terreno">Assentar no terreno</option>
                   <option value="absoluto">Altura absoluta</option>
+                  {objeto.apoio.tipo === 'agua' && <option value="agua">Vinculado ao lago</option>}
                   {objeto.apoio.tipo === 'objeto' && (
                     <option value="objeto">Apoiado em outro objeto</option>
                   )}
@@ -849,7 +879,7 @@ export function CenariosApp({
                     <CampoNumero
                       key={e}
                       nome={e.toUpperCase()}
-                      valor={objeto.transformacao.posicao[e]}
+                      valor={transformacaoExibida!.posicao[e]}
                       alterar={(v) => transformar('posicao', e, v)}
                     />
                   ))}
@@ -862,20 +892,28 @@ export function CenariosApp({
                     <CampoNumero
                       key={e}
                       nome={e.toUpperCase()}
-                      valor={(objeto.transformacao.rotacao[e] * 180) / Math.PI}
+                      valor={(transformacaoExibida!.rotacao[e] * 180) / Math.PI}
                       alterar={(v) => transformar('rotacao', e, v)}
                     />
                   ))}
                 </div>
                 <CampoNumero
                   nome="Escala"
-                  valor={objeto.transformacao.escala}
+                  valor={transformacaoExibida!.escala}
                   alterar={(v) =>
                     editar([
                       {
                         tipo: 'instancia.atualizar',
                         id: objeto.id,
-                        alteracoes: { transformacao: { ...objeto.transformacao, escala: v } },
+                        alteracoes: {
+                          transformacao: { ...transformacaoExibida!, escala: v },
+                          apoio: apoioDepoisDeTransformar(
+                            objeto,
+                            { ...transformacaoExibida!, escala: v },
+                            transformacaoExibida!,
+                            doc!,
+                          ),
+                        },
                       },
                     ])
                   }
@@ -989,10 +1027,22 @@ export function CenariosApp({
               {(['raio', 'valor', 'intensidade'] as const).map((k) => (
                 <CampoNumero
                   key={k}
-                  nome={k === 'raio' ? 'Raio (m)' : k === 'valor' ? 'Altura (m)' : 'Intensidade'}
+                  nome={
+                    k === 'raio' ? 'Raio (mín. 4 m)' : k === 'valor' ? 'Altura (m)' : 'Intensidade'
+                  }
                   valor={estado.viewport.pincel[k]}
                   alterar={(v) =>
-                    editor.viewport({ pincel: { ...estado.viewport.pincel, [k]: v } })
+                    editor.viewport({
+                      pincel: {
+                        ...estado.viewport.pincel,
+                        [k]:
+                          k === 'raio'
+                            ? Math.max(4, Math.min(500, v))
+                            : k === 'intensidade'
+                              ? Math.max(0, Math.min(1, v))
+                              : v,
+                      },
+                    })
                   }
                 />
               ))}
@@ -1004,8 +1054,15 @@ export function CenariosApp({
           </p>
         </aside>
       </div>
-      <footer className="mce-rodape">
-        <span>{doc?.instancias.length ?? 0} objetos · escala em metros</span>
+      <footer
+        className="mce-rodape"
+        data-geometrias={medidas.geometrias}
+        data-texturas={medidas.texturas}
+      >
+        <span title={sessaoId ? `Sessão do agente: ${sessaoId}` : undefined}>
+          {doc?.instancias.length ?? 0} objetos · escala em metros
+          {sessaoId && <> · sessão {sessaoId.slice(0, 8)}</>}
+        </span>
         <span>
           {medidas.fps.toFixed(0)} FPS · {medidas.triangulos.toLocaleString('pt-BR')} triângulos ·{' '}
           {medidas.chamadas} desenhos

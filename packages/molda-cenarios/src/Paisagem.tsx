@@ -97,6 +97,17 @@ export function Paisagem({
           </select>
           {caminho && (
             <>
+              <label>
+                Tipo
+                <select
+                  value={caminho.tipo}
+                  disabled={bloqueado || caminho.bloqueado}
+                  onChange={(e) => definirCaminho({ tipo: e.target.value as 'trilha' | 'praca' })}
+                >
+                  <option value="trilha">Trilha</option>
+                  <option value="praca">Praça fechada</option>
+                </select>
+              </label>
               {numero('Largura · metros', caminho.largura, (v) => definirCaminho({ largura: v }))}
               <label>
                 Acabamento
@@ -176,6 +187,23 @@ export function Paisagem({
           </select>
           {agua && (
             <>
+              <label>
+                Modelo de água e margens
+                <select
+                  value={agua.modelo ?? ''}
+                  disabled={bloqueado || agua.bloqueado}
+                  onChange={(e) => definirAgua({ modelo: e.target.value || null })}
+                >
+                  <option value="">Água de terreno · bacia editável</option>
+                  {catalogo
+                    .filter((m) => m.id === agua.modelo || /lago_nadavel\.glb$/.test(m.caminho))
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.nome}
+                      </option>
+                    ))}
+                </select>
+              </label>
               {numero('Centro X', agua.centro.x, (x) =>
                 definirAgua({ centro: { ...agua.centro, x } }),
               )}
@@ -183,30 +211,86 @@ export function Paisagem({
                 definirAgua({ centro: { ...agua.centro, z } }),
               )}
               {numero('Nível da água', agua.nivel, (nivel) => definirAgua({ nivel }))}
+              {!agua.modelo &&
+                numero('Profundidade da bacia', agua.profundidade, (profundidade) =>
+                  definirAgua({ profundidade }),
+                )}
               {numero('Escala do conjunto', agua.escala, (escala) => definirAgua({ escala }))}
               {numero('Giro · graus', (agua.giro * 180) / Math.PI, (g) =>
                 definirAgua({ giro: (g * Math.PI) / 180 }),
               )}
               <p>
-                O conjunto mantém modelo, margem, recorte e área de nado vinculados. A ponte é um
-                objeto separado: confira seus apoios após alterar o lago.
+                O conjunto mantém modelo, margem, recorte e área de nado vinculados. Objetos com
+                apoio neste lago acompanham seus movimentos. Confira as aproximações das trilhas.
               </p>
               <details>
                 <summary>Contorno de nado</summary>
                 {pontos(agua.contorno, (contorno) => definirAgua({ contorno }))}
               </details>
+              <Button
+                size="compact"
+                variant="danger"
+                disabled={bloqueado || agua.bloqueado}
+                onClick={() => editar([{ tipo: 'agua.remover', id: agua.id }])}
+              >
+                Excluir lago
+              </Button>
               <details>
                 <summary>Recorte do terreno</summary>
                 {pontos(agua.recorte, (recorte) => definirAgua({ recorte }))}
               </details>
             </>
           )}
+          <Button
+            size="compact"
+            disabled={bloqueado}
+            onClick={() => {
+              const base = doc.aguas[0],
+                id = `agua-${crypto.randomUUID()}`
+              const contorno = Array.from({ length: 16 }, (_, i) => ({
+                x: Math.cos((i * Math.PI) / 8) * 5,
+                z: Math.sin((i * Math.PI) / 8) * 4,
+              }))
+              editar([
+                {
+                  tipo: 'agua.definir',
+                  agua: base
+                    ? {
+                        ...base,
+                        id,
+                        grupo: null,
+                        bloqueado: false,
+                        oculto: false,
+                        nome: 'Novo lago',
+                        centro: { x: base.centro.x + 16, z: base.centro.z },
+                      }
+                    : {
+                        id,
+                        nome: 'Nova água de terreno',
+                        grupo: null,
+                        bloqueado: false,
+                        oculto: false,
+                        modelo: null,
+                        centro: { x: 50, z: 135 },
+                        giro: 0,
+                        escala: 1,
+                        nivel: 3.5,
+                        profundidade: 1.5,
+                        contorno,
+                        recorte: contorno,
+                      },
+                },
+              ])
+            }}
+          >
+            Novo lago
+          </Button>
         </>
       )}
       {viewport.ferramenta === 'terreno' && (
         <p>
-          Escolha o pincel e clique no terreno para aplicar um carimbo. Desfazer remove a última
-          operação sem alterar o terreno original.
+          Arraste no terreno para aplicar o pincel. Cada passada corresponde a uma operação de
+          desfazer. Esc cancela a passada em andamento. A malha tem resolução de 4 metros.
         </p>
       )}
     </section>

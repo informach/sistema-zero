@@ -1,6 +1,6 @@
 import type { ModeloDeCatalogo } from './catalogo'
 import type { ComandoDeCenario } from './comandos'
-import type { DocumentoDeCenario } from './documento'
+import type { DocumentoDeCenario, Transformacao } from './documento'
 
 /** Contrato de montagem por URL. Não importa a interface nem o código do jogo. */
 export type FerramentaDeCenario =
@@ -25,6 +25,7 @@ export interface EstadoDeViewport {
   }
 }
 export interface CenarioRuntimePort {
+  transformacoes?(ids: readonly string[]): Record<string, Transformacao>
   posicionarCamera?(
     posicao: { x: number; y: number; z: number },
     alvo: { x: number; y: number; z: number },

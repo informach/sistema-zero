@@ -19,7 +19,11 @@ export type {
 } from '@sistemazero/molda-cenarios-core/runtime'
 
 export interface CenariosHostAdapter {
-  ligarSessao?(editor: CenariosController, runtime: () => CenarioRuntimePort | null): () => void
+  ligarSessao?(
+    editor: CenariosController,
+    runtime: () => CenarioRuntimePort | null,
+    aoLigar?: (id: string) => void,
+  ): () => void
   tema: 'light' | 'dark'
   listar(): Promise<ProjetoDeCenario[]>
   abrir(id: string): Promise<RevisaoDeCenario>

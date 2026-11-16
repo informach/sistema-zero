@@ -63,7 +63,7 @@ export function criarHostHttp({
   const guardar = recuperacao(),
     arte = (m: ModeloDeCatalogo) => `${base}/arte/${m.digest}.glb`
   return {
-    ligarSessao: (editor, runtime) => ligarSessaoHttp(base, editor, runtime),
+    ligarSessao: (editor, runtime, aoLigar) => ligarSessaoHttp(base, editor, runtime, aoLigar),
     tema,
     runtime,
     urlDaArte: arte,

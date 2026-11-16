@@ -4,6 +4,7 @@ import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-ce
 import type { EstadoDeViewport } from '@sistemazero/molda-cenarios-core/runtime'
 import { useRef } from 'react'
 import type { Mesh } from 'three'
+import { estadoHerdado } from './apoio'
 
 export const idDoCaminho = (id: string) => id.split('#ponto:')[0]!
 export function PontosDeCaminho({
@@ -23,7 +24,9 @@ export function PontosDeCaminho({
 }) {
   const id = estado.selecionados[0],
     caminho = doc.caminhos.find((p) => p.id === idDoCaminho(id ?? ''))
-  if (!caminho || caminho.bloqueado || caminho.oculto) return null
+  if (!caminho) return null
+  const herdado = estadoHerdado(doc, caminho)
+  if (herdado.bloqueado || herdado.oculto) return null
   return caminho.pontos.map((p, i) => (
     <Ponto
       key={`${caminho.id}:${p.x}:${p.z}`}
