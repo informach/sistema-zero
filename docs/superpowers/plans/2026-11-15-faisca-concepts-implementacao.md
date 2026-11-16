@@ -77,5 +77,7 @@ Os testes que possuem coordenadas da composição anterior deverão acompanhar a
 
 - [x] Registrar relatório com implementação, correções, limites e evidências, sem declarar aprovação artística humana.
 - [x] Versionar código, plano, relatório, capturas e vídeos; manter binários licenciados em `output/`.
-- [ ] Commitar em `staging`, fazer push e conferir SHA remoto.
+- [x] Commitar em `staging`, fazer push e conferir SHA remoto.
 - [x] Manter `http://127.0.0.1:4530/macro` disponível para a avaliação do conjunto pronto.
+
+**Fechamento em 16/11/2026:** código ambiental em `08fa00487`, preparação GPU em `7d71f4247`, relatório/evidências em `7cd87cd3f`, enviados para `origin/staging` e conferidos no remoto. Servidor respondeu HTTP 200. A única alteração externa não commitada é o roteiro da aula dos pais, preservado conforme identificado na partida. A aprovação artística humana permanece pendente da avaliação do conjunto.
