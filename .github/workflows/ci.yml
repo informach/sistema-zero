@@ -216,6 +216,14 @@ jobs:
           bun --version
           bun run test
 
+      # Pacotes puros e rápidos: documento, comandos e migração dos cenários 3D, o
+      # controlador do editor e o cliente dos agentes. Nenhum outro job os executava.
+      - name: Cenários 3D (núcleo, editor e agente)
+        run: |
+          bun test --cwd packages/molda-cenarios-core
+          bun test --cwd packages/molda-cenarios
+          bun test --cwd packages/molda-cenarios-agente
+
       - name: Preparar navegadores das provas de persistência do Studio
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
@@ -993,6 +1001,11 @@ jobs:
                   # precisam acompanhar o pacote para não servir contratos de versões diferentes.
                   packages/pinta/*) add community-kids; add_palco; add community; add admin; add members ;;
                   packages/molda/*) add community-kids; add_palco; add community ;; # oficina 3D compartilhada pelos dois públicos
+                  # Contrato dos cenários 3D: o gateway limita o corpo por ele, o serviço do jogo
+                  # valida os lotes e o Admin monta o editor. Sem esta linha, um contrato novo
+                  # ficava só no repositório e os três seguiam servindo o antigo.
+                  packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin ;;
+                  packages/molda-cenarios/*) add admin ;; # editor de cenários, hoje montado só pelo Admin
                 esac
               done <<< "$CHANGED"
             fi

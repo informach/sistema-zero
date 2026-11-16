@@ -1,0 +1,7 @@
+export { ConflitoDeCenario } from '../comandos'
+export { PontoSchema, VetorSchema } from '../documento'
+export { CenarioInvalido, poligonoSimples } from '../validacao'
+export * from './comandos'
+export * from './documento'
+export * from './migrar'
+export * from './validacao'
