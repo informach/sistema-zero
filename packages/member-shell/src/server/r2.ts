@@ -511,6 +511,10 @@ export async function r2PresignGetUgc(
     expiresInSeconds?: number
     responseContentDisposition?: string
     responseContentType?: string
+    /** O `Cache-Control` que o R2 devolve com o arquivo (para o que é guardado por conteúdo). */
+    responseCacheControl?: string
+    /** A hora da assinatura (padrão: agora). A mesma hora dá o MESMO link, que o navegador reaproveita. */
+    signingDate?: Date
   } = {},
 ): Promise<string> {
   const cfg = requireUgcR2Config()
@@ -521,8 +525,12 @@ export async function r2PresignGetUgc(
       Key: normalizeKey(key),
       ResponseContentDisposition: opts.responseContentDisposition,
       ResponseContentType: opts.responseContentType,
+      ResponseCacheControl: opts.responseCacheControl,
     }),
-    { expiresIn: opts.expiresInSeconds ?? 300 },
+    {
+      expiresIn: opts.expiresInSeconds ?? 300,
+      ...(opts.signingDate ? { signingDate: opts.signingDate } : {}),
+    },
   )
 }
 

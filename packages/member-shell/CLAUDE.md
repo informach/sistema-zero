@@ -1,5 +1,34 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Molda Cenários: o BFF da oficina de cenários 3D (16/11/2026)
+
+`routes/cenarios.ts` (`createCenariosRoutes({ gateway, session })`, espalhado no `createShell` como
+`routes.cenarios`): UM handler para `app/api/cenarios/[...caminho]/route.ts` (GET, POST, PATCH,
+DELETE). O cliente é o `criarHostHttp` de `@sistemazero/molda-cenarios/oficina`.
+
+- **Repasse** ao members pelo gateway (`/members/cenarios/*`) só dos caminhos da lista `REPASSES`
+  (método e formato do caminho conferidos; a consulta da busca de modelos leva só `busca`, `pasta`,
+  `cursor` e `limite`). Quem pode usar e de quem é cada espaço é o members que decide.
+- **Arquivos não passam aqui.** `…/modelos/reservar` e `…/capa/reservar` voltam com um endereço
+  assinado de envio por arquivo (`r2PresignPutUgc`, tamanho e tipo presos, 15 min); a chave do
+  members só é assinada se for `cenarios/<espaço>/blobs/<digest>` daquela reserva.
+- **Só este servidor afirma que o arquivo chegou**: `POST bibliotecas/:id/modelos` e
+  `POST cenarios/:id/capa` olham o armazenamento (`r2HeadObjectUgc`) e chamam as rotas internas
+  HMAC do members com o ator lido da SESSÃO (`usuarioId` = o perfil no Kids, `contaId`, `equipe`
+  pelo papel e conta ativa, `suporte` com qualquer `act`) e o espaço em que procurou. Armazenamento
+  fora do ar responde 503 e nada é afirmado.
+- **Apagar** biblioteca ou modelos: o members devolve as chaves que ficaram sem dono e elas saem do
+  armazenamento depois da resposta (`after`), só as que são arquivo de cenário. A tela recebe `{ok}`.
+- **Ler** (`GET espacos/:espacoId/arquivos/:digest[?tipo=modelo]`): confere que o espaço é da
+  pessoa (uma consulta a `/members/cenarios/espacos`, lembrada por 60 s por pessoa e espaço: a
+  gaveta pede centenas de retratos) e redireciona para um endereço assinado igual dentro da janela
+  de 6 horas (`avatarLinkWindow`), com cache longo. `r2PresignGetUgc` ganhou `signingDate` e
+  `responseCacheControl` (opcionais).
+- Sessão de suporte que só olha não escreve; `x-sz-viewer` diferente da sessão responde 409.
+- ⚠️ O navegador baixa o `.glb` do armazenamento por `fetch` (redirecionado): o bucket UGC precisa
+  aceitar GET e PUT das origens dos dois apps (CORS).
+- Testes: `tests/cenarios-routes.test.ts`.
+
 ## "Meu avatar" com o pack Cute Characters (13/11/2026)
 
 Canvas aprovado: https://claude.ai/artifact/9AnWm8YaQsFewWWu9eQFSw. O catálogo, as regras e o

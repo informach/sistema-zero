@@ -5,6 +5,7 @@ import { paletteCookieName } from './lib/palette-cookie'
 import { createShellRoutes } from './routes'
 import { createArquipelagoRoutes } from './routes/arquipelago'
 import { createArquipelagoClubeRoutes } from './routes/arquipelago-clube'
+import { createCenariosRoutes } from './routes/cenarios'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
@@ -105,6 +106,7 @@ export function createShell(cfg: ShellConfig) {
     ...createPensaRoutes({ members, session, audience: cfg.audience }),
     ...createPrivateNarrationRoutes({ members, session, audience: cfg.audience }),
     ...createCreationsRoutes({ members, session }),
+    ...createCenariosRoutes({ gateway, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
     ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),
   }

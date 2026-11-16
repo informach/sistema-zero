@@ -190,16 +190,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (dados.etiquetas !== undefined) modelo.etiquetas = [...dados.etiquetas]
       return copia(modelo)
     },
-    async apagarModelos(ids) {
+    async apagarModelos(bibliotecaId, ids) {
       await esperar()
-      const tocadas = new Set<string>()
-      for (const id of ids) {
-        const modelo = modelos.get(id)
-        if (!modelo) continue
-        tocadas.add(modelo.bibliotecaId)
-        modelos.delete(id)
-      }
-      for (const b of tocadas) contar(b)
+      for (const id of ids) if (modelos.get(id)?.bibliotecaId === bibliotecaId) modelos.delete(id)
+      contar(bibliotecaId)
     },
     async conteudoDoModelo(ref) {
       await esperar()

@@ -121,7 +121,7 @@ export interface CenariosHost {
     id: string,
     dados: { nome?: string; pasta?: string; etiquetas?: string[] },
   ): Promise<ModeloDeBiblioteca>
-  apagarModelos(ids: string[]): Promise<void>
+  apagarModelos(bibliotecaId: string, ids: string[]): Promise<void>
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
   conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
 

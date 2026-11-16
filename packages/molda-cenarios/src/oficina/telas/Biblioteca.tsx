@@ -260,7 +260,7 @@ export function Biblioteca({
                           aria-label={COPY.biblioteca.apagarModelo(modelo.nome)}
                           title={COPY.biblioteca.apagarModelo(modelo.nome)}
                           onClick={async () => {
-                            await host.apagarModelos([modelo.id])
+                            await host.apagarModelos(bibliotecaId, [modelo.id])
                             setVolta((v) => v + 1)
                           }}
                         >
