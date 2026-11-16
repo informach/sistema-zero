@@ -3,12 +3,16 @@ import type { CatalogoDeCenario, ModeloDeCatalogo } from '../src/catalogo'
 import type { DocumentoDeCenario as DocumentoV1 } from '../src/documento'
 import {
   abrirDocumento,
+  alteracoesDoGesto,
   ConflitoDeCenario,
+  conferirGlb,
   criarDocumentoVazio,
   type DocumentoDeCenario,
+  digestDosBytes,
   executarLote,
   type InstanciaDeCenario,
   migrarDaV1,
+  posicaoNoMundo,
   resolverPeloCatalogo,
   validarDocumento,
 } from '../src/v2'
@@ -360,5 +364,61 @@ describe('migração do piloto (v1)', () => {
     expect(abrirDocumento(v1(), resolver).versao).toBe(2)
     expect(abrirDocumento(cenario()).versao).toBe(2)
     expect(() => abrirDocumento(v1())).toThrow('versão 1')
+  })
+})
+
+describe('modelo GLB e apoio no chão', () => {
+  function glb(json: object): Uint8Array {
+    const texto = new TextEncoder().encode(JSON.stringify(json))
+    const corpo = new Uint8Array(Math.ceil(texto.length / 4) * 4).fill(0x20)
+    corpo.set(texto)
+    const bytes = new Uint8Array(20 + corpo.length)
+    const v = new DataView(bytes.buffer)
+    v.setUint32(0, 0x46546c67, true)
+    v.setUint32(4, 2, true)
+    v.setUint32(8, bytes.length, true)
+    v.setUint32(12, corpo.length, true)
+    v.setUint32(16, 0x4e4f534a, true)
+    bytes.set(corpo, 20)
+    return bytes
+  }
+  test('aceita o modelo completo e conta o que ele traz', () => {
+    expect(
+      conferirGlb(glb({ meshes: [{}, {}], materials: [{}], images: [{ bufferView: 0 }] })),
+    ).toEqual({
+      bytes: expect.any(Number),
+      malhas: 2,
+      materiais: 1,
+      imagens: 1,
+      animacoes: 0,
+    })
+  })
+  test('recusa o que os jogos não abrem, com o motivo', () => {
+    expect(() => conferirGlb(new Uint8Array(40))).toThrow('não é um modelo GLB')
+    expect(() => conferirGlb(glb({ meshes: [{}], images: [{ uri: 'textura.png' }] }))).toThrow(
+      'arquivos de fora',
+    )
+    expect(() =>
+      conferirGlb(glb({ meshes: [{}], extensionsRequired: ['KHR_draco_mesh_compression'] })),
+    ).toThrow('compressão Draco')
+    expect(() => conferirGlb(glb({ materials: [{}] }))).toThrow('nenhuma forma 3D')
+  })
+  test('o endereço do arquivo é o SHA-256 do conteúdo', async () => {
+    expect(await digestDosBytes(new TextEncoder().encode('abc'))).toBe(
+      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+    )
+  })
+  test('quem pisa no chão guarda a distância até ele', () => {
+    const d = cenario()
+    const mundo = {
+      posicao: { x: 4, y: 1.5, z: -2 },
+      rotacao: { x: 0, y: 0.5, z: 0 },
+      escala: { x: 1, y: 2, z: 1 },
+    }
+    const noChao = alteracoesDoGesto(d, d.instancias[0]!, mundo)
+    expect(noChao.apoio).toEqual({ tipo: 'terreno', deslocamento: 1.5, inclinar: false })
+    expect(posicaoNoMundo(d, { ...d.instancias[0]!, ...noChao })).toEqual({ x: 4, y: 1.5, z: -2 })
+    const solto = alteracoesDoGesto(d, { apoio: { tipo: 'absoluto' } }, mundo)
+    expect(solto).toEqual({ transformacao: mundo, apoio: { tipo: 'absoluto' } })
   })
 })
