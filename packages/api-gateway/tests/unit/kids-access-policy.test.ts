@@ -154,6 +154,8 @@ describe('Arquipélago Vagalume', () => {
       '/arquipelago//admin/desafios',
       '/arquipelago/ADMIN/desafios/x/publicar',
       '/arquipelago/admin/cobertura',
+      '/arquipelago/admin/cenarios/projetos',
+      '/arquipelago/admin/cenarios/catalogos',
     ]) {
       for (const method of ['GET', 'POST', 'PUT']) {
         expect(kidsMayAccess(student, path, method, 'aluno-admin')).toBe(false)

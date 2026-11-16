@@ -1,11 +1,13 @@
 import { afterAll, beforeAll, expect, test } from 'bun:test'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
+import { CatalogosDeCenarios } from '../../src/application/catalogo-de-cenarios'
 import { ServicoDeCenarios } from '../../src/application/servico-de-cenarios'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleRepositorioDeCatalogos } from '../../src/infrastructure/persistence/drizzle/repositorio-catalogos-cenarios'
 import { DrizzleRepositorioDeCenarios } from '../../src/infrastructure/persistence/drizzle/repositorio-cenarios'
 import { rotasDosCenarios } from '../../src/interfaces/http/rotas-dos-cenarios'
 import { migrarBancoDeTeste } from '../fakes/banco-migrado'
@@ -29,6 +31,54 @@ beforeAll(async () => {
 afterAll(async () => {
   await db?.close()
 })
+test.skipIf(!url)(
+  'catálogo remoto imutável: digest, versões antigas e permissão administrativa',
+  async () => {
+    const servico = new CatalogosDeCenarios(new DrizzleRepositorioDeCatalogos(db.db)),
+      autor = { id: randomUUID(), podeEscrever: true, podeRevisar: true }
+    const modelos = [
+      {
+        id: 'reino/arvore',
+        nome: 'Árvore',
+        origem: 'reino',
+        caminho: 'natureza/glb/arvore.glb',
+        commit: 'a'.repeat(40),
+        digest: 'b'.repeat(64),
+        dimensoes: [2, 4, 2] as [number, number, number],
+        min: [-1, 0, -1] as [number, number, number],
+        max: [1, 4, 1] as [number, number, number],
+        bytes: 100,
+        triangulos: 12,
+        arquivo: 'arvore.bbbbbbbbbbbb.glb',
+        categoria: 'natureza',
+      },
+    ]
+    const digest = createHash('sha256').update(JSON.stringify(modelos)).digest('hex'),
+      id = `qa-${randomUUID()}`
+    expect(await servico.registrar(autor, { id, digest, modelos })).toEqual({
+      id,
+      digest,
+      quantidade: 1,
+    })
+    await servico.registrar(autor, { id, digest, modelos })
+    expect((await servico.ler(autor, { id, digest })).modelos).toEqual(modelos)
+    const novos = [{ ...modelos[0]!, nome: 'Árvore revisada' }],
+      outroDigest = createHash('sha256').update(JSON.stringify(novos)).digest('hex')
+    await servico.registrar(autor, { id, digest: outroDigest, modelos: novos })
+    expect((await servico.resolver({ id, digest })).modelos.get('reino/arvore')!.nome).toBe(
+      'Árvore',
+    )
+    expect(
+      (await servico.resolver({ id, digest: outroDigest })).modelos.get('reino/arvore')!.nome,
+    ).toBe('Árvore revisada')
+    await expect(servico.registrar(autor, { id, digest: 'c'.repeat(64), modelos })).rejects.toThrow(
+      /Digest/,
+    )
+    await expect(servico.listar({ ...autor, podeEscrever: false })).rejects.toThrow(
+      /administradores/,
+    )
+  },
+)
 test.skipIf(!url)(
   'Postgres real: revisão e histórico são atômicos em duas sessões e retries',
   async () => {
@@ -126,5 +176,11 @@ test.skipIf(!url)(
     )
     expect(stale.status).toBe(409)
     expect((await stale.json()).revisaoAtual).toBe(2)
+    const restaurar = { revisaoEsperada: 2, origem: 0, operacaoId: randomUUID() }
+    const restaurado = await a.restaurar(autor, p.projetoId, restaurar)
+    expect(restaurado.revisao).toBe(3)
+    expect(restaurado.documento).toEqual(p.documento)
+    expect(await b.restaurar(autor, p.projetoId, restaurar)).toEqual(restaurado)
+    expect(await repo.historico(p.projetoId)).toHaveLength(4)
   },
 )

@@ -6,6 +6,7 @@ export const LIMITES_CENARIO = {
   comandos: 500,
   pontos: 4096,
 } as const
+export const CORPO_CENARIO_MAX_BYTES = LIMITES_CENARIO.bytes + 1024 * 1024
 const id = z
   .string()
   .min(1)

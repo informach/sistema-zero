@@ -16,6 +16,17 @@ export const ModeloDeCatalogoSchema = z
     triangulos: z.number().int().nonnegative(),
     arquivo: z.string().regex(/^[\w.-]+\.glb$/),
     categoria: z.string().min(1).max(120),
+    miniatura: z
+      .object({
+        digest: z.string().regex(/^[a-f0-9]{64}$/),
+        bytes: z
+          .number()
+          .int()
+          .positive()
+          .max(1024 * 1024),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
 export type ModeloDeCatalogo = z.infer<typeof ModeloDeCatalogoSchema>

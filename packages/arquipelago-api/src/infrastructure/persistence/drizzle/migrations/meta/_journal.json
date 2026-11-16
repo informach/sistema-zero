@@ -197,6 +197,13 @@
       "when": 1794818582429,
       "tag": "0027_misty_forge",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794819608338,
+      "tag": "0028_serious_captain_flint",
+      "breakpoints": true
     }
   ]
 }

@@ -287,6 +287,20 @@ export async function r2ReadPrivateObject(reference: string): Promise<Uint8Array
   return bytes
 }
 
+/** Arte licenciada do editor: namespace próprio, sem URL pública nem referência de PDF. */
+export async function r2ReadCenarioAsset(key: string, maxBytes: number): Promise<Uint8Array> {
+  if (!/^molda-cenarios\/arte\/[a-f0-9]{64}\.(glb|png)$/.test(key))
+    throw Error('Chave de arte inválida')
+  const cfg = requirePrivateR2Config()
+  const object = await getClient(cfg).send(new GetObjectCommand({ Bucket: cfg.bucket, Key: key }))
+  if (!object.Body || object.ContentLength === undefined || object.ContentLength > maxBytes)
+    throw Error('Arte acima do tamanho permitido')
+  const bytes = await object.Body.transformToByteArray()
+  if (bytes.byteLength !== object.ContentLength || bytes.byteLength > maxBytes)
+    throw Error('Arte incompleta')
+  return bytes
+}
+
 export interface R2PresignPrivatePutInput {
   key: string
   contentType: string

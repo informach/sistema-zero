@@ -12,6 +12,7 @@ import {
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { type AnyElysia, Elysia } from 'elysia'
+import type { CatalogosDeCenarios } from '../../application/catalogo-de-cenarios'
 import {
   AcessoBloqueadoError,
   AparenciaNaoCompradaError,
@@ -113,6 +114,7 @@ import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
   cenarios?: ServicoDeCenarios
+  catalogos?: CatalogosDeCenarios
   /** Visitas de outras crianças (N08a); sem ele, as rotas não existem. */
   amigos?: ServicoDasVisitasDeAmigos
   visitasAdultas?: ServicoDasVisitasAdultas
@@ -518,7 +520,11 @@ export function createServer(deps: DependenciasHttp): AnyElysia {
     )
     .use(
       deps.cenarios
-        ? rotasDosCenarios({ cenarios: deps.cenarios, tokenInterno: deps.tokenInterno })
+        ? rotasDosCenarios({
+            cenarios: deps.cenarios,
+            catalogos: deps.catalogos,
+            tokenInterno: deps.tokenInterno,
+          })
         : new Elysia(),
     )
     .get('/healthz', () => ({ status: 'ok' }))

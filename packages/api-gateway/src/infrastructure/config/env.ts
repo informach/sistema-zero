@@ -1,4 +1,5 @@
 import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
+import { CORPO_CENARIO_MAX_BYTES } from '@sistemazero/molda-cenarios-core'
 import { z } from 'zod'
 
 /**
@@ -139,7 +140,7 @@ const EnvSchema = z
       .number()
       .int()
       .positive()
-      .default(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES),
+      .default(Math.max(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES, CORPO_CENARIO_MAX_BYTES)),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),

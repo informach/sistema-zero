@@ -1,22 +1,6 @@
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
+import type { ProjetoDeCenario, RevisaoDeCenario } from '@sistemazero/molda-cenarios-core'
 
-export interface RevisaoDeCenario {
-  projetoId: string
-  revisao: number
-  documento: DocumentoDeCenario
-  autorId: string
-  criadoEm: string
-  operacaoId: string
-  impressao: string
-}
-export interface ProjetoDeCenario {
-  id: string
-  nome: string
-  revisao: number
-  revisaoAplicada: number | null
-  atualizadoEm: string
-  autorId: string
-}
+export type { ProjetoDeCenario, RevisaoDeCenario } from '@sistemazero/molda-cenarios-core'
 export interface RepositorioDeCenarios {
   listar(): Promise<ProjetoDeCenario[]>
   criar(revisao: RevisaoDeCenario): Promise<boolean>

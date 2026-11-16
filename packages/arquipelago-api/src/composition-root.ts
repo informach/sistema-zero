@@ -1,4 +1,5 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { CatalogosDeCenarios } from './application/catalogo-de-cenarios'
 import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
@@ -14,6 +15,7 @@ import { ServicoDasVendas } from './application/servico-das-vendas'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDasVisitasAdultas } from './application/servico-das-visitas-adultas'
 import { ServicoDasVisitasDeAmigos } from './application/servico-das-visitas-de-amigos'
+import { ServicoDeCenarios } from './application/servico-de-cenarios'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
 import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
@@ -29,6 +31,8 @@ import { PosseHttp } from './infrastructure/members/posse-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
+import { DrizzleRepositorioDeCatalogos } from './infrastructure/persistence/drizzle/repositorio-catalogos-cenarios'
+import { DrizzleRepositorioDeCenarios } from './infrastructure/persistence/drizzle/repositorio-cenarios'
 import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
 import {
   DrizzleRepositorioDeDesafios,
@@ -127,7 +131,14 @@ export function createApplication(env: Env): Application {
     obras: obrasEstendidas,
     logger,
   })
+  const catalogos = new CatalogosDeCenarios(new DrizzleRepositorioDeCatalogos(connection.db))
+  const cenarios = new ServicoDeCenarios(
+    new DrizzleRepositorioDeCenarios(connection.db),
+    (referencia) => catalogos.resolver(referencia),
+  )
   const app = createServer({
+    cenarios,
+    catalogos,
     amigos: new ServicoDasVisitasDeAmigos({
       repo: new DrizzleRepositorioDasVisitasDeAmigos(connection.db),
       familia: repositorioDaFamilia,

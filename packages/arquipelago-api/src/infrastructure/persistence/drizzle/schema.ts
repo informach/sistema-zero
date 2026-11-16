@@ -13,7 +13,7 @@ import {
   type PostoDaVila,
   type PublicoJogo,
 } from '@sistemazero/arquipelago-contracts'
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core'
+import type { DocumentoDeCenario, ModeloDeCatalogo } from '@sistemazero/molda-cenarios-core'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -38,6 +38,21 @@ import type { SituacaoDaCompra } from '../../../domain/insumos.port'
  * jogo lê e grava aqui; a plataforma nunca toca estas tabelas (e o jogo nunca toca as dela).
  */
 export const arquipelagoSchema = pgSchema('arquipelago')
+
+export const cenarioCatalogos = arquipelagoSchema.table(
+  'cenario_catalogos',
+  {
+    id: varchar({ length: 120 }).notNull(),
+    digest: varchar({ length: 64 }).notNull(),
+    modelos: jsonb().$type<ModeloDeCatalogo[]>().notNull(),
+    autorId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.id, t.digest] }),
+    index('cenario_catalogos_criado_idx').on(t.criadoEm),
+  ],
+)
 
 /** Autoria da equipe, separada dos salvamentos e do inventário dos jogadores. */
 export const cenarioProjetos = arquipelagoSchema.table(
@@ -750,6 +765,7 @@ export const vendasNaFeira = arquipelagoSchema.table(
 )
 
 export const schema = {
+  cenarioCatalogos,
   cenarioProjetos,
   cenarioRevisoes,
   mudancasDeAparencia,

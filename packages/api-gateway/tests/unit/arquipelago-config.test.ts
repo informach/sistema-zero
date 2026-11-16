@@ -12,6 +12,22 @@ const transforms = [
 ]
 
 describe('Arquipélago Vagalume no gateway', () => {
+  test('cenários: catálogo e projetos têm rotas explícitas e acesso exclusivo de admins', () => {
+    const jogo = arquipelagoGateway({
+      url: 'http://arquipelago:3015',
+      transforms,
+      resilience: { timeoutMs: 15_000 },
+    })
+    const rotas = jogo.routes.filter((r) => r.id.startsWith('arquipelago-cenarios-'))
+    expect(rotas).toHaveLength(10)
+    for (const rota of rotas) {
+      expect(routeConfigSchema.safeParse(rota).success).toBe(true)
+      expect(rota.authorize).toEqual({ roles: ['superadmin', 'admin'], statuses: ['active'] })
+      expect(rota.auth).toMatchObject({ required: true, strategies: ['jwt'] })
+      expect(rota.pathPattern).not.toContain('*')
+      expect(rota.maxBodyBytes).toBe(rota.methods.includes('POST') ? 9 * 1024 * 1024 : undefined)
+    }
+  })
   test('casa canônica tem GET/PUT autenticados, público ativo e corpo limitado', () => {
     const house = realConfig.routes.filter((route) => route.pathPattern === '/members/house')
     expect(house).toHaveLength(2)

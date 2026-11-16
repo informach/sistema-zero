@@ -774,7 +774,9 @@ describe('gateway.config.ts (configuração real)', () => {
   })
 
   test('o teto padrão comporta a verificação Python; um teto explícito menor continua recusado', async () => {
-    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES)
+    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBeGreaterThanOrEqual(
+      SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
+    )
     const result = await bootRealConfig('3004096')
     expect(result.code).not.toBe(0)
     expect(result.stderr).toMatch(

@@ -1,3 +1,4 @@
+import { CORPO_CENARIO_MAX_BYTES } from '@sistemazero/molda-cenarios-core'
 import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
@@ -351,6 +352,29 @@ export function arquipelagoGateway(opts: {
         methods: ['DELETE'],
         pathPattern,
         rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      })),
+      // Autoria de cenários: inclusive as leituras são exclusivas da administração.
+      ...(
+        [
+          ['catalogos-listar', '/catalogos', ['GET']],
+          ['catalogos-registrar', '/catalogos', ['POST']],
+          ['catalogos-ler', '/catalogos/:id/:digest', ['GET']],
+          ['projetos-listar', '/projetos', ['GET']],
+          ['projetos-criar', '/projetos', ['POST']],
+          ['projetos-ler', '/projetos/:id', ['GET']],
+          ['projetos-historico', '/projetos/:id/historico', ['GET']],
+          ['projetos-comandos', '/projetos/:id/comandos', ['POST']],
+          ['projetos-restaurar', '/projetos/:id/restaurar', ['POST']],
+          ['projetos-aplicar', '/projetos/:id/aplicar', ['POST']],
+        ] as const
+      ).map(([id, path, methods]) => ({
+        ...leituraDaEquipe,
+        authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+        id: `arquipelago-cenarios-${id}`,
+        methods: [...methods],
+        pathPattern: `/arquipelago/admin/cenarios${path}`,
+        ...(methods[0] === 'POST' ? { maxBodyBytes: CORPO_CENARIO_MAX_BYTES, audit: {} } : {}),
+        rateLimit: { max: 240, windowMs: 60_000, by: 'principal' as const },
       })),
       // Seção Jogo do Admin: leitura para a equipe, escrita só para a administração. Rotas
       // explícitas (nenhum curinga transforma staff em quem publica). Analisar e publicar rodam o

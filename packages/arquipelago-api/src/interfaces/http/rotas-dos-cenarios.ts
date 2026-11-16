@@ -2,6 +2,7 @@ import { envelope, ForbiddenError, UnauthorizedError } from '@sistemazero/core/h
 import { CenarioInvalido, ConflitoDeCenario } from '@sistemazero/molda-cenarios-core'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
+import type { CatalogosDeCenarios } from '../../application/catalogo-de-cenarios'
 import {
   CatalogoDeCenarioDiferente,
   CenarioNaoEncontrado,
@@ -13,7 +14,11 @@ import { exigirGateway, lerEquipe } from './identidade'
 const aplicacao = z.object({ revisao: z.number().int().nonnegative() }).strict()
 const historico = z.object({ antesDe: z.coerce.number().int().nonnegative().optional() }).strict()
 const leitura = z.object({ revisao: z.coerce.number().int().nonnegative().optional() }).strict()
-export function rotasDosCenarios(deps: { cenarios: ServicoDeCenarios; tokenInterno?: string }) {
+export function rotasDosCenarios(deps: {
+  cenarios: ServicoDeCenarios
+  catalogos?: CatalogosDeCenarios
+  tokenInterno?: string
+}) {
   const s = deps.cenarios
   return new Elysia({ prefix: '/arquipelago/admin/cenarios' })
     .onBeforeHandle(({ headers }) => exigirGateway(headers['x-internal-token'], deps.tokenInterno))
@@ -50,6 +55,36 @@ export function rotasDosCenarios(deps: { cenarios: ServicoDeCenarios; tokenInter
         return envelope('CORPO_INVALIDO', 'Dados de edição inválidos')
       }
     })
+    .get('/catalogos', ({ headers, set }) => {
+      const equipe = lerEquipe(headers)
+      if (!equipe.podeEscrever)
+        throw new ForbiddenError('Somente administradores podem acessar o acervo')
+      if (!deps.catalogos) {
+        set.status = 503
+        return envelope('CATALOGO_INDISPONIVEL', 'Catálogo indisponível')
+      }
+      return deps.catalogos.listar(equipe)
+    })
+    .get('/catalogos/:id/:digest', ({ headers, params, set }) => {
+      const equipe = lerEquipe(headers)
+      if (!equipe.podeEscrever)
+        throw new ForbiddenError('Somente administradores podem acessar o acervo')
+      if (!deps.catalogos) {
+        set.status = 503
+        return envelope('CATALOGO_INDISPONIVEL', 'Catálogo indisponível')
+      }
+      return deps.catalogos.ler(equipe, params)
+    })
+    .post('/catalogos', ({ headers, body, set }) => {
+      const equipe = lerEquipe(headers)
+      if (!equipe.podeEscrever)
+        throw new ForbiddenError('Somente administradores podem acessar o acervo')
+      if (!deps.catalogos) {
+        set.status = 503
+        return envelope('CATALOGO_INDISPONIVEL', 'Catálogo indisponível')
+      }
+      return deps.catalogos.registrar(equipe, body)
+    })
     .get('/projetos', ({ headers }) => s.listar(lerEquipe(headers)))
     .post('/projetos', async ({ headers, body, set }) => {
       const r = await s.criar(lerEquipe(headers), body)
@@ -64,6 +99,9 @@ export function rotasDosCenarios(deps: { cenarios: ServicoDeCenarios; tokenInter
     )
     .post('/projetos/:id/comandos', ({ headers, params, body }) =>
       s.editar(lerEquipe(headers), z.uuid().parse(params.id), body),
+    )
+    .post('/projetos/:id/restaurar', ({ headers, params, body }) =>
+      s.restaurar(lerEquipe(headers), z.uuid().parse(params.id), body),
     )
     .post('/projetos/:id/aplicar', ({ headers, params, body }) =>
       s.aplicar(lerEquipe(headers), z.uuid().parse(params.id), aplicacao.parse(body).revisao),

@@ -9,7 +9,7 @@ Módulo com identidade do Molda, acesso administrativo na plataforma, projetos c
 ## Lotes
 
 - [x] 1. Núcleo puro: documento, catálogo, comandos atômicos, revisão, validação e importação fiel da Faísca.
-- [ ] 2. Projetos e revisões compartilhados no serviço, autorização e catálogo remoto.
+- [x] 2. Projetos e revisões compartilhados no serviço, autorização e catálogo remoto.
 - [ ] 3. Editor visual com seleção, transformações, grupos, apoio e identidade Molda.
 - [ ] 4. Terreno, caminhos, água, margens e vínculos funcionais.
 - [ ] 5. Runtime real: editar/testar/retornar e aplicar revisão ao ensaio.
