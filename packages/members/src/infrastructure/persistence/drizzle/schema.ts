@@ -3250,6 +3250,9 @@ export const cenarioBlobs = members.table(
     /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
     digest: varchar('digest', { length: 64 }).notNull(),
     tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa'>().notNull(),
+    tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
+      'model/gltf-binary' | 'image/webp' | 'image/png'
+    >(),
     bytes: integer('bytes').notNull(),
     /** Nulo enquanto a reserva espera o envio; preenchido quando o BFF confere o arquivo. */
     confirmadoEm: timestamp('confirmado_em', { withTimezone: true }),
@@ -3260,6 +3263,10 @@ export const cenarioBlobs = members.table(
   (t) => [
     primaryKey({ columns: [t.espacoId, t.digest] }),
     check('cenario_blobs_tipo_check', sql`${t.tipo} in ('modelo', 'miniatura', 'capa')`),
+    check(
+      'cenario_blobs_conteudo_check',
+      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa') and ${t.tipoDoConteudo} in ('image/webp', 'image/png'))`,
+    ),
     check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
     check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),
   ],

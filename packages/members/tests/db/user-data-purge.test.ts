@@ -274,7 +274,11 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
         agora,
         new Date(agora.getTime() + 3_600_000),
       )
-      await cenarios.confirmarBlobs(espacoId, [digest], agora)
+      await cenarios.confirmarBlobs(
+        espacoId,
+        [{ digest, bytes: 10, tipoDoConteudo: 'model/gltf-binary' }],
+        agora,
+      )
       await cenarios.criarModelos(
         biblioteca!.id,
         [

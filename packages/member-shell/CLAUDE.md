@@ -9,24 +9,29 @@ DELETE). O cliente é o `criarHostHttp` de `@sistemazero/molda-cenarios/oficina`
 - **Repasse** ao members pelo gateway (`/members/cenarios/*`) só dos caminhos da lista `REPASSES`
   (método e formato do caminho conferidos; a consulta da busca de modelos leva só `busca`, `pasta`,
   `cursor` e `limite`). Quem pode usar e de quem é cada espaço é o members que decide.
-- **Arquivos não passam aqui.** `…/modelos/reservar` e `…/capa/reservar` voltam com um endereço
-  assinado de envio por arquivo (`r2PresignPutUgc`, tamanho e tipo presos, 15 min); a chave do
+- **Envio direto ao armazenamento.** `…/modelos/reservar` e `…/capa/reservar` voltam com um endereço
+  assinado por arquivo (`r2PresignPutUgc`, tamanho, tipo e `If-None-Match: *` presos, 15 min); a chave do
   members só é assinada se for `cenarios/<espaço>/blobs/<digest>` daquela reserva.
 - **Só este servidor afirma que o arquivo chegou**: `POST bibliotecas/:id/modelos` e
-  `POST cenarios/:id/capa` olham o armazenamento (`r2HeadObjectUgc`) e chamam as rotas internas
+  `POST cenarios/:id/capa` conferem SHA-256, tamanho e formato em stream (`r2GetObjectUgc`,
+  `server/cenarios-conteudo.ts`, duas leituras por pedido, prefixo GLB limitado a 8 MB) e chamam as rotas internas
   HMAC do members com o ator lido da SESSÃO (`usuarioId` = o perfil no Kids, `contaId`, `equipe`
   pelo papel e conta ativa, `suporte` com qualquer `act`) e o espaço em que procurou. Armazenamento
-  fora do ar responde 503 e nada é afirmado.
+  fora do ar responde 503 e nada é afirmado; conteúdo inválido responde 422. O Members compara
+  a prova `{digest, bytes, tipoDoConteudo}` com a reserva ainda válida. MIME PNG/WebP é preservado
+  na DDL 0155. O PUT condicional impede sobrescrever um arquivo por uma assinatura ainda válida.
 - **Apagar** biblioteca ou modelos: o members devolve as chaves que ficaram sem dono e elas saem do
   armazenamento depois da resposta (`after`), só as que são arquivo de cenário. A tela recebe `{ok}`.
 - **Ler** (`GET espacos/:espacoId/arquivos/:digest[?tipo=modelo]`): confere que o espaço é da
   pessoa (uma consulta a `/members/cenarios/espacos`, lembrada por 60 s por pessoa e espaço: a
   gaveta pede centenas de retratos) e redireciona para um endereço assinado igual dentro da janela
-  de 6 horas (`avatarLinkWindow`), com cache longo. `r2PresignGetUgc` ganhou `signingDate` e
+  de 6 horas (`avatarLinkWindow`), com cache longo. Os metadados confirmados de cada hash também
+  são consultados no Members e lembrados por 60 s; o MIME nunca vem da consulta do navegador.
+  `r2PresignGetUgc` ganhou `signingDate` e
   `responseCacheControl` (opcionais).
 - Sessão de suporte que só olha não escreve; `x-sz-viewer` diferente da sessão responde 409.
 - ⚠️ O navegador baixa o `.glb` do armazenamento por `fetch` (redirecionado): o bucket UGC precisa
-  aceitar GET e PUT das origens dos dois apps (CORS).
+  aceitar GET e PUT das origens dos dois apps, inclusive o cabeçalho `if-none-match` (CORS).
 - Testes: `tests/cenarios-routes.test.ts`.
 
 ## "Meu avatar" com o pack Cute Characters (13/11/2026)

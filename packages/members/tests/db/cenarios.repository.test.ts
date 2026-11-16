@@ -103,6 +103,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of historicoDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const conteudoDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0155_sour_vector.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of conteudoDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -162,7 +171,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       AGORA,
       DEPOIS,
     )
-    await repo.confirmarBlobs(espaco.id, ['a', 'b', 'c', 'd'].map(digest), AGORA)
+    await repo.confirmarBlobs(
+      espaco.id,
+      ['a', 'b', 'c', 'd'].map((l) => ({
+        digest: digest(l),
+        bytes: 1000,
+        tipoDoConteudo: l < 'c' ? ('model/gltf-binary' as const) : ('image/webp' as const),
+      })),
+      AGORA,
+    )
     const [a, b] = (await repo.criarModelos(
       biblioteca.id,
       [
@@ -203,7 +220,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       AGORA,
       DEPOIS,
     )
-    await repo.confirmarBlobs(espacoId, letras.map(digest), AGORA)
+    await repo.confirmarBlobs(
+      espacoId,
+      letras.map((l) => ({
+        digest: digest(l),
+        bytes: 1000,
+        tipoDoConteudo: 'model/gltf-binary' as const,
+      })),
+      AGORA,
+    )
   }
 
   test('o espaço da conta nasce uma vez só, mesmo com dois pedidos juntos', async () => {
@@ -233,7 +258,11 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       DEPOIS,
     )
     expect(reserva?.faltam).toHaveLength(2)
-    await repo.confirmarBlobs(espaco.id, [digest('a')], AGORA)
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 2000, tipoDoConteudo: 'model/gltf-binary' }],
+      AGORA,
+    )
     // Reserva de 1000 ainda vale: 2000 confirmados + 1000 reservados + 2500 novos passam de 5000.
     expect(
       await repo.reservarBlobs(
@@ -277,6 +306,40 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     expect(resultados.filter(Boolean)).toHaveLength(2)
     expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(4000)
+  })
+  test('o mesmo hash não troca tamanho ou tipo durante uma reserva ativa para escapar da cota', async () => {
+    const { espaco } = await comBiblioteca()
+    await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 1, tipo: 'modelo' }],
+      AGORA,
+      DEPOIS,
+    )
+    const tamanho = await repo
+      .reservarBlobs(
+        espaco.id,
+        [{ digest: digest('a'), bytes: 5000, tipo: 'modelo' }],
+        AGORA,
+        DEPOIS,
+      )
+      .then(
+        () => null,
+        (erro: unknown) => erro,
+      )
+    expect(tamanho).toMatchObject({ message: expect.stringContaining('outro tamanho ou tipo') })
+    const tipo = await repo
+      .reservarBlobs(
+        espaco.id,
+        [{ digest: digest('a'), bytes: 1, tipo: 'miniatura' }],
+        AGORA,
+        DEPOIS,
+      )
+      .then(
+        () => null,
+        (erro: unknown) => erro,
+      )
+    expect(tipo).toMatchObject({ message: expect.stringContaining('outro tamanho ou tipo') })
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(1)
   })
 
   test('modelos: sem repetir conteúdo, com teto, busca e páginas', async () => {
@@ -331,6 +394,60 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       pastas: ['chão', 'natureza'],
       etiquetas: ['dura', 'verde'],
     })
+  })
+
+  test('a confirmação exige bytes e MIME reservados, e imagens reutilizam o mesmo conteúdo', async () => {
+    const { espaco } = await comBiblioteca()
+    await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 100, tipo: 'miniatura', tipoDoConteudo: 'image/png' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 101, tipoDoConteudo: 'image/png' }],
+      AGORA,
+    )
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a')])).size).toBe(0)
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 100, tipoDoConteudo: 'image/webp' }],
+      AGORA,
+    )
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a')])).size).toBe(0)
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: digest('a'), bytes: 100, tipoDoConteudo: 'image/png' }],
+      AGORA,
+    )
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a')])).get(digest('a'))).toMatchObject({
+      bytes: 100,
+      tipoDoConteudo: 'image/png',
+    })
+    expect(
+      (
+        await repo.reservarBlobs(
+          espaco.id,
+          [{ digest: digest('a'), bytes: 100, tipo: 'capa', tipoDoConteudo: 'image/png' }],
+          AGORA,
+          DEPOIS,
+        )
+      )?.faltam,
+    ).toEqual([])
+    expect((await repo.espaco(espaco.id))?.usadoBytes).toBe(100)
+    await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: digest('b'), bytes: 100, tipo: 'modelo' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: digest('b'), bytes: 100, tipoDoConteudo: 'model/gltf-binary' }],
+      new Date(DEPOIS.getTime() + 1),
+    )
+    expect((await repo.blobsConfirmados(espaco.id, [digest('b')])).size).toBe(0)
   })
 
   test('apagar modelos solta só os arquivos que ninguém mais usa', async () => {

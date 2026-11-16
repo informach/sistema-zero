@@ -2,12 +2,14 @@ import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-ce
 import type {
   Biblioteca,
   Cenario,
+  ConferenciaDeBlob,
   Espaco,
   Licenca,
   Modelo,
   Mundo,
   ResumoDeCenario,
   TipoDeBlob,
+  TipoDeConteudo,
 } from '../cenarios/cenarios'
 import type {
   MovimentoDoHistorico,
@@ -19,6 +21,7 @@ export interface BlobReservado {
   digest: string
   bytes: number
   tipo: TipoDeBlob
+  tipoDoConteudo?: TipoDeConteudo
 }
 
 export interface NovoModelo {
@@ -102,12 +105,16 @@ export interface CenariosRepository {
     venceEm: Date,
   ): Promise<{ faltam: BlobReservado[] } | null>
   /** Marca como enviados os arquivos que o BFF conferiu no bucket. */
-  confirmarBlobs(espacoId: string, digests: readonly string[], agora: Date): Promise<void>
+  confirmarBlobs(
+    espacoId: string,
+    conferidos: readonly ConferenciaDeBlob[],
+    agora: Date,
+  ): Promise<void>
   /** Dos digests dados, quais estão confirmados neste espaço (com o tipo de cada um). */
   blobsConfirmados(
     espacoId: string,
     digests: readonly string[],
-  ): Promise<Map<string, { tipo: TipoDeBlob; bytes: number }>>
+  ): Promise<Map<string, { tipo: TipoDeBlob; bytes: number; tipoDoConteudo: TipoDeConteudo }>>
   /** Cria os modelos que ainda não existem na biblioteca (mesmo conteúdo não repete). */
   criarModelos(
     bibliotecaId: string,

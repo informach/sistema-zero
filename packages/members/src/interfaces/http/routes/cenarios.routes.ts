@@ -24,6 +24,16 @@ const NOME = t.String({ minLength: 1, maxLength: 120 })
 const LICENCA = t.Union(LICENCAS.map((l) => t.Literal(l)))
 const TRES = t.Tuple([t.Number(), t.Number(), t.Number()])
 const BYTES = t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.modeloBytes })
+const MIME_IMAGEM = t.Union([t.Literal('image/png'), t.Literal('image/webp')])
+const CONFERENCIA = t.Object({
+  digest: DIGEST,
+  bytes: BYTES,
+  tipoDoConteudo: t.Union([
+    t.Literal('model/gltf-binary'),
+    t.Literal('image/png'),
+    t.Literal('image/webp'),
+  ]),
+})
 
 const Id = t.Object({ id: UUID })
 const EspacoId = t.Object({ espacoId: UUID })
@@ -39,6 +49,7 @@ const ModeloParaReservar = t.Object({
       t.Object({
         digest: DIGEST,
         bytes: t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.miniaturaBytes }),
+        tipoDoConteudo: t.Optional(MIME_IMAGEM),
       }),
       t.Null(),
     ]),
@@ -299,6 +310,7 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
             body: t.Object({
               digest: DIGEST,
               bytes: t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.capaBytes }),
+              tipoDoConteudo: t.Optional(MIME_IMAGEM),
             }),
           },
         )
@@ -332,7 +344,9 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
               // Onde o BFF procurou os arquivos: conferência em outro espaço não conta.
               espacoId: UUID,
               modelos: Varios(ModeloParaRegistrar),
-              conferidos: t.Array(DIGEST, { maxItems: LIMITES_DOS_CENARIOS.reservaPorChamada * 2 }),
+              conferidos: t.Array(CONFERENCIA, {
+                maxItems: LIMITES_DOS_CENARIOS.reservaPorChamada * 2,
+              }),
             }),
           },
         )
@@ -355,7 +369,7 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
               cenarioId: UUID,
               espacoId: UUID,
               digest: DIGEST,
-              conferido: t.Boolean(),
+              conferido: t.Union([CONFERENCIA, t.Null()]),
             }),
           },
         ),

@@ -164,7 +164,7 @@ describe('Molda Cenários: trazer modelos', () => {
       bibliotecaId: biblioteca.id,
       espacoId: espaco.id,
       modelos: [modelo],
-      conferidos: [digest('a')],
+      conferidos: [{ digest: digest('a'), bytes: 4096, tipoDoConteudo: 'model/gltf-binary' }],
     })
     expect(semBff.status).toBe(401)
 
@@ -196,7 +196,10 @@ describe('Molda Cenários: trazer modelos', () => {
         bibliotecaId: biblioteca.id,
         espacoId: crypto.randomUUID(),
         modelos: [modelo],
-        conferidos: [digest('a'), digest('b')],
+        conferidos: [
+          { digest: digest('a'), bytes: 4096, tipoDoConteudo: 'model/gltf-binary' },
+          { digest: digest('b'), bytes: 200, tipoDoConteudo: 'image/webp' },
+        ],
       },
       doBff,
     )
@@ -212,7 +215,10 @@ describe('Molda Cenários: trazer modelos', () => {
           bibliotecaId: biblioteca.id,
           espacoId: espaco.id,
           modelos: [modelo],
-          conferidos: [digest('a'), digest('b')],
+          conferidos: [
+            { digest: digest('a'), bytes: 4096, tipoDoConteudo: 'model/gltf-binary' },
+            { digest: digest('b'), bytes: 200, tipoDoConteudo: 'image/webp' },
+          ],
         },
         doBff,
       ),

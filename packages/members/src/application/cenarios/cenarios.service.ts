@@ -13,8 +13,10 @@ import {
   type Ator,
   type Biblioteca,
   type Cenario,
+  type ConferenciaDeBlob,
   chaveDoBlob,
   type Espaco,
+  ehImagemDeCenario,
   LIMITES_DOS_CENARIOS,
   type Licenca,
   type Modelo,
@@ -26,6 +28,8 @@ import {
   TETO_DO_BLOB,
   TIPO_DO_CONTEUDO,
   type TipoDeBlob,
+  type TipoDeConteudo,
+  tiposDeBlobCompativeis,
 } from '../../domain/cenarios/cenarios'
 import {
   CenarioArquivoAusenteError,
@@ -72,7 +76,7 @@ export interface ArquivoAEnviar {
 export interface ModeloParaReservar {
   digest: string
   bytes: number
-  miniatura?: { digest: string; bytes: number } | null
+  miniatura?: { digest: string; bytes: number; tipoDoConteudo?: 'image/png' | 'image/webp' } | null
 }
 
 export interface ModeloParaRegistrar {
@@ -309,16 +313,30 @@ export class CenariosService {
         `Traga de 1 a ${LIMITES_DOS_CENARIOS.reservaPorChamada} modelos por vez`,
       )
     const blobs = new Map<string, BlobReservado>()
-    const por = (digest: string, bytes: number, tipo: TipoDeBlob) => {
+    const por = (
+      digest: string,
+      bytes: number,
+      tipo: TipoDeBlob,
+      tipoDoConteudo: TipoDeConteudo = TIPO_DO_CONTEUDO[tipo],
+    ) => {
+      const existente = blobs.get(digest)
+      if (
+        existente &&
+        (existente.bytes !== bytes ||
+          !tiposDeBlobCompativeis(existente.tipo, tipo) ||
+          existente.tipoDoConteudo !== tipoDoConteudo)
+      )
+        throw new ValidationError('O mesmo arquivo não pode ter tamanhos ou tipos diferentes')
       if (bytes < 1 || bytes > TETO_DO_BLOB[tipo])
         throw new ValidationError(
           tipo === 'modelo' ? 'O modelo passa de 64 MB' : 'O retrato do modelo é grande demais',
         )
-      blobs.set(digest, { digest, bytes, tipo })
+      blobs.set(digest, { digest, bytes, tipo, tipoDoConteudo })
     }
     for (const m of modelos) {
       por(m.digest, m.bytes, 'modelo')
-      if (m.miniatura) por(m.miniatura.digest, m.miniatura.bytes, 'miniatura')
+      if (m.miniatura)
+        por(m.miniatura.digest, m.miniatura.bytes, 'miniatura', m.miniatura.tipoDoConteudo)
     }
     return this.reservar(espaco.id, [...blobs.values()])
   }
@@ -337,7 +355,7 @@ export class CenariosService {
       enviar: reserva.faltam.map((b) => ({
         ...b,
         chave: chaveDoBlob(espacoId, b.digest),
-        tipoDoConteudo: TIPO_DO_CONTEUDO[b.tipo],
+        tipoDoConteudo: b.tipoDoConteudo ?? TIPO_DO_CONTEUDO[b.tipo],
       })),
     }
   }
@@ -351,7 +369,7 @@ export class CenariosService {
     ator: Ator,
     bibliotecaId: string,
     modelos: readonly ModeloParaRegistrar[],
-    conferidos: readonly string[],
+    conferidos: readonly ConferenciaDeBlob[],
     espacoConferido?: string,
   ): Promise<Modelo[]> {
     const { espaco } = await this.bibliotecaDe(ator, bibliotecaId)
@@ -382,7 +400,11 @@ export class CenariosService {
         max: m.max,
         // Retrato que não chegou não derruba o modelo: ele entra sem retrato.
         miniatura:
-          m.miniatura && confirmados.get(m.miniatura)?.tipo === 'miniatura' ? m.miniatura : null,
+          m.miniatura &&
+          confirmados.get(m.miniatura) &&
+          ehImagemDeCenario(confirmados.get(m.miniatura)!.tipo)
+            ? m.miniatura
+            : null,
       })),
       LIMITES_DOS_CENARIOS.modelosPorBiblioteca,
       ator.usuarioId,
@@ -443,7 +465,7 @@ export class CenariosService {
     if (!blob) throw new CenarioNaoEncontradoError('O arquivo')
     return {
       chave: chaveDoBlob(espacoId, digest),
-      tipoDoConteudo: TIPO_DO_CONTEUDO[blob.tipo],
+      tipoDoConteudo: blob.tipoDoConteudo,
       bytes: blob.bytes,
     }
   }
@@ -711,7 +733,7 @@ export class CenariosService {
   async reservarCapa(
     ator: Ator,
     cenarioId: string,
-    capa: { digest: string; bytes: number },
+    capa: { digest: string; bytes: number; tipoDoConteudo?: 'image/png' | 'image/webp' },
   ): Promise<{ espacoId: string; enviar: ArquivoAEnviar[] }> {
     const { espaco } = await this.cenarioDe(ator, cenarioId)
     if (capa.bytes < 1 || capa.bytes > TETO_DO_BLOB.capa)
@@ -724,15 +746,16 @@ export class CenariosService {
     ator: Ator,
     cenarioId: string,
     digest: string,
-    conferido: boolean,
+    conferido: ConferenciaDeBlob | null,
     espacoConferido?: string,
   ) {
     const { espaco } = await this.cenarioDe(ator, cenarioId)
     const agora = this.clock()
-    if (espacoConferido !== undefined && espacoConferido !== espaco.id) conferido = false
-    if (conferido) await this.repo.confirmarBlobs(espaco.id, [digest], agora)
+    if (espacoConferido !== undefined && espacoConferido !== espaco.id) conferido = null
+    if (conferido?.digest === digest) await this.repo.confirmarBlobs(espaco.id, [conferido], agora)
     const guardado = (await this.repo.blobsConfirmados(espaco.id, [digest])).get(digest)
-    if (guardado?.tipo !== 'capa') throw new CenarioArquivoAusenteError([digest])
+    if (!guardado || !ehImagemDeCenario(guardado.tipo))
+      throw new CenarioArquivoAusenteError([digest])
     await this.repo.definirCapa(cenarioId, digest, agora)
   }
 }

@@ -1,16 +1,20 @@
 import { randomUUID } from 'node:crypto'
 import { inverterLote } from '@sistemazero/molda-cenarios-core/v2'
-import { and, asc, desc, eq, gt, inArray, isNotNull, lt, lte, type SQL, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, inArray, isNotNull, lt, lte, or, type SQL, sql } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 import {
   type Biblioteca,
   buscaDoModelo,
   type Cenario,
+  type ConferenciaDeBlob,
   type Espaco,
   type Modelo,
   type Mundo,
   type ResumoDeCenario,
+  TIPO_DO_CONTEUDO,
   type TipoDeBlob,
+  type TipoDeConteudo,
+  tiposDeBlobCompativeis,
 } from '../../../domain/cenarios/cenarios'
 import { CenarioArquivoAusenteError } from '../../../domain/cenarios/cenarios.errors'
 import { avancarHistorico } from '../../../domain/cenarios/historico'
@@ -19,6 +23,7 @@ import type {
   CenariosRepository,
   LoteGravado,
 } from '../../../domain/ports/cenarios-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import type { Database } from './db'
 import {
   cenarioBibliotecas,
@@ -398,6 +403,9 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       const guardados = await tx
         .select({
           digest: cenarioBlobs.digest,
+          bytes: cenarioBlobs.bytes,
+          tipo: cenarioBlobs.tipo,
+          tipoDoConteudo: cenarioBlobs.tipoDoConteudo,
           confirmadoEm: cenarioBlobs.confirmadoEm,
           venceEm: cenarioBlobs.venceEm,
         })
@@ -412,6 +420,18 @@ export class DrizzleCenariosRepository implements CenariosRepository {
           ),
         )
       const porDigest = new Map(guardados.map((g) => [g.digest, g]))
+      for (const b of blobs) {
+        const existente = porDigest.get(b.digest)
+        if (
+          existente &&
+          (existente.confirmadoEm || existente.venceEm > agora) &&
+          (existente.bytes !== b.bytes ||
+            !tiposDeBlobCompativeis(existente.tipo, b.tipo) ||
+            (existente.tipoDoConteudo ?? TIPO_DO_CONTEUDO[existente.tipo]) !==
+              (b.tipoDoConteudo ?? TIPO_DO_CONTEUDO[b.tipo]))
+        )
+          throw new ValidationError('O arquivo já foi reservado com outro tamanho ou tipo')
+      }
       const faltam = blobs.filter((b) => !porDigest.get(b.digest)?.confirmadoEm)
       // Só pesa na cota o que ainda não estava contado: reserva nova ou já vencida.
       const acrescimo = faltam
@@ -424,35 +444,68 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       for (const b of faltam)
         await tx
           .insert(cenarioBlobs)
-          .values({ espacoId, ...b, confirmadoEm: null, venceEm, createdAt: agora })
+          .values({
+            espacoId,
+            ...b,
+            tipoDoConteudo: b.tipoDoConteudo ?? TIPO_DO_CONTEUDO[b.tipo],
+            confirmadoEm: null,
+            venceEm,
+            createdAt: agora,
+          })
           .onConflictDoUpdate({
             target: [cenarioBlobs.espacoId, cenarioBlobs.digest],
-            set: { tipo: b.tipo, bytes: b.bytes, venceEm },
+            set: {
+              tipo: b.tipo,
+              bytes: b.bytes,
+              tipoDoConteudo: b.tipoDoConteudo ?? TIPO_DO_CONTEUDO[b.tipo],
+              venceEm,
+            },
             setWhere: sql`${cenarioBlobs.confirmadoEm} is null`,
           })
       return { faltam: [...faltam] }
     })
   }
 
-  async confirmarBlobs(espacoId: string, digests: readonly string[], agora: Date): Promise<void> {
-    if (!digests.length) return
+  async confirmarBlobs(
+    espacoId: string,
+    conferidos: readonly ConferenciaDeBlob[],
+    agora: Date,
+  ): Promise<void> {
+    if (!conferidos.length) return
     await this.db
       .update(cenarioBlobs)
       .set({ confirmadoEm: agora })
       .where(
         and(
           eq(cenarioBlobs.espacoId, espacoId),
-          inArray(cenarioBlobs.digest, [...digests]),
+          or(
+            ...conferidos.map((c) =>
+              and(
+                eq(cenarioBlobs.digest, c.digest),
+                eq(cenarioBlobs.bytes, c.bytes),
+                sql`coalesce(${cenarioBlobs.tipoDoConteudo}, case when ${cenarioBlobs.tipo} = 'modelo' then 'model/gltf-binary' else 'image/webp' end) = ${c.tipoDoConteudo}`,
+              ),
+            ),
+          ),
+          gt(cenarioBlobs.venceEm, agora),
           sql`${cenarioBlobs.confirmadoEm} is null`,
         ),
       )
   }
 
   async blobsConfirmados(espacoId: string, digests: readonly string[]) {
-    const mapa = new Map<string, { tipo: TipoDeBlob; bytes: number }>()
+    const mapa = new Map<
+      string,
+      { tipo: TipoDeBlob; bytes: number; tipoDoConteudo: TipoDeConteudo }
+    >()
     if (!digests.length) return mapa
     const linhas = await this.db
-      .select({ digest: cenarioBlobs.digest, tipo: cenarioBlobs.tipo, bytes: cenarioBlobs.bytes })
+      .select({
+        digest: cenarioBlobs.digest,
+        tipo: cenarioBlobs.tipo,
+        bytes: cenarioBlobs.bytes,
+        tipoDoConteudo: cenarioBlobs.tipoDoConteudo,
+      })
       .from(cenarioBlobs)
       .where(
         and(
@@ -461,7 +514,12 @@ export class DrizzleCenariosRepository implements CenariosRepository {
           isNotNull(cenarioBlobs.confirmadoEm),
         ),
       )
-    for (const l of linhas) mapa.set(l.digest, { tipo: l.tipo, bytes: l.bytes })
+    for (const l of linhas)
+      mapa.set(l.digest, {
+        tipo: l.tipo,
+        bytes: l.bytes,
+        tipoDoConteudo: l.tipoDoConteudo ?? TIPO_DO_CONTEUDO[l.tipo],
+      })
     return mapa
   }
 

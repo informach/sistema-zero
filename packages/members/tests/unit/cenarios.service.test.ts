@@ -82,7 +82,10 @@ async function trazerArvore(base: Awaited<ReturnType<typeof comBiblioteca>>, ato
     ator,
     base.biblioteca.id,
     [arvore],
-    [digest('a'), digest('b')],
+    [
+      { digest: digest('a'), bytes: 1000, tipoDoConteudo: 'model/gltf-binary' },
+      { digest: digest('b'), bytes: 50, tipoDoConteudo: 'image/webp' },
+    ],
   )
 }
 const objeto = (id: string, modelo: string): InstanciaDeCenario => ({
@@ -201,7 +204,7 @@ describe('trazer modelos', () => {
       ana,
       base.biblioteca.id,
       [arvore],
-      [digest('a')],
+      [{ digest: digest('a'), bytes: 1000, tipoDoConteudo: 'model/gltf-binary' }],
     )
     // O retrato não chegou: o modelo entra sem ele.
     expect(criado).toMatchObject({ nome: 'Árvore', bytes: 1000, miniatura: null })
@@ -383,9 +386,13 @@ describe('mundos e cenários', () => {
     })
     expect(reserva.enviar[0]).toMatchObject({ tipo: 'capa', tipoDoConteudo: 'image/webp' })
     await expect(
-      base.servico.definirCapa(ana, base.cenario.id, digest('c'), false),
+      base.servico.definirCapa(ana, base.cenario.id, digest('c'), null),
     ).rejects.toBeInstanceOf(CenarioArquivoAusenteError)
-    await base.servico.definirCapa(ana, base.cenario.id, digest('c'), true)
+    await base.servico.definirCapa(ana, base.cenario.id, digest('c'), {
+      digest: digest('c'),
+      bytes: 900,
+      tipoDoConteudo: 'image/webp',
+    })
     expect((await base.servico.cenarios(ana, base.mundo.id))[0]!.capa).toBe(digest('c'))
     expect((await base.servico.mundos(ana, base.espaco.id))[0]!.capa).toBe(digest('c'))
   })

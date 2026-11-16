@@ -771,6 +771,7 @@
         "@sistemazero/helpdesk-contracts": "workspace:*",
         "@sistemazero/molda": "workspace:*",
         "@sistemazero/molda-cenarios": "workspace:*",
+        "@sistemazero/molda-cenarios-core": "workspace:*",
         "@sistemazero/pensa": "workspace:*",
         "@sistemazero/pinta": "workspace:*",
         "@sistemazero/studio": "workspace:*",

@@ -93,6 +93,44 @@ async function modeloParaImportar(nome: string, bytes: number[]): Promise<Modelo
 }
 
 describe('a oficina falando com o app', () => {
+  test('criação única envia a condição; 412 só continua quando o servidor pediu criação única', async () => {
+    const m = await modeloParaImportar('Árvore', [1, 2, 3])
+    m.miniatura = new Blob([new Uint8Array([9])], { type: 'image/png' })
+    for (const criarUmaVez of [true, false]) {
+      let registrado = false
+      const host = criarHostHttp({
+        buscar: async (url, init) => {
+          if (url.endsWith('/bibliotecas')) return Response.json([bibliotecaDoServidor])
+          if (url.endsWith('/modelos/reservar')) {
+            expect(JSON.parse(init?.body as string).modelos[0].miniatura.tipoDoConteudo).toBe(
+              'image/png',
+            )
+            return Response.json({
+              espacoId: ESPACO,
+              enviar: [
+                {
+                  digest: m.digest,
+                  tipoDoConteudo: 'model/gltf-binary',
+                  url: 'https://r2/modelo',
+                  criarUmaVez,
+                },
+              ],
+            })
+          }
+          registrado = true
+          return Response.json([])
+        },
+        enviar: async (_url, init) => {
+          expect(new Headers(init?.headers).get('if-none-match')).toBe(criarUmaVez ? '*' : null)
+          return new Response(null, { status: 412 })
+        },
+      })
+      await host.listarBibliotecas(ESPACO)
+      if (criarUmaVez) await host.importarModelos(BIBLIOTECA, [m])
+      else await expect(host.importarModelos(BIBLIOTECA, [m])).rejects.toThrow('O envio parou')
+      expect(registrado).toBe(criarUmaVez)
+    }
+  })
   test('histórico devolve a cabeça diretamente e preserva a leitura dos modelos fixados', async () => {
     const documento = criarDocumentoVazio(CENARIO, 'Praia')
     documento.modelos = [
@@ -302,8 +340,16 @@ describe('a oficina falando com o app', () => {
     const reserva = pedidos.find((p) => p.caminho.endsWith('/modelos/reservar'))
     expect(reserva?.corpo).toEqual({
       modelos: [
-        { digest: arvore.digest, bytes: 4, miniatura: { digest: retrato, bytes: 3 } },
-        { digest: pedra.digest, bytes: 2, miniatura: { digest: retrato, bytes: 3 } },
+        {
+          digest: arvore.digest,
+          bytes: 4,
+          miniatura: { digest: retrato, bytes: 3, tipoDoConteudo: 'image/webp' },
+        },
+        {
+          digest: pedra.digest,
+          bytes: 2,
+          miniatura: { digest: retrato, bytes: 3, tipoDoConteudo: 'image/webp' },
+        },
       ],
     })
     expect(enviados.sort((a, b) => a.url.localeCompare(b.url))).toEqual([
@@ -445,6 +491,7 @@ describe('a oficina falando com o app', () => {
     expect(pedidos.find((p) => p.caminho.endsWith('/capa/reservar'))?.corpo).toEqual({
       digest: capa,
       bytes: 4,
+      tipoDoConteudo: 'image/webp',
     })
     expect(enviados).toEqual([{ url: 'https://r2/capa', tipo: 'image/webp', bytes: 4 }])
     expect(pedidos.at(-1)).toMatchObject({

@@ -5,8 +5,14 @@ import { isReadonlyImpersonation, isSupportSession } from '../lib/act'
 import { avatarLinkWindow } from '../lib/avatar-link-window'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { SessionUser } from '../lib/types'
+import {
+  type ConferenciaDeUpload,
+  ConteudoDeCenarioInvalido,
+  conferirUploadDeCenario,
+  type TipoDeArquivoDeCenario,
+} from '../server/cenarios-conteudo'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
-import { r2DeleteObjectsUgc, r2HeadObjectUgc, r2PresignGetUgc, r2PresignPutUgc } from '../server/r2'
+import { r2DeleteObjectsUgc, r2GetObjectUgc, r2PresignGetUgc, r2PresignPutUgc } from '../server/r2'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
 import type { SessionModule } from '../server/session'
 
@@ -19,7 +25,7 @@ const CORPO_DO_REGISTRO = 256 * 1024
 /** Um modelo de 64 MB numa conexão ruim: o envio direto tem 15 minutos. */
 const ENVIO_VALE_SEGUNDOS = 900
 /** Conferências em paralelo no armazenamento ao registrar um lote de modelos. */
-const CONFERENCIAS_JUNTAS = 8
+const CONFERENCIAS_JUNTAS = 2
 /** Por quanto tempo "esta pessoa pode ler este espaço" fica lembrado (a gaveta pede centenas de retratos). */
 const LEITURA_LEMBRADA_MS = 60_000
 const LEITURAS_LEMBRADAS_MAX = 5_000
@@ -100,12 +106,16 @@ const Reserva = z.object({
 })
 const Apagados = z.object({ apagar: z.array(z.string()) })
 
-const TIPO_DA_LEITURA = { modelo: 'model/gltf-binary', imagem: 'image/webp' } as const
+const ArquivoGuardado = z.object({
+  chave: z.string(),
+  tipoDoConteudo: z.enum(['model/gltf-binary', 'image/webp', 'image/png']),
+  bytes: z.number().int().positive(),
+})
 
 interface Armazenamento {
   presignPut: typeof r2PresignPutUgc
   presignGet: typeof r2PresignGetUgc
-  head: typeof r2HeadObjectUgc
+  abrir: typeof r2GetObjectUgc
   apagar: typeof r2DeleteObjectsUgc
 }
 
@@ -186,9 +196,8 @@ function leiturasLembradas(): Map<string, number> {
  *
  * - quase tudo é repasse ao members pelo gateway, com a sessão (quem pode usar, de quem é cada
  *   espaço, cota e revisão são decididos lá);
- * - os ARQUIVOS (o modelo `.glb`, o retrato dele e a capa do cenário) não passam por aqui: a
- *   reserva volta com um endereço assinado para o navegador pôr o arquivo direto no
- *   armazenamento, com o tamanho e o tipo exatos presos na assinatura;
+ * - o navegador envia os arquivos direto ao armazenamento, por uma assinatura com tamanho,
+ *   tipo e criação única. Este servidor depois confere o conteúdo por leitura incremental;
  * - quem afirma ao members que o arquivo chegou é este servidor, depois de olhar o
  *   armazenamento (rotas internas com HMAC). O navegador não tem como afirmar isso;
  * - ler um arquivo é um redirecionamento para um endereço assinado (ou o próprio endereço, com
@@ -207,11 +216,12 @@ export function createCenariosRoutes(deps: {
   const armazenamento: Armazenamento = deps.armazenamento ?? {
     presignPut: r2PresignPutUgc,
     presignGet: r2PresignGetUgc,
-    head: r2HeadObjectUgc,
+    abrir: r2GetObjectUgc,
     apagar: r2DeleteObjectsUgc,
   }
   const agendar = deps.depois ?? depois
   const agora = deps.agora ?? Date.now
+  const arquivosLembrados = new Map<string, { ate: number; tipoDoConteudo: string }>()
 
   /** O perfil que fez o pedido ainda é o da sessão? (irmão que entrou com um envio em voo) */
   async function mesmaPessoa(req: Request, user: SessionUser | null): Promise<NextResponse | null> {
@@ -245,11 +255,13 @@ export function createCenariosRoutes(deps: {
           tipo: a.tipo,
           bytes: a.bytes,
           tipoDoConteudo: a.tipoDoConteudo,
+          criarUmaVez: true,
           url: await armazenamento.presignPut({
             key: a.chave,
             contentType: a.tipoDoConteudo,
             contentLength: a.bytes,
             expiresInSeconds: ENVIO_VALE_SEGUNDOS,
+            criarUmaVez: true,
           }),
         }
       }),
@@ -259,28 +271,47 @@ export function createCenariosRoutes(deps: {
     return privado(NextResponse.json({ espacoId, enviar: arquivos }))
   }
 
-  /** Quais destes arquivos estão no armazenamento. `null` = não deu para saber agora. */
-  async function conferir(espacoId: string, digests: readonly string[]): Promise<string[] | null> {
-    const unicos = [...new Set(digests)]
-    const achados: string[] = []
-    let duvida = false
+  /** Só confirma bytes recebidos, por hash e formato. Nunca basta a existência da chave. */
+  async function conferir(
+    espacoId: string,
+    referencias: readonly { digest: string; tipo: TipoDeArquivoDeCenario }[],
+    pedido: Request,
+  ): Promise<ConferenciaDeUpload[]> {
+    const unicos = [...new Map(referencias.map((r) => [r.digest, r])).values()]
+    const achados: ConferenciaDeUpload[] = []
+    let falha: unknown = null
     let proximo = 0
+    const controle = new AbortController()
+    const sinal = AbortSignal.any([pedido.signal, controle.signal, AbortSignal.timeout(120_000)])
     await Promise.all(
       Array.from({ length: Math.min(CONFERENCIAS_JUNTAS, unicos.length) }, async () => {
-        while (proximo < unicos.length && !duvida) {
-          const digest = unicos[proximo++]!
-          const existe = await armazenamento
-            .head(chaveDoArquivoDoCenario(espacoId, digest))
-            .catch(() => null)
-          if (existe === null) duvida = true
-          else if (existe) achados.push(digest)
+        while (proximo < unicos.length && !falha) {
+          const ref = unicos[proximo++]!
+          try {
+            const objeto = await armazenamento.abrir(
+              chaveDoArquivoDoCenario(espacoId, ref.digest),
+              sinal,
+            )
+            if (!objeto) continue
+            achados.push(await conferirUploadDeCenario(objeto, ref.digest, ref.tipo, sinal))
+          } catch (erro) {
+            if (!falha) {
+              falha = erro
+              controle.abort(erro)
+            }
+          }
         }
       }),
     )
-    return duvida ? null : achados
+    if (falha) throw falha
+    return achados
   }
   const semConferencia = () =>
     erro(503, 'CENARIOS_ARMAZENAMENTO', 'Não consegui conferir os arquivos agora. Tente de novo.')
+  const conferenciaRecusada = (e: unknown) =>
+    e instanceof ConteudoDeCenarioInvalido
+      ? erro(422, 'CENARIO_ARQUIVO_INVALIDO', e.message)
+      : semConferencia()
 
   /** O members disse quais arquivos ficaram sem dono: saem do armazenamento depois da resposta. */
   function soltar(r: GatewayResponse): NextResponse {
@@ -306,7 +337,9 @@ export function createCenariosRoutes(deps: {
     const ate = lembradas.get(chave)
     if (ate !== undefined && ate > agora()) return true
     const r = await gateway.gatewayFetch<Array<{ id?: unknown }>>(members('espacos'))
-    if (r.status !== 200 || !Array.isArray(r.body)) return repasse(r)
+    if (r.status !== 200) return repasse(r)
+    if (!Array.isArray(r.body))
+      return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
     const pode = r.body.some((e) => typeof e?.id === 'string' && e.id.toLowerCase() === espacoId)
     if (pode) {
       if (lembradas.size >= LEITURAS_LEMBRADAS_MAX) lembradas.clear()
@@ -319,14 +352,26 @@ export function createCenariosRoutes(deps: {
     const permitido = await podeLer(user, espacoId)
     if (permitido !== true) return permitido === false ? semRota() : permitido
     const consulta = new URL(req.url).searchParams
-    const tipo = consulta.get('tipo') === 'modelo' ? 'modelo' : 'imagem'
+    const chave = chaveDoArquivoDoCenario(espacoId, digest)
+    const chaveDaLembranca = `${user.id}:${espacoId}:${digest}`
+    let arquivo = arquivosLembrados.get(chaveDaLembranca)
+    if (!arquivo || arquivo.ate <= agora()) {
+      const resposta = await gateway.gatewayFetch(members(`espacos/${espacoId}/arquivos/${digest}`))
+      if (resposta.status !== 200) return repasse(resposta)
+      const lido = ArquivoGuardado.safeParse(resposta.body)
+      if (!lido.success || lido.data.chave !== chave)
+        return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
+      arquivo = { ate: agora() + LEITURA_LEMBRADA_MS, tipoDoConteudo: lido.data.tipoDoConteudo }
+      if (arquivosLembrados.size >= LEITURAS_LEMBRADAS_MAX) arquivosLembrados.clear()
+      arquivosLembrados.set(chaveDaLembranca, arquivo)
+    }
     const janela = avatarLinkWindow(agora())
-    const url = await armazenamento.presignGet(chaveDoArquivoDoCenario(espacoId, digest), {
+    const url = await armazenamento.presignGet(chave, {
       expiresInSeconds: janela.expiresInSeconds,
       signingDate: janela.signingDate,
       responseCacheControl: janela.fileCacheControl,
-      // Tipo fixo por pedido: o que está guardado nunca é servido como página.
-      responseContentType: TIPO_DA_LEITURA[tipo],
+      // O MIME confirmado do arquivo, nunca o tipo afirmado pelo navegador.
+      responseContentType: arquivo.tipoDoConteudo,
     })
     // A imagem segue o redirecionamento. O modelo é baixado por `fetch`, que levaria os
     // cabeçalhos da sessão ao armazenamento (e o navegador barraria): a oficina pede o endereço
@@ -380,11 +425,24 @@ export function createCenariosRoutes(deps: {
         const corpo = lido.ok ? RegistrarBody.safeParse(lido.corpo) : null
         if (!corpo?.success) return invalido()
         const espacoId = corpo.data.espacoId.toLowerCase()
-        const conferidos = await conferir(
-          espacoId,
-          corpo.data.modelos.flatMap((m) => (m.miniatura ? [m.digest, m.miniatura] : [m.digest])),
-        )
-        if (!conferidos) return semConferencia()
+        const permitido = await podeLer(user, espacoId)
+        if (permitido !== true) return permitido === false ? semRota() : permitido
+        let conferidos: ConferenciaDeUpload[]
+        try {
+          conferidos = await conferir(
+            espacoId,
+            corpo.data.modelos.flatMap((m) => [
+              { digest: m.digest, tipo: 'modelo' as const },
+              ...(m.miniatura ? [{ digest: m.miniatura, tipo: 'miniatura' as const }] : []),
+            ]),
+            req,
+          )
+        } catch (e) {
+          return conferenciaRecusada(e)
+        }
+        const presentes = new Set(conferidos.map((c) => c.digest))
+        if (corpo.data.modelos.some((m) => !presentes.has(m.digest)))
+          return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Faltam arquivos de modelos; envie de novo')
         return repasse(
           await gateway.gatewayFetchHmac('/members/internal/cenarios/modelos', {
             method: 'POST',
@@ -392,7 +450,10 @@ export function createCenariosRoutes(deps: {
               ator: atorDe(user),
               bibliotecaId: registrar[1]!.toLowerCase(),
               espacoId,
-              modelos: corpo.data.modelos,
+              modelos: corpo.data.modelos.map((m) => ({
+                ...m,
+                miniatura: m.miniatura && presentes.has(m.miniatura) ? m.miniatura : null,
+              })),
               conferidos,
             },
           }),
@@ -406,8 +467,16 @@ export function createCenariosRoutes(deps: {
         const corpo = lido.ok ? CapaBody.safeParse(lido.corpo) : null
         if (!corpo?.success) return invalido()
         const espacoId = corpo.data.espacoId.toLowerCase()
-        const conferidos = await conferir(espacoId, [corpo.data.digest])
-        if (!conferidos) return semConferencia()
+        const permitido = await podeLer(user, espacoId)
+        if (permitido !== true) return permitido === false ? semRota() : permitido
+        let conferidos: ConferenciaDeUpload[]
+        try {
+          conferidos = await conferir(espacoId, [{ digest: corpo.data.digest, tipo: 'capa' }], req)
+        } catch (e) {
+          return conferenciaRecusada(e)
+        }
+        if (!conferidos.length)
+          return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Envie o retrato de novo')
         return repasse(
           await gateway.gatewayFetchHmac('/members/internal/cenarios/capa', {
             method: 'POST',
@@ -416,7 +485,7 @@ export function createCenariosRoutes(deps: {
               cenarioId: capa[1]!.toLowerCase(),
               espacoId,
               digest: corpo.data.digest,
-              conferido: conferidos.length === 1,
+              conferido: conferidos[0] ?? null,
             },
           }),
         )

@@ -487,6 +487,8 @@ export async function r2PresignPutUgc(input: {
   contentType: string
   contentLength: number
   expiresInSeconds?: number
+  /** Arquivos por hash: uma URL de envio não pode substituir conteúdo já confirmado. */
+  criarUmaVez?: boolean
 }): Promise<string> {
   const cfg = requireUgcR2Config()
   return getSignedUrl(
@@ -496,12 +498,41 @@ export async function r2PresignPutUgc(input: {
       Key: normalizeKey(input.key),
       ContentType: input.contentType,
       ContentLength: input.contentLength,
+      ...(input.criarUmaVez ? { IfNoneMatch: '*' } : {}),
     }),
     {
       expiresIn: input.expiresInSeconds ?? 300,
-      signableHeaders: new Set(['content-type', 'content-length']),
+      signableHeaders: new Set([
+        'content-type',
+        'content-length',
+        ...(input.criarUmaVez ? ['if-none-match'] : []),
+      ]),
     },
   )
+}
+
+/** Leitura autenticada pelo servidor para conferir um upload UGC sem materializar seu corpo. */
+export async function r2GetObjectUgc(
+  key: string,
+  signal?: AbortSignal,
+): Promise<R2PrivateObject | null> {
+  const cfg = requireUgcR2Config()
+  try {
+    const r = await getClient(cfg).send(
+      new GetObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }),
+      { abortSignal: signal },
+    )
+    if (!r.Body) throw new Error('Objeto sem corpo')
+    return {
+      body: r.Body.transformToWebStream() as ReadableStream<Uint8Array>,
+      contentType: r.ContentType ?? null,
+      contentLength: r.ContentLength ?? null,
+    }
+  } catch (error) {
+    const name = error && typeof error === 'object' && 'name' in error ? error.name : null
+    if (name === 'NotFound' || name === 'NoSuchKey' || name === '404') return null
+    throw new Error('Não consegui ler o arquivo no armazenamento.', { cause: error })
+  }
 }
 
 /** URL pré-assinada de GET no bucket UGC (TTL curto) — entrega direta browser←R2. */

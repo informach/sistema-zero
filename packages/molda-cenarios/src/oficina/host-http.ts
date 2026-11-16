@@ -63,6 +63,7 @@ interface ArquivoAEnviar {
   digest: string
   tipoDoConteudo: string
   url: string
+  criarUmaVez?: boolean
 }
 interface Reserva {
   espacoId: string
@@ -82,6 +83,12 @@ const objeto = (valor: unknown): Record<string, unknown> | null =>
   valor && typeof valor === 'object' && !Array.isArray(valor)
     ? (valor as Record<string, unknown>)
     : null
+
+function tipoDeImagem(tipo: string): 'image/png' | 'image/webp' {
+  if (tipo !== 'image/png' && tipo !== 'image/webp')
+    throw new ErroDaOficina('Use uma imagem PNG ou WebP para o retrato', 0, null, null)
+  return tipo
+}
 
 async function emFila<T>(itens: readonly T[], juntos: number, fazer: (item: T) => Promise<void>) {
   let proximo = 0
@@ -209,14 +216,17 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         resposta = await enviar(arquivo.url, {
           method: 'PUT',
           signal: sinal,
-          headers: { 'content-type': arquivo.tipoDoConteudo },
+          headers: {
+            'content-type': arquivo.tipoDoConteudo,
+            ...(arquivo.criarUmaVez ? { 'if-none-match': '*' } : {}),
+          },
           body: conteudo as BodyInit,
         })
       } catch {
         sinal?.throwIfAborted()
         throw new ErroDaOficina('O envio parou no meio. Tente de novo.', 0, null, null)
       }
-      if (!resposta.ok)
+      if (!resposta.ok && !(arquivo.criarUmaVez && resposta.status === 412))
         throw new ErroDaOficina(
           'O envio parou no meio. Tente de novo.',
           resposta.status,
@@ -289,6 +299,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
               m,
               retrato: bytes,
               digestDoRetrato: bytes ? await digestDosBytes(bytes) : null,
+              tipoDoConteudo: cabe ? tipoDeImagem(m.miniatura.type) : undefined,
             }
           }),
         )
@@ -306,7 +317,11 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
               bytes: p.m.conteudo.byteLength,
               miniatura:
                 p.retrato && p.digestDoRetrato
-                  ? { digest: p.digestDoRetrato, bytes: p.retrato.byteLength }
+                  ? {
+                      digest: p.digestDoRetrato,
+                      bytes: p.retrato.byteLength,
+                      tipoDoConteudo: p.tipoDoConteudo,
+                    }
                   : null,
             })),
           },
@@ -439,6 +454,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       const reserva = await pedir<Reserva>('POST', `cenarios/${cenarioId}/capa/reservar`, {
         digest,
         bytes: bytes.byteLength,
+        tipoDoConteudo: tipoDeImagem(imagem.type),
       })
       await subir(reserva, new Map([[digest, bytes]]))
       await pedir('POST', `cenarios/${cenarioId}/capa`, { espacoId: reserva.espacoId, digest })

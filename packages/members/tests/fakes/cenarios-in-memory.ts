@@ -4,10 +4,14 @@ import {
   type Biblioteca,
   buscaDoModelo,
   type Cenario,
+  type ConferenciaDeBlob,
   type Espaco,
   type Modelo,
   type Mundo,
+  TIPO_DO_CONTEUDO,
   type TipoDeBlob,
+  type TipoDeConteudo,
+  tiposDeBlobCompativeis,
 } from '../../src/domain/cenarios/cenarios'
 import {
   avancarHistorico,
@@ -18,6 +22,7 @@ import type {
   BlobReservado,
   CenariosRepository,
 } from '../../src/domain/ports/cenarios-repository.port'
+import { ValidationError } from '../../src/domain/shared/errors'
 
 interface BlobGuardado extends BlobReservado {
   confirmado: boolean
@@ -227,6 +232,18 @@ export class CenariosEmMemoria implements CenariosRepository {
   ) {
     const espaco = this.espacosGuardados.get(espacoId)
     if (!espaco) return null
+    for (const b of blobs) {
+      const existente = this.blobs.get(this.chave(espacoId, b.digest))
+      if (
+        existente &&
+        (existente.confirmado || existente.venceEm > agora) &&
+        (existente.bytes !== b.bytes ||
+          !tiposDeBlobCompativeis(existente.tipo, b.tipo) ||
+          (existente.tipoDoConteudo ?? TIPO_DO_CONTEUDO[existente.tipo]) !==
+            (b.tipoDoConteudo ?? TIPO_DO_CONTEUDO[b.tipo]))
+      )
+        throw new ValidationError('O arquivo já foi reservado com outro tamanho ou tipo')
+    }
     const faltam = blobs.filter((b) => !this.blobs.get(this.chave(espacoId, b.digest))?.confirmado)
     const novos = faltam.filter((b) => {
       const guardado = this.blobs.get(this.chave(espacoId, b.digest))
@@ -239,18 +256,32 @@ export class CenariosEmMemoria implements CenariosRepository {
     this.atualizarUso(espacoId, agora)
     return { faltam: this.copia(faltam) }
   }
-  async confirmarBlobs(espacoId: string, digests: readonly string[], agora: Date) {
-    for (const d of digests) {
-      const blob = this.blobs.get(this.chave(espacoId, d))
-      if (blob) blob.confirmado = true
+  async confirmarBlobs(espacoId: string, conferidos: readonly ConferenciaDeBlob[], agora: Date) {
+    for (const c of conferidos) {
+      const blob = this.blobs.get(this.chave(espacoId, c.digest))
+      if (
+        blob &&
+        blob.venceEm > agora &&
+        blob.bytes === c.bytes &&
+        (blob.tipoDoConteudo ?? TIPO_DO_CONTEUDO[blob.tipo]) === c.tipoDoConteudo
+      )
+        blob.confirmado = true
     }
     this.atualizarUso(espacoId, agora)
   }
   async blobsConfirmados(espacoId: string, digests: readonly string[]) {
-    const mapa = new Map<string, { tipo: TipoDeBlob; bytes: number }>()
+    const mapa = new Map<
+      string,
+      { tipo: TipoDeBlob; bytes: number; tipoDoConteudo: TipoDeConteudo }
+    >()
     for (const d of digests) {
       const blob = this.blobs.get(this.chave(espacoId, d))
-      if (blob?.confirmado) mapa.set(d, { tipo: blob.tipo, bytes: blob.bytes })
+      if (blob?.confirmado)
+        mapa.set(d, {
+          tipo: blob.tipo,
+          bytes: blob.bytes,
+          tipoDoConteudo: blob.tipoDoConteudo ?? TIPO_DO_CONTEUDO[blob.tipo],
+        })
     }
     return mapa
   }
