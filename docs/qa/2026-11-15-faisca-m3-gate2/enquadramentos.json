@@ -1,138 +1,47 @@
 {
-  "resolucao": [
-    1280,
-    800
-  ],
+  "resolucao": [1280, 800],
   "fov": 55,
   "baseDoAntes": "0f00486c0 + instrumentação de fotografia, sem composição ambiental",
   "vistas": {
     "porta": {
-      "avatar": [
-        0,
-        150
-      ],
-      "camera": [
-        0,
-        12,
-        170
-      ],
-      "alvo": [
-        0,
-        9,
-        125
-      ]
+      "avatar": [0, 150],
+      "camera": [0, 12, 170],
+      "alvo": [0, 9, 125]
     },
     "praca": {
-      "avatar": [
-        0,
-        137
-      ],
-      "camera": [
-        -24,
-        21,
-        160
-      ],
-      "alvo": [
-        0,
-        5,
-        138
-      ]
+      "avatar": [0, 137],
+      "camera": [-24, 21, 160],
+      "alvo": [0, 5, 138]
     },
     "costa": {
-      "avatar": [
-        20,
-        153
-      ],
-      "camera": [
-        -1,
-        9,
-        150
-      ],
-      "alvo": [
-        25,
-        4,
-        174
-      ]
+      "avatar": [20, 153],
+      "camera": [-1, 9, 150],
+      "alvo": [25, 4, 174]
     },
     "oficina": {
-      "avatar": [
-        -24,
-        132
-      ],
-      "camera": [
-        -25,
-        11,
-        145
-      ],
-      "alvo": [
-        -46,
-        7,
-        120
-      ]
+      "avatar": [-24, 132],
+      "camera": [-25, 11, 145],
+      "alvo": [-46, 7, 120]
     },
     "farol": {
-      "avatar": [
-        -3,
-        109
-      ],
-      "camera": [
-        38,
-        30,
-        145
-      ],
-      "alvo": [
-        -3,
-        20,
-        100
-      ]
+      "avatar": [-3, 109],
+      "camera": [38, 30, 145],
+      "alvo": [-3, 20, 100]
     },
     "subida": {
-      "avatar": [
-        -20,
-        115
-      ],
-      "camera": [
-        -42,
-        24,
-        122
-      ],
-      "alvo": [
-        -3,
-        15,
-        109
-      ]
+      "avatar": [-20, 115],
+      "camera": [-42, 24, 122],
+      "alvo": [-3, 15, 109]
     },
     "ponte-sul": {
-      "avatar": [
-        58,
-        135
-      ],
-      "camera": [
-        65,
-        9,
-        143
-      ],
-      "alvo": [
-        58,
-        3.8,
-        125
-      ]
+      "avatar": [58, 135],
+      "camera": [65, 9, 143],
+      "alvo": [58, 3.8, 125]
     },
     "ponte-norte": {
-      "avatar": [
-        58,
-        119
-      ],
-      "camera": [
-        50,
-        9,
-        112
-      ],
-      "alvo": [
-        58,
-        4,
-        129
-      ]
+      "avatar": [58, 119],
+      "camera": [50, 9, 112],
+      "alvo": [58, 4, 129]
     }
   },
   "sha256": {

@@ -773,10 +773,7 @@
       "ambiente": {
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
         "pixelRatio": 1,
-        "pixels": [
-          1280,
-          800
-        ],
+        "pixels": [1280, 800],
         "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 (0x00002584) Direct3D11 vs_5_0 ps_5_0, D3D11)"
       }
     }

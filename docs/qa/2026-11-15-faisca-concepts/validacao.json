@@ -1,10 +1,7 @@
 {
   "data": "2026-11-16T03:22:01.956Z",
   "contexto": "Faísca concepts, somente /macro",
-  "commitsCodigo": [
-    "08fa00487",
-    "7d71f4247"
-  ],
+  "commitsCodigo": ["08fa00487", "7d71f4247"],
   "aprovacaoArtistica": false,
   "testes": {
     "aprovados": 2134,

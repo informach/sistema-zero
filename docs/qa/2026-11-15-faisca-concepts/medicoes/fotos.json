@@ -3,181 +3,121 @@
     {
       "nome": "porta",
       "arquivo": "depois/porta.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "praca",
       "arquivo": "depois/praca.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "horta",
       "arquivo": "depois/horta.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "oficina",
       "arquivo": "depois/oficina.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "farol",
       "arquivo": "depois/farol.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "subida",
       "arquivo": "depois/subida.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "costa",
       "arquivo": "depois/costa.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "concept-praca",
       "arquivo": "depois/concept-praca.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "concept-lago",
       "arquivo": "depois/concept-lago.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "concept-horta",
       "arquivo": "depois/concept-horta.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "escadas-farol",
       "arquivo": "depois/escadas-farol.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "ponte-proxima",
       "arquivo": "depois/ponte-proxima.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "ponte-chegada-norte",
       "arquivo": "depois/ponte-chegada-norte.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "placa-costa",
       "arquivo": "depois/placa-costa.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "placa-horta",
       "arquivo": "depois/placa-horta.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "placa-patio",
       "arquivo": "depois/placa-patio.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": false
     },
     {
       "nome": "concept-praca",
       "arquivo": "depois/concept-praca-noite.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": true
     },
     {
       "nome": "concept-lago",
       "arquivo": "depois/concept-lago-noite.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": true
     },
     {
       "nome": "escadas-farol",
       "arquivo": "depois/escadas-farol-noite.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": true
     },
     {
       "nome": "placa-costa",
       "arquivo": "depois/placa-costa-noite.png",
-      "viewport": [
-        1280,
-        800
-      ],
+      "viewport": [1280, 800],
       "noite": true
     }
   ],

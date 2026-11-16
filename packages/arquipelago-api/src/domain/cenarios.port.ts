@@ -8,6 +8,6 @@ export interface RepositorioDeCenarios {
   historico(id: string, antesDe?: number): Promise<Omit<RevisaoDeCenario, 'documento'>[]>
   operacao(id: string, operacaoId: string): Promise<RevisaoDeCenario | null>
   gravar(revisao: RevisaoDeCenario, revisaoEsperada: number): Promise<boolean>
-  aplicar(id: string, revisao: number,autorId?:string): Promise<boolean>
-  aplicado?(base:string):Promise<RevisaoDeCenario|null>
+  aplicar(id: string, revisao: number, autorId?: string): Promise<boolean>
+  aplicado?(base: string): Promise<RevisaoDeCenario | null>
 }

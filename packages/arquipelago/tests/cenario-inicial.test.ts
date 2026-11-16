@@ -13,8 +13,8 @@ test('catálogo importado é qualificado, válido e sem aliases duplicados', () 
 })
 test('importação preserva todas as posições, orientações, escalas e relações de apoio', () => {
   const d = cenarioInicialDaFaisca('a'.repeat(64))
-  expect(d.instancias.length).toBe(COMPOSICAO_DA_FAISCA.length+1)
-  expect(d.instancias.find(p=>p.ator==='iris')?.id).toBe('iris')
+  expect(d.instancias.length).toBe(COMPOSICAO_DA_FAISCA.length + 1)
+  expect(d.instancias.find((p) => p.ator === 'iris')?.id).toBe('iris')
   const alturas = new Map<string, number>()
   for (const p of COMPOSICAO_DA_FAISCA) {
     const o = d.instancias.find((o) => o.id === p.id)!

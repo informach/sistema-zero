@@ -5,10 +5,7 @@
       "arquivo": "01-planta-geral.webp",
       "original": "Imagem do ChatGPT 15 de nov. de 2026, 20_56_34-1.webp",
       "papel": "organização espacial",
-      "pixels": [
-        1448,
-        1086
-      ],
+      "pixels": [1448, 1086],
       "bytes": 2666686,
       "sha256": "8aab90df11d9329fa5996acc352658385faead52fa28c970b493095d72c5a367"
     },
@@ -16,10 +13,7 @@
       "arquivo": "02-praca.webp",
       "original": "Imagem do ChatGPT 15 de nov. de 2026, 20_56_36-2.webp",
       "papel": "composição da praça e Farol",
-      "pixels": [
-        1672,
-        941
-      ],
+      "pixels": [1672, 941],
       "bytes": 2671858,
       "sha256": "4e4be3ea212a42835cd7e259f6fb9317fccb3ffb52ecda0911e6f4cfe83968d1"
     },
@@ -27,10 +21,7 @@
       "arquivo": "03-campos-lago.webp",
       "original": "Imagem do ChatGPT 15 de nov. de 2026, 20_56_39-3.webp",
       "papel": "horta, lago e ponte",
-      "pixels": [
-        1672,
-        941
-      ],
+      "pixels": [1672, 941],
       "bytes": 2759324,
       "sha256": "2a0131bc7489a85400cd07ec57ad69e2cf76ec4240ccf89e72e7cc829868917e"
     }
