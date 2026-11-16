@@ -19,6 +19,7 @@ export interface Biblioteca {
   id: string
   espacoId: string
   nome: string
+  fonte?: string | null
   licenca: Licenca
   modelos: number
   /** Endereço da imagem de capa, ou nulo. */
@@ -52,6 +53,7 @@ export interface PaginaDeModelos {
 export interface FiltroDeModelos {
   busca?: string
   pasta?: string
+  digest?: string
   cursor?: string | null
   limite?: number
 }
@@ -67,6 +69,30 @@ export interface ModeloParaImportar {
   min: [number, number, number]
   max: [number, number, number]
   triangulos: number
+}
+
+export interface MoldeDisponivel {
+  origem: 'molda'
+  id: string
+  nome: string
+  miniatura: string | null
+  revisao: string
+  atualizadoEm: number
+}
+
+export type EscolhaDeModelo = ModeloDeBiblioteca | MoldeDisponivel
+export type ResultadoDoMolde =
+  | { ok: true; modelo: ModeloDeBiblioteca }
+  | { ok: false; token: string; avisos: string[] }
+
+export interface FonteDeMoldes {
+  listar(sinal?: AbortSignal): Promise<MoldeDisponivel[]>
+  preparar(
+    espacoId: string,
+    molde: MoldeDisponivel,
+    sinal?: AbortSignal,
+    aceite?: string,
+  ): Promise<ResultadoDoMolde>
 }
 
 export interface Mundo {
@@ -107,6 +133,9 @@ export interface CenariosHost {
   espacos(): Promise<Espaco[]>
 
   listarBibliotecas(espacoId: string): Promise<Biblioteca[]>
+  obterBibliotecaDoMolda(espacoId: string): Promise<Biblioteca>
+  /** Fonte viva do perfil. As cópias só viram modelos guardados quando escolhidas. */
+  molda?: FonteDeMoldes
   criarBiblioteca(espacoId: string, dados: { nome: string; licenca: Licenca }): Promise<Biblioteca>
   editarBiblioteca(id: string, dados: { nome?: string; licenca?: Licenca }): Promise<Biblioteca>
   apagarBiblioteca(id: string): Promise<void>

@@ -39,6 +39,22 @@ function montar(modo: ModoDosCenarios = 'equipe', lista: string[] = []) {
   )
   return { repo, servico }
 }
+test('biblioteca do Molda é idempotente por perfil, pertence à conta e não se confunde pelo nome', async () => {
+  const { servico } = montar('aberto')
+  const [espaco, equipe] = await servico.espacos(ana)
+  await servico.criarBiblioteca(ana, espaco!.id, { nome: 'Meus moldes', licenca: 'propria' })
+  const a = await servico.bibliotecaDoMolda(ana, espaco!.id)
+  expect((await servico.bibliotecaDoMolda(ana, espaco!.id)).id).toBe(a.id)
+  const irma = { ...ana, usuarioId: OUTRA }
+  const b = await servico.bibliotecaDoMolda(irma, espaco!.id)
+  expect(b.id).not.toBe(a.id)
+  expect(a.fonte).toBe(`molda:${ana.usuarioId}`)
+  expect(b.fonte).toBe(`molda:${irma.usuarioId}`)
+  await expect(servico.bibliotecaDoMolda(cliente, espaco!.id)).rejects.toBeInstanceOf(
+    CenarioNaoEncontradoError,
+  )
+  await expect(servico.bibliotecaDoMolda(ana, equipe!.id)).rejects.toThrow('espaço da conta')
+})
 async function comBiblioteca(ator: Ator = ana, modo: ModoDosCenarios = 'equipe') {
   const base = montar(modo)
   const [espaco] = await base.servico.espacos(ator)

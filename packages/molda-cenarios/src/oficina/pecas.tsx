@@ -14,7 +14,7 @@ import { COPY } from './copy'
 
 /** Lê dados do host com os três estados de sempre: chegando, pronto e falhou. */
 export function useCarga<T>(
-  buscar: () => Promise<T>,
+  buscar: (sinal: AbortSignal) => Promise<T>,
   dependencias: readonly unknown[],
 ): { dados: T | null; falhou: boolean; carregando: boolean; recarregar(): void } {
   const [estado, setEstado] = useState<{ dados: T | null; falhou: boolean; carregando: boolean }>({
@@ -28,13 +28,15 @@ export function useCarga<T>(
   // biome-ignore lint/correctness/useExhaustiveDependencies: quem chama diz do que a busca depende
   useEffect(() => {
     let vivo = true
+    const controle = new AbortController()
     setEstado((atual) => ({ ...atual, carregando: true, falhou: false }))
-    buscarAtual.current().then(
+    buscarAtual.current(controle.signal).then(
       (dados) => vivo && setEstado({ dados, falhou: false, carregando: false }),
       () => vivo && setEstado((atual) => ({ ...atual, falhou: true, carregando: false })),
     )
     return () => {
       vivo = false
+      controle.abort()
     }
   }, [...dependencias, volta])
   const recarregar = useCallback(() => setVolta((v) => v + 1), [])

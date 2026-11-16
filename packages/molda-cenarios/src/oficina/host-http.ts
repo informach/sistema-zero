@@ -219,6 +219,9 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       const lista = await pedir<BibliotecaDoServidor[]>('GET', `espacos/${espacoId}/bibliotecas`)
       return lista.map(biblioteca)
     },
+    async obterBibliotecaDoMolda(espacoId) {
+      return biblioteca(await pedir('POST', `espacos/${espacoId}/biblioteca-molda`))
+    },
     async criarBiblioteca(espacoId, dados) {
       return biblioteca(
         await pedir<BibliotecaDoServidor>('POST', `espacos/${espacoId}/bibliotecas`, dados),
@@ -240,6 +243,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       const consulta = new URLSearchParams()
       if (filtro.busca?.trim()) consulta.set('busca', filtro.busca.trim().slice(0, 120))
       if (filtro.pasta !== undefined) consulta.set('pasta', filtro.pasta)
+      if (filtro.digest) consulta.set('digest', filtro.digest)
       if (filtro.cursor) consulta.set('cursor', filtro.cursor)
       if (filtro.limite) consulta.set('limite', String(filtro.limite))
       const sufixo = consulta.size ? `?${consulta}` : ''
@@ -377,6 +381,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         ResumoDoServidor & { espacoId: string; documento: CenarioAberto['documento'] }
       >('GET', `cenarios/${id}`)
       espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
+      // As cópias fixadas continuam no cenário mesmo depois de apagar a biblioteca.
+      // O documento autorizado já identifica o espaço dos seus arquivos históricos.
+      for (const ref of aberto.documento.modelos)
+        espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
       return {
         resumo: resumo(aberto, aberto.espacoId),
         documento: aberto.documento,

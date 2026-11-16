@@ -1,8 +1,10 @@
 import { type JSX, lazy, type ReactNode, Suspense, useEffect, useState } from 'react'
+import { BIBLIOTECA_MOLDA_ID } from './moldes'
 import { Chegando, Falhou, useCarga } from './pecas'
 import type { CenariosHost } from './portas'
 import { Biblioteca } from './telas/Biblioteca'
 import { Inicio } from './telas/Inicio'
+import { Moldes } from './telas/Moldes'
 import { Mundo } from './telas/Mundo'
 
 // O editor traz o motor 3D junto: só é baixado quando um cenário abre.
@@ -83,6 +85,7 @@ export function CenariosOficina({
           mundoId={rota.mundoId}
           cenarioId={rota.cenarioId}
           tema={tema}
+          moldesDisponiveis={espaco.tipo === 'conta' && Boolean(host.molda)}
           aoVoltar={() => {
             espacos.recarregar()
             setRota({ tela: 'mundo', mundoId: rota.mundoId })
@@ -97,12 +100,36 @@ export function CenariosOficina({
         host={host}
         mundoId={rota.mundoId}
         espacoId={espaco.id}
+        moldesDisponiveis={espaco.tipo === 'conta' && Boolean(host.molda)}
         aoVoltar={() => setRota({ tela: 'inicio', aba: 'mundos' })}
         aoAbrirCenario={(cenarioId) =>
           setRota({ tela: 'oficina', mundoId: rota.mundoId, cenarioId })
         }
         aoAbrirBiblioteca={(bibliotecaId) =>
           setRota({ tela: 'biblioteca', bibliotecaId, voltarAoMundo: rota.mundoId })
+        }
+      />,
+    )
+
+  if (
+    rota.tela === 'biblioteca' &&
+    rota.bibliotecaId === BIBLIOTECA_MOLDA_ID &&
+    host.molda &&
+    espaco.tipo === 'conta'
+  )
+    return raiz(
+      <Moldes
+        fonte={host.molda}
+        aoAbrirCopias={async () => {
+          const b = await host.obterBibliotecaDoMolda(espaco.id)
+          setRota({ tela: 'biblioteca', bibliotecaId: b.id })
+        }}
+        aoVoltar={() =>
+          setRota(
+            rota.voltarAoMundo
+              ? { tela: 'mundo', mundoId: rota.voltarAoMundo }
+              : { tela: 'inicio', aba: 'bibliotecas' },
+          )
         }
       />,
     )

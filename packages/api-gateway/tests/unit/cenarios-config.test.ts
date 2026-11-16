@@ -21,6 +21,7 @@ const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['GET', '/members/cenarios/espacos'],
   ['GET', `/members/cenarios/espacos/${ID}/bibliotecas`],
   ['POST', `/members/cenarios/espacos/${ID}/bibliotecas`],
+  ['POST', `/members/cenarios/espacos/${ID}/biblioteca-molda`],
   ['PATCH', `/members/cenarios/bibliotecas/${ID}`],
   ['DELETE', `/members/cenarios/bibliotecas/${ID}`],
   ['GET', `/members/cenarios/bibliotecas/${ID}/modelos`],

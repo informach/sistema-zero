@@ -93,6 +93,36 @@ async function modeloParaImportar(nome: string, bytes: number[]): Promise<Modelo
 }
 
 describe('a oficina falando com o app', () => {
+  test('reabrir preserva o espaço dos modelos de uma biblioteca apagada', async () => {
+    const documento = criarDocumentoVazio(CENARIO, 'Ilha')
+    documento.modelos = [
+      { id: 'antigo', modelo: 'antigo', biblioteca: BIBLIOTECA, digest: digest('a') },
+    ]
+    const { host, pedidos } = montar((p) => {
+      if (p.caminho === `cenarios/${CENARIO}`)
+        return {
+          corpo: {
+            id: CENARIO,
+            mundoId: MUNDO,
+            espacoId: ESPACO,
+            documento,
+            revisao: 1,
+            nome: 'Ilha',
+            atualizadoEm: '2026-11-16T12:00:00Z',
+            capa: null,
+          },
+        }
+      return { corpo: { url: 'https://r2/modelo-antigo' } }
+    })
+    await host.abrirCenario(CENARIO)
+    expect(
+      new Uint8Array(await host.conteudoDoModelo({ biblioteca: BIBLIOTECA, digest: digest('a') })),
+    ).toEqual(new Uint8Array([1, 2, 3]))
+    expect(pedidos.map((p) => p.caminho)).toEqual([
+      `cenarios/${CENARIO}`,
+      `espacos/${ESPACO}/arquivos/${digest('a')}?tipo=modelo&como=endereco`,
+    ])
+  })
   test('cancelamento durante upload não registra modelos nem inicia o próximo lote', async () => {
     const controle = new AbortController()
     const caminhos: string[] = []

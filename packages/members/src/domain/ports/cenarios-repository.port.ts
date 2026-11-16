@@ -32,6 +32,7 @@ export interface NovoModelo {
 export interface FiltroDeModelos {
   /** Termos já normalizados; todos precisam aparecer. */
   termos: readonly string[]
+  digest?: string
   pasta?: string
   /** Quantos pular (o cursor da página). */
   inicio: number
@@ -59,7 +60,14 @@ export interface CenariosRepository {
   bibliotecas(espacoId: string): Promise<Biblioteca[]>
   biblioteca(id: string): Promise<Biblioteca | null>
   criarBiblioteca(
-    dados: { id: string; espacoId: string; nome: string; licenca: Licenca; criadoPor: string },
+    dados: {
+      id: string
+      espacoId: string
+      nome: string
+      licenca: Licenca
+      criadoPor: string
+      fonte?: string
+    },
     teto: number,
     agora: Date,
   ): Promise<Biblioteca | null>

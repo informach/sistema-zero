@@ -69,6 +69,8 @@ export interface MoldaStudioReview {
 }
 
 export interface MoldaStudioExportContext {
+  /** O teto do Estúdio continua sendo o padrão; cenários usa seu próprio orçamento. */
+  destino?: 'estudio' | 'cenarios'
   persistence?: MoldaPersistence
   namespace?: string
   acceptedReview?: string
@@ -156,6 +158,7 @@ export async function exportLoadedSceneForStudio(
     sceneSnapshotIds.set(document, snapshotId)
   }
   const token = JSON.stringify([
+    context.destino ?? 'estudio',
     namespace,
     document.id,
     document.updatedAt,
@@ -185,7 +188,11 @@ export async function exportLoadedSceneForStudio(
       stats: result.stats,
       byteLength: result.bytes.length,
     })
-    if (!report.fitsSingleCopy)
+    if (
+      context.destino === 'cenarios'
+        ? report.empty || result.bytes.length > 64 * 1024 ** 2
+        : !report.fitsSingleCopy
+    )
       return { ok: false, reason: report.empty ? 'encode-failed' : 'asset-too-big' }
     const counts = new Map<SceneGlbIssue['code'], number>()
     for (const issue of result.issues) counts.set(issue.code, (counts.get(issue.code) ?? 0) + 1)
@@ -242,7 +249,13 @@ export async function exportLoadedAssetForStudio(
   const namespace = options.namespace ?? getMoldaStorageNamespace()
   const persistence = options.persistence ?? getDefaultMoldaPersistence()
   const cache = cacheFor(persistence)
-  const cacheKey = [namespace, asset.id, String(asset.updatedAt)].join(CACHE_KEY_SEPARATOR)
+  const cacheKey = [
+    options.destino ?? 'estudio',
+    namespace,
+    asset.id,
+    String(asset.updatedAt),
+    String(options.storageRevision ?? ''),
+  ].join(CACHE_KEY_SEPARATOR)
   const cached = cache.get(cacheKey)
   if (cached) return materializeExport(asset, cached)
   const finish = (result: CachedExport): ExportForStudioResult => {
@@ -251,7 +264,10 @@ export async function exportLoadedAssetForStudio(
     return materializeExport(asset, result)
   }
   if (asset.kind === 'model') {
-    const result = exportModelGlb(asset)
+    const result = exportModelGlb(
+      asset,
+      options.destino === 'cenarios' ? Math.ceil((64 * 1024 ** 2) / 3) * 4 + 64 : undefined,
+    )
     if (!result.ok) {
       return finish({
         ok: false,

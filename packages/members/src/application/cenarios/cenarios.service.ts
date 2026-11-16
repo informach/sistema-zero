@@ -181,6 +181,26 @@ export class CenariosService {
     return (await this.repo.bibliotecas(espacoId)).map(bibliotecaView)
   }
 
+  /** Um arquivo exportado do Molda usa o armazenamento da mesma conta. O nome não identifica a fonte. */
+  async bibliotecaDoMolda(ator: Ator, espacoId: string): Promise<BibliotecaView> {
+    const espaco = await this.espacoDe(ator, espacoId)
+    if (espaco.tipo !== 'conta') throw new ValidationError('Os moldes pertencem ao espaço da conta')
+    const criada = await this.repo.criarBiblioteca(
+      {
+        id: this.novoId(),
+        espacoId,
+        nome: 'Cópias do Molda',
+        licenca: 'propria',
+        criadoPor: ator.usuarioId,
+        fonte: `molda:${ator.usuarioId}`,
+      },
+      LIMITES_DOS_CENARIOS.bibliotecasPorEspaco,
+      this.clock(),
+    )
+    if (!criada) throw new CenariosSemEspacoError('Este espaço já tem o máximo de bibliotecas')
+    return bibliotecaView(criada)
+  }
+
   async criarBiblioteca(
     ator: Ator,
     espacoId: string,
@@ -238,7 +258,7 @@ export class CenariosService {
   async modelos(
     ator: Ator,
     bibliotecaId: string,
-    filtro: { busca?: string; pasta?: string; cursor?: string; limite?: number },
+    filtro: { busca?: string; pasta?: string; digest?: string; cursor?: string; limite?: number },
   ): Promise<{ itens: Modelo[]; total: number; proximo: string | null }> {
     await this.bibliotecaDe(ator, bibliotecaId)
     const inicio = Math.max(0, Number(filtro.cursor ?? 0) || 0)
@@ -250,6 +270,7 @@ export class CenariosService {
     const pagina = await this.repo.modelos(bibliotecaId, {
       termos,
       ...(filtro.pasta !== undefined ? { pasta: filtro.pasta } : {}),
+      ...(filtro.digest !== undefined ? { digest: filtro.digest } : {}),
       inicio,
       limite,
     })

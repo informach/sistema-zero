@@ -97,6 +97,11 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           { params: EspacoId },
         )
         .post(
+          '/espacos/:espacoId/biblioteca-molda',
+          ({ headers, params }) => s.bibliotecaDoMolda(atorDe(headers), params.espacoId),
+          { params: EspacoId },
+        )
+        .post(
           '/espacos/:espacoId/bibliotecas',
           ({ headers, params, body }) => s.criarBiblioteca(atorDe(headers), params.espacoId, body),
           { params: EspacoId, body: t.Object({ nome: NOME, licenca: LICENCA }) },
@@ -128,6 +133,7 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
             query: t.Object({
               busca: t.Optional(t.String({ maxLength: 120 })),
               pasta: t.Optional(t.String({ maxLength: 240 })),
+              digest: t.Optional(DIGEST),
               cursor: t.Optional(t.String({ pattern: '^[0-9]{1,7}$' })),
               limite: t.Optional(
                 t.Numeric({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.paginaDeModelos }),

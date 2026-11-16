@@ -54,6 +54,25 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
 
 describe('Molda Cenários: quem entra', () => {
+  test('biblioteca do Molda usa o perfil autenticado, com idempotência e proteção da conta', async () => {
+    const { ctx, espaco } = await comBiblioteca(buildApp({ cenariosModo: 'aberto' }))
+    const caminho = `/members/cenarios/espacos/${espaco.id}/biblioteca-molda`
+    const a = await pedir(ctx.app, 'POST', caminho)
+    expect(a.status).toBe(200)
+    const biblioteca = await json(a)
+    expect(biblioteca.fonte).toBe(`molda:${EQUIPE}`)
+    expect((await json(await pedir(ctx.app, 'POST', caminho))).id).toBe(biblioteca.id)
+    expect((await pedir(ctx.app, 'POST', caminho, undefined, doCliente)).status).toBe(404)
+    expect(
+      (
+        await pedir(
+          ctx.app,
+          'GET',
+          `/members/cenarios/bibliotecas/${biblioteca.id}/modelos?digest=invalido`,
+        )
+      ).status,
+    ).toBe(400)
+  })
   test('a equipe vê o espaço dela e o da equipe; o cliente fica de fora', async () => {
     const { app } = buildApp()
     expect(await json(await pedir(app, 'GET', '/members/cenarios/acesso'))).toEqual({

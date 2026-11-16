@@ -17,16 +17,8 @@
     {
       "nome": "Planta",
       "pasta": "natureza",
-      "min": [
-        0,
-        0,
-        0
-      ],
-      "max": [
-        1,
-        1,
-        0
-      ],
+      "min": [0, 0, 0],
+      "max": [1, 1, 0],
       "triangulos": 1,
       "miniatura": 2222,
       "bytes": 1484,
@@ -41,16 +33,8 @@
     {
       "nome": "Triangulo",
       "pasta": "gltf",
-      "min": [
-        0,
-        0,
-        0
-      ],
-      "max": [
-        2,
-        1,
-        0
-      ],
+      "min": [0, 0, 0],
+      "max": [2, 1, 0],
       "triangulos": 1,
       "miniatura": 1400,
       "bytes": 624,
@@ -59,16 +43,8 @@
     {
       "nome": "Triangulo",
       "pasta": "",
-      "min": [
-        0,
-        0,
-        0
-      ],
-      "max": [
-        1,
-        1,
-        0
-      ],
+      "min": [0, 0, 0],
+      "max": [1, 1, 0],
       "triangulos": 1,
       "miniatura": 1344,
       "bytes": 984,
@@ -77,16 +53,8 @@
     {
       "nome": "Centimetros",
       "pasta": "",
-      "min": [
-        0,
-        0,
-        0
-      ],
-      "max": [
-        0.01,
-        0.01,
-        0
-      ],
+      "min": [0, 0, 0],
+      "max": [0.01, 0.01, 0],
       "triangulos": 1,
       "miniatura": 1156,
       "bytes": 1084,

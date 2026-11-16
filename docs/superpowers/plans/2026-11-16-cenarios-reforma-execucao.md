@@ -40,7 +40,7 @@
 
 ### Continuação registrada
 
-Lotes 1/2 em execução: [revisão e evidências locais](../../plans/2026-11-16-cenarios-reforma/revisao-lotes1-2-parcial.md). Quatorze capturas de interface versionadas; Postgres e imagem Members exercitados; importação em worker e organização das bibliotecas implementadas e verificadas no Chrome sob CSP. Os lotes continuam desmarcados até os critérios restantes, incluindo conta no staging e Meus moldes/acervo/Faísca. A próxima passada segue pela biblioteca viva do Molda, sem aguardar aprovação intermediária.
+Lotes 1/2 em execução: [primeira revisão e evidências locais](../../plans/2026-11-16-cenarios-reforma/revisao-lotes1-2-parcial.md), [biblioteca viva Meus moldes](../../plans/2026-11-16-cenarios-reforma/revisao-lote2-moldes.md). Quatorze capturas de interface versionadas; Postgres e imagem Members exercitados; importação em worker, organização das bibliotecas e fonte viva do Molda implementadas, com ensaios no Chrome. Primeiro recorte enviado na staging em `6e4b20491`. Os lotes continuam desmarcados até os critérios restantes: conta no staging, capa/descrição, texturas/conjuntos, acervo/Faísca e arquivos complexos. Continuar sem aprovação intermediária.
 
 Cada lote deve registrar: requisitos cobertos (com referência às seções da especificação), arquivos/contratos alterados, testes pertinentes, tipagem, prova no navegador, capturas, riscos/dependências externas e commit. Não converter um bloqueio de publicação em alegação de conclusão. Ao final, conferir a especificação linha por linha, testar os fluxos integrados e publicar as evidências e o guia na staging.
 

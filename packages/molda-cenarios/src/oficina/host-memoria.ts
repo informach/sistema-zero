@@ -104,6 +104,26 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       bibliotecas.set(biblioteca.id, biblioteca)
       return copia(biblioteca)
     },
+    async obterBibliotecaDoMolda(espacoId) {
+      await esperar()
+      if (espacoDe(espacoId).tipo !== 'conta') throw Error('Os moldes pertencem ao espaço da conta')
+      const existente = [...bibliotecas.values()].find(
+        (b) => b.espacoId === espacoId && b.fonte === 'molda:playground',
+      )
+      if (existente) return copia(existente)
+      const b: Biblioteca = {
+        id: novoId('bib'),
+        espacoId,
+        nome: 'Cópias do Molda',
+        fonte: 'molda:playground',
+        licenca: 'propria',
+        modelos: 0,
+        capa: null,
+        atualizadaEm: agora(),
+      }
+      bibliotecas.set(b.id, b)
+      return copia(b)
+    },
     async editarBiblioteca(id, dados) {
       await esperar()
       const biblioteca = exigir(bibliotecas, id, 'A biblioteca')
@@ -137,6 +157,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       const todos = [...modelos.values()]
         .filter((m) => m.bibliotecaId === bibliotecaId)
         .filter((m) => filtro.pasta === undefined || m.pasta === filtro.pasta)
+        .filter((m) => filtro.digest === undefined || m.digest === filtro.digest)
         .filter((m) => {
           if (!termos.length) return true
           const alvo = semAcento(`${m.nome} ${m.pasta} ${m.etiquetas.join(' ')}`)

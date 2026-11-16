@@ -2,6 +2,7 @@ import { Button, IconButton } from '@sistemazero/molda/ui'
 import { ArrowLeft, Boxes, Copy, Map as Mapa, Pencil, Plus, Trash2 } from 'lucide-react'
 import { type JSX, useState } from 'react'
 import { COPY, plural } from '../copy'
+import { bibliotecaVivaDoMolda } from '../moldes'
 import {
   Capa,
   CartaoNovo,
@@ -102,6 +103,7 @@ export function Mundo({
   aoVoltar,
   aoAbrirCenario,
   aoAbrirBiblioteca,
+  moldesDisponiveis = false,
 }: {
   host: CenariosHost
   mundoId: string
@@ -109,6 +111,7 @@ export function Mundo({
   aoVoltar(): void
   aoAbrirCenario(id: string): void
   aoAbrirBiblioteca(id: string): void
+  moldesDisponiveis?: boolean
 }): JSX.Element {
   const [janela, setJanela] = useState<Janela>(null)
   const dados = useCarga(async () => {
@@ -126,9 +129,10 @@ export function Mundo({
   const cenarios = [...(dados.dados?.cenarios ?? [])].sort((a, b) =>
     a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true }),
   )
-  const ligadas: Biblioteca[] = (dados.dados?.bibliotecas ?? []).filter((b) =>
-    mundo?.bibliotecas.includes(b.id),
-  )
+  const ligadas: Biblioteca[] = [
+    ...(moldesDisponiveis ? [bibliotecaVivaDoMolda(espacoId)] : []),
+    ...(dados.dados?.bibliotecas ?? []).filter((b) => mundo?.bibliotecas.includes(b.id)),
+  ]
   const cartaoNovo = (
     <CartaoNovo
       titulo={COPY.mundo.novoCenarioTitulo}
@@ -274,7 +278,11 @@ export function Mundo({
                         >
                           <Boxes aria-hidden="true" />
                           {biblioteca.nome}
-                          <span className="font-semibold text-mld-muted">{biblioteca.modelos}</span>
+                          {biblioteca.fonte === 'molda' ? null : (
+                            <span className="font-semibold text-mld-muted">
+                              {biblioteca.modelos}
+                            </span>
+                          )}
                         </button>
                       </li>
                     ))}

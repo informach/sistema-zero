@@ -1,4 +1,5 @@
 export { CenariosOficina, type CenariosOficinaProps, type RotaDosCenarios } from './CenariosOficina'
 export { type Buscar, criarHostHttp, ErroDaOficina, type OpcoesDoHostHttp } from './host-http'
 export { criarHostEmMemoria, type OpcoesDoHostEmMemoria } from './host-memoria'
+export { prepararArquivos } from './importar'
 export * from './portas'

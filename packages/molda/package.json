@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./assets": "./src/assets/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
+    "./cenarios-library": "./src/export/cenariosLibrary.ts",
     "./tools": "./src/core/toolFamilies.ts",
     "./ui": "./src/components/ui/public.ts",
     "./palco": "./src/viewport/palco.ts",

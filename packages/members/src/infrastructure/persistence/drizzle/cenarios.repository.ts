@@ -55,6 +55,7 @@ const colunasDaBiblioteca = {
   id: cenarioBibliotecas.id,
   espacoId: cenarioBibliotecas.espacoId,
   nome: cenarioBibliotecas.nome,
+  fonte: cenarioBibliotecas.fonte,
   licenca: cenarioBibliotecas.licenca,
   atualizadaEm: cenarioBibliotecas.updatedAt,
   modelos: sql<number>`(
@@ -203,6 +204,19 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     agora: Date,
   ): Promise<Biblioteca | null> {
     return this.comTrava(dados.espacoId, async (tx) => {
+      if (dados.fonte) {
+        const [existente] = await tx
+          .select(colunasDaBiblioteca)
+          .from(cenarioBibliotecas)
+          .where(
+            and(
+              eq(cenarioBibliotecas.espacoId, dados.espacoId),
+              eq(cenarioBibliotecas.fonte, dados.fonte),
+            ),
+          )
+          .limit(1)
+        if (existente) return existente
+      }
       const [conta] = await tx
         .select({ n: sql<number>`count(*)::int` })
         .from(cenarioBibliotecas)
@@ -287,6 +301,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     const condicao = and(
       eq(cenarioModelos.bibliotecaId, bibliotecaId),
       filtro.pasta !== undefined ? eq(cenarioModelos.pasta, filtro.pasta) : undefined,
+      filtro.digest !== undefined ? eq(cenarioModelos.digest, filtro.digest) : undefined,
       // Os termos já chegam só com letras e números: não há curinga a escapar.
       ...filtro.termos.map((termo) => sql`${cenarioModelos.busca} like ${`%${termo}%`}`),
     )

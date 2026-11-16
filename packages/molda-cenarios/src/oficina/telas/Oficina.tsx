@@ -54,8 +54,17 @@ import {
 } from '../acoes'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
-import { Chegando, Falhou, useCarga } from '../pecas'
-import type { Biblioteca, CenarioAberto, CenariosHost, ModeloDeBiblioteca, Mundo } from '../portas'
+import { encerrarPreparacao } from '../importar'
+import { Chegando, Dialogo, Falhou, useCarga } from '../pecas'
+import type {
+  Biblioteca,
+  CenarioAberto,
+  CenariosHost,
+  EscolhaDeModelo,
+  ModeloDeBiblioteca,
+  MoldeDisponivel,
+  Mundo,
+} from '../portas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
 import { Painel } from './Painel'
@@ -170,6 +179,7 @@ function OficinaAberta({
   tema,
   aoVoltar,
   aoMudarBibliotecas,
+  moldesDisponiveis,
 }: {
   host: CenariosHost
   aberto: CenarioAberto
@@ -178,12 +188,29 @@ function OficinaAberta({
   tema: 'light' | 'dark'
   aoVoltar(): void
   aoMudarBibliotecas(): void
+  moldesDisponiveis: boolean
 }): JSX.Element {
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
   const canvas = useRef<HTMLCanvasElement>(null)
   const palco = useRef<Palco | null>(null)
-  const arrastado = useRef<ModeloDeBiblioteca | null>(null)
+  const arrastado = useRef<EscolhaDeModelo | null>(null)
+  const importacaoDoMolde = useRef<AbortController | null>(null)
+  const [preparandoMolde, setPreparandoMolde] = useState(false)
+  const [erroDoMolde, setErroDoMolde] = useState<string | null>(null)
+  const [revisaoDoMolde, setRevisaoDoMolde] = useState<{
+    molde: MoldeDisponivel
+    ponto: { x: number; z: number }
+    token: string
+    avisos: string[]
+  } | null>(null)
+  useEffect(
+    () => () => {
+      importacaoDoMolde.current?.abort()
+      void encerrarPreparacao()
+    },
+    [],
+  )
   const [aba, setAba] = useState<Aba>('objetos')
   const [vista, setVista] = useState<Vista>('livre')
   // Em tela estreita o painel é uma folha por cima do palco: começa recolhido.
@@ -253,6 +280,44 @@ function OficinaAberta({
     const { comandos, ids } = comandosParaDuplicar(atual.documento, atual.selecao)
     if (comandos.length && controlador.executar(comandos)) controlador.selecionar(ids)
   }, [controlador])
+  const escolherModelo = async (
+    escolha: EscolhaDeModelo,
+    ponto: { x: number; z: number } | null,
+    aceite?: string,
+  ) => {
+    if (!('origem' in escolha)) {
+      por(escolha, ponto)
+      return
+    }
+    if (!host.molda || !moldesDisponiveis || importacaoDoMolde.current) return
+    const controle = new AbortController()
+    const lugar = ponto ?? centroDaVista(canvas.current, palco.current) ?? { x: 0, z: 0 }
+    importacaoDoMolde.current = controle
+    setPreparandoMolde(true)
+    setErroDoMolde(null)
+    try {
+      const resultado = await host.molda.preparar(mundo.espacoId, escolha, controle.signal, aceite)
+      controle.signal.throwIfAborted()
+      if (resultado.ok) {
+        setRevisaoDoMolde(null)
+        por(resultado.modelo, lugar)
+      } else
+        setRevisaoDoMolde({
+          molde: escolha,
+          ponto: lugar,
+          token: resultado.token,
+          avisos: resultado.avisos,
+        })
+    } catch (e) {
+      if (!controle.signal.aborted)
+        setErroDoMolde(e instanceof Error ? e.message : 'Não consegui preparar o molde')
+    } finally {
+      if (importacaoDoMolde.current === controle) {
+        importacaoDoMolde.current = null
+        if (!controle.signal.aborted) setPreparandoMolde(false)
+      }
+    }
+  }
   const apagar = useCallback(() => {
     const atual = controlador.getState()
     const comandos = comandosParaApagar(atual.documento, atual.selecao)
@@ -312,7 +377,7 @@ function OficinaAberta({
     if (!modelo || !evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
     evento.preventDefault()
     arrastado.current = null
-    por(modelo, palco.current?.pontoNoChao(evento.clientX, evento.clientY) ?? null)
+    void escolherModelo(modelo, palco.current?.pontoNoChao(evento.clientX, evento.clientY) ?? null)
   }
 
   const semEscolha = selecao.length === 0
@@ -335,6 +400,53 @@ function OficinaAberta({
       aria-label={documento.nome}
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
+      {preparandoMolde ? (
+        <div role="status" className="mcn-andamento">
+          <span>Preparando a cópia do molde…</span>
+          <button
+            type="button"
+            onClick={() => {
+              importacaoDoMolde.current?.abort()
+              importacaoDoMolde.current = null
+              setPreparandoMolde(false)
+            }}
+          >
+            Parar
+          </button>
+        </div>
+      ) : null}
+      {erroDoMolde ? (
+        <p role="alert" className="mcn-andamento">
+          {erroDoMolde}
+        </p>
+      ) : null}
+      {revisaoDoMolde ? (
+        <Dialogo titulo="Confira esta cópia do molde" aoFechar={() => setRevisaoDoMolde(null)}>
+          <p>O original continua no Molda. Esta cópia precisa destas mudanças:</p>
+          <ul>
+            {revisaoDoMolde.avisos.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--primary"
+            disabled={preparandoMolde}
+            onClick={() =>
+              void escolherModelo(revisaoDoMolde.molde, revisaoDoMolde.ponto, revisaoDoMolde.token)
+            }
+          >
+            Usar esta cópia
+          </button>
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--quiet"
+            onClick={() => setRevisaoDoMolde(null)}
+          >
+            Cancelar
+          </button>
+        </Dialogo>
+      ) : null}
       <header className="mld-workshop-header mld-bar">
         <div className="mld-workshop-project">
           <button
@@ -529,7 +641,9 @@ function OficinaAberta({
           <Gaveta
             host={host}
             bibliotecas={bibliotecas}
-            aoPor={(modelo) => por(modelo, null)}
+            moldesDisponiveis={moldesDisponiveis}
+            preparandoMolde={preparandoMolde}
+            aoPor={(modelo) => void escolherModelo(modelo, null)}
             aoArrastar={(modelo) => {
               arrastado.current = modelo
             }}
@@ -576,6 +690,7 @@ export default function Oficina({
   cenarioId,
   tema,
   aoVoltar,
+  moldesDisponiveis = false,
 }: {
   host: CenariosHost
   espacoId: string
@@ -583,6 +698,7 @@ export default function Oficina({
   cenarioId: string
   tema: 'light' | 'dark'
   aoVoltar(): void
+  moldesDisponiveis?: boolean
 }): JSX.Element {
   const aberto = useCarga(() => host.abrirCenario(cenarioId), [host, cenarioId])
   const mundo = useCarga(async () => {
@@ -626,6 +742,7 @@ export default function Oficina({
       tema={tema}
       aoVoltar={aoVoltar}
       aoMudarBibliotecas={mundo.recarregar}
+      moldesDisponiveis={moldesDisponiveis}
     />
   )
 }

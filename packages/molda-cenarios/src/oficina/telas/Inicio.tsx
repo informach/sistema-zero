@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { type JSX, type ReactNode, useMemo, useState } from 'react'
 import { COPY, plural, tamanhoLegivel } from '../copy'
+import { bibliotecaVivaDoMolda } from '../moldes'
 import {
   Capa,
   CartaoNovo,
@@ -86,7 +87,12 @@ export function Inicio({
   const [janela, setJanela] = useState<Janela>(null)
   const [licenca, setLicenca] = useState<Licenca>('propria')
   const mundos = useCarga(() => host.listarMundos(espaco.id), [host, espaco.id])
-  const bibliotecas = useCarga(() => host.listarBibliotecas(espaco.id), [host, espaco.id])
+  const bibliotecas = useCarga(async () => {
+    const lista = await host.listarBibliotecas(espaco.id)
+    return espaco.tipo === 'conta' && host.molda
+      ? [bibliotecaVivaDoMolda(espaco.id), ...lista]
+      : lista
+  }, [host, espaco.id, espaco.tipo])
   const carga = aba === 'mundos' ? mundos : bibliotecas
   const termo = semAcento(busca.trim())
 
@@ -385,7 +391,9 @@ export function CartaoDaBiblioteca({
         <Capa endereco={biblioteca.capa} reserva={<Boxes />} />
       </button>
       <span className="font-semibold text-mld-muted text-sm">
-        {COPY.biblioteca.modelos(biblioteca.modelos)}
+        {biblioteca.fonte === 'molda'
+          ? 'Sempre atualizado com o Molda'
+          : COPY.biblioteca.modelos(biblioteca.modelos)}
       </span>
     </li>
   )

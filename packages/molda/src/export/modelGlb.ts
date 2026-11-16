@@ -26,7 +26,10 @@ export type ModelGlbResult =
     }
   | { ok: false; reason: 'empty' | 'atlas-full' | 'too-big' }
 
-export function exportModelGlb(model: MoldaModelAsset): ModelGlbResult {
+export function exportModelGlb(
+  model: MoldaModelAsset,
+  maximumChars: number = MOLDA_LIMITS.studioMax3DChars,
+): ModelGlbResult {
   if (model.parts.length === 0) return { ok: false, reason: 'empty' }
   const packed = packAtlas(model)
   if (!packed.ok) return { ok: false, reason: 'atlas-full' }
@@ -35,7 +38,7 @@ export function exportModelGlb(model: MoldaModelAsset): ModelGlbResult {
   const mesh = buildModelMesh(model, packed.layout)
   const bytes = encodeGlb({ name: model.name, mesh, imagePng: png })
   const dataUrl = `data:${GLB_MIME};base64,${bytesToBase64(bytes)}`
-  if (dataUrl.length > MOLDA_LIMITS.studioMax3DChars) return { ok: false, reason: 'too-big' }
+  if (dataUrl.length > maximumChars) return { ok: false, reason: 'too-big' }
   return {
     ok: true,
     bytes,

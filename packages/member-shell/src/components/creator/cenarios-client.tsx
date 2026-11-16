@@ -6,7 +6,9 @@ import type { CenariosHost, RotaDosCenarios } from '@sistemazero/molda-cenarios/
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { criarFonteDeMoldes } from '../../lib/cenarios-moldes'
+import { createCreationsCloud } from '../../lib/creations-cloud'
 import { sessionFetch } from '../../lib/session-fetch'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
@@ -21,7 +23,8 @@ const id = (valor: string | null) => (valor && UUID.test(valor) ? valor.toLowerC
 export function rotaDoEndereco(consulta: URLSearchParams): RotaDosCenarios {
   const mundoId = id(consulta.get('mundo'))
   const cenarioId = id(consulta.get('cenario'))
-  const bibliotecaId = id(consulta.get('biblioteca'))
+  const bibliotecaId =
+    consulta.get('biblioteca') === 'molda' ? 'molda' : id(consulta.get('biblioteca'))
   if (mundoId && cenarioId) return { tela: 'oficina', mundoId, cenarioId }
   if (bibliotecaId)
     return { tela: 'biblioteca', bibliotecaId, ...(mundoId ? { voltarAoMundo: mundoId } : {}) }
@@ -68,16 +71,22 @@ export function CenariosClient({ viewerId }: { viewerId: string | null }) {
   // Ao sair da página, o menu volta ao que era.
   useEffect(() => () => setWorkspaceActive(false), [setWorkspaceActive])
 
-  const host = useMemo<CenariosHost | null>(
-    () =>
-      mod
-        ? mod.criarHostHttp({
-            buscar: (endereco, opcoes) => sessionFetch(endereco, opcoes),
-            ...(viewerId ? { pessoaId: viewerId } : {}),
-          })
-        : null,
-    [mod, viewerId],
-  )
+  const [conexao, setConexao] = useState<{ perfil: string | null; host: CenariosHost } | null>(null)
+  useEffect(() => {
+    if (!mod) return
+    const novo = mod.criarHostHttp({
+      buscar: (endereco, opcoes) => sessionFetch(endereco, opcoes),
+      ...(viewerId ? { pessoaId: viewerId } : {}),
+    })
+    const cloud = viewerId
+      ? createCreationsCloud({ tool: 'molda', viewerId, maxFormatVersion: 2 })
+      : null
+    if (viewerId && cloud)
+      novo.molda = criarFonteDeMoldes({ perfilId: viewerId, cloud, host: novo })
+    setConexao({ perfil: viewerId, host: novo })
+    return () => cloud?.dispose({ abort: true })
+  }, [mod, viewerId])
+  const host = conexao?.perfil === viewerId ? conexao.host : null
 
   const aoNavegar = useCallback(
     (rota: RotaDosCenarios, espacoId: string) => {
@@ -114,6 +123,7 @@ export function CenariosClient({ viewerId }: { viewerId: string | null }) {
         // O wrapper dá ao `height: 100%` da oficina uma altura definida.
         <div className="flex min-h-0 flex-1 flex-col">
           <mod.CenariosOficina
+            key={viewerId}
             host={host}
             rotaInicial={inicio.rota}
             {...(inicio.espaco ? { espacoInicial: inicio.espaco } : {})}

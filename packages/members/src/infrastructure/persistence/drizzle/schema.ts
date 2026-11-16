@@ -3273,6 +3273,8 @@ export const cenarioBibliotecas = members.table(
       .notNull()
       .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
     nome: varchar('nome', { length: 120 }).notNull(),
+    /** Biblioteca derivada de uma fonte da própria conta; só o serviço atribui. */
+    fonte: varchar('fonte', { length: 120 }),
     licenca: text('licenca').$type<'livre' | 'propria' | 'restrita'>().notNull(),
     criadoPor: uuid('criado_por').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -3284,6 +3286,7 @@ export const cenarioBibliotecas = members.table(
       sql`${t.licenca} in ('livre', 'propria', 'restrita')`,
     ),
     index('cenario_bibliotecas_espaco_idx').on(t.espacoId),
+    uniqueIndex('cenario_bibliotecas_fonte_unica').on(t.espacoId, t.fonte),
   ],
 )
 

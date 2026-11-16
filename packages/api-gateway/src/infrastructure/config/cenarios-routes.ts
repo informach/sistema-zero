@@ -64,6 +64,7 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
 
     ler('bibliotecas', '/espacos/:espacoId/bibliotecas'),
     escrever('biblioteca-criar', 'POST', '/espacos/:espacoId/bibliotecas'),
+    escrever('biblioteca-molda', 'POST', '/espacos/:espacoId/biblioteca-molda'),
     escrever('biblioteca-editar', 'PATCH', '/bibliotecas/:id'),
     escrever('biblioteca-apagar', 'DELETE', '/bibliotecas/:id'),
 

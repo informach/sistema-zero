@@ -1,8 +1,9 @@
 import { Box, Boxes, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { type JSX, useEffect, useState } from 'react'
 import { COPY } from '../copy'
+import { BIBLIOTECA_MOLDA_ID, useMoldes } from '../moldes'
 import { Capa } from '../pecas'
-import type { Biblioteca, CenariosHost, ModeloDeBiblioteca } from '../portas'
+import type { Biblioteca, CenariosHost, EscolhaDeModelo, ModeloDeBiblioteca } from '../portas'
 
 /** O tipo do dado arrastado da gaveta até o palco. */
 export const ARRASTO_DE_MODELO = 'application/x-sz-modelo'
@@ -19,23 +20,44 @@ export function Gaveta({
   aoPor,
   aoArrastar,
   aoEscolherBibliotecas,
+  moldesDisponiveis = false,
+  preparandoMolde = false,
 }: {
   host: CenariosHost
   bibliotecas: readonly Biblioteca[]
-  aoPor(modelo: ModeloDeBiblioteca): void
-  aoArrastar(modelo: ModeloDeBiblioteca | null): void
+  aoPor(modelo: EscolhaDeModelo): void
+  aoArrastar(modelo: EscolhaDeModelo | null): void
   aoEscolherBibliotecas(): void
+  moldesDisponiveis?: boolean
+  preparandoMolde?: boolean
 }): JSX.Element {
   const [aberta, setAberta] = useState(true)
-  const [ativa, setAtiva] = useState<string | null>(bibliotecas[0]?.id ?? null)
+  const [ativa, setAtiva] = useState<string | null>(
+    bibliotecas[0]?.id ?? (moldesDisponiveis ? BIBLIOTECA_MOLDA_ID : null),
+  )
   const [busca, setBusca] = useState('')
   const [buscaAplicada, setBuscaAplicada] = useState('')
   const [modelos, setModelos] = useState<ModeloDeBiblioteca[]>([])
   const [proximo, setProximo] = useState<string | null>(null)
   const [estado, setEstado] = useState<'chegando' | 'pronto' | 'falhou'>('chegando')
 
-  const biblioteca = bibliotecas.find((b) => b.id === ativa) ?? bibliotecas[0] ?? null
-  const bibliotecaId = biblioteca?.id ?? null
+  const noMolda = moldesDisponiveis && ativa === BIBLIOTECA_MOLDA_ID
+  const biblioteca = noMolda
+    ? null
+    : (bibliotecas.find((b) => b.id === ativa) ?? bibliotecas[0] ?? null)
+  const bibliotecaId = noMolda ? BIBLIOTECA_MOLDA_ID : (biblioteca?.id ?? null)
+  const moldes = useMoldes(host.molda, noMolda)
+  const normal = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR')
+  const visiveis: EscolhaDeModelo[] = noMolda
+    ? (moldes.dados ?? []).filter((m) => normal(m.nome).includes(normal(buscaAplicada)))
+    : modelos
+  const estadoAtual = noMolda
+    ? moldes.falhou
+      ? 'falhou'
+      : moldes.dados === null
+        ? 'chegando'
+        : 'pronto'
+    : estado
 
   useEffect(() => {
     const espera = setTimeout(() => setBuscaAplicada(busca.trim()), 200)
@@ -43,7 +65,7 @@ export function Gaveta({
   }, [busca])
 
   useEffect(() => {
-    if (!bibliotecaId) return
+    if (!bibliotecaId || noMolda) return
     let vivo = true
     setEstado('chegando')
     host.listarModelos(bibliotecaId, { busca: buscaAplicada, limite: PAGINA }).then(
@@ -58,10 +80,10 @@ export function Gaveta({
     return () => {
       vivo = false
     }
-  }, [host, bibliotecaId, buscaAplicada])
+  }, [host, bibliotecaId, buscaAplicada, noMolda])
 
   const mostrarMais = async () => {
-    if (!bibliotecaId || !proximo) return
+    if (!bibliotecaId || !proximo || noMolda) return
     const pagina = await host.listarModelos(bibliotecaId, {
       busca: buscaAplicada,
       limite: PAGINA,
@@ -101,6 +123,20 @@ export function Gaveta({
               {b.nome}
             </button>
           ))}
+          {moldesDisponiveis && host.molda ? (
+            <button
+              type="button"
+              className="sz-tool-chip"
+              aria-pressed={noMolda}
+              onClick={() => {
+                setAtiva(BIBLIOTECA_MOLDA_ID)
+                setAberta(true)
+              }}
+            >
+              <Boxes aria-hidden />
+              Meus moldes
+            </button>
+          ) : null}
           <button type="button" className="sz-tool-chip" onClick={aoEscolherBibliotecas}>
             {COPY.gaveta.escolher}
           </button>
@@ -126,20 +162,21 @@ export function Gaveta({
         <div className="mcn-gaveta-corpo">
           {!bibliotecaId ? (
             <p className="mcn-gaveta-aviso">{COPY.gaveta.semBibliotecas}</p>
-          ) : estado === 'falhou' ? (
+          ) : estadoAtual === 'falhou' ? (
             <p className="mcn-gaveta-aviso">{COPY.inicio.falhou}</p>
-          ) : estado === 'pronto' && modelos.length === 0 ? (
+          ) : estadoAtual === 'pronto' && visiveis.length === 0 ? (
             <p className="mcn-gaveta-aviso">
               {buscaAplicada ? COPY.gaveta.semResultado : COPY.gaveta.vazia}
             </p>
           ) : (
-            <ul className="mcn-gaveta-lista" aria-busy={estado === 'chegando'}>
-              {modelos.map((modelo) => (
+            <ul className="mcn-gaveta-lista" aria-busy={estadoAtual === 'chegando'}>
+              {visiveis.map((modelo) => (
                 <li key={modelo.id}>
                   <button
                     type="button"
                     className="mcn-brinquedo"
                     draggable
+                    disabled={preparandoMolde}
                     aria-label={COPY.gaveta.por(modelo.nome)}
                     title={modelo.nome}
                     onClick={() => aoPor(modelo)}
@@ -157,7 +194,7 @@ export function Gaveta({
                   </button>
                 </li>
               ))}
-              {proximo ? (
+              {!noMolda && proximo ? (
                 <li>
                   <button
                     type="button"

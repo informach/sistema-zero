@@ -75,6 +75,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of ddl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const fonteDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0152_young_nomad.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of fonteDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -99,6 +108,28 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     return { espaco, biblioteca: biblioteca! }
   }
+
+  test('uma fonte por perfil nasce uma vez sob concorrência e não depende do nome', async () => {
+    const espaco = await repo.espacoDaConta(CONTA, 5000, AGORA)
+    const criar = () =>
+      repo.criarBiblioteca(
+        {
+          id: randomUUID(),
+          espacoId: espaco.id,
+          nome: 'Meus moldes',
+          licenca: 'propria',
+          criadoPor: CONTA,
+          fonte: `molda:${CONTA}`,
+        },
+        10,
+        AGORA,
+      )
+    const [a, b] = await Promise.all([criar(), criar()])
+    expect(a?.id).toBe(b?.id)
+    await repo.editarBiblioteca(a!.id, { nome: 'Outro nome' }, DEPOIS)
+    expect((await criar())?.id).toBe(a!.id)
+    expect(await repo.bibliotecas(espaco.id)).toHaveLength(1)
+  })
   async function guardar(espacoId: string, ...letras: string[]) {
     await repo.reservarBlobs(
       espacoId,

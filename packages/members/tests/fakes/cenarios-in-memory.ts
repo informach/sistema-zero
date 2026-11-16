@@ -116,11 +116,14 @@ export class CenariosEmMemoria implements CenariosRepository {
     const doEspaco = [...this.bibliotecasGuardadas.values()].filter(
       (b) => b.espacoId === dados.espacoId,
     )
+    const existente = dados.fonte ? doEspaco.find((b) => b.fonte === dados.fonte) : null
+    if (existente) return this.biblioteca(existente.id)
     if (doEspaco.length >= teto) return null
     this.bibliotecasGuardadas.set(dados.id, {
       id: dados.id,
       espacoId: dados.espacoId,
       nome: dados.nome,
+      fonte: dados.fonte ?? null,
       licenca: dados.licenca,
       modelos: 0,
       capa: null,
@@ -160,6 +163,7 @@ export class CenariosEmMemoria implements CenariosRepository {
     const todos = [...this.modelosGuardados.values()]
       .filter((m) => m.bibliotecaId === bibliotecaId)
       .filter((m) => filtro.pasta === undefined || m.pasta === filtro.pasta)
+      .filter((m) => filtro.digest === undefined || m.digest === filtro.digest)
       .filter((m) => filtro.termos.every((t) => m.busca.includes(t)))
       // A mesma ordem do banco: pelo texto de busca, byte a byte.
       .sort((a, b) => (a.busca < b.busca ? -1 : a.busca > b.busca ? 1 : a.id.localeCompare(b.id)))
