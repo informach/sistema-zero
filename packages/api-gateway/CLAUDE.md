@@ -1,5 +1,18 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Molda Cenários (16/11/2026)
+
+`src/infrastructure/config/cenarios-routes.ts` (`cenariosRoutes(membersInternalTransforms)`),
+espalhado no `gateway.config.ts`. Uma rota explícita por caminho de `/members/cenarios/*`
+(`members-cenarios-*`): JWT, conta ativa, sem papel (quem pode usar a ferramenta é o members que
+decide, por `CENARIOS_MODO`), limite por principal (leitura 600/min, escrita 120/min, o lote do
+editor 600/min com corpo de 1 MB). Os caminhos não têm `admin` nem `internal`, então no Kids a
+criança passa e o responsável não. As duas rotas `members-cenarios-interno-*`
+(`POST /members/internal/cenarios/{modelos,capa}`) são HMAC com `allowedConsumers:
+['member-shell']` e limite por `ator.contaId`: só o BFF afirma que um arquivo chegou ao
+armazenamento. Arquivo nenhum passa pela borda. Teste: `tests/unit/cenarios-config.test.ts`
+(inclui a lista de tudo o que a oficina chama; rota nova no members entra nela).
+
 ## Cores conquistadas do Arquipélago (A02, 30/10/2026)
 
 Rota explícita `arquipelago-cores-conquistadas`: GET `/arquipelago/desafios/cores`, jogador

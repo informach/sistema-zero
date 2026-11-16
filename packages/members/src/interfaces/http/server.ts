@@ -31,6 +31,7 @@ import { adultJourneyRoutes } from './routes/adult-journey.routes'
 import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
+import { type CenariosRoutesDeps, cenariosRoutes } from './routes/cenarios.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import {
   coursePromotionPeerRoutes,
@@ -94,6 +95,8 @@ export interface HttpDeps {
   pensa: PensaRoutesDeps
   /** Equipe no Pensa (14/10/2026): equipe, funções, recursos e artes da equipe. */
   creations: CreationsRoutesDeps
+  /** Molda Cenários: a oficina de cenários 3D. */
+  cenarios: CenariosRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
@@ -166,6 +169,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
   if (/^\/members\/internal\/(?:adult\/)?pensa\//.test(pathname)) return 1024 * 1024
+  // Lote de até 500 comandos de um cenário (cada objeto criado leva a transformação inteira).
+  if (/^\/members\/cenarios\/cenarios\/[^/]+\/lotes$/.test(pathname)) return 1024 * 1024
   if (/^\/members\/(?:adult\/)?pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }
@@ -309,6 +314,7 @@ export function createServer(deps: HttpDeps) {
       }),
     )
     .use(creationsRoutes(deps.creations))
+    .use(cenariosRoutes(deps.cenarios))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
     .use(deps.masteries ? masteryRoutes(deps.masteries) : new Elysia())

@@ -818,6 +818,7 @@
         "@sentry/bun": "^10.56.0",
         "@sistemazero/arquipelago-contracts": "workspace:*",
         "@sistemazero/core": "workspace:*",
+        "@sistemazero/molda-cenarios-core": "workspace:*",
         "@sistemazero/pinta": "workspace:*",
         "@sistemazero/studio": "workspace:*",
         "drizzle-kit": "^0.31.5",

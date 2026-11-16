@@ -15,6 +15,7 @@ import {
   aiUsageReservations,
   avatarConfigs,
   avatarInventory,
+  cenarioEspacos,
   certificatesIssued,
   coinEvents,
   courseRatings,
@@ -381,6 +382,11 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(missionClaims).where(inArray(missionClaims.userId, userIds))
       await tx.delete(roomInventory).where(inArray(roomInventory.userId, userIds))
       await tx.delete(moradaHouses).where(inArray(moradaHouses.userId, userIds))
+      // Molda Cenários: o espaço da conta leva bibliotecas, modelos, mundos, cenários e o registro
+      // dos arquivos (FK em cascata). Os arquivos em si saem pelo prefixo `cenarios/<conta>/` do job.
+      await tx
+        .delete(cenarioEspacos)
+        .where(and(eq(cenarioEspacos.tipo, 'conta'), eq(cenarioEspacos.contaId, accountId)))
       await tx
         .delete(profilePreferences)
         .where(

@@ -124,7 +124,7 @@ export function batchGetProfiles(
  * gateway, a purga dos dados do aprendiz ANTES de apagar a identidade — a ordem
  * minimiza o estado órfão e mantém o retry seguro (todos os passos são idempotentes):
  *  1) bloqueia a conta no Auth e captura todos os perfis, inclusive arquivados;
- *  2) tenta apagar no R2 os blobs `creations/<conta|perfil>/…` (best-effort);
+ *  2) tenta apagar no R2 os blobs `creations/<conta|perfil>/…` e `cenarios/<conta>/…` (best-effort);
  *  3) purga em members e instala, na mesma transação, a cerca + o job R2 pós-TTL;
  *  4) purga em hub (reações/leitura/mutes-bans);
  *  5) tenta de novo a limpeza R2 para reduzir o resíduo imediato;
@@ -137,7 +137,10 @@ export async function deleteUser(id: string): Promise<GatewayResponse> {
   return executeUserDeletion(id, {
     gatewayFetch,
     purgeCreationBlobs: (userIds) =>
-      r2DeleteUgcPrefixes(userIds.map((userId) => `creations/${userId}/`)),
+      // `cenarios/<conta>/` = modelos e capas do Molda Cenários (o espaço da conta tem o id dela).
+      r2DeleteUgcPrefixes(
+        userIds.flatMap((userId) => [`creations/${userId}/`, `cenarios/${userId}/`]),
+      ),
   })
 }
 

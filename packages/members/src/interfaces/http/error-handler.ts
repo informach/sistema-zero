@@ -10,6 +10,11 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
+import {
+  CenarioArquivoAusenteError,
+  CenarioDesatualizadoError,
+  CenarioInvalidoError,
+} from '../../domain/cenarios/cenarios.errors'
 import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
   CreationClientOutdatedError,
@@ -24,6 +29,10 @@ export type { ErrorEnvelope }
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
   MORADA_INVALID: 400,
+  CENARIOS_FECHADOS: 403,
+  CENARIO_NAO_ENCONTRADO: 404,
+  CENARIOS_SEM_ESPACO: 409,
+  BIBLIOTECA_RESTRITA: 403,
   MORADA_CLIENT_OUTDATED: 409,
   COURSE_PUBLICATION_CONFLICT: 409,
   COURSE_PUBLICATION_PEER_UNAVAILABLE: 424,
@@ -161,6 +170,9 @@ export function buildErrorResponse(input: {
       | { currentRevision: number }
       | { requiredVersion: number }
       | { issues: HelpValidationIssue[] }
+      | { revisaoAtual: number }
+      | { problemas: string[] }
+      | { digests: string[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -246,6 +258,33 @@ export function buildErrorResponse(input: {
     return {
       status: 409,
       body: { ...envelope(error.code, error.message), details: { hashes: [...error.hashes] } },
+    }
+  }
+
+  // Molda Cenários: o cliente precisa do dado para reagir (abrir a versão nova, mostrar o
+  // problema do lote, reenviar só os arquivos que faltaram).
+  if (error instanceof CenarioDesatualizadoError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { revisaoAtual: error.revisaoAtual },
+      },
+    }
+  }
+  if (error instanceof CenarioInvalidoError) {
+    return {
+      status: 422,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { problemas: [...error.problemas].slice(0, 20) },
+      },
+    }
+  }
+  if (error instanceof CenarioArquivoAusenteError) {
+    return {
+      status: 409,
+      body: { ...envelope(error.code, error.message), details: { digests: [...error.digests] } },
     }
   }
 

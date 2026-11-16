@@ -5,6 +5,7 @@ import {
   ZAPPY_SOURCE_REQUEST_MAX_BYTES,
 } from '@sistemazero/core/zappy'
 import { arquipelagoGateway } from './src/infrastructure/config/arquipelago-routes'
+import { cenariosRoutes } from './src/infrastructure/config/cenarios-routes'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
 import { subscriptionRecoveryRoutes } from './src/infrastructure/config/subscription-recovery-routes'
 
@@ -2773,6 +2774,8 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // ── Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026) ──
+    ...cenariosRoutes(membersInternalTransforms),
     // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
     // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
     // cliente); o BFF chama atrás do portão de senha. Path literal `/members/parents/*`

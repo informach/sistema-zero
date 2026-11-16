@@ -1,5 +1,51 @@
 # CLAUDE.md — @sistemazero/members
 
+## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
+
+Os dados da oficina de cenários 3D (`@sistemazero/molda-cenarios`). Plano da reforma em
+`docs/plans` ainda não existe; o desenho está no pacote `molda-cenarios-core` (`src/v2`).
+
+```
+Espaço (a conta, ou o da equipe) → Bibliotecas → Modelos
+                                 → Mundos → Cenários (documento v2 + registro de lotes)
+```
+
+- **Dono é o ESPAÇO** (`cenario_espacos`). O da conta tem **o id da própria conta** (no Kids a
+  família compartilha; `criado_por` guarda o perfil); o da equipe é um só, com id sorteado, e vale
+  para `isPrivilegedActor` fora de sessão de suporte (`podeNoEspaco`). O acervo licenciado mora nele
+  e nunca aparece para outra conta. Biblioteca `restrita` só existe no espaço da equipe.
+- **Abertura**: `CENARIOS_MODO` = `desligado` (padrão) | `equipe` | `lista` | `aberto`, e
+  `CENARIOS_LISTA` (contas, separadas por vírgula). `GET /members/cenarios/acesso` responde
+  `{aberto}`; toda outra rota recusa com 403 `CENARIOS_FECHADOS`. ⚠️ Variável nova: criar no painel
+  do Railway antes de entrar em `.railway/variables.ts`.
+- **Arquivos** (GLB do modelo, miniatura, capa): bucket UGC, `cenarios/<espaço>/blobs/<sha256>`,
+  por conteúdo e sem dividir entre espaços. O navegador pede a RESERVA (`…/modelos/reservar`, até
+  50 por chamada, conta na cota por 1 h), sobe direto por URL assinada pelo BFF e o **BFF** afirma
+  que chegou nas rotas internas (`POST /members/internal/cenarios/modelos` e `/capa`, HMAC,
+  `x-consumer-id: member-shell`, ator no corpo). O navegador nunca confirma arquivo. Cota: 2 GB por
+  conta, 20 GB na equipe, separada do 1 GB das criações.
+- **Cenário**: o documento é o `molda-cenario` v2 inteiro num jsonb; `POST …/cenarios/:id/lotes`
+  `{revisaoEsperada, comandos, operacaoId}` roda o `executarLote` do core no servidor, troca só na
+  revisão esperada (409 `CENARIO_DESATUALIZADO` com `details.revisaoAtual`) e guarda o lote em
+  `cenario_lotes`. O mesmo `operacaoId` de novo devolve a revisão já gravada, sem aplicar outra
+  vez. Lote recusado: 422 com `details.problemas`. Modelo citado no documento precisa de arquivo
+  confirmado NO MESMO espaço (409 `details.digests`). Corpo do lote até 1 MB (`bodyLimitForPath`).
+- **Apagar** modelo ou biblioteca solta o arquivo só quando nenhum modelo nem cenário do espaço o
+  usa (a consulta olha `documento -> 'modelos'`). Quem apaga o objeto no bucket é o BFF, com os
+  digests que a rota devolve.
+- **Exclusão de conta**: a purga apaga o espaço da conta (FK em cascata leva o resto) e o job de
+  limpeza ganha o prefixo `cenarios/<conta>/`; o Admin tenta o mesmo prefixo na hora.
+- ⚠️ **Subconsulta numa seleção de uma tabela só**: o drizzle escreve a coluna de fora sem a tabela
+  (`"id"`) e o Postgres a resolve na tabela de DENTRO quando ela também tem `id`. A contagem de
+  cenários por mundo dava sempre zero. Use `deFora(tabela, 'id')` (`cenarios.repository.ts`).
+- ⚠️ **Ordem dos nomes**: listas pequenas são ordenadas em JS (`Intl.Collator('pt-BR')`); a de
+  modelos, paginada, usa `busca collate "C"`. A ordenação padrão do banco depende de como o
+  servidor foi criado ("Árvore" ia para depois de "Pedra").
+- Testes: `tests/unit/cenarios.service.test.ts` e `tests/integration/cenarios.test.ts` (repositório
+  em memória); SQL real em `tests/db/cenarios.repository.test.ts` (`CENARIOS_TEST_DATABASE_URL`,
+  banco local `cenarios_*`, aplica o DDL da `0151`; sem a variável é pulado) e o caso dos cenários
+  em `tests/db/user-data-purge.test.ts`.
+
 ## Presente por oferta: curso nomeado e Mural nos avisos (15/11/2026)
 
 - `GET /members/webhooks/gift-course/:slug` devolve `{available, title, learner}` (`giftCourse` no

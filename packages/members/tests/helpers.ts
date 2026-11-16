@@ -14,6 +14,7 @@ import { EquipAvatarService } from '../src/application/avatar/equip-avatar.servi
 import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from '../src/application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
+import { CenariosService } from '../src/application/cenarios/cenarios.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   CourseAdminService,
@@ -131,6 +132,7 @@ import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAdultJourneyRepository } from './fakes/adult-journey-in-memory'
 import { InMemoryAdultProfileRepository } from './fakes/adult-profile-in-memory'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
+import { CenariosEmMemoria } from './fakes/cenarios-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
 import {
@@ -198,6 +200,9 @@ export function buildApp(
       import('../src/application/learning/studio-gallery-source.service').StudioGallerySourceService,
       'load'
     >
+    /** Para quem a oficina de cenários está aberta (padrão dos testes: `equipe`). */
+    cenariosModo?: import('../src/domain/cenarios/cenarios').ModoDosCenarios
+    cenariosLista?: string[]
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -206,6 +211,7 @@ export function buildApp(
   const clock = () => clockRef.now
 
   const entitlements = new InMemoryEntitlementRepository()
+  const cenariosRepo = new CenariosEmMemoria()
   const courses = new InMemoryCourseRepository()
   // O fake de progresso enxerga as aulas p/ espelhar o join das contagens `*Published`.
   const progress = new InMemoryProgressRepository(courses)
@@ -805,6 +811,13 @@ export function buildApp(
       internalToken: opts.internalToken,
       requireAdminEnabled: opts.requireAdmin ?? false,
     },
+    cenarios: {
+      cenarios: new CenariosService(cenariosRepo, clock, {
+        modo: opts.cenariosModo ?? 'equipe',
+        lista: new Set(opts.cenariosLista ?? []),
+      }),
+      internalToken: opts.internalToken,
+    },
     creations: {
       adult: {
         list: new ListCreationsService(adultCreations),
@@ -965,6 +978,7 @@ export function buildApp(
   })
 
   return {
+    cenariosRepo,
     kidsJourneySnapshots,
     kidsJourneyProfiles,
     kidsJourneyQuery,

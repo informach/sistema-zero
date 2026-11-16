@@ -47,6 +47,7 @@ import type {
   StudioProBuilderResult,
   StudioProRevision,
 } from '@sistemazero/core/studio'
+import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
@@ -3211,6 +3212,184 @@ export const creatorJourneyCourseGrants = members.table(
   ],
 )
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Molda Cenários (16/11/2026): a oficina de cenários 3D.
+//   espaço (da conta ou da equipe) → bibliotecas → modelos
+//                                   → mundos → cenários → lotes
+// Os arquivos (GLB, retratos, capas) moram no bucket UGC, por conteúdo e por espaço;
+// aqui fica só o registro de cada um, que é o que conta na cota.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const cenarioEspacos = members.table(
+  'cenario_espacos',
+  {
+    id: uuid('id').primaryKey(),
+    tipo: text('tipo').$type<'conta' | 'equipe'>().notNull(),
+    /** A conta dona. Nulo só no espaço da equipe. */
+    contaId: uuid('conta_id'),
+    limiteBytes: bigint('limite_bytes', { mode: 'number' }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check(
+      'cenario_espacos_tipo_check',
+      sql`(${t.tipo} = 'conta' and ${t.contaId} is not null) or (${t.tipo} = 'equipe' and ${t.contaId} is null)`,
+    ),
+    uniqueIndex('cenario_espacos_conta_uq').on(t.contaId).where(sql`${t.tipo} = 'conta'`),
+    // Um espaço da equipe só.
+    uniqueIndex('cenario_espacos_equipe_uq').on(t.tipo).where(sql`${t.tipo} = 'equipe'`),
+  ],
+)
+
+export const cenarioBlobs = members.table(
+  'cenario_blobs',
+  {
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
+    digest: varchar('digest', { length: 64 }).notNull(),
+    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa'>().notNull(),
+    bytes: integer('bytes').notNull(),
+    /** Nulo enquanto a reserva espera o envio; preenchido quando o BFF confere o arquivo. */
+    confirmadoEm: timestamp('confirmado_em', { withTimezone: true }),
+    /** Até quando uma reserva não confirmada segura espaço na cota. */
+    venceEm: timestamp('vence_em', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.espacoId, t.digest] }),
+    check('cenario_blobs_tipo_check', sql`${t.tipo} in ('modelo', 'miniatura', 'capa')`),
+    check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
+    check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),
+  ],
+)
+
+export const cenarioBibliotecas = members.table(
+  'cenario_bibliotecas',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    licenca: text('licenca').$type<'livre' | 'propria' | 'restrita'>().notNull(),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check(
+      'cenario_bibliotecas_licenca_check',
+      sql`${t.licenca} in ('livre', 'propria', 'restrita')`,
+    ),
+    index('cenario_bibliotecas_espaco_idx').on(t.espacoId),
+  ],
+)
+
+export const cenarioModelos = members.table(
+  'cenario_modelos',
+  {
+    id: uuid('id').primaryKey(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Caminho dentro da biblioteca, com `/` entre os níveis. Vazio = raiz. */
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    /** Nome, pasta e etiquetas sem acento e em minúsculas: é onde a busca procura. */
+    busca: varchar('busca', { length: 600 }).notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    triangulos: integer('triangulos').notNull(),
+    /** Caixa do modelo: `[minX, minY, minZ, maxX, maxY, maxZ]`. */
+    caixa: jsonb('caixa').$type<[number, number, number, number, number, number]>().notNull(),
+    miniatura: varchar('miniatura', { length: 64 }),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    // O mesmo conteúdo não entra duas vezes na mesma biblioteca.
+    uniqueIndex('cenario_modelos_biblioteca_digest_uq').on(t.bibliotecaId, t.digest),
+    index('cenario_modelos_lista_idx').on(t.bibliotecaId, t.nome, t.id),
+    index('cenario_modelos_digest_idx').on(t.digest),
+  ],
+)
+
+export const cenarioMundos = members.table(
+  'cenario_mundos',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Quem criou: o perfil da criança no Kids, a conta no adulto. */
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('cenario_mundos_espaco_idx').on(t.espacoId)],
+)
+
+export const cenarioMundoBibliotecas = members.table(
+  'cenario_mundo_bibliotecas',
+  {
+    mundoId: uuid('mundo_id')
+      .notNull()
+      .references(() => cenarioMundos.id, { onDelete: 'cascade' }),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.mundoId, t.bibliotecaId] }),
+    index('cenario_mundo_bibliotecas_biblioteca_idx').on(t.bibliotecaId),
+  ],
+)
+
+export const cenarioCenarios = members.table(
+  'cenario_cenarios',
+  {
+    id: uuid('id').primaryKey(),
+    mundoId: uuid('mundo_id')
+      .notNull()
+      .references(() => cenarioMundos.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Cresce um a cada lote aplicado. Quem edita precisa conhecer a corrente. */
+    revisao: integer('revisao').notNull().default(0),
+    /** O cenário como está agora (formato `molda-cenario`, versão 2). */
+    documento: jsonb('documento').$type<DocumentoDeCenario>().notNull(),
+    capa: varchar('capa', { length: 64 }),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('cenario_cenarios_mundo_idx').on(t.mundoId)],
+)
+
+/** O registro de cada lote aplicado: o histórico do cenário e a prova da operação repetida. */
+export const cenarioLotes = members.table(
+  'cenario_lotes',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    /** A revisão que este lote produziu. */
+    revisao: integer('revisao').notNull(),
+    operacaoId: varchar('operacao_id', { length: 80 }).notNull(),
+    comandos: jsonb('comandos').$type<ComandoDeCenario[]>().notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.revisao] }),
+    uniqueIndex('cenario_lotes_operacao_uq').on(t.cenarioId, t.operacaoId),
+  ],
+)
+
 export const schema = {
   creatorJourneyCourseGrants,
   kidsJourneyPolicy,
@@ -3325,6 +3504,14 @@ export const schema = {
   pensaDeletionJobs,
   pensaProviderUsage,
   processedWebhooks,
+  cenarioEspacos,
+  cenarioBlobs,
+  cenarioBibliotecas,
+  cenarioModelos,
+  cenarioMundos,
+  cenarioMundoBibliotecas,
+  cenarioCenarios,
+  cenarioLotes,
 }
 
 // Linha-tipo (importado por testes/seed se útil).

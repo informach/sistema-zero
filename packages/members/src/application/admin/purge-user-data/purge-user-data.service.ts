@@ -1,3 +1,4 @@
+import { prefixoDoEspaco } from '../../../domain/cenarios/cenarios'
 import type { UserDataPurgeRepository } from '../../../domain/ports/user-data-purge-repository.port'
 import { InvalidStateTransitionError } from '../../../domain/shared/errors'
 
@@ -29,10 +30,11 @@ export class PurgeUserDataService {
       accountId: userId,
       cleanup: {
         id: this.newId(),
-        prefixes: userIds.flatMap((ownerId) => [
-          `creations/${ownerId}/`,
-          `creations/adult/${ownerId}/`,
-        ]),
+        prefixes: [
+          ...userIds.flatMap((ownerId) => [`creations/${ownerId}/`, `creations/adult/${ownerId}/`]),
+          // Molda Cenários: modelos e capas da conta (o espaço dela tem o id da conta).
+          prefixoDoEspaco(userId),
+        ],
         // O JWT de acesso vale 15 min por padrão. Mais 5 min absorvem skew,
         // operações iniciadas antes da cerca e URLs PUT ainda em voo.
         notBefore: new Date(createdAt.getTime() + 20 * 60_000),
