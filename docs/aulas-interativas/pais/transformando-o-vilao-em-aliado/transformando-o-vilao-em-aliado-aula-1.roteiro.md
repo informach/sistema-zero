@@ -11,7 +11,7 @@ A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá
 **Fala da Helena:**
 
 ```text
-Oi! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. Antes de qualquer coisa, eu quero te fazer uma pergunta. O que você mais deseja para o futuro do seu filho? Pode ser autonomia, coragem para tentar, prazer de aprender, um jeito de se expressar, ser feliz. A minha, durante muito tempo, foi autonomia: eu queria que os meus filhos dessem conta da vida quando eu não estivesse por perto. Escolha a sua palavra e guarde. A gente volta nela na última aula.
+Oi! Seja bem-vindo ao curso "Transformando o vilão em aliado"! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. Antes de qualquer coisa, eu quero te fazer uma pergunta. O que você mais deseja para o futuro do seu filho? Pode ser autonomia, coragem para tentar, prazer de aprender, um jeito de se expressar, ser feliz. A minha, durante muito tempo, foi autonomia: eu queria que os meus filhos dessem conta da vida quando eu não estivesse por perto. Escolha a sua palavra e guarde. A gente volta nela na última aula.
 
 Agora pense numa cena que quase toda casa conhece. Fim de tarde, você fala: desliga isso. E começa a negociação. Mais cinco minutos. Só vou terminar esta fase. Às vezes vira briga. E fica aquela pergunta na cabeça: como eu tiro a tela da vida do meu filho?
 
