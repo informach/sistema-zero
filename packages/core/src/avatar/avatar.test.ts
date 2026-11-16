@@ -628,10 +628,11 @@ describe('as entregas de 15/11 da arte: shortinho, variantes, planador e cópias
     // Sem nada nas costas, a própria peça; com a mochila, a situação dela.
     expect(situationFor(C, 'planador_dobrado', base())).toBe('planador_dobrado')
     const [mochila] = costas[0] ?? []
-    if (mochila)
-      expect(situationFor(C, 'planador_dobrado', { ...base(), costas: mochila })).toBe(
-        s.byBack[mochila],
-      )
+    if (mochila) {
+      const situacao = s.byBack[mochila]
+      if (!situacao) throw new Error(`Falta a situação do planador para ${mochila}`)
+      expect(situationFor(C, 'planador_dobrado', { ...base(), costas: mochila })).toBe(situacao)
+    }
     // Com um casaco da lista, a alça alta (onde há alças).
     const casaco = s.highStrapWith?.find((id) => C.parts[id] && !C.parts[id]?.set)
     if (casaco && s.highStrap?.none)
