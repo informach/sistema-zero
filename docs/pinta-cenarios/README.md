@@ -16,7 +16,7 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 - **Provado por teste local** (`bun test`, happy-dom): um item da conta com versão acima do teto
   não desce na reconciliação, não vira cópia na base vencida, não é restaurado no DELETE recusado
   e não recebe a cópia local por cima; o aviso aparece e some; a galeria mostra o recado e o botão.
-  Suítes inteiras do Pinta (1.679 testes) e do member-shell (2.463) passam; tipagem dos dois aprovada.
+  Suítes inteiras do Pinta (1.677 testes) e do member-shell (2.463) passam; tipagem dos dois aprovada.
 - **Não provado:** o comportamento contra o Members real (a recusa `CREATION_CLIENT_OUTDATED` na
   reserva e no DELETE), em navegador e em staging. O aviso da galeria não foi fotografado.
 - **Risco residual conhecido:** o envio de desenho numa aula (`pinta-submission`) não tem trava de
