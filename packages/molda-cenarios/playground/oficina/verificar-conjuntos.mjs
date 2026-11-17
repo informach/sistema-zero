@@ -43,6 +43,7 @@ try {
       }
     })
     await p.goto(`http://127.0.0.1:4541/?vazio=1&tema=${tema}`)
+    await p.waitForLoadState('networkidle')
     await p.waitForFunction(() => window.__cenarios)
     const ids = await p.evaluate(
       async ({ modelo, modulo }) => {

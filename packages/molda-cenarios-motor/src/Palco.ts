@@ -26,7 +26,6 @@ import {
   Fog,
   Group,
   HemisphereLight,
-  type InstancedMesh,
   LineBasicMaterial,
   LineSegments,
   Matrix4,
@@ -64,6 +63,7 @@ import {
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
+import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
 import { carregarPecasDeTerreno } from './recursos-terreno'
 import { RepresentacoesDoModelo } from './representacoes'
 import { escolherNaArea } from './selecao-area'
@@ -101,6 +101,7 @@ interface Gesto {
   inicio: Map<string, Matrix4>
   apoios: Map<string, InstanciaDeCenario['apoio']>
   atualizarApoios(): void
+  atualizarSuperficies(): void
 }
 
 const CEU_VERTICE = /* glsl */ `
@@ -151,6 +152,9 @@ class PalcoThree implements Palco {
   private readonly luzDoCeu = new HemisphereLight(0xffffff, 0x8a9a7a, 2)
   private readonly sol = new DirectionalLight(0xffffff, 1.7)
   private readonly nevoa = new Fog(0xdff1fb, 200, 1800)
+  private nevoaDaBase = { perto: 200, longe: 1800 }
+  private readonly limitesDaCena = new Box3()
+  private readonly limitesDoChao = new Box3()
   private readonly contornos: Contornos
   private readonly fantasma = criarPartesDoFantasma()
   private readonly loteFantasma: LoteDoModelo
@@ -555,6 +559,7 @@ class PalcoThree implements Palco {
     if (direcao.y < 0.25) direcao.setY(0.25).normalize()
     this.orbita.target.copy(esfera.center)
     this.camera.position.copy(esfera.center).addScaledVector(direcao, distancia)
+    this.atualizarRecorte()
     this.orbita.update()
     this.pedirQuadro()
   }
@@ -591,6 +596,9 @@ class PalcoThree implements Palco {
     this.ajudanteDaAlca.visible = false
     this.contornos.definirVisivel(false)
     try {
+      this.atualizarRecorte()
+      this.posicionarSol()
+      this.ceu.position.copy(this.camera.position)
       this.renderer.render(this.cena, this.camera)
       const origem = this.renderer.domElement
       const escala = Math.min(1, largura / Math.max(1, origem.width))
@@ -655,13 +663,38 @@ class PalcoThree implements Palco {
   }
 
   private readonly quadro = (): boolean => {
+    this.atualizarRecorte()
     const mexeu = this.orbita.update()
+    this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
     this.ceu.position.copy(this.camera.position)
     this.posicionarSol()
     this.renderer.render(this.cena, this.camera)
     this.medir()
     return mexeu
+  }
+
+  private atualizarRecorte(): void {
+    if (!this.documento) return
+    this.superficies.limites(this.limitesDaCena)
+    if (!this.opcoes.fotografia)
+      this.limitesDaCena.union(limitesDaBase(this.documento.base, this.limitesDoChao))
+    const r = recorteDaCamera(
+      this.limitesDaCena,
+      this.camera.position,
+      this.orbita.target,
+      this.camera.fov,
+      this.camera.aspect,
+      Boolean(this.opcoes.fotografia),
+    )
+    this.orbita.maxDistance = r.orbita
+    if (this.camera.near !== r.perto || this.camera.far !== r.longe) {
+      this.camera.near = r.perto
+      this.camera.far = r.longe
+      this.camera.updateProjectionMatrix()
+    }
+    this.nevoa.near = Math.max(this.nevoaDaBase.perto, r.nevoaInicio)
+    this.nevoa.far = Math.max(this.nevoaDaBase.longe, r.nevoaFim, this.nevoa.near + 1)
   }
 
   private medir() {
@@ -778,6 +811,7 @@ class PalcoThree implements Palco {
         })
       this.nevoa.near = Math.max(120, meio.x * 1.8, meio.z * 1.8)
       this.nevoa.far = Math.max(900, meio.x * 8, meio.z * 8)
+      this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
       return
     }
     this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
@@ -809,6 +843,7 @@ class PalcoThree implements Palco {
     const alcance = Math.max(largura, comprimento)
     this.nevoa.near = Math.max(120, alcance * 0.9)
     this.nevoa.far = Math.max(900, alcance * 4)
+    this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
   }
 
   // ---- modelos e objetos --------------------------------------------------
@@ -994,12 +1029,14 @@ class PalcoThree implements Palco {
 
     const superficies: SuperficieDoObjeto[] = []
     for (const [id, local] of this.locais) {
-      if (local.lote === this.loteFantasma) continue
-      for (const malha of local.lote.malhas) {
+      for (const [parte, malha] of local.lote.malhas.entries()) {
         const matriz = new Matrix4()
         malha.getMatrixAt(local.indice, matriz)
         superficies.push({
           id: this.origens.get(id) ?? id,
+          chave: id,
+          pendente: local.lote === this.loteFantasma,
+          relativa: local.lote.matrizDaParte(parte),
           geometria: malha.geometry,
           material: malha.material,
           matriz,
@@ -1100,6 +1137,7 @@ class PalcoThree implements Palco {
             this.locais,
             [...inicio.keys()],
             this.fonteDeAlturas(),
+            (id, matriz) => this.superficies.atualizar(id, matriz),
           )
         : () => {}
       this.gesto = {
@@ -1108,6 +1146,13 @@ class PalcoThree implements Palco {
         inicio,
         apoios: new Map(),
         atualizarApoios: () => atualizar(atuais),
+        atualizarSuperficies: () => {
+          for (const id of inicio.keys())
+            for (const peca of this.alvos.get(id)?.pecas ?? []) {
+              const local = this.locais.get(peca)
+              if (local) this.superficies.atualizar(peca, local.matriz)
+            }
+        },
       }
       this.opcoes.aoGesto?.(true)
       return
@@ -1183,6 +1228,7 @@ class PalcoThree implements Palco {
       local.atualizar()
     }
     gesto.atualizarApoios()
+    gesto.atualizarSuperficies()
     this.desenharContornos()
   }
 
@@ -1221,13 +1267,7 @@ class PalcoThree implements Palco {
     // Soltar em cima de uma alça é o fim de um gesto, não uma escolha.
     if (this.gesto || this.alca.dragging || this.alca.axis) return
     this.mirar(evento.clientX, evento.clientY)
-    const malhas: InstancedMesh[] = [...this.loteFantasma.malhas]
-    for (const estado of this.modelos.values())
-      if (estado.estado === 'pronto')
-        for (const lote of estado.representacoes.lotes()) malhas.push(...lote.malhas)
-    const acerto = this.raio.intersectObjects(malhas, false)[0]
-    const lote = acerto?.object.userData.lote as LoteDoModelo | undefined
-    const id = lote && acerto?.instanceId !== undefined ? lote.ids[acerto.instanceId] : undefined
+    const id = this.superficies.escolher(this.raio)?.id
     this.opcoes.aoSelecionar?.(
       id ? (this.origens.get(id) ?? id) : null,
       evento.shiftKey || evento.ctrlKey || evento.metaKey,

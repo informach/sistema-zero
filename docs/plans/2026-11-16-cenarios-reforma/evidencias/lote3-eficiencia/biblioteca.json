@@ -1,0 +1,82 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "salvarEscolha": true,
+    "retrato": {
+      "largura": 256,
+      "altura": 256,
+      "transparentes": 53524,
+      "visiveis": 12012,
+      "bytes": 3614
+    },
+    "colocar": true,
+    "editarFonte": true,
+    "publicarDuasCenas": true,
+    "retorno": true,
+    "organizarBuscarApagar": true,
+    "repetirFotoSemDuplicar": true,
+    "respostaPerdidaAposPublicacao": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "salvarEscolha": true,
+    "retrato": {
+      "largura": 256,
+      "altura": 256,
+      "transparentes": 53524,
+      "visiveis": 12012,
+      "bytes": 3614
+    },
+    "colocar": true,
+    "editarFonte": true,
+    "publicarDuasCenas": true,
+    "retorno": true,
+    "organizarBuscarApagar": true,
+    "repetirFotoSemDuplicar": true,
+    "respostaPerdidaAposPublicacao": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "salvarEscolha": true,
+    "retrato": {
+      "largura": 256,
+      "altura": 256,
+      "transparentes": 53524,
+      "visiveis": 12012,
+      "bytes": 3614
+    },
+    "colocar": true,
+    "editarFonte": true,
+    "publicarDuasCenas": true,
+    "retorno": true,
+    "organizarBuscarApagar": true,
+    "repetirFotoSemDuplicar": true,
+    "respostaPerdidaAposPublicacao": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "salvarEscolha": true,
+    "retrato": {
+      "largura": 256,
+      "altura": 256,
+      "transparentes": 53524,
+      "visiveis": 12012,
+      "bytes": 3614
+    },
+    "colocar": true,
+    "editarFonte": true,
+    "publicarDuasCenas": true,
+    "retorno": true,
+    "organizarBuscarApagar": true,
+    "repetirFotoSemDuplicar": true,
+    "respostaPerdidaAposPublicacao": true,
+    "erros": []
+  }
+]

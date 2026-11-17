@@ -9,6 +9,7 @@ export interface LocalDoObjeto {
   matriz: Matrix4
 }
 export interface AlvoDeEdicao {
+  pecas: readonly string[]
   caixa: Box3
   matriz: Matrix4
   uniforme: boolean
@@ -22,15 +23,16 @@ export function criarAlvosDeEdicao(
   origens: ReadonlyMap<string, string>,
 ): Map<string, AlvoDeEdicao> {
   const alvos = new Map<string, AlvoDeEdicao>(),
-    partes = new Map<string, LocalDoObjeto[]>()
+    partes = new Map<string, { id: string; local: LocalDoObjeto }[]>()
   for (const [id, local] of locais) {
     const raiz = origens.get(id)
     if (raiz) {
       const lista = partes.get(raiz) ?? []
-      lista.push(local)
+      lista.push({ id, local })
       partes.set(raiz, lista)
     } else
       alvos.set(id, {
+        pecas: [id],
         caixa: local.caixa,
         matriz: local.matriz,
         uniforme: false,
@@ -48,12 +50,13 @@ export function criarAlvosDeEdicao(
     )
     const inversa = matriz.clone().invert(),
       caixa = new Box3()
-    const relativos = filhos.map((local) => {
+    const relativos = filhos.map(({ local }) => {
       const relativa = new Matrix4().multiplyMatrices(inversa, local.matriz)
       caixa.union(local.caixa.clone().applyMatrix4(relativa))
       return { local, relativa }
     })
     alvos.set(m.id, {
+      pecas: filhos.map((p) => p.id),
       matriz,
       caixa,
       uniforme: true,

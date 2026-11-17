@@ -1,0 +1,50 @@
+[
+  {
+    "caso": "formas",
+    "quantidade": 20000,
+    "partes": 1,
+    "bytesAlocados": 2097152,
+    "bytesNoMovimento": 64,
+    "bytesSemMudanca": 0,
+    "chamadasNoMovimento": [
+      {
+        "inicio": 896000,
+        "bytes": 64
+      }
+    ],
+    "triangulos": 240000,
+    "tempoRenderMovimentoMs": 0.30000001192092896
+  },
+  {
+    "caso": "glb-real",
+    "quantidade": 512,
+    "partes": 5,
+    "bytesAlocados": 163840,
+    "bytesNoMovimento": 320,
+    "bytesSemMudanca": 0,
+    "chamadasNoMovimento": [
+      {
+        "inicio": 22912,
+        "bytes": 64
+      },
+      {
+        "inicio": 22912,
+        "bytes": 64
+      },
+      {
+        "inicio": 22912,
+        "bytes": 64
+      },
+      {
+        "inicio": 22912,
+        "bytes": 64
+      },
+      {
+        "inicio": 22912,
+        "bytes": 64
+      }
+    ],
+    "triangulos": 971776,
+    "tempoRenderMovimentoMs": 0.6000000238418579
+  }
+]

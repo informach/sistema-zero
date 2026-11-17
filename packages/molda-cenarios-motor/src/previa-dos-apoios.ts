@@ -9,6 +9,7 @@ export function prepararPreviaDosApoios(
   locais: ReadonlyMap<string, LocalDoObjeto>,
   selecionados: readonly string[],
   fonte?: FonteDeAlturas,
+  aoAtualizar?: (id: string, matriz: Matrix4) => void,
 ) {
   const escolhidos = new Set(selecionados),
     filhos = new Map<string, string[]>()
@@ -54,6 +55,7 @@ export function prepararPreviaDosApoios(
         objeto = objetos.get(id)!
       matrizDoObjeto(previa, objeto, local.matriz, fonte)
       local.lote.atualizar(local.indice, local.matriz)
+      aoAtualizar?.(id, local.matriz)
     }
   }
 }
