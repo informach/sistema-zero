@@ -1,0 +1,183 @@
+import { z } from 'zod'
+
+export const CELULAS_DA_PECA = 64
+export const LADO_DAS_AMOSTRAS = CELULAS_DA_PECA + 1
+export const AMOSTRAS_DA_PECA = LADO_DAS_AMOSTRAS ** 2
+export const BYTES_DA_PECA = 24 + AMOSTRAS_DA_PECA * 2
+const MAGIC = 0x54485a53 // SZHT, little endian
+const altura = z.number().finite().min(-10_000).max(10_000)
+const dimensao = z.number().int().min(CELULAS_DA_PECA).max(4096).multipleOf(CELULAS_DA_PECA)
+
+export const BaseDeTerrenoSchema = z
+  .object({
+    tipo: z.literal('terreno'),
+    origem: z
+      .object({
+        x: z.number().finite().min(-100_000).max(100_000),
+        z: z.number().finite().min(-100_000).max(100_000),
+      })
+      .strict(),
+    passo: z.number().finite().min(0.25).max(32),
+    colunas: dimensao,
+    linhas: dimensao,
+    min: altura,
+    max: altura,
+    fundo: altura,
+    pecas: z
+      .array(
+        z
+          .object({
+            coluna: z.number().int().nonnegative(),
+            linha: z.number().int().nonnegative(),
+            digest: z.string().regex(/^[a-f0-9]{64}$/),
+          })
+          .strict(),
+      )
+      .max(4096),
+  })
+  .strict()
+  .superRefine((b, ctx) => {
+    if (b.max <= b.min || b.fundo < b.min || b.fundo > b.max)
+      ctx.addIssue({
+        code: 'custom',
+        message: 'O intervalo de alturas do terreno é inválido',
+        path: ['min'],
+      })
+    if (b.colunas * b.passo > 8192 || b.linhas * b.passo > 8192)
+      ctx.addIssue({ code: 'custom', message: 'O terreno passa de 8192 metros', path: ['passo'] })
+    const ocupados = new Set<string>()
+    b.pecas.forEach((p, i) => {
+      const chave = `${p.coluna}:${p.linha}`
+      if (
+        p.coluna >= b.colunas / CELULAS_DA_PECA ||
+        p.linha >= b.linhas / CELULAS_DA_PECA ||
+        ocupados.has(chave)
+      )
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A peça se repete ou está fora do terreno',
+          path: ['pecas', i],
+        })
+      ocupados.add(chave)
+    })
+  })
+
+export type BaseDeTerreno = z.infer<typeof BaseDeTerrenoSchema>
+export interface PecaDeAlturas {
+  min: number
+  max: number
+  amostras: Uint16Array
+}
+export type FonteDeAlturas = (x: number, z: number) => number
+export class TerrenoInvalido extends Error {}
+export class PecaDeTerrenoAusente extends TerrenoInvalido {}
+const invalidar = (frase: string): never => {
+  throw new TerrenoInvalido(frase)
+}
+
+function conferirIntervalo(min: number, max: number) {
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min < -10_000 || max > 10_000 || max <= min)
+    invalidar('O intervalo de alturas da peça é inválido')
+}
+
+/** Binário canônico e limitado: sem imagem, ZIP, JSON ou dependência do sistema hospedeiro. */
+export function codificarPecaDeAlturas(
+  amostras: ArrayLike<number>,
+  min: number,
+  max: number,
+): Uint8Array {
+  conferirIntervalo(min, max)
+  if (amostras.length !== AMOSTRAS_DA_PECA) invalidar('A peça precisa ter 65 × 65 amostras')
+  const bytes = new Uint8Array(BYTES_DA_PECA),
+    v = new DataView(bytes.buffer)
+  v.setUint32(0, MAGIC, true)
+  v.setUint16(4, 1, true)
+  v.setUint16(6, LADO_DAS_AMOSTRAS, true)
+  v.setFloat64(8, min, true)
+  v.setFloat64(16, max, true)
+  for (let i = 0; i < AMOSTRAS_DA_PECA; i++) {
+    const h = amostras[i]!
+    if (!Number.isFinite(h) || h < min || h > max)
+      invalidar('A amostra está fora do intervalo de alturas')
+    v.setUint16(24 + i * 2, Math.round(((h - min) / (max - min)) * 65535), true)
+  }
+  return bytes
+}
+
+export function lerPecaDeAlturas(bytes: Uint8Array): PecaDeAlturas {
+  if (bytes.byteLength !== BYTES_DA_PECA) invalidar('O tamanho da peça de terreno é inválido')
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  if (
+    v.getUint32(0, true) !== MAGIC ||
+    v.getUint16(4, true) !== 1 ||
+    v.getUint16(6, true) !== LADO_DAS_AMOSTRAS
+  )
+    invalidar('O formato da peça de terreno é inválido')
+  const min = v.getFloat64(8, true),
+    max = v.getFloat64(16, true)
+  conferirIntervalo(min, max)
+  const amostras = new Uint16Array(AMOSTRAS_DA_PECA)
+  for (let i = 0; i < amostras.length; i++) amostras[i] = v.getUint16(24 + i * 2, true)
+  return { min, max, amostras }
+}
+
+/** Índice e recursos pertencem à base aberta; não há registro global nem resolução por rede. */
+export function criarFonteDeAlturas(
+  entrada: BaseDeTerreno,
+  recursos: ReadonlyMap<string, PecaDeAlturas>,
+): FonteDeAlturas {
+  const base = BaseDeTerrenoSchema.parse(entrada)
+  const larguraEmPecas = base.colunas / CELULAS_DA_PECA
+  const pecas = new Map<number, PecaDeAlturas>()
+  for (const p of base.pecas) {
+    const dados = recursos.get(p.digest)
+    if (!dados) throw new PecaDeTerrenoAusente(`Falta a peça de terreno ${p.digest}`)
+    if (
+      dados.min !== base.min ||
+      dados.max !== base.max ||
+      dados.amostras.length !== AMOSTRAS_DA_PECA
+    )
+      invalidar('A peça não corresponde ao intervalo e à resolução do terreno')
+    pecas.set(p.linha * larguraEmPecas + p.coluna, dados)
+  }
+  // Bordas duplicadas só são aceitas quando representam exatamente as mesmas alturas.
+  for (const [chave, p] of pecas) {
+    const coluna = chave % larguraEmPecas
+    const direita = coluna + 1 < larguraEmPecas ? pecas.get(chave + 1) : null
+    const abaixo = pecas.get(chave + larguraEmPecas)
+    for (let i = 0; i < LADO_DAS_AMOSTRAS; i++) {
+      if (
+        direita &&
+        p.amostras[i * LADO_DAS_AMOSTRAS + CELULAS_DA_PECA] !==
+          direita.amostras[i * LADO_DAS_AMOSTRAS]
+      )
+        invalidar('As bordas das peças de terreno não coincidem')
+      if (abaixo && p.amostras[CELULAS_DA_PECA * LADO_DAS_AMOSTRAS + i] !== abaixo.amostras[i])
+        invalidar('As bordas das peças de terreno não coincidem')
+    }
+  }
+  const ler = (p: PecaDeAlturas, x: number, z: number) =>
+    p.min + (p.amostras[z * LADO_DAS_AMOSTRAS + x]! / 65535) * (p.max - p.min)
+  return (x, z) => {
+    const gx = (x - base.origem.x) / base.passo,
+      gz = (z - base.origem.z) / base.passo
+    if (!Number.isFinite(gx) || !Number.isFinite(gz))
+      return invalidar('O ponto de consulta do terreno é inválido')
+    if (gx < 0 || gz < 0 || gx > base.colunas || gz > base.linhas) return base.fundo
+    const coluna = Math.min(larguraEmPecas - 1, Math.floor(gx / CELULAS_DA_PECA))
+    const linha = Math.min(base.linhas / CELULAS_DA_PECA - 1, Math.floor(gz / CELULAS_DA_PECA))
+    const peca = pecas.get(linha * larguraEmPecas + coluna)
+    if (!peca) return base.fundo
+    const lx = gx - coluna * CELULAS_DA_PECA,
+      lz = gz - linha * CELULAS_DA_PECA
+    const ix = Math.min(CELULAS_DA_PECA - 1, Math.floor(lx)),
+      iz = Math.min(CELULAS_DA_PECA - 1, Math.floor(lz))
+    const u = lx - ix,
+      v = lz - iz
+    const a = ler(peca, ix, iz),
+      b = ler(peca, ix + 1, iz),
+      c = ler(peca, ix, iz + 1),
+      d = ler(peca, ix + 1, iz + 1)
+    return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v)
+  }
+}

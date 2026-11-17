@@ -72,6 +72,8 @@ Cada lote deve registrar: requisitos cobertos (com referência às seções da e
 
 **Conversão da Faísca em conferência:** [continuação concreta do lote 2](../../plans/2026-11-16-cenarios-reforma/continuacao-lote2-faisca.md). Dez projetos antigos preservados por leitura da API local, incluindo um carimbo de relevo autoral. Geografia `46b0ed92f` conferida sem diferenças nos arquivos relevantes; mapeamento de publicação contém os 3.218 modelos e 18 bibliotecas. Implementar o suporte mínimo para importar as alturas reais, sem apresentar o perfil plano como conversão concluída. Pincéis continuam no lote 4; o lote 3 ainda não foi retomado.
 
+**Leitor de alturas conferido isoladamente:** formato Uint16 limitado, índice esparso, bordas coincidentes e mesma interpolação triangular da futura malha. Núcleo 57 testes/158 asserções e tipagem passaram. O módulo ainda está isolado do contrato público, persistência e renderer; faltam a integração e o conversor antes de fechar o lote 2. Detalhes no documento de continuação acima.
+
 ## Estado inicial auditado
 
 Base `dbe99040e`, árvore limpa. Commits do Claude implementaram grande parte de 0/1 e parte do cliente de agentes. 125 testes direcionados passaram nesta sessão de conferência (core 42, motor 9, UI 24, Members 28, gateway 5, BFF 17). A imagem Members falhou no CI porque `qa/image-smoke.mjs` ainda espera a lista anterior de workspaces. Os watchPatterns não incluem os novos pacotes; migração e rollout remoto ainda precisam de prova. O PDF tem três páginas de capturas reais e foi inspecionado visualmente; manter sua composição de quatro telas, seis abas superiores, ferramentas à esquerda, palco central, painel recolhível à direita e gaveta inferior.
