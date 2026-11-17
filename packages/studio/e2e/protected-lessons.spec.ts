@@ -15,7 +15,8 @@ import { gesto, instalarRobo, type JogoDaAula } from './helpers/palco'
  *
  * O que fica de fora, por ser da página da aula e não do Estúdio: expandir e reduzir, Verificar
  * projeto, Enviar, Próxima parte, Concluir aula e o Compartilhar. Os objetivos que RODAM o jogo
- * são conferidos pelo executor do servidor, que este teste não sobe.
+ * passam pelo executor do servidor só quando há um Chromium apontado (`SZ_CHECK_CHROMIUM` ou
+ * `PW_CHROMIUM`): o documento que o Members monta, aberto pelo `check-objectives.mjs`.
  */
 
 const aqui = dirname(fileURLToPath(import.meta.url))
@@ -44,6 +45,9 @@ const CHEGADA: Record<string, string> = {
   'desafio-dia-3': 'decisao',
 }
 const CABECALHO = '// Gerado pelo Sistema Zero Studio\n\n'
+
+/** O navegador do executor dos objetivos de execução (opcional). */
+const EXECUTOR = process.env.SZ_CHECK_CHROMIUM ?? process.env.PW_CHROMIUM ?? ''
 
 const AULAS = [
   { curso: 'cade-todo-mundo', arquivo: 'cade-todo-mundo-aula-1' },
@@ -185,7 +189,14 @@ for (const { curso, arquivo } of AULAS) {
           execFileSync(
             'bun',
             ['scripts/check-lesson-objectives.ts', manifestoEm, parte.key, projetoEm],
-            { cwd: pacote, encoding: 'utf8', timeout: 60_000 },
+            {
+              cwd: pacote,
+              encoding: 'utf8',
+              timeout: 240_000,
+              // Com um Chromium apontado, os objetivos que RODAM o jogo passam pelo executor do
+              // servidor (`studio-runtime/runtime/check-objectives.mjs`). Sem ele, saem sem nota.
+              env: { ...process.env, SZ_CHECK_CHROMIUM: EXECUTOR },
+            },
           ),
         ) as { checkId: string; label: string; passed: boolean | null; execucao: boolean }[]
         writeFileSync(
@@ -193,7 +204,12 @@ for (const { curso, arquivo } of AULAS) {
           JSON.stringify(objetivos, null, 1),
         )
         const faltou = objetivos.filter((objetivo) => objetivo.passed === false)
-        expect(faltou, `objetivos de estrutura da parte ${parte.key}`).toEqual([])
+        expect(faltou, `objetivos da parte ${parte.key}`).toEqual([])
+        if (EXECUTOR)
+          expect(
+            objetivos.filter((objetivo) => objetivo.passed === null),
+            `objetivos de execução sem nota na parte ${parte.key}`,
+          ).toEqual([])
       })
     }
 

@@ -32,7 +32,7 @@ isolamento pode acrescentar bytes a ele.
 | A1 | Matriz de compatibilidade e travas estáticas dos dois cursos | **feito** |
 | A2 | Aula montada no playground (`/aula?aula=`) | **feito** |
 | A3 | Reprodução dos gestos das aulas no navegador (Playwright) | **feito** |
-| A4 | Uma prova por curso com o verificador do servidor | pendente |
+| A4 | Objetivos que rodam o jogo, no executor do servidor | **feito em parte**: o executor de verdade aprova os 17; falta a prova pela página da aula (Verificar e Enviar no app) |
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
 | B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
 | B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **feito** (só Chromium) |
@@ -86,8 +86,10 @@ cd packages/studio && bun test src/blockly/__tests__/protectedCourses.test.ts
   gravação.
 - **O teste** (`packages/studio/e2e/protected-lessons.spec.ts`), uma aula por caso, cinco casos:
   refaz na ordem todos os gestos de Estúdio do roteiro e, ao fim de cada parte, confere
-  1. os objetivos de **estrutura** da parte, com a régua do servidor
-     (`scripts/check-lesson-objectives.ts`);
+  1. os objetivos da parte (`scripts/check-lesson-objectives.ts`): os de **estrutura** com a
+     régua do servidor e, com um Chromium apontado (`SZ_CHECK_CHROMIUM` ou `PW_CHROMIUM`), os de
+     **execução** no executor do servidor (`studio-runtime/runtime/check-objectives.mjs`, com o
+     documento que o Members monta). É o caminho inteiro menos o Worker e o contêiner;
   2. o `script.js` que a parte deixa pronto contra a referência guardada em
      `e2e/fixtures/protected-lessons/<aula>/<parte>.script.js` (13 arquivos);
   3. nas partes de chegada (Cadê aula 2 "contar-achados" e Farol dia 3 "decisao"), que o jogo
@@ -103,13 +105,16 @@ Regravar as referências: `PROTECTED_LESSONS_UPDATE=1`, só com decisão dela.
 
 ### Resultado em 17/11/2026 (staging `bf6e895f`, antes de qualquer mudança funcional)
 
-| Aula | Partes de Estúdio | Gestos refeitos | Objetivos de estrutura | Tempo |
-|---|---|---|---|---|
-| Cadê, aula 1 | 1 | 22 | 0 (os 2 da parte rodam o jogo) | 21 s |
-| Cadê, aula 2 | 2 | 35 | 0 (os 4 rodam o jogo) | 42 s |
-| Farol, dia 1 | 2 | 55 | 5 de 5 | 1,2 min |
-| Farol, dia 2 | 3 | 99 | 19 de 19 | 1,7 min |
-| Farol, dia 3 | 5 | 188 | 25 de 25 | 3,3 min |
+| Aula | Partes de Estúdio | Gestos refeitos | Objetivos de estrutura | Objetivos de execução | Tempo |
+|---|---|---|---|---|---|
+| Cadê, aula 1 | 1 | 22 | 0 | 2 de 2 | 23 s |
+| Cadê, aula 2 | 2 | 35 | 0 | 4 de 4 | 48 s |
+| Farol, dia 1 | 2 | 55 | 5 de 5 | 4 de 4 | 1,2 min |
+| Farol, dia 2 | 3 | 99 | 19 de 19 | 2 de 2 | 1,9 min |
+| Farol, dia 3 | 5 | 188 | 25 de 25 | 5 de 5 | 3,6 min |
+
+Total: 399 gestos, **66 de 66 objetivos** (49 de estrutura, 17 de execução). Sem o Chromium
+apontado, os 17 de execução saem sem nota e o teste não os cobra.
 
 - **Prova de que o teste morde:** com o texto de "Deixar o sprite … com … % de visibilidade"
   trocado para "Tornar o sprite…", a aula 1 do Cadê reprova no gesto 14 com a frase do robô
@@ -123,7 +128,8 @@ Regravar as referências: `PROTECTED_LESSONS_UPDATE=1`, só com decisão dela.
 
 - Gestos da **página da aula**: expandir e reduzir o Estúdio, Verificar projeto, Enviar meu
   projeto, Próxima parte, Concluir aula e o Compartilhar (ficam para A4, com o app de verdade).
-- Objetivos que **rodam o jogo** (17 dos 66): quem responde é o executor do servidor.
+- A verificação **pela página da aula**: o executor roda aqui fora do Worker e do contêiner, e
+  ninguém clica em Verificar projeto nem em Enviar no app de verdade.
 - As partes sem Estúdio (jogo pronto, caderno, experiências).
 - Só Chromium, tela de 1440 por 900, o Estúdio no tamanho "expandido" da gravação.
 
