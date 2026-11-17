@@ -1,8 +1,10 @@
 import type { BlockPlacementPreset } from '../../blockly/blocks/types'
+import { MAP_TWO_D_METHODS } from '../map-2d/catalog'
+import type { MapTwoDApi } from '../map-2d/contract'
 import { SPRITE_SCENE_METHODS } from './spriteCatalog'
 import type { SpriteSceneApi } from './spriteContract'
 
-export type SceneApiMethod = keyof SpriteSceneApi
+export type SceneApiMethod = keyof SpriteSceneApi | keyof MapTwoDApi
 
 export type SceneTarget = 'g2d' | 'gk'
 /** The two things a child names here. Each has its own list of names in use. */
@@ -36,7 +38,7 @@ export interface SceneMethod {
   tooltip: string
 }
 /** Public vocabulary for both extensions. Projection remains private to the engine. */
-export const SCENE_METHODS: readonly SceneMethod[] = SPRITE_SCENE_METHODS
+export const SCENE_METHODS: readonly SceneMethod[] = [...SPRITE_SCENE_METHODS, ...MAP_TWO_D_METHODS]
 export const sceneMethods = (target: SceneTarget) =>
   SCENE_METHODS.filter((entry) => !entry.targets || entry.targets.includes(target))
 

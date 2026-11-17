@@ -4442,7 +4442,9 @@ ${advancedSceneAdapter}
 ${advancedSpriteSceneAdapter}
 ${gameKitDrawingRuntime}
   /** @type {Omit<GameKitRuntimeApi, 'runProject'>} */
+  // MAP_2D_RUNTIME_SLOT
   var api = {
+    // MAP_2D_API_SLOT
     drawRectangle: guard('drawRectangle', drawRectangle),
     drawCircle: guard('drawCircle', drawCircle),
     drawTriangle: guard('drawTriangle', drawTriangle),

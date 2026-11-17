@@ -9,19 +9,32 @@
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
+  effectiveLayer,
   isObjectLayer,
   normalizeObjectPropertyKey,
-  OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  sanitizeObjectExtras,
+  sanitizeObjectProperties,
   type TilemapAsset,
   type TilemapObject,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
 } from '../core/project'
+import { objectContains } from './objectGeometry'
 import { withMapLayer } from './tilemapOps'
 
 /** Os tipos de valor que a criança escolhe para uma propriedade. */
-export const OBJECT_PROPERTY_KINDS = ['text', 'number', 'boolean'] as const
+export const OBJECT_PROPERTY_KINDS = [
+  'text',
+  'number',
+  'boolean',
+  'int',
+  'float',
+  'color',
+  'object',
+  'asset',
+] as const
 
 export type ObjectPropertyKind = (typeof OBJECT_PROPERTY_KINDS)[number]
 
@@ -30,6 +43,7 @@ export function isObjectPropertyKind(value: string): value is ObjectPropertyKind
 }
 
 export function objectPropertyKind(value: TilemapObjectPropertyValue): ObjectPropertyKind {
+  if (typeof value === 'object') return value.type
   if (typeof value === 'number') return 'number'
   if (typeof value === 'boolean') return 'boolean'
   return 'text'
@@ -40,26 +54,44 @@ export function convertPropertyValue(
   value: TilemapObjectPropertyValue,
   kind: ObjectPropertyKind,
 ): TilemapObjectPropertyValue {
+  const primitive = typeof value === 'object' ? value.value : value
+  if (kind === 'int' || kind === 'float') {
+    const parsed = Number(String(primitive).replace(',', '.'))
+    return {
+      type: kind,
+      value: Number.isFinite(parsed) ? (kind === 'int' ? Math.round(parsed) : parsed) : 0,
+    }
+  }
+  if (kind === 'color')
+    return {
+      type: kind,
+      value: /^#[\da-f]{6}([\da-f]{2})?$/i.test(String(primitive))
+        ? String(primitive).toLowerCase()
+        : '#000000',
+    }
+  if (kind === 'object' || kind === 'asset')
+    return { type: kind, value: String(primitive).slice(0, 200) || 'nenhum' }
   if (kind === 'number') {
-    const parsed = typeof value === 'number' ? value : Number(String(value).replace(',', '.'))
+    const parsed =
+      typeof primitive === 'number' ? primitive : Number(String(primitive).replace(',', '.'))
     return Number.isFinite(parsed) ? parsed : 0
   }
   if (kind === 'boolean') {
     if (typeof value === 'boolean') return value
     if (typeof value === 'number') return value !== 0
-    return value.trim() !== '' && value.trim().toLowerCase() !== 'false'
+    return String(primitive).trim() !== '' && String(primitive).trim().toLowerCase() !== 'false'
   }
-  return String(value).slice(0, PINTA_LIMITS.maxObjectPropertyStringChars)
+  return String(primitive).slice(0, PINTA_LIMITS.maxObjectPropertyStringChars)
 }
 
 /** O ponto de um objeto: largura e altura zero. */
 export function isPointObject(object: TilemapObject): boolean {
-  return object.width === 0 && object.height === 0
+  return object.shape === 'point' || (!object.shape && object.width === 0 && object.height === 0)
 }
 
 function clampMeasure(value: number): number {
   const rounded = Math.round(Number.isFinite(value) ? value : 0)
-  return Math.min(Math.max(rounded, 0), PINTA_LIMITS.maxObjectCoord)
+  return Math.min(Math.max(rounded, 0), PINTA_MAP_FORMAT_LIMITS.maxObjectCoord)
 }
 
 function clampText(value: string): string {
@@ -88,25 +120,9 @@ export function createMapObject(
     y: clampMeasure(input.y ?? 0),
     width: clampMeasure(input.width ?? 0),
     height: clampMeasure(input.height ?? 0),
-    properties: filterProperties(input.properties ?? {}),
+    properties: sanitizeObjectProperties(input.properties ?? {}),
+    ...sanitizeObjectExtras(input),
   }
-}
-
-function filterProperties(
-  raw: Record<string, TilemapObjectPropertyValue>,
-): Record<string, TilemapObjectPropertyValue> {
-  const entries: Array<[string, TilemapObjectPropertyValue]> = []
-  for (const [key, value] of Object.entries(raw)) {
-    if (entries.length >= PINTA_LIMITS.maxObjectProperties) break
-    if (key.length > PINTA_LIMITS.maxObjectPropertyKeyChars) continue
-    if (!OBJECT_PROPERTY_KEY_PATTERN.test(key)) continue
-    if (typeof value === 'number' && !Number.isFinite(value)) continue
-    entries.push([
-      key,
-      typeof value === 'string' ? value.slice(0, PINTA_LIMITS.maxObjectPropertyStringChars) : value,
-    ])
-  }
-  return Object.fromEntries(entries)
 }
 
 /** Nome automático do próximo objeto da camada ("Objeto 3"). */
@@ -130,7 +146,9 @@ function withObjectLayer(
   layerId: string,
   update: (layer: TilemapObjectLayer) => TilemapObjectLayer,
 ): TilemapAsset {
-  return withMapLayer(tilemap, layerId, (layer) => (isObjectLayer(layer) ? update(layer) : layer))
+  return withMapLayer(tilemap, layerId, (layer) =>
+    isObjectLayer(layer) && !effectiveLayer(tilemap, layer).locked ? update(layer) : layer,
+  )
 }
 
 /** Acrescenta o objeto no TOPO da camada. No teto (`maxTilemapObjects`) devolve o mesmo asset. */
@@ -176,7 +194,9 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
     a.x !== b.x ||
     a.y !== b.y ||
     a.width !== b.width ||
-    a.height !== b.height
+    a.height !== b.height ||
+    JSON.stringify([a.shape, a.points, a.rotation, a.flipX, a.flipY, a.art, a.role, a.setId]) !==
+      JSON.stringify([b.shape, b.points, b.rotation, b.flipX, b.flipY, b.art, b.role, b.setId])
   ) {
     return false
   }
@@ -184,7 +204,10 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
   const bKeys = Object.keys(b.properties)
   return (
     aKeys.length === bKeys.length &&
-    aKeys.every((key, i) => key === bKeys[i] && a.properties[key] === b.properties[key])
+    aKeys.every(
+      (key, i) =>
+        key === bKeys[i] && JSON.stringify(a.properties[key]) === JSON.stringify(b.properties[key]),
+    )
   )
 }
 
@@ -266,18 +289,7 @@ export function objectAt(
   for (let i = layer.objects.length - 1; i >= 0; i -= 1) {
     const object = layer.objects[i]
     if (!object) continue
-    if (isPointObject(object)) {
-      if (Math.hypot(x - object.x, y - object.y) <= Math.max(slack, 1)) return object
-      continue
-    }
-    if (
-      x >= object.x - slack &&
-      x <= object.x + object.width + slack &&
-      y >= object.y - slack &&
-      y <= object.y + object.height + slack
-    ) {
-      return object
-    }
+    if (objectContains(object, x, y, slack)) return object
   }
   return null
 }

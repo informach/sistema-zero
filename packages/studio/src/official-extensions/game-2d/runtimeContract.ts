@@ -1260,5 +1260,5 @@ export function buildGameTwoDRuntimeApiSource(): string {
     return `    ${key}: ${expression}`
   }).join(',\n')
 
-  return `  /** @satisfies {GameTwoDRuntimeApi} */\n  window.SZGame2D = {\n${properties}\n  };`
+  return `  // MAP_2D_RUNTIME_SLOT\n  /** @satisfies {GameTwoDRuntimeApi} */\n  window.SZGame2D = {\n  // MAP_2D_API_SLOT\n${properties}\n  };`
 }

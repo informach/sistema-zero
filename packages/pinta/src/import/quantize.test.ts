@@ -158,7 +158,7 @@ describe('detectTileSize', () => {
   it('escolhe o MENOR tamanho de peça que cabe no teto (mais peças)', () => {
     expect(detectTileSize(32, 32)).toBe(16) // 16→4 peças (preferido a 32→1)
     expect(detectTileSize(48, 48)).toBe(16) // 16→9 peças
-    expect(detectTileSize(256, 256)).toBe(32) // 16→256 estoura → 32→64 peças
+    expect(detectTileSize(256, 256)).toBe(16) // A folha de 256 peças cabe no teto medido.
   })
 
   it('nenhum divisor de TILE_SIZES → null', () => {

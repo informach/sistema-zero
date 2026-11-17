@@ -6,6 +6,7 @@ import {
   validateManifest,
 } from '#extensions'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
+import { mapTwoDBootstrap, mapTwoDBootstrapVariant } from '../map-2d/bootstrap'
 import { gameTwoDPromptSummary } from './aiSummary'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from './blocks'
 import { gameTwoDManifest } from './manifest'
@@ -18,7 +19,7 @@ export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
   documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameTwoDDocs),
   examples: defineExtensionExamples(
-    45,
+    46,
     async () => (await import('./exampleCatalog')).gameTwoDExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d'),
@@ -31,7 +32,8 @@ export const gameTwoDExtension: ExtensionDefinition = {
     toolboxCategory: gameTwoDToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).gameTwoDRuntime,
+    loadBootstrapScript: (context) => mapTwoDBootstrap('g2d', context),
+    bootstrapVariant: mapTwoDBootstrapVariant,
     lifecycle: GAME_2D_LIFECYCLE,
   },
   ai: {

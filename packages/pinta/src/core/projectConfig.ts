@@ -25,11 +25,11 @@ export const PINTA_LIMITS = {
   minFrameSize: 8,
   maxFrameSize: 128,
   maxBitmapSize: 512,
-  maxTiles: 64,
-  maxTilemapCols: 128,
-  maxTilemapRows: 128,
+  maxTiles: 256,
+  maxTilemapCols: 256,
+  maxTilemapRows: 256,
   /** Camadas de peças E de objetos, somadas. */
-  maxTilemapLayers: 8,
+  maxTilemapLayers: 32,
   /** Objetos por camada de objetos. */
   maxTilemapObjects: 512,
   maxObjectProperties: 16,
@@ -37,8 +37,8 @@ export const PINTA_LIMITS = {
   maxObjectPropertyStringChars: 200,
   /** Nome e tipo de um objeto do mapa. */
   maxObjectNameChars: 48,
-  /** Maior coordenada/medida de objeto em pixels do mapa (128 colunas × peça de 48). */
-  maxObjectCoord: 128 * 48,
+  /** Maior coordenada/medida de objeto em pixels do mapa (256 colunas × peça de 48). */
+  maxObjectCoord: 256 * 48,
   maxPixelLayers: 4,
   maxShapes: 500,
   maxNameChars: 48,
@@ -47,11 +47,8 @@ export const PINTA_LIMITS = {
 } as const
 
 /**
- * O que o DOCUMENTO do mapa aceita ao ser lido (o sanitizador), separado do que o editor deixa
- * CRIAR hoje (`PINTA_LIMITS`). O formato já comporta mapas maiores, mais camadas e conjuntos de
- * peças maiores; o editor só passa a oferecê-los quando o desenho por área visível e a entrega
- * ao Estúdio estiverem prontos. Assim um mapa grande que chegue por importação ou de uma versão
- * mais nova (dentro do mesmo formato) é lido inteiro, nunca cortado.
+ * Limites de leitura do documento. O editor oferece os mesmos tetos após a medição de
+ * persistência de 2.097.152 células no IndexedDB; cada destino mantém seu próprio orçamento.
  *
  * `maxCells` é o orçamento que segura a memória: colunas × linhas × camadas de peças.
  */

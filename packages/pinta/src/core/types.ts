@@ -69,6 +69,8 @@ export interface PintaTilemapMeta {
 }
 
 export interface PintaExportedAsset {
+  maps?: Array<Omit<PintaExportedAsset, 'maps'>>
+  scene?: import('@sistemazero/core/studio/pinta-scene').PintaScene
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */
   id: string
   /** Nome kebab-case (vira o nome que os blocos do Estúdio referenciam). */

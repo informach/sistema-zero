@@ -12,6 +12,7 @@
       "!**/dist",
       "!**/migrations",
       "!bun.lock",
+      "!packages/pinta/src/export/phaser/phaser.generated.ts",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
       "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",

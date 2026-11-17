@@ -26,6 +26,44 @@
  */
 
 import { canonicalJson } from '@sistemazero/core/creations'
+
+function sameDrawingContent(
+  a: {
+    dataUrl: string
+    scene?: unknown
+    tilemap?: unknown
+    tilemapFront?: unknown
+    tileset?: unknown
+    sprite?: unknown
+  },
+  b: {
+    dataUrl: string
+    scene?: unknown
+    tilemap?: unknown
+    tilemapFront?: unknown
+    tileset?: unknown
+    sprite?: unknown
+  },
+): boolean {
+  return (
+    a.dataUrl === b.dataUrl &&
+    canonicalJson([
+      a.scene ?? null,
+      a.tilemap ?? null,
+      a.tilemapFront ?? null,
+      a.tileset ?? null,
+      a.sprite ?? null,
+    ]) ===
+      canonicalJson([
+        b.scene ?? null,
+        b.tilemap ?? null,
+        b.tilemapFront ?? null,
+        b.tileset ?? null,
+        b.sprite ?? null,
+      ])
+  )
+}
+
 import { ulid } from 'ulid'
 import { isValidAssetDataUrl, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { perfSpanAsync } from '../core/perf'
@@ -192,7 +230,7 @@ export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | n
   // inverso) não é "o mesmo desenho, mais novo". Só recusa com as DUAS marcas presentes;
   // legado sem `libOrigin` ou registro sem `origin` segue pelos bytes.
   if (drawing.origin && asset.libOrigin && drawing.origin !== asset.libOrigin) return false
-  if (asset.dataUrl === drawing.dataUrl) return false
+  if (sameDrawingContent(asset, drawing)) return false
   return true
 }
 
@@ -247,7 +285,7 @@ export async function reconcileDrawingsFromRestoredProject(
         continue
       }
       if (drawing.kind !== asset.kind) continue
-      if (drawing.dataUrl === asset.dataUrl) {
+      if (sameDrawingContent(asset, drawing)) {
         if (asset.libRevision !== drawing.updatedAt) {
           nextAssets[index] = { ...asset, libRevision: drawing.updatedAt }
           projectChanged = true
@@ -272,6 +310,8 @@ export async function reconcileDrawingsFromRestoredProject(
           sprite: asset.sprite,
           tileset: asset.tileset,
           tilemap: asset.tilemap,
+          tilemapFront: asset.tilemapFront,
+          scene: asset.scene,
         },
         options,
       )
@@ -649,6 +689,8 @@ async function syncOpenProject(
         sprite: drawing.sprite,
         tileset: drawing.tileset,
         tilemap: drawing.tilemap,
+        tilemapFront: drawing.tilemapFront,
+        scene: drawing.scene,
         libRevision: drawing.updatedAt,
       })
       if (error) pushFailure(result, context.state, error)
@@ -709,6 +751,8 @@ export function mergeDrawingIntoAsset(
   const sprite = drawing.sprite ?? (sameGeometry ? asset.sprite : undefined)
   const tileset = drawing.tileset ?? (sameGeometry ? asset.tileset : undefined)
   const tilemap = drawing.tilemap ?? (sameGeometry ? asset.tilemap : undefined)
+  const scene = drawing.scene ?? (sameGeometry ? asset.scene : undefined),
+    tilemapFront = drawing.tilemapFront ?? (sameGeometry ? asset.tilemapFront : undefined)
   // Nome/id/libId/source intocados — os blocos referenciam o asset pelo NOME.
   const next: ProjectAsset = {
     ...asset,
@@ -725,6 +769,10 @@ export function mergeDrawingIntoAsset(
   else delete next.tileset
   if (tilemap) next.tilemap = tilemap
   else delete next.tilemap
+  if (scene) next.scene = scene
+  else delete next.scene
+  if (tilemapFront) next.tilemapFront = tilemapFront
+  else delete next.tilemapFront
   return next
 }
 

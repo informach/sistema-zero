@@ -15,25 +15,26 @@
  */
 
 /** A maior versão que este código sabe LER. Itens acima disso ficam intocados na nuvem. */
-export const PINTA_MAX_READ_FORMAT_VERSION = 2
+export const PINTA_MAX_READ_FORMAT_VERSION = 3
 
 /**
  * A versão que mapas e conjuntos de peças DECLARAM ao subir.
  *
- * ⚠️⚠️ Este número só pode valer 2 em produção DEPOIS de o leitor (a trava de
- * `pinta-cloud-persistence.ts`, entregue num PR próprio) estar em produção. O servidor nunca
- * rebaixa a versão de um item: se o leitor e este gravador fossem ao ar juntos e houvesse
- * rollback, todo mapa ficaria recusado com 409.
- *
- * Com 2, o servidor recusa a subida de qualquer navegador que não declara versão (todo Pinta
- * anterior à trava). É o que impede o cliente antigo de regravar por cima de um mapa do formato
- * novo: ele não consegue LER o arquivo (o envelope é da versão 3) e, sem isto, subiria a cópia
- * velha que tem no aparelho.
+ * A trava de leitura precisa estar publicada antes do gravador. O servidor não rebaixa
+ * versões. A implementação intermediária (somente camadas v3) já declara 2; por isso a cena
+ * completa declara 3. Aquele cliente não pode regravar formas, terrenos ou conjuntos que
+ * ainda não conhece, mesmo quando os dois documentos usam o mesmo `schema` de registro.
+ * Em rollback, leitores com a trava preservam o item na nuvem e pedem atualização.
  */
-export const PINTA_MAP_WRITE_FORMAT_VERSION = 2
+export const PINTA_MAP_WRITE_FORMAT_VERSION = 3
 
 /** Tipos de desenho cujo formato evolui com o editor de cenários. */
-const VERSIONED_KINDS: ReadonlySet<string> = new Set(['tilemap', 'tileset', 'vector-tileset'])
+const VERSIONED_KINDS: ReadonlySet<string> = new Set([
+  'tilemap',
+  'tileset',
+  'vector-tileset',
+  'map-set',
+])
 
 export function isPintaVersionedKind(kind: string): boolean {
   return VERSIONED_KINDS.has(kind)

@@ -288,6 +288,7 @@ function localVariablesForChild(
   const animItem = gameKit3DModelItemName(statement)
   if (animItem) return first === 'body' ? [animItem] : []
   switch (statement.type) {
+    case 'g2d:sceneEvent':
     case 'gk:sceneEvent':
     case 'gk:sceneEach':
       return first === 'body' && statement.parameter ? [statement.parameter] : []

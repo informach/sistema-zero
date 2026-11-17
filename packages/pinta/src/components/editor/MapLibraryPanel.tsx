@@ -1,0 +1,187 @@
+import type { JSX } from 'react'
+import { useState } from 'react'
+import { COPY } from '../../core/copy'
+import {
+  effectiveLayer,
+  isObjectLayer,
+  isTileLayer,
+  isTilesetKind,
+  type PintaAsset,
+} from '../../core/project'
+import { addMapObject, createMapObject } from '../../tiles/mapObjects'
+import { createMapSet, detachMapSet, placeMapSet } from '../../tiles/sets'
+import { usePintaApp, usePintaGallery } from '../appContext'
+import { AssetThumb } from '../gallery/AssetCard'
+import { Button } from '../ui/Button'
+import { Panel } from '../ui/Panel'
+import { useToast } from '../ui/Toast'
+import { useEditorStores } from './editorContext'
+export function MapLibraryPanel({
+  layerId,
+  selectedId,
+  allowSets = true,
+}: {
+  layerId: string
+  selectedId: string | null
+  allowSets?: boolean
+}): JSX.Element {
+  const assets = usePintaGallery((s) => s.assets),
+    { editor } = useEditorStores()
+  const { gallery } = usePintaApp(),
+    { showToast } = useToast()
+  const [search, setSearch] = useState('')
+  const find = (id: string): PintaAsset | null => assets.find((a) => a.id === id) ?? null
+  const chosen = editor.getState().asset
+  const selected =
+    chosen.kind === 'tilemap'
+      ? chosen.layers
+          .flatMap((l) => (isObjectLayer(l) ? l.objects : []))
+          .find((o) => o.id === selectedId)
+      : null
+  const set = selected?.setId ? find(selected.setId) : null
+  function place(a: PintaAsset): void {
+    const s = editor.getState(),
+      m = s.asset
+    if (m.kind !== 'tilemap') return
+    const ts = find(m.tilesetId),
+      tileSize = ts && isTilesetKind(ts) ? ts.tileSize : 16
+    const x = Math.floor(m.cols / 2) * tileSize,
+      y = Math.floor(m.rows / 2) * tileSize
+    const width =
+      'frameWidth' in a
+        ? a.frameWidth
+        : 'width' in a
+          ? a.width
+          : isTilesetKind(a)
+            ? a.tileSize
+            : tileSize
+    const height =
+      'frameHeight' in a
+        ? a.frameHeight
+        : 'height' in a
+          ? a.height
+          : isTilesetKind(a)
+            ? a.tileSize
+            : tileSize
+    s.commit(
+      a.kind === 'map-set'
+        ? placeMapSet(m, layerId, a, x, y, tileSize)
+        : addMapObject(
+            m,
+            layerId,
+            createMapObject({
+              name: a.name,
+              shape: 'art',
+              art: { assetId: a.id, ...(isTilesetKind(a) ? { tile: 0 } : {}) },
+              x,
+              y,
+              width,
+              height,
+            }),
+          ),
+    )
+  }
+  return (
+    <Panel title={COPY.scene.desenhosDaBiblioteca}>
+      {selected && !selected.setId && chosen.kind === 'tilemap' ? (
+        <Button
+          variant="barOutline"
+          className="mb-2 w-full"
+          onClick={() => {
+            const ts = find(chosen.tilesetId),
+              size = ts && isTilesetKind(ts) ? ts.tileSize : 16
+            const owner = chosen.layers.find(
+              (l) => isObjectLayer(l) && l.objects.some((o) => o.id === selected.id),
+            )!
+            const offset = effectiveLayer(chosen, owner)
+            const source = {
+              ...chosen,
+              layers: chosen.layers.map((l) =>
+                isObjectLayer(l)
+                  ? { ...l, objects: l.objects.filter((o) => o.id === selected.id) }
+                  : isTileLayer(l)
+                    ? { ...l, cells: new Int16Array(l.cells.length).fill(-1) }
+                    : l,
+              ),
+            }
+            const set = createMapSet(
+              source,
+              {
+                col: Math.floor((selected.x + offset.offsetX) / size),
+                row: Math.floor((selected.y + offset.offsetY) / size),
+                cols: Math.max(1, Math.ceil(selected.width / size)),
+                rows: Math.max(1, Math.ceil(selected.height / size)),
+              },
+              size,
+              `modelo-${selected.name || 'objeto'}`,
+            )
+            set.map.layers = [
+              {
+                id: `${set.id}-base`,
+                name: COPY.scene.base,
+                visible: true,
+                cells: new Int16Array(set.map.cols * set.map.rows).fill(-1),
+              },
+              ...set.map.layers.filter((l) => l.kind === 'group' || isObjectLayer(l)),
+            ]
+            void gallery.getState().createPrepared(set)
+          }}
+        >
+          {COPY.scene.guardarModeloDoObjeto}
+        </Button>
+      ) : null}
+      {set?.kind === 'map-set' ? (
+        <Button
+          variant="barOutline"
+          className="mb-2 w-full"
+          onClick={() => {
+            const s = editor.getState(),
+              ts = chosen.kind === 'tilemap' ? find(chosen.tilesetId) : null
+            if (s.asset.kind === 'tilemap' && selectedId) {
+              const next = detachMapSet(
+                s.asset,
+                layerId,
+                selectedId,
+                set,
+                ts && isTilesetKind(ts) ? ts.tileSize : 16,
+              )
+              if (next === s.asset) showToast(COPY.scene.paraSoltarUseOTamanhoOriginalAlinhe)
+              else s.commit(next)
+            }
+          }}
+        >
+          {COPY.scene.soltarOConjunto}
+        </Button>
+      ) : null}
+      <input
+        aria-label={COPY.scene.buscarNaBiblioteca}
+        placeholder={COPY.scene.buscarDesenho}
+        className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      <div className="mt-2 grid max-h-52 grid-cols-3 gap-1 overflow-auto">
+        {assets
+          .filter(
+            (a) =>
+              a.kind !== 'tilemap' &&
+              (allowSets || a.kind !== 'map-set') &&
+              a.name.toLowerCase().includes(search.toLowerCase()),
+          )
+          .map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              title={a.name}
+              aria-label={COPY.scene.dynamicPorNoMapa(a.name)}
+              onClick={() => place(a)}
+              className="overflow-hidden rounded-xl border-2 border-pin-border bg-pin-surface p-1 text-xs hover:border-pin-accent"
+            >
+              <AssetThumb asset={a} findAsset={find} />
+              <span className="block truncate">{a.name}</span>
+            </button>
+          ))}
+      </div>
+    </Panel>
+  )
+}

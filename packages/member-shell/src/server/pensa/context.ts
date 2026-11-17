@@ -35,6 +35,7 @@ import { redactPensaText } from './privacy'
 
 type AssetKind = PensaAssetSlot['kind']
 export const PINTA_KIND_FAMILY: Record<PintaAssetKind, AssetKind> = {
+  'map-set': 'tilemap',
   'pixel-sprite': 'sprite',
   'vector-sprite': 'sprite',
   'pixel-background': 'background',

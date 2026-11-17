@@ -78,6 +78,7 @@ export function resizeTargetOf(asset: PintaAsset): ResizeTarget | null {
         max: PINTA_LIMITS.maxTilemapCols,
       }
     case 'tileset':
+    case 'map-set':
     case 'vector-tileset':
       return null
   }
@@ -254,6 +255,7 @@ export function resizeAsset(
         }),
       }
     case 'tileset':
+    case 'map-set':
     case 'vector-tileset':
       return null
   }

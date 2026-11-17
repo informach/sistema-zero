@@ -11,6 +11,14 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'export/godot/project.ts':
+    'o projeto GDScript extrai a peça com máscara 4095 e conserva os três bits nos flags nativos do TileMapLayer',
+  'tiles/terrain.ts':
+    'resolve índices de terrenos por cellTile; escreve células inteiras com makeCell',
+  'tiles/scatter.ts':
+    'escolhe peças por semente e grava com makeCell, conservando flags explícitos',
+  'tiles/chunks.ts': 'blocos guardam células inteiras; desenhar lê cellTile e cellMatrix',
+  'tiles/sets.ts': 'recorta e expande células inteiras, conservando os bits de giro',
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
   'tiles/tilesetOps.ts': 'remapeia o índice por cellTile e conserva os bits com withCellTile',

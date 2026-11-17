@@ -11,7 +11,9 @@ const positiveInteger = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
 
 /** A map has at most this many layers, so it can use at most this many tilesets (Pinta's
  * `PINTA_LIMITS.maxMapLayers`). Bounds the dependencies of a `map` derivation. */
-export const PINTA_IMAGE_MAX_MAP_TILESETS = 8
+export const PINTA_IMAGE_MAX_MAP_TILESETS = 32
+/** Até 32 folhas, 64 conjuntos e 128 desenhos usados pelos objetos. */
+export const PINTA_IMAGE_MAX_MAP_DEPENDENCIES = 224
 
 /**
  * Selections whose PNG carries the drawing's own data (animations, tiles, map layers and
@@ -147,7 +149,7 @@ export const PintaImageDerivationSchema = z
       // Map tilesets in Pinta's order (the map's default first). Only `map` lists more than one.
       dependencies: z
         .array(z.strictObject({ drawingId: id, sha256 }))
-        .max(PINTA_IMAGE_MAX_MAP_TILESETS),
+        .max(PINTA_IMAGE_MAX_MAP_DEPENDENCIES),
     }),
     output: z.strictObject({
       mime: z.enum(['image/png', 'image/svg+xml']),
@@ -171,7 +173,7 @@ export const PintaImageDerivationSchema = z
       rule === 'default-tileset'
         ? count !== 1
         : rule === 'all-tilesets'
-          ? count < 1 || count > PINTA_IMAGE_MAX_MAP_TILESETS
+          ? count < 1 || count > PINTA_IMAGE_MAX_MAP_DEPENDENCIES
           : count !== 0
     ) {
       context.addIssue({

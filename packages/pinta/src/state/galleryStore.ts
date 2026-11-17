@@ -15,8 +15,8 @@ import {
   type PintaAsset,
   type PintaAssetStyle,
   type PintaProjectRef,
+  pintaAssetDependencyIds,
   sanitizeProjectRef,
-  tilemapUsesTileset,
 } from '../core/project'
 import { findTemplate } from '../templates/catalog'
 import { cloneWithNewIds, planImport, uniqueName } from './importPlan'
@@ -309,11 +309,10 @@ export function createGalleryStore(
     async remove(id) {
       const asset = get().assets.find((item) => item.id === id)
       if (!asset) return false
-      if (
-        isTilesetKind(asset) &&
-        get().assets.some((item) => item.kind === 'tilemap' && tilemapUsesTileset(item, asset.id))
-      ) {
-        set({ mutateError: COPY.gallery.tilesetInUse })
+      if (get().assets.some((item) => pintaAssetDependencyIds(item).includes(asset.id))) {
+        set({
+          mutateError: isTilesetKind(asset) ? COPY.gallery.tilesetInUse : COPY.gallery.drawingInUse,
+        })
         return false
       }
       try {

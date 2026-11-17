@@ -339,10 +339,13 @@ describe('exportAssetForStudio', () => {
     if (exported.ok) expect(exported.asset.dataUrl).toStartWith('data:image/svg+xml')
   })
 
-  it('tilemap órfão (tileset apagado) → raster-failed', async () => {
+  it('tilemap órfão (tileset apagado) explica qual dependência falta', async () => {
     const mapa = createTilemapAsset({ name: 'fase', tilesetId: 'sumiu', cols: 2, rows: 2 })
     await persistAsset(mapa)
-    expect(await exportAssetForStudio(mapa.id)).toEqual({ ok: false, reason: 'raster-failed' })
+    expect(await exportAssetForStudio(mapa.id)).toMatchObject({
+      ok: false,
+      reason: 'needs-tileset',
+    })
   })
 })
 

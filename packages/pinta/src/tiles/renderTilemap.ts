@@ -9,15 +9,19 @@
  */
 import {
   type AnyTilesetAsset,
+  effectiveLayer,
+  isTileLayer,
   type PintaBitmap,
   resolveAssetPalette,
   type TilemapAsset,
   type TilesetAsset,
+  tileLayerTilesetId,
+  tilemapNeedsV3,
 } from '../core/project'
 import { composeSheetPngDataUrl } from '../export/png'
-import { bitmapToRGBA } from '../pixel/render'
+import { drawCellImage } from './chunks'
 import { drawableMapTile, type MapTilesets, resolveMapTilesets } from './mapTilesets'
-import { packTileset } from './packTileset'
+import { pixelSheetCanvas } from './sheetCanvas'
 import { flattenWithTilesets } from './tilemapOps'
 
 /** Só os tilesets de PIXEL (o resto vira `null`: aquela camada não aparece). */
@@ -25,6 +29,43 @@ function pixelTilesets(tilemap: TilemapAsset, source: MapTilesets): Array<Tilese
   return resolveMapTilesets(tilemap, source).map((tileset: AnyTilesetAsset | null) =>
     tileset?.kind === 'tileset' ? tileset : null,
   )
+}
+
+function paintPixelMap(
+  ctx: CanvasRenderingContext2D,
+  map: TilemapAsset,
+  tilesets: Array<TilesetAsset | null>,
+  scale: number,
+): void {
+  const sheets = new Map(
+    tilesets.flatMap((t) => {
+      const sheet = t ? pixelSheetCanvas(t) : null
+      return t && sheet ? [[t.id, sheet] as const] : []
+    }),
+  )
+  const size = tilesets[0]?.tileSize ?? 16
+  ctx.imageSmoothingEnabled = false
+  for (const layer of map.layers) {
+    if (!isTileLayer(layer) || layer.collision) continue
+    const e = effectiveLayer(map, layer),
+      sheet = sheets.get(tileLayerTilesetId(map, layer))
+    if (!e.visible || !sheet || !e.opacity) continue
+    ctx.save()
+    ctx.globalAlpha *= e.opacity
+    for (const [i, cell] of layer.cells.entries())
+      if (cell >= 0)
+        drawCellImage(
+          ctx,
+          sheet,
+          sheet.width,
+          size,
+          cell,
+          ((i % map.cols) * size + e.offsetX) * scale,
+          (Math.floor(i / map.cols) * size + e.offsetY) * scale,
+          size * scale,
+        )
+    ctx.restore()
+  }
 }
 
 export function tilemapPngDataUrl(
@@ -35,6 +76,15 @@ export function tilemapPngDataUrl(
   const resolved = pixelTilesets(tilemap, tilesets)
   const primary = resolved[0]
   if (!primary) return null
+  if (tilemapNeedsV3(tilemap)) {
+    const c = document.createElement('canvas')
+    c.width = tilemap.cols * primary.tileSize * scale
+    c.height = tilemap.rows * primary.tileSize * scale
+    const ctx = c.getContext('2d')
+    if (!ctx) return null
+    paintPixelMap(ctx, tilemap, resolved, scale)
+    return c.toDataURL('image/png')
+  }
   const palettes = resolved.map((tileset) => (tileset ? resolveAssetPalette(tileset) : null))
   const flat = flattenWithTilesets(tilemap, undefined, drawableMapTile(tilemap, resolved))
   const cells: Array<{
@@ -67,25 +117,6 @@ export function tilemapPngDataUrl(
   })
 }
 
-/** A folha empacotada de UM tileset num canvas 1:1 (fonte do `drawImage`). */
-function sheetCanvas(tileset: TilesetAsset): HTMLCanvasElement | null {
-  const pack = packTileset(tileset)
-  const colors = resolveAssetPalette(tileset)
-  const sheet = document.createElement('canvas')
-  sheet.width = pack.columns * pack.tileSize
-  sheet.height = pack.rows * pack.tileSize
-  const sheetCtx = sheet.getContext('2d')
-  if (!sheetCtx) return null
-  for (const c of pack.cells) {
-    sheetCtx.putImageData(
-      new ImageData(bitmapToRGBA(c.bitmap, colors), c.bitmap.width, c.bitmap.height),
-      c.col * pack.tileSize,
-      c.row * pack.tileSize,
-    )
-  }
-  return sheet
-}
-
 /**
  * Miniatura do mapa CAPADA num tamanho fixo (`maxPx` no maior lado). Desenha as
  * peças JÁ ESCALADAS num canvas pequeno — NUNCA compõe o mapa inteiro em
@@ -113,13 +144,17 @@ export function tilemapThumbnail(
   canvas.height = height
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
+  if (tilemapNeedsV3(tilemap)) {
+    paintPixelMap(ctx, tilemap, resolved, scale)
+    return { dataUrl: canvas.toDataURL('image/png'), width, height }
+  }
   // Folhas empacotadas (pequenas: ≤8 colunas × tileSize), uma por tileset usado.
   const sheets: Array<HTMLCanvasElement | null | undefined> = []
   const sheetOf = (source: number): HTMLCanvasElement | null => {
     const known = sheets[source]
     if (known !== undefined) return known
     const tileset = resolved[source]
-    const made = tileset ? sheetCanvas(tileset) : null
+    const made = tileset ? pixelSheetCanvas(tileset) : null
     sheets[source] = made
     return made
   }

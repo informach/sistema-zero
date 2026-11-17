@@ -23,8 +23,10 @@ import {
   type PixelSpriteAsset,
   resolveAssetPalette,
   type TilemapAsset,
+  type TilemapObject,
   type TilemapObjectPropertyValue,
   tileLayerTilesetId,
+  tilemapNeedsV3,
   type VectorSpriteAsset,
 } from '../core/project'
 import { flattenCelsOrBlank } from '../pixel/layers'
@@ -37,7 +39,7 @@ import { packAnimationsGeometry } from './spritesheet'
 
 interface DataHeader {
   format: 'pinta'
-  version: 1
+  version: 1 | 2
   name: string
   scale: number
 }
@@ -63,6 +65,7 @@ export interface PintaImageTilesetData extends DataHeader {
 }
 
 export interface PintaImageMapData extends DataHeader {
+  scene?: import('@sistemazero/core/studio/pinta-scene').PintaScene
   kind: 'map'
   tileSize: number
   cols: number
@@ -75,33 +78,52 @@ export interface PintaImageMapData extends DataHeader {
     count: number
     solid: number[]
     platform: number[]
+    animations?: import('../core/project').AnyTilesetAsset['animations']
+    terrains?: import('../core/project').AnyTilesetAsset['terrains']
+    tileProperties?: import('../core/project').AnyTilesetAsset['tileProperties']
   }>
   layers: Array<
-    | {
-        type: 'tiles'
-        name: string
-        visible: boolean
-        front: boolean
-        /** Índice em `tilesets`. */
-        tileset: number
-        /** Row-major, `cols × rows`; -1 = casa vazia. */
-        cells: number[]
-      }
-    | {
-        type: 'objects'
-        name: string
-        visible: boolean
-        objects: Array<{
-          id: string
+    {
+      id?: string
+      parentId?: string
+      opacity?: number
+      offsetX?: number
+      offsetY?: number
+      parallaxX?: number
+      parallaxY?: number
+      locked?: true
+      properties?: Record<string, TilemapObjectPropertyValue>
+      collision?: true
+    } & (
+      | { type: 'group'; name: string; visible: boolean }
+      | {
+          type: 'tiles'
           name: string
-          type: string
-          x: number
-          y: number
-          width: number
-          height: number
-          properties: Record<string, TilemapObjectPropertyValue>
-        }>
-      }
+          visible: boolean
+          front: boolean
+          /** Índice em `tilesets`. */
+          tileset: number
+          /** Row-major, `cols × rows`; -1 = casa vazia. */
+          cells: number[]
+        }
+      | {
+          type: 'objects'
+          name: string
+          visible: boolean
+          objects: Array<
+            Partial<TilemapObject> & {
+              id: string
+              name: string
+              type: string
+              x: number
+              y: number
+              width: number
+              height: number
+              properties: Record<string, TilemapObjectPropertyValue>
+            }
+          >
+        }
+    )
   >
 }
 
@@ -331,31 +353,64 @@ export function mapAtlasSelection(
   })
   const index = new Map(tilesets.map((tileset, position) => [tileset.id, position]))
   const layers: PintaImageMapData['layers'] = []
+  const v2 =
+    tilemapNeedsV3({
+      ...map,
+      layers: map.layers.map((l) => {
+        if (!isTileLayer(l)) return l
+        const ts = tilesets.find((t) => t.id === tileLayerTilesetId(map, l))
+        return {
+          ...l,
+          cells: Int16Array.from(l.cells, (c) => (ts && cellTile(c) < ts.tiles.length ? c : -1)),
+        }
+      }),
+    }) ||
+    tilesets.some((t) => t.animations || t.terrains || t.tileProperties || t.tiles.length > 64)
   for (const layer of map.layers) {
+    const common = v2
+      ? {
+          id: layer.id,
+          ...(layer.parentId ? { parentId: layer.parentId } : {}),
+          opacity: layer.opacity ?? 1,
+          offsetX: (layer.offsetX ?? 0) * scale,
+          offsetY: (layer.offsetY ?? 0) * scale,
+          parallaxX: layer.parallaxX ?? 1,
+          parallaxY: layer.parallaxY ?? 1,
+          ...(layer.properties ? { properties: layer.properties } : {}),
+          ...(isTileLayer(layer) && layer.collision ? { collision: true as const } : {}),
+        }
+      : {}
+    if (layer.kind === 'group') {
+      layers.push({ ...common, type: 'group', name: layer.name, visible: layer.visible })
+      continue
+    }
     if (isTileLayer(layer)) {
       const position = index.get(tileLayerTilesetId(map, layer))
       if (position === undefined) continue
       const count = tilesets[position]!.tiles.length
       layers.push({
+        ...common,
         type: 'tiles',
         name: layer.name,
         // Este formato não tem grupos: a visibilidade já sai resolvida com a dos grupos em volta.
-        visible: isLayerShown(map, layer),
+        visible: v2 ? layer.visible : isLayerShown(map, layer),
         front: layer.front === true,
         tileset: position,
         // Este formato (versão 1 dos dados do mapa) só conhece o índice da peça: a peça virada
         // sai desvirada, nunca como um índice errado.
         cells: Array.from(layer.cells, (cell) => {
           const tile = cellTile(cell)
-          return tile >= 0 && tile < count ? tile : -1
+          return tile >= 0 && tile < count ? (v2 ? cell : tile) : -1
         }),
       })
     } else if (isObjectLayer(layer)) {
       layers.push({
+        ...common,
         type: 'objects',
         name: layer.name,
-        visible: isLayerShown(map, layer),
+        visible: v2 ? layer.visible : isLayerShown(map, layer),
         objects: layer.objects.map((object) => ({
+          ...(v2 ? object : {}),
           id: object.id,
           name: object.name,
           type: object.type,
@@ -364,6 +419,9 @@ export function mapAtlasSelection(
           width: object.width * scale,
           height: object.height * scale,
           properties: { ...object.properties },
+          ...(v2 && object.points
+            ? { points: object.points.map((p) => ({ x: p.x * scale, y: p.y * scale })) }
+            : {}),
         })),
       })
     }
@@ -379,6 +437,7 @@ export function mapAtlasSelection(
     height: (top / size) * tileSize,
     data: {
       ...header(map.name, scale),
+      ...(v2 ? { version: 2 as const } : {}),
       kind: 'map',
       tileSize,
       cols: map.cols,
@@ -389,6 +448,13 @@ export function mapAtlasSelection(
         columns: sheet.columns,
         count: sheet.tileset.tiles.length,
         ...marks(sheet.tileset),
+        ...(v2
+          ? {
+              animations: sheet.tileset.animations,
+              terrains: sheet.tileset.terrains,
+              tileProperties: sheet.tileset.tileProperties,
+            }
+          : {}),
       })),
       layers,
     },

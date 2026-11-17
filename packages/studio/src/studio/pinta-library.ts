@@ -63,6 +63,8 @@ export type StudioPintaImportResult =
         sprite?: unknown
         tileset?: unknown
         tilemap?: unknown
+        tilemapFront?: unknown
+        scene?: unknown
         /** Revisão persistida na biblioteca pessoal pelo host. */
         libRevision?: number
         /** Captured PNG recipe. The canonical personal-library record remains separate. */

@@ -6,6 +6,7 @@
  * `tilemapOps.ts`).
  */
 import type { TilemapAsset } from '../core/project'
+import { cellTile } from './cell'
 import type { CellPos, CellRect } from './cellGeometry'
 import { withTileLayer } from './tilemapOps'
 
@@ -92,7 +93,7 @@ export function stampCells(
     for (const { col, row } of cells) {
       if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) continue
       const tile = stampTileAt(stamp, anchor, col, row)
-      if (tile < 0 || tile >= tileCount) continue
+      if (tile < 0 || cellTile(tile) >= tileCount) continue
       const at = row * tilemap.cols + col
       if ((cells2 ?? layer.cells)[at] === tile) continue
       if (!cells2) cells2 = new Int16Array(layer.cells)

@@ -25,6 +25,8 @@ import { gifBlob, pixelAnimationGif, vectorAnimationGif } from '../../export/ani
 import { assetBundleToJson } from '../../export/assetJson'
 import { triggerDownload } from '../../export/download'
 import { bitmapToPngDataUrl, dataUrlToBlob, PNG_SCALES } from '../../export/png'
+import { exportPintaScene } from '../../export/scene'
+import { scenePng } from '../../export/sceneDrawing'
 import {
   packSpritesheet,
   spritesheetMetadata,
@@ -64,6 +66,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AnimatedSvgExport } from './AnimatedSvgExport'
+import { SceneExportButtons } from './SceneExportButtons'
 
 /**
  * Deixa o navegador PINTAR o "Preparando..." antes de a thread travar no
@@ -248,7 +251,8 @@ export function ExportDialog({
                   : 'border-pin-border hover:border-pin-accent'
               }`}
             >
-              ×{option}
+              {COPY.scene.texto}
+              {option}
             </button>
           ))}
         </div>
@@ -275,11 +279,13 @@ export function ExportDialog({
                 {COPY.exportDialog.recipeTitle}
               </p>
               <pre className="whitespace-pre-wrap font-sans text-sm text-pin-text">
-                {`Peças de ${tileset.tileSize} × ${tileset.tileSize}.\n${
+                {COPY.scene.dynamicPecasDe(
+                  tileset.tileSize,
+                  tileset.tileSize,
                   tilesetSolidList(tileset)
                     ? `Peças sólidas: ${tilesetSolidList(tileset)}.`
-                    : 'Nenhuma peça sólida marcada.'
-                }`}
+                    : COPY.scene.nenhumaPecaSolidaMarcada,
+                )}
               </pre>
             </div>
           </>
@@ -318,11 +324,13 @@ export function ExportDialog({
                 {COPY.exportDialog.recipeTitle}
               </p>
               <pre className="whitespace-pre-wrap font-sans text-sm text-pin-text">
-                {`Peças de ${vectorTileset.tileSize} × ${vectorTileset.tileSize}.\n${
+                {COPY.scene.dynamicPecasDe2(
+                  vectorTileset.tileSize,
+                  vectorTileset.tileSize,
                   tilesetSolidList(vectorTileset)
                     ? `Peças sólidas: ${tilesetSolidList(vectorTileset)}.`
-                    : 'Nenhuma peça sólida marcada.'
-                }`}
+                    : COPY.scene.nenhumaPecaSolidaMarcada,
+                )}
               </pre>
             </div>
           </>
@@ -356,7 +364,17 @@ export function ExportDialog({
             <Button
               disabled={busy && mapTileset.kind === 'vector-tileset'}
               onClick={() => {
-                if (mapTileset.kind === 'tileset') {
+                if (tilemap.schema === 3) {
+                  downloadAsyncPng(
+                    exportPintaScene(
+                      tilemap,
+                      (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
+                    )
+                      .then((s) => scenePng(s, scale))
+                      .then((p) => p?.dataUrl ?? null),
+                    `${asset.name}.png`,
+                  )
+                } else if (mapTileset.kind === 'tileset') {
                   downloadDataUrl(
                     tilemapPngDataUrl(tilemap, mapTilesets, scale),
                     `${asset.name}.png`,
@@ -581,6 +599,11 @@ export function ExportDialog({
           </Button>
         ) : null}
 
+        {asset.kind === 'tilemap' ? (
+          <SceneExportButtons map={asset} />
+        ) : asset.kind === 'map-set' ? (
+          <SceneExportButtons map={{ ...asset.map, name: asset.name }} />
+        ) : null}
         <div className="mt-1 flex justify-end">
           <Button variant="ghost" onClick={onClose}>
             {COPY.exportDialog.close}

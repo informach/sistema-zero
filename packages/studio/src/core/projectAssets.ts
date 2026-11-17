@@ -1,4 +1,10 @@
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import {
+  type PintaScene,
+  readPintaScene,
+  sceneFitsStudio,
+} from '@sistemazero/core/studio/pinta-scene'
 import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
 import { validProAssetPath } from './proAssetPaths'
@@ -168,6 +174,8 @@ export interface ProjectAsset {
    * metas, ESTE vai ao preview (`__SZGAME_ASSET_META`) — o bloco "Criar mapa do
    * meu desenho" monta o mapa inteiro a partir dele em runtime.
    */
+  tilemapFront?: ProjectTilemapMeta
+  scene?: PintaScene
   tilemap?: ProjectTilemapMeta
 }
 
@@ -182,7 +190,7 @@ const MAX_ASSET_NAME_CHARS = 48
  * Estúdio" valida lá primeiro para dar a mensagem gentil; mudar aqui sem lá
  * faria o Pinta recusar o que o Estúdio aceitaria (ou vice-versa).
  */
-const MAX_ASSET_DATA_URL_CHARS = 800_000
+const MAX_ASSET_DATA_URL_CHARS = PINTA_STUDIO_LEGACY_LIMITS.imageChars
 /**
  * Teto do `dataUrl` de UM asset de ÁUDIO (som/música importado). ~7 mi chars ≈
  * 5 MB de binário — cobre efeitos curtos E uma música inteira. Bem maior que o
@@ -219,11 +227,11 @@ const MAX_ANIM_NAME_CHARS = 48
  * (packages/pinta/src/components/editor/EditorScreen.tsx — valida antes p/ dar
  * a mensagem gentil).
  */
-const MAX_TILEMAP_SHEET_CHARS = 180_000
+const MAX_TILEMAP_SHEET_CHARS = PINTA_STUDIO_LEGACY_LIMITS.sheetChars
 /** Grade 100×100 do Pinta ≈ 30–40k chars; 60k = folga. */
-const MAX_TILEMAP_GRID_CHARS = 60_000
+const MAX_TILEMAP_GRID_CHARS = PINTA_STUDIO_LEGACY_LIMITS.gridChars
 /** Colunas/linhas do mapa (o Pinta capa em 100). */
-const MAX_TILEMAP_DIM = 128
+const MAX_TILEMAP_DIM = PINTA_STUDIO_LEGACY_LIMITS.dimension
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
@@ -621,6 +629,15 @@ export function sanitizeProjectAssets(
     if (tileset) asset.tileset = tileset
     const tilemap = sanitizeTilemapMeta(a.tilemap)
     if (tilemap) asset.tilemap = tilemap
+    const front = sanitizeTilemapMeta(a.tilemapFront)
+    if (front) asset.tilemapFront = front
+    const scene = sanitizeSceneMeta(a.scene)
+    if (scene) {
+      if (totalChars + a.dataUrl.length + JSON.stringify(scene).length > MAX_ASSETS_TOTAL_CHARS)
+        continue
+      asset.scene = scene
+      totalChars += JSON.stringify(scene).length
+    }
     seenNames.add(name)
     totalChars += a.dataUrl.length
     out.push(asset)
@@ -714,9 +731,11 @@ export function assetMetaManifest(
     const hitbox = a.sprite?.hitbox
     // Named animation is resolved by the engine, so its geometry travels with it.
     const sprite = a.sprite?.animations.length ? a.sprite : undefined
-    if (!a.tilemap && !hitbox && !sprite) continue
+    if (!a.tilemap && !a.scene && !hitbox && !sprite) continue
     out[a.name] = {
       ...(a.tilemap ? { tilemap: a.tilemap } : {}),
+      ...(a.tilemapFront ? { tilemapFront: a.tilemapFront } : {}),
+      ...(a.scene ? { scene: a.scene } : {}),
       ...(hitbox ? { hitbox } : {}),
       ...(sprite ? { sprite } : {}),
     }
@@ -726,6 +745,8 @@ export function assetMetaManifest(
 
 /** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa e/ou caixa). */
 export interface ProjectAssetPreviewMeta {
+  tilemapFront?: ProjectTilemapMeta
+  scene?: PintaScene
   tilemap?: ProjectTilemapMeta
   hitbox?: ProjectSpriteHitbox
   sprite?: ProjectSpriteMeta
@@ -748,3 +769,12 @@ export const PROJECT_ASSET_LIMITS = {
   maxTilemapGridChars: MAX_TILEMAP_GRID_CHARS,
   maxTilemapDim: MAX_TILEMAP_DIM,
 } as const
+
+export function sanitizeSceneMeta(raw: unknown): PintaScene | undefined {
+  const scene = readPintaScene(raw)
+  return scene &&
+    sceneFitsStudio(scene) &&
+    [...scene.tilesets, ...(scene.art ?? [])].every((a) => isValidAssetDataUrl(a.image, 'image'))
+    ? scene
+    : undefined
+}

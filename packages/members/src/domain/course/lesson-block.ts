@@ -302,6 +302,7 @@ export interface StudioBlock {
  * resolveria aqui), então o union é copiado e travado por teste de conformidade.
  */
 export type PintaAssetKindName =
+  | 'map-set'
   | 'pixel-sprite'
   | 'pixel-background'
   | 'tileset'
@@ -388,6 +389,7 @@ export function pintaAssetKindOf(block: PintaBlock): PintaAssetKindName | null {
 }
 
 export const PINTA_ASSET_KINDS = [
+  'map-set',
   'pixel-sprite',
   'pixel-background',
   'tileset',
@@ -403,6 +405,7 @@ export const PINTA_ASSET_KINDS = [
  * dela (o admin monta o select); estes não são contrato.
  */
 export const PINTA_ASSET_KIND_LABELS: Record<PintaAssetKindName, string> = {
+  'map-set': 'Conjunto reutilizável',
   'pixel-sprite': 'Personagem (pixel art)',
   'pixel-background': 'Cenário (pixel art)',
   tileset: 'Peças de mapa (pixel art)',

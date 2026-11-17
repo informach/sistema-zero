@@ -237,7 +237,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
     // 02/10: substituição dos 19 controles manuais e posição por lado para a primeira atividade.
     // 29/10: + "Quando começar a encostar em algum do grupo" (Poder Moedas no caminho).
-    expect(gameTwoDBlocks.length).toBe(310)
+    expect(gameTwoDBlocks.length).toBe(322)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {

@@ -67,6 +67,8 @@ type EncodedAsset = EncodedAssetBase & Record<string, unknown>
 
 function encodeAsset(asset: PintaAsset): EncodedAsset {
   switch (asset.kind) {
+    case 'map-set':
+      return { ...asset, map: encodeAsset(asset.map) }
     // Backup PRESERVA as camadas (não achata): um quadro é a lista de cels.
     case 'pixel-sprite':
       return {
@@ -337,7 +339,16 @@ export function galleryToPintaJson(assets: PintaAsset[]): string {
 
 /** O desenho usa algo que só o envelope v3 descreve? */
 export function assetNeedsV3(asset: PintaAsset): boolean {
-  return asset.kind === 'tilemap' && tilemapNeedsV3(asset)
+  return (
+    asset.kind === 'map-set' ||
+    (asset.kind === 'tilemap' && tilemapNeedsV3(asset)) ||
+    ((asset.kind === 'tileset' || asset.kind === 'vector-tileset') &&
+      (asset.schema === 3 ||
+        asset.tiles.length > 64 ||
+        !!asset.animations ||
+        !!asset.terrains ||
+        !!asset.tileProperties))
+  )
 }
 
 /**

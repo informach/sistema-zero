@@ -8,7 +8,9 @@ import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
   type AnyTilesetAsset,
+  effectiveLayer,
   isCompatibleMapTileset,
+  isGroupLayer,
   isLayerShown,
   isObjectLayer,
   isTileLayer,
@@ -57,7 +59,9 @@ export function withTileLayer(
   layerId: string,
   update: (layer: TilemapTileLayer) => TilemapTileLayer,
 ): TilemapAsset {
-  return withMapLayer(tilemap, layerId, (layer) => (isTileLayer(layer) ? update(layer) : layer))
+  return withMapLayer(tilemap, layerId, (layer) =>
+    isTileLayer(layer) && !effectiveLayer(tilemap, layer).locked ? update(layer) : layer,
+  )
 }
 
 /** Carimba UM índice de tile (-1 = borracha) na célula. */
@@ -226,8 +230,18 @@ export function removeLayer(tilemap: TilemapAsset, layerId: string): TilemapAsse
   const index = tilemap.layers.findIndex((layer) => layer.id === layerId)
   const layer = tilemap.layers[index]
   if (!layer) return tilemap
+  if (effectiveLayer(tilemap, layer).locked) return tilemap
   if (isTileLayer(layer) && tilemap.layers.filter(isTileLayer).length <= 1) return tilemap
-  return { ...tilemap, layers: tilemap.layers.filter((_, itemIndex) => itemIndex !== index) }
+  return {
+    ...tilemap,
+    layers: tilemap.layers
+      .filter((_, itemIndex) => itemIndex !== index)
+      .map((l) => {
+        if (!isGroupLayer(layer) || l.parentId !== layerId) return l
+        const { parentId: _old, ...rest } = l
+        return { ...rest, ...(layer.parentId ? { parentId: layer.parentId } : {}) }
+      }),
+  }
 }
 
 export function toggleLayerVisible(tilemap: TilemapAsset, layerId: string): TilemapAsset {

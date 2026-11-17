@@ -286,16 +286,35 @@ export function PintaClient({
       ...(studioAvailable
         ? {
             sendGameToStudio: async (asset) => {
-              if (!asset.tilemap) return { ok: false }
+              if (!asset.tilemap && !asset.scene) return { ok: false }
+              const library = await import('@sistemazero/studio/personal-assets')
+              const saved = await library.savePersonalAsset(asset, { namespace: localNamespace })
+              if (!saved.ok) return { ok: false, error: saved.error }
+              const maps = []
+              for (const map of asset.maps ?? []) {
+                const companion = await library.savePersonalAsset(map, {
+                  namespace: localNamespace,
+                })
+                if (!companion.ok) return { ok: false, error: companion.error }
+                maps.push({
+                  ...map,
+                  name: companion.name ?? map.name,
+                  libRevision: companion.updatedAt,
+                })
+              }
               const studio = await import('@sistemazero/studio')
               studio.setStudioStorageNamespace(localNamespace)
               const project = await studio.buildTilemapGameProject({
-                name: asset.name,
+                id: asset.id,
+                libRevision: saved.updatedAt,
+                name: saved.name ?? asset.name,
                 dataUrl: asset.dataUrl,
                 width: asset.width,
                 height: asset.height,
                 tilemap: asset.tilemap,
                 tilemapFront: asset.tilemapFront,
+                scene: asset.scene,
+                maps,
               })
               if (!project) return { ok: false }
               router.push('/estudio')

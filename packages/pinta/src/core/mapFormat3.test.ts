@@ -91,11 +91,11 @@ describe('mapa antigo', () => {
     expect(lido && tilemapNeedsV3(lido)).toBe(false)
   })
 
-  it('os tetos do EDITOR não mudaram; só o que o documento aceita ler', () => {
-    expect(PINTA_LIMITS.maxTilemapLayers).toBe(8)
-    expect(PINTA_LIMITS.maxTilemapCols).toBe(128)
-    expect(PINTA_LIMITS.maxTiles).toBe(64)
-    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(128)
+  it('o editor oferece o teto medido no IndexedDB, dentro do formato', () => {
+    expect(PINTA_LIMITS.maxTilemapLayers).toBe(32)
+    expect(PINTA_LIMITS.maxTilemapCols).toBe(256)
+    expect(PINTA_LIMITS.maxTiles).toBe(256)
+    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(256)
   })
 })
 

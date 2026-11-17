@@ -6,11 +6,14 @@
  */
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import type { TilemapObjectPropertyValue } from '../core/project'
 import {
+  isObjectLayer,
   isTilesetKind,
   PINTA_LIMITS,
   type PintaAsset,
   remapTilemapTilesetIds,
+  type TilemapAsset,
 } from '../core/project'
 
 /** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
@@ -41,9 +44,86 @@ export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   } else if (copy.kind === 'vector-sprite') {
     copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
   } else if (copy.kind === 'tilemap') {
-    copy.layers = copy.layers.map((l) => ({ ...l, id: newId() }))
+    copy.layers = cloneMapIds(copy).layers
+  } else if (copy.kind === 'map-set') {
+    copy.map = cloneMapIds(copy.map)
   }
   return copy
+}
+
+function cloneMapIds(map: TilemapAsset): TilemapAsset {
+  const ids = new Map<string, string>()
+  for (const l of map.layers) {
+    ids.set(l.id, newId())
+    if (isObjectLayer(l)) for (const o of l.objects) ids.set(o.id, newId())
+  }
+  return {
+    ...map,
+    id: newId(),
+    layers: map.layers.map((l) => ({
+      ...l,
+      id: ids.get(l.id) ?? l.id,
+      ...(l.parentId ? { parentId: ids.get(l.parentId) ?? l.parentId } : {}),
+      ...(l.properties ? { properties: mapPropertyRefs(l.properties, ids, 'object') } : {}),
+      ...(isObjectLayer(l)
+        ? {
+            objects: l.objects.map((o) => ({
+              ...o,
+              id: ids.get(o.id) ?? o.id,
+              properties: Object.fromEntries(
+                Object.entries(o.properties).map(([k, v]) => [
+                  k,
+                  typeof v === 'object' && v.type === 'object'
+                    ? { ...v, value: ids.get(String(v.value)) ?? v.value }
+                    : v,
+                ]),
+              ),
+            })),
+          }
+        : {}),
+    })) as TilemapAsset['layers'],
+  }
+}
+
+function remapMapAssets(
+  map: TilemapAsset,
+  idMap: ReadonlyMap<string, string>,
+  names: ReadonlyMap<string, string> = new Map(),
+): TilemapAsset {
+  const result = remapTilemapTilesetIds(map, (id) => idMap.get(id) ?? id)
+  return {
+    ...result,
+    layers: result.layers.map((l) =>
+      !isObjectLayer(l)
+        ? {
+            ...l,
+            ...(l.properties ? { properties: mapPropertyRefs(l.properties, idMap, 'asset') } : {}),
+          }
+        : {
+            ...l,
+            ...(l.properties ? { properties: mapPropertyRefs(l.properties, idMap, 'asset') } : {}),
+            objects: l.objects.map((o) => ({
+              ...o,
+              ...(o.art
+                ? { art: { ...o.art, assetId: idMap.get(o.art.assetId) ?? o.art.assetId } }
+                : {}),
+              ...(o.setId ? { setId: idMap.get(o.setId) ?? o.setId } : {}),
+              properties: Object.fromEntries(
+                Object.entries(o.properties).map(([k, v]) => [
+                  k,
+                  typeof v === 'object' && v.type === 'asset'
+                    ? { ...v, value: idMap.get(String(v.value)) ?? v.value }
+                    : o.role === 'door' &&
+                        (k === 'destino' || k === 'destination') &&
+                        typeof v === 'string'
+                      ? (names.get(v) ?? idMap.get(v) ?? v)
+                      : v,
+                ]),
+              ),
+            })),
+          },
+    ),
+  }
 }
 
 export interface ImportPlan {
@@ -66,6 +146,7 @@ export function planImport(
   taken: Set<string>,
 ): ImportPlan {
   const idMap = new Map<string, string>()
+  const names = new Map<string, string>()
   const prepared: PintaAsset[] = []
   const preparedTilesetIds = new Set<string>()
   let skipped = 0
@@ -88,6 +169,7 @@ export function planImport(
     }
     const clone = cloneWithNewIds(asset, name)
     idMap.set(asset.id, clone.id)
+    if (asset.kind === 'tilemap') names.set(asset.name, clone.name)
     if (isTilesetKind(asset)) preparedTilesetIds.add(asset.id)
     prepared.push(clone)
     taken.add(name)
@@ -96,8 +178,25 @@ export function planImport(
     source,
     restored:
       source.kind === 'tilemap'
-        ? remapTilemapTilesetIds(source, (id) => idMap.get(id) ?? id)
-        : source,
+        ? remapMapAssets(source, idMap, names)
+        : source.kind === 'map-set'
+          ? { ...source, map: remapMapAssets(source.map, idMap, names) }
+          : source,
   }))
   return { pairs, idMap, skipped, error }
+}
+
+function mapPropertyRefs(
+  properties: Record<string, TilemapObjectPropertyValue>,
+  ids: ReadonlyMap<string, string>,
+  type: 'object' | 'asset',
+): Record<string, TilemapObjectPropertyValue> {
+  return Object.fromEntries(
+    Object.entries(properties).map(([k, v]) => [
+      k,
+      typeof v === 'object' && v.type === type
+        ? { ...v, value: ids.get(String(v.value)) ?? v.value }
+        : v,
+    ]),
+  )
 }

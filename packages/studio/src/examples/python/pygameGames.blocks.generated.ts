@@ -568,7 +568,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'pydew-valley': {
-    sourceSha256: '56b6f5446b96b732c26e51788e474f957fcbcd612d46117f67989c9ad1da4075',
+    sourceSha256: '84377cb8a3cbd56e1faa22999d30269b1e116eea0ceac4939bbe456da6bea93c',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',

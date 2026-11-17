@@ -15,22 +15,21 @@ import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
 import {
   type AnyTilesetAsset,
+  effectiveLayer,
   isCompatibleMapTileset,
   isObjectLayer,
   isTileLayer,
   isTilesetKind,
   type PintaAsset,
-  resolveAssetPalette,
   type TilemapAsset,
   type TilemapObjectPropertyValue,
-  type TilesetAsset,
   tileLayerTilesetId,
   tilemapTilesetIds,
-  type VectorTilesetAsset,
 } from '../../core/project'
 import { shortcut } from '../../core/shortcuts'
-import { bitmapToRGBA, paintSelectionOverlay } from '../../pixel/render'
+import { paintSelectionOverlay } from '../../pixel/render'
 import { isMapObjectTool } from '../../state/sessionStore'
+import { cellTile } from '../../tiles/cell'
 import {
   type CellPos,
   type CellRect,
@@ -38,6 +37,7 @@ import {
   normalizeCellRect,
   rectCells,
 } from '../../tiles/cellGeometry'
+import { paintTilemapLayers, TileChunkCache } from '../../tiles/chunks'
 import {
   type MapObjectPatch,
   nextPropertyKey,
@@ -47,22 +47,17 @@ import {
   withObjectProperty,
   withoutObjectProperty,
 } from '../../tiles/mapObjects'
-import {
-  clearRegion,
-  copyRegion,
-  extractRegion,
-  hasFilledCell,
-  stampRegionAt,
-} from '../../tiles/mapSelection'
-import { collectTilesetsByIds, drawableIn } from '../../tiles/mapTilesets'
-import { packTileset } from '../../tiles/packTileset'
-import { packVectorTileset, vectorTilesetPortableSvg } from '../../tiles/packVectorTileset'
+import { copyRegion, stampRegionAt } from '../../tiles/mapSelection'
+import { collectTilesetsByIds } from '../../tiles/mapTilesets'
+import { scatterTiles } from '../../tiles/scatter'
+import { createMapSet } from '../../tiles/sets'
+import { loadVectorSheet, pixelSheetCanvas } from '../../tiles/sheetCanvas'
 import { blockCells, stampCells, type TileStamp } from '../../tiles/stamp'
+import { paintTerrain, terrainRegion } from '../../tiles/terrain'
 import {
   addLayer,
   addObjectLayer,
   cellAt,
-  flattenWithTilesets,
   floodFillCells,
   growTilemap,
   removeLayer,
@@ -70,16 +65,22 @@ import {
   setLayerTileset,
   toggleLayerFront,
   toggleLayerVisible,
-  topTileAt,
 } from '../../tiles/tilemapOps'
 import { isTileBlank } from '../../tiles/tilesetOps'
-import { usePintaGallery } from '../appContext'
+import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
+import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { MapLibraryPanel } from './MapLibraryPanel'
+import { MapMinimapPanel } from './MapMinimapPanel'
 import { MapObjectPanel } from './MapObjectPanel'
+import { MapObjectSelectionPanel } from './MapObjectSelectionPanel'
 import { MapObjectsOverlay } from './MapObjectsOverlay'
+import { MapPlaytestDialog } from './MapPlaytestDialog'
 import { MapStatusBar } from './MapStatusBar'
+import { DEFAULT_MAP_BRUSH, MapTerrainPanel } from './MapTerrainPanel'
+import { createMapSelectionController, type MapSelection } from './mapTools/selectionController'
 import { stageCursor } from './stageCursor'
 import {
   MAP_TOOLS,
@@ -89,6 +90,7 @@ import {
   TilemapToolbar,
 } from './TilemapPanels'
 import { isPintaModalOpen, useActionShortcuts } from './useActionShortcuts'
+import { useMediaQuery } from './useMediaQuery'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 import { useWheelZoom } from './useWheelZoom'
 import { ZoomControls } from './ZoomControls'
@@ -101,98 +103,32 @@ const DEFAULT_TILEMAP_ZOOM = 2
 const GRID_STROKE = 'rgba(127,127,127,0.3)'
 
 /** Estado local da ferramenta seleção (marquee → retângulo → flutuante). */
-type MapSelection =
-  | { kind: 'marquee'; start: CellPos; rect: CellRect | null }
-  | { kind: 'rect'; rect: CellRect }
-  | { kind: 'floating'; stamp: TileStamp; at: CellPos; remaining: TilemapAsset }
 
-/** Folha 1:1 de um tileset de PIXEL (síncrona; `null` sem canvas 2D). */
-function pixelSheetCanvas(tileset: TilesetAsset): HTMLCanvasElement | null {
-  const pack = packTileset(tileset)
-  const colors = resolveAssetPalette(tileset)
-  const sheet = document.createElement('canvas')
-  sheet.width = pack.columns * pack.tileSize
-  sheet.height = pack.rows * pack.tileSize
-  const ctx = sheet.getContext('2d')
-  if (!ctx) return null
-  for (const cell of pack.cells) {
-    ctx.putImageData(
-      new ImageData(bitmapToRGBA(cell.bitmap, colors), cell.bitmap.width, cell.bitmap.height),
-      cell.col * pack.tileSize,
-      cell.row * pack.tileSize,
-    )
-  }
-  return sheet
-}
-
-/**
- * Folha de um tileset VETORIAL: rasteriza o SVG portátil uma vez (async). A URL
- * temporária é revogada em `load`, `error` E no cancelamento (o devolvido), com
- * guarda idempotente — troca rápida de peças ou desmontar não deixa Blob URL viva.
- */
-function loadVectorSheet(
-  tileset: VectorTilesetAsset,
-  onReady: (sheet: HTMLCanvasElement) => void,
-  onError: () => void,
-): () => void {
-  if (typeof Image === 'undefined' || !document.createElement('canvas').getContext('2d')) {
-    return () => {}
-  }
-  let cancelled = false
-  const pack = packVectorTileset(tileset)
-  let url: string | null = null
-  let img: HTMLImageElement | null = null
-  let revoked = false
-  const revoke = (): void => {
-    if (revoked || !url) return
-    revoked = true
-    URL.revokeObjectURL(url)
-  }
-  void vectorTilesetPortableSvg(tileset)
-    .then((svg) => {
-      if (cancelled) return
-      url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
-      img = new Image()
-      img.onload = () => {
-        revoke()
-        if (cancelled || !img) return
-        const sheet = document.createElement('canvas')
-        sheet.width = pack.columns * pack.tileSize
-        sheet.height = pack.rows * pack.tileSize
-        const ctx = sheet.getContext('2d')
-        if (!ctx) return
-        ctx.drawImage(img, 0, 0)
-        onReady(sheet)
-      }
-      img.onerror = () => {
-        revoke()
-        if (!cancelled) onError()
-      }
-      img.src = url
-    })
-    .catch(() => {
-      if (!cancelled) onError()
-    })
-  return () => {
-    cancelled = true
-    if (img) {
-      img.onload = null
-      img.onerror = null
-    }
-    revoke()
-  }
-}
-
-export function TilemapEditor(): JSX.Element | null {
+export function TilemapEditor({
+  setEditor = false,
+}: {
+  setEditor?: boolean
+} = {}): JSX.Element | null {
   const { editor, session } = useEditorStores()
+  const { gallery } = usePintaApp()
   const { showToast } = useToast()
+  const wide = useMediaQuery('(min-width: 768px)')
   const asset = useEditor((state) => state.asset)
   const tool = useSession((state) => state.tool) as MapTool
   const selectedTile = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
   const stamp = useSession((state) => state.stamp)
   const autoExpand = useSession((state) => state.autoExpand)
-  const galleryAssets = usePintaGallery((state) => state.assets)
+  const savedGalleryAssets = usePintaGallery((state) => state.assets)
+  const linkedAssets = useEditor((state) => state.linkedAssets)
+  const galleryAssets = useMemo(() => {
+    const byId = new Map(savedGalleryAssets.map((a) => [a.id, a]))
+    for (const a of linkedAssets ?? []) byId.set(a.id, a)
+    return [...byId.values()]
+  }, [savedGalleryAssets, linkedAssets])
+  const [mapBrush, setMapBrush] = useState(DEFAULT_MAP_BRUSH)
+  const [mapLevel, setMapLevel] = useState<'start' | 'create' | 'advanced'>('advanced')
+  const [playtest, setPlaytest] = useState(false)
 
   // Zoom pelo teclado (Ctrl+= / Ctrl+- / Ctrl+0), como nos outros dois editores.
   useActionShortcuts([
@@ -211,9 +147,6 @@ export function TilemapEditor(): JSX.Element | null {
     return collectTilesetsByIds(tilesetKey.split('\n'), (id) => byId.get(id))
   }, [tilesetKey, galleryAssets])
   const tilesetById = useMemo(() => new Map(mapTilesets.map((t) => [t.id, t])), [mapTilesets])
-  // Só vence a célula a peça que um tileset ACHADO tem: a camada cujas peças sumiram (ou são
-  // de outro tamanho) não aparece e não tapa as de baixo, como no jogo (atlas `map` do pygame).
-  const drawable = useMemo(() => drawableIn(tilesetById), [tilesetById])
   /** As peças PADRÃO do mapa: tamanho da célula, estilo e o que a ponte leva. */
   const baseTileset = mapTilesets[0] ?? null
   /** Tilesets que uma camada pode escolher (mesmo estilo e tamanho de peça). */
@@ -227,8 +160,28 @@ export function TilemapEditor(): JSX.Element | null {
     [galleryAssets, baseTileset],
   )
 
+  const animationTimeRef = useRef(0)
+  const chunkCache = useMemo(() => new TileChunkCache(), [])
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null)
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null)
+  const [selectedObjectIds, setSelectedObjectIds] = useState<string[]>([])
+  const chooseObjects = (ids: string[]): void => {
+    setSelectedObjectIds(ids)
+    setSelectedObjectId(ids.at(-1) ?? null)
+  }
+  const chooseObject = (id: string | null, additive = false): void => {
+    if (!id) {
+      chooseObjects([])
+      return
+    }
+    if (additive) {
+      const ids = selectedObjectIds.includes(id)
+        ? selectedObjectIds.filter((i) => i !== id)
+        : [...selectedObjectIds, id]
+      chooseObjects(ids)
+    } else if (!selectedObjectIds.includes(id)) chooseObjects([id])
+    else setSelectedObjectId(id)
+  }
   const [snapObjects, setSnapObjects] = useState(true)
   const [sheetVersion, setSheetVersion] = useState(0)
   const [paintTick, setPaintTick] = useState(0)
@@ -240,6 +193,8 @@ export function TilemapEditor(): JSX.Element | null {
   // então este estado liga e desliga apenas nas BORDAS do arrasto.
   const [panning, setPanning] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const paperRef = useRef<HTMLDivElement>(null)
+  const viewportRef = useRef({ x: 0, y: 0, width: 0, height: 0 })
   const stageRef = useRef<HTMLDivElement>(null)
   // Uma folha 1:1 por tileset do mapa, guardada com o tileset que a gerou (refeita só
   // quando ESSE tileset muda; `canvas: null` = ainda carregando ou sem canvas).
@@ -345,92 +300,8 @@ export function TilemapEditor(): JSX.Element | null {
   // biome-ignore lint/correctness/useExhaustiveDependencies: o gatilho é a camada ativa
   useEffect(() => {
     setSelectedObjectId(null)
+    setSelectedObjectIds([])
   }, [layer?.id])
-
-  const drawCellGrid = useCallback(
-    (ctx: CanvasRenderingContext2D, col: number, row: number): void => {
-      ctx.strokeStyle = GRID_STROKE
-      ctx.lineWidth = 1
-      ctx.strokeRect((col + pad) * cellPx + 0.5, (row + pad) * cellPx + 0.5, cellPx - 1, cellPx - 1)
-    },
-    [pad, cellPx],
-  )
-
-  // Índices de peça sólida / plataforma de CADA tileset do mapa (para o overlay de colisão).
-  const collisionSets = useMemo(() => {
-    const byTileset = new Map<string, { solid: Set<number>; platform: Set<number> }>()
-    for (const source of mapTilesets) {
-      const solid = new Set<number>()
-      const platform = new Set<number>()
-      source.solid.forEach((s, i) => {
-        if (s) solid.add(i)
-      })
-      source.platform.forEach((p, i) => {
-        if (p) platform.add(i)
-      })
-      byTileset.set(source.id, { solid, platform })
-    }
-    return byTileset
-  }, [mapTilesets])
-
-  /** Overlay translúcido de colisão sobre a célula (vermelho sólido / âmbar plataforma). */
-  const drawCollisionAt = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      col: number,
-      row: number,
-      index: number,
-      tilesetId: string,
-    ): void => {
-      if (!showCollision || index < 0) return
-      const sets = collisionSets.get(tilesetId)
-      if (!sets) return
-      const x = (col + pad) * cellPx
-      const y = (row + pad) * cellPx
-      if (sets.solid.has(index)) {
-        ctx.fillStyle = 'rgba(239,68,68,0.38)'
-        ctx.fillRect(x, y, cellPx, cellPx)
-      } else if (sets.platform.has(index)) {
-        ctx.fillStyle = 'rgba(250,204,21,0.32)'
-        ctx.fillRect(x, y, cellPx, cellPx)
-        // Faixa mais forte no TOPO: comunica "pisa aqui".
-        ctx.fillStyle = 'rgba(250,204,21,0.85)'
-        ctx.fillRect(x, y, cellPx, Math.max(2, Math.round(cellPx * 0.16)))
-      }
-    },
-    [showCollision, collisionSets, pad, cellPx],
-  )
-
-  /** Desenha UMA peça (de qualquer tileset do mapa) na célula do canvas. */
-  const drawTileAt = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      col: number,
-      row: number,
-      index: number,
-      tilesetId: string,
-    ): void => {
-      const sheet = sheetsRef.current.get(tilesetId)?.canvas
-      if (!sheet) return
-      const ts = tileSize
-      const sheetCols = Math.max(1, Math.floor(sheet.width / ts))
-      const sx = (index % sheetCols) * ts
-      const sy = Math.floor(index / sheetCols) * ts
-      ctx.drawImage(
-        sheet,
-        sx,
-        sy,
-        ts,
-        ts,
-        (col + pad) * cellPx,
-        (row + pad) * cellPx,
-        cellPx,
-        cellPx,
-      )
-      drawCollisionAt(ctx, col, row, index, tilesetId)
-    },
-    [tileSize, pad, cellPx, drawCollisionAt],
-  )
 
   /** Redesenho COMPLETO do mapa `map` (redimensiona + células + grade + anel). */
   const repaintMap = useCallback(
@@ -443,18 +314,68 @@ export function TilemapEditor(): JSX.Element | null {
       if (!ctx) return
       const canvasCols = map.cols + 2 * pad
       const canvasRows = map.rows + 2 * pad
-      canvas.width = canvasCols * cellPx
-      canvas.height = canvasRows * cellPx
+      const fullWidth = canvasCols * cellPx,
+        fullHeight = canvasRows * cellPx
+      const stage = stageRef.current
+      const width = Math.min(fullWidth, Math.max(1, (stage?.clientWidth || 1024) - 16))
+      const height = Math.min(fullHeight, Math.max(1, (stage?.clientHeight || 768) - 16))
+      const x = Math.max(0, Math.min(fullWidth - width, (stage?.scrollLeft ?? 0) - 8))
+      const y = Math.max(0, Math.min(fullHeight - height, (stage?.scrollTop ?? 0) - 8))
+      viewportRef.current = { x, y, width, height }
+      canvas.width = width
+      canvas.height = height
+      canvas.style.transform = `translate(${x}px, ${y}px)`
       ctx.imageSmoothingEnabled = false
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const flat = flattenWithTilesets(map, undefined, drawable)
-      for (let row = 0; row < map.rows; row += 1) {
-        for (let col = 0; col < map.cols; col += 1) {
-          const at = row * map.cols + col
-          const index = flat.tiles[at] ?? -1
-          if (index < 0) continue
-          const tilesetId = flat.tilesetIds[flat.sources[at] ?? 0]
-          if (tilesetId) drawTileAt(ctx, col, row, index, tilesetId)
+      ctx.translate(-x, -y)
+      ctx.save()
+      ctx.translate(pad * cellPx, pad * cellPx)
+      paintTilemapLayers(
+        ctx,
+        map,
+        tilesetById,
+        (id) => sheetsRef.current.get(id)?.canvas ?? null,
+        chunkCache,
+        {
+          x: ((x - pad * cellPx) * tileSize) / cellPx,
+          y: ((y - pad * cellPx) * tileSize) / cellPx,
+          width: (width * tileSize) / cellPx,
+          height: (height * tileSize) / cellPx,
+        },
+        cellPx / tileSize,
+        animationTimeRef.current,
+        showCollision,
+      )
+      ctx.restore()
+      if (showCollision) {
+        for (const l of map.layers) {
+          if (!isTileLayer(l)) continue
+          const e = effectiveLayer(map, l),
+            ts = tilesetById.get(tileLayerTilesetId(map, l))
+          if (!e.visible || !ts) continue
+          const minC = Math.max(0, Math.floor((x - pad * cellPx) / cellPx - e.offsetX / tileSize)),
+            maxC = Math.min(
+              map.cols,
+              Math.ceil((x + width - pad * cellPx) / cellPx - e.offsetX / tileSize),
+            )
+          const minR = Math.max(0, Math.floor((y - pad * cellPx) / cellPx - e.offsetY / tileSize)),
+            maxR = Math.min(
+              map.rows,
+              Math.ceil((y + height - pad * cellPx) / cellPx - e.offsetY / tileSize),
+            )
+          for (let r = minR; r < maxR; r++)
+            for (let c = minC; c < maxC; c++) {
+              const tile = cellTile(cellAt(map, l.id, c, r))
+              if (tile < 0 || (!l.collision && !ts.solid[tile] && !ts.platform[tile])) continue
+              ctx.fillStyle =
+                l.collision || ts.solid[tile] ? 'rgba(239,68,68,0.38)' : 'rgba(250,204,21,0.32)'
+              ctx.fillRect(
+                (c + pad) * cellPx + (e.offsetX * cellPx) / tileSize,
+                (r + pad) * cellPx + (e.offsetY * cellPx) / tileSize,
+                cellPx,
+                cellPx,
+              )
+            }
         }
       }
       // Grade da área do mapa.
@@ -474,12 +395,41 @@ export function TilemapEditor(): JSX.Element | null {
       if (pad > 0) {
         ctx.strokeStyle = 'rgba(120,120,120,0.55)'
         ctx.setLineDash([5, 4])
-        ctx.strokeRect(cellPx * 0.5, cellPx * 0.5, canvas.width - cellPx, canvas.height - cellPx)
+        ctx.strokeRect(cellPx * 0.5, cellPx * 0.5, fullWidth - cellPx, fullHeight - cellPx)
         ctx.setLineDash([])
       }
     },
-    [baseTileset, pad, cellPx, drawTileAt, drawable],
+    [baseTileset, pad, cellPx, tilesetById, chunkCache, tileSize, showCollision],
   )
+
+  useEffect(() => {
+    if (!mapTilesets.some((t) => t.animations && Object.keys(t.animations).length)) return
+    let frame = 0,
+      last = ''
+    const tick = (time: number): void => {
+      const key = mapTilesets
+        .flatMap((t) =>
+          Object.values(t.animations ?? {}).map((frames) => {
+            let at = time % frames.reduce((s, f) => s + f.duration, 0)
+            for (let i = 0; i < frames.length; i++) {
+              at -= frames[i]!.duration
+              if (at < 0) return i
+            }
+            return 0
+          }),
+        )
+        .join(',')
+      if (key !== last) {
+        last = key
+        animationTimeRef.current = time
+        const a = editor.getState().asset
+        if (a.kind === 'tilemap') repaintMap(a)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [mapTilesets, repaintMap, editor])
 
   /** Repinta SÓ um conjunto de células do mapa `map` (incremental, no gesto). */
   const paintCells = useCallback(
@@ -489,29 +439,28 @@ export function TilemapEditor(): JSX.Element | null {
       const ctx = canvas.getContext('2d')
       if (!ctx) return
       ctx.imageSmoothingEnabled = false
-      for (const { col, row } of cells) {
-        if (col < 0 || row < 0 || col >= map.cols || row >= map.rows) continue
-        const x = (col + pad) * cellPx
-        const y = (row + pad) * cellPx
-        ctx.clearRect(x, y, cellPx, cellPx)
-        // Só a célula tocada (não o mapa inteiro achatado a cada pointermove).
-        const top = topTileAt(map, col, row, undefined, drawable)
-        if (top) drawTileAt(ctx, col, row, top.tile, tileLayerTilesetId(map, top.layer))
-        drawCellGrid(ctx, col, row)
-      }
+      // Camadas podem ser translúcidas ou deslocadas: compor todas evita apagar as de baixo.
+      // O cache refaz somente os blocos que mudaram.
+      if (cells.length) repaintMap(map)
     },
-    [baseTileset, pad, cellPx, drawCellGrid, drawTileAt, drawable],
+    [baseTileset, repaintMap],
   )
 
   const overlayRect = useCallback(
     (rect: CellRect): void => {
+      const e = tilemap && layer ? effectiveLayer(tilemap, layer) : { offsetX: 0, offsetY: 0 }
       paintSelectionOverlay(
         canvasRef.current,
-        { x: rect.col + pad, y: rect.row + pad, width: rect.cols, height: rect.rows },
+        {
+          x: rect.col + pad + e.offsetX / tileSize,
+          y: rect.row + pad + e.offsetY / tileSize,
+          width: rect.cols,
+          height: rect.rows,
+        },
         cellPx,
       )
     },
-    [pad, cellPx],
+    [pad, cellPx, tilemap, layer, tileSize],
   )
 
   const registerHover = useCallback((fn: (cell: CellPos | null) => void) => {
@@ -549,9 +498,8 @@ export function TilemapEditor(): JSX.Element | null {
   }, [asset, tilemap, cellPx, sheetVersion, paintTick, autoExpand, renderSelection, repaintMap])
 
   // Sair da ferramenta seleção CARIMBA o recorte pendente.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: o gatilho é `tool`
   useEffect(() => {
-    if (tool !== 'select') stampPending()
+    if (tool !== 'select') stampPendingRef.current()
   }, [tool])
 
   // Delete apaga o pedaço selecionado (o mesmo que o botão "Apagar pedaço"). A
@@ -597,7 +545,19 @@ export function TilemapEditor(): JSX.Element | null {
   useToolShortcuts(TOOL_SHORTCUTS, (id) => {
     if (mapToolsFor(toolMode).some((entry) => entry.id === id)) session.getState().setTool(id)
   })
-  useWheelZoom(stageRef, canvasRef)
+  useWheelZoom(stageRef, paperRef)
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage || !tilemap) return
+    const paint = (): void => repaintMap(editor.getState().asset as TilemapAsset)
+    stage.addEventListener('scroll', paint, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(paint)
+    observer?.observe(stage)
+    return () => {
+      stage.removeEventListener('scroll', paint)
+      observer?.disconnect()
+    }
+  }, [tilemap, repaintMap, editor])
 
   if (!tilemap) return null
   if (!baseTileset) {
@@ -612,11 +572,14 @@ export function TilemapEditor(): JSX.Element | null {
   if (!activeLayer) return null
   const layerId = activeLayer.id
   // As ações precisam da camada ativa — religam a cada render.
-  deleteSelectionRef.current = deleteMapSelection
-  stampPendingRef.current = stampPending
   deleteObjectRef.current = () => {
     if (!activeObjectLayer || !selectedObjectId) return false
-    removeObject(selectedObjectId)
+    const s = editor.getState()
+    if (s.asset.kind === 'tilemap')
+      s.commit(
+        selectedObjectIds.reduce((m, id) => removeMapObject(m, activeObjectLayer.id, id), s.asset),
+      )
+    chooseObjects([])
     return true
   }
 
@@ -625,13 +588,18 @@ export function TilemapEditor(): JSX.Element | null {
     const canvas = canvasRef.current
     const rect = canvas?.getBoundingClientRect()
     if (!canvas || !rect || !tilemap) return { col: 0, row: 0 }
-    const canvasCols = tilemap.cols + 2 * pad
-    const canvasRows = tilemap.rows + 2 * pad
-    const cellW = rect.width / canvasCols
-    const cellH = rect.height / canvasRows
+    const e = activeTileLayer
+      ? effectiveLayer(tilemap, activeTileLayer)
+      : { offsetX: 0, offsetY: 0 }
     return {
-      col: Math.floor((event.clientX - rect.left) / cellW) - pad,
-      row: Math.floor((event.clientY - rect.top) / cellH) - pad,
+      col:
+        Math.floor(
+          (event.clientX - rect.left + viewportRef.current.x) / cellPx - e.offsetX / tileSize,
+        ) - pad,
+      row:
+        Math.floor(
+          (event.clientY - rect.top + viewportRef.current.y) / cellPx - e.offsetY / tileSize,
+        ) - pad,
     }
   }
 
@@ -659,6 +627,29 @@ export function TilemapEditor(): JSX.Element | null {
 
   function applyTiles(current: TilemapAsset, cells: CellPos[]): TilemapAsset {
     const g = gestureRef.current
+    const terrain = tileset?.terrains?.find((t) => t.id === mapBrush.terrainId)
+    if (terrain) {
+      const result = paintTerrain(
+        current,
+        layerId,
+        terrain,
+        tool === 'eraser' ? 0 : mapBrush.color,
+        cells,
+        mapBrush.seed,
+      )
+      if (result.unmatched && gestureRef.current)
+        showToast(COPY.scene.faltamPecasDeBordaOuCantoNeste)
+      return result.map
+    }
+    if (mapBrush.scatter && tool !== 'eraser')
+      return scatterTiles(
+        current,
+        layerId,
+        cells,
+        mapBrush.tiles.length ? mapBrush.tiles : [selectedTile],
+        mapBrush.density,
+        mapBrush.seed,
+      )
     if (tool === 'eraser') return setCells(current, layerId, cells, -1)
     if (stamp && g) return stampCells(current, layerId, cells, stamp, g.anchor, tileCount)
     return setCells(current, layerId, cells, selectedTile)
@@ -751,7 +742,8 @@ export function TilemapEditor(): JSX.Element | null {
 
   function pickAt(cell: CellPos): void {
     const c = clampCell(cell)
-    const picked = cellAt(editor.getState().asset as TilemapAsset, layerId, c.col, c.row)
+    const pickedCell = cellAt(editor.getState().asset as TilemapAsset, layerId, c.col, c.row)
+    const picked = cellTile(pickedCell)
     const s = session.getState()
     if (picked >= 0) {
       s.setStamp(null)
@@ -763,122 +755,35 @@ export function TilemapEditor(): JSX.Element | null {
   }
 
   function fillAt(cell: CellPos): void {
-    const c = clampCell(cell)
-    const state = editor.getState()
+    const c = clampCell(cell),
+      state = editor.getState()
     if (state.asset.kind !== 'tilemap') return
-    const tile = stamp ? (stamp.tiles[0] ?? -1) : selectedTile
-    const next = floodFillCells(state.asset, layerId, c.col, c.row, tile)
-    if (next === state.asset) return
-    state.commit(next)
+    const terrain = tileset?.terrains?.find((t) => t.id === mapBrush.terrainId)
+    state.commit(
+      terrain || mapBrush.scatter
+        ? applyTiles(state.asset, terrainRegion(state.asset, layerId, c, terrain))
+        : floodFillCells(state.asset, layerId, c.col, c.row, selectedTile),
+    )
   }
 
   // ---- Seleção (espelho do PixelCanvas em células) ----------------------
 
-  /** Apaga o pedaço: levantado some, assentado limpa as células (Delete). */
-  function deleteMapSelection(): void {
-    const sel = selRef.current
-    const state = editor.getState()
-    if (!sel || state.asset.kind !== 'tilemap') return
-    selRef.current = null
-    movingRef.current = null
-    setSelRect(null)
-    selfCommitRef.current = true
-    if (sel.kind === 'floating') state.commit(sel.remaining)
-    else if (sel.kind === 'rect') state.commit(clearRegion(state.asset, layerId, sel.rect))
-  }
-
-  function stampPending(): void {
-    const sel = selRef.current
-    selRef.current = null
-    movingRef.current = null
-    setSelRect(null)
-    if (sel?.kind === 'floating' && tilemap) {
-      selfCommitRef.current = true
-      editor.getState().commit(stampRegionAt(sel.remaining, layerId, sel.at, sel.stamp))
-    }
-  }
-
-  function selectDown(event: PointerEvent<HTMLCanvasElement>): void {
-    if (!event.isPrimary || !tilemap) return
-    safeSetPointerCapture(event.currentTarget, event.pointerId)
-    selPointerRef.current = event.pointerId
-    const p = clampCell(cellFromEvent(event))
-    const sel = selRef.current
-    if (sel?.kind === 'floating') {
-      const within =
-        p.col >= sel.at.col &&
-        p.col < sel.at.col + sel.stamp.cols &&
-        p.row >= sel.at.row &&
-        p.row < sel.at.row + sel.stamp.rows
-      if (within) {
-        movingRef.current = { offset: { col: p.col - sel.at.col, row: p.row - sel.at.row } }
-        return
-      }
-    }
-    if (sel?.kind === 'rect') {
-      const r = sel.rect
-      const within =
-        p.col >= r.col && p.col < r.col + r.cols && p.row >= r.row && p.row < r.row + r.rows
-      if (within) {
-        const { remaining, floating } = extractRegion(tilemap, layerId, r)
-        selRef.current = {
-          kind: 'floating',
-          stamp: floating,
-          at: { col: r.col, row: r.row },
-          remaining,
-        }
-        movingRef.current = { offset: { col: p.col - r.col, row: p.row - r.row } }
-        setSelRect(null)
-        renderSelection()
-        return
-      }
-    }
-    stampPending()
-    selRef.current = {
-      kind: 'marquee',
-      start: p,
-      rect: normalizeCellRect(p, p, tilemap.cols, tilemap.rows),
-    }
-    renderSelection()
-  }
-
-  function selectMove(event: PointerEvent<HTMLCanvasElement>): void {
-    if (event.pointerId !== selPointerRef.current || !tilemap) return
-    const p = clampCell(cellFromEvent(event))
-    const sel = selRef.current
-    const moving = movingRef.current
-    if (sel?.kind === 'floating' && moving) {
-      sel.at = { col: p.col - moving.offset.col, row: p.row - moving.offset.row }
-      renderSelection()
-      return
-    }
-    if (sel?.kind === 'marquee') {
-      sel.rect = normalizeCellRect(sel.start, p, tilemap.cols, tilemap.rows)
-      renderSelection()
-    }
-  }
-
-  function selectUp(event: PointerEvent<HTMLCanvasElement>): void {
-    if (event.pointerId !== selPointerRef.current) return
-    selPointerRef.current = null
-    if (movingRef.current) {
-      movingRef.current = null
-      return
-    }
-    const sel = selRef.current
-    if (sel?.kind === 'marquee') {
-      // Pedaço só de grade VAZIA não vira seleção (a grade de fundo é
-      // referência, não desenho) — mesma régua do editor de pixel.
-      if (sel.rect && tilemap && hasFilledCell(tilemap, layerId, sel.rect)) {
-        selRef.current = { kind: 'rect', rect: sel.rect }
-        setSelRect(sel.rect)
-      } else {
-        selRef.current = null
-        setSelRect(null)
-      }
-      renderSelection()
-    }
-  }
+  const { deleteMapSelection, stampPending, selectDown, selectMove, selectUp } =
+    createMapSelectionController({
+      tilemap,
+      layerId,
+      editor,
+      selRef,
+      movingRef,
+      selPointerRef,
+      selfCommitRef,
+      setSelRect,
+      cellFromEvent,
+      clampCell,
+      renderSelection,
+    })
+  deleteSelectionRef.current = deleteMapSelection
+  stampPendingRef.current = stampPending
 
   // ---- Ponteiro geral ---------------------------------------------------
   function handlePointerDown(event: PointerEvent<HTMLCanvasElement>): void {
@@ -944,7 +849,18 @@ export function TilemapEditor(): JSX.Element | null {
     const cell = cellFromEvent(event)
     hoverRef.current(inRing(cell) ? null : cell)
     const gesture = gestureRef.current
-    if (!gesture || event.pointerId !== gesture.pointerId) return
+    if (!gesture || event.pointerId !== gesture.pointerId) {
+      const current = editor.getState().asset
+      if (
+        !gesture &&
+        current.kind === 'tilemap' &&
+        (mapBrush.scatter || mapBrush.terrainId) &&
+        tool === 'pencil' &&
+        !inRing(cell)
+      )
+        repaintMap(applyTiles(current, [cell]))
+      return
+    }
     if (tool === 'line' || tool === 'rect') paintShape(cell)
     else if (tool === 'pencil' || tool === 'eraser') paintStroke(cell)
   }
@@ -971,6 +887,8 @@ export function TilemapEditor(): JSX.Element | null {
 
   function handlePointerLeave(): void {
     hoverRef.current(null)
+    const current = editor.getState().asset
+    if (!gestureRef.current && current.kind === 'tilemap') repaintMap(current)
   }
 
   function selectMapTool(nextTool: MapTool): void {
@@ -1126,9 +1044,11 @@ export function TilemapEditor(): JSX.Element | null {
     // A área da tela-modelo (11/09/2026): a coluna branca das ferramentas, o palco claro, a coluna
     // branca das peças e camadas, e a faixa azul com as medidas do mapa e o zoom.
     <div className="pin-work flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 items-stretch">
+      <div className="flex min-h-0 flex-1 flex-col items-stretch md:flex-row">
         <TilemapToolbar
+          orientation={wide ? 'vertical' : 'horizontal'}
           tool={tool}
+          level={mapLevel}
           mode={toolMode}
           autoExpand={autoExpand}
           showCollision={showCollision}
@@ -1160,6 +1080,23 @@ export function TilemapEditor(): JSX.Element | null {
               >
                 {COPY.tiles.copyPiece}
               </Button>
+              <Button
+                variant="barOutline"
+                onClick={() => {
+                  try {
+                    if (tilemap && selRect)
+                      void gallery
+                        .getState()
+                        .createPrepared(
+                          createMapSet(tilemap, selRect, tileSize, `conjunto-${tilemap.name}`),
+                        )
+                  } catch (error) {
+                    showToast(error instanceof Error ? error.message : String(error))
+                  }
+                }}
+              >
+                {COPY.scene.guardarConjunto}
+              </Button>
               <Button variant="barOutline" onClick={() => deleteSelectionRef.current()}>
                 {COPY.tiles.clearPiece}
               </Button>
@@ -1169,10 +1106,17 @@ export function TilemapEditor(): JSX.Element | null {
             ref={stageRef}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
           >
-            <div className="pin-checkerboard pin-paper relative">
+            <div
+              ref={paperRef}
+              className="pin-checkerboard pin-paper relative shrink-0"
+              style={{
+                width: (tilemap.cols + 2 * pad) * cellPx,
+                height: (tilemap.rows + 2 * pad) * cellPx,
+              }}
+            >
               <canvas
                 ref={canvasRef}
-                className="pin-pixelated block"
+                className="pin-pixelated absolute top-0 left-0 block"
                 style={{
                   touchAction: 'none',
                   imageRendering: 'pixelated',
@@ -1198,47 +1142,121 @@ export function TilemapEditor(): JSX.Element | null {
                 scale={cellPx / tileSize}
                 snap={snapObjects}
                 selectedObjectId={selectedObjectId}
-                onSelectObject={setSelectedObjectId}
+                selectedObjectIds={selectedObjectIds}
+                onSelectObject={chooseObject}
+                onSelectObjects={chooseObjects}
               />
             </div>
           </div>
         </div>
 
-        <TilemapSidebar
-          tilemap={tilemap}
-          tileset={tileset}
-          layerTilesetChoices={layerTilesetChoices}
-          selectedTile={selectedTile}
-          stamp={stamp}
-          activeLayerId={layerId}
-          objectPanel={
-            activeObjectLayer ? (
-              <MapObjectPanel
-                layer={activeObjectLayer}
-                selectedObjectId={selectedObjectId}
-                onSelectObject={setSelectedObjectId}
-                onUpdateObject={updateObject}
-                onRemoveObject={removeObject}
-                onSetProperty={setObjectProperty}
-                onRemoveProperty={removeObjectProperty}
-                onAddProperty={addObjectProperty}
-              />
-            ) : !tileset ? (
-              // Camada de peças cujas peças sumiram da galeria: diz, em vez de um vazio.
-              <p className="p-3 text-sm text-pin-muted">{COPY.tiles.missingTileset}</p>
-            ) : null
-          }
-          onSelectTile={selectTile}
-          onSetStamp={selectStamp}
-          onSelectLayer={setActiveLayerId}
-          onToggleFront={toggleMapLayerFront}
-          onToggleVisible={toggleMapLayerVisible}
-          onRemoveLayer={removeMapLayer}
-          onAddLayer={addMapLayer}
-          onAddObjectLayer={addMapObjectLayer}
-          onSetLayerTileset={setMapLayerTileset}
-        />
+        <details
+          open={wide}
+          className="shrink-0 border-t border-pin-border bg-pin-surface md:contents"
+        >
+          <summary className="min-h-11 cursor-pointer px-3 py-2 text-sm font-bold md:hidden">
+            {COPY.scene.mapPanels}
+          </summary>
+          <TilemapSidebar
+            compact={!wide}
+            tilemap={tilemap}
+            extras={
+              <>
+                <Panel title={COPY.scene.criarDoMeuJeito}>
+                  <select
+                    aria-label={COPY.scene.nivelDasFerramentas}
+                    className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm"
+                    value={mapLevel}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      if (v === 'start' || v === 'create' || v === 'advanced') setMapLevel(v)
+                    }}
+                  >
+                    <option value="start">{COPY.scene.comecar}</option>
+                    <option value="create">{COPY.scene.criarMais}</option>
+                    <option value="advanced">{COPY.scene.avancado}</option>
+                  </select>
+                  <Button
+                    variant="barOutline"
+                    className="mt-2 w-full"
+                    onClick={() => setPlaytest(true)}
+                  >
+                    {COPY.scene.testarComPersonagem}
+                  </Button>
+                </Panel>
+                <MapMinimapPanel
+                  map={tilemap}
+                  tilesets={mapTilesets}
+                  onJump={(col, row) => {
+                    const stage = stageRef.current
+                    if (stage) {
+                      stage.scrollLeft = (col + pad) * cellPx - stage.clientWidth / 2
+                      stage.scrollTop = (row + pad) * cellPx - stage.clientHeight / 2
+                    }
+                  }}
+                />
+              </>
+            }
+            tileset={tileset}
+            layerTilesetChoices={layerTilesetChoices}
+            selectedTile={selectedTile}
+            stamp={stamp}
+            activeLayerId={layerId}
+            objectPanel={
+              activeObjectLayer ? (
+                <>
+                  <MapObjectPanel
+                    layer={activeObjectLayer}
+                    selectedObjectId={selectedObjectId}
+                    onSelectObject={chooseObject}
+                    onUpdateObject={updateObject}
+                    onRemoveObject={removeObject}
+                    onSetProperty={setObjectProperty}
+                    onRemoveProperty={removeObjectProperty}
+                    onAddProperty={addObjectProperty}
+                  />
+                  <MapObjectSelectionPanel
+                    layerId={activeObjectLayer.id}
+                    ids={selectedObjectIds}
+                    onSelect={chooseObjects}
+                  />
+                  <MapLibraryPanel
+                    layerId={activeObjectLayer.id}
+                    selectedId={selectedObjectId}
+                    allowSets={!setEditor}
+                  />
+                </>
+              ) : tileset ? (
+                <MapTerrainPanel
+                  tileset={tileset}
+                  tile={selectedTile}
+                  settings={mapBrush}
+                  onChange={setMapBrush}
+                />
+              ) : activeTileLayer && !tileset ? (
+                // Camada de peças cujas peças sumiram da galeria: diz, em vez de um vazio.
+                <p className="p-3 text-sm text-pin-muted">{COPY.tiles.missingTileset}</p>
+              ) : null
+            }
+            onSelectTile={selectTile}
+            onSetStamp={selectStamp}
+            onSelectLayer={setActiveLayerId}
+            onToggleFront={toggleMapLayerFront}
+            onToggleVisible={toggleMapLayerVisible}
+            onRemoveLayer={removeMapLayer}
+            onAddLayer={addMapLayer}
+            onAddObjectLayer={addMapObjectLayer}
+            onSetLayerTileset={setMapLayerTileset}
+          />
+        </details>
       </div>
+      {playtest ? (
+        <MapPlaytestDialog
+          map={tilemap}
+          assets={galleryAssets}
+          onClose={() => setPlaytest(false)}
+        />
+      ) : null}
       <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">
         <MapStatusBar cols={tilemap.cols} rows={tilemap.rows} register={registerHover} />
         <ZoomControls />

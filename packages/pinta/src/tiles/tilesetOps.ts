@@ -13,6 +13,7 @@ import { newId } from '../core/id'
 import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
 import {
   createBitmap,
+  isObjectLayer,
   isTileLayer,
   PINTA_LIMITS,
   type PintaBitmap,
@@ -22,6 +23,37 @@ import { cloneBitmap } from '../pixel/bitmap'
 import { cellTile, withCellTile } from './cell'
 
 type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
+function remapTileMetadata<A extends AnyTilesetAsset>(asset: A, at: number, remove = false): A {
+  const index = (n: number) => (remove ? (n === at ? -1 : n > at ? n - 1 : n) : n >= at ? n + 1 : n)
+  const remap = <T>(
+    values: Record<string, T> | undefined,
+    convert: (v: T) => T,
+  ): Record<string, T> | undefined =>
+    values
+      ? Object.fromEntries(
+          Object.entries(values).flatMap(([k, v]) =>
+            index(Number(k)) < 0 ? [] : [[String(index(Number(k))), convert(v)]],
+          ),
+        )
+      : undefined
+  const animations = remap(asset.animations, (frames) =>
+    frames.flatMap((f) => (index(f.tile) < 0 ? [] : [{ ...f, tile: index(f.tile) }])),
+  )
+  return {
+    ...asset,
+    ...(animations
+      ? {
+          animations: Object.fromEntries(
+            Object.entries(animations).filter(([, frames]) => frames.length),
+          ),
+        }
+      : {}),
+    ...(asset.tileProperties ? { tileProperties: remap(asset.tileProperties, (v) => v) } : {}),
+    ...(asset.terrains
+      ? { terrains: asset.terrains.map((t) => ({ ...t, tiles: remap(t.tiles, (v) => v) ?? {} })) }
+      : {}),
+  }
+}
 
 function emptyTileFor<A extends AnyTilesetAsset>(asset: A): TileOf<A> {
   const tile: PintaBitmap | VectorFrame =
@@ -59,7 +91,7 @@ export function addTile<A extends AnyTilesetAsset>(asset: A, afterIndex: number)
   tiles.splice(afterIndex + 1, 0, emptyTileFor(asset))
   solid.splice(afterIndex + 1, 0, false)
   platform.splice(afterIndex + 1, 0, false)
-  return { ...asset, tiles, solid, platform }
+  return { ...remapTileMetadata(asset, afterIndex + 1), tiles, solid, platform }
 }
 
 export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number): A {
@@ -72,14 +104,32 @@ export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number
   tiles.splice(index + 1, 0, cloneTileOf(asset, source))
   solid.splice(index + 1, 0, asset.solid[index] === true)
   platform.splice(index + 1, 0, asset.platform[index] === true)
-  return { ...asset, tiles, solid, platform }
+  const next = remapTileMetadata(asset, index + 1)
+  if (asset.animations?.[index])
+    next.animations = { ...next.animations, [index + 1]: next.animations?.[index] ?? [] }
+  if (asset.tileProperties?.[index])
+    next.tileProperties = {
+      ...next.tileProperties,
+      [index + 1]: structuredClone(asset.tileProperties[index]),
+    }
+  if (next.terrains)
+    next.terrains = next.terrains.map((t, i) => ({
+      ...t,
+      tiles: {
+        ...t.tiles,
+        ...(asset.terrains?.[i]?.tiles[index]
+          ? { [index + 1]: structuredClone(asset.terrains[i]!.tiles[index]!) }
+          : {}),
+      },
+    }))
+  return { ...next, tiles, solid, platform }
 }
 
 /** Remove o tile — nunca deixa o tileset vazio (o último não sai). */
 export function removeTile<A extends AnyTilesetAsset>(asset: A, index: number): A {
   if (asset.tiles.length <= 1 || !asset.tiles[index]) return asset
   return {
-    ...asset,
+    ...remapTileMetadata(asset, index, true),
     tiles: (asset.tiles as TileOf<A>[]).filter((_, i) => i !== index),
     solid: asset.solid.filter((_, i) => i !== index),
     platform: asset.platform.filter((_, i) => i !== index),
@@ -135,6 +185,25 @@ export function remapTilemapCells(
   }
   let touched = false
   const layers = tilemap.layers.map((layer) => {
+    if (isObjectLayer(layer) && tilesetId !== undefined) {
+      let changed = false
+      const objects = layer.objects.map((o) => {
+        if (o.art?.assetId !== tilesetId || o.art.tile === undefined) return o
+        const next = remapOne(o.art.tile)
+        if (next === o.art.tile) return o
+        changed = true
+        if (next < 0) {
+          const { art: _art, ...rest } = o
+          return { ...rest, shape: 'rect' as const }
+        }
+        return { ...o, art: { ...o.art, tile: next } }
+      })
+      if (changed) {
+        touched = true
+        return { ...layer, objects }
+      }
+      return layer
+    }
     if (!isTileLayer(layer)) return layer
     if (tilesetId !== undefined && tileLayerTilesetId(tilemap, layer) !== tilesetId) return layer
     const cells = new Int16Array(layer.cells.length)

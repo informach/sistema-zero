@@ -62,6 +62,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
+import { TiledImportButton } from './TiledImportButton'
 import { useGallerySelection } from './useGallerySelection'
 
 /**
@@ -660,6 +661,7 @@ export function GalleryScreen(): JSX.Element {
                       <Upload aria-hidden="true" />
                       {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
                     </Button>
+                    {!selectionMode ? <TiledImportButton /> : null}
                   </div>
                 </div>
               ) : null}
@@ -765,6 +767,7 @@ export function GalleryScreen(): JSX.Element {
                       <Upload aria-hidden="true" />
                       {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
                     </Button>
+                    {!selectionMode ? <TiledImportButton /> : null}
                   </div>
                 </div>
               </div>

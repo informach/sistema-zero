@@ -52,6 +52,7 @@ export function insertKindFor(asset: PintaAsset): InsertKind | null {
     case 'tileset':
       return asset.tiles[0] ? 'image' : null
     case 'tilemap':
+    case 'map-set':
       return null
   }
 }

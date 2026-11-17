@@ -330,6 +330,51 @@ describe('updateAssetImage (a ação da store)', () => {
 })
 
 describe('syncDrawingsIntoProjects', () => {
+  it('uma propriedade de cenário muda sem mudar o PNG e atualiza o jogo sem tocar na programação', async () => {
+    const scene = {
+      version: 1 as const,
+      id: 'vila',
+      name: 'vila',
+      tileSize: 16,
+      cols: 1,
+      rows: 1,
+      tilesets: [
+        { id: 'ts', name: 'ts', image: PNG, columns: 1, count: 1, solid: [], platform: [] },
+      ],
+      layers: [
+        {
+          id: 'o',
+          kind: 'objects' as const,
+          name: 'Objetos',
+          visible: true,
+          objects: [
+            {
+              id: 'p',
+              name: 'Porta',
+              type: '',
+              x: 0,
+              y: 0,
+              width: 16,
+              height: 16,
+              properties: { vidas: { type: 'int' as const, value: 1 } },
+            },
+          ],
+        },
+      ],
+    }
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG, scene })
+    const before = await getPersonalAsset('d1')
+    seedOpenProject([drawingAsset({ scene, libRevision: before?.updatedAt })])
+    const program = structuredClone(useProjectStore.getState().project?.ir)
+    const changed = structuredClone(scene)
+    changed.layers[0]!.objects[0]!.properties.vidas.value = 3
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG, scene: changed })
+    expect(drawingNeedsSync(drawingAsset({ scene }), await getPersonalAsset('d1'))).toBe(true)
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOpenProject).toBe(1)
+    expect(useProjectStore.getState().project?.assets?.[0]?.scene).toEqual(changed)
+    expect(useProjectStore.getState().project?.ir).toEqual(program)
+  })
   it('atualiza o projeto ABERTO quando o desenho mudou no Pinta', async () => {
     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
     seedOpenProject([drawingAsset({})])

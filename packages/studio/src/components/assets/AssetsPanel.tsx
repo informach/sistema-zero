@@ -554,6 +554,8 @@ export function AssetsPanel({
         sprite: asset.sprite,
         tileset: asset.tileset,
         tilemap: asset.tilemap,
+        scene: asset.scene,
+        tilemapFront: asset.tilemapFront,
         updatedAt: asset.libRevision,
       },
       { namespace: personalNamespace },
@@ -585,6 +587,8 @@ export function AssetsPanel({
       sprite: drawing.sprite,
       tileset: drawing.tileset,
       tilemap: drawing.tilemap,
+      scene: drawing.scene,
+      tilemapFront: drawing.tilemapFront,
     })
     if (err) setError(err)
   }

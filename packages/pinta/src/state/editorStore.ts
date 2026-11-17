@@ -99,6 +99,8 @@ function mergeLinkedAssets(
 export function assetBytes(asset: PintaAsset, countCells = true): number {
   const bitmaps: PintaBitmap[] = []
   switch (asset.kind) {
+    case 'map-set':
+      return assetBytes(asset.map, countCells)
     case 'pixel-sprite':
       // Cada quadro é uma PILHA de cels (um por camada) — contar só o primeiro
       // subestimaria o snapshot em N× e furaria o orçamento do undo.
@@ -163,8 +165,8 @@ function snapshotBytes(snapshot: EditorSnapshot): number {
 function* snapshotShared(snapshot: EditorSnapshot): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
   for (const asset of maps) {
-    if (asset.kind !== 'tilemap') continue
-    for (const layer of asset.layers)
+    if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') continue
+    for (const layer of (asset.kind === 'map-set' ? asset.map : asset).layers)
       if (isTileLayer(layer)) yield { key: layer.cells, bytes: layer.cells.byteLength }
   }
 }

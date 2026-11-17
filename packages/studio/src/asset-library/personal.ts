@@ -1,3 +1,4 @@
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 /**
  * Biblioteca PESSOAL de imagens ("Meus desenhos") — a ponte Pinta → Estúdio.
  * O Studio é o DONO do formato/limites/normalização; o Pinta só conhece o
@@ -24,6 +25,7 @@ import {
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
 } from '#core'
+import { sanitizeSceneMeta } from '../core/projectAssets'
 
 const ASSET_KEY_PREFIX = 'asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -127,6 +129,8 @@ export interface PersonalAsset {
   /** Metadados do Pinta (tiles sólidos do tileset). */
   tileset?: ProjectTilesetMeta
   /** Metadados do Pinta (MAPA de tiles: grade + folha embutida). */
+  tilemapFront?: ProjectTilemapMeta
+  scene?: PintaScene
   tilemap?: ProjectTilemapMeta
   updatedAt: number
 }
@@ -216,6 +220,8 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
   const sprite = sanitizeSpriteMeta(a.sprite)
   const tileset = sanitizeTilesetMeta(a.tileset)
   const tilemap = sanitizeTilemapMeta(a.tilemap)
+  const tilemapFront = sanitizeTilemapMeta(a.tilemapFront),
+    scene = sanitizeSceneMeta(a.scene)
   return {
     id: a.id,
     name,
@@ -227,6 +233,8 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     ...(sprite ? { sprite } : {}),
     ...(tileset ? { tileset } : {}),
     ...(tilemap ? { tilemap } : {}),
+    ...(tilemapFront ? { tilemapFront } : {}),
+    ...(scene ? { scene } : {}),
     updatedAt,
   }
 }
@@ -279,6 +287,8 @@ export async function savePersonalAsset(
     /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
     sprite?: unknown
     tileset?: unknown
+    tilemapFront?: unknown
+    scene?: unknown
     tilemap?: unknown
     /** Usado por restauros da nuvem para preservar a revisão autoritativa da origem. */
     updatedAt?: number
@@ -312,8 +322,16 @@ export async function savePersonalAsset(
     if (!previous && others.length >= PERSONAL_ASSET_LIMITS.maxCount) {
       return { ok: false, error: 'A sua biblioteca está cheia! Apague um desenho antigo.' }
     }
-    const othersChars = others.reduce((sum, a) => sum + a.dataUrl.length, 0)
-    if (othersChars + input.dataUrl.length > PERSONAL_ASSET_LIMITS.maxTotalChars) {
+    const chars = (a: {
+      dataUrl: string
+      scene?: unknown
+      tilemap?: unknown
+      tilemapFront?: unknown
+    }) =>
+      a.dataUrl.length +
+      JSON.stringify([a.scene ?? null, a.tilemap ?? null, a.tilemapFront ?? null]).length
+    const othersChars = others.reduce((sum, a) => sum + chars(a), 0)
+    if (othersChars + chars(input) > PERSONAL_ASSET_LIMITS.maxTotalChars) {
       return { ok: false, error: 'A sua biblioteca está sem espaço! Apague um desenho antigo.' }
     }
 
@@ -332,6 +350,13 @@ export async function savePersonalAsset(
     const sprite = sanitizeSpriteMeta(input.sprite)
     const tileset = sanitizeTilesetMeta(input.tileset)
     const tilemap = sanitizeTilemapMeta(input.tilemap)
+    const tilemapFront = sanitizeTilemapMeta(input.tilemapFront),
+      scene = sanitizeSceneMeta(input.scene)
+    if (input.scene && !scene)
+      return {
+        ok: false,
+        error: 'Este cenário passou do limite do Estúdio ou tem dados inválidos.',
+      }
     const requestedRevision =
       typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) && input.updatedAt > 0
         ? Math.round(input.updatedAt)
@@ -351,6 +376,8 @@ export async function savePersonalAsset(
             ...(sprite ? { sprite } : {}),
             ...(tileset ? { tileset } : {}),
             ...(tilemap ? { tilemap } : {}),
+            ...(tilemapFront ? { tilemapFront } : {}),
+            ...(scene ? { scene } : {}),
             updatedAt,
           }
         : {

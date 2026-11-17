@@ -3,9 +3,16 @@ import {
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
 import type { AnyTilesetAsset, PintaBitmap, TilemapAsset } from '../core/project'
-import { isLayerShown, isTileLayer, resolveAssetPalette, tileLayerTilesetId } from '../core/project'
+import {
+  effectiveLayer,
+  isLayerShown,
+  isTileLayer,
+  resolveAssetPalette,
+  tileLayerTilesetId,
+} from '../core/project'
 import { bitmapToRGBA } from '../pixel/render'
 import { cellTile } from '../tiles/cell'
+import { cellMatrix } from '../tiles/chunks'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts, vectorToPortableSvg } from '../vector/portableSvg'
 import { sceneDefsMarkup, shapesToMarkup, type VectorDoc } from '../vector/svg'
@@ -184,11 +191,18 @@ function* mapCells(map: TilemapAsset) {
   // dependency) carries that one tileset; layers using another one are left out, never drawn with
   // the wrong pieces. Object layers have no tiles.
   for (const layer of map.layers) {
-    if (!isTileLayer(layer) || !isLayerShown(map, layer)) continue
+    if (!isTileLayer(layer) || layer.collision || !isLayerShown(map, layer)) continue
     if (tileLayerTilesetId(map, layer) !== map.tilesetId) continue
     for (let index = 0; index < layer.cells.length; index++) {
       const tile = cellTile(layer.cells[index]!)
-      if (tile >= 0) yield { tile, col: index % map.cols, row: Math.floor(index / map.cols) }
+      if (tile >= 0)
+        yield {
+          tile,
+          value: layer.cells[index]!,
+          e: effectiveLayer(map, layer),
+          col: index % map.cols,
+          row: Math.floor(index / map.cols),
+        }
     }
   }
 }
@@ -247,9 +261,10 @@ async function sceneSvg(scene: VectorScene): Promise<string> {
     return `<g id="tile-${index}" clip-path="url(#pinta-tile-viewport)">${sceneDefsMarkup(shapes, `tile-${index}-`)}${shapesToMarkup(shapes, '', `tile-${index}-`)}</g>`
   })
   // Local fragment only. SVG2 href and SVG1.1 xlink are identical; no external resource lookup.
-  const uses = cells.map(
-    ({ tile, col, row }) =>
-      `<use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${col * size}" y="${row * size}"/>`,
+  const uses = cells.map(({ tile, col, row, value, e }) =>
+    value < 4096 && e.opacity === 1 && !e.offsetX && !e.offsetY
+      ? `<use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${col * size}" y="${row * size}"/>`
+      : `<g opacity="${e.opacity}" transform="translate(${col * size + e.offsetX + size / 2} ${row * size + e.offsetY + size / 2}) matrix(${[...cellMatrix(value), 0, 0].join(' ')})"><use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${-size / 2}" y="${-size / 2}"/></g>`,
   )
   return embedVectorFonts(
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${map.cols * size}" height="${map.rows * size}" viewBox="0 0 ${map.cols * size} ${map.rows * size}"><defs><clipPath id="pinta-tile-viewport"><rect width="${size}" height="${size}"/></clipPath>${symbols.join('')}</defs>${uses.join('')}</svg>`,
@@ -398,13 +413,15 @@ export async function renderPintaImage(
             tile = bitmapCanvas(bitmap, colors)
             tiles.set(cell.tile, tile)
           }
-          context.drawImage(
-            tile,
-            cell.col * cellWidth,
-            cell.row * cellHeight,
-            cellWidth,
-            cellHeight,
+          context.save()
+          context.globalAlpha = cell.e.opacity
+          context.translate(
+            (cell.col + 0.5 + cell.e.offsetX / scene.tileset.tileSize) * cellWidth,
+            (cell.row + 0.5 + cell.e.offsetY / scene.tileset.tileSize) * cellHeight,
           )
+          context.transform(...cellMatrix(cell.value), 0, 0)
+          context.drawImage(tile, -cellWidth / 2, -cellHeight / 2, cellWidth, cellHeight)
+          context.restore()
         }
       }
     }

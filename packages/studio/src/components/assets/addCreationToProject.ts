@@ -118,6 +118,8 @@ export function addPintaCreationToProject(
       sprite: asset.sprite,
       tileset: asset.tileset,
       tilemap: asset.tilemap,
+      scene: asset.scene,
+      tilemapFront: asset.tilemapFront,
       libRevision: asset.libRevision,
       ...(pintaImage ? { pintaImage } : {}),
     })
@@ -136,6 +138,8 @@ export function addPintaCreationToProject(
     sprite: asset.sprite,
     tileset: asset.tileset,
     tilemap: asset.tilemap,
+    scene: asset.scene,
+    tilemapFront: asset.tilemapFront,
     ...(pintaImage ? { pintaImage } : {}),
   })
 }
