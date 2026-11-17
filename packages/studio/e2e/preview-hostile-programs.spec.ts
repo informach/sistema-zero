@@ -113,6 +113,41 @@ test.describe('programas hostis na prévia', () => {
     await editorSobrevive(page, 1000)
   })
 
+  // Em navegador que não isola a prévia, a aba congela junto com o jogo, e o projeto travaria de
+  // novo a cada abertura. Aqui a marca que uma aba congelada deixa é posta à mão.
+  test('depois de uma execução interrompida, a prévia espera o Rodar', async ({ page }) => {
+    await createProject(page)
+    await replaceBridgeScript(page, CONSERTADO)
+    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
+    await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
+    const id = decodeURIComponent(new URL(page.url()).pathname.replace('/editor/', ''))
+    const chave = `sz:run-tripwire:${id}`
+    // Jogo vivo: a marca sai sozinha depois de alguns batimentos.
+    await expect
+      .poll(() => page.evaluate((k) => window.localStorage.getItem(k), chave), { timeout: 10_000 })
+      .toBeNull()
+
+    // Recarregar com a página viva não deixa marca: a prévia roda sozinha, como sempre.
+    await page.reload()
+    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 20_000 })
+
+    // A marca de uma aba que congelou: na abertura seguinte a prévia fica parada.
+    await page.evaluate((k) => window.localStorage.setItem(k, String(Date.now())), chave)
+    await page.addInitScript((k) => {
+      if (!window.sessionStorage.getItem('marca-posta')) {
+        window.sessionStorage.setItem('marca-posta', '1')
+        window.localStorage.setItem(k, String(Date.now()))
+      }
+    }, chave)
+    await page.reload()
+    await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 20_000 })
+    await page.waitForTimeout(1500)
+    await expect(corpoDoJogo(page)).not.toHaveAttribute('data-voltou', 'sim')
+
+    await rodar(page).click()
+    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
+  })
+
   test('memória crescendo sem parar não derruba o editor', async ({ page }) => {
     await createProject(page)
     await replaceBridgeScript(

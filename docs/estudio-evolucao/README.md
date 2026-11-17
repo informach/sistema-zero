@@ -36,7 +36,7 @@ isolamento pode acrescentar bytes a ele.
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
 | B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
 | B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **feito** (só Chromium) |
-| B1 | Marca de execução (não rodar sozinho depois de uma queda) | pendente |
+| B1 | Marca de execução (não rodar sozinho depois de uma queda) | **feito**; falta salvar antes de rodar |
 | B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
 | B4 | Estudo do Jogo 2D em Worker | pendente |
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |

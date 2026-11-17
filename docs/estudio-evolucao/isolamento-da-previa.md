@@ -63,10 +63,35 @@ cada edição já deixou a prévia em branco de vez em quando, e isso não mudou
 **Portão:** as cinco aulas dos cursos gravados (`protected-lessons.spec.ts`) e as suítes de
 segurança da prévia rodam depois desta mudança; o resultado está no README desta pasta.
 
+## B1: a marca de execução (17/11/2026)
+
+Onde a prévia NÃO é isolada, um jogo preso congela a aba inteira. A criança fecha a aba, abre o
+projeto de novo, a prévia roda sozinha e trava outra vez: o projeto fica impossível de abrir.
+
+`components/preview/runTripwire.ts` + `PreviewIframe.tsx`:
+
+- ao começar a rodar um jogo, grava uma marca do projeto no `localStorage` (síncrono, antes de o
+  jogo começar);
+- a marca sai com três batimentos do jogo, ao Parar, ao fechar o editor e ao recarregar ou sair
+  com a página viva (`pagehide`). Numa aba congelada nada disso roda, e ela fica;
+- ao abrir um projeto com a marca, a prévia **não roda sozinha**: fica parada, com o Rodar à vista.
+
+Provas: teste de unidade em `PreviewIframe.test.tsx` e, no navegador, o caso "depois de uma
+execução interrompida, a prévia espera o Rodar" de `preview-hostile-programs.spec.ts` (jogo vivo
+tira a marca; recarregar com a página viva roda sozinho como sempre; com a marca, espera o Rodar).
+
+Limites, ditos com clareza:
+- a marca que o teste usa é posta à mão: não há aqui um navegador sem isolamento para congelar a
+  aba de verdade;
+- "salvar antes de cada Rodar" não foi feito. O salvamento automático (1 s depois da edição, 5 s
+  no máximo) continua sendo o que protege o trabalho; uma edição feita no último segundo antes de
+  uma queda pode se perder;
+- um jogo que só trava depois de alguns segundos rodando (passou dos três batimentos) não deixa
+  marca.
+
 ## O que falta no pacote B
 
-- **B1 (marca de execução):** salvar antes de rodar e, ao reabrir depois de uma queda, não rodar
-  sozinho. Continua valendo para os navegadores em que a prévia não é isolada. Não feito.
+- **Salvar antes de rodar:** ver os limites do B1 acima. Não feito.
 - **B2 (casca em outra origem):** só faz sentido medir e decidir depois de saber o que acontece no
   Firefox, no Safari e no Android. Depende também de um fato de deploy: o domínio do
   `studio-runtime` precisa ser de outro **site** em relação aos apps. Não feito; decisão dela.

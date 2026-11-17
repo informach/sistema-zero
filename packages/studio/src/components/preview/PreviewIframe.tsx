@@ -54,6 +54,12 @@ import {
   shouldPausePreviewRender,
 } from './previewBudget'
 import {
+  armRunTripwire,
+  disarmRunTripwire,
+  HEARTBEATS_TO_TRUST,
+  wasRunInterrupted,
+} from './runTripwire'
+import {
   projectUsesKeyboardControls,
   useTouchInput,
   VirtualGamepad,
@@ -476,6 +482,13 @@ export function PreviewIframe(): JSX.Element {
     if (autoStartedProjectId.current === projectId) return
     if (loadedSrcDoc !== PAUSED_PREVIEW_DOC) return
     autoStartedProjectId.current = projectId
+    // A última execução deste projeto nunca deu sinal de vida (a aba congelou ou caiu com o
+    // jogo rodando): desta vez a prévia espera o Rodar em vez de rodar sozinha.
+    if (wasRunInterrupted(projectId)) {
+      disarmRunTripwire(projectId)
+      setPreviewRunning(false)
+      return
+    }
     setRenderNonce((n) => n + 1)
   }, [
     projectId,
@@ -484,6 +497,7 @@ export function PreviewIframe(): JSX.Element {
     loadedSrcDoc,
     execution.autoRun,
     execution.editingAccess,
+    setPreviewRunning,
   ])
 
   useEffect(() => {
@@ -702,6 +716,27 @@ export function PreviewIframe(): JSX.Element {
     setPreviewStalled(false)
   }, [doc])
 
+  // A marca de execução (ver `runTripwire.ts`): posta quando um jogo começa a rodar, tirada
+  // quando ele dá sinal de vida, quando para e quando o editor fecha direito.
+  const tripwireRef = useRef<{ projectId: string; heartbeats: number } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho (cada documento novo recomeça a contagem)
+  useEffect(() => {
+    // Só o jogo RODANDO põe a marca. Parado (inclusive na abertura), nada mexe nela: é a marca
+    // deixada por uma aba que congelou que a abertura seguinte precisa encontrar.
+    if (!projectId || !docIsLive) return
+    armRunTripwire(projectId)
+    tripwireRef.current = { projectId, heartbeats: 0 }
+    // Recarregar ou sair com a página VIVA também tira a marca (a desmontagem do React não roda
+    // nessa hora). Numa aba congelada este aviso nunca chega a rodar, e a marca fica.
+    const leaving = () => disarmRunTripwire(projectId)
+    window.addEventListener('pagehide', leaving)
+    return () => {
+      window.removeEventListener('pagehide', leaving)
+      disarmRunTripwire(projectId)
+      tripwireRef.current = null
+    }
+  }, [doc, docIsLive, projectId])
+
   // Loop do watchdog: marca travado se nenhum heartbeat chegar dentro do timeout.
   //
   // ⚠️ Medido em 17/11/2026 (`scripts/measure-preview-isolation.mjs`): no Chromium de mesa o
@@ -783,6 +818,9 @@ export function PreviewIframe(): JSX.Element {
       if (ev.data.kind === 'heartbeat') {
         lastHeartbeatRef.current = Date.now()
         setPreviewStalled((stalled) => (stalled ? false : stalled))
+        const tripwire = tripwireRef.current
+        if (tripwire && ++tripwire.heartbeats === HEARTBEATS_TO_TRUST)
+          disarmRunTripwire(tripwire.projectId)
         return
       }
       pushLog(ev.data)
