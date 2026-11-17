@@ -409,9 +409,13 @@ export class CenariosEmMemoria implements CenariosRepository {
     return this.copia(resto)
   }
   async organizacao(bibliotecaId: string) {
-    const modelos = [...this.modelosGuardados.values()].filter(
-      (m) => m.bibliotecaId === bibliotecaId,
-    )
+    const modelos = [
+      ...this.modelosGuardados.values(),
+      ...this.texturasGuardadas.values(),
+      ...this.catalogoConjuntos
+        .organizacaoDaBiblioteca(bibliotecaId)
+        .map((c) => ({ ...c, bibliotecaId })),
+    ].filter((m) => m.bibliotecaId === bibliotecaId)
     return {
       pastas: [...new Set(modelos.map((m) => m.pasta))].sort(),
       etiquetas: [...new Set(modelos.flatMap((m) => m.etiquetas))].sort(),

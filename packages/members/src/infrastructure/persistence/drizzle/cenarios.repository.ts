@@ -483,7 +483,11 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       .select({ pasta: cenarioTexturas.pasta, etiquetas: cenarioTexturas.etiquetas })
       .from(cenarioTexturas)
       .where(eq(cenarioTexturas.bibliotecaId, bibliotecaId))
-    const linhas = [...modelos, ...texturas]
+    const conjuntos = await this.db
+      .select({ pasta: cenarioConjuntos.pasta, etiquetas: cenarioConjuntos.etiquetas })
+      .from(cenarioConjuntos)
+      .where(eq(cenarioConjuntos.bibliotecaId, bibliotecaId))
+    const linhas = [...modelos, ...texturas, ...conjuntos]
     return {
       pastas: [...new Set(linhas.map((l) => l.pasta))].sort(),
       etiquetas: [...new Set(linhas.flatMap((l) => l.etiquetas))].sort(),

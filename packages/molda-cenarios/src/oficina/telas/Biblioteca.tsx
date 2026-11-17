@@ -7,6 +7,7 @@ import { encerrarPreparacao, prepararArquivos } from '../importar'
 import { Capa, Chegando, Dialogo, DialogoDeApagar, DialogoDeNome, Falhou, useCarga } from '../pecas'
 import type { CenariosHost, Licenca, ModeloDeBiblioteca } from '../portas'
 import { Chaos } from './Chaos'
+import { Conjuntos } from './Conjuntos'
 import { SeletorDeLicenca } from './Inicio'
 
 type Andamento =
@@ -29,14 +30,16 @@ export function Biblioteca({
   bibliotecaId,
   espacoId,
   aoVoltar,
+  aoEditarConjunto,
 }: {
   host: CenariosHost
   bibliotecaId: string
   espacoId: string
   aoVoltar(): void
+  aoEditarConjunto(id: string): Promise<void>
 }): JSX.Element {
   const [busca, setBusca] = useState('')
-  const [aba, setAba] = useState<'modelos' | 'chaos'>('modelos')
+  const [aba, setAba] = useState<'modelos' | 'chaos' | 'conjuntos'>('modelos')
   const [buscaAplicada, setBuscaAplicada] = useState('')
   const [pastaEscolhida, setPastaEscolhida] = useState('*')
   const [erroDaAcao, setErroDaAcao] = useState<string | null>(null)
@@ -333,6 +336,14 @@ export function Biblioteca({
                     >
                       Chãos
                     </button>
+                    <button
+                      type="button"
+                      className="sz-tool-chip"
+                      aria-pressed={aba === 'conjuntos'}
+                      onClick={() => setAba('conjuntos')}
+                    >
+                      Conjuntos
+                    </button>
                   </fieldset>
                   <select
                     className="sz-tool-select"
@@ -368,8 +379,20 @@ export function Biblioteca({
                       autoComplete="off"
                       value={busca}
                       onChange={(evento) => setBusca(evento.target.value)}
-                      aria-label={aba === 'chaos' ? 'Buscar chão' : COPY.biblioteca.buscar}
-                      placeholder={aba === 'chaos' ? 'Buscar chão' : COPY.biblioteca.buscar}
+                      aria-label={
+                        aba === 'conjuntos'
+                          ? 'Buscar conjunto'
+                          : aba === 'chaos'
+                            ? 'Buscar chão'
+                            : COPY.biblioteca.buscar
+                      }
+                      placeholder={
+                        aba === 'conjuntos'
+                          ? 'Buscar conjunto'
+                          : aba === 'chaos'
+                            ? 'Buscar chão'
+                            : COPY.biblioteca.buscar
+                      }
                       className="sz-tool-search"
                     />
                   </label>
@@ -408,7 +431,17 @@ export function Biblioteca({
                   ))}
                 </section>
               ) : null}
-              {aba === 'chaos' ? (
+              {aba === 'conjuntos' ? (
+                <Conjuntos
+                  key={bibliotecaId}
+                  host={host}
+                  bibliotecaId={bibliotecaId}
+                  busca={buscaAplicada}
+                  pasta={pastaEscolhida === '*' ? undefined : pastaEscolhida}
+                  aoEditar={aoEditarConjunto}
+                  aoMudar={() => setVolta((v) => v + 1)}
+                />
+              ) : aba === 'chaos' ? (
                 <Chaos
                   key={bibliotecaId}
                   host={host}

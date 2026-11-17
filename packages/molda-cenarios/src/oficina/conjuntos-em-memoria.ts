@@ -440,6 +440,11 @@ export function criarConjuntosEmMemoria(ctx: Contexto) {
   }
   return {
     host,
+    organizacaoDaBiblioteca(id: string) {
+      return [...registros.values()]
+        .filter((r) => r.conjunto.bibliotecaId === id)
+        .map((r) => ({ pasta: r.conjunto.pasta, etiquetas: [...r.conjunto.etiquetas] }))
+    },
     conferirCenario(id: string, d: DocumentoDeCenario, publicando?: DefinicaoPublicada) {
       const espacoId = ctx.mundos.get(ctx.cenarios.get(id)!.resumo.mundoId)!.espacoId
       const fixadas = new Map(d.definicoesConjuntos?.map((f) => [f.id, f]))

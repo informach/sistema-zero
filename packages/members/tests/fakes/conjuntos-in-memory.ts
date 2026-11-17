@@ -81,6 +81,11 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
       .filter((v) => this.espacoDo(this.atuais.get(v.conjuntoId)?.bibliotecaId ?? '') === id)
       .reduce((n, v) => n + v.bytes, 0)
   }
+  organizacaoDaBiblioteca(id: string) {
+    return [...this.atuais.values()]
+      .filter((c) => c.bibliotecaId === id)
+      .map((c) => ({ pasta: c.pasta, etiquetas: [...c.etiquetas] }))
+  }
   arquivosDoEspaco(id: string): Set<string> {
     const usados = new Set<string>()
     for (const v of this.versoes.values()) {

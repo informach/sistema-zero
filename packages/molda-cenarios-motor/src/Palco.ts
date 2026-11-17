@@ -63,6 +63,7 @@ import {
   transformacaoDaMatriz,
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
+import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { carregarPecasDeTerreno } from './recursos-terreno'
 import { RepresentacoesDoModelo } from './representacoes'
 import { escolherNaArea } from './selecao-area'
@@ -94,9 +95,12 @@ type EstadoDoModelo =
   | { estado: 'falhou' }
 
 interface Gesto {
+  cancelado?: boolean
+  documento: DocumentoDeCenario | null
   pivo: Matrix4
   inicio: Map<string, Matrix4>
   apoios: Map<string, InstanciaDeCenario['apoio']>
+  atualizarApoios(): void
 }
 
 const CEU_VERTICE = /* glsl */ `
@@ -162,6 +166,7 @@ class PalcoThree implements Palco {
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
   private estadoDasTexturas: EstadoDasTexturas = { carregando: 0, falhas: [] }
+  private falhaDeAcabamento = false
   private readonly texturas = new TexturasDoPalco(
     async (ref, sinal) => {
       if (!this.opcoes.carregarTextura) throw Error('Este ambiente não oferece leitura de texturas')
@@ -200,14 +205,24 @@ class PalcoThree implements Palco {
     this.renderer = new WebGLRenderer({
       canvas,
       antialias: true,
+      alpha: Boolean(opcoes.fotografia),
       powerPreference: 'high-performance',
     })
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2))
+    if (opcoes.fotografia) {
+      this.renderer.setPixelRatio(1)
+      this.renderer.setSize(256, 256, false)
+      this.renderer.setClearColor(0, 0)
+      this.camera.near = 0.001
+      this.camera.updateProjectionMatrix()
+      this.chao.visible = false
+      this.grade.visible = false
+    }
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = PCFShadowMap
 
     this.camera.position.set(16, 13, 20)
-    this.cena.fog = this.nevoa
+    this.cena.fog = opcoes.fotografia ? null : this.nevoa
 
     this.ceu = new Mesh(
       new SphereGeometry(1, 32, 16),
@@ -224,6 +239,7 @@ class PalcoThree implements Palco {
     this.ceu.scale.setScalar(3000)
     this.ceu.renderOrder = -1000
     this.ceu.frustumCulled = false
+    this.ceu.visible = !opcoes.fotografia
     this.cena.add(this.ceu)
 
     this.sol.castShadow = true
@@ -248,7 +264,7 @@ class PalcoThree implements Palco {
     this.orbita.dampingFactor = 0.12
     this.orbita.screenSpacePanning = false
     this.orbita.zoomToCursor = true
-    this.orbita.minDistance = 0.6
+    this.orbita.minDistance = opcoes.fotografia ? 0.001 : 0.6
     this.orbita.maxDistance = 2500
     this.orbita.maxPolarAngle = Math.PI / 2 - 0.02
     this.orbita.target.set(0, 0.5, 0)
@@ -531,7 +547,7 @@ class PalcoThree implements Palco {
     if (caixa.isEmpty() && this.terreno) caixa.setFromObject(this.terreno.grupo)
     if (caixa.isEmpty()) esfera.set(new Vector3(0, 1, 0), 12)
     else caixa.getBoundingSphere(esfera)
-    const raio = Math.max(1.5, esfera.radius)
+    const raio = Math.max(this.opcoes.fotografia ? 0.01 : 1.5, esfera.radius)
     const distancia = perspectiveFitDistance(raio, this.camera.fov, this.camera.aspect || 1) * 1.15
     const direcao = this.camera.position.clone().sub(this.orbita.target)
     if (direcao.lengthSq() < 1e-6) direcao.set(0.55, 0.5, 0.67)
@@ -541,6 +557,30 @@ class PalcoThree implements Palco {
     this.camera.position.copy(esfera.center).addScaledVector(direcao, distancia)
     this.orbita.update()
     this.pedirQuadro()
+  }
+
+  async aguardarRecursos(sinal?: AbortSignal): Promise<void> {
+    const limite = Date.now() + 60_000
+    while (true) {
+      sinal?.throwIfAborted()
+      if (this.destruido) throw new Error('O palco foi encerrado')
+      const estados = [...this.modelos.values()]
+      if (
+        estados.some((e) => e.estado === 'falhou') ||
+        this.estadoDasTexturas.falhas.length ||
+        this.falhaDeAcabamento
+      )
+        throw new Error('Não consegui carregar todos os arquivos da composição')
+      if (
+        !estados.some((e) => e.estado === 'carregando') &&
+        !this.estadoDasTexturas.carregando &&
+        (this.documento?.base.tipo !== 'terreno' || this.terreno)
+      )
+        return
+      if (Date.now() >= limite)
+        throw new Error('O carregamento da composição demorou demais. Tente novamente.')
+      await new Promise<void>((resolve) => setTimeout(resolve, 30))
+    }
   }
 
   capturar(largura = 640): Promise<Blob | null> {
@@ -602,7 +642,9 @@ class PalcoThree implements Palco {
     this.limparChao()
     this.ceu.geometry.dispose()
     this.ceu.material.dispose()
+    this.sol.shadow.dispose()
     this.renderer.dispose()
+    if (this.opcoes.fotografia) this.renderer.forceContextLoss()
   }
 
   // ---- desenho ------------------------------------------------------------
@@ -966,6 +1008,7 @@ class PalcoThree implements Palco {
     }
     this.superficies.definir(superficies)
     this.alvos = criarAlvosDeEdicao(this.documento!, this.locais, this.origens)
+    this.falhaDeAcabamento = falhasDeAcabamento.length > 0
     this.opcoes.aoTexturas?.({
       ...this.estadoDasTexturas,
       falhas: [...this.estadoDasTexturas.falhas, ...falhasDeAcabamento],
@@ -1050,14 +1093,30 @@ class PalcoThree implements Palco {
       this.pivo.updateMatrix()
       const inicio = new Map<string, Matrix4>()
       for (const id of this.movidos()) inicio.set(id, this.alvos.get(id)!.matriz.clone())
-      this.gesto = { pivo: this.pivo.matrix.clone(), inicio, apoios: new Map() }
+      const atuais = new Map([...inicio.keys()].map((id) => [id, this.alvos.get(id)!.matriz]))
+      const atualizar = this.documento
+        ? prepararPreviaDosApoios(
+            this.documento,
+            this.locais,
+            [...inicio.keys()],
+            this.fonteDeAlturas(),
+          )
+        : () => {}
+      this.gesto = {
+        documento: this.documento,
+        pivo: this.pivo.matrix.clone(),
+        inicio,
+        apoios: new Map(),
+        atualizarApoios: () => atualizar(atuais),
+      }
       this.opcoes.aoGesto?.(true)
       return
     }
     const gesto = this.gesto
     this.gesto = null
     this.opcoes.aoGesto?.(false)
-    if (gesto) {
+    // Uma cabeça nova invalida o gesto iniciado na anterior, como no pincel de objetos.
+    if (gesto && !gesto.cancelado && (!this.pendente || this.pendente === gesto.documento)) {
       const mudancas: MudancaDeTransformacao[] = []
       for (const [id, antes] of gesto.inicio) {
         const local = this.alvos.get(id)
@@ -1068,7 +1127,8 @@ class PalcoThree implements Palco {
           ...(gesto.apoios.has(id) ? { apoio: gesto.apoios.get(id)! } : {}),
         })
       }
-      if (mudancas.length) this.opcoes.aoTransformar?.(mudancas)
+      if (mudancas.length && this.opcoes.aoTransformar?.(mudancas) === false && !this.pendente)
+        this.pendente = gesto.documento
     }
     if (this.pendente) {
       const documento = this.pendente
@@ -1122,6 +1182,7 @@ class PalcoThree implements Palco {
       }
       local.atualizar()
     }
+    gesto.atualizarApoios()
     this.desenharContornos()
   }
 
@@ -1144,6 +1205,12 @@ class PalcoThree implements Palco {
 
   private readonly aoCancelar = (): void => {
     this.toque = null
+    if (this.gesto) {
+      this.gesto.cancelado = true
+      this.pendente ??= this.gesto.documento
+      this.alca.reset()
+      this.alca.dragging = false
+    }
   }
 
   private readonly aoSoltar = (evento: PointerEvent): void => {

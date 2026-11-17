@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   Blocks,
   Box,
+  Boxes,
   Check,
   Clipboard,
   CloudOff,
@@ -68,6 +69,7 @@ import {
   comandosParaDuplicar,
   comandosParaForma,
   comandosParaPor,
+  comandosParaPorConjunto,
   comandosParaTrocar,
   comMedidasConferidas,
   type LocalDeColocacao,
@@ -82,11 +84,13 @@ import type {
   Biblioteca,
   CenarioAberto,
   CenariosHost,
+  ConjuntoDeBiblioteca,
   EscolhaDeModelo,
   ModeloDeBiblioteca,
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { useConjuntos } from '../useConjuntos'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
@@ -212,6 +216,8 @@ function OficinaAberta({
   aoVoltar,
   aoMudarBibliotecas,
   moldesDisponiveis,
+  conjunto,
+  aoEditarConjunto,
 }: {
   host: CenariosHost
   aberto: CenarioAberto
@@ -221,6 +227,8 @@ function OficinaAberta({
   aoVoltar(): void
   aoMudarBibliotecas(): void
   moldesDisponiveis: boolean
+  conjunto: ConjuntoDeBiblioteca | null
+  aoEditarConjunto?(id: string): Promise<void>
 }): JSX.Element {
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
@@ -283,6 +291,47 @@ function OficinaAberta({
     centro: centroParaColar,
   })
   const { documento, selecao, ferramenta, encaixe } = estado
+  const conjuntos = useConjuntos({
+    host,
+    espaco: mundo.espacoId,
+    controlador,
+    palco,
+    bibliotecas,
+    conjunto,
+  })
+  const origemDaOficina = useMemo(() => ({ host, controlador, mundo }), [host, controlador, mundo])
+  const contexto = useRef(origemDaOficina)
+  contexto.current = origemDaOficina
+  const montado = useRef(true)
+  useEffect(() => {
+    montado.current = true
+    return () => {
+      montado.current = false
+    }
+  }, [])
+  const porConjunto = async (escolha: ConjuntoDeBiblioteca) => {
+    const origem = contexto.current
+    if (!origem.mundo.bibliotecas.includes(escolha.bibliotecaId))
+      throw new Error('Este conjunto não pertence às bibliotecas do mundo')
+    if (escolha.id === conjunto?.id)
+      throw new Error('Um conjunto não pode conter uma cópia de si mesmo')
+    const versao = await host.versaoDoConjunto(escolha.id, escolha.revisao)
+    if (!montado.current || contexto.current !== origem) return
+    const ponto = centroDaVista(canvas.current, palco.current)
+    if (!ponto) throw new Error('Aproxime a câmera do chão para colocar o conjunto')
+    const preparado = comandosParaPorConjunto(
+      controlador.getState().documento,
+      escolha,
+      versao,
+      ponto,
+    )
+    if (!controlador.executar(preparado.comandos))
+      throw new Error(controlador.getState().recusa ?? 'Não consegui colocar o conjunto')
+    controlador.selecionar([preparado.id])
+    controlador.definirFerramenta('mover')
+    setAba('objetos')
+    setModoDeSelecao('ponto')
+  }
   const pincel = usePincelDeObjetos({
     controlador,
     documento,
@@ -654,6 +703,22 @@ function OficinaAberta({
       aria-label={documento.nome}
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
+      {conjuntos.janela}
+      {conjuntos.erro || conjuntos.mensagem ? (
+        <div className="mcn-andamento" role={conjuntos.erro ? 'alert' : 'status'}>
+          <span>{conjuntos.erro ?? conjuntos.mensagem}</span>
+          {conjuntos.fotoPendente ? (
+            <button
+              type="button"
+              className="sz-tool-pill sz-tool-pill--outline"
+              disabled={conjuntos.ocupado}
+              onClick={() => void conjuntos.repetirFoto()}
+            >
+              Tentar retrato novamente
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {transferencia.mensagem ? (
         <div className="mcn-andamento" role={transferencia.erro ? 'alert' : 'status'}>
           <span>{transferencia.mensagem}</span>
@@ -780,13 +845,23 @@ function OficinaAberta({
             {documento.nome}
           </h1>
           <SeloDeGuardar controlador={controlador} salvamento={estado.salvamento} />
+          {conjuntos.catalogo ? (
+            <span className="sz-tool-status" role="status">
+              Versão {conjuntos.catalogo.revisao} ·{' '}
+              {estado.salvamento === 'guardado' &&
+              estado.revisao === conjuntos.catalogo.revisaoPublicadaDoCenario
+                ? 'publicada'
+                : 'rascunho não publicado'}
+            </span>
+          ) : null}
         </div>
         <div className="mld-workshop-tabs">
           <fieldset aria-label={COPY.oficina.abasRotulo} className="mld-seg">
-            {ABAS.map(([valor, Icone]) => (
+            {ABAS.filter(([valor]) => !conjunto || valor === 'objetos').map(([valor, Icone]) => (
               <button
                 key={valor}
                 type="button"
+                aria-label={COPY.oficina.abas[valor]}
                 aria-pressed={aba === valor}
                 onClick={() => {
                   if (valor !== 'objetos') pincel.fechar()
@@ -801,6 +876,30 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
+          {conjunto ? (
+            <button
+              type="button"
+              className="sz-tool-pill"
+              disabled={
+                conjuntos.ocupado ||
+                estado.ocupado ||
+                estado.revisao === conjuntos.catalogo?.revisaoPublicadaDoCenario
+              }
+              onClick={() => void conjuntos.publicar()}
+            >
+              Atualizar cópias
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            aria-label="Guardar escolha como conjunto"
+            title="Guardar escolha como conjunto"
+            disabled={semEscolha || estado.ocupado || !relevoPronto || conjuntos.ocupado}
+            onClick={conjuntos.abrir}
+          >
+            <Boxes aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="sz-tool-icon-btn"
@@ -1113,6 +1212,9 @@ function OficinaAberta({
             </div>
           ) : null}
           <Gaveta
+            atualizacaoDosConjuntos={conjuntos.atualizacao}
+            aoPorConjunto={porConjunto}
+            conjuntoEmEdicao={conjunto?.id}
             modo={pincel.ativo ? 'pincel' : 'colocar'}
             aberta={gavetaAberta}
             aoMudarAbertura={setGavetaAberta}
@@ -1169,6 +1271,24 @@ function OficinaAberta({
                     selecao={selecao}
                     executar={executar}
                     fonte={fonte}
+                    aoEditarConjunto={
+                      aoEditarConjunto
+                        ? (id) => {
+                            void controlador
+                              .terminar()
+                              .then(async () => {
+                                if (controlador.getState().salvamento !== 'guardado')
+                                  throw new Error('Guarde as alterações antes de editar o conjunto')
+                                await aoEditarConjunto(id)
+                              })
+                              .catch((e) =>
+                                setErroDoMolde(
+                                  e instanceof Error ? e.message : 'Não consegui abrir o conjunto',
+                                ),
+                              )
+                          }
+                        : undefined
+                    }
                   />
                 ) : null}
                 {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
@@ -1283,6 +1403,8 @@ export default function Oficina({
   tema,
   aoVoltar,
   moldesDisponiveis = false,
+  conjuntoId,
+  aoEditarConjunto,
 }: {
   host: CenariosHost
   espacoId: string
@@ -1291,20 +1413,30 @@ export default function Oficina({
   tema: 'light' | 'dark'
   aoVoltar(): void
   moldesDisponiveis?: boolean
+  conjuntoId?: string
+  aoEditarConjunto?(id: string): Promise<void>
 }): JSX.Element {
   const aberto = useCarga(() => host.abrirCenario(cenarioId), [host, cenarioId])
   const mundo = useCarga(async () => {
-    const [mundos, bibliotecas] = await Promise.all([
-      host.listarMundos(espacoId),
+    const [doMundo, bibliotecas, conjunto] = await Promise.all([
+      host.obterMundo(mundoId),
       host.listarBibliotecas(espacoId),
+      conjuntoId ? host.obterConjunto(conjuntoId) : Promise.resolve(null),
     ])
-    const doMundo = mundos.find((j) => j.id === mundoId)
-    if (!doMundo) throw new Error('O mundo não existe mais')
+    if (doMundo.espacoId !== espacoId) throw new Error('O mundo não pertence a este espaço')
+    if (
+      conjunto
+        ? conjunto.cenarioDeEdicaoId !== cenarioId ||
+          conjunto.bibliotecaId !== doMundo.bibliotecaConjuntosId
+        : Boolean(doMundo.bibliotecaConjuntosId)
+    )
+      throw new Error('Abra a edição do conjunto pela biblioteca')
     return {
       mundo: doMundo,
       bibliotecas: bibliotecas.filter((b) => doMundo.bibliotecas.includes(b.id)),
+      conjunto,
     }
-  }, [host, espacoId, mundoId])
+  }, [host, espacoId, mundoId, cenarioId, conjuntoId])
 
   if (aberto.falhou || mundo.falhou)
     return (
@@ -1318,7 +1450,13 @@ export default function Oficina({
         />
       </div>
     )
-  if (!aberto.dados || !mundo.dados)
+  if (
+    !aberto.dados ||
+    !mundo.dados ||
+    aberto.dados.resumo.id !== cenarioId ||
+    mundo.dados.mundo.id !== mundoId ||
+    (mundo.dados.conjunto?.id !== conjuntoId && (mundo.dados.conjunto || conjuntoId))
+  )
     return (
       <div className="mcn-centro" data-molda-theme={tema}>
         <Chegando texto={COPY.oficina.abrindo} />
@@ -1335,6 +1473,8 @@ export default function Oficina({
       aoVoltar={aoVoltar}
       aoMudarBibliotecas={mundo.recarregar}
       moldesDisponiveis={moldesDisponiveis}
+      conjunto={mundo.dados.conjunto}
+      aoEditarConjunto={aoEditarConjunto}
     />
   )
 }

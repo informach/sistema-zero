@@ -127,6 +127,9 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         // Para o menu saber se mostra a ferramenta. Nunca recusa.
         .get('/acesso', ({ headers }) => ({ aberto: s.aberto(atorDe(headers)) }))
         .get('/espacos', ({ headers }) => s.espacos(atorDe(headers)))
+        .get('/mundos/:id', ({ headers, params }) => s.abrirMundo(atorDe(headers), params.id), {
+          params: Id,
+        })
         .get(
           '/bibliotecas/:id/conjuntos',
           ({ headers, params, query }) => s.conjuntos.listar(atorDe(headers), params.id, query),

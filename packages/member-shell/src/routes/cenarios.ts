@@ -76,6 +76,7 @@ const REPASSES: readonly Repasse[] = [
     consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
   },
   { metodo: 'GET', caminho: exato(`espacos/${U}/mundos`) },
+  { metodo: 'GET', caminho: exato(`mundos/${U}`) },
   { metodo: 'POST', caminho: exato(`espacos/${U}/mundos`) },
   { metodo: 'PATCH', caminho: exato(`mundos/${U}`) },
   { metodo: 'DELETE', caminho: exato(`mundos/${U}`), corpo: null },

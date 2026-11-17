@@ -3,7 +3,14 @@ import { type JSX, useEffect, useState } from 'react'
 import { COPY } from '../copy'
 import { BIBLIOTECA_MOLDA_ID, useMoldes } from '../moldes'
 import { Capa } from '../pecas'
-import type { Biblioteca, CenariosHost, EscolhaDeModelo, ModeloDeBiblioteca } from '../portas'
+import type {
+  Biblioteca,
+  CenariosHost,
+  ConjuntoDeBiblioteca,
+  EscolhaDeModelo,
+  ModeloDeBiblioteca,
+} from '../portas'
+import { Conjuntos } from './Conjuntos'
 
 /** O tipo do dado arrastado da gaveta até o palco. */
 export const ARRASTO_DE_MODELO = 'application/x-sz-modelo'
@@ -25,6 +32,9 @@ export function Gaveta({
   aberta,
   aoMudarAbertura,
   modo = 'colocar',
+  aoPorConjunto,
+  conjuntoEmEdicao,
+  atualizacaoDosConjuntos = 0,
 }: {
   host: CenariosHost
   bibliotecas: readonly Biblioteca[]
@@ -36,11 +46,15 @@ export function Gaveta({
   aberta: boolean
   aoMudarAbertura(aberta: boolean): void
   modo?: 'colocar' | 'pincel'
+  aoPorConjunto?(conjunto: ConjuntoDeBiblioteca): Promise<void>
+  conjuntoEmEdicao?: string
+  atualizacaoDosConjuntos?: number
 }): JSX.Element {
   const [ativa, setAtiva] = useState<string | null>(
     bibliotecas[0]?.id ?? (moldesDisponiveis ? BIBLIOTECA_MOLDA_ID : null),
   )
   const [busca, setBusca] = useState('')
+  const [tipo, setTipo] = useState<'modelos' | 'conjuntos'>('modelos')
   const [buscaAplicada, setBuscaAplicada] = useState('')
   const [modelos, setModelos] = useState<ModeloDeBiblioteca[]>([])
   const [proximo, setProximo] = useState<string | null>(null)
@@ -101,6 +115,33 @@ export function Gaveta({
   return (
     <section className="mcn-gaveta mld-bar" aria-label={COPY.gaveta.titulo} data-aberta={aberta}>
       <div className="mcn-gaveta-topo">
+        {aoPorConjunto && !noMolda && modo === 'colocar' ? (
+          <fieldset className="sz-tool-chips">
+            <legend className="sr-only">Conteúdo da biblioteca</legend>
+            <button
+              type="button"
+              className="sz-tool-chip"
+              aria-pressed={tipo === 'modelos'}
+              onClick={() => {
+                setTipo('modelos')
+                aoMudarAbertura(true)
+              }}
+            >
+              Modelos
+            </button>
+            <button
+              type="button"
+              className="sz-tool-chip"
+              aria-pressed={tipo === 'conjuntos'}
+              onClick={() => {
+                setTipo('conjuntos')
+                aoMudarAbertura(true)
+              }}
+            >
+              Conjuntos
+            </button>
+          </fieldset>
+        ) : null}
         <button
           type="button"
           className="sz-tool-icon-btn"
@@ -167,6 +208,16 @@ export function Gaveta({
         <div className="mcn-gaveta-corpo">
           {!bibliotecaId ? (
             <p className="mcn-gaveta-aviso">{COPY.gaveta.semBibliotecas}</p>
+          ) : tipo === 'conjuntos' && !noMolda && modo === 'colocar' ? (
+            <Conjuntos
+              key={`${bibliotecaId}:${atualizacaoDosConjuntos}`}
+              host={host}
+              bibliotecaId={bibliotecaId}
+              busca={buscaAplicada}
+              compacto
+              aoPor={aoPorConjunto}
+              excluido={conjuntoEmEdicao}
+            />
           ) : estadoAtual === 'falhou' ? (
             <p className="mcn-gaveta-aviso">{COPY.inicio.falhou}</p>
           ) : estadoAtual === 'pronto' && visiveis.length === 0 ? (

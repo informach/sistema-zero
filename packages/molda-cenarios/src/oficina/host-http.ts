@@ -413,6 +413,9 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       )
       return conjunto(r.conjunto, r.espacoId)
     },
+    async obterMundo(id) {
+      return mundo(await pedir<MundoDoServidor>('GET', `mundos/${id}`))
+    },
     async versaoDoConjunto(id, revisao) {
       if (!espacoDoConjunto.has(id)) await host.obterConjunto(id)
       const espacoId = espacoDoConjunto.get(id)!

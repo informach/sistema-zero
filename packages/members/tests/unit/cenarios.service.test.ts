@@ -373,6 +373,13 @@ describe('mundos e cenários', () => {
     })
     expect(editado.bibliotecas).toEqual([base.biblioteca.id])
   })
+  test('abrir mundo por identidade conserva a autorização do espaço', async () => {
+    const base = await comCenario()
+    expect((await base.servico.abrirMundo(ana, base.mundo.id)).id).toBe(base.mundo.id)
+    await expect(
+      base.servico.abrirMundo({ ...ana, usuarioId: OUTRA, contaId: OUTRA }, base.mundo.id),
+    ).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
+  })
   test('o lote aplica tudo, sobe a revisão e o nome do cenário segue o documento', async () => {
     const base = await comCenario()
     const resposta = await base.servico.editarCenario(ana, base.cenario.id, {

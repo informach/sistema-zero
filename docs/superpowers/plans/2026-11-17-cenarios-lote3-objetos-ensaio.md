@@ -92,12 +92,14 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** uma definição de conjunto pertence à biblioteca/espaço; cópias referenciam essa definição e têm transformação própria. Mudar a definição atualiza as cópias sem sobrescrever seus cenários. A edição da definição reaproveita a oficina e a lista de comandos.
 
-- [ ] Definir o contrato e os índices de uso, com limite de expansão, modelos, formas, materiais e grupos internos.
-- [ ] Implementar salvar seleção como conjunto, organizar na biblioteca, colocar cópias e editar a definição.
-- [ ] Nome e miniatura na biblioteca; ensaiar praça funcional com apoios por contato e vínculos internos. Colocar, mover, girar, duplicar, salvar/reabrir e conferir IDs remapeados, posições relativas e proporções. Alterar a definição e reabrir versões anteriores dos cenários para provar que continuam resolvíveis e preservadas (issue 267).
-- [ ] Conferir atualização de todas as cópias, versões, conflitos, licença, exclusão e proteção de arquivos ainda usados.
-- [ ] Validar soma de objetos e orçamento antes de aceitar uma atualização que afete cópias existentes.
-- [ ] Testar dados e SQL reais, bordas HTTP e a experiência nos dois temas.
+- [x] Definir o contrato e os índices de uso, com limite de expansão, modelos, formas, materiais e grupos internos.
+- [x] Implementar salvar seleção como conjunto, organizar na biblioteca, colocar cópias e editar a definição.
+- [x] Nome e miniatura na biblioteca; ensaiar praça funcional com apoios por contato e vínculos internos. Colocar, mover, girar, duplicar, salvar/reabrir e conferir IDs remapeados, posições relativas e proporções. Alterar a definição e reabrir versões anteriores dos cenários para provar que continuam resolvíveis e preservadas (issue 267).
+- [x] Conferir atualização de todas as cópias, versões, conflitos, licença, exclusão e proteção de arquivos ainda usados.
+- [x] Validar soma de objetos e orçamento antes de aceitar uma atualização que afete cópias existentes.
+- [x] Testar dados e SQL reais, bordas HTTP e a experiência nos dois temas.
+
+Parte 3.6 verificada em escopo local; [relatório](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-conjuntos-biblioteca.md). Tipagem global tem pendências externas ao recorte e continua obrigatória antes de fechar o lote 3.
 
 ### 3.7 — Retratos das versões e eficiência dos objetos
 

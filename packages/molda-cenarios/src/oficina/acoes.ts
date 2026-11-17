@@ -11,12 +11,14 @@ import {
   LIMITES_CENARIO_V2,
   type ModeloDoCenario,
   posicaoNoMundo,
+  referenciarConjunto,
   referenciarModelo,
   type Transformacao,
   trocarModeloDosObjetos,
   type VolumeDeComposicao,
+  volumeDaMontagem,
 } from '@sistemazero/molda-cenarios-core/v2'
-import type { ModeloDeBiblioteca } from './portas'
+import type { ConjuntoDeBiblioteca, ModeloDeBiblioteca, VersaoDeConjunto } from './portas'
 
 /** Medidas verificadas numa cópia, disponíveis também a operações de leitura como copiar. */
 export function conferirMedidasDoDocumento(
@@ -174,6 +176,49 @@ export function comandosParaPor(
     tipo: 'instancia.criar',
     instancia: instanciaNoLugar(doc, referencia, modelo.nome, modelo.min[1], ponto, id, 'caixa'),
   })
+  return { comandos, id }
+}
+
+/** Assenta a composição inteira pela base, sem deformar os contatos entre suas peças. */
+export function comandosParaPorConjunto(
+  doc: DocumentoDeCenario,
+  conjunto: ConjuntoDeBiblioteca,
+  versao: VersaoDeConjunto,
+  ponto: LocalDeColocacao,
+  novoId: NovoId = novoIdAleatorio,
+): { comandos: ComandoDeCenario[]; id: string } {
+  if (versao.conjuntoId !== conjunto.id || versao.revisao !== conjunto.revisao)
+    throw new Error('A versão escolhida não corresponde ao conjunto')
+  const { definicao, comandos } = referenciarConjunto(doc, {
+    biblioteca: conjunto.bibliotecaId,
+    conjunto: conjunto.id,
+    revisao: versao.revisao,
+    nome: versao.nome,
+    conteudo: versao.conteudo,
+  })
+  const id = novoId()
+  const montagem = {
+    id,
+    nome: nomeLivre(doc, conjunto.nome),
+    grupo: null,
+    bloqueado: false,
+    oculto: false,
+    definicao: definicao.id,
+    transformacao: {
+      posicao: { x: ponto.x, y: 0, z: ponto.z },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    },
+  }
+  const preparado = {
+    ...doc,
+    definicoesConjuntos: [
+      ...(doc.definicoesConjuntos ?? []).filter((d) => d.id !== definicao.id),
+      definicao,
+    ],
+  }
+  montagem.transformacao.posicao.y = (ponto.y ?? 0) - volumeDaMontagem(preparado, montagem).min.y
+  comandos.push({ tipo: 'montagem.definir', montagem })
   return { comandos, id }
 }
 

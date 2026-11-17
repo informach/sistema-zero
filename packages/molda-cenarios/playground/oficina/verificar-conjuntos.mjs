@@ -253,6 +253,14 @@ try {
     assert.deepEqual(mudado.documento.definicoesConjuntos[0].conteudo, ids.conteudo)
     await fechar()
     await p.screenshot({ path: resolve(saida, `conjunto-depois-${tema}-${largura}.png`) })
+    await p.getByRole('button', { name: 'Luz e céu', exact: true }).click()
+    await p.getByRole('button', { name: 'Noite', exact: true }).click()
+    await salvo()
+    assert.equal((await ler()).documento.iluminacao.hora, 22)
+    await p.screenshot({ path: resolve(saida, `conjunto-noite-${tema}-${largura}.png`) })
+    await p.getByRole('button', { name: 'Meio-dia', exact: true }).click()
+    await salvo()
+    await p.getByRole('button', { name: 'Objetos', exact: true }).click()
     await tecla('Control+d')
     await aguardar(mudado.revisao + 1)
     const duplicado = await ler()
@@ -285,6 +293,7 @@ try {
       transformacoes: true,
       tamanhoUniforme: true,
       semClonesAutorais: true,
+      iluminacaoDiurnaNoturna: true,
       duplicar: true,
       separarUndo: true,
       reabrir: true,

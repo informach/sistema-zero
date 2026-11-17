@@ -345,9 +345,13 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async organizacaoDaBiblioteca(bibliotecaId) {
       await esperar()
       exigir(bibliotecas, bibliotecaId, 'A biblioteca')
-      const lista = [...modelos.values(), ...texturas.values()].filter(
-        (m) => m.bibliotecaId === bibliotecaId,
-      )
+      const lista = [
+        ...modelos.values(),
+        ...texturas.values(),
+        ...catalogoConjuntos
+          .organizacaoDaBiblioteca(bibliotecaId)
+          .map((c) => ({ ...c, bibliotecaId })),
+      ].filter((m) => m.bibliotecaId === bibliotecaId)
       return {
         pastas: [...new Set(lista.map((m) => m.pasta))].sort(),
         etiquetas: [...new Set(lista.flatMap((m) => m.etiquetas))].sort(),
@@ -533,6 +537,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       return copia(
         [...mundos.values()].filter((j) => j.espacoId === espacoId && !j.bibliotecaConjuntosId),
       )
+    },
+    async obterMundo(id) {
+      await esperar()
+      return copia(exigir(mundos, id, 'O mundo'))
     },
     async criarMundo(espacoId, nome) {
       await esperar()

@@ -58,6 +58,28 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
 }
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
 
+test('fonte do conjunto abre seu mundo por ID autorizado, sem aparecer na lista de jogos', async () => {
+  const base = await comConjunto()
+  const fonte = await json(
+    await pedir(base.ctx.app, 'POST', `/members/cenarios/conjuntos/${base.conjunto.id}/editar`),
+  )
+  const r = await pedir(base.ctx.app, 'GET', `/members/cenarios/mundos/${fonte.mundo.id}`)
+  expect(r.status).toBe(200)
+  expect((await json(r)).bibliotecaConjuntosId).toBe(base.biblioteca.id)
+  const jogos = await json(
+    await pedir(base.ctx.app, 'GET', `/members/cenarios/espacos/${base.espaco.id}/mundos`),
+  )
+  expect(jogos.some((m: { id: string }) => m.id === fonte.mundo.id)).toBe(false)
+  expect(
+    (
+      await pedir(base.ctx.app, 'GET', `/members/cenarios/mundos/${fonte.mundo.id}`, undefined, {
+        ...daEquipe,
+        'x-auth-user-id': CLIENTE,
+      })
+    ).status,
+  ).toBe(404)
+})
+
 async function comConjunto() {
   const base = await comBiblioteca()
   const d = criarDocumentoVazio('origem', 'Jardim')

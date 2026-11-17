@@ -7,6 +7,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import { enderecoDaRota, idDoEndereco as id, rotaDoEndereco } from '../../lib/cenarios-endereco'
 import { criarFonteDeMoldes, criarFonteDeTexturas } from '../../lib/cenarios-moldes'
 import { createCreationsCloud } from '../../lib/creations-cloud'
 import { sessionFetch } from '../../lib/session-fetch'
@@ -16,35 +17,7 @@ import { useFocusMode } from './focus-mode'
 // O pacote é só de navegador (WebGL, three): entra por `import()` num efeito, como o Molda.
 type Modulo = typeof import('@sistemazero/molda-cenarios/oficina')
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const id = (valor: string | null) => (valor && UUID.test(valor) ? valor.toLowerCase() : null)
-
-/** Onde a oficina abre, lido do endereço: `?mundo=…&cenario=…`, `?biblioteca=…`, `?aba=bibliotecas`. */
-export function rotaDoEndereco(consulta: URLSearchParams): RotaDosCenarios {
-  const mundoId = id(consulta.get('mundo'))
-  const cenarioId = id(consulta.get('cenario'))
-  const bibliotecaId =
-    consulta.get('biblioteca') === 'molda' ? 'molda' : id(consulta.get('biblioteca'))
-  if (mundoId && cenarioId) return { tela: 'oficina', mundoId, cenarioId }
-  if (bibliotecaId)
-    return { tela: 'biblioteca', bibliotecaId, ...(mundoId ? { voltarAoMundo: mundoId } : {}) }
-  if (mundoId) return { tela: 'mundo', mundoId }
-  return { tela: 'inicio', aba: consulta.get('aba') === 'bibliotecas' ? 'bibliotecas' : 'mundos' }
-}
-
-/** O endereço de uma tela da oficina: recarregar a página volta para o mesmo lugar. */
-export function enderecoDaRota(rota: RotaDosCenarios, espacoId: string): string {
-  const consulta = new URLSearchParams({ espaco: espacoId })
-  if (rota.tela === 'oficina') {
-    consulta.set('mundo', rota.mundoId)
-    consulta.set('cenario', rota.cenarioId)
-  } else if (rota.tela === 'mundo') consulta.set('mundo', rota.mundoId)
-  else if (rota.tela === 'biblioteca') {
-    consulta.set('biblioteca', rota.bibliotecaId)
-    if (rota.voltarAoMundo) consulta.set('mundo', rota.voltarAoMundo)
-  } else if (rota.aba === 'bibliotecas') consulta.set('aba', 'bibliotecas')
-  return `?${consulta}`
-}
+export { enderecoDaRota, rotaDoEndereco } from '../../lib/cenarios-endereco'
 
 /**
  * Molda Cenários (a oficina de cenários 3D) dentro da comunidade, Kids e adulta. O pacote traz

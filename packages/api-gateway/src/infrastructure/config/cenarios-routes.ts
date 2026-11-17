@@ -99,6 +99,7 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     ler('arquivo', '/espacos/:espacoId/arquivos/:digest'),
 
     ler('mundos', '/espacos/:espacoId/mundos'),
+    ler('mundo', '/mundos/:id'),
     escrever('mundo-criar', 'POST', '/espacos/:espacoId/mundos'),
     escrever('mundo-editar', 'PATCH', '/mundos/:id'),
     escrever('mundo-apagar', 'DELETE', '/mundos/:id'),

@@ -660,6 +660,10 @@ export class CenariosService {
     return mundoView(criado)
   }
 
+  async abrirMundo(ator: Ator, id: string): Promise<MundoView> {
+    return mundoView((await this.mundoDe(ator, id)).mundo)
+  }
+
   async editarMundo(
     ator: Ator,
     id: string,

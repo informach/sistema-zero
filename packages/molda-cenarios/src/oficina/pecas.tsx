@@ -110,7 +110,10 @@ export function Dialogo({
       className="mcn-dialogo"
       aria-labelledby={idDoTitulo}
       onClose={aoFechar}
-      onCancel={aoFechar}
+      onCancel={(evento) => {
+        evento.preventDefault()
+        aoFechar()
+      }}
       onClick={(evento) => {
         // Toque fora do cartão (no fundo escuro) fecha.
         if (evento.target === ref.current) aoFechar()
@@ -134,6 +137,7 @@ export function DialogoDeNome({
   aoConfirmar,
   aoFechar,
   children,
+  nomeFixo = false,
 }: {
   titulo: string
   inicial: string
@@ -141,6 +145,7 @@ export function DialogoDeNome({
   aoConfirmar(nome: string): Promise<void> | void
   aoFechar(): void
   children?: ReactNode
+  nomeFixo?: boolean
 }): JSX.Element {
   const [nome, setNome] = useState(inicial)
   const [ocupado, setOcupado] = useState(false)
@@ -163,7 +168,12 @@ export function DialogoDeNome({
     }
   }
   return (
-    <Dialogo titulo={titulo} aoFechar={aoFechar}>
+    <Dialogo
+      titulo={titulo}
+      aoFechar={() => {
+        if (!ocupado) aoFechar()
+      }}
+    >
       <form onSubmit={enviar} className="flex flex-col gap-4">
         <label htmlFor={idDoCampo} className="mcn-campo">
           <span>{COPY.nome.rotulo}</span>
@@ -172,6 +182,7 @@ export function DialogoDeNome({
             // biome-ignore lint/a11y/noAutofocus: o diálogo existe para este campo
             autoFocus
             value={nome}
+            disabled={ocupado || nomeFixo}
             maxLength={120}
             autoComplete="off"
             onChange={(evento) => {
@@ -182,7 +193,11 @@ export function DialogoDeNome({
             aria-invalid={erro ? true : undefined}
           />
         </label>
-        {children}
+        {children ? (
+          <fieldset disabled={ocupado} className="contents">
+            {children}
+          </fieldset>
+        ) : null}
         {erro ? (
           <p role="alert" className="font-semibold text-mld-danger text-sm">
             {erro}
@@ -215,7 +230,12 @@ export function DialogoDeApagar({
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   return (
-    <Dialogo titulo={titulo} aoFechar={aoFechar}>
+    <Dialogo
+      titulo={titulo}
+      aoFechar={() => {
+        if (!ocupado) aoFechar()
+      }}
+    >
       <p className="text-base text-mld-text">{texto}</p>
       {erro ? (
         <p role="alert" className="mt-3 font-semibold text-mld-danger text-sm">

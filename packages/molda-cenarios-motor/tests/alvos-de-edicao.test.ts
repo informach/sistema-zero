@@ -8,7 +8,8 @@ import { Euler, Group, Matrix4, Quaternion, Vector3 } from 'three'
 import { criarAlvosDeEdicao, type LocalDoObjeto } from '../src/alvos-de-edicao'
 import { criarModeloDaForma } from '../src/formas'
 import { LoteDoModelo } from '../src/lotes'
-import { matrizDoObjeto } from '../src/matematica'
+import { matrizDoObjeto, transformacaoDaMatriz } from '../src/matematica'
+import { prepararPreviaDosApoios } from '../src/previa-dos-apoios'
 
 test('alvo da montagem transforma o lote real como unidade, com giros XYZ e sem acumular erro entre gestos', () => {
   const origem = criarDocumentoVazio('origem', 'Jardim')
@@ -54,6 +55,21 @@ test('alvo da montagem transforma o lote real como unidade, com giros XYZ e sem 
       },
     },
   ]
+  d.formas = [{ ...origem.formas[0]!, id: 'exterior' }]
+  d.instancias = [
+    {
+      ...structuredClone(origem.instancias[0]!),
+      id: 'flor',
+      modelo: 'exterior',
+      apoio: { tipo: 'objeto', objeto: 'jardim', contato: { x: 1, y: 2, z: 0 }, deslocamento: 0.1 },
+    },
+    {
+      ...structuredClone(origem.instancias[0]!),
+      id: 'luz',
+      modelo: 'exterior',
+      apoio: { tipo: 'objeto', objeto: 'flor', contato: { x: 0, y: 1, z: 0 }, deslocamento: 0.2 },
+    },
+  ]
   const antes = structuredClone(d),
     projecao = resolverConjuntos(d),
     visual = projecao.documento
@@ -71,11 +87,12 @@ test('alvo da montagem transforma o lote real como unidade, com giros XYZ e sem 
     )
     const alvos = criarAlvosDeEdicao(d, locais, projecao.origens),
       alvo = alvos.get('jardim')!
-    expect([...alvos.keys()]).toEqual(['jardim'])
+    expect([...alvos.keys()]).toEqual(['flor', 'luz', 'jardim'])
     expect(alvo.uniforme).toBe(true)
     expect(alvo.caixa.isEmpty()).toBe(false)
     const geometria = lote.malhas[0]!.geometry,
       material = lote.malhas[0]!.material
+    const atualizarApoios = prepararPreviaDosApoios(d, locais, ['jardim'])
     for (let n = 0; n < 20; n++) {
       const t = {
         posicao: { x: 30 + n, y: 5 - n / 10, z: -10 },
@@ -88,6 +105,7 @@ test('alvo da montagem transforma o lote real como unidade, com giros XYZ e sem 
         new Vector3(3, 3, 3),
       )
       alvo.atualizar()
+      atualizarApoios(new Map([['jardim', alvo.matriz]]))
       const nova = structuredClone(d)
       nova.montagens![0]!.transformacao = t
       const esperado = resolverConjuntos(nova).documento
@@ -102,6 +120,26 @@ test('alvo da montagem transforma o lote real como unidade, com giros XYZ e sem 
         })
       })
     }
+    const selecionados = ['jardim', 'flor'],
+      misto = prepararPreviaDosApoios(d, locais, selecionados)
+    const flor = locais.get('flor')!.matriz
+    flor.elements[12]! += 3
+    const florAntes = flor.clone()
+    misto(
+      new Map([
+        ['jardim', alvo.matriz],
+        ['flor', flor],
+      ]),
+    )
+    expect(flor.elements).toEqual(florAntes.elements)
+    const misturado = structuredClone(d)
+    misturado.montagens![0]!.transformacao = transformacaoDaMatriz(alvo.matriz)
+    misturado.instancias[0]!.transformacao = transformacaoDaMatriz(flor)
+    misturado.instancias[0]!.apoio = { tipo: 'absoluto' }
+    const correto = matrizDoObjeto(misturado, misturado.instancias[1]!, new Matrix4())
+    locais.get('luz')!.matriz.elements.forEach((v, i) => {
+      expect(v).toBeCloseTo(correto.elements[i]!, 6)
+    })
     expect(lote.malhas).toHaveLength(1)
     expect(lote.malhas[0]!.geometry).toBe(geometria)
     expect(lote.malhas[0]!.material).toBe(material)

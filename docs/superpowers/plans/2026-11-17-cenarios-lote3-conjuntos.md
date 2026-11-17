@@ -29,30 +29,30 @@
 ## 1. Núcleo e representação
 
 - [x] Extrair os esquemas elementares sem mudar sua validação e rodar a regressão existente. `entidades-schema.ts` e fragmento básico sem dependência circular; contratos públicos reexportados.
-- [ ] Definir conteúdo fixado, montagem, expansão limitada, identidade dos filhos e consulta de seleção/volume.
-- [ ] Implementar intenções de montar, transformar, duplicar, desvincular, remover e atualizar definição; inversão, clipboard e restauração coerentes.
-- [ ] Testar proporções, giros XYZ, contato/apoios internos, remapeamento, cadeados, limites, referências malformadas e preservação da origem/histórico.
+- [x] Definir conteúdo fixado, montagem, expansão limitada, identidade dos filhos e consulta de seleção/volume.
+- [x] Implementar intenções de montar, transformar, duplicar, desvincular, remover e atualizar definição; inversão, clipboard e restauração coerentes.
+- [x] Testar proporções, giros XYZ, contato/apoios internos, remapeamento, cadeados, limites, referências malformadas e preservação da origem/histórico.
 
 ## 2. Persistência e atualização viva
 
-- [ ] Acrescentar domínio/portas, tabelas de conjuntos/revisões/usos e índices. Gerar DDL com o script do projeto; não editar SQL gerado.
-- [ ] Serviço e repositório conferem espaço/licenças/arquivos, conflito de versão e limites. Atualizar cabeças afetadas atomicamente, com os mesmos lotes/histórico.
-- [ ] Conservar snapshots antigos e arquivos necessários; conferir remoção de biblioteca/conjunto, exclusão de cenário e liberação final.
-- [ ] Rotas Members/gateway/BFF e hosts HTTP/memória com o mesmo contrato. Provar SQL real, concorrência e recusas entre espaços.
+- [x] Acrescentar domínio/portas, tabelas de conjuntos/revisões/usos e índices. Gerar DDL com o script do projeto; não editar SQL gerado.
+- [x] Serviço e repositório conferem espaço/licenças/arquivos, conflito de versão e limites. Atualizar cabeças afetadas atomicamente, com os mesmos lotes/histórico.
+- [x] Conservar snapshots antigos e arquivos necessários; conferir remoção de biblioteca/conjunto, exclusão de cenário e liberação final.
+- [x] Rotas Members/gateway/BFF e hosts HTTP/memória com o mesmo contrato. Provar SQL real, concorrência e recusas entre espaços.
 
 ## 3. Biblioteca, oficina e motor
 
-- [ ] Salvar seleção com nome e miniatura, listar/buscar/organizar conjuntos na biblioteca e gaveta existentes.
-- [ ] Colocar cópias, selecionar raiz, mover/girar/dimensionar/duplicar/apagar e editar definição pela oficina existente; sem outro editor ou armazenamento.
-- [ ] Mostrar revisão e estado de atualização, aplicar undo/redo e restaurar após reabrir. Cancelar resposta atrasada ou edição de outra versão.
-- [ ] Ajustar renderização, picking, árvore, camadas e volumes às montagens; retirar recursos sem destruir conteúdo compartilhado.
+- [x] Salvar seleção com nome e miniatura, listar/buscar/organizar conjuntos na biblioteca e gaveta existentes.
+- [x] Colocar cópias, selecionar raiz, mover/girar/dimensionar/duplicar/apagar e editar definição pela oficina existente; sem outro editor ou armazenamento.
+- [x] Mostrar revisão e estado de atualização, aplicar undo/redo e restaurar após reabrir. Cancelar resposta atrasada ou edição de outra versão.
+- [x] Ajustar renderização, picking, árvore, camadas e volumes às montagens; retirar recursos sem destruir conteúdo compartilhado.
 
 ## 4. Verificação e revisão
 
-- [ ] Ensaio de composição com GLBs reais, apoio por contato e pastas internas: colocar/mover/girar/duplicar/reabrir, conferindo proporções e relações.
-- [ ] Alterar definição usada por dois cenários; conferir atualização das cabeças, revisão antiga intacta, conflito, undo/redo, limite recusado e arquivos preservados.
-- [ ] Conferir teclado/toque, claro/escuro, 390/1.024/1.440 px, miniaturas e recursos em ciclos.
-- [ ] Regressões, tipagem, build, revisão local, relatório/evidências e commit/push. Só depois marcar 3.6 e seguir a 3.7. Lote 3 continua aberto até 3.8.
+- [x] Ensaio de composição com GLBs reais, apoio por contato e pastas internas: colocar/mover/girar/duplicar/reabrir, conferindo proporções e relações.
+- [x] Alterar definição usada por dois cenários; conferir atualização das cabeças, revisão antiga intacta, conflito, undo/redo, limite recusado e arquivos preservados.
+- [x] Conferir teclado/toque, claro/escuro, 390/1.024/1.440 px, miniaturas e recursos em ciclos.
+- [x] Regressões, tipagem, build, revisão local, relatório/evidências e commit/push. Só depois marcar 3.6 e seguir a 3.7. Lote 3 continua aberto até 3.8.
 
 ## Registro intermediário — não fecha a parte 3.6
 
@@ -84,3 +84,11 @@ Atualização intermediária posterior: migrações geradas `0158_fluffy_maggott
 Atualização posterior: serviço/rotas/gateway/BFF e miniaturas transacionais estão no checkpoint `a0e593698`. Hosts HTTP/memória também foram conectados e verificados: oficina 58 testes/395 asserções, tipagem/build e regressões de clipboard e pincel em quatro configurações de tela. Ver `docs/plans/2026-11-16-cenarios-reforma/revisao-lote3-conjuntos-edicao-http.md`. Não fechar 3.6: ainda faltam seus controles visuais, fotografia e integração das montagens ao palco/seleção/organização/pincel.
 
 Atualização seguinte: hosts publicados em `36b8a1293`. Projeção de leitura separada, raiz selecionável, painel de transformação, organização, duplicação, separação/undo e ocupação do pincel passaram nos testes de núcleo/motor/oficina e no navegador com GLB real (quatro configurações, toque emulado). Núcleo 155/3.954, motor 45/1.665, oficina 59/406, Postgres 33/300; tipagem dos três pacotes e build aprovados. Evidências e pendências no [checkpoint do palco](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-conjuntos-palco.md). A parte 3.6 permanece aberta. Próxima implementação: biblioteca/gaveta e contexto de edição/publicação da definição, na oficina existente, com fotografia isolada e cancelamento. Ainda conferir alças nativas, cancelamento de gesto/recusa, prévia de apoios externos e regressões finais antes de fechar.
+
+### Biblioteca e publicação pela oficina — revisão de 17/11
+
+A parte interna 3.6 foi implementada, testada e revisada no escopo descrito acima. Relatório: [biblioteca, fonte e fotografias](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-conjuntos-biblioteca.md). Abrir, criar composição pela seleção, colocar, organizar, editar fonte, publicar e remover catálogo foram exercitados nos quatro layouts. A revisão corrigiu prévia recusada, cancelamento do ponteiro, atualização durante arraste, apoios externos e fotografia de operação repetida após outra publicação.
+
+Núcleo 155/3.954, motor 45/2.322, oficina 60/415, Members 48/217, BFF/endereço 28/155, gateway 5/285 e Postgres 33/300 aprovados. Tipagem de núcleo/motor/oficina e build conferidos. As verificações globais de Members e member-shell ainda apresentam erros fora deste recorte, listados no relatório; devem passar antes do fechamento do lote 3. Não afirmar aprovação global ou implantação.
+
+O lote 3 continua aberto. Próxima parte interna: 3.7, retratos das versões e eficiência. Depois 3.8, Testar com avatar e medição de percursos. Lotes 4–10, revisão completa e implantação/validação finais permanecem pendentes.

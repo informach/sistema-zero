@@ -302,6 +302,7 @@ export interface CenariosHost {
   ): Promise<{ espacoId: string; digests: string[] }>
 
   listarMundos(espacoId: string): Promise<Mundo[]>
+  obterMundo(id: string): Promise<Mundo>
   criarMundo(espacoId: string, nome: string): Promise<Mundo>
   editarMundo(id: string, dados: { nome?: string; bibliotecas?: string[] }): Promise<Mundo>
   apagarMundo(id: string): Promise<void>

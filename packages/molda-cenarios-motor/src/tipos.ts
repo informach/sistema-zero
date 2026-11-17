@@ -73,6 +73,8 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  /** Retratos isolados de composições, sem chão, céu ou elementos de edição. */
+  fotografia?: boolean
   /** Os bytes do GLB de um modelo da tabela do cenário. O host decide de onde vêm. */
   carregarModelo(modelo: ModeloDoCenario): Promise<ArrayBuffer>
   carregarTextura?(textura: TexturaDoCenario, sinal: AbortSignal): Promise<ArrayBuffer>
@@ -90,7 +92,8 @@ export interface OpcoesDoPalco {
   aoPreverEspalhamento?(estado: EstadoDoEspalhamento): void
   aoEspalhar?(gesto: GestoDeEspalhamento): void
   /** Fim de um gesto de mover, girar ou mudar o tamanho. */
-  aoTransformar?(mudancas: MudancaDeTransformacao[]): void
+  // biome-ignore lint/suspicious/noConfusingVoidType: consumidores sem retorno continuam válidos; false recusa a prévia
+  aoTransformar?(mudancas: MudancaDeTransformacao[]): boolean | void
   aoGesto?(ativo: boolean): void
   aoMedir?(estatisticas: Estatisticas): void
   aoFalhar?(modelo: ModeloDoCenario, erro: unknown): void
@@ -119,5 +122,7 @@ export interface Palco {
   enquadrar(ids?: readonly string[]): void
   /** Uma foto do palco agora, sem as alças de edição. */
   capturar(largura?: number): Promise<Blob | null>
+  /** Aguarda os arquivos reais; recusa falhas, cancelamento e tempo esgotado. */
+  aguardarRecursos(sinal?: AbortSignal): Promise<void>
   destruir(): void
 }

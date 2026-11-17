@@ -4,8 +4,13 @@ import {
   conteudoDoCenarioDeConjunto,
   criarDocumentoVazio,
   referenciarConjunto,
+  volumeDaMontagem,
 } from '@sistemazero/molda-cenarios-core/v2'
-import { comandosDoGesto, comandosParaDuplicar } from '../src/oficina/acoes'
+import {
+  comandosDoGesto,
+  comandosParaDuplicar,
+  comandosParaPorConjunto,
+} from '../src/oficina/acoes'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostHttp } from '../src/oficina/host-http'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -55,6 +60,46 @@ async function base() {
   const conjunto = await host.criarConjunto(biblioteca.id, dados)
   return { host, biblioteca, conjunto, conteudo, dados }
 }
+
+test('colocar conjunto assenta o corpo inteiro na superfície e fixa o nome histórico da versão', async () => {
+  const { host, biblioteca, conjunto } = await base()
+  const versao = await host.versaoDoConjunto(conjunto.id, 1)
+  const renomeado = await host.editarConjunto(conjunto.id, { nome: 'Novo nome' })
+  const mundo = await host.criarMundo('conta', 'Colocação')
+  await host.editarMundo(mundo.id, { bibliotecas: [biblioteca.id] })
+  const cena = await host.criarCenario(mundo.id, 'Lago'),
+    aberto = await host.abrirCenario(cena.id)
+  const antes = structuredClone(aberto.documento)
+  const preparado = comandosParaPorConjunto(
+    aberto.documento,
+    renomeado,
+    versao,
+    { x: 7, y: 4, z: -9 },
+    () => 'jardim',
+  )
+  await host.editarCenario(cena.id, 0, preparado.comandos, 'colocar-jardim')
+  const doc = (await host.abrirCenario(cena.id)).documento,
+    montagem = doc.montagens![0]!
+  expect(volumeDaMontagem(doc, montagem).min.y).toBeCloseTo(4, 8)
+  expect(montagem.nome).toBe('Novo nome')
+  expect(doc.definicoesConjuntos![0]!.nome).toBe(versao.nome)
+  expect(doc.definicoesConjuntos![0]!.conteudo).toEqual(versao.conteudo)
+  expect(aberto.documento).toEqual(antes)
+  const repetido = comandosParaPorConjunto(
+    doc,
+    renomeado,
+    versao,
+    { x: 0, y: 0, z: 0 },
+    () => 'outro',
+  )
+  expect(repetido.comandos.map((c) => c.tipo)).toEqual(['montagem.definir'])
+  expect(() =>
+    comandosParaPorConjunto(doc, { ...renomeado, revisao: 2 }, versao, { x: 0, z: 0 }),
+  ).toThrow('versão')
+  const fonte = await host.editarConjuntoNaOficina(conjunto.id)
+  expect((await host.obterMundo(fonte.mundo.id)).bibliotecaConjuntosId).toBe(biblioteca.id)
+  expect((await host.organizacaoDaBiblioteca(biblioteca.id)).pastas).toContain('Campos')
+})
 
 test('host local publica cópias e reabre fonte/histórico sem deformar a composição ou alterar revisões antigas', async () => {
   const { host, biblioteca, conjunto, dados, conteudo } = await base()
