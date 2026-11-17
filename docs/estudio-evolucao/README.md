@@ -39,7 +39,8 @@ isolamento pode acrescentar bytes a ele.
 | B1 | Marca de execução (não rodar sozinho depois de uma queda) | pendente |
 | B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
 | B4 | Estudo do Jogo 2D em Worker | pendente |
-| C | Clássico em escala (perfil, IR incremental, montagem sob demanda) | pendente |
+| C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
+| C1 a C5 | Clássico em escala | pendente; a ordem mudou com a medição (diagnósticos e geração primeiro) |
 | D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente |
 
 ## A1: o que existe e como rodar
