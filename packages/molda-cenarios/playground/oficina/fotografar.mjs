@@ -1,7 +1,9 @@
 // Fotografa as telas da oficina no playground (http://127.0.0.1:4541), para conferir o visual.
 // Uso: node playground/oficina/fotografar.mjs <pasta de saída> [tela ...]
 // Telas: inicio, bibliotecas, mundo, oficina, oficina-escolha, oficina-luz, celular, escuro.
-import { mkdirSync } from 'node:fs'
+
+import assert from 'node:assert/strict'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright-core'
 
@@ -17,8 +19,12 @@ const navegador = await chromium.launch({
 })
 const erros = []
 
-async function abrir(caminho, largura, altura) {
-  const pagina = await navegador.newPage({ viewport: { width: largura, height: altura } })
+async function abrir(caminho, largura, altura, toque = false) {
+  const pagina = await navegador.newPage({
+    viewport: { width: largura, height: altura },
+    hasTouch: toque,
+    isMobile: toque,
+  })
   pagina.on('console', (m) => m.type() === 'error' && erros.push(`${caminho}: ${m.text()}`))
   pagina.on('pageerror', (e) => erros.push(`${caminho}: ${e.message}`))
   await pagina.goto(`${BASE}/${caminho}`)
@@ -126,6 +132,67 @@ if (quer('escuro')) {
   await palcoPronto(o)
   await foto(o, '14-oficina-escuro')
   await o.close()
+}
+
+if (quer('toque')) {
+  const resultados = []
+  for (const largura of [390, 1024]) {
+    const p = await abrir('?tela=oficina', largura, 844, true)
+    await palcoPronto(p)
+    const lerDocumento = () =>
+      p.evaluate(async () => {
+        const host = globalThis.__cenarios.host
+        const mundo = (await host.listarMundos('conta')).find((m) => m.nome === 'Ilha do Farol')
+        const cenario = (await host.listarCenarios(mundo.id)).find(
+          (c) => c.nome === 'Vila da praia',
+        )
+        return (await host.abrirCenario(cenario.id)).documento
+      })
+    const antes = await lerDocumento()
+    await p.getByRole('button', { name: /^Pôr / }).first().tap()
+    await p.getByText('Guardado', { exact: true }).waitFor()
+    const depois = await lerDocumento()
+    assert.equal(depois.instancias.length, antes.instancias.length + 1)
+    await p.getByRole('button', { name: 'Escolher', exact: true }).tap()
+    const grade = p.getByRole('button', { name: 'Encaixar', exact: true })
+    await grade.tap()
+    assert.equal(await grade.getAttribute('aria-pressed'), 'false')
+    await grade.tap()
+    assert.equal(await grade.getAttribute('aria-pressed'), 'true')
+    const canvas = p.locator('.mcn-palco-tela'),
+      caixa = await canvas.boundingBox()
+    const imagemAntes = await canvas.screenshot()
+    const sessao = await p.context().newCDPSession(p)
+    const ponto = (dx) => ({
+      x: caixa.x + caixa.width * 0.7 + dx,
+      y: caixa.y + caixa.height * 0.45,
+      radiusX: 2,
+      radiusY: 2,
+      force: 1,
+    })
+    await sessao.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [ponto(0)] })
+    for (const dx of [10, 20, 30, 40])
+      await sessao.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [ponto(dx)] })
+    await sessao.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+    await p.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    )
+    assert.notDeepEqual(await canvas.screenshot(), imagemAntes, 'O gesto precisa alterar a vista')
+    assert.deepEqual(await lerDocumento(), depois, 'Mover a câmera não altera a autoria')
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    await p.screenshot({ path: join(saida, `toque-${largura}.png`) })
+    resultados.push({
+      largura,
+      porModeloComToque: true,
+      grade: true,
+      orbitarComToque: true,
+      autoriaPreservada: true,
+      semRolagemHorizontal: true,
+    })
+    await p.close()
+  }
+  writeFileSync(join(saida, 'toque.json'), JSON.stringify({ resultados, erros }, null, 2))
+  console.log(JSON.stringify({ resultados, erros }))
 }
 
 await navegador.close()

@@ -12,6 +12,7 @@
 
 ## Restrições gerais
 
+- **Correção de sequência solicitada e confirmada pela usuária:** fechar um lote por vez, na ordem. Prioridade exclusiva agora: encerrar o lote 1. Depois encerrar o 2; só então retomar o 3. Preservar o recorte já iniciado do 3, sem expandi-lo. Cada fechamento exige implementação integral, teste, revisão, documentação, commit e push. A autorização de execução contínua continua válida, sem aprovações intermediárias.
 - Conferir `staging` local antes do trabalho; commits por caminhos; preservar alterações externas; push dos lotes verificados.
 - Uma verificação pesada por vez. Nunca manter playground, Next e e2e pesados juntos; uma sessão de typecheck.
 - Manter isolamento do jogo e do host. Núcleo sem React/Three/IO; dados autorais separados de câmera e ensaio.
@@ -53,6 +54,12 @@ Cada lote deve registrar: requisitos cobertos (com referência às seções da e
 **Correção implementada, aguardando prova remota:** [integridade e FBX real](../../plans/2026-11-16-cenarios-reforma/revisao-integridade-importacao.md). Conferência SHA/tamanho/GLB em stream no BFF, PUT condicional, prova tipada comparada à reserva e MIME PNG/WebP preservado (DDL 0155). Postgres descartável: 12 testes; BFF/conteúdo: 26; cliente HTTP: 11; núcleo: 47; Members serviço/HTTP: 32. Tipagem Members, member-shell e oficina conferida. FBX binário original do Farol importado pelo worker no Chrome com cinco imagens e escala de 23,9767 m. Arquivos privados fora do Git. Não fechar os lotes 1/2: prova remota/CORS, Kids, texturas, conjuntos e conversão ainda pendem.
 
 **CI remoto `413359d31`:** testes e jobs especializados passaram, mas a tipagem geral falhou em `core/src/avatar/avatar.test.ts:633` por expectativa `string | undefined`; deploy-staging pulado. Corrigida a guarda explícita da variante, sem mudar o avatar nem relaxar testes; 38 testes do arquivo e typecheck do core passaram. Aguardar o novo CI. Não confundir push com implantação.
+
+**Último recorte enviado:** `cc227425c` (integridade), precedido por `23660deb5` (guarda no teste do avatar). CI `43980464489` em andamento. O CORS do bucket `testes-ugc` foi conferido e estendido apenas com `if-none-match`, preservando regras e origens; preflight das duas origens de staging retornou 204 com o cabeçalho permitido. A conferência não torna o bucket público. Prova completa de upload condicional ainda depende da implantação.
+
+**Recorte do lote 3 preservado, sem continuidade até fechar 1/2:** alinhamento, distribuição por centro/vãos, repetição em fila/círculo e variação com semente, painel integrado e medidas de volume. Núcleo 51 testes, oficina 33, motor 10; ensaio Chrome claro/escuro aprovou operações, reabertura e desfazer. Não fecha lote 3. Faltam sua revisão integral, ferramentas restantes e validações mais amplas. A mudança de prioridade foi aceita explicitamente pela usuária; não iniciar outra frente de produto enquanto o lote 1 estiver aberto.
+
+**Avanço exclusivo no lote 1:** [revisão dos dois apps e armazenamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote1-dois-apps.md). Staging adulto e Kids: upload, pôr objeto, X=2,5 m, giro=45°, escala=1,3, grade e recarga conferidos pela API (revisão 4). No Kids foi usado perfil temporário da própria conta da equipe; arquivado com permissão revogada, sem mudar perfis reais. Corrigida a prova de sessão na limpeza; a passagem revisada terminou com exit 0. Demonstração local recuperada preservando caminhos únicos entre variantes com mesmo nome curto. Teste adicional usou as funções de produção e o Chrome contra R2 real: PUT 200, sobrescrita 412, hash/tamanho/GLB conferidos nas duas origens, arquivos QA removidos. Falta conferir o novo BFF/HMAC/Members implantado pelo CI de `cc227425c` antes de fechar o lote 1. Não iniciar lote 2 enquanto isso.
 
 ## Estado inicial auditado
 

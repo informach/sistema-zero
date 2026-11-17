@@ -1,0 +1,17 @@
+{
+  "checks": [
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "primeiroPut": 200,
+      "sobrescritaRecusada": 412,
+      "hashETamanhoConferidos": true
+    },
+    {
+      "origem": "https://community-kids-staging.up.railway.app",
+      "primeiroPut": 200,
+      "sobrescritaRecusada": 412,
+      "hashETamanhoConferidos": true
+    }
+  ],
+  "arquivosTemporariosRemovidos": true
+}

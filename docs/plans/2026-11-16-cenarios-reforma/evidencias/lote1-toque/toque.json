@@ -1,0 +1,21 @@
+{
+  "resultados": [
+    {
+      "largura": 390,
+      "porModeloComToque": true,
+      "grade": true,
+      "orbitarComToque": true,
+      "autoriaPreservada": true,
+      "semRolagemHorizontal": true
+    },
+    {
+      "largura": 1024,
+      "porModeloComToque": true,
+      "grade": true,
+      "orbitarComToque": true,
+      "autoriaPreservada": true,
+      "semRolagemHorizontal": true
+    }
+  ],
+  "erros": []
+}

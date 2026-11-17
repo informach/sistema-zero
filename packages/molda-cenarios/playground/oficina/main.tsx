@@ -1,3 +1,4 @@
+import type { EntradaDeImportacao } from '@sistemazero/molda-cenarios-motor'
 import { createRoot } from 'react-dom/client'
 import {
   type CenariosHost,
@@ -57,13 +58,18 @@ async function trazerDoAcervo(
   const escolhidos: string[] = []
   for (const comeco of comecos)
     escolhidos.push(...lista.filter((arquivo) => arquivo.startsWith(comeco)).slice(0, 3))
-  const arquivos: File[] = []
-  for (const nome of escolhidos) {
+  const arquivos: EntradaDeImportacao[] = []
+  for (const nome of new Set(escolhidos)) {
     const resposta = await fetch(`/acervo/${nome}`)
     if (!resposta.ok) continue
     // "arvore_01_pacote.aaddbd6a2032.glb" vira "arvore_01.glb" para o nome do modelo.
     const limpo = nome.replace(/\.[0-9a-f]{12}\.glb$/, '.glb').replace(/_pacote\.glb$/, '.glb')
-    arquivos.push(new File([await resposta.arrayBuffer()], limpo))
+    // Variantes podem ter o mesmo nome de apresentação. A origem preserva o hash,
+    // sem provocar colisão de caminhos ao tirar o sufixo para a gaveta.
+    arquivos.push({
+      caminho: `${nome.slice(0, -4)}/${limpo}`,
+      arquivo: new File([await resposta.arrayBuffer()], limpo),
+    })
   }
   const { prontos } = await prepararArquivos(arquivos)
   return host.importarModelos(bibliotecaId, prontos)
