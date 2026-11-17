@@ -30,6 +30,8 @@
 
 Parte interna 3.5 implementada, testada e revisada: pincel determinístico, prévia real, catálogo/seleção, um passo de histórico por gesto, cancelamentos, alturas e replay; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espalhamento.md). O lote 3 permanece aberto; seguir para 3.6, conjuntos reutilizáveis e vivos. Lotes 4–10 pendentes; implantação e validação remotas apenas no encerramento global.
 
+Parte 3.6 em andamento: [checkpoint de contratos e persistência](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-conjuntos-base.md), com expansão rígida, revisões fixadas, clipboard, catálogo e publicação transacional testados. Concorrência e falha até o commit conferidas em SQL real. Não fecha 3.6: endpoints, rascunho persistente, biblioteca visual, miniaturas e integração das montagens com o palco permanecem na [execução detalhada](2026-11-17-cenarios-lote3-conjuntos.md).
+
 Atualização de 17/11: lote 3 em execução exclusiva. Espelho e troca de modelos implementados, testados e revisados; [registro e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). Não é fechamento do lote; sequência integral no [plano detalhado](2026-11-17-cenarios-lote3-objetos-ensaio.md).
 
 Ainda no lote 3: grade modular, andares e encaixe nas superfícies implementados, testados e revisados; [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-encaixes.md). Próxima parte interna: formas de rascunho e acabamento por objeto. Lotes 4–10 continuam pendentes.

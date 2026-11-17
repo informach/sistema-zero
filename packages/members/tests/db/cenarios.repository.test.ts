@@ -16,13 +16,16 @@ import {
   capturarFragmento,
   criarAmostradorDeEspalhamento,
   criarDocumentoVazio,
+  type DefinicaoDeConjunto,
   executarLote,
 } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
 import {
   CenarioArquivoAusenteError,
+  CenarioDesatualizadoError,
   CenarioInvalidoError,
+  CenariosSemEspacoError,
 } from '../../src/domain/cenarios/cenarios.errors'
 import type {
   CenariosRepository,
@@ -141,6 +144,24 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of terrenoDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const conjuntosDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0158_fluffy_maggott.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of conjuntosDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
+    const operacoesDeConjuntosDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0159_wise_lady_bullseye.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of operacoesDeConjuntosDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -148,6 +169,156 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
   })
   beforeEach(async () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
+  })
+
+  async function conjuntoComDuasCopias() {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const fonte = criarDocumentoVazio('fonte', 'Jardim')
+    fonte.formas = [{ id: 'f', nome: 'Flor', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 }]
+    fonte.instancias = [
+      {
+        id: 'flor',
+        nome: 'Flor',
+        modelo: 'f',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        colisao: 'caixa',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 0, y: 0, z: 0 },
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+        },
+      },
+    ]
+    const conteudo = capturarFragmento(fonte, ['flor'], espaco.id)
+    const conjunto = (await repo.criarConjunto(
+      {
+        id: randomUUID(),
+        bibliotecaId: biblioteca.id,
+        operacaoId: randomUUID(),
+        nome: 'Jardim',
+        pasta: '',
+        etiquetas: [],
+        conteudo,
+        autorId: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    const definicao: DefinicaoDeConjunto = {
+      id: 'd',
+      biblioteca: biblioteca.id,
+      conjunto: conjunto.id,
+      revisao: 1,
+      nome: 'Jardim',
+      conteudo,
+    }
+    const mundo = await s.criarMundo(ator, espaco.id, 'Mundo'),
+      cenarios: string[] = []
+    for (const nome of ['Primeiro', 'Falhar publicação']) {
+      const c = await s.criarCenario(ator, mundo.id, nome)
+      cenarios.push(c.id)
+      await s.editarCenario(ator, c.id, {
+        revisaoEsperada: 0,
+        operacaoId: randomUUID(),
+        comandos: [
+          { tipo: 'conjunto.definir', definicao },
+          {
+            tipo: 'montagem.definir',
+            montagem: {
+              id: 'jardim',
+              nome: 'Jardim',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              definicao: 'd',
+              transformacao: {
+                posicao: { x: 0, y: 0, z: 0 },
+                rotacao: { x: 0, y: 0, z: 0 },
+                escala: { x: 1, y: 1, z: 1 },
+              },
+            },
+          },
+        ],
+      })
+    }
+    return { espaco, conjunto, conteudo, cenarios, ator, s }
+  }
+
+  test('publicações concorrentes disputam a mesma revisão sem duplicar lotes ou versões', async () => {
+    const { conjunto, conteudo, cenarios, s, ator } = await conjuntoComDuasCopias()
+    const editar = (cor: string) => {
+      const c = structuredClone(conteudo)
+      c.instancias[0]!.aparencia = { cor }
+      return c
+    }
+    const pedidos = ['#bb4477', '#334455'].map((cor) => ({
+      id: conjunto.id,
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+      conteudo: editar(cor),
+      autorId: CONTA,
+    }))
+    const resultados = await Promise.allSettled(
+      pedidos.map((p) => repo.publicarConjunto(p, 1000, AGORA)),
+    )
+    expect(resultados.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+    const rejeitada = resultados.find((r) => r.status === 'rejected') as PromiseRejectedResult
+    expect(rejeitada.reason).toBeInstanceOf(CenarioDesatualizadoError)
+    expect((await repo.conjunto(conjunto.id))!.revisao).toBe(2)
+    const cabecas = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))
+    expect(cabecas.map((c) => c.revisao)).toEqual([2, 2])
+    const [quantidade] =
+      await conn.sql`select count(*)::int as n from members.cenario_conjunto_versoes where conjunto_id = ${conjunto.id}`
+    expect(quantidade!.n).toBe(2)
+    const vencedora = pedidos[resultados.findIndex((r) => r.status === 'fulfilled')]!
+    const repetidos = await Promise.all([
+      repo.publicarConjunto(vencedora, 1000, AGORA),
+      repo.publicarConjunto(vencedora, 1000, AGORA),
+    ])
+    expect(repetidos.map((r) => r!.conjunto.revisao)).toEqual([2, 2])
+    expect(await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))).toEqual(cabecas)
+  })
+
+  test('falha adiada até o commit desfaz a definição, todas as cabeças e seus históricos', async () => {
+    const { conjunto, conteudo, cenarios, s, ator, espaco } = await conjuntoComDuasCopias()
+    const antes = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id))),
+      bytes = (await repo.espaco(espaco.id))!.usadoBytes
+    await conn.sql.unsafe(
+      "create function members.falhar_publicacao_qa() returns trigger language plpgsql as $$ begin raise exception 'Falha transacional de ensaio'; end $$",
+    )
+    await conn.sql.unsafe(
+      "create constraint trigger falhar_publicacao_qa after update on members.cenario_cenarios deferrable initially deferred for each row when (new.nome = 'Falhar publicação' and new.revisao = 2) execute function members.falhar_publicacao_qa()",
+    )
+    try {
+      const novo = structuredClone(conteudo)
+      novo.instancias[0]!.aparencia = { cor: '#bb4477' }
+      const erro = await repo
+        .publicarConjunto(
+          {
+            id: conjunto.id,
+            revisaoEsperada: 1,
+            operacaoId: randomUUID(),
+            conteudo: novo,
+            autorId: CONTA,
+          },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e)
+      expect(String(erro)).toContain('Falha transacional de ensaio')
+      expect((await repo.conjunto(conjunto.id))!.revisao).toBe(1)
+      expect(await repo.versaoDoConjunto(conjunto.id, 2)).toBeNull()
+      expect(await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))).toEqual(antes)
+      expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(bytes)
+    } finally {
+      await conn.sql.unsafe('drop trigger falhar_publicacao_qa on members.cenario_cenarios')
+      await conn.sql.unsafe('drop function members.falhar_publicacao_qa()')
+    }
   })
 
   test('colagem confirma espaço e papéis; arquivos só no fragmento do histórico sobrevivem à remoção do catálogo e são liberados no fim', async () => {
@@ -1452,6 +1623,447 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect((await reaberto.documentoNaRevisao(ator, cenario.id, 2)).camadas![0]!.bloqueado).toBe(
       true,
     )
+  })
+
+  test('snapshots de conjuntos em comandos, clipboard e restauração conservam arquivos sem catálogo e os liberam na última exclusão', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    await guardar(espaco.id, 'a')
+    const [m] = (await repo.criarModelos(biblioteca.id, [modelo('a', 'Banco')], 10, CONTA, AGORA))!
+    const texturas = []
+    for (const letra of ['e', 'f']) {
+      const imagem = { digest: digest(letra), bytes: 128, tipoDoConteudo: 'image/png' as const }
+      await s.reservarTexturas(ator, biblioteca.id, [imagem])
+      const [t] = await s.registrarTexturas(
+        ator,
+        biblioteca.id,
+        [
+          {
+            nome: letra,
+            pasta: '',
+            etiquetas: [],
+            digest: imagem.digest,
+            largura: 2,
+            altura: 2,
+            repeticaoMetros: 2,
+          },
+        ],
+        [{ ...imagem, largura: 2, altura: 2 }],
+        espaco.id,
+      )
+      texturas.push(t!)
+    }
+    const fonte = criarDocumentoVazio('fonte', 'Banco')
+    fonte.modelos = [
+      {
+        id: 'banco',
+        biblioteca: biblioteca.id,
+        modelo: m!.id,
+        digest: m!.digest,
+        volume: { min: { x: -1, y: 0, z: -1 }, max: { x: 1, y: 3, z: 1 } },
+      },
+    ]
+    fonte.texturas = [
+      { id: 't', biblioteca: biblioteca.id, textura: texturas[0]!.id, digest: texturas[0]!.digest },
+    ]
+    fonte.instancias = [
+      {
+        id: 'b',
+        nome: 'Banco',
+        modelo: 'banco',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        colisao: 'malha',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 0, y: 0, z: 0 },
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+        },
+        aparencia: { textura: { id: 't', repeticaoMetros: 2 } },
+      },
+    ]
+    const definicao: DefinicaoDeConjunto = {
+      id: 'def',
+      biblioteca: biblioteca.id,
+      conjunto: randomUUID(),
+      revisao: 1,
+      nome: 'Banco',
+      conteudo: capturarFragmento(fonte, ['b'], espaco.id),
+    }
+    const montagem = {
+      id: 'copia',
+      nome: 'Banco',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      definicao: 'def',
+      transformacao: {
+        posicao: { x: 5, y: 0, z: 5 },
+        rotacao: { x: 0, y: 0.5, z: 0 },
+        escala: { x: 1, y: 1, z: 1 },
+      },
+    }
+    const mundo = await s.criarMundo(ator, espaco.id, 'Conjuntos'),
+      cenarios: string[] = []
+    for (const modo of ['definicao', 'clipboard', 'restauracao']) {
+      const c = await s.criarCenario(ator, mundo.id, modo)
+      cenarios.push(c.id)
+      const doc = {
+        ...criarDocumentoVazio(c.id, modo),
+        definicoesConjuntos: [definicao],
+        montagens: [montagem],
+      }
+      const comandos: ComandoDeCenario[] =
+        modo === 'definicao'
+          ? [
+              { tipo: 'conjunto.definir', definicao },
+              { tipo: 'montagem.definir', montagem },
+            ]
+          : modo === 'clipboard'
+            ? [
+                {
+                  tipo: 'fragmento.colar',
+                  fragmento: capturarFragmento(doc, ['copia'], espaco.id),
+                  prefixo: 'colar',
+                  ponto: { x: 0, y: 0, z: 0 },
+                },
+              ]
+            : [{ tipo: 'cenario.restaurar', documento: doc }]
+      await s.editarCenario(ator, c.id, { revisaoEsperada: 0, operacaoId: randomUUID(), comandos })
+      if (modo === 'definicao') {
+        const nova = structuredClone(definicao)
+        nova.id = 'def-2'
+        nova.revisao = 2
+        nova.conteudo.texturas = [
+          {
+            id: 't',
+            biblioteca: biblioteca.id,
+            textura: texturas[1]!.id,
+            digest: texturas[1]!.digest,
+          },
+        ]
+        await s.editarCenario(ator, c.id, {
+          revisaoEsperada: 1,
+          operacaoId: randomUUID(),
+          comandos: [{ tipo: 'conjunto.atualizar', definicao: nova }],
+        })
+      }
+      const atual = await s.abrirCenario(ator, c.id)
+      await s.editarCenario(ator, c.id, {
+        revisaoEsperada: atual.revisao,
+        operacaoId: randomUUID(),
+        comandos: [{ tipo: 'cenario.restaurar', documento: criarDocumentoVazio(c.id, modo) }],
+      })
+    }
+    expect(await repo.apagarBiblioteca(biblioteca.id, AGORA)).toEqual([])
+    expect(
+      (await repo.blobsConfirmados(espaco.id, [digest('a'), digest('e'), digest('f')])).size,
+    ).toBe(3)
+    expect(
+      (await s.documentoNaRevisao(ator, cenarios[0]!, 2)).definicoesConjuntos![0]!.conteudo
+        .texturas[0]!.digest,
+    ).toBe(digest('f'))
+    expect(await repo.apagarCenario(cenarios[1]!)).toEqual([])
+    expect(await repo.apagarCenario(cenarios[2]!)).toEqual([])
+    expect((await repo.apagarCenario(cenarios[0]!)).sort()).toEqual(
+      [digest('a'), digest('e'), digest('f')].sort(),
+    )
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
+  })
+
+  test('catálogo publica conjuntos nas cabeças em uma transação, com cota, conflito, limite e histórico preservados', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    await conn.sql`update members.cenario_espacos set limite_bytes = 10000000 where id = ${espaco.id}`
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const fonte = criarDocumentoVazio('fonte', 'Jardim')
+    fonte.formas = [
+      { id: 'f', nome: 'Flor', tipo: 'caixa', largura: 0.4, altura: 0.8, comprimento: 0.4 },
+    ]
+    fonte.instancias = [
+      {
+        id: 'flor',
+        nome: 'Flor',
+        modelo: 'f',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        colisao: 'caixa',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 0, y: 0, z: 0 },
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+        },
+      },
+    ]
+    const conteudo = capturarFragmento(fonte, ['flor'], espaco.id),
+      operacaoId = randomUUID()
+    const dados = {
+      id: randomUUID(),
+      bibliotecaId: biblioteca.id,
+      operacaoId,
+      nome: 'Jardim',
+      pasta: 'Vila',
+      etiquetas: ['flores'],
+      conteudo,
+      autorId: CONTA,
+    }
+    const conjunto = (await repo.criarConjunto(dados, 10, AGORA))!
+    expect(conjunto.revisao).toBe(1)
+    expect(conjunto.objetos).toBe(1)
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(conjunto.bytes)
+    expect((await repo.criarConjunto({ ...dados, id: randomUUID() }, 10, AGORA))!.id).toBe(
+      conjunto.id,
+    )
+    expect(
+      (await repo.conjuntos(biblioteca.id, { termos: ['jardim'], inicio: 0, limite: 10 })).total,
+    ).toBe(1)
+    const v1 = (await repo.versaoDoConjunto(conjunto.id, 1))!
+    const definicao: DefinicaoDeConjunto = {
+      id: 'def',
+      biblioteca: biblioteca.id,
+      conjunto: conjunto.id,
+      revisao: 1,
+      nome: v1.nome,
+      conteudo: v1.conteudo,
+    }
+    const mundo = await s.criarMundo(ator, espaco.id, 'Mundo'),
+      cenarios: string[] = []
+    for (let i = 0; i < 2; i++) {
+      const c = await s.criarCenario(ator, mundo.id, `C${i}`)
+      cenarios.push(c.id)
+      await s.editarCenario(ator, c.id, {
+        revisaoEsperada: 0,
+        operacaoId: randomUUID(),
+        comandos: [
+          { tipo: 'conjunto.definir', definicao },
+          {
+            tipo: 'montagem.definir',
+            montagem: {
+              id: 'jardim',
+              nome: 'Jardim',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              definicao: 'def',
+              transformacao: {
+                posicao: { x: i * 10, y: 0, z: 0 },
+                rotacao: { x: 0, y: i * 0.3, z: 0 },
+                escala: { x: 1, y: 1, z: 1 },
+              },
+            },
+          },
+        ],
+      })
+    }
+    const modificado = structuredClone(conteudo)
+    modificado.instancias[0]!.aparencia = { cor: '#bb4477' }
+    const publicacao = {
+      id: conjunto.id,
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+      conteudo: modificado,
+      autorId: CONTA,
+    }
+    const publicado = (await repo.publicarConjunto(publicacao, 1000, AGORA))!
+    expect(publicado.conjunto.revisao).toBe(2)
+    expect(publicado.cenarios.map((c) => c.id).sort()).toEqual([...cenarios].sort())
+    const cabecas = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))
+    for (let i = 0; i < cabecas.length; i++) {
+      expect(cabecas[i]!.revisao).toBe(2)
+      expect(cabecas[i]!.documento.montagens![0]!.transformacao.posicao.x).toBe(i * 10)
+      expect(
+        cabecas[i]!.documento.definicoesConjuntos![0]!.conteudo.instancias[0]!.aparencia!.cor,
+      ).toBe('#bb4477')
+      expect(
+        (await s.documentoNaRevisao(ator, cenarios[i]!, 1)).definicoesConjuntos![0]!.revisao,
+      ).toBe(1)
+    }
+    expect((await repo.publicarConjunto(publicacao, 1000, AGORA))!.conjunto.revisao).toBe(2)
+    expect((await s.abrirCenario(ator, cenarios[0]!)).revisao).toBe(2)
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(
+      conjunto.bytes + publicado.conjunto.bytes,
+    )
+    expect(
+      await repo
+        .publicarConjunto({ ...publicacao, operacaoId: randomUUID() }, 1000, AGORA)
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioDesatualizadoError)
+    await s.editarCenario(ator, cenarios[0]!, {
+      revisaoEsperada: 2,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'montagem.atualizar', id: 'jardim', alteracoes: { bloqueado: true } }],
+    })
+    const bloqueadas = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))
+    expect(
+      await repo
+        .publicarConjunto(
+          { ...publicacao, revisaoEsperada: 2, operacaoId: randomUUID() },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    expect(await repo.versaoDoConjunto(conjunto.id, 3)).toBeNull()
+    expect(await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))).toEqual(bloqueadas)
+    await s.editarCenario(ator, cenarios[0]!, {
+      revisaoEsperada: 3,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'montagem.atualizar', id: 'jardim', alteracoes: { bloqueado: false } }],
+    })
+    const copias: ComandoDeCenario[] = Array.from({ length: 10 }, (_, i) => ({
+      tipo: 'montagem.duplicar',
+      id: 'jardim',
+      novoId: `jardim-${i}`,
+      deslocamento: { x: 2 * i, y: 0, z: 3 },
+    }))
+    await s.editarCenario(ator, cenarios[1]!, {
+      revisaoEsperada: 2,
+      operacaoId: randomUUID(),
+      comandos: copias,
+    })
+    const grande = structuredClone(modificado)
+    grande.instancias = Array.from({ length: 2000 }, (_, i) => ({
+      ...structuredClone(modificado.instancias[0]!),
+      id: `flor-${i}`,
+    }))
+    grande.raizes = grande.instancias.map((o) => o.id)
+    const antesDoLimite = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))
+    expect(
+      await repo
+        .publicarConjunto(
+          { ...publicacao, revisaoEsperada: 2, operacaoId: randomUUID(), conteudo: grande },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    expect(await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))).toEqual(antesDoLimite)
+    expect((await repo.conjunto(conjunto.id))!.revisao).toBe(2)
+    await conn.sql`update members.cenario_espacos set limite_bytes = ${(await repo.espaco(espaco.id))!.usadoBytes} where id = ${espaco.id}`
+    expect(
+      await repo
+        .publicarConjunto(
+          { ...publicacao, revisaoEsperada: 2, operacaoId: randomUUID() },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenariosSemEspacoError)
+    expect((await repo.conjunto(conjunto.id))!.revisao).toBe(2)
+    expect(await repo.apagarConjunto(conjunto.id, AGORA)).toEqual([])
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
+    expect(
+      (await s.abrirCenario(ator, cenarios[0]!)).documento.definicoesConjuntos![0]!.revisao,
+    ).toBe(2)
+    const [usos] = await conn.sql`select count(*)::int as n from members.cenario_conjunto_usos`
+    expect(usos!.n).toBe(0)
+  })
+
+  test('catálogo protege modelos e retratos de cada revisão sem confundir miniatura atrasada com a cabeça', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    await guardar(espaco.id, 'a')
+    for (const letra of ['e', 'f']) {
+      await repo.reservarBlobs(
+        espaco.id,
+        [{ digest: digest(letra), bytes: 128, tipo: 'miniatura', tipoDoConteudo: 'image/png' }],
+        AGORA,
+        DEPOIS,
+      )
+      await repo.confirmarBlobs(
+        espaco.id,
+        [{ digest: digest(letra), bytes: 128, tipoDoConteudo: 'image/png' }],
+        AGORA,
+      )
+    }
+    const [m] = (await repo.criarModelos(
+      biblioteca.id,
+      [modelo('a', 'Banco', { miniatura: digest('e') })],
+      10,
+      CONTA,
+      AGORA,
+    ))!
+    const catalogo = (await repo.criarBiblioteca(
+      {
+        id: randomUUID(),
+        espacoId: espaco.id,
+        nome: 'Conjuntos',
+        licenca: 'propria',
+        criadoPor: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    const fonte = criarDocumentoVazio('fonte', 'Banco')
+    fonte.modelos = [
+      {
+        id: 'banco',
+        biblioteca: biblioteca.id,
+        modelo: m!.id,
+        digest: m!.digest,
+        volume: { min: { x: -1, y: 0, z: -1 }, max: { x: 1, y: 3, z: 1 } },
+      },
+    ]
+    fonte.instancias = [
+      {
+        id: 'o',
+        nome: 'Banco',
+        modelo: 'banco',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        colisao: 'malha',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 0, y: 0, z: 0 },
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+        },
+      },
+    ]
+    const conteudo = capturarFragmento(fonte, ['o'], espaco.id)
+    const c = (await repo.criarConjunto(
+      {
+        id: randomUUID(),
+        bibliotecaId: catalogo.id,
+        operacaoId: randomUUID(),
+        nome: 'Banco',
+        pasta: '',
+        etiquetas: [],
+        conteudo,
+        autorId: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    expect(await repo.definirMiniaturaDoConjunto(c.id, 1, digest('e'), AGORA)).toBe(true)
+    const editado = structuredClone(conteudo)
+    editado.instancias[0]!.aparencia = { cor: '#bb4477' }
+    await repo.publicarConjunto(
+      { id: c.id, revisaoEsperada: 1, operacaoId: randomUUID(), conteudo: editado, autorId: CONTA },
+      1000,
+      AGORA,
+    )
+    expect((await repo.conjunto(c.id))!.miniatura).toBeNull()
+    expect(await repo.apagarBiblioteca(biblioteca.id, AGORA)).toEqual([])
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a'), digest('e')])).size).toBe(2)
+    expect(
+      await repo.definirMiniaturaDoConjunto(c.id, 2, digest('a'), AGORA).catch((e) => e),
+    ).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect(await repo.definirMiniaturaDoConjunto(c.id, 1, digest('f'), AGORA)).toBe(true)
+    expect((await repo.versaoDoConjunto(c.id, 1))!.miniatura).toBe(digest('f'))
+    expect((await repo.conjunto(c.id))!.miniatura).toBeNull()
+    expect((await repo.blobsConfirmados(espaco.id, [digest('e')])).size).toBe(0)
+    expect(await repo.definirMiniaturaDoConjunto(c.id, 2, digest('f'), AGORA)).toBe(true)
+    expect((await repo.conjunto(c.id))!.miniatura).toBe(digest('f'))
+    expect((await repo.apagarConjunto(c.id, AGORA)).sort()).toEqual(
+      [digest('a'), digest('f')].sort(),
+    )
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
   })
 
   test('pincelada preserva receita e amostras em JSONB; replay e undo não sorteiam novamente após reabrir', async () => {

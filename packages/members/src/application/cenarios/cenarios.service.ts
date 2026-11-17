@@ -5,6 +5,7 @@ import {
   type ComandoDeCenario,
   ConflitoDeCenario,
   criarDocumentoVazio,
+  espacosDosComandos,
   executarLote,
   inverterLote,
   LIMITES_CENARIO_V2,
@@ -831,11 +832,7 @@ export class CenariosService {
     })
     if (!formato.success) throw new CenarioInvalidoError(['O lote tem um comando fora do formato'])
     const comandos = formato.data.comandos
-    if (
-      comandos.some(
-        (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== espaco.id,
-      )
-    )
+    if (espacosDosComandos(comandos).some((origem) => origem !== espaco.id))
       throw new CenarioInvalidoError(['Não é possível colar objetos de outro espaço'])
 
     // Referências de acervo só podem usar arquivos confirmados com o papel correto NESTE espaço.

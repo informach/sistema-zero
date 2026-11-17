@@ -1,7 +1,10 @@
 import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
 import { posicaoNoMundo } from './chao'
+import { resolverConjuntos } from './conjuntos'
+import { LIMITES_CONJUNTOS } from './conjuntos-schema'
 import { criarDocumentoVazio, type DocumentoDeCenario, LIMITES_CENARIO_V2 } from './documento'
+import { type FragmentoBasico, FragmentoBasicoSchema } from './fragmento-base-schema'
 import {
   type FragmentoDeCenario,
   FragmentoDeCenarioSchema,
@@ -31,8 +34,9 @@ export function validarFragmento(valor: unknown): FragmentoDeCenario {
   const lido = FragmentoDeCenarioSchema.safeParse(valor)
   if (!lido.success) falhar('O conteúdo copiado não é um fragmento de cenário válido')
   const f = lido.data!
-  if (!f.instancias.length && !f.grupos.length) falhar('O conteúdo copiado está vazio')
-  const entidades = new Set([...f.instancias, ...f.grupos].map((e) => e.id))
+  if (!f.instancias.length && !f.grupos.length && !f.montagens?.length)
+    falhar('O conteúdo copiado está vazio')
+  const entidades = new Set([...f.instancias, ...f.grupos, ...(f.montagens ?? [])].map((e) => e.id))
   if (f.raizes.some((id) => !entidades.has(id))) falhar('A escolha copiada contém uma raiz ausente')
   if (new TextEncoder().encode(JSON.stringify(f)).length > LIMITES_CENARIO_V2.bytes)
     falhar('O conteúdo copiado excede 8 MB')
@@ -45,7 +49,11 @@ export function validarFragmento(valor: unknown): FragmentoDeCenario {
     ...(f.formas.length ? { formas: f.formas } : {}),
     ...(f.texturas.length ? { texturas: f.texturas } : {}),
     ...(f.camadas.length ? { camadas: f.camadas } : {}),
+    ...(f.montagens?.length ? { montagens: f.montagens } : {}),
+    ...(f.definicoesConjuntos?.length ? { definicoesConjuntos: f.definicoesConjuntos } : {}),
   })
+  if (f.definicoesConjuntos?.some((d) => d.conteudo.origem.espaco !== f.origem.espaco))
+    falhar('O conjunto copiado pertence a outro espaço')
   if (f.instancias.some((o) => o.apoio.tipo !== 'absoluto' && o.apoio.tipo !== 'objeto'))
     falhar('O conteúdo copiado depende de terreno ou água externos')
   return f
@@ -70,7 +78,9 @@ export function capturarFragmento(
     if (indice.grupos.has(id)) for (const filho of indice.filhos.get(id) ?? []) fila.push(filho.id)
   }
   if (!ids.size) falhar('Escolha objetos ou uma pasta para copiar')
-  const permitidos = new Set([...doc.grupos, ...doc.instancias].map((e) => e.id))
+  const permitidos = new Set(
+    [...doc.grupos, ...doc.instancias, ...(doc.montagens ?? [])].map((e) => e.id),
+  )
   if ([...ids].some((id) => !permitidos.has(id)))
     falhar('Esta pasta contém elementos que ainda não podem ser copiados como objetos')
   // Conserva as pastas ancestrais necessárias, sem copiar seus outros filhos.
@@ -82,7 +92,15 @@ export function capturarFragmento(
     }
   }
   const objetos = doc.instancias.filter((o) => ids.has(o.id)),
-    volumes = objetos.map((o) => volumeNoMundo(doc, o, fonte))
+    montagens = doc.montagens?.filter((m) => ids.has(m.id)) ?? [],
+    montagensEscolhidas = new Set(montagens.map((m) => m.id)),
+    expandido = montagens.length ? resolverConjuntos(doc) : null,
+    volumes = [
+      ...objetos.map((o) => volumeNoMundo(doc, o, fonte)),
+      ...(expandido?.documento.instancias
+        .filter((o) => montagensEscolhidas.has(expandido.origens.get(o.id) ?? ''))
+        .map((o) => volumeNoMundo(expandido.documento, o, fonte)) ?? []),
+    ]
   const ancora: Ponto = volumes.length
     ? {
         x:
@@ -94,7 +112,9 @@ export function capturarFragmento(
     : { x: 0, y: 0, z: 0 }
   const modelos = new Set(objetos.map((o) => o.modelo)),
     texturas = new Set(objetos.map((o) => o.aparencia?.textura?.id)),
-    camadas = new Set([...doc.grupos, ...objetos].filter((e) => ids.has(e.id)).map((e) => e.camada))
+    camadas = new Set(
+      [...doc.grupos, ...objetos, ...montagens].filter((e) => ids.has(e.id)).map((e) => e.camada),
+    )
   return validarFragmento({
     formato: 'molda-cenario-fragmento',
     versao: 1,
@@ -106,6 +126,14 @@ export function capturarFragmento(
     texturas: doc.texturas?.filter((t) => texturas.has(t.id)) ?? [],
     camadas: doc.camadas?.filter((c) => camadas.has(c.id)) ?? [],
     grupos: doc.grupos.filter((g) => ids.has(g.id)),
+    ...(montagens.length
+      ? {
+          montagens,
+          definicoesConjuntos: doc.definicoesConjuntos?.filter((d) =>
+            montagens.some((m) => m.definicao === d.id),
+          ),
+        }
+      : {}),
     instancias: objetos.map((o) => ({
       ...o,
       transformacao: { ...o.transformacao, posicao: posicaoNoMundo(doc, o, fonte) },
@@ -118,8 +146,14 @@ export function capturarFragmento(
 export function idsDoFragmento(f: FragmentoDeCenario, prefixo: string) {
   PrefixoDeColagemSchema.parse(prefixo)
   const instancias = new Map(f.instancias.map((o, i) => [o.id, `${prefixo}/objeto/${i}`])),
-    grupos = new Map(f.grupos.map((g, i) => [g.id, `${prefixo}/grupo/${i}`]))
-  return { instancias, grupos, raizes: f.raizes.map((id) => instancias.get(id) ?? grupos.get(id)!) }
+    grupos = new Map(f.grupos.map((g, i) => [g.id, `${prefixo}/grupo/${i}`])),
+    montagens = new Map(f.montagens?.map((m, i) => [m.id, `${prefixo}/conjunto/${i}`]))
+  return {
+    instancias,
+    grupos,
+    montagens,
+    raizes: f.raizes.map((id) => instancias.get(id) ?? grupos.get(id) ?? montagens.get(id)!),
+  }
 }
 
 /** Uma única intenção atômica, mesmo para milhares de objetos; não é uma restauração de cena. */
@@ -134,7 +168,7 @@ export function colarFragmento(
     doc = structuredClone(documento),
     ids = idsDoFragmento(f, prefixo),
     ocupados = new Set(entidadesDoCenario(doc).map((e) => e.id))
-  for (const id of [...ids.instancias.values(), ...ids.grupos.values()])
+  for (const id of [...ids.instancias.values(), ...ids.grupos.values(), ...ids.montagens.values()])
     if (ocupados.has(id)) falhar('O identificador desta colagem já foi usado')
   const modelos = new Map<string, string>(),
     texturas = new Map<string, string>(),
@@ -203,6 +237,39 @@ export function colarFragmento(
   })
   doc.grupos.push(...f.grupos.map((g) => ({ ...g, ...organizacao(g), id: ids.grupos.get(g.id)! })))
   const delta = { x: ponto.x - f.ancora.x, y: ponto.y - f.ancora.y, z: ponto.z - f.ancora.z }
+  const definicoes = new Map<string, string>()
+  for (const [i, definicao] of (f.definicoesConjuntos ?? []).entries()) {
+    const equivalente = doc.definicoesConjuntos?.find(
+      (d) =>
+        d.biblioteca === definicao.biblioteca &&
+        d.conjunto === definicao.conjunto &&
+        d.revisao === definicao.revisao,
+    )
+    if (equivalente) {
+      if (!igual({ ...equivalente, id: definicao.id }, definicao))
+        falhar('A revisão do conjunto copiado diverge da definição fixada')
+      definicoes.set(definicao.id, equivalente.id)
+    } else {
+      const id = novoId('conjunto-definicao', i, new Set(doc.definicoesConjuntos?.map((d) => d.id)))
+      doc.definicoesConjuntos ??= []
+      doc.definicoesConjuntos.push({ ...definicao, id })
+      definicoes.set(definicao.id, id)
+    }
+  }
+  for (const m of f.montagens ?? []) {
+    doc.montagens ??= []
+    const p = m.transformacao.posicao
+    doc.montagens.push({
+      ...m,
+      ...organizacao(m),
+      id: ids.montagens.get(m.id)!,
+      definicao: definicoes.get(m.definicao)!,
+      transformacao: {
+        ...m.transformacao,
+        posicao: { x: p.x + delta.x, y: p.y + delta.y, z: p.z + delta.z },
+      },
+    })
+  }
   doc.instancias.push(
     ...f.instancias.map((o) => {
       const p = o.transformacao.posicao
@@ -231,4 +298,26 @@ export function colarFragmento(
     }),
   )
   return validarDocumento(doc)
+}
+
+/** Salvar um conjunto com cópias internas fixa a expansão; não cria catálogo recursivo. */
+export function capturarConteudoDeConjunto(
+  documento: DocumentoDeCenario,
+  escolha: readonly string[],
+  espaco: string,
+  fonte?: FonteDeAlturas,
+): FragmentoBasico {
+  const expandido = resolverConjuntos(documento).documento
+  return validarConteudoDeConjunto(capturarFragmento(expandido, escolha, espaco, fonte), espaco)
+}
+
+export function validarConteudoDeConjunto(valor: unknown, espaco?: string): FragmentoBasico {
+  const lido = FragmentoBasicoSchema.safeParse(valor)
+  if (!lido.success) falhar('O conteúdo do conjunto está fora do formato')
+  const f = validarFragmento(lido.data!)
+  if (!f.instancias.length || f.instancias.length > LIMITES_CONJUNTOS.objetosPorDefinicao)
+    falhar('O conjunto precisa ter entre um e 2.000 objetos')
+  if (espaco !== undefined && f.origem.espaco !== espaco)
+    falhar('O conjunto pertence a outro espaço')
+  return f
 }

@@ -1,0 +1,42 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "quantidade": 9,
+    "revisao": 2,
+    "previaSemGravar": true,
+    "cancelamento": true,
+    "retomada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "quantidade": 9,
+    "revisao": 2,
+    "previaSemGravar": true,
+    "cancelamento": true,
+    "retomada": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "quantidade": 9,
+    "revisao": 2,
+    "previaSemGravar": true,
+    "cancelamento": true,
+    "retomada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "quantidade": 9,
+    "revisao": 2,
+    "previaSemGravar": true,
+    "cancelamento": true,
+    "retomada": true,
+    "erros": []
+  }
+]

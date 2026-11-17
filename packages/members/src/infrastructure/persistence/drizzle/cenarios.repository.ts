@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import { arquivosDoDocumento, inverterLote } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  arquivosDoDocumento,
+  espacosDoDocumento,
+  espacosDosComandos,
+  inverterLote,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   and,
   asc,
@@ -42,11 +47,23 @@ import type {
   LoteGravado,
 } from '../../../domain/ports/cenarios-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
+import {
+  arrayDeDigestsSql,
+  digestsDoDocumentoJson,
+  digestsDosComandosJson,
+} from './cenarios-arquivos-json'
+import type {
+  ExecutorDeCenarios as Executor,
+  TransacaoDeCenarios as Transacao,
+} from './cenarios-transacao'
+import { ConjuntosNoPostgres } from './conjuntos.repository'
 import type { Database } from './db'
 import {
   cenarioBibliotecas,
   cenarioBlobs,
   cenarioCenarios,
+  cenarioConjuntos,
+  cenarioConjuntoVersoes,
   cenarioEspacos,
   cenarioLotes,
   cenarioModelos,
@@ -55,9 +72,6 @@ import {
   cenarioRevisoes,
   cenarioTexturas,
 } from './schema'
-
-type Transacao = Parameters<Parameters<Database['transaction']>[0]>[0]
-type Executor = Database | Transacao
 
 /**
  * A coluna da linha de FORA, com a tabela escrita por extenso. Numa consulta de uma tabela só o
@@ -77,6 +91,11 @@ const usoDoEspaco = (agora: Date): SQL<number> => sql<number>`coalesce((
   select sum(b.bytes) from ${cenarioBlobs} b
   where b.espaco_id = ${deFora(cenarioEspacos, 'id')}
     and (b.confirmado_em is not null or b.vence_em > ${agora.toISOString()}::timestamptz)
+), 0)::float8 + coalesce((
+  select sum(v.bytes) from ${cenarioConjuntoVersoes} v
+  join ${cenarioConjuntos} s on s.id = v.conjunto_id
+  join ${cenarioBibliotecas} b on b.id = s.biblioteca_id
+  where b.espaco_id = ${deFora(cenarioEspacos, 'id')}
 ), 0)::float8`
 
 const colunasDaBiblioteca = {
@@ -160,7 +179,32 @@ const paraTextura = (t: typeof cenarioTexturas.$inferSelect): Textura => ({
 })
 
 export class DrizzleCenariosRepository implements CenariosRepository {
-  constructor(private readonly db: Database) {}
+  private readonly catalogoConjuntos: ConjuntosNoPostgres
+  constructor(private readonly db: Database) {
+    this.catalogoConjuntos = new ConjuntosNoPostgres(db, {
+      comTrava: (espacoId, tarefa) => this.comTrava(espacoId, tarefa),
+      espaco: (tx, id, agora) => this.lerEspaco(tx, eq(cenarioEspacos.id, id), agora),
+      gravarLote: (tx, espacoId, dados, agora) =>
+        this.gravarLoteSobTrava(tx, espacoId, dados, agora),
+      soltarOrfaos: (tx, espacoId, digests) => this.soltarOrfaos(tx, espacoId, digests),
+    })
+  }
+
+  conjuntos: CenariosRepository['conjuntos'] = (...args) =>
+    this.catalogoConjuntos.conjuntos(...args)
+  conjunto: CenariosRepository['conjunto'] = (...args) => this.catalogoConjuntos.conjunto(...args)
+  versaoDoConjunto: CenariosRepository['versaoDoConjunto'] = (...args) =>
+    this.catalogoConjuntos.versaoDoConjunto(...args)
+  criarConjunto: CenariosRepository['criarConjunto'] = (...args) =>
+    this.catalogoConjuntos.criarConjunto(...args)
+  editarConjunto: CenariosRepository['editarConjunto'] = (...args) =>
+    this.catalogoConjuntos.editarConjunto(...args)
+  publicarConjunto: CenariosRepository['publicarConjunto'] = (...args) =>
+    this.catalogoConjuntos.publicarConjunto(...args)
+  definirMiniaturaDoConjunto: CenariosRepository['definirMiniaturaDoConjunto'] = (...args) =>
+    this.catalogoConjuntos.definirMiniaturaDoConjunto(...args)
+  apagarConjunto: CenariosRepository['apagarConjunto'] = (...args) =>
+    this.catalogoConjuntos.apagarConjunto(...args)
 
   /** Uma escrita por vez em cada espaço: é o que segura a cota e os tetos de quantidade. */
   private comTrava<T>(espacoId: string, tarefa: (tx: Transacao) => Promise<T>): Promise<T> {
@@ -319,6 +363,11 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         and(
           eq(cenarioBlobs.espacoId, espacoId),
           inArray(cenarioBlobs.digest, candidatos),
+          sql`not exists (select 1 from ${cenarioConjuntoVersoes} v
+            join ${cenarioConjuntos} s on s.id = v.conjunto_id
+            join ${cenarioBibliotecas} b on b.id = s.biblioteca_id
+            where b.espaco_id = ${espacoId} and (v.miniatura = ${cenarioBlobs.digest}
+              or exists (select 1 from jsonb_array_elements_text(${digestsDoDocumentoJson(sql`v.conteudo`)}) as e(digest) where e.digest = ${cenarioBlobs.digest})))`,
           sql`not exists (select 1 from ${cenarioTexturas} t join ${cenarioBibliotecas} b on b.id = t.biblioteca_id where b.espaco_id = ${espacoId} and t.digest = ${cenarioBlobs.digest})`,
           sql`not exists (
             select 1 from ${cenarioModelos} m
@@ -332,15 +381,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             join ${cenarioMundos} w on w.id = c.mundo_id
             where w.espaco_id = ${espacoId}
               and exists (
-                select 1 from jsonb_array_elements(l.comandos || coalesce(l.inversos, '[]'::jsonb)) e
-                where e -> 'modelo' ->> 'digest' = ${cenarioBlobs.digest}
-                  or e -> 'textura' ->> 'digest' = ${cenarioBlobs.digest}
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'fragmento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'fragmento' -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
-                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
+                select 1 from jsonb_array_elements_text(${digestsDosComandosJson(sql`(l.comandos || coalesce(l.inversos, '[]'::jsonb))`)}) as e(digest)
+                where e.digest = ${cenarioBlobs.digest}
               )
           )`,
           sql`not exists (
@@ -348,10 +390,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             join ${cenarioCenarios} c on c.id = r.cenario_id
             join ${cenarioMundos} w on w.id = c.mundo_id
             where w.espaco_id = ${espacoId}
-              and (exists (select 1 from jsonb_array_elements(r.documento -> 'modelos') e
-                where e ->> 'digest' = ${cenarioBlobs.digest})
-                or exists (select 1 from jsonb_array_elements(coalesce(r.documento -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
-                or exists (select 1 from jsonb_array_elements(coalesce(r.documento -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest}))
+              and exists (select 1 from jsonb_array_elements_text(${digestsDoDocumentoJson(sql`r.documento`)}) as e(digest)
+                where e.digest = ${cenarioBlobs.digest})
           )`,
           sql`not exists (
             select 1 from ${cenarioCenarios} c
@@ -359,12 +399,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             where w.espaco_id = ${espacoId}
               and (
                 c.capa = ${cenarioBlobs.digest}
-                or exists (select 1 from jsonb_array_elements(coalesce(c.documento -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
-                or exists (select 1 from jsonb_array_elements(coalesce(c.documento -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
-                or exists (
-                  select 1 from jsonb_array_elements(c.documento -> 'modelos') e
-                  where e ->> 'digest' = ${cenarioBlobs.digest}
-                )
+                or exists (select 1 from jsonb_array_elements_text(${digestsDoDocumentoJson(sql`c.documento`)}) as e(digest)
+                  where e.digest = ${cenarioBlobs.digest})
               )
           )`,
         ),
@@ -385,10 +421,12 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         .select({ digest: cenarioTexturas.digest })
         .from(cenarioTexturas)
         .where(eq(cenarioTexturas.bibliotecaId, id))
+      const conjuntos = await this.catalogoConjuntos.arquivosDaBiblioteca(tx, id)
       await tx.delete(cenarioBibliotecas).where(eq(cenarioBibliotecas.id, id))
       return this.soltarOrfaos(tx, biblioteca.espacoId, [
         ...dela.flatMap((m) => (m.miniatura ? [m.digest, m.miniatura] : [m.digest])),
         ...texturas.map((t) => t.digest),
+        ...conjuntos,
       ])
     })
   }
@@ -925,27 +963,23 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   /** Extrai só referências conhecidas, sem baixar documentos inteiros nem varrer propriedades. */
   private async arquivosDosCenarios(tx: Transacao, ids: readonly string[]): Promise<string[]> {
     if (!ids.length) return []
-    const digestsNoJsonDoDocumento = (d: SQL) =>
-      sql<
-        string[]
-      >`array(select jsonb_array_elements_text(jsonb_path_query_array(${d}, '$.modelos[*].digest') || jsonb_path_query_array(${d}, '$.texturas[*].digest') || jsonb_path_query_array(${d}, '$.base.pecas[*].digest')))`
     const cabecas = await tx
       .select({
-        digests: digestsNoJsonDoDocumento(sql`${cenarioCenarios.documento}`),
+        digests: arrayDeDigestsSql(digestsDoDocumentoJson(sql`${cenarioCenarios.documento}`)),
         capa: cenarioCenarios.capa,
       })
       .from(cenarioCenarios)
       .where(inArray(cenarioCenarios.id, [...ids]))
     const fotos = await tx
-      .select({ digests: digestsNoJsonDoDocumento(sql`${cenarioRevisoes.documento}`) })
+      .select({
+        digests: arrayDeDigestsSql(digestsDoDocumentoJson(sql`${cenarioRevisoes.documento}`)),
+      })
       .from(cenarioRevisoes)
       .where(inArray(cenarioRevisoes.cenarioId, [...ids]))
     const comandos = sql`(${cenarioLotes.comandos} || coalesce(${cenarioLotes.inversos}, '[]'::jsonb))`
     const lotes = await tx
       .select({
-        digests: sql<
-          string[]
-        >`array(select jsonb_array_elements_text(jsonb_path_query_array(${comandos}, '$[*].modelo.digest') || jsonb_path_query_array(${comandos}, '$[*].textura.digest') || jsonb_path_query_array(${comandos}, '$[*].fragmento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].fragmento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].base.pecas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.base.pecas[*].digest')))`,
+        digests: arrayDeDigestsSql(digestsDosComandosJson(comandos)),
       })
       .from(cenarioLotes)
       .where(inArray(cenarioLotes.cenarioId, [...ids]))
@@ -995,6 +1029,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         .insert(cenarioCenarios)
         .values({ ...dados, revisao: 0, capa: null, createdAt: agora, updatedAt: agora })
         .returning(colunasDoResumo)
+      if (linha)
+        await this.catalogoConjuntos.atualizarUsos(tx, linha.id, dados.documento, mundo.espacoId)
       await tx
         .update(cenarioMundos)
         .set({ updatedAt: agora })
@@ -1099,155 +1135,164 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       .where(eq(cenarioCenarios.id, dados.cenarioId))
       .limit(1)
     if (!dono) return null
-    return this.comTrava(dono.espacoId, async (tx) => {
-      const [repetido] = await tx
-        .select({ revisao: cenarioLotes.revisao })
-        .from(cenarioLotes)
+    return this.comTrava(dono.espacoId, (tx) =>
+      this.gravarLoteSobTrava(tx, dono.espacoId, dados, agora),
+    )
+  }
+
+  /** Mesma gravação sob a trava já tomada por uma publicação de conjunto. */
+  private async gravarLoteSobTrava(
+    tx: Transacao,
+    espacoId: string,
+    dados: Parameters<CenariosRepository['gravarLote']>[0],
+    agora: Date,
+  ): Promise<LoteGravado | null> {
+    const [repetido] = await tx
+      .select({ revisao: cenarioLotes.revisao })
+      .from(cenarioLotes)
+      .where(
+        and(
+          eq(cenarioLotes.cenarioId, dados.cenarioId),
+          eq(cenarioLotes.operacaoId, dados.operacaoId),
+        ),
+      )
+      .limit(1)
+    if (repetido) return { revisao: repetido.revisao, repetido: true }
+    const [antes] = await tx
+      .select({
+        documento: cenarioCenarios.documento,
+        revisao: cenarioCenarios.revisao,
+        historico: cenarioCenarios.historico,
+      })
+      .from(cenarioCenarios)
+      .where(eq(cenarioCenarios.id, dados.cenarioId))
+      .for('update')
+    if (!antes || antes.revisao !== dados.revisaoEsperada) return null
+    if (
+      [...espacosDosComandos(dados.comandos), ...espacosDoDocumento(dados.documento)].some(
+        (origem) => origem !== espacoId,
+      )
+    )
+      throw new CenarioInvalidoError(['Não é possível colar objetos de outro espaço'])
+    const inversos = inverterLote(antes.documento, dados.documento)
+    const historico =
+      inversos.length || dados.movimento
+        ? avancarHistorico(antes.historico, antes.revisao + 1, dados.movimento)
+        : antes.historico
+    if (!historico) return null
+    // O BFF só pode confirmar peças que este documento passa a referenciar.
+    const base = dados.documento.base
+    const recursos = dados.recursosConferidos ?? []
+    const usados = new Set(base.tipo === 'terreno' ? base.pecas.map((p) => p.digest) : [])
+    if (
+      recursos.some((r) => !usados.has(r.digest) || r.tipoDoConteudo !== 'application/octet-stream')
+    )
+      throw new CenarioArquivoAusenteError(recursos.map((r) => r.digest))
+    await this.confirmarBlobsCom(tx, espacoId, recursos, agora)
+    if (base.tipo === 'terreno' && usados.size) {
+      const confirmados = await tx
+        .select({ digest: cenarioBlobs.digest, terreno: cenarioBlobs.terreno })
+        .from(cenarioBlobs)
         .where(
           and(
-            eq(cenarioLotes.cenarioId, dados.cenarioId),
-            eq(cenarioLotes.operacaoId, dados.operacaoId),
+            eq(cenarioBlobs.espacoId, espacoId),
+            inArray(cenarioBlobs.digest, [...usados]),
+            eq(cenarioBlobs.tipo, 'terreno'),
+            isNotNull(cenarioBlobs.confirmadoEm),
           ),
         )
-        .limit(1)
-      if (repetido) return { revisao: repetido.revisao, repetido: true }
-      const [antes] = await tx
-        .select({
-          documento: cenarioCenarios.documento,
-          revisao: cenarioCenarios.revisao,
-          historico: cenarioCenarios.historico,
-        })
-        .from(cenarioCenarios)
-        .where(eq(cenarioCenarios.id, dados.cenarioId))
-        .for('update')
-      if (!antes || antes.revisao !== dados.revisaoEsperada) return null
-      if (
-        dados.comandos.some(
-          (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== dono.espacoId,
-        )
+      const presentes = new Set(
+        confirmados
+          .filter((p) => p.terreno?.min === base.min && p.terreno?.max === base.max)
+          .map((p) => p.digest),
       )
-        throw new CenarioInvalidoError(['Não é possível colar objetos de outro espaço'])
-      const inversos = inverterLote(antes.documento, dados.documento)
-      const historico =
-        inversos.length || dados.movimento
-          ? avancarHistorico(antes.historico, antes.revisao + 1, dados.movimento)
-          : antes.historico
-      if (!historico) return null
-      // O BFF só pode confirmar peças que este documento passa a referenciar.
-      const base = dados.documento.base
-      const recursos = dados.recursosConferidos ?? []
-      const usados = new Set(base.tipo === 'terreno' ? base.pecas.map((p) => p.digest) : [])
-      if (
-        recursos.some(
-          (r) => !usados.has(r.digest) || r.tipoDoConteudo !== 'application/octet-stream',
-        )
-      )
-        throw new CenarioArquivoAusenteError(recursos.map((r) => r.digest))
-      await this.confirmarBlobsCom(tx, dono.espacoId, recursos, agora)
-      if (base.tipo === 'terreno' && usados.size) {
-        const confirmados = await tx
-          .select({ digest: cenarioBlobs.digest, terreno: cenarioBlobs.terreno })
-          .from(cenarioBlobs)
-          .where(
-            and(
-              eq(cenarioBlobs.espacoId, dono.espacoId),
-              inArray(cenarioBlobs.digest, [...usados]),
-              eq(cenarioBlobs.tipo, 'terreno'),
-              isNotNull(cenarioBlobs.confirmadoEm),
-            ),
-          )
-        const presentes = new Set(
-          confirmados
-            .filter((p) => p.terreno?.min === base.min && p.terreno?.max === base.max)
-            .map((p) => p.digest),
-        )
-        const ausentes = [...usados].filter((d) => !presentes.has(d))
-        if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
-      }
-      // A biblioteca pode ter sido apagada entre a conferência do serviço e esta trava.
-      const conhecidos = new Set(
-        arquivosDoDocumento(antes.documento).map((r) => `${r.tipo}:${r.digest}`),
-      )
-      const referencias = arquivosDoDocumento(dados.documento).filter(
-        (r) => r.tipo !== 'terreno' && !conhecidos.has(`${r.tipo}:${r.digest}`),
-      )
-      const novos = [...new Set(referencias.map((r) => r.digest))]
-      if (novos.length) {
-        const confirmados = await tx
-          .select({ digest: cenarioBlobs.digest, tipo: cenarioBlobs.tipo })
-          .from(cenarioBlobs)
-          .where(
-            and(
-              eq(cenarioBlobs.espacoId, dono.espacoId),
-              inArray(cenarioBlobs.digest, novos),
-              isNotNull(cenarioBlobs.confirmadoEm),
-              inArray(cenarioBlobs.tipo, ['modelo', 'textura']),
-            ),
-          )
-        const presentes = new Set(confirmados.map((b) => `${b.tipo}:${b.digest}`))
-        const ausentes = [
-          ...new Set(
-            referencias.filter((r) => !presentes.has(`${r.tipo}:${r.digest}`)).map((r) => r.digest),
-          ),
-        ]
-        if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
-      }
-      // Adota a cabeça anterior de projetos existentes; não presume um começo vazio.
-      const [fotografia] = await tx
-        .select({ revisao: cenarioRevisoes.revisao })
-        .from(cenarioRevisoes)
-        .where(eq(cenarioRevisoes.cenarioId, dados.cenarioId))
-        .limit(1)
-      if (!fotografia)
-        await tx.insert(cenarioRevisoes).values({
-          cenarioId: dados.cenarioId,
-          revisao: antes.revisao,
-          documento: antes.documento,
-          createdAt: agora,
-        })
-      // Troca só se a revisão guardada ainda é a que quem editava conhecia.
-      const [linha] = await tx
-        .update(cenarioCenarios)
-        .set({
-          documento: dados.documento,
-          nome: dados.documento.nome,
-          revisao: dados.revisaoEsperada + 1,
-          historico,
-          updatedAt: agora,
-        })
+      const ausentes = [...usados].filter((d) => !presentes.has(d))
+      if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
+    }
+    // A biblioteca pode ter sido apagada entre a conferência do serviço e esta trava.
+    const conhecidos = new Set(
+      arquivosDoDocumento(antes.documento).map((r) => `${r.tipo}:${r.digest}`),
+    )
+    const referencias = arquivosDoDocumento(dados.documento).filter(
+      (r) => r.tipo !== 'terreno' && !conhecidos.has(`${r.tipo}:${r.digest}`),
+    )
+    const novos = [...new Set(referencias.map((r) => r.digest))]
+    if (novos.length) {
+      const confirmados = await tx
+        .select({ digest: cenarioBlobs.digest, tipo: cenarioBlobs.tipo })
+        .from(cenarioBlobs)
         .where(
           and(
-            eq(cenarioCenarios.id, dados.cenarioId),
-            eq(cenarioCenarios.revisao, dados.revisaoEsperada),
+            eq(cenarioBlobs.espacoId, espacoId),
+            inArray(cenarioBlobs.digest, novos),
+            isNotNull(cenarioBlobs.confirmadoEm),
+            inArray(cenarioBlobs.tipo, ['modelo', 'textura']),
           ),
         )
-        .returning({ revisao: cenarioCenarios.revisao, mundoId: cenarioCenarios.mundoId })
-      if (!linha) return null
-      await tx.insert(cenarioLotes).values({
+      const presentes = new Set(confirmados.map((b) => `${b.tipo}:${b.digest}`))
+      const ausentes = [
+        ...new Set(
+          referencias.filter((r) => !presentes.has(`${r.tipo}:${r.digest}`)).map((r) => r.digest),
+        ),
+      ]
+      if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
+    }
+    // Adota a cabeça anterior de projetos existentes; não presume um começo vazio.
+    const [fotografia] = await tx
+      .select({ revisao: cenarioRevisoes.revisao })
+      .from(cenarioRevisoes)
+      .where(eq(cenarioRevisoes.cenarioId, dados.cenarioId))
+      .limit(1)
+    if (!fotografia)
+      await tx.insert(cenarioRevisoes).values({
         cenarioId: dados.cenarioId,
-        revisao: linha.revisao,
-        operacaoId: dados.operacaoId,
-        comandos: dados.comandos,
-        inversos,
-        autorId: dados.autorId,
+        revisao: antes.revisao,
+        documento: antes.documento,
         createdAt: agora,
       })
-      if (linha.revisao % 50 === 0)
-        await tx
-          .insert(cenarioRevisoes)
-          .values({
-            cenarioId: dados.cenarioId,
-            revisao: linha.revisao,
-            documento: dados.documento,
-            createdAt: agora,
-          })
-          .onConflictDoNothing()
-      await tx
-        .update(cenarioMundos)
-        .set({ updatedAt: agora })
-        .where(eq(cenarioMundos.id, linha.mundoId))
-      return { revisao: linha.revisao, repetido: false }
+    // Troca só se a revisão guardada ainda é a que quem editava conhecia.
+    const [linha] = await tx
+      .update(cenarioCenarios)
+      .set({
+        documento: dados.documento,
+        nome: dados.documento.nome,
+        revisao: dados.revisaoEsperada + 1,
+        historico,
+        updatedAt: agora,
+      })
+      .where(
+        and(
+          eq(cenarioCenarios.id, dados.cenarioId),
+          eq(cenarioCenarios.revisao, dados.revisaoEsperada),
+        ),
+      )
+      .returning({ revisao: cenarioCenarios.revisao, mundoId: cenarioCenarios.mundoId })
+    if (!linha) return null
+    await this.catalogoConjuntos.atualizarUsos(tx, dados.cenarioId, dados.documento, espacoId)
+    await tx.insert(cenarioLotes).values({
+      cenarioId: dados.cenarioId,
+      revisao: linha.revisao,
+      operacaoId: dados.operacaoId,
+      comandos: dados.comandos,
+      inversos,
+      autorId: dados.autorId,
+      createdAt: agora,
     })
+    if (linha.revisao % 50 === 0)
+      await tx
+        .insert(cenarioRevisoes)
+        .values({
+          cenarioId: dados.cenarioId,
+          revisao: linha.revisao,
+          documento: dados.documento,
+          createdAt: agora,
+        })
+        .onConflictDoNothing()
+    await tx
+      .update(cenarioMundos)
+      .set({ updatedAt: agora })
+      .where(eq(cenarioMundos.id, linha.mundoId))
+    return { revisao: linha.revisao, repetido: false }
   }
 
   async definirCapa(cenarioId: string, digest: string, agora: Date): Promise<boolean> {

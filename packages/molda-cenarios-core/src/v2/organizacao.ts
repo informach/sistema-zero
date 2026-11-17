@@ -1,8 +1,10 @@
 import { CenarioInvalido } from '../validacao'
 import type { ComandoDeCenario } from './comandos'
+import type { MontagemDeConjunto } from './conjuntos-schema'
 import { type DocumentoDeCenario, GrupoSchema } from './documento'
 
 export type EntidadeOrganizavel =
+  | MontagemDeConjunto
   | DocumentoDeCenario['grupos'][number]
   | DocumentoDeCenario['instancias'][number]
   | DocumentoDeCenario['caminhos'][number]
@@ -21,7 +23,14 @@ export function referenciaDeModelo(e: EntidadeOrganizavel): string | null {
 }
 
 export function entidadesDoCenario(doc: DocumentoDeCenario): EntidadeOrganizavel[] {
-  return [...doc.grupos, ...doc.instancias, ...doc.caminhos, ...doc.aguas, ...doc.marcadores]
+  return [
+    ...doc.grupos,
+    ...doc.instancias,
+    ...doc.caminhos,
+    ...doc.aguas,
+    ...doc.marcadores,
+    ...(doc.montagens ?? []),
+  ]
 }
 
 /** Um índice por documento. Não depende da ordem da lista, da câmera nem de um host. */

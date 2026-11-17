@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { ConflitoDeCenario } from '../comandos'
 import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
+import { resolverConjuntos } from './conjuntos'
+import { DefinicaoDeConjuntoSchema, MontagemDeConjuntoSchema } from './conjuntos-schema'
 import {
   AguaSchema,
   BaseSchema,
@@ -49,6 +51,29 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
+  z.object({ tipo: z.literal('conjunto.definir'), definicao: DefinicaoDeConjuntoSchema }).strict(),
+  z.object({ tipo: z.literal('conjunto.remover'), id }).strict(),
+  z
+    .object({ tipo: z.literal('conjunto.atualizar'), definicao: DefinicaoDeConjuntoSchema })
+    .strict(),
+  z.object({ tipo: z.literal('montagem.definir'), montagem: MontagemDeConjuntoSchema }).strict(),
+  z
+    .object({
+      tipo: z.literal('montagem.atualizar'),
+      id,
+      alteracoes: MontagemDeConjuntoSchema.omit({ id: true }).partial(),
+    })
+    .strict(),
+  z.object({ tipo: z.literal('montagem.remover'), id }).strict(),
+  z.object({ tipo: z.literal('montagem.desvincular'), id }).strict(),
+  z
+    .object({
+      tipo: z.literal('montagem.duplicar'),
+      id,
+      novoId: z.string().min(1).max(160),
+      deslocamento: VetorSchema,
+    })
+    .strict(),
   z.object({ tipo: z.literal('objetos.espalhar'), pincelada: PinceladaDeObjetosSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
   z.object({ tipo: z.literal('textura.definir'), textura: TexturaDoCenarioSchema }).strict(),
@@ -183,6 +208,95 @@ export function executarLote(
   let travas = indiceDeTravas(d)
   for (const c of lote.comandos) {
     switch (c.tipo) {
+      case 'conjunto.definir': {
+        const atual = d.definicoesConjuntos?.find((e) => e.id === c.definicao.id)
+        if (atual && !igual(atual, c.definicao))
+          throw new CenarioInvalido(['A definição fixada é imutável; use uma nova revisão'])
+        d.definicoesConjuntos ??= []
+        definir(d.definicoesConjuntos, c.definicao)
+        break
+      }
+      case 'conjunto.remover':
+        if (d.montagens?.some((m) => m.definicao === c.id))
+          throw new CenarioInvalido(['A definição do conjunto está em uso'])
+        d.definicoesConjuntos = d.definicoesConjuntos?.filter((e) => e.id !== c.id)
+        if (!d.definicoesConjuntos?.length) delete d.definicoesConjuntos
+        break
+      case 'conjunto.atualizar': {
+        const definicao = c.definicao,
+          antigas = new Set(
+            (d.definicoesConjuntos ?? [])
+              .filter(
+                (e) => e.biblioteca === definicao.biblioteca && e.conjunto === definicao.conjunto,
+              )
+              .map((e) => e.id),
+          )
+        const alvos = (d.montagens ?? []).filter((m) => antigas.has(m.definicao))
+        for (const m of alvos) {
+          exigeLivre(travas, m)
+          const anterior = d.definicoesConjuntos!.find((e) => e.id === m.definicao)!
+          if (anterior.revisao > definicao.revisao)
+            throw new CenarioInvalido(['A definição recebida é anterior à montagem atual'])
+          if (
+            anterior.revisao === definicao.revisao &&
+            !igual({ ...anterior, id: definicao.id }, definicao)
+          )
+            throw new CenarioInvalido(['A revisão da definição é imutável'])
+        }
+        const atual = d.definicoesConjuntos?.find((e) => e.id === definicao.id)
+        if (atual && !igual(atual, definicao))
+          throw new CenarioInvalido(['A definição fixada é imutável; use uma nova revisão'])
+        for (const m of alvos) m.definicao = definicao.id
+        d.definicoesConjuntos = (d.definicoesConjuntos ?? []).filter(
+          (e) => !antigas.has(e.id) || d.montagens?.some((m) => m.definicao === e.id),
+        )
+        definir(d.definicoesConjuntos, definicao)
+        break
+      }
+      case 'montagem.definir':
+        d.montagens ??= []
+        definirTravavel(travas, d.montagens, c.montagem)
+        break
+      case 'montagem.atualizar': {
+        const atual = existente(d.montagens ?? [], c.id)
+        definirTravavel(travas, d.montagens!, { ...atual, ...c.alteracoes })
+        break
+      }
+      case 'montagem.remover':
+        d.montagens = removerTravavel(travas, d.montagens ?? [], c.id)
+        if (!d.montagens.length) delete d.montagens
+        break
+      case 'montagem.desvincular': {
+        const atual = existente(d.montagens ?? [], c.id)
+        exigeLivre(travas, atual)
+        const outras = d.montagens!.filter((m) => m.id !== c.id),
+          definicoes = d.definicoesConjuntos
+        d = resolverConjuntos({ ...d, montagens: [atual] }).documento
+        if (outras.length) d.montagens = outras
+        if (definicoes?.length) d.definicoesConjuntos = definicoes
+        travas = indiceDeTravas(d)
+        break
+      }
+      case 'montagem.duplicar': {
+        const atual = existente(d.montagens ?? [], c.id)
+        exigeLivre(travas, atual)
+        if (entidadesDoCenario(d).some((e) => e.id === c.novoId))
+          throw new CenarioInvalido(['O identificador da cópia já está em uso'])
+        const p = atual.transformacao.posicao
+        d.montagens!.push({
+          ...atual,
+          id: c.novoId,
+          transformacao: {
+            ...atual.transformacao,
+            posicao: {
+              x: p.x + c.deslocamento.x,
+              y: p.y + c.deslocamento.y,
+              z: p.z + c.deslocamento.z,
+            },
+          },
+        })
+        break
+      }
       case 'objetos.espalhar': {
         const novas = materializarEspalhamento(d, c.pincelada)
         for (const o of novas) exigeLivre(travas, o)
@@ -336,6 +450,10 @@ export function executarLote(
         d.aguas = d.aguas.filter((e) => !apagar.has(e.id))
         d.marcadores = d.marcadores.filter((e) => !apagar.has(e.id))
         d.grupos = d.grupos.filter((e) => !apagar.has(e.id))
+        if (d.montagens) {
+          d.montagens = d.montagens.filter((e) => !apagar.has(e.id))
+          if (!d.montagens.length) delete d.montagens
+        }
         for (const id of apagar) travas.grupos.delete(id)
         break
       }

@@ -29,6 +29,7 @@ import type {
   CenariosRepository,
 } from '../../src/domain/ports/cenarios-repository.port'
 import { ValidationError } from '../../src/domain/shared/errors'
+import { ConjuntosEmMemoria } from './conjuntos-in-memory'
 
 interface BlobGuardado extends BlobReservado {
   confirmado: boolean
@@ -41,6 +42,50 @@ interface CenarioGuardado extends Cenario {
 
 /** Repositório em memória com a MESMA régua do Drizzle: cota, tetos, CAS e operação repetida. */
 export class CenariosEmMemoria implements CenariosRepository {
+  private readonly catalogoConjuntos: ConjuntosEmMemoria
+  constructor() {
+    this.catalogoConjuntos = new ConjuntosEmMemoria({
+      biblioteca: (id) => this.bibliotecasGuardadas.get(id),
+      espaco: (id, agora) => {
+        this.atualizarUso(id, agora)
+        return this.espacosGuardados.get(id)
+      },
+      arquivo: (espacoId, digest, tipo) => {
+        const b = this.blobs.get(this.chave(espacoId, digest))
+        return Boolean(b?.confirmado && b.tipo === tipo)
+      },
+      imagem: (espacoId, digest) => {
+        const b = this.blobs.get(this.chave(espacoId, digest))
+        return Boolean(
+          b?.confirmado &&
+            ['miniatura', 'capa', 'textura'].includes(b.tipo) &&
+            b.bytes <= 256 * 1024,
+        )
+      },
+      cenarios: (espacoId) =>
+        [...this.cenariosGuardados.values()]
+          .filter((c) => this.mundosGuardados.get(c.mundoId)?.espacoId === espacoId)
+          .map(({ lotes: _l, criadoPor: _p, ...c }) => this.copia(c)),
+      gravar: (dados, agora) => this.gravarLoteNoEstado(dados, agora),
+      soltar: (espacoId, digests, agora) => this.soltarOrfaos(espacoId, digests, agora),
+      mudou: (espacoId, agora) => this.atualizarUso(espacoId, agora),
+    })
+  }
+  conjuntos: CenariosRepository['conjuntos'] = (...args) =>
+    this.catalogoConjuntos.conjuntos(...args)
+  conjunto: CenariosRepository['conjunto'] = (...args) => this.catalogoConjuntos.conjunto(...args)
+  versaoDoConjunto: CenariosRepository['versaoDoConjunto'] = (...args) =>
+    this.catalogoConjuntos.versaoDoConjunto(...args)
+  criarConjunto: CenariosRepository['criarConjunto'] = (...args) =>
+    this.catalogoConjuntos.criarConjunto(...args)
+  editarConjunto: CenariosRepository['editarConjunto'] = (...args) =>
+    this.catalogoConjuntos.editarConjunto(...args)
+  publicarConjunto: CenariosRepository['publicarConjunto'] = (...args) =>
+    this.catalogoConjuntos.publicarConjunto(...args)
+  definirMiniaturaDoConjunto: CenariosRepository['definirMiniaturaDoConjunto'] = (...args) =>
+    this.catalogoConjuntos.definirMiniaturaDoConjunto(...args)
+  apagarConjunto: CenariosRepository['apagarConjunto'] = (...args) =>
+    this.catalogoConjuntos.apagarConjunto(...args)
   readonly espacosGuardados = new Map<string, Espaco>()
   readonly bibliotecasGuardadas = new Map<string, Biblioteca & { criadoPor: string }>()
   readonly modelosGuardados = new Map<string, Modelo & { busca: string }>()
@@ -61,7 +106,7 @@ export class CenariosEmMemoria implements CenariosRepository {
     let total = 0
     for (const [chave, b] of this.blobs)
       if (chave.startsWith(`${espacoId}|`) && (b.confirmado || b.venceEm > agora)) total += b.bytes
-    return total
+    return total + this.catalogoConjuntos.bytesDoEspaco(espacoId)
   }
   private atualizarUso(espacoId: string, agora: Date) {
     const espaco = this.espacosGuardados.get(espacoId)
@@ -69,7 +114,7 @@ export class CenariosEmMemoria implements CenariosRepository {
   }
   /** Digests que nenhum modelo nem cenário do espaço usa mais: saem do espaço. */
   private soltarOrfaos(espacoId: string, digests: readonly string[], agora: Date): string[] {
-    const usados = new Set<string>()
+    const usados = this.catalogoConjuntos.arquivosDoEspaco(espacoId)
     for (const t of this.texturasGuardadas.values())
       if (this.bibliotecasGuardadas.get(t.bibliotecaId)?.espacoId === espacoId) usados.add(t.digest)
     for (const m of this.modelosGuardados.values()) {
@@ -207,6 +252,7 @@ export class CenariosEmMemoria implements CenariosRepository {
         digests.push(t.digest)
         this.texturasGuardadas.delete(t.id)
       }
+    digests.push(...this.catalogoConjuntos.removerDaBiblioteca(id))
     this.bibliotecasGuardadas.delete(id)
     for (const mundo of this.mundosGuardados.values())
       mundo.bibliotecas = mundo.bibliotecas.filter((x) => x !== id)
@@ -512,13 +558,16 @@ export class CenariosEmMemoria implements CenariosRepository {
     )
   }
   async gravarLote(dados: Parameters<CenariosRepository['gravarLote']>[0], agora: Date) {
+    return this.gravarLoteNoEstado(dados, agora)
+  }
+  private gravarLoteNoEstado(dados: Parameters<CenariosRepository['gravarLote']>[0], agora: Date) {
     const c = this.cenariosGuardados.get(dados.cenarioId)
     if (!c) return null
     const repetido = c.lotes.find((l) => l.operacaoId === dados.operacaoId)
     if (repetido) return { revisao: repetido.revisao, repetido: true }
     if (c.revisao !== dados.revisaoEsperada) return null
     const inversos = inverterLote(c.documento, dados.documento)
-    const atual = await this.pilhasDoHistorico(c.id)
+    const atual = this.copia(this.pilhas.get(c.id) ?? { passado: [], futuro: [] })
     const historico =
       inversos.length || dados.movimento
         ? avancarHistorico(atual, c.revisao + 1, dados.movimento)

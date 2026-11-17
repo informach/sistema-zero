@@ -1,5 +1,6 @@
 import {
   type DocumentoDeCenario,
+  type FragmentoBasico,
   MAX_BYTES_DE_TEXTURA_CENARIO,
 } from '@sistemazero/molda-cenarios-core/v2'
 
@@ -50,6 +51,8 @@ export const LIMITES_DOS_CENARIOS = {
   bibliotecasPorEspaco: 200,
   modelosPorBiblioteca: 5000,
   texturasPorBiblioteca: 2000,
+  conjuntosPorBiblioteca: 1000,
+  versoesPorConjunto: 1000,
   mundosPorEspaco: 500,
   cenariosPorMundo: 200,
   modeloBytes: 64 * 1024 * 1024,
@@ -162,6 +165,32 @@ export interface Textura {
 export interface ConferenciaDeTextura extends ConferenciaDeBlob {
   largura: number
   altura: number
+}
+
+/** Composição reutilizável da biblioteca; a revisão aponta para conteúdo imutável. */
+export interface Conjunto {
+  id: string
+  bibliotecaId: string
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  revisao: number
+  miniatura: string | null
+  bytes: number
+  objetos: number
+  atualizadoEm: Date
+}
+
+export interface VersaoDeConjunto {
+  conjuntoId: string
+  revisao: number
+  nome: string
+  conteudo: FragmentoBasico
+  miniatura: string | null
+  bytes: number
+  objetos: number
+  autorId: string
+  criadoEm: Date
 }
 
 export interface Mundo {

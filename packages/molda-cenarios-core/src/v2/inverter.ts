@@ -8,6 +8,7 @@ const ENTIDADES = [
   ['caminhos', 'caminho'],
   ['aguas', 'agua'],
   ['marcadores', 'marcador'],
+  ['montagens', 'montagem'],
 ] as const
 
 function definir(tipo: (typeof ENTIDADES)[number][1], valor: Travavel): ComandoDeCenario {
@@ -38,14 +39,23 @@ export function inverterLote(
   antes: DocumentoDeCenario,
   depois: DocumentoDeCenario,
 ): ComandoDeCenario[] {
+  // Uma restauração integral pode trocar o conteúdo sob o mesmo ID local; os comandos
+  // comuns conservam definições imutáveis e usam IDs novos para revisões novas.
+  if (
+    (antes.definicoesConjuntos ?? []).some((a) => {
+      const d = depois.definicoesConjuntos?.find((d) => d.id === a.id)
+      return d && !igual(a, d)
+    })
+  )
+    return [{ tipo: 'cenario.restaurar', documento: structuredClone(antes) }]
   const comandos: ComandoDeCenario[] = [],
     gruposAntes = new Map(antes.grupos.map((g) => [g.id, g])),
     gruposDepois = new Map(depois.grupos.map((g) => [g.id, g]))
 
   // 1. O que muda, por lista.
   const mudancas = ENTIDADES.map(([lista, tipo]) => {
-    const a = new Map((antes[lista] as Travavel[]).map((e) => [e.id, e])),
-      d = new Map((depois[lista] as Travavel[]).map((e) => [e.id, e]))
+    const a = new Map(((antes[lista] ?? []) as Travavel[]).map((e) => [e.id, e])),
+      d = new Map(((depois[lista] ?? []) as Travavel[]).map((e) => [e.id, e]))
     return {
       tipo,
       restaurar: [...a.values()].filter((e) => !igual(e, d.get(e.id))),
@@ -154,9 +164,12 @@ export function inverterLote(
   }
 
   // 5. Devolve os modelos antes de quem os usa.
+  const definicoesDepois = new Set(depois.definicoesConjuntos?.map((d) => d.id))
+  for (const d of antes.definicoesConjuntos ?? [])
+    if (!definicoesDepois.has(d.id)) comandos.push({ tipo: 'conjunto.definir', definicao: d })
   const destrancadosPorDefinicao = new Set<string>()
   for (const [lista, tipo] of ENTIDADES)
-    for (const o of depois[lista])
+    for (const o of depois[lista] ?? [])
       if (o.bloqueado && definicaoMudou(o)) {
         comandos.push(definir(tipo, { ...o, bloqueado: false }))
         destrancadosPorDefinicao.add(o.id)
@@ -200,7 +213,7 @@ export function inverterLote(
 
   const entidadesRestauradas = new Set(mudancas.flatMap((m) => m.restaurar.map((o) => o.id)))
   for (const [lista, tipo] of ENTIDADES)
-    for (const o of antes[lista])
+    for (const o of antes[lista] ?? [])
       if (o.bloqueado && destrancadosPorDefinicao.has(o.id) && !entidadesRestauradas.has(o.id))
         comandos.push(definir(tipo, o))
 
@@ -218,6 +231,9 @@ export function inverterLote(
   if (!igual(antes.iluminacao, depois.iluminacao))
     comandos.push({ tipo: 'iluminacao.definir', iluminacao: antes.iluminacao })
   if (antes.nome !== depois.nome) comandos.push({ tipo: 'cenario.renomear', nome: antes.nome })
+  const definicoesAntes = new Set(antes.definicoesConjuntos?.map((d) => d.id))
+  for (const d of depois.definicoesConjuntos ?? [])
+    if (!definicoesAntes.has(d.id)) comandos.push({ tipo: 'conjunto.remover', id: d.id })
   // Restaurar uma versão grande continua sendo uma ação atômica, sem exceder o teto de
   // comandos nem criar dezenas de revisões artificiais para um único desfazer.
   return comandos.length > LIMITES_CENARIO_V2.comandos

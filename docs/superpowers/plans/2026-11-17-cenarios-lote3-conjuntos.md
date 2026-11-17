@@ -1,0 +1,72 @@
+# Lote 3.6 — Conjuntos reutilizáveis e vivos — Implementation Plan
+
+> Executar com `executing-plans`, sem delegação ou aprovação intermediária. Staging conferida e limpa em `237dc9794`; partes 3.1–3.5 fechadas. Somente o lote 3 está ativo.
+
+**Goal:** salvar composições nomeadas na biblioteca, colocá-las e transformá-las como unidades, editar sua definição na oficina existente e atualizar as cópias atuais sem alterar versões históricas.
+
+**Architecture:** definições versionadas e imutáveis, fixadas no documento; montagens com identidade e transformação próprias; expansão pura para os objetos/grupos usados pelo motor. A edição usa a mesma oficina, fila e comandos. Atualização viva produz lotes autorais nas cabeças afetadas, com conferência de revisão e orçamento, em uma transação do espaço. Nenhuma resolução mutável de catálogo durante replay.
+
+**Tech Stack:** TypeScript/Zod, React e Three existentes; Members/Drizzle/Postgres, gateway/BFF e protocolo de blobs existentes.
+
+## Contratos e decisões
+
+- Conteúdo da definição reaproveita o fragmento de objetos/pastas. Separar os esquemas elementares de objetos do documento para que documento → conjunto → fragmento não forme uma dependência circular de esquemas. Reexportar os contratos públicos atuais, sem duas versões de um mesmo esquema.
+- A biblioteca guarda conjunto, revisões, nome/pasta/etiquetas e miniatura. O cenário fixa a definição efetiva (biblioteca, conjunto, revisão e conteúdo) e guarda suas montagens. Não consultar a cabeça do catálogo para abrir uma revisão antiga.
+- Montagem é uma entidade de autoria com nome, pasta, camada, cadeado, visibilidade, propriedades, posição, giro e tamanho uniforme. Preservar as proporções por eixo das peças internas; não introduzir cisalhamento para simular uma transformação que o documento não representa.
+- A expansão resolve os apoios dentro da definição em seu espaço original e depois aplica a transformação da montagem. Isso conserva a composição e seus contatos como um corpo, inclusive em giros fora do Y. As relações originais permanecem na definição. Não salvar milhares de clones editáveis com uma segunda transformação que possa divergir da montagem.
+- As peças expandidas pertencem à montagem: picking e seleção retornam sua raiz. Mover, girar, dimensionar, duplicar e apagar operam na montagem; editar as partes abre a definição ou uma desvinculação explícita. Não editar silenciosamente um clone desconectado.
+- Uma composição pode conter outras composições ao capturar a seleção; o conteúdo salvo é sua expansão fixada naquele instante. Não criar dependências recursivas de catálogo ou permitir ciclos. Conservar pastas internas e remapear IDs de apoios.
+- Limitar conteúdo por definição, definições fixadas, montagens e expansão pelo orçamento global, incluindo 20.000 objetos e 8 MiB. Recusar integralmente uma edição da definição se qualquer cabeça afetada ultrapassar limites.
+- Apoios externos são resolvidos na captura, usando alturas reais. Colocar uma montagem usa a base da composição como âncora; não reassentar cada peça isoladamente e deformar a praça. O lote 4 deverá reassentar a montagem pelo apoio de sua base após mudar o terreno.
+- Definições e arquivos continuam dentro do mesmo espaço e das licenças existentes. O GC protege arquivos nas definições e revisões, cenários, lotes e inversos. Apagar o catálogo não invalida as cenas que já fixaram seu conteúdo.
+- Atualização viva mantém a identidade/transformação de cada montagem. As cabeças recebem comandos com nova definição fixada; versões anteriores dos cenários permanecem iguais. A transação confere a versão esperada da definição, as revisões dos cenários, os arquivos confirmados e o orçamento antes de gravar tudo. Não usar atualizações parciais fora de uma transação.
+- Miniatura pertence à revisão da definição fotografada. Respostas atrasadas não podem associar retrato à revisão errada. Reutilizar reserva/envio/confirmação de imagens, sem binários ou URLs temporários dentro do documento.
+- Edição da definição deve usar um cenário de rascunho real, vinculado ao conjunto e guardado pela mesma fila/histórico dos cenários. Um mundo interno por biblioteca pode hospedá-los, identificado por fonte e ausente da lista normal de jogos. Não criar um segundo motor de edição nem um histórico paralelo de comandos.
+- O rascunho é persistente e compartilhado com CAS de revisão. Seus gestos não disparam publicações em todos os jogos. A ação explícita Atualizar cópias publica o rascunho salvo, conferindo tanto a revisão do catálogo quanto a do rascunho na transação. A interface deve distinguir rascunho guardado de versão publicada.
+- Registrar na cabeça do conjunto o cenário vinculado e a revisão desse cenário que foi publicada. Publicação direta por agente só pode substituir um rascunho limpo; não apagar alterações pendentes de outra pessoa. Quando limpa, atualizar a fonte editável junto com a publicação. Quando publica o rascunho, conservar seu documento e apontar a revisão publicada. Reabertura e undo usam o histórico existente.
+- O pivô da definição permanece estável entre versões. Normalizar o conteúdo para uma âncora local fixa ao preparar o cenário de edição; ao publicar, não recentralizar automaticamente pelo novo bounding box. Acrescentar uma flor numa borda não deve deslocar todas as outras peças de cada cópia.
+
+## 1. Núcleo e representação
+
+- [x] Extrair os esquemas elementares sem mudar sua validação e rodar a regressão existente. `entidades-schema.ts` e fragmento básico sem dependência circular; contratos públicos reexportados.
+- [ ] Definir conteúdo fixado, montagem, expansão limitada, identidade dos filhos e consulta de seleção/volume.
+- [ ] Implementar intenções de montar, transformar, duplicar, desvincular, remover e atualizar definição; inversão, clipboard e restauração coerentes.
+- [ ] Testar proporções, giros XYZ, contato/apoios internos, remapeamento, cadeados, limites, referências malformadas e preservação da origem/histórico.
+
+## 2. Persistência e atualização viva
+
+- [ ] Acrescentar domínio/portas, tabelas de conjuntos/revisões/usos e índices. Gerar DDL com o script do projeto; não editar SQL gerado.
+- [ ] Serviço e repositório conferem espaço/licenças/arquivos, conflito de versão e limites. Atualizar cabeças afetadas atomicamente, com os mesmos lotes/histórico.
+- [ ] Conservar snapshots antigos e arquivos necessários; conferir remoção de biblioteca/conjunto, exclusão de cenário e liberação final.
+- [ ] Rotas Members/gateway/BFF e hosts HTTP/memória com o mesmo contrato. Provar SQL real, concorrência e recusas entre espaços.
+
+## 3. Biblioteca, oficina e motor
+
+- [ ] Salvar seleção com nome e miniatura, listar/buscar/organizar conjuntos na biblioteca e gaveta existentes.
+- [ ] Colocar cópias, selecionar raiz, mover/girar/dimensionar/duplicar/apagar e editar definição pela oficina existente; sem outro editor ou armazenamento.
+- [ ] Mostrar revisão e estado de atualização, aplicar undo/redo e restaurar após reabrir. Cancelar resposta atrasada ou edição de outra versão.
+- [ ] Ajustar renderização, picking, árvore, camadas e volumes às montagens; retirar recursos sem destruir conteúdo compartilhado.
+
+## 4. Verificação e revisão
+
+- [ ] Ensaio de composição com GLBs reais, apoio por contato e pastas internas: colocar/mover/girar/duplicar/reabrir, conferindo proporções e relações.
+- [ ] Alterar definição usada por dois cenários; conferir atualização das cabeças, revisão antiga intacta, conflito, undo/redo, limite recusado e arquivos preservados.
+- [ ] Conferir teclado/toque, claro/escuro, 390/1.024/1.440 px, miniaturas e recursos em ciclos.
+- [ ] Regressões, tipagem, build, revisão local, relatório/evidências e commit/push. Só depois marcar 3.6 e seguir a 3.7. Lote 3 continua aberto até 3.8.
+
+## Registro intermediário — não fecha a parte 3.6
+
+- Núcleo em implementação: `conjuntos-schema.ts`, `conjuntos.ts`, comandos `conjunto.definir/remover/atualizar` e `montagem.definir/atualizar/remover/duplicar/desvincular`. Definição fixada e imutável; expansão de leitura sem clones autorais; tamanho uniforme e giros XYZ. Inversão granular e clipboard conservam cópias vivas; captura para uma nova definição fixa a expansão, sem catálogo recursivo.
+- A validação confere orçamento expandido, referências, IDs, raízes, camadas e cadeados. `arquivos-referenciados.ts` inclui snapshots e procedência do espaço; serviço, transação e host local conferem a origem. A coleta SQL usa os mesmos caminhos estruturais de cabeças, comandos, inversos e restaurações, centralizados em `cenarios-arquivos-json.ts`.
+- Verificações até aqui: núcleo 148 testes/3.907 asserções; teste independente do motor compara 25 composições XYZ com matrizes Three, 400 asserções. Oficina 53/355; Postgres 24/186. O teste de arquivos de conjuntos falhou com o repositório anterior (apagava os três arquivos ainda necessários) e passou com a correção. Logs privados `output/cenarios-reforma/conjuntos-*`.
+- Ainda não há catálogo de conjuntos, atualização transacional entre cenários, edição visual de definição, miniaturas ou integração das montagens com palco/seleção. Não apresentar esses contratos como ferramenta concluída nem marcar 3.6.
+
+Atualização intermediária posterior: migrações geradas `0158_fluffy_maggott.sql` (catálogo/revisões/usos) e `0159_wise_lady_bullseye.sql` (operações idempotentes e FK de versão nos usos), ambas ainda locais. `ConjuntosNoPostgres` usa os mesmos hooks de transação e gravação de lotes, extraídos sem alterar seu comportamento. O primeiro teste real de publicação em dois cenários passou: versões antigas intactas, transformações preservadas, repetição idempotente, bloqueio/conflito/cota/expansão recusados integralmente e exclusão do catálogo sem invalidar snapshots. Esse ensaio usa o repositório; endpoints e interface ainda faltam. O double de testes foi ampliado para a porta nova. Não é fechamento de 3.6.
+
+### Próxima sequência de arquivos
+
+1. `members/domain/cenarios/cenarios.ts`, porta `cenarios-repository.port.ts`, `schema.ts` e DDL gerada: catálogo, revisões imutáveis e usos atuais. Corpo JSONB com tamanho limitado e contado na cota; imagens no protocolo de blobs existente. Revisões e miniaturas protegem seus arquivos.
+2. `cenarios.repository.ts`: extrair a gravação de lote sob a trava existente para reutilização na atualização viva. Prevalidar todas as cabeças, gravar definição e lotes em uma transação do espaço, conferir versões/conflitos e manter o índice de usos. Nenhuma alteração de cenário histórico.
+3. Serviço/rotas/hosts/BFF e testes SQL/HTTP: espaço, origem e papel dos arquivos, exclusão, conflito e orçamento recusados sem parcialidade. Definições já fixadas continuam disponíveis ao remover catálogo.
+4. Motor e oficina: conservar documento autoral separado da projeção expandida; picking retorna raiz, gizmo e painel operam na montagem. Ajustar árvore/clipboard/aparência/espalhamento à consulta correta. Ocupação do pincel deve incluir volumes das montagens; seu resultado continua gravando no documento autoral real.
+5. Biblioteca/gaveta e edição da definição reaproveitam as telas existentes, com nome, miniatura da revisão correta, confirmação de atualização e tratamento de resposta atrasada. Só após os ensaios fechar 3.6.

@@ -47,7 +47,11 @@ import type {
   StudioProBuilderResult,
   StudioProRevision,
 } from '@sistemazero/core/studio'
-import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import type {
+  ComandoDeCenario,
+  DocumentoDeCenario,
+  FragmentoBasico,
+} from '@sistemazero/molda-cenarios-core/v2'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
@@ -57,6 +61,7 @@ import {
   customType,
   date,
   doublePrecision,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -3375,6 +3380,60 @@ export const cenarioTexturas = members.table(
   ],
 )
 
+export const cenarioConjuntos = members.table(
+  'cenario_conjuntos',
+  {
+    id: uuid('id').primaryKey(),
+    operacaoId: varchar('operacao_id', { length: 64 }).notNull(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    busca: varchar('busca', { length: 600 }).notNull(),
+    revisao: integer('revisao').notNull().default(1),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('cenario_conjuntos_lista_idx').on(t.bibliotecaId, t.busca, t.id),
+    uniqueIndex('cenario_conjuntos_operacao_uq').on(t.bibliotecaId, t.operacaoId),
+    check('cenario_conjuntos_revisao_check', sql`${t.revisao} > 0`),
+  ],
+)
+
+/** Conteúdo fixado por revisão; o catálogo aponta para a corrente e nunca reescreve as antigas. */
+export const cenarioConjuntoVersoes = members.table(
+  'cenario_conjunto_versoes',
+  {
+    conjuntoId: uuid('conjunto_id')
+      .notNull()
+      .references(() => cenarioConjuntos.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    operacaoId: varchar('operacao_id', { length: 64 }).notNull(),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    conteudo: jsonb('conteudo').$type<FragmentoBasico>().notNull(),
+    miniatura: varchar('miniatura', { length: 64 }),
+    bytes: integer('bytes').notNull(),
+    objetos: integer('objetos').notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.conjuntoId, t.revisao] }),
+    uniqueIndex('cenario_conjunto_versoes_operacao_uq').on(t.conjuntoId, t.operacaoId),
+    check('cenario_conjunto_versoes_revisao_check', sql`${t.revisao} > 0`),
+    check('cenario_conjunto_versoes_bytes_check', sql`${t.bytes} between 1 and 8388608`),
+    check('cenario_conjunto_versoes_objetos_check', sql`${t.objetos} between 1 and 2000`),
+    check(
+      'cenario_conjunto_versoes_miniatura_check',
+      sql`${t.miniatura} is null or ${t.miniatura} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+)
+
 export const cenarioMundos = members.table(
   'cenario_mundos',
   {
@@ -3429,6 +3488,29 @@ export const cenarioCenarios = members.table(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [index('cenario_cenarios_mundo_idx').on(t.mundoId)],
+)
+
+/** Só as cabeças participam das atualizações vivas; revisões antigas conservam snapshots próprios. */
+export const cenarioConjuntoUsos = members.table(
+  'cenario_conjunto_usos',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    montagemId: varchar('montagem_id', { length: 160 }).notNull(),
+    conjuntoId: uuid('conjunto_id').notNull(),
+    revisao: integer('revisao').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.montagemId] }),
+    foreignKey({
+      columns: [t.conjuntoId, t.revisao],
+      foreignColumns: [cenarioConjuntoVersoes.conjuntoId, cenarioConjuntoVersoes.revisao],
+      name: 'cenario_conjunto_usos_versao_fk',
+    }).onDelete('cascade'),
+    index('cenario_conjunto_usos_conjunto_idx').on(t.conjuntoId, t.cenarioId),
+    check('cenario_conjunto_usos_revisao_check', sql`${t.revisao} > 0`),
+  ],
 )
 
 /** O registro de cada lote aplicado: o histórico do cenário e a prova da operação repetida. */
@@ -3585,6 +3667,9 @@ export const schema = {
   cenarioBibliotecas,
   cenarioModelos,
   cenarioTexturas,
+  cenarioConjuntos,
+  cenarioConjuntoVersoes,
+  cenarioConjuntoUsos,
   cenarioMundos,
   cenarioMundoBibliotecas,
   cenarioCenarios,

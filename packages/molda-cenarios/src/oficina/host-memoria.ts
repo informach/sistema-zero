@@ -5,8 +5,11 @@ import {
   criarDocumentoVazio,
   type DocumentoDeCenario,
   digestDosBytes,
+  espacosDoDocumento,
+  espacosDosComandos,
   executarLote,
   inverterLote,
+  LoteDeCenarioSchema,
   lerPecaDeAlturas,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -538,12 +541,11 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       // A mesma operação mandada duas vezes (resposta perdida) não se aplica de novo.
       const feita = c.operacoes.get(operacaoId)
       if (feita !== undefined) return { revisao: feita }
+      const formato = LoteDeCenarioSchema.safeParse({ revisaoEsperada, comandos })
+      if (!formato.success) throw new Error('O lote tem um comando fora do formato')
+      comandos = formato.data.comandos
       const espacoId = exigir(mundos, c.resumo.mundoId, 'O mundo').espacoId
-      if (
-        comandos.some(
-          (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== espacoId,
-        )
-      )
+      if (espacosDosComandos(comandos).some((origem) => origem !== espacoId))
         throw new Error('Não é possível colar objetos de outro espaço')
       try {
         const depois = executarLote(
@@ -552,7 +554,12 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         )
         const inversos = inverterLote(c.documento, depois.documento)
         const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
-        for (const t of depois.documento.texturas ?? []) {
+        if (espacosDoDocumento(depois.documento).some((origem) => origem !== mundo.espacoId))
+          throw new Error('O conjunto não pertence ao espaço do cenário')
+        for (const t of [
+          ...(depois.documento.texturas ?? []),
+          ...(depois.documento.definicoesConjuntos?.flatMap((d) => d.conteudo.texturas) ?? []),
+        ]) {
           if (
             espacoDasBibliotecas.get(t.biblioteca) !== mundo.espacoId ||
             !conteudos.has(`${mundo.espacoId}:${t.digest}`)

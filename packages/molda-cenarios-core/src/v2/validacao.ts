@@ -1,4 +1,5 @@
 import { CenarioInvalido, poligonoSimples } from '../validacao'
+import { resolverConjuntos } from './conjuntos'
 import {
   type DocumentoDeCenario,
   DocumentoDeCenarioSchema,
@@ -48,7 +49,14 @@ export function validarDocumento(
     fontes.add(f.id)
   }
 
-  const entidades = [...d.grupos, ...d.instancias, ...d.caminhos, ...d.aguas, ...d.marcadores]
+  const entidades = [
+    ...d.grupos,
+    ...d.instancias,
+    ...d.caminhos,
+    ...d.aguas,
+    ...d.marcadores,
+    ...(d.montagens ?? []),
+  ]
   const camadas = new Set<string>()
   for (const c of d.camadas ?? []) {
     if (camadas.has(c.id)) erros.push(`Camada duplicada: ${c.id}`)
@@ -140,5 +148,16 @@ export function validarDocumento(
   }
 
   if (erros.length) throw new CenarioInvalido(erros)
+  if (d.definicoesConjuntos?.length || d.montagens?.length) {
+    for (const def of d.definicoesConjuntos ?? []) {
+      for (const m of def.conteudo.modelos)
+        if (opcoes.modeloExiste && !opcoes.modeloExiste(m))
+          throw new CenarioInvalido([`Modelo ausente no conjunto: ${m.id}`])
+      for (const t of def.conteudo.texturas)
+        if (opcoes.texturaExiste && !opcoes.texturaExiste(t))
+          throw new CenarioInvalido([`Textura ausente no conjunto: ${t.id}`])
+    }
+    validarDocumento(resolverConjuntos(d).documento, opcoes)
+  }
   return d
 }

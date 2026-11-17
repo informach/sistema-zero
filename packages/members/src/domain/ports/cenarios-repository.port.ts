@@ -1,8 +1,13 @@
-import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import type {
+  ComandoDeCenario,
+  DocumentoDeCenario,
+  FragmentoBasico,
+} from '@sistemazero/molda-cenarios-core/v2'
 import type {
   Biblioteca,
   Cenario,
   ConferenciaDeBlob,
+  Conjunto,
   Espaco,
   Licenca,
   Modelo,
@@ -11,6 +16,7 @@ import type {
   Textura,
   TipoDeBlob,
   TipoDeConteudo,
+  VersaoDeConjunto,
 } from '../cenarios/cenarios'
 import type {
   MovimentoDoHistorico,
@@ -56,12 +62,62 @@ export interface LoteGravado {
   repetido: boolean
 }
 
+export interface NovoConjunto {
+  id: string
+  bibliotecaId: string
+  operacaoId: string
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  conteudo: FragmentoBasico
+  autorId: string
+}
+
+export interface PublicacaoDeConjunto {
+  conjunto: Conjunto
+  cenarios: Array<{ id: string; revisao: number }>
+}
+
+/** Catálogo e publicação usam a mesma trava e transação que os lotes de cenários. */
+export interface ConjuntosRepository {
+  conjuntos(
+    bibliotecaId: string,
+    filtro: FiltroDeModelos,
+  ): Promise<{ itens: Conjunto[]; total: number }>
+  conjunto(id: string): Promise<Conjunto | null>
+  versaoDoConjunto(id: string, revisao: number): Promise<VersaoDeConjunto | null>
+  criarConjunto(dados: NovoConjunto, teto: number, agora: Date): Promise<Conjunto | null>
+  editarConjunto(
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[] },
+    agora: Date,
+  ): Promise<Conjunto | null>
+  publicarConjunto(
+    dados: {
+      id: string
+      revisaoEsperada: number
+      operacaoId: string
+      conteudo: FragmentoBasico
+      autorId: string
+    },
+    tetoVersoes: number,
+    agora: Date,
+  ): Promise<PublicacaoDeConjunto | null>
+  definirMiniaturaDoConjunto(
+    id: string,
+    revisao: number,
+    digest: string,
+    agora: Date,
+  ): Promise<boolean>
+  apagarConjunto(id: string, agora: Date): Promise<string[]>
+}
+
 /**
  * Persistência do Molda Cenários. Toda escrita que conta bytes, cria com teto de quantidade ou
  * muda um cenário acontece sob a trava do ESPAÇO, tomada pela implementação: é o que impede
  * duas importações simultâneas de passarem da cota juntas.
  */
-export interface CenariosRepository {
+export interface CenariosRepository extends ConjuntosRepository {
   /** O espaço da conta, criado na primeira vez. */
   espacoDaConta(contaId: string, limiteBytes: number, agora: Date): Promise<Espaco>
   /** O espaço único da equipe, criado na primeira vez. */
