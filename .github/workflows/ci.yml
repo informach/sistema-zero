@@ -445,7 +445,14 @@ jobs:
           PROFILE_ADMISSION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/kids_journey_auth_admission_ci
 
       - name: Typecheck (todos os pacotes)
-        run: bun run --filter '*' typecheck
+        # Cada frontend também analisa centenas de milhares de linhas dos workspaces.
+        # Uma checagem por vez evita a disputa de memória entre compiladores; uma falha
+        # continua falhando o job, mas não impede a conferência dos outros pacotes.
+        run: bun run --sequential --no-exit-on-error --filter '*' typecheck
+        env:
+          # Admin sem cache: ~5 GiB medidos; 4 GiB abortava. Um compilador por vez
+          # deixa margem para o sistema no runner público de 16 GB.
+          NODE_OPTIONS: --max-old-space-size=6144
 
       - name: Evidências do Pensa integrado
         if: failure()
