@@ -7,6 +7,7 @@ import {
   LIMITES_CENARIO_V2,
   type Transformacao,
 } from './documento'
+import { girarNaVertical } from './rotacao'
 import type { FonteDeAlturas } from './terreno'
 import { transformarVolume, type VolumeDeComposicao } from './volume'
 
@@ -176,7 +177,7 @@ export function repetirObjetos(
           z = posicao.z - receita.centro.z
         posicao.x = receita.centro.x + x * Math.cos(angulo) + z * Math.sin(angulo)
         posicao.z = receita.centro.z - x * Math.sin(angulo) + z * Math.cos(angulo)
-        if (receita.girar) transformacao.rotacao.y += angulo
+        if (receita.girar) transformacao.rotacao = girarNaVertical(transformacao.rotacao, angulo)
       }
       copia.id = novosIds[comandos.length]!
       copia.nome = `${o.nome.slice(0, 108)} ${i + 2}`
@@ -212,7 +213,7 @@ export function sortearTransformacoes(
   return escolhidos(doc, ids).map((o) => {
     const t = structuredClone(o.transformacao),
       fator = variacao.tamanhoMin + sorteio() * (variacao.tamanhoMax - variacao.tamanhoMin)
-    t.rotacao.y += (sorteio() * 2 - 1) * variacao.giro
+    t.rotacao = girarNaVertical(t.rotacao, (sorteio() * 2 - 1) * variacao.giro)
     t.escala = { x: t.escala.x * fator, y: t.escala.y * fator, z: t.escala.z * fator }
     return { tipo: 'instancia.atualizar', id: o.id, alteracoes: { transformacao: t } }
   })
