@@ -4,13 +4,14 @@ import {
   type DocumentoDeCenario,
   distribuirObjetos,
   type EixoDeComposicao,
+  espelharObjetos,
   type FonteDeAlturas,
   repetirObjetos,
   sortearTransformacoes,
   type VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { type JSX, useState } from 'react'
-import { novoIdAleatorio } from '../acoes'
+import { comMedidasConferidas, novoIdAleatorio } from '../acoes'
 import { CampoNumero } from './Painel'
 
 /** Ferramentas da seleção, dentro do painel aprovado. Todas gravam um único lote desfazível. */
@@ -20,12 +21,14 @@ export function Organizar({
   executar,
   medir,
   fonte,
+  aoTrocar,
 }: {
   documento: DocumentoDeCenario
   selecao: readonly string[]
   executar(comandos: ComandoDeCenario[]): void
   medir?(id: string): VolumeDeComposicao | null
   fonte?: FonteDeAlturas
+  aoTrocar(): void
 }): JSX.Element {
   const [eixo, setEixo] = useState<EixoDeComposicao>('x')
   const [copias, setCopias] = useState(3),
@@ -41,21 +44,7 @@ export function Organizar({
   const [erro, setErro] = useState<string | null>(null)
   const acao = (preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[]) => {
     try {
-      // Documentos antigos ganham medidas conferidas a partir do GLB real do palco.
-      // A atualização e a operação formam o mesmo lote; nenhuma gravação escondida ao abrir.
-      const doc = structuredClone(documento),
-        comandos: ComandoDeCenario[] = []
-      const ids = new Set(selecao)
-      const modelos = new Set(doc.instancias.filter((o) => ids.has(o.id)).map((o) => o.modelo))
-      for (const id of modelos) {
-        const m = doc.modelos.find((m) => m.id === id)!
-        const volume = m.volume ?? medir?.(id)
-        if (!m.volume && volume) {
-          m.volume = volume
-          comandos.push({ tipo: 'modelo.definir', modelo: m })
-        }
-      }
-      executar([...comandos, ...preparar(doc)])
+      executar(comMedidasConferidas(documento, selecao, medir, preparar))
       setErro(null)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não consegui organizar a seleção')
@@ -111,6 +100,25 @@ export function Organizar({
             () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'vaos', fonte)),
             selecao.length < 3,
           )}
+        </div>
+      </fieldset>
+      <fieldset className="mcn-grupo">
+        <legend>Espelhar ou trocar</legend>
+        <p className="text-sm text-mld-muted">
+          O espelho inverte a forma no eixo local, mantendo sua posição e apoio.
+        </p>
+        <div className="mcn-acoes-composicao">
+          {(['x', 'y', 'z'] as const).map((e) => (
+            <button
+              key={e}
+              type="button"
+              className="sz-tool-pill sz-tool-pill--outline"
+              onClick={() => acao((doc) => espelharObjetos(doc, selecao, e))}
+            >
+              Espelhar {e.toUpperCase()}
+            </button>
+          ))}
+          {botao('Trocar modelo', aoTrocar)}
         </div>
       </fieldset>
       <fieldset className="mcn-grupo">

@@ -1,10 +1,12 @@
 import { CenarioInvalido } from '../validacao'
-import { alteracoesDoGesto, posicaoNoMundo } from './chao'
+import { alteracoesDoGesto, alturaDoChao, posicaoNoMundo } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import {
   type DocumentoDeCenario,
   type InstanciaDeCenario,
   LIMITES_CENARIO_V2,
+  type ModeloDoCenario,
+  ModeloDoCenarioSchema,
   type Transformacao,
 } from './documento'
 import { girarNaVertical } from './rotacao'
@@ -12,6 +14,109 @@ import type { FonteDeAlturas } from './terreno'
 import { transformarVolume, type VolumeDeComposicao } from './volume'
 
 export type EixoDeComposicao = 'x' | 'y' | 'z'
+
+/** Inverte a forma dentro do seu volume local; não altera posição, apoio ou escala. */
+export function espelharObjetos(
+  doc: DocumentoDeCenario,
+  ids: readonly string[],
+  eixo: EixoDeComposicao,
+): ComandoDeCenario[] {
+  return escolhidos(doc, ids).map((o) => ({
+    tipo: 'instancia.atualizar',
+    id: o.id,
+    alteracoes: {
+      espelho: {
+        x: o.espelho?.x ?? false,
+        y: o.espelho?.y ?? false,
+        z: o.espelho?.z ?? false,
+        [eixo]: !o.espelho?.[eixo],
+      },
+    },
+  }))
+}
+
+/** Não sobrescreve referências usadas por outras peças ao trazer outra revisão da biblioteca. */
+export function referenciarModelo(
+  doc: DocumentoDeCenario,
+  entrada: ModeloDoCenario,
+): { id: string; comandos: ComandoDeCenario[] } {
+  const modelo = ModeloDoCenarioSchema.parse(entrada)
+  const igual = doc.modelos.find(
+    (m) =>
+      m.biblioteca === modelo.biblioteca &&
+      m.modelo === modelo.modelo &&
+      m.digest === modelo.digest &&
+      (['min', 'max'] as const).every((lado) =>
+        (['x', 'y', 'z'] as const).every(
+          (eixo) => m.volume?.[lado][eixo] === modelo.volume?.[lado][eixo],
+        ),
+      ),
+  )
+  if (igual) return { id: igual.id, comandos: [] }
+  const usados = new Set(doc.modelos.map((m) => m.id))
+  let id = modelo.id
+  const base = `${modelo.id.slice(0, 165)}/${modelo.digest}`
+  for (let n = 0; usados.has(id); n++) {
+    if (n > LIMITES_CENARIO_V2.modelos)
+      throw new CenarioInvalido(['Não há espaço para outra referência de modelo'])
+    id = `${base}/${n}`
+  }
+  return { id, comandos: [{ tipo: 'modelo.definir', modelo: { ...modelo, id } }] }
+}
+
+/** Troca apenas a seleção e conserva a base visual da peça, mesmo com pivôs diferentes. */
+export function trocarModeloDosObjetos(
+  doc: DocumentoDeCenario,
+  ids: readonly string[],
+  entrada: ModeloDoCenario,
+  fonte?: FonteDeAlturas,
+): ComandoDeCenario[] {
+  const objetos = escolhidos(doc, ids)
+  if (!objetos.length || !entrada.volume)
+    throw new CenarioInvalido(['Escolha peças e um modelo com medidas conferidas'])
+  const { id, comandos } = referenciarModelo(doc, entrada)
+  const modelo = { ...entrada, id }
+  const novo = { ...doc, modelos: [...doc.modelos.filter((m) => m.id !== id), modelo] }
+  if (objetos.length + comandos.length > LIMITES_CENARIO_V2.comandos)
+    throw new CenarioInvalido(['Divida a troca em até 499 peças por ação'])
+  for (const o of objetos) {
+    const base = volumeNoMundo(doc, o, fonte).min.y
+    const copia = { ...o, modelo: id }
+    const mundo = { ...structuredClone(o.transformacao), posicao: posicaoNoMundo(doc, o, fonte) }
+    mundo.posicao.y += base - volumeNoMundo(novo, copia, fonte).min.y
+    let alteracoes = alteracoesDoGesto(novo, copia, mundo, fonte)
+    if (o.apoio.tipo === 'terreno') {
+      const apoio = {
+        ...o.apoio,
+        referencia: 'volume' as const,
+        deslocamento: base - alturaDoChao(doc.base, mundo.posicao.x, mundo.posicao.z, fonte),
+      }
+      mundo.posicao.y = posicaoNoMundo(novo, { ...copia, transformacao: mundo, apoio }, fonte).y
+      alteracoes = { transformacao: mundo, apoio }
+    } else if (o.apoio.tipo === 'objeto') {
+      alteracoes.apoio = {
+        ...o.apoio,
+        deslocamento: o.apoio.deslocamento + mundo.posicao.y - posicaoNoMundo(doc, o, fonte).y,
+      }
+    } else if (o.apoio.tipo === 'agua') {
+      const suporte = doc.aguas.find((a) => o.apoio.tipo === 'agua' && a.id === o.apoio.agua)
+      if (suporte?.tipo !== 'lago')
+        throw new CenarioInvalido(['A água de apoio não está disponível'])
+      alteracoes.apoio = {
+        ...o.apoio,
+        deslocamento:
+          o.apoio.deslocamento +
+          (mundo.posicao.y - posicaoNoMundo(doc, o, fonte).y) / suporte.escala,
+      }
+    }
+    comandos.push({
+      tipo: 'instancia.atualizar',
+      id: o.id,
+      alteracoes: { ...alteracoes, modelo: id },
+    })
+  }
+  return comandos
+}
 
 function escolhidos(doc: DocumentoDeCenario, ids: readonly string[]): InstanciaDeCenario[] {
   const porId = new Map(doc.instancias.map((o) => [o.id, o]))

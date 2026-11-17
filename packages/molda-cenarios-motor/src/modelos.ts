@@ -11,6 +11,7 @@ import {
   Vector3,
 } from 'three'
 import { GLTFLoader, type GLTFParser } from 'three/addons/loaders/GLTFLoader.js'
+import { transformarGeometriaEstatica } from './geometria-instanciada'
 import { ArquivoDoConjunto, RecursosDoConjunto } from './importacao/recursos'
 import { geometriaDaPoseInicial } from './modelo-estatico'
 
@@ -130,7 +131,17 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
       const pontos = indice ? indice.count : (geometria.getAttribute('position')?.count ?? 0)
       triangulos += Math.floor(pontos / 3)
     })
+    // InstancedMesh não aceita escalas negativas. Materializa somente esses nós do GLB.
+    for (let i = 0; i < partes.length; i++) {
+      const p = partes[i]!
+      if (p.matriz.determinant() >= 0) continue
+      const geometria = transformarGeometriaEstatica(p.geometria, p.matriz)
+      geometrias.add(geometria)
+      partes[i] = { ...p, geometria, matriz: new Matrix4() }
+    }
     const caixa = new Box3().setFromObject(raiz)
+    if (![...caixa.min, ...caixa.max].every(Number.isFinite))
+      throw new Error('As medidas do modelo são inválidas')
     if (caixa.isEmpty()) caixa.set(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
     let descartado = false
     return {

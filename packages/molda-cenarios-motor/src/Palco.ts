@@ -50,6 +50,7 @@ import {
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { carregarPecasDeTerreno } from './recursos-terreno'
+import { RepresentacoesDoModelo } from './representacoes'
 import { TerrenoDoPalco } from './Terreno'
 import type {
   Encaixe,
@@ -65,13 +66,12 @@ import type {
 const COR_DA_SELECAO = 0x2f7df6
 const COR_DO_CHAO = 0xa4d48c
 const COR_DE_FORA = 0x8fc27a
-const FANTASMA = '\u0000fantasma'
 const CAIXA_DO_FANTASMA = new Box3(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
 const TOQUE_MAXIMO_PX = 5
 
 type EstadoDoModelo =
   | { estado: 'carregando' }
-  | { estado: 'pronto'; modelo: ModeloCarregado; lote: LoteDoModelo }
+  | { estado: 'pronto'; modelo: ModeloCarregado; representacoes: RepresentacoesDoModelo }
   | { estado: 'falhou' }
 
 interface Local {
@@ -356,7 +356,7 @@ class PalcoThree implements Palco {
     this.fantasma.descartar()
     for (const estado of this.modelos.values())
       if (estado.estado === 'pronto') {
-        estado.lote.descartar()
+        estado.representacoes.descartar()
         estado.modelo.descartar()
       }
     this.modelos.clear()
@@ -565,7 +565,7 @@ class PalcoThree implements Palco {
     for (const [digest, estado] of this.modelos) {
       if (vivos.has(digest)) continue
       if (estado.estado === 'pronto') {
-        estado.lote.descartar()
+        estado.representacoes.descartar()
         estado.modelo.descartar()
       }
       this.modelos.delete(digest)
@@ -589,7 +589,7 @@ class PalcoThree implements Palco {
         this.modelos.set(modelo.digest, {
           estado: 'pronto',
           modelo: carregado,
-          lote: new LoteDoModelo(this.objetos, carregado.partes),
+          representacoes: new RepresentacoesDoModelo(this.objetos, carregado),
         })
         if (!this.gesto) this.reconstruir()
       })
@@ -616,14 +616,15 @@ class PalcoThree implements Palco {
     if (doc.base.tipo === 'terreno' && !this.terreno) {
       this.locais.clear()
       this.loteFantasma.preencher([])
-      for (const e of this.modelos.values()) if (e.estado === 'pronto') e.lote.preencher([])
+      for (const e of this.modelos.values())
+        if (e.estado === 'pronto') for (const lote of e.representacoes.lotes()) lote.preencher([])
       this.atualizarSelecao()
       this.pedirQuadro()
       return
     }
     const escondidos = idsEscondidos(doc)
     const tabela = new Map(doc.modelos.map((m) => [m.id, m.digest]))
-    const porLote = new Map<string, ItemDoLote[]>()
+    const porLote = new Map<LoteDoModelo, ItemDoLote[]>()
     const vistos = new Set<string>()
     this.trancados.clear()
     const gruposTrancados = this.gruposTrancados(doc)
@@ -634,7 +635,8 @@ class PalcoThree implements Palco {
       const matriz = matrizDoObjeto(doc, o, this.matrizDe(o.id), this.fonteDeAlturas())
       const digest = tabela.get(o.modelo)
       const estado = digest ? this.modelos.get(digest) : undefined
-      const chave = estado?.estado === 'pronto' && digest ? digest : FANTASMA
+      const chave =
+        estado?.estado === 'pronto' ? estado.representacoes.obter(o.espelho) : this.loteFantasma
       let itens = porLote.get(chave)
       if (!itens) {
         itens = []
@@ -652,10 +654,14 @@ class PalcoThree implements Palco {
         this.locais.set(item.id, { lote, indice: i, caixa, matriz: item.matriz })
       }
     }
-    registrar(this.loteFantasma, CAIXA_DO_FANTASMA, porLote.get(FANTASMA) ?? [])
-    for (const [digest, estado] of this.modelos)
-      if (estado.estado === 'pronto')
-        registrar(estado.lote, estado.modelo.caixa, porLote.get(digest) ?? [])
+    registrar(this.loteFantasma, CAIXA_DO_FANTASMA, porLote.get(this.loteFantasma) ?? [])
+    const usadas = new Set(porLote.keys())
+    for (const estado of this.modelos.values())
+      if (estado.estado === 'pronto') {
+        estado.representacoes.manter(usadas)
+        for (const lote of estado.representacoes.lotes())
+          registrar(lote, estado.modelo.caixa, porLote.get(lote) ?? [])
+      }
 
     this.atualizarSelecao()
   }
@@ -822,7 +828,8 @@ class PalcoThree implements Palco {
     this.mirar(evento.clientX, evento.clientY)
     const malhas: InstancedMesh[] = [...this.loteFantasma.malhas]
     for (const estado of this.modelos.values())
-      if (estado.estado === 'pronto') malhas.push(...estado.lote.malhas)
+      if (estado.estado === 'pronto')
+        for (const lote of estado.representacoes.lotes()) malhas.push(...lote.malhas)
     const acerto = this.raio.intersectObjects(malhas, false)[0]
     const lote = acerto?.object.userData.lote as LoteDoModelo | undefined
     const id = lote && acerto?.instanceId !== undefined ? lote.ids[acerto.instanceId] : undefined

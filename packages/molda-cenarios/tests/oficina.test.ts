@@ -5,6 +5,7 @@ import {
   comandosParaApagar,
   comandosParaDuplicar,
   comandosParaPor,
+  comandosParaTrocar,
 } from '../src/oficina/acoes'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -56,6 +57,30 @@ const por = (
 }
 
 describe('ações da aba Objetos', () => {
+  test('trocar usa o histórico durável e pôr uma revisão nova não altera modelos anteriores', async () => {
+    const { controlador } = await abrir()
+    const novoId = ids(),
+      primeiro = por(controlador, novoId)
+    const novo = {
+      ...arvore,
+      digest: 'b'.repeat(64),
+      min: [-1, -2, -1] as [number, number, number],
+    }
+    const outra = comandosParaPor(controlador.getState().documento, novo, { x: 4, z: 0 }, novoId)
+    expect(controlador.executar(outra.comandos)).toBe(true)
+    const antes = structuredClone(controlador.getState().documento)
+    expect(antes.modelos).toHaveLength(2)
+    expect(antes.instancias[0]!.modelo).not.toBe(antes.instancias[1]!.modelo)
+    expect(controlador.executar(comandosParaTrocar(antes, [primeiro], novo))).toBe(true)
+    await controlador.terminar()
+    const depois = controlador.getState().documento
+    expect(depois.instancias[0]!.modelo).toBe(depois.instancias[1]!.modelo)
+    expect(depois.instancias[1]).toEqual(antes.instancias[1])
+    await controlador.desfazer()
+    expect(controlador.getState().documento).toEqual(antes)
+    await controlador.refazer()
+    expect(controlador.getState().documento).toEqual(depois)
+  })
   test('pôr um modelo registra o modelo uma vez e põe o objeto de pé no chão', async () => {
     const { controlador } = await abrir()
     const novoId = ids()

@@ -53,6 +53,8 @@ import {
   comandosParaApagar,
   comandosParaDuplicar,
   comandosParaPor,
+  comandosParaTrocar,
+  comMedidasConferidas,
 } from '../acoes'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
@@ -199,6 +201,8 @@ function OficinaAberta({
   const canvas = useRef<HTMLCanvasElement>(null)
   const palco = useRef<Palco | null>(null)
   const arrastado = useRef<EscolhaDeModelo | null>(null)
+  const troca = useRef<readonly string[] | null>(null)
+  const [trocando, setTrocando] = useState(0)
   const importacaoDoMolde = useRef<AbortController | null>(null)
   const [preparandoMolde, setPreparandoMolde] = useState(false)
   const [erroDoMolde, setErroDoMolde] = useState<string | null>(null)
@@ -326,8 +330,31 @@ function OficinaAberta({
     ponto: { x: number; z: number } | null,
     aceite?: string,
   ) => {
+    const alvo = troca.current
+    const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: { x: number; z: number } | null) => {
+      if (!alvo) {
+        por(modelo, lugar)
+        return
+      }
+      if (troca.current !== alvo) return
+      try {
+        const comandos = comMedidasConferidas(
+          controlador.getState().documento,
+          alvo,
+          (id) => palco.current?.volumeDoModelo(id) ?? null,
+          (doc) => comandosParaTrocar(doc, alvo, modelo, palco.current?.fonteDeAlturas?.()),
+        )
+        if (controlador.executar(comandos)) {
+          troca.current = null
+          setTrocando(0)
+          setErroDoMolde(null)
+        }
+      } catch (e) {
+        setErroDoMolde(e instanceof Error ? e.message : 'Não consegui trocar o modelo')
+      }
+    }
     if (!('origem' in escolha)) {
-      por(escolha, ponto)
+      aplicarModelo(escolha, ponto)
       return
     }
     if (!host.molda || !moldesDisponiveis || importacaoDoMolde.current) return
@@ -341,7 +368,7 @@ function OficinaAberta({
       controle.signal.throwIfAborted()
       if (resultado.ok) {
         setRevisaoDoMolde(null)
-        por(resultado.modelo, lugar)
+        aplicarModelo(resultado.modelo, lugar)
       } else
         setRevisaoDoMolde({
           molde: escolha,
@@ -703,6 +730,29 @@ function OficinaAberta({
               </p>
             ) : null}
           </div>
+          {trocando > 0 ? (
+            <div className="mld-float" role="status">
+              <span>
+                Escolha na biblioteca o novo modelo para {trocando}{' '}
+                {trocando === 1 ? 'objeto' : 'objetos'}.
+              </span>
+              <button
+                type="button"
+                className="sz-tool-pill sz-tool-pill--outline"
+                onClick={() => {
+                  troca.current = null
+                  setTrocando(0)
+                  importacaoDoMolde.current?.abort()
+                  importacaoDoMolde.current = null
+                  setPreparandoMolde(false)
+                  setRevisaoDoMolde(null)
+                  setErroDoMolde(null)
+                }}
+              >
+                Cancelar troca
+              </button>
+            </div>
+          ) : null}
           <Gaveta
             host={host}
             bibliotecas={bibliotecas}
@@ -731,6 +781,15 @@ function OficinaAberta({
                 executar={executar}
                 medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
                 fonte={fonte}
+                aoTrocar={() => {
+                  if (!preparandoMolde) {
+                    troca.current = [...selecao]
+                    setTrocando(selecao.length)
+                    setErroDoMolde(null)
+                    if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                      setPainelAberto(false)
+                  }
+                }}
               />
             ) : null}
           </aside>

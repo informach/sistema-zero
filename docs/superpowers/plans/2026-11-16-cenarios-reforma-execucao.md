@@ -26,6 +26,8 @@
 
 ## Lotes e critérios de fechamento
 
+Atualização de 17/11: lote 3 em execução exclusiva. Espelho e troca de modelos implementados, testados e revisados; [registro e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). Não é fechamento do lote; sequência integral no [plano detalhado](2026-11-17-cenarios-lote3-objetos-ensaio.md).
+
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
 - [x] **1 — Equipe na plataforma:** Members, gateway/BFF, migrações em Postgres real, motor genérico, quatro telas conforme PDF, objetos básicos, GLB, acesso nos dois apps, fotos nos tamanhos/temas previstos. Implementado, testado e revisado; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote1-fechamento.md). Conferência da implantação do contrato mais recente transferida à validação global, conforme a usuária.
 - [x] **2 — Bibliotecas:** GLTF/OBJ/FBX/pastas/ZIP, conversão em worker e recursos incorporados; pastas/etiquetas/busca/cota; biblioteca Meus moldes; chãos; acervo da equipe e conversão da Faísca. [Revisão de chãos](../../plans/2026-11-16-cenarios-reforma/revisao-lote2-texturas.md) e [fechamento da conversão](../../plans/2026-11-16-cenarios-reforma/revisao-lote2-conversao.md). Leitura mínima de alturas importadas concluída; pincéis e demais ferramentas continuam no 4. Prova remota do protocolo novo fica para o encerramento global.

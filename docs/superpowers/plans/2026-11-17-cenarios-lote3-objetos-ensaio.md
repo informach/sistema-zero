@@ -36,7 +36,7 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 - [x] Reproduzir a falha de rotação inclinada com uma referência independente do Three nos testes do motor.
 - [x] Corrigir composição de giros e conferir repetição, variação, volumes, limites, bloqueios e inversão dos lotes. Os dois casos falharam antes e passaram depois; núcleo 63 testes/202 asserções, motor 21/150, tipagem de ambos aprovada. O lote 3 e esta parte permanecem abertos para os itens seguintes.
-- [ ] Completar espelho e troca de modelo, conservando posição, proporções e contato com o chão. Não usar escala negativa em InstancedMesh: a variante de geometria precisa de orientação e normais corretas.
+- [x] Completar espelho e troca de modelo, conservando posição, proporções e contato com o chão. Geometrias refletidas com faces/normais/tangentes corrigidas; sem escala negativa de instância. Troca pela gaveta e histórico existentes, preservando referências de peças não selecionadas. Testes e Chrome claro/escuro/390 px aprovados; [revisão do recorte](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). O lote continua aberto.
 - [ ] Conferir suportes e transformações das ações existentes, sem introduzir heurísticas por nome de arquivo.
 - [ ] Testar, revisar e preservar o recorte; lote 3 continua aberto.
 

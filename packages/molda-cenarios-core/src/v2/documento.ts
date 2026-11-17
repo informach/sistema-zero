@@ -107,6 +107,8 @@ export const InstanciaSchema = entidade
     transformacao: TransformacaoSchema,
     apoio: ApoioSchema,
     colisao: z.enum(COLISOES),
+    /** Espelha a forma nos eixos locais, em torno do centro do volume, sem mover o pivô. */
+    espelho: z.object({ x: z.boolean(), y: z.boolean(), z: z.boolean() }).strict().optional(),
   })
   .strict()
 

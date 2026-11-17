@@ -6,13 +6,147 @@ import {
   criarDocumentoVazio,
   type DocumentoDeCenario,
   distribuirObjetos,
+  espelharObjetos,
   executarLote,
   inverterLote,
   posicaoNoMundo,
+  referenciarModelo,
   repetirObjetos,
   sortearTransformacoes,
+  trocarModeloDosObjetos,
   volumeNoMundo,
 } from '../src/v2'
+
+test('espelho alterna cada eixo sem alterar posição, apoio ou volume; desfazer é exato', () => {
+  const d = exemplo(),
+    antes = structuredClone(d)
+  d.instancias[0]!.transformacao.rotacao = { x: 0.6, y: -0.8, z: 0.4 }
+  const depois = aplicar(d, espelharObjetos(d, ['b-0'], 'x'))
+  expect(depois.instancias[0]!.espelho).toEqual({ x: true, y: false, z: false })
+  expect(volumeNoMundo(depois, depois.instancias[0]!)).toEqual(volumeNoMundo(d, d.instancias[0]!))
+  expect(depois.instancias[0]!.transformacao).toEqual(d.instancias[0]!.transformacao)
+  expect(depois.instancias[0]!.apoio).toEqual(d.instancias[0]!.apoio)
+  const duas = aplicar(depois, espelharObjetos(depois, ['b-0'], 'x'))
+  expect(duas.instancias[0]!.espelho).toEqual({ x: false, y: false, z: false })
+  expect(aplicar(depois, inverterLote(d, depois))).toEqual(d)
+  expect(d.instancias.slice(1)).toEqual(antes.instancias.slice(1))
+  d.instancias[1]!.bloqueado = true
+  const fechado = structuredClone(d)
+  expect(() => aplicar(d, espelharObjetos(d, ['b-0', 'b-1'], 'y'))).toThrow('bloqueado')
+  expect(d).toEqual(fechado)
+})
+
+test('troca conserva base visual, proporções, espelho e vínculos com pivôs e apoios distintos', () => {
+  for (const apoio of [
+    { tipo: 'terreno', deslocamento: 2, inclinar: false, referencia: 'volume' },
+    { tipo: 'terreno', deslocamento: 2, inclinar: false, referencia: 'pivo' },
+    { tipo: 'absoluto' },
+    { tipo: 'objeto', objeto: 'b-1', deslocamento: 1 },
+    { tipo: 'agua', agua: 'lago', local: { x: 1, z: 1 }, deslocamento: 2, giro: 0.3, escala: 2 },
+  ] as const) {
+    const d = exemplo(),
+      o = d.instancias[0]!
+    o.apoio = apoio
+    o.espelho = { x: true, y: false, z: false }
+    o.transformacao = {
+      posicao: { x: 3, y: 8, z: 4 },
+      rotacao: { x: 0.6, y: 0.4, z: -0.7 },
+      escala: { x: 2, y: 3, z: 1 },
+    }
+    d.aguas = [
+      {
+        id: 'lago',
+        nome: 'Lago',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        tipo: 'lago',
+        modelo: null,
+        centro: { x: 0, z: 0 },
+        giro: 0,
+        escala: 2,
+        nivel: 0,
+        profundidade: 2,
+        contorno: [
+          { x: -2, z: -2 },
+          { x: 2, z: -2 },
+          { x: 0, z: 2 },
+        ],
+        recorte: [],
+      },
+    ]
+    const lago = d.aguas[0]!
+    if (lago.tipo !== 'lago') throw new Error('Lago esperado')
+    lago.recorte = lago.contorno
+    const antes = structuredClone(d),
+      base = volumeNoMundo(d, o).min.y
+    const novo = {
+      ...d.modelos[0]!,
+      volume: { min: { x: -3, y: -4, z: 0 }, max: { x: 1, y: -1, z: 2 } },
+    }
+    const depois = aplicar(d, trocarModeloDosObjetos(d, ['b-0'], novo))
+    const n = depois.instancias[0]!
+    expect(volumeNoMundo(depois, n).min.y).toBeCloseTo(base, 9)
+    expect(n.transformacao.posicao.x).toBe(3)
+    expect(n.transformacao.posicao.z).toBe(4)
+    expect(n.transformacao.rotacao).toEqual(o.transformacao.rotacao)
+    expect(n.transformacao.escala).toEqual(o.transformacao.escala)
+    expect(n.espelho).toEqual(o.espelho)
+    expect(n.apoio.tipo).toBe(apoio.tipo)
+    expect(depois.instancias[1]).toEqual(d.instancias[1])
+    expect(depois.modelos.find((m) => m.id === 'banco')).toEqual(d.modelos[0])
+    expect(aplicar(depois, inverterLote(d, depois))).toEqual(d)
+    expect(d).toEqual(antes)
+  }
+})
+
+test('troca em relevo real exige a fonte e conserva base acima dele', () => {
+  const d = exemplo()
+  d.base = {
+    tipo: 'terreno',
+    origem: { x: -32, z: -32 },
+    passo: 1,
+    colunas: 64,
+    linhas: 64,
+    min: 0,
+    max: 100,
+    fundo: 0,
+    pecas: [],
+  }
+  const fonte = (x: number, z: number) => x / 10 + z / 20 + 7
+  const novo = {
+    ...d.modelos[0]!,
+    id: 'arvore',
+    modelo: 'arvore',
+    volume: { min: { x: -2, y: -2, z: -2 }, max: { x: 2, y: 6, z: 2 } },
+  }
+  expect(() => trocarModeloDosObjetos(d, ['b-2'], novo)).toThrow('carregado')
+  const depois = aplicar(d, trocarModeloDosObjetos(d, ['b-2'], novo, fonte))
+  expect(volumeNoMundo(depois, depois.instancias[2]!, fonte).min.y).toBeCloseTo(
+    volumeNoMundo(d, d.instancias[2]!, fonte).min.y,
+    9,
+  )
+})
+
+test('referências de outra revisão ou outro volume não sobrescrevem peças fora da seleção', () => {
+  const d = exemplo(),
+    entrada = { ...d.modelos[0]!, digest: 'b'.repeat(64) }
+  const a = referenciarModelo(d, entrada)
+  expect(a.id).not.toBe('banco')
+  const c = a.comandos[0]!
+  if (c.tipo !== 'modelo.definir') throw new Error('Referência esperada')
+  d.modelos.push(c.modelo)
+  expect(referenciarModelo(d, entrada)).toEqual({ id: a.id, comandos: [] })
+  const outra = referenciarModelo(d, {
+    ...entrada,
+    volume: { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 2, z: 1 } },
+  })
+  expect(outra.id).not.toBe(a.id)
+  d.instancias[1]!.bloqueado = true
+  const antes = structuredClone(d)
+  expect(() => aplicar(d, trocarModeloDosObjetos(d, ['b-0', 'b-1'], entrada))).toThrow('bloqueado')
+  expect(d).toEqual(antes)
+})
 
 function exemplo(): DocumentoDeCenario {
   const d = criarDocumentoVazio('jardim', 'Jardim')
