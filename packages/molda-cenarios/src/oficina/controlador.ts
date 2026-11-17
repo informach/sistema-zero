@@ -2,6 +2,7 @@ import {
   CenarioInvalido,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  entidadesDoCenario,
   executarLote,
   inverterLote,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -14,8 +15,10 @@ export interface EstadoDaOficina {
   documento: DocumentoDeCenario
   revisao: number
   selecao: readonly string[]
+  alvoDaArvore: string | null
   ferramenta: Ferramenta
   encaixe: boolean
+  somarSelecao: boolean
   salvamento: Salvamento
   /** O motivo da última ação recusada, para avisar a pessoa. */
   recusa: string | null
@@ -40,11 +43,12 @@ export interface ControladorDaOficina {
   desfazer(): Promise<void>
   refazer(): Promise<void>
   restaurar(revisao: number): Promise<void>
-  selecionar(ids: readonly string[]): void
+  selecionar(ids: readonly string[], alvoDaArvore?: string | null): void
   /** Toque num objeto: troca a escolha ou, somando, põe e tira da escolha. */
   tocar(id: string | null, somar: boolean): void
   definirFerramenta(ferramenta: Ferramenta): void
   definirEncaixe(ligado: boolean): void
+  definirSomarSelecao(ligado: boolean): void
   limparRecusa(): void
   /** Tenta de novo a gravação que falhou. */
   tentarDeNovo(): void
@@ -86,8 +90,10 @@ export function criarControlador(
     documento: aberto.documento,
     revisao: aberto.revisao,
     selecao: [],
+    alvoDaArvore: null,
     ferramenta: 'selecionar',
     encaixe: true,
+    somarSelecao: false,
     salvamento: 'guardado',
     recusa: null,
     podeDesfazer: historico.desfazer > 0,
@@ -106,6 +112,11 @@ export function criarControlador(
       podeDesfazer: historico.desfazer > 0 && disponivel,
       podeRefazer: historico.refazer > 0 && disponivel,
     }
+    if (
+      estado.alvoDaArvore &&
+      !entidadesDoCenario(estado.documento).some((e) => e.id === estado.alvoDaArvore)
+    )
+      estado = { ...estado, alvoDaArvore: estado.selecao.length === 1 ? estado.selecao[0]! : null }
     for (const ouvinte of ouvintes) ouvinte()
   }
 
@@ -237,7 +248,7 @@ export function criarControlador(
         pendente = null
         precisaReabrir = false
         receber(novo)
-        emitir({ selecao: [] })
+        emitir({ selecao: [], alvoDaArvore: null })
       } catch (erro) {
         emitir({ salvamento: 'erro', recusa: mensagemDaRecusa(erro) })
       } finally {
@@ -272,27 +283,37 @@ export function criarControlador(
     desfazer: () => andar('desfazer'),
     refazer: () => andar('refazer'),
     restaurar: (revisao) => andar(revisao),
-    selecionar(ids) {
+    selecionar(ids, alvoDaArvore) {
       const vivos = new Set(estado.documento.instancias.map((o) => o.id))
-      emitir({ selecao: [...new Set(ids)].filter((s) => vivos.has(s)) })
+      const selecao = [...new Set(ids)].filter((s) => vivos.has(s))
+      emitir({
+        selecao,
+        alvoDaArvore:
+          alvoDaArvore === undefined ? (selecao.length === 1 ? selecao[0]! : null) : alvoDaArvore,
+      })
     },
     tocar(alvo, somar) {
+      const acrescentar = somar || estado.somarSelecao
       if (!alvo) {
-        if (!somar && estado.selecao.length) emitir({ selecao: [] })
+        if (!acrescentar && (estado.selecao.length || estado.alvoDaArvore))
+          emitir({ selecao: [], alvoDaArvore: null })
         return
       }
-      if (!somar) {
-        emitir({ selecao: [alvo] })
+      if (!estado.documento.instancias.some((o) => o.id === alvo)) return
+      if (!acrescentar) {
+        emitir({ selecao: [alvo], alvoDaArvore: alvo })
         return
       }
+      const retirar = estado.selecao.includes(alvo)
+      const selecao = retirar ? estado.selecao.filter((s) => s !== alvo) : [...estado.selecao, alvo]
       emitir({
-        selecao: estado.selecao.includes(alvo)
-          ? estado.selecao.filter((s) => s !== alvo)
-          : [...estado.selecao, alvo],
+        selecao,
+        alvoDaArvore: retirar ? (selecao.length === 1 ? selecao[0]! : null) : alvo,
       })
     },
     definirFerramenta: (ferramenta) => emitir({ ferramenta }),
     definirEncaixe: (encaixe) => emitir({ encaixe }),
+    definirSomarSelecao: (somarSelecao) => emitir({ somarSelecao }),
     limparRecusa: () => {
       if (estado.recusa) emitir({ recusa: null })
     },

@@ -6,7 +6,7 @@ import {
   LIMITES_CENARIO_V2,
 } from './documento'
 
-type Travavel = { id: string; bloqueado: boolean; grupo: string | null }
+type Travavel = { id: string; bloqueado: boolean; grupo: string | null; camada?: string | null }
 const ENTIDADES = [
   ['instancias', 'instancia'],
   ['caminhos', 'caminho'],
@@ -76,7 +76,12 @@ export function inverterLote(
   }
   const formasDepois = new Map(depois.formas?.map((f) => [f.id, f]))
   const formasARestaurar = (antes.formas ?? []).filter((f) => !igual(f, formasDepois.get(f.id)))
-  const fontesAlteradas = new Set(formasARestaurar.map((f) => f.id))
+  const modelosDepois = new Map(depois.modelos.map((m) => [m.id, m]))
+  const modelosARestaurar = antes.modelos.filter((m) => !igual(m, modelosDepois.get(m.id)))
+  const fontesAlteradas = new Set([
+    ...formasARestaurar.map((f) => f.id),
+    ...modelosARestaurar.map((m) => m.id),
+  ])
   const texturasDepois = new Map(depois.texturas?.map((t) => [t.id, t]))
   const texturasARestaurar = (antes.texturas ?? []).filter(
     (t) => !igual(t, texturasDepois.get(t.id)),
@@ -98,6 +103,36 @@ export function inverterLote(
     subir(g.id, gruposDepois)
   }
   const noCaminho = (id: string) => tocados.has(`a:${id}`) || tocados.has(`d:${id}`)
+
+  // Camadas vêm antes dos grupos/entidades que as referenciam. Abre só as necessárias.
+  const camadasAntes = new Map(antes.camadas?.map((c) => [c.id, c]) ?? []),
+    camadasDepois = new Map(depois.camadas?.map((c) => [c.id, c]) ?? [])
+  const camadasARestaurar = (antes.camadas ?? []).filter((c) => !igual(c, camadasDepois.get(c.id)))
+  const camadasTocadas = new Set(camadasARestaurar.map((c) => c.id))
+  const incluirCamada = (e: Travavel | undefined) => {
+    if (e?.camada) camadasTocadas.add(e.camada)
+  }
+  for (const c of depois.camadas ?? []) if (!camadasAntes.has(c.id)) camadasTocadas.add(c.id)
+  for (const m of mudancas) {
+    for (const e of m.restaurar) {
+      incluirCamada(e)
+      incluirCamada(m.atual.get(e.id))
+    }
+    for (const e of m.apagar) incluirCamada(e)
+  }
+  for (const g of [...antes.grupos, ...depois.grupos]) if (noCaminho(g.id)) incluirCamada(g)
+  for (const o of [...antes.instancias, ...depois.instancias])
+    if (definicaoMudou(o)) incluirCamada(o)
+  const camadasAbertas = new Set<string>()
+  for (const c of depois.camadas ?? [])
+    if (c.bloqueado && camadasTocadas.has(c.id)) {
+      comandos.push({ tipo: 'camada.definir', camada: { ...c, bloqueado: false } })
+      camadasAbertas.add(c.id)
+    }
+  for (const c of camadasARestaurar) {
+    comandos.push({ tipo: 'camada.definir', camada: { ...c, bloqueado: false } })
+    if (c.bloqueado) camadasAbertas.add(c.id)
+  }
 
   // 3. Abre os cadeados de grupo que impediriam a volta.
   const abertos = new Set<string>()
@@ -122,9 +157,7 @@ export function inverterLote(
       comandos.push({ tipo: 'instancia.atualizar', id: o.id, alteracoes: { bloqueado: false } })
       destrancadosPorDefinicao.add(o.id)
     }
-  const modelosDepois = new Map(depois.modelos.map((m) => [m.id, m]))
-  for (const m of antes.modelos)
-    if (!igual(m, modelosDepois.get(m.id))) comandos.push({ tipo: 'modelo.definir', modelo: m })
+  for (const m of modelosARestaurar) comandos.push({ tipo: 'modelo.definir', modelo: m })
   for (const f of formasARestaurar) comandos.push({ tipo: 'forma.definir', forma: f })
   for (const t of texturasARestaurar) comandos.push({ tipo: 'textura.definir', textura: t })
 
@@ -149,6 +182,8 @@ export function inverterLote(
     (a, b) => profundidade(gruposDepois, b.id) - profundidade(gruposDepois, a.id),
   ))
     comandos.push(remover('grupo', g.id))
+  for (const c of depois.camadas ?? [])
+    if (!camadasAntes.has(c.id)) comandos.push({ tipo: 'camada.remover', id: c.id })
   const modelosAntes = new Set(antes.modelos.map((m) => m.id))
   for (const m of depois.modelos)
     if (!modelosAntes.has(m.id)) comandos.push({ tipo: 'modelo.remover', id: m.id })
@@ -171,6 +206,9 @@ export function inverterLote(
     .filter((g) => g.bloqueado && abertos.has(g.id))
     .sort((a, b) => porProfundidade(b, a)))
     comandos.push({ tipo: 'grupo.definir', grupo: g })
+  for (const c of antes.camadas ?? [])
+    if (c.bloqueado && camadasAbertas.has(c.id))
+      comandos.push({ tipo: 'camada.definir', camada: c })
 
   // 9. O que é do cenário inteiro.
   if (!igual(antes.base, depois.base)) comandos.push({ tipo: 'base.definir', base: antes.base })

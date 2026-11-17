@@ -6,10 +6,12 @@ import {
   type DocumentoDeCenario,
   type FonteDeAlturas,
   type InstanciaDeCenario,
+  indiceDaOrganizacao,
+  LIMITES_CENARIO_V2,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Eye, EyeOff, Lock, LockOpen } from 'lucide-react'
-import { type JSX, useEffect, useId, useState } from 'react'
+import { type JSX, useEffect, useId, useMemo, useState } from 'react'
 import { transformacaoNoMundo } from '../acoes'
 import { COPY } from '../copy'
 
@@ -88,10 +90,12 @@ function CampoTexto({
   rotulo,
   valor,
   aoMudar,
+  desligado = false,
 }: {
   rotulo: string
   valor: string
   aoMudar(valor: string): void
+  desligado?: boolean
 }): JSX.Element {
   const id = useId()
   const [texto, setTexto] = useState(valor)
@@ -107,6 +111,7 @@ function CampoTexto({
       <input
         id={id}
         value={texto}
+        disabled={desligado}
         maxLength={120}
         autoComplete="off"
         onChange={(evento) => setTexto(evento.target.value)}
@@ -139,7 +144,11 @@ function PainelDoObjeto({
     executar([{ tipo: 'instancia.atualizar', id: objeto.id, alteracoes }])
   const transformar = (nova: Transformacao) =>
     atualizar(alteracoesDoGesto(documento, objeto, nova, fonte))
-  const trancado = objeto.bloqueado
+  const flags = useMemo(
+    () => indiceDaOrganizacao(documento).flags.get(objeto.id),
+    [documento, objeto.id],
+  )
+  const trancado = Boolean(flags?.bloqueado)
   const escala = mundo.escala
 
   return (
@@ -148,7 +157,11 @@ function PainelDoObjeto({
         rotulo={COPY.painel.nome}
         valor={objeto.nome}
         aoMudar={(nome) => atualizar({ nome })}
+        desligado={trancado}
       />
+      {flags?.bloqueioHerdado ? (
+        <p className="text-sm text-mld-muted">Este objeto está trancado na pasta ou camada.</p>
+      ) : null}
 
       <fieldset className="mcn-grupo" disabled={trancado}>
         <legend>{COPY.painel.lugar}</legend>
@@ -235,11 +248,16 @@ function PainelDoObjeto({
         <button
           type="button"
           className="sz-tool-pill sz-tool-pill--outline"
-          aria-pressed={objeto.bloqueado}
+          aria-pressed={trancado}
+          disabled={flags?.bloqueioHerdado}
           onClick={() => atualizar({ bloqueado: !objeto.bloqueado })}
         >
-          {objeto.bloqueado ? <Lock aria-hidden="true" /> : <LockOpen aria-hidden="true" />}
-          {objeto.bloqueado ? COPY.painel.destrancar : COPY.painel.trancar}
+          {trancado ? <Lock aria-hidden="true" /> : <LockOpen aria-hidden="true" />}
+          {flags?.bloqueioHerdado
+            ? 'Trancado'
+            : objeto.bloqueado
+              ? COPY.painel.destrancar
+              : COPY.painel.trancar}
         </button>
         <button
           type="button"
@@ -394,6 +412,7 @@ export function Painel({
     .map((id) => porId.get(id))
     .filter((o): o is InstanciaDeCenario => Boolean(o))
   const unico = escolhidos.length === 1 ? escolhidos[0] : undefined
+  const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
   return (
     <>
       <h2 className="mld-kicker px-4 pt-4">
@@ -417,6 +436,10 @@ export function Painel({
             <button
               type="button"
               className="sz-tool-pill sz-tool-pill--outline"
+              disabled={
+                escolhidos.length > LIMITES_CENARIO_V2.comandos ||
+                escolhidos.some((o) => indice.flags.get(o.id)?.bloqueioHerdado)
+              }
               onClick={() => {
                 const trancar = escolhidos.some((o) => !o.bloqueado)
                 executar(

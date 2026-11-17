@@ -1187,6 +1187,108 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
   })
 
+  test('camadas, organização e cadeados persistem em JSONB e conservam undo após reabrir o serviço', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const montar = () =>
+      new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const servico = montar()
+    const [espaco] = await servico.espacos(ator)
+    const mundo = await servico.criarMundo(ator, espaco!.id, 'Organização')
+    const cenario = await servico.criarCenario(ator, mundo.id, 'Camadas')
+    await servico.editarCenario(ator, cenario.id, {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [
+        {
+          tipo: 'camada.definir',
+          camada: { id: 'natureza', nome: 'Natureza', bloqueado: false, oculto: false },
+        },
+        {
+          tipo: 'grupo.definir',
+          grupo: {
+            id: 'grupo',
+            nome: 'Jardim',
+            grupo: null,
+            camada: 'natureza',
+            bloqueado: false,
+            oculto: false,
+          },
+        },
+        {
+          tipo: 'forma.definir',
+          forma: {
+            id: 'forma',
+            nome: 'Caixa',
+            tipo: 'caixa',
+            largura: 1,
+            altura: 1,
+            comprimento: 1,
+          },
+        },
+        {
+          tipo: 'instancia.criar',
+          instancia: {
+            id: 'objeto',
+            nome: 'Caixa',
+            modelo: 'forma',
+            grupo: 'grupo',
+            bloqueado: false,
+            oculto: false,
+            colisao: 'caixa',
+            apoio: { tipo: 'absoluto' },
+            transformacao: {
+              posicao: { x: 1, y: 2, z: 3 },
+              rotacao: { x: 0, y: 0, z: 0 },
+              escala: { x: 1, y: 1, z: 1 },
+            },
+          },
+        },
+      ],
+    })
+    await servico.editarCenario(ator, cenario.id, {
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+      comandos: [
+        {
+          tipo: 'camada.definir',
+          camada: { id: 'natureza', nome: 'Natureza', bloqueado: true, oculto: true },
+        },
+      ],
+    })
+    const recusado = await servico
+      .editarCenario(ator, cenario.id, {
+        revisaoEsperada: 2,
+        operacaoId: randomUUID(),
+        comandos: [
+          { tipo: 'elementos.organizar', ids: ['objeto'], destino: { grupo: null, camada: null } },
+        ],
+      })
+      .catch((e: unknown) => e)
+    expect(recusado).toBeInstanceOf(CenarioInvalidoError)
+    expect((await servico.abrirCenario(ator, cenario.id)).revisao).toBe(2)
+    const reaberto = montar()
+    const desfeito = await reaberto.moverHistorico(ator, cenario.id, {
+      revisaoEsperada: 2,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.camadas![0]).toMatchObject({ bloqueado: false, oculto: false })
+    expect(desfeito.documento.instancias[0]!.grupo).toBe('grupo')
+    const refeito = await reaberto.moverHistorico(ator, cenario.id, {
+      revisaoEsperada: 3,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento.camadas![0]).toMatchObject({ bloqueado: true, oculto: true })
+    expect(refeito.documento.instancias[0]!.transformacao.posicao).toEqual({ x: 1, y: 2, z: 3 })
+    expect((await reaberto.documentoNaRevisao(ator, cenario.id, 1)).camadas![0]!.bloqueado).toBe(
+      false,
+    )
+    expect((await reaberto.documentoNaRevisao(ator, cenario.id, 2)).camadas![0]!.bloqueado).toBe(
+      true,
+    )
+  })
+
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
     const montarServico = () =>

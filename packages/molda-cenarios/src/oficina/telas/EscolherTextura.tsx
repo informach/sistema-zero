@@ -35,6 +35,7 @@ export function EscolherTextura({
               Biblioteca de texturas
               <select
                 className="sz-tool-select"
+                aria-label="Biblioteca de texturas"
                 value={biblioteca.id}
                 onChange={(e) => setAtiva(e.target.value)}
               >

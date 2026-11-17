@@ -63,6 +63,55 @@ const por = (
 }
 
 describe('ações da aba Objetos', () => {
+  test('o controlador conserva a pasta escolhida, inclusive vazia, e limpa contexto removido sem gravar seleção', async () => {
+    const { controlador, host, cenario } = await abrir()
+    const a = por(controlador, ids())
+    controlador.executar([
+      {
+        tipo: 'grupo.definir',
+        grupo: { id: 'g', nome: 'Pasta', grupo: null, oculto: false, bloqueado: false },
+      },
+    ])
+    await controlador.terminar()
+    const antes = await host.abrirCenario(cenario.id)
+    controlador.selecionar([], 'g')
+    expect(controlador.getState().alvoDaArvore).toBe('g')
+    expect(controlador.getState().selecao).toEqual([])
+    expect(await host.abrirCenario(cenario.id)).toEqual(antes)
+    controlador.tocar(null, false)
+    expect(controlador.getState().alvoDaArvore).toBeNull()
+    controlador.selecionar([a], 'g')
+    controlador.executar(comandosParaApagar(controlador.getState().documento, ['g']))
+    expect(controlador.getState().alvoDaArvore).toBe(a)
+    await controlador.terminar()
+    await controlador.desfazer()
+    expect(controlador.getState().documento.grupos[0]!.id).toBe('g')
+    controlador.selecionar([a], 'ausente')
+    expect(controlador.getState().alvoDaArvore).toBe(a)
+    controlador.tocar('fantasma', false)
+    expect(controlador.getState().selecao).toEqual([a])
+  })
+  test('somar escolhas funciona sem teclado e não grava nem altera o histórico autoral', async () => {
+    const { controlador, host, cenario } = await abrir()
+    const novoId = ids(),
+      a = por(controlador, novoId),
+      b = por(controlador, novoId, 4)
+    await controlador.terminar()
+    const antes = await host.abrirCenario(cenario.id)
+    controlador.selecionar([])
+    controlador.definirSomarSelecao(true)
+    controlador.tocar(a, false)
+    controlador.tocar(b, false)
+    expect(controlador.getState().selecao).toEqual([a, b])
+    controlador.tocar(a, false)
+    expect(controlador.getState().selecao).toEqual([b])
+    controlador.tocar(null, false)
+    expect(controlador.getState().selecao).toEqual([b])
+    controlador.definirSomarSelecao(false)
+    controlador.tocar(null, false)
+    expect(controlador.getState().selecao).toEqual([])
+    expect(await host.abrirCenario(cenario.id)).toEqual(antes)
+  })
   test('tonalidade altera só a cópia escolhida, persiste e pode ser desfeita; cor inválida é recusada', async () => {
     const { controlador, host, cenario } = await abrir(),
       novoId = ids()

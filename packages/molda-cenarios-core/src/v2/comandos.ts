@@ -4,6 +4,7 @@ import { CenarioInvalido } from '../validacao'
 import {
   AguaSchema,
   BaseSchema,
+  CamadaSchema,
   CaminhoSchema,
   type DocumentoDeCenario,
   DocumentoDeCenarioSchema,
@@ -16,9 +17,15 @@ import {
   TexturaDoCenarioSchema,
 } from './documento'
 import { FormaDeCenarioSchema } from './formas'
+import { entidadesDoCenario } from './organizacao'
 import { type OpcoesDeValidacao, validarDocumento } from './validacao'
 
 const id = z.string().min(1).max(240)
+const idsOrganizaveis = z
+  .array(id)
+  .min(1)
+  .max(LIMITES_CENARIO_V2.objetos)
+  .refine((ids) => new Set(ids).size === ids.length, 'Identificadores repetidos')
 
 /** A mesma lista serve à edição pela mão e aos agentes. */
 export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
@@ -42,7 +49,25 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   /** Grava o objeto inteiro por cima (ou cria). É o que o desfazer usa para devolver um estado. */
   z.object({ tipo: z.literal('instancia.definir'), instancia: InstanciaSchema }).strict(),
   z.object({ tipo: z.literal('grupo.definir'), grupo: GrupoSchema }).strict(),
-  z.object({ tipo: z.literal('grupo.remover'), id }).strict(),
+  z.object({ tipo: z.literal('grupo.remover'), id, desagrupar: z.boolean().optional() }).strict(),
+  z.object({ tipo: z.literal('camada.definir'), camada: CamadaSchema }).strict(),
+  z
+    .object({ tipo: z.literal('camada.remover'), id, transferirPara: id.nullable().optional() })
+    .strict(),
+  z
+    .object({
+      tipo: z.literal('elementos.organizar'),
+      ids: idsOrganizaveis,
+      destino: z
+        .object({ grupo: id.nullable().optional(), camada: id.nullable().optional() })
+        .strict()
+        .refine(
+          (d) => d.grupo !== undefined || d.camada !== undefined,
+          'Escolha uma pasta ou camada de destino',
+        ),
+    })
+    .strict(),
+  z.object({ tipo: z.literal('elementos.remover'), ids: idsOrganizaveis }).strict(),
   z.object({ tipo: z.literal('caminho.definir'), caminho: CaminhoSchema }).strict(),
   z.object({ tipo: z.literal('caminho.remover'), id }).strict(),
   z.object({ tipo: z.literal('agua.definir'), agua: AguaSchema }).strict(),
@@ -66,18 +91,35 @@ export interface EstadoDeCenario {
   revisao: number
 }
 
-type Travavel = { id: string; bloqueado: boolean; grupo: string | null }
+type Travavel = { id: string; bloqueado: boolean; grupo: string | null; camada?: string | null }
 
-function exigeLivre(d: DocumentoDeCenario, e: Travavel, desbloqueando = false) {
+function indiceDeTravas(d: DocumentoDeCenario) {
+  return {
+    grupos: new Map(d.grupos.map((g) => [g.id, g])),
+    camadas: new Map(d.camadas?.map((c) => [c.id, c]) ?? []),
+  }
+}
+type IndiceDeTravas = ReturnType<typeof indiceDeTravas>
+
+function exigeCamadaLivre(d: IndiceDeTravas, id: string | null | undefined) {
+  if (!id) return
+  const camada = d.camadas.get(id)
+  if (!camada) throw new CenarioInvalido([`Camada ausente: ${id}`])
+  if (camada.bloqueado) throw new CenarioInvalido([`Camada bloqueada: ${id}`])
+}
+
+function exigeLivre(d: IndiceDeTravas, e: Travavel, desbloqueando = false) {
   if (e.bloqueado && !desbloqueando) throw new CenarioInvalido([`Elemento bloqueado: ${e.id}`])
+  exigeCamadaLivre(d, e.camada)
   let pai = e.grupo
   const visitados = new Set<string>()
   while (pai) {
     if (visitados.has(pai)) throw new CenarioInvalido([`Ciclo de grupos: ${pai}`])
     visitados.add(pai)
-    const g = d.grupos.find((g) => g.id === pai)
+    const g = d.grupos.get(pai)
     if (!g) break
     if (g.bloqueado) throw new CenarioInvalido([`Grupo bloqueado: ${pai}`])
+    exigeCamadaLivre(d, g.camada)
     pai = g.grupo
   }
 }
@@ -104,14 +146,14 @@ export function igual(a: unknown, b: unknown): boolean {
   )
 }
 /** Grava por cima respeitando o cadeado do que já existia e do grupo de destino. */
-function definirTravavel<T extends Travavel>(d: DocumentoDeCenario, lista: T[], valor: T) {
+function definirTravavel<T extends Travavel>(d: IndiceDeTravas, lista: T[], valor: T) {
   exigeLivre(d, { ...valor, bloqueado: false })
   const atual = lista.find((e) => e.id === valor.id)
   // Tirar o cadeado, e nada mais, é a única mudança aceita num elemento trancado.
   if (atual) exigeLivre(d, atual, !valor.bloqueado && igual({ ...atual, bloqueado: false }, valor))
   definir(lista, valor)
 }
-function removerTravavel<T extends Travavel>(d: DocumentoDeCenario, lista: T[], id: string): T[] {
+function removerTravavel<T extends Travavel>(d: IndiceDeTravas, lista: T[], id: string): T[] {
   exigeLivre(d, existente(lista, id))
   return lista.filter((e) => e.id !== id)
 }
@@ -132,14 +174,17 @@ export function executarLote(
   const lote = LoteDeCenarioSchema.parse(entrada)
   if (lote.revisaoEsperada !== estado.revisao) throw new ConflitoDeCenario(estado.revisao)
   let d = validarDocumento(estado.documento, opcoes)
+  let travas = indiceDeTravas(d)
   for (const c of lote.comandos) {
     switch (c.tipo) {
       case 'cenario.restaurar':
         if (c.documento.id !== d.id)
           throw new CenarioInvalido(['A restauração precisa ser deste cenário'])
         d = validarDocumento(c.documento, opcoes)
+        travas = indiceDeTravas(d)
         break
       case 'modelo.definir':
+        for (const o of d.instancias) if (o.modelo === c.modelo.id) exigeLivre(travas, o)
         definir(d.modelos, c.modelo)
         break
       case 'modelo.remover':
@@ -148,13 +193,13 @@ export function executarLote(
         d.modelos = d.modelos.filter((m) => m.id !== c.id)
         break
       case 'forma.definir':
-        for (const o of d.instancias) if (o.modelo === c.forma.id) exigeLivre(d, o)
+        for (const o of d.instancias) if (o.modelo === c.forma.id) exigeLivre(travas, o)
         d.formas ??= []
         definir(d.formas, c.forma)
         break
       case 'textura.definir':
         for (const o of d.instancias)
-          if (o.aparencia?.textura?.id === c.textura.id) exigeLivre(d, o)
+          if (o.aparencia?.textura?.id === c.textura.id) exigeLivre(travas, o)
         d.texturas ??= []
         definir(d.texturas, c.textura)
         break
@@ -174,47 +219,126 @@ export function executarLote(
       case 'instancia.criar':
         if (d.instancias.some((o) => o.id === c.instancia.id))
           throw new CenarioInvalido([`Identificador duplicado: ${c.instancia.id}`])
-        exigeLivre(d, { ...c.instancia, bloqueado: false })
+        exigeLivre(travas, { ...c.instancia, bloqueado: false })
         d.instancias.push(c.instancia)
         break
       case 'instancia.atualizar': {
         const o = existente(d.instancias, c.id),
           chaves = Object.keys(c.alteracoes)
-        exigeLivre(d, o, chaves.length === 1 && c.alteracoes.bloqueado === false)
-        if (c.alteracoes.grupo !== undefined)
-          exigeLivre(d, { ...o, grupo: c.alteracoes.grupo, bloqueado: false })
+        exigeLivre(travas, o, chaves.length === 1 && c.alteracoes.bloqueado === false)
+        if (c.alteracoes.grupo !== undefined || c.alteracoes.camada !== undefined)
+          exigeLivre(travas, { ...o, ...c.alteracoes, bloqueado: false })
         Object.assign(o, c.alteracoes)
         break
       }
       case 'instancia.remover':
-        d.instancias = removerTravavel(d, d.instancias, c.id)
+        d.instancias = removerTravavel(travas, d.instancias, c.id)
         break
       case 'instancia.definir':
-        definirTravavel(d, d.instancias, c.instancia)
+        definirTravavel(travas, d.instancias, c.instancia)
         break
       case 'grupo.definir':
-        definirTravavel(d, d.grupos, c.grupo)
+        definirTravavel(travas, d.grupos, c.grupo)
+        travas.grupos.set(c.grupo.id, c.grupo)
         break
-      case 'grupo.remover':
-        d.grupos = removerTravavel(d, d.grupos, c.id)
+      case 'grupo.remover': {
+        const grupo = existente(d.grupos, c.id)
+        exigeLivre(travas, grupo)
+        if (c.desagrupar) {
+          const filhos = entidadesDoCenario(d).filter((e) => e.grupo === c.id)
+          for (const e of filhos) exigeLivre(travas, e)
+          for (const e of filhos) e.grupo = grupo.grupo
+        }
+        d.grupos = removerTravavel(travas, d.grupos, c.id)
+        travas.grupos.delete(c.id)
         break
+      }
+      case 'camada.definir': {
+        const atual = d.camadas?.find((e) => e.id === c.camada.id)
+        if (
+          atual?.bloqueado &&
+          !(!c.camada.bloqueado && igual({ ...atual, bloqueado: false }, c.camada))
+        )
+          throw new CenarioInvalido([`Camada bloqueada: ${atual.id}`])
+        d.camadas ??= []
+        definir(d.camadas, c.camada)
+        travas.camadas.set(c.camada.id, c.camada)
+        break
+      }
+      case 'camada.remover': {
+        existente(d.camadas ?? [], c.id)
+        exigeCamadaLivre(travas, c.id)
+        if (c.transferirPara === c.id)
+          throw new CenarioInvalido(['Escolha outra camada de destino'])
+        exigeCamadaLivre(travas, c.transferirPara)
+        const membros = entidadesDoCenario(d).filter((e) => e.camada === c.id)
+        if (membros.length && c.transferirPara === undefined)
+          throw new CenarioInvalido([`Camada em uso: ${c.id}`])
+        for (const e of membros) exigeLivre(travas, e)
+        for (const e of membros) e.camada = c.transferirPara ?? null
+        d.camadas = d.camadas?.filter((e) => e.id !== c.id)
+        if (!d.camadas?.length) delete d.camadas
+        travas.camadas.delete(c.id)
+        break
+      }
+      case 'elementos.organizar': {
+        const tabela = new Map(entidadesDoCenario(d).map((e) => [e.id, e]))
+        const escolhidos = c.ids.map((id) => {
+          const e = tabela.get(id)
+          if (!e) throw new CenarioInvalido([`Elemento ausente: ${id}`])
+          exigeLivre(travas, e)
+          exigeLivre(travas, { ...e, ...c.destino, bloqueado: false })
+          return e
+        })
+        for (const e of escolhidos) Object.assign(e, c.destino)
+        break
+      }
+      case 'elementos.remover': {
+        const entidades = entidadesDoCenario(d),
+          tabela = new Map(entidades.map((e) => [e.id, e]))
+        const filhos = new Map<string, string[]>()
+        for (const e of entidades)
+          if (e.grupo) {
+            const lista = filhos.get(e.grupo) ?? []
+            lista.push(e.id)
+            filhos.set(e.grupo, lista)
+          }
+        const fila = [...c.ids],
+          apagar = new Set<string>()
+        for (let i = 0; i < fila.length; i++) {
+          const id = fila[i]!
+          if (apagar.has(id)) continue
+          const e = tabela.get(id)
+          if (!e) throw new CenarioInvalido([`Elemento ausente: ${id}`])
+          exigeLivre(travas, e)
+          apagar.add(id)
+          for (const filho of filhos.get(id) ?? []) fila.push(filho)
+        }
+        d.instancias = d.instancias.filter((e) => !apagar.has(e.id))
+        d.caminhos = d.caminhos.filter((e) => !apagar.has(e.id))
+        d.aguas = d.aguas.filter((e) => !apagar.has(e.id))
+        d.marcadores = d.marcadores.filter((e) => !apagar.has(e.id))
+        d.grupos = d.grupos.filter((e) => !apagar.has(e.id))
+        for (const id of apagar) travas.grupos.delete(id)
+        break
+      }
       case 'caminho.definir':
-        definirTravavel(d, d.caminhos, c.caminho)
+        definirTravavel(travas, d.caminhos, c.caminho)
         break
       case 'caminho.remover':
-        d.caminhos = removerTravavel(d, d.caminhos, c.id)
+        d.caminhos = removerTravavel(travas, d.caminhos, c.id)
         break
       case 'agua.definir':
-        definirTravavel(d, d.aguas, c.agua)
+        definirTravavel(travas, d.aguas, c.agua)
         break
       case 'agua.remover':
-        d.aguas = removerTravavel(d, d.aguas, c.id)
+        d.aguas = removerTravavel(travas, d.aguas, c.id)
         break
       case 'marcador.definir':
-        definirTravavel(d, d.marcadores, c.marcador)
+        definirTravavel(travas, d.marcadores, c.marcador)
         break
       case 'marcador.remover':
-        d.marcadores = removerTravavel(d, d.marcadores, c.id)
+        d.marcadores = removerTravavel(travas, d.marcadores, c.id)
         break
       case 'base.definir':
         d.base = c.base

@@ -2,9 +2,11 @@ import {
   alteracoesDoGesto,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  entidadesDoCenario,
   type FonteDeAlturas,
   type FormaDeCenario,
   type InstanciaDeCenario,
+  LIMITES_CENARIO_V2,
   type ModeloDoCenario,
   posicaoNoMundo,
   referenciarModelo,
@@ -200,6 +202,10 @@ export function comandosParaApagar(
   ids: readonly string[],
 ): ComandoDeCenario[] {
   const existentes = new Set(doc.instancias.map((o) => o.id))
+  const conjuntos = new Set(entidadesDoCenario(doc).map((e) => e.id))
+  const alvos = [...new Set(ids)].filter((id) => conjuntos.has(id))
+  if (alvos.length > LIMITES_CENARIO_V2.comandos || alvos.some((id) => !existentes.has(id)))
+    return [{ tipo: 'elementos.remover', ids: alvos }]
   return ids
     .filter((id) => existentes.has(id))
     .map((id) => ({ tipo: 'instancia.remover' as const, id }))

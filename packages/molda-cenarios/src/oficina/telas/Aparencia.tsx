@@ -4,9 +4,9 @@ import {
   type ComandoDeCenario,
   type DocumentoDeCenario,
   type InstanciaDeCenario,
+  indiceDaOrganizacao,
   LIMITES_CENARIO_V2,
 } from '@sistemazero/molda-cenarios-core/v2'
-import { estaTrancado } from '@sistemazero/molda-cenarios-motor'
 import { type JSX, useMemo, useState } from 'react'
 import type { Biblioteca, CenariosHost, TexturaDeBiblioteca } from '../portas'
 import { EscolherTextura } from './EscolherTextura'
@@ -31,6 +31,7 @@ export function Aparencia({
     const cores = new Set(objetos.map((o) => o.aparencia?.cor?.toLowerCase() ?? '#ffffff'))
     const unica = cores.size === 1 ? [...cores][0]! : null
     const excedeu = objetos.length > LIMITES_CENARIO_V2.comandos
+    const indice = indiceDaOrganizacao(documento)
     return {
       objetos,
       unica,
@@ -38,7 +39,8 @@ export function Aparencia({
       base: excedeu
         ? 'selecao-excedida'
         : JSON.stringify(objetos.map((o) => [o.id, o.aparencia?.cor ?? '#ffffff'])),
-      trancado: excedeu || !objetos.length || objetos.some((o) => estaTrancado(documento, o)),
+      trancado:
+        excedeu || !objetos.length || objetos.some((o) => indice.flags.get(o.id)?.bloqueado),
     }
   }, [documento, selecao])
   const [edicao, setEdicao] = useState<{ base: string; cor: string } | null>(null)

@@ -9,6 +9,7 @@ import {
   type Estatisticas,
   type Ferramenta,
   idsEscondidos,
+  type ModoDeSelecao,
   type Palco,
   type Vista,
 } from '@sistemazero/molda-cenarios-motor'
@@ -21,6 +22,9 @@ import {
   Copy,
   Flag,
   History,
+  Lasso,
+  ListChecks,
+  ListTree,
   Loader2,
   type LucideIcon,
   Magnet,
@@ -36,6 +40,7 @@ import {
   RotateCw,
   Route,
   Scaling,
+  Scan,
   Sun,
   Sunrise,
   Sunset,
@@ -83,6 +88,7 @@ import { Encaixes } from './Encaixes'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
+import { Organizacao } from './Organizacao'
 import { Organizar } from './Organizar'
 import { Painel } from './Painel'
 import { Versoes } from './Versoes'
@@ -121,6 +127,7 @@ function digitando(alvo: EventTarget | null): boolean {
 function Ladrilho({
   icone: Icone,
   rotulo,
+  rotuloAcessivel,
   atalho,
   ligado,
   alternavel,
@@ -129,6 +136,7 @@ function Ladrilho({
 }: {
   icone: LucideIcon
   rotulo: string
+  rotuloAcessivel?: string
   atalho?: string
   ligado?: boolean
   alternavel?: boolean
@@ -142,7 +150,8 @@ function Ladrilho({
       aria-pressed={ligado}
       data-toggle={alternavel ? '' : undefined}
       disabled={desligado}
-      title={atalho ? `${rotulo} (${atalho})` : rotulo}
+      title={atalho ? `${rotuloAcessivel ?? rotulo} (${atalho})` : (rotuloAcessivel ?? rotulo)}
+      aria-label={rotuloAcessivel}
       aria-keyshortcuts={atalho}
       onClick={aoTocar}
     >
@@ -209,6 +218,7 @@ function OficinaAberta({
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
   const arrastado = useRef<EscolhaDeModelo | null>(null)
   const troca = useRef<readonly string[] | null>(null)
@@ -230,6 +240,7 @@ function OficinaAberta({
     [],
   )
   const [aba, setAba] = useState<Aba>('objetos')
+  const [modoDeSelecao, setModoDeSelecao] = useState<ModoDeSelecao>('ponto')
   const [configuracaoDoEncaixe, setConfiguracaoDoEncaixe] = useState<EncaixeDeComposicao>({
     grade: 0.5,
     angulo: 15,
@@ -242,6 +253,7 @@ function OficinaAberta({
   const [painelAberto, setPainelAberto] = useState(
     () => !globalThis.matchMedia?.('(max-width: 899px)').matches,
   )
+  const [modoPainel, setModoPainel] = useState<'escolha' | 'organizacao'>('escolha')
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
   const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
   const [relevo, setRelevo] = useState<{
@@ -265,8 +277,8 @@ function OficinaAberta({
         controlador.getState().documento.base.tipo === 'terreno' &&
         !palco.current?.fonteDeAlturas?.()
       )
-        return
-      controlador.executar(comandos)
+        return false
+      return controlador.executar(comandos)
     },
     [controlador],
   )
@@ -289,7 +301,19 @@ function OficinaAberta({
             ? { erro: erro instanceof Error ? erro.message : 'Não consegui carregar o relevo' }
             : {}),
         }),
-      aoSelecionar: (id, somar) => controlador.tocar(id, somar),
+      aoSelecionar: (id, somar) => {
+        setModoPainel('escolha')
+        controlador.tocar(id, somar)
+      },
+      aoSelecionarArea: (ids, somar) => {
+        setModoPainel('escolha')
+        const atual = controlador.getState()
+        controlador.selecionar(
+          somar || atual.somarSelecao ? [...new Set([...atual.selecao, ...ids])] : ids,
+        )
+      },
+      aoPreverSelecao: (pontos) =>
+        previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
       aoTransformar: (mudancas) =>
         controlador.executar(
           comMedidasConferidas(
@@ -326,6 +350,13 @@ function OficinaAberta({
   }, [ferramenta, aba, estado.ocupado])
   useEffect(
     () =>
+      palco.current?.definirModoDeSelecao(
+        aba === 'objetos' && relevoPronto && !estado.ocupado ? modoDeSelecao : 'ponto',
+      ),
+    [aba, relevoPronto, estado.ocupado, modoDeSelecao],
+  )
+  useEffect(
+    () =>
       palco.current?.definirEncaixe(
         encaixe ? configuracaoDoEncaixe : { grade: null, angulo: null },
       ),
@@ -351,6 +382,7 @@ function OficinaAberta({
         (doc) => comandosParaPor(doc, modelo, lugar, () => id).comandos,
       )
       if (controlador.executar(comandos)) {
+        setModoDeSelecao('ponto')
         controlador.selecionar([id])
         if (controlador.getState().ferramenta === 'selecionar')
           controlador.definirFerramenta('mover')
@@ -432,7 +464,12 @@ function OficinaAberta({
   }
   const apagar = useCallback(() => {
     const atual = controlador.getState()
-    const comandos = comandosParaApagar(atual.documento, atual.selecao)
+    const alvo = atual.alvoDaArvore
+    const pasta = alvo && atual.documento.grupos.some((g) => g.id === alvo)
+    const comandos = comandosParaApagar(
+      atual.documento,
+      pasta || !atual.selecao.length ? (alvo ? [alvo] : []) : atual.selecao,
+    )
     if (comandos.length) controlador.executar(comandos)
   }, [controlador])
 
@@ -461,14 +498,22 @@ function OficinaAberta({
       else if (tecla === 'delete' || tecla === 'backspace') {
         evento.preventDefault()
         apagar()
-      } else if (tecla === 'escape') controlador.selecionar([])
-      else if (tecla === 'f') palco.current?.enquadrar(controlador.getState().selecao)
-      else {
+      } else if (tecla === 'escape') {
+        setModoDeSelecao('ponto')
+        controlador.definirSomarSelecao(false)
+        controlador.selecionar([])
+      } else if (tecla === 'f') palco.current?.enquadrar(controlador.getState().selecao)
+      else if (tecla === 'b' || tecla === 'l') {
+        setAba('objetos')
+        controlador.definirFerramenta('selecionar')
+        setModoDeSelecao(tecla === 'b' ? 'retangulo' : 'laco')
+      } else {
         const ferramentaDaTecla = FERRAMENTAS.find(
           ([, , , atalho]) => atalho.toLowerCase() === tecla,
         )
         if (!ferramentaDaTecla) return
         setAba('objetos')
+        setModoDeSelecao('ponto')
         controlador.definirFerramenta(ferramentaDaTecla[0])
       }
     }
@@ -501,19 +546,22 @@ function OficinaAberta({
     void escolherModelo(modelo, palco.current?.pontoNoChao(evento.clientX, evento.clientY) ?? null)
   }
 
-  const semEscolha = selecao.length === 0
+  const semEscolha = selecao.length === 0 && !estado.alvoDaArvore
+  const semObjetosEscolhidos = selecao.length === 0
   const dica =
     aba !== 'objetos'
       ? null
-      : documento.instancias.length === 0
-        ? COPY.oficina.dicaVazio
-        : ferramenta === 'mover' && !semEscolha
-          ? COPY.oficina.dicaMover
-          : ferramenta === 'girar' && !semEscolha
-            ? COPY.oficina.dicaGirar
-            : ferramenta === 'tamanho' && !semEscolha
-              ? COPY.oficina.dicaTamanho
-              : COPY.oficina.dicaEscolher
+      : modoDeSelecao !== 'ponto'
+        ? 'Arraste para escolher vários objetos.'
+        : documento.instancias.length === 0
+          ? COPY.oficina.dicaVazio
+          : ferramenta === 'mover' && !semObjetosEscolhidos
+            ? COPY.oficina.dicaMover
+            : ferramenta === 'girar' && !semObjetosEscolhidos
+              ? COPY.oficina.dicaGirar
+              : ferramenta === 'tamanho' && !semObjetosEscolhidos
+                ? COPY.oficina.dicaTamanho
+                : COPY.oficina.dicaEscolher
 
   return (
     <section
@@ -646,6 +694,21 @@ function OficinaAberta({
               <PanelRightOpen aria-hidden="true" />
             )}
           </button>
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            aria-label="Objetos e camadas"
+            title="Objetos e camadas"
+            aria-pressed={painelAberto && modoPainel === 'organizacao'}
+            onClick={() => {
+              setModoPainel(
+                painelAberto && modoPainel === 'organizacao' ? 'escolha' : 'organizacao',
+              )
+              setPainelAberto(true)
+            }}
+          >
+            <ListTree aria-hidden="true" />
+          </button>
         </div>
       </header>
 
@@ -669,16 +732,48 @@ function OficinaAberta({
                   icone={Icone}
                   rotulo={rotulo}
                   atalho={atalho}
-                  ligado={ferramenta === valor}
-                  aoTocar={() => controlador.definirFerramenta(valor)}
+                  ligado={modoDeSelecao === 'ponto' && ferramenta === valor}
+                  aoTocar={() => {
+                    setModoDeSelecao('ponto')
+                    controlador.definirFerramenta(valor)
+                  }}
                 />
               ))}
+              <Ladrilho
+                icone={Scan}
+                rotulo="Área"
+                rotuloAcessivel="Retângulo"
+                atalho="B"
+                ligado={modoDeSelecao === 'retangulo'}
+                aoTocar={() => {
+                  controlador.definirFerramenta('selecionar')
+                  setModoDeSelecao('retangulo')
+                }}
+              />
+              <Ladrilho
+                icone={Lasso}
+                rotulo="Laço"
+                atalho="L"
+                ligado={modoDeSelecao === 'laco'}
+                aoTocar={() => {
+                  controlador.definirFerramenta('selecionar')
+                  setModoDeSelecao('laco')
+                }}
+              />
+              <Ladrilho
+                icone={ListChecks}
+                rotulo="Somar"
+                rotuloAcessivel="Somar à escolha"
+                ligado={estado.somarSelecao}
+                alternavel
+                aoTocar={() => controlador.definirSomarSelecao(!estado.somarSelecao)}
+              />
               <hr className="mcn-fio" />
               <Ladrilho
                 icone={Copy}
                 rotulo={COPY.oficina.copiar}
                 atalho="Ctrl+D"
-                desligado={semEscolha}
+                desligado={!selecao.length}
                 aoTocar={copiar}
               />
               <Ladrilho
@@ -731,9 +826,18 @@ function OficinaAberta({
           <div className="mcn-palco">
             <canvas
               ref={canvas}
+              tabIndex={0}
               className="mcn-palco-tela"
               aria-label={COPY.oficina.vistasRotulo}
             />
+            <svg
+              className="mcn-selecao-area"
+              viewBox="0 0 1 1"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <polygon ref={previaDaArea} points="" vectorEffect="non-scaling-stroke" />
+            </svg>
             <div className="mld-stage-toolbar">
               {texturas.carregando > 0 ? (
                 <p className="mld-float" role="status">
@@ -785,10 +889,10 @@ function OficinaAberta({
                   type="button"
                   className="mcn-vista"
                   onClick={() => palco.current?.enquadrar(selecao)}
-                  title={`${semEscolha ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha} (F)`}
+                  title={`${semObjetosEscolhidos ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha} (F)`}
                 >
                   <Maximize aria-hidden="true" className="size-4" />
-                  {semEscolha ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha}
+                  {semObjetosEscolhidos ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha}
                 </button>
               </div>
               {medidas ? (
@@ -849,49 +953,68 @@ function OficinaAberta({
             className="mld-workshop-inspector mld-bar mcn-painel"
             aria-label={COPY.painel.titulo}
           >
-            {relevoPronto ? (
-              <Painel documento={documento} selecao={selecao} executar={executar} fonte={fonte} />
-            ) : null}
-            {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
-              <>
-                <Aparencia
-                  documento={documento}
-                  selecao={selecao}
-                  executar={executar}
-                  host={host}
-                  bibliotecas={bibliotecas}
-                />
-                <Organizar
-                  documento={documento}
-                  selecao={selecao}
-                  executar={executar}
-                  medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
-                  fonte={fonte}
-                  aoTrocar={() => {
-                    if (!preparandoMolde) {
-                      troca.current = [...selecao]
-                      setTrocando(selecao.length)
-                      setErroDoMolde(null)
-                      if (globalThis.matchMedia?.('(max-width: 899px)').matches)
-                        setPainelAberto(false)
-                    }
-                  }}
-                />
-              </>
-            ) : null}
-            {relevoPronto && aba === 'objetos' ? (
-              <Encaixes
+            {modoPainel === 'organizacao' ? (
+              <Organizacao
                 documento={documento}
                 selecao={selecao}
-                valor={configuracaoDoEncaixe}
-                aoMudar={setConfiguracaoDoEncaixe}
-                ligado={encaixe}
-                aoLigar={controlador.definirEncaixe}
+                selecionar={controlador.selecionar}
                 executar={executar}
-                medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
-                fonte={fonte}
+                aoDetalhes={() => setModoPainel('escolha')}
+                somarSelecao={estado.somarSelecao}
+                alvo={estado.alvoDaArvore}
               />
-            ) : null}
+            ) : (
+              <>
+                {relevoPronto ? (
+                  <Painel
+                    documento={documento}
+                    selecao={selecao}
+                    executar={executar}
+                    fonte={fonte}
+                  />
+                ) : null}
+                {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
+                  <>
+                    <Aparencia
+                      documento={documento}
+                      selecao={selecao}
+                      executar={executar}
+                      host={host}
+                      bibliotecas={bibliotecas}
+                    />
+                    <Organizar
+                      documento={documento}
+                      selecao={selecao}
+                      executar={executar}
+                      medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                      fonte={fonte}
+                      aoTrocar={() => {
+                        if (!preparandoMolde) {
+                          troca.current = [...selecao]
+                          setTrocando(selecao.length)
+                          setErroDoMolde(null)
+                          if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                            setPainelAberto(false)
+                        }
+                      }}
+                    />
+                  </>
+                ) : null}
+                {relevoPronto && aba === 'objetos' ? (
+                  <Encaixes
+                    documento={documento}
+                    selecao={selecao}
+                    valor={configuracaoDoEncaixe}
+                    aoMudar={setConfiguracaoDoEncaixe}
+                    ligado={encaixe}
+                    aoLigar={controlador.definirEncaixe}
+                    executar={executar}
+                    medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                    fonte={fonte}
+                  />
+                ) : null}
+              </>
+            )}
           </aside>
         ) : null}
       </div>
@@ -923,6 +1046,7 @@ function OficinaAberta({
             if (!controlador.executar(comandos))
               throw new Error(controlador.getState().recusa ?? 'Não consegui colocar o bloco')
             controlador.selecionar([id])
+            setModoDeSelecao('ponto')
             controlador.definirFerramenta('mover')
             return true
           }}

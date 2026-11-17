@@ -3,6 +3,7 @@ import {
   encaixarNaGrade,
   type FonteDeAlturas,
   type InstanciaDeCenario,
+  indiceDaOrganizacao,
   posicaoNoMundo,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -122,32 +123,9 @@ export function luzDaHora(hora: number): LuzDaHora {
 }
 
 /** Quem está escondido: o próprio objeto ou algum grupo acima dele. */
-export function idsEscondidos(doc: DocumentoDeCenario): Set<string> {
-  const grupos = new Map(doc.grupos.map((g) => [g.id, g]))
-  const cache = new Map<string, boolean>()
-  const grupoEscondido = (id: string | null): boolean => {
-    let atual = id
-    const caminho: string[] = []
-    let resposta = false
-    for (let n = 0; atual && n < 64; n++) {
-      const sabido = cache.get(atual)
-      if (sabido !== undefined) {
-        resposta = sabido
-        break
-      }
-      const g = grupos.get(atual)
-      if (!g) break
-      caminho.push(atual)
-      if (g.oculto) {
-        resposta = true
-        break
-      }
-      atual = g.grupo
-    }
-    for (const c of caminho) cache.set(c, resposta)
-    return resposta
-  }
-  const escondidos = new Set<string>()
-  for (const o of doc.instancias) if (o.oculto || grupoEscondido(o.grupo)) escondidos.add(o.id)
-  return escondidos
+export function idsEscondidos(
+  doc: DocumentoDeCenario,
+  indice = indiceDaOrganizacao(doc),
+): Set<string> {
+  return new Set(doc.instancias.filter((o) => indice.flags.get(o.id)?.oculto).map((o) => o.id))
 }

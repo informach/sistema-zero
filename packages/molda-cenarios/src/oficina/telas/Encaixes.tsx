@@ -4,10 +4,11 @@ import {
   type EncaixeDeComposicao,
   type FonteDeAlturas,
   girarObjetosNaVertical,
+  indiceDaOrganizacao,
   levarObjetosAoAndar,
   type VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
-import { type JSX, useState } from 'react'
+import { type JSX, useMemo, useState } from 'react'
 import { comMedidasConferidas } from '../acoes'
 import { CampoNumero } from './Painel'
 
@@ -34,6 +35,8 @@ export function Encaixes({
   fonte?: FonteDeAlturas
 }): JSX.Element {
   const [erro, setErro] = useState<string | null>(null)
+  const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
+  const trancado = !selecao.length || selecao.some((id) => indice.flags.get(id)?.bloqueado)
   const acao = (preparar: (d: DocumentoDeCenario) => ComandoDeCenario[]) => {
     try {
       executar(comMedidasConferidas(documento, selecao, medir, preparar))
@@ -144,7 +147,7 @@ export function Encaixes({
             <button
               type="button"
               className="sz-tool-pill sz-tool-pill--outline"
-              disabled={!selecao.length}
+              disabled={trancado}
               onClick={() =>
                 acao((d) =>
                   levarObjetosAoAndar(
@@ -175,7 +178,7 @@ export function Encaixes({
         <button
           type="button"
           className="sz-tool-pill sz-tool-pill--outline"
-          disabled={!selecao.length}
+          disabled={trancado}
           onClick={() => acao((d) => girarObjetosNaVertical(d, selecao, Math.PI / 2))}
         >
           Girar seleção 90°

@@ -9,6 +9,7 @@ import {
   matrizDoObjeto,
   transformacaoDaMatriz,
 } from '../src/matematica'
+import { estaTrancado } from '../src/Palco'
 
 const objeto = (id: string, extra: Partial<InstanciaDeCenario> = {}): InstanciaDeCenario => ({
   id,
@@ -27,6 +28,17 @@ const objeto = (id: string, extra: Partial<InstanciaDeCenario> = {}): InstanciaD
   ...extra,
 })
 const doc = criarDocumentoVazio('c', 'C')
+
+test('palco usa a camada própria e a das pastas para ocultar e trancar objetos', () => {
+  const d = criarDocumentoVazio('camadas', 'Camadas')
+  d.camadas = [{ id: 'c', nome: 'Natureza', bloqueado: true, oculto: true }]
+  d.grupos = [{ id: 'g', nome: 'Grupo', grupo: null, camada: 'c', bloqueado: false, oculto: false }]
+  d.instancias = [objeto('a', { grupo: 'g' }), objeto('b', { camada: 'c' }), objeto('livre')]
+  expect([...idsEscondidos(d)]).toEqual(['a', 'b'])
+  expect(estaTrancado(d, d.instancias[0]!)).toBe(true)
+  expect(estaTrancado(d, d.instancias[1]!)).toBe(true)
+  expect(estaTrancado(d, d.instancias[2]!)).toBe(false)
+})
 
 describe('matriz do objeto', () => {
   test('quem pisa no chão fica na altura do chão mais o deslocamento, não na altura gravada', () => {

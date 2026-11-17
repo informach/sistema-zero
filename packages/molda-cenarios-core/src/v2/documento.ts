@@ -53,12 +53,17 @@ const entidade = z.object({
   id,
   nome: z.string().min(1).max(120),
   grupo: id.nullable(),
+  camada: id.nullable().optional(),
   bloqueado: z.boolean(),
   oculto: z.boolean(),
   propriedades: PropriedadesSchema.optional(),
 })
 
 const origemDeRecurso = { id, biblioteca: id, digest, nome: z.string().min(1).max(120).optional() }
+
+export const CamadaSchema = z
+  .object({ id, nome: z.string().min(1).max(120), bloqueado: z.boolean(), oculto: z.boolean() })
+  .strict()
 
 /** Uma imagem de biblioteca fixada pelo conteúdo; endereços de download não são autorais. */
 export const TexturaDoCenarioSchema = z.object({ ...origemDeRecurso, textura: id }).strict()
@@ -212,6 +217,7 @@ export const DocumentoDeCenarioSchema = z
     texturas: z.array(TexturaDoCenarioSchema).min(1).max(256).optional(),
     formas: z.array(FormaDeCenarioSchema).min(1).max(2000).optional(),
     grupos: z.array(GrupoSchema).max(LIMITES_CENARIO_V2.objetos),
+    camadas: z.array(CamadaSchema).min(1).max(128).optional(),
     instancias: z.array(InstanciaSchema).max(LIMITES_CENARIO_V2.objetos),
     caminhos: z.array(CaminhoSchema).max(2000),
     aguas: z.array(AguaSchema).max(256),
@@ -223,6 +229,7 @@ export const DocumentoDeCenarioSchema = z
 export type DocumentoDeCenario = z.infer<typeof DocumentoDeCenarioSchema>
 export type InstanciaDeCenario = z.infer<typeof InstanciaSchema>
 export type GrupoDeCenario = z.infer<typeof GrupoSchema>
+export type CamadaDeCenario = z.infer<typeof CamadaSchema>
 export type CaminhoDeCenario = z.infer<typeof CaminhoSchema>
 export type AguaDeCenario = z.infer<typeof AguaSchema>
 export type MarcadorDeCenario = z.infer<typeof MarcadorSchema>

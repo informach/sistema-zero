@@ -6,11 +6,12 @@ import {
   type EixoDeComposicao,
   espelharObjetos,
   type FonteDeAlturas,
+  indiceDaOrganizacao,
   repetirObjetos,
   sortearTransformacoes,
   type VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
-import { type JSX, useState } from 'react'
+import { type JSX, useMemo, useState } from 'react'
 import { comMedidasConferidas, novoIdAleatorio } from '../acoes'
 import { CampoNumero } from './Painel'
 
@@ -42,6 +43,8 @@ export function Organizar({
   const [min, setMin] = useState(0.9),
     [max, setMax] = useState(1.1)
   const [erro, setErro] = useState<string | null>(null)
+  const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
+  const trancado = !selecao.length || selecao.some((id) => indice.flags.get(id)?.bloqueado)
   const acao = (preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[]) => {
     try {
       executar(comMedidasConferidas(documento, selecao, medir, preparar))
@@ -62,7 +65,7 @@ export function Organizar({
   )
   return (
     <div className="mcn-painel-corpo">
-      <fieldset className="mcn-grupo">
+      <fieldset className="mcn-grupo" disabled={trancado}>
         <legend>Organizar seleção</legend>
         <label className="mcn-campo">
           <span>Eixo</span>

@@ -13,6 +13,7 @@ import type { EstadoDasTexturas } from './texturas'
 export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho'
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
 export type Tema = 'light' | 'dark'
+export type ModoDeSelecao = 'ponto' | 'retangulo' | 'laco'
 
 export type Encaixe = Pick<EncaixeDeComposicao, 'grade' | 'angulo'> &
   Partial<Omit<EncaixeDeComposicao, 'grade' | 'angulo'>>
@@ -54,6 +55,8 @@ export interface OpcoesDoPalco {
   }): void
   /** Toque num objeto (ou no vazio, com `null`). `somar` = Shift ou Ctrl apertado. */
   aoSelecionar?(id: string | null, somar: boolean): void
+  aoSelecionarArea?(ids: readonly string[], somar: boolean): void
+  aoPreverSelecao?(pontos: readonly (readonly [number, number])[]): void
   /** Fim de um gesto de mover, girar ou mudar o tamanho. */
   aoTransformar?(mudancas: MudancaDeTransformacao[]): void
   aoGesto?(ativo: boolean): void
@@ -68,6 +71,7 @@ export interface Palco {
   recarregarTexturas(): void
   definirSelecao(ids: readonly string[]): void
   definirFerramenta(ferramenta: Ferramenta): void
+  definirModoDeSelecao(modo: ModoDeSelecao): void
   definirEncaixe(encaixe: Encaixe): void
   definirTema(tema: Tema): void
   definirVista(vista: Vista): void

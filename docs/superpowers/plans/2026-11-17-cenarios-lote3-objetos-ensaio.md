@@ -68,9 +68,9 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** a árvore representa os grupos e objetos do documento; camadas têm estado autoral próprio. A seleção permanece no controlador, com cadeados/visibilidade herdados. Copiar/colar usa um fragmento validado com referências e IDs remapeados.
 
-- [ ] Acrescentar árvore com busca, grupos, olho, cadeado, seleção e reorganização sem ciclos.
-- [ ] Acrescentar camadas, inclusão/remoção e visibilidade/bloqueio coerentes no palco e na árvore.
-- [ ] Implementar laço/seleção por área sem conflitar com órbita e gestos de transformação.
+- [x] Acrescentar árvore com busca, grupos, olho, cadeado, seleção e reorganização sem ciclos. Lista virtual, contexto no controlador e destinos estáveis; Chrome 1.440/1.024/390 px conferido. [Registro do recorte](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-organizacao-selecao.md).
+- [x] Acrescentar camadas, inclusão/remoção e visibilidade/bloqueio coerentes no palco e na árvore. Permissões próprias/herdadas e histórico JSONB testados no Postgres, incluindo restauração de definições compartilhadas.
+- [x] Implementar laço/seleção por área sem conflitar com órbita e gestos de transformação. Captura do Molda, projeção, soma por teclado ou botão, cancelamento e toque emulado conferidos; não cria revisão autoral.
 - [ ] Implementar copiar, recortar e colar, conservando relações internas e recusando referências inacessíveis de outra conta.
 - [ ] Verificar apagar, desfazer, refazer, recarga e ações recusadas sem aplicação parcial.
 

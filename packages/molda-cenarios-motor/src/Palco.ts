@@ -1,4 +1,8 @@
-import { DemandRenderLoop, perspectiveFitDistance } from '@sistemazero/molda/palco'
+import {
+  DemandRenderLoop,
+  perspectiveFitDistance,
+  SceneAreaSelection,
+} from '@sistemazero/molda/palco'
 import {
   alturaDoChao,
   apoioNaSuperficie,
@@ -7,6 +11,7 @@ import {
   type EncaixeDeComposicao,
   EncaixeDeComposicaoSchema,
   type InstanciaDeCenario,
+  indiceDaOrganizacao,
   type ModeloDoCenario,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -56,12 +61,14 @@ import {
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { carregarPecasDeTerreno } from './recursos-terreno'
 import { RepresentacoesDoModelo } from './representacoes'
+import { escolherNaArea } from './selecao-area'
 import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
 import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
   Encaixe,
   Ferramenta,
+  ModoDeSelecao,
   MudancaDeTransformacao,
   OpcoesDoPalco,
   Palco,
@@ -126,6 +133,8 @@ class PalcoThree implements Palco {
   private readonly camera = new PerspectiveCamera(48, 1, 0.1, 6000)
   private readonly orbita: OrbitControls
   private readonly alca: TransformControls
+  private readonly area: SceneAreaSelection
+  private modoDeSelecao: ModoDeSelecao = 'ponto'
   private readonly ajudanteDaAlca: Object3D
   private readonly laco: DemandRenderLoop
   private readonly pivo = new Object3D()
@@ -252,6 +261,25 @@ class PalcoThree implements Palco {
     this.alca.enabled = false
     this.cena.add(this.ajudanteDaAlca)
 
+    this.area = new SceneAreaSelection(
+      canvas,
+      (pontos) => this.opcoes.aoPreverSelecao?.(pontos),
+      (regiao, somar) => {
+        const candidatos = [...this.locais].map(([id, local]) => ({
+          id,
+          centro: local.caixa.getCenter(new Vector3()).applyMatrix4(local.matriz),
+          bloqueado: this.trancados.has(id),
+        }))
+        this.opcoes.aoSelecionarArea?.(escolherNaArea(candidatos, this.camera, regiao), somar)
+      },
+      (ativo) => {
+        this.toque = null
+        this.orbita.enabled = !ativo
+        this.opcoes.aoGesto?.(ativo)
+        this.pedirQuadro()
+      },
+    )
+
     canvas.addEventListener('pointerdown', this.aoApertar)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
@@ -292,6 +320,12 @@ class PalcoThree implements Palco {
 
   definirFerramenta(ferramenta: Ferramenta): void {
     this.ferramenta = ferramenta
+    this.atualizarAlca()
+  }
+
+  definirModoDeSelecao(modo: ModoDeSelecao): void {
+    this.modoDeSelecao = modo
+    this.area.setTool(modo === 'retangulo' ? 'box' : modo === 'laco' ? 'lasso' : 'point')
     this.atualizarAlca()
   }
 
@@ -435,6 +469,7 @@ class PalcoThree implements Palco {
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
+    this.area.dispose()
     this.alca.detach()
     this.alca.dispose()
     this.orbita.dispose()
@@ -727,7 +762,8 @@ class PalcoThree implements Palco {
       this.pedirQuadro()
       return
     }
-    const escondidos = idsEscondidos(doc)
+    const organizacao = indiceDaOrganizacao(doc)
+    const escondidos = idsEscondidos(doc, organizacao)
     const tabela = new Map([
       ...doc.modelos.map((m) => [m.id, m.digest] as const),
       ...(doc.formas?.map((f) => [f.id, chaveDaForma(f)] as const) ?? []),
@@ -737,9 +773,8 @@ class PalcoThree implements Palco {
     const texturas = new Map(doc.texturas?.map((t) => [t.id, t]) ?? [])
     const vistos = new Set<string>()
     this.trancados.clear()
-    const gruposTrancados = this.gruposTrancados(doc)
     for (const o of doc.instancias) {
-      if (o.bloqueado || (o.grupo && gruposTrancados.has(o.grupo))) this.trancados.add(o.id)
+      if (organizacao.flags.get(o.id)?.bloqueado) this.trancados.add(o.id)
       if (escondidos.has(o.id)) continue
       vistos.add(o.id)
       const matriz = matrizDoObjeto(doc, o, this.matrizDe(o.id), this.fonteDeAlturas())
@@ -811,24 +846,6 @@ class PalcoThree implements Palco {
     this.atualizarSelecao()
   }
 
-  private gruposTrancados(doc: DocumentoDeCenario): Set<string> {
-    const grupos = new Map(doc.grupos.map((g) => [g.id, g]))
-    const trancados = new Set<string>()
-    for (const g of doc.grupos) {
-      let atual: string | null = g.id
-      for (let n = 0; atual && n < 64; n++) {
-        const grupo = grupos.get(atual)
-        if (!grupo) break
-        if (grupo.bloqueado) {
-          trancados.add(g.id)
-          break
-        }
-        atual = grupo.grupo
-      }
-    }
-    return trancados
-  }
-
   // ---- seleção e alça -----------------------------------------------------
 
   private movidos(): string[] {
@@ -855,10 +872,12 @@ class PalcoThree implements Palco {
 
   private atualizarAlca() {
     const movidos = this.movidos()
-    const ligada = this.ferramenta !== 'selecionar' && movidos.length > 0
+    const ligada =
+      this.modoDeSelecao === 'ponto' && this.ferramenta !== 'selecionar' && movidos.length > 0
     if (!ligada) {
       if (this.alca.object) this.alca.detach()
       this.alca.enabled = false
+      this.alca.axis = null
       this.ajudanteDaAlca.visible = false
       this.pedirQuadro()
       return
@@ -983,7 +1002,7 @@ class PalcoThree implements Palco {
   }
 
   private readonly aoApertar = (evento: PointerEvent): void => {
-    if (evento.button !== 0) return
+    if (evento.button !== 0 || this.modoDeSelecao !== 'ponto') return
     this.toque = { x: evento.clientX, y: evento.clientY, ponteiro: evento.pointerId }
   }
 
@@ -1016,14 +1035,5 @@ export function criarPalco(canvas: HTMLCanvasElement, opcoes: OpcoesDoPalco): Pa
 
 /** Para a interface saber se um objeto pode ser mexido sem perguntar ao palco. */
 export function estaTrancado(doc: DocumentoDeCenario, o: InstanciaDeCenario): boolean {
-  if (o.bloqueado) return true
-  const grupos = new Map(doc.grupos.map((g) => [g.id, g]))
-  let atual = o.grupo
-  for (let n = 0; atual && n < 64; n++) {
-    const grupo = grupos.get(atual)
-    if (!grupo) return false
-    if (grupo.bloqueado) return true
-    atual = grupo.grupo
-  }
-  return false
+  return Boolean(o.bloqueado || indiceDaOrganizacao(doc).flags.get(o.id)?.bloqueado)
 }

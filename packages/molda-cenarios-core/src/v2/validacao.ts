@@ -49,10 +49,16 @@ export function validarDocumento(
   }
 
   const entidades = [...d.grupos, ...d.instancias, ...d.caminhos, ...d.aguas, ...d.marcadores]
+  const camadas = new Set<string>()
+  for (const c of d.camadas ?? []) {
+    if (camadas.has(c.id)) erros.push(`Camada duplicada: ${c.id}`)
+    camadas.add(c.id)
+  }
   for (const e of entidades) {
     if (ids.has(e.id)) erros.push(`Identificador duplicado: ${e.id}`)
     ids.add(e.id)
     if (e.grupo && !grupos.has(e.grupo)) erros.push(`Grupo ausente: ${e.id}`)
+    if (e.camada && !camadas.has(e.camada)) erros.push(`Camada ausente: ${e.id}`)
     let pai = e.grupo
     const vistos = new Set([e.id])
     while (pai) {
