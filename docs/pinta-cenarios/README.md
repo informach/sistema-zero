@@ -8,7 +8,7 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 | # | Incremento | Estado |
 |---|---|---|
 | 1 | Trava de formato, só leitura | Implementado e testado localmente (17/11/2026). Sem prova em staging. |
-| 2 | Declarar a versão por tipo | Pendente. Só depois de o incremento 1 estar em produção. |
+| 2 | Declarar a versão por tipo | Implementado na branch da evolução (17/11/2026). ⚠️ Só pode ir a produção depois do incremento 1 (PR da trava). |
 | 3 | Auxiliares de célula e histórico por buffer único | Implementado e testado localmente (17/11/2026). Sem mudança de comportamento. |
 | 4a | Documento do formato 3: camadas | Implementado e testado localmente (17/11/2026). Sem interface ainda. |
 | 4b | Documento do formato 3: objetos (formas, giro, papéis, propriedades tipadas) | Pendente. |
@@ -73,6 +73,12 @@ Ou seja: pela nuvem o mapa novo está protegido de um cliente antigo (ele não c
 cortar, e o servidor recusará a subida quando a versão declarada subir, no incremento 2). No
 MESMO aparelho, um bundle antigo em cache ainda cortaria o registro local; não há como barrar
 isso por dentro do código antigo. O que protege é a nuvem ter a versão inteira.
+
+⚠️ **Por que o incremento 2 é obrigatório antes de qualquer ferramenta que grave o formato 3:**
+no Pinta antigo, quando a subida cai em base vencida e a versão da conta não pode ser lida, o
+código antigo avança a marca e sobe a cópia local por cima. Sem o servidor recusar (versão
+declarada 2), um aparelho com o Pinta antigo e uma cópia velha do mapa regravaria o mapa novo. Com
+a versão declarada, a reserva dele é recusada com `CREATION_CLIENT_OUTDATED`.
 
 **Não provado:** nada disto tem interface, então não há ensaio no navegador. O Members embute o
 sanitizador do Pinta para envios de aula; a suíte dele não foi rodada neste incremento.

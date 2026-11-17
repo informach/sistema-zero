@@ -20,11 +20,17 @@ export const PINTA_MAX_READ_FORMAT_VERSION = 2
 /**
  * A versão que mapas e conjuntos de peças DECLARAM ao subir.
  *
- * ⚠️ Fica um passo atrás de `PINTA_MAX_READ_FORMAT_VERSION` de propósito. Como o servidor não
- * rebaixa, quem sobe com a versão nova trava para sempre os clientes que não a leem. Então o
- * leitor vai ao ar primeiro; só depois de ele estar em produção este número sobe.
+ * ⚠️⚠️ Este número só pode valer 2 em produção DEPOIS de o leitor (a trava de
+ * `pinta-cloud-persistence.ts`, entregue num PR próprio) estar em produção. O servidor nunca
+ * rebaixa a versão de um item: se o leitor e este gravador fossem ao ar juntos e houvesse
+ * rollback, todo mapa ficaria recusado com 409.
+ *
+ * Com 2, o servidor recusa a subida de qualquer navegador que não declara versão (todo Pinta
+ * anterior à trava). É o que impede o cliente antigo de regravar por cima de um mapa do formato
+ * novo: ele não consegue LER o arquivo (o envelope é da versão 3) e, sem isto, subiria a cópia
+ * velha que tem no aparelho.
  */
-export const PINTA_MAP_WRITE_FORMAT_VERSION = 1
+export const PINTA_MAP_WRITE_FORMAT_VERSION = 2
 
 /** Tipos de desenho cujo formato evolui com o editor de cenários. */
 const VERSIONED_KINDS: ReadonlySet<string> = new Set(['tilemap', 'tileset', 'vector-tileset'])
