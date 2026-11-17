@@ -20,7 +20,7 @@ export type CenariosRoutes = ReturnType<typeof createCenariosRoutes>
 
 /** Os mesmos tetos da borda (`cenarios-routes.ts` do gateway). */
 const CORPO_PEQUENO = 64 * 1024
-const CORPO_DO_LOTE = 1024 * 1024
+const CORPO_DO_LOTE = 8 * 1024 * 1024 + 64 * 1024
 const CORPO_DO_REGISTRO = 256 * 1024
 /** Um modelo de 64 MB numa conexão ruim: o envio direto tem 15 minutos. */
 const ENVIO_VALE_SEGUNDOS = 900
@@ -61,6 +61,17 @@ const REPASSES: readonly Repasse[] = [
   { metodo: 'PATCH', caminho: exato(`texturas/${U}`) },
   {
     metodo: 'GET',
+    caminho: exato(`bibliotecas/${U}/conjuntos`),
+    consulta: ['busca', 'pasta', 'cursor', 'limite'],
+  },
+  { metodo: 'POST', caminho: exato(`bibliotecas/${U}/conjuntos`), corpo: CORPO_DO_LOTE },
+  { metodo: 'GET', caminho: exato(`conjuntos/${U}`) },
+  { metodo: 'GET', caminho: exato(`conjuntos/${U}/versoes/[1-9][0-9]{0,9}`) },
+  { metodo: 'PATCH', caminho: exato(`conjuntos/${U}`) },
+  { metodo: 'POST', caminho: exato(`conjuntos/${U}/editar`), corpo: null },
+  { metodo: 'POST', caminho: exato(`conjuntos/${U}/publicar`), corpo: CORPO_DO_LOTE },
+  {
+    metodo: 'GET',
     caminho: exato(`bibliotecas/${U}/texturas`),
     consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
   },
@@ -89,6 +100,10 @@ const APAGAR_MODELOS = exato(`bibliotecas/(${U})/modelos/apagar`)
 const APAGAR_BIBLIOTECA = exato(`bibliotecas/(${U})`)
 const RESERVAR_CAPA = exato(`cenarios/(${U})/capa/reservar`)
 const DEFINIR_CAPA = exato(`cenarios/(${U})/capa`)
+const RESERVAR_MINIATURA_CONJUNTO = exato(
+  `conjuntos/(${U})/versoes/([1-9][0-9]{0,9})/miniatura/reservar`,
+)
+const MINIATURA_CONJUNTO = exato(`conjuntos/(${U})/versoes/([1-9][0-9]{0,9})/miniatura`)
 const RESERVAR_RECURSOS = exato(`cenarios/(${U})/recursos/reservar`)
 const GRAVAR_LOTE = exato(`cenarios/(${U})/lotes`)
 const ARQUIVO = new RegExp(`^espacos/(${U})/arquivos/(${D})$`, 'i')
@@ -445,7 +460,12 @@ export function createCenariosRoutes(deps: {
     if (metodo === 'POST') {
       const reservarModelos = RESERVAR_MODELOS.exec(caminho) ?? RESERVAR_TEXTURAS.exec(caminho)
       const reservarCapa = RESERVAR_CAPA.exec(caminho)
-      if (reservarModelos || reservarCapa || RESERVAR_RECURSOS.test(caminho)) {
+      if (
+        reservarModelos ||
+        reservarCapa ||
+        RESERVAR_RECURSOS.test(caminho) ||
+        RESERVAR_MINIATURA_CONJUNTO.test(caminho)
+      ) {
         const lido = await corpoJson(req, CORPO_PEQUENO)
         if (!lido.ok) return invalido()
         return comEnderecos(
@@ -581,6 +601,50 @@ export function createCenariosRoutes(deps: {
         )
       }
 
+      const miniatura = MINIATURA_CONJUNTO.exec(caminho)
+      if (miniatura) {
+        if (!user) return semSessao()
+        const lido = await corpoJson(req, CORPO_PEQUENO)
+        const corpo = lido.ok ? CapaBody.safeParse(lido.corpo) : null
+        if (!corpo?.success) return invalido()
+        const espacoId = corpo.data.espacoId.toLowerCase()
+        const conjunto = await gateway.gatewayFetch(members(`conjuntos/${miniatura[1]}`), {
+          method: 'GET',
+        })
+        if (conjunto.status !== 200) return repasse(conjunto)
+        if ((conjunto.body as { espacoId?: unknown } | null)?.espacoId !== espacoId)
+          return semRota()
+        const versao = await gateway.gatewayFetch(
+          members(`conjuntos/${miniatura[1]}/versoes/${miniatura[2]}`),
+          { method: 'GET' },
+        )
+        if (versao.status !== 200) return repasse(versao)
+        let conferidos: ConferenciaDeUpload[]
+        try {
+          conferidos = await conferir(
+            espacoId,
+            [{ digest: corpo.data.digest, tipo: 'miniatura' }],
+            req,
+          )
+        } catch (e) {
+          return conferenciaRecusada(e)
+        }
+        const imagem = conferidos[0]
+        if (!imagem) return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Envie a miniatura de novo')
+        return repasse(
+          await gateway.gatewayFetchHmac('/members/internal/cenarios/conjuntos/miniatura', {
+            method: 'POST',
+            body: {
+              ator: atorDe(user),
+              conjuntoId: miniatura[1]!.toLowerCase(),
+              revisao: Number(miniatura[2]),
+              espacoId,
+              digest: corpo.data.digest,
+              conferido: imagem,
+            },
+          }),
+        )
+      }
       const capa = DEFINIR_CAPA.exec(caminho)
       if (capa) {
         if (!user) return semSessao()
@@ -621,7 +685,10 @@ export function createCenariosRoutes(deps: {
       }
     }
 
-    if (metodo === 'DELETE' && APAGAR_BIBLIOTECA.test(caminho))
+    if (
+      metodo === 'DELETE' &&
+      (APAGAR_BIBLIOTECA.test(caminho) || exato(`conjuntos/${U}`).test(caminho))
+    )
       return soltar(await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
     if (
       metodo === 'DELETE' &&

@@ -47,6 +47,7 @@ import {
 import type { MovimentoDoHistorico, ResumoDoHistorico } from '../../domain/cenarios/historico'
 import type { BlobReservado, CenariosRepository } from '../../domain/ports/cenarios-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
+import { ConjuntosService } from './conjuntos.service'
 
 export interface EspacoView {
   id: string
@@ -136,12 +137,23 @@ const resumoView = (c: ResumoDeCenario): ResumoDeCenarioView => ({
  * e se o que ele pede é do espaço dele. O que é de outro espaço responde "não existe".
  */
 export class CenariosService {
+  readonly conjuntos: ConjuntosService
   constructor(
     private readonly repo: CenariosRepository,
     private readonly clock: () => Date,
     private readonly abertura: AberturaDosCenarios,
     private readonly novoId: () => string = randomUUID,
-  ) {}
+  ) {
+    this.conjuntos = new ConjuntosService(repo, {
+      exigirAberto: (ator) => this.exigirAberto(ator),
+      bibliotecaDe: (ator, id) => this.bibliotecaDe(ator, id),
+      abrirCenario: (ator, id) => this.abrirCenario(ator, id),
+      abrirMundo: async (ator, id) => mundoView((await this.mundoDe(ator, id)).mundo),
+      reservar: (espacoId, blobs) => this.reservar(espacoId, blobs),
+      agora: clock,
+      novoId,
+    })
+  }
 
   aberto(ator: Ator): boolean {
     return podeUsarCenarios(this.abertura, ator)
@@ -673,7 +685,9 @@ export class CenariosService {
   }
 
   async apagarMundo(ator: Ator, id: string): Promise<{ apagar: string[] }> {
-    const { espaco } = await this.mundoDe(ator, id)
+    const { espaco, mundo } = await this.mundoDe(ator, id)
+    if (mundo.bibliotecaConjuntosId)
+      throw new CenarioInvalidoError(['Gerencie estes rascunhos pela biblioteca de conjuntos'])
     const digests = await this.repo.apagarMundo(id)
     return { apagar: digests.map((d) => chaveDoBlob(espaco.id, d)) }
   }
@@ -686,7 +700,9 @@ export class CenariosService {
   }
 
   async criarCenario(ator: Ator, mundoId: string, nome: string): Promise<ResumoDeCenarioView> {
-    await this.mundoDe(ator, mundoId)
+    const { mundo } = await this.mundoDe(ator, mundoId)
+    if (mundo.bibliotecaConjuntosId)
+      throw new CenarioInvalidoError(['Crie o conjunto pela biblioteca'])
     const id = this.novoId()
     const limpo = texto(nome, 'O nome')
     const criado = await this.repo.criarCenario(
@@ -885,6 +901,8 @@ export class CenariosService {
 
   async duplicarCenario(ator: Ator, id: string): Promise<ResumoDeCenarioView> {
     const { cenario } = await this.cenarioDe(ator, id)
+    if (await this.repo.conjuntoDoCenario(id))
+      throw new CenarioInvalidoError(['Salve outra seleção como conjunto pela biblioteca'])
     const novo = this.novoId()
     const nome = `${cenario.nome} (cópia)`.slice(0, 120)
     const criado = await this.repo.criarCenario(
@@ -928,6 +946,10 @@ export class CenariosService {
 
   async apagarCenario(ator: Ator, id: string): Promise<{ apagar: string[] }> {
     const { espaco } = await this.cenarioDe(ator, id)
+    if (await this.repo.conjuntoDoCenario(id))
+      throw new CenarioInvalidoError([
+        'Apague o conjunto pela biblioteca para remover seu rascunho',
+      ])
     const digests = await this.repo.apagarCenario(id)
     return { apagar: digests.map((d) => chaveDoBlob(espaco.id, d)) }
   }

@@ -52,6 +52,83 @@ const prova = (indice: number) => ({
   tipoDoConteudo: arquivos[indice]!.tipo,
 })
 
+test('catálogo de conjuntos repassa somente as rotas e consultas declaradas, com corpos limitados', async () => {
+  const base = montar()
+  const prefixo = `conjuntos/${BIBLIOTECA}`
+  for (const [metodo, caminho, corpo] of [
+    ['GET', `bibliotecas/${BIBLIOTECA}/conjuntos?busca=flores&limite=20&injetar=1`, undefined],
+    ['GET', prefixo, undefined],
+    ['GET', `${prefixo}/versoes/2`, undefined],
+    ['PATCH', prefixo, { nome: 'Jardim' }],
+    ['POST', `${prefixo}/editar`, undefined],
+  ] as const)
+    expect((await base.pedir(metodo, caminho, corpo)).status).toBe(200)
+  expect(base.chamadas[0]!.query).toEqual({ busca: 'flores', limite: '20' })
+  expect((await base.pedir('GET', `${prefixo}/versoes/0`)).status).toBe(404)
+  for (const caminho of [
+    `bibliotecas/${BIBLIOTECA}/conjuntos`,
+    `${prefixo}/publicar`,
+    `cenarios/${CENARIO}/lotes`,
+  ]) {
+    const valida = montar()
+    expect(
+      (await valida.pedir('POST', caminho, { conteudo: 'a'.repeat(1024 * 1024 + 1) })).status,
+    ).toBe(200)
+    const grande = montar()
+    expect(
+      (await grande.pedir('POST', caminho, { conteudo: 'a'.repeat(8 * 1024 * 1024 + 64 * 1024) }))
+        .status,
+    ).toBe(400)
+    expect(grande.chamadas).toHaveLength(0)
+  }
+})
+
+test('miniatura do conjunto autoriza conjunto e revisão antes de ler, e envia prova por HMAC', async () => {
+  const prefixo = `conjuntos/${BIBLIOTECA}`
+  const corpo = { espacoId: ESPACO, digest: digest('c') }
+  const responder = (c: Chamada) =>
+    c.path === `/members/cenarios/${prefixo}`
+      ? { status: 200, body: { espacoId: ESPACO } }
+      : undefined
+  const base = montar({ responder })
+  expect((await base.pedir('POST', `${prefixo}/versoes/1/miniatura`, corpo)).status).toBe(200)
+  expect(base.conferidos).toHaveLength(1)
+  expect(base.chamadas.find((c) => c.via === 'hmac')).toMatchObject({
+    path: '/members/internal/cenarios/conjuntos/miniatura',
+    body: {
+      conjuntoId: BIBLIOTECA,
+      revisao: 1,
+      espacoId: ESPACO,
+      digest: digest('c'),
+      conferido: prova(2),
+    },
+  })
+  for (const opcoes of [
+    {
+      responder: (c: Chamada) =>
+        c.path === `/members/cenarios/${prefixo}` ? { status: 404, body: {} } : undefined,
+    },
+    {
+      responder: (c: Chamada) =>
+        c.path === `/members/cenarios/${prefixo}`
+          ? { status: 200, body: { espacoId: OUTRO_ESPACO } }
+          : undefined,
+    },
+    {
+      responder: (c: Chamada) =>
+        c.path.endsWith('/versoes/1') ? { status: 404, body: {} } : responder(c),
+    },
+  ]) {
+    const negada = montar(opcoes)
+    expect((await negada.pedir('POST', `${prefixo}/versoes/1/miniatura`, corpo)).status).toBe(404)
+    expect(negada.conferidos).toHaveLength(0)
+    expect(negada.chamadas.some((c) => c.via === 'hmac')).toBe(false)
+  }
+  const adulterada = montar({ responder, adulterar: true })
+  expect((await adulterada.pedir('POST', `${prefixo}/versoes/1/miniatura`, corpo)).status).toBe(422)
+  expect(adulterada.chamadas.some((c) => c.via === 'hmac')).toBe(false)
+})
+
 test('lote com relevo autoriza o cenário antes de ler e leva só prova real pela rota HMAC', async () => {
   const recursos = { espacoId: ESPACO, digests: [arquivos[3]!.digest] }
   const corpo = {

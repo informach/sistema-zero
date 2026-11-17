@@ -175,6 +175,8 @@ export interface Conjunto {
   pasta: string
   etiquetas: string[]
   revisao: number
+  cenarioDeEdicaoId: string | null
+  revisaoPublicadaDoCenario: number | null
   miniatura: string | null
   bytes: number
   objetos: number
@@ -196,6 +198,7 @@ export interface VersaoDeConjunto {
 export interface Mundo {
   id: string
   espacoId: string
+  bibliotecaConjuntosId?: string | null
   nome: string
   cenarios: number
   bibliotecas: string[]

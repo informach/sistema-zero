@@ -1,9 +1,12 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import {
   arquivosDoDocumento,
   type ComandoDeCenario,
+  conferirFormatoDoCenarioDeConjunto,
+  conteudoDoCenarioDeConjunto,
   criarDocumentoVazio,
   type DocumentoDeCenario,
+  documentoParaEditarConjunto,
   CenarioInvalido as ErroDoNucleo,
   executarLote,
   type FragmentoBasico,
@@ -14,6 +17,7 @@ import {
 import { and, asc, eq, ilike, inArray, isNotNull, or, sql } from 'drizzle-orm'
 import {
   buscaDoModelo,
+  type ConferenciaDeBlob,
   type Conjunto,
   type Espaco,
   LIMITES_DOS_CENARIOS,
@@ -45,6 +49,8 @@ import {
   cenarioConjuntoUsos,
   cenarioConjuntoVersoes,
   cenarioLotes,
+  cenarioMundoBibliotecas,
+  cenarioMundos,
 } from './schema'
 
 interface TransacoesDoCatalogo {
@@ -57,6 +63,13 @@ interface TransacoesDoCatalogo {
     agora: Date,
   ): ReturnType<CenariosRepository['gravarLote']>
   soltarOrfaos(tx: Transacao, espacoId: string, digests: readonly string[]): Promise<string[]>
+  arquivosDosCenarios(tx: Executor, ids: readonly string[]): Promise<string[]>
+  confirmarBlobs(
+    tx: Transacao,
+    espacoId: string,
+    conferidos: readonly ConferenciaDeBlob[],
+    agora: Date,
+  ): Promise<void>
 }
 const colunas = {
   id: cenarioConjuntos.id,
@@ -65,6 +78,8 @@ const colunas = {
   pasta: cenarioConjuntos.pasta,
   etiquetas: cenarioConjuntos.etiquetas,
   revisao: cenarioConjuntos.revisao,
+  cenarioDeEdicaoId: cenarioConjuntos.cenarioDeEdicaoId,
+  revisaoPublicadaDoCenario: cenarioConjuntos.revisaoPublicadaDoCenario,
   miniatura: cenarioConjuntoVersoes.miniatura,
   bytes: cenarioConjuntoVersoes.bytes,
   objetos: cenarioConjuntoVersoes.objetos,
@@ -84,6 +99,15 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
     private readonly db: Database,
     private readonly transacoes: TransacoesDoCatalogo,
   ) {}
+
+  private documentoDaFonte(...args: Parameters<typeof documentoParaEditarConjunto>) {
+    try {
+      return documentoParaEditarConjunto(...args)
+    } catch (e) {
+      if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+      throw e
+    }
+  }
 
   async conjuntos(bibliotecaId: string, filtro: Parameters<ConjuntosRepository['conjuntos']>[1]) {
     const condicao = and(
@@ -113,6 +137,142 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
       .where(eq(cenarioConjuntos.id, id))
       .limit(1)
     return r ?? null
+  }
+
+  async conjuntoDoCenario(
+    cenarioId: string,
+    executor: Executor = this.db,
+  ): Promise<Conjunto | null> {
+    const [r] = await executor
+      .select(colunas)
+      .from(cenarioConjuntos)
+      .innerJoin(cenarioConjuntoVersoes, versaoAtual)
+      .where(eq(cenarioConjuntos.cenarioDeEdicaoId, cenarioId))
+      .limit(1)
+    return r ?? null
+  }
+
+  async prepararEdicaoDeConjunto(id: string, autorId: string, agora: Date) {
+    const inicial = await this.conjunto(id)
+    const espacoId = inicial && (await this.donoDaBiblioteca(inicial.bibliotecaId))
+    if (!espacoId) return null
+    return this.transacoes.comTrava(espacoId, async (tx) => {
+      const c = await this.conjunto(id, tx)
+      if (!c) return null
+      if (c.cenarioDeEdicaoId) {
+        const [fonte] = await tx
+          .select({ mundoId: cenarioCenarios.mundoId, cenarioId: cenarioCenarios.id })
+          .from(cenarioCenarios)
+          .where(eq(cenarioCenarios.id, c.cenarioDeEdicaoId))
+        return fonte ?? null
+      }
+      const versao = (await this.versaoDoConjunto(id, c.revisao, tx))!
+      const cenarioId = randomUUID()
+      const documento = this.documentoDaFonte(versao.conteudo, cenarioId, c.nome, espacoId)
+      const [existente] = await tx
+        .select({ id: cenarioMundos.id })
+        .from(cenarioMundos)
+        .where(eq(cenarioMundos.bibliotecaConjuntosId, c.bibliotecaId))
+      const mundoId = existente?.id ?? randomUUID()
+      if (!existente)
+        await tx.insert(cenarioMundos).values({
+          id: mundoId,
+          espacoId,
+          bibliotecaConjuntosId: c.bibliotecaId,
+          nome: 'Conjuntos da biblioteca',
+          criadoPor: autorId,
+          createdAt: agora,
+          updatedAt: agora,
+        })
+      const origens = [
+        ...new Set([
+          c.bibliotecaId,
+          ...versao.conteudo.modelos.map((m) => m.biblioteca),
+          ...versao.conteudo.texturas.map((t) => t.biblioteca),
+        ]),
+      ].filter((origem) => uuid.test(origem))
+      const bibliotecas = await tx
+        .select({ id: cenarioBibliotecas.id })
+        .from(cenarioBibliotecas)
+        .where(
+          and(eq(cenarioBibliotecas.espacoId, espacoId), inArray(cenarioBibliotecas.id, origens)),
+        )
+      if (bibliotecas.length)
+        await tx
+          .insert(cenarioMundoBibliotecas)
+          .values(bibliotecas.map((b) => ({ mundoId, bibliotecaId: b.id })))
+          .onConflictDoNothing()
+      await tx.insert(cenarioCenarios).values({
+        id: cenarioId,
+        mundoId,
+        nome: c.nome,
+        documento,
+        revisao: 0,
+        criadoPor: autorId,
+        createdAt: agora,
+        updatedAt: agora,
+      })
+      await tx
+        .update(cenarioConjuntos)
+        .set({ cenarioDeEdicaoId: cenarioId, revisaoPublicadaDoCenario: 0 })
+        .where(eq(cenarioConjuntos.id, id))
+      return { mundoId, cenarioId }
+    })
+  }
+
+  /** Conferência sob a mesma trava; nenhuma publicação apaga um rascunho pendente. */
+  private async prepararPublicacaoDaFonte(
+    tx: Transacao,
+    atual: Conjunto,
+    espacoId: string,
+    dados: Parameters<ConjuntosRepository['publicarConjunto']>[0],
+    conteudo: FragmentoBasico,
+  ) {
+    const [fonte] = atual.cenarioDeEdicaoId
+      ? await tx
+          .select({
+            id: cenarioCenarios.id,
+            documento: cenarioCenarios.documento,
+            revisao: cenarioCenarios.revisao,
+          })
+          .from(cenarioCenarios)
+          .where(eq(cenarioCenarios.id, atual.cenarioDeEdicaoId))
+      : []
+    if (dados.rascunho) {
+      if (!fonte || fonte.id !== dados.rascunho.cenarioId)
+        throw new CenarioInvalidoError(['Este rascunho não pertence ao conjunto'])
+      if (fonte.revisao !== dados.rascunho.revisao)
+        throw new CenarioDesatualizadoError(fonte.revisao)
+      let salvo: FragmentoBasico
+      try {
+        salvo = conteudoDoCenarioDeConjunto(fonte.documento, espacoId)
+      } catch (e) {
+        if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+        throw e
+      }
+      if (!igual(salvo, conteudo))
+        throw new CenarioInvalidoError(['O conteúdo deve corresponder ao rascunho salvo'])
+      return { revisao: fonte.revisao, lote: null }
+    }
+    if (!fonte) return { revisao: null, lote: null }
+    if (fonte.revisao !== atual.revisaoPublicadaDoCenario)
+      throw new CenarioInvalidoError([
+        'Há alterações não publicadas no conjunto. Abra o rascunho para continuar.',
+      ])
+    const documento = this.documentoDaFonte(conteudo, fonte.id, atual.nome, espacoId)
+    if (igual(documento, fonte.documento)) return { revisao: fonte.revisao, lote: null }
+    const comandos: ComandoDeCenario[] = [{ tipo: 'cenario.restaurar', documento }]
+    return {
+      revisao: fonte.revisao + 1,
+      lote: {
+        cenarioId: fonte.id,
+        revisaoEsperada: fonte.revisao,
+        documento,
+        comandos,
+        operacaoId: `${operacaoDaPublicacao(atual.id, dados.operacaoId)}:fonte`,
+        autorId: dados.autorId,
+      },
+    }
   }
 
   async versaoDoConjunto(
@@ -280,6 +440,15 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
     doc: DocumentoDeCenario,
     espacoId: string,
   ): Promise<void> {
+    const fonte = await this.conjuntoDoCenario(cenarioId, tx)
+    if (fonte) {
+      try {
+        conferirFormatoDoCenarioDeConjunto(doc)
+      } catch (e) {
+        if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+        throw e
+      }
+    }
     const fixadas = new Map(doc.definicoesConjuntos?.map((d) => [d.id, d]))
     for (const d of fixadas.values()) await this.conferirConteudo(tx, espacoId, d.conteudo)
     const conjuntos = [
@@ -301,6 +470,8 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
       .innerJoin(cenarioBibliotecas, eq(cenarioBibliotecas.id, cenarioConjuntos.bibliotecaId))
       .where(inArray(cenarioConjuntos.id, conjuntos))
     const porId = new Map(catalogo.map((c) => [c.id, c]))
+    if (fonte && conjuntos.includes(fonte.id))
+      throw new CenarioInvalidoError(['Um conjunto não pode conter uma cópia de si mesmo'])
     const versoes = await tx
       .select()
       .from(cenarioConjuntoVersoes)
@@ -388,6 +559,7 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
         throw new CenarioDesatualizadoError(atual.revisao)
       if (atual.revisao >= tetoVersoes)
         throw new CenariosSemEspacoError('Este conjunto chegou ao limite de versões')
+      const fonte = await this.prepararPublicacaoDaFonte(tx, atual, espacoId, dados, conteudo)
       const bytes = new TextEncoder().encode(JSON.stringify(conteudo)).length
       await this.conferirCota(tx, espacoId, bytes, agora)
       const versao: VersaoDeConjunto = {
@@ -455,6 +627,8 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
         }
       }
       await paraCadaCabeca(false)
+      if (fonte.lote && !(await this.transacoes.gravarLote(tx, espacoId, fonte.lote, agora)))
+        throw new CenarioDesatualizadoError(fonte.lote.revisaoEsperada)
       await tx.insert(cenarioConjuntoVersoes).values({
         conjuntoId: dados.id,
         revisao: versao.revisao,
@@ -469,7 +643,11 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
       })
       await tx
         .update(cenarioConjuntos)
-        .set({ revisao: versao.revisao, updatedAt: agora })
+        .set({
+          revisao: versao.revisao,
+          revisaoPublicadaDoCenario: fonte.revisao,
+          updatedAt: agora,
+        })
         .where(eq(cenarioConjuntos.id, dados.id))
       await paraCadaCabeca(true)
       return {
@@ -484,6 +662,7 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
     revisao: number,
     digest: string,
     agora: Date,
+    recurso?: Parameters<ConjuntosRepository['definirMiniaturaDoConjunto']>[4],
   ): Promise<boolean> {
     const conjunto = await this.conjunto(id)
     if (!conjunto) return false
@@ -492,6 +671,18 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
     return this.transacoes.comTrava(espacoId, async (tx) => {
       const versao = await this.versaoDoConjunto(id, revisao, tx)
       if (!versao) return false
+      if (recurso) {
+        const c = recurso.conferido
+        if (
+          recurso.espacoId !== espacoId ||
+          c.digest !== digest ||
+          c.bytes < 1 ||
+          c.bytes > LIMITES_DOS_CENARIOS.miniaturaBytes ||
+          !['image/png', 'image/webp'].includes(c.tipoDoConteudo)
+        )
+          throw new CenarioArquivoAusenteError([digest])
+        await this.transacoes.confirmarBlobs(tx, espacoId, [c], agora)
+      }
       const [imagem] = await tx
         .select({ digest: cenarioBlobs.digest })
         .from(cenarioBlobs)
@@ -535,7 +726,17 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
       .from(cenarioConjuntoVersoes)
       .innerJoin(cenarioConjuntos, eq(cenarioConjuntos.id, cenarioConjuntoVersoes.conjuntoId))
       .where(eq(cenarioConjuntos.bibliotecaId, bibliotecaId))
+    const fontes = await tx
+      .select({ id: cenarioCenarios.id })
+      .from(cenarioCenarios)
+      .innerJoin(cenarioMundos, eq(cenarioMundos.id, cenarioCenarios.mundoId))
+      .where(eq(cenarioMundos.bibliotecaConjuntosId, bibliotecaId))
+    const arquivosDasFontes = await this.transacoes.arquivosDosCenarios(
+      tx,
+      fontes.map((f) => f.id),
+    )
     return [
+      ...arquivosDasFontes,
       ...new Set(versoes.flatMap((v) => [...v.digests, ...(v.miniatura ? [v.miniatura] : [])])),
     ]
   }
@@ -546,6 +747,18 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
     const espacoId = await this.donoDaBiblioteca(conjunto.bibliotecaId)
     if (!espacoId) return []
     return this.transacoes.comTrava(espacoId, async (tx) => {
+      const atual = await this.conjunto(id, tx)
+      if (!atual) return []
+      const fontes = atual.cenarioDeEdicaoId
+        ? await tx
+            .select({ id: cenarioCenarios.id, mundoId: cenarioCenarios.mundoId })
+            .from(cenarioCenarios)
+            .where(eq(cenarioCenarios.id, atual.cenarioDeEdicaoId))
+        : []
+      const arquivosDaFonte = await this.transacoes.arquivosDosCenarios(
+        tx,
+        fontes.map((f) => f.id),
+      )
       const versoes = await tx
         .select({
           miniatura: cenarioConjuntoVersoes.miniatura,
@@ -556,11 +769,20 @@ export class ConjuntosNoPostgres implements ConjuntosRepository {
         .from(cenarioConjuntoVersoes)
         .where(eq(cenarioConjuntoVersoes.conjuntoId, id))
       await tx.delete(cenarioConjuntos).where(eq(cenarioConjuntos.id, id))
-      return this.transacoes.soltarOrfaos(
-        tx,
-        espacoId,
-        versoes.flatMap((v) => [...v.digests, ...(v.miniatura ? [v.miniatura] : [])]),
-      )
+      if (fontes.length) {
+        await tx.delete(cenarioCenarios).where(eq(cenarioCenarios.id, fontes[0]!.id))
+        const [restante] = await tx
+          .select({ id: cenarioCenarios.id })
+          .from(cenarioCenarios)
+          .where(eq(cenarioCenarios.mundoId, fontes[0]!.mundoId))
+          .limit(1)
+        if (!restante)
+          await tx.delete(cenarioMundos).where(eq(cenarioMundos.id, fontes[0]!.mundoId))
+      }
+      return this.transacoes.soltarOrfaos(tx, espacoId, [
+        ...arquivosDaFonte,
+        ...versoes.flatMap((v) => [...v.digests, ...(v.miniatura ? [v.miniatura] : [])]),
+      ])
     })
   }
 }

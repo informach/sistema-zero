@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto'
 import {
   arquivosDoDocumento,
+  conferirFormatoDoCenarioDeConjunto,
+  conteudoDoCenarioDeConjunto,
   criarDocumentoVazio,
+  documentoParaEditarConjunto,
   CenarioInvalido as ErroDoNucleo,
   executarLote,
   type FragmentoBasico,
@@ -13,6 +16,7 @@ import {
   type Biblioteca,
   buscaDoModelo,
   type Cenario,
+  type ConferenciaDeBlob,
   type Conjunto,
   type Espaco,
   type VersaoDeConjunto,
@@ -36,7 +40,16 @@ interface Contexto {
   espaco(id: string, agora: Date): Espaco | undefined
   arquivo(espacoId: string, digest: string, tipo: 'modelo' | 'textura'): boolean
   imagem(espacoId: string, digest: string): boolean
+  confirmarImagem(espacoId: string, conferido: ConferenciaDeBlob, agora: Date): void
   cenarios(espacoId: string): Cenario[]
+  fonte(id: string): Cenario | undefined
+  prepararFonte(
+    c: Conjunto,
+    v: VersaoDeConjunto,
+    autorId: string,
+    agora: Date,
+  ): { mundoId: string; cenarioId: string }
+  removerFonte(id: string): string[]
   gravar(dados: Parameters<CenariosRepository['gravarLote']>[0], agora: Date): LoteGravado | null
   soltar(espacoId: string, digests: readonly string[], agora: Date): string[]
   mudou(espacoId: string, agora: Date): void
@@ -54,6 +67,14 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
   private copia = <T>(v: T): T => structuredClone(v)
   private chave = (id: string, revisao: number) => `${id}:${revisao}`
   private espacoDo = (id: string) => this.contexto.biblioteca(id)?.espacoId
+  private noNucleo<T>(tarefa: () => T): T {
+    try {
+      return tarefa()
+    } catch (e) {
+      if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+      throw e
+    }
+  }
 
   bytesDoEspaco(id: string): number {
     return [...this.versoes.values()]
@@ -77,6 +98,7 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
   }
   private remover(id: string): string[] {
     const digests: string[] = []
+    const fonte = this.atuais.get(id)?.cenarioDeEdicaoId
     for (const [chave, v] of this.versoes)
       if (v.conjuntoId === id) {
         digests.push(
@@ -87,6 +109,7 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
         this.versoes.delete(chave)
       }
     this.atuais.delete(id)
+    if (fonte) digests.push(...this.contexto.removerFonte(fonte))
     return [...new Set(digests)]
   }
   private conferir(espacoId: string, entrada: FragmentoBasico) {
@@ -136,6 +159,40 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
     const { operacaoId: _op, ...resto } = c
     return this.copia(resto)
   }
+  async conjuntoDoCenario(id: string): Promise<Conjunto | null> {
+    const c = [...this.atuais.values()].find((c) => c.cenarioDeEdicaoId === id)
+    return c ? this.conjunto(c.id) : null
+  }
+  conferirCenarioDeEdicao(id: string, doc: Cenario['documento']): void {
+    const c = [...this.atuais.values()].find((c) => c.cenarioDeEdicaoId === id)
+    if (!c) return
+    try {
+      conferirFormatoDoCenarioDeConjunto(doc)
+    } catch (e) {
+      if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+      throw e
+    }
+    if (
+      doc.montagens?.some((m) =>
+        doc.definicoesConjuntos?.some((d) => d.id === m.definicao && d.conjunto === c.id),
+      )
+    )
+      throw new CenarioInvalidoError(['Um conjunto não pode conter uma cópia de si mesmo'])
+  }
+  async prepararEdicaoDeConjunto(id: string, autorId: string, agora: Date) {
+    const c = this.atuais.get(id)
+    if (!c) return null
+    if (c.cenarioDeEdicaoId) {
+      const f = this.contexto.fonte(c.cenarioDeEdicaoId)
+      return f ? { mundoId: f.mundoId, cenarioId: f.id } : null
+    }
+    const fonte = this.noNucleo(() =>
+      this.contexto.prepararFonte(c, this.versoes.get(this.chave(id, c.revisao))!, autorId, agora),
+    )
+    c.cenarioDeEdicaoId = fonte.cenarioId
+    c.revisaoPublicadaDoCenario = 0
+    return fonte
+  }
   async versaoDoConjunto(id: string, revisao: number): Promise<VersaoDeConjunto | null> {
     const v = this.versoes.get(this.chave(id, revisao))
     if (!v) return null
@@ -169,6 +226,8 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
       pasta: dados.pasta,
       etiquetas: this.copia(dados.etiquetas),
       revisao: 1,
+      cenarioDeEdicaoId: null,
+      revisaoPublicadaDoCenario: null,
       miniatura: null,
       bytes,
       objetos: conteudo.instancias.length,
@@ -220,6 +279,36 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
     }
     if (c.revisao !== dados.revisaoEsperada) throw new CenarioDesatualizadoError(c.revisao)
     if (c.revisao >= teto) throw new CenariosSemEspacoError()
+    const fonte = c.cenarioDeEdicaoId ? this.contexto.fonte(c.cenarioDeEdicaoId) : undefined
+    let documentoDaFonte = null
+    let revisaoPublicadaDoCenario = fonte?.revisao ?? null
+    if (dados.rascunho) {
+      if (!fonte || fonte.id !== dados.rascunho.cenarioId)
+        throw new CenarioInvalidoError(['Este rascunho não pertence ao conjunto'])
+      if (fonte.revisao !== dados.rascunho.revisao)
+        throw new CenarioDesatualizadoError(fonte.revisao)
+      let salvo: FragmentoBasico
+      try {
+        salvo = conteudoDoCenarioDeConjunto(fonte.documento, espacoId)
+      } catch (e) {
+        if (e instanceof ErroDoNucleo) throw new CenarioInvalidoError(e.problemas)
+        throw e
+      }
+      if (!igual(salvo, conteudo))
+        throw new CenarioInvalidoError(['O conteúdo deve corresponder ao rascunho salvo'])
+    } else if (fonte) {
+      if (fonte.revisao !== c.revisaoPublicadaDoCenario)
+        throw new CenarioInvalidoError([
+          'Há alterações não publicadas no conjunto. Abra o rascunho para continuar.',
+        ])
+      const novo = this.noNucleo(() =>
+        documentoParaEditarConjunto(conteudo, fonte.id, c.nome, espacoId),
+      )
+      if (!igual(novo, fonte.documento)) {
+        documentoDaFonte = novo
+        revisaoPublicadaDoCenario = fonte.revisao + 1
+      }
+    }
     const bytes = new TextEncoder().encode(JSON.stringify(conteudo)).length
     this.conferirCota(espacoId, bytes, agora)
     const revisao = c.revisao + 1
@@ -253,6 +342,18 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
       }
     })
     const operacaoId = `conjunto:${createHash('sha256').update(`${c.id}:${dados.operacaoId}`).digest('hex')}`
+    if (documentoDaFonte && fonte)
+      this.contexto.gravar(
+        {
+          cenarioId: fonte.id,
+          revisaoEsperada: fonte.revisao,
+          documento: documentoDaFonte,
+          comandos: [{ tipo: 'cenario.restaurar', documento: documentoDaFonte }],
+          operacaoId: `${operacaoId}:fonte`,
+          autorId: dados.autorId,
+        },
+        agora,
+      )
     for (const p of planos) {
       const r = this.contexto.gravar(
         {
@@ -283,6 +384,7 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
     })
     Object.assign(c, {
       revisao,
+      revisaoPublicadaDoCenario,
       miniatura: null,
       bytes,
       objetos: conteudo.instancias.length,
@@ -292,11 +394,29 @@ export class ConjuntosEmMemoria implements ConjuntosRepository {
     const { operacaoId: _op, ...conjunto } = c
     return this.copia({ conjunto, cenarios })
   }
-  async definirMiniaturaDoConjunto(id: string, revisao: number, digest: string, agora: Date) {
+  async definirMiniaturaDoConjunto(
+    id: string,
+    revisao: number,
+    digest: string,
+    agora: Date,
+    recurso?: Parameters<ConjuntosRepository['definirMiniaturaDoConjunto']>[4],
+  ) {
     const c = this.atuais.get(id),
       v = this.versoes.get(this.chave(id, revisao)),
       espacoId = c && this.espacoDo(c.bibliotecaId)
     if (!c || !v || !espacoId) return false
+    if (recurso) {
+      const f = recurso.conferido
+      if (
+        recurso.espacoId !== espacoId ||
+        f.digest !== digest ||
+        f.bytes < 1 ||
+        f.bytes > 256 * 1024 ||
+        !['image/png', 'image/webp'].includes(f.tipoDoConteudo)
+      )
+        throw new CenarioArquivoAusenteError([digest])
+      this.contexto.confirmarImagem(espacoId, f, agora)
+    }
     if (!this.contexto.imagem(espacoId, digest)) throw new CenarioArquivoAusenteError([digest])
     const anterior = v.miniatura
     v.miniatura = digest

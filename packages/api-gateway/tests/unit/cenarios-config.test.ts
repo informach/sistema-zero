@@ -26,6 +26,15 @@ const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['DELETE', `/members/cenarios/bibliotecas/${ID}`],
   ['GET', `/members/cenarios/bibliotecas/${ID}/modelos`],
   ['GET', `/members/cenarios/bibliotecas/${ID}/texturas`],
+  ['GET', `/members/cenarios/bibliotecas/${ID}/conjuntos`],
+  ['POST', `/members/cenarios/bibliotecas/${ID}/conjuntos`],
+  ['GET', `/members/cenarios/conjuntos/${ID}`],
+  ['GET', `/members/cenarios/conjuntos/${ID}/versoes/1`],
+  ['PATCH', `/members/cenarios/conjuntos/${ID}`],
+  ['POST', `/members/cenarios/conjuntos/${ID}/editar`],
+  ['POST', `/members/cenarios/conjuntos/${ID}/publicar`],
+  ['POST', `/members/cenarios/conjuntos/${ID}/versoes/1/miniatura/reservar`],
+  ['DELETE', `/members/cenarios/conjuntos/${ID}`],
   ['POST', `/members/cenarios/bibliotecas/${ID}/texturas/reservar`],
   ['POST', `/members/cenarios/bibliotecas/${ID}/texturas/apagar`],
   ['PATCH', `/members/cenarios/texturas/${ID}`],
@@ -76,7 +85,7 @@ describe('Molda Cenários na borda', () => {
     expect(new Set(declaradas).size).toBe(declaradas.length)
   })
 
-  test('escritas têm teto de corpo; o lote do editor aceita até 1 MB', () => {
+  test('escritas têm teto de corpo; documentos e conjuntos aceitam 8 MiB mais envelope limitado', () => {
     expect(resolver('POST', `/members/cenarios/cenarios/${ID}/lotes`)?.maxBodyBytes).toBe(
       CENARIOS_LOTE_MAX_BYTES,
     )
@@ -84,7 +93,13 @@ describe('Molda Cenários na borda', () => {
       if (metodo !== 'POST' && metodo !== 'PATCH') continue
       const teto = resolver(metodo, caminho)?.maxBodyBytes
       expect(`${caminho}: ${typeof teto}`).toBe(`${caminho}: number`)
-      if (!caminho.endsWith('/lotes')) expect(teto).toBeLessThanOrEqual(64 * 1024)
+      if (
+        caminho.endsWith('/lotes') ||
+        caminho.endsWith('/publicar') ||
+        (metodo === 'POST' && caminho.endsWith('/conjuntos'))
+      )
+        expect(teto).toBe(8 * 1024 * 1024 + 64 * 1024)
+      else expect(teto).toBeLessThanOrEqual(64 * 1024)
     }
   })
 
@@ -107,6 +122,7 @@ describe('Molda Cenários na borda', () => {
       '/members/internal/cenarios/texturas',
       '/members/internal/cenarios/lotes',
       '/members/internal/cenarios/capa',
+      '/members/internal/cenarios/conjuntos/miniatura',
     ]) {
       const rota = resolver('POST', caminho)
       expect(rota).toMatchObject({

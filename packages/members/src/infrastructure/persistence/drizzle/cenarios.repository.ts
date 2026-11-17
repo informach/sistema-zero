@@ -124,6 +124,7 @@ const colunasDaBiblioteca = {
 const colunasDoMundo = {
   id: cenarioMundos.id,
   espacoId: cenarioMundos.espacoId,
+  bibliotecaConjuntosId: cenarioMundos.bibliotecaConjuntosId,
   nome: cenarioMundos.nome,
   criadoPor: cenarioMundos.criadoPor,
   atualizadoEm: cenarioMundos.updatedAt,
@@ -187,12 +188,19 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       gravarLote: (tx, espacoId, dados, agora) =>
         this.gravarLoteSobTrava(tx, espacoId, dados, agora),
       soltarOrfaos: (tx, espacoId, digests) => this.soltarOrfaos(tx, espacoId, digests),
+      arquivosDosCenarios: (tx, ids) => this.arquivosDosCenarios(tx, ids),
+      confirmarBlobs: (tx, espacoId, conferidos, agora) =>
+        this.confirmarBlobsCom(tx, espacoId, conferidos, agora),
     })
   }
 
   conjuntos: CenariosRepository['conjuntos'] = (...args) =>
     this.catalogoConjuntos.conjuntos(...args)
   conjunto: CenariosRepository['conjunto'] = (...args) => this.catalogoConjuntos.conjunto(...args)
+  conjuntoDoCenario: CenariosRepository['conjuntoDoCenario'] = (...args) =>
+    this.catalogoConjuntos.conjuntoDoCenario(...args)
+  prepararEdicaoDeConjunto: CenariosRepository['prepararEdicaoDeConjunto'] = (...args) =>
+    this.catalogoConjuntos.prepararEdicaoDeConjunto(...args)
   versaoDoConjunto: CenariosRepository['versaoDoConjunto'] = (...args) =>
     this.catalogoConjuntos.versaoDoConjunto(...args)
   criarConjunto: CenariosRepository['criarConjunto'] = (...args) =>
@@ -422,6 +430,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         .from(cenarioTexturas)
         .where(eq(cenarioTexturas.bibliotecaId, id))
       const conjuntos = await this.catalogoConjuntos.arquivosDaBiblioteca(tx, id)
+      await tx.delete(cenarioConjuntos).where(eq(cenarioConjuntos.bibliotecaId, id))
       await tx.delete(cenarioBibliotecas).where(eq(cenarioBibliotecas.id, id))
       return this.soltarOrfaos(tx, biblioteca.espacoId, [
         ...dela.flatMap((m) => (m.miniatura ? [m.digest, m.miniatura] : [m.digest])),
@@ -888,7 +897,9 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       await this.db
         .select(colunasDoMundo)
         .from(cenarioMundos)
-        .where(eq(cenarioMundos.espacoId, espacoId)),
+        .where(
+          and(eq(cenarioMundos.espacoId, espacoId), isNull(cenarioMundos.bibliotecaConjuntosId)),
+        ),
     )
   }
 
@@ -913,7 +924,12 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       const [conta] = await tx
         .select({ n: sql<number>`count(*)::int` })
         .from(cenarioMundos)
-        .where(eq(cenarioMundos.espacoId, dados.espacoId))
+        .where(
+          and(
+            eq(cenarioMundos.espacoId, dados.espacoId),
+            isNull(cenarioMundos.bibliotecaConjuntosId),
+          ),
+        )
       if ((conta?.n ?? 0) >= teto) return null
       await tx.insert(cenarioMundos).values({ ...dados, createdAt: agora, updatedAt: agora })
       return this.lerMundo(tx, dados.id)
@@ -961,7 +977,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   }
 
   /** Extrai só referências conhecidas, sem baixar documentos inteiros nem varrer propriedades. */
-  private async arquivosDosCenarios(tx: Transacao, ids: readonly string[]): Promise<string[]> {
+  private async arquivosDosCenarios(tx: Executor, ids: readonly string[]): Promise<string[]> {
     if (!ids.length) return []
     const cabecas = await tx
       .select({

@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import type { ComandoDeCenario, InstanciaDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type ComandoDeCenario,
+  capturarFragmento,
+  conteudoDoCenarioDeConjunto,
+  criarDocumentoVazio,
+  type InstanciaDeCenario,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   CenariosService,
   type ModeloParaRegistrar,
@@ -102,6 +108,73 @@ const objeto = (id: string, modelo: string): InstanciaDeCenario => ({
   },
   apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false },
   colisao: 'caixa',
+})
+
+test('double conserva rascunho persistente, revisão publicada e histórico da mesma oficina', async () => {
+  const { repo, servico, biblioteca, espaco } = await comBiblioteca()
+  const original = criarDocumentoVazio('original', 'Jardim')
+  original.formas = [
+    { id: 'caixa', nome: 'Caixa', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 },
+  ]
+  original.instancias = [objeto('flor', 'caixa')]
+  const conteudo = capturarFragmento(original, ['flor'], espaco.id)
+  const conjunto = (await repo.criarConjunto(
+    {
+      id: 'conjunto',
+      bibliotecaId: biblioteca.id,
+      operacaoId: 'criar',
+      nome: 'Jardim',
+      pasta: '',
+      etiquetas: [],
+      conteudo,
+      autorId: CONTA,
+    },
+    10,
+    AGORA,
+  ))!
+  const fonte = (await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA))!
+  expect(await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA)).toEqual(fonte)
+  expect(await servico.mundos(ana, espaco.id)).toEqual([])
+  const c = await servico.abrirCenario(ana, fonte.cenarioId)
+  const d = structuredClone(c.documento)
+  d.instancias[0]!.transformacao.posicao.x += 4
+  await servico.editarCenario(ana, c.id, {
+    revisaoEsperada: 0,
+    operacaoId: 'mover',
+    comandos: [{ tipo: 'cenario.restaurar', documento: d }],
+  })
+  const pedido = {
+    id: conjunto.id,
+    revisaoEsperada: 1,
+    operacaoId: 'publicar',
+    conteudo,
+    autorId: CONTA,
+  }
+  await expect(repo.publicarConjunto(pedido, 1000, AGORA)).rejects.toBeInstanceOf(
+    CenarioInvalidoError,
+  )
+  const publicado = (await repo.publicarConjunto(
+    {
+      ...pedido,
+      conteudo: conteudoDoCenarioDeConjunto(d, espaco.id),
+      rascunho: { cenarioId: c.id, revisao: 1 },
+    },
+    1000,
+    AGORA,
+  ))!
+  expect(publicado.conjunto.revisao).toBe(2)
+  expect(publicado.conjunto.revisaoPublicadaDoCenario).toBe(1)
+  await servico.moverHistorico(ana, c.id, {
+    acao: 'desfazer',
+    revisaoEsperada: 1,
+    operacaoId: 'desfazer',
+  })
+  expect((await servico.abrirCenario(ana, c.id)).documento).toEqual(c.documento)
+  expect((await repo.conjunto(conjunto.id))!.revisaoPublicadaDoCenario).toBe(1)
+  await expect(servico.apagarCenario(ana, c.id)).rejects.toBeInstanceOf(CenarioInvalidoError)
+  await repo.apagarConjunto(conjunto.id, AGORA)
+  expect(await repo.cenario(c.id)).toBeNull()
+  expect(await repo.mundo(fonte.mundoId)).toBeNull()
 })
 
 describe('quem entra', () => {

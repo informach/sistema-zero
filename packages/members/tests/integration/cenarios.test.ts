@@ -3,6 +3,11 @@
  * registrar pelo BFF, listar), mundos e cenários, e o contrato de cada erro.
  */
 import { describe, expect, test } from 'bun:test'
+import {
+  capturarFragmento,
+  conteudoDoCenarioDeConjunto,
+  criarDocumentoVazio,
+} from '@sistemazero/molda-cenarios-core/v2'
 import { buildApp } from '../helpers'
 
 const EQUIPE = '11111111-1111-4111-8111-111111111111'
@@ -52,6 +57,240 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
   return { ctx, espaco, biblioteca }
 }
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
+
+async function comConjunto() {
+  const base = await comBiblioteca()
+  const d = criarDocumentoVazio('origem', 'Jardim')
+  d.formas = [{ id: 'f', nome: 'Flor', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 }]
+  d.instancias = [
+    {
+      id: 'flor',
+      nome: 'Flor',
+      modelo: 'f',
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      colisao: 'caixa',
+      apoio: { tipo: 'absoluto' },
+      transformacao: {
+        posicao: { x: 10, y: 0, z: 20 },
+        rotacao: { x: 0, y: 0, z: 0 },
+        escala: { x: 1, y: 1, z: 1 },
+      },
+    },
+  ]
+  const corpo = {
+    nome: 'Jardim',
+    pasta: 'Campos',
+    etiquetas: ['flores'],
+    operacaoId: 'criar-conjunto-01',
+    conteudo: capturarFragmento(d, ['flor'], base.espaco.id),
+  }
+  const resposta = await pedir(
+    base.ctx.app,
+    'POST',
+    `/members/cenarios/bibliotecas/${base.biblioteca.id}/conjuntos`,
+    corpo,
+  )
+  expect(resposta.status).toBe(200)
+  return { ...base, corpo, conjunto: await json(resposta) }
+}
+
+test('catálogo HTTP autoriza o espaço, mantém a fonte e publica a revisão salva sem alterar o conteúdo histórico', async () => {
+  const { ctx, espaco, biblioteca, corpo, conjunto } = await comConjunto()
+  const app = ctx.app,
+    prefixo = `/members/cenarios/conjuntos/${conjunto.id}`
+  const criar = `/members/cenarios/bibliotecas/${biblioteca.id}/conjuntos`
+  expect((await json(await pedir(app, 'POST', criar, corpo))).id).toBe(conjunto.id)
+  expect((await pedir(app, 'POST', criar, { ...corpo, nome: 'Outro' })).status).toBe(422)
+  expect(
+    (
+      await pedir(app, 'POST', criar, {
+        ...corpo,
+        operacaoId: 'outro-espaco-01',
+        conteudo: {
+          ...corpo.conteudo,
+          origem: { ...corpo.conteudo.origem, espaco: CLIENTE },
+        },
+      })
+    ).status,
+  ).toBe(422)
+  expect(
+    (
+      await pedir(app, 'POST', criar, {
+        ...corpo,
+        operacaoId: 'conjunto-vazio-01',
+        conteudo: {
+          ...corpo.conteudo,
+          raizes: [],
+          instancias: [],
+        },
+      })
+    ).status,
+  ).toBe(422)
+  expect((await json(await pedir(app, 'GET', `${criar}?busca=FLORES&limite=1`))).total).toBe(1)
+  expect((await pedir(app, 'GET', `${criar}?cursor=-1`)).status).toBe(400)
+  expect((await pedir(app, 'GET', prefixo, undefined, doCliente)).status).toBe(403)
+  expect(
+    (await pedir(app, 'GET', prefixo, undefined, { ...daEquipe, 'x-auth-user-id': CLIENTE }))
+      .status,
+  ).toBe(404)
+  const versao1 = await json(await pedir(app, 'GET', `${prefixo}/versoes/1`))
+  expect(versao1.conteudo).toEqual(corpo.conteudo)
+  expect(typeof versao1.criadoEm).toBe('string')
+  expect(versao1.autorId).toBeUndefined()
+  const aberto = await json(await pedir(app, 'POST', `${prefixo}/editar`))
+  expect(aberto.cenario.revisao).toBe(0)
+  expect((await json(await pedir(app, 'POST', `${prefixo}/editar`))).cenario.id).toBe(
+    aberto.cenario.id,
+  )
+  expect(
+    await json(await pedir(app, 'GET', `/members/cenarios/espacos/${espaco.id}/mundos`)),
+  ).toEqual([])
+  const documento = structuredClone(aberto.cenario.documento)
+  documento.instancias[0].transformacao.posicao.x += 2
+  expect(
+    (
+      await pedir(app, 'POST', `/members/cenarios/cenarios/${aberto.cenario.id}/lotes`, {
+        revisaoEsperada: 0,
+        operacaoId: 'editar-fonte-01',
+        comandos: [{ tipo: 'cenario.restaurar', documento }],
+      })
+    ).status,
+  ).toBe(200)
+  const publicacao = {
+    revisaoEsperada: 1,
+    operacaoId: 'publicar-conjunto-01',
+    conteudo: conteudoDoCenarioDeConjunto(documento, espaco.id),
+    rascunho: { cenarioId: aberto.cenario.id, revisao: 1 },
+  }
+  expect(
+    (
+      await pedir(app, 'POST', `${prefixo}/publicar`, {
+        ...publicacao,
+        rascunho: { ...publicacao.rascunho, revisao: 0 },
+      })
+    ).status,
+  ).toBe(409)
+  const publicada = await pedir(app, 'POST', `${prefixo}/publicar`, publicacao)
+  expect(publicada.status).toBe(200)
+  expect((await json(publicada)).conjunto).toMatchObject({
+    revisao: 2,
+    revisaoPublicadaDoCenario: 1,
+  })
+  expect((await pedir(app, 'POST', `${prefixo}/publicar`, publicacao)).status).toBe(200)
+  expect((await json(await pedir(app, 'GET', `${prefixo}/versoes/1`))).conteudo).toEqual(
+    corpo.conteudo,
+  )
+  expect(
+    (await pedir(app, 'DELETE', `/members/cenarios/cenarios/${aberto.cenario.id}`)).status,
+  ).toBe(422)
+  expect(
+    (
+      await pedir(app, 'PATCH', prefixo, {
+        nome: 'Flores da Íris',
+        pasta: 'Jardins',
+        etiquetas: ['íris'],
+      })
+    ).status,
+  ).toBe(200)
+  expect((await json(await pedir(app, 'GET', `${criar}?busca=IRIS`))).itens[0].nome).toBe(
+    'Flores da Íris',
+  )
+  expect((await pedir(app, 'DELETE', prefixo)).status).toBe(200)
+  expect((await pedir(app, 'GET', `/members/cenarios/cenarios/${aberto.cenario.id}`)).status).toBe(
+    404,
+  )
+})
+
+test('miniatura do conjunto só é confirmada pelo BFF e fica associada à revisão fotografada', async () => {
+  const { ctx, espaco, conjunto, corpo } = await comConjunto()
+  const app = ctx.app,
+    prefixo = `/members/cenarios/conjuntos/${conjunto.id}`
+  const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' }
+  const reserva = await pedir(app, 'POST', `${prefixo}/versoes/1/miniatura/reservar`, imagem)
+  expect(reserva.status).toBe(200)
+  expect((await json(reserva)).enviar[0]).toMatchObject({ ...imagem, tipo: 'miniatura' })
+  expect(
+    (
+      await pedir(app, 'POST', `${prefixo}/publicar`, {
+        revisaoEsperada: 1,
+        operacaoId: 'publicar-versao-02',
+        conteudo: corpo.conteudo,
+      })
+    ).status,
+  ).toBe(200)
+  const interna = '/members/internal/cenarios/conjuntos/miniatura'
+  const body = {
+    ator: atorDaEquipe,
+    conjuntoId: conjunto.id,
+    revisao: 1,
+    digest: imagem.digest,
+    espacoId: espaco.id,
+    conferido: imagem,
+  }
+  expect((await pedir(app, 'POST', interna, body, daEquipe)).status).toBe(401)
+  expect((await pedir(app, 'POST', interna, { ...body, espacoId: CLIENTE }, doBff)).status).toBe(
+    404,
+  )
+  expect((await pedir(app, 'POST', interna, body, doBff)).status).toBe(200)
+  expect((await json(await pedir(app, 'GET', `${prefixo}/versoes/1`))).miniatura).toBe(
+    imagem.digest,
+  )
+  expect((await json(await pedir(app, 'GET', prefixo))).conjunto.miniatura).toBeNull()
+  expect((await pedir(app, 'POST', `${prefixo}/versoes/3/miniatura/reservar`, imagem)).status).toBe(
+    404,
+  )
+})
+
+test('transporte aceita fragmentos acima de 1 MiB e recusa o envelope além do orçamento antes de processar conteúdo', async () => {
+  const { ctx, biblioteca, conjunto } = await comConjunto()
+  const base = criarDocumentoVazio('fonte-grande', 'Jardim detalhado')
+  base.formas = [{ id: 'f', nome: 'Flor', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 }]
+  const primeiro = conjunto.id // Identificador apenas para compor dados determinísticos do ensaio.
+  base.instancias = Array.from({ length: 1800 }, (_, i) => ({
+    id: `flor-${i}`,
+    nome: 'Flor',
+    modelo: 'f',
+    grupo: null,
+    bloqueado: false,
+    oculto: false,
+    colisao: 'caixa' as const,
+    apoio: { tipo: 'absoluto' as const },
+    propriedades: { origem: primeiro, anotacao: 'a'.repeat(400) },
+    transformacao: {
+      posicao: { x: (i % 40) * 2, y: 0, z: Math.floor(i / 40) * 2 },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    },
+  }))
+  const espacoId = (await ctx.cenariosRepo.biblioteca(biblioteca.id))!.espacoId
+  const conteudo = capturarFragmento(
+    base,
+    base.instancias.map((o) => o.id),
+    espacoId,
+  )
+  expect(new TextEncoder().encode(JSON.stringify(conteudo)).length).toBeGreaterThan(1024 * 1024)
+  const caminho = `/members/cenarios/bibliotecas/${biblioteca.id}/conjuntos`
+  expect(
+    (
+      await pedir(ctx.app, 'POST', caminho, {
+        nome: 'Jardim grande',
+        operacaoId: 'grande-conjunto-01',
+        conteudo,
+      })
+    ).status,
+  ).toBe(200)
+  expect(
+    (
+      await pedir(ctx.app, 'POST', caminho, {
+        nome: 'Grande demais',
+        operacaoId: 'grande-conjunto-02',
+        conteudo: { texto: 'a'.repeat(8 * 1024 * 1024 + 64 * 1024) },
+      })
+    ).status,
+  ).toBe(413)
+})
 
 test('recursos do relevo são reservados pelo cenário autorizado e a prova só entra pela rota do BFF', async () => {
   const { ctx, espaco } = await comBiblioteca()

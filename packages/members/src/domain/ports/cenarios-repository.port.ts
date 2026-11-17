@@ -85,6 +85,12 @@ export interface ConjuntosRepository {
     filtro: FiltroDeModelos,
   ): Promise<{ itens: Conjunto[]; total: number }>
   conjunto(id: string): Promise<Conjunto | null>
+  conjuntoDoCenario(cenarioId: string): Promise<Conjunto | null>
+  prepararEdicaoDeConjunto(
+    id: string,
+    autorId: string,
+    agora: Date,
+  ): Promise<{ mundoId: string; cenarioId: string } | null>
   versaoDoConjunto(id: string, revisao: number): Promise<VersaoDeConjunto | null>
   criarConjunto(dados: NovoConjunto, teto: number, agora: Date): Promise<Conjunto | null>
   editarConjunto(
@@ -99,6 +105,7 @@ export interface ConjuntosRepository {
       operacaoId: string
       conteudo: FragmentoBasico
       autorId: string
+      rascunho?: { cenarioId: string; revisao: number }
     },
     tetoVersoes: number,
     agora: Date,
@@ -108,6 +115,7 @@ export interface ConjuntosRepository {
     revisao: number,
     digest: string,
     agora: Date,
+    recurso?: { espacoId: string; conferido: ConferenciaDeBlob },
   ): Promise<boolean>
   apagarConjunto(id: string, agora: Date): Promise<string[]>
 }

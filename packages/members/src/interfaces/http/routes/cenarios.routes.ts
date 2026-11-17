@@ -38,6 +38,18 @@ const CONFERENCIA = t.Object({
 const Id = t.Object({ id: UUID })
 const EspacoId = t.Object({ espacoId: UUID })
 const NomeBody = t.Object({ nome: NOME })
+const ConjuntoRevisao = t.Object({
+  id: UUID,
+  revisao: t.Integer({ minimum: 1, maximum: 2147483647 }),
+})
+const ConteudoDeConjunto = t.Record(t.String(), t.Unknown())
+const OperacaoDeConjunto = t.String({ minLength: 8, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$' })
+const Etiquetas = t.Array(t.String({ minLength: 1, maxLength: 40 }), { maxItems: 16 })
+const MiniaturaDeConjunto = t.Object({
+  digest: DIGEST,
+  bytes: t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.miniaturaBytes }),
+  tipoDoConteudo: MIME_IMAGEM,
+})
 const LoteBody = t.Object({
   revisaoEsperada: t.Integer({ minimum: 0 }),
   operacaoId: t.String({ minLength: 8, maxLength: 80, pattern: '^[A-Za-z0-9_-]+$' }),
@@ -115,6 +127,88 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         // Para o menu saber se mostra a ferramenta. Nunca recusa.
         .get('/acesso', ({ headers }) => ({ aberto: s.aberto(atorDe(headers)) }))
         .get('/espacos', ({ headers }) => s.espacos(atorDe(headers)))
+        .get(
+          '/bibliotecas/:id/conjuntos',
+          ({ headers, params, query }) => s.conjuntos.listar(atorDe(headers), params.id, query),
+          {
+            params: Id,
+            query: t.Object({
+              busca: t.Optional(t.String({ maxLength: 240 })),
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              cursor: t.Optional(t.String({ maxLength: 16 })),
+              limite: t.Optional(
+                t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.paginaDeModelos }),
+              ),
+            }),
+          },
+        )
+        .post(
+          '/bibliotecas/:id/conjuntos',
+          ({ headers, params, body }) => s.conjuntos.criar(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              nome: NOME,
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              etiquetas: t.Optional(Etiquetas),
+              conteudo: ConteudoDeConjunto,
+              operacaoId: OperacaoDeConjunto,
+            }),
+          },
+        )
+        .get(
+          '/conjuntos/:id',
+          ({ headers, params }) => s.conjuntos.abrir(atorDe(headers), params.id),
+          { params: Id },
+        )
+        .get(
+          '/conjuntos/:id/versoes/:revisao',
+          ({ headers, params }) => s.conjuntos.versao(atorDe(headers), params.id, params.revisao),
+          { params: ConjuntoRevisao },
+        )
+        .patch(
+          '/conjuntos/:id',
+          ({ headers, params, body }) => s.conjuntos.editar(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              nome: t.Optional(NOME),
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              etiquetas: t.Optional(Etiquetas),
+            }),
+          },
+        )
+        .post(
+          '/conjuntos/:id/editar',
+          ({ headers, params }) => s.conjuntos.editarNaOficina(atorDe(headers), params.id),
+          { params: Id },
+        )
+        .post(
+          '/conjuntos/:id/publicar',
+          ({ headers, params, body }) => s.conjuntos.publicar(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              revisaoEsperada: t.Integer({ minimum: 1 }),
+              operacaoId: OperacaoDeConjunto,
+              conteudo: ConteudoDeConjunto,
+              rascunho: t.Optional(
+                t.Object({ cenarioId: UUID, revisao: t.Integer({ minimum: 0 }) }),
+              ),
+            }),
+          },
+        )
+        .post(
+          '/conjuntos/:id/versoes/:revisao/miniatura/reservar',
+          ({ headers, params, body }) =>
+            s.conjuntos.reservarMiniatura(atorDe(headers), params.id, params.revisao, body),
+          { params: ConjuntoRevisao, body: MiniaturaDeConjunto },
+        )
+        .delete(
+          '/conjuntos/:id',
+          ({ headers, params }) => s.conjuntos.apagar(atorDe(headers), params.id),
+          { params: Id },
+        )
 
         .get(
           '/espacos/:espacoId/bibliotecas',
@@ -395,6 +489,29 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
     )
     .group('/members/internal/cenarios', (app) =>
       app
+        .post(
+          '/conjuntos/miniatura',
+          ({ headers, body }) => {
+            assertMemberShellConsumer(headers['x-consumer-id'])
+            return s.conjuntos.definirMiniatura(
+              body.ator,
+              body.conjuntoId,
+              body.revisao,
+              body.digest,
+              { espacoId: body.espacoId, conferido: body.conferido },
+            )
+          },
+          {
+            body: t.Object({
+              ator: AtorBody,
+              conjuntoId: UUID,
+              revisao: t.Integer({ minimum: 1 }),
+              espacoId: UUID,
+              digest: DIGEST,
+              conferido: MiniaturaDeConjunto,
+            }),
+          },
+        )
         .post(
           '/lotes',
           ({ headers, body }) => {

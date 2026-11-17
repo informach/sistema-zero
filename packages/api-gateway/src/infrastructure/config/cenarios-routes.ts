@@ -2,8 +2,8 @@ import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
 
-/** Um lote de comandos do editor (o members aceita até 1 MB neste caminho). */
-export const CENARIOS_LOTE_MAX_BYTES = 1024 * 1024
+/** Documento/fragmento até 8 MiB, mais envelope limitado de comandos e protocolo. */
+export const CENARIOS_LOTE_MAX_BYTES = 8 * 1024 * 1024 + 64 * 1024
 /** Registro de até 50 modelos de uma vez, afirmado pelo BFF. */
 export const CENARIOS_REGISTRO_MAX_BYTES = 256 * 1024
 
@@ -73,6 +73,24 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     escrever('texturas-reservar', 'POST', '/bibliotecas/:id/texturas/reservar'),
     escrever('texturas-apagar', 'POST', '/bibliotecas/:id/texturas/apagar'),
     escrever('textura-editar', 'PATCH', '/texturas/:id'),
+    ler('conjuntos', '/bibliotecas/:id/conjuntos'),
+    escrever('conjunto-criar', 'POST', '/bibliotecas/:id/conjuntos', {
+      corpo: CENARIOS_LOTE_MAX_BYTES,
+    }),
+    ler('conjunto', '/conjuntos/:id'),
+    ler('conjunto-versao', '/conjuntos/:id/versoes/:revisao'),
+    escrever('conjunto-editar', 'PATCH', '/conjuntos/:id'),
+    escrever('conjunto-oficina', 'POST', '/conjuntos/:id/editar'),
+    escrever('conjunto-publicar', 'POST', '/conjuntos/:id/publicar', {
+      corpo: CENARIOS_LOTE_MAX_BYTES,
+      porMinuto: 30,
+    }),
+    escrever(
+      'conjunto-miniatura-reservar',
+      'POST',
+      '/conjuntos/:id/versoes/:revisao/miniatura/reservar',
+    ),
+    escrever('conjunto-apagar', 'DELETE', '/conjuntos/:id'),
     ler('biblioteca-organizacao', '/bibliotecas/:id/organizacao'),
     // Até 50 arquivos por chamada: 120 chamadas por minuto cobrem um pacote de milhares.
     escrever('modelos-reservar', 'POST', '/bibliotecas/:id/modelos/reservar'),
@@ -107,5 +125,6 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     interna('texturas', '/texturas', CENARIOS_REGISTRO_MAX_BYTES),
     interna('lotes', '/lotes', CENARIOS_LOTE_MAX_BYTES),
     interna('capa', '/capa', 16 * 1024),
+    interna('conjunto-miniatura', '/conjuntos/miniatura', 16 * 1024),
   ]
 }

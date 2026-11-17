@@ -3393,6 +3393,10 @@ export const cenarioConjuntos = members.table(
     etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     busca: varchar('busca', { length: 600 }).notNull(),
     revisao: integer('revisao').notNull().default(1),
+    cenarioDeEdicaoId: uuid('cenario_de_edicao_id').references(
+      (): AnyPgColumn => cenarioCenarios.id,
+    ),
+    revisaoPublicadaDoCenario: integer('revisao_publicada_do_cenario'),
     criadoPor: uuid('criado_por').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -3400,6 +3404,11 @@ export const cenarioConjuntos = members.table(
   (t) => [
     index('cenario_conjuntos_lista_idx').on(t.bibliotecaId, t.busca, t.id),
     uniqueIndex('cenario_conjuntos_operacao_uq').on(t.bibliotecaId, t.operacaoId),
+    uniqueIndex('cenario_conjuntos_edicao_uq').on(t.cenarioDeEdicaoId),
+    check(
+      'cenario_conjuntos_edicao_check',
+      sql`(${t.cenarioDeEdicaoId} is null and ${t.revisaoPublicadaDoCenario} is null) or (${t.cenarioDeEdicaoId} is not null and ${t.revisaoPublicadaDoCenario} is not null and ${t.revisaoPublicadaDoCenario} >= 0)`,
+    ),
     check('cenario_conjuntos_revisao_check', sql`${t.revisao} > 0`),
   ],
 )
@@ -3441,13 +3450,19 @@ export const cenarioMundos = members.table(
     espacoId: uuid('espaco_id')
       .notNull()
       .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    bibliotecaConjuntosId: uuid('biblioteca_conjuntos_id').references(() => cenarioBibliotecas.id, {
+      onDelete: 'cascade',
+    }),
     nome: varchar('nome', { length: 120 }).notNull(),
     /** Quem criou: o perfil da criança no Kids, a conta no adulto. */
     criadoPor: uuid('criado_por').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('cenario_mundos_espaco_idx').on(t.espacoId)],
+  (t) => [
+    index('cenario_mundos_espaco_idx').on(t.espacoId),
+    uniqueIndex('cenario_mundos_conjuntos_biblioteca_uq').on(t.bibliotecaConjuntosId),
+  ],
 )
 
 export const cenarioMundoBibliotecas = members.table(

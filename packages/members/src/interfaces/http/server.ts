@@ -131,6 +131,7 @@ const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
 const ARQUIPELAGO_OBJECTIVES_PATH =
   /^\/members\/internal\/arquipelago\/objetivos\/(?:analisar|verificar)$/
 const ARQUIPELAGO_OBJECTIVES_BODY_BYTES = 4 * 1024 * 1024
+const CENARIOS_DOCUMENTO_BODY_BYTES = 8 * 1024 * 1024 + 64 * 1024
 
 // Rotas do Pensa com corpo GRANDE (conversa de turno, artefato jsonb, replace de
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
@@ -169,12 +170,14 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
   if (/^\/members\/internal\/(?:adult\/)?pensa\//.test(pathname)) return 1024 * 1024
-  // Lote de até 500 comandos de um cenário (cada objeto criado leva a transformação inteira).
+  // Uma definição fixada/restauração pode conter o documento inteiro, limitado a 8 MiB.
   if (
     /^\/members\/cenarios\/cenarios\/[^/]+\/lotes$/.test(pathname) ||
-    pathname === '/members/internal/cenarios/lotes'
+    pathname === '/members/internal/cenarios/lotes' ||
+    /^\/members\/cenarios\/bibliotecas\/[^/]+\/conjuntos$/.test(pathname) ||
+    /^\/members\/cenarios\/conjuntos\/[^/]+\/publicar$/.test(pathname)
   )
-    return 1024 * 1024
+    return CENARIOS_DOCUMENTO_BODY_BYTES
   if (/^\/members\/(?:adult\/)?pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }
@@ -191,6 +194,7 @@ export function createServer(deps: HttpDeps) {
     deps.coursePromotion ? 64_000_000 : 0,
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     ARQUIPELAGO_OBJECTIVES_BODY_BYTES,
+    CENARIOS_DOCUMENTO_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
     1024 * 1024,

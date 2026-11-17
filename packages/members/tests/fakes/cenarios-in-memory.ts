@@ -3,6 +3,7 @@ import {
   arquivosDoDocumento,
   arquivosDosComandos,
   type DocumentoDeCenario,
+  documentoParaEditarConjunto,
   inverterLote,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -62,10 +63,66 @@ export class CenariosEmMemoria implements CenariosRepository {
             b.bytes <= 256 * 1024,
         )
       },
+      confirmarImagem: (espacoId, conferido, agora) => {
+        const b = this.blobs.get(this.chave(espacoId, conferido.digest))
+        if (b && ['miniatura', 'capa', 'textura'].includes(b.tipo))
+          this.confirmarBlobsNoEstado(espacoId, [conferido], agora)
+      },
       cenarios: (espacoId) =>
         [...this.cenariosGuardados.values()]
           .filter((c) => this.mundosGuardados.get(c.mundoId)?.espacoId === espacoId)
           .map(({ lotes: _l, criadoPor: _p, ...c }) => this.copia(c)),
+      fonte: (id) => this.cenariosGuardados.get(id),
+      prepararFonte: (c, v, autorId, agora) => {
+        const espacoId = this.bibliotecasGuardadas.get(c.bibliotecaId)!.espacoId
+        const cenarioId = randomUUID()
+        const documento = documentoParaEditarConjunto(v.conteudo, cenarioId, c.nome, espacoId)
+        let mundo = [...this.mundosGuardados.values()].find(
+          (m) => m.bibliotecaConjuntosId === c.bibliotecaId,
+        )
+        if (!mundo) {
+          mundo = {
+            id: randomUUID(),
+            espacoId,
+            bibliotecaConjuntosId: c.bibliotecaId,
+            nome: 'Conjuntos da biblioteca',
+            criadoPor: autorId,
+            atualizadoEm: agora,
+            cenarios: 0,
+            bibliotecas: [],
+            capa: null,
+          }
+          this.mundosGuardados.set(mundo.id, mundo)
+        }
+        mundo.bibliotecas = [
+          ...new Set([
+            ...mundo.bibliotecas,
+            c.bibliotecaId,
+            ...v.conteudo.modelos.map((m) => m.biblioteca),
+            ...v.conteudo.texturas.map((t) => t.biblioteca),
+          ]),
+        ].filter((id) => this.bibliotecasGuardadas.get(id)?.espacoId === espacoId)
+        this.cenariosGuardados.set(cenarioId, {
+          id: cenarioId,
+          mundoId: mundo.id,
+          nome: c.nome,
+          documento,
+          revisao: 0,
+          capa: null,
+          criadoPor: autorId,
+          atualizadoEm: agora,
+          lotes: [],
+        })
+        this.contarCenarios(mundo.id)
+        return { mundoId: mundo.id, cenarioId }
+      },
+      removerFonte: (id) => {
+        const mundoId = this.cenariosGuardados.get(id)?.mundoId
+        const digests = this.removerCenarioDoEstado(id)
+        if (mundoId && this.mundosGuardados.get(mundoId)?.cenarios === 0)
+          this.mundosGuardados.delete(mundoId)
+        return digests
+      },
       gravar: (dados, agora) => this.gravarLoteNoEstado(dados, agora),
       soltar: (espacoId, digests, agora) => this.soltarOrfaos(espacoId, digests, agora),
       mudou: (espacoId, agora) => this.atualizarUso(espacoId, agora),
@@ -74,6 +131,10 @@ export class CenariosEmMemoria implements CenariosRepository {
   conjuntos: CenariosRepository['conjuntos'] = (...args) =>
     this.catalogoConjuntos.conjuntos(...args)
   conjunto: CenariosRepository['conjunto'] = (...args) => this.catalogoConjuntos.conjunto(...args)
+  conjuntoDoCenario: CenariosRepository['conjuntoDoCenario'] = (...args) =>
+    this.catalogoConjuntos.conjuntoDoCenario(...args)
+  prepararEdicaoDeConjunto: CenariosRepository['prepararEdicaoDeConjunto'] = (...args) =>
+    this.catalogoConjuntos.prepararEdicaoDeConjunto(...args)
   versaoDoConjunto: CenariosRepository['versaoDoConjunto'] = (...args) =>
     this.catalogoConjuntos.versaoDoConjunto(...args)
   criarConjunto: CenariosRepository['criarConjunto'] = (...args) =>
@@ -389,6 +450,13 @@ export class CenariosEmMemoria implements CenariosRepository {
     return { faltam: this.copia(faltam) }
   }
   async confirmarBlobs(espacoId: string, conferidos: readonly ConferenciaDeBlob[], agora: Date) {
+    this.confirmarBlobsNoEstado(espacoId, conferidos, agora)
+  }
+  private confirmarBlobsNoEstado(
+    espacoId: string,
+    conferidos: readonly ConferenciaDeBlob[],
+    agora: Date,
+  ) {
     for (const c of conferidos) {
       const blob = this.blobs.get(this.chave(espacoId, c.digest))
       if (
@@ -473,7 +541,11 @@ export class CenariosEmMemoria implements CenariosRepository {
         .sort((a, b) => b.atualizadoEm.getTime() - a.atualizadoEm.getTime())[0]?.capa ?? null
   }
   async mundos(espacoId: string) {
-    return this.copia([...this.mundosGuardados.values()].filter((m) => m.espacoId === espacoId))
+    return this.copia(
+      [...this.mundosGuardados.values()].filter(
+        (m) => m.espacoId === espacoId && !m.bibliotecaConjuntosId,
+      ),
+    )
   }
   async mundo(id: string) {
     const m = this.mundosGuardados.get(id)
@@ -484,7 +556,9 @@ export class CenariosEmMemoria implements CenariosRepository {
     teto: number,
     agora: Date,
   ) {
-    const doEspaco = [...this.mundosGuardados.values()].filter((m) => m.espacoId === dados.espacoId)
+    const doEspaco = [...this.mundosGuardados.values()].filter(
+      (m) => m.espacoId === dados.espacoId && !m.bibliotecaConjuntosId,
+    )
     if (doEspaco.length >= teto) return null
     this.mundosGuardados.set(dados.id, {
       ...dados,
@@ -566,6 +640,7 @@ export class CenariosEmMemoria implements CenariosRepository {
     const repetido = c.lotes.find((l) => l.operacaoId === dados.operacaoId)
     if (repetido) return { revisao: repetido.revisao, repetido: true }
     if (c.revisao !== dados.revisaoEsperada) return null
+    this.catalogoConjuntos.conferirCenarioDeEdicao(c.id, dados.documento)
     const inversos = inverterLote(c.documento, dados.documento)
     const atual = this.copia(this.pilhas.get(c.id) ?? { passado: [], futuro: [] })
     const historico =
@@ -640,6 +715,12 @@ export class CenariosEmMemoria implements CenariosRepository {
   async apagarCenario(id: string) {
     const c = this.cenariosGuardados.get(id)
     const mundo = c && this.mundosGuardados.get(c.mundoId)
+    if (!mundo) return []
+    return this.soltarOrfaos(mundo.espacoId, this.removerCenarioDoEstado(id), new Date())
+  }
+  private removerCenarioDoEstado(id: string): string[] {
+    const c = this.cenariosGuardados.get(id)
+    const mundo = c && this.mundosGuardados.get(c.mundoId)
     if (!c || !mundo) return []
     const candidatos = new Set<string>()
     const incluir = (d: DocumentoDeCenario) => {
@@ -655,6 +736,6 @@ export class CenariosEmMemoria implements CenariosRepository {
     this.pilhas.delete(id)
     this.fotografias.delete(id)
     this.contarCenarios(c.mundoId)
-    return this.soltarOrfaos(mundo.espacoId, [...candidatos], new Date())
+    return [...candidatos]
   }
 }

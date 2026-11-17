@@ -14,6 +14,7 @@ import {
   type BaseDeTerreno,
   type ComandoDeCenario,
   capturarFragmento,
+  conteudoDoCenarioDeConjunto,
   criarAmostradorDeEspalhamento,
   criarDocumentoVazio,
   type DefinicaoDeConjunto,
@@ -162,6 +163,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of operacoesDeConjuntosDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const fontesDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0160_flaky_marvel_zombies.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of fontesDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -249,6 +259,279 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     return { espaco, conjunto, conteudo, cenarios, ator, s }
   }
 
+  test('rascunho compartilhado usa o histórico real e publica somente a revisão salva, sem apagar edições pendentes', async () => {
+    const { conjunto, conteudo, cenarios, s, ator, espaco } = await conjuntoComDuasCopias()
+    const aberturas = await Promise.all([
+      repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA),
+      repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA),
+    ])
+    expect(aberturas[0]).toEqual(aberturas[1])
+    const fonte = aberturas[0]!
+    expect((await repo.mundos(espaco.id)).map((m) => m.id)).not.toContain(fonte.mundoId)
+    expect((await repo.mundo(fonte.mundoId))!.bibliotecaConjuntosId).toBe(conjunto.bibliotecaId)
+    expect((await repo.conjuntoDoCenario(fonte.cenarioId))!.id).toBe(conjunto.id)
+    const c0 = await s.abrirCenario(ator, fonte.cenarioId)
+    const d1 = structuredClone(c0.documento)
+    d1.instancias[0]!.nome = 'Flor do rascunho'
+    d1.instancias[0]!.transformacao.posicao.x += 3
+    await s.editarCenario(ator, fonte.cenarioId, {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'cenario.restaurar', documento: d1 }],
+    })
+    const base = {
+      id: conjunto.id,
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+      conteudo,
+      autorId: CONTA,
+    }
+    expect(await repo.publicarConjunto(base, 1000, AGORA).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    expect((await repo.conjunto(conjunto.id))!.revisao).toBe(1)
+    expect((await repo.cenario(cenarios[0]!))!.revisao).toBe(1)
+    const salvo = conteudoDoCenarioDeConjunto(d1, espaco.id)
+    expect(
+      await repo
+        .publicarConjunto(
+          { ...base, conteudo: salvo, rascunho: { cenarioId: fonte.cenarioId, revisao: 0 } },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioDesatualizadoError)
+    expect(
+      await repo
+        .publicarConjunto(
+          { ...base, rascunho: { cenarioId: fonte.cenarioId, revisao: 1 } },
+          1000,
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    const pedido = {
+      ...base,
+      conteudo: salvo,
+      rascunho: { cenarioId: fonte.cenarioId, revisao: 1 },
+    }
+    const r = (await repo.publicarConjunto(pedido, 1000, AGORA))!
+    expect(r.conjunto.revisao).toBe(2)
+    expect(r.conjunto.revisaoPublicadaDoCenario).toBe(1)
+    expect(r.cenarios.map((c) => c.id).sort()).toEqual([...cenarios].sort())
+    expect((await repo.cenario(fonte.cenarioId))!.documento).toEqual(d1)
+    expect(await s.documentoNaRevisao(ator, fonte.cenarioId, 0)).toEqual(c0.documento)
+    // Desfazer no rascunho não desfaz uma publicação já aplicada em outros cenários.
+    await s.moverHistorico(ator, fonte.cenarioId, {
+      acao: 'desfazer',
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+    })
+    expect((await repo.cenario(fonte.cenarioId))!.documento).toEqual(c0.documento)
+    expect((await repo.conjunto(conjunto.id))!.revisaoPublicadaDoCenario).toBe(1)
+    expect((await repo.cenario(cenarios[0]!))!.revisao).toBe(2)
+    // Repetição idempotente continua válida mesmo depois de uma nova edição do rascunho.
+    expect((await repo.publicarConjunto(pedido, 1000, AGORA))!.conjunto.revisao).toBe(2)
+    expect(await s.apagarCenario(ator, fonte.cenarioId).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    expect(await s.duplicarCenario(ator, fonte.cenarioId).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    expect(await s.criarCenario(ator, fonte.mundoId, 'Extra').catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    expect(await s.apagarMundo(ator, fonte.mundoId).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    await repo.apagarConjunto(conjunto.id, AGORA)
+    expect(await repo.cenario(fonte.cenarioId)).toBeNull()
+    expect(await repo.mundo(fonte.mundoId)).toBeNull()
+    expect((await repo.cenario(cenarios[0]!))!.documento.definicoesConjuntos![0]!.conteudo).toEqual(
+      salvo,
+    )
+  })
+
+  test('publicação direta sincroniza somente rascunho limpo e conserva o mundo interno enquanto outra definição o usa', async () => {
+    const { conjunto, conteudo, espaco } = await conjuntoComDuasCopias()
+    const fonte = (await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA))!
+    const segundo = (await repo.criarConjunto(
+      {
+        id: randomUUID(),
+        bibliotecaId: conjunto.bibliotecaId,
+        nome: 'Outro jardim',
+        pasta: '',
+        etiquetas: [],
+        operacaoId: randomUUID(),
+        conteudo,
+        autorId: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    const outraFonte = (await repo.prepararEdicaoDeConjunto(segundo.id, CONTA, AGORA))!
+    expect(outraFonte.mundoId).toBe(fonte.mundoId)
+    const novo = structuredClone(conteudo)
+    novo.instancias[0]!.nome = 'Publicada pelo agente'
+    const pedido = {
+      id: conjunto.id,
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+      conteudo: novo,
+      autorId: CONTA,
+    }
+    const publicado = (await repo.publicarConjunto(pedido, 1000, AGORA))!
+    const repetido = (await repo.publicarConjunto(pedido, 1000, AGORA))!
+    expect(repetido.cenarios.map((c) => c.id).sort()).toEqual(
+      publicado.cenarios.map((c) => c.id).sort(),
+    )
+    const c = (await repo.cenario(fonte.cenarioId))!
+    expect(c.revisao).toBe(1)
+    expect(c.documento.instancias[0]!.nome).toBe('Publicada pelo agente')
+    expect((await repo.conjunto(conjunto.id))!.revisaoPublicadaDoCenario).toBe(1)
+    await repo.apagarConjunto(conjunto.id, AGORA)
+    expect(await repo.cenario(fonte.cenarioId)).toBeNull()
+    expect((await repo.cenario(outraFonte.cenarioId))!.revisao).toBe(0)
+    expect(await repo.mundo(fonte.mundoId)).not.toBeNull()
+    await repo.apagarBiblioteca(conjunto.bibliotecaId, AGORA)
+    expect(await repo.cenario(outraFonte.cenarioId)).toBeNull()
+    expect(await repo.mundo(fonte.mundoId)).toBeNull()
+    expect((await repo.mundos(espaco.id)).length).toBe(1)
+  })
+
+  test('rascunho recusa sistemas não representados na definição e cópia de si mesmo, sem gravar parcialmente', async () => {
+    const { conjunto, s, ator, cenarios } = await conjuntoComDuasCopias()
+    const fonte = (await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA))!
+    const d = structuredClone((await repo.cenario(fonte.cenarioId))!.documento)
+    d.aguas = [
+      {
+        id: 'mar',
+        nome: 'Mar',
+        tipo: 'mar',
+        nivel: 0,
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+      },
+    ]
+    const lote = {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'cenario.restaurar' as const, documento: d }],
+    }
+    expect(await s.editarCenario(ator, fonte.cenarioId, lote).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    expect((await repo.cenario(fonte.cenarioId))!.revisao).toBe(0)
+    const copia = (await repo.cenario(cenarios[0]!))!.documento
+    d.aguas = []
+    d.definicoesConjuntos = copia.definicoesConjuntos
+    d.montagens = copia.montagens
+    expect(
+      await s
+        .editarCenario(ator, fonte.cenarioId, { ...lote, operacaoId: randomUUID() })
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    expect((await repo.cenario(fonte.cenarioId))!.revisao).toBe(0)
+    expect(await repo.pilhasDoHistorico(fonte.cenarioId)).toEqual({ passado: [], futuro: [] })
+  })
+
+  test('arquivo presente só no histórico do rascunho sobrevive ao catálogo de modelos e é liberado com o conjunto', async () => {
+    const { conjunto, s, ator, espaco } = await conjuntoComDuasCopias()
+    const acervo = (await repo.criarBiblioteca(
+      {
+        id: randomUUID(),
+        espacoId: espaco.id,
+        nome: 'Peças',
+        licenca: 'restrita',
+        criadoPor: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    await guardar(espaco.id, 'b')
+    const [m] = (await repo.criarModelos(acervo.id, [modelo('b', 'Banco')], 10, CONTA, AGORA))!
+    const fonte = (await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA))!
+    const d = structuredClone((await repo.cenario(fonte.cenarioId))!.documento)
+    d.modelos.push({
+      id: 'banco',
+      biblioteca: acervo.id,
+      modelo: m!.id,
+      digest: m!.digest,
+      volume: { min: { x: -1, y: 0, z: -1 }, max: { x: 1, y: 3, z: 1 } },
+    })
+    d.instancias.push({ ...structuredClone(d.instancias[0]!), id: 'banco', modelo: 'banco' })
+    await s.editarCenario(ator, fonte.cenarioId, {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'cenario.restaurar', documento: d }],
+    })
+    await s.moverHistorico(ator, fonte.cenarioId, {
+      acao: 'desfazer',
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+    })
+    expect((await repo.cenario(fonte.cenarioId))!.documento.modelos).toHaveLength(0)
+    expect(await repo.apagarBiblioteca(acervo.id, AGORA)).toEqual([])
+    expect((await repo.blobsConfirmados(espaco.id, [digest('b')])).size).toBe(1)
+    expect(await repo.apagarConjunto(conjunto.id, AGORA)).toEqual([digest('b')])
+    expect((await repo.blobsConfirmados(espaco.id, [digest('b')])).size).toBe(0)
+  })
+
+  test('miniatura confirma e associa em uma transação; falha no commit e exclusão não deixam arquivo confirmado sem dono', async () => {
+    const { conjunto, espaco } = await conjuntoComDuasCopias()
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    await repo.reservarBlobs(espaco.id, [{ ...imagem, tipo: 'miniatura' }], AGORA, DEPOIS)
+    const bytes = (await repo.espaco(espaco.id))!.usadoBytes
+    await conn.sql.unsafe(
+      "create function members.falhar_miniatura_qa() returns trigger language plpgsql as $$ begin raise exception 'Falha da miniatura no commit'; end $$",
+    )
+    await conn.sql.unsafe(
+      'create constraint trigger falhar_miniatura_qa after update on members.cenario_conjunto_versoes deferrable initially deferred for each row when (new.miniatura is not null) execute function members.falhar_miniatura_qa()',
+    )
+    try {
+      const erro = await repo
+        .definirMiniaturaDoConjunto(conjunto.id, 1, imagem.digest, AGORA, {
+          espacoId: espaco.id,
+          conferido: imagem,
+        })
+        .catch((e) => e)
+      expect(String(erro)).toContain('Falha da miniatura no commit')
+      expect((await repo.blobsConfirmados(espaco.id, [imagem.digest])).size).toBe(0)
+      expect((await repo.versaoDoConjunto(conjunto.id, 1))!.miniatura).toBeNull()
+      expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(bytes)
+    } finally {
+      await conn.sql.unsafe('drop trigger falhar_miniatura_qa on members.cenario_conjunto_versoes')
+      await conn.sql.unsafe('drop function members.falhar_miniatura_qa()')
+    }
+    expect(
+      await repo.definirMiniaturaDoConjunto(conjunto.id, 1, imagem.digest, AGORA, {
+        espacoId: espaco.id,
+        conferido: imagem,
+      }),
+    ).toBe(true)
+    expect((await repo.blobsConfirmados(espaco.id, [imagem.digest])).size).toBe(1)
+    const outra = { ...imagem, digest: digest('f') }
+    await repo.reservarBlobs(espaco.id, [{ ...outra, tipo: 'miniatura' }], AGORA, DEPOIS)
+    expect(
+      await repo
+        .definirMiniaturaDoConjunto(conjunto.id, 1, outra.digest, AGORA, {
+          espacoId: randomUUID(),
+          conferido: outra,
+        })
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.blobsConfirmados(espaco.id, [outra.digest])).size).toBe(0)
+    await repo.apagarConjunto(conjunto.id, AGORA)
+    expect(
+      await repo.definirMiniaturaDoConjunto(conjunto.id, 1, outra.digest, AGORA, {
+        espacoId: espaco.id,
+        conferido: outra,
+      }),
+    ).toBe(false)
+    expect((await repo.blobsConfirmados(espaco.id, [outra.digest])).size).toBe(0)
+  })
+
   test('publicações concorrentes disputam a mesma revisão sem duplicar lotes ou versões', async () => {
     const { conjunto, conteudo, cenarios, s, ator } = await conjuntoComDuasCopias()
     const editar = (cor: string) => {
@@ -286,6 +569,8 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
 
   test('falha adiada até o commit desfaz a definição, todas as cabeças e seus históricos', async () => {
     const { conjunto, conteudo, cenarios, s, ator, espaco } = await conjuntoComDuasCopias()
+    const fonte = (await repo.prepararEdicaoDeConjunto(conjunto.id, CONTA, AGORA))!
+    const fonteAntes = await s.abrirCenario(ator, fonte.cenarioId)
     const antes = await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id))),
       bytes = (await repo.espaco(espaco.id))!.usadoBytes
     await conn.sql.unsafe(
@@ -315,6 +600,8 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       expect(await repo.versaoDoConjunto(conjunto.id, 2)).toBeNull()
       expect(await Promise.all(cenarios.map((id) => s.abrirCenario(ator, id)))).toEqual(antes)
       expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(bytes)
+      expect(await s.abrirCenario(ator, fonte.cenarioId)).toEqual(fonteAntes)
+      expect((await repo.conjunto(conjunto.id))!.revisaoPublicadaDoCenario).toBe(0)
     } finally {
       await conn.sql.unsafe('drop trigger falhar_publicacao_qa on members.cenario_cenarios')
       await conn.sql.unsafe('drop function members.falhar_publicacao_qa()')
