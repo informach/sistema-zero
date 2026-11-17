@@ -33,4 +33,6 @@ Evidências: [evidencias/lote3-formas](evidencias/lote3-formas). São formas de 
 
 ## Continuidade
 
+Na publicação deste recorte, a staging remota recebeu `29c2ab43c` e `9946171a9`, núcleos puros adiantados por outra sessão a pedido da usuária. O commit local de formas foi reaplicado sobre eles sem conflitos. A verificação integrada do núcleo passou com **104 testes / 3.160 asserções**, além da tipagem. Esses módulos continuam isolados, sem exportação no índice ou ligação à oficina, conforme [seu registro](adiantamento-nucleo-lotes-4-5-6.md); não representam conclusão ou início formal dos lotes seguintes nesta execução.
+
 Seguir pela cor e textura por objeto na parte 3.3. Depois, continuar árvore/camadas/laço/área de transferência, espalhar, conjuntos vivos, retratos de revisão, otimizações e Testar. Nenhuma ferramenta dos lotes 4–10 foi iniciada. Validação de implantação continua reservada ao encerramento global.
