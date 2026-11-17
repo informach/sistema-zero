@@ -46,6 +46,33 @@ export const PINTA_LIMITS = {
   maxExtraColors: 48,
 } as const
 
+/**
+ * O que o DOCUMENTO do mapa aceita ao ser lido (o sanitizador), separado do que o editor deixa
+ * CRIAR hoje (`PINTA_LIMITS`). O formato já comporta mapas maiores, mais camadas e conjuntos de
+ * peças maiores; o editor só passa a oferecê-los quando o desenho por área visível e a entrega
+ * ao Estúdio estiverem prontos. Assim um mapa grande que chegue por importação ou de uma versão
+ * mais nova (dentro do mesmo formato) é lido inteiro, nunca cortado.
+ *
+ * `maxCells` é o orçamento que segura a memória: colunas × linhas × camadas de peças.
+ */
+export const PINTA_MAP_FORMAT_LIMITS = {
+  maxTiles: 256,
+  maxCols: 256,
+  maxRows: 256,
+  maxLayers: 32,
+  maxCells: 2_097_152,
+  /** Um grupo dentro de outro, até esta profundidade. */
+  maxGroupDepth: 4,
+  maxLayerProperties: 16,
+  /** Deslocamento de camada, em pixels do mapa, para cada lado. */
+  maxLayerOffset: 256 * 48,
+  /** Maior coordenada de objeto em pixels do mapa (256 colunas × peça de 48). */
+  maxObjectCoord: 256 * 48,
+} as const
+
+/** O número gravado em `schema` quando o desenho usa algo deste formato. */
+export const PINTA_MAP_SCHEMA = 3
+
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)
   const base = desired.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)

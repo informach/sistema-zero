@@ -44,6 +44,7 @@ export {
   OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_ASSET_KINDS,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   type PintaAsset,
   type PintaAssetKind,
   sanitizePintaAsset,

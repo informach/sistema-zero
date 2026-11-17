@@ -17,6 +17,7 @@ import { translateShape } from '../vector/geometry'
 import type { VectorShape } from '../vector/model'
 import {
   isObjectLayer,
+  isTileLayer,
   type PintaAsset,
   type PintaBitmap,
   type PintaPixelFrame,
@@ -237,6 +238,8 @@ export function resizeAsset(
           // DENTRO do mapa novo: encolher não pode deixar um objeto onde ninguém
           // alcança. Sem `tileSize` (o tamanho da peça é do tileset), ficam onde estão.
           if (isObjectLayer(layer)) return resizeObjectLayer(layer, dx, dy, w, h, options.tileSize)
+          // Grupo não tem conteúdo próprio: as camadas dele são redimensionadas uma a uma.
+          if (!isTileLayer(layer)) return layer
           const cells = new Int16Array(w * h).fill(-1)
           for (let r = 0; r < asset.rows; r += 1) {
             const destinoR = r + dy

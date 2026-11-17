@@ -14,8 +14,11 @@
  * O leitor é o `pinta.py` (`packages/studio/src/runtime/python/pygame/py/pinta.py`): mudar um
  * nome de campo aqui quebra os jogos. Campo novo é acréscimo; o resto pede `version: 2`.
  */
+
 import {
   type AnyTilesetAsset,
+  isLayerShown,
+  isObjectLayer,
   isTileLayer,
   type PixelSpriteAsset,
   resolveAssetPalette,
@@ -25,6 +28,7 @@ import {
   type VectorSpriteAsset,
 } from '../core/project'
 import { flattenCelsOrBlank } from '../pixel/layers'
+import { cellTile } from '../tiles/cell'
 import { resolveMapTilesets } from '../tiles/mapTilesets'
 import { tilesetGridGeometry } from '../tiles/packGeometry'
 import type { PintaImageScene, PixelSceneCell, VectorSceneCell } from './portableImageRender'
@@ -335,16 +339,22 @@ export function mapAtlasSelection(
       layers.push({
         type: 'tiles',
         name: layer.name,
-        visible: layer.visible,
+        // Este formato não tem grupos: a visibilidade já sai resolvida com a dos grupos em volta.
+        visible: isLayerShown(map, layer),
         front: layer.front === true,
         tileset: position,
-        cells: Array.from(layer.cells, (cell) => (cell >= 0 && cell < count ? cell : -1)),
+        // Este formato (versão 1 dos dados do mapa) só conhece o índice da peça: a peça virada
+        // sai desvirada, nunca como um índice errado.
+        cells: Array.from(layer.cells, (cell) => {
+          const tile = cellTile(cell)
+          return tile >= 0 && tile < count ? tile : -1
+        }),
       })
-    } else {
+    } else if (isObjectLayer(layer)) {
       layers.push({
         type: 'objects',
         name: layer.name,
-        visible: layer.visible,
+        visible: isLayerShown(map, layer),
         objects: layer.objects.map((object) => ({
           id: object.id,
           name: object.name,

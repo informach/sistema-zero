@@ -1,0 +1,192 @@
+# Pinta: cenários 2D
+
+Registro vivo da evolução do editor de mapas do Pinta para um editor de cenários 2D: diagnóstico,
+arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incremento fechado.
+
+## Estado
+
+| # | Incremento | Estado |
+|---|---|---|
+| 1 | Trava de formato, só leitura | Implementado e testado localmente (17/11/2026). Sem prova em staging. |
+| 2 | Declarar a versão por tipo | Implementado na branch da evolução (17/11/2026). ⚠️ Só pode ir a produção depois do incremento 1 (PR da trava). |
+| 3 | Auxiliares de célula e histórico por buffer único | Implementado e testado localmente (17/11/2026). Sem mudança de comportamento. |
+| 4a | Documento do formato 3: camadas | Implementado e testado localmente (17/11/2026). Sem interface ainda. |
+| 4b | Documento do formato 3: objetos (formas, giro, papéis, propriedades tipadas) | Pendente. |
+| 4c | Documento do formato 3: conjuntos de peças (animação, terrenos, propriedades por peça) | Pendente. |
+| 4d | Documento do formato 3: conjuntos reutilizáveis | Pendente. |
+| 5 a 14 | Ver a tabela do plano abaixo | Pendentes. |
+
+### Incremento 1: o que foi provado e o que não foi
+
+- **Provado por teste local** (`bun test`, happy-dom): um item da conta com versão acima do teto
+  não desce na reconciliação, não vira cópia na base vencida, não é restaurado no DELETE recusado
+  e não recebe a cópia local por cima; o aviso aparece e some; a galeria mostra o recado e o botão.
+  Suítes inteiras do Pinta (1.677 testes) e do member-shell (2.463) passam; tipagem dos dois aprovada.
+- **Não provado:** o comportamento contra o Members real (a recusa `CREATION_CLIENT_OUTDATED` na
+  reserva e no DELETE), em navegador e em staging. O aviso da galeria não foi fotografado.
+- **Risco residual conhecido:** o envio de desenho numa aula (`pinta-submission`) não tem trava de
+  formato, e o Members saneia esses envios com a cópia do Pinta que ele embute. Mapas não são
+  oferecidos nas aulas hoje.
+
+### Incremento 3: o que entrou
+
+- `packages/pinta/src/tiles/cell.ts`: a célula do mapa guarda a peça (bits 0 a 11) e como ela
+  está virada (bits 12 a 14, os mesmos do Tiled), dentro do `Int16Array` que já existia. Mapa sem
+  peça virada tem os mesmos números de antes. Quem lê o índice da peça (achatar, peça do topo,
+  remapear ao inserir ou tirar peça, os dois exportadores de imagem) passou a ler por `cellTile`.
+- `tiles/cellAccess.test.ts` lista os oito arquivos que indexam células e reprova um arquivo novo.
+- Histórico do editor (`core/history.ts`, `sharedOf`): as células de cada camada contam uma vez
+  enquanto algum passo as segura. Antes cada pincelada num mapa de 16 camadas custava as 16; agora
+  custa a camada tocada. Medido no teste: 20 passos onde antes cabiam 2, no mesmo orçamento.
+- **Limite conhecido:** o exportador de imagem para o Pygame (dados versão 1) ainda não leva o
+  giro da peça: ela sai desvirada. Entra com a versão 2 dos dados, no incremento 9.
+- Nenhuma ferramenta escreve os bits de giro ainda, então não há o que ver no navegador.
+
+### Incremento 4a: o que entrou
+
+- **Camadas** (`packages/pinta/src/core/project.ts`): grupo (`kind: 'group'`, lista plana com
+  `parentId`), cadeado, opacidade, deslocamento, parallax, propriedades de camada e camada de
+  colisão. Tudo opcional e omitido no valor padrão. `effectiveLayer` soma o que os grupos em volta
+  impõem; achatar, a peça do topo e os exportadores já respeitam grupo escondido.
+- **Tetos em dois níveis:** `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita LER (256 × 256,
+  32 camadas, 256 peças, 2 milhões de células); `PINTA_LIMITS` continua sendo o que o editor deixa
+  CRIAR (128 × 128, 8 camadas, 64 peças). O editor só sobe quando o desenho por área visível e a
+  entrega ao Estúdio estiverem prontos.
+- **Carimbo `schema: 3`** entra sozinho quando o mapa usa algo do formato e sai quando deixa de
+  usar. Um código que não conhece o número não lê o mapa.
+- **Envelope do `.pinta.json` na versão 3** só quando algum mapa precisa. Mapas acima de 128 × 128
+  viajam com as células compactadas (`cellsPacked`, `tiles/cellCodec.ts`); os demais, com a lista
+  de números de sempre, para o texto guardado não mudar.
+- Um serializador só para a camada de peças (`tileLayerToWire`), usado pelo wire, pelo arquivo e
+  pelos construtores de modelo.
+- Testes: `core/mapFormat3.test.ts` (19 casos). Suíte do Pinta: 1.710 testes, sem falha.
+
+**Ensaio de frota mista** (script descartável, 17/11/2026): o Pinta da `staging` em `237dc979`
+lendo um mapa do formato 3 com 13 camadas.
+
+| Caminho | Resultado no Pinta antigo |
+|---|---|
+| Registro direto (o IndexedDB do mesmo aparelho) | Lê e CORTA: sobram 5 das 13 camadas. |
+| `.pinta.json` versão 3 (o que desce da nuvem, o backup) | Recusa o arquivo inteiro com recado. Nada é gravado. |
+
+Ou seja: pela nuvem o mapa novo está protegido de um cliente antigo (ele não consegue ler para
+cortar, e o servidor recusará a subida quando a versão declarada subir, no incremento 2). No
+MESMO aparelho, um bundle antigo em cache ainda cortaria o registro local; não há como barrar
+isso por dentro do código antigo. O que protege é a nuvem ter a versão inteira.
+
+⚠️ **Por que o incremento 2 é obrigatório antes de qualquer ferramenta que grave o formato 3:**
+no Pinta antigo, quando a subida cai em base vencida e a versão da conta não pode ser lida, o
+código antigo avança a marca e sobe a cópia local por cima. Sem o servidor recusar (versão
+declarada 2), um aparelho com o Pinta antigo e uma cópia velha do mapa regravaria o mapa novo. Com
+a versão declarada, a reserva dele é recusada com `CREATION_CLIENT_OUTDATED`.
+
+**Não provado:** nada disto tem interface, então não há ensaio no navegador. O Members embute o
+sanitizador do Pinta para envios de aula; a suíte dele não foi rodada neste incremento.
+
+---
+
+## Contexto
+
+O Pinta já tem mapas (tilesets, camadas de peças e de objetos, colisão por peça), mas a auditoria do código real mostrou quatro problemas que impedem chamá-lo de ferramenta de level design:
+
+1. **Perda silenciosa de dados.** O Pinta nunca declara `formatVersion` ao salvar na nuvem, então a trava `CREATION_CLIENT_OUTDATED` do servidor (que Estúdio, Molda e Cenários usam) está desligada para ele. Um cliente antigo baixa um mapa novo, o `sanitizePintaAsset` dele descarta o que não conhece (camadas de objetos, camadas 5 a 8) e a versão cortada sobe. É o risco "M3" registrado em `packages/pinta/CLAUDE.md` L2236-2248, sem conserto até hoje.
+2. **O mapa chega pela metade ao Estúdio.** Nos caminhos JavaScript (Jogo 2D, Jogo 2D Avançado, Pro, "Jogar meu mapa") só passa um tileset e uma grade achatada. Objetos, propriedades, camadas e demais tilesets ficam para trás; o Jogo 2D ignora até a grade de frente. Só o `pinta.py` recebe o mapa inteiro.
+3. **Modelo curto.** Tetos de 64 peças, 128 × 128 células e 8 camadas. Sem grupos, bloqueio, opacidade, reordenar camadas, espelhar/girar peças, animação, terrenos automáticos, conjuntos, formas além de ponto e retângulo, seleção múltipla ou copiar/colar de objetos.
+4. **Nenhuma saída para fora.** Não existe leitor nem exportador de Tiled, Phaser ou Godot no repositório.
+
+Resultado pretendido: a criança monta um cenário pintando terrenos e pondo objetos, testa, leva ao Estúdio sem perder nada, programa lá, e também exporta para outros motores. Um desenvolvedor experiente encontra camadas, objetos tipados, colisões, terrenos inteligentes e exportação estruturada.
+
+## Como o trabalho será feito
+
+- Branch `pinta-cenarios-2d`, criada da `staging` atualizada, em worktree próprio. Nada em `packages/molda-cenarios*`, `members/.../cenarios` ou nos documentos do plano de Cenários 3D. Sem merge nem deploy.
+- **Dois PRs para a `staging`, sem merge:**
+  - **PR A (pequeno, só segurança de dados):** incrementos 1 e 2 abaixo. Precisa ir ao ar antes do resto, porque o servidor nunca rebaixa versão: se o leitor e o gravador saírem juntos e houver rollback, todo mapa fica travado com 409.
+  - **PR B (a evolução):** incrementos 3 a 14, empilhado sobre o A.
+- Um incremento só fecha com núcleo + interface + testes + ensaio no navegador + commit. Uma verificação pesada por vez (regra do repositório).
+- O escopo é de muitas semanas. Sigo a ordem abaixo até onde der com qualidade comprovada; o PR lista o que ficou implementado, parcial e pendente.
+
+## Decisões de arquitetura
+
+**Três eixos de versão, documentados separadamente**
+- Servidor (`creations.format_version`): declarado **por tipo de desenho**, nunca pelo conteúdo (evita o mapa "se rebaixar" ao apagar uma camada). Mapas, tilesets e conjuntos sobem; paleta e demais ficam em 1.
+- Envelope `.pinta.json`: versão 3 **só quando o desenho precisa** (padrão do `tilemapNeedsV2`). Um dígito, como o medidor de tamanho exige.
+- Registro: campo opcional `schema` em mapa, tileset e conjunto, para um cliente futuro não ser regravado por este.
+
+**Documento: estender `TilemapAsset` no lugar**, mesmo `kind`, chaves opcionais omitidas no padrão, para mapas antigos continuarem byte a byte iguais. Migração preguiçosa só pelo `sanitizePintaAsset`.
+- Camadas em lista plana com `parentId` e novo `kind: 'group'`. O sanitizador valida pai (existe, é grupo, sem ciclo, vem antes) e realoja órfãos.
+- Por camada: `locked`, `opacity`, `offset`, `parallax`, `properties`.
+- **Espelho e giro empacotados na própria célula** (`peça | flags << 12` no `Int16Array`), não num vetor paralelo: assim histórico, clone, wire, redimensionar, seleção, carimbo e área de transferência carregam os flags sem mudança. Acesso só por `tiles/cell.ts`, com teste de arquitetura.
+- Objetos: `shape` (ponto, retângulo, elipse, polígono, polilinha, referência a sprite/peça, instância de conjunto), `points`, `rotation`, espelho, referência de arte, `role` e propriedades tipadas (inteiro, decimal, cor, objeto, arte).
+- `role` é o vocabulário infantil: onde o jogador começa, lugar perigoso, porta para outro lugar, caminho do inimigo, área que ativa alguma coisa, inimigo, região. O Pinta só registra; quem executa é o motor.
+- Tilesets: `animations`, `terrains` (conjuntos Wang de canto, borda e mistos), propriedades por peça.
+- Novo tipo de desenho **conjunto** (pedaço de peças + objetos). Instância vinculada é um objeto que aponta para o conjunto; "Soltar" vira cópias independentes. Template de objeto é um conjunto de um objeto só.
+
+**Tamanho com orçamento explícito**
+- Primeira entrega: 256 × 256 células, 32 camadas, 256 peças por tileset, total de cerca de 2 M de células. Só sobe depois de medir o autosave no IndexedDB.
+- Codificação por dimensão: mapas até 128 × 128 mantêm `cells: number[]` (não muda impressão digital nem reenvia partes); maiores usam `cellsPacked` (RLE em base64).
+- Limites por adaptador: o bloco de aula mantém os tetos antigos (teto de 1,8 M caracteres em `lesson-block.ts`).
+- Histórico: os ops já são copy-on-write por camada; corrigir o estimador para contar buffers únicos, em vez de reescrever para patches.
+- Renderização com recorte pela área visível e cache de blocos de 32 × 32 células.
+- Mapa infinito e projeções isométrica/hexagonal ficam declarados como pendentes.
+
+**Um contrato de cena para todos os destinos**
+- `packages/core/src/studio/pinta-scene.ts` (zod, no molde de `pinta-image.ts`). O Pinta converte documento → cena em `pinta/src/export/scene.ts`; ninguém mais converte.
+- Consumidores: Estúdio JS (`ProjectAsset.scene`, ao lado do `tilemap` legado), `pinta.py` (`PintaImageMapData` versão 2), Tiled, Phaser, zip Pygame, Godot.
+- O `tilemap` legado só é emitido quando o mapa cabe no envelope antigo; senão, só `scene`, com recusa explícita apontando para os blocos novos.
+
+**Estúdio: fragmento compartilhado `official-extensions/map-2d/`**, no padrão de `scene-2d/` (contrato sem DOM, host por motor), usado por Jogo 2D e Jogo 2D Avançado.
+- Colisão sem física nova: o fragmento funde as camadas de colisão numa grade e chama o `createTileMap`/`collideTileMap` que já existem.
+- Carga por `bootstrapVariant` (precedente `game-3d/platformKitVariant.ts`): jogos sem mapa novo não pagam um byte; o teto atual fica intocado para essa variante e a variante completa ganha teto próprio, escrito e justificado.
+- Blocos novos, antigos intocados: criar cenário do meu desenho, desenhar fundo e frente, colidir, objetos por tipo e nome, propriedade de objeto, entrar em área, porta.
+
+## Incrementos, em ordem
+
+| # | Entrega | Arquivos principais |
+|---|---|---|
+| 1 | **Trava de formato, só leitura.** Constante e regra por tipo; `maxFormatVersion` nos clientes; os **três** caminhos que baixam e sanitizam (reconcile, `resolveStale`, `resolveStaleRemove`) ignoram item de formato futuro, no padrão do filtro do Molda; cartão bloqueado "atualize a página". Ainda envia 1 | novo `core/src/creations/pinta-format.ts`; `member-shell/src/lib/pinta-cloud-persistence.ts`; `components/creator/pinta-client.tsx`, `molda-client.tsx`; `components/pinta/lesson-pinta-draft.ts` |
+| 2 | **Declarar por tipo.** Envios de mapa e tileset passam a declarar a versão atual. Atualizar a nota M3 | os mesmos + `pinta/CLAUDE.md` |
+| 3 | Auxiliares de célula e estimador do histórico por buffer único. Sem mudança de comportamento | novo `pinta/src/tiles/cell.ts`; `core/history.ts`, `state/editorStore.ts` |
+| 4 | **Documento v3 e sanitizador, sem interface.** Tudo o que está em "Documento" acima, limites por adaptador, um só serializador de camada | `pinta/src/core/project.ts`, `projectConfig.ts`, `assets/wire.ts`, `export/projectJson.ts`, `assetJson.ts` |
+| 5 | Contrato `PintaScene` e conversor, com fixtures de referência | novo `core/src/studio/pinta-scene.ts`, `pinta/src/export/scene.ts` |
+| 6 | Renderizador com recorte e cache por bloco | `pinta/src/tiles/renderTilemap.ts`, novo `tiles/chunks.ts` |
+| 7 | Dividir `TilemapEditor.tsx` (1248 linhas) em controlador e módulos de ferramenta, sem mudar comportamento | `pinta/src/components/editor/*` |
+| 8 | **Ferramentas, um commit cada:** árvore de camadas (grupos, ordem, nome, cadeado, opacidade) → espelhar/girar → formas e papéis de objeto → propriedades tipadas → seleção múltipla, copiar/colar, alinhar/distribuir → objetos da biblioteca com miniatura real → terreno inteligente (pincel, borracha, balde, retângulo, linha, prévia, vizinhos, semente) → espalhar → conjuntos vinculados e soltos → peças animadas → níveis Começar / Criar mais / Avançado sobre o `allowTools` → teste com personagem dentro do Pinta → minimapa e indicador de orçamento | novos puros em `pinta/src/tiles/` (`terrain.ts`, `scatter.ts`, `objectGeometry.ts`, `sets.ts`); painéis e `core/copy.ts` |
+| 9 | **Python.** `PintaImageMapData` v2; `pinta.py` lê 1 e 2 (grupos, opacidade, deslocamento, espelho, animação, formas, mais de 8 camadas). PyDew Valley reunido num mapa só de 16 camadas como regressão | `pinta/src/export/portableImageData.ts`; `studio/src/runtime/python/pygame/py/pinta.py`; `scripts/python/test-pinta-module.py` |
+| 10 | **Assets do Estúdio.** `ProjectAsset.scene`, sanitizador, metadados da prévia, biblioteca pessoal (que hoje descarta `tilemapFront`) e sincronização | `studio/src/core/projectAssets.ts`, `preview/assetsBridge.ts`, `asset-library/personal.ts`, `personalSync.ts` |
+| 11 | **Fragmento `map-2d` e blocos novos** nos dois motores, variante de carga, dois tetos, lista de blocos permitidos, contadores do `docDrift` | `studio/src/official-extensions/map-2d/*`, `game-2d/*`, `game-2d-advanced/*` |
+| 12 | **"Jogar meu mapa" v2:** nasce no ponto de início, usa frente e objetos, guarda `libId` para o jogo atualizar quando o mapa muda, sem tocar na programação | `studio/src/projects/tilemapGame.ts`; `pinta-client.tsx` |
+| 13 | **Exportação e importação.** Tiled JSON e TMX/TSX (gids com flags, camadas, objetos, propriedades, terrenos, animações) com importação de mapas ortogonais e relatório do que não foi convertido; pacote Phaser com exemplo executável (Phaser embutido no zip); projeto Pygame portátil; Godot por último | novos `pinta/src/export/tiled/*`, `export/phaser/*`, `export/pygameProject.ts`; `components/export/ExportDialog.tsx` |
+| 14 | **Homologação "A Vila e a Floresta"** (16+ camadas, vários tilesets, terrenos, água, objetos com propriedades, porta entre dois mapas, peça animada, conjunto), os dez passos do ciclo, guias e relatórios | `pinta/scripts/homologacao/*`; `docs/pinta-cenarios/*` |
+
+## Reaproveitar, não reescrever
+
+- Atlas e geometria: `mapAtlasSelection` (`export/portableImageData.ts`), `tiles/packGeometry.ts`, `tiles/mapTilesets.ts`.
+- Camadas: `flattenLayers`, `usesMapTileset`, `tileLayersOf`, `remapTilemapTilesetIds` (`tiles/tilemapOps.ts`, `core/project.ts`).
+- Propriedades: estender `sanitizeObjectProperties`; fundir com o `filterProperties` duplicado.
+- Carimbo, seleção, construtores: `tiles/stamp.ts`, `tiles/mapSelection.ts`, `templates/builders.ts` (`buildTilemap`).
+- Zip e PNG: `export/zip.ts`, `export/pngText.ts`, `studio/src/export/pygameDesktop.ts`.
+- Estúdio: `createTileMap`, `collideTileMap`, `tileAt` (`game-2d/runtime/worldTiles.ts`); padrão de `scene-2d/*`.
+- Nuvem: `reconcileCreations` e o filtro de formato futuro do Molda (`molda-cloud-persistence.ts` ~L609).
+- Duplicações a fundir no caminho: os quatro serializadores de células, `pixelSheetCanvas`/`sheetCanvas`, `indicesOf`, e os tetos `STUDIO_MAX_*` × `MAX_*` (hoje sincronizados por comentário) movidos para `core/src/studio/`.
+
+## Limites que o plano assume, por regra do repositório
+
+- **Blocos publicados não mudam.** Fidelidade total só existe pelos blocos novos; projetos antigos seguem com a visão achatada.
+- **Cenas muito grandes não entram no Estúdio JS.** Teto por asset (cerca de 2 M caracteres de dados de camada) com recusa explícita na interface; o editor e os exportadores externos aceitam mais.
+- **Ordem de deploy:** Members e Admin embutem o sanitizador do Pinta e a lista de blocos, então vão antes; depois o leitor, depois o gravador. Depois do deploy de blocos, "Sincronizar base" no Admin.
+- **Envio de aula** não tem trava de formato: uma aba antiga ainda pode enviar mapa cortado numa lição. Mapas já são excluídos das opções de aula; registro como risco residual depois de conferir a rota.
+- **Proteção local** só vale contra clientes futuros; um bundle anterior no mesmo aparelho não pode ser barrado localmente (a nuvem barra).
+
+## Verificação
+
+- **Por incremento:** `bun test src`, `bun run typecheck` e `bun run check` em `packages/pinta`; `bun run test` e typecheck em `packages/studio`; suítes de `member-shell`, `community-kids` e `members` nos incrementos que os tocam. Testes de ida e volta com `structuredClone`, wire, envelope, redimensionar e o sanitizador de envios do Members.
+- **Frota mista:** rodar o sanitizador anterior (do histórico do git) contra documentos novos e provar que a nuvem recusa a regravação.
+- **Navegador:** Playwright no playground do Pinta (porta 5199) para cada ferramenta, em desktop, notebook e celular emulado, claro e escuro; e2e do Estúdio para o cenário rodando com camadas, colisão, frente e objetos.
+- **Motores externos:** Phaser carregando o pacote em Chromium sem janela; pygame-ce real rodando o projeto exportado e `test-pinta-module.py`; Godot só se um binário headless importar a cena.
+- **Tiled:** tentar obter o Tiled e usar a exportação por linha de comando para ida e volta. Se não for possível no ambiente, validar com três leitores independentes (carregador do Phaser, `pytmx`, nosso importador) e relatar como "validado por leitores, não aberto no Tiled".
+- **Não verificável aqui:** aparelhos físicos e desempenho em máquina fraca. Só emulação de toque e CPU reduzida, e o relatório dirá isso.
+- **Homologação:** os dez passos do ciclo de "A Vila e a Floresta", com evidências versionadas.
+
+## Entregáveis de documentação
+
+Em `docs/pinta-cenarios/`: diagnóstico e arquitetura, guia de uso, guia de exportação para desenvolvedores, relatório de compatibilidade com o Tiled, e a lista de recursos implementados, parciais e pendentes, separando teste local, navegador, motor externo e aparelho físico.

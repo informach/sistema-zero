@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Trava de formato na nuvem: o leitor (17/11/2026)
+
+Primeiro passo do conserto do risco M3 (cliente antigo regravando um mapa novo pela nuvem; ver a
+nota mais abaixo). Diagnóstico e plano: `docs/pinta-cenarios/README.md`.
+
+- A regra mora no core (`@sistemazero/core/creations`, `pinta-format.ts`):
+  `PINTA_MAX_READ_FORMAT_VERSION` (o que este código lê), `PINTA_MAP_WRITE_FORMAT_VERSION` (o que
+  mapas e peças declaram ao subir) e `pintaWriteFormatVersion(kind)`. A versão declarada é função
+  do TIPO do desenho, nunca do conteúdo.
+- ⚠️⚠️ **A escrita fica um passo atrás da leitura, de propósito.** O servidor nunca rebaixa a
+  versão de um item. Se o leitor e o gravador fossem ao ar juntos e houvesse rollback, todo mapa
+  ficaria recusado (409). Hoje a escrita ainda declara 1; ela só sobe depois de este leitor estar
+  em produção.
+- `PintaPersistence.getReadIssues?()` (`PintaReadIssue`): desenhos que o armazenamento conhece e
+  este código não lê. A galeria (`galleryStore.readIssues`) mostra o aviso
+  `COPY.gallery.newerFormat` com "Atualizar a página" e NÃO os põe na lista. O host preenche (ver o
+  CLAUDE.md do member-shell).
+- Testes: `state/gallerySync.test.ts`, `components/gallery/galleryNewerFormatUi.test.tsx`.
+
 ## Tela com MOLDE pedida pelo host (28/10/2026, o Arquipélago)
 
 `PintaHostAdapter.initialCanvas?: PintaInitialCanvas` (`{name, width, height, guide}`, retângulos

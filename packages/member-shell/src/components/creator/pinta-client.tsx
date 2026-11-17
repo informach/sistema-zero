@@ -1,5 +1,6 @@
 'use client'
 
+import { PINTA_MAX_READ_FORMAT_VERSION } from '@sistemazero/core/creations'
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -133,7 +134,12 @@ export function PintaClient({
         if (viewerId) {
           // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
           // trocou de perfil (irmão que entrou no meio de um upload em voo).
-          const nextCloud = createCreationsCloud({ tool: 'pinta', viewerId })
+          const nextCloud = createCreationsCloud({
+            tool: 'pinta',
+            // O teto do que este código lê: sem ele, apagar um desenho de formato novo era recusado.
+            maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
+            viewerId,
+          })
           // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
           // updater: efeito colateral em updater roda duas vezes no StrictMode).
           setCloud(nextCloud)

@@ -6,8 +6,8 @@
  * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import { bitmapBytes, createHistory } from '../core/history'
-import { isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
+import { bitmapBytes, createHistory, type SharedPart } from '../core/history'
+import { isObjectLayer, isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
 import type { VectorShape } from '../vector/model'
 
 /**
@@ -96,7 +96,7 @@ function mergeLinkedAssets(
 }
 
 /** Bytes aproximados de um asset (payload dominante = bitmaps). */
-export function assetBytes(asset: PintaAsset): number {
+export function assetBytes(asset: PintaAsset, countCells = true): number {
   const bitmaps: PintaBitmap[] = []
   switch (asset.kind) {
     case 'pixel-sprite':
@@ -119,11 +119,16 @@ export function assetBytes(asset: PintaAsset): number {
           sum +
           64 +
           (isTileLayer(layer)
-            ? layer.cells.byteLength
-            : layer.objects.reduce(
-                (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
-                0,
-              )),
+            ? // As células entram por `snapshotShared` (uma vez por buffer); aqui só o resto.
+              countCells
+              ? layer.cells.byteLength
+              : 0
+            : isObjectLayer(layer)
+              ? layer.objects.reduce(
+                  (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
+                  0,
+                )
+              : 0),
         128,
       )
     case 'vector-background':
@@ -145,9 +150,23 @@ export function assetBytes(asset: PintaAsset): number {
 
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
 function snapshotBytes(snapshot: EditorSnapshot): number {
-  let bytes = assetBytes(snapshot.asset)
-  if (snapshot.linkedMaps) for (const map of snapshot.linkedMaps) bytes += assetBytes(map)
+  let bytes = assetBytes(snapshot.asset, false)
+  if (snapshot.linkedMaps) for (const map of snapshot.linkedMaps) bytes += assetBytes(map, false)
   return bytes
+}
+
+/**
+ * As células das camadas de peças, pelo próprio buffer. As operações do mapa copiam só a camada
+ * que o gesto tocou, então os passos do histórico dividem todas as outras: contar cada buffer uma
+ * vez é o que a memória gasta de verdade.
+ */
+function* snapshotShared(snapshot: EditorSnapshot): Iterable<SharedPart> {
+  const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
+  for (const asset of maps) {
+    if (asset.kind !== 'tilemap') continue
+    for (const layer of asset.layers)
+      if (isTileLayer(layer)) yield { key: layer.cells, bytes: layer.cells.byteLength }
+  }
 }
 
 export function createEditorStore(options: {
@@ -159,7 +178,10 @@ export function createEditorStore(options: {
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
 }): PintaEditorStore {
-  const history = createHistory<EditorSnapshot>({ sizeOf: snapshotBytes })
+  const history = createHistory<EditorSnapshot>({
+    sizeOf: snapshotBytes,
+    sharedOf: snapshotShared,
+  })
   let timer: ReturnType<typeof setTimeout> | null = null
   let saving: Promise<PintaSaveResult> | null = null
   let dirty = false

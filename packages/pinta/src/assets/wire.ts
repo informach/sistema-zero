@@ -1,4 +1,12 @@
-import { isTileLayer, type PintaAsset, type PintaBitmap, sanitizePintaAsset } from '../core/project'
+import {
+  isTileLayer,
+  type PintaAsset,
+  type PintaBitmap,
+  sanitizePintaAsset,
+  type TilemapAsset,
+  type TilemapTileLayer,
+} from '../core/project'
+import { packCells } from '../tiles/cellCodec'
 
 /**
  * Representação JSON-safe usada nas bordas HTTP e no jsonb.
@@ -26,7 +34,7 @@ export function pintaAssetToWire(asset: PintaAsset): unknown {
         ...asset,
         // Camada de objetos já é JSON puro (números, textos, sim/não).
         layers: asset.layers.map((layer) =>
-          isTileLayer(layer) ? { ...layer, cells: Array.from(layer.cells) } : { ...layer },
+          isTileLayer(layer) ? tileLayerToWire(layer, asset) : { ...layer },
         ),
       }
     case 'vector-sprite':
@@ -34,6 +42,24 @@ export function pintaAssetToWire(asset: PintaAsset): unknown {
     case 'vector-tileset':
       return { ...asset }
   }
+}
+
+/** Mapas até este tamanho levam as células como lista de números, como sempre foi. */
+const PLAIN_CELLS_MAX_SIDE = 128
+
+/**
+ * Uma camada de peças pronta para virar JSON. É o ÚNICO lugar que decide como as células
+ * viajam: lista de números nos mapas de até 128 × 128 (o texto de um mapa que já existia não
+ * muda), compactadas (`cellsPacked`) nos maiores.
+ */
+export function tileLayerToWire(
+  layer: TilemapTileLayer,
+  map: Pick<TilemapAsset, 'cols' | 'rows'>,
+): Record<string, unknown> {
+  if (map.cols <= PLAIN_CELLS_MAX_SIDE && map.rows <= PLAIN_CELLS_MAX_SIDE)
+    return { ...layer, cells: Array.from(layer.cells) }
+  const { cells, ...rest } = layer
+  return { ...rest, cellsPacked: packCells(cells) }
 }
 
 /** Valida dados não confiáveis e devolve o asset canônico, com typed arrays restaurados. */

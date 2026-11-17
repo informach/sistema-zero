@@ -3,11 +3,13 @@
  * Mesmo contrato das ops de pixel: devolvem um asset novo (structural sharing)
  * ou o MESMO asset quando nada muda — o chamador commita por referência.
  */
+
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
   type AnyTilesetAsset,
   isCompatibleMapTileset,
+  isLayerShown,
   isObjectLayer,
   isTileLayer,
   PINTA_LIMITS,
@@ -18,6 +20,7 @@ import {
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
+import { cellTile } from './cell'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
@@ -122,6 +125,7 @@ export function growTilemap(
     if (isObjectLayer(layer)) {
       return tileSize ? shiftObjectLayer(layer, dCol * tileSize, dRow * tileSize) : layer
     }
+    if (!isTileLayer(layer)) return layer
     const cells = new Int16Array(cols * rows).fill(-1)
     for (let r = 0; r < tilemap.rows; r += 1) {
       for (let c = 0; c < tilemap.cols; c += 1) {
@@ -270,10 +274,10 @@ export function usesMapTileset(tilemap: TilemapAsset): TileLayerFilter {
 export function flattenLayers(tilemap: TilemapAsset, include?: TileLayerFilter): Int16Array {
   const out = new Int16Array(tilemap.cols * tilemap.rows).fill(-1)
   for (const layer of tilemap.layers) {
-    if (!isTileLayer(layer) || !layer.visible) continue
+    if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
     for (let i = 0; i < out.length; i += 1) {
-      const value = layer.cells[i] ?? -1
+      const value = cellTile(layer.cells[i] ?? -1)
       if (value >= 0) out[i] = value
     }
   }
@@ -312,12 +316,12 @@ export function flattenWithTilesets(
   const tiles = new Int16Array(tilemap.cols * tilemap.rows).fill(-1)
   const sources = new Uint8Array(tiles.length)
   for (const layer of tilemap.layers) {
-    if (!isTileLayer(layer) || !layer.visible) continue
+    if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
     const tilesetId = tileLayerTilesetId(tilemap, layer)
     const source = Math.max(0, tilesetIds.indexOf(tilesetId))
     for (let i = 0; i < tiles.length; i += 1) {
-      const value = layer.cells[i] ?? -1
+      const value = cellTile(layer.cells[i] ?? -1)
       if (value < 0) continue
       if (drawable && !drawable(tilesetId, value)) continue
       tiles[i] = value
@@ -358,9 +362,9 @@ export function topTileAt(
   const index = row * tilemap.cols + col
   let out: { layer: TilemapTileLayer; tile: number } | null = null
   for (const layer of tilemap.layers) {
-    if (!isTileLayer(layer) || !layer.visible) continue
+    if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
-    const value = layer.cells[index] ?? -1
+    const value = cellTile(layer.cells[index] ?? -1)
     if (value < 0) continue
     if (drawable && !drawable(tileLayerTilesetId(tilemap, layer), value)) continue
     out = { layer, tile: value }

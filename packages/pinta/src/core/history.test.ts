@@ -81,3 +81,76 @@ describe('orçamento com total corrente', () => {
     expect(history.canUndo()).toBe(false)
   })
 })
+
+describe('partes divididas entre os passos (as camadas que o gesto não tocou)', () => {
+  type Mapa = { camadas: Int16Array[] }
+  const historico = (byteBudget: number) =>
+    createHistory<Mapa>({
+      sizeOf: () => 10,
+      sharedOf: (m) => m.camadas.map((key) => ({ key, bytes: key.byteLength })),
+      byteBudget,
+    })
+  const camada = () => new Int16Array(500) // 1000 bytes
+
+  it('um buffer que vários passos seguram conta UMA vez: 16 camadas não custam 16 por pincelada', () => {
+    // Cada passo troca UMA das 16 camadas; as outras 15 são o mesmo objeto.
+    const base = Array.from({ length: 16 }, camada)
+    const history = historico(40_000)
+    let atual: Mapa = { camadas: base }
+    for (let passo = 0; passo < 20; passo += 1) {
+      history.record(atual)
+      const camadas = [...atual.camadas]
+      camadas[0] = camada()
+      atual = { camadas }
+    }
+    // 15 fixas + 20 versões da primeira = 35 buffers de 1000 bytes: cabem os 20 passos.
+    let desfeitos = 0
+    while (history.undo(atual) !== null) desfeitos += 1
+    expect(desfeitos).toBe(20)
+  })
+
+  it('sem dividir nada (cada passo com buffers próprios) o orçamento corta como antes', () => {
+    const history = historico(40_000)
+    for (let passo = 0; passo < 20; passo += 1)
+      history.record({ camadas: Array.from({ length: 16 }, camada) })
+    let desfeitos = 0
+    while (history.undo({ camadas: [] }) !== null) desfeitos += 1
+    expect(desfeitos).toBe(2)
+  })
+
+  it('o buffer deixa de contar quando o último passo que o segura sai (por corte ou por desfazer)', () => {
+    const fixa = camada()
+    const history = historico(3_100)
+    history.record({ camadas: [fixa, camada()] })
+    history.record({ camadas: [fixa, camada()] })
+    // Com o terceiro são 4 buffers únicos (4000) > 3100: o primeiro passo cai e leva o buffer
+    // que só ele segurava; ficam 3 buffers e 2 passos.
+    history.record({ camadas: [fixa, camada()] })
+    let desfeitos = 0
+    while (history.undo({ camadas: [] }) !== null) desfeitos += 1
+    expect(desfeitos).toBe(2)
+    // Vazio de novo: o que entra agora não herda bytes de quem saiu.
+    history.record({ camadas: [fixa, camada()] })
+    history.record({ camadas: [fixa] })
+    desfeitos = 0
+    while (history.undo({ camadas: [] }) !== null) desfeitos += 1
+    expect(desfeitos).toBe(2)
+  })
+
+  it('o mesmo buffer repetido dentro de um snapshot conta uma vez, e `clear` zera a conta', () => {
+    const b = camada()
+    const history = historico(1_500)
+    history.record({ camadas: [b, b, b] })
+    history.record({ camadas: [b] })
+    expect(history.undo({ camadas: [] })).not.toBeNull()
+    expect(history.undo({ camadas: [] })).not.toBeNull()
+    history.record({ camadas: [b] })
+    history.clear()
+    expect(history.canUndo()).toBe(false)
+    history.record({ camadas: [camada()] })
+    history.record({ camadas: [camada()] })
+    // 2000 > 1500: só um passo fica. Se `clear` deixasse resto, não ficaria nem a conta certa.
+    expect(history.undo({ camadas: [] })).not.toBeNull()
+    expect(history.undo({ camadas: [] })).toBeNull()
+  })
+})

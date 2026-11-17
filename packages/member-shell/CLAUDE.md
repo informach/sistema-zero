@@ -1,5 +1,25 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Pinta: item da conta em formato mais novo não é lido (17/11/2026)
+
+`lib/pinta-cloud-persistence.ts` baixava e passava pelo `sanitizePintaAsset` em TRÊS caminhos: a
+reconciliação, a base vencida na subida (`resolveStale`) e o DELETE recusado
+(`resolveStaleRemove`). O sanitizador reconstrói o registro e descarta o que não conhece, então
+um mapa de formato novo era gravado cortado no aparelho e depois subia por cima do inteiro.
+
+- Os três param em `noteUnreadable(summary)` (`pintaCanReadFormatVersion` do core) ANTES de ler o
+  conteúdo. O item não desce, não vira `-copia` e não é restaurado; a cópia local, se houver, não
+  sobe (o produtor devolve `null`); a marca não avança. Nenhum dos dois lados entra na
+  reconciliação por carimbo de tempo (o mesmo desenho do filtro do Molda).
+- `getReadIssues()` devolve esses itens e a galeria do Pinta avisa. O aviso é refeito a cada passe.
+- `createCreationsCloud({ tool: 'pinta', maxFormatVersion })` no `pinta-client`, no espelho de
+  paletas do `molda-client` e no canal `lesson-pinta`: sem o teto, apagar um desenho de formato
+  novo seria recusado. O rascunho da aula declara `pintaWriteFormatVersion(kind)` no lugar do 1 fixo.
+- A subida só põe `formatVersion` no corpo acima de 1: enquanto a escrita declara 1, o pedido é
+  byte a byte o de antes.
+- Testes: o bloco "formato mais novo que este código" de
+  `community-kids/tests/pinta-cloud-persistence.test.ts`.
+
 ## Importação do relevo no Molda Cenários (17/11/2026)
 
 `cenarios/:id/recursos/reservar` reutiliza assinatura condicional e cota. Um POST de lote com `recursos: {espacoId, digests}` primeiro autoriza o cenário, lê cada peça de 8.474 bytes, confere SHA/cabeçalho e só então encaminha a prova para `/members/internal/cenarios/lotes` por HMAC. A prova não vem do navegador. Lotes sem recursos mantêm a porta JWT existente. Erro ou falta de arquivo impede a confirmação; o Members confirma e grava atomicamente. DELETE de cenário ou mundo usa a mesma limpeza posterior de arquivos sem referências das bibliotecas. A DDL é `0157_tiresome_shen`.

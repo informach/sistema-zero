@@ -28,12 +28,21 @@
  *
  * ⚠️ Descidas gravadas por aqui NÃO passam pelo `persistAssets` embrulhado (senão
  * o que acabou de descer subiria de novo).
+ *
+ * ⚠️⚠️ Formato mais novo que este código (`pintaCanReadFormatVersion`): o item NÃO desce, não
+ * vira cópia e não é restaurado. Ler um desenho é passar pelo `sanitizePintaAsset`, que
+ * reconstrói o registro e descarta o que não conhece; gravar esse resultado no aparelho e depois
+ * subi-lo cortaria o desenho de verdade. São TRÊS os caminhos que baixam e leem (a reconciliação,
+ * a base vencida na subida e o DELETE recusado) e os três param antes de ler. O item entra em
+ * `getReadIssues` para a galeria pedir que a página seja atualizada.
  */
 
 import {
   PINTA_PALETTE_LIBRARY_ITEM_ID,
   PINTA_PALETTE_LIBRARY_KIND,
   PINTA_PALETTE_LIBRARY_TOOL,
+  pintaCanReadFormatVersion,
+  pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import {
@@ -58,6 +67,18 @@ export type PintaCloudPersistenceEvent =
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
 
+/**
+ * Um desenho guardado na conta num formato mais novo que o deste navegador. Ele fica intocado na
+ * nuvem; a galeria mostra o aviso e o botão de atualizar a página (espelho estrutural de
+ * `PintaReadIssue` do pacote).
+ */
+export interface PintaCloudReadIssue {
+  id: string
+  name: string
+  status: 'unsupported'
+  version: number
+}
+
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
 export interface PintaPersistenceLike {
   persistAsset(asset: PintaAsset): Promise<void>
@@ -71,6 +92,8 @@ export interface PintaPersistenceLike {
   savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
   /** Reconcilia apenas o item de paletas, sem baixar a galeria inteira. */
   syncPaletteLibrary?(): Promise<void>
+  /** Desenhos da conta que este código não sabe ler (ver `PintaCloudReadIssue`). */
+  getReadIssues?(): PintaCloudReadIssue[]
   /** Desliga o que o wrapper escuta por fora (abrir/fechar do editor). O host chama ao trocar. */
   dispose?(): void
 }
@@ -206,6 +229,12 @@ export function createCloudMirroredPintaPersistence(options: {
           sendingAt.delete(asset.id)
           return null
         }
+        // A conta guarda este desenho num formato que este código não lê: a cópia daqui é mais
+        // velha por definição e não sobe por cima.
+        if (readIssues.has(asset.id)) {
+          sendingAt.delete(asset.id)
+          return null
+        }
         return {
           json: assetToJson(current),
           meta: {
@@ -214,6 +243,11 @@ export function createCloudMirroredPintaPersistence(options: {
             updatedAt: current.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
             baseRevision: marks.revision(asset.id) ?? 0,
+            // Por TIPO, nunca pelo conteúdo (ver `pinta-format.ts` no core). Versão 1 não vai no
+            // corpo: é o padrão do servidor, e o pedido fica igual ao de antes.
+            ...(pintaWriteFormatVersion(current.kind) > 1
+              ? { formatVersion: pintaWriteFormatVersion(current.kind) }
+              : {}),
           },
         }
       },
@@ -249,6 +283,9 @@ export function createCloudMirroredPintaPersistence(options: {
    */
   async function resolveStale(id: string): Promise<void> {
     const downloaded = await cloud.download(id)
+    // Outro aparelho subiu este desenho num formato que este código não lê. Não vira cópia (a
+    // cópia seria o desenho cortado) e não sobe de novo: a nuvem recusaria, e é o certo.
+    if (downloaded && noteUnreadable(downloaded.summary)) return
     if (downloaded) {
       const parsed = assetFromJson(downloaded.json)
       const remote = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
@@ -320,6 +357,9 @@ export function createCloudMirroredPintaPersistence(options: {
       marks.setTombstone(id, { ...tombstone, sent: true })
       return
     }
+    // Editado em outro aparelho num formato mais novo: restaurar aqui gravaria o desenho cortado.
+    // A lápide fica; a exclusão não vence a edição e o desenho segue inteiro na conta.
+    if (noteUnreadable(downloaded.summary)) return
     // ABERTO no editor agora? Não grava por baixo: o editor segura a versão antiga em memória e
     // o próximo autosave sobrescreveria o restauro. A lápide fica como está e a próxima
     // reconciliação, já com o desenho fechado, decide de novo.
@@ -461,6 +501,22 @@ export function createCloudMirroredPintaPersistence(options: {
     )
   }
 
+  /** Desenhos da conta em formato mais novo que este código, por id. */
+  const readIssues = new Map<string, PintaCloudReadIssue>()
+  /** Anota o item se ele não pode ser lido aqui. Verdadeiro = pare, não leia o conteúdo. */
+  function noteUnreadable(summary: CloudCreationSummary): boolean {
+    if (summary.deletedAt || pintaCanReadFormatVersion(summary.formatVersion)) return false
+    const known = readIssues.get(summary.itemId)
+    readIssues.set(summary.itemId, {
+      id: summary.itemId,
+      name: summary.name.slice(0, MAX_NAME),
+      status: 'unsupported',
+      version: summary.formatVersion ?? 1,
+    })
+    if (!known) emitChangedSoon()
+    return true
+  }
+
   let reconcileInFlight: Promise<PintaAsset[]> | null = null
   /** Quando a última reconciliação terminou (`-Infinity` = nunca). */
   let lastReconcileEndedAt = Number.NEGATIVE_INFINITY
@@ -537,11 +593,19 @@ export function createCloudMirroredPintaPersistence(options: {
       ? remote.filter((s) => s.itemId !== PALETTE_LIBRARY_ITEM_ID)
       : remote
     await reconcilePaletteSummary(paletteSummary)
+    // Refeito a cada passe: um item que saiu da nuvem (ou uma página já atualizada) limpa o aviso.
+    const before = readIssues.size
+    readIssues.clear()
+    for (const summary of assetSummaries) noteUnreadable(summary)
+    if (before !== readIssues.size) emitChangedSoon()
     const takenNames = new Set(localAssets.map((a) => a.name))
     const nameOwner = new Map(localAssets.map((a) => [a.name, a.id]))
     const report = await reconcileCreations<PintaAsset, PintaAsset>({
-      local: localAssets,
-      cloud: assetSummaries,
+      // Nenhum dos dois lados de um item ilegível entra na reconciliação por carimbo de tempo:
+      // carimbos iguais não podem dar por sincronizado um desenho que este código não lê, e a
+      // cópia local (se houver) não pode subir por cima dele.
+      local: localAssets.filter((asset) => !readIssues.has(asset.id)),
+      cloud: assetSummaries.filter((summary) => !readIssues.has(summary.itemId)),
       marks,
       now,
       budgetMs,
@@ -690,6 +754,7 @@ export function createCloudMirroredPintaPersistence(options: {
         listeners.delete(listener)
       }
     },
+    getReadIssues: () => [...readIssues.values()],
     async syncPaletteLibrary() {
       if (!cloud.supported) return
       const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)

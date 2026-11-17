@@ -8,6 +8,7 @@
  * Genéricas sobre o ESTILO do tileset (`AnyTilesetAsset`): pixel cria bitmap
  * vazio e clona bytes, vetor cria lista vazia e clona shapes com ids novos.
  */
+
 import { newId } from '../core/id'
 import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
 import {
@@ -18,6 +19,7 @@ import {
   tileLayerTilesetId,
 } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
+import { cellTile, withCellTile } from './cell'
 
 type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
 
@@ -138,9 +140,11 @@ export function remapTilemapCells(
     const cells = new Int16Array(layer.cells.length)
     let layerTouched = false
     for (let i = 0; i < layer.cells.length; i += 1) {
-      const next = remapOne(layer.cells[i] ?? -1)
+      // A peça muda de índice; o jeito como ela está virada na célula fica.
+      const before = layer.cells[i] ?? -1
+      const next = withCellTile(before, remapOne(cellTile(before)))
       cells[i] = next
-      if (next !== (layer.cells[i] ?? -1)) layerTouched = true
+      if (next !== before) layerTouched = true
     }
     if (!layerTouched) return layer
     touched = true

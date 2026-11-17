@@ -1,5 +1,6 @@
 'use client'
 
+import { PINTA_MAX_READ_FORMAT_VERSION } from '@sistemazero/core/creations'
 // O CSS do Molda (tokens + @theme que GERA as utilitárias mld-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -171,7 +172,13 @@ export function MoldaClient({
       // A lista "Minhas paletas" pertence ao perfil do Pinta. O Molda usa a MESMA store
       // e o mesmo espelho de nuvem, inclusive quando o Pinta não está montado nesta rota.
       const pintaLocal = p.createPintaPersistence({ namespace: localNamespace })
-      const pintaCloud = viewerId ? createCreationsCloud({ tool: 'pinta', viewerId }) : null
+      const pintaCloud = viewerId
+        ? createCreationsCloud({
+            tool: 'pinta',
+            maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
+            viewerId,
+          })
+        : null
       const mirroredPinta = pintaCloud
         ? createCloudMirroredPintaPersistence({
             local: pintaLocal,
