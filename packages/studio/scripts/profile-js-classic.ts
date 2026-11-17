@@ -29,7 +29,10 @@ const FAROL = resolve(
   import.meta.dir,
   '../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/projeto-final.szproject.json',
 )
-const ALVOS = [0, 500, 2000, 5000, 10000]
+// `SZ_PROFILE_BLOCKS=5000` mede um tamanho só (para tirar um perfil de CPU: `bun --cpu-prof`).
+const ALVOS = process.env.SZ_PROFILE_BLOCKS
+  ? [Number(process.env.SZ_PROFILE_BLOCKS)]
+  : [0, 500, 2000, 5000, 10000]
 const REPETICOES = 7
 
 interface Bloco {

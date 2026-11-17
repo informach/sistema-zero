@@ -259,7 +259,11 @@ function addName(target: Set<string>, value: unknown): void {
 function cloneOwnedNames(
   source: ReadonlyMap<string, ReadonlySet<string>>,
 ): Map<string, Set<string>> {
-  return new Map([...source].map(([owner, names]) => [owner, new Set(names)]))
+  // Laços diretos nas três cópias abaixo: são chamadas uma vez por corpo de bloco, e as listas
+  // intermediárias (`map` + `fromEntries`) pesavam no perfil de 17/11/2026.
+  const copy = new Map<string, Set<string>>()
+  for (const [owner, names] of source) copy.set(owner, new Set(names))
+  return copy
 }
 
 function mergeOwnedNames(
@@ -299,9 +303,9 @@ function emptyGame3DSymbols(): Record<Game3DSymbolKind, Set<string>> {
 function cloneGame3DSymbols(
   symbols: Readonly<Record<Game3DSymbolKind, ReadonlySet<string>>>,
 ): Record<Game3DSymbolKind, Set<string>> {
-  return Object.fromEntries(
-    GAME3D_SYMBOL_KINDS.map((kind) => [kind, new Set(symbols[kind])]),
-  ) as Record<Game3DSymbolKind, Set<string>>
+  const copy = {} as Record<Game3DSymbolKind, Set<string>>
+  for (const kind of GAME3D_SYMBOL_KINDS) copy[kind] = new Set(symbols[kind])
+  return copy
 }
 
 const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
@@ -335,9 +339,9 @@ function emptyCanvas3DSymbols(): Record<Canvas3DSymbolKind, Set<string>> {
 function cloneCanvas3DSymbols(
   symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlySet<string>>>,
 ): Record<Canvas3DSymbolKind, Set<string>> {
-  return Object.fromEntries(
-    CANVAS3D_SYMBOL_KINDS.map((kind) => [kind, new Set(symbols[kind])]),
-  ) as Record<Canvas3DSymbolKind, Set<string>>
+  const copy = {} as Record<Canvas3DSymbolKind, Set<string>>
+  for (const kind of CANVAS3D_SYMBOL_KINDS) copy[kind] = new Set(symbols[kind])
+  return copy
 }
 
 function addCanvas3DSymbols(
@@ -1325,6 +1329,31 @@ export function createCanvas3DStatementContextIndex(
   const initialSymbols = createInitialProgrammingSymbols()
   indexCanvas3DStatements(statements, initialSymbols, initialSymbols, initialSymbols, index)
   return index
+}
+
+/**
+ * O índice de `createCanvas3DStatementContextIndex` só diz algo quando o programa importa classes
+ * do three (`import { X } from 'three'` ou `three/addons/…`): é a única coisa que enche
+ * `importedClasses`, e é só isso que o validador do schema lê dele. Sem esse import, todo
+ * statement teria um conjunto vazio, que é o mesmo que não ter entrada. Montar o índice custava
+ * três cópias da tabela de símbolos por corpo de bloco: 36% do tempo dos diagnósticos num jogo 2D
+ * de 5 mil blocos (perfil de 17/11/2026).
+ */
+export function programImportsThreeClasses(statements: JSStatement[]): boolean {
+  const pending: JSStatement[][] = [statements]
+  while (pending.length > 0) {
+    const list = pending.pop()
+    if (!list) continue
+    for (const statement of list) {
+      if (
+        statement.type === 'importNamed' &&
+        (statement.module === 'three' || statement.module.startsWith('three/addons/'))
+      )
+        return true
+      for (const child of programmingChildBodyEntries(statement)) pending.push(child.body)
+    }
+  }
+  return false
 }
 
 export function validateProgrammingReferences(

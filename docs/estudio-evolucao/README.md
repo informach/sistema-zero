@@ -40,7 +40,8 @@ isolamento pode acrescentar bytes a ele.
 | B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
 | B4 | Estudo do Jogo 2D em Worker | pendente |
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
-| C1 a C5 | Clássico em escala | pendente; a ordem mudou com a medição (diagnósticos e geração primeiro) |
+| C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
+| C3, C5 | Diagnósticos mais fundos; perfil no navegador e montagem sob demanda | pendente |
 | D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente |
 
 ## A1: o que existe e como rodar

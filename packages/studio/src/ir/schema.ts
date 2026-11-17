@@ -120,6 +120,7 @@ import {
   type Canvas3DStatementContextIndex,
   validateProgrammingReferences as collectProgrammingReferenceIssues,
   createCanvas3DStatementContextIndex,
+  programImportsThreeClasses,
 } from './programmingReferences'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
@@ -11606,7 +11607,15 @@ export const SZIRSchema = z
   })
 
   .superRefine((ir, ctx) => {
-    validateLegacyLifecycle(ir.js, ctx, ['js'], createCanvas3DStatementContextIndex(ir.js))
+    validateLegacyLifecycle(
+      ir.js,
+      ctx,
+      ['js'],
+      // Sem import de classes do three, o índice sairia vazio em todo statement: nem monta.
+      programImportsThreeClasses(ir.js)
+        ? createCanvas3DStatementContextIndex(ir.js)
+        : new WeakMap(),
+    )
     for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'], {
       canvasIds: collectCanvasIds(ir.html),
       // Pincel entregue por runtime instalado (`ctx` do Jogo 2D) conta como
