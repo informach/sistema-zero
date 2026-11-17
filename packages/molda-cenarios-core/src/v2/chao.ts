@@ -5,11 +5,12 @@ import type {
   InstanciaDeCenario,
   Transformacao,
 } from './documento'
+import { volumeDaReferencia } from './fontes'
 import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { destransformarPonto, transformarPonto, transformarVolume } from './volume'
 
 type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
-  Partial<Pick<DocumentoDeCenario, 'modelos' | 'instancias'>>
+  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias'>>
 type ObjetoComModelo = Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> &
   Partial<Pick<InstanciaDeCenario, 'modelo'>>
 
@@ -19,7 +20,7 @@ function elevacaoDoVolume(doc: BaseComModelos, o: ObjetoComModelo): number {
     !(o.apoio.tipo === 'objeto' && o.apoio.contato)
   )
     return 0
-  const volume = doc.modelos?.find((m) => m.id === o.modelo)?.volume
+  const volume = volumeDaReferencia(doc, o.modelo)
   if (!volume) return 0
   return -transformarVolume(volume, { ...o.transformacao, posicao: { x: 0, y: 0, z: 0 } }).min.y
 }
@@ -82,7 +83,7 @@ function refletirContato(
   suporte: InstanciaDeCenario,
   ponto: { x: number; y: number; z: number },
 ) {
-  const volume = doc.modelos?.find((m) => m.id === suporte.modelo)?.volume
+  const volume = volumeDaReferencia(doc, suporte.modelo)
   if (suporte.espelho && Object.values(suporte.espelho).some(Boolean) && !volume)
     throw new CenarioInvalido(['Confira as medidas da superfície espelhada'])
   const q = { ...ponto }

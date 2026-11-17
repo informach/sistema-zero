@@ -57,7 +57,7 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** caixa, rampa, escada e cilindro são dados validados e determinísticos, sem fingir que são arquivos GLB de uma biblioteca. Cor e textura são ajustes explícitos do objeto, usando texturas já guardadas no espaço.
 
-- [ ] Acrescentar as quatro formas, com dimensões e resolução limitadas, medidas de volume e geração comum para renderer e compilação futura.
+- [x] Acrescentar as quatro formas, com dimensões e resolução limitadas, medidas de volume e geração comum para renderer e compilação futura. Tabela autoral `formas`, diálogo Blocos, malhas fechadas e recursos compartilhados; [revisão e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-formas.md). Cor/textura e a parte 3.3 permanecem abertos.
 - [ ] Acrescentar cor e textura por objeto, com repetição física; compartilhar geometrias e materiais equivalentes e liberar variantes retiradas.
 - [ ] Proteger novas referências no armazenamento, nas cópias e no histórico, incluindo limites e licenças.
 - [ ] Conferir renderização, normais, seleção, descarte e orçamento; nenhuma forma de referência pode virar um falso modelo licenciado.

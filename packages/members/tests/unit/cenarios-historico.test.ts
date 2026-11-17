@@ -18,6 +18,66 @@ async function criar() {
   const cenario = await servico.criarCenario(ator, mundo.id, 'Inicial')
   return { repo, servico, id: cenario.id }
 }
+test('formas autorais persistem, duplicam e desfazem sem biblioteca ou arquivos GLB fictícios', async () => {
+  const { repo, servico, id } = await criar()
+  const forma = {
+    id: 'forma/rampa',
+    nome: 'Rampa',
+    tipo: 'rampa',
+    largura: 2,
+    altura: 3,
+    comprimento: 6,
+  } as const
+  await servico.editarCenario(ator, id, {
+    revisaoEsperada: 0,
+    operacaoId: 'forma-criar-0001',
+    comandos: [
+      { tipo: 'forma.definir', forma },
+      {
+        tipo: 'instancia.criar',
+        instancia: {
+          id: 'rampa',
+          nome: 'Rampa',
+          modelo: forma.id,
+          grupo: null,
+          bloqueado: false,
+          oculto: false,
+          colisao: 'malha',
+          apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
+          transformacao: {
+            posicao: { x: 0, y: 0, z: 0 },
+            rotacao: { x: 0, y: 0, z: 0 },
+            escala: { x: 1, y: 1, z: 1 },
+          },
+        },
+      },
+    ],
+  })
+  const reaberto = new CenariosService(repo, agora, { modo: 'equipe', lista: new Set() })
+  const original = await reaberto.abrirCenario(ator, id)
+  expect(original.documento.modelos).toHaveLength(0)
+  expect(original.documento.formas).toEqual([forma])
+  const copia = await reaberto.duplicarCenario(ator, id)
+  expect((await reaberto.abrirCenario(ator, copia.id)).documento.formas).toEqual([forma])
+  expect(
+    (
+      await reaberto.moverHistorico(ator, id, {
+        acao: 'desfazer',
+        revisaoEsperada: 1,
+        operacaoId: 'forma-desfazer-1',
+      })
+    ).documento.formas,
+  ).toBeUndefined()
+  expect(
+    (
+      await reaberto.moverHistorico(ator, id, {
+        acao: 'refazer',
+        revisaoEsperada: 2,
+        operacaoId: 'forma-refazer-1',
+      })
+    ).documento.formas,
+  ).toEqual([forma])
+})
 test('desfazer e refazer usam o registro persistido e sobrevivem a outra instância do serviço', async () => {
   const { repo, servico, id } = await criar()
   await servico.editarCenario(ator, id, {

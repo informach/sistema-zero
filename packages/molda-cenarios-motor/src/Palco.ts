@@ -8,6 +8,7 @@ import {
   EncaixeDeComposicaoSchema,
   type InstanciaDeCenario,
   type ModeloDoCenario,
+  volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   BackSide,
@@ -41,6 +42,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
 import {
@@ -110,6 +112,8 @@ void main() {
 
 class PalcoThree implements Palco {
   volumeDoModelo(id: string) {
+    const forma = this.documento?.formas?.find((f) => f.id === id)
+    if (forma) return volumeDaForma(forma)
     const digest = this.documento?.modelos.find((m) => m.id === id)?.digest
     const estado = digest ? this.modelos.get(digest) : undefined
     if (estado?.estado !== 'pronto') return null
@@ -610,6 +614,20 @@ class PalcoThree implements Palco {
       vivos.add(modelo.digest)
       if (!this.modelos.has(modelo.digest)) this.carregar(modelo)
     }
+    const usadas = new Set(doc.instancias.map((o) => o.modelo))
+    for (const f of doc.formas ?? []) {
+      if (!usadas.has(f.id)) continue
+      const chave = chaveDaForma(f)
+      vivos.add(chave)
+      if (!this.modelos.has(chave)) {
+        const modelo = criarModeloDaForma(f)
+        this.modelos.set(chave, {
+          estado: 'pronto',
+          modelo,
+          representacoes: new RepresentacoesDoModelo(this.objetos, modelo),
+        })
+      }
+    }
     for (const [digest, estado] of this.modelos) {
       if (vivos.has(digest)) continue
       if (estado.estado === 'pronto') {
@@ -672,7 +690,10 @@ class PalcoThree implements Palco {
       return
     }
     const escondidos = idsEscondidos(doc)
-    const tabela = new Map(doc.modelos.map((m) => [m.id, m.digest]))
+    const tabela = new Map([
+      ...doc.modelos.map((m) => [m.id, m.digest] as const),
+      ...(doc.formas?.map((f) => [f.id, chaveDaForma(f)] as const) ?? []),
+    ])
     const porLote = new Map<LoteDoModelo, ItemDoLote[]>()
     const vistos = new Set<string>()
     this.trancados.clear()

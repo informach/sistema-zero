@@ -3,6 +3,7 @@ import {
   type ComandoDeCenario,
   type DocumentoDeCenario,
   type FonteDeAlturas,
+  type FormaDeCenario,
   type InstanciaDeCenario,
   type ModeloDoCenario,
   posicaoNoMundo,
@@ -33,7 +34,8 @@ export function comMedidasConferidas(
   }
   const modelos = new Set(doc.instancias.filter((o) => ids.has(o.id)).map((o) => o.modelo))
   for (const id of modelos) {
-    const m = doc.modelos.find((m) => m.id === id)!
+    const m = doc.modelos.find((m) => m.id === id)
+    if (!m) continue // Formas de rascunho têm medidas determinísticas, sem arquivo da biblioteca.
     const volume = m.volume ?? medir?.(id)
     if (!m.volume && volume) {
       m.volume = volume
@@ -91,6 +93,60 @@ function nomeLivre(doc: DocumentoDeCenario, base: string, extras: readonly strin
   return limpo
 }
 
+function instanciaNoLugar(
+  doc: DocumentoDeCenario,
+  modelo: string,
+  nome: string,
+  minY: number,
+  ponto: LocalDeColocacao,
+  id: string,
+  colisao: InstanciaDeCenario['colisao'],
+): InstanciaDeCenario {
+  return {
+    id,
+    nome: nomeLivre(doc, nome),
+    grupo: null,
+    bloqueado: false,
+    oculto: false,
+    modelo,
+    transformacao: {
+      posicao: {
+        x: ponto.x,
+        y: ponto.apoio?.tipo === 'absoluto' ? (ponto.y ?? 0) - minY : 0,
+        z: ponto.z,
+      },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    },
+    apoio: ponto.apoio ?? {
+      tipo: 'terreno',
+      deslocamento: 0,
+      inclinar: false,
+      referencia: 'volume',
+    },
+    colisao,
+  }
+}
+
+export function comandosParaForma(
+  doc: DocumentoDeCenario,
+  forma: FormaDeCenario,
+  ponto: LocalDeColocacao,
+  novoId: NovoId = novoIdAleatorio,
+): { comandos: ComandoDeCenario[]; id: string } {
+  const id = novoId()
+  return {
+    id,
+    comandos: [
+      { tipo: 'forma.definir', forma },
+      {
+        tipo: 'instancia.criar',
+        instancia: instanciaNoLugar(doc, forma.id, forma.nome, 0, ponto, id, 'malha'),
+      },
+    ],
+  }
+}
+
 /** Põe no cenário uma cópia de um modelo da biblioteca, pisando no chão. */
 export function comandosParaPor(
   doc: DocumentoDeCenario,
@@ -102,31 +158,7 @@ export function comandosParaPor(
   const id = novoId()
   comandos.push({
     tipo: 'instancia.criar',
-    instancia: {
-      id,
-      nome: nomeLivre(doc, modelo.nome),
-      grupo: null,
-      bloqueado: false,
-      oculto: false,
-      modelo: referencia,
-      transformacao: {
-        posicao: {
-          x: ponto.x,
-          y: ponto.apoio?.tipo === 'absoluto' ? (ponto.y ?? 0) - modelo.min[1] : 0,
-          z: ponto.z,
-        },
-        rotacao: { x: 0, y: 0, z: 0 },
-        escala: { x: 1, y: 1, z: 1 },
-      },
-      // Pés no chão: quem tem o pivô no meio sobe a metade da altura que fica abaixo dele.
-      apoio: ponto.apoio ?? {
-        tipo: 'terreno',
-        deslocamento: 0,
-        inclinar: false,
-        referencia: 'volume',
-      },
-      colisao: 'caixa',
-    },
+    instancia: instanciaNoLugar(doc, referencia, modelo.nome, modelo.min[1], ponto, id, 'caixa'),
   })
   return { comandos, id }
 }

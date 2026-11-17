@@ -9,6 +9,7 @@ import {
   ModeloDoCenarioSchema,
   type Transformacao,
 } from './documento'
+import { volumeDaReferencia } from './fontes'
 import { girarNaVertical } from './rotacao'
 import type { FonteDeAlturas } from './terreno'
 import { transformarVolume, type VolumeDeComposicao } from './volume'
@@ -53,7 +54,7 @@ export function referenciarModelo(
       ),
   )
   if (igual) return { id: igual.id, comandos: [] }
-  const usados = new Set(doc.modelos.map((m) => m.id))
+  const usados = new Set([...doc.modelos.map((m) => m.id), ...(doc.formas?.map((f) => f.id) ?? [])])
   let id = modelo.id
   const base = `${modelo.id.slice(0, 165)}/${modelo.digest}`
   for (let n = 0; usados.has(id); n++) {
@@ -137,7 +138,7 @@ export function volumeNoMundo(
   o: InstanciaDeCenario,
   fonte?: FonteDeAlturas,
 ): VolumeDeComposicao {
-  const volume = doc.modelos.find((m) => m.id === o.modelo)?.volume
+  const volume = volumeDaReferencia(doc, o.modelo)
   if (!volume)
     throw new CenarioInvalido([`Traga novamente o modelo para conferir suas medidas: ${o.nome}`])
   return transformarVolume(volume, { ...o.transformacao, posicao: posicaoNoMundo(doc, o, fonte) })

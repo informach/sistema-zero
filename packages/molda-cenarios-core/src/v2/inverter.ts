@@ -69,6 +69,11 @@ export function inverterLote(
     subir(e.grupo, gruposAntes)
     subir(e.grupo, gruposDepois)
   }
+  const formasDepois = new Map(depois.formas?.map((f) => [f.id, f]))
+  const formasARestaurar = (antes.formas ?? []).filter((f) => !igual(f, formasDepois.get(f.id)))
+  const fontesAlteradas = new Set(formasARestaurar.map((f) => f.id))
+  for (const o of [...antes.instancias, ...depois.instancias])
+    if (fontesAlteradas.has(o.modelo)) marcar(o)
   for (const m of mudancas) {
     for (const e of m.restaurar) {
       marcar(e)
@@ -99,9 +104,16 @@ export function inverterLote(
   }
 
   // 5. Devolve os modelos antes de quem os usa.
+  const destrancadosPorForma = new Set<string>()
+  for (const o of depois.instancias)
+    if (o.bloqueado && fontesAlteradas.has(o.modelo)) {
+      comandos.push({ tipo: 'instancia.atualizar', id: o.id, alteracoes: { bloqueado: false } })
+      destrancadosPorForma.add(o.id)
+    }
   const modelosDepois = new Map(depois.modelos.map((m) => [m.id, m]))
   for (const m of antes.modelos)
     if (!igual(m, modelosDepois.get(m.id))) comandos.push({ tipo: 'modelo.definir', modelo: m })
+  for (const f of formasARestaurar) comandos.push({ tipo: 'forma.definir', forma: f })
 
   // 6. Devolve e apaga as entidades.
   for (const m of mudancas) {
@@ -127,6 +139,16 @@ export function inverterLote(
   const modelosAntes = new Set(antes.modelos.map((m) => m.id))
   for (const m of depois.modelos)
     if (!modelosAntes.has(m.id)) comandos.push({ tipo: 'modelo.remover', id: m.id })
+  const formasAntes = new Set(antes.formas?.map((f) => f.id))
+  for (const f of depois.formas ?? [])
+    if (!formasAntes.has(f.id)) comandos.push({ tipo: 'forma.remover', id: f.id })
+
+  const instanciasRestauradas = new Set(
+    mudancas.find((m) => m.tipo === 'instancia')?.restaurar.map((o) => o.id),
+  )
+  for (const o of antes.instancias)
+    if (o.bloqueado && destrancadosPorForma.has(o.id) && !instanciasRestauradas.has(o.id))
+      comandos.push({ tipo: 'instancia.atualizar', id: o.id, alteracoes: { bloqueado: true } })
 
   // 8. Fecha de novo os cadeados de grupo, dos filhos para os pais.
   for (const g of antes.grupos

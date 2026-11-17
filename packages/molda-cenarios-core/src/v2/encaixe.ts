@@ -4,6 +4,7 @@ import { CenarioInvalido } from '../validacao'
 import { posicaoNoMundo } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import type { DocumentoDeCenario } from './documento'
+import { volumeDaReferencia } from './fontes'
 import { girarNaVertical } from './rotacao'
 import type { FonteDeAlturas } from './terreno'
 import { transformarVolume } from './volume'
@@ -68,7 +69,7 @@ export function levarObjetosAoAndar(
     throw new CenarioInvalido(['Altura de andar inválida'])
   return ids.map((id) => {
     const o = doc.instancias.find((o) => o.id === id)
-    const volume = doc.modelos.find((m) => m.id === o?.modelo)?.volume
+    const volume = volumeDaReferencia(doc, o?.modelo)
     if (!o || !volume)
       throw new CenarioInvalido(['Confira as medidas das peças antes de mudar de andar'])
     const t = { ...o.transformacao, posicao: { ...posicaoNoMundo(doc, o, fonte), y: 0 } }

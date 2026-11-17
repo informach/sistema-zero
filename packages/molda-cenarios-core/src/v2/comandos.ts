@@ -14,6 +14,7 @@ import {
   MarcadorSchema,
   ModeloDoCenarioSchema,
 } from './documento'
+import { FormaDeCenarioSchema } from './formas'
 import { type OpcoesDeValidacao, validarDocumento } from './validacao'
 
 const id = z.string().min(1).max(240)
@@ -24,6 +25,8 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('cenario.restaurar'), documento: DocumentoDeCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
+  z.object({ tipo: z.literal('forma.definir'), forma: FormaDeCenarioSchema }).strict(),
+  z.object({ tipo: z.literal('forma.remover'), id }).strict(),
   z.object({ tipo: z.literal('instancia.criar'), instancia: InstanciaSchema }).strict(),
   z
     .object({
@@ -140,6 +143,17 @@ export function executarLote(
         existente(d.modelos, c.id)
         if (modeloEmUso(d, c.id)) throw new CenarioInvalido([`Modelo em uso: ${c.id}`])
         d.modelos = d.modelos.filter((m) => m.id !== c.id)
+        break
+      case 'forma.definir':
+        for (const o of d.instancias) if (o.modelo === c.forma.id) exigeLivre(d, o)
+        d.formas ??= []
+        definir(d.formas, c.forma)
+        break
+      case 'forma.remover':
+        existente(d.formas ?? [], c.id)
+        if (modeloEmUso(d, c.id)) throw new CenarioInvalido([`Forma em uso: ${c.id}`])
+        d.formas = d.formas?.filter((f) => f.id !== c.id)
+        if (!d.formas?.length) delete d.formas
         break
       case 'instancia.criar':
         if (d.instancias.some((o) => o.id === c.instancia.id))

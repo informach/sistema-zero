@@ -5,6 +5,7 @@ import {
   LIMITES_CENARIO_V2,
   type ModeloDoCenario,
 } from './documento'
+import { volumeDaReferencia } from './fontes'
 
 export interface OpcoesDeValidacao {
   /** Confere se o modelo fixado existe no acervo de quem valida (o servidor, em geral). */
@@ -33,6 +34,11 @@ export function validarDocumento(
     modelos.add(m.id)
     if (opcoes.modeloExiste && !opcoes.modeloExiste(m)) erros.push(`Modelo ausente: ${m.id}`)
   }
+  const fontes = new Set(modelos)
+  for (const f of d.formas ?? []) {
+    if (fontes.has(f.id)) erros.push(`Definição de forma duplicada: ${f.id}`)
+    fontes.add(f.id)
+  }
 
   const entidades = [...d.grupos, ...d.instancias, ...d.caminhos, ...d.aguas, ...d.marcadores]
   for (const e of entidades) {
@@ -56,12 +62,8 @@ export function validarDocumento(
   }
 
   for (const o of d.instancias) {
-    if (!modelos.has(o.modelo)) erros.push(`Modelo fora da tabela do cenário: ${o.id}`)
-    if (
-      o.apoio.tipo === 'objeto' &&
-      o.apoio.contato &&
-      !d.modelos.find((m) => m.id === o.modelo)?.volume
-    )
+    if (!fontes.has(o.modelo)) erros.push(`Modelo fora da tabela do cenário: ${o.id}`)
+    if (o.apoio.tipo === 'objeto' && o.apoio.contato && !volumeDaReferencia(d, o.modelo))
       erros.push(`O encaixe em superfície exige medidas do modelo: ${o.id}`)
     if (o.apoio.tipo === 'agua' && !aguas.has(o.apoio.agua))
       erros.push(`Água de apoio ausente: ${o.id}`)

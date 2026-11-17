@@ -8,6 +8,7 @@ import {
   comandosDoGesto,
   comandosParaApagar,
   comandosParaDuplicar,
+  comandosParaForma,
   comandosParaPor,
   comandosParaTrocar,
   comMedidasConferidas,
@@ -62,6 +63,36 @@ const por = (
 }
 
 describe('ações da aba Objetos', () => {
+  test('criar uma forma gera definição e instância no mesmo histórico, sem modelo de biblioteca', async () => {
+    const { controlador, host, cenario } = await abrir()
+    const forma = {
+      id: 'forma/escada',
+      nome: 'Escada',
+      tipo: 'escada',
+      largura: 2,
+      altura: 3,
+      comprimento: 4,
+      degraus: 6,
+    } as const
+    const antes = structuredClone(controlador.getState().documento)
+    const r = comandosParaForma(
+      antes,
+      forma,
+      { x: 2, y: 6, z: 3, apoio: { tipo: 'absoluto' } },
+      () => 'bloco',
+    )
+    expect(controlador.executar(r.comandos)).toBe(true)
+    await controlador.terminar()
+    const d = (await host.abrirCenario(cenario.id)).documento
+    expect(d.modelos).toHaveLength(0)
+    expect(d.formas).toEqual([forma])
+    expect(d.instancias[0]!.transformacao.posicao.y).toBe(6)
+    expect(d.instancias[0]!.colisao).toBe('malha')
+    await controlador.desfazer()
+    expect(controlador.getState().documento).toEqual(antes)
+    await controlador.refazer()
+    expect(controlador.getState().documento).toEqual(d)
+  })
   test('encaixe em suporte legado confere as medidas no mesmo lote, inclusive quando espelhado', async () => {
     const { controlador } = await abrir(),
       novoId = ids()

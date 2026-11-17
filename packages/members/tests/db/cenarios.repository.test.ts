@@ -144,6 +144,83 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
   })
 
+  test('formas, espelho e contato local sobrevivem ao JSONB e ao histórico sem criar blobs', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const [espaco] = await servico.espacos(ator)
+    const mundo = await servico.criarMundo(ator, espaco!.id, 'Blocos')
+    const c = await servico.criarCenario(ator, mundo.id, 'Rascunho')
+    const forma = {
+      id: 'forma/caixa',
+      nome: 'Caixa',
+      tipo: 'caixa',
+      largura: 4,
+      altura: 1,
+      comprimento: 4,
+    } as const
+    const instancia = {
+      id: 'base',
+      nome: 'Base',
+      modelo: forma.id,
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      colisao: 'malha',
+      apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
+      espelho: { x: true, y: false, z: false },
+      transformacao: {
+        posicao: { x: 0, y: 0, z: 0 },
+        rotacao: { x: 0, y: 0, z: 0 },
+        escala: { x: 1, y: 1, z: 1 },
+      },
+    } as const
+    await servico.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'criar-formas-001',
+      comandos: [
+        { tipo: 'forma.definir', forma },
+        { tipo: 'instancia.criar', instancia },
+        {
+          tipo: 'instancia.criar',
+          instancia: {
+            ...instancia,
+            id: 'filho',
+            nome: 'Filho',
+            apoio: {
+              tipo: 'objeto',
+              objeto: 'base',
+              contato: { x: 0.5, y: 1, z: 0.25 },
+              deslocamento: 0,
+            },
+          },
+        },
+      ],
+    })
+    const novaSessao = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const d = (await novaSessao.abrirCenario(ator, c.id)).documento
+    expect(d.formas).toEqual([forma])
+    expect(d.modelos).toHaveLength(0)
+    expect(d.instancias[1]!.apoio).toMatchObject({
+      tipo: 'objeto',
+      contato: { x: 0.5, y: 1, z: 0.25 },
+    })
+    expect(d.instancias[0]!.espelho).toEqual(instancia.espelho)
+    expect((await repo.espaco(espaco!.id))!.usadoBytes).toBe(0)
+    const volta = await novaSessao.moverHistorico(ator, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 1,
+      operacaoId: 'desfazer-forma-01',
+    })
+    expect(volta.documento.formas).toBeUndefined()
+    const refaz = await novaSessao.moverHistorico(ator, c.id, {
+      acao: 'refazer',
+      revisaoEsperada: 2,
+      operacaoId: 'refazer-forma-01',
+    })
+    expect(refaz.documento.formas).toEqual([forma])
+    expect(refaz.documento.instancias).toEqual(d.instancias)
+  })
+
   test('peças do relevo só confirmam junto com o lote válido; conflito e falha desfazem toda a confirmação', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
     const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })

@@ -13,6 +13,7 @@ import {
 } from '@sistemazero/molda-cenarios-motor'
 import {
   ArrowLeft,
+  Blocks,
   Box,
   Check,
   CloudOff,
@@ -56,6 +57,7 @@ import {
   comandosDoGesto,
   comandosParaApagar,
   comandosParaDuplicar,
+  comandosParaForma,
   comandosParaPor,
   comandosParaTrocar,
   comMedidasConferidas,
@@ -76,6 +78,7 @@ import type {
   Mundo,
 } from '../portas'
 import { Encaixes } from './Encaixes'
+import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
 import { Organizar } from './Organizar'
@@ -246,6 +249,7 @@ function OficinaAberta({
   const [escolhendo, setEscolhendo] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const [versoesAbertas, setVersoesAbertas] = useState(false)
+  const [formasAbertas, setFormasAbertas] = useState(false)
   const { documento, selecao, ferramenta, encaixe } = estado
   const relevoPronto =
     documento.base.tipo !== 'terreno' ||
@@ -681,6 +685,12 @@ function OficinaAberta({
               />
               <hr className="mcn-fio" />
               <Ladrilho
+                icone={Blocks}
+                rotulo="Blocos"
+                desligado={!relevoPronto || estado.ocupado}
+                aoTocar={() => setFormasAbertas(true)}
+              />
+              <Ladrilho
                 icone={Magnet}
                 rotulo={COPY.oficina.grade}
                 ligado={encaixe}
@@ -850,6 +860,30 @@ function OficinaAberta({
           mundo={mundo}
           aoFechar={() => setEscolhendo(false)}
           aoGuardar={aoMudarBibliotecas}
+        />
+      ) : null}
+      {formasAbertas ? (
+        <Formas
+          aoFechar={() => setFormasAbertas(false)}
+          aoCriar={(forma) => {
+            const lugar: LocalDeColocacao = centroDaVista(canvas.current, palco.current) ?? {
+              x: 0,
+              z: 0,
+            }
+            const id = novoIdAleatorio(),
+              apoio = lugar.apoio
+            const comandos = comMedidasConferidas(
+              controlador.getState().documento,
+              apoio?.tipo === 'objeto' ? [apoio.objeto] : [],
+              (id) => palco.current?.volumeDoModelo(id) ?? null,
+              (doc) => comandosParaForma(doc, forma, lugar, () => id).comandos,
+            )
+            if (!controlador.executar(comandos))
+              throw new Error(controlador.getState().recusa ?? 'Não consegui colocar o bloco')
+            controlador.selecionar([id])
+            controlador.definirFerramenta('mover')
+            return true
+          }}
         />
       ) : null}
       {versoesAbertas ? (

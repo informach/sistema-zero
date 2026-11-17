@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, RelevoSchema, VetorSchema } from '../documento'
+import { FormaDeCenarioSchema } from './formas'
 import { BaseDeTerrenoSchema } from './terreno'
 
 /**
@@ -110,7 +111,7 @@ export const ApoioSchema = z.discriminatedUnion('tipo', [
 export const COLISOES = ['nenhuma', 'caixa', 'capsula', 'malha'] as const
 export const InstanciaSchema = entidade
   .extend({
-    /** Chave da tabela `modelos` do documento. */
+    /** Chave de uma definição de biblioteca (`modelos`) ou de rascunho autoral (`formas`). */
     modelo: id,
     transformacao: TransformacaoSchema,
     apoio: ApoioSchema,
@@ -192,6 +193,7 @@ export const DocumentoDeCenarioSchema = z
     eixoVertical: z.literal('y'),
     base: BaseSchema,
     modelos: z.array(ModeloDoCenarioSchema).max(LIMITES_CENARIO_V2.modelos),
+    formas: z.array(FormaDeCenarioSchema).min(1).max(2000).optional(),
     grupos: z.array(GrupoSchema).max(LIMITES_CENARIO_V2.objetos),
     instancias: z.array(InstanciaSchema).max(LIMITES_CENARIO_V2.objetos),
     caminhos: z.array(CaminhoSchema).max(2000),
