@@ -33,6 +33,11 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         permissions: ['clipboard-read', 'clipboard-write'],
+        // Ambiente com um Chromium próprio já instalado (outra revisão que a do pacote):
+        // `PW_CHROMIUM=/caminho/do/chrome`. Sem a variável, nada muda.
+        ...(process.env.PW_CHROMIUM
+          ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } }
+          : {}),
       },
     },
     {

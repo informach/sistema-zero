@@ -1,11 +1,12 @@
 import type { JSX } from 'react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { EditableStudioProject as Project } from '../src/core/editableProject'
-import type { StudioLessonProps } from '../src/studio/types'
+import { LESSON_DEFAULT_FEATURES } from '../src/studio/lessonFeatures'
+import type { StudioHandle, StudioLessonProps } from '../src/studio/types'
 import { PLAYGROUND_LESSON } from './initialQuery'
 
 /**
- * A aula dentro do playground (`/aula?aula=<curso>/<aula>&bloco=<chave>`): monta o `StudioLesson`
+ * A aula dentro do playground (`/aula?aula=<curso>/<aula>&bloco=<chave>`): monta o Estúdio da aula
  * com o projeto inicial, o nível, os blocos liberados e os modos do bloco de Estúdio do manifesto,
  * do mesmo jeito que a página da aula monta (`member-shell/.../studio-block.tsx`). Existe para os
  * e2e dos cursos gravados refazerem os gestos ensinados sem subir o app inteiro. Não grava nada:
@@ -19,9 +20,13 @@ const MANIFESTOS = import.meta.glob<{ default: unknown }>([
   '../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/*.manifesto.json',
 ])
 
-const StudioLesson = lazy(async () => {
-  const module = await import('../src/studio/StudioLesson')
-  return { default: module.StudioLesson }
+// O `StudioLesson` é o `StudioCore` com os recursos da aula desligados. Aqui a aula entra pela
+// MESMA entrada do editor do playground (o `StudioEditor`, o outro invólucro fino do mesmo
+// núcleo) com esses mesmos recursos: um ponto de entrada a mais mudava a divisão dos pacotes e
+// passava do teto do modo Blocos (`initialBundleBudget.test.ts`).
+const StudioDaAula = lazy(async () => {
+  const module = await import('@sistemazero/studio/editor')
+  return { default: module.StudioEditor }
 })
 
 interface BlocoDeEstudio {
@@ -75,6 +80,18 @@ async function carregar(aula: string, chave: string | null): Promise<Estado> {
 
 export function LessonHarness(): JSX.Element {
   const [estado, setEstado] = useState<Estado>({ fase: 'carregando' })
+  const estudio = useRef<StudioHandle>(null)
+
+  // O projeto de agora, para o e2e conferir os objetivos da parte (a página da aula lê pelo
+  // mesmo `getProject` na hora de verificar e de enviar).
+  useEffect(() => {
+    const aula = { projeto: () => estudio.current?.getProject() ?? null }
+    Object.assign(window, { __aula: aula })
+    return () => {
+      if ((window as { __aula?: unknown }).__aula === aula)
+        delete (window as { __aula?: unknown }).__aula
+    }
+  }, [])
 
   useEffect(() => {
     let vivo = true
@@ -118,7 +135,8 @@ export function LessonHarness(): JSX.Element {
   return (
     <Suspense fallback={carregando}>
       <div className="h-full" data-aula-bloco={estado.bloco.key}>
-        <StudioLesson
+        <StudioDaAula
+          ref={estudio}
           initialProject={content.initialProject}
           level={content.level}
           allowBlocks={content.allowBlocks}
@@ -126,7 +144,7 @@ export function LessonHarness(): JSX.Element {
           allowedModes={content.allowedModes}
           allowLevelReveal={content.allowLevelReveal}
           // Os mesmos cortes que a página da aula faz para o aluno.
-          features={{ extensions: false, professional: false, terminal: false }}
+          features={{ ...LESSON_DEFAULT_FEATURES, extensions: false }}
           persistence="none"
           blockUnloadWhenDirty={false}
         />

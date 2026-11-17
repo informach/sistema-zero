@@ -142,12 +142,17 @@ export function retratoDoBloco(tipo: string): Json {
 
 interface BlocoDeEstudio {
   chave: string
-  conteudo: Extract<NonNullable<LearningManifest['blocks'][number]['content']>, { kind: 'studio' }>
+  conteudo: Extract<
+    Extract<LearningManifest['blocks'][number], { content: unknown }>['content'],
+    { kind: 'studio' }
+  >
 }
 
 export function estudiosDaAula(manifesto: LearningManifest): BlocoDeEstudio[] {
   return manifesto.blocks.flatMap((bloco) =>
-    bloco.content?.kind === 'studio' ? [{ chave: bloco.key, conteudo: bloco.content }] : [],
+    'content' in bloco && bloco.content.kind === 'studio'
+      ? [{ chave: bloco.key, conteudo: bloco.content }]
+      : [],
   )
 }
 

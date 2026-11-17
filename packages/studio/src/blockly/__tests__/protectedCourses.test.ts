@@ -71,7 +71,7 @@ describe('cursos protegidos: os projetos das aulas num Blockly de verdade', () =
         const guardado = projeto as unknown as {
           name: string
           ir: Parameters<typeof generateProjectFilesWithMap>[0]['ir']
-          files: Record<string, string>
+          files: { 'index.html': string; 'style.css': string; 'script.js': string }
         }
         const dosBlocos = generateProjectFilesWithMap({
           ir: buildIRFromWorkspace(workspace),
