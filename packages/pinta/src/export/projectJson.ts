@@ -10,15 +10,29 @@
  * versão antiga do Pinta continua lendo. O import aceita as duas; uma versão
  * antiga recusa a v2 com o recado de versão, em vez de perder os objetos calada.
  */
+
+import { tileLayerToWire } from '../assets/wire'
 import { decodeBitmap, type EncodedBitmap, encodeBitmap } from '../core/bitmapCodec'
-import { isTileLayer, type PintaAsset, sanitizePintaAsset, tilemapNeedsV2 } from '../core/project'
+import {
+  isTileLayer,
+  type PintaAsset,
+  sanitizePintaAsset,
+  tilemapNeedsV2,
+  tilemapNeedsV3,
+} from '../core/project'
 
 const FORMAT = 'pinta-gallery'
 /** A versão que um arquivo SEM nada novo leva (e a única que versões antigas leem). */
 const BASE_VERSION = 1
 /** Mapas com objetos / peças por camada. */
 const OBJECTS_VERSION = 2
-const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([BASE_VERSION, OBJECTS_VERSION])
+/** Mapas com grupos, camadas além de 8, peças viradas, mapas grandes (`tilemapNeedsV3`). */
+const SCENE_VERSION = 3
+const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
+  BASE_VERSION,
+  OBJECTS_VERSION,
+  SCENE_VERSION,
+])
 const UTF8 = new TextEncoder()
 
 /**
@@ -70,9 +84,7 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
       return {
         ...asset,
         // Camada de objetos já é JSON puro; só as células viram array.
-        layers: asset.layers.map((l) =>
-          isTileLayer(l) ? { ...l, cells: Array.from(l.cells) } : { ...l },
-        ),
+        layers: asset.layers.map((l) => (isTileLayer(l) ? tileLayerToWire(l, asset) : { ...l })),
       }
     // Shapes vetoriais já são JSON puro — passam direto, sem codec.
     case 'vector-sprite':
@@ -318,8 +330,24 @@ export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 /** A galeria inteira → texto do `.pinta.json`. */
 export function galleryToPintaJson(assets: PintaAsset[]): string {
   if (assets.length === 0) return EMPTY_JSON
-  const prefix = assets.some(assetNeedsV2) ? `${jsonHeader(OBJECTS_VERSION)}\n` : NON_EMPTY_PREFIX
+  const version = envelopeVersionFor(assets)
+  const prefix = version === BASE_VERSION ? NON_EMPTY_PREFIX : `${jsonHeader(version)}\n`
   return `${prefix}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+}
+
+/** O desenho usa algo que só o envelope v3 descreve? */
+export function assetNeedsV3(asset: PintaAsset): boolean {
+  return asset.kind === 'tilemap' && tilemapNeedsV3(asset)
+}
+
+/**
+ * A versão do envelope: a MENOR que descreve tudo o que está no arquivo. Um arquivo sem nada
+ * novo continua saindo na versão 1, que todo Pinta lê; um Pinta que não conhece a versão recusa
+ * o arquivo inteiro com recado, em vez de importar os mapas cortados.
+ */
+export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (assets.some(assetNeedsV3)) return SCENE_VERSION
+  return assets.some(assetNeedsV2) ? OBJECTS_VERSION : BASE_VERSION
 }
 
 /** O desenho usa algo que só o envelope v2 descreve (objetos, peças por camada)? */

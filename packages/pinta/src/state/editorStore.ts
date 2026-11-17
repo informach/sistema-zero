@@ -7,7 +7,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { bitmapBytes, createHistory, type SharedPart } from '../core/history'
-import { isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
+import { isObjectLayer, isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
 import type { VectorShape } from '../vector/model'
 
 /**
@@ -123,10 +123,12 @@ export function assetBytes(asset: PintaAsset, countCells = true): number {
               countCells
               ? layer.cells.byteLength
               : 0
-            : layer.objects.reduce(
-                (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
-                0,
-              )),
+            : isObjectLayer(layer)
+              ? layer.objects.reduce(
+                  (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
+                  0,
+                )
+              : 0),
         128,
       )
     case 'vector-background':

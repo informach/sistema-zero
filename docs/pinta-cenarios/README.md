@@ -10,7 +10,11 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 | 1 | Trava de formato, só leitura | Implementado e testado localmente (17/11/2026). Sem prova em staging. |
 | 2 | Declarar a versão por tipo | Pendente. Só depois de o incremento 1 estar em produção. |
 | 3 | Auxiliares de célula e histórico por buffer único | Implementado e testado localmente (17/11/2026). Sem mudança de comportamento. |
-| 4 a 14 | Ver a tabela do plano abaixo | Pendentes. |
+| 4a | Documento do formato 3: camadas | Implementado e testado localmente (17/11/2026). Sem interface ainda. |
+| 4b | Documento do formato 3: objetos (formas, giro, papéis, propriedades tipadas) | Pendente. |
+| 4c | Documento do formato 3: conjuntos de peças (animação, terrenos, propriedades por peça) | Pendente. |
+| 4d | Documento do formato 3: conjuntos reutilizáveis | Pendente. |
+| 5 a 14 | Ver a tabela do plano abaixo | Pendentes. |
 
 ### Incremento 1: o que foi provado e o que não foi
 
@@ -37,6 +41,41 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 - **Limite conhecido:** o exportador de imagem para o Pygame (dados versão 1) ainda não leva o
   giro da peça: ela sai desvirada. Entra com a versão 2 dos dados, no incremento 9.
 - Nenhuma ferramenta escreve os bits de giro ainda, então não há o que ver no navegador.
+
+### Incremento 4a: o que entrou
+
+- **Camadas** (`packages/pinta/src/core/project.ts`): grupo (`kind: 'group'`, lista plana com
+  `parentId`), cadeado, opacidade, deslocamento, parallax, propriedades de camada e camada de
+  colisão. Tudo opcional e omitido no valor padrão. `effectiveLayer` soma o que os grupos em volta
+  impõem; achatar, a peça do topo e os exportadores já respeitam grupo escondido.
+- **Tetos em dois níveis:** `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita LER (256 × 256,
+  32 camadas, 256 peças, 2 milhões de células); `PINTA_LIMITS` continua sendo o que o editor deixa
+  CRIAR (128 × 128, 8 camadas, 64 peças). O editor só sobe quando o desenho por área visível e a
+  entrega ao Estúdio estiverem prontos.
+- **Carimbo `schema: 3`** entra sozinho quando o mapa usa algo do formato e sai quando deixa de
+  usar. Um código que não conhece o número não lê o mapa.
+- **Envelope do `.pinta.json` na versão 3** só quando algum mapa precisa. Mapas acima de 128 × 128
+  viajam com as células compactadas (`cellsPacked`, `tiles/cellCodec.ts`); os demais, com a lista
+  de números de sempre, para o texto guardado não mudar.
+- Um serializador só para a camada de peças (`tileLayerToWire`), usado pelo wire, pelo arquivo e
+  pelos construtores de modelo.
+- Testes: `core/mapFormat3.test.ts` (19 casos). Suíte do Pinta: 1.710 testes, sem falha.
+
+**Ensaio de frota mista** (script descartável, 17/11/2026): o Pinta da `staging` em `237dc979`
+lendo um mapa do formato 3 com 13 camadas.
+
+| Caminho | Resultado no Pinta antigo |
+|---|---|
+| Registro direto (o IndexedDB do mesmo aparelho) | Lê e CORTA: sobram 5 das 13 camadas. |
+| `.pinta.json` versão 3 (o que desce da nuvem, o backup) | Recusa o arquivo inteiro com recado. Nada é gravado. |
+
+Ou seja: pela nuvem o mapa novo está protegido de um cliente antigo (ele não consegue ler para
+cortar, e o servidor recusará a subida quando a versão declarada subir, no incremento 2). No
+MESMO aparelho, um bundle antigo em cache ainda cortaria o registro local; não há como barrar
+isso por dentro do código antigo. O que protege é a nuvem ter a versão inteira.
+
+**Não provado:** nada disto tem interface, então não há ensaio no navegador. O Members embute o
+sanitizador do Pinta para envios de aula; a suíte dele não foi rodada neste incremento.
 
 ---
 

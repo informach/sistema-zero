@@ -17,6 +17,8 @@
 
 import {
   type AnyTilesetAsset,
+  isLayerShown,
+  isObjectLayer,
   isTileLayer,
   type PixelSpriteAsset,
   resolveAssetPalette,
@@ -337,7 +339,8 @@ export function mapAtlasSelection(
       layers.push({
         type: 'tiles',
         name: layer.name,
-        visible: layer.visible,
+        // Este formato não tem grupos: a visibilidade já sai resolvida com a dos grupos em volta.
+        visible: isLayerShown(map, layer),
         front: layer.front === true,
         tileset: position,
         // Este formato (versão 1 dos dados do mapa) só conhece o índice da peça: a peça virada
@@ -347,11 +350,11 @@ export function mapAtlasSelection(
           return tile >= 0 && tile < count ? tile : -1
         }),
       })
-    } else {
+    } else if (isObjectLayer(layer)) {
       layers.push({
         type: 'objects',
         name: layer.name,
-        visible: layer.visible,
+        visible: isLayerShown(map, layer),
         objects: layer.objects.map((object) => ({
           id: object.id,
           name: object.name,

@@ -20,6 +20,9 @@ const CONFERIDOS: Record<string, string> = {
   'export/studioGrid.ts': 'lê o achatado, que já é índice de peça',
   'export/portableImageRender.ts': 'lê o índice por cellTile',
   'templates/art.ts': 'monta células a partir de índices de peça da arte em texto',
+  'core/project.ts':
+    'valida cada célula por isValidCell + cellTile ao ler, e procura peça acima do teto antigo no valor cru (bits de giro também passam do teto, de propósito)',
+  'tiles/cellCodec.ts': 'compacta corridas de células inteiras',
 }
 
 function arquivos(dir: string): string[] {

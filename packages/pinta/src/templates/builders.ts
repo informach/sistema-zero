@@ -4,6 +4,7 @@
  * chamada gera ids FRESCOS (asset/animação/camada) → o template vira uma CÓPIA
  * independente por construção (sem clonar/regenerar ids depois).
  */
+import { tileLayerToWire } from '../assets/wire'
 import { newId } from '../core/id'
 import {
   type AnyTilesetAsset,
@@ -13,6 +14,7 @@ import {
   createVectorBackgroundAsset,
   createVectorSpriteAsset,
   isCompatibleMapTileset,
+  isTileLayer,
   normalizeAssetName,
   OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_LIMITS,
@@ -268,9 +270,7 @@ export function buildTilemap(spec: TilemapSpec): TilemapAsset {
 }
 
 function wireLayers(map: TilemapAsset): unknown {
-  return map.layers.map((layer) =>
-    layer.kind === 'objects' ? layer : { ...layer, cells: Array.from(layer.cells) },
-  )
+  return map.layers.map((layer) => (isTileLayer(layer) ? tileLayerToWire(layer, map) : layer))
 }
 
 /**

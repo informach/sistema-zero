@@ -13,6 +13,7 @@ import {
   createVectorTilesetAsset,
   isObjectLayer,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   remapTilemapTilesetIds,
   sanitizePintaAsset,
   type TilemapAsset,
@@ -118,7 +119,8 @@ describe('sanitize: camadas de objetos', () => {
       x: 2,
       y: 0,
       width: 0,
-      height: PINTA_LIMITS.maxObjectCoord,
+      // O documento lê até o teto do FORMATO; o editor segue cortando no teto dele.
+      height: PINTA_MAP_FORMAT_LIMITS.maxObjectCoord,
     })
   })
 
@@ -179,7 +181,7 @@ describe('sanitize: camadas de objetos', () => {
       properties: {},
     }))
     ;(raw.layers[1] as { objects: unknown }).objects = objects
-    const extra = Array.from({ length: 12 }, (_, i) => ({
+    const extra = Array.from({ length: 40 }, (_, i) => ({
       kind: 'objects',
       id: `l${i}`,
       name: `L${i}`,
@@ -188,7 +190,9 @@ describe('sanitize: camadas de objetos', () => {
     }))
     raw.layers.push(...extra)
     const back = sanitizePintaAsset(raw) as TilemapAsset
-    expect(back.layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers)
+    // O documento guarda até o teto do FORMATO (o editor ainda cria até `maxTilemapLayers`).
+    expect(back.layers).toHaveLength(PINTA_MAP_FORMAT_LIMITS.maxLayers)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(PINTA_LIMITS.maxTilemapLayers)
     expect(objectLayerOf(back).objects).toHaveLength(PINTA_LIMITS.maxTilemapObjects)
   })
 
@@ -388,7 +392,7 @@ describe('fronteiras: wire, .pinta.json e .pinta-tilemap.json', () => {
 
     // Versão futura: recusa com o recado, não lê pela metade.
     const future = JSON.parse(v2)
-    future.version = 3
+    future.version = 4
     expect(importPintaJson(JSON.stringify(future)).assets).toEqual([])
   })
 

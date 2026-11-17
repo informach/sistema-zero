@@ -12,8 +12,11 @@
  */
 import {
   type AnyTilesetAsset,
+  isGroupLayer,
+  isLayerShown,
   isObjectLayer,
   type TilemapAsset,
+  type TilemapTileLayer,
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
@@ -111,32 +114,36 @@ export function tilemapExportJson(tilemap: TilemapAsset, tilesets: MapTilesets):
         solid: indicesOf(tileset.solid),
         platform: indicesOf(tileset.platform),
       })),
-      layers: tilemap.layers.map((layer) =>
-        isObjectLayer(layer)
-          ? {
-              type: 'objects',
-              name: layer.name,
-              visible: layer.visible,
-              objects: layer.objects.map((object) => ({
-                id: object.id,
-                name: object.name,
-                type: object.type,
-                x: object.x,
-                y: object.y,
-                width: object.width,
-                height: object.height,
-                properties: object.properties,
-              })),
-            }
-          : {
-              type: 'tiles',
-              name: layer.name,
-              visible: layer.visible,
-              front: layer.front === true,
-              tileset: indexOfId(tileLayerTilesetId(tilemap, layer)),
-              cells: Array.from(layer.cells),
-            },
-      ),
+      // Este arquivo não tem grupos: eles saem da lista e a visibilidade de cada camada já vem
+      // resolvida com a dos grupos em volta dela.
+      layers: tilemap.layers
+        .filter((layer) => !isGroupLayer(layer))
+        .map((layer) =>
+          isObjectLayer(layer)
+            ? {
+                type: 'objects',
+                name: layer.name,
+                visible: isLayerShown(tilemap, layer),
+                objects: layer.objects.map((object) => ({
+                  id: object.id,
+                  name: object.name,
+                  type: object.type,
+                  x: object.x,
+                  y: object.y,
+                  width: object.width,
+                  height: object.height,
+                  properties: object.properties,
+                })),
+              }
+            : {
+                type: 'tiles',
+                name: layer.name,
+                visible: isLayerShown(tilemap, layer),
+                front: layer.front === true,
+                tileset: indexOfId(tileLayerTilesetId(tilemap, layer as TilemapTileLayer)),
+                cells: Array.from((layer as TilemapTileLayer).cells),
+              },
+        ),
     },
     null,
     2,

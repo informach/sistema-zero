@@ -9,6 +9,8 @@
  */
 
 import { PINTA_SOURCE_REF_PATTERN } from '@sistemazero/core/studio/pinta-source-ref'
+import { cellTile, isValidCell } from '../tiles/cell'
+import { unpackCells } from '../tiles/cellCodec'
 import { sanitizeMaskReferences } from '../vector/mask'
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
@@ -28,6 +30,8 @@ import {
   createPixelLayer,
   normalizeAssetName,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAP_SCHEMA,
   TILE_SIZES,
   uniqueAnimationName,
   VECTOR_TILE_SIZES,
@@ -46,6 +50,8 @@ export {
   createVectorTilesetAsset,
   normalizeAssetName,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAP_SCHEMA,
   SPRITE_FRAME_SIZES,
   TILE_SIZES,
   uniqueAnimationName,
@@ -283,13 +289,40 @@ export interface TilesetAsset extends PintaAssetBase {
  * mapa salvo antes das camadas de objetos não tem a chave, e o sanitize a OMITE
  * na camada de peças — o registro antigo atravessa o round-trip byte a byte.
  */
-export interface TilemapTileLayer {
-  kind?: 'tiles'
+/**
+ * O que toda camada do mapa pode ter, seja de peças, de objetos ou um grupo. Tudo opcional e
+ * OMITIDO no valor padrão: um mapa que não usa nada disto continua byte a byte o de antes.
+ * Num grupo, estes valores valem para tudo o que está dentro dele (leia por `effectiveLayer`).
+ */
+export interface TilemapLayerCommon {
   id: string
   name: string
   visible: boolean
-  /** Índices de tile por célula, row-major; -1 = vazio. */
+  /** O grupo que contém esta camada (um `TilemapGroupLayer` que vem ANTES na lista). */
+  parentId?: string
+  /** Trancada: o editor não deixa mudar o conteúdo nem apagar. Ausente = livre. */
+  locked?: true
+  /** 0 a 1. Ausente = 1 (opaca). */
+  opacity?: number
+  /** Deslocamento do desenho da camada, em pixels do mapa. Ausente = 0. */
+  offsetX?: number
+  offsetY?: number
+  /** Quanto a camada acompanha a câmera (1 = junto; 0,5 = metade, parece mais longe). Ausente = 1. */
+  parallaxX?: number
+  parallaxY?: number
+  /** Dados que o jogo lê da camada. Mesmas regras das propriedades de objeto. */
+  properties?: Record<string, TilemapObjectPropertyValue>
+}
+
+export interface TilemapTileLayer extends TilemapLayerCommon {
+  kind?: 'tiles'
+  /** Uma célula por posição, linha a linha; -1 = vazia. Leia a peça por `cellTile` (`tiles/cell`). */
   cells: Int16Array
+  /**
+   * Camada de COLISÃO: onde há peça, o jogo não deixa passar; ela não é desenhada no jogo.
+   * Serve para barreiras que não coincidem com as peças do cenário. Ausente = camada comum.
+   */
+  collision?: true
   /**
    * Camada "da frente": desenhada POR CIMA do jogador (copa de árvore, telhado).
    * No Estúdio vira um 2º tilemap desenhado depois do sprite. Ausente = fundo.
@@ -328,11 +361,8 @@ export interface TilemapObject {
 }
 
 /** Camada de OBJETOS: não tem peças, só a lista de objetos. */
-export interface TilemapObjectLayer {
+export interface TilemapObjectLayer extends TilemapLayerCommon {
   kind: 'objects'
-  id: string
-  name: string
-  visible: boolean
   objects: TilemapObject[]
   // Chaves exclusivas da camada de peças: `never` deixa ler `layer.front` na união
   // (dá `undefined` aqui) sem deixar escrever uma camada de objetos com células.
@@ -341,7 +371,20 @@ export interface TilemapObjectLayer {
   tilesetId?: never
 }
 
-export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer
+/**
+ * Um GRUPO de camadas (uma região do mapa: "Vila", "Floresta"). Não tem conteúdo próprio; as
+ * camadas que estão nele apontam para cá por `parentId` e ficam DEPOIS dele na lista.
+ */
+export interface TilemapGroupLayer extends TilemapLayerCommon {
+  kind: 'group'
+  cells?: never
+  objects?: never
+  front?: never
+  tilesetId?: never
+  collision?: never
+}
+
+export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer | TilemapGroupLayer
 
 export interface TilemapAsset extends PintaAssetBase {
   kind: 'tilemap'
@@ -353,12 +396,75 @@ export interface TilemapAsset extends PintaAssetBase {
   tilesetId: string
   cols: number
   rows: number
-  /** Nasce com 1 camada ("Chão"); peças e objetos dividem o teto de camadas. */
+  /** Nasce com 1 camada ("Chão"); peças, objetos e grupos dividem o teto de camadas. */
   layers: TilemapLayer[]
+  /**
+   * Carimbo do formato, gravado só quando o mapa usa algo que o formato anterior não descreve
+   * (`tilemapNeedsV3`). Um código que não conhece o número NÃO lê o mapa (devolve `null` sem
+   * regravar), em vez de cortar o que não entende.
+   */
+  schema?: number
 }
 
 export function isTileLayer(layer: TilemapLayer): layer is TilemapTileLayer {
-  return layer.kind !== 'objects'
+  return layer.kind === undefined || layer.kind === 'tiles'
+}
+
+export function isGroupLayer(layer: TilemapLayer): layer is TilemapGroupLayer {
+  return layer.kind === 'group'
+}
+
+/** Os grupos que contêm a camada, do mais próximo ao mais de fora. */
+export function layerAncestors(tilemap: TilemapAsset, layer: TilemapLayer): TilemapGroupLayer[] {
+  const out: TilemapGroupLayer[] = []
+  let parentId = layer.parentId
+  // O sanitizador garante que não há ciclo; o teto é só o cinto.
+  while (parentId !== undefined && out.length < 16) {
+    const parent = tilemap.layers.find((candidate) => candidate.id === parentId)
+    if (!parent || !isGroupLayer(parent)) break
+    out.push(parent)
+    parentId = parent.parentId
+  }
+  return out
+}
+
+/** Como a camada vale DE VERDADE, somando o que os grupos em volta dela impõem. */
+export interface EffectiveLayer {
+  visible: boolean
+  locked: boolean
+  opacity: number
+  offsetX: number
+  offsetY: number
+  parallaxX: number
+  parallaxY: number
+}
+
+export function effectiveLayer(tilemap: TilemapAsset, layer: TilemapLayer): EffectiveLayer {
+  const out: EffectiveLayer = {
+    visible: layer.visible,
+    locked: layer.locked === true,
+    opacity: layer.opacity ?? 1,
+    offsetX: layer.offsetX ?? 0,
+    offsetY: layer.offsetY ?? 0,
+    parallaxX: layer.parallaxX ?? 1,
+    parallaxY: layer.parallaxY ?? 1,
+  }
+  for (const group of layerAncestors(tilemap, layer)) {
+    out.visible = out.visible && group.visible
+    out.locked = out.locked || group.locked === true
+    out.opacity *= group.opacity ?? 1
+    out.offsetX += group.offsetX ?? 0
+    out.offsetY += group.offsetY ?? 0
+    out.parallaxX *= group.parallaxX ?? 1
+    out.parallaxY *= group.parallaxY ?? 1
+  }
+  return out
+}
+
+/** A camada aparece? (ela e todos os grupos em volta estão visíveis). */
+export function isLayerShown(tilemap: TilemapAsset, layer: TilemapLayer): boolean {
+  if (!layer.visible) return false
+  return layer.parentId === undefined || effectiveLayer(tilemap, layer).visible
 }
 
 export function isObjectLayer(layer: TilemapLayer): layer is TilemapObjectLayer {
@@ -426,6 +532,38 @@ export function remapTilemapTilesetIds(
 /** O mapa tem algo que o envelope v1 do `.pinta.json` não sabe descrever? */
 export function tilemapNeedsV2(tilemap: TilemapAsset): boolean {
   return tilemap.layers.some((layer) => isObjectLayer(layer) || layer.tilesetId !== undefined)
+}
+
+/** Os tetos do mapa de ANTES do formato 3: o que um código antigo sabe ler sem cortar. */
+const LEGACY_MAP = { cols: 128, rows: 128, layers: 8, tiles: 64 } as const
+
+/**
+ * O mapa usa algo que só o formato 3 descreve? Decide o carimbo `schema` e o envelope do
+ * `.pinta.json`. Um mapa que cabe no formato anterior continua saindo exatamente como antes.
+ */
+export function tilemapNeedsV3(tilemap: TilemapAsset): boolean {
+  if (tilemap.cols > LEGACY_MAP.cols || tilemap.rows > LEGACY_MAP.rows) return true
+  if (tilemap.layers.length > LEGACY_MAP.layers) return true
+  return tilemap.layers.some((layer) => {
+    if (isGroupLayer(layer)) return true
+    if (
+      layer.parentId !== undefined ||
+      layer.locked !== undefined ||
+      layer.opacity !== undefined ||
+      layer.offsetX !== undefined ||
+      layer.offsetY !== undefined ||
+      layer.parallaxX !== undefined ||
+      layer.parallaxY !== undefined ||
+      layer.properties !== undefined
+    )
+      return true
+    if (!isTileLayer(layer)) return false
+    if (layer.collision !== undefined) return true
+    // Peça acima do teto antigo ou virada: o código antigo descartaria a camada inteira.
+    for (let i = 0; i < layer.cells.length; i += 1)
+      if ((layer.cells[i] ?? -1) >= LEGACY_MAP.tiles) return true
+    return false
+  })
 }
 
 /**
@@ -875,18 +1013,67 @@ function sanitizeVectorFrame(raw: unknown): VectorFrame | null {
 function sanitizeTilemapCells(raw: unknown, cellCount: number): Int16Array | null {
   const values = raw instanceof Int16Array ? Array.from(raw) : Array.isArray(raw) ? raw : null
   if (!values || values.length !== cellCount) return null
+  // A célula guarda a peça e os bits de giro (`tiles/cell`): vale o que cabe nos bits e aponta
+  // para uma peça dentro do teto do formato.
   if (
-    !values.every(
-      (cell) =>
-        typeof cell === 'number' &&
-        Number.isInteger(cell) &&
-        cell >= -1 &&
-        cell < PINTA_LIMITS.maxTiles,
-    )
-  ) {
+    !values.every((cell) => isValidCell(cell) && cellTile(cell) < PINTA_MAP_FORMAT_LIMITS.maxTiles)
+  )
     return null
-  }
   return Int16Array.from(values)
+}
+
+/** Número finito dentro da faixa, ou `undefined`. */
+function numberIn(value: unknown, min: number, max: number): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
+  return Math.min(max, Math.max(min, value))
+}
+
+/**
+ * Os campos comuns de uma camada. Cada um só entra quando difere do padrão; o `parentId` é
+ * conferido depois, com a lista inteira (`sanitizeLayerTree`).
+ */
+function sanitizeLayerCommon(
+  l: Record<string, unknown>,
+): Omit<TilemapLayerCommon, 'id' | 'name' | 'visible'> {
+  const opacity = numberIn(l.opacity, 0, 1)
+  const offset = PINTA_MAP_FORMAT_LIMITS.maxLayerOffset
+  const offsetX = numberIn(l.offsetX, -offset, offset)
+  const offsetY = numberIn(l.offsetY, -offset, offset)
+  const parallaxX = numberIn(l.parallaxX, 0, 4)
+  const parallaxY = numberIn(l.parallaxY, 0, 4)
+  const properties = sanitizeObjectProperties(l.properties)
+  return {
+    ...(typeof l.parentId === 'string' && l.parentId ? { parentId: l.parentId } : {}),
+    ...(l.locked === true ? { locked: true as const } : {}),
+    ...(opacity !== undefined && opacity !== 1 ? { opacity } : {}),
+    ...(offsetX !== undefined && Math.round(offsetX) !== 0 ? { offsetX: Math.round(offsetX) } : {}),
+    ...(offsetY !== undefined && Math.round(offsetY) !== 0 ? { offsetY: Math.round(offsetY) } : {}),
+    ...(parallaxX !== undefined && parallaxX !== 1 ? { parallaxX } : {}),
+    ...(parallaxY !== undefined && parallaxY !== 1 ? { parallaxY } : {}),
+    ...(Object.keys(properties).length > 0 ? { properties } : {}),
+  }
+}
+
+/**
+ * Confere a árvore de grupos: o pai precisa existir, ser um grupo, vir ANTES na lista e não
+ * passar da profundidade. Camada com pai inválido sai do grupo (vai para a raiz); nunca some.
+ */
+function sanitizeLayerTree(layers: TilemapLayer[]): TilemapLayer[] {
+  const depthById = new Map<string, number>()
+  return layers.map((layer) => {
+    let next = layer
+    let depth = 0
+    if (layer.parentId !== undefined) {
+      const parentDepth = depthById.get(layer.parentId)
+      if (parentDepth === undefined || parentDepth + 1 > PINTA_MAP_FORMAT_LIMITS.maxGroupDepth) {
+        const { parentId: _orphan, ...rest } = layer
+        next = rest as TilemapLayer
+      } else depth = parentDepth + 1
+    }
+    // Só grupo já visto pode ser pai: é o que impede ciclo e pai que vem depois.
+    if (isGroupLayer(next)) depthById.set(next.id, depth)
+    return next
+  })
 }
 
 /** Referência a um tileset: qualquer id não vazio (a mesma régua de sempre do mapa). */
@@ -897,7 +1084,7 @@ function isTilesetRef(value: unknown): value is string {
 /** Coordenada/medida de objeto: número finito, arredondado ao pixel e dentro do teto. */
 function sanitizeObjectMeasure(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null
-  return clampInt(value, 0, PINTA_LIMITS.maxObjectCoord)
+  return clampInt(value, 0, PINTA_MAP_FORMAT_LIMITS.maxObjectCoord)
 }
 
 function sanitizeObjectText(value: unknown): string {
@@ -1057,7 +1244,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       // Tile corrompido vira tile VAZIO (não some): o índice no array é a
       // identidade da peça nos mapas e na folha — compactar deslocaria tudo.
       const tiles = record.tiles
-        .slice(0, PINTA_LIMITS.maxTiles)
+        .slice(0, PINTA_MAP_FORMAT_LIMITS.maxTiles)
         .map((t) => sanitizeBitmap(t, tileDims) ?? createBitmap(tileSize, tileSize))
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
@@ -1081,13 +1268,18 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     case 'tilemap': {
       if (!isTilesetRef(record.tilesetId)) return null
       const mapTilesetId = record.tilesetId
-      if (!isFinitePositiveInt(record.cols, PINTA_LIMITS.maxTilemapCols)) return null
-      if (!isFinitePositiveInt(record.rows, PINTA_LIMITS.maxTilemapRows)) return null
+      // Formato mais novo que este código: não lê. Ler seria reconstruir o mapa sem o que não
+      // conhecemos; quem chama recebe `null` e o registro guardado fica como está.
+      if (record.schema !== undefined) {
+        if (typeof record.schema !== 'number' || record.schema > PINTA_MAP_SCHEMA) return null
+      }
+      if (!isFinitePositiveInt(record.cols, PINTA_MAP_FORMAT_LIMITS.maxCols)) return null
+      if (!isFinitePositiveInt(record.rows, PINTA_MAP_FORMAT_LIMITS.maxRows)) return null
       const cellCount = record.cols * record.rows
       if (!Array.isArray(record.layers)) return null
       const layers = ensureUniqueIds(
         record.layers
-          .slice(0, PINTA_LIMITS.maxTilemapLayers)
+          .slice(0, PINTA_MAP_FORMAT_LIMITS.maxLayers)
           .map((layer): TilemapLayer | null => {
             if (!layer || typeof layer !== 'object') return null
             const l = layer as Record<string, unknown>
@@ -1096,19 +1288,28 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
               typeof l.name === 'string' && l.name.trim()
                 ? l.name.trim().slice(0, 30)
                 : COPY.tiles.layerNamePrefix
+            const common = sanitizeLayerCommon(l)
             if (l.kind === 'objects') {
               return {
                 kind: 'objects',
                 id: l.id,
                 name,
                 visible: l.visible !== false,
+                ...common,
                 objects: sanitizeTilemapObjects(l.objects),
               }
             }
+            if (l.kind === 'group') {
+              return { kind: 'group', id: l.id, name, visible: l.visible !== false, ...common }
+            }
             // `kind` desconhecido (versão futura): descarta a camada, não o mapa.
             if (l.kind !== undefined && l.kind !== 'tiles') return null
-            // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
-            const cells = sanitizeTilemapCells(l.cells, cellCount)
+            // Coage array simples → Int16Array (JSON/outro realm) antes de validar. Mapa grande
+            // viaja com as células compactadas (`cellsPacked`).
+            const cells =
+              typeof l.cellsPacked === 'string'
+                ? unpackCells(l.cellsPacked, cellCount, PINTA_MAP_FORMAT_LIMITS.maxTiles)
+                : sanitizeTilemapCells(l.cells, cellCount)
             if (!cells) return null
             // Tileset da camada: só quando é OUTRO (o padrão é a ausência — forma
             // canônica, e o mapa antigo continua byte-idêntico).
@@ -1118,24 +1319,32 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
               id: l.id,
               name,
               visible: l.visible !== false,
+              ...common,
               cells,
               ...(l.front === true ? { front: true } : {}),
               ...(tilesetId ? { tilesetId } : {}),
+              ...(l.collision === true ? { collision: true as const } : {}),
             }
           })
           .filter((l): l is TilemapLayer => l !== null),
       )
       // Sem NENHUMA camada de peças o mapa não tem o que desenhar (nem o editor
       // tem onde pintar): descarta, como sempre foi com zero camadas.
-      if (!layers.some(isTileLayer)) return null
-      return {
+      const tileLayerCount = layers.filter(isTileLayer).length
+      if (tileLayerCount === 0) return null
+      // O orçamento de memória do formato: um mapa acima dele não é deste editor.
+      if (cellCount * tileLayerCount > PINTA_MAP_FORMAT_LIMITS.maxCells) return null
+      const tilemap: TilemapAsset = {
         ...base,
         kind: 'tilemap',
         tilesetId: mapTilesetId,
         cols: record.cols,
         rows: record.rows,
-        layers,
+        layers: sanitizeLayerTree(layers),
       }
+      // O carimbo acompanha o conteúdo: entra quando o mapa precisa do formato 3 e sai quando
+      // deixa de precisar (o mapa que cabe no formato antigo fica byte a byte como era).
+      return tilemapNeedsV3(tilemap) ? { ...tilemap, schema: PINTA_MAP_SCHEMA } : tilemap
     }
     // `vector` é o kind ANTIGO (pré paridade vetorial): migra para
     // `vector-background` aqui, sem tocar nos dados.
@@ -1182,7 +1391,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (!Array.isArray(record.tiles)) return null
       // Como no pixel: tile corrompido vira VAZIO para preservar os índices.
       const tiles = record.tiles
-        .slice(0, PINTA_LIMITS.maxTiles)
+        .slice(0, PINTA_MAP_FORMAT_LIMITS.maxTiles)
         .map((t) => sanitizeVectorFrame(t) ?? [])
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
