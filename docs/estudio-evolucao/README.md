@@ -34,7 +34,11 @@ isolamento pode acrescentar bytes a ele.
 | A3 | Reprodução dos gestos das aulas no navegador (Playwright) | **feito** |
 | A4 | Uma prova por curso com o verificador do servidor | pendente |
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
-| B | Isolamento da prévia (medição, marca de execução, casca em outra origem, programas hostis) | pendente |
+| B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
+| B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **feito** (só Chromium) |
+| B1 | Marca de execução (não rodar sozinho depois de uma queda) | pendente |
+| B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
+| B4 | Estudo do Jogo 2D em Worker | pendente |
 | C | Clássico em escala (perfil, IR incremental, montagem sob demanda) | pendente |
 | D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente |
 
@@ -123,7 +127,28 @@ Regravar as referências: `PROTECTED_LESSONS_UPDATE=1`, só com decisão dela.
 - As partes sem Estúdio (jogo pronto, caderno, experiências).
 - Só Chromium, tela de 1440 por 900, o Estúdio no tamanho "expandido" da gravação.
 
-### Falha que já existia antes desta frente
+## Pacote B: isolamento da prévia
+
+Detalhes, tabelas e o que falta: [`isolamento-da-previa.md`](isolamento-da-previa.md). Em resumo:
+
+- No Chromium de mesa a prévia de hoje **já roda em outro processo**: um travamento de 5 s nela
+  atrasa o relógio do editor 51 ms.
+- O teste de programas hostis achou um defeito de verdade: com o jogo preso, o código consertado
+  só rodava quando o travamento antigo terminava. Agora o Parar (e o Rodar de novo com a prévia
+  muda, e um documento novo que não carrega em 3 s) põe um iframe novo no lugar, que roda na hora.
+- **Primeira mudança funcional desta frente.** Portão depois dela (17/11/2026): as cinco aulas
+  protegidas passam, com as mesmas 13 referências de código e a igualdade com o projeto final;
+  mais `preview-security`, `preview-executes-user-code`, `behavior-lifecycle`, `reopen-blocks` e o
+  smoke: 41 de 43. As duas que reprovam estão abaixo e não passam pelo código que mudou.
+
+### Falhas que já existiam antes desta frente
+
+`e2e/public-player-security.spec.ts` (o perfil criativo deveria deixar passar um GET de imagem, e o
+teste conta zero pedidos) reprova neste ambiente. Ele monta um iframe próprio com
+`src/preview/renderProject`, pasta que esta branch não tocou (`git diff bf6e895f -- src/preview`
+vazio); a suspeita é a interceptação de rede do Playwright com o Chromium de outra revisão. Não
+foi conferido na `staging` intocada.
+
 
 `e2e/smoke.spec.ts` › "Pensa: recolher e abrir preserva editor e histórico" reprova na `staging`
 intocada (`bf6e895f`) neste ambiente, sempre no mesmo ponto: o botão Desfazer da barra não tira o

@@ -72,6 +72,34 @@ describe('PreviewIframe', () => {
     })
   })
 
+  // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
+  // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
+  // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
+  it('Rodar de novo mantém o mesmo iframe; Parar põe um iframe novo no lugar', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const primeiro = screen.getByTitle('Pré-visualização')
+    fireEvent.load(primeiro)
+    const rodando = await waitFor(() => {
+      const doc = getPreviewSrcDoc()
+      expect(doc).toContain('Preview automático')
+      return doc
+    })
+    fireEvent.load(primeiro)
+
+    act(() => useProRun.getState().actions?.reload?.())
+    await waitFor(() => expect(getPreviewSrcDoc()).not.toBe(rodando))
+    expect(screen.getByTitle('Pré-visualização')).toBe(primeiro)
+
+    act(() => useProRun.getState().actions?.stop())
+    await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
+    const depoisDeParar = screen.getByTitle('Pré-visualização')
+    expect(depoisDeParar).not.toBe(primeiro)
+    expect(depoisDeParar.getAttribute('sandbox')).toBe(
+      'allow-scripts allow-modals allow-pointer-lock',
+    )
+  })
+
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     render(<PreviewIframe />)
