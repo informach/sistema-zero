@@ -1,8 +1,11 @@
 import { DemandRenderLoop, perspectiveFitDistance } from '@sistemazero/molda/palco'
 import {
   alturaDoChao,
+  apoioNaSuperficie,
   chaveDaBase,
   type DocumentoDeCenario,
+  type EncaixeDeComposicao,
+  EncaixeDeComposicaoSchema,
   type InstanciaDeCenario,
   type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -12,7 +15,6 @@ import {
   BufferGeometry,
   Color,
   DirectionalLight,
-  Float32BufferAttribute,
   Fog,
   Group,
   HemisphereLight,
@@ -39,6 +41,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { geometriaDaGrade } from './grade'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
 import {
   encaixar,
@@ -51,6 +54,7 @@ import {
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { carregarPecasDeTerreno } from './recursos-terreno'
 import { RepresentacoesDoModelo } from './representacoes'
+import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
 import type {
   Encaixe,
@@ -84,6 +88,7 @@ interface Local {
 interface Gesto {
   pivo: Matrix4
   inicio: Map<string, Matrix4>
+  apoios: Map<string, InstanciaDeCenario['apoio']>
 }
 
 const CEU_VERTICE = /* glsl */ `
@@ -121,6 +126,10 @@ class PalcoThree implements Palco {
   private readonly pivo = new Object3D()
   private readonly objetos = new Group()
   private readonly chao = new Group()
+  private readonly grade = new LineSegments(
+    new BufferGeometry(),
+    new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.24, depthWrite: false }),
+  )
   private readonly ceu: Mesh<SphereGeometry, ShaderMaterial>
   private readonly luzDoCeu = new HemisphereLight(0xffffff, 0x8a9a7a, 2)
   private readonly sol = new DirectionalLight(0xffffff, 1.7)
@@ -140,10 +149,15 @@ class PalcoThree implements Palco {
   private readonly trancados = new Set<string>()
   private selecao: string[] = []
   private ferramenta: Ferramenta = 'selecionar'
-  private encaixe: Encaixe = { grade: null, angulo: null }
+  private encaixe: EncaixeDeComposicao = EncaixeDeComposicaoSchema.parse({
+    grade: null,
+    angulo: null,
+  })
+  private readonly superficies = new SuperficiesDosObjetos()
   private gesto: Gesto | null = null
   private toque: { x: number; y: number; ponteiro: number } | null = null
   private chaveDoChao = ''
+  private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
   private cargaDoTerreno: AbortController | null = null
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
@@ -187,7 +201,15 @@ class PalcoThree implements Palco {
     this.sol.shadow.mapSize.set(2048, 2048)
     this.sol.shadow.bias = -0.0004
     this.sol.shadow.normalBias = 0.05
-    this.cena.add(this.luzDoCeu, this.sol, this.sol.target, this.chao, this.objetos, this.pivo)
+    this.cena.add(
+      this.luzDoCeu,
+      this.sol,
+      this.sol.target,
+      this.chao,
+      this.objetos,
+      this.pivo,
+      this.grade,
+    )
 
     this.loteFantasma = new LoteDoModelo(this.objetos, this.fantasma.partes)
     this.contornos = new Contornos(this.cena, COR_DA_SELECAO)
@@ -235,6 +257,7 @@ class PalcoThree implements Palco {
     this.aplicarLuz(documento.iluminacao.hora)
     this.pedirModelos(documento)
     this.reconstruir()
+    this.atualizarGrade()
   }
 
   definirSelecao(ids: readonly string[]): void {
@@ -248,10 +271,12 @@ class PalcoThree implements Palco {
   }
 
   definirEncaixe(encaixe: Encaixe): void {
-    this.encaixe = encaixe
-    this.alca.setTranslationSnap(encaixe.grade)
-    this.alca.setRotationSnap(encaixe.angulo ? (encaixe.angulo * Math.PI) / 180 : null)
-    this.alca.setScaleSnap(encaixe.grade ? 0.25 : null)
+    this.encaixe = EncaixeDeComposicaoSchema.parse(encaixe)
+    // A translação usa a origem modular; o snap nativo do Three assume origem zero.
+    this.alca.setTranslationSnap(null)
+    this.alca.setRotationSnap(this.encaixe.angulo ? (this.encaixe.angulo * Math.PI) / 180 : null)
+    this.alca.setScaleSnap(this.encaixe.grade ? 0.25 : null)
+    this.atualizarGrade()
   }
 
   definirTema(_tema: Tema): void {
@@ -278,20 +303,57 @@ class PalcoThree implements Palco {
     if (!doc) return null
     this.mirar(clientX, clientY)
     if (doc.base.tipo === 'terreno' && !this.terreno) return null
-    const ponto = this.terreno
-      ? this.terreno.pontoSobRaio(this.raio)
-      : this.raio.ray.intersectPlane(this.planoDoChao, new Vector3())
+    const andar = this.encaixe.andar
+    const plano = andar
+      ? new Plane(new Vector3(0, 1, 0), -(this.encaixe.origem.y + andar.nivel * andar.altura))
+      : this.planoDoChao
+    const ponto = andar
+      ? this.raio.ray.intersectPlane(plano, new Vector3())
+      : this.terreno
+        ? this.terreno.pontoSobRaio(this.raio)
+        : this.raio.ray.intersectPlane(this.planoDoChao, new Vector3())
+    const superficie = this.encaixe.superficie ? this.superficies.acertar(this.raio) : null
+    if (superficie && (!ponto || superficie.distancia < ponto.distanceTo(this.raio.ray.origin))) {
+      // Ponto real da malha tem precedência sobre a grade: quantizar depois o faria flutuar.
+      return {
+        x: superficie.ponto.x,
+        y: superficie.ponto.y,
+        z: superficie.ponto.z,
+        apoio: this.apoiarNaSuperficie(superficie.id, superficie.ponto),
+      }
+    }
     if (!ponto) return null
     const meio = this.meioDoLote(doc)
     const minX = doc.base.tipo === 'terreno' ? doc.base.origem.x : -meio.x
     const minZ = doc.base.tipo === 'terreno' ? doc.base.origem.z : -meio.z
-    const x = Math.min(minX + meio.x * 2, Math.max(minX, encaixar(ponto.x, this.encaixe.grade)))
-    const z = Math.min(minZ + meio.z * 2, Math.max(minZ, encaixar(ponto.z, this.encaixe.grade)))
-    return { x, y: alturaDoChao(doc.base, x, z, this.fonteDeAlturas()), z }
+    const x = Math.min(
+      minX + meio.x * 2,
+      Math.max(minX, encaixar(ponto.x, this.encaixe.grade, this.encaixe.origem.x)),
+    )
+    const z = Math.min(
+      minZ + meio.z * 2,
+      Math.max(minZ, encaixar(ponto.z, this.encaixe.grade, this.encaixe.origem.z)),
+    )
+    return {
+      x,
+      y: andar ? ponto.y : alturaDoChao(doc.base, x, z, this.fonteDeAlturas()),
+      z,
+      ...(andar ? { apoio: { tipo: 'absoluto' as const } } : {}),
+    }
   }
 
   fonteDeAlturas() {
     return this.terreno?.altura
+  }
+
+  private apoiarNaSuperficie(id: string, ponto: Vector3) {
+    const doc = this.documento!
+    // Medidas legadas são lidas do GLB para a consulta. O host confirma e grava essas mesmas
+    // medidas no lote de colocação/gesto, junto do novo apoio, sem alterar o documento aqui.
+    const modelos = doc.modelos.map((m) =>
+      m.volume ? m : { ...m, volume: this.volumeDoModelo(m.id) ?? undefined },
+    )
+    return apoioNaSuperficie({ ...doc, modelos }, id, ponto, this.fonteDeAlturas())
   }
 
   enquadrar(ids?: readonly string[]): void {
@@ -352,6 +414,9 @@ class PalcoThree implements Palco {
     this.alca.dispose()
     this.orbita.dispose()
     this.contornos.descartar()
+    this.grade.geometry.dispose()
+    this.grade.material.dispose()
+    this.superficies.descartar()
     this.loteFantasma.descartar()
     this.fantasma.descartar()
     for (const estado of this.modelos.values())
@@ -476,6 +541,7 @@ class PalcoThree implements Palco {
           if (this.destruido || this.cargaDoTerreno !== controle || controle.signal.aborted) return
           this.terreno = new TerrenoDoPalco(base, recursos)
           this.chao.add(this.terreno.grupo)
+          this.atualizarGrade()
           this.reconstruir()
           if (this.enquadramentoPendente) {
             const pedido = this.enquadramentoPendente
@@ -519,42 +585,24 @@ class PalcoThree implements Palco {
     lote.rotation.x = -Math.PI / 2
     lote.receiveShadow = true
 
-    // Grade: fios finos de metro em metro (ou mais largos em lotes grandes) e fortes a cada dez.
-    const passo = Math.max(largura, comprimento) > 512 ? 8 : 1
-    const finos: number[] = [],
-      fortes: number[] = []
-    const fio = (lista: number[], x1: number, z1: number, x2: number, z2: number) =>
-      lista.push(x1, 0, z1, x2, 0, z2)
-    for (let x = -meio.x; x <= meio.x + 1e-6; x += passo) {
-      const forte = Math.abs(Math.round(x / (passo * 10)) * passo * 10 - x) < 1e-6
-      fio(forte ? fortes : finos, x, -meio.z, x, meio.z)
-    }
-    for (let z = -meio.z; z <= meio.z + 1e-6; z += passo) {
-      const forte = Math.abs(Math.round(z / (passo * 10)) * passo * 10 - z) < 1e-6
-      fio(forte ? fortes : finos, -meio.x, z, meio.x, z)
-    }
-    const linhas = (pontos: number[], opacidade: number) => {
-      const geometria = new BufferGeometry()
-      geometria.setAttribute('position', new Float32BufferAttribute(pontos, 3))
-      const grade = new LineSegments(
-        geometria,
-        new LineBasicMaterial({
-          color: 0xffffff,
-          transparent: true,
-          opacity: opacidade,
-          depthWrite: false,
-        }),
-      )
-      grade.position.y = 0.012
-      return grade
-    }
-    this.chao.add(fora, lote, linhas(finos, 0.16), linhas(fortes, 0.42))
+    this.chao.add(fora, lote)
     const alcance = Math.max(largura, comprimento)
     this.nevoa.near = Math.max(120, alcance * 0.9)
     this.nevoa.far = Math.max(900, alcance * 4)
   }
 
   // ---- modelos e objetos --------------------------------------------------
+
+  private atualizarGrade() {
+    if (!this.documento) return
+    const chave = JSON.stringify([this.chaveDoChao, this.encaixe, Boolean(this.fonteDeAlturas())])
+    if (chave === this.chaveDaGrade) return
+    this.chaveDaGrade = chave
+    const geometria = geometriaDaGrade(this.documento, this.encaixe, this.fonteDeAlturas())
+    this.grade.geometry.dispose()
+    this.grade.geometry = geometria
+    this.pedirQuadro()
+  }
 
   private pedirModelos(doc: DocumentoDeCenario) {
     const vivos = new Set<string>()
@@ -615,6 +663,7 @@ class PalcoThree implements Palco {
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
       this.locais.clear()
+      this.superficies.definir([])
       this.loteFantasma.preencher([])
       for (const e of this.modelos.values())
         if (e.estado === 'pronto') for (const lote of e.representacoes.lotes()) lote.preencher([])
@@ -662,6 +711,17 @@ class PalcoThree implements Palco {
         for (const lote of estado.representacoes.lotes())
           registrar(lote, estado.modelo.caixa, porLote.get(lote) ?? [])
       }
+
+    const superficies: SuperficieDoObjeto[] = []
+    for (const [id, local] of this.locais) {
+      if (local.lote === this.loteFantasma) continue
+      for (const malha of local.lote.malhas) {
+        const matriz = new Matrix4()
+        malha.getMatrixAt(local.indice, matriz)
+        superficies.push({ id, geometria: malha.geometry, material: malha.material, matriz })
+      }
+    }
+    this.superficies.definir(superficies)
 
     this.atualizarSelecao()
   }
@@ -754,7 +814,7 @@ class PalcoThree implements Palco {
       this.pivo.updateMatrix()
       const inicio = new Map<string, Matrix4>()
       for (const id of this.movidos()) inicio.set(id, this.locais.get(id)!.matriz.clone())
-      this.gesto = { pivo: this.pivo.matrix.clone(), inicio }
+      this.gesto = { pivo: this.pivo.matrix.clone(), inicio, apoios: new Map() }
       this.opcoes.aoGesto?.(true)
       return
     }
@@ -766,7 +826,11 @@ class PalcoThree implements Palco {
       for (const [id, antes] of gesto.inicio) {
         const local = this.locais.get(id)
         if (!local || local.matriz.equals(antes)) continue
-        mudancas.push({ id, transformacao: transformacaoDaMatriz(local.matriz) })
+        mudancas.push({
+          id,
+          transformacao: transformacaoDaMatriz(local.matriz),
+          ...(gesto.apoios.has(id) ? { apoio: gesto.apoios.get(id)! } : {}),
+        })
       }
       if (mudancas.length) this.opcoes.aoTransformar?.(mudancas)
     }
@@ -787,12 +851,36 @@ class PalcoThree implements Palco {
       const s = this.pivo.scale
       this.pivo.scale.setScalar(fatorUniforme(s.x, s.y, s.z))
     }
+    if (this.ferramenta === 'mover') {
+      const eixo = this.alca.axis ?? ''
+      for (const e of ['x', 'y', 'z'] as const)
+        if (eixo.includes(e.toUpperCase())) {
+          const passo =
+            e === 'y' && this.encaixe.andar ? this.encaixe.andar.altura : this.encaixe.grade
+          this.pivo.position[e] = encaixar(this.pivo.position[e], passo, this.encaixe.origem[e])
+        }
+    }
     this.pivo.updateMatrix()
     this.delta.multiplyMatrices(this.pivo.matrix, this.inversa.copy(gesto.pivo).invert())
     for (const [id, antes] of gesto.inicio) {
       const local = this.locais.get(id)
       if (!local) continue
       local.matriz.multiplyMatrices(this.delta, antes)
+      if (this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
+        const caixa = local.caixa.clone().applyMatrix4(local.matriz)
+        const p = new Vector3().setFromMatrixPosition(local.matriz)
+        const raio = new Raycaster(new Vector3(p.x, caixa.max.y + 0.01, p.z), new Vector3(0, -1, 0))
+        const acerto = this.superficies.acertar(raio, new Set(gesto.inicio.keys()))
+        const chao = alturaDoChao(this.documento.base, p.x, p.z, this.fonteDeAlturas())
+        const usarObjeto = acerto && acerto.ponto.y >= chao
+        local.matriz.elements[13]! += (usarObjeto ? acerto.ponto.y : chao) - caixa.min.y
+        gesto.apoios.set(
+          id,
+          usarObjeto
+            ? this.apoiarNaSuperficie(acerto.id, acerto.ponto)
+            : { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
+        )
+      }
       local.lote.atualizar(local.indice, local.matriz)
     }
     this.desenharContornos()

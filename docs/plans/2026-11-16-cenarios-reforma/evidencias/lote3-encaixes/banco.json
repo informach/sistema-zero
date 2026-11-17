@@ -1,0 +1,16 @@
+{
+  "modelo": "morada_banco.a3bf1765ed72.glb",
+  "superficie": {
+    "y": 3.4500898416259034,
+    "apoio": "objeto"
+  },
+  "grade": {
+    "x": 2.25,
+    "y": 0,
+    "z": 3.75
+  },
+  "andar": 6.5,
+  "gestos": 2,
+  "orbitaSemSelecao": true,
+  "erros": []
+}

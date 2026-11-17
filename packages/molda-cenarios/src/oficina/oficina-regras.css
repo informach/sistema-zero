@@ -103,6 +103,26 @@
     font-weight: 800;
     font-size: 0.875rem;
   }
+  .mcn-opcao-encaixe {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mcn-opcao-encaixe > input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-mld-accent);
+  }
+  .mcn-opcao-encaixe > input:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 3px;
+  }
   .mcn-campo > input,
   .mcn-campo > textarea {
     min-height: 44px;

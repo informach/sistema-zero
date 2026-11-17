@@ -57,6 +57,12 @@ export function validarDocumento(
 
   for (const o of d.instancias) {
     if (!modelos.has(o.modelo)) erros.push(`Modelo fora da tabela do cenário: ${o.id}`)
+    if (
+      o.apoio.tipo === 'objeto' &&
+      o.apoio.contato &&
+      !d.modelos.find((m) => m.id === o.modelo)?.volume
+    )
+      erros.push(`O encaixe em superfície exige medidas do modelo: ${o.id}`)
     if (o.apoio.tipo === 'agua' && !aguas.has(o.apoio.agua))
       erros.push(`Água de apoio ausente: ${o.id}`)
     const vistos = new Set([o.id])

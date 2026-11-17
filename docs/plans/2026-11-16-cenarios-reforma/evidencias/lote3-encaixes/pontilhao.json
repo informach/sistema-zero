@@ -1,0 +1,16 @@
+{
+  "modelo": "pontilhao_tabuas.5f24d8c293fe.glb",
+  "superficie": {
+    "y": 3.9760440680659337,
+    "apoio": "objeto"
+  },
+  "grade": {
+    "x": 2.25,
+    "y": 0,
+    "z": 3.75
+  },
+  "andar": 6.5,
+  "gestos": 2,
+  "orbitaSemSelecao": true,
+  "erros": []
+}

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { ensaiarEncaixes } from './ensaiar-encaixes.mjs'
 
 const raiz = resolve(import.meta.dirname, '../../../..')
 const saida = resolve(
@@ -20,6 +21,7 @@ const modelos = ['poco_manivela_baixa.209f7e2a54ed.glb', 'morada_banco.a3bf1765e
 mkdirSync(saida, { recursive: true })
 const navegador = await chromium.launch({ channel: 'chrome', headless: true })
 const resultados = []
+let paginaAtual
 try {
   for (const [tema, largura] of [
     ['light', 1440],
@@ -30,6 +32,7 @@ try {
       viewport: { width: largura, height: 900 },
       hasTouch: largura === 390,
     })
+    paginaAtual = pagina
     const erros = []
     pagina.on('pageerror', (e) => erros.push(e.message))
     await pagina.goto(`http://127.0.0.1:4541/?vazio=1&tema=${tema}`)
@@ -85,6 +88,15 @@ try {
       return t && !t.includes('chegando')
     })
     await pagina.screenshot({ path: resolve(saida, `espelho-${tema}-${largura}.png`) })
+    const encaixes = process.argv.includes('--encaixes')
+      ? await ensaiarEncaixes(pagina, {
+          ler,
+          saida,
+          tema,
+          largura,
+          modulo: `/@fs/${resolve(raiz, 'packages/molda-cenarios-core/src/v2/index.ts').replaceAll('\\', '/')}`,
+        })
+      : undefined
     await pagina.getByRole('button', { name: 'Trocar modelo', exact: true }).click()
     await pagina.getByRole('button', { name: 'Cancelar troca', exact: true }).click()
     assert.deepEqual(await ler(), espelhado)
@@ -127,12 +139,26 @@ try {
       desfazer: true,
       refazer: true,
       reentrada: true,
+      ...(encaixes ? { encaixes } : {}),
       erros,
     })
     await pagina.close()
   }
   writeFileSync(resolve(saida, 'resultado.json'), `${JSON.stringify(resultados, null, 2)}\n`)
   console.log(JSON.stringify(resultados))
+} catch (e) {
+  if (paginaAtual && !paginaAtual.isClosed()) {
+    await paginaAtual.screenshot({ path: resolve(saida, 'falha.png') })
+    writeFileSync(
+      resolve(saida, 'falha.json'),
+      JSON.stringify(
+        { erro: String(e), texto: await paginaAtual.locator('body').innerText() },
+        null,
+        2,
+      ),
+    )
+  }
+  throw e
 } finally {
   await navegador.close()
 }

@@ -86,7 +86,15 @@ export const ApoioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('absoluto') }).strict(),
-  z.object({ tipo: z.literal('objeto'), objeto: id, deslocamento: numero }).strict(),
+  z
+    .object({
+      tipo: z.literal('objeto'),
+      objeto: id,
+      deslocamento: numero,
+      /** Ponto local da superfície original. Ausente nos apoios legados com posição já resolvida. */
+      contato: VetorSchema.optional(),
+    })
+    .strict(),
   z
     .object({
       tipo: z.literal('agua'),

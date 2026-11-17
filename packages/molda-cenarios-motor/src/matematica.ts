@@ -1,5 +1,6 @@
 import {
   type DocumentoDeCenario,
+  encaixarNaGrade,
   type FonteDeAlturas,
   type InstanciaDeCenario,
   posicaoNoMundo,
@@ -14,7 +15,8 @@ const euler = new Euler(0, 0, 0, 'XYZ')
 
 /** Matriz de mundo de um objeto do cenário, com o apoio já resolvido. Escreve em `saida`. */
 export function matrizDoObjeto(
-  doc: Pick<DocumentoDeCenario, 'base' | 'modelos'>,
+  doc: Pick<DocumentoDeCenario, 'base' | 'modelos'> &
+    Partial<Pick<DocumentoDeCenario, 'instancias'>>,
   o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio' | 'modelo'>,
   saida: Matrix4,
   fonte?: FonteDeAlturas,
@@ -51,10 +53,8 @@ export function transformacaoDaMatriz(m: Matrix4): Transformacao {
   }
 }
 
-export function encaixar(valor: number, passo: number | null): number {
-  if (!passo || passo <= 0) return valor
-  const v = Math.round(valor / passo) * passo
-  return v === 0 ? 0 : v
+export function encaixar(valor: number, passo: number | null, origem = 0): number {
+  return encaixarNaGrade(valor, passo, origem)
 }
 
 /** Num gesto de tamanho com vários objetos, vale o eixo que mais mudou, igual nos três. */

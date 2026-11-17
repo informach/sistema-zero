@@ -1,0 +1,16 @@
+{
+  "modelo": "ponte_04_pacote.8d256d9aefcc.glb",
+  "superficie": {
+    "y": 3.5644919612325663,
+    "apoio": "objeto"
+  },
+  "grade": {
+    "x": 2.25,
+    "y": 0,
+    "z": 3.75
+  },
+  "andar": 6.5,
+  "gestos": 2,
+  "orbitaSemSelecao": true,
+  "erros": []
+}

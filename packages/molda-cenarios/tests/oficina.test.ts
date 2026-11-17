@@ -1,11 +1,16 @@
 import { describe, expect, test } from 'bun:test'
-import type { ComandoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  apoioNaSuperficie,
+  type ComandoDeCenario,
+  posicaoNoMundo,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   comandosDoGesto,
   comandosParaApagar,
   comandosParaDuplicar,
   comandosParaPor,
   comandosParaTrocar,
+  comMedidasConferidas,
 } from '../src/oficina/acoes'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -57,6 +62,77 @@ const por = (
 }
 
 describe('ações da aba Objetos', () => {
+  test('encaixe em suporte legado confere as medidas no mesmo lote, inclusive quando espelhado', async () => {
+    const { controlador } = await abrir(),
+      novoId = ids()
+    const pai = por(controlador, novoId),
+      filho = por(controlador, novoId)
+    const m = structuredClone(controlador.getState().documento.modelos[0]!),
+      volume = m.volume!
+    delete m.volume
+    expect(
+      controlador.executar([
+        { tipo: 'modelo.definir', modelo: m },
+        {
+          tipo: 'instancia.atualizar',
+          id: pai,
+          alteracoes: { espelho: { x: true, y: false, z: false } },
+        },
+      ]),
+    ).toBe(true)
+    const antes = structuredClone(controlador.getState().documento)
+    const comandos = comMedidasConferidas(
+      antes,
+      [pai, filho],
+      () => volume,
+      (d) => [
+        {
+          tipo: 'instancia.atualizar',
+          id: filho,
+          alteracoes: { apoio: apoioNaSuperficie(d, pai, { x: 0.2, y: 3.5, z: 0.3 }) },
+        },
+      ],
+    )
+    expect(controlador.executar(comandos)).toBe(true)
+    const d = controlador.getState().documento
+    expect(d.modelos[0]!.volume).toEqual(volume)
+    expect(posicaoNoMundo(d, d.instancias[1]!)).toEqual({ x: 0.2, y: 4, z: 0.3 })
+    expect(antes.modelos[0]!.volume).toBeUndefined()
+    await controlador.terminar()
+    await controlador.desfazer()
+    expect(controlador.getState().documento).toEqual(antes)
+  })
+  test('mover a pilha inteira não aplica a translação duas vezes; duplicar o dependente mantém o deslocamento', async () => {
+    const { controlador } = await abrir(),
+      novoId = ids()
+    const pai = por(controlador, novoId),
+      filho = por(controlador, novoId)
+    let d = controlador.getState().documento
+    controlador.executar([
+      {
+        tipo: 'instancia.atualizar',
+        id: filho,
+        alteracoes: { apoio: apoioNaSuperficie(d, pai, { x: 0, y: 3.5, z: 0 }) },
+      },
+    ])
+    d = controlador.getState().documento
+    const mudancas = [filho, pai].map((id) => {
+      const o = d.instancias.find((o) => o.id === id)!,
+        p = posicaoNoMundo(d, o)
+      return { id, transformacao: { ...o.transformacao, posicao: { ...p, x: p.x + 10 } } }
+    })
+    expect(controlador.executar(comandosDoGesto(d, mudancas))).toBe(true)
+    const depois = controlador.getState().documento
+    expect(posicaoNoMundo(depois, depois.instancias[0]!).x).toBeCloseTo(10)
+    expect(posicaoNoMundo(depois, depois.instancias[1]!).x).toBeCloseTo(10)
+    const copia = comandosParaDuplicar(depois, [filho], novoId)
+    expect(controlador.executar(copia.comandos)).toBe(true)
+    const final = controlador.getState().documento
+    const p = posicaoNoMundo(final, final.instancias.at(-1)!)
+    expect(p.x).toBeCloseTo(11)
+    expect(p.z).toBeCloseTo(1)
+    expect(p.y).toBeCloseTo(posicaoNoMundo(depois, depois.instancias[1]!).y)
+  })
   test('trocar usa o histórico durável e pôr uma revisão nova não altera modelos anteriores', async () => {
     const { controlador } = await abrir()
     const novoId = ids(),

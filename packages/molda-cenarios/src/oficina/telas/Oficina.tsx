@@ -1,4 +1,8 @@
-import { type ComandoDeCenario, chaveDaBase } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type ComandoDeCenario,
+  chaveDaBase,
+  type EncaixeDeComposicao,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   criarPalco,
   type Estatisticas,
@@ -55,6 +59,8 @@ import {
   comandosParaPor,
   comandosParaTrocar,
   comMedidasConferidas,
+  type LocalDeColocacao,
+  novoIdAleatorio,
 } from '../acoes'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
@@ -69,6 +75,7 @@ import type {
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { Encaixes } from './Encaixes'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
 import { Organizar } from './Organizar'
@@ -98,8 +105,6 @@ const HORAS: readonly [number, LucideIcon, string][] = [
   [22, Moon, COPY.painel.horas.noite],
 ]
 const VISTAS: readonly Vista[] = ['livre', 'cima', 'frente', 'lado']
-const ENCAIXE_LIGADO = { grade: 0.5, angulo: 15 }
-const ENCAIXE_DESLIGADO = { grade: null, angulo: null }
 
 function digitando(alvo: EventTarget | null): boolean {
   const elemento = alvo as HTMLElement | null
@@ -208,7 +213,7 @@ function OficinaAberta({
   const [erroDoMolde, setErroDoMolde] = useState<string | null>(null)
   const [revisaoDoMolde, setRevisaoDoMolde] = useState<{
     molde: MoldeDisponivel
-    ponto: { x: number; z: number }
+    ponto: LocalDeColocacao
     token: string
     avisos: string[]
   } | null>(null)
@@ -220,6 +225,13 @@ function OficinaAberta({
     [],
   )
   const [aba, setAba] = useState<Aba>('objetos')
+  const [configuracaoDoEncaixe, setConfiguracaoDoEncaixe] = useState<EncaixeDeComposicao>({
+    grade: 0.5,
+    angulo: 15,
+    origem: { x: 0, y: 0, z: 0 },
+    andar: null,
+    superficie: false,
+  })
   const [vista, setVista] = useState<Vista>('livre')
   // Em tela estreita o painel é uma folha por cima do palco: começa recolhido.
   const [painelAberto, setPainelAberto] = useState(
@@ -271,10 +283,17 @@ function OficinaAberta({
       aoSelecionar: (id, somar) => controlador.tocar(id, somar),
       aoTransformar: (mudancas) =>
         controlador.executar(
-          comandosDoGesto(
+          comMedidasConferidas(
             controlador.getState().documento,
-            mudancas,
-            palco.current?.fonteDeAlturas?.(),
+            [
+              ...new Set(
+                mudancas.flatMap((m) =>
+                  m.apoio?.tipo === 'objeto' ? [m.id, m.apoio.objeto] : [m.id],
+                ),
+              ),
+            ],
+            (id) => palco.current?.volumeDoModelo(id) ?? null,
+            (doc) => comandosDoGesto(doc, mudancas, palco.current?.fonteDeAlturas?.()),
           ),
         ),
       aoMedir: setMedidas,
@@ -297,20 +316,31 @@ function OficinaAberta({
     )
   }, [ferramenta, aba, estado.ocupado])
   useEffect(
-    () => palco.current?.definirEncaixe(encaixe ? ENCAIXE_LIGADO : ENCAIXE_DESLIGADO),
-    [encaixe],
+    () =>
+      palco.current?.definirEncaixe(
+        encaixe ? configuracaoDoEncaixe : { grade: null, angulo: null },
+      ),
+    [encaixe, configuracaoDoEncaixe],
   )
   useEffect(() => palco.current?.definirTema(tema), [tema])
 
   const por = useCallback(
-    (modelo: ModeloDeBiblioteca, ponto: { x: number; z: number } | null) => {
+    (modelo: ModeloDeBiblioteca, ponto: LocalDeColocacao | null) => {
       if (
         controlador.getState().documento.base.tipo === 'terreno' &&
         !palco.current?.fonteDeAlturas?.()
       )
         return
-      const lugar = ponto ?? centroDaVista(canvas.current, palco.current) ?? { x: 0, z: 0 }
-      const { comandos, id } = comandosParaPor(controlador.getState().documento, modelo, lugar)
+      const lugar: LocalDeColocacao = ponto ??
+        centroDaVista(canvas.current, palco.current) ?? { x: 0, z: 0 }
+      const id = novoIdAleatorio()
+      const apoio = lugar.apoio
+      const comandos = comMedidasConferidas(
+        controlador.getState().documento,
+        apoio?.tipo === 'objeto' ? [apoio.objeto] : [],
+        (id) => palco.current?.volumeDoModelo(id) ?? null,
+        (doc) => comandosParaPor(doc, modelo, lugar, () => id).comandos,
+      )
       if (controlador.executar(comandos)) {
         controlador.selecionar([id])
         if (controlador.getState().ferramenta === 'selecionar')
@@ -322,16 +352,21 @@ function OficinaAberta({
   )
   const copiar = useCallback(() => {
     const atual = controlador.getState()
-    const { comandos, ids } = comandosParaDuplicar(atual.documento, atual.selecao)
+    const { comandos, ids } = comandosParaDuplicar(
+      atual.documento,
+      atual.selecao,
+      undefined,
+      palco.current?.fonteDeAlturas?.(),
+    )
     if (comandos.length && controlador.executar(comandos)) controlador.selecionar(ids)
   }, [controlador])
   const escolherModelo = async (
     escolha: EscolhaDeModelo,
-    ponto: { x: number; z: number } | null,
+    ponto: LocalDeColocacao | null,
     aceite?: string,
   ) => {
     const alvo = troca.current
-    const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: { x: number; z: number } | null) => {
+    const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
       if (!alvo) {
         por(modelo, lugar)
         return
@@ -792,6 +827,19 @@ function OficinaAberta({
                 }}
               />
             ) : null}
+            {relevoPronto && aba === 'objetos' ? (
+              <Encaixes
+                documento={documento}
+                selecao={selecao}
+                valor={configuracaoDoEncaixe}
+                aoMudar={setConfiguracaoDoEncaixe}
+                ligado={encaixe}
+                aoLigar={controlador.definirEncaixe}
+                executar={executar}
+                medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                fonte={fonte}
+              />
+            ) : null}
           </aside>
         ) : null}
       </div>
@@ -820,7 +868,7 @@ function OficinaAberta({
 function centroDaVista(
   tela: HTMLCanvasElement | null,
   palco: Palco | null,
-): { x: number; z: number } | null {
+): LocalDeColocacao | null {
   if (!tela || !palco) return null
   const caixa = tela.getBoundingClientRect()
   return palco.pontoNoChao(caixa.left + caixa.width / 2, caixa.top + caixa.height * 0.58)

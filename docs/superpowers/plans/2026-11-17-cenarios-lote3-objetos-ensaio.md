@@ -37,8 +37,8 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 - [x] Reproduzir a falha de rotação inclinada com uma referência independente do Three nos testes do motor.
 - [x] Corrigir composição de giros e conferir repetição, variação, volumes, limites, bloqueios e inversão dos lotes. Os dois casos falharam antes e passaram depois; núcleo 63 testes/202 asserções, motor 21/150, tipagem de ambos aprovada. O lote 3 e esta parte permanecem abertos para os itens seguintes.
 - [x] Completar espelho e troca de modelo, conservando posição, proporções e contato com o chão. Geometrias refletidas com faces/normais/tangentes corrigidas; sem escala negativa de instância. Troca pela gaveta e histórico existentes, preservando referências de peças não selecionadas. Testes e Chrome claro/escuro/390 px aprovados; [revisão do recorte](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). O lote continua aberto.
-- [ ] Conferir suportes e transformações das ações existentes, sem introduzir heurísticas por nome de arquivo.
-- [ ] Testar, revisar e preservar o recorte; lote 3 continua aberto.
+- [x] Conferir suportes e transformações das ações existentes, sem introduzir heurísticas por nome de arquivo. Contato local acompanha o suporte; movimento conjunto e duplicação conferidos no recorte de encaixes. Apoios legados preservados.
+- [x] Testar, revisar e preservar o recorte; lote 3 continua aberto. Registros de [espelho/troca](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md) e [encaixes](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-encaixes.md).
 
 ### 3.2 — Grade modular e encaixes
 
@@ -46,10 +46,10 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** parâmetros explícitos de grade, origem, ângulo e altura de andar; preferências de vista separadas dos dados autorais. O palco devolve pontos e transformações de mundo; a fila existente grava os comandos.
 
-- [ ] Implementar passo configurável, giros de 90°, níveis de andar e origem modular.
-- [ ] Implementar encaixe em superfície com a consulta espacial existente, preservando pivôs e volumes reais.
-- [ ] Conferir terreno inclinado, ponte, topo de objeto e perfis importados; indicar claramente as opções ativas.
-- [ ] Exercitar mouse, teclado e toque emulado, sem perder navegação de câmera ou capturar um gesto de órbita como edição.
+- [x] Implementar passo configurável, giros de 90°, níveis de andar e origem modular.
+- [x] Implementar encaixe em superfície com a consulta espacial existente, preservando pivôs e volumes reais.
+- [x] Conferir terreno inclinado, ponte, topo de objeto e perfis importados; indicar claramente as opções ativas. Rampa, banco, Ponte 4, pontilhão e regressão da Faísca convertida aprovados.
+- [x] Exercitar mouse, teclado e toque emulado, sem perder navegação de câmera ou capturar um gesto de órbita como edição. Dois arrastes reais por modelo e ensaio de órbita; preferências e aplicação conferidas no Chrome claro/escuro/390 px. [Revisão](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-encaixes.md).
 
 ### 3.3 — Formas de rascunho e acabamento por objeto
 

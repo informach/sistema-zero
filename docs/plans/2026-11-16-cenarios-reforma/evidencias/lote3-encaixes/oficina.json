@@ -1,0 +1,56 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "encaixes": {
+      "preferenciasSemEdicao": true,
+      "giro90": true,
+      "baseNoAndar": 6.25,
+      "desfazer": true,
+      "toqueEmulado": false
+    },
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "encaixes": {
+      "preferenciasSemEdicao": true,
+      "giro90": true,
+      "baseNoAndar": 6.25,
+      "desfazer": true,
+      "toqueEmulado": false
+    },
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "encaixes": {
+      "preferenciasSemEdicao": true,
+      "giro90": true,
+      "baseNoAndar": 6.25,
+      "desfazer": true,
+      "toqueEmulado": true
+    },
+    "erros": []
+  }
+]

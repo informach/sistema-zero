@@ -1,6 +1,8 @@
 import type {
   DocumentoDeCenario,
+  EncaixeDeComposicao,
   FonteDeAlturas,
+  InstanciaDeCenario,
   ModeloDoCenario,
   Transformacao,
   VolumeDeComposicao,
@@ -10,23 +12,21 @@ export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho'
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
 export type Tema = 'light' | 'dark'
 
-export interface Encaixe {
-  /** Passo da grade em metros, ou nulo para mover livre. */
-  grade: number | null
-  /** Passo do giro em graus, ou nulo para girar livre. */
-  angulo: number | null
-}
+export type Encaixe = Pick<EncaixeDeComposicao, 'grade' | 'angulo'> &
+  Partial<Omit<EncaixeDeComposicao, 'grade' | 'angulo'>>
 
 export interface Ponto3 {
   x: number
   y: number
   z: number
+  apoio?: InstanciaDeCenario['apoio']
 }
 
 export interface MudancaDeTransformacao {
   id: string
   /** Em coordenadas de MUNDO. Quem grava converte para o apoio do objeto. */
   transformacao: Transformacao
+  apoio?: InstanciaDeCenario['apoio']
 }
 
 export interface Estatisticas {
