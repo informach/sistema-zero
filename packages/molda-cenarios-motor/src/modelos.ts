@@ -1,11 +1,14 @@
 import { conferirGlb, digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import {
+  type AnimationClip,
   Box3,
   type BufferGeometry,
   type Material,
   Matrix4,
   type Mesh,
   type Object3D,
+  type Skeleton,
+  type SkinnedMesh,
   type Texture,
   TextureLoader,
   Vector3,
@@ -35,6 +38,7 @@ export interface ParteDoModelo {
 }
 
 export interface ModeloCarregado {
+  animacoes?: readonly AnimationClip[]
   partes: ParteDoModelo[]
   caixa: Box3
   triangulos: number
@@ -92,9 +96,12 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
   const partes: ParteDoModelo[] = []
   const geometrias = new Set<BufferGeometry>()
   const materiais = new Set<Material>()
+  const esqueletos = new Set<Skeleton>()
   raiz.traverse((no) => {
     const m = no as Mesh
     if (!m.isMesh) return
+    const pele = m as SkinnedMesh
+    if (pele.isSkinnedMesh) esqueletos.add(pele.skeleton)
     geometrias.add(m.geometry)
     for (const material of Array.isArray(m.material) ? m.material : [m.material])
       materiais.add(material)
@@ -145,6 +152,7 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
     if (caixa.isEmpty()) caixa.set(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
     let descartado = false
     return {
+      animacoes: gltf.animations,
       partes,
       caixa,
       triangulos,
@@ -154,11 +162,13 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
         descartado = true
         for (const g of geometrias) g.dispose()
         for (const m of materiais) descartarMaterial(m)
+        for (const s of esqueletos) s.dispose()
       },
     }
   } catch (e) {
     for (const g of geometrias) g.dispose()
     for (const m of materiais) descartarMaterial(m)
+    for (const s of esqueletos) s.dispose()
     throw e
   }
 }

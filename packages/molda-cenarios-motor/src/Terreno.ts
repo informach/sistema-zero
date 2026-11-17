@@ -164,6 +164,11 @@ export class TerrenoDoPalco {
     }
   }
 
+  fontesDoTeste() {
+    this.grupo.updateWorldMatrix(true, true)
+    return this.superficies.map((m) => ({ geometria: m.geometry, matriz: m.matrixWorld }))
+  }
+
   pontoSobRaio(raio: Raycaster): Vector3 | null {
     if (this.descartado) return null
     this.grupo.updateWorldMatrix(true, true)

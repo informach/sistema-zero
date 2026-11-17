@@ -7,6 +7,159 @@
 @source "./";
 
 @layer components {
+  .mcn-teste-preparar {
+    display: grid;
+    gap: 14px;
+    margin-block: 16px;
+  }
+  .mcn-teste-preparar label,
+  .mcn-teste-clipes label {
+    display: grid;
+    gap: 5px;
+  }
+  .mcn-teste-preparar :where(.mcn-opcao) {
+    display: flex;
+  }
+  .mcn-teste-controles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    color: var(--color-mld-text);
+  }
+  .mcn-teste-controles .mld-float,
+  .mcn-teste-toque {
+    pointer-events: auto;
+  }
+  .mcn-teste-barra {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+  }
+  .mcn-teste-barra label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mcn-teste-barra select {
+    max-width: 170px;
+  }
+  .mcn-teste-medida {
+    position: absolute;
+    top: 74px;
+    left: 10px;
+    width: min(290px, calc(100% - 20px));
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    font-size: 0.8125rem;
+  }
+  .mcn-teste-medida dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .mcn-teste-medida dt {
+    color: var(--color-mld-muted);
+  }
+  .mcn-teste-medida dd {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .mcn-teste-medida small {
+    color: var(--color-mld-muted);
+    font-size: 0.75rem;
+  }
+  .mcn-teste-ajuda {
+    position: absolute;
+    left: 10px;
+    bottom: 140px;
+    max-width: min(370px, calc(100% - 20px));
+    max-height: 48%;
+    overflow: auto;
+    padding: 10px;
+    font-size: 0.8125rem;
+  }
+  .mcn-teste-ajuda summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .mcn-teste-ajuda p {
+    margin-block: 8px;
+  }
+  .mcn-teste-clipes {
+    display: grid;
+    gap: 8px;
+  }
+  .mcn-teste-pausa {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(310px, calc(100% - 20px));
+    padding: 16px;
+  }
+  .mcn-teste-toque {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    position: absolute;
+    inset: auto 10px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 8px;
+  }
+  .mcn-teste-direcoes {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+  }
+  .mcn-teste-pressionar {
+    touch-action: none;
+    width: 48px;
+    height: 48px;
+    background: var(--color-mld-surface);
+    border: 1px solid var(--color-mld-border);
+  }
+  @media (max-width: 639px) {
+    .mcn-teste-barra {
+      font-size: 0.75rem;
+      gap: 4px;
+    }
+    .mcn-teste-barra .sz-tool-pill {
+      padding-inline: 8px;
+    }
+    .mcn-teste-medida {
+      top: 116px;
+      width: 245px;
+      padding: 8px;
+    }
+    .mcn-teste-medida .sz-tool-pill {
+      font-size: 0.75rem;
+    }
+    .mcn-teste-medida dl {
+      gap: 8px;
+    }
+    .mcn-teste-medida small {
+      display: none;
+    }
+    .mcn-teste-toque {
+      inset-inline: 6px;
+      gap: 4px;
+    }
+    .mcn-teste-pressionar {
+      width: 44px;
+      height: 44px;
+    }
+  }
   .mcn-versoes {
     display: grid;
     gap: 0.5rem;
@@ -442,6 +595,17 @@
   }
   .mcn-oficina .mld-workshop-project {
     gap: 8px;
+  }
+  .mcn-oficina .mld-workshop-header[data-testando] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "project files";
+    min-height: 60px;
+  }
+  .mcn-oficina .mld-workshop-header[data-testando] > .mld-workshop-project {
+    grid-area: project;
+  }
+  .mcn-oficina .mld-workshop-header[data-testando] > .mld-workshop-file-actions {
+    grid-area: files;
   }
   @media (max-width: 1279px) {
     .mcn-aba-rotulo {

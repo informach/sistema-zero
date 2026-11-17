@@ -36,6 +36,15 @@ export class SuperficiesDosObjetos {
     return this.indice.limites(destino)
   }
 
+  fontesDoTeste() {
+    return this.entradas.map((e) => ({
+      objeto: e.chave ?? e.id,
+      pendente: e.pendente,
+      geometria: e.geometria,
+      matriz: e.matriz,
+    }))
+  }
+
   definir(fontes: readonly SuperficieDoObjeto[]) {
     this.porChave.clear()
     this.entradas = fontes.map((f, i) => {

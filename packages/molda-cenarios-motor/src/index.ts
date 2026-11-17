@@ -3,5 +3,6 @@ export { converterArquivos, type EntradaDeImportacao } from './importacao/client
 export * from './matematica'
 export { encerrarFotografo, type FotoDoModelo, fotografarModelo } from './miniatura'
 export { criarPalco, estaTrancado } from './Palco'
+export type * from './teste/tipos'
 export type { EstadoDasTexturas } from './texturas'
 export type * from './tipos'

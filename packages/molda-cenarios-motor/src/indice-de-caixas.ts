@@ -79,4 +79,16 @@ export class IndiceDeCaixas {
     // Empates seguem a ordem das fontes: não alteramos qual face/objeto o Three escolheria.
     return resposta.sort((a, b) => a - b)
   }
+
+  sobrepor(caixa: Box3): number[] {
+    const pilha = this.nos.length ? [0] : [],
+      resposta: number[] = []
+    while (pilha.length) {
+      const no = this.nos[pilha.pop()!]!
+      if (no.caixa.isEmpty() || !caixa.intersectsBox(no.caixa)) continue
+      if (no.item !== -1) resposta.push(no.item)
+      else pilha.push(no.direita, no.esquerda)
+    }
+    return resposta.sort((a, b) => a - b)
+  }
 }

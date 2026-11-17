@@ -73,6 +73,7 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoTeste?(estado: import('./teste/tipos').EstadoDoTeste | null): void
   /** Retratos isolados de composições, sem chão, céu ou elementos de edição. */
   fotografia?: boolean
   /** Os bytes do GLB de um modelo da tabela do cenário. O host decide de onde vêm. */
@@ -102,6 +103,14 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  iniciarTeste(
+    configuracao: import('./teste/tipos').ConfiguracaoDoTeste,
+    sinal?: AbortSignal,
+  ): Promise<void>
+  comandarTeste(comando: import('./teste/tipos').ComandoDoTeste): void
+  entradaDoTeste(entrada: Partial<import('./teste/tipos').EntradaDoTeste>): void
+  estadoDoTeste(): import('./teste/tipos').EstadoDoTeste | null
+  encerrarTeste(): void
   definirDocumento(documento: DocumentoDeCenario): void
   recarregarTexturas(): void
   definirSelecao(ids: readonly string[]): void

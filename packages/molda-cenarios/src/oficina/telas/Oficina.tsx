@@ -5,8 +5,10 @@ import {
   entidadesTransformaveis,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
+  type ConfiguracaoDoTeste,
   criarPalco,
   type EstadoDasTexturas,
+  type EstadoDoTeste,
   type Estatisticas,
   type Ferramenta,
   idsEscondidos,
@@ -39,6 +41,7 @@ import {
   Paintbrush,
   PanelRightClose,
   PanelRightOpen,
+  Play,
   Redo2,
   RefreshCw,
   RotateCw,
@@ -102,6 +105,7 @@ import { EscolherBibliotecas } from './Mundo'
 import { Organizacao } from './Organizacao'
 import { Organizar } from './Organizar'
 import { Painel } from './Painel'
+import { ControlesTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
 
 type Aba = 'terreno' | 'agua' | 'objetos' | 'caminhos' | 'jogo' | 'luz'
@@ -236,6 +240,15 @@ function OficinaAberta({
   const canvas = useRef<HTMLCanvasElement>(null)
   const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
+  const [teste, setTeste] = useState<EstadoDoTeste | null>(null)
+  const [janelaTeste, setJanelaTeste] = useState(false)
+  const [preparandoTeste, setPreparandoTeste] = useState(false)
+  const [erroTeste, setErroTeste] = useState<string | null>(null)
+  const controleDoTeste = useRef<AbortController | null>(null)
+  const emEnsaio = Boolean(teste) || preparandoTeste
+  const ensaioAtivo = useRef(false)
+  ensaioAtivo.current = emEnsaio || janelaTeste
+  useEffect(() => () => controleDoTeste.current?.abort(), [])
   const arrastado = useRef<EscolhaDeModelo | null>(null)
   const troca = useRef<readonly string[] | null>(null)
   const [trocando, setTrocando] = useState(0)
@@ -371,7 +384,7 @@ function OficinaAberta({
     estado,
     palco,
     pronto: relevoPronto && !medidas?.carregando && !texturas.carregando && !texturas.falhas.length,
-    emGesto: gestoAtivo,
+    emGesto: gestoAtivo || emEnsaio || janelaTeste,
   })
 
   const executar = useCallback(
@@ -423,6 +436,7 @@ function OficinaAberta({
       aoEspalhar: aoAplicarPincel,
       aoPreverEspalhamento: aoPreverPincel,
       aoGesto: setGestoAtivo,
+      aoTeste: setTeste,
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
       aoTransformar: (mudancas) =>
@@ -456,9 +470,11 @@ function OficinaAberta({
   useEffect(
     () =>
       palco.current?.definirEspalhamento(
-        aba === 'objetos' && relevoPronto && !estado.ocupado ? pincel.configuracao : null,
+        aba === 'objetos' && relevoPronto && !estado.ocupado && !emEnsaio
+          ? pincel.configuracao
+          : null,
       ),
-    [aba, relevoPronto, estado.ocupado, pincel.configuracao],
+    [aba, relevoPronto, estado.ocupado, pincel.configuracao, emEnsaio],
   )
   useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
   useEffect(() => {
@@ -469,9 +485,9 @@ function OficinaAberta({
   useEffect(
     () =>
       palco.current?.definirModoDeSelecao(
-        aba === 'objetos' && relevoPronto && !estado.ocupado ? modoDeSelecao : 'ponto',
+        aba === 'objetos' && relevoPronto && !estado.ocupado && !emEnsaio ? modoDeSelecao : 'ponto',
       ),
-    [aba, relevoPronto, estado.ocupado, modoDeSelecao],
+    [aba, relevoPronto, estado.ocupado, modoDeSelecao, emEnsaio],
   )
   useEffect(
     () =>
@@ -606,6 +622,7 @@ function OficinaAberta({
   // Atalhos do teclado, quando a pessoa não está escrevendo num campo.
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
+      if (ensaioAtivo.current) return
       if (evento.defaultPrevented || digitando(evento.target)) return
       const comando = evento.ctrlKey || evento.metaKey
       const tecla = evento.key.toLowerCase()
@@ -674,6 +691,35 @@ function OficinaAberta({
     aoVoltar()
   }
 
+  const encerrarTeste = () => {
+    controleDoTeste.current?.abort()
+    controleDoTeste.current = null
+    palco.current?.encerrarTeste()
+    setTeste(null)
+    setJanelaTeste(false)
+    setPreparandoTeste(false)
+  }
+  const iniciarTeste = async (config: ConfiguracaoDoTeste) => {
+    const cena = palco.current
+    if (!cena || controleDoTeste.current) return
+    const controle = new AbortController()
+    controleDoTeste.current = controle
+    setPreparandoTeste(true)
+    setErroTeste(null)
+    try {
+      await cena.iniciarTeste(config, controle.signal)
+      if (montado.current && !controle.signal.aborted) setJanelaTeste(false)
+    } catch (e) {
+      if (montado.current && !controle.signal.aborted)
+        setErroTeste(e instanceof Error ? e.message : 'Não consegui iniciar o teste')
+    } finally {
+      if (controleDoTeste.current === controle) {
+        controleDoTeste.current = null
+        if (montado.current) setPreparandoTeste(false)
+      }
+    }
+  }
+
   const aoSoltarNoPalco = (evento: DragEvent) => {
     const modelo = arrastado.current
     if (!modelo || !evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
@@ -714,6 +760,15 @@ function OficinaAberta({
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
       {conjuntos.janela}
+      {janelaTeste ? (
+        <PrepararTeste
+          documento={documento}
+          ocupado={preparandoTeste}
+          erro={erroTeste}
+          iniciar={(config) => void iniciarTeste(config)}
+          fechar={encerrarTeste}
+        />
+      ) : null}
       {retratos.erro ? (
         <div className="mcn-andamento" role="alert">
           <span>Não guardei o retrato: {retratos.erro}</span>
@@ -852,8 +907,8 @@ function OficinaAberta({
           </button>
         </Dialogo>
       ) : null}
-      <header className="mld-workshop-header mld-bar">
-        <div className="mld-workshop-project">
+      <header className="mld-workshop-header mld-bar" data-testando={emEnsaio || undefined}>
+        <div className="mld-workshop-project" inert={emEnsaio}>
           <button
             type="button"
             className="sz-tool-icon-btn"
@@ -878,7 +933,11 @@ function OficinaAberta({
             </span>
           ) : null}
         </div>
-        <div className="mld-workshop-tabs">
+        <div
+          className="mld-workshop-tabs"
+          inert={emEnsaio}
+          style={emEnsaio ? { display: 'none' } : undefined}
+        >
           <fieldset aria-label={COPY.oficina.abasRotulo} className="mld-seg">
             {ABAS.filter(([valor]) => !conjunto || valor === 'objetos').map(([valor, Icone]) => (
               <button
@@ -899,100 +958,130 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
-          {conjunto ? (
+          <div
+            className="contents"
+            inert={emEnsaio}
+            style={emEnsaio ? { display: 'none' } : undefined}
+          >
+            {conjunto ? (
+              <button
+                type="button"
+                className="sz-tool-pill"
+                disabled={
+                  conjuntos.ocupado ||
+                  estado.ocupado ||
+                  estado.revisao === conjuntos.catalogo?.revisaoPublicadaDoCenario
+                }
+                onClick={() => void conjuntos.publicar()}
+              >
+                Atualizar cópias
+              </button>
+            ) : null}
             <button
               type="button"
-              className="sz-tool-pill"
-              disabled={
-                conjuntos.ocupado ||
-                estado.ocupado ||
-                estado.revisao === conjuntos.catalogo?.revisaoPublicadaDoCenario
-              }
-              onClick={() => void conjuntos.publicar()}
+              className="sz-tool-icon-btn"
+              aria-label="Guardar escolha como conjunto"
+              title="Guardar escolha como conjunto"
+              disabled={semEscolha || estado.ocupado || !relevoPronto || conjuntos.ocupado}
+              onClick={conjuntos.abrir}
             >
-              Atualizar cópias
+              <Boxes aria-hidden="true" />
             </button>
-          ) : null}
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              aria-label="Copiar e colar"
+              title="Copiar, recortar e colar"
+              onClick={() => setTransferenciaAberta(true)}
+            >
+              <Clipboard aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              aria-label="Versões do cenário"
+              title="Versões do cenário"
+              disabled={estado.ocupado || estado.salvamento !== 'guardado'}
+              onClick={() => {
+                setVersoesAbertas(true)
+                void retratos.fotografar()
+              }}
+            >
+              <History aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              disabled={!estado.podeDesfazer}
+              onClick={controlador.desfazer}
+              aria-label={COPY.oficina.desfazer}
+              title={`${COPY.oficina.desfazer} (Ctrl+Z)`}
+            >
+              <Undo2 aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              disabled={!estado.podeRefazer}
+              onClick={controlador.refazer}
+              aria-label={COPY.oficina.refazer}
+              title={`${COPY.oficina.refazer} (Ctrl+Y)`}
+            >
+              <Redo2 aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              aria-pressed={painelAberto}
+              onClick={() => setPainelAberto((p) => !p)}
+              aria-label={painelAberto ? COPY.painel.fechar : COPY.painel.abrir}
+              title={painelAberto ? COPY.painel.fechar : COPY.painel.abrir}
+            >
+              {painelAberto ? (
+                <PanelRightClose aria-hidden="true" />
+              ) : (
+                <PanelRightOpen aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
+              aria-label="Objetos e camadas"
+              title="Objetos e camadas"
+              aria-pressed={painelAberto && modoPainel === 'organizacao'}
+              onClick={() => {
+                setModoPainel(
+                  painelAberto && modoPainel === 'organizacao' ? 'escolha' : 'organizacao',
+                )
+                setPainelAberto(true)
+              }}
+            >
+              <ListTree aria-hidden="true" />
+            </button>
+          </div>
           <button
             type="button"
-            className="sz-tool-icon-btn"
-            aria-label="Guardar escolha como conjunto"
-            title="Guardar escolha como conjunto"
-            disabled={semEscolha || estado.ocupado || !relevoPronto || conjuntos.ocupado}
-            onClick={conjuntos.abrir}
-          >
-            <Boxes aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            aria-label="Copiar e colar"
-            title="Copiar, recortar e colar"
-            onClick={() => setTransferenciaAberta(true)}
-          >
-            <Clipboard aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            aria-label="Versões do cenário"
-            title="Versões do cenário"
-            disabled={estado.ocupado || estado.salvamento !== 'guardado'}
+            className="sz-tool-pill sz-tool-pill--primary"
+            disabled={
+              preparandoTeste ||
+              estado.ocupado ||
+              estado.salvamento !== 'guardado' ||
+              !relevoPronto ||
+              Boolean(medidas?.carregando) ||
+              preparandoMolde ||
+              conjuntos.ocupado ||
+              gestoAtivo
+            }
             onClick={() => {
-              setVersoesAbertas(true)
-              void retratos.fotografar()
+              if (teste) encerrarTeste()
+              else {
+                setErroTeste(null)
+                setJanelaTeste(true)
+              }
             }}
           >
-            <History aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            disabled={!estado.podeDesfazer}
-            onClick={controlador.desfazer}
-            aria-label={COPY.oficina.desfazer}
-            title={`${COPY.oficina.desfazer} (Ctrl+Z)`}
-          >
-            <Undo2 aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            disabled={!estado.podeRefazer}
-            onClick={controlador.refazer}
-            aria-label={COPY.oficina.refazer}
-            title={`${COPY.oficina.refazer} (Ctrl+Y)`}
-          >
-            <Redo2 aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            aria-pressed={painelAberto}
-            onClick={() => setPainelAberto((p) => !p)}
-            aria-label={painelAberto ? COPY.painel.fechar : COPY.painel.abrir}
-            title={painelAberto ? COPY.painel.fechar : COPY.painel.abrir}
-          >
-            {painelAberto ? (
-              <PanelRightClose aria-hidden="true" />
-            ) : (
-              <PanelRightOpen aria-hidden="true" />
-            )}
-          </button>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            aria-label="Objetos e camadas"
-            title="Objetos e camadas"
-            aria-pressed={painelAberto && modoPainel === 'organizacao'}
-            onClick={() => {
-              setModoPainel(
-                painelAberto && modoPainel === 'organizacao' ? 'escolha' : 'organizacao',
-              )
-              setPainelAberto(true)
-            }}
-          >
-            <ListTree aria-hidden="true" />
+            <Play aria-hidden="true" />
+            {teste ? 'Editar' : COPY.oficina.testar}
           </button>
         </div>
       </header>
@@ -1008,7 +1097,12 @@ function OficinaAberta({
       ) : null}
 
       <div className="mld-workshop-body relative flex min-h-0 flex-1 overflow-hidden">
-        <nav className="mld-workshop-rail mld-bar" aria-label={COPY.oficina.ferramentas}>
+        <nav
+          style={emEnsaio ? { display: 'none' } : undefined}
+          inert={emEnsaio}
+          className="mld-workshop-rail mld-bar"
+          aria-label={COPY.oficina.ferramentas}
+        >
           {aba === 'objetos' ? (
             <>
               {FERRAMENTAS.map(([valor, Icone, rotulo, atalho]) => (
@@ -1103,11 +1197,14 @@ function OficinaAberta({
         <div
           className="mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           onDragOver={(evento) => {
+            if (emEnsaio) return
             if (!evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
             evento.preventDefault()
             evento.dataTransfer.dropEffect = 'copy'
           }}
-          onDrop={aoSoltarNoPalco}
+          onDrop={(evento) => {
+            if (!emEnsaio) aoSoltarNoPalco(evento)
+          }}
         >
           <div className="mcn-palco">
             <canvas
@@ -1124,7 +1221,19 @@ function OficinaAberta({
             >
               <polygon ref={previaDaArea} points="" vectorEffect="non-scaling-stroke" />
             </svg>
-            <div className="mld-stage-toolbar">
+            {teste ? (
+              <ControlesTeste
+                estado={teste}
+                comandar={(c) => palco.current?.comandarTeste(c)}
+                entrada={(e) => palco.current?.entradaDoTeste(e)}
+                fechar={encerrarTeste}
+              />
+            ) : null}
+            <div
+              className="mld-stage-toolbar"
+              style={emEnsaio ? { display: 'none' } : undefined}
+              inert={emEnsaio}
+            >
               {texturas.carregando > 0 ? (
                 <p className="mld-float" role="status">
                   Carregando {texturas.carregando}{' '}
@@ -1192,7 +1301,7 @@ function OficinaAberta({
                 </p>
               ) : null}
             </div>
-            {dica ? (
+            {dica && !emEnsaio ? (
               <div
                 className="mcn-dica"
                 data-molda-theme="dark"
@@ -1237,27 +1346,31 @@ function OficinaAberta({
               </button>
             </div>
           ) : null}
-          <Gaveta
-            atualizacaoDosConjuntos={conjuntos.atualizacao}
-            aoPorConjunto={porConjunto}
-            conjuntoEmEdicao={conjunto?.id}
-            modo={pincel.ativo ? 'pincel' : 'colocar'}
-            aberta={gavetaAberta}
-            aoMudarAbertura={setGavetaAberta}
-            host={host}
-            bibliotecas={bibliotecas}
-            moldesDisponiveis={moldesDisponiveis}
-            preparandoMolde={preparandoMolde}
-            aoPor={(modelo) => void escolherModelo(modelo, null)}
-            aoArrastar={(modelo) => {
-              arrastado.current = modelo
-            }}
-            aoEscolherBibliotecas={() => setEscolhendo(true)}
-          />
+          <div style={emEnsaio ? { display: 'none' } : undefined} inert={emEnsaio}>
+            <Gaveta
+              atualizacaoDosConjuntos={conjuntos.atualizacao}
+              aoPorConjunto={porConjunto}
+              conjuntoEmEdicao={conjunto?.id}
+              modo={pincel.ativo ? 'pincel' : 'colocar'}
+              aberta={gavetaAberta}
+              aoMudarAbertura={setGavetaAberta}
+              host={host}
+              bibliotecas={bibliotecas}
+              moldesDisponiveis={moldesDisponiveis}
+              preparandoMolde={preparandoMolde}
+              aoPor={(modelo) => void escolherModelo(modelo, null)}
+              aoArrastar={(modelo) => {
+                arrastado.current = modelo
+              }}
+              aoEscolherBibliotecas={() => setEscolhendo(true)}
+            />
+          </div>
         </div>
 
         {painelAberto ? (
           <aside
+            style={emEnsaio ? { display: 'none' } : undefined}
+            inert={emEnsaio}
             className="mld-workshop-inspector mld-bar mcn-painel"
             aria-label={COPY.painel.titulo}
           >

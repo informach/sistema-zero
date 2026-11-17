@@ -69,6 +69,11 @@ import { RepresentacoesDoModelo } from './representacoes'
 import { escolherNaArea } from './selecao-area'
 import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
+import { MundoDoTeste } from './teste/colisoes'
+import { prepararColisoesDoTeste } from './teste/fontes'
+import { PersonagemDoTeste } from './teste/personagem'
+import { SessaoDoTeste } from './teste/sessao'
+import type { ComandoDoTeste, ConfiguracaoDoTeste, EntradaDoTeste } from './teste/tipos'
 import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
   ConfiguracaoDoEspalhamento,
@@ -197,6 +202,17 @@ class PalcoThree implements Palco {
   private chaveDoChao = ''
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
+  private planoFisico: Mesh | null = null
+  private teste: SessaoDoTeste | null = null
+  private preparandoTeste: AbortController | null = null
+  private vistaDaEdicao: {
+    posicao: Vector3
+    rotacao: Quaternion
+    alvo: Vector3
+    near: number
+    fov: number
+    grade: boolean
+  } | null = null
   private cargaDoTerreno: AbortController | null = null
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
   private ultimaMedida = ''
@@ -359,6 +375,7 @@ class PalcoThree implements Palco {
 
   definirDocumento(documento: DocumentoDeCenario): void {
     if (this.destruido) return
+    if (this.documento !== documento && (this.teste || this.preparandoTeste)) this.encerrarTeste()
     if (this.gesto) {
       // No meio de um gesto a prévia é do palco; o documento novo entra quando ele acabar.
       this.pendente = documento
@@ -537,6 +554,149 @@ class PalcoThree implements Palco {
     return this.terreno?.altura
   }
 
+  async iniciarTeste(config: ConfiguracaoDoTeste, sinal?: AbortSignal): Promise<void> {
+    if (this.destruido || !this.documento || !this.visual)
+      throw new Error('Abra um cenário antes de testar')
+    if (this.documento.base.tipo === 'perfil')
+      throw new Error('Converta o relevo antes de caminhar neste cenário')
+    if (this.gesto || this.gestosAtivos.size) throw new Error('Termine o gesto antes de testar')
+    this.encerrarTeste()
+    const controle = new AbortController(),
+      cancelar = () => controle.abort()
+    this.preparandoTeste = controle
+    sinal?.addEventListener('abort', cancelar, { once: true })
+    let modelo: ModeloCarregado | null = null,
+      mundo: MundoDoTeste | null = null,
+      personagem: PersonagemDoTeste | null = null
+    try {
+      sinal?.throwIfAborted()
+      await this.aguardarRecursos(controle.signal)
+      controle.signal.throwIfAborted()
+      if (config.modelo) {
+        const bytes = await conferirConteudoDoModelo(
+          await this.opcoes.carregarModelo(config.modelo),
+          config.modelo.digest,
+        )
+        controle.signal.throwIfAborted()
+        modelo = await lerGlb(bytes)
+        controle.signal.throwIfAborted()
+      }
+      personagem = new PersonagemDoTeste(modelo, config)
+      const chao = this.terreno?.fontesDoTeste() ?? []
+      if (this.planoFisico) {
+        this.planoFisico.updateWorldMatrix(true, false)
+        chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
+      }
+      const pacote = prepararColisoesDoTeste(
+        this.visual!,
+        this.superficies.fontesDoTeste(),
+        this.locais,
+        chao,
+      )
+      try {
+        mundo = new MundoDoTeste(pacote.fontes)
+      } finally {
+        pacote.descartar()
+      }
+      const foco = this.orbita.target.clone(),
+        inicio = foco.clone()
+      this.superficies.limites(this.limitesDaCena)
+      const topo =
+        Math.max(
+          foco.y,
+          this.limitesDaCena.isEmpty() ? 0 : this.limitesDaCena.max.y,
+          this.documento.base.tipo === 'terreno' ? this.documento.base.max : 0,
+        ) +
+        personagem.altura * 2
+      const de = new Vector3(foco.x, topo, foco.z),
+        ate = new Vector3(foco.x, Math.min(foco.y - 1000, -1000), foco.z)
+      const piso = mundo.rastrear(de, ate)
+      if (config.modo !== 'voo' && (!piso || piso.normal.y < Math.cos((48 * Math.PI) / 180)))
+        throw new Error('Aponte a vista para um chão caminhável antes de testar')
+      if (piso) inicio.copy(piso.ponto).y += 0.001
+      else inicio.y += personagem.altura
+      controle.signal.throwIfAborted()
+      this.vistaDaEdicao = {
+        posicao: this.camera.position.clone(),
+        rotacao: this.camera.quaternion.clone(),
+        alvo: this.orbita.target.clone(),
+        near: this.camera.near,
+        fov: this.camera.fov,
+        grade: this.grade.visible,
+      }
+      this.orbita.enabled = false
+      this.area.setTool('point')
+      this.definirEspalhamento(null)
+      this.grade.visible = false
+      this.contornos.definirVisivel(false)
+      this.teste = new SessaoDoTeste(
+        this.canvas,
+        this.camera,
+        this.cena,
+        mundo,
+        personagem,
+        inicio,
+        config,
+        (estado) => this.opcoes.aoTeste?.(estado),
+        this.pedirQuadro,
+      )
+      this.preparandoTeste = null
+      this.atualizarAlca()
+      this.pedirQuadro()
+      modelo = null
+      mundo = null
+      personagem = null
+    } catch (e) {
+      personagem?.descartar()
+      if (!personagem) modelo?.descartar()
+      mundo?.descartar()
+      if (this.preparandoTeste === controle) this.encerrarTeste()
+      throw e
+    } finally {
+      sinal?.removeEventListener('abort', cancelar)
+    }
+  }
+
+  comandarTeste(comando: ComandoDoTeste) {
+    this.teste?.comandar(comando)
+  }
+  entradaDoTeste(entrada: Partial<EntradaDoTeste>) {
+    this.teste?.entrada(entrada)
+  }
+  estadoDoTeste() {
+    return this.teste?.estado() ?? null
+  }
+  encerrarTeste(): void {
+    this.preparandoTeste?.abort()
+    this.preparandoTeste = null
+    const tinha = Boolean(this.teste || this.vistaDaEdicao)
+    this.teste?.descartar()
+    this.teste = null
+    const vista = this.vistaDaEdicao
+    this.vistaDaEdicao = null
+    if (vista) {
+      this.camera.position.copy(vista.posicao)
+      this.camera.quaternion.copy(vista.rotacao)
+      this.orbita.target.copy(vista.alvo)
+      this.orbita.enabled = true
+      this.camera.near = vista.near
+      this.camera.fov = vista.fov
+      this.camera.updateProjectionMatrix()
+      this.grade.visible = vista.grade
+      this.contornos.definirVisivel(true)
+      this.area.setTool(
+        this.modoDeSelecao === 'retangulo'
+          ? 'box'
+          : this.modoDeSelecao === 'laco'
+            ? 'lasso'
+            : 'point',
+      )
+      this.atualizarAlca()
+      this.pedirQuadro()
+    }
+    if (tinha) this.opcoes.aoTeste?.(null)
+  }
+
   private apoiarNaSuperficie(id: string, ponto: Vector3) {
     const doc = this.documento!
     // Medidas legadas são lidas do GLB para a consulta. O host confirma e grava essas mesmas
@@ -548,6 +708,7 @@ class PalcoThree implements Palco {
   }
 
   enquadrar(ids?: readonly string[]): void {
+    if (this.teste) return
     if (this.documento?.base.tipo === 'terreno' && !this.terreno) {
       this.enquadramentoPendente = { ...(ids ? { ids: [...ids] } : {}) }
       return
@@ -630,6 +791,7 @@ class PalcoThree implements Palco {
 
   destruir(): void {
     if (this.destruido) return
+    this.encerrarTeste()
     this.destruido = true
     this.laco.dispose()
     this.espalhamento.descartar()
@@ -679,7 +841,7 @@ class PalcoThree implements Palco {
 
   private readonly quadro = (): boolean => {
     this.atualizarRecorte()
-    const mexeu = this.orbita.update()
+    const mexeu = this.teste ? this.teste.quadro() : this.orbita.update()
     this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
     this.ceu.position.copy(this.camera.position)
@@ -703,8 +865,9 @@ class PalcoThree implements Palco {
       Boolean(this.opcoes.fotografia),
     )
     this.orbita.maxDistance = r.orbita
-    if (this.camera.near !== r.perto || this.camera.far !== r.longe) {
-      this.camera.near = r.perto
+    const perto = this.teste ? Math.max(0.005, this.teste.estado().altura * 0.015) : r.perto
+    if (this.camera.near !== perto || this.camera.far !== r.longe) {
+      this.camera.near = perto
       this.camera.far = r.longe
       this.camera.updateProjectionMatrix()
     }
@@ -774,6 +937,7 @@ class PalcoThree implements Palco {
   }
 
   private limparChao() {
+    this.planoFisico = null
     this.cargaDoTerreno?.abort()
     this.cargaDoTerreno = null
     this.terreno?.descartar()
@@ -853,6 +1017,7 @@ class PalcoThree implements Palco {
     )
     lote.rotation.x = -Math.PI / 2
     lote.receiveShadow = true
+    this.planoFisico = lote
 
     this.chao.add(fora, lote)
     const alcance = Math.max(largura, comprimento)
@@ -1096,6 +1261,8 @@ class PalcoThree implements Palco {
   private atualizarAlca() {
     const movidos = this.movidos()
     const ligada =
+      !this.teste &&
+      !this.preparandoTeste &&
       !this.espalhamento?.habilitado &&
       this.modoDeSelecao === 'ponto' &&
       this.ferramenta !== 'selecionar' &&
@@ -1259,6 +1426,7 @@ class PalcoThree implements Palco {
   }
 
   private readonly aoApertar = (evento: PointerEvent): void => {
+    if (this.teste || this.preparandoTeste) return
     if (this.espalhamento.habilitado) return
     if (evento.button !== 0 || this.modoDeSelecao !== 'ponto') return
     this.toque = { x: evento.clientX, y: evento.clientY, ponteiro: evento.pointerId }
