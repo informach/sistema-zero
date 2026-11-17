@@ -58,6 +58,7 @@ import { carregarPecasDeTerreno } from './recursos-terreno'
 import { RepresentacoesDoModelo } from './representacoes'
 import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
+import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
   Encaixe,
   Ferramenta,
@@ -148,6 +149,18 @@ class PalcoThree implements Palco {
   private documento: DocumentoDeCenario | null = null
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
+  private estadoDasTexturas: EstadoDasTexturas = { carregando: 0, falhas: [] }
+  private readonly texturas = new TexturasDoPalco(
+    async (ref, sinal) => {
+      if (!this.opcoes.carregarTextura) throw Error('Este ambiente não oferece leitura de texturas')
+      return lerTextura(await this.opcoes.carregarTextura(ref, sinal), ref.digest, sinal)
+    },
+    (estado) => {
+      this.estadoDasTexturas = estado
+      if (!this.gesto) this.reconstruir()
+      else this.opcoes.aoTexturas?.(estado)
+    },
+  )
   private readonly locais = new Map<string, Local>()
   private readonly matrizes = new Map<string, Matrix4>()
   private readonly trancados = new Set<string>()
@@ -260,13 +273,21 @@ class PalcoThree implements Palco {
     this.aplicarChao(documento)
     this.aplicarLuz(documento.iluminacao.hora)
     this.pedirModelos(documento)
-    this.reconstruir()
+    const usadas = new Set(
+      documento.instancias.flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
+    )
+    this.texturas.definir((documento.texturas ?? []).filter((t) => usadas.has(t.id)))
+    // definir publica o estado sincronicamente e reconstrói uma única vez pelo callback.
     this.atualizarGrade()
   }
 
   definirSelecao(ids: readonly string[]): void {
     this.selecao = [...ids]
     this.atualizarSelecao()
+  }
+
+  recarregarTexturas(): void {
+    this.texturas.repetirFalhas()
   }
 
   definirFerramenta(ferramenta: Ferramenta): void {
@@ -429,6 +450,7 @@ class PalcoThree implements Palco {
         estado.modelo.descartar()
       }
     this.modelos.clear()
+    this.texturas.descartar()
     this.limparChao()
     this.ceu.geometry.dispose()
     this.ceu.material.dispose()
@@ -454,9 +476,10 @@ class PalcoThree implements Palco {
   private medir() {
     if (!this.opcoes.aoMedir) return
     const info = this.renderer.info.render
+    const memoria = this.renderer.info.memory
     let carregando = 0
     for (const estado of this.modelos.values()) if (estado.estado === 'carregando') carregando++
-    const chave = `${this.locais.size}:${info.triangles}:${info.calls}:${carregando}`
+    const chave = `${this.locais.size}:${info.triangles}:${info.calls}:${carregando}:${memoria.geometries}:${memoria.textures}`
     if (chave === this.ultimaMedida) return
     this.ultimaMedida = chave
     this.opcoes.aoMedir({
@@ -464,6 +487,8 @@ class PalcoThree implements Palco {
       triangulos: info.triangles,
       desenhos: info.calls,
       carregando,
+      geometrias: memoria.geometries,
+      texturas: memoria.textures,
     })
   }
 
@@ -642,6 +667,7 @@ class PalcoThree implements Palco {
     // Uma leitura antiga pode terminar depois de remover e recolocar o mesmo hash.
     // Só a leitura que ainda ocupa a entrada pode publicar sucesso ou falha.
     const pedido: EstadoDoModelo = { estado: 'carregando' }
+    let publicado: EstadoDoModelo | undefined
     this.modelos.set(modelo.digest, pedido)
     this.opcoes
       .carregarModelo(modelo)
@@ -652,17 +678,28 @@ class PalcoThree implements Palco {
           carregado.descartar()
           return
         }
-        this.modelos.set(modelo.digest, {
+        publicado = {
           estado: 'pronto',
           modelo: carregado,
           representacoes: new RepresentacoesDoModelo(this.objetos, carregado),
-        })
+        }
+        this.modelos.set(modelo.digest, publicado)
         if (!this.gesto) this.reconstruir()
       })
       .catch((erro) => {
-        if (this.destruido || this.modelos.get(modelo.digest) !== pedido) return
+        if (
+          this.destruido ||
+          (this.modelos.get(modelo.digest) !== pedido &&
+            this.modelos.get(modelo.digest) !== publicado)
+        )
+          return
+        if (publicado?.estado === 'pronto') {
+          publicado.representacoes.descartar()
+          publicado.modelo.descartar()
+        }
         this.modelos.set(modelo.digest, { estado: 'falhou' })
         this.opcoes.aoFalhar?.(modelo, erro)
+        if (!this.gesto) this.reconstruir()
         this.pedirQuadro()
       })
   }
@@ -680,6 +717,7 @@ class PalcoThree implements Palco {
     const doc = this.documento
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
+      this.opcoes.aoTexturas?.(this.estadoDasTexturas)
       this.locais.clear()
       this.superficies.definir([])
       this.loteFantasma.preencher([])
@@ -695,6 +733,8 @@ class PalcoThree implements Palco {
       ...(doc.formas?.map((f) => [f.id, chaveDaForma(f)] as const) ?? []),
     ])
     const porLote = new Map<LoteDoModelo, ItemDoLote[]>()
+    const falhasDeAcabamento: EstadoDasTexturas['falhas'] = []
+    const texturas = new Map(doc.texturas?.map((t) => [t.id, t]) ?? [])
     const vistos = new Set<string>()
     this.trancados.clear()
     const gruposTrancados = this.gruposTrancados(doc)
@@ -705,8 +745,28 @@ class PalcoThree implements Palco {
       const matriz = matrizDoObjeto(doc, o, this.matrizDe(o.id), this.fonteDeAlturas())
       const digest = tabela.get(o.modelo)
       const estado = digest ? this.modelos.get(digest) : undefined
-      const chave =
-        estado?.estado === 'pronto' ? estado.representacoes.obter(o.espelho) : this.loteFantasma
+      const acabamento = o.aparencia?.textura
+      const ref = acabamento ? texturas.get(acabamento.id) : undefined
+      const textura = ref ? this.texturas.obter(ref.digest)?.textura : undefined
+      let chave = this.loteFantasma
+      if (estado?.estado === 'pronto') {
+        if (textura && acabamento && ref) {
+          try {
+            chave = estado.representacoes.obter(o.espelho, {
+              textura,
+              repeticaoMetros: acabamento.repeticaoMetros,
+            })
+          } catch (erro) {
+            falhasDeAcabamento.push({
+              digest: ref.digest,
+              nome: `${ref.nome ?? 'Textura'} em ${o.nome}`,
+              mensagem:
+                erro instanceof Error ? erro.message : 'Não consegui preparar esta superfície',
+            })
+            chave = estado.representacoes.obter(o.espelho)
+          }
+        } else chave = estado.representacoes.obter(o.espelho)
+      }
       let itens = porLote.get(chave)
       if (!itens) {
         itens = []
@@ -743,6 +803,10 @@ class PalcoThree implements Palco {
       }
     }
     this.superficies.definir(superficies)
+    this.opcoes.aoTexturas?.({
+      ...this.estadoDasTexturas,
+      falhas: [...this.estadoDasTexturas.falhas, ...falhasDeAcabamento],
+    })
 
     this.atualizarSelecao()
   }

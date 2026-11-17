@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   criarPalco,
+  type EstadoDasTexturas,
   type Estatisticas,
   type Ferramenta,
   idsEscondidos,
@@ -242,6 +243,7 @@ function OficinaAberta({
     () => !globalThis.matchMedia?.('(max-width: 899px)').matches,
   )
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
+  const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
   const [relevo, setRelevo] = useState<{
     chave: string
     estado: 'carregando' | 'pronto' | 'erro'
@@ -277,6 +279,8 @@ function OficinaAberta({
       carregarModelo: (modelo) =>
         host.conteudoDoModelo({ biblioteca: modelo.biblioteca, digest: modelo.digest }),
       carregarTerreno: (digest, sinal) => host.conteudoDoTerreno(aberto.resumo.id, digest, sinal),
+      carregarTextura: (ref, sinal) => host.conteudoDaTextura(ref, sinal),
+      aoTexturas: setTexturas,
       aoTerreno: ({ estado, chave, erro }) =>
         setRelevo({
           chave,
@@ -731,6 +735,30 @@ function OficinaAberta({
               aria-label={COPY.oficina.vistasRotulo}
             />
             <div className="mld-stage-toolbar">
+              {texturas.carregando > 0 ? (
+                <p className="mld-float" role="status">
+                  Carregando {texturas.carregando}{' '}
+                  {texturas.carregando === 1 ? 'textura' : 'texturas'}…
+                </p>
+              ) : null}
+              {texturas.falhas.length ? (
+                <div className="mld-float" role="alert">
+                  <span>
+                    Não consegui carregar{' '}
+                    {texturas.falhas.length === 1
+                      ? `a textura ${texturas.falhas[0]!.nome}`
+                      : `${texturas.falhas.length} texturas`}
+                    . {texturas.falhas[0]!.mensagem}
+                  </span>
+                  <button
+                    type="button"
+                    className="sz-tool-pill sz-tool-pill--outline"
+                    onClick={() => palco.current?.recarregarTexturas()}
+                  >
+                    Tentar texturas novamente
+                  </button>
+                </div>
+              ) : null}
               {!relevoPronto ? (
                 <p className="mld-float" role={relevo?.estado === 'erro' ? 'alert' : 'status'}>
                   {relevo?.estado === 'erro' ? relevo.erro : 'Carregando o relevo…'}
@@ -764,7 +792,11 @@ function OficinaAberta({
                 </button>
               </div>
               {medidas ? (
-                <p className="mld-float mcn-orcamento" role="status">
+                <p
+                  className="mld-float mcn-orcamento"
+                  role="status"
+                  title={`${medidas.desenhos} chamadas de desenho · ${medidas.geometrias} geometrias · ${medidas.texturas} texturas na GPU`}
+                >
                   {COPY.oficina.orcamento(medidas.objetos, medidas.triangulos)}
                   {medidas.carregando ? ` · ${COPY.oficina.carregando(medidas.carregando)}` : ''}
                 </p>
@@ -822,7 +854,13 @@ function OficinaAberta({
             ) : null}
             {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
               <>
-                <Aparencia documento={documento} selecao={selecao} executar={executar} />
+                <Aparencia
+                  documento={documento}
+                  selecao={selecao}
+                  executar={executar}
+                  host={host}
+                  bibliotecas={bibliotecas}
+                />
                 <Organizar
                   documento={documento}
                   selecao={selecao}

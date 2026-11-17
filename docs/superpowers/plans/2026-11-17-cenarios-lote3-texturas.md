@@ -23,9 +23,9 @@ Escolher outra textura substitui o acabamento visual da superfície. Limpar reto
 
 1. [x] Esquemas, comandos, referências e inversão no núcleo; prova de concorrência/bloqueios e roundtrip.
 2. [x] Serviço/repositório/GC e hosts; testes de espaço, histórico e Postgres real, incluindo apagar biblioteca e conservar/reler bytes.
-3. [ ] Loader de imagens e projeção física; testes independentes de escala, rotação, inclinação, faces coplanares, espelho, UV materializada e recursos compartilhados/descartados.
-4. [ ] Painel Aparência com as bibliotecas existentes, busca paginada, escolha, repetição, remoção e estados de erro. Não duplicar a biblioteca de chãos.
-5. [ ] Ensaios com GLB real e formas, em claro/escuro/390 px: textura, cor, espelho, escala, troca de modelo, undo, reentrada e descarte. Capturas comparáveis e teste em movimento.
-6. [ ] Revisão da parte 3.3 inteira, tipagem, testes e registro. Só então prosseguir à parte 3.4 do mesmo lote 3.
+3. [x] Loader de imagens e projeção física; testes independentes de escala, rotação, inclinação, faces coplanares, espelho, UV materializada e recursos compartilhados/descartados.
+4. [x] Painel Aparência com as bibliotecas existentes, busca paginada, escolha, repetição, remoção e estados de erro. Não duplicar a biblioteca de chãos.
+5. [x] Ensaios com GLB real e formas, em claro/escuro/390 px: textura, cor, espelho, escala, troca de modelo, undo, reentrada e descarte. Capturas comparáveis e teste em movimento.
+6. [x] Revisão da parte 3.3 inteira, tipagem, testes e [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-texturas-objetos.md). Próximo: parte 3.4 do mesmo lote 3.
 
 O lote 3 permanece aberto até todas as suas partes estarem implementadas, testadas e revisadas. Implantação e validação de staging no encerramento global.

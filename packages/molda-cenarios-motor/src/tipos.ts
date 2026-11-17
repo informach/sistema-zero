@@ -4,9 +4,11 @@ import type {
   FonteDeAlturas,
   InstanciaDeCenario,
   ModeloDoCenario,
+  TexturaDoCenario,
   Transformacao,
   VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
+import type { EstadoDasTexturas } from './texturas'
 
 export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho'
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
@@ -35,11 +37,15 @@ export interface Estatisticas {
   desenhos: number
   /** Modelos da tabela do cenário que ainda estão chegando. */
   carregando: number
+  geometrias: number
+  texturas: number
 }
 
 export interface OpcoesDoPalco {
   /** Os bytes do GLB de um modelo da tabela do cenário. O host decide de onde vêm. */
   carregarModelo(modelo: ModeloDoCenario): Promise<ArrayBuffer>
+  carregarTextura?(textura: TexturaDoCenario, sinal: AbortSignal): Promise<ArrayBuffer>
+  aoTexturas?(estado: EstadoDasTexturas): void
   carregarTerreno?(digest: string, sinal: AbortSignal): Promise<ArrayBuffer>
   aoTerreno?(evento: {
     estado: 'carregando' | 'pronto' | 'erro'
@@ -59,6 +65,7 @@ export interface OpcoesDoPalco {
 
 export interface Palco {
   definirDocumento(documento: DocumentoDeCenario): void
+  recarregarTexturas(): void
   definirSelecao(ids: readonly string[]): void
   definirFerramenta(ferramenta: Ferramenta): void
   definirEncaixe(encaixe: Encaixe): void

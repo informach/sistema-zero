@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import {
+  aplicarTexturaAosObjetos,
   arquivosDoDocumento,
   arquivosDosComandos,
   type ComandoDeCenario,
@@ -126,4 +127,37 @@ test('busca de arquivos inclui a tabela e os comandos que sobrevivem no históri
     arquivosDoDocumento(d),
   )
   expect(arquivosDosComandos([{ tipo: 'instancia.remover', id: 'o' }])).toEqual([])
+})
+
+test('escolha substitui apenas a seleção, resolve colisão de IDs e desfaz a remoção de referências sem uso', () => {
+  const d = aplicar(cena(), porTextura(cena()))
+  d.instancias.push({ ...structuredClone(d.instancias[0]!), id: 'vizinho', nome: 'Vizinho' })
+  const nova = { ...textura, digest: 'b'.repeat(64) }
+  const outro = aplicar(d, aplicarTexturaAosObjetos(d, ['o', 'o'], nova, 3))
+  expect(outro.instancias[0]!.aparencia!.textura!.id).not.toBe('terra')
+  expect(outro.instancias[1]!.aparencia!.textura!.id).toBe('terra')
+  expect(outro.texturas).toHaveLength(2)
+  expect(outro.instancias[0]!.aparencia!.cor).toBe('#dd8844')
+  const ref = outro.texturas!.find((t) => t.digest === nova.digest)!
+  const ambos = aplicar(outro, aplicarTexturaAosObjetos(outro, ['o', 'vizinho'], ref, 1.5))
+  expect(ambos.texturas).toHaveLength(1)
+  expect(ambos.texturas![0]).toEqual(ref)
+  expect(ambos.instancias.every((o) => o.aparencia!.textura!.repeticaoMetros === 1.5)).toBe(true)
+  const desfeito = aplicar(ambos, inverterLote(outro, ambos))
+  // A ordem da tabela não tem significado no contrato autoral.
+  expect({
+    ...desfeito,
+    texturas: desfeito.texturas?.slice().sort((a, b) => a.id.localeCompare(b.id)),
+  }).toEqual({
+    ...outro,
+    texturas: outro.texturas?.slice().sort((a, b) => a.id.localeCompare(b.id)),
+  })
+  const limpo = aplicar(ambos, aplicarTexturaAosObjetos(ambos, ['o', 'vizinho'], null))
+  expect(limpo.texturas).toBeUndefined()
+  expect(limpo.instancias[0]!.aparencia).toEqual({ cor: '#dd8844' })
+  expect(aplicar(limpo, inverterLote(ambos, limpo))).toEqual(ambos)
+  expect(() => aplicarTexturaAosObjetos(d, ['ausente'], nova)).toThrow()
+  expect(() => aplicarTexturaAosObjetos(d, ['o'], nova, NaN)).toThrow()
+  d.instancias[0]!.bloqueado = true
+  expect(() => aplicar(d, aplicarTexturaAosObjetos(d, ['o'], nova))).toThrow('bloqueado')
 })

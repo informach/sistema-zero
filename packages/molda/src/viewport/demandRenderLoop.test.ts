@@ -29,8 +29,8 @@ afterEach(() => {
 function fixture(renderFrame: () => boolean = () => false) {
   const parent = document.createElement('div')
   Object.defineProperties(parent, {
-    clientWidth: { value: 320 },
-    clientHeight: { value: 180 },
+    clientWidth: { configurable: true, value: 320 },
+    clientHeight: { configurable: true, value: 180 },
   })
   const canvas = document.createElement('canvas')
   parent.append(canvas)
@@ -46,6 +46,51 @@ function fixture(renderFrame: () => boolean = () => false) {
 }
 
 describe('DemandRenderLoop', () => {
+  test('redimensionar não apaga o canvas fora do frame que o redesenha', () => {
+    const original = globalThis.ResizeObserver
+    let notificar = () => {}
+    globalThis.ResizeObserver = class implements ResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        notificar = () => callback([], this)
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    const desenhados: Array<[number, number, boolean]> = []
+    const { loop, canvas, sizes } = fixture(() => {
+      const tamanho = sizes.at(-1)
+      if (!tamanho) throw Error('O desenho começou sem dimensionar o framebuffer')
+      desenhados.push(tamanho)
+      return false
+    })
+    const avancar = () => {
+      const callback = [...frames.values()][0]
+      frames.clear()
+      callback?.(0)
+    }
+    try {
+      avancar()
+      expect(desenhados).toEqual([[320, 180, false]])
+      Object.defineProperty(canvas.parentElement!, 'clientWidth', {
+        configurable: true,
+        value: 640,
+      })
+      notificar()
+      // setSize apaga o framebuffer. Deve ocorrer junto do próximo render, sem um paint vazio.
+      expect(sizes).toEqual([[320, 180, false]])
+      expect(desenhados).toHaveLength(1)
+      avancar()
+      expect(desenhados).toEqual([
+        [320, 180, false],
+        [640, 180, false],
+      ])
+      expect(sizes).toEqual(desenhados)
+    } finally {
+      loop.dispose()
+      globalThis.ResizeObserver = original
+    }
+  })
   test('an offscreen canvas suspends requests until its observed intersection returns', () => {
     const original = globalThis.IntersectionObserver
     const observed: { observer?: IntersectionObserver; callback?: IntersectionObserverCallback } =
@@ -154,7 +199,7 @@ describe('DemandRenderLoop', () => {
     loop.request()
     loop.request()
 
-    expect(sizes).toEqual([[320, 180, false]])
+    expect(sizes).toEqual([])
     expect(camera.aspect).toBe(320 / 180)
     expect(camera.updates).toBe(1)
     expect(frames.size).toBe(1)
@@ -162,6 +207,7 @@ describe('DemandRenderLoop', () => {
     frames.clear()
     callback?.(0)
     expect(renders).toBe(1)
+    expect(sizes).toEqual([[320, 180, false]])
     expect(frames.size).toBe(0)
     loop.dispose()
   })

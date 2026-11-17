@@ -32,7 +32,7 @@ Ainda no lote 3: grade modular, andares e encaixe nas superfícies implementados
 
 Formas de rascunho implementadas, testadas no navegador/Postgres e revisadas; [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-formas.md). A parte 3.3 continua por cor/textura por objeto. Isso não conclui o lote 3.
 
-Tonalidade por objeto implementada e revisada, com seletor do Molda, cores por instância, seleção múltipla e persistência; [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-cores.md). Próximo item: texturas por objeto. Lote 3 permanece aberto.
+Tonalidade e texturas por objeto implementadas, testadas e revisadas: seletor do Molda, acervo existente, repetição física, seleção múltipla, preservação do histórico e descarte; [cor](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-cores.md), [referências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-referencias-texturas.md) e [fechamento da parte 3.3](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-texturas-objetos.md). Próximo item: 3.4, organização dos objetos. Lote 3 permanece aberto.
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
 - [x] **1 — Equipe na plataforma:** Members, gateway/BFF, migrações em Postgres real, motor genérico, quatro telas conforme PDF, objetos básicos, GLB, acesso nos dois apps, fotos nos tamanhos/temas previstos. Implementado, testado e revisado; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote1-fechamento.md). Conferência da implantação do contrato mais recente transferida à validação global, conforme a usuária.

@@ -57,10 +57,10 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** caixa, rampa, escada e cilindro são dados validados e determinísticos, sem fingir que são arquivos GLB de uma biblioteca. Cor e textura são ajustes explícitos do objeto, usando texturas já guardadas no espaço.
 
-- [x] Acrescentar as quatro formas, com dimensões e resolução limitadas, medidas de volume e geração comum para renderer e compilação futura. Tabela autoral `formas`, diálogo Blocos, malhas fechadas e recursos compartilhados; [revisão e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-formas.md). Cor/textura e a parte 3.3 permanecem abertos.
-- [ ] Acrescentar cor e textura por objeto, com repetição física; compartilhar geometrias e materiais equivalentes e liberar variantes retiradas. **Cor concluída neste recorte**, por `instanceColor`, usando seletor do Molda, seleção múltipla, undo, reentrada e JSONB verificados; [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-cores.md). Textura e repetição física continuam pendentes.
-- [ ] Proteger novas referências no armazenamento, nas cópias e no histórico, incluindo limites e licenças.
-- [ ] Conferir renderização, normais, seleção, descarte e orçamento; nenhuma forma de referência pode virar um falso modelo licenciado.
+- [x] Acrescentar as quatro formas, com dimensões e resolução limitadas, medidas de volume e geração comum para renderer e compilação futura. Tabela autoral `formas`, diálogo Blocos, malhas fechadas e recursos compartilhados; [revisão e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-formas.md).
+- [x] Acrescentar cor e textura por objeto, com repetição física; compartilhar geometrias e materiais equivalentes e liberar variantes retiradas. Cor por `instanceColor` e seletor do Molda; texturas do acervo, repetição física, seleção múltipla, undo, reentrada, restauração e descarte conferidos; [cor](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-cores.md) e [fechamento da parte 3.3](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-texturas-objetos.md).
+- [x] Proteger novas referências no armazenamento, nas cópias e no histórico, incluindo limites e licenças. Conferências de espaço/papel na aplicação e transação; GC conserva revisões, lotes, inversos e restaurações. Postgres real e hosts conferidos; [registro](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-referencias-texturas.md).
+- [x] Conferir renderização, normais, seleção, descarte e orçamento; nenhuma forma de referência pode virar um falso modelo licenciado. Projeção física, GLBs originais preservados, variantes compartilhadas, recursos estáveis em três ciclos, Chrome claro/escuro/390 px e regressões conferidos; [revisão da parte 3.3](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-texturas-objetos.md).
 
 ### 3.4 — Árvore, camadas, laço e área de transferência
 
