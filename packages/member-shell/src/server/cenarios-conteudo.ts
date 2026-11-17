@@ -1,15 +1,21 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import {
+  BYTES_DA_PECA,
   conferirBlocoBinarioGlb,
   conferirImagemDeCenario as conferirImagemDoNucleo,
   conferirInicioGlb,
   GLB_MAX_BYTES,
+  lerPecaDeAlturas,
   tamanhoDoInicioGlb,
 } from '@sistemazero/molda-cenarios-core/v2'
 
-export type TipoDeArquivoDeCenario = 'modelo' | 'miniatura' | 'capa' | 'textura'
-export type MimeDeCenario = 'model/gltf-binary' | 'image/webp' | 'image/png'
+export type TipoDeArquivoDeCenario = 'modelo' | 'miniatura' | 'capa' | 'textura' | 'terreno'
+export type MimeDeCenario =
+  | 'model/gltf-binary'
+  | 'image/webp'
+  | 'image/png'
+  | 'application/octet-stream'
 export interface ConteudoDoCenario {
   body: ReadableStream<Uint8Array>
   contentType: string | null
@@ -21,6 +27,7 @@ export interface ConferenciaDeUpload {
   tipoDoConteudo: MimeDeCenario
   largura?: number
   altura?: number
+  terreno?: { min: number; max: number }
 }
 export class ConteudoDeCenarioInvalido extends Error {}
 function invalidar(mensagem: string): never {
@@ -48,15 +55,19 @@ export async function conferirUploadDeCenario(
     const tamanho = objeto.contentLength,
       mime = objeto.contentType
     const limite =
-      tipo === 'modelo'
-        ? GLB_MAX_BYTES
-        : (tipo === 'textura' ? 4096 : tipo === 'miniatura' ? 256 : 512) * 1024
+      tipo === 'terreno'
+        ? BYTES_DA_PECA
+        : tipo === 'modelo'
+          ? GLB_MAX_BYTES
+          : (tipo === 'textura' ? 4096 : tipo === 'miniatura' ? 256 : 512) * 1024
     if (!tamanho || !Number.isSafeInteger(tamanho) || tamanho < 1 || tamanho > limite)
       invalidar('O tamanho recebido está fora do limite do arquivo')
     if (
-      tipo === 'modelo'
-        ? mime !== 'model/gltf-binary'
-        : mime !== 'image/png' && mime !== 'image/webp'
+      tipo === 'terreno'
+        ? mime !== 'application/octet-stream'
+        : tipo === 'modelo'
+          ? mime !== 'model/gltf-binary'
+          : mime !== 'image/png' && mime !== 'image/webp'
     )
       invalidar('O tipo recebido não corresponde ao arquivo esperado')
     let memoria = new Uint8Array(tipo === 'modelo' ? 20 : tamanho),
@@ -103,6 +114,15 @@ export async function conferirUploadDeCenario(
     if (lidos !== tamanho || hash.digest('hex') !== digest)
       invalidar('O conteúdo recebido não corresponde ao arquivo enviado')
     let imagem: { largura: number; altura: number } | null = null
+    let terreno: { min: number; max: number } | undefined
+    if (tipo === 'terreno') {
+      try {
+        const peca = lerPecaDeAlturas(memoria)
+        terreno = { min: peca.min, max: peca.max }
+      } catch (e) {
+        invalidar(e instanceof Error ? e.message : 'A peça de terreno é inválida')
+      }
+    }
     if (tipo === 'modelo') {
       if (inicioGlb === null || guardado !== memoria.length)
         invalidar('O GLB recebido está incompleto')
@@ -115,7 +135,12 @@ export async function conferirUploadDeCenario(
       }
     } else if (mime === 'image/png' || mime === 'image/webp')
       imagem = conferirImagemDeCenario(memoria, mime)
-    if (mime !== 'model/gltf-binary' && mime !== 'image/png' && mime !== 'image/webp')
+    if (
+      mime !== 'model/gltf-binary' &&
+      mime !== 'image/png' &&
+      mime !== 'image/webp' &&
+      mime !== 'application/octet-stream'
+    )
       return invalidar('Tipo de arquivo inválido')
     completo = true
     return {
@@ -123,6 +148,7 @@ export async function conferirUploadDeCenario(
       bytes: lidos,
       tipoDoConteudo: mime,
       ...(tipo === 'textura' && imagem ? imagem : {}),
+      ...(terreno ? { terreno } : {}),
     }
   } finally {
     if (!completo) await leitor.cancel().catch(() => undefined)

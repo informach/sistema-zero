@@ -2,6 +2,7 @@ import {
   alteracoesDoGesto,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  type FonteDeAlturas,
   type InstanciaDeCenario,
   posicaoNoMundo,
   type Transformacao,
@@ -114,6 +115,7 @@ export function comandosParaApagar(
 export function comandosDoGesto(
   doc: DocumentoDeCenario,
   mudancas: readonly { id: string; transformacao: Transformacao }[],
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
   const comandos: ComandoDeCenario[] = []
   for (const mudanca of mudancas) {
@@ -122,7 +124,7 @@ export function comandosDoGesto(
     comandos.push({
       tipo: 'instancia.atualizar',
       id: objeto.id,
-      alteracoes: alteracoesDoGesto(doc, objeto, mudanca.transformacao),
+      alteracoes: alteracoesDoGesto(doc, objeto, mudanca.transformacao, fonte),
     })
   }
   return comandos
@@ -132,6 +134,7 @@ export function comandosDoGesto(
 export function transformacaoNoMundo(
   doc: DocumentoDeCenario,
   objeto: InstanciaDeCenario,
+  fonte?: FonteDeAlturas,
 ): Transformacao {
-  return { ...objeto.transformacao, posicao: posicaoNoMundo(doc, objeto) }
+  return { ...objeto.transformacao, posicao: posicaoNoMundo(doc, objeto, fonte) }
 }

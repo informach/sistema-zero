@@ -1,5 +1,6 @@
 import type {
   DocumentoDeCenario,
+  FonteDeAlturas,
   ModeloDoCenario,
   Transformacao,
   VolumeDeComposicao,
@@ -39,6 +40,12 @@ export interface Estatisticas {
 export interface OpcoesDoPalco {
   /** Os bytes do GLB de um modelo da tabela do cenário. O host decide de onde vêm. */
   carregarModelo(modelo: ModeloDoCenario): Promise<ArrayBuffer>
+  carregarTerreno?(digest: string, sinal: AbortSignal): Promise<ArrayBuffer>
+  aoTerreno?(evento: {
+    estado: 'carregando' | 'pronto' | 'erro'
+    chave: string
+    erro?: unknown
+  }): void
   /** Toque num objeto (ou no vazio, com `null`). `somar` = Shift ou Ctrl apertado. */
   aoSelecionar?(id: string | null, somar: boolean): void
   /** Fim de um gesto de mover, girar ou mudar o tamanho. */
@@ -61,6 +68,8 @@ export interface Palco {
   pontoNoChao(clientX: number, clientY: number): Ponto3 | null
   /** Volume medido do GLB já carregado, sem expor objetos do Three ao host. */
   volumeDoModelo(id: string): VolumeDeComposicao | null
+  /** Ausente enquanto os bytes do relevo não estão prontos; não substitui altura por zero. */
+  fonteDeAlturas(): FonteDeAlturas | undefined
   /** Enquadra os objetos dados, ou o cenário inteiro. */
   enquadrar(ids?: readonly string[]): void
   /** Uma foto do palco agora, sem as alças de edição. */

@@ -1,4 +1,4 @@
-import { SceneSurfaceQuery } from '@sistemazero/molda/palco'
+import { recortarMalha, SceneSurfaceQuery } from '@sistemazero/molda/palco'
 import {
   type BaseDeTerreno,
   CELULAS_DA_PECA,
@@ -16,6 +16,8 @@ import {
   Mesh,
   MeshStandardMaterial,
   type Raycaster,
+  ShapeUtils,
+  Vector2,
   Vector3,
 } from 'three'
 
@@ -40,6 +42,12 @@ export class TerrenoDoPalco {
       areia = new Color('#d5c995'),
       fundo = new Color('#8d947d')
     const passo = base.passo
+    const furos = (base.recortes ?? []).flatMap((p) =>
+      ShapeUtils.triangulateShape(
+        p.map((v) => new Vector2(v.x, v.z)),
+        [],
+      ).map((is) => is.map((i) => p[i]!)),
+    )
     const adicionar = (
       vertices: Float32Array,
       indices: Uint16Array,
@@ -65,12 +73,23 @@ export class TerrenoDoPalco {
         cor.copy(y < 0 ? fundo : areia).lerp(grama, Math.max(0, Math.min(1, y / 3)))
         cores.set([cor.r, cor.g, cor.b], i)
       }
-      const geometria = new BufferGeometry()
+      let geometria = new BufferGeometry()
         .setAttribute('position', new BufferAttribute(vertices, 3))
         .setAttribute('normal', new BufferAttribute(normais, 3))
         .setAttribute('color', new BufferAttribute(cores, 3))
         .setAttribute('uv', new BufferAttribute(uvs, 2))
         .setIndex(new BufferAttribute(indices, 1))
+      if (furos.length) {
+        const original = geometria
+        geometria = recortarMalha(
+          original,
+          [],
+          furos.map((f) =>
+            f.map((p) => ({ x: p.x - base.origem.x - ox, z: p.z - base.origem.z - oz })),
+          ),
+        )
+        original.dispose()
+      }
       geometria.computeBoundingBox()
       geometria.computeBoundingSphere()
       const malha = new Mesh(geometria, this.material)

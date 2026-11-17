@@ -1,5 +1,9 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Importação do relevo no Molda Cenários (17/11/2026)
+
+`cenarios/:id/recursos/reservar` reutiliza assinatura condicional e cota. Um POST de lote com `recursos: {espacoId, digests}` primeiro autoriza o cenário, lê cada peça de 8.474 bytes, confere SHA/cabeçalho e só então encaminha a prova para `/members/internal/cenarios/lotes` por HMAC. A prova não vem do navegador. Lotes sem recursos mantêm a porta JWT existente. Erro ou falta de arquivo impede a confirmação; o Members confirma e grava atomicamente. DELETE de cenário ou mundo usa a mesma limpeza posterior de arquivos sem referências das bibliotecas. A DDL é `0157_tiresome_shen`.
+
 ## Molda Cenários: o BFF da oficina de cenários 3D (16/11/2026)
 
 `routes/cenarios.ts` (`createCenariosRoutes({ gateway, session })`, espalhado no `createShell` como

@@ -1,5 +1,15 @@
 import { expect, test } from 'bun:test'
 import {
+  alteracoesDoGesto,
+  alturaDoChao,
+  chaveDaBase,
+  criarDocumentoVazio,
+  executarLote,
+  type InstanciaDeCenario,
+  posicaoNoMundo,
+  repetirObjetos,
+} from '../src/v2'
+import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
   BaseDeTerrenoSchema,
@@ -28,6 +38,65 @@ const campo = (ox: number, oz: number) =>
     { length: AMOSTRAS_DA_PECA },
     (_, i) => (ox + (i % 65)) / 8 + (oz + Math.floor(i / 65)) / 16,
   )
+
+test('identidade da base ignora a ordem de chaves do JSONB e das referências de peças', () => {
+  const b = base([
+    { coluna: 0, linha: 0, digest: digest('a') },
+    { coluna: 1, linha: 0, digest: digest('b') },
+  ])
+  const outraOrdem = Object.fromEntries(Object.entries(b).reverse()) as BaseDeTerreno
+  outraOrdem.origem = { z: b.origem.z, x: b.origem.x }
+  outraOrdem.pecas = [...b.pecas]
+    .reverse()
+    .map((p) => ({ digest: p.digest, linha: p.linha, coluna: p.coluna }))
+  expect(JSON.stringify(outraOrdem)).not.toBe(JSON.stringify(b))
+  expect(chaveDaBase(outraOrdem)).toBe(chaveDaBase(b))
+  expect(chaveDaBase({ ...b, passo: 2 })).not.toBe(chaveDaBase(b))
+})
+
+test('documento, apoio e gestos usam a fonte explícita; a falta do relevo não vira altura zero', () => {
+  const b = base([{ coluna: 0, linha: 0, digest: digest('a') }])
+  const dados = new Map([
+    [digest('a'), lerPecaDeAlturas(codificarPecaDeAlturas(campo(0, 0), 0, 255))],
+  ])
+  const fonte = criarFonteDeAlturas(b, dados)
+  const doc = criarDocumentoVazio('c', 'C')
+  doc.base = b
+  doc.modelos = [{ id: 'm', biblioteca: 'bib', modelo: 'mod', digest: digest('c') }]
+  const o: InstanciaDeCenario = {
+    id: 'o',
+    nome: 'O',
+    grupo: null,
+    bloqueado: false,
+    oculto: false,
+    modelo: 'm',
+    colisao: 'caixa',
+    apoio: { tipo: 'terreno', deslocamento: 0.5, inclinar: false },
+    transformacao: {
+      posicao: { x: -60, y: 999, z: -30 },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    },
+  }
+  doc.instancias = [o]
+  expect(() => alturaDoChao(b, -60, -30)).toThrow(PecaDeTerrenoAusente)
+  expect(posicaoNoMundo(doc, o, fonte).y).toBeCloseTo(fonte(-60, -30) + 0.5)
+  const mundo = { ...o.transformacao, posicao: { x: -59, y: fonte(-59, -30) + 1.5, z: -30 } }
+  const gestos = alteracoesDoGesto(doc, o, mundo, fonte)
+  expect(gestos.apoio).toMatchObject({ deslocamento: 1.5 })
+  const comandos = repetirObjetos(
+    doc,
+    ['o'],
+    { tipo: 'fila', copias: 1, deslocamento: { x: 2, y: 0, z: 0 } },
+    ['copia'],
+    fonte,
+  )
+  const resultado = executarLote({ documento: doc, revisao: 0 }, { revisaoEsperada: 0, comandos })
+  expect(
+    posicaoNoMundo(resultado.documento, resultado.documento.instancias[1]!, fonte).y,
+  ).toBeCloseTo(posicaoNoMundo(doc, o, fonte).y, 3)
+  expect(doc.instancias).toHaveLength(1)
+})
 
 test('peça Uint16 tem formato canônico, intervalo e erro de quantização limitado', () => {
   const origem = campo(0, 0)

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, RelevoSchema, VetorSchema } from '../documento'
+import { BaseDeTerrenoSchema } from './terreno'
 
 /**
  * Documento v2: genérico, para o cenário de qualquer jogo.
@@ -150,6 +151,7 @@ export const MarcadorSchema = entidade
   .strict()
 
 export const BaseSchema = z.discriminatedUnion('tipo', [
+  BaseDeTerrenoSchema,
   z
     .object({
       tipo: z.literal('plano'),
@@ -200,6 +202,33 @@ export type BaseDeCenario = z.infer<typeof BaseSchema>
 export type Transformacao = z.infer<typeof TransformacaoSchema>
 export type Propriedades = z.infer<typeof PropriedadesSchema>
 export type Colisao = (typeof COLISOES)[number]
+
+/** Identidade de leitura, independente da ordem das chaves recebidas do JSONB. Não é um hash de arquivo. */
+export function chaveDaBase(b: BaseDeCenario): string {
+  if (b.tipo === 'plano') return JSON.stringify([b.tipo, b.largura, b.comprimento])
+  if (b.tipo === 'perfil')
+    return JSON.stringify([
+      b.tipo,
+      b.perfil,
+      b.versao,
+      b.carimbos.map((c) => [c.id, c.tipo, c.centro.x, c.centro.z, c.raio, c.valor, c.intensidade]),
+    ])
+  return JSON.stringify([
+    b.tipo,
+    b.origem.x,
+    b.origem.z,
+    b.passo,
+    b.colunas,
+    b.linhas,
+    b.min,
+    b.max,
+    b.fundo,
+    [...b.pecas]
+      .sort((a, c) => a.linha - c.linha || a.coluna - c.coluna)
+      .map((p) => [p.coluna, p.linha, p.digest]),
+    (b.recortes ?? []).map((p) => p.map((v) => [v.x, v.z])),
+  ])
+}
 
 /** Cenário vazio sobre um chão plano: o ponto de partida de qualquer jogo. */
 export function criarDocumentoVazio(id: string, nome: string): DocumentoDeCenario {

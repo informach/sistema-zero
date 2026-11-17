@@ -170,7 +170,11 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   }
   if (/^\/members\/internal\/(?:adult\/)?pensa\//.test(pathname)) return 1024 * 1024
   // Lote de até 500 comandos de um cenário (cada objeto criado leva a transformação inteira).
-  if (/^\/members\/cenarios\/cenarios\/[^/]+\/lotes$/.test(pathname)) return 1024 * 1024
+  if (
+    /^\/members\/cenarios\/cenarios\/[^/]+\/lotes$/.test(pathname) ||
+    pathname === '/members/internal/cenarios/lotes'
+  )
+    return 1024 * 1024
   if (/^\/members\/(?:adult\/)?pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }

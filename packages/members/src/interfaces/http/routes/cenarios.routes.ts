@@ -38,6 +38,11 @@ const CONFERENCIA = t.Object({
 const Id = t.Object({ id: UUID })
 const EspacoId = t.Object({ espacoId: UUID })
 const NomeBody = t.Object({ nome: NOME })
+const LoteBody = t.Object({
+  revisaoEsperada: t.Integer({ minimum: 0 }),
+  operacaoId: t.String({ minLength: 8, maxLength: 80, pattern: '^[A-Za-z0-9_-]+$' }),
+  comandos: t.Array(t.Record(t.String(), t.Unknown()), { minItems: 1, maxItems: 500 }),
+})
 const Varios = <T extends TSchema>(item: T) =>
   t.Array(item, { minItems: 1, maxItems: LIMITES_DOS_CENARIOS.reservaPorChamada })
 
@@ -279,14 +284,9 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
             }),
           },
         )
-        .delete(
-          '/mundos/:id',
-          async ({ headers, params }) => {
-            await s.apagarMundo(atorDe(headers), params.id)
-            return { ok: true }
-          },
-          { params: Id },
-        )
+        .delete('/mundos/:id', ({ headers, params }) => s.apagarMundo(atorDe(headers), params.id), {
+          params: Id,
+        })
 
         .get(
           '/mundos/:id/cenarios',
@@ -365,6 +365,17 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           { params: Id },
         )
         .post(
+          '/cenarios/:id/recursos/reservar',
+          ({ headers, params, body }) =>
+            s.reservarRecursos(atorDe(headers), params.id, body.recursos),
+          {
+            params: Id,
+            body: t.Object({
+              recursos: Varios(t.Object({ digest: DIGEST, bytes: t.Literal(8474) })),
+            }),
+          },
+        )
+        .post(
           '/cenarios/:id/capa/reservar',
           ({ headers, params, body }) => s.reservarCapa(atorDe(headers), params.id, body),
           {
@@ -378,15 +389,44 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         )
         .delete(
           '/cenarios/:id',
-          async ({ headers, params }) => {
-            await s.apagarCenario(atorDe(headers), params.id)
-            return { ok: true }
-          },
+          ({ headers, params }) => s.apagarCenario(atorDe(headers), params.id),
           { params: Id },
         ),
     )
     .group('/members/internal/cenarios', (app) =>
       app
+        .post(
+          '/lotes',
+          ({ headers, body }) => {
+            assertMemberShellConsumer(headers['x-consumer-id'])
+            return s.editarCenario(
+              body.ator,
+              body.cenarioId,
+              { ...body.lote, comandos: body.lote.comandos as ComandoDeCenario[] },
+              { espacoId: body.espacoId, conferidos: body.conferidos },
+            )
+          },
+          {
+            body: t.Object({
+              ator: AtorBody,
+              cenarioId: UUID,
+              espacoId: UUID,
+              lote: LoteBody,
+              conferidos: t.Array(
+                t.Object({
+                  digest: DIGEST,
+                  bytes: t.Literal(8474),
+                  tipoDoConteudo: t.Literal('application/octet-stream'),
+                  terreno: t.Object({
+                    min: t.Number({ minimum: -10000, maximum: 10000 }),
+                    max: t.Number({ minimum: -10000, maximum: 10000 }),
+                  }),
+                }),
+                { maxItems: 4096 },
+              ),
+            }),
+          },
+        )
         .post(
           '/modelos',
           ({ headers, body }) => {

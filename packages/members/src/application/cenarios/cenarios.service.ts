@@ -669,9 +669,10 @@ export class CenariosService {
     return mundoView(editado)
   }
 
-  async apagarMundo(ator: Ator, id: string): Promise<void> {
-    await this.mundoDe(ator, id)
-    await this.repo.apagarMundo(id)
+  async apagarMundo(ator: Ator, id: string): Promise<{ apagar: string[] }> {
+    const { espaco } = await this.mundoDe(ator, id)
+    const digests = await this.repo.apagarMundo(id)
+    return { apagar: digests.map((d) => chaveDoBlob(espaco.id, d)) }
   }
 
   // ---- cenários -----------------------------------------------------------
@@ -799,8 +800,9 @@ export class CenariosService {
     ator: Ator,
     id: string,
     lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
+    recursos?: { espacoId: string; conferidos: readonly ConferenciaDeBlob[] },
   ): Promise<{ revisao: number }> {
-    return this.aplicarMudanca(ator, id, lote)
+    return this.aplicarMudanca(ator, id, lote, undefined, recursos)
   }
 
   private async aplicarMudanca(
@@ -808,8 +810,10 @@ export class CenariosService {
     id: string,
     lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
     movimento?: MovimentoDoHistorico,
+    recursos?: { espacoId: string; conferidos: readonly ConferenciaDeBlob[] },
   ): Promise<{ revisao: number }> {
     const { cenario, espaco } = await this.cenarioDe(ator, id)
+    if (recursos && recursos.espacoId !== espaco.id) throw new CenarioNaoEncontradoError('O espaço')
     const feita = await this.repo.operacaoAplicada(id, lote.operacaoId)
     if (feita !== null) return { revisao: feita }
     if (lote.revisaoEsperada !== cenario.revisao)
@@ -852,6 +856,7 @@ export class CenariosService {
         operacaoId: lote.operacaoId,
         autorId: ator.usuarioId,
         movimento,
+        recursosConferidos: recursos?.conferidos,
       },
       this.clock(),
     )
@@ -881,9 +886,34 @@ export class CenariosService {
     return resumoView(criado)
   }
 
-  async apagarCenario(ator: Ator, id: string): Promise<void> {
-    await this.cenarioDe(ator, id)
-    await this.repo.apagarCenario(id)
+  async reservarRecursos(
+    ator: Ator,
+    id: string,
+    recursos: readonly { digest: string; bytes: number }[],
+  ) {
+    const { espaco } = await this.cenarioDe(ator, id)
+    if (
+      !recursos.length ||
+      recursos.length > LIMITES_DOS_CENARIOS.reservaPorChamada ||
+      recursos.some(
+        (r) => !/^[a-f0-9]{64}$/.test(r.digest) || r.bytes !== LIMITES_DOS_CENARIOS.terrenoBytes,
+      )
+    )
+      throw new ValidationError('Envie de 1 a 50 peças de terreno válidas por reserva')
+    return this.reservar(espaco.id, [
+      ...new Map(
+        recursos.map((r) => [
+          r.digest,
+          { ...r, tipo: 'terreno' as const, tipoDoConteudo: 'application/octet-stream' as const },
+        ]),
+      ).values(),
+    ])
+  }
+
+  async apagarCenario(ator: Ator, id: string): Promise<{ apagar: string[] }> {
+    const { espaco } = await this.cenarioDe(ator, id)
+    const digests = await this.repo.apagarCenario(id)
+    return { apagar: digests.map((d) => chaveDoBlob(espaco.id, d)) }
   }
 
   /** Reserva o retrato do cenário (a capa do cartão). */

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { poligonoSimples } from '../validacao'
 
 export const CELULAS_DA_PECA = 64
 export const LADO_DAS_AMOSTRAS = CELULAS_DA_PECA + 1
@@ -23,6 +24,23 @@ export const BaseDeTerrenoSchema = z
     min: altura,
     max: altura,
     fundo: altura,
+    /** Furos importados, em coordenadas de mundo; não alteram as alturas de apoio. */
+    recortes: z
+      .array(
+        z
+          .array(
+            z
+              .object({
+                x: z.number().finite().min(-100000).max(100000),
+                z: z.number().finite().min(-100000).max(100000),
+              })
+              .strict(),
+          )
+          .min(3)
+          .max(4096),
+      )
+      .max(128)
+      .optional(),
     pecas: z
       .array(
         z
@@ -37,6 +55,23 @@ export const BaseDeTerrenoSchema = z
   })
   .strict()
   .superRefine((b, ctx) => {
+    if (b.recortes) {
+      if (b.recortes.reduce((n, p) => n + p.length, 0) > 16384)
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Os recortes excedem o orçamento de pontos',
+          path: ['recortes'],
+        })
+      else
+        b.recortes.forEach((p, i) => {
+          if (!poligonoSimples(p))
+            ctx.addIssue({
+              code: 'custom',
+              message: 'O recorte do terreno é inválido',
+              path: ['recortes', i],
+            })
+        })
+    }
     if (b.max <= b.min || b.fundo < b.min || b.fundo > b.max)
       ctx.addIssue({
         code: 'custom',
@@ -85,7 +120,7 @@ export function codificarPecaDeAlturas(
   amostras: ArrayLike<number>,
   min: number,
   max: number,
-): Uint8Array {
+): Uint8Array<ArrayBuffer> {
   conferirIntervalo(min, max)
   if (amostras.length !== AMOSTRAS_DA_PECA) invalidar('A peça precisa ter 65 × 65 amostras')
   const bytes = new Uint8Array(BYTES_DA_PECA),

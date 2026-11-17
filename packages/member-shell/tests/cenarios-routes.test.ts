@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { AMOSTRAS_DA_PECA, codificarPecaDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import type { SessionUser } from '../src/lib/types'
 import type { GatewayModule } from '../src/server/gateway'
 import type { SessionModule } from '../src/server/session'
@@ -39,12 +40,67 @@ const arquivos = [
     ),
     tipo: 'image/png',
   },
+  {
+    bytes: Buffer.from(codificarPecaDeAlturas(new Float64Array(AMOSTRAS_DA_PECA), -10, 40)),
+    tipo: 'application/octet-stream',
+  },
 ].map((a) => ({ ...a, digest: createHash('sha256').update(a.bytes).digest('hex') }))
 const digest = (letra: string) => arquivos['abc'.indexOf(letra)]?.digest ?? letra.repeat(64)
 const prova = (indice: number) => ({
   digest: arquivos[indice]!.digest,
   bytes: arquivos[indice]!.bytes.length,
   tipoDoConteudo: arquivos[indice]!.tipo,
+})
+
+test('lote com relevo autoriza o cenário antes de ler e leva só prova real pela rota HMAC', async () => {
+  const recursos = { espacoId: ESPACO, digests: [arquivos[3]!.digest] }
+  const corpo = {
+    revisaoEsperada: 0,
+    operacaoId: 'importar-terreno-01',
+    comandos: [{ tipo: 'base.definir', base: { tipo: 'terreno' } }],
+    recursos,
+  }
+  const base = montar({
+    responder: (c) =>
+      c.path === `/members/cenarios/cenarios/${CENARIO}`
+        ? { status: 200, body: { espacoId: ESPACO } }
+        : undefined,
+  })
+  expect((await base.pedir('POST', `cenarios/${CENARIO}/lotes`, corpo)).status).toBe(200)
+  expect(base.conferidos).toHaveLength(1)
+  const chamada = base.chamadas.find((c) => c.via === 'hmac')!
+  expect(chamada.path).toBe('/members/internal/cenarios/lotes')
+  expect(chamada.body).toMatchObject({
+    cenarioId: CENARIO,
+    espacoId: ESPACO,
+    ator: { usuarioId: PERFIL, contaId: CONTA },
+    lote: { revisaoEsperada: 0, operacaoId: corpo.operacaoId, comandos: corpo.comandos },
+    conferidos: [{ ...prova(3), terreno: { min: -10, max: 40 } }],
+  })
+  for (const status of [403, 404]) {
+    const recusado = montar({
+      responder: (c) =>
+        c.path === `/members/cenarios/cenarios/${CENARIO}` ? { status, body: {} } : undefined,
+    })
+    expect((await recusado.pedir('POST', `cenarios/${CENARIO}/lotes`, corpo)).status).toBe(status)
+    expect(recusado.conferidos).toHaveLength(0)
+    expect(recusado.chamadas.some((c) => c.via === 'hmac')).toBe(false)
+  }
+  const trocado = montar({
+    adulterar: true,
+    responder: (c) =>
+      c.path === `/members/cenarios/cenarios/${CENARIO}`
+        ? { status: 200, body: { espacoId: ESPACO } }
+        : undefined,
+  })
+  expect((await trocado.pedir('POST', `cenarios/${CENARIO}/lotes`, corpo)).status).toBe(422)
+  expect(trocado.chamadas.some((c) => c.via === 'hmac')).toBe(false)
+  const falso = montar()
+  expect(
+    (await falso.pedir('POST', `cenarios/${CENARIO}/lotes`, { ...corpo, conferidos: [prova(3)] }))
+      .status,
+  ).toBe(400)
+  expect(falso.conferidos).toHaveLength(0)
 })
 
 const crianca: SessionUser = {
@@ -589,6 +645,13 @@ describe('BFF do Molda Cenários: apagar e ler arquivos', () => {
       ok: true,
     })
     expect(biblioteca.tarefas).toEqual([])
+    for (const caminho of [`cenarios/${CENARIO}`, `mundos/${CENARIO}`]) {
+      const cenario = montar({ responder: () => ({ status: 200, body: { apagar: [solto] } }) })
+      expect(await (await cenario.pedir('DELETE', caminho)).json()).toEqual({ ok: true })
+      expect(cenario.apagados).toEqual([])
+      await Promise.all(cenario.tarefas.map((tarefa) => tarefa()))
+      expect(cenario.apagados).toEqual([[solto]])
+    }
   })
 
   test('ler um arquivo: confere o espaço uma vez e redireciona para o mesmo endereço na janela', async () => {

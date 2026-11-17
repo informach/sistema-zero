@@ -214,6 +214,12 @@ export interface CenariosHost {
   apagarTexturas(bibliotecaId: string, ids: string[]): Promise<void>
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
   conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
+  conteudoDoTerreno(cenarioId: string, digest: string, sinal?: AbortSignal): Promise<ArrayBuffer>
+  guardarRecursos(
+    cenarioId: string,
+    pecas: readonly { digest: string; conteudo: Uint8Array }[],
+    sinal?: AbortSignal,
+  ): Promise<{ espacoId: string; digests: string[] }>
 
   listarMundos(espacoId: string): Promise<Mundo[]>
   criarMundo(espacoId: string, nome: string): Promise<Mundo>
@@ -242,6 +248,7 @@ export interface CenariosHost {
     revisaoEsperada: number,
     comandos: ComandoDeCenario[],
     operacaoId: string,
+    recursos?: { espacoId: string; digests: string[] },
   ): Promise<{ revisao: number }>
   duplicarCenario(id: string): Promise<ResumoDeCenario>
   apagarCenario(id: string): Promise<void>

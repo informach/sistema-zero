@@ -1,4 +1,4 @@
-import type { ComandoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import { type ComandoDeCenario, chaveDaBase } from '@sistemazero/molda-cenarios-core/v2'
 import {
   criarPalco,
   type Estatisticas,
@@ -222,13 +222,27 @@ function OficinaAberta({
     () => !globalThis.matchMedia?.('(max-width: 899px)').matches,
   )
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
+  const [relevo, setRelevo] = useState<{
+    chave: string
+    estado: 'carregando' | 'pronto' | 'erro'
+    erro?: string
+  } | null>(null)
   const [escolhendo, setEscolhendo] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const [versoesAbertas, setVersoesAbertas] = useState(false)
   const { documento, selecao, ferramenta, encaixe } = estado
+  const relevoPronto =
+    documento.base.tipo !== 'terreno' ||
+    (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
+  const fonte = relevoPronto ? palco.current?.fonteDeAlturas?.() : undefined
 
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
+      if (
+        controlador.getState().documento.base.tipo === 'terreno' &&
+        !palco.current?.fonteDeAlturas?.()
+      )
+        return
       controlador.executar(comandos)
     },
     [controlador],
@@ -241,9 +255,24 @@ function OficinaAberta({
     const novo = criarPalco(tela, {
       carregarModelo: (modelo) =>
         host.conteudoDoModelo({ biblioteca: modelo.biblioteca, digest: modelo.digest }),
+      carregarTerreno: (digest, sinal) => host.conteudoDoTerreno(aberto.resumo.id, digest, sinal),
+      aoTerreno: ({ estado, chave, erro }) =>
+        setRelevo({
+          chave,
+          estado,
+          ...(erro
+            ? { erro: erro instanceof Error ? erro.message : 'Não consegui carregar o relevo' }
+            : {}),
+        }),
       aoSelecionar: (id, somar) => controlador.tocar(id, somar),
       aoTransformar: (mudancas) =>
-        controlador.executar(comandosDoGesto(controlador.getState().documento, mudancas)),
+        controlador.executar(
+          comandosDoGesto(
+            controlador.getState().documento,
+            mudancas,
+            palco.current?.fonteDeAlturas?.(),
+          ),
+        ),
       aoMedir: setMedidas,
       movimentoReduzido: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
     })
@@ -254,7 +283,7 @@ function OficinaAberta({
       palco.current = null
       novo.destruir()
     }
-  }, [host, controlador])
+  }, [host, controlador, aberto.resumo.id])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
   useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
@@ -271,6 +300,11 @@ function OficinaAberta({
 
   const por = useCallback(
     (modelo: ModeloDeBiblioteca, ponto: { x: number; z: number } | null) => {
+      if (
+        controlador.getState().documento.base.tipo === 'terreno' &&
+        !palco.current?.fonteDeAlturas?.()
+      )
+        return
       const lugar = ponto ?? centroDaVista(canvas.current, palco.current) ?? { x: 0, z: 0 }
       const { comandos, id } = comandosParaPor(controlador.getState().documento, modelo, lugar)
       if (controlador.executar(comandos)) {
@@ -624,6 +658,11 @@ function OficinaAberta({
               aria-label={COPY.oficina.vistasRotulo}
             />
             <div className="mld-stage-toolbar">
+              {!relevoPronto ? (
+                <p className="mld-float" role={relevo?.estado === 'erro' ? 'alert' : 'status'}>
+                  {relevo?.estado === 'erro' ? relevo.erro : 'Carregando o relevo…'}
+                </p>
+              ) : null}
               <fieldset className="mld-float" aria-label={COPY.oficina.vistasRotulo}>
                 {VISTAS.map((valor) => (
                   <button
@@ -682,13 +721,16 @@ function OficinaAberta({
             className="mld-workshop-inspector mld-bar mcn-painel"
             aria-label={COPY.painel.titulo}
           >
-            <Painel documento={documento} selecao={selecao} executar={executar} />
-            {aba === 'objetos' && selecao.length > 0 ? (
+            {relevoPronto ? (
+              <Painel documento={documento} selecao={selecao} executar={executar} fonte={fonte} />
+            ) : null}
+            {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
               <Organizar
                 documento={documento}
                 selecao={selecao}
                 executar={executar}
                 medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                fonte={fonte}
               />
             ) : null}
           </aside>

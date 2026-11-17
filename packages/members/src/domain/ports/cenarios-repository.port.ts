@@ -166,7 +166,8 @@ export interface CenariosRepository {
     dados: { nome?: string; bibliotecas?: string[] },
     agora: Date,
   ): Promise<Mundo | null>
-  apagarMundo(id: string): Promise<boolean>
+  /** Exclui e devolve somente arquivos que ficaram sem referências, inclusive no histórico. */
+  apagarMundo(id: string): Promise<string[]>
 
   cenarios(mundoId: string): Promise<ResumoDeCenario[]>
   cenario(id: string): Promise<Cenario | null>
@@ -214,9 +215,11 @@ export interface CenariosRepository {
       operacaoId: string
       autorId: string
       movimento?: MovimentoDoHistorico
+      /** Prova do BFF; confirmação e documento são gravados na mesma transação. */
+      recursosConferidos?: readonly ConferenciaDeBlob[]
     },
     agora: Date,
   ): Promise<LoteGravado | null>
   definirCapa(cenarioId: string, digest: string, agora: Date): Promise<boolean>
-  apagarCenario(id: string): Promise<boolean>
+  apagarCenario(id: string): Promise<string[]>
 }

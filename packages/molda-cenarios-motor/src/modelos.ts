@@ -12,6 +12,7 @@ import {
 } from 'three'
 import { GLTFLoader, type GLTFParser } from 'three/addons/loaders/GLTFLoader.js'
 import { ArquivoDoConjunto, RecursosDoConjunto } from './importacao/recursos'
+import { geometriaDaPoseInicial } from './modelo-estatico'
 
 /** Confere o conteúdo fixado no documento antes de entregar qualquer dado ao carregador 3D. */
 export async function conferirConteudoDoModelo(
@@ -90,50 +91,64 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
   const partes: ParteDoModelo[] = []
   const geometrias = new Set<BufferGeometry>()
   const materiais = new Set<Material>()
-  let triangulos = 0
   raiz.traverse((no) => {
-    const malha = no as Mesh
-    if (!malha.isMesh) return
-    const geometria = malha.geometry
-    geometrias.add(geometria)
-    const lista = Array.isArray(malha.material) ? malha.material : [malha.material]
-    const grupos = geometria.groups
-    if (lista.length > 1 && grupos.length > 0) {
-      // Malha com vários materiais: uma parte por grupo, sobre a mesma geometria.
-      for (const grupo of grupos) {
-        const material = lista[grupo.materialIndex ?? 0]
-        if (!material) continue
-        const recorte = geometria.clone()
-        recorte.clearGroups()
-        recorte.setDrawRange(grupo.start, grupo.count)
-        geometrias.add(recorte)
-        materiais.add(material)
-        partes.push({ geometria: recorte, material, matriz: malha.matrixWorld.clone() })
-      }
-    } else {
-      const material = lista[0]
-      if (!material) return
+    const m = no as Mesh
+    if (!m.isMesh) return
+    geometrias.add(m.geometry)
+    for (const material of Array.isArray(m.material) ? m.material : [m.material])
       materiais.add(material)
-      partes.push({ geometria, material, matriz: malha.matrixWorld.clone() })
-    }
-    const indice = geometria.index
-    const pontos = indice ? indice.count : (geometria.getAttribute('position')?.count ?? 0)
-    triangulos += Math.floor(pontos / 3)
   })
-  const caixa = new Box3().setFromObject(raiz)
-  if (caixa.isEmpty()) caixa.set(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
-  let descartado = false
-  return {
-    partes,
-    caixa,
-    triangulos,
-    raiz,
-    descartar() {
-      if (descartado) return
-      descartado = true
-      for (const g of geometrias) g.dispose()
-      for (const m of materiais) descartarMaterial(m)
-    },
+  let triangulos = 0
+  try {
+    raiz.traverse((no) => {
+      const malha = no as Mesh
+      if (!malha.isMesh) return
+      geometrias.add(malha.geometry)
+      const geometria = geometriaDaPoseInicial(malha)
+      geometrias.add(geometria)
+      const lista = Array.isArray(malha.material) ? malha.material : [malha.material]
+      const grupos = geometria.groups
+      if (lista.length > 1 && grupos.length > 0) {
+        // Malha com vários materiais: uma parte por grupo, sobre a mesma geometria.
+        for (const grupo of grupos) {
+          const material = lista[grupo.materialIndex ?? 0]
+          if (!material) continue
+          const recorte = geometria.clone()
+          recorte.clearGroups()
+          recorte.setDrawRange(grupo.start, grupo.count)
+          geometrias.add(recorte)
+          materiais.add(material)
+          partes.push({ geometria: recorte, material, matriz: malha.matrixWorld.clone() })
+        }
+      } else {
+        const material = lista[0]
+        if (!material) return
+        materiais.add(material)
+        partes.push({ geometria, material, matriz: malha.matrixWorld.clone() })
+      }
+      const indice = geometria.index
+      const pontos = indice ? indice.count : (geometria.getAttribute('position')?.count ?? 0)
+      triangulos += Math.floor(pontos / 3)
+    })
+    const caixa = new Box3().setFromObject(raiz)
+    if (caixa.isEmpty()) caixa.set(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
+    let descartado = false
+    return {
+      partes,
+      caixa,
+      triangulos,
+      raiz,
+      descartar() {
+        if (descartado) return
+        descartado = true
+        for (const g of geometrias) g.dispose()
+        for (const m of materiais) descartarMaterial(m)
+      },
+    }
+  } catch (e) {
+    for (const g of geometrias) g.dispose()
+    for (const m of materiais) descartarMaterial(m)
+    throw e
   }
 }
 

@@ -18,16 +18,23 @@ export const TIPOS_DE_ESPACO = ['conta', 'equipe'] as const
 export type TipoDeEspaco = (typeof TIPOS_DE_ESPACO)[number]
 
 /** O que guarda cada arquivo: o `.glb` do modelo, o retrato dele ou a capa de um cenário. */
-export const TIPOS_DE_BLOB = ['modelo', 'miniatura', 'capa', 'textura'] as const
+export const TIPOS_DE_BLOB = ['modelo', 'miniatura', 'capa', 'textura', 'terreno'] as const
 export type TipoDeBlob = (typeof TIPOS_DE_BLOB)[number]
-export const TIPOS_DE_CONTEUDO = ['model/gltf-binary', 'image/webp', 'image/png'] as const
+export const TIPOS_DE_CONTEUDO = [
+  'model/gltf-binary',
+  'image/webp',
+  'image/png',
+  'application/octet-stream',
+] as const
 export type TipoDeConteudo = (typeof TIPOS_DE_CONTEUDO)[number]
 export interface ConferenciaDeBlob {
   digest: string
   bytes: number
   tipoDoConteudo: TipoDeConteudo
+  terreno?: { min: number; max: number }
 }
-export const ehImagemDeCenario = (tipo: TipoDeBlob) => tipo !== 'modelo'
+export const ehImagemDeCenario = (tipo: TipoDeBlob) =>
+  tipo === 'miniatura' || tipo === 'capa' || tipo === 'textura'
 /** A mesma imagem pode servir ao retrato de um modelo e à capa de um cenário. */
 export const tiposDeBlobCompativeis = (a: TipoDeBlob, b: TipoDeBlob) =>
   a === b || (ehImagemDeCenario(a) && ehImagemDeCenario(b))
@@ -46,6 +53,7 @@ export const LIMITES_DOS_CENARIOS = {
   miniaturaBytes: 256 * 1024,
   capaBytes: 512 * 1024,
   texturaBytes: 4 * 1024 * 1024,
+  terrenoBytes: 8474,
   /** Arquivos reservados por chamada: o gateway limita os pedidos por minuto. */
   reservaPorChamada: 50,
   paginaDeModelos: 200,
@@ -58,12 +66,14 @@ export const TIPO_DO_CONTEUDO: Record<TipoDeBlob, TipoDeConteudo> = {
   miniatura: 'image/webp',
   capa: 'image/webp',
   textura: 'image/webp',
+  terreno: 'application/octet-stream',
 }
 export const TETO_DO_BLOB: Record<TipoDeBlob, number> = {
   modelo: LIMITES_DOS_CENARIOS.modeloBytes,
   miniatura: LIMITES_DOS_CENARIOS.miniaturaBytes,
   capa: LIMITES_DOS_CENARIOS.capaBytes,
   textura: LIMITES_DOS_CENARIOS.texturaBytes,
+  terreno: LIMITES_DOS_CENARIOS.terrenoBytes,
 }
 
 /**

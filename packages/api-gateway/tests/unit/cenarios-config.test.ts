@@ -47,6 +47,7 @@ const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['POST', `/members/cenarios/cenarios/${ID}/restaurar`],
   ['POST', `/members/cenarios/cenarios/${ID}/lotes`],
   ['POST', `/members/cenarios/cenarios/${ID}/duplicar`],
+  ['POST', `/members/cenarios/cenarios/${ID}/recursos/reservar`],
   ['POST', `/members/cenarios/cenarios/${ID}/capa/reservar`],
   ['DELETE', `/members/cenarios/cenarios/${ID}`],
 ]
@@ -104,6 +105,7 @@ describe('Molda Cenários na borda', () => {
     for (const caminho of [
       '/members/internal/cenarios/modelos',
       '/members/internal/cenarios/texturas',
+      '/members/internal/cenarios/lotes',
       '/members/internal/cenarios/capa',
     ]) {
       const rota = resolver('POST', caminho)

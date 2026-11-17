@@ -2,8 +2,10 @@ import {
   ConflitoDeCenario,
   criarDocumentoVazio,
   type DocumentoDeCenario,
+  digestDosBytes,
   executarLote,
   inverterLote,
+  lerPecaDeAlturas,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
@@ -70,6 +72,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const texturas = new Map<string, TexturaDeBiblioteca>()
   const espacoDasBibliotecas = new Map<string, string>()
   const conteudos = new Map<string, Uint8Array>()
+  const recursosDeTerreno = new Map<string, Uint8Array>()
   const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
 
@@ -82,6 +85,36 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     const espaco = espacos.find((e) => e.id === id)
     if (!espaco) throw new Error('Espaço não existe')
     return espaco
+  }
+  const pecasDoCenario = (c: CenarioGuardado) => {
+    const digests = new Set<string>()
+    const incluir = (doc: DocumentoDeCenario) => {
+      if (doc.base.tipo === 'terreno') for (const p of doc.base.pecas) digests.add(p.digest)
+    }
+    incluir(c.documento)
+    for (const doc of c.versoes.values()) incluir(doc)
+    for (const lote of c.lotes.values())
+      for (const op of [...lote.comandos, ...lote.inversos]) {
+        if (op.tipo === 'base.definir' && op.base.tipo === 'terreno')
+          for (const p of op.base.pecas) digests.add(p.digest)
+        if (op.tipo === 'cenario.restaurar') incluir(op.documento)
+      }
+    return digests
+  }
+  const soltarPecas = (espacoId: string, candidatos: ReadonlySet<string>) => {
+    const usados = new Set<string>()
+    for (const c of cenarios.values())
+      if (mundos.get(c.resumo.mundoId)?.espacoId === espacoId)
+        for (const d of pecasDoCenario(c)) usados.add(d)
+    for (const d of candidatos) {
+      if (usados.has(d)) continue
+      const chave = `${espacoId}:${d}`,
+        bytes = recursosDeTerreno.get(chave)
+      if (bytes) {
+        recursosDeTerreno.delete(chave)
+        espacoDe(espacoId).usadoBytes -= bytes.length
+      }
+    }
   }
   const contar = (bibliotecaId: string) => {
     const biblioteca = bibliotecas.get(bibliotecaId)
@@ -391,10 +424,15 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     },
     async apagarMundo(id) {
       await esperar()
-      exigir(mundos, id, 'O mundo')
+      const mundo = exigir(mundos, id, 'O mundo'),
+        candidatos = new Set<string>()
       for (const c of [...cenarios.values()])
-        if (c.resumo.mundoId === id) cenarios.delete(c.resumo.id)
+        if (c.resumo.mundoId === id) {
+          for (const d of pecasDoCenario(c)) candidatos.add(d)
+          cenarios.delete(c.resumo.id)
+        }
       mundos.delete(id)
+      soltarPecas(mundo.espacoId, candidatos)
     },
 
     async listarCenarios(mundoId) {
@@ -442,7 +480,36 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         },
       })
     },
-    async editarCenario(id, revisaoEsperada, comandos, operacaoId) {
+    async conteudoDoTerreno(cenarioId, digest, sinal) {
+      sinal?.throwIfAborted()
+      const c = exigir(cenarios, cenarioId, 'O cenário')
+      const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+      return exigir(recursosDeTerreno, `${mundo.espacoId}:${digest}`, 'A peça de terreno').slice()
+        .buffer
+    },
+    async guardarRecursos(cenarioId, pecas, sinal) {
+      const c = exigir(cenarios, cenarioId, 'O cenário')
+      const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+      const espaco = espacoDe(mundo.espacoId)
+      const unicas = new Map(pecas.map((p) => [p.digest, p.conteudo]))
+      if (unicas.size > 4096) throw new Error('O terreno tem peças demais')
+      let novosBytes = 0
+      for (const [digest, bytes] of unicas) {
+        sinal?.throwIfAborted()
+        lerPecaDeAlturas(bytes)
+        if ((await digestDosBytes(bytes)) !== digest)
+          throw new Error('O hash da peça de terreno é inválido')
+        if (!recursosDeTerreno.has(`${espaco.id}:${digest}`)) novosBytes += bytes.length
+      }
+      sinal?.throwIfAborted()
+      if (espaco.usadoBytes + novosBytes > espaco.limiteBytes)
+        throw new Error('Seu espaço está cheio')
+      for (const [digest, bytes] of unicas)
+        recursosDeTerreno.set(`${espaco.id}:${digest}`, bytes.slice())
+      espaco.usadoBytes += novosBytes
+      return { espacoId: espaco.id, digests: [...unicas.keys()] }
+    },
+    async editarCenario(id, revisaoEsperada, comandos, operacaoId, recursos) {
       await esperar()
       const c = exigir(cenarios, id, 'O cenário')
       // A mesma operação mandada duas vezes (resposta perdida) não se aplica de novo.
@@ -454,6 +521,19 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           { revisaoEsperada, comandos },
         )
         const inversos = inverterLote(c.documento, depois.documento)
+        const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+        if (recursos && recursos.espacoId !== mundo.espacoId)
+          throw new Error('O espaço não corresponde ao cenário')
+        if (depois.documento.base.tipo === 'terreno') {
+          const base = depois.documento.base
+          for (const p of base.pecas) {
+            const dados = lerPecaDeAlturas(
+              exigir(recursosDeTerreno, `${mundo.espacoId}:${p.digest}`, 'A peça de terreno'),
+            )
+            if (dados.min !== base.min || dados.max !== base.max)
+              throw new Error('A peça não corresponde ao terreno')
+          }
+        }
         if (!c.versoes.size) c.versoes.set(c.resumo.revisao, copia(c.documento))
         c.lotes.set(depois.revisao, { comandos: copia(comandos), inversos, criadoEm: agora() })
         if (inversos.length) {
@@ -467,8 +547,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         c.resumo.nome = depois.documento.nome
         c.resumo.atualizadoEm = agora()
         c.operacoes.set(operacaoId, depois.revisao)
-        const mundo = mundos.get(c.resumo.mundoId)
-        if (mundo) mundo.atualizadoEm = c.resumo.atualizadoEm
+        mundo.atualizadoEm = c.resumo.atualizadoEm
         return { revisao: depois.revisao }
       } catch (erro) {
         if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizado(erro.revisaoAtual)
@@ -574,7 +653,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       const c = exigir(cenarios, id, 'O cenário')
       cenarios.delete(id)
       const mundo = mundos.get(c.resumo.mundoId)
-      if (mundo) mundo.cenarios = Math.max(0, mundo.cenarios - 1)
+      if (mundo) {
+        mundo.cenarios = Math.max(0, mundo.cenarios - 1)
+        soltarPecas(mundo.espacoId, pecasDoCenario(c))
+      }
     },
     async guardarCapa(cenarioId, imagem) {
       const c = cenarios.get(cenarioId)

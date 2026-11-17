@@ -99,11 +99,13 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
       porMinuto: 600,
     }),
     escrever('cenario-duplicar', 'POST', '/cenarios/:id/duplicar'),
+    escrever('cenario-recursos-reservar', 'POST', '/cenarios/:id/recursos/reservar'),
     escrever('cenario-capa-reservar', 'POST', '/cenarios/:id/capa/reservar'),
     escrever('cenario-apagar', 'DELETE', '/cenarios/:id'),
 
     interna('modelos', '/modelos', CENARIOS_REGISTRO_MAX_BYTES),
     interna('texturas', '/texturas', CENARIOS_REGISTRO_MAX_BYTES),
+    interna('lotes', '/lotes', CENARIOS_LOTE_MAX_BYTES),
     interna('capa', '/capa', 16 * 1024),
   ]
 }

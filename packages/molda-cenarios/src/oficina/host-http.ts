@@ -1,4 +1,8 @@
-import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  BYTES_DA_PECA,
+  digestDosBytes,
+  lerPecaDeAlturas,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
   type CenarioAberto,
@@ -109,6 +113,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   // De que espaço é cada biblioteca e cada mundo: é o que monta o endereço dos arquivos.
   const espacoDaBiblioteca = new Map<string, string>()
   const espacoDoMundo = new Map<string, string>()
+  const espacoDoCenario = new Map<string, string>()
 
   async function pedir<T>(
     metodo: 'GET' | 'POST' | 'PATCH' | 'DELETE',
@@ -183,6 +188,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     atualizadoEm: c.atualizadoEm,
   })
   const cenarioAberto = (aberto: CenarioDoServidor): CenarioAberto => {
+    espacoDoCenario.set(aberto.id, aberto.espacoId)
     espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
     // Arquivos fixados continuam autorizados mesmo depois de apagar a biblioteca de origem.
     for (const ref of aberto.documento.modelos)
@@ -498,11 +504,77 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         }),
       )
     },
-    async editarCenario(id, revisaoEsperada, comandos, operacaoId) {
+    async conteudoDoTerreno(cenarioId, digest, sinal) {
+      if (!espacoDoCenario.has(cenarioId)) await host.abrirCenario(cenarioId)
+      const { url } = await pedir<{ url: string }>(
+        'GET',
+        `espacos/${espacoDoCenario.get(cenarioId)}/arquivos/${digest}?como=endereco`,
+        undefined,
+        sinal,
+      )
+      const resposta = await enviar(url, { signal: sinal })
+      if (!resposta.ok)
+        throw new ErroDaOficina('Não consegui carregar o relevo', resposta.status, null, null)
+      if (!resposta.body) throw new ErroDaOficina('A peça de terreno está vazia', 0, null, null)
+      const leitor = resposta.body.getReader(),
+        bytes = new Uint8Array(BYTES_DA_PECA)
+      let posicao = 0,
+        completo = false
+      try {
+        while (true) {
+          sinal?.throwIfAborted()
+          const parte = await leitor.read()
+          if (parte.done) break
+          if (posicao + parte.value.byteLength > bytes.byteLength)
+            throw new Error('A peça de terreno excede o tamanho permitido')
+          bytes.set(parte.value, posicao)
+          posicao += parte.value.byteLength
+        }
+        sinal?.throwIfAborted()
+        if (posicao !== bytes.byteLength) throw new Error('A peça de terreno está incompleta')
+        completo = true
+        return bytes.buffer
+      } finally {
+        if (!completo) await leitor.cancel().catch(() => undefined)
+        leitor.releaseLock()
+      }
+    },
+    async guardarRecursos(cenarioId, pecas, sinal) {
+      const unicas = [...new Map(pecas.map((p) => [p.digest, p])).values()]
+      if (unicas.length > 4096) throw new Error('O terreno tem peças demais')
+      let espacoId = espacoDoCenario.get(cenarioId)
+      for (let i = 0; i < unicas.length; i += POR_LOTE) {
+        const lote = unicas.slice(i, i + POR_LOTE)
+        for (const p of lote) {
+          sinal?.throwIfAborted()
+          lerPecaDeAlturas(p.conteudo)
+          if ((await digestDosBytes(p.conteudo)) !== p.digest)
+            throw new Error('O hash da peça de terreno é inválido')
+        }
+        const reserva = await pedir<Reserva>(
+          'POST',
+          `cenarios/${cenarioId}/recursos/reservar`,
+          { recursos: lote.map((p) => ({ digest: p.digest, bytes: p.conteudo.byteLength })) },
+          sinal,
+        )
+        if (espacoId && espacoId !== reserva.espacoId) throw new Error('O espaço do cenário mudou')
+        espacoId = reserva.espacoId
+        espacoDoCenario.set(cenarioId, espacoId)
+        await subir(reserva, new Map(lote.map((p) => [p.digest, p.conteudo])), sinal)
+      }
+      if (!espacoId) {
+        await host.abrirCenario(cenarioId)
+        espacoId = espacoDoCenario.get(cenarioId)
+      }
+      if (!espacoId) throw new Error('O espaço do cenário não foi encontrado')
+      return { espacoId, digests: unicas.map((p) => p.digest) }
+    },
+    async editarCenario(id, revisaoEsperada, comandos, operacaoId, recursos) {
       const { revisao } = await pedir<{ revisao: number }>('POST', `cenarios/${id}/lotes`, {
         revisaoEsperada,
         comandos,
         operacaoId,
+        ...(recursos?.digests.length ? { recursos } : {}),
       })
       return { revisao }
     },

@@ -53,6 +53,50 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
 }
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
 
+test('recursos do relevo são reservados pelo cenário autorizado e a prova só entra pela rota do BFF', async () => {
+  const { ctx, espaco } = await comBiblioteca()
+  const mundo = await json(
+    await pedir(ctx.app, 'POST', `/members/cenarios/espacos/${espaco.id}/mundos`, {
+      nome: 'Mundo',
+    }),
+  )
+  const c = await json(
+    await pedir(ctx.app, 'POST', `/members/cenarios/mundos/${mundo.id}/cenarios`, {
+      nome: 'Relevo',
+    }),
+  )
+  const caminho = `/members/cenarios/cenarios/${c.id}/recursos/reservar`
+  const recursos = [{ digest: digest('e'), bytes: 8474 }]
+  const reserva = await pedir(ctx.app, 'POST', caminho, { recursos })
+  expect(reserva.status).toBe(200)
+  expect((await json(reserva)).enviar[0]).toMatchObject({
+    ...recursos[0],
+    tipo: 'terreno',
+    tipoDoConteudo: 'application/octet-stream',
+  })
+  expect(
+    (await pedir(ctx.app, 'POST', caminho, { recursos: [{ ...recursos[0], bytes: 1 }] })).status,
+  ).toBe(400)
+  expect((await pedir(ctx.app, 'POST', caminho, { recursos }, doCliente)).status).toBe(403)
+  const corpo = {
+    ator: atorDaEquipe,
+    cenarioId: c.id,
+    espacoId: espaco.id,
+    lote: {
+      revisaoEsperada: 0,
+      operacaoId: 'editar-por-hmac-01',
+      comandos: [{ tipo: 'cenario.renomear', nome: 'Relevo conferido' }],
+    },
+    conferidos: [],
+  }
+  const interna = '/members/internal/cenarios/lotes'
+  expect((await pedir(ctx.app, 'POST', interna, corpo, daEquipe)).status).toBe(401)
+  expect((await pedir(ctx.app, 'POST', interna, corpo, doBff)).status).toBe(200)
+  expect((await json(await pedir(ctx.app, 'GET', `/members/cenarios/cenarios/${c.id}`))).nome).toBe(
+    'Relevo conferido',
+  )
+})
+
 test('chãos percorrem reserva, confirmação do BFF, busca e edição, com autorização da mesma conta', async () => {
   const { ctx, espaco, biblioteca } = await comBiblioteca()
   const prefixo = `/members/cenarios/bibliotecas/${biblioteca.id}/texturas`

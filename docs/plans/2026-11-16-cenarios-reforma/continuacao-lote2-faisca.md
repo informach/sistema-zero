@@ -1,5 +1,7 @@
 # Lote 2: conversão da Faísca sem achatar o relevo
 
+**Encerramento local em 17/11/2026:** esta sequência foi implementada, testada e revisada; o lote 2 está concluído. Ver [relatório final e evidências](revisao-lote2-conversao.md). Os registros abaixo conservam as verificações intermediárias, sem substituir o estado final. A validação da implantação permanece no encerramento global.
+
 Estado em 17/11/2026, após `fca1d1cd5`. A execução continua exclusivamente no lote 2. A fonte local antiga foi consultada somente para leitura; os dez projetos foram preservados em um backup privado sob `output/cenarios-reforma/conversao-faisca/fontes/1794905362478`. Nenhum projeto antigo foi modificado ou removido.
 
 ## Fontes conferidas

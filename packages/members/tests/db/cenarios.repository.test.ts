@@ -10,7 +10,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type BaseDeTerreno,
+  type ComandoDeCenario,
+  criarDocumentoVazio,
+} from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
 import { CenarioArquivoAusenteError } from '../../src/domain/cenarios/cenarios.errors'
@@ -122,6 +126,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of texturasDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const terrenoDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0157_tiresome_shen.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of terrenoDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -129,6 +142,169 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
   })
   beforeEach(async () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
+  })
+
+  test('peças do relevo só confirmam junto com o lote válido; conflito e falha desfazem toda a confirmação', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const [espaco] = await servico.espacos(ator)
+    const mundo = await servico.criarMundo(ator, espaco!.id, 'Mundo')
+    const cenario = await servico.criarCenario(ator, mundo.id, 'Terreno')
+    const a = digest('a'),
+      b = digest('b')
+    const base = (d: string): BaseDeTerreno => ({
+      tipo: 'terreno',
+      origem: { x: -128, z: 0 },
+      passo: 4,
+      colunas: 64,
+      linhas: 64,
+      min: -10,
+      max: 40,
+      fundo: -10,
+      pecas: [{ coluna: 0, linha: 0, digest: d }],
+    })
+    const prova = (d: string) => ({
+      digest: d,
+      bytes: 8474,
+      tipoDoConteudo: 'application/octet-stream' as const,
+      terreno: { min: -10, max: 40 },
+    })
+    await servico.reservarRecursos(
+      ator,
+      cenario.id,
+      [a, b].map((digest) => ({ digest, bytes: 8474 })),
+    )
+    const lote = (d: string, revisaoEsperada: number, op: string) => ({
+      revisaoEsperada,
+      operacaoId: op,
+      comandos: [{ tipo: 'base.definir' as const, base: base(d) }],
+    })
+    const erro = await servico
+      .editarCenario(ator, cenario.id, lote(a, 0, 'sem-prova-0001'))
+      .catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.cenario(cenario.id))!.revisao).toBe(0)
+    expect(
+      await servico.editarCenario(ator, cenario.id, lote(a, 0, 'com-prova-0001'), {
+        espacoId: espaco!.id,
+        conferidos: [prova(a)],
+      }),
+    ).toEqual({ revisao: 1 })
+    expect((await repo.blobsConfirmados(espaco!.id, [a])).size).toBe(1)
+    const conflito = await servico
+      .editarCenario(ator, cenario.id, lote(b, 0, 'conflito-0001'), {
+        espacoId: espaco!.id,
+        conferidos: [prova(b)],
+      })
+      .catch((e: unknown) => e)
+    expect(conflito).toBeInstanceOf(Error)
+    expect((await repo.blobsConfirmados(espaco!.id, [b])).size).toBe(0)
+    const atual = (await repo.cenario(cenario.id))!
+    const modeloAusente = {
+      id: 'ausente',
+      biblioteca: randomUUID(),
+      modelo: randomUUID(),
+      digest: digest('c'),
+    }
+    const comandos: ComandoDeCenario[] = [
+      ...lote(b, 1, 'x').comandos,
+      { tipo: 'modelo.definir', modelo: modeloAusente },
+    ]
+    const falha = await repo
+      .gravarLote(
+        {
+          cenarioId: cenario.id,
+          revisaoEsperada: 1,
+          documento: { ...atual.documento, base: base(b), modelos: [modeloAusente] },
+          comandos,
+          operacaoId: 'rollback-0001',
+          autorId: CONTA,
+          recursosConferidos: [prova(b)],
+        },
+        AGORA,
+      )
+      .catch((e: unknown) => e)
+    expect(falha).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.blobsConfirmados(espaco!.id, [b])).size).toBe(0)
+    expect((await repo.cenario(cenario.id))!.revisao).toBe(1)
+    const intervaloErrado = await servico
+      .editarCenario(ator, cenario.id, lote(b, 1, 'intervalo-0001'), {
+        espacoId: espaco!.id,
+        conferidos: [{ ...prova(b), terreno: { min: -11, max: 40 } }],
+      })
+      .catch((e: unknown) => e)
+    expect(intervaloErrado).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.blobsConfirmados(espaco!.id, [b])).size).toBe(0)
+    await servico.editarCenario(ator, cenario.id, lote(b, 1, 'com-prova-0002'), {
+      espacoId: espaco!.id,
+      conferidos: [prova(b)],
+    })
+    const reaberto = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const desfeito = await reaberto.moverHistorico(ator, cenario.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 2,
+      operacaoId: 'desfazer-relevo-01',
+    })
+    expect(desfeito.documento.base).toEqual(base(a))
+    expect((await reaberto.documentoNaRevisao(ator, cenario.id, 2)).base).toEqual(base(b))
+    const repetido = await reaberto.editarCenario(ator, cenario.id, lote(b, 1, 'com-prova-0002'), {
+      espacoId: espaco!.id,
+      conferidos: [],
+    })
+    expect(repetido).toEqual({ revisao: 2 })
+    expect((await repo.cenario(cenario.id))!.revisao).toBe(3)
+    const outroEspaco = await repo.espacoDaConta(randomUUID(), 50000, AGORA)
+    await repo.reservarBlobs(
+      outroEspaco.id,
+      [{ digest: a, bytes: 8474, tipo: 'terreno', tipoDoConteudo: 'application/octet-stream' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(outroEspaco.id, [prova(a)], AGORA)
+    const copia = await servico.duplicarCenario(ator, cenario.id)
+    expect((await servico.apagarCenario(ator, cenario.id)).apagar).toEqual([
+      `cenarios/${espaco!.id}/blobs/${b}`,
+    ])
+    expect((await repo.blobsConfirmados(espaco!.id, [a, b])).size).toBe(1)
+    expect((await repo.cenario(copia.id))!.documento.base).toEqual(base(a))
+    expect((await servico.apagarMundo(ator, mundo.id)).apagar).toEqual([
+      `cenarios/${espaco!.id}/blobs/${a}`,
+    ])
+    expect((await repo.espaco(espaco!.id))!.usadoBytes).toBe(0)
+    expect((await repo.blobsConfirmados(outroEspaco.id, [a])).size).toBe(1)
+  })
+
+  test('banco recusa cabeçalho incompleto e peça confirmada com formato ou tamanho errado', async () => {
+    const espaco = await repo.espacoDaConta(CONTA, 50000, AGORA)
+    await repo.reservarBlobs(
+      espaco.id,
+      [
+        {
+          digest: digest('a'),
+          bytes: 8474,
+          tipo: 'terreno',
+          tipoDoConteudo: 'application/octet-stream',
+        },
+      ],
+      AGORA,
+      DEPOIS,
+    )
+    const erro =
+      await conn.sql`update members.cenario_blobs set confirmado_em = ${AGORA.toISOString()}, terreno = ${JSON.stringify({ min: 0 })}::jsonb where espaco_id = ${espaco.id}`.catch(
+        (e: unknown) => e,
+      )
+    expect((erro as { code: string }).code).toBe('23514')
+    const bytes =
+      await conn.sql`update members.cenario_blobs set bytes = 1 where espaco_id = ${espaco.id}`.catch(
+        (e: unknown) => e,
+      )
+    expect((bytes as { code: string }).code).toBe('23514')
+    const mime =
+      await conn.sql`update members.cenario_blobs set tipo_do_conteudo = 'image/png' where espaco_id = ${espaco.id}`.catch(
+        (e: unknown) => e,
+      )
+    expect((mime as { code: string }).code).toBe('23514')
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a')])).size).toBe(0)
   })
 
   async function comBiblioteca() {
@@ -554,7 +730,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     // Apagar a biblioteca a tira do mundo; apagar o mundo leva cenários e lotes.
     await repo.apagarBiblioteca(biblioteca.id, DEPOIS)
     expect((await repo.mundo(mundo.id))!.bibliotecas).toEqual([])
-    expect(await repo.apagarMundo(mundo.id)).toBe(true)
+    expect(await repo.apagarMundo(mundo.id)).toBeInstanceOf(Array)
     expect(await repo.cenario(id)).toBeNull()
   })
 

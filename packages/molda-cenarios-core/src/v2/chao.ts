@@ -4,6 +4,7 @@ import type {
   InstanciaDeCenario,
   Transformacao,
 } from './documento'
+import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { transformarVolume } from './volume'
 
 type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
@@ -23,7 +24,16 @@ function elevacaoDoVolume(doc: BaseComModelos, o: ObjetoComModelo): number {
  * um jogo) também responde zero aqui: o relevo de verdade só existe depois da conversão em
  * terreno, e até lá o cenário abre sobre o plano.
  */
-export function alturaDoChao(_base: BaseDeCenario, _x: number, _z: number): number {
+export function alturaDoChao(
+  base: BaseDeCenario,
+  x: number,
+  z: number,
+  fonte?: FonteDeAlturas,
+): number {
+  if (base.tipo === 'terreno') {
+    if (!fonte) throw new PecaDeTerrenoAusente('O relevo ainda não foi carregado')
+    return fonte(x, z)
+  }
   return 0
 }
 
@@ -31,12 +41,13 @@ export function alturaDoChao(_base: BaseDeCenario, _x: number, _z: number): numb
 export function posicaoNoMundo(
   doc: BaseComModelos,
   o: ObjetoComModelo,
+  fonte?: FonteDeAlturas,
 ): { x: number; y: number; z: number } {
   const p = o.transformacao.posicao
   if (o.apoio.tipo === 'terreno')
     return {
       x: p.x,
-      y: alturaDoChao(doc.base, p.x, p.z) + o.apoio.deslocamento + elevacaoDoVolume(doc, o),
+      y: alturaDoChao(doc.base, p.x, p.z, fonte) + o.apoio.deslocamento + elevacaoDoVolume(doc, o),
       z: p.z,
     }
   return { x: p.x, y: p.y, z: p.z }
@@ -51,14 +62,16 @@ export function alteracoesDoGesto(
   o: Pick<InstanciaDeCenario, 'apoio'> &
     Partial<Pick<InstanciaDeCenario, 'modelo' | 'transformacao'>>,
   mundo: Transformacao,
+  fonte?: FonteDeAlturas,
 ): Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> {
   if (o.apoio.tipo !== 'terreno') return { transformacao: mundo, apoio: o.apoio }
-  const chao = alturaDoChao(doc.base, mundo.posicao.x, mundo.posicao.z)
+  const chao = alturaDoChao(doc.base, mundo.posicao.x, mundo.posicao.z, fonte)
   const mantemApoio =
     o.apoio.referencia === 'volume' &&
     o.transformacao &&
-    Math.abs(posicaoNoMundo(doc, { ...o, transformacao: o.transformacao }).y - mundo.posicao.y) <
-      1e-6
+    Math.abs(
+      posicaoNoMundo(doc, { ...o, transformacao: o.transformacao }, fonte).y - mundo.posicao.y,
+    ) < 1e-6
   const deslocamento = mantemApoio
     ? o.apoio.deslocamento
     : Math.round(

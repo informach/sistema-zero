@@ -29,6 +29,7 @@
     "test:3": "bun test --timeout 20000 src/accessibility-contract.test.ts src/host-conformance.test.ts src/assets src/core src/model src/paint src/sky src/state src/styles src/templates src/testing src/texture src/viewport"
   },
   "dependencies": {
+    "@sistemazero/molda-cenarios-core": "workspace:*",
     "clsx": "^2.1.1",
     "earcut": "3.2.4",
     "fflate": "^0.8.2",

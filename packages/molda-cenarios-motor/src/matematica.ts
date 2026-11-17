@@ -1,5 +1,6 @@
 import {
   type DocumentoDeCenario,
+  type FonteDeAlturas,
   type InstanciaDeCenario,
   posicaoNoMundo,
   type Transformacao,
@@ -16,8 +17,9 @@ export function matrizDoObjeto(
   doc: Pick<DocumentoDeCenario, 'base' | 'modelos'>,
   o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio' | 'modelo'>,
   saida: Matrix4,
+  fonte?: FonteDeAlturas,
 ): Matrix4 {
-  const p = posicaoNoMundo(doc, o),
+  const p = posicaoNoMundo(doc, o, fonte),
     r = o.transformacao.rotacao,
     s = o.transformacao.escala
   posicao.set(p.x, p.y, p.z)

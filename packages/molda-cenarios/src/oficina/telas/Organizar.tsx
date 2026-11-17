@@ -4,6 +4,7 @@ import {
   type DocumentoDeCenario,
   distribuirObjetos,
   type EixoDeComposicao,
+  type FonteDeAlturas,
   repetirObjetos,
   sortearTransformacoes,
   type VolumeDeComposicao,
@@ -18,11 +19,13 @@ export function Organizar({
   selecao,
   executar,
   medir,
+  fonte,
 }: {
   documento: DocumentoDeCenario
   selecao: readonly string[]
   executar(comandos: ComandoDeCenario[]): void
   medir?(id: string): VolumeDeComposicao | null
+  fonte?: FonteDeAlturas
 }): JSX.Element {
   const [eixo, setEixo] = useState<EixoDeComposicao>('x')
   const [copias, setCopias] = useState(3),
@@ -87,7 +90,7 @@ export function Organizar({
               type="button"
               className="sz-tool-pill sz-tool-pill--outline"
               disabled={selecao.length < 2}
-              onClick={() => acao((doc) => alinharObjetos(doc, selecao, eixo, lado))}
+              onClick={() => acao((doc) => alinharObjetos(doc, selecao, eixo, lado, fonte))}
             >
               {lado === 'inicio'
                 ? 'Alinhar início'
@@ -100,12 +103,12 @@ export function Organizar({
         <div className="mcn-acoes-composicao">
           {botao(
             'Centros iguais',
-            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'centros')),
+            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'centros', fonte)),
             selecao.length < 3,
           )}
           {botao(
             'Vãos iguais',
-            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'vaos')),
+            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'vaos', fonte)),
             selecao.length < 3,
           )}
         </div>
@@ -170,6 +173,7 @@ export function Organizar({
                     girar: true,
                   },
               novos,
+              fonte,
             )
           }),
         )}

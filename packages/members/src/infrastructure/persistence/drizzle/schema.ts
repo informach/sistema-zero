@@ -3250,10 +3250,11 @@ export const cenarioBlobs = members.table(
       .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
     /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
     digest: varchar('digest', { length: 64 }).notNull(),
-    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa' | 'textura'>().notNull(),
+    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa' | 'textura' | 'terreno'>().notNull(),
     tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
-      'model/gltf-binary' | 'image/webp' | 'image/png'
+      'model/gltf-binary' | 'image/webp' | 'image/png' | 'application/octet-stream'
     >(),
+    terreno: jsonb('terreno').$type<{ min: number; max: number }>(),
     bytes: integer('bytes').notNull(),
     /** Nulo enquanto a reserva espera o envio; preenchido quando o BFF confere o arquivo. */
     confirmadoEm: timestamp('confirmado_em', { withTimezone: true }),
@@ -3263,10 +3264,17 @@ export const cenarioBlobs = members.table(
   },
   (t) => [
     primaryKey({ columns: [t.espacoId, t.digest] }),
-    check('cenario_blobs_tipo_check', sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura')`),
+    check(
+      'cenario_blobs_tipo_check',
+      sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura', 'terreno')`,
+    ),
     check(
       'cenario_blobs_conteudo_check',
-      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png'))`,
+      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png')) or (${t.tipo} = 'terreno' and ${t.tipoDoConteudo} = 'application/octet-stream')`,
+    ),
+    check(
+      'cenario_blobs_terreno_check',
+      sql`case when ${t.tipo} = 'terreno' then ${t.bytes} = 8474 and (${t.confirmadoEm} is null or (${t.terreno} is not null and jsonb_typeof(${t.terreno} -> 'min') = 'number' and jsonb_typeof(${t.terreno} -> 'max') = 'number' and (${t.terreno} ->> 'min')::numeric >= -10000 and (${t.terreno} ->> 'max')::numeric <= 10000 and (${t.terreno} ->> 'min')::numeric < (${t.terreno} ->> 'max')::numeric) is true) else ${t.terreno} is null end`,
     ),
     check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
     check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),

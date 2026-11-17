@@ -4,6 +4,7 @@ import {
   type Colisao,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  type FonteDeAlturas,
   type InstanciaDeCenario,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -125,16 +126,19 @@ function PainelDoObjeto({
   documento,
   objeto,
   executar,
+  fonte,
 }: {
   documento: DocumentoDeCenario
   objeto: InstanciaDeCenario
   executar(comandos: ComandoDeCenario[]): void
+  fonte?: FonteDeAlturas
 }): JSX.Element {
   const [proporcao, setProporcao] = useState(true)
-  const mundo = transformacaoNoMundo(documento, objeto)
+  const mundo = transformacaoNoMundo(documento, objeto, fonte)
   const atualizar = (alteracoes: Partial<Omit<InstanciaDeCenario, 'id'>>) =>
     executar([{ tipo: 'instancia.atualizar', id: objeto.id, alteracoes }])
-  const transformar = (nova: Transformacao) => atualizar(alteracoesDoGesto(documento, objeto, nova))
+  const transformar = (nova: Transformacao) =>
+    atualizar(alteracoesDoGesto(documento, objeto, nova, fonte))
   const trancado = objeto.bloqueado
   const escala = mundo.escala
 
@@ -378,10 +382,12 @@ export function Painel({
   documento,
   selecao,
   executar,
+  fonte,
 }: {
   documento: DocumentoDeCenario
   selecao: readonly string[]
   executar(comandos: ComandoDeCenario[]): void
+  fonte?: FonteDeAlturas
 }): JSX.Element {
   const porId = new Map(documento.instancias.map((o) => [o.id, o]))
   const escolhidos = selecao
@@ -398,7 +404,13 @@ export function Painel({
             : COPY.painel.cenario}
       </h2>
       {unico ? (
-        <PainelDoObjeto key={unico.id} documento={documento} objeto={unico} executar={executar} />
+        <PainelDoObjeto
+          key={unico.id}
+          documento={documento}
+          objeto={unico}
+          executar={executar}
+          fonte={fonte}
+        />
       ) : escolhidos.length > 1 ? (
         <div className="mcn-painel-corpo">
           <div className="mcn-linha">

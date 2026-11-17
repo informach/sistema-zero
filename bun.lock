@@ -861,6 +861,7 @@
       "name": "@sistemazero/molda",
       "version": "0.1.0",
       "dependencies": {
+        "@sistemazero/molda-cenarios-core": "workspace:*",
         "clsx": "^2.1.1",
         "earcut": "3.2.4",
         "fflate": "^0.8.2",

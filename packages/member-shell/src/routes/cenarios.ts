@@ -89,6 +89,8 @@ const APAGAR_MODELOS = exato(`bibliotecas/(${U})/modelos/apagar`)
 const APAGAR_BIBLIOTECA = exato(`bibliotecas/(${U})`)
 const RESERVAR_CAPA = exato(`cenarios/(${U})/capa/reservar`)
 const DEFINIR_CAPA = exato(`cenarios/(${U})/capa`)
+const RESERVAR_RECURSOS = exato(`cenarios/(${U})/recursos/reservar`)
+const GRAVAR_LOTE = exato(`cenarios/(${U})/lotes`)
 const ARQUIVO = new RegExp(`^espacos/(${U})/arquivos/(${D})$`, 'i')
 
 const RegistrarBody = z.object({
@@ -99,6 +101,18 @@ const RegistrarBody = z.object({
     .max(50),
 })
 const CapaBody = z.object({ espacoId: Uuid, digest: Digest })
+const LoteComRecursosBody = z
+  .object({
+    revisaoEsperada: z.number().int().nonnegative(),
+    operacaoId: z
+      .string()
+      .min(8)
+      .max(80)
+      .regex(/^[A-Za-z0-9_-]+$/),
+    comandos: z.array(z.record(z.string(), z.unknown())).min(1).max(500),
+    recursos: z.object({ espacoId: Uuid, digests: z.array(Digest).min(1).max(4096) }).strict(),
+  })
+  .strict()
 const TexturasBody = z.object({
   espacoId: Uuid,
   texturas: z
@@ -113,7 +127,7 @@ const Reserva = z.object({
   enviar: z.array(
     z.object({
       digest: Digest,
-      tipo: z.enum(['modelo', 'miniatura', 'capa', 'textura']),
+      tipo: z.enum(['modelo', 'miniatura', 'capa', 'textura', 'terreno']),
       bytes: z.number().int().min(1),
       chave: z.string(),
       tipoDoConteudo: z.string(),
@@ -124,7 +138,12 @@ const Apagados = z.object({ apagar: z.array(z.string()) })
 
 const ArquivoGuardado = z.object({
   chave: z.string(),
-  tipoDoConteudo: z.enum(['model/gltf-binary', 'image/webp', 'image/png']),
+  tipoDoConteudo: z.enum([
+    'model/gltf-binary',
+    'image/webp',
+    'image/png',
+    'application/octet-stream',
+  ]),
   bytes: z.number().int().positive(),
 })
 
@@ -426,11 +445,61 @@ export function createCenariosRoutes(deps: {
     if (metodo === 'POST') {
       const reservarModelos = RESERVAR_MODELOS.exec(caminho) ?? RESERVAR_TEXTURAS.exec(caminho)
       const reservarCapa = RESERVAR_CAPA.exec(caminho)
-      if (reservarModelos || reservarCapa) {
+      if (reservarModelos || reservarCapa || RESERVAR_RECURSOS.test(caminho)) {
         const lido = await corpoJson(req, CORPO_PEQUENO)
         if (!lido.ok) return invalido()
         return comEnderecos(
           await gateway.gatewayFetch(members(caminho), { method: 'POST', body: lido.corpo }),
+        )
+      }
+
+      const lote = GRAVAR_LOTE.exec(caminho)
+      if (lote) {
+        if (!user) return semSessao()
+        const lido = await corpoJson(req, CORPO_DO_LOTE)
+        if (!lido.ok) return invalido()
+        if (!lido.corpo || typeof lido.corpo !== 'object' || Array.isArray(lido.corpo))
+          return invalido()
+        if (!Object.hasOwn(lido.corpo, 'recursos'))
+          return repasse(
+            await gateway.gatewayFetch(members(caminho), { method: 'POST', body: lido.corpo }),
+          )
+        const corpo = LoteComRecursosBody.safeParse(lido.corpo)
+        if (!corpo.success) return invalido()
+        const espacoId = corpo.data.recursos.espacoId.toLowerCase()
+        const permitido = await podeLer(user, espacoId)
+        if (permitido !== true) return permitido === false ? semRota() : permitido
+        // Autoriza o cenário antes de ler o bucket; ler um espaço não permite editar outro cenário.
+        const cenario = await gateway.gatewayFetch(members(`cenarios/${lote[1]}`), {
+          method: 'GET',
+        })
+        if (cenario.status !== 200) return repasse(cenario)
+        const dono = cenario.body as { espacoId?: unknown } | null
+        if (dono?.espacoId !== espacoId) return semRota()
+        let conferidos: ConferenciaDeUpload[]
+        try {
+          conferidos = await conferir(
+            espacoId,
+            corpo.data.recursos.digests.map((digest) => ({ digest, tipo: 'terreno' as const })),
+            req,
+          )
+        } catch (e) {
+          return conferenciaRecusada(e)
+        }
+        if (conferidos.length !== new Set(corpo.data.recursos.digests).size)
+          return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Faltam peças do relevo; envie de novo')
+        const { recursos: _recursos, ...dados } = corpo.data
+        return repasse(
+          await gateway.gatewayFetchHmac('/members/internal/cenarios/lotes', {
+            method: 'POST',
+            body: {
+              ator: atorDe(user),
+              cenarioId: lote[1]!.toLowerCase(),
+              espacoId,
+              lote: dados,
+              conferidos,
+            },
+          }),
         )
       }
 
@@ -553,6 +622,11 @@ export function createCenariosRoutes(deps: {
     }
 
     if (metodo === 'DELETE' && APAGAR_BIBLIOTECA.test(caminho))
+      return soltar(await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
+    if (
+      metodo === 'DELETE' &&
+      (exato(`mundos/${U}`).test(caminho) || exato(`cenarios/${U}`).test(caminho))
+    )
       return soltar(await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
 
     const rota = REPASSES.find((r) => r.metodo === metodo && r.caminho.test(caminho))

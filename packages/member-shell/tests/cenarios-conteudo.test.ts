@@ -1,11 +1,50 @@
 import { expect, mock, test } from 'bun:test'
 import { createHash } from 'node:crypto'
+import { AMOSTRAS_DA_PECA, codificarPecaDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 
 mock.module('server-only', () => ({}))
 const { conferirUploadDeCenario, conferirImagemDeCenario, ConteudoDeCenarioInvalido } =
   await import('../src/server/cenarios-conteudo')
 
 const sha = (b: Uint8Array) => createHash('sha256').update(b).digest('hex')
+
+test('prova de terreno vem do cabeçalho real e recusa troca de hash, MIME e versão', async () => {
+  const bytes = codificarPecaDeAlturas(new Float64Array(AMOSTRAS_DA_PECA), -10, 40)
+  expect(
+    await conferirUploadDeCenario(
+      fonte(bytes, 'application/octet-stream', 3).objeto,
+      sha(bytes),
+      'terreno',
+    ),
+  ).toEqual({
+    digest: sha(bytes),
+    bytes: bytes.length,
+    tipoDoConteudo: 'application/octet-stream',
+    terreno: { min: -10, max: 40 },
+  })
+  await expect(
+    conferirUploadDeCenario(fonte(bytes, 'image/png').objeto, sha(bytes), 'terreno'),
+  ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+  await expect(
+    conferirUploadDeCenario(
+      fonte(bytes, 'application/octet-stream').objeto,
+      'a'.repeat(64),
+      'terreno',
+    ),
+  ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+  const adulterada = bytes.slice()
+  adulterada[4] = 2
+  await expect(
+    conferirUploadDeCenario(
+      fonte(adulterada, 'application/octet-stream').objeto,
+      sha(adulterada),
+      'terreno',
+    ),
+  ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+  await expect(
+    conferirUploadDeCenario(fonte(bytes, 'application/octet-stream').objeto, sha(bytes), 'textura'),
+  ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+})
 function glb(extra: object = {}, bin = 0) {
   const json = Buffer.from(JSON.stringify({ asset: { version: '2.0' }, meshes: [{}], ...extra })),
     n = Math.ceil(json.length / 4) * 4

@@ -34,6 +34,25 @@ const peca = (ox: number) =>
   )
 const raio = (x: number, z: number) => new Raycaster(new Vector3(x, 1000, z), new Vector3(0, -1, 0))
 
+test('recortes importados retiram a superfície da seleção, sem plano invisível por baixo', () => {
+  const b = base([{ coluna: 0, linha: 0, digest: a }])
+  b.recortes = [
+    [
+      { x: -502, z: 266 },
+      { x: -494, z: 266 },
+      { x: -494, z: 274 },
+      { x: -502, z: 274 },
+    ],
+  ]
+  const terreno = new TerrenoDoPalco(b, new Map([[a, peca(0)]]))
+  try {
+    expect(terreno.pontoSobRaio(raio(-498, 270))).toBeNull()
+    expect(terreno.pontoSobRaio(raio(-506, 270))).not.toBeNull()
+  } finally {
+    terreno.descartar()
+  }
+})
+
 test('seleção usa o relevo real, incluindo origem, interior e borda entre peças', () => {
   const terreno = new TerrenoDoPalco(
     base([

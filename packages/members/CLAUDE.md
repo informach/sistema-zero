@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/members
 
+## Recursos de relevo do Molda Cenários (17/11/2026, migration `0157`)
+
+- `POST /members/cenarios/cenarios/:id/recursos/reservar`: reserva até 50 peças por chamada no espaço autorizado do cenário. Papel `terreno`, MIME `application/octet-stream`, 8.474 bytes, mesma cota e PUT imutável dos modelos.
+- O BFF confere SHA-256 e cabeçalho SZHT e chama `POST /members/internal/cenarios/lotes` por HMAC de `member-shell`. Ator, cenário, espaço, lote e provas são conferidos; uma chamada JWT comum não confirma arquivos.
+- `gravarLote` confirma recursos e grava a edição na mesma transação, depois do CAS/idempotência, sob a trava do espaço. A base precisa referir todas as peças confirmadas, com mínimo/máximo iguais ao cabeçalho. Falhas fazem rollback.
+- Histórico, fotografias e cópias protegem os hashes de terreno. Apagar mundo/cenário devolve `{apagar: chaves[]}` só dos arquivos sem referências, para a limpeza do BFF. Outra conta nunca divide o mesmo objeto de armazenamento.
+- `ehImagemDeCenario` enumera os papéis de imagem explicitamente; um terreno não pode servir de capa. O núcleo e os testes de fronteira continuam sem Three/React/IO.
+
 ## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
 
 Os dados da oficina de cenários 3D (`@sistemazero/molda-cenarios`). Plano da reforma em

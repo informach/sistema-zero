@@ -1,6 +1,7 @@
 import { DemandRenderLoop, perspectiveFitDistance } from '@sistemazero/molda/palco'
 import {
   alturaDoChao,
+  chaveDaBase,
   type DocumentoDeCenario,
   type InstanciaDeCenario,
   type ModeloDoCenario,
@@ -48,6 +49,8 @@ import {
   transformacaoDaMatriz,
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
+import { carregarPecasDeTerreno } from './recursos-terreno'
+import { TerrenoDoPalco } from './Terreno'
 import type {
   Encaixe,
   Ferramenta,
@@ -141,6 +144,9 @@ class PalcoThree implements Palco {
   private gesto: Gesto | null = null
   private toque: { x: number; y: number; ponteiro: number } | null = null
   private chaveDoChao = ''
+  private terreno: TerrenoDoPalco | null = null
+  private cargaDoTerreno: AbortController | null = null
+  private enquadramentoPendente: { ids?: readonly string[] } | null = null
   private ultimaMedida = ''
   private destruido = false
 
@@ -271,15 +277,28 @@ class PalcoThree implements Palco {
     const doc = this.documento
     if (!doc) return null
     this.mirar(clientX, clientY)
-    const ponto = this.raio.ray.intersectPlane(this.planoDoChao, new Vector3())
+    if (doc.base.tipo === 'terreno' && !this.terreno) return null
+    const ponto = this.terreno
+      ? this.terreno.pontoSobRaio(this.raio)
+      : this.raio.ray.intersectPlane(this.planoDoChao, new Vector3())
     if (!ponto) return null
     const meio = this.meioDoLote(doc)
-    const x = Math.min(meio.x, Math.max(-meio.x, encaixar(ponto.x, this.encaixe.grade)))
-    const z = Math.min(meio.z, Math.max(-meio.z, encaixar(ponto.z, this.encaixe.grade)))
-    return { x, y: alturaDoChao(doc.base, x, z), z }
+    const minX = doc.base.tipo === 'terreno' ? doc.base.origem.x : -meio.x
+    const minZ = doc.base.tipo === 'terreno' ? doc.base.origem.z : -meio.z
+    const x = Math.min(minX + meio.x * 2, Math.max(minX, encaixar(ponto.x, this.encaixe.grade)))
+    const z = Math.min(minZ + meio.z * 2, Math.max(minZ, encaixar(ponto.z, this.encaixe.grade)))
+    return { x, y: alturaDoChao(doc.base, x, z, this.fonteDeAlturas()), z }
+  }
+
+  fonteDeAlturas() {
+    return this.terreno?.altura
   }
 
   enquadrar(ids?: readonly string[]): void {
+    if (this.documento?.base.tipo === 'terreno' && !this.terreno) {
+      this.enquadramentoPendente = { ...(ids ? { ids: [...ids] } : {}) }
+      return
+    }
     const caixa = new Box3()
     const escolhidos = ids?.length ? ids : [...this.locais.keys()]
     const cantos = new Box3()
@@ -289,6 +308,7 @@ class PalcoThree implements Palco {
       caixa.union(cantos.copy(local.caixa).applyMatrix4(local.matriz))
     }
     const esfera = new Sphere()
+    if (caixa.isEmpty() && this.terreno) caixa.setFromObject(this.terreno.grupo)
     if (caixa.isEmpty()) esfera.set(new Vector3(0, 1, 0), 12)
     else caixa.getBoundingSphere(esfera)
     const raio = Math.max(1.5, esfera.radius)
@@ -413,12 +433,18 @@ class PalcoThree implements Palco {
 
   private meioDoLote(doc: DocumentoDeCenario): { x: number; z: number } {
     const base = doc.base
+    if (base.tipo === 'terreno')
+      return { x: (base.colunas * base.passo) / 2, z: (base.linhas * base.passo) / 2 }
     return base.tipo === 'plano'
       ? { x: base.largura / 2, z: base.comprimento / 2 }
       : { x: 256, z: 256 }
   }
 
   private limparChao() {
+    this.cargaDoTerreno?.abort()
+    this.cargaDoTerreno = null
+    this.terreno?.descartar()
+    this.terreno = null
     for (const filho of [...this.chao.children]) {
       this.chao.remove(filho)
       const peca = filho as Mesh | LineSegments
@@ -431,10 +457,44 @@ class PalcoThree implements Palco {
 
   private aplicarChao(doc: DocumentoDeCenario) {
     const meio = this.meioDoLote(doc)
-    const chave = `${meio.x}x${meio.z}`
+    const chave = chaveDaBase(doc.base)
     if (chave === this.chaveDoChao) return
     this.chaveDoChao = chave
     this.limparChao()
+    if (doc.base.tipo === 'terreno') {
+      const base = doc.base
+      const controle = new AbortController()
+      this.cargaDoTerreno = controle
+      this.opcoes.aoTerreno?.({ estado: 'carregando', chave })
+      const carregar =
+        this.opcoes.carregarTerreno ??
+        (async () => {
+          throw new Error('O host não oferece os arquivos do terreno')
+        })
+      void carregarPecasDeTerreno(base, carregar, controle.signal)
+        .then((recursos) => {
+          if (this.destruido || this.cargaDoTerreno !== controle || controle.signal.aborted) return
+          this.terreno = new TerrenoDoPalco(base, recursos)
+          this.chao.add(this.terreno.grupo)
+          this.reconstruir()
+          if (this.enquadramentoPendente) {
+            const pedido = this.enquadramentoPendente
+            this.enquadramentoPendente = null
+            this.enquadrar(pedido.ids)
+          }
+          this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
+          this.pedirQuadro()
+        })
+        .catch((e) => {
+          if (this.destruido || this.cargaDoTerreno !== controle || controle.signal.aborted) return
+          this.opcoes.aoTerreno?.({ estado: 'erro', chave, erro: e })
+          this.pedirQuadro()
+        })
+      this.nevoa.near = Math.max(120, meio.x * 1.8, meio.z * 1.8)
+      this.nevoa.far = Math.max(900, meio.x * 8, meio.z * 8)
+      return
+    }
+    this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
     const largura = meio.x * 2,
       comprimento = meio.z * 2
 
@@ -553,6 +613,14 @@ class PalcoThree implements Palco {
   private reconstruir() {
     const doc = this.documento
     if (!doc) return
+    if (doc.base.tipo === 'terreno' && !this.terreno) {
+      this.locais.clear()
+      this.loteFantasma.preencher([])
+      for (const e of this.modelos.values()) if (e.estado === 'pronto') e.lote.preencher([])
+      this.atualizarSelecao()
+      this.pedirQuadro()
+      return
+    }
     const escondidos = idsEscondidos(doc)
     const tabela = new Map(doc.modelos.map((m) => [m.id, m.digest]))
     const porLote = new Map<string, ItemDoLote[]>()
@@ -563,7 +631,7 @@ class PalcoThree implements Palco {
       if (o.bloqueado || (o.grupo && gruposTrancados.has(o.grupo))) this.trancados.add(o.id)
       if (escondidos.has(o.id)) continue
       vistos.add(o.id)
-      const matriz = matrizDoObjeto(doc, o, this.matrizDe(o.id))
+      const matriz = matrizDoObjeto(doc, o, this.matrizDe(o.id), this.fonteDeAlturas())
       const digest = tabela.get(o.modelo)
       const estado = digest ? this.modelos.get(digest) : undefined
       const chave = estado?.estado === 'pronto' && digest ? digest : FANTASMA

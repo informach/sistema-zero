@@ -7,6 +7,7 @@ import {
   LIMITES_CENARIO_V2,
   type Transformacao,
 } from './documento'
+import type { FonteDeAlturas } from './terreno'
 import { transformarVolume, type VolumeDeComposicao } from './volume'
 
 export type EixoDeComposicao = 'x' | 'y' | 'z'
@@ -25,11 +26,15 @@ function escolhidos(doc: DocumentoDeCenario, ids: readonly string[]): InstanciaD
 }
 
 /** Caixa de mundo exata do volume local, incluindo pivô, giro XYZ e escala por eixo. */
-export function volumeNoMundo(doc: DocumentoDeCenario, o: InstanciaDeCenario): VolumeDeComposicao {
+export function volumeNoMundo(
+  doc: DocumentoDeCenario,
+  o: InstanciaDeCenario,
+  fonte?: FonteDeAlturas,
+): VolumeDeComposicao {
   const volume = doc.modelos.find((m) => m.id === o.modelo)?.volume
   if (!volume)
     throw new CenarioInvalido([`Traga novamente o modelo para conferir suas medidas: ${o.nome}`])
-  return transformarVolume(volume, { ...o.transformacao, posicao: posicaoNoMundo(doc, o) })
+  return transformarVolume(volume, { ...o.transformacao, posicao: posicaoNoMundo(doc, o, fonte) })
 }
 
 function mover(
@@ -37,13 +42,14 @@ function mover(
   o: InstanciaDeCenario,
   eixo: EixoDeComposicao,
   delta: number,
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario {
-  const posicao = posicaoNoMundo(doc, o)
+  const posicao = posicaoNoMundo(doc, o, fonte)
   posicao[eixo] += delta
   return {
     tipo: 'instancia.atualizar',
     id: o.id,
-    alteracoes: alteracoesDoGesto(doc, o, { ...o.transformacao, posicao }),
+    alteracoes: alteracoesDoGesto(doc, o, { ...o.transformacao, posicao }, fonte),
   }
 }
 
@@ -53,11 +59,12 @@ export function alinharObjetos(
   ids: readonly string[],
   eixo: EixoDeComposicao,
   lado: 'inicio' | 'centro' | 'fim',
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
   const objetos = escolhidos(doc, ids)
   if (objetos.length < 2)
     throw new CenarioInvalido(['Escolha pelo menos dois objetos para alinhar'])
-  const volumes = objetos.map((o) => volumeNoMundo(doc, o))
+  const volumes = objetos.map((o) => volumeNoMundo(doc, o, fonte))
   const inicio = Math.min(...volumes.map((v) => v.min[eixo])),
     fim = Math.max(...volumes.map((v) => v.max[eixo]))
   const alvo = lado === 'inicio' ? inicio : lado === 'fim' ? fim : (inicio + fim) / 2
@@ -69,7 +76,7 @@ export function alinharObjetos(
           : lado === 'fim'
             ? v.max[eixo]
             : (v.min[eixo] + v.max[eixo]) / 2
-    return mover(doc, o, eixo, alvo - atual)
+    return mover(doc, o, eixo, alvo - atual, fonte)
   })
 }
 
@@ -79,9 +86,10 @@ export function distribuirObjetos(
   ids: readonly string[],
   eixo: EixoDeComposicao,
   modo: 'centros' | 'vaos',
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
   const ordenados = escolhidos(doc, ids)
-    .map((o) => ({ o, v: volumeNoMundo(doc, o) }))
+    .map((o) => ({ o, v: volumeNoMundo(doc, o, fonte) }))
     .sort(
       (a, b) =>
         a.v.min[eixo] + a.v.max[eixo] - (b.v.min[eixo] + b.v.max[eixo]) ||
@@ -108,6 +116,7 @@ export function distribuirObjetos(
       o,
       eixo,
       modo === 'centros' ? centro(primeiro.v) + passo * (i + 1) - centro(v) : borda - v.min[eixo],
+      fonte,
     )
   })
 }
@@ -128,6 +137,7 @@ export function repetirObjetos(
   ids: readonly string[],
   receita: Repeticao,
   novosIds: readonly string[],
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
   const objetos = escolhidos(doc, ids),
     quantidade = objetos.length * receita.copias
@@ -153,7 +163,7 @@ export function repetirObjetos(
   for (let i = 0; i < receita.copias; i++)
     for (const o of objetos) {
       const copia = structuredClone(o),
-        posicao = posicaoNoMundo(doc, o)
+        posicao = posicaoNoMundo(doc, o, fonte)
       const transformacao: Transformacao = { ...structuredClone(o.transformacao), posicao }
       if (receita.tipo === 'fila')
         for (const eixo of ['x', 'y', 'z'] as const)
@@ -173,7 +183,7 @@ export function repetirObjetos(
       copia.bloqueado = false
       // Uma cópia de objeto apoiado fora da seleção mantém a posição visível, não um vínculo deslocado.
       if (copia.apoio.tipo !== 'terreno') copia.apoio = { tipo: 'absoluto' }
-      Object.assign(copia, alteracoesDoGesto(doc, copia, transformacao))
+      Object.assign(copia, alteracoesDoGesto(doc, copia, transformacao, fonte))
       comandos.push({ tipo: 'instancia.criar', instancia: copia })
     }
   return comandos
