@@ -9,4 +9,12 @@ export const E2E_AUTOSAVE_MS = Number(initialQuery.get('autosave-ms'))
 // (ver `lessonHarness.tsx`). Sem o parâmetro, nada muda.
 const aula = initialQuery.get('aula')
 export const PLAYGROUND_LESSON =
-  window.location.pathname === '/aula' && aula ? { aula, bloco: initialQuery.get('bloco') } : null
+  window.location.pathname === '/aula' && aula
+    ? {
+        aula,
+        bloco: initialQuery.get('bloco'),
+        // `&escala=2000`: repete os eventos do projeto até passar desse número de blocos (para o
+        // perfil de escala, `e2e/classic-scale.spec.ts`). Sem ele, o projeto é o da aula.
+        escala: Number(initialQuery.get('escala')) || 0,
+      }
+    : null

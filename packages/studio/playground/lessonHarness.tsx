@@ -61,7 +61,58 @@ function caminhoDoManifesto(aula: string): string | null {
   )
 }
 
-async function carregar(aula: string, chave: string | null): Promise<Estado> {
+interface BlocoSalvo {
+  type: string
+  id?: string
+  next?: { block: BlocoSalvo }
+  inputs?: Record<string, { block?: BlocoSalvo; shadow?: BlocoSalvo }>
+  [chave: string]: unknown
+}
+
+/**
+ * O projeto com os eventos de "Quando acontecer" repetidos (blocos de verdade, encaixados, com
+ * ids novos) até passar de `alvo` blocos. Só para medir escala: mantém a forma de um jogo de
+ * criança, com muitos eventos curtos. O mesmo que `scripts/profile-js-classic.ts` faz sem tela.
+ */
+function ampliar(projeto: Project, alvo: number): Project {
+  const copia = structuredClone(projeto) as Project & {
+    blocksState?: { blocks?: { blocks?: BlocoSalvo[] } }
+  }
+  const eventos = copia.blocksState?.blocks?.blocks?.find(
+    (bloco) => bloco.type === 'sz_frame_events',
+  )
+  const primeiro = eventos?.inputs?.CHILDREN?.block
+  if (!primeiro) throw new Error('Este projeto não tem eventos em "Quando acontecer" para repetir.')
+  const molde = structuredClone(primeiro)
+  let contador = 0
+  const comIdsNovos = (bloco: BlocoSalvo): BlocoSalvo => {
+    const novo: BlocoSalvo = { ...bloco, id: `escala${(contador++).toString(36)}` }
+    if (bloco.inputs)
+      novo.inputs = Object.fromEntries(
+        Object.entries(bloco.inputs).map(([nome, entrada]) => [
+          nome,
+          {
+            ...(entrada.block ? { block: comIdsNovos(entrada.block) } : {}),
+            ...(entrada.shadow ? { shadow: comIdsNovos(entrada.shadow) } : {}),
+          },
+        ]),
+      )
+    if (bloco.next) novo.next = { block: comIdsNovos(bloco.next.block) }
+    return novo
+  }
+  const contar = () => JSON.stringify(copia.blocksState).split('"type":"sz_').length - 1
+  let fim = primeiro
+  while (fim.next) fim = fim.next.block
+  while (contar() < alvo) {
+    const repetido = comIdsNovos(molde)
+    fim.next = { block: repetido }
+    fim = repetido
+    while (fim.next) fim = fim.next.block
+  }
+  return copia
+}
+
+async function carregar(aula: string, chave: string | null, escala: number): Promise<Estado> {
   const caminho = caminhoDoManifesto(aula)
   const importar = caminho ? MANIFESTOS[caminho] : undefined
   if (!importar) return { fase: 'erro', recado: `Aula não encontrada: ${aula}` }
@@ -75,7 +126,14 @@ async function carregar(aula: string, chave: string | null): Promise<Estado> {
   const bloco = chave ? estudios.find((item) => item.key === chave) : estudios[0]
   if (!bloco)
     return { fase: 'erro', recado: `Bloco de Estúdio não encontrado: ${chave ?? '(primeiro)'}` }
-  return { fase: 'pronta', bloco }
+  if (escala <= 0) return { fase: 'pronta', bloco }
+  return {
+    fase: 'pronta',
+    bloco: {
+      ...bloco,
+      content: { ...bloco.content, initialProject: ampliar(bloco.content.initialProject, escala) },
+    },
+  }
 }
 
 export function LessonHarness(): JSX.Element {
@@ -100,7 +158,7 @@ export function LessonHarness(): JSX.Element {
       setEstado({ fase: 'erro', recado: 'Faltou ?aula=<curso>/<aula>.' })
       return
     }
-    carregar(pedido.aula, pedido.bloco)
+    carregar(pedido.aula, pedido.bloco, pedido.escala)
       .then((proximo) => {
         if (vivo) setEstado(proximo)
       })

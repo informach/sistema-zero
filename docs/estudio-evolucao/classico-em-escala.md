@@ -88,14 +88,63 @@ Próximo alvo, se for preciso descer mais: a tabela de símbolos em camadas (sem
 implícitos a cada corpo) e o parse estrutural guardado por filho de área. A memória por raiz na
 geração, que o plano previa (C4), **sai**: a geração deixou de ser o gargalo.
 
+## C5: o perfil no navegador (17/11/2026)
+
+`packages/studio/e2e/classic-scale.spec.ts` abre o dia 3 de A Chave do Farol com os eventos
+repetidos (`/aula?…&escala=N`), edita um campo de número e arrasta a área "Ao iniciar". Chromium
+153 **sem interface e sem placa de vídeo**, tela de 1440 por 900.
+
+```bash
+cd packages/studio && PW_CHROMIUM=/opt/pw-browsers/chromium bunx playwright test e2e/classic-scale.spec.ts --project=chromium --trace off
+```
+
+| Blocos | Abrir e desenhar | Editar um campo (tarefas longas) | Arrastar uma área (tarefas longas, maior) |
+|---|---|---|---|
+| 70 (o curso) | 1,7 s | nenhuma | nenhuma |
+| 502 | 2,2 s | nenhuma | 202 ms (82 ms) |
+| 2 002 | 4,8 s | 69 ms | 1 926 ms (717 ms) |
+| 5 002 | 18,2 s | 605 ms | 10 900 ms (3 105 ms) |
+
+Onde o tempo vai (contadores do navegador, 2 mil blocos, 38 mil nós na página, 19 por bloco):
+
+| | Script | Estilo | Layout | Total da tarefa |
+|---|---|---|---|---|
+| Abrir | 2 308 ms | 626 ms | 308 ms | 3 886 ms |
+| Arrastar | 46 ms | 10 ms | 5 ms | 493 ms |
+
+- **Arrastar não é JavaScript**: de 493 ms, 46 são script. O resto é pintura do SVG. Um perfil
+  de CPU do arrasto confirmou: 130 ms de script, metade do próprio Playwright.
+- **Editar um campo ficou barato** depois do C1: nenhuma tarefa longa até 500 blocos.
+- **Abrir** cresce mais rápido que o número de blocos (2,2 s para 4,8 s para 18 s).
+
+### O que isso decide
+
+O que sobra de escala no Clássico é **quantidade de nós desenhados**, não processamento. O remédio
+é desenhar menos: a montagem sob demanda (recolher o que está longe da tela), que o Python
+Clássico já tem em `python/blocks/programNavigation.ts`. Ela entra só acima de um limiar e
+**nunca em aula**: nos cursos (70 blocos) não há nada a ganhar e o robô acha os blocos pelo texto
+na tela.
+
+### Ressalvas desta medição
+
+- Sem placa de vídeo, a pintura aqui é por software: num computador comum o arrasto deve custar
+  menos, e num tablet fraco pode custar mais. Os números servem para comparar antes e depois
+  nesta máquina, não como orçamento.
+- O arrasto variou entre rodadas (493 ms numa, 1 926 ms noutra, com 2 mil blocos).
+- Os tamanhos grandes são o Farol repetido: muitos eventos iguais lado a lado numa área só. Um
+  projeto de verdade tem outra distribuição.
+- O Playwright não devolve um objeto com centenas de blocos encadeados (a serialização dele
+  estoura e acusa uma navegação que não houve): o teste lê o projeto como texto.
+
 ## Estado
 
 | Item | Estado |
 |---|---|
 | C0 perfil sem tela | **feito** |
-| C0 perfil no navegador (desenho, arrasto, gravação) | pendente |
+| C0 perfil no navegador | feito no C5; a gravação no IndexedDB segue sem medir |
 | C1 perfil de CPU e os três desperdícios tirados | **feito** |
 | C2 acervo de equivalência para caches | não foi preciso (nenhum cache entrou); a prova do atalho está em `canvas3dIndexShortcut.test.ts` |
 | C3 diagnósticos por diferença, tabela de símbolos em camadas | pendente |
 | C4 memória por raiz na geração | saiu do plano |
-| C5 perfil no navegador e montagem sob demanda | pendente |
+| C5 perfil no navegador | **feito** (sem placa de vídeo) |
+| Montagem sob demanda no JavaScript (fora das aulas) | pendente; é o próximo passo de escala |
