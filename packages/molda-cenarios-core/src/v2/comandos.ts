@@ -17,6 +17,8 @@ import {
   ModeloDoCenarioSchema,
   TexturaDoCenarioSchema,
 } from './documento'
+import { materializarEspalhamento } from './espalhar'
+import { PinceladaDeObjetosSchema } from './espalhar-schema'
 import { FormaDeCenarioSchema } from './formas'
 import { colarFragmento } from './fragmento'
 import { FragmentoDeCenarioSchema, PrefixoDeColagemSchema } from './fragmento-schema'
@@ -47,6 +49,7 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
+  z.object({ tipo: z.literal('objetos.espalhar'), pincelada: PinceladaDeObjetosSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
   z.object({ tipo: z.literal('textura.definir'), textura: TexturaDoCenarioSchema }).strict(),
   z.object({ tipo: z.literal('textura.remover'), id }).strict(),
@@ -180,6 +183,12 @@ export function executarLote(
   let travas = indiceDeTravas(d)
   for (const c of lote.comandos) {
     switch (c.tipo) {
+      case 'objetos.espalhar': {
+        const novas = materializarEspalhamento(d, c.pincelada)
+        for (const o of novas) exigeLivre(travas, o)
+        d.instancias.push(...novas)
+        break
+      }
       case 'fragmento.colar':
         d = colarFragmento(d, c.fragmento, c.prefixo, c.ponto)
         travas = indiceDeTravas(d)

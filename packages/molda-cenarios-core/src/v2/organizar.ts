@@ -11,6 +11,7 @@ import {
 } from './documento'
 import { volumeDaReferencia } from './fontes'
 import { girarNaVertical } from './rotacao'
+import { criarSorteio } from './sorteio'
 import type { FonteDeAlturas } from './terreno'
 import { transformarVolume, type VolumeDeComposicao } from './volume'
 
@@ -311,11 +312,7 @@ export function sortearTransformacoes(
     variacao.tamanhoMin > variacao.tamanhoMax
   )
     throw new CenarioInvalido(['Confira a semente e o intervalo de variação'])
-  let estado = semente >>> 0
-  const sorteio = () => {
-    estado = (Math.imul(1664525, estado) + 1013904223) >>> 0
-    return estado / 0x100000000
-  }
+  const sorteio = criarSorteio(semente)
   return escolhidos(doc, ids).map((o) => {
     const t = structuredClone(o.transformacao),
       fator = variacao.tamanhoMin + sorteio() * (variacao.tamanhoMax - variacao.tamanhoMin)

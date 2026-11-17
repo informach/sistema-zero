@@ -22,6 +22,9 @@ export function Gaveta({
   aoEscolherBibliotecas,
   moldesDisponiveis = false,
   preparandoMolde = false,
+  aberta,
+  aoMudarAbertura,
+  modo = 'colocar',
 }: {
   host: CenariosHost
   bibliotecas: readonly Biblioteca[]
@@ -30,8 +33,10 @@ export function Gaveta({
   aoEscolherBibliotecas(): void
   moldesDisponiveis?: boolean
   preparandoMolde?: boolean
+  aberta: boolean
+  aoMudarAbertura(aberta: boolean): void
+  modo?: 'colocar' | 'pincel'
 }): JSX.Element {
-  const [aberta, setAberta] = useState(true)
   const [ativa, setAtiva] = useState<string | null>(
     bibliotecas[0]?.id ?? (moldesDisponiveis ? BIBLIOTECA_MOLDA_ID : null),
   )
@@ -102,7 +107,7 @@ export function Gaveta({
           aria-expanded={aberta}
           aria-label={aberta ? COPY.gaveta.recolher : COPY.gaveta.abrir}
           title={aberta ? COPY.gaveta.recolher : COPY.gaveta.abrir}
-          onClick={() => setAberta((a) => !a)}
+          onClick={() => aoMudarAbertura(!aberta)}
         >
           {aberta ? <ChevronDown aria-hidden="true" /> : <ChevronUp aria-hidden="true" />}
         </button>
@@ -116,7 +121,7 @@ export function Gaveta({
               aria-pressed={b.id === bibliotecaId}
               onClick={() => {
                 setAtiva(b.id)
-                setAberta(true)
+                aoMudarAbertura(true)
               }}
             >
               <Boxes aria-hidden="true" />
@@ -130,7 +135,7 @@ export function Gaveta({
               aria-pressed={noMolda}
               onClick={() => {
                 setAtiva(BIBLIOTECA_MOLDA_ID)
-                setAberta(true)
+                aoMudarAbertura(true)
               }}
             >
               <Boxes aria-hidden />
@@ -149,7 +154,7 @@ export function Gaveta({
               autoComplete="off"
               value={busca}
               onChange={(evento) => setBusca(evento.target.value)}
-              onFocus={() => setAberta(true)}
+              onFocus={() => aoMudarAbertura(true)}
               aria-label={COPY.gaveta.buscar}
               placeholder={COPY.gaveta.buscar}
               className="sz-tool-search"
@@ -177,7 +182,11 @@ export function Gaveta({
                     className="mcn-brinquedo"
                     draggable
                     disabled={preparandoMolde}
-                    aria-label={COPY.gaveta.por(modelo.nome)}
+                    aria-label={
+                      modo === 'pincel'
+                        ? `Usar ${modelo.nome} no pincel`
+                        : COPY.gaveta.por(modelo.nome)
+                    }
                     title={modelo.nome}
                     onClick={() => aoPor(modelo)}
                     onDragStart={(evento) => {

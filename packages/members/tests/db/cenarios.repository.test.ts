@@ -14,6 +14,7 @@ import {
   type BaseDeTerreno,
   type ComandoDeCenario,
   capturarFragmento,
+  criarAmostradorDeEspalhamento,
   criarDocumentoVazio,
   executarLote,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -1451,6 +1452,84 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect((await reaberto.documentoNaRevisao(ator, cenario.id, 2)).camadas![0]!.bloqueado).toBe(
       true,
     )
+  })
+
+  test('pincelada preserva receita e amostras em JSONB; replay e undo não sorteiam novamente após reabrir', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const montar = () =>
+      new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const s = montar(),
+      [espaco] = await s.espacos(ator)
+    const m = await s.criarMundo(ator, espaco!.id, 'Pincel'),
+      c = await s.criarCenario(ator, m.id, 'Jardim')
+    const doc = criarDocumentoVazio(c.id, 'Jardim')
+    doc.formas = [
+      { id: 'flor', nome: 'Flor', tipo: 'caixa', largura: 0.4, altura: 0.8, comprimento: 0.4 },
+    ]
+    const receita = {
+      prototipos: [
+        {
+          nome: 'Flor',
+          modelo: 'flor',
+          colisao: 'caixa' as const,
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+          aparencia: { cor: '#334455' },
+        },
+      ],
+      traco: [
+        { x: 0, z: 0 },
+        { x: 3, z: 2 },
+      ],
+      raio: 5,
+      densidade: 20,
+      afastamento: 1,
+      giro: Math.PI,
+      tamanhoMin: 0.8,
+      tamanhoMax: 1.2,
+      semente: 77,
+      limite: 50,
+      evitarObjetos: true,
+      grupo: null,
+      camada: null,
+    }
+    const amostras = criarAmostradorDeEspalhamento(doc, receita)
+      .gerar()
+      .amostras.map((a, i) => ({ ...a, id: `flor-${i}` }))
+    const comando: ComandoDeCenario = { tipo: 'objetos.espalhar', pincelada: { receita, amostras } }
+    await s.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [{ tipo: 'forma.definir', forma: doc.formas[0]! }, comando],
+    })
+    const salvo = await s.abrirCenario(ator, c.id)
+    expect(salvo.documento.instancias.length).toBeGreaterThan(5)
+    const [lote] = await repo.lotesEntre(c.id, 0, 1)
+    expect(lote!.comandos[1]).toEqual(comando)
+    const reaberto = montar()
+    expect(await reaberto.documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await reaberto.moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.instancias).toEqual([])
+    expect(desfeito.documento.formas ?? []).toEqual([])
+    const refeito = await reaberto.moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
+    const recusado = await reaberto
+      .editarCenario(ator, c.id, {
+        revisaoEsperada: 3,
+        operacaoId: randomUUID(),
+        comandos: [comando],
+      })
+      .catch((e: unknown) => e)
+    expect(recusado).toBeInstanceOf(CenarioInvalidoError)
+    expect((await reaberto.abrirCenario(ator, c.id)).revisao).toBe(3)
   })
 
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {

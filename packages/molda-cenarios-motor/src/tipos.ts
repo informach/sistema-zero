@@ -1,19 +1,49 @@
 import type {
+  AmostraSemId,
   DocumentoDeCenario,
   EncaixeDeComposicao,
   FonteDeAlturas,
+  FormaDeCenario,
   InstanciaDeCenario,
   ModeloDoCenario,
+  ReceitaDeEspalhamento,
   TexturaDoCenario,
   Transformacao,
   VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import type { EstadoDasTexturas } from './texturas'
 
-export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho'
+export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho' | 'espalhar'
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
 export type Tema = 'light' | 'dark'
 export type ModoDeSelecao = 'ponto' | 'retangulo' | 'laco'
+
+export interface ConfiguracaoDoEspalhamento {
+  /** Mantém a paleta carregada enquanto parâmetros ou destino precisam ser corrigidos. */
+  pausa?: string
+  receita: Omit<ReceitaDeEspalhamento, 'traco'>
+  modelos: readonly ModeloDoCenario[]
+  formas: readonly FormaDeCenario[]
+  texturas: readonly TexturaDoCenario[]
+}
+export interface EstadoDoEspalhamento {
+  quantidade: number
+  ativa: boolean
+  pronta: boolean
+  saturou: boolean
+  faltouEspaco: boolean
+  limiteDoTraco: boolean
+  erro: string | null
+}
+export interface GestoDeEspalhamento {
+  /** Identidade da cabeça na qual o gesto começou, somente para o ciclo local de edição. */
+  documentoDeOrigem: DocumentoDeCenario
+  modelos: readonly ModeloDoCenario[]
+  formas: readonly FormaDeCenario[]
+  texturas: readonly TexturaDoCenario[]
+  receita: ReceitaDeEspalhamento
+  amostras: readonly AmostraSemId[]
+}
 
 export type Encaixe = Pick<EncaixeDeComposicao, 'grade' | 'angulo'> &
   Partial<Omit<EncaixeDeComposicao, 'grade' | 'angulo'>>
@@ -57,6 +87,8 @@ export interface OpcoesDoPalco {
   aoSelecionar?(id: string | null, somar: boolean): void
   aoSelecionarArea?(ids: readonly string[], somar: boolean): void
   aoPreverSelecao?(pontos: readonly (readonly [number, number])[]): void
+  aoPreverEspalhamento?(estado: EstadoDoEspalhamento): void
+  aoEspalhar?(gesto: GestoDeEspalhamento): void
   /** Fim de um gesto de mover, girar ou mudar o tamanho. */
   aoTransformar?(mudancas: MudancaDeTransformacao[]): void
   aoGesto?(ativo: boolean): void
@@ -72,6 +104,8 @@ export interface Palco {
   definirSelecao(ids: readonly string[]): void
   definirFerramenta(ferramenta: Ferramenta): void
   definirModoDeSelecao(modo: ModoDeSelecao): void
+  definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void
+  recarregarModelos(): void
   definirEncaixe(encaixe: Encaixe): void
   definirTema(tema: Tema): void
   definirVista(vista: Vista): void

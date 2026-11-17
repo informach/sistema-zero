@@ -8,6 +8,7 @@ import {
   apoioNaSuperficie,
   chaveDaBase,
   type DocumentoDeCenario,
+  dominioDoChao,
   type EncaixeDeComposicao,
   EncaixeDeComposicaoSchema,
   type InstanciaDeCenario,
@@ -47,6 +48,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { EspalhamentoDoPalco } from './Espalhamento'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
@@ -66,6 +68,7 @@ import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
 import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
+  ConfiguracaoDoEspalhamento,
   Encaixe,
   Ferramenta,
   ModoDeSelecao,
@@ -134,6 +137,7 @@ class PalcoThree implements Palco {
   private readonly orbita: OrbitControls
   private readonly alca: TransformControls
   private readonly area: SceneAreaSelection
+  private readonly espalhamento: EspalhamentoDoPalco
   private modoDeSelecao: ModoDeSelecao = 'ponto'
   private readonly ajudanteDaAlca: Object3D
   private readonly laco: DemandRenderLoop
@@ -156,6 +160,7 @@ class PalcoThree implements Palco {
   private readonly planoDoChao = new Plane(new Vector3(0, 1, 0), 0)
 
   private documento: DocumentoDeCenario | null = null
+  private temChao: (p: { x: number; z: number }) => boolean = () => false
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
   private estadoDasTexturas: EstadoDasTexturas = { carregando: 0, falhas: [] }
@@ -280,6 +285,37 @@ class PalcoThree implements Palco {
       },
     )
 
+    this.espalhamento = new EspalhamentoDoPalco(canvas, {
+      documento: () => this.documento,
+      alturas: () => this.fonteDeAlturas(),
+      ponto: (x, y) => this.pontoParaEspalhar(x, y),
+      modelo: (id, doc) => {
+        const estado = this.estadoDoModelo(id, doc)
+        return estado?.estado === 'pronto' ? estado.modelo : null
+      },
+      textura: (id, doc) => {
+        const ref = doc.texturas?.find((t) => t.id === id)
+        return ref ? (this.texturas.obter(ref.digest)?.textura ?? null) : null
+      },
+      erroDeRecurso: (id, tipo, doc) => {
+        if (tipo === 'modelo')
+          return this.estadoDoModelo(id, doc)?.estado === 'falhou'
+            ? 'Não consegui carregar um modelo do pincel. Tente novamente.'
+            : null
+        const ref = doc.texturas?.find((t) => t.id === id)
+        return this.estadoDasTexturas.falhas.find((f) => f.digest === ref?.digest)?.mensagem ?? null
+      },
+      pedirQuadro: this.pedirQuadro,
+      aoGesto: (ativo) => {
+        this.toque = null
+        this.orbita.enabled = !ativo
+        this.opcoes.aoGesto?.(ativo)
+      },
+      aoPrevia: (estado) => this.opcoes.aoPreverEspalhamento?.(estado),
+      aoAplicar: (gesto) => this.opcoes.aoEspalhar?.(gesto),
+    })
+    this.cena.add(this.espalhamento.grupo)
+
     canvas.addEventListener('pointerdown', this.aoApertar)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
@@ -298,13 +334,12 @@ class PalcoThree implements Palco {
       return
     }
     this.documento = documento
+    this.temChao = dominioDoChao(documento.base)
+    this.espalhamento.contextoAlterado()
     this.aplicarChao(documento)
     this.aplicarLuz(documento.iluminacao.hora)
     this.pedirModelos(documento)
-    const usadas = new Set(
-      documento.instancias.flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
-    )
-    this.texturas.definir((documento.texturas ?? []).filter((t) => usadas.has(t.id)))
+    this.pedirTexturas(documento)
     // definir publica o estado sincronicamente e reconstrói uma única vez pelo callback.
     this.atualizarGrade()
   }
@@ -324,9 +359,65 @@ class PalcoThree implements Palco {
   }
 
   definirModoDeSelecao(modo: ModoDeSelecao): void {
+    if (modo !== 'ponto') this.definirEspalhamento(null)
     this.modoDeSelecao = modo
     this.area.setTool(modo === 'retangulo' ? 'box' : modo === 'laco' ? 'lasso' : 'point')
     this.atualizarAlca()
+  }
+
+  definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void {
+    if (!this.espalhamento.definir(configuracao)) return
+    if (configuracao) {
+      this.modoDeSelecao = 'ponto'
+      this.area.setTool('point')
+    }
+    if (this.documento) {
+      this.pedirModelos(this.documento)
+      this.pedirTexturas(this.documento)
+    }
+    this.atualizarAlca()
+  }
+
+  recarregarModelos(): void {
+    for (const [id, estado] of this.modelos) if (estado.estado === 'falhou') this.modelos.delete(id)
+    if (this.documento) this.pedirModelos(this.documento)
+    this.espalhamento.invalidar()
+  }
+
+  private estadoDoModelo(id: string, doc: DocumentoDeCenario) {
+    const forma = doc.formas?.find((f) => f.id === id)
+    const chave = forma ? chaveDaForma(forma) : doc.modelos.find((m) => m.id === id)?.digest
+    return chave ? this.modelos.get(chave) : undefined
+  }
+
+  private pontoParaEspalhar(clientX: number, clientY: number): Ponto3 | null {
+    const doc = this.documento
+    if (!doc || doc.base.tipo === 'perfil' || (doc.base.tipo === 'terreno' && !this.terreno))
+      return null
+    const caixa = this.canvas.getBoundingClientRect()
+    if (
+      clientX < caixa.left ||
+      clientX > caixa.right ||
+      clientY < caixa.top ||
+      clientY > caixa.bottom
+    )
+      return null
+    this.mirar(clientX, clientY)
+    const ponto = this.terreno
+      ? this.terreno.pontoSobRaio(this.raio)
+      : this.raio.ray.intersectPlane(this.planoDoChao, new Vector3())
+    if (!ponto || !this.temChao(ponto)) return null
+    return { x: ponto.x, y: ponto.y, z: ponto.z }
+  }
+
+  private pedirTexturas(doc: DocumentoDeCenario) {
+    const consulta = this.espalhamento.documentoDeConsulta() ?? doc
+    const usadas = new Set(
+      [...doc.instancias, ...this.espalhamento.prototipos].flatMap((o) =>
+        o.aparencia?.textura ? [o.aparencia.textura.id] : [],
+      ),
+    )
+    this.texturas.definir((consulta.texturas ?? []).filter((t) => usadas.has(t.id)))
   }
 
   definirEncaixe(encaixe: Encaixe): void {
@@ -447,25 +538,32 @@ class PalcoThree implements Palco {
   capturar(largura = 640): Promise<Blob | null> {
     if (this.destruido) return Promise.resolve(null)
     const alcaVisivel = this.ajudanteDaAlca.visible
+    const previaVisivel = this.espalhamento.grupo.visible
+    this.espalhamento.grupo.visible = false
     this.ajudanteDaAlca.visible = false
     this.contornos.definirVisivel(false)
-    this.renderer.render(this.cena, this.camera)
-    const origem = this.renderer.domElement
-    const escala = Math.min(1, largura / Math.max(1, origem.width))
-    const copia = origem.ownerDocument.createElement('canvas')
-    copia.width = Math.max(1, Math.round(origem.width * escala))
-    copia.height = Math.max(1, Math.round(origem.height * escala))
-    copia.getContext('2d')?.drawImage(origem, 0, 0, copia.width, copia.height)
-    this.ajudanteDaAlca.visible = alcaVisivel
-    this.contornos.definirVisivel(true)
-    this.pedirQuadro()
-    return new Promise((resolver) => copia.toBlob((blob) => resolver(blob), 'image/webp', 0.86))
+    try {
+      this.renderer.render(this.cena, this.camera)
+      const origem = this.renderer.domElement
+      const escala = Math.min(1, largura / Math.max(1, origem.width))
+      const copia = origem.ownerDocument.createElement('canvas')
+      copia.width = Math.max(1, Math.round(origem.width * escala))
+      copia.height = Math.max(1, Math.round(origem.height * escala))
+      copia.getContext('2d')?.drawImage(origem, 0, 0, copia.width, copia.height)
+      return new Promise((resolver) => copia.toBlob((blob) => resolver(blob), 'image/webp', 0.86))
+    } finally {
+      this.ajudanteDaAlca.visible = alcaVisivel
+      this.espalhamento.grupo.visible = previaVisivel
+      this.contornos.definirVisivel(true)
+      this.pedirQuadro()
+    }
   }
 
   destruir(): void {
     if (this.destruido) return
     this.destruido = true
     this.laco.dispose()
+    this.espalhamento.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
@@ -501,6 +599,7 @@ class PalcoThree implements Palco {
 
   private readonly quadro = (): boolean => {
     const mexeu = this.orbita.update()
+    this.espalhamento.quadro(mexeu)
     this.ceu.position.copy(this.camera.position)
     this.posicionarSol()
     this.renderer.render(this.cena, this.camera)
@@ -669,13 +768,16 @@ class PalcoThree implements Palco {
   }
 
   private pedirModelos(doc: DocumentoDeCenario) {
+    const consulta = this.espalhamento?.documentoDeConsulta() ?? doc
     const vivos = new Set<string>()
-    for (const modelo of doc.modelos) {
+    for (const modelo of consulta.modelos) {
       vivos.add(modelo.digest)
       if (!this.modelos.has(modelo.digest)) this.carregar(modelo)
     }
-    const usadas = new Set(doc.instancias.map((o) => o.modelo))
-    for (const f of doc.formas ?? []) {
+    const usadas = new Set(
+      [...doc.instancias, ...(this.espalhamento?.prototipos ?? [])].map((o) => o.modelo),
+    )
+    for (const f of consulta.formas ?? []) {
       if (!usadas.has(f.id)) continue
       const chave = chaveDaForma(f)
       vivos.add(chave)
@@ -749,6 +851,7 @@ class PalcoThree implements Palco {
   }
 
   private reconstruir() {
+    this.espalhamento?.recursosAlterados()
     const doc = this.documento
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
@@ -873,7 +976,11 @@ class PalcoThree implements Palco {
   private atualizarAlca() {
     const movidos = this.movidos()
     const ligada =
-      this.modoDeSelecao === 'ponto' && this.ferramenta !== 'selecionar' && movidos.length > 0
+      !this.espalhamento?.habilitado &&
+      this.modoDeSelecao === 'ponto' &&
+      this.ferramenta !== 'selecionar' &&
+      this.ferramenta !== 'espalhar' &&
+      movidos.length > 0
     if (!ligada) {
       if (this.alca.object) this.alca.detach()
       this.alca.enabled = false
@@ -1002,6 +1109,7 @@ class PalcoThree implements Palco {
   }
 
   private readonly aoApertar = (evento: PointerEvent): void => {
+    if (this.espalhamento.habilitado) return
     if (evento.button !== 0 || this.modoDeSelecao !== 'ponto') return
     this.toque = { x: evento.clientX, y: evento.clientY, ponteiro: evento.pointerId }
   }

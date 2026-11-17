@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-Parte interna 3.4 implementada, testada e revisada: árvore/camadas, seleção por área e clipboard nativo entre cenários do mesmo espaço, com histórico e referências protegidas; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-transferencia.md). O lote 3 permanece aberto; seguir para 3.5, espalhamento. Lotes 4–10 pendentes; implantação e validação remotas apenas no encerramento global.
+Parte interna 3.5 implementada, testada e revisada: pincel determinístico, prévia real, catálogo/seleção, um passo de histórico por gesto, cancelamentos, alturas e replay; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espalhamento.md). O lote 3 permanece aberto; seguir para 3.6, conjuntos reutilizáveis e vivos. Lotes 4–10 pendentes; implantação e validação remotas apenas no encerramento global.
 
 Atualização de 17/11: lote 3 em execução exclusiva. Espelho e troca de modelos implementados, testados e revisados; [registro e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). Não é fechamento do lote; sequência integral no [plano detalhado](2026-11-17-cenarios-lote3-objetos-ensaio.md).
 

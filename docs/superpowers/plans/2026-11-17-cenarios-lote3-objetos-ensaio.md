@@ -81,10 +81,10 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 **Interfaces:** receita determinística com área, modelos escolhidos, densidade/afastamento, variação, semente e IDs fornecidos. Alturas são resolvidas pelo contrato de apoio, sem IO no núcleo.
 
-- [ ] Gerar posições com limites de tentativas e distância mínima, sem aleatoriedade global ou laços sem teto.
-- [ ] Acrescentar prévia e aplicação por gesto, preservando receita, seleção e um desfazer coerente.
-- [ ] Conferir limites de 20.000 objetos e 500 comandos por lote, áreas inválidas, bordas, cancelamento e concorrência.
-- [ ] Verificar que não há colocação aleatória automática na Faísca: a ferramenta executa a intenção de quem edita.
+- [x] Gerar posições com limites de tentativas e distância mínima, sem aleatoriedade global ou laços sem teto. Grade irregular ancorada no mundo e PRNG inteiro; núcleo confere determinismo e limites.
+- [x] Acrescentar prévia e aplicação por gesto, preservando receita, seleção e um desfazer coerente. Mouse/toque, catálogo/seleção, alturas reais e replay JSONB conferidos; [revisão da parte 3.5](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espalhamento.md).
+- [x] Conferir limites de 20.000 objetos e 500 comandos por lote, áreas inválidas, bordas, cancelamento e concorrência. Uma intenção limitada por gesto; revisão alterada, Escape, foco e segundo dedo descartam a prévia.
+- [x] Verificar que não há colocação aleatória automática na Faísca: a ferramenta executa a intenção de quem edita. Nenhum cenário do jogo foi modificado automaticamente. Parte 3.5 implementada, testada e revisada; lote 3 continua aberto.
 
 ### 3.6 — Conjuntos reutilizáveis e vivos
 

@@ -57,7 +57,7 @@ export function comMedidasConferidas(
   return [...conferido.comandos, ...preparar(conferido.documento)]
 }
 
-function referenciaDeBiblioteca(modelo: ModeloDeBiblioteca): ModeloDoCenario {
+export function referenciaDeBiblioteca(modelo: ModeloDeBiblioteca): ModeloDoCenario {
   return {
     id: modelo.id,
     biblioteca: modelo.bibliotecaId,

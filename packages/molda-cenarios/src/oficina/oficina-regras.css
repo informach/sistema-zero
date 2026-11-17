@@ -545,6 +545,43 @@
     transform: translateX(-50%);
     pointer-events: none;
   }
+  .mcn-dica[data-interativa] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .mcn-pincel-modelos {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mcn-pincel-modelos > li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 8px;
+    padding-inline: 10px 2px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+  }
+  .mcn-pincel-modelos > li > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .mcn-pincel-miniatura {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--color-mld-surface);
+  }
 
   /* ---- a gaveta de modelos ---- */
   .mcn-gaveta {

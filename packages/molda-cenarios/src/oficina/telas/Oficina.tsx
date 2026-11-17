@@ -34,6 +34,7 @@ import {
   Mountain,
   MousePointer2,
   Move,
+  Paintbrush,
   PanelRightClose,
   PanelRightOpen,
   Redo2,
@@ -85,8 +86,10 @@ import type {
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
+import { Espalhar } from './Espalhar'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
@@ -110,6 +113,7 @@ const FERRAMENTAS: readonly [Ferramenta, LucideIcon, string, string][] = [
   ['mover', Move, COPY.oficina.mover, 'M'],
   ['girar', RotateCw, COPY.oficina.girar, 'R'],
   ['tamanho', Scaling, COPY.oficina.tamanho, 'T'],
+  ['espalhar', Paintbrush, 'Espalhar', 'E'],
 ]
 const HORAS: readonly [number, LucideIcon, string][] = [
   [8, Sunrise, COPY.painel.horas.manha],
@@ -267,6 +271,7 @@ function OficinaAberta({
   const [saindo, setSaindo] = useState(false)
   const [versoesAbertas, setVersoesAbertas] = useState(false)
   const [formasAbertas, setFormasAbertas] = useState(false)
+  const [gavetaAberta, setGavetaAberta] = useState(true)
   const [transferenciaAberta, setTransferenciaAberta] = useState(false)
   const centroParaColar = useCallback(() => centroDaVista(canvas.current, palco.current), [])
   const transferencia = useAreaDeTransferencia({
@@ -277,6 +282,33 @@ function OficinaAberta({
     centro: centroParaColar,
   })
   const { documento, selecao, ferramenta, encaixe } = estado
+  const pincel = usePincelDeObjetos({
+    controlador,
+    documento,
+    palco,
+    ativo: ferramenta === 'espalhar',
+  })
+  const aoAplicarPincel = pincel.aoAplicar,
+    aoPreverPincel = pincel.aoPrever
+  const abrirPincel = useCallback(() => {
+    pincel.abrir()
+    setAba('objetos')
+    setModoDeSelecao('ponto')
+    setModoPainel('escolha')
+    setPainelAberto(true)
+    troca.current = null
+    setTrocando(0)
+    if (!pincel.escolhas.length) setGavetaAberta(true)
+  }, [pincel.abrir, pincel.escolhas.length])
+  const modoAnteriorDoPincel = useRef(pincel.ativo)
+  useEffect(() => {
+    if (modoAnteriorDoPincel.current === pincel.ativo) return
+    modoAnteriorDoPincel.current = pincel.ativo
+    importacaoDoMolde.current?.abort()
+    importacaoDoMolde.current = null
+    setPreparandoMolde(false)
+    setRevisaoDoMolde(null)
+  }, [pincel.ativo])
   const relevoPronto =
     documento.base.tipo !== 'terreno' ||
     (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
@@ -328,6 +360,8 @@ function OficinaAberta({
           somar || atual.somarSelecao ? [...new Set([...atual.selecao, ...ids])] : ids,
         )
       },
+      aoEspalhar: aoAplicarPincel,
+      aoPreverEspalhamento: aoPreverPincel,
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
       aoTransformar: (mudancas) =>
@@ -355,9 +389,16 @@ function OficinaAberta({
       palco.current = null
       novo.destruir()
     }
-  }, [host, controlador, aberto.resumo.id, mundo.espacoId])
+  }, [host, controlador, aberto.resumo.id, mundo.espacoId, aoAplicarPincel, aoPreverPincel])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
+  useEffect(
+    () =>
+      palco.current?.definirEspalhamento(
+        aba === 'objetos' && relevoPronto && !estado.ocupado ? pincel.configuracao : null,
+      ),
+    [aba, relevoPronto, estado.ocupado, pincel.configuracao],
+  )
   useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
   useEffect(() => {
     palco.current?.definirFerramenta(
@@ -429,7 +470,13 @@ function OficinaAberta({
     aceite?: string,
   ) => {
     const alvo = troca.current
+    const paraPincel = controlador.getState().ferramenta === 'espalhar'
     const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
+      if (paraPincel) {
+        if (controlador.getState().ferramenta === 'espalhar') pincel.adicionar(modelo)
+        return
+      }
+      if (controlador.getState().ferramenta === 'espalhar') return
       if (!alvo) {
         por(modelo, lugar)
         return
@@ -521,6 +568,8 @@ function OficinaAberta({
         evento.preventDefault()
         apagar()
       } else if (tecla === 'escape') {
+        if (controlador.getState().ferramenta === 'espalhar')
+          controlador.definirFerramenta('selecionar')
         setModoDeSelecao('ponto')
         controlador.definirSomarSelecao(false)
         controlador.selecionar([])
@@ -536,12 +585,13 @@ function OficinaAberta({
         if (!ferramentaDaTecla) return
         setAba('objetos')
         setModoDeSelecao('ponto')
-        controlador.definirFerramenta(ferramentaDaTecla[0])
+        if (ferramentaDaTecla[0] === 'espalhar') abrirPincel()
+        else controlador.definirFerramenta(ferramentaDaTecla[0])
       }
     }
     globalThis.addEventListener('keydown', aoApertar)
     return () => globalThis.removeEventListener('keydown', aoApertar)
-  }, [controlador, copiar, apagar])
+  }, [controlador, copiar, apagar, abrirPincel])
 
   const sair = async () => {
     if (saindo) return
@@ -573,17 +623,25 @@ function OficinaAberta({
   const dica =
     aba !== 'objetos'
       ? null
-      : modoDeSelecao !== 'ponto'
-        ? 'Arraste para escolher vários objetos.'
-        : documento.instancias.length === 0
-          ? COPY.oficina.dicaVazio
-          : ferramenta === 'mover' && !semObjetosEscolhidos
-            ? COPY.oficina.dicaMover
-            : ferramenta === 'girar' && !semObjetosEscolhidos
-              ? COPY.oficina.dicaGirar
-              : ferramenta === 'tamanho' && !semObjetosEscolhidos
-                ? COPY.oficina.dicaTamanho
-                : COPY.oficina.dicaEscolher
+      : pincel.ativo
+        ? pincel.erro
+          ? 'Abra o painel do pincel para conferir a escolha.'
+          : !pincel.escolhas.length
+            ? 'Escolha modelos na biblioteca ou use peças do cenário.'
+            : pincel.previa.ativa
+              ? `${pincel.previa.quantidade} peças na prévia. Solte para criar; Escape cancela.`
+              : 'Arraste no chão para espalhar. Solte para criar as peças.'
+        : modoDeSelecao !== 'ponto'
+          ? 'Arraste para escolher vários objetos.'
+          : documento.instancias.length === 0
+            ? COPY.oficina.dicaVazio
+            : ferramenta === 'mover' && !semObjetosEscolhidos
+              ? COPY.oficina.dicaMover
+              : ferramenta === 'girar' && !semObjetosEscolhidos
+                ? COPY.oficina.dicaGirar
+                : ferramenta === 'tamanho' && !semObjetosEscolhidos
+                  ? COPY.oficina.dicaTamanho
+                  : COPY.oficina.dicaEscolher
 
   return (
     <section
@@ -725,7 +783,10 @@ function OficinaAberta({
                 key={valor}
                 type="button"
                 aria-pressed={aba === valor}
-                onClick={() => setAba(valor)}
+                onClick={() => {
+                  if (valor !== 'objetos') pincel.fechar()
+                  setAba(valor)
+                }}
                 className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
               >
                 <Icone aria-hidden="true" />
@@ -829,7 +890,8 @@ function OficinaAberta({
                   ligado={modoDeSelecao === 'ponto' && ferramenta === valor}
                   aoTocar={() => {
                     setModoDeSelecao('ponto')
-                    controlador.definirFerramenta(valor)
+                    if (valor === 'espalhar') abrirPincel()
+                    else controlador.definirFerramenta(valor)
                   }}
                 />
               ))}
@@ -1001,9 +1063,25 @@ function OficinaAberta({
               ) : null}
             </div>
             {dica ? (
-              <p className="mcn-dica" data-molda-theme="dark">
-                {dica}
-              </p>
+              <div
+                className="mcn-dica"
+                data-molda-theme="dark"
+                data-interativa={pincel.ativo && pincel.erro ? '' : undefined}
+              >
+                <span>{dica}</span>
+                {pincel.ativo && pincel.erro ? (
+                  <button
+                    type="button"
+                    className="sz-tool-btn sz-tool-btn--sm"
+                    onClick={() => {
+                      setModoPainel('escolha')
+                      setPainelAberto(true)
+                    }}
+                  >
+                    Ver pincel
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </div>
           {trocando > 0 ? (
@@ -1030,6 +1108,9 @@ function OficinaAberta({
             </div>
           ) : null}
           <Gaveta
+            modo={pincel.ativo ? 'pincel' : 'colocar'}
+            aberta={gavetaAberta}
+            aoMudarAbertura={setGavetaAberta}
             host={host}
             bibliotecas={bibliotecas}
             moldesDisponiveis={moldesDisponiveis}
@@ -1056,6 +1137,24 @@ function OficinaAberta({
                 aoDetalhes={() => setModoPainel('escolha')}
                 somarSelecao={estado.somarSelecao}
                 alvo={estado.alvoDaArvore}
+              />
+            ) : pincel.ativo && aba === 'objetos' ? (
+              <Espalhar
+                documento={documento}
+                pincel={pincel}
+                temSelecao={selecao.length > 0 && !medidas?.carregando}
+                aoEscolherBiblioteca={() => {
+                  setGavetaAberta(true)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+                aoPintar={() => {
+                  setGavetaAberta(false)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+                aoTentar={() => {
+                  palco.current?.recarregarModelos()
+                  palco.current?.recarregarTexturas()
+                }}
               />
             ) : (
               <>
