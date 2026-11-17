@@ -107,8 +107,12 @@ export function fazerPlato(
 /** Aproxima cada amostra da média das vizinhas, lida antes da pincelada. */
 export function suavizarTerreno(campo: CampoDeAlturas, p: PincelDeTerreno) {
   conferirPincel(p)
-  const antes = campo.alturas.slice(),
-    largura = campo.colunas + 1
+  const largura = campo.colunas + 1,
+    area = regiaoDoRetangulo(campo, p.x - p.raio, p.z - p.raio, p.x + p.raio, p.z + p.raio)
+  if (!area) return null
+  // Cópia só das linhas que o pincel alcança, com uma de folga de cada lado.
+  const primeira = Math.max(0, area.z0 - 1) * largura,
+    antes = campo.alturas.slice(primeira, (Math.min(campo.linhas, area.z1 + 1) + 1) * largura)
   return pincelar(campo, p, (h, peso, _x, _z, i) => {
     const ix = i % largura,
       iz = (i - ix) / largura
@@ -119,7 +123,7 @@ export function suavizarTerreno(campo: CampoDeAlturas, p: PincelDeTerreno) {
         const x = ix + dx,
           z = iz + dz
         if (x < 0 || z < 0 || x > campo.colunas || z > campo.linhas) continue
-        soma += antes[z * largura + x]!
+        soma += antes[z * largura + x - primeira]!
         n++
       }
     return h + (soma / n - h) * peso

@@ -38,3 +38,35 @@ Esquema do documento para camadas de chão, pintura e buracos; comandos e invers
 - A pintura tem a resolução das alturas (uma amostra por vértice). Pintura mais fina que o relevo pediria outro formato.
 - A máscara de buracos convive com `base.recortes` (polígonos importados); a união das duas formas de furo é decisão do lote 4.
 - O leitor de PNG recusa paleta e entrelaçamento com mensagem clara, em vez de aceitar em silêncio.
+
+## Lote 6 — Caminhos
+
+| Arquivo | O que traz |
+|---|---|
+| `curvas.ts` | `medirCurva`, `suavizarCurva` (Catmull-Rom centrípeta, aberta ou fechada, passa pelos pontos de controle), `pontoNaCurva`, `reamostrarCurva`. `faixaDaCurva`: malha da trilha e da estrada deitada no relevo, com UV que não estica e faces para cima. `triangularPoligono` (praça e lâmina de lago; recusa polígono que se cruza). `distribuirNaCurva` (postes, lampiões) e `modulosNaCurva` (lances de cerca e muro que fecham exato, com giro e fator de comprimento). `moldarTerrenoPelaCurva`: a estrada que molda o terreno. `perfilDaPonte`: tabuleiro, vãos para os pilares e aviso quando o morro atravessa. Edição na cena: `trechoMaisProximo`, `inserirPontoNaCurva`, `removerPontoDaCurva`. |
+
+Notas para quem ligar:
+
+- `giroDaDirecao` alinha o **eixo X local** da peça à direção da curva, na convenção de rotação Y do motor, arredondado a 1e-6 rad. Se os módulos de cerca do acervo correm no eixo Z, somar um quarto de volta na chamada.
+- `moldarTerrenoPelaCurva` copia a região envolvente da curva enquanto trabalha. Uma estrada em diagonal num terreno de 4096 × 4096 chega a duas cópias do campo; se isso pesar no navegador, dividir a curva em trechos.
+- O `CaminhoSchema` de hoje só conhece `trilha` e `praca`, com `acabamento` e `largura`. Estrada, cerca, muro e ponte pedem tipos novos no documento; isso é do lote 6.
+
+## Lote 5 — Água
+
+| Arquivo | O que traz |
+|---|---|
+| `agua-do-terreno.ts` | `encherLago`: a partir do ponto tocado e do nível, alaga o que está ligado e abaixo dele; devolve margem simplificada (cabe no limite de pontos do documento), ilhas, área, volume, profundidade e o aviso `vaza` quando a água alcança a borda do terreno. `nivelDeTransbordo`: até onde a baixada enche e por onde sai (teto do controle de nível). `cavarRio`: leito que nunca sobe rio abaixo, lâmina de água em malha e lista de quedas para a cachoeira. `represar`: levanta a barragem (só sobe o chão) e enche atrás dela. `profundidadeDaAgua` para a área de nado. |
+
+Notas para quem ligar:
+
+- O mar é o mesmo `encherLago` tocado na borda do terreno no nível do mar: a margem externa é o retângulo do terreno e as ilhas são a terra firme.
+- A margem do lago sai em coordenadas de mundo. O `AguaSchema` atual guarda `contorno` e `recorte` locais ao `centro`, com `giro` e `escala`; a conversão e os tipos `rio`, `represa` e `cachoeira` são do lote 5.
+- `cavarRio` usa `moldarTerrenoPelaCurva` com `descer: true`. O rio altera o campo: a ordem "cavar, depois encher o lago da foz" importa.
+
+Testes dos dois lotes: `tests/curvas-e-agua.test.ts`, 14 testes.
+
+## Verificação desta entrega
+
+`bun test` em `packages/molda-cenarios-core`: 101 testes, nenhuma falha (71 que já existiam e 30 novos). `tsc --noEmit` e Biome do pacote aprovados. Medição local num campo de 1024 × 1024 com passo de 1 m: pincelada de 20 m de raio em cerca de 1 ms, receita de ilha em 0,2 s, encher o mar em 70 ms, estrada ou rio de 1,2 km em 30 ms.
+
+Não houve prova no navegador nem em staging: nada disto está ligado ao palco ou à oficina.
