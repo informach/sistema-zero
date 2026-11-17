@@ -18,6 +18,7 @@ import {
   Blocks,
   Box,
   Check,
+  Clipboard,
   CloudOff,
   Copy,
   Flag,
@@ -70,6 +71,7 @@ import {
   type LocalDeColocacao,
   novoIdAleatorio,
 } from '../acoes'
+import { useAreaDeTransferencia } from '../area-de-transferencia'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
 import { encerrarPreparacao } from '../importar'
@@ -265,6 +267,15 @@ function OficinaAberta({
   const [saindo, setSaindo] = useState(false)
   const [versoesAbertas, setVersoesAbertas] = useState(false)
   const [formasAbertas, setFormasAbertas] = useState(false)
+  const [transferenciaAberta, setTransferenciaAberta] = useState(false)
+  const centroParaColar = useCallback(() => centroDaVista(canvas.current, palco.current), [])
+  const transferencia = useAreaDeTransferencia({
+    host,
+    espaco: mundo.espacoId,
+    controlador,
+    palco,
+    centro: centroParaColar,
+  })
   const { documento, selecao, ferramenta, encaixe } = estado
   const relevoPronto =
     documento.base.tipo !== 'terreno' ||
@@ -289,9 +300,14 @@ function OficinaAberta({
     if (!tela) return
     const novo = criarPalco(tela, {
       carregarModelo: (modelo) =>
-        host.conteudoDoModelo({ biblioteca: modelo.biblioteca, digest: modelo.digest }),
+        host.conteudoDoModelo({
+          biblioteca: modelo.biblioteca,
+          digest: modelo.digest,
+          espacoId: mundo.espacoId,
+        }),
       carregarTerreno: (digest, sinal) => host.conteudoDoTerreno(aberto.resumo.id, digest, sinal),
-      carregarTextura: (ref, sinal) => host.conteudoDaTextura(ref, sinal),
+      carregarTextura: (ref, sinal) =>
+        host.conteudoDaTextura({ ...ref, espacoId: mundo.espacoId }, sinal),
       aoTexturas: setTexturas,
       aoTerreno: ({ estado, chave, erro }) =>
         setRelevo({
@@ -339,7 +355,7 @@ function OficinaAberta({
       palco.current = null
       novo.destruir()
     }
-  }, [host, controlador, aberto.resumo.id])
+  }, [host, controlador, aberto.resumo.id, mundo.espacoId])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
   useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
@@ -391,8 +407,14 @@ function OficinaAberta({
     },
     [controlador],
   )
+  const duplicarPasta = transferencia.duplicar
   const copiar = useCallback(() => {
     const atual = controlador.getState()
+    if (atual.alvoDaArvore && atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore)) {
+      duplicarPasta()
+      return
+    }
+    // Conserva o encaixe e os nomes da duplicação rápida já existente. Colar é outra intenção.
     const { comandos, ids } = comandosParaDuplicar(
       atual.documento,
       atual.selecao,
@@ -400,7 +422,7 @@ function OficinaAberta({
       palco.current?.fonteDeAlturas?.(),
     )
     if (comandos.length && controlador.executar(comandos)) controlador.selecionar(ids)
-  }, [controlador])
+  }, [controlador, duplicarPasta])
   const escolherModelo = async (
     escolha: EscolhaDeModelo,
     ponto: LocalDeColocacao | null,
@@ -569,6 +591,69 @@ function OficinaAberta({
       aria-label={documento.nome}
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
+      {transferencia.mensagem ? (
+        <div className="mcn-andamento" role={transferencia.erro ? 'alert' : 'status'}>
+          <span>{transferencia.mensagem}</span>
+          <button
+            type="button"
+            className="sz-tool-btn sz-tool-btn--sm"
+            onClick={transferencia.limpar}
+          >
+            Fechar aviso
+          </button>
+        </div>
+      ) : null}
+      {transferenciaAberta ? (
+        <Dialogo titulo="Copiar e colar" aoFechar={() => setTransferenciaAberta(false)}>
+          <p>Leve sua escolha para outro lugar ou para outro cenário deste mesmo espaço.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="sz-tool-btn"
+              disabled={semEscolha || estado.ocupado || !relevoPronto}
+              onClick={() => {
+                setTransferenciaAberta(false)
+                void transferencia.copiar()
+              }}
+            >
+              Copiar escolha
+            </button>
+            <button
+              type="button"
+              className="sz-tool-btn"
+              disabled={semEscolha || estado.ocupado || !relevoPronto}
+              onClick={() => {
+                setTransferenciaAberta(false)
+                void transferencia.copiar(true)
+              }}
+            >
+              Recortar escolha
+            </button>
+            <button
+              type="button"
+              className="sz-tool-btn"
+              disabled={estado.ocupado || !relevoPronto}
+              onClick={() => {
+                setTransferenciaAberta(false)
+                void transferencia.colar()
+              }}
+            >
+              Colar escolha
+            </button>
+          </div>
+          <p className="mt-4 text-sm text-mld-text-muted">
+            Ctrl+C copia, Ctrl+X recorta e Ctrl+V cola. Duplicar (Ctrl+D) cria outra cópia ao lado.
+            Campos de texto mantêm seus próprios atalhos.
+          </p>
+          <button
+            type="button"
+            className="sz-tool-btn mt-4"
+            onClick={() => setTransferenciaAberta(false)}
+          >
+            Voltar à oficina
+          </button>
+        </Dialogo>
+      ) : null}
       {preparandoMolde ? (
         <div role="status" className="mcn-andamento">
           <span>Preparando a cópia do molde…</span>
@@ -650,6 +735,15 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            aria-label="Copiar e colar"
+            title="Copiar, recortar e colar"
+            onClick={() => setTransferenciaAberta(true)}
+          >
+            <Clipboard aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="sz-tool-icon-btn"
@@ -771,9 +865,9 @@ function OficinaAberta({
               <hr className="mcn-fio" />
               <Ladrilho
                 icone={Copy}
-                rotulo={COPY.oficina.copiar}
+                rotulo="Duplicar"
                 atalho="Ctrl+D"
-                desligado={!selecao.length}
+                desligado={semEscolha || estado.ocupado || !relevoPronto}
                 aoTocar={copiar}
               />
               <Ladrilho

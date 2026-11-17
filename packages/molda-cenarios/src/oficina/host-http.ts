@@ -379,7 +379,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         })
     },
     async conteudoDoModelo(ref) {
-      const espacoId = await acharEspacoDaBiblioteca(ref.biblioteca)
+      const espacoId = ref.espacoId ?? (await acharEspacoDaBiblioteca(ref.biblioteca))
       // O app diz onde o arquivo está; a busca vai direto ao armazenamento, sem os cabeçalhos da
       // sessão (com eles o navegador barraria o pedido a outra origem).
       const { url } = await pedir<{ url: string }>(
@@ -419,7 +419,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     },
     async conteudoDaTextura(ref, sinal) {
       sinal?.throwIfAborted()
-      const espacoId = await acharEspacoDaBiblioteca(ref.biblioteca)
+      const espacoId = ref.espacoId ?? (await acharEspacoDaBiblioteca(ref.biblioteca))
       const { url } = await pedir<{ url: string }>(
         'GET',
         `espacos/${espacoId}/arquivos/${ref.digest}?tipo=textura&como=endereco`,

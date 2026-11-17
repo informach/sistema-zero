@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ConflitoDeCenario } from '../comandos'
+import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
 import {
   AguaSchema,
@@ -17,8 +18,14 @@ import {
   TexturaDoCenarioSchema,
 } from './documento'
 import { FormaDeCenarioSchema } from './formas'
-import { entidadesDoCenario } from './organizacao'
+import { colarFragmento } from './fragmento'
+import { FragmentoDeCenarioSchema, PrefixoDeColagemSchema } from './fragmento-schema'
+import { igual } from './igual'
+
+import { entidadesDoCenario, referenciaDeModelo } from './organizacao'
 import { type OpcoesDeValidacao, validarDocumento } from './validacao'
+
+export { igual } from './igual'
 
 const id = z.string().min(1).max(240)
 const idsOrganizaveis = z
@@ -31,6 +38,14 @@ const idsOrganizaveis = z
 export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   /** Restauração atômica de uma versão; conserva a identidade do cenário. */
   z.object({ tipo: z.literal('cenario.restaurar'), documento: DocumentoDeCenarioSchema }).strict(),
+  z
+    .object({
+      tipo: z.literal('fragmento.colar'),
+      fragmento: FragmentoDeCenarioSchema,
+      prefixo: PrefixoDeColagemSchema,
+      ponto: VetorSchema,
+    })
+    .strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
   z.object({ tipo: z.literal('textura.definir'), textura: TexturaDoCenarioSchema }).strict(),
@@ -133,18 +148,6 @@ function definir<T extends { id: string }>(lista: T[], valor: T) {
   if (i < 0) lista.push(valor)
   else lista[i] = valor
 }
-/** Comparação estrutural que não depende da ordem das chaves. */
-export function igual(a: unknown, b: unknown): boolean {
-  if (a === b) return true
-  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false
-  if (Array.isArray(a) !== Array.isArray(b)) return false
-  const ka = Object.keys(a).filter((k) => (a as Record<string, unknown>)[k] !== undefined),
-    kb = Object.keys(b).filter((k) => (b as Record<string, unknown>)[k] !== undefined)
-  return (
-    ka.length === kb.length &&
-    ka.every((k) => igual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]))
-  )
-}
 /** Grava por cima respeitando o cadeado do que já existia e do grupo de destino. */
 function definirTravavel<T extends Travavel>(d: IndiceDeTravas, lista: T[], valor: T) {
   exigeLivre(d, { ...valor, bloqueado: false })
@@ -177,6 +180,10 @@ export function executarLote(
   let travas = indiceDeTravas(d)
   for (const c of lote.comandos) {
     switch (c.tipo) {
+      case 'fragmento.colar':
+        d = colarFragmento(d, c.fragmento, c.prefixo, c.ponto)
+        travas = indiceDeTravas(d)
+        break
       case 'cenario.restaurar':
         if (c.documento.id !== d.id)
           throw new CenarioInvalido(['A restauração precisa ser deste cenário'])
@@ -184,7 +191,8 @@ export function executarLote(
         travas = indiceDeTravas(d)
         break
       case 'modelo.definir':
-        for (const o of d.instancias) if (o.modelo === c.modelo.id) exigeLivre(travas, o)
+        for (const o of entidadesDoCenario(d))
+          if (referenciaDeModelo(o) === c.modelo.id) exigeLivre(travas, o)
         definir(d.modelos, c.modelo)
         break
       case 'modelo.remover':

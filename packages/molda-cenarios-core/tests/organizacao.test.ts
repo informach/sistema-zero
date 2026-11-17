@@ -35,6 +35,67 @@ function cena() {
 }
 const aplicar = (d: ReturnType<typeof cena>, comandos: ComandoDeCenario[]) =>
   executarLote({ documento: d, revisao: 0 }, { revisaoEsperada: 0, comandos }).documento
+
+test('referências de modelos em caminhos e lagos também respeitam cadeados próprios e herdados e o undo', () => {
+  const d = comCamada()
+  d.modelos = [{ id: 'm', modelo: 'm', biblioteca: 'b', digest: 'a'.repeat(64) }]
+  d.caminhos = [
+    {
+      id: 'trilha',
+      nome: 'Trilha',
+      grupo: 'g',
+      camada: 'c',
+      oculto: false,
+      bloqueado: true,
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 8, z: 0 },
+      ],
+      acabamento: 'm',
+      largura: 2,
+      tipo: 'trilha',
+    },
+  ]
+  const triangulo = [
+    { x: 0, z: 0 },
+    { x: 8, z: 0 },
+    { x: 0, z: 8 },
+  ]
+  d.aguas = [
+    {
+      id: 'lago',
+      nome: 'Lago',
+      grupo: 'g',
+      camada: 'c',
+      oculto: false,
+      bloqueado: true,
+      tipo: 'lago',
+      modelo: 'm',
+      centro: { x: 0, z: 0 },
+      giro: 0,
+      escala: 1,
+      nivel: 0,
+      profundidade: 2,
+      contorno: triangulo,
+      recorte: triangulo,
+    },
+  ]
+  const modelo = { ...d.modelos[0]!, digest: 'b'.repeat(64) }
+  for (const lista of ['caminhos', 'aguas'] as const) {
+    const isolado = structuredClone(d)
+    if (lista === 'caminhos') isolado.aguas = []
+    else isolado.caminhos = []
+    expect(() => aplicar(isolado, [{ tipo: 'modelo.definir', modelo }])).toThrow('bloqueado')
+    isolado[lista][0]!.bloqueado = false
+    isolado.camadas![0]!.bloqueado = true
+    expect(() => aplicar(isolado, [{ tipo: 'modelo.definir', modelo }])).toThrow('bloqueada')
+  }
+  d.camadas![0]!.bloqueado = true
+  d.grupos[0]!.bloqueado = true
+  const alterado = structuredClone(d)
+  alterado.modelos[0] = modelo
+  expect(aplicar(alterado, inverterLote(d, alterado))).toEqual(d)
+})
 const comCamada = () =>
   aplicar(cena(), [
     {

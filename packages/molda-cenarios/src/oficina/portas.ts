@@ -213,9 +213,13 @@ export interface CenariosHost {
   ): Promise<TexturaDeBiblioteca>
   apagarTexturas(bibliotecaId: string, ids: string[]): Promise<void>
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
-  conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
+  conteudoDoModelo(ref: {
+    biblioteca: string
+    digest: string
+    espacoId?: string
+  }): Promise<ArrayBuffer>
   conteudoDaTextura(
-    ref: { biblioteca: string; digest: string },
+    ref: { biblioteca: string; digest: string; espacoId?: string },
     sinal?: AbortSignal,
   ): Promise<ArrayBuffer>
   conteudoDoTerreno(cenarioId: string, digest: string, sinal?: AbortSignal): Promise<ArrayBuffer>

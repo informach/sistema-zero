@@ -326,7 +326,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       sinal?.throwIfAborted()
       await esperar()
       sinal?.throwIfAborted()
-      const espacoId = espacoDasBibliotecas.get(ref.biblioteca)
+      const espacoId = ref.espacoId ?? espacoDasBibliotecas.get(ref.biblioteca)
       if (!espacoId) throw new Error('O espaço da textura não existe')
       return exigir(conteudos, `${espacoId}:${ref.digest}`, 'A textura').slice().buffer
     },
@@ -538,6 +538,13 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       // A mesma operação mandada duas vezes (resposta perdida) não se aplica de novo.
       const feita = c.operacoes.get(operacaoId)
       if (feita !== undefined) return { revisao: feita }
+      const espacoId = exigir(mundos, c.resumo.mundoId, 'O mundo').espacoId
+      if (
+        comandos.some(
+          (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== espacoId,
+        )
+      )
+        throw new Error('Não é possível colar objetos de outro espaço')
       try {
         const depois = executarLote(
           { documento: c.documento, revisao: c.resumo.revisao },

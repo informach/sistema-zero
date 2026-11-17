@@ -182,7 +182,11 @@ function TexturaDoObjeto({
         Textura:{' '}
         {escolhida?.nome ??
           ref?.nome ??
-          (valores.size > 1 ? 'Várias na seleção' : 'Original do modelo')}
+          (valores.size > 1
+            ? 'Várias na seleção'
+            : atual
+              ? 'Textura aplicada'
+              : 'Original do modelo')}
       </p>
       <button
         type="button"

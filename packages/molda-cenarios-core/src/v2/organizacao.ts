@@ -15,6 +15,11 @@ export interface FlagsDeOrganizacao {
   ocultacaoHerdada: boolean
 }
 
+export function referenciaDeModelo(e: EntidadeOrganizavel): string | null {
+  if ('modelo' in e) return e.modelo
+  return 'acabamento' in e ? e.acabamento : null
+}
+
 export function entidadesDoCenario(doc: DocumentoDeCenario): EntidadeOrganizavel[] {
   return [...doc.grupos, ...doc.instancias, ...doc.caminhos, ...doc.aguas, ...doc.marcadores]
 }

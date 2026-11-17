@@ -31,7 +31,10 @@ import {
   type TipoDeConteudo,
   tiposDeBlobCompativeis,
 } from '../../../domain/cenarios/cenarios'
-import { CenarioArquivoAusenteError } from '../../../domain/cenarios/cenarios.errors'
+import {
+  CenarioArquivoAusenteError,
+  CenarioInvalidoError,
+} from '../../../domain/cenarios/cenarios.errors'
 import { avancarHistorico } from '../../../domain/cenarios/historico'
 import type {
   BlobReservado,
@@ -332,6 +335,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
                 select 1 from jsonb_array_elements(l.comandos || coalesce(l.inversos, '[]'::jsonb)) e
                 where e -> 'modelo' ->> 'digest' = ${cenarioBlobs.digest}
                   or e -> 'textura' ->> 'digest' = ${cenarioBlobs.digest}
+                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'fragmento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
+                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'fragmento' -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
@@ -940,7 +945,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       .select({
         digests: sql<
           string[]
-        >`array(select jsonb_array_elements_text(jsonb_path_query_array(${comandos}, '$[*].modelo.digest') || jsonb_path_query_array(${comandos}, '$[*].textura.digest') || jsonb_path_query_array(${comandos}, '$[*].base.pecas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.base.pecas[*].digest')))`,
+        >`array(select jsonb_array_elements_text(jsonb_path_query_array(${comandos}, '$[*].modelo.digest') || jsonb_path_query_array(${comandos}, '$[*].textura.digest') || jsonb_path_query_array(${comandos}, '$[*].fragmento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].fragmento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].base.pecas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.base.pecas[*].digest')))`,
       })
       .from(cenarioLotes)
       .where(inArray(cenarioLotes.cenarioId, [...ids]))
@@ -1116,6 +1121,12 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         .where(eq(cenarioCenarios.id, dados.cenarioId))
         .for('update')
       if (!antes || antes.revisao !== dados.revisaoEsperada) return null
+      if (
+        dados.comandos.some(
+          (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== dono.espacoId,
+        )
+      )
+        throw new CenarioInvalidoError(['Não é possível colar objetos de outro espaço'])
       const inversos = inverterLote(antes.documento, dados.documento)
       const historico =
         inversos.length || dados.movimento

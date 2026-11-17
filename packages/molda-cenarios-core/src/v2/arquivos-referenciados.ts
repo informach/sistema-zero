@@ -21,6 +21,15 @@ export function arquivosDoDocumento(doc: DocumentoDeCenario): ArquivoReferenciad
 export function arquivosDosComandos(comandos: readonly ComandoDeCenario[]): ArquivoReferenciado[] {
   return comandos.flatMap((c): ArquivoReferenciado[] => {
     switch (c.tipo) {
+      case 'fragmento.colar':
+        return [
+          ...c.fragmento.modelos.map(
+            (m): ArquivoReferenciado => ({ digest: m.digest, tipo: 'modelo' }),
+          ),
+          ...c.fragmento.texturas.map(
+            (t): ArquivoReferenciado => ({ digest: t.digest, tipo: 'textura' }),
+          ),
+        ]
       case 'modelo.definir':
         return [{ digest: c.modelo.digest, tipo: 'modelo' }]
       case 'textura.definir':

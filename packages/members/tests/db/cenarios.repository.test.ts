@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs'
 import {
   type BaseDeTerreno,
   type ComandoDeCenario,
+  capturarFragmento,
   criarDocumentoVazio,
   executarLote,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -146,6 +147,169 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
   })
   beforeEach(async () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
+  })
+
+  test('colagem confirma espaço e papéis; arquivos só no fragmento do histórico sobrevivem à remoção do catálogo e são liberados no fim', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    await guardar(espaco.id, 'a')
+    const [m] = (await repo.criarModelos(biblioteca.id, [modelo('a', 'Caixa')], 10, CONTA, AGORA))!
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    await s.reservarTexturas(ator, biblioteca.id, [imagem])
+    const [t] = await s.registrarTexturas(
+      ator,
+      biblioteca.id,
+      [
+        {
+          nome: 'Terra',
+          pasta: '',
+          etiquetas: [],
+          digest: imagem.digest,
+          largura: 2,
+          altura: 2,
+          repeticaoMetros: 2,
+        },
+      ],
+      [{ ...imagem, largura: 2, altura: 2 }],
+      espaco.id,
+    )
+    const origem = criarDocumentoVazio('origem', 'Origem')
+    origem.modelos = [
+      {
+        id: 'modelo',
+        biblioteca: biblioteca.id,
+        modelo: m!.id,
+        digest: m!.digest,
+        volume: { min: { x: -1, y: 0, z: -1 }, max: { x: 1, y: 3, z: 1 } },
+      },
+    ]
+    origem.texturas = [
+      { id: 't', biblioteca: biblioteca.id, textura: t!.id, digest: imagem.digest },
+    ]
+    origem.instancias = [
+      {
+        id: 'o',
+        nome: 'Objeto',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        modelo: 'modelo',
+        colisao: 'caixa',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 0, y: 0, z: 0 },
+          rotacao: { x: 0, y: 0, z: 0 },
+          escala: { x: 1, y: 1, z: 1 },
+        },
+        aparencia: { textura: { id: 't', repeticaoMetros: 2 } },
+      },
+    ]
+    const fragmento = capturarFragmento(origem, ['o'], espaco.id)
+    const mundo = await s.criarMundo(ator, espaco.id, 'Mundo'),
+      c = await s.criarCenario(ator, mundo.id, 'Destino')
+    const comando: ComandoDeCenario = {
+      tipo: 'fragmento.colar',
+      fragmento,
+      prefixo: 'p',
+      ponto: { x: 4, y: 0, z: 4 },
+    }
+    const malformado = {
+      ...comando,
+      fragmento: { origem: { espaco: espaco.id } },
+    } as unknown as ComandoDeCenario
+    expect(
+      await s
+        .editarCenario(ator, c.id, {
+          revisaoEsperada: 0,
+          comandos: [malformado],
+          operacaoId: randomUUID(),
+        })
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    const estrangeiro: ComandoDeCenario = {
+      ...comando,
+      fragmento: { ...fragmento, origem: { ...fragmento.origem, espaco: randomUUID() } },
+    }
+    expect(
+      await s
+        .editarCenario(ator, c.id, {
+          revisaoEsperada: 0,
+          comandos: [estrangeiro],
+          operacaoId: randomUUID(),
+        })
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    const documentoEstrangeiro = executarLote(
+      { documento: criarDocumentoVazio(c.id, 'Destino'), revisao: 0 },
+      { revisaoEsperada: 0, comandos: [estrangeiro] },
+    ).documento
+    expect(
+      await repo
+        .gravarLote(
+          {
+            cenarioId: c.id,
+            revisaoEsperada: 0,
+            documento: documentoEstrangeiro,
+            comandos: [estrangeiro],
+            operacaoId: randomUUID(),
+            autorId: CONTA,
+          },
+          AGORA,
+        )
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    const papelErrado = structuredClone(comando)
+    papelErrado.fragmento.texturas[0]!.digest = m!.digest
+    expect(
+      await s
+        .editarCenario(ator, c.id, {
+          revisaoEsperada: 0,
+          comandos: [papelErrado],
+          operacaoId: randomUUID(),
+        })
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioInvalidoError)
+    expect((await repo.cenario(c.id))!.revisao).toBe(0)
+    await s.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      comandos: [comando],
+      operacaoId: randomUUID(),
+    })
+    const colado = (await s.abrirCenario(ator, c.id)).documento
+    await s.moverHistorico(ator, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 1,
+      operacaoId: randomUUID(),
+    })
+    expect((await repo.cenario(c.id))!.documento.modelos).toEqual([])
+    expect((await repo.cenario(c.id))!.documento.texturas).toBeUndefined()
+    expect((await s.apagarBiblioteca(ator, biblioteca.id)).apagar).toEqual([])
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(1128)
+    const reaberto = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    expect(
+      (
+        await reaberto.moverHistorico(ator, c.id, {
+          acao: 'refazer',
+          revisaoEsperada: 2,
+          operacaoId: randomUUID(),
+        })
+      ).documento,
+    ).toEqual(colado)
+    expect(await reaberto.documentoNaRevisao(ator, c.id, 1)).toEqual(colado)
+    await reaberto.moverHistorico(ator, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 3,
+      operacaoId: randomUUID(),
+    })
+    expect((await repo.cenario(c.id))!.documento.modelos).toEqual([])
+    expect((await reaberto.apagarCenario(ator, c.id)).apagar.sort()).toEqual(
+      [
+        `cenarios/${espaco.id}/blobs/${m!.digest}`,
+        `cenarios/${espaco.id}/blobs/${imagem.digest}`,
+      ].sort(),
+    )
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
   })
 
   test('textura do cenário permanece nos lotes após remover da cabeça e apagar a biblioteca; a última cópia solta a imagem', async () => {

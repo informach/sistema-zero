@@ -20,6 +20,7 @@
 - Manter cota, licença restrita, isolamento entre espaços, prova do BFF, controle de revisão e idempotência.
 - GLBs e credenciais fora do Git. Todos os códigos, testes, relatórios e evidências permitidas entram em commits na staging.
 - Uma verificação pesada e uma sessão de tipagem por vez. Não afirmar desempenho em aparelhos físicos sem teste nesses aparelhos.
+- Incorporar os critérios da [issue 267, conferidos pela sessão principal](../../plans/2026-11-16-cenarios-reforma/triagem-issue-267.md), nas partes 3.4, 3.6 e 3.8, sem outro editor nem implementação concorrente. As dependências de terreno/água/caminhos permanecem nos lotes 4/5/6.
 - Não chamar um recorte de lote concluído. Os itens abaixo são partes internas do mesmo lote 3.
 
 ## Estado inicial preservado
@@ -71,8 +72,8 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 - [x] Acrescentar árvore com busca, grupos, olho, cadeado, seleção e reorganização sem ciclos. Lista virtual, contexto no controlador e destinos estáveis; Chrome 1.440/1.024/390 px conferido. [Registro do recorte](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-organizacao-selecao.md).
 - [x] Acrescentar camadas, inclusão/remoção e visibilidade/bloqueio coerentes no palco e na árvore. Permissões próprias/herdadas e histórico JSONB testados no Postgres, incluindo restauração de definições compartilhadas.
 - [x] Implementar laço/seleção por área sem conflitar com órbita e gestos de transformação. Captura do Molda, projeção, soma por teclado ou botão, cancelamento e toque emulado conferidos; não cria revisão autoral.
-- [ ] Implementar copiar, recortar e colar, conservando relações internas e recusando referências inacessíveis de outra conta.
-- [ ] Verificar apagar, desfazer, refazer, recarga e ações recusadas sem aplicação parcial.
+- [x] Implementar copiar, recortar e colar, conservando relações internas e recusando referências inacessíveis de outra conta. Fragmento limitado, IDs/apoios remapeados, referências confirmadas, clipboard nativo e buffer de sessão; [revisão da parte 3.4](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-transferencia.md).
+- [x] Verificar apagar, desfazer, refazer, recarga e ações recusadas sem aplicação parcial. Chrome claro/escuro/1.440/1.024/390 px, GLB e textura reais, Postgres e regressão integrada conferidos. O lote 3 continua aberto.
 
 ### 3.5 — Espalhar com intenção e semente
 
@@ -93,6 +94,7 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 
 - [ ] Definir o contrato e os índices de uso, com limite de expansão, modelos, formas, materiais e grupos internos.
 - [ ] Implementar salvar seleção como conjunto, organizar na biblioteca, colocar cópias e editar a definição.
+- [ ] Nome e miniatura na biblioteca; ensaiar praça funcional com apoios por contato e vínculos internos. Colocar, mover, girar, duplicar, salvar/reabrir e conferir IDs remapeados, posições relativas e proporções. Alterar a definição e reabrir versões anteriores dos cenários para provar que continuam resolvíveis e preservadas (issue 267).
 - [ ] Conferir atualização de todas as cópias, versões, conflitos, licença, exclusão e proteção de arquivos ainda usados.
 - [ ] Validar soma de objetos e orçamento antes de aceitar uma atualização que afete cópias existentes.
 - [ ] Testar dados e SQL reais, bordas HTTP e a experiência nos dois temas.
@@ -117,6 +119,8 @@ Faltam as demais ferramentas abaixo. A revisão inicial também encontrou soma d
 - [ ] Implementar gravidade, chão real, objetos por tipo de colisão, degraus, inclinação e fronteiras; não criar piso onde houver fundo/furo.
 - [ ] Implementar os três modos, controles de teclado/mouse/toque, entrada/saída e retorno à edição na mesma vista.
 - [ ] Aceitar personagem da biblioteca com escala e pose corretas; conservar animações disponíveis do arquivo.
+- [ ] Derivar cápsula e câmera da altura do personagem em uso; conferir o Cute Characters em aproximadamente 1,16 m, a reserva da Morada e os marcos da Faísca. Registrar caminhada em primeira e terceira pessoa, com vídeo; voo não substitui a travessia (issue 267).
+- [ ] Medidor de percurso da sessão: pontos de início/fim, distância direta, distância percorrida caminhando e tempo. Descontar pausas e excluir voo/teletransporte/retomada; registrar percursos reais sem reposicionar automaticamente a geografia. A régua autoral permanece no lote 7 (issue 267).
 - [ ] Exercitar Faísca convertida, formas, espelhos, conjuntos, carregamento e estados de erro no ensaio.
 - [ ] Conferir toda a lista normativa do lote 3, rodar regressões/tipagem/build pertinentes, revisar tudo e versionar evidências e relatório.
 - [ ] Só então marcar o lote 3 como concluído e iniciar o 4. Não aguardar implantação intermediária e não declarar o projeto global concluído.

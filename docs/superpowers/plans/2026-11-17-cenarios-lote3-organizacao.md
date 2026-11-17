@@ -25,7 +25,7 @@
 
 **Interfaces:** `CamadaSchema`, `camada.definir/remover`; `camada?: string | null` nas entidades. Índice puro de grupos/entidades/camadas calcula flags efetivas uma vez por documento para uso no palco e nos painéis. Escritas verificam origem e destino atuais. `elementos.organizar` é uma intenção atômica para até 20.000 IDs distintos; `camada.remover` pode transferir membros explicitamente e `grupo.remover` pode desagrupar. Assim, seleções grandes não exigem centenas de revisões nem contornam cadeados. O índice de escrita é atualizado durante o lote, inclusive após restauração.
 
-- [x] Implementar dados, comandos, limites, vínculos e inversão. Testar cadeados próprios/herdados, trocas de camada/grupo, documentos antigos e ações atômicas recusadas. Nove testes do recorte; JSONB e undo confirmados no Postgres.
+- [x] Implementar dados, comandos, limites, vínculos e inversão. Testar cadeados próprios/herdados, trocas de camada/grupo, documentos antigos e ações atômicas recusadas. Doze testes do recorte; JSONB e undo confirmados no Postgres.
 - [x] Criar índice e operações de agrupar, desagrupar, mover para grupo/camada e remover camada sem deixar referências inválidas. Excluir camada move seus membros para sem camada explicitamente, numa ação atômica; recusar membros bloqueados. Grupos não recebem transformação adicional ao agrupar: o mundo permanece no lugar. Organização de 600 objetos conferida em dois comandos e um undo.
 - [x] Integrar flags ao palco, seleção, gestos, operações e interface, preservando APIs públicas existentes quando possível.
 
@@ -53,13 +53,13 @@
 
 **Interfaces:** fragmento validado contém origem do espaço, grupos/camadas necessários, referências de modelos/formas/texturas e instâncias, com limites de bytes/expansão/comandos. Apoios internos são remapeados; apoios externos são resolvidos em posição mundial na captura, para não criar vínculos quebrados. Colagem gera IDs novos e referências sem colisão; a origem nunca é alterada.
 
-- [ ] Implementar captura e colagem determinísticas, seleção remapeada, ancoragem de colocação, grupos/camadas/referências e bloqueios. Usar IDs fornecidos, sem aleatoriedade escondida no núcleo.
-- [ ] Integração com eventos reais de clipboard e controles explícitos. Colagem interna disponível se o clipboard do sistema estiver indisponível; deixar o resultado claro. Não interceptar edição em inputs/dialogs. Manter duplicação rápida como ação distinta.
-- [ ] Recortar só atualiza a área de transferência quando a exclusão é aceita; recusar dependências externas inválidas sem apagar parcialmente. Outro espaço recusado; referências continuam sujeitas à confirmação do serviço.
-- [ ] Testar mesma cena, outra cena do mesmo espaço, espaço diferente, referências repetidas/colidentes, formas, texturas, grupos, camadas e pilhas de apoio; undo/redo e reentrada.
+- [x] Implementar captura e colagem determinísticas, seleção remapeada, ancoragem de colocação, grupos/camadas/referências e bloqueios. Usar IDs fornecidos, sem aleatoriedade escondida no núcleo.
+- [x] Integração com eventos reais de clipboard e controles explícitos. Colagem interna disponível se o clipboard do sistema estiver indisponível; deixar o resultado claro. Não interceptar edição em inputs/dialogs. Manter duplicação rápida como ação distinta.
+- [x] Recortar só atualiza a área de transferência quando a exclusão é aceita; recusar dependências externas inválidas sem apagar parcialmente. Outro espaço recusado; referências continuam sujeitas à confirmação do serviço.
+- [x] Testar mesma cena, outra cena do mesmo espaço, espaço diferente, referências repetidas/colidentes, formas, texturas, grupos, camadas e pilhas de apoio; undo/redo e reentrada.
 
 ## 5. Revisão e evidências
 
-- [ ] Ensaiar os fluxos completos em 1.440/1.024/390 px, claro e escuro, com objetos de biblioteca e formas; capturas e vídeo de seleção/organização.
-- [ ] Conferir testes, tipagem e build pertinentes; revisar contratos e recusas no histórico, regressões de composição, carregamento e recursos do palco.
-- [ ] Registrar, commitar e enviar à staging. Marcar somente a parte 3.4; continuar a 3.5 dentro do lote 3, sem aprovação intermediária.
+- [x] Ensaiar os fluxos completos em 1.440/1.024/390 px, claro e escuro, com objetos de biblioteca e formas; capturas e vídeo de seleção/organização.
+- [x] Conferir testes, tipagem e build pertinentes; revisar contratos e recusas no histórico, regressões de composição, carregamento e recursos do palco.
+- [x] Registrar, commitar e enviar à staging. Marcar somente a parte 3.4; continuar a 3.5 dentro do lote 3, sem aprovação intermediária.

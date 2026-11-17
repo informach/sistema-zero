@@ -8,6 +8,7 @@ import {
   executarLote,
   inverterLote,
   LIMITES_CENARIO_V2,
+  LoteDeCenarioSchema,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type AberturaDosCenarios,
@@ -824,9 +825,22 @@ export class CenariosService {
         `O lote aceita de 1 a ${LIMITES_CENARIO_V2.comandos} comandos`,
       ])
 
+    const formato = LoteDeCenarioSchema.safeParse({
+      revisaoEsperada: lote.revisaoEsperada,
+      comandos: lote.comandos,
+    })
+    if (!formato.success) throw new CenarioInvalidoError(['O lote tem um comando fora do formato'])
+    const comandos = formato.data.comandos
+    if (
+      comandos.some(
+        (c) => c.tipo === 'fragmento.colar' && c.fragmento?.origem?.espaco !== espaco.id,
+      )
+    )
+      throw new CenarioInvalidoError(['Não é possível colar objetos de outro espaço'])
+
     // Referências de acervo só podem usar arquivos confirmados com o papel correto NESTE espaço.
     // O relevo mantém sua prova específica de conteúdo, confirmada na transação pelo BFF.
-    const referencias = arquivosDosComandos(lote.comandos).filter((r) => r.tipo !== 'terreno')
+    const referencias = arquivosDosComandos(comandos).filter((r) => r.tipo !== 'terreno')
     const papeis = new Set(referencias.map((r) => `${r.tipo}:${r.digest}`))
     const novos = new Set(referencias.map((r) => r.digest))
     const guardados = novos.size
@@ -837,7 +851,7 @@ export class CenariosService {
     try {
       depois = executarLote(
         { documento: cenario.documento, revisao: cenario.revisao },
-        { revisaoEsperada: lote.revisaoEsperada, comandos: lote.comandos },
+        { revisaoEsperada: lote.revisaoEsperada, comandos },
         {
           modeloExiste: (m) =>
             !papeis.has(`modelo:${m.digest}`) || guardados.get(m.digest)?.tipo === 'modelo',
@@ -857,7 +871,7 @@ export class CenariosService {
         cenarioId: id,
         revisaoEsperada: lote.revisaoEsperada,
         documento: depois.documento,
-        comandos: lote.comandos,
+        comandos,
         operacaoId: lote.operacaoId,
         autorId: ator.usuarioId,
         movimento,

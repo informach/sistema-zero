@@ -16,13 +16,12 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import type { ModeloDeBiblioteca } from './portas'
 
-/** Confere medidas legadas e aplica a ação no mesmo lote, sem gravar ao simplesmente abrir. */
-export function comMedidasConferidas(
+/** Medidas verificadas numa cópia, disponíveis também a operações de leitura como copiar. */
+export function conferirMedidasDoDocumento(
   documento: DocumentoDeCenario,
   selecao: readonly string[],
   medir: ((id: string) => VolumeDeComposicao | null) | undefined,
-  preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[],
-): ComandoDeCenario[] {
+): { documento: DocumentoDeCenario; comandos: ComandoDeCenario[] } {
   const doc = structuredClone(documento),
     comandos: ComandoDeCenario[] = []
   const ids = new Set(selecao)
@@ -44,7 +43,18 @@ export function comMedidasConferidas(
       comandos.push({ tipo: 'modelo.definir', modelo: m })
     }
   }
-  return [...comandos, ...preparar(doc)]
+  return { documento: doc, comandos }
+}
+
+/** Confere medidas legadas e aplica a ação no mesmo lote, sem gravar ao simplesmente abrir. */
+export function comMedidasConferidas(
+  documento: DocumentoDeCenario,
+  selecao: readonly string[],
+  medir: ((id: string) => VolumeDeComposicao | null) | undefined,
+  preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[],
+): ComandoDeCenario[] {
+  const conferido = conferirMedidasDoDocumento(documento, selecao, medir)
+  return [...conferido.comandos, ...preparar(conferido.documento)]
 }
 
 function referenciaDeBiblioteca(modelo: ModeloDeBiblioteca): ModeloDoCenario {

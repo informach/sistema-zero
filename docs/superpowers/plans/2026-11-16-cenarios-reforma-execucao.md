@@ -20,11 +20,15 @@
 - `three` na faixa `^0.184`; não escrever `boundsTree` diretamente; usar os padrões exportados pelo Molda.
 - CSS prefixado em `@layer components`; `color-mix` em oklab. Copy Kids simples, sem travessão nem referências a IA.
 - Toda funcionalidade da especificação precisa de implementação, evidência e estado explícito. Placeholders não contam como entrega.
+- [Issue 267 triada](../../plans/2026-11-16-cenarios-reforma/triagem-issue-267.md): organização por áreas já coberta no 3.4; critérios adicionais de conjuntos e escala/percursos incorporados a 3.6/3.8. Nos lotes 4/5/6, conferir reassentamento de conjuntos após editar relevo, integração de margens/apoios e chegada dos caminhos às entradas. Os núcleos adiantados do Claude continuam preservados para integrar na ordem correta.
+- A área de transferência do recorte 3.4 cobre objetos e pastas. Nos lotes 5–7, estender o mesmo fragmento aos caminhos, águas e marcadores, incluindo vínculos e transformações próprias; até então, pastas mistas são recusadas sem perda de dados. O aceite global de copiar/colar em todas as ferramentas depende dessa extensão.
 - Acesso somente equipe no rollout inicial. Produção e abertura a membros obedecem ao aceite final previsto no plano.
 - GLBs licenciados e credenciais fora do Git. Não compartilhar nem exportar biblioteca restrita para outra conta.
 - Variável nova no Railway deve existir antes de ser incluída em `.railway/variables.ts`.
 
 ## Lotes e critérios de fechamento
+
+Parte interna 3.4 implementada, testada e revisada: árvore/camadas, seleção por área e clipboard nativo entre cenários do mesmo espaço, com histórico e referências protegidas; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-transferencia.md). O lote 3 permanece aberto; seguir para 3.5, espalhamento. Lotes 4–10 pendentes; implantação e validação remotas apenas no encerramento global.
 
 Atualização de 17/11: lote 3 em execução exclusiva. Espelho e troca de modelos implementados, testados e revisados; [registro e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-espelho-troca.md). Não é fechamento do lote; sequência integral no [plano detalhado](2026-11-17-cenarios-lote3-objetos-ensaio.md).
 
@@ -34,7 +38,7 @@ Formas de rascunho implementadas, testadas no navegador/Postgres e revisadas; [r
 
 Tonalidade e texturas por objeto implementadas, testadas e revisadas: seletor do Molda, acervo existente, repetição física, seleção múltipla, preservação do histórico e descarte; [cor](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-cores.md), [referências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-referencias-texturas.md) e [fechamento da parte 3.3](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-texturas-objetos.md). Próximo item: 3.4, organização dos objetos. Lote 3 permanece aberto.
 
-Parte 3.4 em execução: árvore virtual, pastas, camadas, herança de cadeados/visibilidade, remoção atômica de árvores, seleção por área/laço e Somar implementados e testados. [Revisão e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-organizacao-selecao.md). Copiar/recortar/colar e sua regressão integrada ainda pendem; não fechar a parte 3.4 nem avançar para a 3.5.
+Registro inicial da parte 3.4: [organização e seleção](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-organizacao-selecao.md). Clipboard e regressão integrada foram concluídos na [revisão de fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-transferencia.md); próxima parte interna: 3.5. O lote 3 permanece aberto.
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
 - [x] **1 — Equipe na plataforma:** Members, gateway/BFF, migrações em Postgres real, motor genérico, quatro telas conforme PDF, objetos básicos, GLB, acesso nos dois apps, fotos nos tamanhos/temas previstos. Implementado, testado e revisado; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote1-fechamento.md). Conferência da implantação do contrato mais recente transferida à validação global, conforme a usuária.
