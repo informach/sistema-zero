@@ -9,7 +9,8 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 |---|---|---|
 | 1 | Trava de formato, só leitura | Implementado e testado localmente (17/11/2026). Sem prova em staging. |
 | 2 | Declarar a versão por tipo | Pendente. Só depois de o incremento 1 estar em produção. |
-| 3 a 14 | Ver a tabela do plano abaixo | Pendentes. |
+| 3 | Auxiliares de célula e histórico por buffer único | Implementado e testado localmente (17/11/2026). Sem mudança de comportamento. |
+| 4 a 14 | Ver a tabela do plano abaixo | Pendentes. |
 
 ### Incremento 1: o que foi provado e o que não foi
 
@@ -22,6 +23,20 @@ arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incr
 - **Risco residual conhecido:** o envio de desenho numa aula (`pinta-submission`) não tem trava de
   formato, e o Members saneia esses envios com a cópia do Pinta que ele embute. Mapas não são
   oferecidos nas aulas hoje.
+
+### Incremento 3: o que entrou
+
+- `packages/pinta/src/tiles/cell.ts`: a célula do mapa guarda a peça (bits 0 a 11) e como ela
+  está virada (bits 12 a 14, os mesmos do Tiled), dentro do `Int16Array` que já existia. Mapa sem
+  peça virada tem os mesmos números de antes. Quem lê o índice da peça (achatar, peça do topo,
+  remapear ao inserir ou tirar peça, os dois exportadores de imagem) passou a ler por `cellTile`.
+- `tiles/cellAccess.test.ts` lista os oito arquivos que indexam células e reprova um arquivo novo.
+- Histórico do editor (`core/history.ts`, `sharedOf`): as células de cada camada contam uma vez
+  enquanto algum passo as segura. Antes cada pincelada num mapa de 16 camadas custava as 16; agora
+  custa a camada tocada. Medido no teste: 20 passos onde antes cabiam 2, no mesmo orçamento.
+- **Limite conhecido:** o exportador de imagem para o Pygame (dados versão 1) ainda não leva o
+  giro da peça: ela sai desvirada. Entra com a versão 2 dos dados, no incremento 9.
+- Nenhuma ferramenta escreve os bits de giro ainda, então não há o que ver no navegador.
 
 ---
 

@@ -3,6 +3,7 @@
  * Mesmo contrato das ops de pixel: devolvem um asset novo (structural sharing)
  * ou o MESMO asset quando nada muda — o chamador commita por referência.
  */
+
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
@@ -18,6 +19,7 @@ import {
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
+import { cellTile } from './cell'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
@@ -273,7 +275,7 @@ export function flattenLayers(tilemap: TilemapAsset, include?: TileLayerFilter):
     if (!isTileLayer(layer) || !layer.visible) continue
     if (include && !include(layer)) continue
     for (let i = 0; i < out.length; i += 1) {
-      const value = layer.cells[i] ?? -1
+      const value = cellTile(layer.cells[i] ?? -1)
       if (value >= 0) out[i] = value
     }
   }
@@ -317,7 +319,7 @@ export function flattenWithTilesets(
     const tilesetId = tileLayerTilesetId(tilemap, layer)
     const source = Math.max(0, tilesetIds.indexOf(tilesetId))
     for (let i = 0; i < tiles.length; i += 1) {
-      const value = layer.cells[i] ?? -1
+      const value = cellTile(layer.cells[i] ?? -1)
       if (value < 0) continue
       if (drawable && !drawable(tilesetId, value)) continue
       tiles[i] = value
@@ -360,7 +362,7 @@ export function topTileAt(
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer) || !layer.visible) continue
     if (include && !include(layer)) continue
-    const value = layer.cells[index] ?? -1
+    const value = cellTile(layer.cells[index] ?? -1)
     if (value < 0) continue
     if (drawable && !drawable(tileLayerTilesetId(tilemap, layer), value)) continue
     out = { layer, tile: value }

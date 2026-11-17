@@ -5,6 +5,7 @@ import {
 import type { AnyTilesetAsset, PintaBitmap, TilemapAsset } from '../core/project'
 import { isTileLayer, resolveAssetPalette, tileLayerTilesetId } from '../core/project'
 import { bitmapToRGBA } from '../pixel/render'
+import { cellTile } from '../tiles/cell'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts, vectorToPortableSvg } from '../vector/portableSvg'
 import { sceneDefsMarkup, shapesToMarkup, type VectorDoc } from '../vector/svg'
@@ -186,7 +187,7 @@ function* mapCells(map: TilemapAsset) {
     if (!isTileLayer(layer) || !layer.visible) continue
     if (tileLayerTilesetId(map, layer) !== map.tilesetId) continue
     for (let index = 0; index < layer.cells.length; index++) {
-      const tile = layer.cells[index]!
+      const tile = cellTile(layer.cells[index]!)
       if (tile >= 0) yield { tile, col: index % map.cols, row: Math.floor(index / map.cols) }
     }
   }
