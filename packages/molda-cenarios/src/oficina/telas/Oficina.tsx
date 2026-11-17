@@ -77,6 +77,7 @@ import type {
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
@@ -820,22 +821,25 @@ function OficinaAberta({
               <Painel documento={documento} selecao={selecao} executar={executar} fonte={fonte} />
             ) : null}
             {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
-              <Organizar
-                documento={documento}
-                selecao={selecao}
-                executar={executar}
-                medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
-                fonte={fonte}
-                aoTrocar={() => {
-                  if (!preparandoMolde) {
-                    troca.current = [...selecao]
-                    setTrocando(selecao.length)
-                    setErroDoMolde(null)
-                    if (globalThis.matchMedia?.('(max-width: 899px)').matches)
-                      setPainelAberto(false)
-                  }
-                }}
-              />
+              <>
+                <Aparencia documento={documento} selecao={selecao} executar={executar} />
+                <Organizar
+                  documento={documento}
+                  selecao={selecao}
+                  executar={executar}
+                  medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                  fonte={fonte}
+                  aoTrocar={() => {
+                    if (!preparandoMolde) {
+                      troca.current = [...selecao]
+                      setTrocando(selecao.length)
+                      setErroDoMolde(null)
+                      if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                        setPainelAberto(false)
+                    }
+                  }}
+                />
+              </>
             ) : null}
             {relevoPronto && aba === 'objetos' ? (
               <Encaixes

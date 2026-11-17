@@ -63,6 +63,31 @@ const por = (
 }
 
 describe('ações da aba Objetos', () => {
+  test('tonalidade altera só a cópia escolhida, persiste e pode ser desfeita; cor inválida é recusada', async () => {
+    const { controlador, host, cenario } = await abrir(),
+      novoId = ids()
+    const a = por(controlador, novoId),
+      b = por(controlador, novoId)
+    const antes = structuredClone(controlador.getState().documento)
+    expect(
+      controlador.executar([
+        { tipo: 'instancia.atualizar', id: a, alteracoes: { aparencia: { cor: '#dd8844' } } },
+      ]),
+    ).toBe(true)
+    await controlador.terminar()
+    const d = (await host.abrirCenario(cenario.id)).documento
+    expect(d.instancias.find((o) => o.id === a)!.aparencia).toEqual({ cor: '#dd8844' })
+    expect(d.instancias.find((o) => o.id === b)!.aparencia).toBeUndefined()
+    expect(d.modelos).toEqual(antes.modelos)
+    expect(
+      controlador.executar([
+        { tipo: 'instancia.atualizar', id: a, alteracoes: { aparencia: { cor: 'red' } } },
+      ]),
+    ).toBe(false)
+    expect(controlador.getState().documento).toEqual(d)
+    await controlador.desfazer()
+    expect(controlador.getState().documento).toEqual(antes)
+  })
   test('criar uma forma gera definição e instância no mesmo histórico, sem modelo de biblioteca', async () => {
     const { controlador, host, cenario } = await abrir()
     const forma = {

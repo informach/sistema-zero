@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { aplicarCorPelaOficina } from './ensaiar-cores.mjs'
 import { ensaiarEncaixes } from './ensaiar-encaixes.mjs'
 
 const raiz = resolve(import.meta.dirname, '../../../..')
@@ -81,6 +82,7 @@ try {
     await pagina.getByText('Guardado', { exact: true }).waitFor()
     const ler = () =>
       pagina.evaluate(async (id) => (await window.__cenarios.host.abrirCenario(id)).documento, id)
+    if (process.argv.includes('--cores')) await aplicarCorPelaOficina(pagina, ler, '#ff9955')
     const espelhado = await ler()
     assert.equal(espelhado.instancias[0].espelho.x, true)
     await pagina.waitForFunction(() => {
@@ -114,6 +116,7 @@ try {
     assert.equal(trocado.instancias.length, 1)
     assert.notEqual(trocado.instancias[0].modelo, espelhado.instancias[0].modelo)
     assert.deepEqual(trocado.instancias[0].espelho, espelhado.instancias[0].espelho)
+    assert.deepEqual(trocado.instancias[0].aparencia, espelhado.instancias[0].aparencia)
     await pagina.getByRole('button', { name: 'Desfazer', exact: true }).click()
     await pagina.getByText('Guardado', { exact: true }).waitFor()
     assert.deepEqual(await ler(), espelhado)

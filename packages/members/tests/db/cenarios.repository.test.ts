@@ -144,7 +144,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
   })
 
-  test('formas, espelho e contato local sobrevivem ao JSONB e ao histórico sem criar blobs', async () => {
+  test('formas, espelho, cor e contato local sobrevivem ao JSONB e ao histórico sem criar blobs', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
     const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
     const [espaco] = await servico.espacos(ator)
@@ -168,6 +168,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       colisao: 'malha',
       apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
       espelho: { x: true, y: false, z: false },
+      aparencia: { cor: '#dd8844' },
       transformacao: {
         posicao: { x: 0, y: 0, z: 0 },
         rotacao: { x: 0, y: 0, z: 0 },
@@ -205,6 +206,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       contato: { x: 0.5, y: 1, z: 0.25 },
     })
     expect(d.instancias[0]!.espelho).toEqual(instancia.espelho)
+    expect(d.instancias[0]!.aparencia).toEqual(instancia.aparencia)
     expect((await repo.espaco(espaco!.id))!.usadoBytes).toBe(0)
     const volta = await novaSessao.moverHistorico(ator, c.id, {
       acao: 'desfazer',

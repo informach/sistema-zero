@@ -712,7 +712,7 @@ class PalcoThree implements Palco {
         itens = []
         porLote.set(chave, itens)
       }
-      itens.push({ id: o.id, matriz })
+      itens.push({ id: o.id, matriz, cor: o.aparencia?.cor })
     }
     for (const id of [...this.matrizes.keys()]) if (!vistos.has(id)) this.matrizes.delete(id)
 

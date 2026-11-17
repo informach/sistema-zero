@@ -118,6 +118,16 @@ export const InstanciaSchema = entidade
     colisao: z.enum(COLISOES),
     /** Espelha a forma nos eixos locais, em torno do centro do volume, sem mover o pivô. */
     espelho: z.object({ x: z.boolean(), y: z.boolean(), z: z.boolean() }).strict().optional(),
+    /** Tonalidade aplicada sobre as cores e texturas originais, sem modificar o acervo. */
+    aparencia: z
+      .object({
+        cor: z
+          .string()
+          .regex(/^#[a-f0-9]{6}$/i)
+          .optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
 

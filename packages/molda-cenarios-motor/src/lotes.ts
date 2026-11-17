@@ -2,6 +2,7 @@ import {
   type Box3,
   BoxGeometry,
   type BufferGeometry,
+  Color,
   EdgesGeometry,
   InstancedMesh,
   LineBasicMaterial,
@@ -16,9 +17,11 @@ import type { ParteDoModelo } from './modelos'
 export interface ItemDoLote {
   id: string
   matriz: Matrix4
+  cor?: string
 }
 
 const auxiliar = new Matrix4()
+const corAuxiliar = new Color()
 
 /**
  * Todas as cópias de um modelo no cenário, desenhadas de uma vez (uma malha instanciada por
@@ -37,11 +40,16 @@ export class LoteDoModelo {
   preencher(itens: readonly ItemDoLote[]): void {
     if (itens.length > this.capacidade) this.alocar(itens.length)
     this.ids = itens.map((i) => i.id)
+    const temTonalidade = itens.some((i) => i.cor && i.cor.toLowerCase() !== '#ffffff')
     for (let p = 0; p < this.malhas.length; p++) {
       const malha = this.malhas[p]!,
         parte = this.partes[p]!
-      for (let i = 0; i < itens.length; i++)
+      const colorir = Boolean(malha.instanceColor) || temTonalidade
+      for (let i = 0; i < itens.length; i++) {
         malha.setMatrixAt(i, auxiliar.multiplyMatrices(itens[i]!.matriz, parte.matriz))
+        if (colorir) malha.setColorAt(i, corAuxiliar.set(itens[i]!.cor ?? '#ffffff'))
+      }
+      if (malha.instanceColor) malha.instanceColor.needsUpdate = true
       malha.count = itens.length
       malha.visible = itens.length > 0
       this.marcar(malha)
