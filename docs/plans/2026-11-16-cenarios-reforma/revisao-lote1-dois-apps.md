@@ -36,3 +36,5 @@ O ensaio adicional no Chrome com toque emulado, em **390 e 1024 px**, colocou um
 ## Pendência para fechar o lote
 
 As provas de interface/persistência acima usaram a versão então implantada. O ensaio direto de armazenamento comprova as funções novas contra R2, mas **não substitui** a prova do novo contrato completo BFF → HMAC → Members após a implantação de `cc227425c`. O CI `43980464489` ainda estava em andamento na tipagem geral quando este registro foi preparado. A validação dessa implantação e a revisão final do lote 1 continuam obrigatórias. O lote permanece aberto; não iniciar o lote 2 antes desse fechamento.
+
+O ensaio de staging oferece `CENARIOS_QA_EXIGIR_INTEGRIDADE=1`: nesse modo exige que a reserva declare criação única e que os PUTs efetivamente enviem a condição assinada. O GLB sintético contém um identificador único do ensaio, evitando reaproveitar um upload anterior. Essa guarda foi exercitada contra a versão antiga e recusou-a pelo motivo esperado, com limpeza concluída. A passagem positiva será feita com a nova versão implantada; uma execução básica verde na versão antiga não basta para essa aprovação.

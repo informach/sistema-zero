@@ -45,6 +45,9 @@ pagina.on('response', (r) => {
       caminho: u.pathname,
       metodo: r.request().method(),
       status: r.status(),
+      ...(r.request().method() === 'PUT'
+        ? { criacaoUnica: r.request().headers()['if-none-match'] === '*' }
+        : {}),
     })
 })
 async function entrarComoResponsavel() {
@@ -148,7 +151,7 @@ try {
     etapa = 'trazer GLB'
     const posicoes = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0])
     const gltf = {
-      asset: { version: '2.0' },
+      asset: { version: '2.0', extras: { ensaio: identificador } },
       scene: 0,
       scenes: [{ nodes: [0] }],
       nodes: [{ mesh: 0 }],
@@ -189,6 +192,10 @@ try {
     glb.writeUInt32LE(posicoes.byteLength, 20 + n)
     glb.writeUInt32LE(0x004e4942, 24 + n)
     glb.set(new Uint8Array(posicoes.buffer), 28 + n)
+    const reservaDoUpload = pagina.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname.endsWith('/modelos/reservar') && r.request().method() === 'POST',
+    )
     const escolher = pagina.waitForEvent('filechooser')
     await pagina.getByRole('button', { name: 'Trazer modelos', exact: true }).click()
     const opcao = pagina
@@ -211,6 +218,19 @@ try {
     ).json()
     assert.equal(modelos.total, 1)
     assert.ok(pedidos.some((r) => r.metodo === 'PUT' && r.status >= 200 && r.status < 300))
+    const reservaRecebida = await (await reservaDoUpload).json()
+    const integridadeExigida = process.env.CENARIOS_QA_EXIGIR_INTEGRIDADE === '1'
+    if (integridadeExigida) {
+      assert.ok(reservaRecebida.enviar.length > 0)
+      assert.ok(
+        reservaRecebida.enviar.every((a) => a.criarUmaVez === true),
+        'O BFF novo ainda não foi implantado',
+      )
+      assert.ok(
+        pedidos.filter((r) => r.metodo === 'PUT').every((r) => r.criacaoUnica),
+        'O cliente precisa enviar a condição assinada',
+      )
+    }
     await pagina.screenshot({ path: resolve(saida, 'modelo-guardado.png') })
     etapa = 'montar cenário'
     await pagina.getByRole('button', { name: 'Voltar às bibliotecas', exact: true }).click()
@@ -286,6 +306,7 @@ try {
           espacoEquipe: true,
           moverGirarTamanho: true,
           gradeAlternavel: true,
+          integridadeExigida,
           revisao: salvo.revisao,
           pedidos,
           erros,
