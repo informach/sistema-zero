@@ -513,13 +513,16 @@ class PalcoThree implements Palco {
   }
 
   private carregar(modelo: ModeloDoCenario) {
-    this.modelos.set(modelo.digest, { estado: 'carregando' })
+    // Uma leitura antiga pode terminar depois de remover e recolocar o mesmo hash.
+    // Só a leitura que ainda ocupa a entrada pode publicar sucesso ou falha.
+    const pedido: EstadoDoModelo = { estado: 'carregando' }
+    this.modelos.set(modelo.digest, pedido)
     this.opcoes
       .carregarModelo(modelo)
       .then((bytes) => conferirConteudoDoModelo(bytes, modelo.digest))
       .then((bytes) => lerGlb(bytes))
       .then((carregado) => {
-        if (this.destruido || this.modelos.get(modelo.digest)?.estado !== 'carregando') {
+        if (this.destruido || this.modelos.get(modelo.digest) !== pedido) {
           carregado.descartar()
           return
         }
@@ -531,9 +534,8 @@ class PalcoThree implements Palco {
         if (!this.gesto) this.reconstruir()
       })
       .catch((erro) => {
-        if (this.destruido) return
-        if (this.modelos.get(modelo.digest)?.estado === 'carregando')
-          this.modelos.set(modelo.digest, { estado: 'falhou' })
+        if (this.destruido || this.modelos.get(modelo.digest) !== pedido) return
+        this.modelos.set(modelo.digest, { estado: 'falhou' })
         this.opcoes.aoFalhar?.(modelo, erro)
         this.pedirQuadro()
       })
