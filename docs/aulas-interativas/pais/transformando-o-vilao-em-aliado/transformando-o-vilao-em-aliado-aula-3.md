@@ -1,14 +1,15 @@
-# Aula 3. Programar é organizar a vida
+# Aula 3. Como criar jogos coloca isso em prática
 
-**Objetivo de aprendizagem:** o responsável desmistifica a programação, reconhece que a rotina da casa já é um algoritmo e vive, num desafio curto, o ciclo de observar, ajustar e testar.
+**Objetivo:** Ver uma ideia se transformar em regra e resultado, compreendendo o ciclo de criação e as oportunidades de decisão e investigação.
 
-**Crença que muda:** "programação é difícil e não é para o meu filho (nem para mim)." Passa a ser: "programar é organizar passos, e a gente já faz isso em casa."
+**Ideia central:** O jogo é uma possibilidade concreta de praticar planejamento, escolhas, testes e ajustes, com orientação.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| Você já programa em casa | Blocos coloridos em vez da tela preta; QUANDO, SE e ENTÃO com a rotina da manhã e com a porta e a chave; a ordem dos passos no banho; causa e consequência. | Vídeo assistido. |
-| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. | Vídeo assistido. |
-| Qual é o seu caminho? | Quiz com a sequência do caminho (parte própria, sem vídeo). O que fazer depois do erro é ensinado na parte seguinte. | Quiz respondido. |
-| E se a primeira tentativa não funcionar? | A resposta; observar, mudar uma instrução, testar de novo; o erro como pista; o olhar para o todo e para o ponto importante. | Vídeo assistido; tarefa à vista. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. Uma ideia pode virar um jogo | Apresentar a criação de jogos, o ciclo de trabalho e a programação com blocos. |
+| 2. Uma regra, um teste e um resultado | Mostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável. |
+| 3. O que a demonstração permite perceber | Relacionar ações observadas às habilidades, à agência e à investigação de problemas. |
 
-**Ferramenta:** escrever com o filho uma rotina da casa em forma de regra, e usar as três perguntas quando algo der errado.
+**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
+
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A apostila e o resgate do presente não são critérios de conclusão.

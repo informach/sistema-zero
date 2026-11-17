@@ -1,5 +1,5 @@
 /**
- * Apostila do curso para pais "Transformando o vilão em aliado" (15/11/2026), pela Receita do
+ * Apostila de consulta do minicurso para pais "Transformando o vilão em aliado" (17/11/2026), pela Receita do
  * Passo a passo do projeto (`../caderno-visual/README.md`): capa com a composição fixa, abertura
  * com o mapa das aulas, uma ou duas folhas por aula com o cabeçalho simples da receita (curso
  * para pais não tem cena de jogo) e os cards de `../caderno-visual/visual.ts`. Só o nome do
@@ -62,7 +62,7 @@ type Item = {
   name?: string
   author?: string
   steps?: Array<string | [string, string]>
-  cards?: { title: string; text: string }[]
+  cards?: { pageId: string; title: string; text: string }[]
   pairs?: [string, string][]
   refs?: [string, string, string][]
   left?: { title: string; text: string }
@@ -96,7 +96,7 @@ const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${n
 const slide = (arquivo: string) =>
   `data:image/jpeg;base64,${readFileSync(resolve(scriptDir, 'slides', arquivo)).toString('base64')}`
 
-/** A regra do Cadê Todo Mundo que a Helena monta na demonstração da Aula 6. */
+/** A regra do Cadê Todo Mundo que a Helena mostra na demonstração da Aula 3. */
 const B = criarBlocos([...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks])
 const drawings: Record<string, { area: string; corpo: () => string }> = {
   'cade-regra': {
@@ -144,16 +144,15 @@ function grade(): string {
   return `<div class="grade"><svg viewBox="0 0 ${4 * casa} ${4 * casa}" role="img" aria-label="Grade 4 por 4 com a bolinha azul embaixo à esquerda, a estrela em cima à direita e dois quadrados escuros na segunda coluna">${celulas}${bolinha}${estrela}</svg><div class="grade-instrucoes">${['Subir', 'Descer', 'Ir para a direita', 'Ir para a esquerda'].map((t) => `<span>${t}</span>`).join('')}</div></div>`
 }
 
-const CORES_DO_MAPA = ['azul', 'ambar', 'roxo', 'verde', 'vermelho', 'azul', 'ambar']
-
 function renderItem(item: Item): string {
   const text = item.text ?? ''
   if (item.kind === 'map')
     return `<h3 class="titulo-secao">${item.title ?? ''}</h3><div class="mapa">${(item.cards ?? [])
-      .map(
-        (c, i) =>
-          `<div class="mapa-card mapa-card--${CORES_DO_MAPA[i % CORES_DO_MAPA.length]}"><span class="mapa-numero">${i + 1}</span><div><h3>${c.title}</h3><p>${c.text}</p></div></div>`,
-      )
+      .map((c, i) => {
+        const destino = pages.find((page) => page.id === c.pageId)
+        if (!destino) throw new Error(`Página do mapa não existe: ${c.pageId}`)
+        return `<div class="mapa-card mapa-card--${destino.theme ?? 'azul'}"><span class="mapa-numero">${i + 1}</span><div><h3>${c.title}</h3><p>${c.text}</p></div></div>`
+      })
       .join('')}</div>`
   if (item.kind === 'box')
     return caixa({
@@ -200,7 +199,7 @@ function renderItem(item: Item): string {
     return `<div class="referencias">${(item.refs ?? [])
       .map(
         ([autores, assunto, onde]) =>
-          `<div class="referencia"><h3>${autores}</h3><p>${assunto}</p><p class="referencia-onde">${onde}</p></div>`,
+          `<div class="referencia"><h3>${autores}</h3><p>${assunto}</p><p class="referencia-onde">${/^doi\.org\/10\.[a-z0-9./-]+$/i.test(onde) ? `<a href="https://${onde}">${onde}</a>` : onde}</p></div>`,
       )
       .join('')}</div>`
   throw new Error(`Item desconhecido na apostila: ${item.kind}`)
@@ -239,8 +238,8 @@ const cover = capaHtml({
   iconeSelo: 'livro',
   linha1: 'Transformando',
   linha2: 'o vilão em aliado',
-  frase: 'Como a tela que o seu filho já usa pode treinar habilidades para a vida.',
-  fraseBaixo: 'Um curso para pais, em sete aulas curtas.',
+  frase: 'Como criar pode colocar habilidades cognitivas para a vida em prática.',
+  fraseBaixo: 'Um minicurso para pais, em seis aulas.',
   tema: 'capa--vilao',
   selo: material,
 })
@@ -301,6 +300,7 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .referencia h3 { font-size: 12pt; margin-bottom: .8mm; }
 .referencia p { font-size: 10pt; font-weight: 600; line-height: 1.4; }
 .referencia-onde { margin-top: .6mm; color: var(--destaque); font-weight: 800 !important; }
+.content a { color: var(--destaque); text-decoration: underline; text-underline-offset: .15em; overflow-wrap: anywhere; }
 [data-id="abertura"] .content { gap: 3mm; }
 `
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Apostila do curso - ${curso}</title><style>${cssDoCaderno(fontes)}\n${cursoCss}</style></head><body>${cover}${folhas.join('\n')}</body></html>`

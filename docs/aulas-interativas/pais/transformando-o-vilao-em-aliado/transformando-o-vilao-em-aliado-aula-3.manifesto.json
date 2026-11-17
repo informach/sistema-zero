@@ -2,92 +2,71 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-3",
-  "title": "Programar é organizar a vida",
+  "title": "Como criar jogos coloca isso em prática",
   "blocks": [
     {
       "key": "video-a3-rotina",
-      "plannedVideo": "Título: Você já programa em casa\n\nBlocos coloridos em vez da tela preta, a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO, a sequência do banho e a causa e consequência. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1."
+      "plannedVideo": "Título: Uma ideia pode virar um jogo\n\nApresentar a criação de jogos, o ciclo de trabalho e a programação com blocos. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
     },
     {
       "key": "video-a3-caminho",
-      "plannedVideo": "Título: Você consegue programar este caminho?\n\nA grade 4 por 4, da bolinha azul até a estrela, sem passar pelos quadrados escuros. A tela fica parada no fim para a pessoa pensar antes do quiz. Fala completa no roteiro, Parte 2."
-    },
-    {
-      "key": "quiz-a3",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 50,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Na grade, a bolinha azul está na linha de baixo, à esquerda, e a estrela na linha de cima, à direita. Os quadrados escuros ficam na segunda coluna, nas duas linhas do meio. Qual sequência leva a bolinha até a estrela?",
-            "choices": [
-              { "id": "a", "label": "Subir, subir, subir, direita, direita, direita." },
-              { "id": "b", "label": "Direita, subir, subir, subir, direita, direita." },
-              { "id": "c", "label": "Subir, direita, subir, direita, subir, direita." }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. As outras duas sequências batem num quadrado escuro. E existe outro caminho certo: ir pela direita até o fim e só depois subir. Se você errou, tudo bem: é disso que a próxima parte fala."
-          }
-        ]
-      }
+      "plannedVideo": "Título: Uma regra, um teste e um resultado\n\nMostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
     },
     {
       "key": "video-a3-erro",
-      "plannedVideo": "Título: E se a primeira tentativa não funcionar?\n\nA resposta do caminho, observar, mudar uma instrução e testar de novo, o olhar para o todo e para o ponto importante, e a ferramenta da rotina em forma de regra. Fala completa no roteiro, Parte 4."
+      "plannedVideo": "Título: O que a demonstração permite perceber\n\nRelacionar ações observadas às habilidades, à agência e à investigação de problemas. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 3. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
     },
     {
-      "key": "para-casa-a3",
+      "key": "resumo-a3",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para fazer esta semana\n\nEscolham juntos uma rotina da casa e escrevam como regra:\n\n- **Quando** chegar da escola,\n- **se** tiver lição,\n- **então** lanchar, fazer a lição e só depois brincar.\n\nE quando algo der errado no dia a dia, experimente as três perguntas: **onde parou? O que dá para mudar? Vamos tentar de novo?**"
+        "markdown": "## Para consultar\n\nImaginar, planejar, criar, testar, melhorar e compartilhar. A demonstração mostra a participação de quem cria; o responsável apenas acompanha."
       }
     }
   ],
   "sections": [
     {
       "key": "rotina",
-      "title": "Você já programa em casa",
-      "objective": "Entender programar como organizar passos, com a mesma lógica da rotina da casa, e ver a causa e a consequência que o jogo ensina.",
+      "title": "Uma ideia pode virar um jogo",
+      "objective": "Apresentar a criação de jogos, o ciclo de trabalho e a programação com blocos.",
       "intent": "explanation",
       "blockKeys": ["video-a3-rotina"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-rotina"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-rotina"]
+      }
     },
     {
       "key": "caminho",
-      "title": "Você consegue programar este caminho?",
-      "objective": "Viver na prática o que a criança vive ao programar: montar uma sequência que leve a bolinha até a estrela.",
-      "intent": "application",
+      "title": "Uma regra, um teste e um resultado",
+      "objective": "Mostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável.",
+      "intent": "explanation",
       "blockKeys": ["video-a3-caminho"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-caminho"] }
-    },
-    {
-      "key": "caminho-resposta",
-      "title": "Qual é o seu caminho?",
-      "objective": "Conferir a sequência pensada e o que fazer quando a primeira tentativa não funciona.",
-      "intent": "application",
-      "blockKeys": ["quiz-a3"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-a3"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-caminho"]
+      }
     },
     {
       "key": "erro",
-      "title": "E se a primeira tentativa não funcionar?",
-      "objective": "Ver o erro como pista e levar o observar, ajustar e testar para a rotina da casa.",
+      "title": "O que a demonstração permite perceber",
+      "objective": "Relacionar ações observadas às habilidades, à agência e à investigação de problemas.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-erro", "para-casa-a3"],
+      "blockKeys": ["video-a3-erro", "resumo-a3"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-erro"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-erro"]
+      }
     }
-  ]
+  ],
+  "retireBlockKeys": ["para-casa-a3", "quiz-a3"]
 }

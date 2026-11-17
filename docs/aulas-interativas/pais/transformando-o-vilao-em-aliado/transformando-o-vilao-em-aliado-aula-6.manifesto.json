@@ -2,42 +2,22 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-6",
-  "title": "Da criação à conversa, e o primeiro passo",
+  "title": "Uma oportunidade para experimentar com seu filho",
   "blocks": [
     {
       "key": "video-a6-conversa",
-      "plannedVideo": "Título: O jogo vira assunto na mesa de casa\n\nEntrar no mundo da criança, o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle), as quatro perguntas e a história do André. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1."
+      "plannedVideo": "Título: A criança cria, a família acompanha\n\nExplicar expectativas, participação do responsável e acesso ao ambiente sem transformar a apresentação em um tour. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+    },
+    {
+      "key": "video-a6-primeiro-passo",
+      "plannedVideo": "Título: O presente para conhecer essa possibilidade\n\nApresentar o Cadê Todo Mundo como experiência prática posterior, com acesso direto e sem avaliação. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
     },
     {
       "key": "perguntas-a6",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para a mesa de casa\n\nPerguntas sobre o caminho, e não só sobre nota ou tempo de tela. Você não precisa saber programar:\n\n- Me mostra o que você criou?\n- O que foi mais divertido?\n- O que você precisou mudar?\n- O que você vai inventar depois?"
+        "markdown": "## Para consultar\n\nO Cadê Todo Mundo é a oportunidade de experimentar depois do minicurso. O responsável acompanha conforme a necessidade da criança; a apostila é consulta opcional.\n\nO presente é a experiência prática, depois do minicurso. Não é necessário emitir certificado para acessá-lo. Depois de assistir às partes, use **Baixar meu certificado** para registrar a conclusão do minicurso."
       }
-    },
-    {
-      "key": "quiz-a6",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 50,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Você chega em casa e quer conversar com o seu filho sobre o que ele criou. Qual pergunta abre mais conversa?",
-            "choices": [
-              { "id": "a", "label": "Quanto tempo você ficou no computador hoje?" },
-              { "id": "b", "label": "Me mostra o que você criou? O que você precisou mudar?" },
-              { "id": "c", "label": "Já terminou? Então pode desligar." }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "Perguntas sobre o caminho convidam a criança a mostrar e a explicar, e é aí que a conversa acontece."
-          }
-        ]
-      }
-    },
-    {
-      "key": "video-a6-primeiro-passo",
-      "plannedVideo": "Título: A sua palavra e o primeiro passo\n\nO ciclo de criação, o vídeo das crianças contando o que sentem ao criar, a palavra guardada na Aula 1, a ideia que fica e o presente: o Cadê Todo Mundo por 7 dias. Fala completa no roteiro, Parte 3."
     },
     {
       "key": "presente",
@@ -66,43 +46,39 @@
         "title": "Certificado de conclusão",
         "introLine": "Certificamos que",
         "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
-        "bodyText": "Aprendeu como a tela que a família já usa pode virar um treino de habilidades para a vida, criando em vez de só consumir."
+        "bodyText": "Conheceu possibilidades de usar a tela para criar e praticar habilidades cognitivas para a vida, com participação da família."
       }
     }
   ],
   "sections": [
     {
       "key": "conversa",
-      "title": "O jogo vira assunto na mesa de casa",
-      "objective": "Usar a criação do filho como porta de conversa em família, com perguntas sobre o caminho.",
+      "title": "A criança cria, a família acompanha",
+      "objective": "Explicar expectativas, participação do responsável e acesso ao ambiente sem transformar a apresentação em um tour.",
       "intent": "explanation",
-      "blockKeys": ["video-a6-conversa", "perguntas-a6"],
+      "blockKeys": ["video-a6-conversa"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a6-conversa"] }
-    },
-    {
-      "key": "confira-a6",
-      "title": "Confira o que ficou",
-      "objective": "Aplicar a ideia da aula a uma situação.",
-      "intent": "application",
-      "blockKeys": ["quiz-a6"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-a6"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a6-conversa"]
+      }
     },
     {
       "key": "primeiro-passo",
-      "title": "A sua palavra e o primeiro passo",
-      "objective": "Retomar a palavra guardada na primeira aula, receber o presente para a família viver isso na prática e emitir o certificado.",
+      "title": "O presente para conhecer essa possibilidade",
+      "objective": "Apresentar o Cadê Todo Mundo como experiência prática posterior, com acesso direto e sem avaliação.",
       "intent": "delivery",
-      "blockKeys": ["video-a6-primeiro-passo", "presente", "certificado"],
+      "blockKeys": ["video-a6-primeiro-passo", "perguntas-a6", "presente", "certificado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a6-primeiro-passo", "certificado"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a6-primeiro-passo", "certificado"]
+      }
     }
-  ]
+  ],
+  "retireBlockKeys": ["quiz-a6"]
 }

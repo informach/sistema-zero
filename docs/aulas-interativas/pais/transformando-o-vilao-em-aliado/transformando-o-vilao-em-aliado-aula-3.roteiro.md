@@ -1,71 +1,93 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-3
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca. A Parte 1 tem uma gravação curta de tela do Estúdio com blocos coloridos; a Parte 2 mostra a grade do desafio.
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
 
-## Parte 1. Você já programa em casa
+## Parte 1. Uma ideia pode virar um jogo
 
 **Clipe:** `video-a3-rotina`
 
-**Na tela:** Helena na câmera. Alguns segundos de blocos coloridos sendo encaixados no Estúdio quando ela fala dos bloquinhos. Uma tela com QUANDO, SE e ENTÃO, primeiro com a rotina da manhã e depois com a porta e a chave. Câmera de novo na parte da causa e da consequência.
+**Na tela:** No "Criar um jogo reúne várias dessas ações", apresentar um jogo e sua regra [na edição: jardim do Cadê Todo Mundo e blocos]. No "Existe um ciclo nesse trabalho", mostrar as seis ações [na edição: imaginar, planejar, criar, testar, melhorar e compartilhar]. No "Na próxima parte", mostrar o jardim que será usado na demonstração [na edição: projeto preparado].
+
+**Depoimento opcional (não gravar):** Um corte curto de Rafael sobre criar o próprio jogo ou de Fernando explicando sua regra pode entrar depois de "Quem cria precisa transformar essas intenções em regras." Escolher um deles, com nome e vínculo, sem interromper a demonstração seguinte.
 
 **Fala da Helena:**
 
 ```text
-Quando eu falo que criar um jogo envolve programar, muita gente imagina uma tela preta cheia de letras e números. Isso ficou no passado. Hoje a criança programa arrastando bloquinhos coloridos. O jeito de pensar é o mesmo dos programadores, só que muito mais fácil de expressar.
+Criar um jogo reúne várias dessas ações numa experiência que pode ter muito significado para a criança. Ela imagina uma situação e precisa pensar no que o jogador vai fazer, quais regras vão existir e como conferir se funcionaram.
 
-E eu tenho uma boa notícia: você já programa em casa. Só não chama assim. Se você já montou uma rotina visual com o seu filho, um quadro de tarefas, a sequência da manhã, você escreveu um algoritmo. Olha só. Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes.
+O jogo pode começar com um jardim e animais escondidos. O objetivo é encontrar os animais. Mas o que acontece quando o jogador toca num esconderijo? Como ele sabe quantos já encontrou? Quem cria precisa transformar essas intenções em regras.
 
-Num jogo, é a mesma lógica. Quando o personagem tocar na porta, se ele estiver com a chave, então ele pode entrar.
+Para começar, não é preciso escrever linhas de código. É possível montar regras com blocos visuais. Eles ajudam a expressar um pensamento: quando acontecer isto, faça aquilo.
 
-Programar é isso: organizar passos para chegar num objetivo, criar regras, fazer escolhas e testar o resultado.
+Essa lógica também é conhecida fora do computador. Antes de sair, eu preciso pegar o que vou levar. Se a porta estiver trancada, preciso da chave. Eu organizo ações e considero condições para chegar a um resultado. No jogo, vou expressar essas relações de um jeito que o computador consiga executar.
 
-Repare que a ordem importa. Primeiro o personagem toca na porta, depois confere a chave, e só então entra. Na vida também: eu só entro no banheiro se abrir a porta, só tomo banho se tirar a roupa antes, e só me visto de novo depois de me enxugar. Quando a criança organiza passos no jogo, ela treina a mesma sequência que usa todo dia. E muitas vezes ela traz o exemplo de volta: fui abrir a porta, estava trancada, e lembrei que a chave estava na mochila. Isso é resolver um problema.
+Por exemplo: quando o personagem tocar na porta, se estiver com a chave, ele pode entrar. Uma intenção virou uma regra com uma condição. Na demonstração, vamos começar com uma regra ainda mais simples: tocar num esconderijo para revelar o que está atrás.
 
-Tem mais uma coisa que a programação ensina, e que eu acho preciosa: causa e consequência. Muita criança vive como se tudo acontecesse com ela. O jogo é chato, a chuva estragou, a culpa é do outro. Imagine um esconde-esconde num jardim. Quando ela decide que o esconderijo some ao ser tocado, e vê o esconderijo sumir, foi ela que causou aquilo. Ela é quem faz acontecer. E se ela programa um placar, aprende que quanto mais bichinhos acha, mais pontos tem. Na vida, quanto mais eu treino, melhor eu jogo bola. Clique em Próxima parte.
+Existe um ciclo nesse trabalho. Imaginar o que quero fazer. Planejar como as partes se relacionam. Criar as regras. Testar o que acontece. Melhorar o que ainda não corresponde à ideia. E compartilhar, para outra pessoa conhecer e experimentar.
+
+Essas etapas se misturam e podem se repetir. Um teste pode mostrar que preciso rever o plano. A pessoa que joga pode descobrir uma dificuldade que eu ainda não tinha percebido.
+
+Na próxima parte, você vai acompanhar uma demonstração pequena. Eu vou mostrar uma regra sendo construída e o que muda quando a gente testa. Não é preciso abrir a ferramenta ou fazer junto. O objetivo é enxergar o raciocínio de quem está criando. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes. A rotina da sua casa já é um algoritmo.
-
-## Parte 2. Você consegue programar este caminho?
+## Parte 2. Uma regra, um teste e um resultado
 
 **Clipe:** `video-a3-caminho`
 
-**Na tela:** A grade 4 por 4: a bolinha azul na linha de baixo, à esquerda, a estrela na linha de cima, à direita, e dois quadrados escuros na segunda coluna, nas duas linhas do meio. As quatro instruções aparecem ao lado. A tela fica parada no fim, para a pessoa pensar.
+**Na tela:** No "Aqui já temos um jardim", mostrar o projeto preparado [na edição: jardim com animais, esconderijos e Achados em zero]. No "Eu clico neste esconderijo", clicar uma vez no esconderijo ainda sem regra [na edição: clique sem efeito]. No "Eu acrescento uma regra", mostrar o evento e a ação de visibilidade [na edição: Quando clicar/tocar num sprite do grupo esconderijos chamá-lo de escolhido; Deixar o sprite escolhido com 0 % de visibilidade]. No "Agora eu testo", clicar e mostrar o animal [na edição: esconderijo invisível, Achados ainda em zero]. No "Eu acrescento a ação de somar um", mostrar a nova ação no mesmo evento [na edição: Somar 1 em variável achados]. No "Recomeço o jogo para testar", reiniciar e clicar uma vez em cada esconderijo [na edição: achados em zero, depois um e dois, sem repetir clique no mesmo esconderijo]. No "Eu decidi o que queria que acontecesse", manter o resultado à vista [na edição: regra e jogo lado a lado].
+
+**Preparação da captura (não gravar):** Usar uma versão reduzida do jardim do Cadê Todo Mundo, com dois animais sob dois esconderijos separados. Ao iniciar, criar os sprites, deixar os esconderijos à frente, inserir somente os esconderijos no grupo esconderijos, iniciar a variável achados em zero e manter o placar ligado a essa variável durante a execução. Essas partes já vêm preparadas e não são alteradas durante a explicação. Registrar três estados do mesmo projeto: sem evento de clique; evento que torna o escolhido invisível; mesmo evento com a soma de um em achados. Parar e executar novamente a cada mudança, restaurando esconderijos e contagem. Na versão final, tocar uma vez em cada esconderijo, com o jogo em execução, para obter zero, um e dois. Não apresentar como montagem integral nem pedir que o responsável siga paletas. A captura é manual e recebe a fala em edição.
+
+**Conferência antes da gravação (não gravar):** Aguardar o primeiro desenho do jardim antes de clicar; testar os três estados e conferir que o placar exibe a variável atual. Sem regra, o clique não faz nada; com visibilidade, revela sem contar; com a soma, revela e conta. Conferir também que tocar no lugar de um esconderijo já invisível não aumenta a contagem. No runtime atual, um sprite com visibilidade zero não recebe esse clique. Os rótulos foram conferidos nas definições reais: sz_g2d_on_group_click em blockCatalogText.ts, sz_g2d_set_opacity em blockCatalogFundamentals.ts e sz_js_var_increment em blockly/blocks/js.ts, no pacote studio. A apostila usa esses mesmos tipos e cores.
 
 **Fala da Helena:**
 
 ```text
-Agora é a sua vez de programar. Olhe a grade. A bolinha azul precisa chegar até a estrela sem passar pelos quadrados escuros. As instruções possíveis são subir, descer, ir para a direita e ir para a esquerda. Quais instruções você daria, uma depois da outra?
+Aqui já temos um jardim, dois animais escondidos e um placar. Vou começar com uma ideia bem pequena: quando eu tocar no esconderijo, quero descobrir o animal que está atrás.
 
-É exatamente isso que o seu filho faz quando cria um jogo: passa um passo a passo para o computador, e o computador executa.
+Eu clico neste esconderijo. Nada aconteceu. O desenho já está aqui, mas ainda falta uma regra para responder ao clique.
 
-Pense com calma. Depois clique em Próxima parte e responda. Se a primeira tentativa não der certo, tudo bem. É justamente disso que a gente fala logo depois.
+O que eu preciso dizer ao jogo? Primeiro, reconhecer que alguém tocou num esconderijo. Depois, fazer aquele esconderijo ficar invisível. Assim, o animal que já está atrás vai aparecer.
+
+Eu acrescento uma regra: quando clicar num esconderijo, deixar esse esconderijo com zero por cento de visibilidade.
+
+Agora eu testo. O esconderijo sumiu e o animal apareceu. O jogo respondeu à regra que eu construí.
+
+Só que repare no placar. Continua em zero. Eu encontrei um animal, mas o jogo não está contando. Por quê? Porque a regra que eu fiz só manda esconder. Ela ainda não manda contar.
+
+Então preciso relacionar a intenção com o que já foi construído. Quero que, ao encontrar um animal, o placar aumente um. A mudança vai entrar dentro desse mesmo acontecimento, junto da ação de esconder.
+
+Eu acrescento a ação de somar um na variável que guarda os achados.
+
+Recomeço o jogo para testar desde o início. O placar está em zero. Clico num esconderijo: o animal aparece e o placar vai para um. Clico no outro: aparece o outro animal e o placar vai para dois.
+
+Eu decidi o que queria que acontecesse, organizei uma regra, observei o resultado e acrescentei o que faltava. O placar não contar não queria dizer que eu era incapaz. Mostrava uma parte da ideia que ainda não estava expressa no programa.
+
+Quem apenas olhar o jogo pronto vai ver um esconde-esconde. Quem participa da criação precisa pensar nessas relações para fazer o esconde-esconde funcionar. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Da bolinha azul até a estrela, sem passar pelos quadrados escuros. Pense e responda na próxima parte.
-
-## Parte 3. Qual é o seu caminho? (quiz, sem vídeo)
-
-O quiz `quiz-a3` fica numa parte própria, sem gravação. A grade é descrita no enunciado.
-
-## Parte 4. E se a primeira tentativa não funcionar?
+## Parte 3. O que a demonstração permite perceber
 
 **Clipe:** `video-a3-erro`
 
-**Na tela:** A grade com as setas verdes do caminho certo. Os três passos (observar, mudar uma instrução, testar de novo) acendem quando ela os lê. Câmera no fechamento e na tarefa.
+**Na tela:** No "Na demonstração", mostrar os três estados [na edição: clique sem efeito, esconderijo que some, placar que conta]. No "Existe também uma relação entre decisão e consequência", destacar a regra e o efeito correspondente [na edição: ação programada e resultado]. No "É isso que torna a criação", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Um caminho que chega é subir, subir, subir e depois direita, direita, direita. E existe outro: ir para a direita até o fim e só depois subir. Agora, se você começou com uma casa para a direita e logo tentou subir, bateu no quadrado escuro. E aí?
+Na demonstração, o resultado apareceu aos poucos. Para chegar nele, foi preciso manter uma intenção em mente, organizar ações e comparar o que eu queria com o que realmente aconteceu.
 
-No jogo e na programação, a gente faz três coisas. Primeiro, observar: onde a bolinha parou? O que aconteceu de diferente? Depois, mudar uma instrução, uma coisa por vez, para entender o efeito. E testar de novo.
+Quando o esconderijo sumiu, mas o placar não contou, eu precisei separar as duas coisas. Uma parte funcionou. A outra ainda precisava ser construída. Esse olhar evita tratar toda dificuldade como se tudo tivesse dado errado.
 
-O erro vira uma pista. O computador não fica bravo e não julga. Ele só mostra o que aconteceu. Para a criança que sofre muito com o erro, isso pode ser um treino seguro, com pausas e com desafios menores quando for preciso.
+Eu também precisei formular uma hipótese: se a contagem deve acontecer no clique, a instrução de contar precisa estar ligada a esse acontecimento. Depois do ajuste, testei para conferir. A resposta apareceu no próprio resultado.
 
-E repare que, para achar o caminho, você precisou olhar a grade inteira e, ao mesmo tempo, prestar atenção no ponto que importava. A criança faz isso o tempo todo: quando entra na sala de aula, ela precisa olhar tudo, as carteiras, os colegas, se a professora está falando, e depois focar no lugar dela. O jogo treina esse olhar.
+Existe também uma relação entre decisão e consequência. A criança percebe que uma escolha dela muda o que acontece no jogo. Ela participa como alguém que pode agir, observar o efeito e fazer outra escolha.
 
-Para esta semana, eu tenho uma ferramenta: escolham juntos uma rotina da casa e escrevam como regra. Quando chegar da escola, se tiver lição, então lanchar, fazer a lição e só depois brincar. E quando algo der errado no dia a dia, experimente as três perguntas: onde parou? O que dá para mudar? Vamos tentar de novo?
+É claro que nem tudo na vida responde como um programa. Mas essa experiência permite conversar sobre um ponto concreto: o que eu fiz, o que aconteceu e o que posso tentar de outro jeito?
+
+Observe também que o jardim já estava preparado. Começar com apoio e com algumas partes prontas não retira a participação da criança. Pode permitir que ela se concentre numa decisão de cada vez, compreenda aquela relação e depois consiga fazer algo mais complexo.
+
+O que queremos preservar é esse espaço para pensar. Uma explicação pode ajudar a conhecer um caminho. A criança pode acompanhar, testar e depois fazer uma mudança que entende. Se apenas repetir gestos sem compreender o resultado, a oportunidade fica menor.
+
+É isso que torna a criação de jogos uma possibilidade interessante para praticar habilidades cognitivas para a vida. O jogo dá uma situação concreta para planejar, escolher, investigar e ajustar. Cada criança vai precisar de desafios e apoios que façam sentido para ela. Na próxima aula, vamos conversar sobre esse começo. Clique em Concluir aula para continuar.
 ```
-
-**Recado na página (não gravar):** Observar, mudar uma instrução, testar de novo. O erro é uma pista, dentro e fora da tela.

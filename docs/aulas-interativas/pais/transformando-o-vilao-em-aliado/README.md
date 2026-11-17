@@ -1,43 +1,68 @@
 # Transformando o vilão em aliado
 
-Minicurso gratuito para pais, com a Helena na câmera. São seis aulas curtas, de 6 a 10 minutos (a confirmar depois da gravação), em **Cursos para pais**, na área dos pais do Kids. A família recebe o curso de presente por uma campanha, e no fim ganha o Cadê Todo Mundo por 7 dias.
+Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. A revisão de 17/11/2026 implementa a proposta aprovada: uma conversa explicativa que pode ser acompanhada em uma sentada. São seis aulas; a duração resulta da explicação e da edição, sem meta fixa de minutos.
 
-**O caminho do curso:** da preocupação ao primeiro passo. Cada aula muda uma crença do responsável, traz uma prova (exemplo, depoimento ou pesquisa), entrega uma ferramenta para usar em casa e tem um quiz de situação.
+**O propósito:** ajudar a família a compreender que a tela pode ser usada para criar e colocar habilidades cognitivas para a vida em prática. A criação de jogos é apresentada depois da explicação das habilidades, como uma possibilidade concreta. O Cadê Todo Mundo por sete dias é a experiência prática, depois do minicurso.
+
+O responsável assiste a explicações, exemplos e uma demonstração. Não há tarefa semanal, quiz, exercício para entregar nem dependência de participação do filho para continuar. A apostila é consulta opcional. As partes são concluídas pelos vídeos; na última, a emissão do certificado registra a conclusão conforme o contrato da plataforma. O presente está disponível independentemente dessa emissão.
 
 | Material | Arquivo |
 | --- | --- |
-| Título, descrições, módulo e aulas | [Módulos](modulos.md) |
-| Base de conhecimento, depoimentos, referências e cuidados (uso interno) | [Fontes](fontes.md) |
-| Apostila do curso para consultar ou anexar | [PDF da apostila](apostila.pdf) |
+| Título, descrições e organização | [Módulos](modulos.md) |
+| Fontes, argumentos recuperados e produção | [Fontes](fontes.md) |
+| Consulta opcional | [Apostila](apostila.pdf) |
+| Ajustes e conferências desta revisão | [Revisão final](revisao-final-2026-11-17.md) |
 
-Cada aula tem **conteúdo** (objetivo, crença que muda, estrutura e ferramenta), **roteiro** (a fala completa da Helena e o que aparece na tela) e **manifesto** (o JSON para importar no Admin). Este curso não tem fala de ElevenLabs: a Helena grava.
-
-| Aula | Conteúdo | Roteiro | Manifesto |
+| Aula | Conteúdo | Roteiro | Importação no Admin |
 | --- | --- | --- | --- |
-| 1. A pergunta certa sobre telas | [Abrir](transformando-o-vilao-em-aliado-aula-1.md) | [Abrir](transformando-o-vilao-em-aliado-aula-1.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-1.manifesto.json) |
-| 2. Consumir ou criar: o que muda por dentro | [Abrir](transformando-o-vilao-em-aliado-aula-2.md) | [Abrir](transformando-o-vilao-em-aliado-aula-2.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-2.manifesto.json) |
-| 3. Programar é organizar a vida | [Abrir](transformando-o-vilao-em-aliado-aula-3.md) | [Abrir](transformando-o-vilao-em-aliado-aula-3.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-3.manifesto.json) |
-| 4. O interesse do seu filho é a porta de entrada | [Abrir](transformando-o-vilao-em-aliado-aula-4.md) | [Abrir](transformando-o-vilao-em-aliado-aula-4.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-4.manifesto.json) |
-| 5. Quando fica difícil: foco, erro e o seu papel | [Abrir](transformando-o-vilao-em-aliado-aula-5.md) | [Abrir](transformando-o-vilao-em-aliado-aula-5.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-5.manifesto.json) |
-| 6. Da criação à conversa, e o primeiro passo | [Abrir](transformando-o-vilao-em-aliado-aula-6.md) | [Abrir](transformando-o-vilao-em-aliado-aula-6.roteiro.md) | [JSON](transformando-o-vilao-em-aliado-aula-6.manifesto.json) |
+| 1. A tela pode ter outros usos | [Conteúdo](transformando-o-vilao-em-aliado-aula-1.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-1.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-1.manifesto.json) |
+| 2. O que uma criança exercita quando cria | [Conteúdo](transformando-o-vilao-em-aliado-aula-2.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-2.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-2.manifesto.json) |
+| 3. Como criar jogos coloca isso em prática | [Conteúdo](transformando-o-vilao-em-aliado-aula-3.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-3.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-3.manifesto.json) |
+| 4. Interesse, dificuldade e apoio para continuar | [Conteúdo](transformando-o-vilao-em-aliado-aula-4.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-4.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-4.manifesto.json) |
+| 5. O que essa experiência pode levar para a vida | [Conteúdo](transformando-o-vilao-em-aliado-aula-5.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-5.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-5.manifesto.json) |
+| 6. Uma oportunidade para experimentar com seu filho | [Conteúdo](transformando-o-vilao-em-aliado-aula-6.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-6.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-6.manifesto.json) |
 
-## Como gravar
+## Gravação e edição
 
-- Uma gravação por parte com vídeo, com o nome do clipe do roteiro (`video-a1-pergunta` e assim por diante): 13 clipes no total. As partes de quiz não têm gravação.
-- A fala do roteiro é para teleprompter. Dá para falar com as próprias palavras, desde que nenhuma ideia se perca.
-- **Na tela** diz o que aparece em cada momento e onde entra cada vídeo de depoimento (ver [Fontes](fontes.md)). Todo depoimento leva legenda com nome e vínculo ("Débora, mãe do Bernardo"), para não confundir com a Débora, filha da Helena.
-- A Aula 3 tem alguns segundos de gravação de tela do Estúdio (blocos coloridos) e a grade do desafio do caminho.
+- São **13 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs nem intervenções de personagens.
+- O **Na tela** de cada parte cita trechos da fala atual e indica as imagens a inserir. A captura da demonstração é manual e tem preparação descrita na Aula 3. O responsável acompanha o vídeo; não recebe uma montagem para executar.
+- Os depoimentos são opcionais e curtos. Escolher um relato que sustente o argumento da parte, em vez de reunir vários relatos equivalentes. O roteiro funciona sem os cortes. Identificar nome e vínculo, distinguindo Débora, mãe do Bernardo, da filha da Helena.
+- A autorização da Isabela para uma apresentação não deve ser tomada como autorização para o curso. Até confirmar, não inserir imagem ou depoimento dela.
+- Há seis aulas, mas os 13 identificadores de clipe foram preservados. Alguns nomes técnicos antigos já não descrevem o assunto novo: usar os títulos abaixo e gravar novamente o conteúdo antes de vincular mídia.
 
-## Como publicar
+| Aula | Chave preservada | Título da parte nesta revisão |
+| --- | --- | --- |
+| 1 | `video-a1-pergunta` | O que acontece dentro da tela |
+| 1 | `video-a1-tres-usos` | Assistir, jogar e criar |
+| 2 | `video-a2-por-dentro` | Da ideia ao que precisa ser feito |
+| 2 | `video-a2-autoria` | Ter uma intenção e participar das escolhas |
+| 3 | `video-a3-rotina` | Uma ideia pode virar um jogo |
+| 3 | `video-a3-caminho` | Uma regra, um teste e um resultado |
+| 3 | `video-a3-erro` | O que a demonstração permite perceber |
+| 4 | `video-a4-interesse` | Um motivo para querer tentar |
+| 4 | `video-a4-escola` | O apoio acompanha a necessidade |
+| 5 | `video-a5-foco` | Quando um conhecimento ganha uma função |
+| 5 | `video-a5-suporte` | Criar também pode abrir uma conversa |
+| 6 | `video-a6-conversa` | A criança cria, a família acompanha |
+| 6 | `video-a6-primeiro-passo` | O presente para conhecer essa possibilidade |
 
-1. No Admin, criar o curso com audiência Kids e **Para quem: Pais** (fora da Jornada, só gravado). Título e descrições em [Módulos](modulos.md).
-2. Criar as seis aulas e importar cada manifesto. Os vídeos entram como vídeo planejado; depois, vincular cada gravação.
-3. Anexar a [apostila](apostila.pdf) no bloco de materiais da Aula 1 (`apostila`, com prévia em livro).
-4. **Presente do fim (Aula 6):** o bloco `presente` já leva o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. A campanha `vilao-em-aliado-cade` (público Kids, oferta `cade-todo-mundo-7-dias`, ativa até 31/12/2027) precisa existir em Embaixadores no ambiente onde o curso for publicado.
-5. **O minicurso de presente:** criar no catálogo uma oferta do curso (acesso sem prazo, sem Mural) e uma campanha em Embaixadores que dê essa oferta de presente.
+## Publicação
 
-## Pendências de produção
+1. No Admin, usar audiência Kids e **Para quem: Pais**, fora da Jornada, no formato gravado. Slug do curso e slugs das seis aulas foram mantidos.
+2. Atualizar títulos e descrições conforme [Módulos](modulos.md) e importar os seis manifestos. Conferir a substituição da estrutura anterior: não podem restar partes de quiz ou tarefas antigas. As seções removidas tinham chaves `confira-a1`, `confira-a2`, `caminho-resposta`, `confira-a4`, `confira-a5` e `confira-a6`.
+3. Os vídeos estão como `plannedVideo`. Vincular as novas gravações, sem reutilizar uma gravação anterior só porque a chave é a mesma.
+4. Anexar a apostila revisada ao bloco `apostila` da Aula 1, com prévia em livro.
+5. Na Aula 6, o bloco `presente` mantém o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. Conferir no ambiente de destino a campanha `vilao-em-aliado-cade`, a oferta `cade-todo-mundo-7-dias` e as condições reais do resgate. O presente não depende de certificado.
+6. O bloco `certificado` foi conservado como registro de conclusão da última parte, conforme a regra da plataforma. A família não precisa baixar materiais, fazer uma criação ou resgatar o presente para concluir. O resgate é independente do certificado.
 
-- Gravar os 13 clipes e editar com os depoimentos.
-- Confirmar a autorização da família da Isabela para o vídeo num curso.
-- Arte final da capa da apostila e do curso: a provisória usa uma ilustração de 880 px; a receita pede pelo menos 1300 px de largura.
+## Estado desta entrega
+
+Fonte editorial, manifestos e apostila revistos localmente. Os 13 vídeos ainda precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores; esta revisão dos arquivos não comprova essas etapas.
+
+A capa da apostila preserva a arte existente, com 1.300 px de largura, e a composição compartilhada dos materiais do Sistema Zero. Fontes Baloo 2 e Nunito, cards com ícones, cores dos blocos do Estúdio e rodapés seguem a receita visual. O cabeçalho simples é a variação prevista para o curso de pais.
+
+## Conferência da revisão de 17/11/2026
+
+Seis manifestos conferidos com o schema e os critérios reais de publicação do core; 13 chaves de vídeo preservadas; 11 blocos antigos de tarefa/quiz retirados. Roteiros: seis aulas, 13 clipes e zero erros. Testes de linguagem da apostila aprovados. PDF com 14 páginas, layout verificado e todas as páginas inspecionadas visualmente. Não há campos para preencher ou tarefas semanais. O presente é independente da emissão do certificado.
+
+A revisão final também alinhou as cores do índice às páginas, acrescentou links clicáveis ao presente e às referências, refinou a relação com a escrita e detalhou a preparação da demonstração. A suíte completa da documentação passou com 724 testes e zero falhas. O [registro da revisão](revisao-final-2026-11-17.md) distingue essas verificações das etapas de produção e publicação ainda pendentes.

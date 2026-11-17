@@ -1,57 +1,63 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-6
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
 
-## Parte 1. O jogo vira assunto na mesa de casa
+## Parte 1. A criança cria, a família acompanha
 
 **Clipe:** `video-a6-conversa`
 
-**Na tela:** Helena na câmera. Entra o vídeo de depoimentos sobre conversa em família (Débora, Daniel e Harle) logo depois de "Veja o que contam estes pais". Uma tela com as quatro perguntas, uma por linha, quando ela as lê. Câmera na história do André. Os depoimentos têm legenda de nome e vínculo ("Débora, mãe do Bernardo").
+**Na tela:** No "Você não precisa se tornar programador", mostrar a apresentadora [na edição: câmera]. No "No Sistema Zero", mostrar a aula e a área do responsável [na edição: captura atual sem dados de família real]. No "Cada criança", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Você chega cansado do trabalho, pergunta como foi o dia, e a resposta é: bom. E acabou a conversa. Muita família vive isso todos os dias.
+Você não precisa se tornar programador para acompanhar uma experiência de criação do seu filho. Pode se interessar pela ideia, ouvir o que ele quer fazer e estar por perto quando precisar de ajuda.
 
-Agora imagine chegar e perguntar do jogo que ele está criando. Ele foge ou ele vem? Quando a gente entra no mundo da criança, ela abre a porta para o nosso. Para te mostrar o jogo, ela precisa organizar o pensamento e se esforçar para ser entendida. E vocês ganham um assunto em comum. Veja o que contam estes pais.
+Em vez de procurar apenas o jogo pronto no final, pode conhecer o caminho: o que ele tentou, o que conseguiu e o que ainda quer mudar. São coisas que podem aparecer numa conversa simples sobre o projeto.
 
-Reparou que esses pais não precisaram programar nada? O que eles fazem é perguntar, olhar e celebrar.
+Isso também ajuda a ajustar a expectativa. Uma primeira criação pode ser pequena. Descobrir como fazer um esconderijo sumir ou como mudar uma regra já pode ter bastante significado para quem está começando.
 
-Para isso, eu deixo quatro perguntas para a mesa de casa. Me mostra o que você criou? O que foi mais divertido? O que você precisou mudar? O que você vai inventar depois? São perguntas sobre o caminho, e não sobre nota ou tempo de tela.
+Com o André, a experiência de criar abriu possibilidades que a nossa família queria compartilhar com outras famílias. É uma história nossa, com as particularidades dele e de todo o apoio que recebeu. Cada criança vai ter a própria experiência.
 
-E dá para ir além do jogo. Depois que o seu filho contar o que deu errado no jogo e como ele resolveu, você pode dizer: hoje, no meu trabalho, também deu uma coisa errada. Como o seu personagem fez para consertar? Quando a criança responde, ela está levando uma estratégia do jogo para outra situação. É assim que o repertório cresce.
+No Sistema Zero, a criança encontra explicações e ferramentas de criação dentro da aula. Pode acompanhar uma parte, experimentar e voltar à explicação quando precisar. Começar com orientação permite conhecer as ferramentas antes de tentar uma ideia maior.
 
-Na minha casa, foi o jogo que abriu a porta. Quem vê o André hoje não imagina, mas ele não era de conversar. Hoje eu é que preciso pedir: calma, resume, porque ele quer falar o tempo todo sobre o que está criando. O assunto dos jogos foi o pontapé inicial, e a partir dele a gente passou a conversar sobre qualquer assunto. Clique em Próxima parte.
+A conta é do responsável, que cria o perfil da criança e acompanha pela Área dos pais. O adulto autoriza o acesso ao aparelho, e existem escolhas da família para a participação e o compartilhamento de criações. Na hora de usar, vale conhecer essas opções no próprio ambiente.
+
+O acompanhamento depende da idade e da necessidade de apoio. Para menores de nove anos, a proposta é fazer com um adulto do lado. A partir daí, a presença continua sendo ajustada ao que a criança ou o adolescente precisar.
+
+E a atividade pode ocupar uma parte do tempo de tela já combinado pela família. Os limites e as outras experiências do dia continuam fazendo parte da rotina.
+
+Cada criança pode mostrar interesse por uma parte diferente e precisar de um ritmo diferente. O que queremos oferecer é uma oportunidade de conhecer a criação com apoio, fazer escolhas e perceber o que acontece a partir delas. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Me mostra o que você criou? O que foi mais divertido? O que você precisou mudar? O que você vai inventar depois?
-
-## Parte 2. Confira o que ficou (quiz, sem vídeo)
-
-O quiz `quiz-a6` fica numa parte própria, sem gravação.
-
-## Parte 3. A sua palavra e o primeiro passo
+## Parte 2. O presente para conhecer essa possibilidade
 
 **Clipe:** `video-a6-primeiro-passo`
 
-**Na tela:** Helena na câmera. Uma tela com o ciclo de criação (imaginar, planejar, criar, testar, melhorar, compartilhar), acendendo cada passo. Entra o vídeo das crianças contando o que sentem ao criar logo depois de "Escute como as crianças se sentem". A pergunta da Aula 1 volta na tela quando ela pede para lembrar da palavra. No fim, a tela do presente.
+**Na tela:** No "A tela pode ser utilizada", mostrar a apresentadora [na edição: câmera]. No "Por isso, o presente", mostrar o jardim do Cadê Todo Mundo [na edição: imagem atual do jogo, sem antecipar uma construção completa]. No "O link do presente", destacar o material da página [na edição: O presente: Cadê Todo Mundo por 7 dias]. No "Depois de assistir às partes", mostrar o certificado na última parte [na edição: Baixar meu certificado]. No "Obrigada por acompanhar", voltar para a apresentadora [na edição: câmera].
+
+**Depoimento opcional (não gravar):** Se acrescentar ao encerramento, usar somente um corte curto de uma criança sobre a alegria ou a expressão na criação, com identificação. Inserir depois de "Não precisamos transformar cada momento em uma medida de desempenho." O corte não substitui a explicação do acesso ao presente.
 
 **Fala da Helena:**
 
 ```text
-Tudo o que a gente viu cabe num ciclo simples, que se repete a cada novo jogo. Imaginar: os personagens, o mundo e o objetivo. Planejar: o começo, o desafio e o final. Criar: montar as regras. Testar: jogar e ver o que acontece. Melhorar: ajustar o que ainda não funciona. E compartilhar: mostrar para a família e para os amigos. Esse ciclo serve para uma redação, para um trabalho da escola e, mais tarde, para a vida profissional.
+A tela pode ser utilizada para criar. E, quando a criança participa dessa criação, pode colocar em prática habilidades cognitivas para a vida: organizar uma ideia, fazer escolhas, manter informações em uso, testar, perceber um problema e buscar outro caminho.
 
-E tem uma coisa que eu não quero que se perca no meio de tantas habilidades: o prazer de criar. Escute como as crianças se sentem.
+Foi isso que acompanhamos aqui. Uma atividade que parece ser apenas um jogo pode envolver um processo de construção. O interesse da criança, a orientação e o espaço para participar fazem diferença nesse processo.
 
-Lembra da palavra que você guardou na primeira aula? A minha era autonomia. Mas, pensando bem, o que eu mais desejo para os meus filhos é que eles sejam felizes. E ser feliz, lá na frente, passa por dar conta da própria vida: pegar uma tarefa e levar até o fim, lidar com a frustração, esperar a sua vez. São habilidades que a criança pode exercitar quando cria. Pense na sua palavra agora, depois de tudo o que a gente conversou.
+O prazer de criar também importa. Conseguir mostrar alguma coisa que imaginou, brincar com o que construiu e compartilhar com alguém pode ser uma experiência muito boa. Não precisamos transformar cada momento em uma medida de desempenho.
 
-E olhe de novo o mapa da semana que você fez na primeira aula. Onde cabe um pouco de criar, dentro do tempo que já existe?
+Por isso, o presente para a sua família é uma oportunidade de conhecer essa possibilidade na prática: o Cadê Todo Mundo, no Sistema Zero.
 
-A tela não precisa ser só o lugar onde o seu filho encontra jogos. Ela também pode ser o lugar onde ele descobre que é capaz de criar os seus. O vilão pode virar aliado. Tudo depende de como a tela é usada.
+É um primeiro projeto de esconde-esconde num jardim, com explicações e ferramentas na própria aula. A criança vai conhecer como construir as regras e pode acompanhar no ritmo dela. O acesso do presente é de sete dias, gratuito e sem cartão.
 
-E, para vocês viverem isso na prática, eu tenho um presente. O seu filho pode ganhar o Cadê Todo Mundo por sete dias, de graça e sem cartão. É o primeiro jogo dele: um esconde-esconde num jardim, em que ele monta as regras com blocos, no ritmo dele. É para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, com um adulto do lado.
+Ele é pensado para crianças e adolescentes de cinco a dezessete anos. Abaixo de nove anos, com um adulto do lado. Para os demais, o apoio depende do que cada um precisar.
 
-O link do presente está aqui embaixo. Depois, emita o certificado deste curso. Obrigada por fazer este caminho comigo.
+O link do presente está aqui na página. Quem faz o cadastro é o responsável, que depois cria o perfil do filho no ambiente. Essa é a oportunidade de experimentar depois do minicurso, quando fizer sentido para vocês.
+
+A apostila fica disponível para consultar as ideias e os exemplos, e também tem o link do presente. Depois de assistir às partes, clique em Baixar meu certificado para registrar a conclusão deste minicurso. O presente está disponível independentemente dessa emissão.
+
+A tela não precisa ser só um lugar onde o seu filho encontra coisas prontas. Ela também pode ser um lugar onde ele descobre possibilidades de criar. O vilão pode virar aliado, conforme a experiência que a gente oferece e constrói com ele.
+
+Obrigada por acompanhar essa conversa. Para encerrar, clique em Concluir aula.
 ```
-
-**Recado na página (não gravar):** O presente: o Cadê Todo Mundo por 7 dias, gratuito e sem cartão, para o seu filho criar o primeiro jogo. De 5 a 17 anos; abaixo de 9, com um adulto do lado.

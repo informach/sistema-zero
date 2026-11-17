@@ -1,69 +1,59 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-4
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
 
-## Parte 1. O interesse como porta de entrada
+## Parte 1. Um motivo para querer tentar
 
 **Clipe:** `video-a4-interesse`
 
-**Na tela:** Helena na câmera. Uma tela com as seis cenas, cada uma acendendo quando ela lê, com o que o jogo oferece ao lado. Entra o vídeo do Bernardo logo depois de "Escute o Bernardo", com legenda de nome em todos os depoimentos. A frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___." fica na tela durante o exercício.
+**Na tela:** No "O que a criança quer criar pode ser muito diferente", mostrar diferentes interesses [na edição: desenho, história, trens e personagens]. No "Não é só decorar a atividade com o tema preferido", mostrar a relação entre uma intenção e um desafio [na edição: trem, estação e caminho]. No "É uma vitória pequena", voltar para a apresentadora [na edição: câmera].
+
+**Depoimento opcional (não gravar):** Escolher um trecho curto do Bernardo sobre entender como são feitos os jogos. Inserir depois de "se tornou uma porta para aprender outras coisas sobre criação e tecnologia.", com identificação. Sem o corte, a história narrada já apresenta o argumento. Evitar uma sequência de depoimentos sobre o mesmo benefício.
 
 **Fala da Helena:**
 
 ```text
-Talvez você já tenha dito esta frase: o meu filho não presta atenção em nada, mas passa horas falando de dinossauro. Hoje eu quero te mostrar que esse interesse não é o problema. Ele é a porta de entrada.
+O que a criança quer criar pode ser muito diferente de uma família para outra. Pode ser um jogo sobre dinossauros, uma história, um desenho que se movimenta ou a curiosidade de entender como algo funciona.
 
-Veja se você reconhece o seu filho em alguma destas cenas.
+Quando partimos de um interesse que já existe, temos uma possibilidade de aproximação. Em vez de apresentar um desafio sem relação com o que importa para ela, podemos encontrar um objetivo que ela queira alcançar.
 
-Ele sabe tudo sobre um assunto. Esse assunto pode virar o tema do jogo dele, e aí o interesse aparece sozinho, porque dá para criar um jogo sobre qualquer coisa.
+Não é só decorar a atividade com o tema preferido. Se ela quer que um trem chegue à estação, surge uma questão: que caminho ele vai percorrer? Se precisa desviar de um obstáculo, como a regra vai funcionar? O interesse dá uma razão para pensar nesse problema.
 
-Ele precisa saber o que vai acontecer. Na programação, a mesma regra dá sempre o mesmo resultado. É previsível.
+O Bernardo conta que gostou de descobrir como eram feitos os jogos que já jogava. No caso dele, aquilo que já despertava curiosidade se tornou uma porta para aprender outras coisas sobre criação e tecnologia.
 
-Ele se frustra quando perde. No jogo que ele cria, o erro vira pista, e quem muda a regra é ele.
+E a criança não precisa ser apaixonada por jogos para conhecer essa possibilidade. Pode gostar de desenhar, inventar personagens ou contar histórias. A criação de um jogo reúne vários tipos de participação, e cada pessoa pode se aproximar de um jeito.
 
-Ele organiza tudo em sequência. Sequência é a base de todo jogo.
+O envolvimento com um assunto também não significa que a criança vai conseguir manter a atenção em qualquer desafio relacionado a ele. Uma tarefa pode estar grande demais, uma explicação pode não ter ficado clara, ou pode ser hora de parar. O interesse ajuda a começar a conversa; o apoio e a organização da experiência continuam importantes.
 
-Ele não larga a tela. O tempo pode ser o mesmo. O que muda é o papel dele.
+Quando uma parte funciona, a criança pode perceber que conseguiu realizar algo que queria. Esse resultado pode alimentar a vontade de continuar e experimentar outra ideia.
 
-Ele mostra mais do que fala. Um jogo pronto vira um jeito de mostrar o que ele pensa, sem precisar de tantas palavras.
-
-Essas cenas não são diagnóstico e não descrevem toda criança. São coisas que muitas famílias contam. E um interesse forte, desses que parecem não ter fim, é fonte de prazer, de motivação e muitas vezes de calma. Não é algo para eliminar. Quando a gente usa o interesse da criança a favor, ensinar fica muito mais fácil, porque ela se envolve, se abre e aprende mais. E isso vale dos 5 aos 17 anos. Escute o Bernardo.
-
-Ele usou o que já gostava, os jogos que ele joga, para descobrir como eles são feitos.
-
-E nem toda criança é dos jogos, e tudo bem. O interesse pode ser desenhar, contar histórias, fazer vídeos. O jogo é só a ferramenta.
-
-Agora complete em voz alta, pensando no seu filho: meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Alguns exemplos para ajudar. Ama trens? O trem precisa chegar na estação sem bater. Ama bandeiras? O jogo mostra uma bandeira e ele escolhe o país. Ama dinossauros? O dinossauro precisa fugir do vulcão. Lembra da resposta do seu filho na Aula 2, sobre o jogo que ele inventaria? Ela pode ser o ponto de partida. Clique em Próxima parte.
+É uma vitória pequena, mas com significado: ela consegue relacionar uma tentativa ao que produziu. O próximo desafio pode crescer a partir do que ela já compreendeu, em vez de chegar todo de uma vez. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Meu filho ama ___. Um jogo sobre isso poderia ter ___.
-
-## Parte 2. Quando a matéria da escola ganha sentido
+## Parte 2. O apoio acompanha a necessidade
 
 **Clipe:** `video-a4-escola`
 
-**Na tela:** Helena na câmera. Uma tela com "2 + 5 = ?" de um lado e a trilha de casas de 1 a 7, com o personagem na casa 2 e a estrela na 7, do outro. Uma tela com português, ciências, arte e planejamento, cada um acendendo. Entra o vídeo de depoimentos do que os pais começam a perceber (Harle, Daniel, Débora e Flávia) logo depois de "Veja o que contam alguns pais". Câmera na parte da pesquisa.
+**Na tela:** No "Um primeiro contato pode parecer difícil", mostrar a apresentadora [na edição: câmera, relato sem nome ou imagem da criança]. No "Um adulto pode mostrar uma ação", mostrar os apoios como possibilidades [na edição: demonstrar, fazer junto, dar espaço para tentar, voltar a ajudar]. No "O objetivo do apoio", destacar a ideia [na edição: compreender e participar].
+
+**Depoimento opcional (não gravar):** O depoimento da Isabela, de 31 segundos, é opcional e só pode entrar depois de confirmada a autorização da família para uso em curso. O ponto de inserção é depois de "se sentir feliz com o resultado." Sem essa autorização, manter a versão em câmera abaixo, sem nome nem imagem da criança.
 
 **Fala da Helena:**
 
 ```text
-O interesse também é uma ponte com a escola. Muitas vezes a escola apresenta a matéria de um jeito abstrato. A criança vê dois mais cinco no papel e pergunta: para que eu preciso disso?
+Um primeiro contato pode parecer difícil. Uma das crianças que conheceu essa proposta ainda estava aprendendo a usar o computador e o mouse. Precisou que alguém mostrasse como usar. Naquela experiência, ela passou de achar difícil para conseguir fazer uma parte e se sentir feliz com o resultado.
 
-Agora imagine que o personagem dela está na casa 2 e ela quer levá-lo até a estrela, na casa 7. Quantos passos faltam? A conta virou a solução de que ela precisa para a ideia dela funcionar. Fazer a conta porque a própria ideia precisa dela muda tudo. Para muitas crianças, ver primeiro o concreto ajuda a chegar no abstrato.
+O que importa nessa história é a oportunidade que ela teve de conhecer a atividade com apoio. O tempo que uma criança levou não serve como prazo para outra. Também não dá para concluir que uma atividade não serve para ela só porque o primeiro contato foi difícil.
 
-Uma amiga minha é professora, doutora em matemática e física, e dá aula particular para quem está de recuperação. O filho dela também cria jogos. Ela me disse: se todos os meus alunos tivessem esse hábito desde pequenos, eu estaria sem aluno.
+Um adulto pode mostrar uma ação para tornar a possibilidade visível. Depois, pode fazer uma parte junto, dando espaço para a criança participar. Quando ela já compreendeu, pode esperar e permitir que tente, mantendo a ajuda disponível.
 
-E não é só matemática. Em português, para a personagem pedir ajuda ao jogador, a criança escreve o diálogo e decide o que acontece em cada resposta. Em ciências, para o foguete subir e voltar, ela mexe em velocidade e gravidade e observa. Em arte, ela cria personagens, cores e o clima do cenário. E no planejamento, ela organiza o começo, o desafio e o final, porque o jogo precisa terminar.
+Essas são possibilidades de apoio, não degraus obrigatórios que toda criança precisa subir na mesma ordem. Às vezes ela vai precisar de mais ajuda numa parte nova e de menos ajuda numa parte conhecida. Uma pista pode ser suficiente; em outro momento, pode ser necessário mostrar de novo ou diminuir o desafio.
 
-Veja o que contam alguns pais sobre o que começaram a perceber.
+Pense no placar da demonstração. Se a criança ainda não sabe onde a contagem acontece, perguntar o que ela já tentou pode não ser suficiente. O adulto pode mostrar onde o valor aparece e ajudar a comparar antes e depois do clique. Se ela já sabe isso, talvez baste dar tempo para investigar a regra.
 
-Isso não é só uma impressão. Uma grande análise de mais de cem estudos mostrou que aprender a programar traz ganhos em criatividade, em pensamento matemático e em raciocínio, com variações de uma pesquisa para outra. Esses estudos não são específicos sobre autismo, e programar não é fórmula mágica. É uma ponte a mais. As referências estão na apostila.
+O objetivo do apoio é permitir que a criança compreenda e participe. Fazer tudo por ela o tempo inteiro tira oportunidades de escolha. Retirar a ajuda antes da hora pode transformar uma dificuldade pequena numa situação que ela ainda não consegue enfrentar.
 
-Para esta semana: escreva a frase do seu filho. Meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Ela vai ser o primeiro rascunho de um jogo dele. Depois responda as perguntas da próxima parte.
+Também faz parte apoiar uma pausa e reconhecer quando algo está cansativo. Persistir não precisa ser insistir até o limite. É poder voltar a uma questão com uma condição melhor para tentar.
+
+Com experiências assim, a criança pode reunir ideias e caminhos que ainda não conhecia. Aos poucos, passa a ter mais recursos para escolher o que fazer diante de um problema. Isso é diferente de esperar que ela acerte sozinha desde o início. Clique em Concluir aula para continuar.
 ```
-
-**Recado na página (não gravar):** Fazer a conta porque a própria ideia precisa dela muda tudo.
-
-## Parte 3. Confira o que ficou (quiz, sem vídeo)
-
-O quiz `quiz-a4` fica numa parte própria, sem gravação.

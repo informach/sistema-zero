@@ -1,15 +1,14 @@
-# Aula 1. A pergunta certa sobre telas
+# Aula 1. A tela pode ter outros usos
 
-**Objetivo de aprendizagem:** o responsável troca a pergunta "como eu tiro a tela?" por "o que eu posso oferecer dentro dela?" e passa a enxergar três usos diferentes da tela.
+**Objetivo:** Compreender que a experiência oferecida na tela faz diferença e reconhecer a criação como uma possibilidade para a família.
 
-**Crença que muda:** "a tela é o inimigo e o único caminho é cortar." Passa a ser: "a tela é uma ferramenta; o que importa é o uso, dentro do tempo que já existe."
+**Ideia central:** A tela é uma ferramenta. Além de receber conteúdo e jogar, a criança pode participar da criação.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| A pergunta que cansa | A palavra guardada; a briga para desligar; por que tirar a tela não funciona; o mesmo tempo, não mais tempo; o depoimento de pais que tinham medo de aumentar o tempo de tela. | Vídeo assistido. |
-| Assistir, jogar e criar | O fogo como ferramenta; os três usos; o mapa da semana de telas. | Vídeo assistido; mapa e apostila à vista. |
-| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. O que acontece dentro da tela | Relacionar a preocupação com as telas ao desenvolvimento e à participação da criança. |
+| 2. Assistir, jogar e criar | Distinguir usos da tela sem desvalorizar o lazer nem transformar todo uso em obrigação produtiva. |
 
-**Ferramenta:** o mapa da semana de telas (anotar todo dia o uso que mais apareceu, sem julgar).
+**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
 
-**Fio do curso:** a palavra guardada aqui volta na Aula 6.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A apostila e o resgate do presente não são critérios de conclusão.

@@ -1,63 +1,57 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-2
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
 
-## Parte 1. O que acontece por dentro
+## Parte 1. Da ideia ao que precisa ser feito
 
 **Clipe:** `video-a2-por-dentro`
 
-**Na tela:** Helena na câmera. Uma tela simples com duas colunas (A tela que só entretém / A tela que faz pensar) quando ela compara. Uma lista com as cinco habilidades, uma por linha, quando ela explica cada uma com a manhã da casa. Câmera no exemplo do Lego.
+**Na tela:** No "Imagine uma criança que quer montar uma fazenda com peças de Lego", mostrar a situação [na edição: peças e uma fazenda em construção]. No "Esse conjunto de habilidades", apresentar os termos junto às ações correspondentes [na edição: planejar, manter informações em uso, observar e ajustar]. No "É nessa participação", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Talvez você já tenha visto esta cena. O seu filho trava numa fase do jogo, abre um vídeo de alguém passando aquela fase, copia e segue em frente. Parece que ele aprendeu, mas na verdade ele só memorizou um caminho que outra pessoa achou. Na próxima dificuldade, ele vai procurar outro vídeo.
+Imagine uma criança que quer montar uma fazenda com peças de Lego porque gostou de um passeio que fez. Ela tem uma ideia, mas essa ideia ainda precisa virar uma construção.
 
-A tela que só entretém funciona assim. Tudo chega pronto. Por isso sobra pouca paciência para tentar de novo, e na hora de desligar vem a briga, porque nunca tem um fim.
+Ela vai precisar pensar no que quer colocar ali: a casa, os animais, talvez uma cerca. Depois, decidir por onde começar. Se usar todas as peças grandes na casa, o que vai sobrar para a cerca? Ao organizar essas escolhas, ela está planejando.
 
-A tela que faz pensar é diferente. Ela pede raciocínio, resolver problemas, foco, planejamento e saber lidar com o erro. E por trás disso estão umas habilidades que têm um nome: funções executivas. Eu vou te explicar com a manhã da sua casa.
+Enquanto monta, precisa manter algumas informações em uso. Onde ficaria a porta? Por que ela separou aquelas peças? O que ainda falta? Essa capacidade de manter e usar informações enquanto faz alguma coisa é chamada de memória de trabalho.
 
-Lembrar que hoje tem educação física e que precisa do tênis: isso é memória de trabalho, guardar uma informação para usar depois.
+Agora a casa cai. A primeira vontade pode ser jogar as peças para longe. Com o apoio de que precisar, a criança pode parar, perceber o que aconteceu e experimentar outra resposta. Aí entram o controle do impulso e a maneira de lidar com a frustração.
 
-Saber que primeiro se veste, depois toma café, depois escova os dentes: isso é planejamento e organização.
+Talvez não exista uma peça igual ao telhado que ela imaginou. Ela pode combinar outras peças ou mudar o formato. Rever o plano diante do que encontrou é exercitar a flexibilidade.
 
-Esperar o irmão sair do banheiro sem empurrar a porta: isso é controle do impulso.
+Esse conjunto de habilidades ajuda a organizar ações para alcançar um objetivo. Algumas delas fazem parte do que chamamos de funções executivas. O nome pode parecer complicado, mas as situações são conhecidas: lembrar o que precisa fazer, escolher uma ordem, perceber quando uma estratégia não funcionou e ajustar.
 
-E respirar quando o tênis não aparece, em vez de explodir: isso é controle emocional.
+Isso aparece na vida da criança quando ela organiza a mochila, acompanha uma tarefa da escola ou precisa encontrar outro jeito de resolver um problema. Na criação, essas ações podem ganhar um motivo que faz sentido para ela: quero que a minha ideia funcione.
 
-São essas habilidades que fazem uma pessoa dar conta da própria vida. Quando a criança só joga o que outra pessoa criou, ela usa uma parte pequena disso. Quando ela cria, usa tudo, e de um jeito mais profundo.
-
-Pense no Lego. Com o manual, a criança olha a figura e monta. Treina atenção e seguir instruções. Terminou o foguete, acabou. Agora entregue as peças sem manual e diga: vamos montar a fazenda daquele passeio? As peças não vão encaixar do jeito que ela imaginou. Uma pecinha vai ter que virar cavalo, ela vai inventar um laguinho, a casa não vai sair igual. Ela vai ter que mudar o plano no caminho. Isso se chama flexibilidade, e é uma das coisas mais importantes que uma criança pode treinar. Criar um jogo é o Lego sem manual. Clique em Próxima parte.
+O resultado visível, como a fazenda montada, é só uma parte da história. Existe também todo o caminho que ela percorreu para chegar ali. É nessa participação que estão muitas oportunidades de aprender. Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Memória de trabalho, planejamento, organização, controle do impulso e controle emocional: as habilidades que a criança usa quando cria.
-
-## Parte 2. Quando o jogo é dele
+## Parte 2. Ter uma intenção e participar das escolhas
 
 **Clipe:** `video-a2-autoria`
 
-**Na tela:** Helena na câmera. Entra o vídeo de depoimentos das crianças e dos pais sobre criar o próprio jogo (Rafael, Daniel, Fernando e Débora) logo depois de "Veja o que acontece quando o jogo é dele". Câmera na história da família. No fim, a pergunta da tarefa na tela.
+**Na tela:** No "Um manual de Lego também pode ensinar", mostrar uma construção orientada e uma modificação [na edição: exemplo e escolha própria]. No "A criança passa a ter mais de uma possibilidade", mostrar dois caminhos para um mesmo objetivo [na edição: repertório de soluções]. No "Na próxima aula", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Tem uma coisa curiosa. A mesma criança que larga uma tarefa da escola no primeiro erro aguenta errar dez vezes no jogo que ela está criando. Por quê? Porque o resultado é dela. Ela quer que funcione. Existe o orgulho de poder dizer: fui eu que fiz.
+Um manual de Lego também pode ensinar. A criança observa, acompanha uma sequência, compara o que montou com o exemplo e aprende a usar as peças. Começar com orientação pode ser justamente o que permite que ela faça alguma coisa que ainda não conseguiria sozinha.
 
-E quem cria precisa escolher. Escolher uma coisa é abrir mão de outra. Se o personagem vai pular, talvez não dê para ele voar. Isso ensina a pensar melhor nas próprias escolhas, coisa que o jogo pronto não pede, porque lá tudo já foi decidido.
+O importante é que ela tenha espaço para entender o que está fazendo. Depois de conhecer uma possibilidade, pode experimentar outra: e se a porta ficar deste lado? E se eu quiser uma casa maior? O que vou precisar mudar?
 
-Tem mais um efeito que eu vejo muito. Um projeto de criação tem começo, meio e fim, como uma história. Então a criança consegue terminar uma parte e sair satisfeita, em vez de ficar presa num vídeo atrás do outro. A hora de desligar fica menos difícil. Veja o que acontece quando o jogo é dele.
+Autoria não significa inventar tudo do zero e sem ajuda. Significa participar, compreender escolhas e, aos poucos, conseguir tomar decisões sobre o que está construindo.
 
-Repare no jeito que o Fernando explica as regras do jogo que ele criou. Ele não está só jogando. Ele sabe por que cada coisa acontece.
+Quando existe uma intenção própria, um problema passa a ter um motivo para ser enfrentado. A cerca não para em pé, mas eu quero que os animais fiquem dentro dela. Então vale olhar de novo, pedir ajuda, experimentar outra base. O interesse no resultado pode dar vontade de continuar.
 
-Eu vou te contar de onde eu tirei tudo isso. O André, meu filho mais velho, é autista e sempre amou jogos. Ele passava muito tempo nas telas, e muitas vezes era assim que ele se acalmava. Tirar a tela na hora que eu queria virava briga. Eu e o meu marido somos da área de tecnologia, e um dia a gente decidiu não brigar mais com esse interesse. A gente usou uma parte do tempo que ele já passava na tela para ensinar ele a criar os próprios jogos.
+Isso não elimina a dificuldade nem faz toda criança gostar da mesma atividade. O que muda é a relação com o desafio. A tentativa deixa de ser apenas uma exigência de outra pessoa e pode fazer parte de algo que ela quer realizar.
 
-Muita coisa mudou. O André disse uma frase que eu nunca esqueci: eu já jogava um monte, agora eu faço os meus jogos. Os meus filhos se desenvolveram em vários pontos, inclusive na escola. E há pouco tempo o André deu uma palestra numa faculdade, ensinando uma turma de tecnologia a criar jogos. O mesmo menino que um tempo atrás tinha tantas dificuldades.
+Ao experimentar, a criança também vai reunindo repertório. Se conhece uma única solução e ela não funciona, fica sem saber como seguir. Se já conheceu outras maneiras, pode comparar, adaptar ou buscar uma ajuda mais específica.
 
-Para esta semana: pergunte ao seu filho que jogo ele inventaria se pudesse. Só escute, sem corrigir. Anote a resposta, porque ela vai servir daqui a duas aulas. Depois responda as perguntas da próxima parte.
+A criança passa a ter mais de uma possibilidade de resposta. Pode descobrir que precisa dividir o problema, mudar uma peça, conferir uma informação ou tentar uma ordem diferente. Autonomia vai sendo construída nessas oportunidades, com o apoio de que cada pessoa precisa.
+
+E escolher também envolve perceber consequências. Uma casa muito grande ocupa o espaço dos animais. Uma base estreita pode não sustentar o telhado. A criança observa o efeito da decisão e pode revê-la. Não é uma escolha feita só para preencher uma opção: ela muda o que está sendo construído.
+
+Na próxima aula, eu vou mostrar uma forma de reunir intenção, escolhas e tentativas numa atividade que muitas crianças e adolescentes já têm curiosidade de conhecer: a criação de jogos. Clique em Concluir aula para continuar.
 ```
-
-**Recado na página (não gravar):** Pergunte ao seu filho: que jogo você inventaria se pudesse? Só escute e anote.
-
-## Parte 3. Confira o que ficou (quiz, sem vídeo)
-
-O quiz `quiz-a2` fica numa parte própria, sem gravação.

@@ -1,20 +1,24 @@
 # Transformando o vilão em aliado
 
-**Título do curso:** Transformando o vilão em aliado
+**Título:** Transformando o vilão em aliado
 
-**Para quem:** Pais (curso para pais na área dos pais do Kids; audiência `kids`, `learner = parents`, gravado).
+**Para quem:** pais e responsáveis, na Área dos pais do Kids. Audiência `kids`, `learner = parents`, gravado e fora da Jornada.
 
-**Descrição curta:** Como a tela que o seu filho já usa pode virar um treino de habilidades para a vida.
+**Descrição curta:** Uma possibilidade de usar a tela para criar e praticar habilidades cognitivas para a vida.
 
-**Descrição longa:** Sem aumentar o tempo de tela, sem proibir e sem precisar saber programar. Em seis aulas curtas, a Helena, engenheira de software e mãe do André e da Débora, mostra por que criar jogos treina habilidades para a vida, como usar o interesse do seu filho como porta de entrada, como apoiar quando fica difícil e como transformar a criação em conversa de família. Cada aula termina com uma ferramenta para usar em casa. No fim, um presente para a sua família experimentar.
+**Descrição longa:** A tela pode oferecer mais do que conteúdo pronto. Neste minicurso para pais e responsáveis, a Helena mostra como criar pode envolver planejamento, escolhas, tentativas e ajustes, e apresenta a criação de jogos como uma possibilidade de reunir essas experiências. Exemplos, relatos de famílias e uma demonstração ajudam a compreender o papel do interesse, do apoio e da conversa. São seis aulas para acompanhar no próprio ritmo, sem tarefas ou avaliações. Ao final, um presente permite à família conhecer a proposta na prática: o Cadê Todo Mundo por sete dias.
 
-## Módulo 1: O vilão que vira aliado
+## Módulo 1: A tela como espaço de criação
 
-**Resumo:** Da preocupação ao primeiro passo: a pergunta certa sobre telas, o que muda quando a criança cria, programar como organizar a vida, o interesse como porta de entrada, o seu papel quando fica difícil e a conversa em família.
+**Resumo:** Compreender os usos da tela e as habilidades envolvidas na criação; ver uma ideia virar regra e resultado; conhecer o papel do interesse, do apoio, da aprendizagem e da conversa; receber uma oportunidade de experimentar com o filho.
 
-- [A pergunta certa sobre telas](transformando-o-vilao-em-aliado-aula-1.md)
-- [Consumir ou criar: o que muda por dentro](transformando-o-vilao-em-aliado-aula-2.md)
-- [Programar é organizar a vida](transformando-o-vilao-em-aliado-aula-3.md)
-- [O interesse do seu filho é a porta de entrada](transformando-o-vilao-em-aliado-aula-4.md)
-- [Quando fica difícil: foco, erro e o seu papel](transformando-o-vilao-em-aliado-aula-5.md)
-- [Da criação à conversa, e o primeiro passo](transformando-o-vilao-em-aliado-aula-6.md)
+- [A tela pode ter outros usos](transformando-o-vilao-em-aliado-aula-1.md)
+- [O que uma criança exercita quando cria](transformando-o-vilao-em-aliado-aula-2.md)
+- [Como criar jogos coloca isso em prática](transformando-o-vilao-em-aliado-aula-3.md)
+- [Interesse, dificuldade e apoio para continuar](transformando-o-vilao-em-aliado-aula-4.md)
+- [O que essa experiência pode levar para a vida](transformando-o-vilao-em-aliado-aula-5.md)
+- [Uma oportunidade para experimentar com seu filho](transformando-o-vilao-em-aliado-aula-6.md)
+
+**Formato:** seis aulas e 13 partes com vídeo, sem duração fixada antecipadamente. Apostila opcional de consulta. Sem quiz, tarefas, ficha de observação semanal ou exigência de participação do filho durante o minicurso.
+
+**Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro, conforme o contrato da plataforma. O resgate do presente é independente do certificado. A prática acontece depois, com o presente, e não integra os critérios de conclusão deste minicurso.

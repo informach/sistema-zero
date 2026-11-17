@@ -1,59 +1,59 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-1
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca. Os depoimentos são os vídeos já cortados e autorizados (ver [Fontes](fontes.md)).
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
 
-## Parte 1. A pergunta que cansa
+## Parte 1. O que acontece dentro da tela
 
 **Clipe:** `video-a1-pergunta`
 
-**Na tela:** Helena na câmera. Quando ela pede para guardar a palavra, aparece na tela só a pergunta "O que você mais deseja para o futuro do seu filho?". Entra o vídeo de depoimentos da preocupação (Flávia, Daniel e Débora) logo depois de "Veja o que contam alguns pais", com legenda de nome e vínculo em cada pessoa ("Débora, mãe do Bernardo"), para não confundir com a Débora, filha da Helena. Volta para a câmera no fechamento.
+**Na tela:** No "Eu sou a Helena", mostrar a apresentadora e sua identificação [na edição: Helena, engenheira de software e mãe do André e da Débora]. No "o que o meu filho está vivendo enquanto usa essa tela?", mostrar a pergunta [na edição: pergunta em destaque]. No "O que vamos conversar aqui", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Oi! Seja bem-vindo ao curso "Transformando o vilão em aliado"! Eu sou a Helena. Sou engenheira de software e mãe do André e da Débora. Antes de qualquer coisa, eu quero te fazer uma pergunta. O que você mais deseja para o futuro do seu filho? Pode ser autonomia, coragem para tentar, prazer de aprender, um jeito de se expressar, ser feliz. A minha, durante muito tempo, foi autonomia: eu queria que os meus filhos dessem conta da vida quando eu não estivesse por perto. Escolha a sua palavra e guarde. A gente volta nela na última aula.
+Oi! Seja bem-vindo ao curso Transformando o vilão em aliado. Eu sou a Helena, engenheira de software e mãe do André e da Débora.
 
-Agora pense numa cena que quase toda casa conhece. Fim de tarde, você fala: desliga isso. E começa a negociação. Mais cinco minutos. Só vou terminar esta fase. Às vezes vira briga. E fica aquela pergunta na cabeça: como eu tiro a tela da vida do meu filho?
+Talvez a tela tenha virado uma preocupação na sua casa. Seu filho quer continuar, você precisa que ele desligue, e a conversa termina sempre no tempo que ele passou ali. Só que existe outra pergunta importante: o que o meu filho está vivendo enquanto usa essa tela?
 
-Eu vou ser sincera com você: tirar, ninguém consegue. A tela está na escola, com lousa digital e atividade no tablet. Está nas amizades, no trabalho, em casa. E muitas vezes ela ajuda. Às vezes é o recurso que a gente tem naquele momento, inclusive para a criança se acalmar. Na minha casa foi assim por muito tempo.
+A mesma tela pode mostrar uma sequência de vídeos, permitir uma conversa com alguém ou servir para construir alguma coisa. O aparelho é o mesmo, mas a participação da criança pode ser muito diferente.
 
-Então eu te proponho trocar a pergunta. Em vez de como eu tiro a tela, pense: o que eu posso oferecer dentro dessa tela?
+Quando a gente pensa no futuro dos filhos, pensa em coisas como conseguir se expressar, fazer escolhas, aprender, lidar com dificuldades e participar da vida com autonomia e com o apoio de que precisar. É por isso que vale olhar para as experiências que oferecemos, inclusive as digitais.
 
-E tem um ponto importante aqui. Não é colocar mais tempo de tela. Se o seu filho já usa meia hora por dia, a ideia é fazer essa meia hora render. A rotina da casa não muda. Muda o que acontece dentro daquele tempo.
+O que vamos conversar aqui é como uma parte desse uso pode abrir espaço para criar e colocar habilidades cognitivas para a vida em prática. Você vai acompanhar os exemplos e conhecer uma possibilidade para experimentar com seu filho ao final.
 
-Eu sei que a primeira preocupação é esta: se eu oferecer mais uma coisa na tela, ele não vai ficar ainda mais tempo nela? Veja o que contam alguns pais que tinham exatamente esse medo.
+Isso pode acontecer dentro do tempo que a família já reservou para a tela. Não é preciso acrescentar mais tempo para incluir uma experiência diferente. E oferecer uma atividade de criação não dispensa os limites que vocês consideram necessários.
 
-Os três dizem a mesma coisa, cada um do seu jeito. O tempo não aumentou. O que aconteceu foi uma troca: o mesmo tempo, usado de outro jeito. Eu não estou dizendo que toda criança vai viver exatamente isso. Estou te mostrando que existe esse caminho. Clique em Próxima parte.
+Eu conheço essa preocupação de perto. Na nossa casa, o André sempre gostou muito de jogos, e a tela também era uma forma de ele se acalmar. Foi desse interesse, junto com o nosso trabalho com tecnologia, que nasceu a vontade de oferecer a ele uma participação diferente. Mais adiante, eu vou mostrar como isso funciona.
+
+Primeiro, vamos entender o que pode mudar dentro dessa mesma tela. Clique em Próxima parte.
 ```
-
-**Recado na página (não gravar):** Guarde a sua palavra: o que você mais deseja para o futuro do seu filho? Ela volta na última aula.
 
 ## Parte 2. Assistir, jogar e criar
 
 **Clipe:** `video-a1-tres-usos`
 
-**Na tela:** Helena na câmera na analogia do fogo. Uma tela simples com três colunas (Assistir, Jogar, Criar) do "Existem pelo menos três jeitos" em diante, acendendo cada coluna quando ela fala. No fim, a tela do mapa da semana (uma tabela com os dias e as três colunas).
+**Na tela:** No "Pense numa ferramenta que você conhece bem", mostrar a apresentadora [na edição: câmera]. No "Podemos olhar para três possibilidades", mostrar as três formas de participação [na edição: assistir, jogar e criar]. No "É nessa possibilidade de criação", destacar a terceira [na edição: criar].
+
+**Depoimento opcional (não gravar):** Preocupação com o tempo de tela: usar somente um trecho do Daniel ou da Débora, mãe do Bernardo, que registre a substituição do uso, com nome e vínculo. Inserir depois de "Substituíram uma parte do que já acontecia por uma atividade de criação." O curso funciona sem o corte.
 
 **Fala da Helena:**
 
 ```text
-Pense no fogo. Ele aquece a casa e cozinha a comida da família. E o mesmo fogo pode destruir uma floresta inteira. Ninguém olha para o fogão e diz que o fogo é um vilão. A gente aprende a usar. Com a tecnologia é igual: a ferramenta é a mesma, e a diferença está no uso.
+Pense numa ferramenta que você conhece bem: o fogo. Ele ajuda a preparar a comida e a aquecer uma casa, mas também pode causar um incêndio. Para entender o efeito, a gente precisa olhar para o uso e para os cuidados. Com a tecnologia, também vale perguntar o que estamos fazendo com ela.
 
-Existem pelo menos três jeitos de usar a tela.
+Podemos olhar para três possibilidades: assistir, jogar e criar.
 
-O primeiro é assistir. A criança recebe uma história ou um vídeo pronto. Dá para aprender alguma coisa, mas é o uso que menos pede dela.
+Quando assiste, a criança recebe uma história, uma explicação ou uma ideia que alguém preparou. Um vídeo pode divertir, ensinar e despertar curiosidade.
 
-O segundo é jogar. Ela explora regras e desafios que outra pessoa criou. Tem jogo que faz mal, e tem muito jogo bom, que ajuda a desenvolver várias coisas.
+Quando joga, ela participa de uma experiência com regras já construídas. Pode precisar escolher, pensar em estratégias, colaborar e resolver desafios. Isso varia muito de um jogo para outro.
 
-O terceiro é criar. Ela inventa as próprias regras e vê aquilo funcionar. É aqui que a tela vira aliada, e é sobre isso que a gente vai falar no resto do curso.
+Quando cria, ela também participa da construção. Pode inventar uma história, desenhar uma personagem, organizar uma ideia e decidir como alguma coisa vai funcionar. Em vez de apenas encontrar um resultado pronto, ela começa a fazer escolhas sobre esse resultado.
 
-Em muitas casas, quase nada do tempo de tela está no criar. E tudo bem, é por isso que você está aqui. Eu não quero tirar os jogos do seu filho. Jogar é bom. Eu quero te mostrar uma terceira possibilidade que muita família ainda não conhece.
+Essas formas podem se combinar. Uma criança pode assistir a uma explicação, experimentar o que entendeu e depois modificar alguma coisa. A questão é perceber se existe espaço para a intenção dela, para uma tentativa e para compreender o que aconteceu.
 
-Para esta semana, eu tenho uma ferramenta simples: o mapa da semana de telas. Todo dia, anote em qual dos três usos o seu filho passou a maior parte do tempo: assistindo, jogando ou criando. Sem julgar e sem mudar nada ainda. Você só vai observar. O mapa está aqui embaixo e na apostila do curso, que reúne as ideias de todas as aulas. Depois responda as duas perguntas da próxima parte.
+Em muitas famílias, assistir e jogar já fazem parte da rotina, mas criar ainda é uma possibilidade pouco conhecida. Incluir essa possibilidade não exige transformar toda diversão em aula. A criança também precisa poder descansar e brincar.
+
+Algumas famílias que conheceram essa proposta contaram que não aumentaram o tempo de tela. Substituíram uma parte do que já acontecia por uma atividade de criação. São experiências dessas famílias, não uma garantia de que toda rotina vai se organizar sozinha do mesmo jeito.
+
+É nessa possibilidade de criação que vamos nos concentrar: o que a criança precisa fazer para uma ideia sua ganhar forma, e por que isso pode ser tão interessante para o desenvolvimento dela. Clique em Concluir aula para continuar.
 ```
-
-**Recado na página (não gravar):** Esta semana, anote todo dia em qual uso o seu filho passou mais tempo: assistir, jogar ou criar. Só observe.
-
-## Parte 3. Confira o que ficou (quiz, sem vídeo)
-
-O quiz `quiz-a1` fica numa parte própria, sem gravação.
