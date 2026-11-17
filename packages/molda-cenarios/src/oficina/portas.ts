@@ -1,4 +1,8 @@
-import type { ComandoDeCenario, DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import type {
+  ComandoDeCenario,
+  DocumentoDeCenario,
+  FragmentoBasico,
+} from '@sistemazero/molda-cenarios-core/v2'
 
 /**
  * Tudo o que a oficina de cenários pede a quem a hospeda. A ferramenta não sabe de sessão, de
@@ -105,6 +109,50 @@ export interface FonteDeTexturas {
   ): Promise<TexturaDeBiblioteca>
 }
 
+export interface ConjuntoDeBiblioteca {
+  id: string
+  bibliotecaId: string
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  revisao: number
+  cenarioDeEdicaoId: string | null
+  revisaoPublicadaDoCenario: number | null
+  /** Endereço da miniatura da revisão atual, nunca do rascunho não publicado. */
+  miniatura: string | null
+  bytes: number
+  objetos: number
+  atualizadoEm: string
+}
+export interface VersaoDeConjunto {
+  conjuntoId: string
+  revisao: number
+  nome: string
+  conteudo: FragmentoBasico
+  miniatura: string | null
+  bytes: number
+  objetos: number
+  criadoEm: string
+}
+export interface ConjuntoParaCriar {
+  nome: string
+  pasta?: string
+  etiquetas?: string[]
+  conteudo: FragmentoBasico
+  operacaoId: string
+}
+export interface PublicacaoDeConjunto {
+  revisaoEsperada: number
+  operacaoId: string
+  conteudo: FragmentoBasico
+  rascunho?: { cenarioId: string; revisao: number }
+}
+export interface EdicaoDeConjunto {
+  conjunto: ConjuntoDeBiblioteca
+  mundo: Mundo
+  cenario: CenarioAberto
+}
+
 export interface MoldeDisponivel {
   origem: 'molda'
   id: string
@@ -132,6 +180,7 @@ export interface FonteDeMoldes {
 export interface Mundo {
   id: string
   espacoId: string
+  bibliotecaConjuntosId?: string | null
   nome: string
   cenarios: number
   /** Bibliotecas que este mundo usa. */
@@ -212,6 +261,29 @@ export interface CenariosHost {
     dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
   ): Promise<TexturaDeBiblioteca>
   apagarTexturas(bibliotecaId: string, ids: string[]): Promise<void>
+  listarConjuntos(
+    bibliotecaId: string,
+    filtro?: FiltroDeModelos,
+  ): Promise<{ itens: ConjuntoDeBiblioteca[]; total: number; proximo: string | null }>
+  obterConjunto(id: string): Promise<ConjuntoDeBiblioteca>
+  versaoDoConjunto(id: string, revisao: number): Promise<VersaoDeConjunto>
+  criarConjunto(bibliotecaId: string, dados: ConjuntoParaCriar): Promise<ConjuntoDeBiblioteca>
+  editarConjunto(
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[] },
+  ): Promise<ConjuntoDeBiblioteca>
+  editarConjuntoNaOficina(id: string): Promise<EdicaoDeConjunto>
+  publicarConjunto(
+    id: string,
+    dados: PublicacaoDeConjunto,
+  ): Promise<{ conjunto: ConjuntoDeBiblioteca; cenarios: Array<{ id: string; revisao: number }> }>
+  apagarConjunto(id: string): Promise<void>
+  guardarMiniaturaDoConjunto(
+    id: string,
+    revisao: number,
+    imagem: Blob,
+    sinal?: AbortSignal,
+  ): Promise<void>
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
   conteudoDoModelo(ref: {
     biblioteca: string

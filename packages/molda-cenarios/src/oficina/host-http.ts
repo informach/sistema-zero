@@ -9,6 +9,7 @@ import {
   type CenarioAberto,
   CenarioDesatualizado,
   type CenariosHost,
+  type ConjuntoDeBiblioteca,
   type Espaco,
   type ModeloDeBiblioteca,
   type ModeloParaImportar,
@@ -16,6 +17,7 @@ import {
   type PaginaDeModelos,
   type ResumoDeCenario,
   type TexturaDeBiblioteca,
+  type VersaoDeConjunto,
 } from './portas'
 
 /**
@@ -115,6 +117,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   const espacoDaBiblioteca = new Map<string, string>()
   const espacoDoMundo = new Map<string, string>()
   const espacoDoCenario = new Map<string, string>()
+  const espacoDoConjunto = new Map<string, string>()
 
   async function pedir<T>(
     metodo: 'GET' | 'POST' | 'PATCH' | 'DELETE',
@@ -169,6 +172,11 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     ...m,
     miniatura: retrato(espacoDaBiblioteca.get(m.bibliotecaId), m.miniatura),
   })
+  const conjunto = (c: ConjuntoDeBiblioteca, espacoId: string): ConjuntoDeBiblioteca => {
+    espacoDoConjunto.set(c.id, espacoId)
+    espacoDaBiblioteca.set(c.bibliotecaId, espacoId)
+    return { ...c, miniatura: retrato(espacoId, c.miniatura) }
+  }
   const textura = (t: TexturaDoServidor): TexturaDeBiblioteca => ({
     ...t,
     imagem: retrato(espacoDaBiblioteca.get(t.bibliotecaId), t.digest) ?? '',
@@ -192,9 +200,15 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     espacoDoCenario.set(aberto.id, aberto.espacoId)
     espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
     // Arquivos fixados continuam autorizados mesmo depois de apagar a biblioteca de origem.
-    for (const ref of aberto.documento.modelos)
+    for (const ref of [
+      ...aberto.documento.modelos,
+      ...(aberto.documento.definicoesConjuntos?.flatMap((d) => d.conteudo.modelos) ?? []),
+    ])
       espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
-    for (const ref of aberto.documento.texturas ?? [])
+    for (const ref of [
+      ...(aberto.documento.texturas ?? []),
+      ...(aberto.documento.definicoesConjuntos?.flatMap((d) => d.conteudo.texturas) ?? []),
+    ])
       espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
     return {
       resumo: resumo(aberto, aberto.espacoId),
@@ -377,6 +391,85 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         await pedir('POST', `bibliotecas/${bibliotecaId}/modelos/apagar`, {
           ids: ids.slice(inicio, inicio + 200),
         })
+    },
+    async listarConjuntos(bibliotecaId, filtro = {}) {
+      const espacoId = await acharEspacoDaBiblioteca(bibliotecaId)
+      const consulta = new URLSearchParams()
+      for (const chave of ['busca', 'pasta', 'cursor', 'limite'] as const) {
+        const valor = filtro[chave]
+        if (valor !== undefined && valor !== null) consulta.set(chave, String(valor))
+      }
+      const pagina = await pedir<{
+        itens: ConjuntoDeBiblioteca[]
+        total: number
+        proximo: string | null
+      }>('GET', `bibliotecas/${bibliotecaId}/conjuntos?${consulta}`)
+      return { ...pagina, itens: pagina.itens.map((c) => conjunto(c, espacoId)) }
+    },
+    async obterConjunto(id) {
+      const r = await pedir<{ conjunto: ConjuntoDeBiblioteca; espacoId: string }>(
+        'GET',
+        `conjuntos/${id}`,
+      )
+      return conjunto(r.conjunto, r.espacoId)
+    },
+    async versaoDoConjunto(id, revisao) {
+      if (!espacoDoConjunto.has(id)) await host.obterConjunto(id)
+      const espacoId = espacoDoConjunto.get(id)!
+      const v = await pedir<VersaoDeConjunto>('GET', `conjuntos/${id}/versoes/${revisao}`)
+      for (const ref of [...v.conteudo.modelos, ...v.conteudo.texturas])
+        espacoDaBiblioteca.set(ref.biblioteca, espacoId)
+      return { ...v, miniatura: retrato(espacoId, v.miniatura) }
+    },
+    async criarConjunto(bibliotecaId, dados) {
+      const espacoId = await acharEspacoDaBiblioteca(bibliotecaId)
+      return conjunto(await pedir('POST', `bibliotecas/${bibliotecaId}/conjuntos`, dados), espacoId)
+    },
+    async editarConjunto(id, dados) {
+      if (!espacoDoConjunto.has(id)) await host.obterConjunto(id)
+      return conjunto(await pedir('PATCH', `conjuntos/${id}`, dados), espacoDoConjunto.get(id)!)
+    },
+    async editarConjuntoNaOficina(id) {
+      const r = await pedir<{
+        conjunto: ConjuntoDeBiblioteca
+        mundo: MundoDoServidor
+        cenario: CenarioDoServidor
+      }>('POST', `conjuntos/${id}/editar`)
+      return {
+        conjunto: conjunto(r.conjunto, r.cenario.espacoId),
+        mundo: mundo(r.mundo),
+        cenario: cenarioAberto(r.cenario),
+      }
+    },
+    async publicarConjunto(id, dados) {
+      if (!espacoDoConjunto.has(id)) await host.obterConjunto(id)
+      const r = await pedir<{
+        conjunto: ConjuntoDeBiblioteca
+        cenarios: Array<{ id: string; revisao: number }>
+      }>('POST', `conjuntos/${id}/publicar`, dados)
+      return { ...r, conjunto: conjunto(r.conjunto, espacoDoConjunto.get(id)!) }
+    },
+    async apagarConjunto(id) {
+      await pedir('DELETE', `conjuntos/${id}`)
+      espacoDoConjunto.delete(id)
+    },
+    async guardarMiniaturaDoConjunto(id, revisao, imagem, sinal) {
+      sinal?.throwIfAborted()
+      if (imagem.size < 1 || imagem.size > RETRATO_MAX_BYTES)
+        throw new Error('A miniatura deve ter até 256 KB')
+      const bytes = new Uint8Array(await imagem.arrayBuffer()),
+        digest = await digestDosBytes(bytes)
+      sinal?.throwIfAborted()
+      const prefixo = `conjuntos/${id}/versoes/${revisao}/miniatura`
+      const reserva = await pedir<Reserva>(
+        'POST',
+        `${prefixo}/reservar`,
+        { digest, bytes: bytes.byteLength, tipoDoConteudo: tipoDeImagem(imagem.type) },
+        sinal,
+      )
+      await subir(reserva, new Map([[digest, bytes]]), sinal)
+      sinal?.throwIfAborted()
+      await pedir('POST', prefixo, { espacoId: reserva.espacoId, digest }, sinal)
     },
     async conteudoDoModelo(ref) {
       const espacoId = ref.espacoId ?? (await acharEspacoDaBiblioteca(ref.biblioteca))

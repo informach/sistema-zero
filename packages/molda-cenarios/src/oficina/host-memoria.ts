@@ -12,6 +12,7 @@ import {
   LoteDeCenarioSchema,
   lerPecaDeAlturas,
 } from '@sistemazero/molda-cenarios-core/v2'
+import { criarConjuntosEmMemoria, type PrepararLoteDoEnsaio } from './conjuntos-em-memoria'
 import {
   type Biblioteca,
   type CenarioAberto,
@@ -24,7 +25,7 @@ import {
   type TexturaDeBiblioteca,
 } from './portas'
 
-interface CenarioGuardado {
+export interface CenarioGuardado {
   resumo: ResumoDeCenario
   documento: DocumentoDeCenario
   operacoes: Map<string, number>
@@ -110,6 +111,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         .filter((t) => espacoDasBibliotecas.get(t.bibliotecaId) === espacoId)
         .map((t) => t.digest),
     )
+    for (const d of catalogoConjuntos.texturasFixadas(espacoId)) usados.add(d)
     for (const c of cenarios.values())
       if (mundos.get(c.resumo.mundoId)?.espacoId === espacoId)
         for (const d of arquivosFixados(c, 'textura')) usados.add(d)
@@ -158,7 +160,112 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const semAcento = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const copia = <T>(valor: T): T => structuredClone(valor)
 
+  /** Prepara sem mutar; publicações validam todas as cabeças antes da troca síncrona. */
+  const prepararLote: PrepararLoteDoEnsaio = (
+    ...[id, revisaoEsperada, comandos, operacaoId, recursos, publicando]
+  ) => {
+    const c = exigir(cenarios, id, 'O cenário')
+    // A mesma operação mandada duas vezes (resposta perdida) não se aplica de novo.
+    const feita = c.operacoes.get(operacaoId)
+    if (feita !== undefined) return () => ({ revisao: feita })
+    const antes = c.documento
+    const formato = LoteDeCenarioSchema.safeParse({ revisaoEsperada, comandos })
+    if (!formato.success) throw new Error('O lote tem um comando fora do formato')
+    comandos = formato.data.comandos
+    const espacoId = exigir(mundos, c.resumo.mundoId, 'O mundo').espacoId
+    if (espacosDosComandos(comandos).some((origem) => origem !== espacoId))
+      throw new Error('Não é possível colar objetos de outro espaço')
+    try {
+      const depois = executarLote(
+        { documento: c.documento, revisao: c.resumo.revisao },
+        { revisaoEsperada, comandos },
+      )
+      catalogoConjuntos.conferirCenario(id, depois.documento, publicando)
+      const inversos = inverterLote(c.documento, depois.documento)
+      const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+      if (espacosDoDocumento(depois.documento).some((origem) => origem !== mundo.espacoId))
+        throw new Error('O conjunto não pertence ao espaço do cenário')
+      for (const t of [
+        ...(depois.documento.texturas ?? []),
+        ...(depois.documento.definicoesConjuntos?.flatMap((d) => d.conteudo.texturas) ?? []),
+      ]) {
+        if (
+          espacoDasBibliotecas.get(t.biblioteca) !== mundo.espacoId ||
+          !conteudos.has(`${mundo.espacoId}:${t.digest}`)
+        )
+          throw new Error('A textura não pertence ao espaço do cenário')
+      }
+      if (recursos && recursos.espacoId !== mundo.espacoId)
+        throw new Error('O espaço não corresponde ao cenário')
+      if (depois.documento.base.tipo === 'terreno') {
+        const base = depois.documento.base
+        for (const p of base.pecas) {
+          const dados = lerPecaDeAlturas(
+            exigir(recursosDeTerreno, `${mundo.espacoId}:${p.digest}`, 'A peça de terreno'),
+          )
+          if (dados.min !== base.min || dados.max !== base.max)
+            throw new Error('A peça não corresponde ao terreno')
+        }
+      }
+      return () => {
+        if (c.documento !== antes || c.resumo.revisao !== revisaoEsperada)
+          throw new CenarioDesatualizado(c.resumo.revisao)
+        if (!c.versoes.size) c.versoes.set(c.resumo.revisao, copia(c.documento))
+        c.lotes.set(depois.revisao, { comandos: copia(comandos), inversos, criadoEm: agora() })
+        if (inversos.length) {
+          c.passado.push(depois.revisao)
+          c.passado = c.passado.slice(-200)
+          c.futuro = []
+        }
+        c.documento = depois.documento
+        if (depois.revisao % 50 === 0) c.versoes.set(depois.revisao, copia(depois.documento))
+        c.resumo.revisao = depois.revisao
+        c.resumo.nome = depois.documento.nome
+        c.resumo.atualizadoEm = agora()
+        c.operacoes.set(operacaoId, depois.revisao)
+        mundo.atualizadoEm = c.resumo.atualizadoEm
+        return { revisao: depois.revisao }
+      }
+    } catch (erro) {
+      if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizado(erro.revisaoAtual)
+      throw erro
+    }
+  }
+
+  const apagarFonte = (id: string) => {
+    const c = exigir(cenarios, id, 'O cenário'),
+      mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+    cenarios.delete(id)
+    mundo.cenarios = Math.max(0, mundo.cenarios - 1)
+    soltarPecas(mundo.espacoId, pecasDoCenario(c))
+    soltarTexturas(mundo.espacoId, arquivosFixados(c, 'textura'))
+    if (mundo.bibliotecaConjuntosId && mundo.cenarios === 0) mundos.delete(mundo.id)
+  }
+  const catalogoConjuntos = criarConjuntosEmMemoria({
+    bibliotecas,
+    mundos,
+    cenarios,
+    novoId,
+    agora,
+    esperar,
+    espaco: espacoDe,
+    prepararLote,
+    abrirCenario: (id) => host.abrirCenario(id),
+    apagarFonte,
+    conferirArquivos: (f, espacoId) => {
+      for (const m of f.modelos)
+        if (espacoDasBibliotecas.get(m.biblioteca) !== espacoId || !conteudos.has(m.digest))
+          throw new Error('O modelo não pertence ao espaço do conjunto')
+      for (const t of f.texturas)
+        if (
+          espacoDasBibliotecas.get(t.biblioteca) !== espacoId ||
+          !conteudos.has(`${espacoId}:${t.digest}`)
+        )
+          throw new Error('A textura não pertence ao espaço do conjunto')
+    },
+  })
   const host: CenariosHost = {
+    ...catalogoConjuntos.host,
     async espacos() {
       await esperar()
       return copia(espacos)
@@ -220,15 +327,19 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     },
     async apagarBiblioteca(id) {
       await esperar()
-      exigir(bibliotecas, id, 'A biblioteca')
-      await host.apagarTexturas(
-        id,
-        [...texturas.values()].filter((t) => t.bibliotecaId === id).map((t) => t.id),
-      )
+      const b = exigir(bibliotecas, id, 'A biblioteca')
+      catalogoConjuntos.apagarDaBiblioteca(id)
+      const imagens = new Set<string>()
+      for (const t of [...texturas.values()])
+        if (t.bibliotecaId === id) {
+          imagens.add(t.digest)
+          texturas.delete(t.id)
+        }
       for (const m of [...modelos.values()]) if (m.bibliotecaId === id) modelos.delete(m.id)
       bibliotecas.delete(id)
       for (const mundo of mundos.values())
         mundo.bibliotecas = mundo.bibliotecas.filter((b) => b !== id)
+      soltarTexturas(b.espacoId, imagens)
     },
 
     async organizacaoDaBiblioteca(bibliotecaId) {
@@ -419,7 +530,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
 
     async listarMundos(espacoId) {
       await esperar()
-      return copia([...mundos.values()].filter((j) => j.espacoId === espacoId))
+      return copia(
+        [...mundos.values()].filter((j) => j.espacoId === espacoId && !j.bibliotecaConjuntosId),
+      )
     },
     async criarMundo(espacoId, nome) {
       await esperar()
@@ -447,8 +560,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     },
     async apagarMundo(id) {
       await esperar()
-      const mundo = exigir(mundos, id, 'O mundo'),
-        candidatos = new Set<string>(),
+      const mundo = exigir(mundos, id, 'O mundo')
+      if (mundo.bibliotecaConjuntosId) throw new Error('Gerencie os rascunhos pela biblioteca')
+      const candidatos = new Set<string>(),
         imagens = new Set<string>()
       for (const c of [...cenarios.values()])
         if (c.resumo.mundoId === id) {
@@ -470,6 +584,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async criarCenario(mundoId, nome) {
       await esperar()
       const mundo = exigir(mundos, mundoId, 'O mundo')
+      if (mundo.bibliotecaConjuntosId) throw new Error('Crie o conjunto pela biblioteca')
       const id = novoId('cen')
       const resumo: ResumoDeCenario = {
         id,
@@ -535,68 +650,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       espaco.usadoBytes += novosBytes
       return { espacoId: espaco.id, digests: [...unicas.keys()] }
     },
-    async editarCenario(id, revisaoEsperada, comandos, operacaoId, recursos) {
+    async editarCenario(...args) {
       await esperar()
-      const c = exigir(cenarios, id, 'O cenário')
-      // A mesma operação mandada duas vezes (resposta perdida) não se aplica de novo.
-      const feita = c.operacoes.get(operacaoId)
-      if (feita !== undefined) return { revisao: feita }
-      const formato = LoteDeCenarioSchema.safeParse({ revisaoEsperada, comandos })
-      if (!formato.success) throw new Error('O lote tem um comando fora do formato')
-      comandos = formato.data.comandos
-      const espacoId = exigir(mundos, c.resumo.mundoId, 'O mundo').espacoId
-      if (espacosDosComandos(comandos).some((origem) => origem !== espacoId))
-        throw new Error('Não é possível colar objetos de outro espaço')
-      try {
-        const depois = executarLote(
-          { documento: c.documento, revisao: c.resumo.revisao },
-          { revisaoEsperada, comandos },
-        )
-        const inversos = inverterLote(c.documento, depois.documento)
-        const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
-        if (espacosDoDocumento(depois.documento).some((origem) => origem !== mundo.espacoId))
-          throw new Error('O conjunto não pertence ao espaço do cenário')
-        for (const t of [
-          ...(depois.documento.texturas ?? []),
-          ...(depois.documento.definicoesConjuntos?.flatMap((d) => d.conteudo.texturas) ?? []),
-        ]) {
-          if (
-            espacoDasBibliotecas.get(t.biblioteca) !== mundo.espacoId ||
-            !conteudos.has(`${mundo.espacoId}:${t.digest}`)
-          )
-            throw new Error('A textura não pertence ao espaço do cenário')
-        }
-        if (recursos && recursos.espacoId !== mundo.espacoId)
-          throw new Error('O espaço não corresponde ao cenário')
-        if (depois.documento.base.tipo === 'terreno') {
-          const base = depois.documento.base
-          for (const p of base.pecas) {
-            const dados = lerPecaDeAlturas(
-              exigir(recursosDeTerreno, `${mundo.espacoId}:${p.digest}`, 'A peça de terreno'),
-            )
-            if (dados.min !== base.min || dados.max !== base.max)
-              throw new Error('A peça não corresponde ao terreno')
-          }
-        }
-        if (!c.versoes.size) c.versoes.set(c.resumo.revisao, copia(c.documento))
-        c.lotes.set(depois.revisao, { comandos: copia(comandos), inversos, criadoEm: agora() })
-        if (inversos.length) {
-          c.passado.push(depois.revisao)
-          c.passado = c.passado.slice(-200)
-          c.futuro = []
-        }
-        c.documento = depois.documento
-        if (depois.revisao % 50 === 0) c.versoes.set(depois.revisao, copia(depois.documento))
-        c.resumo.revisao = depois.revisao
-        c.resumo.nome = depois.documento.nome
-        c.resumo.atualizadoEm = agora()
-        c.operacoes.set(operacaoId, depois.revisao)
-        mundo.atualizadoEm = c.resumo.atualizadoEm
-        return { revisao: depois.revisao }
-      } catch (erro) {
-        if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizado(erro.revisaoAtual)
-        throw erro
-      }
+      return prepararLote(...args)()
     },
     async moverHistorico(id, revisaoEsperada, acao, operacaoId) {
       await esperar()
@@ -670,6 +726,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     },
     async duplicarCenario(id) {
       await esperar()
+      if (catalogoConjuntos.ehFonte(id))
+        throw new Error('Salve outra seleção como conjunto pela biblioteca')
       const original = exigir(cenarios, id, 'O cenário')
       const novo = novoId('cen')
       const resumo: ResumoDeCenario = {
@@ -694,14 +752,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     },
     async apagarCenario(id) {
       await esperar()
-      const c = exigir(cenarios, id, 'O cenário')
-      cenarios.delete(id)
-      const mundo = mundos.get(c.resumo.mundoId)
-      if (mundo) {
-        mundo.cenarios = Math.max(0, mundo.cenarios - 1)
-        soltarPecas(mundo.espacoId, pecasDoCenario(c))
-        soltarTexturas(mundo.espacoId, arquivosFixados(c, 'textura'))
-      }
+      if (catalogoConjuntos.ehFonte(id))
+        throw new Error('Apague o conjunto pela biblioteca para remover o rascunho')
+      apagarFonte(id)
     },
     async guardarCapa(cenarioId, imagem) {
       const c = cenarios.get(cenarioId)
