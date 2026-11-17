@@ -1,6 +1,7 @@
 import type {
   CenariosHost,
   FonteDeMoldes,
+  FonteDeTexturas,
   ModeloDeBiblioteca,
   MoldeDisponivel,
 } from '@sistemazero/molda-cenarios/oficina'
@@ -107,6 +108,74 @@ export function criarFonteDeMoldes({
       preparados.set(chave, copia)
       if (preparados.size > 128) preparados.delete(preparados.keys().next().value!)
       return { ok: true, modelo: copia }
+    },
+  }
+}
+
+/** A mesma galeria de criações: a textura escolhida é copiada para a biblioteca de destino. */
+export function criarFonteDeTexturas({
+  cloud,
+  host,
+  perfilId,
+}: {
+  perfilId: string
+  cloud: Pick<CreationsCloud, 'list' | 'download'>
+  host: CenariosHost
+}): FonteDeTexturas {
+  return {
+    async listar(sinal) {
+      const lista = await cloud.list({ signal: sinal })
+      sinal?.throwIfAborted()
+      return lista
+        .filter((m) => m.kind === 'texture')
+        .map((m) => ({
+          origem: 'molda' as const,
+          id: m.itemId,
+          nome: m.name,
+          miniatura: m.thumb,
+          revisao: String(m.revision),
+          atualizadoEm: m.itemUpdatedAt,
+        }))
+    },
+    async preparar(bibliotecaId, item, sinal) {
+      sinal?.throwIfAborted()
+      const documento = await cloud.download(item.id, { signal: sinal })
+      sinal?.throwIfAborted()
+      if (
+        !documento ||
+        String(documento.summary.revision) !== item.revisao ||
+        documento.summary.kind !== 'texture'
+      )
+        throw Error('Essa textura mudou. Atualize a lista e escolha novamente')
+      const { exportMoldaJsonForCenarios } = await import('@sistemazero/molda/cenarios-library')
+      const resultado = await exportMoldaJsonForCenarios(documento.json, item.id, {
+        namespace: perfilId,
+        storageRevision: documento.summary.revision,
+        signal: sinal,
+      })
+      sinal?.throwIfAborted()
+      if (!resultado.ok || resultado.asset.kind !== 'image')
+        throw Error('Não consegui preparar esta textura. Abra e confira a criação no Molda')
+      const { prepararChao } = await import('@sistemazero/molda-cenarios/oficina')
+      const pronta = await prepararChao(
+        new File([dataUrlBase64ToBlob(resultado.asset.dataUrl)], `${item.id}.png`, {
+          type: 'image/png',
+        }),
+        sinal,
+      )
+      pronta.nome = documento.summary.name.slice(0, 120)
+      pronta.etiquetas = ['Molda']
+      const existente = (
+        await host.listarTexturas(bibliotecaId, { digest: pronta.digest, limite: 1 })
+      ).itens[0]
+      sinal?.throwIfAborted()
+      if (existente) return existente
+      const guardada =
+        (await host.importarTexturas(bibliotecaId, [pronta], undefined, sinal))[0] ??
+        (await host.listarTexturas(bibliotecaId, { digest: pronta.digest, limite: 1 })).itens[0]
+      sinal?.throwIfAborted()
+      if (!guardada) throw Error('Não consegui guardar a textura na biblioteca')
+      return guardada
     },
   }
 }

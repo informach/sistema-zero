@@ -18,7 +18,7 @@ export const TIPOS_DE_ESPACO = ['conta', 'equipe'] as const
 export type TipoDeEspaco = (typeof TIPOS_DE_ESPACO)[number]
 
 /** O que guarda cada arquivo: o `.glb` do modelo, o retrato dele ou a capa de um cenário. */
-export const TIPOS_DE_BLOB = ['modelo', 'miniatura', 'capa'] as const
+export const TIPOS_DE_BLOB = ['modelo', 'miniatura', 'capa', 'textura'] as const
 export type TipoDeBlob = (typeof TIPOS_DE_BLOB)[number]
 export const TIPOS_DE_CONTEUDO = ['model/gltf-binary', 'image/webp', 'image/png'] as const
 export type TipoDeConteudo = (typeof TIPOS_DE_CONTEUDO)[number]
@@ -27,7 +27,7 @@ export interface ConferenciaDeBlob {
   bytes: number
   tipoDoConteudo: TipoDeConteudo
 }
-export const ehImagemDeCenario = (tipo: TipoDeBlob) => tipo === 'miniatura' || tipo === 'capa'
+export const ehImagemDeCenario = (tipo: TipoDeBlob) => tipo !== 'modelo'
 /** A mesma imagem pode servir ao retrato de um modelo e à capa de um cenário. */
 export const tiposDeBlobCompativeis = (a: TipoDeBlob, b: TipoDeBlob) =>
   a === b || (ehImagemDeCenario(a) && ehImagemDeCenario(b))
@@ -39,11 +39,13 @@ export const LIMITES_DOS_CENARIOS = {
   bytesDaEquipe: 20 * 1024 ** 3,
   bibliotecasPorEspaco: 200,
   modelosPorBiblioteca: 5000,
+  texturasPorBiblioteca: 2000,
   mundosPorEspaco: 500,
   cenariosPorMundo: 200,
   modeloBytes: 64 * 1024 * 1024,
   miniaturaBytes: 256 * 1024,
   capaBytes: 512 * 1024,
+  texturaBytes: 4 * 1024 * 1024,
   /** Arquivos reservados por chamada: o gateway limita os pedidos por minuto. */
   reservaPorChamada: 50,
   paginaDeModelos: 200,
@@ -55,11 +57,13 @@ export const TIPO_DO_CONTEUDO: Record<TipoDeBlob, TipoDeConteudo> = {
   modelo: 'model/gltf-binary',
   miniatura: 'image/webp',
   capa: 'image/webp',
+  textura: 'image/webp',
 }
 export const TETO_DO_BLOB: Record<TipoDeBlob, number> = {
   modelo: LIMITES_DOS_CENARIOS.modeloBytes,
   miniatura: LIMITES_DOS_CENARIOS.miniaturaBytes,
   capa: LIMITES_DOS_CENARIOS.capaBytes,
+  textura: LIMITES_DOS_CENARIOS.texturaBytes,
 }
 
 /**
@@ -108,6 +112,7 @@ export interface Biblioteca {
   capaModelo?: string | null
   licenca: Licenca
   modelos: number
+  texturas: number
   /** Digest do retrato que serve de capa (o do primeiro modelo). */
   capa: string | null
   atualizadaEm: Date
@@ -125,6 +130,25 @@ export interface Modelo {
   min: [number, number, number]
   max: [number, number, number]
   miniatura: string | null
+}
+
+/** Uma imagem de chão da mesma biblioteca e cota dos modelos, com escala física de repetição. */
+export interface Textura {
+  id: string
+  bibliotecaId: string
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  digest: string
+  bytes: number
+  largura: number
+  altura: number
+  repeticaoMetros: number
+}
+
+export interface ConferenciaDeTextura extends ConferenciaDeBlob {
+  largura: number
+  altura: number
 }
 
 export interface Mundo {

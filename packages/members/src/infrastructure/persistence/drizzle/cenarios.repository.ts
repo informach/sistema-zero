@@ -11,6 +11,7 @@ import {
   type Modelo,
   type Mundo,
   type ResumoDeCenario,
+  type Textura,
   TIPO_DO_CONTEUDO,
   type TipoDeBlob,
   type TipoDeConteudo,
@@ -35,6 +36,7 @@ import {
   cenarioMundoBibliotecas,
   cenarioMundos,
   cenarioRevisoes,
+  cenarioTexturas,
 } from './schema'
 
 type Transacao = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -73,13 +75,14 @@ const colunasDaBiblioteca = {
     select count(*) from ${cenarioModelos} m
     where m.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')}
   )::int`,
+  texturas: sql<number>`(select count(*) from ${cenarioTexturas} t where t.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')})::int`,
   capa: sql<string | null>`coalesce((
     select m.miniatura from ${cenarioModelos} m where m.id = ${deFora(cenarioBibliotecas, 'capa_modelo')}
   ), (
     select m.miniatura from ${cenarioModelos} m
     where m.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')} and m.miniatura is not null
     order by m.busca collate "C", m.id limit 1
-  ))`,
+  ), (select t.digest from ${cenarioTexturas} t where t.biblioteca_id = ${deFora(cenarioBibliotecas, 'id')} order by t.busca collate "C", t.id limit 1))`,
 }
 
 const colunasDoMundo = {
@@ -124,6 +127,19 @@ const paraModelo = (m: LinhaDoModelo): Modelo => ({
   min: [m.caixa[0], m.caixa[1], m.caixa[2]],
   max: [m.caixa[3], m.caixa[4], m.caixa[5]],
   miniatura: m.miniatura,
+})
+
+const paraTextura = (t: typeof cenarioTexturas.$inferSelect): Textura => ({
+  id: t.id,
+  bibliotecaId: t.bibliotecaId,
+  nome: t.nome,
+  pasta: t.pasta,
+  etiquetas: t.etiquetas,
+  digest: t.digest,
+  bytes: t.bytes,
+  largura: t.largura,
+  altura: t.altura,
+  repeticaoMetros: t.repeticaoMetros,
 })
 
 export class DrizzleCenariosRepository implements CenariosRepository {
@@ -286,6 +302,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         and(
           eq(cenarioBlobs.espacoId, espacoId),
           inArray(cenarioBlobs.digest, candidatos),
+          sql`not exists (select 1 from ${cenarioTexturas} t join ${cenarioBibliotecas} b on b.id = t.biblioteca_id where b.espaco_id = ${espacoId} and t.digest = ${cenarioBlobs.digest})`,
           sql`not exists (
             select 1 from ${cenarioModelos} m
             join ${cenarioBibliotecas} b on b.id = m.biblioteca_id
@@ -337,12 +354,15 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         .select({ digest: cenarioModelos.digest, miniatura: cenarioModelos.miniatura })
         .from(cenarioModelos)
         .where(eq(cenarioModelos.bibliotecaId, id))
+      const texturas = await tx
+        .select({ digest: cenarioTexturas.digest })
+        .from(cenarioTexturas)
+        .where(eq(cenarioTexturas.bibliotecaId, id))
       await tx.delete(cenarioBibliotecas).where(eq(cenarioBibliotecas.id, id))
-      return this.soltarOrfaos(
-        tx,
-        biblioteca.espacoId,
-        dela.flatMap((m) => (m.miniatura ? [m.digest, m.miniatura] : [m.digest])),
-      )
+      return this.soltarOrfaos(tx, biblioteca.espacoId, [
+        ...dela.flatMap((m) => (m.miniatura ? [m.digest, m.miniatura] : [m.digest])),
+        ...texturas.map((t) => t.digest),
+      ])
     })
   }
 
@@ -381,10 +401,15 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   }
 
   async organizacao(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }> {
-    const linhas = await this.db
+    const modelos = await this.db
       .select({ pasta: cenarioModelos.pasta, etiquetas: cenarioModelos.etiquetas })
       .from(cenarioModelos)
       .where(eq(cenarioModelos.bibliotecaId, bibliotecaId))
+    const texturas = await this.db
+      .select({ pasta: cenarioTexturas.pasta, etiquetas: cenarioTexturas.etiquetas })
+      .from(cenarioTexturas)
+      .where(eq(cenarioTexturas.bibliotecaId, bibliotecaId))
+    const linhas = [...modelos, ...texturas]
     return {
       pastas: [...new Set(linhas.map((l) => l.pasta))].sort(),
       etiquetas: [...new Set(linhas.flatMap((l) => l.etiquetas))].sort(),
@@ -471,8 +496,17 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     conferidos: readonly ConferenciaDeBlob[],
     agora: Date,
   ): Promise<void> {
+    await this.confirmarBlobsCom(this.db, espacoId, conferidos, agora)
+  }
+
+  private async confirmarBlobsCom(
+    executor: Executor,
+    espacoId: string,
+    conferidos: readonly ConferenciaDeBlob[],
+    agora: Date,
+  ): Promise<void> {
     if (!conferidos.length) return
-    await this.db
+    await executor
       .update(cenarioBlobs)
       .set({ confirmadoEm: agora })
       .where(
@@ -621,6 +655,140 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   }
 
   // ---- mundos -------------------------------------------------------------
+
+  async texturas(bibliotecaId: string, filtro: Parameters<CenariosRepository['texturas']>[1]) {
+    const condicao = and(
+      eq(cenarioTexturas.bibliotecaId, bibliotecaId),
+      filtro.pasta !== undefined ? eq(cenarioTexturas.pasta, filtro.pasta) : undefined,
+      filtro.digest !== undefined ? eq(cenarioTexturas.digest, filtro.digest) : undefined,
+      ...filtro.termos.map((termo) => sql`${cenarioTexturas.busca} like ${`%${termo}%`}`),
+    )
+    const [linhas, [conta]] = await Promise.all([
+      this.db
+        .select()
+        .from(cenarioTexturas)
+        .where(condicao)
+        .orderBy(sql`${cenarioTexturas.busca} collate "C"`, asc(cenarioTexturas.id))
+        .limit(filtro.limite)
+        .offset(filtro.inicio),
+      this.db.select({ n: sql<number>`count(*)::int` }).from(cenarioTexturas).where(condicao),
+    ])
+    return { itens: linhas.map(paraTextura), total: conta?.n ?? 0 }
+  }
+
+  async textura(id: string): Promise<Textura | null> {
+    const [linha] = await this.db
+      .select()
+      .from(cenarioTexturas)
+      .where(eq(cenarioTexturas.id, id))
+      .limit(1)
+    return linha ? paraTextura(linha) : null
+  }
+
+  async criarTexturas(
+    bibliotecaId: string,
+    texturas: Parameters<CenariosRepository['criarTexturas']>[1],
+    teto: number,
+    criadoPor: string,
+    agora: Date,
+    conferidos: readonly ConferenciaDeBlob[],
+  ): Promise<Textura[] | null> {
+    const biblioteca = await this.lerBiblioteca(this.db, bibliotecaId)
+    if (!biblioteca) return null
+    return this.comTrava(biblioteca.espacoId, async (tx) => {
+      const existentes = await tx
+        .select({ digest: cenarioTexturas.digest })
+        .from(cenarioTexturas)
+        .where(eq(cenarioTexturas.bibliotecaId, bibliotecaId))
+      const jaTem = new Set(existentes.map((e) => e.digest))
+      const novos = texturas.filter(
+        (t, i) => !jaTem.has(t.digest) && texturas.findIndex((x) => x.digest === t.digest) === i,
+      )
+      if (existentes.length + novos.length > teto) return null
+      if (!novos.length) return []
+      await this.confirmarBlobsCom(tx, biblioteca.espacoId, conferidos, agora)
+      const confirmados = await tx
+        .select({ digest: cenarioBlobs.digest, bytes: cenarioBlobs.bytes })
+        .from(cenarioBlobs)
+        .where(
+          and(
+            eq(cenarioBlobs.espacoId, biblioteca.espacoId),
+            inArray(
+              cenarioBlobs.digest,
+              novos.map((t) => t.digest),
+            ),
+            isNotNull(cenarioBlobs.confirmadoEm),
+            sql`${cenarioBlobs.tipo} in ('miniatura', 'capa', 'textura')`,
+          ),
+        )
+      const mapa = new Map(confirmados.map((c) => [c.digest, c.bytes]))
+      const ausentes = novos.filter((t) => mapa.get(t.digest) !== t.bytes).map((t) => t.digest)
+      if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
+      const linhas = await tx
+        .insert(cenarioTexturas)
+        .values(
+          novos.map((t) => ({
+            ...t,
+            bibliotecaId,
+            busca: buscaDoModelo(t),
+            criadoPor,
+            createdAt: agora,
+            updatedAt: agora,
+          })),
+        )
+        .returning()
+      await tx
+        .update(cenarioBibliotecas)
+        .set({ updatedAt: agora })
+        .where(eq(cenarioBibliotecas.id, bibliotecaId))
+      return linhas.map(paraTextura)
+    })
+  }
+
+  async editarTextura(
+    id: string,
+    dados: Parameters<CenariosRepository['editarTextura']>[1],
+    agora: Date,
+  ): Promise<Textura | null> {
+    const atual = await this.textura(id)
+    if (!atual) return null
+    const depois = { ...atual, ...dados }
+    const [linha] = await this.db
+      .update(cenarioTexturas)
+      .set({ ...dados, busca: buscaDoModelo(depois), updatedAt: agora })
+      .where(eq(cenarioTexturas.id, id))
+      .returning()
+    return linha ? paraTextura(linha) : null
+  }
+
+  async apagarTexturas(
+    bibliotecaId: string,
+    ids: readonly string[],
+    agora: Date,
+  ): Promise<string[]> {
+    const biblioteca = await this.lerBiblioteca(this.db, bibliotecaId)
+    if (!biblioteca || !ids.length) return []
+    return this.comTrava(biblioteca.espacoId, async (tx) => {
+      const apagadas = await tx
+        .delete(cenarioTexturas)
+        .where(
+          and(
+            eq(cenarioTexturas.bibliotecaId, bibliotecaId),
+            inArray(cenarioTexturas.id, [...ids]),
+          ),
+        )
+        .returning({ digest: cenarioTexturas.digest })
+      await tx
+        .update(cenarioBibliotecas)
+        .set({ updatedAt: agora })
+        .where(eq(cenarioBibliotecas.id, bibliotecaId))
+      return this.soltarOrfaos(
+        tx,
+        biblioteca.espacoId,
+        apagadas.map((t) => t.digest),
+      )
+    })
+  }
 
   async mundos(espacoId: string): Promise<Mundo[]> {
     return porNome(

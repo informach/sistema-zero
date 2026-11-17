@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs'
 import { criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
+import { CenarioArquivoAusenteError } from '../../src/domain/cenarios/cenarios.errors'
 import type {
   CenariosRepository,
   NovoModelo,
@@ -111,6 +112,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       'utf8',
     )
     for (const comando of conteudoDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
+    const texturasDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0156_hesitant_lorna_dane.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of texturasDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
@@ -616,6 +626,154 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect(await repo.pilhasDoHistorico(id)).toEqual({ passado: [1], futuro: [2] })
     expect((await repo.revisoes(id, 3, 1)).map((l) => l.revisao)).toEqual([2])
   })
+  test('chãos usam a mesma cota e reserva; repetição da importação não duplica, busca e remoção preservam imagens ainda usadas', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    const textura = {
+      digest: imagem.digest,
+      nome: 'Grama da Íris',
+      pasta: 'natureza/solo',
+      etiquetas: ['Verde'],
+      largura: 2,
+      altura: 2,
+      repeticaoMetros: 2,
+    }
+    expect((await servico.reservarTexturas(ator, biblioteca.id, [imagem])).enviar).toHaveLength(1)
+    const [guardada] = await servico.registrarTexturas(
+      ator,
+      biblioteca.id,
+      [textura],
+      [{ ...imagem, largura: 2, altura: 2 }],
+      espaco.id,
+    )
+    expect(guardada).toMatchObject({ ...textura, bytes: 128 })
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(128)
+    expect((await servico.reservarTexturas(ator, biblioteca.id, [imagem])).enviar).toEqual([])
+    expect(
+      await servico.registrarTexturas(
+        ator,
+        biblioteca.id,
+        [textura],
+        [{ ...imagem, largura: 2, altura: 2 }],
+        espaco.id,
+      ),
+    ).toEqual([])
+    expect(
+      (await servico.texturas(ator, biblioteca.id, { busca: 'IRIS VERDE', limite: 1 })).itens,
+    ).toHaveLength(1)
+    expect((await repo.biblioteca(biblioteca.id))!).toMatchObject({
+      modelos: 0,
+      texturas: 1,
+      capa: imagem.digest,
+    })
+    expect(
+      (await servico.editarTextura(ator, guardada!.id, { nome: 'Terra', repeticaoMetros: 3 }))
+        .repeticaoMetros,
+    ).toBe(3)
+    expect((await servico.texturas(ator, biblioteca.id, { busca: 'grama' })).total).toBe(0)
+    const m = modelo('b', 'Canteiro', { miniatura: imagem.digest })
+    await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: m.digest, bytes: m.bytes, tipo: 'modelo' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(
+      espaco.id,
+      [{ digest: m.digest, bytes: m.bytes, tipoDoConteudo: 'model/gltf-binary' }],
+      AGORA,
+    )
+    await repo.criarModelos(biblioteca.id, [m], 50, CONTA, AGORA)
+    expect((await servico.apagarTexturas(ator, biblioteca.id, [guardada!.id])).apagar).toEqual([])
+    expect((await repo.blobsConfirmados(espaco.id, [imagem.digest])).has(imagem.digest)).toBe(true)
+    expect((await repo.apagarModelos(biblioteca.id, [m.id], AGORA)).sort()).toEqual(
+      [m.digest, imagem.digest].sort(),
+    )
+  })
+
+  test('chão exige dimensões conferidas, reserva íntegra e espaço correto; a biblioteca remove seus arquivos órfãos', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/webp' as const }
+    const textura = {
+      digest: imagem.digest,
+      nome: 'Areia',
+      pasta: '',
+      etiquetas: [],
+      largura: 2,
+      altura: 2,
+      repeticaoMetros: 2,
+    }
+    const provas = [{ ...imagem, largura: 2, altura: 2 }]
+    await servico.reservarTexturas(ator, biblioteca.id, [imagem])
+    const dimensoesErradas = await servico
+      .registrarTexturas(ator, biblioteca.id, [{ ...textura, largura: 4 }], provas, espaco.id)
+      .catch((e: unknown) => e)
+    expect(dimensoesErradas).toBeInstanceOf(CenarioArquivoAusenteError)
+    const outroEspaco = await servico
+      .registrarTexturas(ator, biblioteca.id, [textura], provas, randomUUID())
+      .catch((e: unknown) => e)
+    expect(outroEspaco).toBeInstanceOf(CenarioArquivoAusenteError)
+    const tamanhoErrado = await servico
+      .registrarTexturas(ator, biblioteca.id, [textura], [{ ...provas[0]!, bytes: 129 }], espaco.id)
+      .catch((e: unknown) => e)
+    expect(tamanhoErrado).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.texturas(biblioteca.id, { termos: [], inicio: 0, limite: 50 })).total).toBe(
+      0,
+    )
+    await servico.registrarTexturas(ator, biblioteca.id, [textura], provas, espaco.id)
+    const apagados = await servico.apagarBiblioteca(ator, biblioteca.id)
+    expect(apagados.apagar).toEqual([`cenarios/${espaco.id}/blobs/${imagem.digest}`])
+    expect(await repo.biblioteca(biblioteca.id)).toBeNull()
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
+  })
+
+  test('registro de chão é atômico: teto ou metadados inválidos não deixam arquivos confirmados sem textura', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const criar = (letra: string, largura = 2) => ({
+      id: randomUUID(),
+      nome: 'Grama',
+      pasta: '',
+      etiquetas: [],
+      digest: digest(letra),
+      bytes: 128,
+      largura,
+      altura: 2,
+      repeticaoMetros: 2,
+    })
+    const primeira = criar('e'),
+      segunda = criar('f')
+    const provas = [primeira, segunda].map((t) => ({
+      digest: t.digest,
+      bytes: t.bytes,
+      tipoDoConteudo: 'image/png' as const,
+    }))
+    await repo.reservarBlobs(
+      espaco.id,
+      provas.map((p) => ({ ...p, tipo: 'textura' as const })),
+      AGORA,
+      DEPOIS,
+    )
+    expect(
+      await repo.criarTexturas(biblioteca.id, [primeira], 1, CONTA, AGORA, [provas[0]!]),
+    ).toHaveLength(1)
+    expect(
+      await repo.criarTexturas(biblioteca.id, [segunda], 1, CONTA, AGORA, [provas[1]!]),
+    ).toBeNull()
+    expect((await repo.blobsConfirmados(espaco.id, [segunda.digest])).size).toBe(0)
+    const erro = await repo
+      .criarTexturas(biblioteca.id, [{ ...segunda, largura: 0 }], 2, CONTA, AGORA, [provas[1]!])
+      .catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(Error)
+    expect((await repo.blobsConfirmados(espaco.id, [segunda.digest])).size).toBe(0)
+    expect((await repo.texturas(biblioteca.id, { termos: [], inicio: 0, limite: 50 })).total).toBe(
+      1,
+    )
+  })
+
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
     const montarServico = () =>

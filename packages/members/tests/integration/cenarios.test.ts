@@ -53,6 +53,58 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
 }
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
 
+test('chãos percorrem reserva, confirmação do BFF, busca e edição, com autorização da mesma conta', async () => {
+  const { ctx, espaco, biblioteca } = await comBiblioteca()
+  const prefixo = `/members/cenarios/bibliotecas/${biblioteca.id}/texturas`
+  const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' }
+  const reserva = await pedir(ctx.app, 'POST', `${prefixo}/reservar`, { texturas: [imagem] })
+  expect(reserva.status).toBe(200)
+  const lida = await json(reserva)
+  expect(lida.enviar[0]).toMatchObject({ ...imagem, tipo: 'textura' })
+  const corpo = {
+    ator: atorDaEquipe,
+    bibliotecaId: biblioteca.id,
+    espacoId: espaco.id,
+    texturas: [
+      {
+        nome: 'Grama',
+        digest: imagem.digest,
+        pasta: 'solo',
+        etiquetas: ['verde'],
+        largura: 2,
+        altura: 2,
+        repeticaoMetros: 2,
+      },
+    ],
+    conferidos: [{ ...imagem, largura: 2, altura: 2 }],
+  }
+  const rotaInterna = '/members/internal/cenarios/texturas'
+  expect((await pedir(ctx.app, 'POST', rotaInterna, corpo, daEquipe)).status).toBe(401)
+  const registrada = await pedir(ctx.app, 'POST', rotaInterna, corpo, doBff)
+  expect(registrada.status).toBe(200)
+  const [textura] = await json(registrada)
+  expect(textura).toMatchObject({ nome: 'Grama', largura: 2, altura: 2, repeticaoMetros: 2 })
+  expect((await pedir(ctx.app, 'GET', prefixo, undefined, doCliente)).status).toBe(403)
+  expect((await json(await pedir(ctx.app, 'GET', `${prefixo}?busca=VERDE`))).itens).toHaveLength(1)
+  const editada = await pedir(ctx.app, 'PATCH', `/members/cenarios/texturas/${textura.id}`, {
+    nome: 'Terra',
+    repeticaoMetros: 3,
+  })
+  expect(editada.status).toBe(200)
+  expect(await json(editada)).toMatchObject({ nome: 'Terra', repeticaoMetros: 3 })
+  expect(
+    (
+      await pedir(ctx.app, 'PATCH', `/members/cenarios/texturas/${textura.id}`, {
+        repeticaoMetros: 0,
+      })
+    ).status,
+  ).toBe(400)
+  expect((await pedir(ctx.app, 'POST', `${prefixo}/apagar`, { ids: [textura.id] })).status).toBe(
+    200,
+  )
+  expect((await json(await pedir(ctx.app, 'GET', prefixo))).total).toBe(0)
+})
+
 describe('Molda Cenários: quem entra', () => {
   test('biblioteca do Molda usa o perfil autenticado, com idempotência e proteção da conta', async () => {
     const { ctx, espaco } = await comBiblioteca(buildApp({ cenariosModo: 'aberto' }))

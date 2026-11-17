@@ -7,3 +7,4 @@ export {
   inspectImportDataPayload,
 } from './importDataUri'
 export { literalLocalFilePath, literalResourcePath } from './literalResourcePath'
+export { inspectReferenceRaster } from './rasterHeader'

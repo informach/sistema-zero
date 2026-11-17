@@ -10,6 +10,7 @@ import {
   type Mundo,
   type PaginaDeModelos,
   type ResumoDeCenario,
+  type TexturaDeBiblioteca,
 } from './portas'
 
 /**
@@ -71,6 +72,7 @@ interface Reserva {
 }
 type BibliotecaDoServidor = Omit<Biblioteca, 'capa'> & { capa: string | null }
 type ModeloDoServidor = Omit<ModeloDeBiblioteca, 'miniatura'> & { miniatura: string | null }
+type TexturaDoServidor = Omit<TexturaDeBiblioteca, 'imagem'>
 type MundoDoServidor = Omit<Mundo, 'capa'> & { capa: string | null }
 type ResumoDoServidor = Omit<ResumoDeCenario, 'capa'> & { capa: string | null }
 type CenarioDoServidor = ResumoDoServidor & {
@@ -160,6 +162,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   const modelo = (m: ModeloDoServidor): ModeloDeBiblioteca => ({
     ...m,
     miniatura: retrato(espacoDaBiblioteca.get(m.bibliotecaId), m.miniatura),
+  })
+  const textura = (t: TexturaDoServidor): TexturaDeBiblioteca => ({
+    ...t,
+    imagem: retrato(espacoDaBiblioteca.get(t.bibliotecaId), t.digest) ?? '',
   })
   const mundo = (m: MundoDoServidor): Mundo => {
     espacoDoMundo.set(m.id, m.espacoId)
@@ -385,6 +391,66 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
           null,
         )
       return resposta.arrayBuffer()
+    },
+
+    async listarTexturas(bibliotecaId, filtro = {}) {
+      await acharEspacoDaBiblioteca(bibliotecaId)
+      const consulta = new URLSearchParams()
+      if (filtro.busca?.trim()) consulta.set('busca', filtro.busca.trim().slice(0, 120))
+      if (filtro.pasta !== undefined) consulta.set('pasta', filtro.pasta)
+      if (filtro.digest) consulta.set('digest', filtro.digest)
+      if (filtro.cursor) consulta.set('cursor', filtro.cursor)
+      if (filtro.limite) consulta.set('limite', String(filtro.limite))
+      const pagina = await pedir<{
+        itens: TexturaDoServidor[]
+        total: number
+        proximo: string | null
+      }>('GET', `bibliotecas/${bibliotecaId}/texturas${consulta.size ? `?${consulta}` : ''}`)
+      return { ...pagina, itens: pagina.itens.map(textura) }
+    },
+    async importarTexturas(bibliotecaId, texturas, aoAndar, sinal) {
+      sinal?.throwIfAborted()
+      await acharEspacoDaBiblioteca(bibliotecaId)
+      const criadas: TexturaDeBiblioteca[] = []
+      for (let inicio = 0; inicio < texturas.length; inicio += POR_LOTE) {
+        sinal?.throwIfAborted()
+        const lote = texturas.slice(inicio, inicio + POR_LOTE)
+        const reserva = await pedir<Reserva>(
+          'POST',
+          `bibliotecas/${bibliotecaId}/texturas/reservar`,
+          {
+            texturas: lote.map((t) => ({
+              digest: t.digest,
+              bytes: t.conteudo.size,
+              tipoDoConteudo: tipoDeImagem(t.conteudo.type),
+            })),
+          },
+          sinal,
+        )
+        await subir(reserva, new Map(lote.map((t) => [t.digest, t.conteudo])), sinal)
+        sinal?.throwIfAborted()
+        const registradas = await pedir<TexturaDoServidor[]>(
+          'POST',
+          `bibliotecas/${bibliotecaId}/texturas`,
+          {
+            espacoId: reserva.espacoId,
+            texturas: lote.map(({ conteudo: _conteudo, ...t }) => t),
+          },
+          sinal,
+        )
+        criadas.push(...registradas.map(textura))
+        aoAndar?.(Math.min(inicio + POR_LOTE, texturas.length), texturas.length)
+      }
+      return criadas
+    },
+    async editarTextura(id, dados) {
+      return textura(await pedir<TexturaDoServidor>('PATCH', `texturas/${id}`, dados))
+    },
+    async apagarTexturas(bibliotecaId, ids) {
+      for (let inicio = 0; inicio < ids.length; inicio += 200)
+        await pedir('POST', `bibliotecas/${bibliotecaId}/texturas/apagar`, {
+          ids: ids.slice(inicio, inicio + 200),
+        })
     },
 
     async listarMundos(espacoId) {

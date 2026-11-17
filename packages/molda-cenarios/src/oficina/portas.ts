@@ -24,6 +24,7 @@ export interface Biblioteca {
   capaModelo?: string | null
   licenca: Licenca
   modelos: number
+  texturas?: number
   /** Endereço da imagem de capa, ou nulo. */
   capa: string | null
   atualizadaEm: string
@@ -71,6 +72,37 @@ export interface ModeloParaImportar {
   min: [number, number, number]
   max: [number, number, number]
   triangulos: number
+}
+
+export interface TexturaDeBiblioteca {
+  id: string
+  bibliotecaId: string
+  nome: string
+  pasta: string
+  etiquetas: string[]
+  digest: string
+  bytes: number
+  largura: number
+  altura: number
+  repeticaoMetros: number
+  imagem: string
+}
+export type TexturaParaImportar = Omit<
+  TexturaDeBiblioteca,
+  'id' | 'bibliotecaId' | 'bytes' | 'imagem'
+> & { conteudo: Blob }
+export interface PaginaDeTexturas {
+  itens: TexturaDeBiblioteca[]
+  total: number
+  proximo: string | null
+}
+export interface FonteDeTexturas {
+  listar(sinal?: AbortSignal): Promise<MoldeDisponivel[]>
+  preparar(
+    bibliotecaId: string,
+    item: MoldeDisponivel,
+    sinal?: AbortSignal,
+  ): Promise<TexturaDeBiblioteca>
 }
 
 export interface MoldeDisponivel {
@@ -144,6 +176,7 @@ export interface CenariosHost {
   obterBibliotecaDoMolda(espacoId: string): Promise<Biblioteca>
   /** Fonte viva do perfil. As cópias só viram modelos guardados quando escolhidas. */
   molda?: FonteDeMoldes
+  texturasMolda?: FonteDeTexturas
   criarBiblioteca(
     espacoId: string,
     dados: { nome: string; licenca: Licenca; descricao?: string },
@@ -167,6 +200,18 @@ export interface CenariosHost {
     dados: { nome?: string; pasta?: string; etiquetas?: string[] },
   ): Promise<ModeloDeBiblioteca>
   apagarModelos(bibliotecaId: string, ids: string[]): Promise<void>
+  listarTexturas(bibliotecaId: string, filtro?: FiltroDeModelos): Promise<PaginaDeTexturas>
+  importarTexturas(
+    bibliotecaId: string,
+    texturas: TexturaParaImportar[],
+    aoAndar?: (feitos: number, total: number) => void,
+    sinal?: AbortSignal,
+  ): Promise<TexturaDeBiblioteca[]>
+  editarTextura(
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
+  ): Promise<TexturaDeBiblioteca>
+  apagarTexturas(bibliotecaId: string, ids: string[]): Promise<void>
   /** O arquivo `.glb` de um modelo, pelo conteúdo. */
   conteudoDoModelo(ref: { biblioteca: string; digest: string }): Promise<ArrayBuffer>
 

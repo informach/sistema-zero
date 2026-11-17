@@ -69,6 +69,10 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     escrever('biblioteca-apagar', 'DELETE', '/bibliotecas/:id'),
 
     ler('modelos', '/bibliotecas/:id/modelos'),
+    ler('texturas', '/bibliotecas/:id/texturas'),
+    escrever('texturas-reservar', 'POST', '/bibliotecas/:id/texturas/reservar'),
+    escrever('texturas-apagar', 'POST', '/bibliotecas/:id/texturas/apagar'),
+    escrever('textura-editar', 'PATCH', '/texturas/:id'),
     ler('biblioteca-organizacao', '/bibliotecas/:id/organizacao'),
     // Até 50 arquivos por chamada: 120 chamadas por minuto cobrem um pacote de milhares.
     escrever('modelos-reservar', 'POST', '/bibliotecas/:id/modelos/reservar'),
@@ -99,6 +103,7 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     escrever('cenario-apagar', 'DELETE', '/cenarios/:id'),
 
     interna('modelos', '/modelos', CENARIOS_REGISTRO_MAX_BYTES),
+    interna('texturas', '/texturas', CENARIOS_REGISTRO_MAX_BYTES),
     interna('capa', '/capa', 16 * 1024),
   ]
 }

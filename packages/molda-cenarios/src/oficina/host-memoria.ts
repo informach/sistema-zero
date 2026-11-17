@@ -14,6 +14,7 @@ import {
   type ModeloDeBiblioteca,
   type Mundo,
   type ResumoDeCenario,
+  type TexturaDeBiblioteca,
 } from './portas'
 
 interface CenarioGuardado {
@@ -66,6 +67,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     })
   const bibliotecas = new Map<string, Biblioteca>()
   const modelos = new Map<string, ModeloDeBiblioteca>()
+  const texturas = new Map<string, TexturaDeBiblioteca>()
+  const espacoDasBibliotecas = new Map<string, string>()
   const conteudos = new Map<string, Uint8Array>()
   const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
@@ -86,10 +89,14 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     let total = 0
     for (const m of modelos.values()) if (m.bibliotecaId === bibliotecaId) total++
     biblioteca.modelos = total
+    biblioteca.texturas = [...texturas.values()].filter(
+      (t) => t.bibliotecaId === bibliotecaId,
+    ).length
     if (biblioteca.capaModelo && !modelos.has(biblioteca.capaModelo)) biblioteca.capaModelo = null
     biblioteca.capa =
       (biblioteca.capaModelo ? modelos.get(biblioteca.capaModelo)?.miniatura : null) ??
       [...modelos.values()].find((m) => m.bibliotecaId === bibliotecaId)?.miniatura ??
+      [...texturas.values()].find((t) => t.bibliotecaId === bibliotecaId)?.imagem ??
       null
     biblioteca.atualizadaEm = agora()
   }
@@ -122,6 +129,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         atualizadaEm: agora(),
       }
       bibliotecas.set(biblioteca.id, biblioteca)
+      espacoDasBibliotecas.set(biblioteca.id, espacoId)
       return copia(biblioteca)
     },
     async obterBibliotecaDoMolda(espacoId) {
@@ -158,6 +166,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async apagarBiblioteca(id) {
       await esperar()
       exigir(bibliotecas, id, 'A biblioteca')
+      await host.apagarTexturas(
+        id,
+        [...texturas.values()].filter((t) => t.bibliotecaId === id).map((t) => t.id),
+      )
       for (const m of [...modelos.values()]) if (m.bibliotecaId === id) modelos.delete(m.id)
       bibliotecas.delete(id)
       for (const mundo of mundos.values())
@@ -167,7 +179,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async organizacaoDaBiblioteca(bibliotecaId) {
       await esperar()
       exigir(bibliotecas, bibliotecaId, 'A biblioteca')
-      const lista = [...modelos.values()].filter((m) => m.bibliotecaId === bibliotecaId)
+      const lista = [...modelos.values(), ...texturas.values()].filter(
+        (m) => m.bibliotecaId === bibliotecaId,
+      )
       return {
         pastas: [...new Set(lista.map((m) => m.pasta))].sort(),
         etiquetas: [...new Set(lista.flatMap((m) => m.etiquetas))].sort(),
@@ -255,6 +269,96 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       const conteudo = conteudos.get(ref.digest)
       if (!conteudo) throw new Error('O arquivo do modelo não foi encontrado')
       return conteudo.slice().buffer
+    },
+
+    async listarTexturas(bibliotecaId, filtro = {}) {
+      await esperar()
+      exigir(bibliotecas, bibliotecaId, 'A biblioteca')
+      const termos = semAcento(filtro.busca ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+      const todos = [...texturas.values()]
+        .filter(
+          (t) =>
+            t.bibliotecaId === bibliotecaId &&
+            (filtro.pasta === undefined || t.pasta === filtro.pasta) &&
+            (!filtro.digest || t.digest === filtro.digest) &&
+            termos.every((termo) =>
+              semAcento(`${t.nome} ${t.pasta} ${t.etiquetas.join(' ')}`).includes(termo),
+            ),
+        )
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+      const inicio = Number(filtro.cursor ?? 0) || 0,
+        limite = Math.min(200, Math.max(1, filtro.limite ?? 60))
+      return copia({
+        itens: todos.slice(inicio, inicio + limite),
+        total: todos.length,
+        proximo: inicio + limite < todos.length ? String(inicio + limite) : null,
+      })
+    },
+    async importarTexturas(bibliotecaId, lista, aoAndar, sinal) {
+      const biblioteca = exigir(bibliotecas, bibliotecaId, 'A biblioteca')
+      espacoDasBibliotecas.set(bibliotecaId, biblioteca.espacoId)
+      const espaco = espacoDe(biblioteca.espacoId)
+      const criadas: TexturaDeBiblioteca[] = []
+      for (const [i, t] of lista.entries()) {
+        await esperar()
+        sinal?.throwIfAborted()
+        const existente = [...texturas.values()].find(
+          (x) => x.bibliotecaId === bibliotecaId && x.digest === t.digest,
+        )
+        if (!existente) {
+          const chave = `${espaco.id}:${t.digest}`
+          if (!conteudos.has(chave) && espaco.usadoBytes + t.conteudo.size > espaco.limiteBytes)
+            throw Error('O espaço está cheio')
+          if (!conteudos.has(chave)) {
+            conteudos.set(chave, new Uint8Array(await t.conteudo.arrayBuffer()))
+            espaco.usadoBytes += t.conteudo.size
+          }
+          const { conteudo, ...metadados } = t
+          const criada = {
+            ...metadados,
+            id: novoId('tex'),
+            bibliotecaId,
+            bytes: conteudo.size,
+            imagem: URL.createObjectURL(conteudo),
+          }
+          texturas.set(criada.id, criada)
+          criadas.push(criada)
+        }
+        aoAndar?.(i + 1, lista.length)
+      }
+      contar(bibliotecaId)
+      return copia(criadas)
+    },
+    async editarTextura(id, dados) {
+      await esperar()
+      const atual = exigir(texturas, id, 'O chão')
+      Object.assign(atual, dados)
+      contar(atual.bibliotecaId)
+      return copia(atual)
+    },
+    async apagarTexturas(bibliotecaId, ids) {
+      await esperar()
+      const biblioteca = exigir(bibliotecas, bibliotecaId, 'A biblioteca')
+      const espaco = espacoDe(biblioteca.espacoId)
+      for (const id of ids) {
+        const t = texturas.get(id)
+        if (!t || t.bibliotecaId !== bibliotecaId) continue
+        texturas.delete(id)
+        URL.revokeObjectURL(t.imagem)
+        if (
+          ![...texturas.values()].some(
+            (x) => x.digest === t.digest && espacoDasBibliotecas.get(x.bibliotecaId) === espaco.id,
+          )
+        ) {
+          const chave = `${espaco.id}:${t.digest}`
+          const bytes = conteudos.get(chave)?.byteLength ?? 0
+          conteudos.delete(chave)
+          espaco.usadoBytes -= bytes
+        }
+      }
+      contar(bibliotecaId)
     },
 
     async listarMundos(espacoId) {

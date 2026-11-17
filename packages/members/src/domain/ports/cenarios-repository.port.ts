@@ -8,6 +8,7 @@ import type {
   Modelo,
   Mundo,
   ResumoDeCenario,
+  Textura,
   TipoDeBlob,
   TipoDeConteudo,
 } from '../cenarios/cenarios'
@@ -36,6 +37,8 @@ export interface NovoModelo {
   max: [number, number, number]
   miniatura: string | null
 }
+
+export type NovaTextura = Omit<Textura, 'bibliotecaId'>
 
 export interface FiltroDeModelos {
   /** Termos já normalizados; todos precisam aparecer. */
@@ -130,6 +133,26 @@ export interface CenariosRepository {
   ): Promise<Modelo | null>
   /** Apaga modelos de UMA biblioteca; devolve os digests que ficaram sem dono. */
   apagarModelos(bibliotecaId: string, ids: readonly string[], agora: Date): Promise<string[]>
+
+  texturas(
+    bibliotecaId: string,
+    filtro: FiltroDeModelos,
+  ): Promise<{ itens: Textura[]; total: number }>
+  textura(id: string): Promise<Textura | null>
+  criarTexturas(
+    bibliotecaId: string,
+    texturas: readonly NovaTextura[],
+    teto: number,
+    criadoPor: string,
+    agora: Date,
+    conferidos: readonly ConferenciaDeBlob[],
+  ): Promise<Textura[] | null>
+  editarTextura(
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
+    agora: Date,
+  ): Promise<Textura | null>
+  apagarTexturas(bibliotecaId: string, ids: readonly string[], agora: Date): Promise<string[]>
 
   mundos(espacoId: string): Promise<Mundo[]>
   mundo(id: string): Promise<Mundo | null>

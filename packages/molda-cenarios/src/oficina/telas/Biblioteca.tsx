@@ -6,6 +6,7 @@ import { COPY, tamanhoLegivel } from '../copy'
 import { encerrarPreparacao, prepararArquivos } from '../importar'
 import { Capa, Chegando, Dialogo, DialogoDeApagar, DialogoDeNome, Falhou, useCarga } from '../pecas'
 import type { CenariosHost, Licenca, ModeloDeBiblioteca } from '../portas'
+import { Chaos } from './Chaos'
 import { SeletorDeLicenca } from './Inicio'
 
 type Andamento =
@@ -35,6 +36,7 @@ export function Biblioteca({
   aoVoltar(): void
 }): JSX.Element {
   const [busca, setBusca] = useState('')
+  const [aba, setAba] = useState<'modelos' | 'chaos'>('modelos')
   const [buscaAplicada, setBuscaAplicada] = useState('')
   const [pastaEscolhida, setPastaEscolhida] = useState('*')
   const [erroDaAcao, setErroDaAcao] = useState<string | null>(null)
@@ -188,6 +190,7 @@ export function Biblioteca({
   const aoSoltar = (evento: DragEvent) => {
     evento.preventDefault()
     setArrastando(false)
+    if (aba !== 'modelos') return
     void arquivosDoDrop(evento.dataTransfer).then(trazer, (e) =>
       setAndamento({
         fase: 'pronto',
@@ -206,7 +209,7 @@ export function Biblioteca({
       onDragOver={(evento) => {
         if (!evento.dataTransfer.types.includes('Files')) return
         evento.preventDefault()
-        setArrastando(true)
+        if (aba === 'modelos') setArrastando(true)
       }}
       onDragLeave={(evento) => {
         if (evento.currentTarget === evento.target) setArrastando(false)
@@ -234,7 +237,7 @@ export function Biblioteca({
                     <h1 className="sz-tool-title">{biblioteca?.nome ?? ' '}</h1>
                     <p className="sz-tool-subtitle">
                       {biblioteca
-                        ? `${COPY.biblioteca.modelos(biblioteca.modelos)} · ${COPY.biblioteca.licenca[biblioteca.licenca]}`
+                        ? `${COPY.biblioteca.conteudo(biblioteca)} · ${COPY.biblioteca.licenca[biblioteca.licenca]}`
                         : ' '}
                     </p>
                     {biblioteca?.descricao ? (
@@ -273,15 +276,17 @@ export function Biblioteca({
                     <Trash2 aria-hidden="true" />
                     {COPY.mundo.apagar}
                   </button>
-                  <button
-                    type="button"
-                    className="sz-tool-pill sz-tool-pill--primary"
-                    disabled={!biblioteca || (andamento !== null && andamento.fase !== 'pronto')}
-                    onClick={() => setJanela({ tipo: 'trazer' })}
-                  >
-                    <Upload aria-hidden="true" />
-                    {COPY.biblioteca.trazer}
-                  </button>
+                  {aba === 'modelos' ? (
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--primary"
+                      disabled={!biblioteca || (andamento !== null && andamento.fase !== 'pronto')}
+                      onClick={() => setJanela({ tipo: 'trazer' })}
+                    >
+                      <Upload aria-hidden="true" />
+                      {COPY.biblioteca.trazer}
+                    </button>
+                  ) : null}
                   <input
                     ref={entrada}
                     type="file"
@@ -311,6 +316,24 @@ export function Biblioteca({
                   }}
                 />
                 <div className="sz-tool-toolbar__start">
+                  <fieldset className="flex flex-wrap gap-2" aria-label="Conteúdo da biblioteca">
+                    <button
+                      type="button"
+                      className="sz-tool-chip"
+                      aria-pressed={aba === 'modelos'}
+                      onClick={() => setAba('modelos')}
+                    >
+                      Modelos
+                    </button>
+                    <button
+                      type="button"
+                      className="sz-tool-chip"
+                      aria-pressed={aba === 'chaos'}
+                      onClick={() => setAba('chaos')}
+                    >
+                      Chãos
+                    </button>
+                  </fieldset>
                   <select
                     className="sz-tool-select"
                     aria-label="Pasta da biblioteca"
@@ -345,8 +368,8 @@ export function Biblioteca({
                       autoComplete="off"
                       value={busca}
                       onChange={(evento) => setBusca(evento.target.value)}
-                      aria-label={COPY.biblioteca.buscar}
-                      placeholder={COPY.biblioteca.buscar}
+                      aria-label={aba === 'chaos' ? 'Buscar chão' : COPY.biblioteca.buscar}
+                      placeholder={aba === 'chaos' ? 'Buscar chão' : COPY.biblioteca.buscar}
                       className="sz-tool-search"
                     />
                   </label>
@@ -385,7 +408,17 @@ export function Biblioteca({
                   ))}
                 </section>
               ) : null}
-              {falhou || cabecalho.falhou ? (
+              {aba === 'chaos' ? (
+                <Chaos
+                  key={bibliotecaId}
+                  host={host}
+                  bibliotecaId={bibliotecaId}
+                  busca={buscaAplicada}
+                  pasta={pastaEscolhida}
+                  volta={volta}
+                  aoMudar={() => setVolta((v) => v + 1)}
+                />
+              ) : falhou || cabecalho.falhou ? (
                 <Falhou aoTentar={() => setVolta((v) => v + 1)} />
               ) : total === null ? (
                 <Chegando />
@@ -557,7 +590,7 @@ export function Biblioteca({
       {janela?.tipo === 'apagar' && biblioteca ? (
         <DialogoDeApagar
           titulo={COPY.biblioteca.apagarTitulo}
-          texto={COPY.biblioteca.apagarTexto(biblioteca.nome, biblioteca.modelos)}
+          texto={COPY.biblioteca.apagarTexto(biblioteca.nome)}
           aoFechar={() => setJanela(null)}
           aoConfirmar={async () => {
             await host.apagarBiblioteca(biblioteca.id)

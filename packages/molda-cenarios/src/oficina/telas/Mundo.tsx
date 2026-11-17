@@ -65,7 +65,7 @@ export function EscolherBibliotecas({
               />
               <span>
                 <strong>{biblioteca.nome}</strong>
-                <small>{COPY.biblioteca.modelos(biblioteca.modelos)}</small>
+                <small>{COPY.biblioteca.conteudo(biblioteca)}</small>
               </span>
             </label>
           ))
@@ -280,7 +280,7 @@ export function Mundo({
                           {biblioteca.nome}
                           {biblioteca.fonte === 'molda' ? null : (
                             <span className="font-semibold text-mld-muted">
-                              {biblioteca.modelos}
+                              {biblioteca.modelos + (biblioteca.texturas ?? 0)}
                             </span>
                           )}
                         </button>

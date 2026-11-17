@@ -58,6 +58,12 @@ const REPASSES: readonly Repasse[] = [
     consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
   },
   { metodo: 'PATCH', caminho: exato(`modelos/${U}`) },
+  { metodo: 'PATCH', caminho: exato(`texturas/${U}`) },
+  {
+    metodo: 'GET',
+    caminho: exato(`bibliotecas/${U}/texturas`),
+    consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
+  },
   { metodo: 'GET', caminho: exato(`espacos/${U}/mundos`) },
   { metodo: 'POST', caminho: exato(`espacos/${U}/mundos`) },
   { metodo: 'PATCH', caminho: exato(`mundos/${U}`) },
@@ -76,6 +82,9 @@ const REPASSES: readonly Repasse[] = [
 
 const RESERVAR_MODELOS = exato(`bibliotecas/(${U})/modelos/reservar`)
 const REGISTRAR_MODELOS = exato(`bibliotecas/(${U})/modelos`)
+const RESERVAR_TEXTURAS = exato(`bibliotecas/(${U})/texturas/reservar`)
+const REGISTRAR_TEXTURAS = exato(`bibliotecas/(${U})/texturas`)
+const APAGAR_TEXTURAS = exato(`bibliotecas/(${U})/texturas/apagar`)
 const APAGAR_MODELOS = exato(`bibliotecas/(${U})/modelos/apagar`)
 const APAGAR_BIBLIOTECA = exato(`bibliotecas/(${U})`)
 const RESERVAR_CAPA = exato(`cenarios/(${U})/capa/reservar`)
@@ -90,6 +99,13 @@ const RegistrarBody = z.object({
     .max(50),
 })
 const CapaBody = z.object({ espacoId: Uuid, digest: Digest })
+const TexturasBody = z.object({
+  espacoId: Uuid,
+  texturas: z
+    .array(z.looseObject({ digest: Digest }))
+    .min(1)
+    .max(50),
+})
 
 /** O que o members devolve numa reserva: onde cada arquivo que falta deve ser posto. */
 const Reserva = z.object({
@@ -97,7 +113,7 @@ const Reserva = z.object({
   enviar: z.array(
     z.object({
       digest: Digest,
-      tipo: z.enum(['modelo', 'miniatura', 'capa']),
+      tipo: z.enum(['modelo', 'miniatura', 'capa', 'textura']),
       bytes: z.number().int().min(1),
       chave: z.string(),
       tipoDoConteudo: z.string(),
@@ -408,7 +424,7 @@ export function createCenariosRoutes(deps: {
     }
 
     if (metodo === 'POST') {
-      const reservarModelos = RESERVAR_MODELOS.exec(caminho)
+      const reservarModelos = RESERVAR_MODELOS.exec(caminho) ?? RESERVAR_TEXTURAS.exec(caminho)
       const reservarCapa = RESERVAR_CAPA.exec(caminho)
       if (reservarModelos || reservarCapa) {
         const lido = await corpoJson(req, CORPO_PEQUENO)
@@ -460,6 +476,42 @@ export function createCenariosRoutes(deps: {
         )
       }
 
+      const texturas = REGISTRAR_TEXTURAS.exec(caminho)
+      if (texturas) {
+        if (!user) return semSessao()
+        const lido = await corpoJson(req, CORPO_DO_REGISTRO)
+        const corpo = lido.ok ? TexturasBody.safeParse(lido.corpo) : null
+        if (!corpo?.success) return invalido()
+        const espacoId = corpo.data.espacoId.toLowerCase()
+        const permitido = await podeLer(user, espacoId)
+        if (permitido !== true) return permitido === false ? semRota() : permitido
+        let conferidos: ConferenciaDeUpload[]
+        try {
+          conferidos = await conferir(
+            espacoId,
+            corpo.data.texturas.map((t) => ({ digest: t.digest, tipo: 'textura' as const })),
+            req,
+          )
+        } catch (e) {
+          return conferenciaRecusada(e)
+        }
+        const presentes = new Set(conferidos.map((c) => c.digest))
+        if (corpo.data.texturas.some((t) => !presentes.has(t.digest)))
+          return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Faltam imagens; envie de novo')
+        return repasse(
+          await gateway.gatewayFetchHmac('/members/internal/cenarios/texturas', {
+            method: 'POST',
+            body: {
+              ator: atorDe(user),
+              bibliotecaId: texturas[1]!.toLowerCase(),
+              espacoId,
+              texturas: corpo.data.texturas,
+              conferidos,
+            },
+          }),
+        )
+      }
+
       const capa = DEFINIR_CAPA.exec(caminho)
       if (capa) {
         if (!user) return semSessao()
@@ -491,7 +543,7 @@ export function createCenariosRoutes(deps: {
         )
       }
 
-      if (APAGAR_MODELOS.test(caminho)) {
+      if (APAGAR_MODELOS.test(caminho) || APAGAR_TEXTURAS.test(caminho)) {
         const lido = await corpoJson(req, CORPO_PEQUENO)
         if (!lido.ok) return invalido()
         return soltar(

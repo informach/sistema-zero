@@ -58,6 +58,21 @@ const imagens = [
   ],
   ['image/webp', 'UklGRh4AAABXRUJQVlA4TBEAAAAvAUAAAAdQ2qIUqv+BiOh/AAA='],
 ] as const
+
+test('a prova de textura inclui as dimensões dos bytes, sem confiar nos metadados do navegador', async () => {
+  for (const [mime, base64] of imagens) {
+    const bytes = Buffer.from(base64, 'base64')
+    const medido = conferirImagemDeCenario(bytes, mime)
+    expect(medido).toEqual({ largura: 2, altura: 2 })
+    expect(await conferirUploadDeCenario(fonte(bytes, mime).objeto, sha(bytes), 'textura')).toEqual(
+      { digest: sha(bytes), bytes: bytes.length, tipoDoConteudo: mime, largura: 2, altura: 2 },
+    )
+  }
+  const bytes = glb()
+  await expect(
+    conferirUploadDeCenario(fonte(bytes).objeto, sha(bytes), 'textura'),
+  ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+})
 test('conferência incremental preserva o hash e valida prefixos partidos em qualquer limite', async () => {
   const bytes = glb({}, 4 * 1024 * 1024)
   for (const passo of [1, 3, 19, 65536]) {

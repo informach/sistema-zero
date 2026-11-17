@@ -1,0 +1,24 @@
+{
+  "resultados": [
+    {
+      "tema": "light",
+      "formatos": ["PNG", "JPEG convertido para PNG", "WebP"],
+      "duplicacaoEvitada": true,
+      "buscaPorEtiqueta": true,
+      "escalaFisica": 3.5,
+      "texturas": 5,
+      "revisaoAnteriorPreservada": true,
+      "erros": []
+    },
+    {
+      "tema": "dark",
+      "formatos": ["PNG", "JPEG convertido para PNG", "WebP"],
+      "duplicacaoEvitada": true,
+      "buscaPorEtiqueta": true,
+      "escalaFisica": 3.5,
+      "texturas": 5,
+      "revisaoAnteriorPreservada": true,
+      "erros": []
+    }
+  ]
+}

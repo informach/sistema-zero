@@ -71,8 +71,8 @@ export const COPY = {
     nadaNovo: 'Esses modelos já estavam na biblioteca.',
     recusados: (n: number) => plural(n, 'arquivo ficou de fora', 'arquivos ficaram de fora'),
     apagarTitulo: 'Apagar esta biblioteca?',
-    apagarTexto: (nome: string, n: number) =>
-      `"${nome}" e ${plural(n, 'modelo dela vai', 'modelos dela vão')} sair de todos os mundos.`,
+    apagarTexto: (nome: string) =>
+      `A biblioteca "${nome}" será apagada. As cópias já colocadas nos cenários continuam lá.`,
     apagarModelo: (nome: string) => `Tirar ${nome} da biblioteca`,
     licenca: {
       livre: 'Uso livre',
@@ -86,6 +86,8 @@ export const COPY = {
     },
     licencaRotulo: 'De onde vêm estes modelos',
     modelos: (n: number) => plural(n, 'modelo', 'modelos'),
+    conteudo: (b: { modelos: number; texturas?: number }) =>
+      `${plural(b.modelos, 'modelo', 'modelos')}${b.texturas ? ` · ${plural(b.texturas, 'chão', 'chãos')}` : ''}`,
     triangulos: (n: number) =>
       `${n.toLocaleString('pt-BR')} ${n === 1 ? 'triângulo' : 'triângulos'}`,
   },

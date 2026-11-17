@@ -7,7 +7,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { criarFonteDeMoldes } from '../../lib/cenarios-moldes'
+import { criarFonteDeMoldes, criarFonteDeTexturas } from '../../lib/cenarios-moldes'
 import { createCreationsCloud } from '../../lib/creations-cloud'
 import { sessionFetch } from '../../lib/session-fetch'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
@@ -81,8 +81,10 @@ export function CenariosClient({ viewerId }: { viewerId: string | null }) {
     const cloud = viewerId
       ? createCreationsCloud({ tool: 'molda', viewerId, maxFormatVersion: 2 })
       : null
-    if (viewerId && cloud)
+    if (viewerId && cloud) {
       novo.molda = criarFonteDeMoldes({ perfilId: viewerId, cloud, host: novo })
+      novo.texturasMolda = criarFonteDeTexturas({ perfilId: viewerId, cloud, host: novo })
+    }
     setConexao({ perfil: viewerId, host: novo })
     return () => cloud?.dispose({ abort: true })
   }, [mod, viewerId])

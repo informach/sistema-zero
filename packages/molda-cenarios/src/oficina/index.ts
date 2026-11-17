@@ -3,3 +3,4 @@ export { type Buscar, criarHostHttp, ErroDaOficina, type OpcoesDoHostHttp } from
 export { criarHostEmMemoria, type OpcoesDoHostEmMemoria } from './host-memoria'
 export { prepararArquivos } from './importar'
 export * from './portas'
+export { prepararChao } from './texturas'

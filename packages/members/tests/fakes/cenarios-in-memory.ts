@@ -8,6 +8,7 @@ import {
   type Espaco,
   type Modelo,
   type Mundo,
+  type Textura,
   TIPO_DO_CONTEUDO,
   type TipoDeBlob,
   type TipoDeConteudo,
@@ -38,6 +39,7 @@ export class CenariosEmMemoria implements CenariosRepository {
   readonly espacosGuardados = new Map<string, Espaco>()
   readonly bibliotecasGuardadas = new Map<string, Biblioteca & { criadoPor: string }>()
   readonly modelosGuardados = new Map<string, Modelo & { busca: string }>()
+  readonly texturasGuardadas = new Map<string, Textura & { busca: string }>()
   readonly blobs = new Map<string, BlobGuardado>()
   readonly mundosGuardados = new Map<string, Mundo>()
   readonly cenariosGuardados = new Map<string, CenarioGuardado>()
@@ -63,6 +65,8 @@ export class CenariosEmMemoria implements CenariosRepository {
   /** Digests que nenhum modelo nem cenário do espaço usa mais: saem do espaço. */
   private soltarOrfaos(espacoId: string, digests: readonly string[], agora: Date): string[] {
     const usados = new Set<string>()
+    for (const t of this.texturasGuardadas.values())
+      if (this.bibliotecasGuardadas.get(t.bibliotecaId)?.espacoId === espacoId) usados.add(t.digest)
     for (const m of this.modelosGuardados.values()) {
       if (this.bibliotecasGuardadas.get(m.bibliotecaId)?.espacoId !== espacoId) continue
       usados.add(m.digest)
@@ -90,6 +94,10 @@ export class CenariosEmMemoria implements CenariosRepository {
     if (!biblioteca) return
     const dela = [...this.modelosGuardados.values()].filter((m) => m.bibliotecaId === bibliotecaId)
     biblioteca.modelos = dela.length
+    const texturas = [...this.texturasGuardadas.values()].filter(
+      (t) => t.bibliotecaId === bibliotecaId,
+    )
+    biblioteca.texturas = texturas.length
     if (biblioteca.capaModelo && !this.modelosGuardados.has(biblioteca.capaModelo))
       biblioteca.capaModelo = null
     biblioteca.capa =
@@ -97,6 +105,7 @@ export class CenariosEmMemoria implements CenariosRepository {
         ? this.modelosGuardados.get(biblioteca.capaModelo)?.miniatura
         : null) ??
       dela.find((m) => m.miniatura)?.miniatura ??
+      texturas[0]?.digest ??
       null
   }
 
@@ -159,6 +168,7 @@ export class CenariosEmMemoria implements CenariosRepository {
       capaModelo: null,
       licenca: dados.licenca,
       modelos: 0,
+      texturas: 0,
       capa: null,
       atualizadaEm: agora,
       criadoPor: dados.criadoPor,
@@ -188,10 +198,82 @@ export class CenariosEmMemoria implements CenariosRepository {
         digests.push(m.digest, ...(m.miniatura ? [m.miniatura] : []))
         this.modelosGuardados.delete(m.id)
       }
+    for (const t of [...this.texturasGuardadas.values()])
+      if (t.bibliotecaId === id) {
+        digests.push(t.digest)
+        this.texturasGuardadas.delete(t.id)
+      }
     this.bibliotecasGuardadas.delete(id)
     for (const mundo of this.mundosGuardados.values())
       mundo.bibliotecas = mundo.bibliotecas.filter((x) => x !== id)
     return this.soltarOrfaos(b.espacoId, digests, agora)
+  }
+
+  async texturas(bibliotecaId: string, filtro: Parameters<CenariosRepository['texturas']>[1]) {
+    const todos = [...this.texturasGuardadas.values()]
+      .filter((t) => t.bibliotecaId === bibliotecaId)
+      .filter((t) => filtro.pasta === undefined || t.pasta === filtro.pasta)
+      .filter((t) => filtro.digest === undefined || t.digest === filtro.digest)
+      .filter((t) => filtro.termos.every((termo) => t.busca.includes(termo)))
+      .sort((a, b) => (a.busca < b.busca ? -1 : a.busca > b.busca ? 1 : a.id.localeCompare(b.id)))
+    return {
+      itens: this.copia(todos.slice(filtro.inicio, filtro.inicio + filtro.limite)),
+      total: todos.length,
+    }
+  }
+  async textura(id: string) {
+    return this.copia(this.texturasGuardadas.get(id) ?? null)
+  }
+  async criarTexturas(
+    bibliotecaId: string,
+    texturas: Parameters<CenariosRepository['criarTexturas']>[1],
+    teto: number,
+    _criadoPor: string,
+    agora: Date,
+    conferidos: readonly ConferenciaDeBlob[],
+  ) {
+    const biblioteca = this.bibliotecasGuardadas.get(bibliotecaId)
+    if (!biblioteca) return null
+    const existentes = [...this.texturasGuardadas.values()].filter(
+      (t) => t.bibliotecaId === bibliotecaId,
+    )
+    const novos = texturas.filter(
+      (t, i) =>
+        !existentes.some((e) => e.digest === t.digest) &&
+        texturas.findIndex((e) => e.digest === t.digest) === i,
+    )
+    if (existentes.length + novos.length > teto) return null
+    await this.confirmarBlobs(biblioteca.espacoId, conferidos, agora)
+    for (const t of novos)
+      this.texturasGuardadas.set(t.id, { ...t, bibliotecaId, busca: buscaDoModelo(t) })
+    biblioteca.atualizadaEm = agora
+    this.contar(bibliotecaId)
+    return this.copia(novos.map((t) => this.texturasGuardadas.get(t.id)!))
+  }
+  async editarTextura(
+    id: string,
+    dados: Parameters<CenariosRepository['editarTextura']>[1],
+    agora: Date,
+  ) {
+    const atual = this.texturasGuardadas.get(id)
+    if (!atual) return null
+    Object.assign(atual, dados)
+    atual.busca = buscaDoModelo(atual)
+    const biblioteca = this.bibliotecasGuardadas.get(atual.bibliotecaId)
+    if (biblioteca) biblioteca.atualizadaEm = agora
+    return this.copia(atual)
+  }
+  async apagarTexturas(bibliotecaId: string, ids: readonly string[], agora: Date) {
+    const biblioteca = this.bibliotecasGuardadas.get(bibliotecaId)
+    if (!biblioteca) return []
+    const digests: string[] = []
+    for (const t of [...this.texturasGuardadas.values()])
+      if (t.bibliotecaId === bibliotecaId && ids.includes(t.id)) {
+        this.texturasGuardadas.delete(t.id)
+        digests.push(t.digest)
+      }
+    this.contar(bibliotecaId)
+    return this.soltarOrfaos(biblioteca.espacoId, digests, agora)
   }
 
   async modelos(bibliotecaId: string, filtro: Parameters<CenariosRepository['modelos']>[1]) {

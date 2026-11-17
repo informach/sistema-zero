@@ -56,6 +56,7 @@ import {
   check,
   customType,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -3249,7 +3250,7 @@ export const cenarioBlobs = members.table(
       .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
     /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
     digest: varchar('digest', { length: 64 }).notNull(),
-    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa'>().notNull(),
+    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa' | 'textura'>().notNull(),
     tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
       'model/gltf-binary' | 'image/webp' | 'image/png'
     >(),
@@ -3262,10 +3263,10 @@ export const cenarioBlobs = members.table(
   },
   (t) => [
     primaryKey({ columns: [t.espacoId, t.digest] }),
-    check('cenario_blobs_tipo_check', sql`${t.tipo} in ('modelo', 'miniatura', 'capa')`),
+    check('cenario_blobs_tipo_check', sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura')`),
     check(
       'cenario_blobs_conteudo_check',
-      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa') and ${t.tipoDoConteudo} in ('image/webp', 'image/png'))`,
+      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png'))`,
     ),
     check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
     check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),
@@ -3330,6 +3331,39 @@ export const cenarioModelos = members.table(
     uniqueIndex('cenario_modelos_biblioteca_digest_uq').on(t.bibliotecaId, t.digest),
     index('cenario_modelos_lista_idx').on(t.bibliotecaId, t.nome, t.id),
     index('cenario_modelos_digest_idx').on(t.digest),
+  ],
+)
+
+export const cenarioTexturas = members.table(
+  'cenario_texturas',
+  {
+    id: uuid('id').primaryKey(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    busca: varchar('busca', { length: 600 }).notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    largura: integer('largura').notNull(),
+    altura: integer('altura').notNull(),
+    repeticaoMetros: doublePrecision('repeticao_metros').notNull().default(2),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('cenario_texturas_biblioteca_digest_uq').on(t.bibliotecaId, t.digest),
+    index('cenario_texturas_lista_idx').on(t.bibliotecaId, t.nome, t.id),
+    check(
+      'cenario_texturas_dimensoes_check',
+      sql`${t.largura} between 1 and 4096 and ${t.altura} between 1 and 4096 and ${t.largura}::bigint * ${t.altura} <= 8388608`,
+    ),
+    check('cenario_texturas_repeticao_check', sql`${t.repeticaoMetros} between 0.05 and 1000`),
+    check('cenario_texturas_bytes_check', sql`${t.bytes} > 0 and ${t.bytes} <= 4194304`),
+    check('cenario_texturas_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
   ],
 )
 
@@ -3542,6 +3576,7 @@ export const schema = {
   cenarioBlobs,
   cenarioBibliotecas,
   cenarioModelos,
+  cenarioTexturas,
   cenarioMundos,
   cenarioMundoBibliotecas,
   cenarioCenarios,

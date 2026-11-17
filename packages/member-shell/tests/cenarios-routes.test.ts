@@ -497,6 +497,51 @@ describe('BFF do Molda Cenários: trazer modelos', () => {
   })
 })
 
+describe('BFF do Molda Cenários: chãos', () => {
+  test('confirma as dimensões da imagem e só então usa a rota HMAC', async () => {
+    const t = montar()
+    const r = await t.pedir('POST', `bibliotecas/${BIBLIOTECA}/texturas`, {
+      espacoId: ESPACO,
+      texturas: [
+        {
+          digest: digest('c'),
+          nome: 'Grama',
+          pasta: '',
+          etiquetas: [],
+          largura: 2,
+          altura: 2,
+          repeticaoMetros: 2,
+        },
+      ],
+    })
+    expect(r.status).toBe(200)
+    const afirmacao = t.chamadas.find((c) => c.via === 'hmac')
+    expect(afirmacao?.path).toBe('/members/internal/cenarios/texturas')
+    expect(afirmacao?.body).toMatchObject({ conferidos: [{ ...prova(2), largura: 2, altura: 2 }] })
+  })
+  test('não lê imagens de outro espaço nem confirma um arquivo GLB como textura', async () => {
+    const t = montar()
+    expect(
+      (
+        await t.pedir('POST', `bibliotecas/${BIBLIOTECA}/texturas`, {
+          espacoId: OUTRO_ESPACO,
+          texturas: [{ digest: digest('c') }],
+        })
+      ).status,
+    ).toBe(404)
+    expect(t.conferidos).toEqual([])
+    expect(
+      (
+        await t.pedir('POST', `bibliotecas/${BIBLIOTECA}/texturas`, {
+          espacoId: ESPACO,
+          texturas: [{ digest: digest('a') }],
+        })
+      ).status,
+    ).toBe(422)
+    expect(t.chamadas.some((c) => c.via === 'hmac')).toBe(false)
+  })
+})
+
 describe('BFF do Molda Cenários: apagar e ler arquivos', () => {
   test('o MIME confirmado prevalece sobre a consulta e nunca permite servir HTML', async () => {
     const t = montar()

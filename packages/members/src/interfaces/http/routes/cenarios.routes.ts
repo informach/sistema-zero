@@ -65,6 +65,15 @@ const ModeloParaRegistrar = t.Object({
   max: TRES,
   miniatura: t.Optional(t.Union([DIGEST, t.Null()])),
 })
+const TexturaParaRegistrar = t.Object({
+  nome: NOME,
+  pasta: t.String({ maxLength: 240 }),
+  etiquetas: t.Array(t.String({ minLength: 1, maxLength: 40 }), { maxItems: 16 }),
+  digest: DIGEST,
+  largura: t.Integer({ minimum: 1, maximum: 4096 }),
+  altura: t.Integer({ minimum: 1, maximum: 4096 }),
+  repeticaoMetros: t.Number({ minimum: 0.05, maximum: 1000 }),
+})
 /** Quem pede, afirmado pelo BFF nas rotas internas (ele leu a sessão). */
 const AtorBody = t.Object({
   usuarioId: UUID,
@@ -161,6 +170,59 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
               limite: t.Optional(
                 t.Numeric({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.paginaDeModelos }),
               ),
+            }),
+          },
+        )
+        .get(
+          '/bibliotecas/:id/texturas',
+          ({ headers, params, query }) => s.texturas(atorDe(headers), params.id, query),
+          {
+            params: Id,
+            query: t.Object({
+              busca: t.Optional(t.String({ maxLength: 120 })),
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              digest: t.Optional(DIGEST),
+              cursor: t.Optional(t.String({ pattern: '^[0-9]{1,7}$' })),
+              limite: t.Optional(
+                t.Numeric({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.paginaDeModelos }),
+              ),
+            }),
+          },
+        )
+        .post(
+          '/bibliotecas/:id/texturas/reservar',
+          ({ headers, params, body }) =>
+            s.reservarTexturas(atorDe(headers), params.id, body.texturas),
+          {
+            params: Id,
+            body: t.Object({
+              texturas: Varios(
+                t.Object({
+                  digest: DIGEST,
+                  bytes: t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.texturaBytes }),
+                  tipoDoConteudo: MIME_IMAGEM,
+                }),
+              ),
+            }),
+          },
+        )
+        .post(
+          '/bibliotecas/:id/texturas/apagar',
+          ({ headers, params, body }) => s.apagarTexturas(atorDe(headers), params.id, body.ids),
+          { params: Id, body: t.Object({ ids: t.Array(UUID, { minItems: 1, maxItems: 200 }) }) },
+        )
+        .patch(
+          '/texturas/:id',
+          ({ headers, params, body }) => s.editarTextura(atorDe(headers), params.id, body),
+          {
+            params: Id,
+            body: t.Object({
+              nome: t.Optional(NOME),
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              etiquetas: t.Optional(
+                t.Array(t.String({ minLength: 1, maxLength: 40 }), { maxItems: 16 }),
+              ),
+              repeticaoMetros: t.Optional(t.Number({ minimum: 0.05, maximum: 1000 })),
             }),
           },
         )
@@ -347,6 +409,37 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
               conferidos: t.Array(CONFERENCIA, {
                 maxItems: LIMITES_DOS_CENARIOS.reservaPorChamada * 2,
               }),
+            }),
+          },
+        )
+        .post(
+          '/texturas',
+          ({ headers, body }) => {
+            assertMemberShellConsumer(headers['x-consumer-id'])
+            return s.registrarTexturas(
+              body.ator,
+              body.bibliotecaId,
+              body.texturas,
+              body.conferidos,
+              body.espacoId,
+            )
+          },
+          {
+            body: t.Object({
+              ator: AtorBody,
+              bibliotecaId: UUID,
+              espacoId: UUID,
+              texturas: Varios(TexturaParaRegistrar),
+              conferidos: t.Array(
+                t.Intersect([
+                  CONFERENCIA,
+                  t.Object({
+                    largura: t.Integer({ minimum: 1, maximum: 4096 }),
+                    altura: t.Integer({ minimum: 1, maximum: 4096 }),
+                  }),
+                ]),
+                { maxItems: 50 },
+              ),
             }),
           },
         )

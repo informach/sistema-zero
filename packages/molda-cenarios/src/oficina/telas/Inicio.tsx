@@ -404,7 +404,7 @@ export function CartaoDaBiblioteca({
       <span className="font-semibold text-mld-muted text-sm">
         {biblioteca.fonte === 'molda'
           ? 'Sempre atualizado com o Molda'
-          : COPY.biblioteca.modelos(biblioteca.modelos)}
+          : COPY.biblioteca.conteudo(biblioteca)}
       </span>
       {biblioteca.descricao ? (
         <p className="line-clamp-2 text-sm text-mld-muted" title={biblioteca.descricao}>

@@ -14,6 +14,7 @@ import {
   type Biblioteca,
   type Cenario,
   type ConferenciaDeBlob,
+  type ConferenciaDeTextura,
   chaveDoBlob,
   type Espaco,
   ehImagemDeCenario,
@@ -26,6 +27,7 @@ import {
   podeUsarCenarios,
   type ResumoDeCenario,
   TETO_DO_BLOB,
+  type Textura,
   TIPO_DO_CONTEUDO,
   type TipoDeBlob,
   type TipoDeConteudo,
@@ -89,6 +91,13 @@ export interface ModeloParaRegistrar {
   max: [number, number, number]
   miniatura?: string | null
 }
+
+export interface TexturaParaReservar {
+  digest: string
+  bytes: number
+  tipoDoConteudo: 'image/png' | 'image/webp'
+}
+export type TexturaParaRegistrar = Omit<Textura, 'id' | 'bibliotecaId' | 'bytes'>
 
 const texto = (valor: string, oque: string, max = 120): string => {
   const limpo = valor.trim()
@@ -452,6 +461,154 @@ export class CenariosService {
     if (!ids.length || ids.length > 200) throw new ValidationError('Escolha de 1 a 200 modelos')
     const orfaos = await this.repo.apagarModelos(bibliotecaId, ids, this.clock())
     return { apagar: orfaos.map((digest) => chaveDoBlob(espaco.id, digest)) }
+  }
+
+  async texturas(
+    ator: Ator,
+    bibliotecaId: string,
+    filtro: { busca?: string; pasta?: string; digest?: string; cursor?: string; limite?: number },
+  ) {
+    await this.bibliotecaDe(ator, bibliotecaId)
+    const inicio = Math.max(0, Number(filtro.cursor ?? 0) || 0)
+    const limite = Math.min(LIMITES_DOS_CENARIOS.paginaDeModelos, Math.max(1, filtro.limite ?? 60))
+    const pagina = await this.repo.texturas(bibliotecaId, {
+      termos: normalizarBusca(filtro.busca ?? '')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 8),
+      ...(filtro.pasta !== undefined ? { pasta: filtro.pasta } : {}),
+      ...(filtro.digest !== undefined ? { digest: filtro.digest } : {}),
+      inicio,
+      limite,
+    })
+    return {
+      ...pagina,
+      proximo: inicio + pagina.itens.length < pagina.total ? String(inicio + limite) : null,
+    }
+  }
+
+  async reservarTexturas(
+    ator: Ator,
+    bibliotecaId: string,
+    texturas: readonly TexturaParaReservar[],
+  ) {
+    const { espaco } = await this.bibliotecaDe(ator, bibliotecaId)
+    if (!texturas.length || texturas.length > LIMITES_DOS_CENARIOS.reservaPorChamada)
+      throw new ValidationError('Traga de 1 a 50 imagens por vez')
+    const blobs = new Map<string, BlobReservado>()
+    for (const t of texturas) {
+      if (
+        !Number.isSafeInteger(t.bytes) ||
+        t.bytes < 1 ||
+        t.bytes > LIMITES_DOS_CENARIOS.texturaBytes ||
+        !['image/png', 'image/webp'].includes(t.tipoDoConteudo)
+      )
+        throw new ValidationError('Use uma imagem PNG ou WebP de até 4 MB')
+      const anterior = blobs.get(t.digest)
+      if (anterior && (anterior.bytes !== t.bytes || anterior.tipoDoConteudo !== t.tipoDoConteudo))
+        throw new ValidationError('O mesmo arquivo não pode ter tamanhos ou tipos diferentes')
+      blobs.set(t.digest, { ...t, tipo: 'textura' })
+    }
+    return this.reservar(espaco.id, [...blobs.values()])
+  }
+
+  async registrarTexturas(
+    ator: Ator,
+    bibliotecaId: string,
+    texturas: readonly TexturaParaRegistrar[],
+    conferidos: readonly ConferenciaDeTextura[],
+    espacoConferido: string,
+  ): Promise<Textura[]> {
+    const { espaco } = await this.bibliotecaDe(ator, bibliotecaId)
+    if (!texturas.length || texturas.length > LIMITES_DOS_CENARIOS.reservaPorChamada)
+      throw new ValidationError('Traga de 1 a 50 imagens por vez')
+    const provas = new Map(
+      (espacoConferido === espaco.id ? conferidos : []).map((c) => [c.digest, c]),
+    )
+    const agora = this.clock()
+    const preparadas = texturas.map((t) => {
+      const prova = provas.get(t.digest)
+      if (
+        !prova ||
+        prova.largura !== t.largura ||
+        prova.altura !== t.altura ||
+        !['image/png', 'image/webp'].includes(prova.tipoDoConteudo)
+      )
+        throw new CenarioArquivoAusenteError([t.digest])
+      if (
+        !Number.isInteger(t.largura) ||
+        !Number.isInteger(t.altura) ||
+        t.largura < 1 ||
+        t.altura < 1 ||
+        t.largura > 4096 ||
+        t.altura > 4096 ||
+        t.largura * t.altura > 8388608 ||
+        prova.bytes > LIMITES_DOS_CENARIOS.texturaBytes
+      )
+        throw new ValidationError('A imagem passa do limite de tamanho ou dimensões')
+      this.conferirRepeticao(t.repeticaoMetros)
+      return {
+        ...t,
+        id: this.novoId(),
+        bytes: prova.bytes,
+        nome: texto(t.nome, 'O nome do chão'),
+        pasta: t.pasta.trim().slice(0, 240),
+        etiquetas: [...new Set(t.etiquetas.map((e) => e.trim()).filter(Boolean))].slice(0, 16),
+      }
+    })
+    const criadas = await this.repo.criarTexturas(
+      bibliotecaId,
+      preparadas,
+      LIMITES_DOS_CENARIOS.texturasPorBiblioteca,
+      ator.usuarioId,
+      agora,
+      [...provas.values()],
+    )
+    if (!criadas) throw new CenariosSemEspacoError('Esta biblioteca já tem o máximo de chãos')
+    return criadas
+  }
+
+  private conferirRepeticao(valor: number) {
+    if (!Number.isFinite(valor) || valor < 0.05 || valor > 1000)
+      throw new ValidationError('A repetição do chão precisa ter de 0,05 a 1000 metros')
+  }
+
+  async editarTextura(
+    ator: Ator,
+    id: string,
+    dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
+  ): Promise<Textura> {
+    this.exigirAberto(ator)
+    const atual = await this.repo.textura(id)
+    if (!atual) throw new CenarioNaoEncontradoError('O chão')
+    await this.bibliotecaDe(ator, atual.bibliotecaId)
+    if (dados.repeticaoMetros !== undefined) this.conferirRepeticao(dados.repeticaoMetros)
+    const editada = await this.repo.editarTextura(
+      id,
+      {
+        ...(dados.nome !== undefined ? { nome: texto(dados.nome, 'O nome do chão') } : {}),
+        ...(dados.pasta !== undefined ? { pasta: dados.pasta.trim().slice(0, 240) } : {}),
+        ...(dados.etiquetas !== undefined
+          ? {
+              etiquetas: [...new Set(dados.etiquetas.map((e) => e.trim()).filter(Boolean))].slice(
+                0,
+                16,
+              ),
+            }
+          : {}),
+        ...(dados.repeticaoMetros !== undefined ? { repeticaoMetros: dados.repeticaoMetros } : {}),
+      },
+      this.clock(),
+    )
+    if (!editada) throw new CenarioNaoEncontradoError('O chão')
+    return editada
+  }
+
+  async apagarTexturas(ator: Ator, bibliotecaId: string, ids: readonly string[]) {
+    const { espaco } = await this.bibliotecaDe(ator, bibliotecaId)
+    if (!ids.length || ids.length > 200) throw new ValidationError('Escolha de 1 a 200 chãos')
+    const orfas = await this.repo.apagarTexturas(bibliotecaId, ids, this.clock())
+    return { apagar: orfas.map((digest) => chaveDoBlob(espaco.id, digest)) }
   }
 
   /** Onde está um arquivo do espaço, para o BFF assinar a leitura. */

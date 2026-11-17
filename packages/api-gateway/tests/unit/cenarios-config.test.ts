@@ -25,6 +25,10 @@ const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['PATCH', `/members/cenarios/bibliotecas/${ID}`],
   ['DELETE', `/members/cenarios/bibliotecas/${ID}`],
   ['GET', `/members/cenarios/bibliotecas/${ID}/modelos`],
+  ['GET', `/members/cenarios/bibliotecas/${ID}/texturas`],
+  ['POST', `/members/cenarios/bibliotecas/${ID}/texturas/reservar`],
+  ['POST', `/members/cenarios/bibliotecas/${ID}/texturas/apagar`],
+  ['PATCH', `/members/cenarios/texturas/${ID}`],
   ['GET', `/members/cenarios/bibliotecas/${ID}/organizacao`],
   ['POST', `/members/cenarios/bibliotecas/${ID}/modelos/reservar`],
   ['POST', `/members/cenarios/bibliotecas/${ID}/modelos/apagar`],
@@ -99,6 +103,7 @@ describe('Molda Cenários na borda', () => {
   test('só o BFF afirma que o arquivo chegou: rota interna por HMAC do member-shell', () => {
     for (const caminho of [
       '/members/internal/cenarios/modelos',
+      '/members/internal/cenarios/texturas',
       '/members/internal/cenarios/capa',
     ]) {
       const rota = resolver('POST', caminho)
