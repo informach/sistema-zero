@@ -4,7 +4,7 @@ import type {
   CoursePublicationStatus,
 } from '@sistemazero/core/course/publication'
 import { DomainError } from '../shared/errors'
-import type { CourseSyncPlan, Snapshot } from './course-sync'
+import type { CourseSnapshot, CourseSyncPlan, LessonSnapshot, Snapshot } from './course-sync'
 
 export function coursePublicationPreview(
   snapshot: Snapshot,
@@ -32,12 +32,23 @@ export function coursePublicationPreview(
   }
 }
 
-export type StoredPublicationValue<T> = T extends Date
-  ? string
-  : T extends object
-    ? { [K in keyof T]: StoredPublicationValue<T[K]> }
-    : T
-export type StoredPublicationSnapshot = StoredPublicationValue<Snapshot>
+/** Somente timestamps das linhas são Date; documentos autorais já são valores JSON. */
+type StoredDate<T> = T extends Date ? string : T
+type StoredRow<T> = { [K in keyof T]: StoredDate<T[K]> }
+type StoredCourseSnapshot = Omit<
+  CourseSnapshot,
+  'course' | 'modules' | 'lessons' | 'archivedModules' | 'archivedLessons'
+> & {
+  course: StoredRow<CourseSnapshot['course']>
+  modules: Array<StoredRow<CourseSnapshot['modules'][number]>>
+  lessons: Array<Omit<LessonSnapshot, 'row'> & { row: StoredRow<LessonSnapshot['row']> }>
+  archivedModules?: Array<StoredRow<NonNullable<CourseSnapshot['archivedModules']>[number]>>
+  archivedLessons?: Array<StoredRow<NonNullable<CourseSnapshot['archivedLessons']>[number]>>
+}
+export type StoredPublicationSnapshot = Omit<Snapshot, 'source' | 'target'> & {
+  source: StoredCourseSnapshot
+  target: StoredCourseSnapshot
+}
 
 export function storePublicationSnapshot(snapshot: Snapshot): StoredPublicationSnapshot {
   return JSON.parse(JSON.stringify(snapshot)) as StoredPublicationSnapshot

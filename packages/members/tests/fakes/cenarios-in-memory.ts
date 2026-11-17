@@ -21,6 +21,10 @@ import {
   tiposDeBlobCompativeis,
 } from '../../src/domain/cenarios/cenarios'
 import {
+  CenarioArquivoAusenteError,
+  CenarioInvalidoError,
+} from '../../src/domain/cenarios/cenarios.errors'
+import {
   avancarHistorico,
   type PassoDoHistorico,
   type PilhasDoHistorico,
@@ -154,6 +158,7 @@ export class CenariosEmMemoria implements CenariosRepository {
   readonly blobs = new Map<string, BlobGuardado>()
   readonly mundosGuardados = new Map<string, Mundo>()
   readonly cenariosGuardados = new Map<string, CenarioGuardado>()
+  private readonly retratosGuardados = new Map<string, Map<number, string>>()
   private readonly pilhas = new Map<string, PilhasDoHistorico>()
   private readonly fotografias = new Map<
     string,
@@ -193,6 +198,7 @@ export class CenariosEmMemoria implements CenariosRepository {
         for (const a of arquivosDoDocumento(r.documento)) usados.add(a.digest)
       }
       if (c.capa) usados.add(c.capa)
+      for (const digest of this.retratosGuardados.get(c.id)?.values() ?? []) usados.add(digest)
     }
     const orfaos = [...new Set(digests)].filter((d) => !usados.has(d))
     for (const d of orfaos) this.blobs.delete(this.chave(espacoId, d))
@@ -708,13 +714,59 @@ export class CenariosEmMemoria implements CenariosRepository {
         .map(({ revisao, comandos }) => ({ revisao, comandos })),
     )
   }
-  async definirCapa(cenarioId: string, digest: string, agora: Date) {
+  async retratos(cenarioId: string, revisoes: readonly number[]) {
+    const fontes = this.retratosGuardados.get(cenarioId)
+    return new Map(revisoes.flatMap((r) => (fontes?.has(r) ? [[r, fontes.get(r)!] as const] : [])))
+  }
+  async definirCapa(dados: Parameters<CenariosRepository['definirCapa']>[0], agora: Date) {
+    const { cenarioId, revisao, digest } = dados
     const c = this.cenariosGuardados.get(cenarioId)
-    if (!c) return false
-    c.capa = digest
-    c.atualizadoEm = agora
+    const mundo = c && this.mundosGuardados.get(c.mundoId)
+    if (!c || !mundo) return null
+    const inicio = (await this.inicioDoHistorico(cenarioId)) ?? c.revisao
+    if (!Number.isInteger(revisao) || revisao < inicio || revisao > c.revisao)
+      throw new CenarioInvalidoError(['Revisão fora do histórico deste cenário'])
+    const retratos = this.retratosGuardados.get(cenarioId) ?? new Map<number, string>(),
+      existente = retratos.get(revisao)
+    if (existente) return { revisao, digest: existente, atual: revisao === c.revisao, apagar: [] }
+    if (dados.recurso) {
+      const cf = dados.recurso.conferido
+      if (
+        dados.recurso.espacoId !== mundo.espacoId ||
+        !cf ||
+        cf.digest !== digest ||
+        cf.bytes < 1 ||
+        cf.bytes > 512 * 1024 ||
+        !['image/png', 'image/webp'].includes(cf.tipoDoConteudo)
+      )
+        throw new CenarioArquivoAusenteError([digest])
+      this.confirmarBlobsNoEstado(mundo.espacoId, [cf], agora)
+    }
+    const imagem = this.blobs.get(this.chave(mundo.espacoId, digest))
+    if (
+      !imagem?.confirmado ||
+      imagem.bytes > 512 * 1024 ||
+      !['miniatura', 'capa', 'textura'].includes(imagem.tipo)
+    )
+      throw new CenarioArquivoAusenteError([digest])
+    retratos.set(revisao, digest)
+    this.retratosGuardados.set(cenarioId, retratos)
+    const atual = revisao === c.revisao,
+      anterior = c.capa
+    if (atual) {
+      c.capa = digest
+      c.atualizadoEm = agora
+    }
     this.contarCenarios(c.mundoId)
-    return true
+    return {
+      revisao,
+      digest,
+      atual,
+      apagar:
+        atual && anterior && anterior !== digest
+          ? this.soltarOrfaos(mundo.espacoId, [anterior], agora)
+          : [],
+    }
   }
   async apagarCenario(id: string) {
     const c = this.cenariosGuardados.get(id)
@@ -736,6 +788,8 @@ export class CenariosEmMemoria implements CenariosRepository {
       for (const r of arquivosDosComandos([...l.comandos, ...(l.inversos ?? [])]))
         candidatos.add(r.digest)
     if (c.capa) candidatos.add(c.capa)
+    for (const digest of this.retratosGuardados.get(id)?.values() ?? []) candidatos.add(digest)
+    this.retratosGuardados.delete(id)
     this.cenariosGuardados.delete(id)
     this.pilhas.delete(id)
     this.fotografias.delete(id)

@@ -117,6 +117,12 @@ const RegistrarBody = z.object({
     .max(50),
 })
 const CapaBody = z.object({ espacoId: Uuid, digest: Digest })
+const RetratoBody = CapaBody.extend({ revisao: z.number().int().min(0).max(2147483647) })
+const RetratoGuardadoBody = z.object({
+  revisao: z.number().int().min(0).max(2147483647),
+  digest: Digest,
+  atual: z.boolean(),
+})
 const LoteComRecursosBody = z
   .object({
     revisaoEsperada: z.number().int().nonnegative(),
@@ -365,7 +371,7 @@ export function createCenariosRoutes(deps: {
       : semConferencia()
 
   /** O members disse quais arquivos ficaram sem dono: saem do armazenamento depois da resposta. */
-  function soltar(r: GatewayResponse): NextResponse {
+  function soltar(r: GatewayResponse, retrato?: z.infer<typeof RetratoGuardadoBody>): NextResponse {
     if (r.status !== 200) return repasse(r)
     const apagados = Apagados.safeParse(r.body)
     const chaves = apagados.success
@@ -379,7 +385,7 @@ export function createCenariosRoutes(deps: {
           console.warn('[cenarios] não apagou arquivos soltos', { quantos: chaves.length, error })
         }
       })
-    return privado(NextResponse.json({ ok: true }))
+    return privado(NextResponse.json(retrato ?? { ok: true }))
   }
 
   async function podeLer(user: SessionUser, espacoId: string): Promise<boolean | NextResponse> {
@@ -650,7 +656,7 @@ export function createCenariosRoutes(deps: {
       if (capa) {
         if (!user) return semSessao()
         const lido = await corpoJson(req, CORPO_PEQUENO)
-        const corpo = lido.ok ? CapaBody.safeParse(lido.corpo) : null
+        const corpo = lido.ok ? RetratoBody.safeParse(lido.corpo) : null
         if (!corpo?.success) return invalido()
         const espacoId = corpo.data.espacoId.toLowerCase()
         const permitido = await podeLer(user, espacoId)
@@ -663,18 +669,22 @@ export function createCenariosRoutes(deps: {
         }
         if (!conferidos.length)
           return erro(409, 'CENARIO_ARQUIVO_AUSENTE', 'Envie o retrato de novo')
-        return repasse(
-          await gateway.gatewayFetchHmac('/members/internal/cenarios/capa', {
-            method: 'POST',
-            body: {
-              ator: atorDe(user),
-              cenarioId: capa[1]!.toLowerCase(),
-              espacoId,
-              digest: corpo.data.digest,
-              conferido: conferidos[0] ?? null,
-            },
-          }),
-        )
+        const resultado = await gateway.gatewayFetchHmac('/members/internal/cenarios/capa', {
+          method: 'POST',
+          body: {
+            ator: atorDe(user),
+            cenarioId: capa[1]!.toLowerCase(),
+            revisao: corpo.data.revisao,
+            espacoId,
+            digest: corpo.data.digest,
+            conferido: conferidos[0] ?? null,
+          },
+        })
+        if (resultado.status !== 200) return repasse(resultado)
+        const retrato = RetratoGuardadoBody.safeParse(resultado.body)
+        if (!retrato.success || retrato.data.revisao !== corpo.data.revisao)
+          return erro(502, 'CENARIOS_RETRATO', 'O servidor não confirmou o retrato desta versão')
+        return soltar(resultado, retrato.data)
       }
 
       if (APAGAR_MODELOS.test(caminho) || APAGAR_TEXTURAS.test(caminho)) {

@@ -3563,6 +3563,31 @@ export const cenarioRevisoes = members.table(
   (t) => [primaryKey({ columns: [t.cenarioId, t.revisao] })],
 )
 
+/** Imagem fixada na revisão fotografada, independente dos snapshots JSON esparsos. */
+export const cenarioRetratos = members.table(
+  'cenario_retratos',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    espacoId: uuid('espaco_id').notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.revisao] }),
+    foreignKey({
+      columns: [t.espacoId, t.digest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+      name: 'cenario_retratos_blob_fk',
+    }),
+    index('cenario_retratos_blob_idx').on(t.espacoId, t.digest),
+    check('cenario_retratos_revisao_check', sql`${t.revisao} >= 0`),
+  ],
+)
+
 export const schema = {
   creatorJourneyCourseGrants,
   kidsJourneyPolicy,
@@ -3690,6 +3715,7 @@ export const schema = {
   cenarioCenarios,
   cenarioLotes,
   cenarioRevisoes,
+  cenarioRetratos,
 }
 
 // Linha-tipo (importado por testes/seed se útil).

@@ -92,6 +92,7 @@ import type {
 } from '../portas'
 import { useConjuntos } from '../useConjuntos'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
+import { useRetratos } from '../useRetratos'
 import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
@@ -270,6 +271,7 @@ function OficinaAberta({
   )
   const [modoPainel, setModoPainel] = useState<'escolha' | 'organizacao'>('escolha')
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
+  const [gestoAtivo, setGestoAtivo] = useState(false)
   const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
   const [relevo, setRelevo] = useState<{
     chave: string
@@ -363,6 +365,14 @@ function OficinaAberta({
     documento.base.tipo !== 'terreno' ||
     (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
   const fonte = relevoPronto ? palco.current?.fonteDeAlturas?.() : undefined
+  const retratos = useRetratos({
+    host,
+    controlador,
+    estado,
+    palco,
+    pronto: relevoPronto && !medidas?.carregando && !texturas.carregando && !texturas.falhas.length,
+    emGesto: gestoAtivo,
+  })
 
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
@@ -412,6 +422,7 @@ function OficinaAberta({
       },
       aoEspalhar: aoAplicarPincel,
       aoPreverEspalhamento: aoPreverPincel,
+      aoGesto: setGestoAtivo,
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
       aoTransformar: (mudancas) =>
@@ -656,8 +667,7 @@ function OficinaAberta({
       return
     }
     try {
-      const retrato = await palco.current?.capturar(640)
-      if (retrato) await host.guardarCapa(aberto.resumo.id, retrato)
+      await retratos.fotografar()
     } catch {
       // O retrato do cartão é um conforto: sem ele, a saída continua.
     }
@@ -704,6 +714,19 @@ function OficinaAberta({
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
       {conjuntos.janela}
+      {retratos.erro ? (
+        <div className="mcn-andamento" role="alert">
+          <span>Não guardei o retrato: {retratos.erro}</span>
+          <button
+            type="button"
+            className="sz-tool-pill"
+            disabled={retratos.ocupado}
+            onClick={() => void retratos.fotografar()}
+          >
+            Tentar retrato da versão
+          </button>
+        </div>
+      ) : null}
       {conjuntos.erro || conjuntos.mensagem ? (
         <div className="mcn-andamento" role={conjuntos.erro ? 'alert' : 'status'}>
           <span>{conjuntos.erro ?? conjuntos.mensagem}</span>
@@ -915,7 +938,10 @@ function OficinaAberta({
             aria-label="Versões do cenário"
             title="Versões do cenário"
             disabled={estado.ocupado || estado.salvamento !== 'guardado'}
-            onClick={() => setVersoesAbertas(true)}
+            onClick={() => {
+              setVersoesAbertas(true)
+              void retratos.fotografar()
+            }}
           >
             <History aria-hidden="true" />
           </button>
@@ -1377,6 +1403,7 @@ function OficinaAberta({
           host={host}
           cenarioId={aberto.resumo.id}
           revisaoAtual={estado.revisao}
+          fotoRecente={retratos.ultima}
           controlador={controlador}
           aoFechar={() => setVersoesAbertas(false)}
         />

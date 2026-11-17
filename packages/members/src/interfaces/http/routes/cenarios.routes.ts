@@ -478,6 +478,7 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           {
             params: Id,
             body: t.Object({
+              revisao: t.Integer({ minimum: 0, maximum: 2147483647 }),
               digest: DIGEST,
               bytes: t.Integer({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.capaBytes }),
               tipoDoConteudo: t.Optional(MIME_IMAGEM),
@@ -607,20 +608,21 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           '/capa',
           async ({ headers, body }) => {
             assertMemberShellConsumer(headers['x-consumer-id'])
-            await s.definirCapa(
+            return s.definirCapa(
               body.ator,
               body.cenarioId,
+              body.revisao,
               body.digest,
               body.conferido,
               body.espacoId,
             )
-            return { ok: true }
           },
           {
             body: t.Object({
               ator: AtorBody,
               cenarioId: UUID,
               espacoId: UUID,
+              revisao: t.Integer({ minimum: 0, maximum: 2147483647 }),
               digest: DIGEST,
               conferido: t.Union([CONFERENCIA, t.Null()]),
             }),

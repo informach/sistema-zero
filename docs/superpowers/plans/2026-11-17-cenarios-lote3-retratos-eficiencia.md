@@ -40,23 +40,31 @@
 
 ## 3. Retratos duráveis do histórico
 
+Decisão de contrato: tabela `cenario_retratos`, identificada por cenário e revisão, guarda somente o digest/autor/data e a procedência do espaço. A primeira imagem válida de uma revisão fica fixada; uma repetição devolve a imagem já associada, sem confirmar outro arquivo. A coluna de capa existente continua sendo a última captura aceita enquanto aquela revisão era a cabeça. Um envio atrasado registra seu retrato histórico, mas não modifica a capa nem a data da cabeça nova. Imagens históricas e capa protegem os recursos; arquivo legado substituído só é liberado quando não possui outro dono.
+
+`definirCapa` e `guardarCapa` receberão a revisão explicitamente. Serviço/host não poderão inferir a revisão depois da captura. Confirmação e associação usam a mesma trava/transação do espaço. A listagem atual recebe miniatura por item e miniatura da revisão inicial; continua paginada e sem ler documentos JSON completos. A oficina fotografa somente uma versão guardada e estabilizada, com cancelamento, não cada gesto/frame. A saída e a abertura do histórico podem solicitar fotografia imediata pela mesma fila.
+
 **Files:** Members domínio/porta/repositório/schema, DDL gerada; serviço/HTTP/BFF/gateway; hosts; `Oficina.tsx`, `Versoes.tsx`; testes SQL/HTTP/browser.
 
-- [ ] Inspecionar reserva/confirmação de capa e revisão esparsa. Definir associação imagem–revisão sem tornar cada gesto um snapshot JSON completo.
-- [ ] Conferir revisão e autorização na confirmação atômica do recurso. Imagem atrasada vai somente à sua revisão; a capa da cabeça não recebe retrato antigo. Não confirmar blob órfão em falha.
-- [ ] Incluir retratos nas consultas do histórico e proteção/GC. Apagar cenário/mundo libera imagens não usadas; duplicação não atribui histórico de outra identidade ao novo cenário.
-- [ ] Gerar DDL com `bun run db:generate`; não editar SQL gerado nem implantar nesta etapa.
-- [ ] UI mostra retrato ou reserva honesta, permite inspecionar/restaurar, respeita concorrência e cancela captura/envio ao sair/trocar perfil. Congelar revisão junto à captura; não usar a revisão lida depois de gerar a imagem.
-- [ ] Captura por estabilização/ação explícita, fila limitada ao estado pertinente; nada de gerar PNG e fotografar JSON integral a cada frame/gesto.
-- [ ] Testes com resposta atrasada, cabeça nova, falha até commit, arquivo compartilhado, cota, isolamento entre espaços e restauração/undo.
+- [x] Inspecionar reserva/confirmação de capa e revisão esparsa. Definir associação imagem–revisão sem tornar cada gesto um snapshot JSON completo.
+- [x] Conferir revisão e autorização na confirmação atômica do recurso. Imagem atrasada vai somente à sua revisão; a capa da cabeça não recebe retrato antigo. Não confirmar blob órfão em falha.
+- [x] Incluir retratos nas consultas do histórico e proteção/GC. Apagar cenário/mundo libera imagens não usadas; duplicação não atribui histórico de outra identidade ao novo cenário.
+- [x] Gerar DDL com `bun run db:generate`; não editar SQL gerado nem implantar nesta etapa.
+- [x] UI mostra retrato ou reserva honesta, permite inspecionar/restaurar, respeita concorrência e cancela captura/envio ao sair/trocar perfil. Congelar revisão junto à captura; não usar a revisão lida depois de gerar a imagem.
+- [x] Captura por estabilização/ação explícita, fila limitada ao estado pertinente; nada de gerar PNG e fotografar JSON integral a cada frame/gesto.
+- [x] Testes com resposta atrasada, cabeça nova, falha até commit, arquivo compartilhado, cota, isolamento entre espaços e restauração/undo.
 
 ## 4. Revisão do recorte
 
-- [ ] Regressões de conjuntos, clipboard, pincel, árvore, superfície e recursos; quatro layouts, teclado/toque, claro/escuro e cena diurna/noturna.
-- [ ] Núcleo/motor/oficina, Members/BFF/gateway e Postgres; tipagem/build pertinentes, sem ocultar falhas globais.
-- [ ] Revisar limites, descarte, uploads, arquivos e algoritmos; registrar evidências e limitações reais, commit/push dos caminhos próprios.
-- [ ] Só depois seguir à parte 3.8. Não fechar o lote 3 ou a tarefa global.
+- [x] Regressões de conjuntos, clipboard, pincel, árvore, superfície e recursos; quatro layouts, teclado/toque, claro/escuro e cena diurna/noturna.
+- [x] Núcleo/motor/oficina, Members/BFF/gateway e Postgres; tipagem/build pertinentes, sem ocultar falhas globais.
+- [x] Revisar limites, descarte, uploads, arquivos e algoritmos; registrar evidências e limitações reais, commit/push dos caminhos próprios.
+- [x] Só depois seguir à parte 3.8. Não fechar o lote 3 ou a tarefa global.
 
 ## Checkpoint de eficiência — parte 3.7 ainda aberta
 
 As seções 1 e 2 passaram em testes e revisão local. [Evidências e medidas](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-eficiencia-objetos.md). Continuar na seção 3: retratos duráveis do histórico. Não confundir as miniaturas de conjuntos já entregues com as imagens das revisões do cenário, ainda pendentes. Não iniciar 3.8 nem lote 4.
+
+## Fechamento da parte 3.7
+
+Retratos implementados, testados e revisados. Evidências e limitações em [revisão dos retratos](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-retratos.md). Seguir exclusivamente à parte 3.8; lote 3 permanece aberto. Nenhuma implantação remota neste recorte.

@@ -11,6 +11,7 @@ import {
   validarConteudoDeConjunto,
 } from '@sistemazero/molda-cenarios-core/v2'
 import type { CenarioGuardado } from './host-memoria'
+import type { ImagensEmMemoria } from './imagens-em-memoria'
 import {
   type Biblioteca,
   CenarioDesatualizado,
@@ -36,6 +37,7 @@ export type PrepararLoteDoEnsaio = (
   ...args: [...Parameters<CenariosHost['editarCenario']>, publicando?: DefinicaoPublicada]
 ) => () => { revisao: number }
 interface Contexto {
+  imagens: ImagensEmMemoria
   bibliotecas: Map<string, Biblioteca>
   mundos: Map<string, Mundo>
   cenarios: Map<string, CenarioGuardado>
@@ -64,11 +66,6 @@ const bytesDo = (f: FragmentoBasico) => new TextEncoder().encode(JSON.stringify(
 /** Persistência de ensaio; usa a mesma preparação/gravação de gestos da oficina. */
 export function criarConjuntosEmMemoria(ctx: Contexto) {
   const registros = new Map<string, Registro>()
-  const fotos = new Map<
-    string,
-    { url: string; bytes: number; espacoId: string; donos: Set<string> }
-  >()
-  const porRevisao = new Map<string, string>()
   const exigir = (id: string) => {
     const r = registros.get(id)
     if (!r) throw new Error('O conjunto não existe mais')
@@ -106,16 +103,7 @@ export function criarConjuntosEmMemoria(ctx: Contexto) {
     }
   }
   const soltarFoto = (dono: string) => {
-    const chave = porRevisao.get(dono),
-      foto = chave && fotos.get(chave)
-    porRevisao.delete(dono)
-    if (!foto) return
-    foto.donos.delete(dono)
-    if (!foto.donos.size) {
-      URL.revokeObjectURL(foto.url)
-      ctx.espaco(foto.espacoId).usadoBytes -= foto.bytes
-      fotos.delete(chave!)
-    }
+    ctx.imagens.soltar(`conjunto:${dono}`)
   }
   const remover = (id: string) => {
     const r = exigir(id),
@@ -406,36 +394,14 @@ export function criarConjuntosEmMemoria(ctx: Contexto) {
       remover(id)
     },
     async guardarMiniaturaDoConjunto(id, revisao, imagem, sinal) {
-      sinal?.throwIfAborted()
-      if (
-        !['image/png', 'image/webp'].includes(imagem.type) ||
-        imagem.size < 1 ||
-        imagem.size > 256 * 1024
-      )
-        throw new Error('Envie uma miniatura PNG ou WebP de até 256 KB')
-      const bytes = new Uint8Array(await imagem.arrayBuffer())
-      const digest = await digestDosBytes(bytes)
+      const preparada = await ctx.imagens.preparar(imagem, 256 * 1024, sinal)
       await ctx.esperar()
       sinal?.throwIfAborted()
       const r = exigir(id),
         v = r.versoes.get(revisao)
       if (!v) throw new Error('A revisão não existe mais')
-      const espacoId = espacoDo(r),
-        chave = `${espacoId}:${digest}`,
-        dono = `${id}:${revisao}`
-      if (porRevisao.get(dono) === chave) return
-      let foto = fotos.get(chave)
-      if (!foto) {
-        const espaco = cota(espacoId, bytes.length)
-        foto = { url: URL.createObjectURL(imagem), bytes: bytes.length, espacoId, donos: new Set() }
-        fotos.set(chave, foto)
-        espaco.usadoBytes += bytes.length
-      }
-      soltarFoto(dono)
-      foto.donos.add(dono)
-      porRevisao.set(dono, chave)
-      v.miniatura = foto.url
-      if (r.conjunto.revisao === revisao) r.conjunto.miniatura = foto.url
+      v.miniatura = ctx.imagens.fixar(`conjunto:${id}:${revisao}`, espacoDo(r), preparada)
+      if (r.conjunto.revisao === revisao) r.conjunto.miniatura = v.miniatura
     },
   }
   return {

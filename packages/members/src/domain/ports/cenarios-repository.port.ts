@@ -284,6 +284,16 @@ export interface CenariosRepository extends ConjuntosRepository {
     },
     agora: Date,
   ): Promise<LoteGravado | null>
-  definirCapa(cenarioId: string, digest: string, agora: Date): Promise<boolean>
+  retratos(cenarioId: string, revisoes: readonly number[]): Promise<Map<number, string>>
+  definirCapa(
+    dados: {
+      cenarioId: string
+      revisao: number
+      digest: string
+      autorId: string
+      recurso?: { espacoId: string; conferido: ConferenciaDeBlob | null }
+    },
+    agora: Date,
+  ): Promise<{ revisao: number; digest: string; atual: boolean; apagar: string[] } | null>
   apagarCenario(id: string): Promise<string[]>
 }

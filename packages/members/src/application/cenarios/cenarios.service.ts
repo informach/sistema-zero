@@ -745,12 +745,18 @@ export class CenariosService {
   }
 
   async revisoes(ator: Ator, id: string, antes?: number) {
-    await this.cenarioDe(ator, id)
+    const { cenario } = await this.cenarioDe(ator, id)
     const itens = await this.repo.revisoes(id, antes, 50)
-    const inicio = await this.repo.inicioDoHistorico(id)
+    const inicio = (await this.repo.inicioDoHistorico(id)) ?? cenario.revisao
+    const retratos = await this.repo.retratos(id, [...itens.map((r) => r.revisao), inicio])
     return {
       inicio,
-      itens: itens.map((r) => ({ revisao: r.revisao, criadoEm: r.criadoEm.toISOString() })),
+      retratoInicial: retratos.get(inicio) ?? null,
+      itens: itens.map((r) => ({
+        revisao: r.revisao,
+        criadoEm: r.criadoEm.toISOString(),
+        miniatura: retratos.get(r.revisao) ?? null,
+      })),
       proximo: itens.length === 50 ? itens.at(-1)!.revisao : null,
     }
   }
@@ -962,29 +968,63 @@ export class CenariosService {
   async reservarCapa(
     ator: Ator,
     cenarioId: string,
-    capa: { digest: string; bytes: number; tipoDoConteudo?: 'image/png' | 'image/webp' },
-  ): Promise<{ espacoId: string; enviar: ArquivoAEnviar[] }> {
-    const { espaco } = await this.cenarioDe(ator, cenarioId)
+    capa: {
+      revisao: number
+      digest: string
+      bytes: number
+      tipoDoConteudo?: 'image/png' | 'image/webp'
+    },
+  ): Promise<{ espacoId: string; enviar: ArquivoAEnviar[]; retrato: string | null }> {
+    const { espaco, cenario } = await this.cenarioDe(ator, cenarioId)
+    const inicio = await this.repo.inicioDoHistorico(cenarioId)
+    if (
+      !Number.isInteger(capa.revisao) ||
+      capa.revisao < 0 ||
+      capa.revisao > cenario.revisao ||
+      capa.revisao < (inicio ?? cenario.revisao)
+    )
+      throw new CenarioInvalidoError(['Revisão fora do histórico deste cenário'])
     if (capa.bytes < 1 || capa.bytes > TETO_DO_BLOB.capa)
       throw new ValidationError('O retrato do cenário é grande demais')
-    return this.reservar(espaco.id, [{ ...capa, tipo: 'capa' }])
+    const existente = (await this.repo.retratos(cenarioId, [capa.revisao])).get(capa.revisao)
+    if (existente) return { espacoId: espaco.id, enviar: [], retrato: existente }
+    return {
+      ...(await this.reservar(espaco.id, [
+        {
+          digest: capa.digest,
+          bytes: capa.bytes,
+          tipoDoConteudo: capa.tipoDoConteudo,
+          tipo: 'capa',
+        },
+      ])),
+      retrato: null,
+    }
   }
 
   /** Chamado só pelo BFF, depois de conferir o arquivo no bucket. */
   async definirCapa(
     ator: Ator,
     cenarioId: string,
+    revisao: number,
     digest: string,
     conferido: ConferenciaDeBlob | null,
     espacoConferido?: string,
   ) {
     const { espaco } = await this.cenarioDe(ator, cenarioId)
     const agora = this.clock()
-    if (espacoConferido !== undefined && espacoConferido !== espaco.id) conferido = null
-    if (conferido?.digest === digest) await this.repo.confirmarBlobs(espaco.id, [conferido], agora)
-    const guardado = (await this.repo.blobsConfirmados(espaco.id, [digest])).get(digest)
-    if (!guardado || !ehImagemDeCenario(guardado.tipo))
+    if (espacoConferido !== undefined && espacoConferido !== espaco.id)
       throw new CenarioArquivoAusenteError([digest])
-    await this.repo.definirCapa(cenarioId, digest, agora)
+    const guardado = await this.repo.definirCapa(
+      {
+        cenarioId,
+        revisao,
+        digest,
+        autorId: ator.usuarioId,
+        ...(conferido ? { recurso: { espacoId: espaco.id, conferido } } : {}),
+      },
+      agora,
+    )
+    if (!guardado) throw new CenarioNaoEncontradoError()
+    return { ...guardado, apagar: guardado.apagar.map((d) => chaveDoBlob(espaco.id, d)) }
   }
 }

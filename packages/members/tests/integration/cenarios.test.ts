@@ -675,6 +675,77 @@ describe('Molda Cenários: mundos e cenários', () => {
       details: { revisaoAtual: 1 },
     })
   })
+  test('retratos HTTP fixam a revisão capturada e conservam a capa da cabeça nova', async () => {
+    const { ctx, cenario, espaco } = await comCenario()
+    const caminho = `/members/cenarios/cenarios/${cenario.id}`
+    const reservar = (revisao: number, letra: string) =>
+      pedir(ctx.app, 'POST', `${caminho}/capa/reservar`, {
+        revisao,
+        digest: digest(letra),
+        bytes: 200,
+        tipoDoConteudo: 'image/png',
+      })
+    const confirmar = (
+      revisao: number,
+      letra: string,
+      cabecalhos: Record<string, string> = doBff,
+    ) =>
+      pedir(
+        ctx.app,
+        'POST',
+        '/members/internal/cenarios/capa',
+        {
+          ator: atorDaEquipe,
+          cenarioId: cenario.id,
+          espacoId: espaco.id,
+          revisao,
+          digest: digest(letra),
+          conferido: { digest: digest(letra), bytes: 200, tipoDoConteudo: 'image/png' },
+        },
+        cabecalhos,
+      )
+    expect((await reservar(0, 'a')).status).toBe(200)
+    expect((await confirmar(0, 'a', daEquipe)).status).toBe(401)
+    expect(
+      (
+        await pedir(
+          ctx.app,
+          'POST',
+          `${caminho}/lotes`,
+          lote(0, 'retrato-edicao-01', [{ tipo: 'cenario.renomear', nome: 'Praça nova' }]),
+        )
+      ).status,
+    ).toBe(200)
+    expect((await reservar(1, 'b')).status).toBe(200)
+    expect(await json(await confirmar(1, 'b'))).toMatchObject({
+      revisao: 1,
+      digest: digest('b'),
+      atual: true,
+    })
+    expect(await json(await confirmar(0, 'a'))).toMatchObject({
+      revisao: 0,
+      digest: digest('a'),
+      atual: false,
+    })
+    expect((await json(await pedir(ctx.app, 'GET', caminho))).capa).toBe(digest('b'))
+    const retratos = await json(await pedir(ctx.app, 'GET', `${caminho}/revisoes`))
+    expect(retratos.retratoInicial).toBe(digest('a'))
+    expect(retratos.itens[0]).toMatchObject({ revisao: 1, miniatura: digest('b') })
+    expect(await json(await reservar(0, 'c'))).toMatchObject({ enviar: [], retrato: digest('a') })
+    expect((await reservar(2, 'c')).status).toBe(422)
+    expect(
+      (
+        await pedir(ctx.app, 'GET', `${caminho}/revisoes`, undefined, {
+          ...daEquipe,
+          'x-auth-user-id': CLIENTE,
+        })
+      ).status,
+    ).toBe(404)
+    const copia = await json(await pedir(ctx.app, 'POST', `${caminho}/duplicar`))
+    expect(
+      await json(await pedir(ctx.app, 'GET', `/members/cenarios/cenarios/${copia.id}/revisoes`)),
+    ).toMatchObject({ retratoInicial: null, itens: [] })
+  })
   test('histórico por HTTP permite desfazer, refazer e restaurar sem expor a outra conta', async () => {
     const { ctx, cenario } = await comCenario()
     const caminho = `/members/cenarios/cenarios/${cenario.id}`

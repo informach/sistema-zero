@@ -15,6 +15,7 @@ import {
   type ModeloParaImportar,
   type Mundo,
   type PaginaDeModelos,
+  type PaginaDeRevisoes,
   type ResumoDeCenario,
   type TexturaDeBiblioteca,
   type VersaoDeConjunto,
@@ -74,6 +75,7 @@ interface ArquivoAEnviar {
   criarUmaVez?: boolean
 }
 interface Reserva {
+  retrato?: string | null
   espacoId: string
   enviar: ArquivoAEnviar[]
 }
@@ -632,7 +634,17 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       )
     },
     async listarRevisoes(id, antes) {
-      return pedir('GET', `cenarios/${id}/revisoes${antes === undefined ? '' : `?antes=${antes}`}`)
+      const pagina = await pedir<PaginaDeRevisoes>(
+        'GET',
+        `cenarios/${id}/revisoes${antes === undefined ? '' : `?antes=${antes}`}`,
+      )
+      if (!espacoDoCenario.has(id)) await host.abrirCenario(id)
+      const espacoId = espacoDoCenario.get(id)
+      return {
+        ...pagina,
+        retratoInicial: retrato(espacoId, pagina.retratoInicial),
+        itens: pagina.itens.map((r) => ({ ...r, miniatura: retrato(espacoId, r.miniatura) })),
+      }
     },
     async restaurarRevisao(id, revisaoEsperada, revisao, operacaoId) {
       return cenarioAberto(
@@ -723,18 +735,39 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     async apagarCenario(id) {
       await pedir('DELETE', `cenarios/${id}`)
     },
-    async guardarCapa(cenarioId, imagem) {
+    async guardarCapa(cenarioId, revisao, imagem, sinal) {
       // A capa é um enfeite do cartão: grande demais, fica a anterior.
-      if (imagem.size < 1 || imagem.size > CAPA_MAX_BYTES) return
+      if (imagem.size < 1 || imagem.size > CAPA_MAX_BYTES)
+        throw new Error('O retrato deve ter até 512 KB')
       const bytes = new Uint8Array(await imagem.arrayBuffer())
       const digest = await digestDosBytes(bytes)
-      const reserva = await pedir<Reserva>('POST', `cenarios/${cenarioId}/capa/reservar`, {
-        digest,
-        bytes: bytes.byteLength,
-        tipoDoConteudo: tipoDeImagem(imagem.type),
-      })
-      await subir(reserva, new Map([[digest, bytes]]))
-      await pedir('POST', `cenarios/${cenarioId}/capa`, { espacoId: reserva.espacoId, digest })
+      const reserva = await pedir<Reserva>(
+        'POST',
+        `cenarios/${cenarioId}/capa/reservar`,
+        {
+          revisao,
+          digest,
+          bytes: bytes.byteLength,
+          tipoDoConteudo: tipoDeImagem(imagem.type),
+        },
+        sinal,
+      )
+      if (reserva.retrato) return retrato(reserva.espacoId, reserva.retrato)!
+      await subir(reserva, new Map([[digest, bytes]]), sinal)
+      const resultado = await pedir<{ digest: string; revisao: number }>(
+        'POST',
+        `cenarios/${cenarioId}/capa`,
+        { espacoId: reserva.espacoId, revisao, digest },
+        sinal,
+      )
+      if (resultado.revisao !== revisao || !/^[a-f0-9]{64}$/.test(resultado.digest))
+        throw new ErroDaOficina(
+          'O servidor não confirmou o retrato desta versão',
+          502,
+          'CENARIOS_RETRATO',
+          null,
+        )
+      return retrato(reserva.espacoId, resultado.digest)!
     },
   }
   return host

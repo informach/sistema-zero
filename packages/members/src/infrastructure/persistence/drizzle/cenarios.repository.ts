@@ -52,6 +52,7 @@ import {
   digestsDoDocumentoJson,
   digestsDosComandosJson,
 } from './cenarios-arquivos-json'
+import { RetratosNoPostgres } from './cenarios-retratos.repository'
 import type {
   ExecutorDeCenarios as Executor,
   TransacaoDeCenarios as Transacao,
@@ -69,6 +70,7 @@ import {
   cenarioModelos,
   cenarioMundoBibliotecas,
   cenarioMundos,
+  cenarioRetratos,
   cenarioRevisoes,
   cenarioTexturas,
 } from './schema'
@@ -181,7 +183,14 @@ const paraTextura = (t: typeof cenarioTexturas.$inferSelect): Textura => ({
 
 export class DrizzleCenariosRepository implements CenariosRepository {
   private readonly catalogoConjuntos: ConjuntosNoPostgres
+  private readonly imagensDoHistorico: RetratosNoPostgres
   constructor(private readonly db: Database) {
+    this.imagensDoHistorico = new RetratosNoPostgres(db, {
+      comTrava: (espacoId, tarefa) => this.comTrava(espacoId, tarefa),
+      confirmarBlobs: (tx, espacoId, conferidos, agora) =>
+        this.confirmarBlobsCom(tx, espacoId, conferidos, agora),
+      soltarOrfaos: (tx, espacoId, digests) => this.soltarOrfaos(tx, espacoId, digests),
+    })
     this.catalogoConjuntos = new ConjuntosNoPostgres(db, {
       comTrava: (espacoId, tarefa) => this.comTrava(espacoId, tarefa),
       espaco: (tx, id, agora) => this.lerEspaco(tx, eq(cenarioEspacos.id, id), agora),
@@ -410,6 +419,10 @@ export class DrizzleCenariosRepository implements CenariosRepository {
                 or exists (select 1 from jsonb_array_elements_text(${digestsDoDocumentoJson(sql`c.documento`)}) as e(digest)
                   where e.digest = ${cenarioBlobs.digest})
               )
+          )`,
+          sql`not exists (
+            select 1 from ${cenarioRetratos} r
+            where r.espaco_id = ${espacoId} and r.digest = ${cenarioBlobs.digest}
           )`,
         ),
       )
@@ -997,6 +1010,10 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       .from(cenarioRevisoes)
       .where(inArray(cenarioRevisoes.cenarioId, [...ids]))
     const comandos = sql`(${cenarioLotes.comandos} || coalesce(${cenarioLotes.inversos}, '[]'::jsonb))`
+    const retratos = await tx
+      .select({ digest: cenarioRetratos.digest })
+      .from(cenarioRetratos)
+      .where(inArray(cenarioRetratos.cenarioId, [...ids]))
     const lotes = await tx
       .select({
         digests: arrayDeDigestsSql(digestsDosComandosJson(comandos)),
@@ -1008,6 +1025,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         ...cabecas.flatMap((c) => [...c.digests, ...(c.capa ? [c.capa] : [])]),
         ...fotos.flatMap((f) => f.digests),
         ...lotes.flatMap((l) => l.digests),
+        ...retratos.map((r) => r.digest),
       ]),
     ]
   }
@@ -1315,14 +1333,9 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return { revisao: linha.revisao, repetido: false }
   }
 
-  async definirCapa(cenarioId: string, digest: string, agora: Date): Promise<boolean> {
-    const mudados = await this.db
-      .update(cenarioCenarios)
-      .set({ capa: digest, updatedAt: agora })
-      .where(eq(cenarioCenarios.id, cenarioId))
-      .returning({ id: cenarioCenarios.id })
-    return mudados.length > 0
-  }
+  retratos: CenariosRepository['retratos'] = (...args) => this.imagensDoHistorico.retratos(...args)
+  definirCapa: CenariosRepository['definirCapa'] = (...args) =>
+    this.imagensDoHistorico.definirCapa(...args)
 
   async apagarCenario(id: string): Promise<string[]> {
     const cenario = await this.cenario(id)

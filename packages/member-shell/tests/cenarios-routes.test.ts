@@ -612,16 +612,61 @@ describe('BFF do Molda Cenários: trazer modelos', () => {
     expect(semSessao.chamadas).toEqual([])
   })
 
+  test('retrato exige revisão antes de ler o bucket e recusa confirmação de outra revisão', async () => {
+    const semRevisao = montar()
+    expect(
+      (
+        await semRevisao.pedir('POST', `cenarios/${CENARIO}/capa`, {
+          espacoId: ESPACO,
+          digest: digest('c'),
+        })
+      ).status,
+    ).toBe(400)
+    expect(semRevisao.conferidos).toEqual([])
+    const errada = montar({
+      responder: (c) =>
+        c.via === 'hmac'
+          ? { status: 200, body: { revisao: 9, digest: digest('c'), atual: true, apagar: [] } }
+          : undefined,
+    })
+    expect(
+      (
+        await errada.pedir('POST', `cenarios/${CENARIO}/capa`, {
+          espacoId: ESPACO,
+          revisao: 1,
+          digest: digest('c'),
+        })
+      ).status,
+    ).toBe(502)
+  })
+
   test('a capa do cenário passa pela mesma conferência', async () => {
-    const achou = montar()
-    await achou.pedir('POST', `cenarios/${CENARIO}/capa`, { espacoId: ESPACO, digest: digest('c') })
+    const achou = montar({
+      responder: (c) =>
+        c.path === '/members/internal/cenarios/capa'
+          ? { status: 200, body: { revisao: 0, digest: digest('c'), atual: true, apagar: [] } }
+          : undefined,
+    })
+    const resposta = await achou.pedir('POST', `cenarios/${CENARIO}/capa`, {
+      espacoId: ESPACO,
+      revisao: 0,
+      digest: digest('c'),
+    })
+    expect(await resposta.json()).toEqual({ revisao: 0, digest: digest('c'), atual: true })
     expect(achou.chamadas.find((c) => c.via === 'hmac')).toMatchObject({
       via: 'hmac',
       path: '/members/internal/cenarios/capa',
-      body: { cenarioId: CENARIO, espacoId: ESPACO, digest: digest('c'), conferido: prova(2) },
+      body: {
+        cenarioId: CENARIO,
+        espacoId: ESPACO,
+        revisao: 0,
+        digest: digest('c'),
+        conferido: prova(2),
+      },
     })
     const naoAchou = montar({ existe: () => false })
     const ausente = await naoAchou.pedir('POST', `cenarios/${CENARIO}/capa`, {
+      revisao: 0,
       espacoId: ESPACO,
       digest: digest('c'),
     })

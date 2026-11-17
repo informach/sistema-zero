@@ -272,9 +272,11 @@ export function DialogoDeApagar({
 export function Capa({
   endereco,
   reserva,
+  ajuste = 'cobrir',
 }: {
   endereco: string | null
   reserva: ReactNode
+  ajuste?: 'cobrir' | 'conter'
 }): JSX.Element {
   const [quebrou, setQuebrou] = useState(false)
   return endereco && !quebrou ? (
@@ -285,7 +287,7 @@ export function Capa({
       decoding="async"
       draggable={false}
       onError={() => setQuebrou(true)}
-      className="size-full object-cover"
+      className={`size-full ${ajuste === 'conter' ? 'object-contain' : 'object-cover'}`}
     />
   ) : (
     <span aria-hidden="true" className="mcn-capa-reserva">

@@ -13,6 +13,7 @@ import {
   lerPecaDeAlturas,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarConjuntosEmMemoria, type PrepararLoteDoEnsaio } from './conjuntos-em-memoria'
+import { criarImagensEmMemoria } from './imagens-em-memoria'
 import {
   type Biblioteca,
   type CenarioAberto,
@@ -81,6 +82,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const recursosDeTerreno = new Map<string, Uint8Array>()
   const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
+  const retratos = new Map<string, Map<number, string>>()
+  const imagens = criarImagensEmMemoria((id) => espacoDe(id))
 
   const exigir = <T>(mapa: Map<string, T>, id: string, oque: string): T => {
     const valor = mapa.get(id)
@@ -232,16 +235,27 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     }
   }
 
+  const soltarRetratos = (id: string) => {
+    for (const revisao of retratos.get(id)?.keys() ?? []) imagens.soltar(`cenario:${id}:${revisao}`)
+    retratos.delete(id)
+  }
   const apagarFonte = (id: string) => {
     const c = exigir(cenarios, id, 'O cenário'),
       mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+    soltarRetratos(id)
     cenarios.delete(id)
     mundo.cenarios = Math.max(0, mundo.cenarios - 1)
+    mundo.capa =
+      [...cenarios.values()]
+        .filter((c) => c.resumo.mundoId === mundo.id && c.resumo.capa)
+        .sort((a, b) => b.resumo.atualizadoEm.localeCompare(a.resumo.atualizadoEm))[0]?.resumo
+        .capa ?? null
     soltarPecas(mundo.espacoId, pecasDoCenario(c))
     soltarTexturas(mundo.espacoId, arquivosFixados(c, 'textura'))
     if (mundo.bibliotecaConjuntosId && mundo.cenarios === 0) mundos.delete(mundo.id)
   }
   const catalogoConjuntos = criarConjuntosEmMemoria({
+    imagens,
     bibliotecas,
     mundos,
     cenarios,
@@ -576,6 +590,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         if (c.resumo.mundoId === id) {
           for (const d of pecasDoCenario(c)) candidatos.add(d)
           for (const d of arquivosFixados(c, 'textura')) imagens.add(d)
+          soltarRetratos(c.resumo.id)
           cenarios.delete(c.resumo.id)
         }
       mundos.delete(id)
@@ -694,9 +709,14 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         .filter(([r]) => antes === undefined || r < antes)
         .reverse()
         .slice(0, 50)
-        .map(([revisao, l]) => ({ revisao, criadoEm: l.criadoEm }))
+        .map(([revisao, l]) => ({
+          revisao,
+          criadoEm: l.criadoEm,
+          miniatura: retratos.get(id)?.get(revisao) ?? null,
+        }))
       return {
-        inicio: [...c.versoes.keys()][0] ?? null,
+        inicio: [...c.versoes.keys()][0] ?? c.resumo.revisao,
+        retratoInicial: retratos.get(id)?.get([...c.versoes.keys()][0] ?? c.resumo.revisao) ?? null,
         itens,
         proximo: itens.length === 50 ? itens.at(-1)!.revisao : null,
       }
@@ -764,13 +784,27 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         throw new Error('Apague o conjunto pela biblioteca para remover o rascunho')
       apagarFonte(id)
     },
-    async guardarCapa(cenarioId, imagem) {
-      const c = cenarios.get(cenarioId)
-      if (!c) return
-      const endereco = URL.createObjectURL(imagem)
-      c.resumo.capa = endereco
-      const mundo = mundos.get(c.resumo.mundoId)
-      if (mundo) mundo.capa = endereco
+    async guardarCapa(cenarioId, revisao, imagem, sinal) {
+      const preparada = await imagens.preparar(imagem, 512 * 1024, sinal)
+      await esperar()
+      sinal?.throwIfAborted()
+      const c = exigir(cenarios, cenarioId, 'O cenário'),
+        mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+      const inicio = [...c.versoes.keys()][0] ?? c.resumo.revisao
+      if (!Number.isInteger(revisao) || revisao < inicio || revisao > c.resumo.revisao)
+        throw new Error('Revisão fora do histórico deste cenário')
+      const lista = retratos.get(cenarioId) ?? new Map<number, string>(),
+        existente = lista.get(revisao)
+      if (existente) return existente
+      const endereco = imagens.fixar(`cenario:${cenarioId}:${revisao}`, mundo.espacoId, preparada)
+      lista.set(revisao, endereco)
+      retratos.set(cenarioId, lista)
+      if (revisao === c.resumo.revisao) {
+        c.resumo.capa = endereco
+        c.resumo.atualizadoEm = agora()
+        mundo.capa = endereco
+      }
+      return endereco
     },
   }
   return host

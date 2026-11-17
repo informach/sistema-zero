@@ -461,14 +461,15 @@ describe('mundos e cenários', () => {
   test('a capa só vale depois de o retrato ser conferido', async () => {
     const base = await comCenario()
     const reserva = await base.servico.reservarCapa(ana, base.cenario.id, {
+      revisao: 0,
       digest: digest('c'),
       bytes: 900,
     })
     expect(reserva.enviar[0]).toMatchObject({ tipo: 'capa', tipoDoConteudo: 'image/webp' })
     await expect(
-      base.servico.definirCapa(ana, base.cenario.id, digest('c'), null),
+      base.servico.definirCapa(ana, base.cenario.id, 0, digest('c'), null),
     ).rejects.toBeInstanceOf(CenarioArquivoAusenteError)
-    await base.servico.definirCapa(ana, base.cenario.id, digest('c'), {
+    await base.servico.definirCapa(ana, base.cenario.id, 0, digest('c'), {
       digest: digest('c'),
       bytes: 900,
       tipoDoConteudo: 'image/webp',

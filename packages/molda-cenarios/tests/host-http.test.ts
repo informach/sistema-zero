@@ -480,15 +480,18 @@ describe('a oficina falando com o app', () => {
             ],
           },
         }
+      if (p.caminho.endsWith('/capa'))
+        return { corpo: { digest: (p.corpo as { digest: string }).digest, revisao: 4 } }
       return undefined
     })
     const aberto = await host.abrirCenario(CENARIO)
     expect(aberto).toMatchObject({ revisao: 4, resumo: { id: CENARIO, capa: null }, documento })
 
     const imagem = new Blob([new Uint8Array([7, 7, 7, 7])], { type: 'image/webp' })
-    await host.guardarCapa(CENARIO, imagem)
+    await host.guardarCapa(CENARIO, 4, imagem)
     const capa = await digestDosBytes(new Uint8Array([7, 7, 7, 7]))
     expect(pedidos.find((p) => p.caminho.endsWith('/capa/reservar'))?.corpo).toEqual({
+      revisao: 4,
       digest: capa,
       bytes: 4,
       tipoDoConteudo: 'image/webp',
@@ -497,7 +500,7 @@ describe('a oficina falando com o app', () => {
     expect(pedidos.at(-1)).toMatchObject({
       metodo: 'POST',
       caminho: `cenarios/${CENARIO}/capa`,
-      corpo: { espacoId: ESPACO, digest: capa },
+      corpo: { espacoId: ESPACO, revisao: 4, digest: capa },
     })
 
     await host.apagarModelos(BIBLIOTECA, ['m1', 'm2'])
@@ -506,6 +509,56 @@ describe('a oficina falando com o app', () => {
       caminho: `bibliotecas/${BIBLIOTECA}/modelos/apagar`,
       corpo: { ids: ['m1', 'm2'] },
     })
+  })
+
+  test('retratos HTTP reusam imagem confirmada e convertem o histórico sem reenviar binários', async () => {
+    const doc = criarDocumentoVazio(CENARIO, 'Praça')
+    const { host, pedidos, enviados } = montar((p) => {
+      if (p.caminho.endsWith('/capa/reservar'))
+        return { corpo: { espacoId: ESPACO, retrato: digest('a'), enviar: [] } }
+      if (p.caminho === `cenarios/${CENARIO}`)
+        return {
+          corpo: {
+            id: CENARIO,
+            mundoId: MUNDO,
+            espacoId: ESPACO,
+            nome: 'Praça',
+            revisao: 1,
+            capa: digest('a'),
+            atualizadoEm: '2026-11-17T00:00:00Z',
+            documento: doc,
+          },
+        }
+      if (p.caminho.endsWith('/revisoes'))
+        return {
+          corpo: {
+            inicio: 0,
+            retratoInicial: digest('b'),
+            itens: [{ revisao: 1, criadoEm: '2026-11-17T00:00:00Z', miniatura: digest('a') }],
+            proximo: null,
+          },
+        }
+    })
+    expect(await host.guardarCapa(CENARIO, 1, new Blob(['foto'], { type: 'image/png' }))).toContain(
+      `/arquivos/${digest('a')}`,
+    )
+    const lista = await host.listarRevisoes(CENARIO)
+    expect(lista.retratoInicial).toContain(`/arquivos/${digest('b')}`)
+    expect(lista.itens[0]!.miniatura).toContain(`/arquivos/${digest('a')}`)
+    expect(enviados).toEqual([])
+    expect(pedidos.some((p) => p.caminho.endsWith('/capa'))).toBe(false)
+  })
+  test('retratos HTTP recusam confirmação que pertence a outra revisão', async () => {
+    const { host } = montar((p) =>
+      p.caminho.endsWith('/capa/reservar')
+        ? { corpo: { espacoId: ESPACO, enviar: [] } }
+        : p.caminho.endsWith('/capa')
+          ? { corpo: { revisao: 7, digest: digest('a') } }
+          : undefined,
+    )
+    await expect(
+      host.guardarCapa(CENARIO, 1, new Blob(['foto'], { type: 'image/png' })),
+    ).rejects.toThrow('esta versão')
   })
 
   test('o arquivo do modelo: o app diz onde está e a busca vai direto ao armazenamento', async () => {

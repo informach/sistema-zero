@@ -206,7 +206,8 @@ export interface CenarioAberto {
 }
 export interface PaginaDeRevisoes {
   inicio: number | null
-  itens: Array<{ revisao: number; criadoEm: string }>
+  retratoInicial: string | null
+  itens: Array<{ revisao: number; criadoEm: string; miniatura: string | null }>
   proximo: number | null
 }
 
@@ -334,5 +335,10 @@ export interface CenariosHost {
   duplicarCenario(id: string): Promise<ResumoDeCenario>
   apagarCenario(id: string): Promise<void>
   /** Guarda o retrato do cenário que aparece nos cartões. */
-  guardarCapa(cenarioId: string, imagem: Blob): Promise<void>
+  guardarCapa(
+    cenarioId: string,
+    revisao: number,
+    imagem: Blob,
+    sinal?: AbortSignal,
+  ): Promise<string>
 }

@@ -201,6 +201,17 @@ class PalcoThree implements Palco {
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
   private ultimaMedida = ''
   private destruido = false
+  private readonly gestosAtivos = new Set<string>()
+
+  private informarGesto(tipo: string, ativo: boolean): void {
+    const antes = this.gestosAtivos.size > 0
+    if (ativo) this.gestosAtivos.add(tipo)
+    else this.gestosAtivos.delete(tipo)
+    const depois = this.gestosAtivos.size > 0
+    if (antes !== depois) this.opcoes.aoGesto?.(depois)
+  }
+  private readonly iniciarOrbita = () => this.informarGesto('orbita', true)
+  private readonly encerrarOrbita = () => this.informarGesto('orbita', false)
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -273,6 +284,8 @@ class PalcoThree implements Palco {
     this.orbita.maxPolarAngle = Math.PI / 2 - 0.02
     this.orbita.target.set(0, 0.5, 0)
     this.orbita.addEventListener('change', this.pedirQuadro)
+    this.orbita.addEventListener('start', this.iniciarOrbita)
+    this.orbita.addEventListener('end', this.encerrarOrbita)
 
     this.alca = new TransformControls(this.camera, canvas)
     this.alca.setSize(0.9)
@@ -298,7 +311,7 @@ class PalcoThree implements Palco {
       (ativo) => {
         this.toque = null
         this.orbita.enabled = !ativo
-        this.opcoes.aoGesto?.(ativo)
+        this.informarGesto('area', ativo)
         this.pedirQuadro()
       },
     )
@@ -327,7 +340,7 @@ class PalcoThree implements Palco {
       aoGesto: (ativo) => {
         this.toque = null
         this.orbita.enabled = !ativo
-        this.opcoes.aoGesto?.(ativo)
+        this.informarGesto('pincel', ativo)
       },
       aoPrevia: (estado) => this.opcoes.aoPreverEspalhamento?.(estado),
       aoAplicar: (gesto) => this.opcoes.aoEspalhar?.(gesto),
@@ -627,6 +640,8 @@ class PalcoThree implements Palco {
     this.alca.detach()
     this.alca.dispose()
     this.orbita.dispose()
+    this.gestosAtivos.clear()
+    this.opcoes.aoGesto?.(false)
     this.contornos.descartar()
     this.grade.geometry.dispose()
     this.grade.material.dispose()
@@ -1154,12 +1169,12 @@ class PalcoThree implements Palco {
             }
         },
       }
-      this.opcoes.aoGesto?.(true)
+      this.informarGesto('alca', true)
       return
     }
     const gesto = this.gesto
     this.gesto = null
-    this.opcoes.aoGesto?.(false)
+    this.informarGesto('alca', false)
     // Uma cabeça nova invalida o gesto iniciado na anterior, como no pincel de objetos.
     if (gesto && !gesto.cancelado && (!this.pendente || this.pendente === gesto.documento)) {
       const mudancas: MudancaDeTransformacao[] = []

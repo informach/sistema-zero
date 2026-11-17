@@ -17,7 +17,7 @@ import {
 } from '@sistemazero/core/learning'
 import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { t } from 'elysia'
-import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
+import { MAX_SUBMISSION_MESSAGE_CHARS, PINTA_ASSET_KINDS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
 import { moduleAnimationInputSchema } from './module-animation.schema'
 
@@ -1200,15 +1200,7 @@ const PintaAssetSchema = t.Object(
   {
     id: t.String({ minLength: 1, maxLength: 100 }),
     name: t.String({ maxLength: 100 }),
-    kind: t.Union([
-      t.Literal('pixel-sprite'),
-      t.Literal('pixel-background'),
-      t.Literal('tileset'),
-      t.Literal('tilemap'),
-      t.Literal('vector-sprite'),
-      t.Literal('vector-background'),
-      t.Literal('vector-tileset'),
-    ]),
+    kind: t.Union(PINTA_ASSET_KINDS.map((kind) => t.Literal(kind))),
   },
   { additionalProperties: true },
 )

@@ -107,10 +107,12 @@ Parte 3.6 verificada em escopo local; [relatório](../../plans/2026-11-16-cenari
 
 **Interfaces:** retrato associado à revisão capturada, sem atribuir uma imagem atrasada à cabeça nova. O histórico e as referências continuam no mesmo armazenamento. Matrizes e seleção usam somente as faixas alteradas quando possível.
 
-- [ ] Guardar e listar retratos por revisão, sem criar uma fotografia integral do documento por gesto.
-- [ ] Conferir cancelamento, resposta atrasada, capa atual, exclusão e licenças.
-- [ ] Completar faixas sujas de instâncias e consultas espaciais para evitar varrer/enviar toda a cena a cada movimento.
-- [ ] Conferir câmera e planos de recorte para os tamanhos aceitos pelo documento, incluindo o relevo convertido.
+- [x] Guardar e listar retratos por revisão, sem criar uma fotografia integral do documento por gesto.
+- [x] Conferir cancelamento, resposta atrasada, capa atual, exclusão e licenças.
+- [x] Completar faixas sujas de instâncias e consultas espaciais para evitar varrer/enviar toda a cena a cada movimento.
+- [x] Conferir câmera e planos de recorte para os tamanhos aceitos pelo documento, incluindo o relevo convertido.
+
+Parte 3.7 implementada, testada e revisada. [Eficiência](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-eficiencia-objetos.md) e [retratos](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-retratos.md). Lote 3 continua aberto, exclusivamente na parte 3.8.
 
 ### 3.8 — Testar e fechar o lote
 

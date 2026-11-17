@@ -172,6 +172,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of fontesDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const retratosDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0161_lonely_zemo.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of retratosDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
@@ -1559,6 +1568,97 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect(await repo.apagarBiblioteca(outra!.id, DEPOIS)).toEqual([digest('b')])
   })
 
+  test('retratos: imagem da revisão atrasada não troca a capa; repetição, histórico e coleta são coerentes', async () => {
+    const { espaco } = await comBiblioteca(),
+      ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const mundo = await s.criarMundo(ator, espaco.id, 'Retratos'),
+      c = await s.criarCenario(ator, mundo.id, 'Praça')
+    const imagens = ['a', 'b', 'c'].map((l) => ({
+      digest: digest(l),
+      bytes: 128,
+      tipoDoConteudo: 'image/png' as const,
+    }))
+    await repo.reservarBlobs(
+      espaco.id,
+      imagens.map((i) => ({ ...i, tipo: 'capa' as const })),
+      AGORA,
+      DEPOIS,
+    )
+    await s.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'foto-editar-cenario',
+      comandos: [{ tipo: 'cenario.renomear', nome: 'Praça habitada' }],
+    })
+    const gravar = (revisao: number, n: number, agora = AGORA) =>
+      repo.definirCapa(
+        {
+          cenarioId: c.id,
+          revisao,
+          digest: imagens[n]!.digest,
+          autorId: CONTA,
+          recurso: { espacoId: espaco.id, conferido: imagens[n]! },
+        },
+        agora,
+      )
+    expect(await gravar(1, 1)).toMatchObject({ revisao: 1, digest: digest('b'), atual: true })
+    const antes = await repo.cenario(c.id)
+    expect(await gravar(0, 0, new Date(AGORA.getTime() + 1000))).toMatchObject({
+      revisao: 0,
+      digest: digest('a'),
+      atual: false,
+    })
+    expect(await repo.cenario(c.id)).toEqual(antes)
+    expect(await gravar(0, 2)).toMatchObject({ digest: digest('a') })
+    expect((await repo.blobsConfirmados(espaco.id, [digest('c')])).size).toBe(0)
+    expect(await gravar(2, 2).catch((e) => e)).toBeInstanceOf(CenarioInvalidoError)
+    expect((await repo.blobsConfirmados(espaco.id, [digest('c')])).size).toBe(0)
+    expect([...(await repo.retratos(c.id, [0, 1, 2]))].sort((a, b) => a[0] - b[0])).toEqual([
+      [0, digest('a')],
+      [1, digest('b')],
+    ])
+    expect((await repo.apagarCenario(c.id)).sort()).toEqual([digest('a'), digest('b')])
+    expect((await repo.blobsConfirmados(espaco.id, [digest('a'), digest('b')])).size).toBe(0)
+  })
+
+  test('retratos: falha adiada até commit não confirma arquivo nem associa imagem/capa', async () => {
+    const { espaco } = await comBiblioteca(),
+      ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() }),
+      mundo = await s.criarMundo(ator, espaco.id, 'Falha do retrato'),
+      c = await s.criarCenario(ator, mundo.id, 'Vila')
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    await repo.reservarBlobs(espaco.id, [{ ...imagem, tipo: 'capa' }], AGORA, DEPOIS)
+    await conn.sql.unsafe(
+      "create function members.falhar_retrato_qa() returns trigger language plpgsql as $$ begin raise exception 'falha no commit do retrato'; end $$",
+    )
+    await conn.sql.unsafe(
+      'create constraint trigger falhar_retrato_qa after insert on members.cenario_retratos deferrable initially deferred for each row execute function members.falhar_retrato_qa()',
+    )
+    try {
+      const erro = await repo
+        .definirCapa(
+          {
+            cenarioId: c.id,
+            revisao: 0,
+            digest: imagem.digest,
+            autorId: CONTA,
+            recurso: { espacoId: espaco.id, conferido: imagem },
+          },
+          AGORA,
+        )
+        .catch((e) => e)
+      expect(erro).toBeInstanceOf(Error)
+      expect((await repo.retratos(c.id, [0])).size).toBe(0)
+      expect((await repo.blobsConfirmados(espaco.id, [imagem.digest])).size).toBe(0)
+      expect((await repo.cenario(c.id))!.capa).toBeNull()
+    } finally {
+      await conn.sql.unsafe(
+        'drop trigger falhar_retrato_qa on members.cenario_retratos; drop function members.falhar_retrato_qa()',
+      )
+    }
+  })
+
   test('mundos: bibliotecas ligadas, contagem e capa do cenário mais recente', async () => {
     const { espaco, biblioteca } = await comBiblioteca()
     const mundo = (await repo.criarMundo(
@@ -1585,7 +1685,25 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       10,
       AGORA,
     )
-    await repo.definirCapa(id, digest('f'), DEPOIS)
+    await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: digest('f'), bytes: 128, tipo: 'capa', tipoDoConteudo: 'image/png' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.definirCapa(
+      {
+        cenarioId: id,
+        revisao: 0,
+        digest: digest('f'),
+        autorId: CONTA,
+        recurso: {
+          espacoId: espaco.id,
+          conferido: { digest: digest('f'), bytes: 128, tipoDoConteudo: 'image/png' },
+        },
+      },
+      AGORA,
+    )
     expect((await repo.mundos(espaco.id))[0]).toMatchObject({ cenarios: 1, capa: digest('f') })
     // Apagar a biblioteca a tira do mundo; apagar o mundo leva cenários e lotes.
     await repo.apagarBiblioteca(biblioteca.id, DEPOIS)

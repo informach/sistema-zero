@@ -18,6 +18,46 @@ async function criar() {
   const cenario = await servico.criarCenario(ator, mundo.id, 'Inicial')
   return { repo, servico, id: cenario.id }
 }
+test('retratos expõem imagem da revisão inicial e conservam capa/histórico ao repetir envio antigo', async () => {
+  const { repo, servico, id } = await criar()
+  const a = { digest: 'a'.repeat(64), bytes: 128, tipoDoConteudo: 'image/png' as const },
+    b = { ...a, digest: 'b'.repeat(64) }
+  await servico.reservarCapa(ator, id, { ...a, revisao: 0 })
+  await servico.definirCapa(ator, id, 0, a.digest, a)
+  expect(await servico.revisoes(ator, id)).toMatchObject({
+    inicio: 0,
+    retratoInicial: a.digest,
+    itens: [],
+  })
+  await servico.editarCenario(ator, id, {
+    revisaoEsperada: 0,
+    operacaoId: 'foto-mudar-0001',
+    comandos: [{ tipo: 'cenario.renomear', nome: 'Praça viva' }],
+  })
+  await servico.reservarCapa(ator, id, { ...b, revisao: 1 })
+  await servico.definirCapa(ator, id, 1, b.digest, b)
+  const repetida = await servico.reservarCapa(ator, id, { ...b, revisao: 0 })
+  expect(repetida).toMatchObject({ retrato: a.digest, enviar: [] })
+  expect(await servico.definirCapa(ator, id, 0, b.digest, null)).toMatchObject({
+    digest: a.digest,
+    atual: false,
+  })
+  expect((await repo.cenario(id))!.capa).toBe(b.digest)
+  expect((await servico.revisoes(ator, id)).itens[0]).toMatchObject({
+    revisao: 1,
+    miniatura: b.digest,
+  })
+  await expect(
+    servico.revisoes(
+      {
+        ...ator,
+        usuarioId: '22222222-2222-4222-8222-222222222222',
+        contaId: '22222222-2222-4222-8222-222222222222',
+      },
+      id,
+    ),
+  ).rejects.toThrow()
+})
 test('formas autorais persistem, duplicam e desfazem sem biblioteca ou arquivos GLB fictícios', async () => {
   const { repo, servico, id } = await criar()
   const forma = {

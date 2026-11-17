@@ -239,10 +239,15 @@ describe('sincronizar curso publicado entre públicos', () => {
     snapshot.source.archivedModules = [
       { ...snapshot.source.modules[0]!, archivedAt: new Date('2026-11-01T00:00:00Z') },
     ]
+    snapshot.source.archivedLessons = [
+      { ...snapshot.source.lessons[0]!.row, archivedAt: new Date('2026-11-02T00:00:00Z') },
+    ]
     const stored = storePublicationSnapshot(snapshot)
     const hydrated = readPublicationSnapshot(stored)
     expect(hydrated.source.course.createdAt).toBeInstanceOf(Date)
     expect(hydrated.source.archivedModules?.[0]?.archivedAt).toBeInstanceOf(Date)
+    expect(hydrated.source.archivedLessons?.[0]?.archivedAt).toBeInstanceOf(Date)
+    expect(hydrated.target.course.createdAt).toBeInstanceOf(Date)
     expect(hydrated.source.lessons[0]!.published.blocks[0]!.content.initialProject).toEqual(project)
     expect(hash(hydrated)).toBe(hash(snapshot))
     stored.source.course.createdAt = 'ontem'
