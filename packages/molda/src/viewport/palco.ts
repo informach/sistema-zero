@@ -4,3 +4,4 @@
  */
 export { perspectiveFitDistance } from './cameraFit'
 export { DemandRenderLoop } from './demandRenderLoop'
+export { SceneSurfaceQuery } from './SceneSurfaceQuery'

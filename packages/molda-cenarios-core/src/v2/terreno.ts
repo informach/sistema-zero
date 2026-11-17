@@ -181,3 +181,51 @@ export function criarFonteDeAlturas(
     return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v)
   }
 }
+
+/** Vértices locais à peça; o renderer aplica a origem em sua matriz para manter precisão. */
+export function malhaDaPecaDeTerreno(
+  base: BaseDeTerreno,
+  referencia: BaseDeTerreno['pecas'][number],
+  peca: PecaDeAlturas,
+) {
+  if (
+    !base.pecas.some(
+      (p) =>
+        p.coluna === referencia.coluna &&
+        p.linha === referencia.linha &&
+        p.digest === referencia.digest,
+    )
+  )
+    invalidar('A peça não pertence a este terreno')
+  if (peca.min !== base.min || peca.max !== base.max || peca.amostras.length !== AMOSTRAS_DA_PECA)
+    invalidar('A peça não corresponde ao terreno')
+  const vertices = new Float32Array(AMOSTRAS_DA_PECA * 3)
+  const uvs = new Float32Array(AMOSTRAS_DA_PECA * 2)
+  const indices = new Uint16Array(CELULAS_DA_PECA ** 2 * 6)
+  let n = 0
+  for (let z = 0; z <= CELULAS_DA_PECA; z++)
+    for (let x = 0; x <= CELULAS_DA_PECA; x++) {
+      const i = z * LADO_DAS_AMOSTRAS + x
+      vertices[i * 3] = x * base.passo
+      vertices[i * 3 + 1] = peca.min + (peca.amostras[i]! / 65535) * (peca.max - peca.min)
+      vertices[i * 3 + 2] = z * base.passo
+      uvs[i * 2] = (referencia.coluna * CELULAS_DA_PECA + x) / base.colunas
+      uvs[i * 2 + 1] = (referencia.linha * CELULAS_DA_PECA + z) / base.linhas
+      if (x === CELULAS_DA_PECA || z === CELULAS_DA_PECA) continue
+      const a = i,
+        b = i + 1,
+        c = i + LADO_DAS_AMOSTRAS,
+        d = c + 1
+      indices.set([a, c, b, b, c, d], n)
+      n += 6
+    }
+  return {
+    origem: {
+      x: base.origem.x + referencia.coluna * CELULAS_DA_PECA * base.passo,
+      z: base.origem.z + referencia.linha * CELULAS_DA_PECA * base.passo,
+    },
+    vertices,
+    uvs,
+    indices,
+  }
+}

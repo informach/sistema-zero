@@ -7,6 +7,7 @@ import {
   codificarPecaDeAlturas,
   criarFonteDeAlturas,
   lerPecaDeAlturas,
+  malhaDaPecaDeTerreno,
   PecaDeTerrenoAusente,
 } from '../src/v2/terreno'
 
@@ -135,4 +136,25 @@ test('descritor limita extensão e quantidade, recusa posições repetidas e man
   expect(primeira(-32, 0)).toBe(4)
   expect(segunda(-32, 0)).toBe(8)
   expect(primeira(-32, 0)).toBe(4)
+})
+
+test('malha usa vértices locais, Uint16 e os mesmos triângulos da consulta de altura', () => {
+  const ref = { coluna: 0, linha: 0, digest: digest('a') },
+    b = base([ref])
+  const p = lerPecaDeAlturas(codificarPecaDeAlturas(campo(0, 0), 0, 255))
+  const fonte = criarFonteDeAlturas(b, new Map([[ref.digest, p]]))
+  const malha = malhaDaPecaDeTerreno(b, ref, p)
+  expect(malha.origem).toEqual(b.origem)
+  expect(malha.vertices.length).toBe(AMOSTRAS_DA_PECA * 3)
+  expect(malha.indices.length).toBe(64 * 64 * 6)
+  expect([...malha.indices.subarray(0, 6)]).toEqual([0, 65, 1, 1, 65, 66])
+  for (const t of [0, 1, 25, 8191]) {
+    const is = [...malha.indices.subarray(t * 3, t * 3 + 3)]
+    const media = (eixo: number) =>
+      is.reduce((soma, i) => soma + malha.vertices[i * 3 + eixo]!, 0) / 3
+    expect(
+      Math.abs(fonte(malha.origem.x + media(0), malha.origem.z + media(2)) - media(1)),
+    ).toBeLessThan(0.0001)
+  }
+  expect(() => malhaDaPecaDeTerreno(b, { ...ref, coluna: 1 }, p)).toThrow('pertence')
 })

@@ -34,3 +34,9 @@ Formatos e bibliotecas completos dentro do escopo do lote, chãos disponíveis, 
 ## Primeira verificação do leitor
 
 Implementado o módulo puro `molda-cenarios-core/src/v2/terreno.ts`: formato binário limitado, quantização Uint16, descritor esparso, índice por peça, interpolação triangular e conferência de bordas. Seis testes novos passaram, incluindo uma célula em que a interpolação bilinear daria resultado diferente da malha, ausência de arquivo, borda divergente, formato desconhecido e isolamento entre fontes. Núcleo completo: 57 testes e 158 asserções; tipagem passou. Esse módulo ainda não foi ligado ao documento público, ao armazenamento ou ao renderer; a conversão permanece em execução.
+
+## Malha e seleção conferidas isoladamente
+
+O gerador puro agora entrega vértices locais, UVs e índices Uint16; o renderer `TerrenoDoPalco` aplica a origem pela matriz, usa as mesmas amostras para as normais entre peças e reaproveita `SceneSurfaceQuery` para a seleção com BVH. As áreas omitidas recebem somente o piso, sem um plano coplanar sob as peças. O descarte libera consulta, geometrias e material compartilhado de forma idempotente. A exportação da consulta existente no Molda não modifica seu comportamento.
+
+Verificação local em 17/11: núcleo completo com 58 testes e 167 asserções; motor com 13 testes e 59 asserções; tipagem do motor aprovada e Biome nos seis arquivos de código passou. Os testes usam Three real, sem WebGL, e conferem seleção/altura em origem deslocada e na borda, normais coincidentes, preservação dos buffers e descarte. Ainda falta ligar esse componente ao palco principal, aos recursos persistidos e ao conversor. Não é evidência de conversão pronta ou de desempenho no navegador.
