@@ -383,8 +383,9 @@ export function Painel({
   selecao: readonly string[]
   executar(comandos: ComandoDeCenario[]): void
 }): JSX.Element {
+  const porId = new Map(documento.instancias.map((o) => [o.id, o]))
   const escolhidos = selecao
-    .map((id) => documento.instancias.find((o) => o.id === id))
+    .map((id) => porId.get(id))
     .filter((o): o is InstanciaDeCenario => Boolean(o))
   const unico = escolhidos.length === 1 ? escolhidos[0] : undefined
   return (

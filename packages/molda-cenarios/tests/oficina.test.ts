@@ -68,8 +68,9 @@ describe('ações da aba Objetos', () => {
     // O pivô deste modelo fica meio metro acima da base: ele sobe meio metro para pisar no chão.
     expect(doc.instancias[0]!.apoio).toEqual({
       tipo: 'terreno',
-      deslocamento: 0.5,
+      deslocamento: 0,
       inclinar: false,
+      referencia: 'volume',
     })
   })
   test('duplicar copia ao lado, com nome novo e destrancado', async () => {
@@ -103,7 +104,7 @@ describe('ações da aba Objetos', () => {
     ])
     controlador.executar(comandos)
     const o = controlador.getState().documento.instancias[0]!
-    expect(o.apoio).toMatchObject({ tipo: 'terreno', deslocamento: 2 })
+    expect(o.apoio).toMatchObject({ tipo: 'terreno', deslocamento: 1, referencia: 'volume' })
     expect(o.transformacao.escala).toEqual({ x: 1, y: 2, z: 1 })
   })
   test('apagar ignora o que não existe mais', async () => {

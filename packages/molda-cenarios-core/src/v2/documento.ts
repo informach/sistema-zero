@@ -64,6 +64,14 @@ export const ModeloDoCenarioSchema = z
     modelo: id,
     digest,
     nome: z.string().min(1).max(120).optional(),
+    /** Medida local do arquivo fixado por hash; usada pelas ferramentas de composição. */
+    volume: z
+      .object({ min: VetorSchema, max: VetorSchema })
+      .strict()
+      .refine((v) => (['x', 'y', 'z'] as const).every((e) => v.min[e] <= v.max[e]), {
+        message: 'O volume do modelo tem limites invertidos',
+      })
+      .optional(),
   })
   .strict()
 

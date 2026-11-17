@@ -101,6 +101,13 @@ void main() {
 }`
 
 class PalcoThree implements Palco {
+  volumeDoModelo(id: string) {
+    const digest = this.documento?.modelos.find((m) => m.id === id)?.digest
+    const estado = digest ? this.modelos.get(digest) : undefined
+    if (estado?.estado !== 'pronto') return null
+    const { min, max } = estado.modelo.caixa
+    return { min: { x: min.x, y: min.y, z: min.z }, max: { x: max.x, y: max.y, z: max.z } }
+  }
   private readonly renderer: WebGLRenderer
   private readonly cena = new Scene()
   private readonly camera = new PerspectiveCamera(48, 1, 0.1, 6000)

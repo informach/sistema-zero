@@ -3,6 +3,7 @@ import {
   criarPalco,
   type Estatisticas,
   type Ferramenta,
+  idsEscondidos,
   type Palco,
   type Vista,
 } from '@sistemazero/molda-cenarios-motor'
@@ -68,6 +69,7 @@ import type {
 } from '../portas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { EscolherBibliotecas } from './Mundo'
+import { Organizar } from './Organizar'
 import { Painel } from './Painel'
 import { Versoes } from './Versoes'
 
@@ -345,6 +347,11 @@ function OficinaAberta({
       } else if (comando && tecla === 'd') {
         evento.preventDefault()
         copiar()
+      } else if (comando && tecla === 'a') {
+        evento.preventDefault()
+        const doc = controlador.getState().documento,
+          escondidos = idsEscondidos(doc)
+        controlador.selecionar(doc.instancias.filter((o) => !escondidos.has(o.id)).map((o) => o.id))
       } else if (comando || evento.altKey) return
       else if (tecla === 'delete' || tecla === 'backspace') {
         evento.preventDefault()
@@ -676,6 +683,14 @@ function OficinaAberta({
             aria-label={COPY.painel.titulo}
           >
             <Painel documento={documento} selecao={selecao} executar={executar} />
+            {aba === 'objetos' && selecao.length > 0 ? (
+              <Organizar
+                documento={documento}
+                selecao={selecao}
+                executar={executar}
+                medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+              />
+            ) : null}
           </aside>
         ) : null}
       </div>

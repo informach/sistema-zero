@@ -2,6 +2,7 @@ import type {
   DocumentoDeCenario,
   ModeloDoCenario,
   Transformacao,
+  VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
 
 export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho'
@@ -58,6 +59,8 @@ export interface Palco {
   definirVista(vista: Vista): void
   /** O ponto do chão debaixo de uma posição da tela, já no encaixe da grade. */
   pontoNoChao(clientX: number, clientY: number): Ponto3 | null
+  /** Volume medido do GLB já carregado, sem expor objetos do Three ao host. */
+  volumeDoModelo(id: string): VolumeDeComposicao | null
   /** Enquadra os objetos dados, ou o cenário inteiro. */
   enquadrar(ids?: readonly string[]): void
   /** Uma foto do palco agora, sem as alças de edição. */

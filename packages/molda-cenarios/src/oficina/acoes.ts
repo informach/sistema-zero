@@ -36,7 +36,7 @@ export function comandosParaPor(
 ): { comandos: ComandoDeCenario[]; id: string } {
   const comandos: ComandoDeCenario[] = []
   const naTabela = doc.modelos.find((m) => m.id === modelo.id)
-  if (!naTabela || naTabela.digest !== modelo.digest)
+  if (!naTabela || naTabela.digest !== modelo.digest || !naTabela.volume)
     comandos.push({
       tipo: 'modelo.definir',
       modelo: {
@@ -45,6 +45,10 @@ export function comandosParaPor(
         modelo: modelo.id,
         digest: modelo.digest,
         nome: modelo.nome.slice(0, 120),
+        volume: {
+          min: { x: modelo.min[0], y: modelo.min[1], z: modelo.min[2] },
+          max: { x: modelo.max[0], y: modelo.max[1], z: modelo.max[2] },
+        },
       },
     })
   const id = novoId()
@@ -63,7 +67,7 @@ export function comandosParaPor(
         escala: { x: 1, y: 1, z: 1 },
       },
       // Pés no chão: quem tem o pivô no meio sobe a metade da altura que fica abaixo dele.
-      apoio: { tipo: 'terreno', deslocamento: Math.max(0, -modelo.min[1]), inclinar: false },
+      apoio: { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
       colisao: 'caixa',
     },
   })

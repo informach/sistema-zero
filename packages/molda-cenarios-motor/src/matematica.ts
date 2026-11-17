@@ -13,8 +13,8 @@ const euler = new Euler(0, 0, 0, 'XYZ')
 
 /** Matriz de mundo de um objeto do cenário, com o apoio já resolvido. Escreve em `saida`. */
 export function matrizDoObjeto(
-  doc: Pick<DocumentoDeCenario, 'base'>,
-  o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio'>,
+  doc: Pick<DocumentoDeCenario, 'base' | 'modelos'>,
+  o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio' | 'modelo'>,
   saida: Matrix4,
 ): Matrix4 {
   const p = posicaoNoMundo(doc, o),
