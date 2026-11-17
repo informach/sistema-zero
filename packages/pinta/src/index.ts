@@ -44,6 +44,7 @@ export {
   type PintaAssetOpenEvent,
   type PintaPersistence,
   type PintaPersistenceEvent,
+  type PintaReadIssue,
   setPintaStorageNamespace,
   subscribePintaAssetOpenState,
 } from './state/persistence'

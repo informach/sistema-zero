@@ -131,6 +131,18 @@ export type PintaPersistenceEvent =
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
 
+/**
+ * Um desenho que existe na conta num formato mais novo que o deste código. Ele NÃO é carregado:
+ * ler seria passar pelo `sanitizePintaAsset`, que descarta o que não conhece, e a versão cortada
+ * acabaria salva por cima. A galeria avisa e pede para atualizar a página.
+ */
+export interface PintaReadIssue {
+  id: string
+  name: string
+  status: 'unsupported'
+  version: number
+}
+
 const persistenceListeners = new WeakMap<StoreHandle, Set<(event: PintaPersistenceEvent) => void>>()
 
 function listenersFor(storeHandle: StoreHandle): Set<(event: PintaPersistenceEvent) => void> {
@@ -278,6 +290,11 @@ export interface PintaPersistence {
    * os eventos da galeria — é o que permite abrir com o LOCAL e receber o que desce depois.
    */
   subscribe?(listener: (event: PintaPersistenceEvent) => void): () => void
+  /**
+   * OPCIONAL: desenhos que o armazenamento conhece mas este código não sabe ler (formato mais
+   * novo, vindo de outro aparelho). Síncrono e barato; a galeria relê a cada aviso do `subscribe`.
+   */
+  getReadIssues?(): PintaReadIssue[]
   /**
    * OPCIONAIS: a biblioteca "Minhas paletas" do perfil (registro único, fora
    * da galeria/backup/orçamento). Armazenamento sem os métodos = a UI esconde

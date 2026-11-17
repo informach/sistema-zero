@@ -6,6 +6,7 @@
  * conflito real vira `-copia` DEPOIS de a descida ter sido baixada e validada.
  */
 import { describe, expect, test } from 'bun:test'
+import { pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import { assetFromJson, assetToJson, createAsset, PINTA_LIMITS } from '@sistemazero/pinta/assets'
 import type {
@@ -1203,5 +1204,164 @@ describe('review 06/09: upload em voo × exclusão, flush antes da descida, dese
     expect(marks.tombstone(nave.id)).toEqual({ at: 500, sent: false, revision: null })
     removed[0]?.onRemoved?.({ revision: 3 })
     expect(marks.tombstone(nave.id)).toEqual({ at: 500, sent: true, revision: 3 })
+  })
+})
+
+describe('formato mais novo que este código: o desenho fica intocado na conta', () => {
+  const FUTURO = 99
+  const mapaNovo = (asset: PintaAsset, over: Partial<CloudCreationSummary> = {}) => ({
+    json: assetToJson(asset),
+    summary: summaryOf(asset, { formatVersion: FUTURO, ...over }),
+  })
+
+  test('a reconciliação não desce o item, não o copia e não sobe a versão daqui por cima; a galeria recebe o aviso', async () => {
+    const mine = sprite('vila', 1000)
+    const theirs: PintaAsset = { ...mine, updatedAt: 5000 }
+    const soLa = sprite('floresta', 3000)
+    const normal = sprite('nave', 2000)
+    const local = fakeLocal([mine])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        [mine.id, mapaNovo(theirs, { revision: 9 })],
+        [soLa.id, mapaNovo(soLa)],
+        [normal.id, { json: assetToJson(normal), summary: summaryOf(normal) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+    })
+    expect(mirrored.getReadIssues?.()).toEqual([])
+    const depois = await loadSettled(mirrored, local)
+    // O que este código lê desce como sempre; os dois de formato novo ficam onde estão.
+    expect(depois.map((a) => a.name).sort()).toEqual(['nave', 'vila'])
+    expect(local.rows.get(mine.id)?.updatedAt).toBe(1000)
+    expect(local.rows.has(soLa.id)).toBe(false)
+    expect(depois.some((a) => a.name.includes('copia'))).toBe(false)
+    // Nem a marca avança (carimbos não dão por sincronizado o que não foi lido)…
+    expect(marks.get(mine.id)).toBeUndefined()
+    expect(marks.revision(mine.id)).toBeUndefined()
+    // …nem a cópia daqui entra na fila.
+    expect(uploads.has(mine.id)).toBe(false)
+    expect(
+      mirrored
+        .getReadIssues?.()
+        .map((i) => [i.name, i.status, i.version])
+        .sort(),
+    ).toEqual([
+      ['floresta', 'unsupported', FUTURO],
+      ['vila', 'unsupported', FUTURO],
+    ])
+  })
+
+  test('editar a cópia daqui não sobe por cima: o produtor devolve null enquanto a conta guarda o formato novo', async () => {
+    const mine = sprite('vila', 1000)
+    const local = fakeLocal([mine])
+    const { cloud, uploads } = fakeCloud(
+      new Map([[mine.id, mapaNovo({ ...mine, updatedAt: 5000 })]]),
+    )
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+    })
+    await loadSettled(mirrored, local)
+    await mirrored.persistAssets([{ ...mine, updatedAt: 7000 }])
+    expect(await uploads.get(mine.id)?.produce()).toBeNull()
+  })
+
+  test('base vencida na subida com a nuvem em formato novo: sem cópia, sem nova subida, marca parada', async () => {
+    const mine = sprite('vila', 1000)
+    const local = fakeLocal([mine])
+    const { cloud, uploads } = fakeCloud(
+      new Map([[mine.id, mapaNovo({ ...mine, updatedAt: 5000 }, { revision: 7 })]]),
+    )
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 9000,
+    })
+    await mirrored.persistAssets([mine])
+    const job = uploads.get(mine.id)
+    uploads.clear()
+    await job?.onStale?.({ itemId: mine.id })
+    expect((await local.listAllAssets()).map((a) => a.name)).toEqual(['vila'])
+    expect(uploads.size).toBe(0)
+    expect(marks.revision(mine.id)).toBeUndefined()
+    expect(mirrored.getReadIssues?.().map((i) => i.id)).toEqual([mine.id])
+  })
+
+  test('DELETE recusado porque editaram em formato novo: nada é restaurado aqui e a lápide fica', async () => {
+    const nave = sprite('nave', 1000)
+    const local = fakeLocal([nave])
+    const { cloud, removed } = fakeCloud(
+      new Map([[nave.id, mapaNovo({ ...nave, updatedAt: 2000 }, { revision: 7 })]]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set(nave.id, 1000, 5)
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+    })
+    await mirrored.deleteAsset(nave.id)
+    await removed[0]?.onStale?.({ itemId: nave.id, currentRevision: 7 })
+    expect(local.rows.has(nave.id)).toBe(false)
+    expect(marks.tombstone(nave.id)).toEqual({ at: 4242, sent: false, revision: 5 })
+    expect(removed).toHaveLength(1)
+    expect(mirrored.getReadIssues?.().map((i) => i.id)).toEqual([nave.id])
+  })
+
+  test('o aviso some quando o item passa a ser legível ou sai da conta; lápide remota nunca vira aviso', async () => {
+    const vila = sprite('vila', 1000)
+    const apagado = sprite('velho', 1000)
+    const remote = new Map([
+      [vila.id, mapaNovo(vila)],
+      [apagado.id, mapaNovo(apagado, { deletedAt: 3000 })],
+    ])
+    const local = fakeLocal()
+    const { cloud } = fakeCloud(remote)
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+      reconcileMinIntervalMs: 0,
+    })
+    await loadSettled(mirrored, local)
+    expect(mirrored.getReadIssues?.().map((i) => i.id)).toEqual([vila.id])
+    remote.set(vila.id, { json: assetToJson(vila), summary: summaryOf(vila) })
+    const depois = await loadSettled(mirrored, local)
+    expect(mirrored.getReadIssues?.()).toEqual([])
+    expect(depois.map((a) => a.name)).toEqual(['vila'])
+  })
+
+  test('a versão declarada na subida vem do tipo do desenho e a 1 não entra no corpo', async () => {
+    const local = fakeLocal()
+    const { cloud, uploads } = fakeCloud(new Map())
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+    })
+    const pecas = {
+      ...createAsset({ kind: 'tileset', name: 'pecas', tileSize: 16 }),
+      updatedAt: 10,
+    }
+    await mirrored.persistAssets([pecas])
+    const meta = (await uploads.get(pecas.id)?.produce())?.meta as { formatVersion?: number }
+    const esperado = pintaWriteFormatVersion('tileset')
+    expect(meta.formatVersion).toBe(esperado > 1 ? esperado : undefined)
+    expect(pintaWriteFormatVersion('pixel-sprite')).toBe(1)
   })
 })

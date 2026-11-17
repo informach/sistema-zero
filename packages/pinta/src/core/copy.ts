@@ -85,6 +85,12 @@ export const COPY = {
     searchClear: 'Limpar busca',
     searchClearAll: 'Limpar busca e filtros',
     syncing: 'Buscando na sua conta os desenhos que ainda não chegaram…',
+    /** Desenhos da conta feitos num Pinta mais novo que o desta página (não são abertos aqui). */
+    newerFormat: (count: number) =>
+      count === 1
+        ? 'Um desenho da sua conta foi feito numa versão mais nova do Pinta. Atualize a página para ver.'
+        : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
+    newerFormatReload: 'Atualizar a página',
     searchEmpty: 'Nenhum desenho combina com essa busca.',
     /** Filtros da galeria (chips): estilo e tipo. */
     filterStyle: 'Estilo',

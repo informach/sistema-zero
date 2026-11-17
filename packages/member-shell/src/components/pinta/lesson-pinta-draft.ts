@@ -5,7 +5,7 @@
  *
  * A "outra versão" mora num SEGUNDO banco do mesmo bloco (`aula-<bloco>-<perfil>-outra`).
  */
-import { pintaContentFingerprint } from '@sistemazero/core/creations'
+import { pintaContentFingerprint, pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import { type PintaAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { LessonDraftChannel, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { decideLessonDraftSeed } from '../../lib/lesson-draft-seed'
@@ -139,7 +139,7 @@ export function pintaDraftProducer(
       kind: asset.kind,
       updatedAt: asset.updatedAt,
       fingerprint,
-      formatVersion: 1,
+      formatVersion: pintaWriteFormatVersion(asset.kind),
     }
   }
 }

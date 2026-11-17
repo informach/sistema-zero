@@ -24,6 +24,7 @@ import {
   createPintaPersistence,
   isPintaStorageBudgetError,
   type PintaPersistence,
+  type PintaReadIssue,
 } from './persistence'
 
 /** A fábrica e o input moram em `core/newAsset.ts` (puros); aqui só o que tem EFEITO. */
@@ -39,6 +40,11 @@ export interface PintaGalleryState {
    * cair antes de dizer "sumiu".
    */
   syncing: boolean
+  /**
+   * Desenhos da conta feitos num Pinta mais novo que este (`persistence.getReadIssues?`). Não
+   * entram em `assets`: a galeria só avisa e oferece atualizar a página.
+   */
+  readIssues: PintaReadIssue[]
   /**
    * Liga a escuta do armazenamento (`persistence.subscribe?`): `sync-start`/`changed`/`sync-end`.
    * Idempotente; devolve o desligar. Sem `subscribe` na persistência, não faz nada.
@@ -130,6 +136,7 @@ export function createGalleryStore(
     loaded: false,
     loading: false,
     syncing: false,
+    readIssues: [],
     attachPersistence: () => () => {},
     loadError: null,
     mutateError: null,
@@ -446,6 +453,17 @@ export function createGalleryStore(
   // Geração: um `sync-start` que chega DURANTE a releitura do `sync-end` anterior não pode ser
   // apagado pelo `syncing: false` daquela releitura.
   let syncGeneration = 0
+  // Só troca o estado quando a lista muda de fato: o aviso chega a cada desenho que desce.
+  const refreshReadIssues = () => {
+    const next = persistence.getReadIssues?.() ?? []
+    const current = store.getState().readIssues
+    if (
+      next.length === current.length &&
+      next.every((issue, i) => issue.id === current[i]?.id && issue.version === current[i]?.version)
+    )
+      return
+    store.setState({ readIssues: next })
+  }
   store.setState({
     attachPersistence: () => {
       if (detach || !persistence.subscribe) return () => {}
@@ -458,6 +476,7 @@ export function createGalleryStore(
         }, CHANGED_RELOAD_DELAY_MS)
       }
       const unsubscribe = persistence.subscribe((event) => {
+        refreshReadIssues()
         if (event.type === 'sync-start') {
           syncGeneration += 1
           store.setState({ syncing: true })
@@ -477,6 +496,8 @@ export function createGalleryStore(
             })
         }
       })
+      // O que o armazenamento já sabe ao ligar (uma reconciliação que terminou antes da galeria).
+      refreshReadIssues()
       detach = () => {
         detach = null
         if (reloadTimer) {
