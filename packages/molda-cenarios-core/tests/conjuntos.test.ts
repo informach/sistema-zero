@@ -1,19 +1,32 @@
 import { expect, test } from 'bun:test'
 import {
+  alinharObjetos,
+  alterarElemento,
+  apoioNaSuperficie,
   arquivosDoDocumento,
   capturarConteudoDeConjunto,
   capturarFragmento,
+  criarAmostradorDeEspalhamento,
   criarDocumentoVazio,
   type DefinicaoDeConjunto,
   DefinicaoDeConjuntoSchema,
+  entidadesTransformaveis,
+  espelharObjetos,
   executarLote,
   idsDoFragmento,
+  indiceDaOrganizacao,
   inverterLote,
   type MontagemDeConjunto,
   MontagemDeConjuntoSchema,
+  materializarEspalhamento,
   posicaoNoMundo,
+  quantidadeDeObjetosDoCenario,
+  repetirObjetos,
   resolverConjuntos,
+  sortearTransformacoes,
   validarDocumento,
+  volumeDaMontagem,
+  volumeNoMundo,
 } from '../src/v2'
 
 function fonte() {
@@ -113,6 +126,168 @@ test('montagem fixa revisão e preserva a composição sem gravar clones na orig
   expect(doc).toEqual(antes)
   expect(doc.instancias).toEqual([])
   expect(validarDocumento(expandido.documento)).toEqual(expandido.documento)
+})
+
+test('objeto sobre a montagem usa seu espaço local e conserva o contato na expansão e ao mover a raiz', () => {
+  const d = cena()
+  d.formas = fonte().formas
+  const apoio = apoioNaSuperficie(d, 'copia', { x: 11, y: 12, z: 20 })
+  d.instancias = [{ ...fonte().instancias[0]!, id: 'visitante', grupo: null, apoio }]
+  expect(posicaoNoMundo(d, d.instancias[0]!)).toEqual({ x: 11, y: 12, z: 20 })
+  expect(validarDocumento(d)).toEqual(d)
+  const expandido = resolverConjuntos(d).documento
+  expect(posicaoNoMundo(expandido, expandido.instancias[0]!)).toEqual({ x: 11, y: 12, z: 20 })
+  expect(expandido.instancias[0]!.apoio.tipo).toBe('absoluto')
+  const transformacao = structuredClone(d.montagens![0]!.transformacao)
+  transformacao.posicao.x += 3
+  const depois = executarLote(
+    { documento: d, revisao: 0 },
+    {
+      revisaoEsperada: 0,
+      comandos: [{ tipo: 'montagem.atualizar', id: 'copia', alteracoes: { transformacao } }],
+    },
+  ).documento
+  expect(posicaoNoMundo(depois, depois.instancias[0]!)).toEqual({ x: 14, y: 12, z: 20 })
+  expect(() =>
+    executarLote(
+      { documento: d, revisao: 0 },
+      { revisaoEsperada: 0, comandos: [{ tipo: 'montagem.remover', id: 'copia' }] },
+    ),
+  ).toThrow('Apoio')
+  const livre = executarLote(
+    { documento: d, revisao: 0 },
+    { revisaoEsperada: 0, comandos: [{ tipo: 'montagem.desvincular', id: 'copia' }] },
+  ).documento
+  expect(posicaoNoMundo(livre, livre.instancias.find((o) => o.id === 'visitante')!)).toEqual({
+    x: 11,
+    y: 12,
+    z: 20,
+  })
+})
+
+test('pincel considera a ocupação e o orçamento das peças internas de conjuntos', () => {
+  const d = cena()
+  d.formas = [
+    { id: 'flor', nome: 'Flor', tipo: 'caixa', largura: 0.1, altura: 0.2, comprimento: 0.1 },
+  ]
+  const receita = {
+    prototipos: [
+      {
+        nome: 'Flor',
+        modelo: 'flor',
+        colisao: 'caixa' as const,
+        rotacao: { x: 0, y: 0, z: 0 },
+        escala: { x: 1, y: 1, z: 1 },
+      },
+    ],
+    traco: [{ x: 10, z: 20 }],
+    raio: 0.5,
+    densidade: 1000,
+    afastamento: 0.1,
+    giro: 0,
+    tamanhoMin: 1,
+    tamanhoMax: 1,
+    semente: 1,
+    limite: 8,
+    evitarObjetos: true,
+    grupo: null,
+    camada: null,
+  }
+  expect(quantidadeDeObjetosDoCenario(d)).toBe(4)
+  expect(criarAmostradorDeEspalhamento(d, receita).gerar().amostras).toHaveLength(0)
+  const livres = criarAmostradorDeEspalhamento(d, { ...receita, evitarObjetos: false }).gerar()
+    .amostras
+  expect(livres.length).toBeGreaterThan(0)
+  const f = d.definicoesConjuntos![0]!.conteudo,
+    primeira = f.instancias[0]!
+  f.instancias = Array.from({ length: 2000 }, (_, i) => ({
+    ...structuredClone(primeira),
+    id: `parte-${i}`,
+    apoio: { tipo: 'absoluto' },
+  }))
+  d.montagens = Array.from({ length: 10 }, (_, i) => montagem(`copia-${i}`))
+  expect(quantidadeDeObjetosDoCenario(d)).toBe(20000)
+  expect(() => criarAmostradorDeEspalhamento(d, receita)).toThrow('limite')
+  expect(() =>
+    materializarEspalhamento(d, {
+      receita: { ...receita, evitarObjetos: false },
+      amostras: [{ ...livres[0]!, id: 'nova' }],
+    }),
+  ).toThrow('limite')
+})
+
+test('organizar trata montagens como unidades e mede os volumes de suas peças com giros XYZ', () => {
+  const d = cena()
+  d.montagens![0]!.transformacao.rotacao = { x: 0.3, y: 0.7, z: 0.1 }
+  const projecao = resolverConjuntos(d),
+    volumes = projecao.documento.instancias
+      .filter((o) => projecao.origens.get(o.id) === 'copia')
+      .map((o) => volumeNoMundo(projecao.documento, o))
+  const volume = volumeDaMontagem(d, d.montagens![0]!)
+  for (const e of ['x', 'y', 'z'] as const) {
+    expect(volume.min[e]).toBeCloseTo(Math.min(...volumes.map((v) => v.min[e])), 8)
+    expect(volume.max[e]).toBeCloseTo(Math.max(...volumes.map((v) => v.max[e])), 8)
+  }
+  const antes = structuredClone(d)
+  const alinhado = executarLote(
+    { documento: d, revisao: 0 },
+    { revisaoEsperada: 0, comandos: alinharObjetos(d, ['copia', 'outra'], 'x', 'inicio') },
+  ).documento
+  expect(volumeDaMontagem(alinhado, alinhado.montagens![0]!).min.x).toBeCloseTo(
+    volumeDaMontagem(alinhado, alinhado.montagens![1]!).min.x,
+    8,
+  )
+  const comandos = repetirObjetos(
+    d,
+    ['copia'],
+    { tipo: 'fila', copias: 2, deslocamento: { x: 5, y: 0, z: 0 } },
+    ['nova1', 'nova2'],
+  )
+  const repetido = executarLote(
+    { documento: d, revisao: 0 },
+    { revisaoEsperada: 0, comandos },
+  ).documento
+  expect(repetido.instancias).toHaveLength(0)
+  expect(repetido.montagens).toHaveLength(4)
+  expect(repetido.montagens![2]!.transformacao.posicao.x).toBe(
+    d.montagens![0]!.transformacao.posicao.x + 5,
+  )
+  expect(repetido.montagens![3]!.transformacao.posicao.x).toBe(
+    d.montagens![0]!.transformacao.posicao.x + 10,
+  )
+  const sorteado = executarLote(
+    { documento: d, revisao: 0 },
+    {
+      revisaoEsperada: 0,
+      comandos: sortearTransformacoes(d, ['copia'], 42, {
+        giro: 1,
+        tamanhoMin: 0.8,
+        tamanhoMax: 1.2,
+      }),
+    },
+  ).documento
+  const s = sorteado.montagens![0]!.transformacao.escala
+  expect(s.x).toBe(s.y)
+  expect(s.y).toBe(s.z)
+  expect(() => espelharObjetos(d, ['copia'], 'x')).toThrow('Separe as peças')
+  expect(d).toEqual(antes)
+})
+
+test('pasta e camada conservam seleção, nomes e flags de montagens', () => {
+  const d = cena()
+  d.grupos = [{ id: 'vila', nome: 'Vila', grupo: null, bloqueado: false, oculto: false }]
+  d.montagens![0]!.grupo = 'vila'
+  expect(indiceDaOrganizacao(d).descendentes('vila')).toEqual(['copia'])
+  expect(entidadesTransformaveis(d).map((e) => e.id)).toEqual(['copia', 'outra'])
+  const depois = executarLote(
+    { documento: d, revisao: 0 },
+    {
+      revisaoEsperada: 0,
+      comandos: alterarElemento(d, 'copia', { nome: 'Praça dos Criadores', oculto: true }),
+    },
+  ).documento
+  expect(depois.montagens![0]!).toMatchObject({ nome: 'Praça dos Criadores', oculto: true })
+  expect(indiceDaOrganizacao(depois).flags.get('copia')!.oculto).toBe(true)
 })
 
 test('giro fora do Y move posições e contatos como um corpo, sem reassentar as peças separadamente', () => {

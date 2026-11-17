@@ -10,7 +10,7 @@ import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { destransformarPonto, transformarPonto, transformarVolume } from './volume'
 
 type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
-  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias'>>
+  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias' | 'montagens'>>
 type ObjetoComModelo = Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> &
   Partial<Pick<InstanciaDeCenario, 'modelo'>>
 
@@ -73,14 +73,17 @@ export function posicaoNoMundo(
 
 function suporteDoObjeto(doc: BaseComModelos, id: string) {
   const suporte = doc.instancias?.find((o) => o.id === id)
-  if (!suporte) throw new CenarioInvalido([`Apoio ausente: ${id}`])
-  return suporte
+  if (suporte) return suporte
+  const montagem = doc.montagens?.find((m) => m.id === id)
+  // O contato pertence ao espaço da raiz; não muda ao reorganizar suas peças internas.
+  if (montagem) return { ...montagem, apoio: { tipo: 'absoluto' as const } }
+  throw new CenarioInvalido([`Apoio ausente: ${id}`])
 }
 
 /** Reflexão é a própria inversa. O contato permanece no espaço original do GLB. */
 function refletirContato(
   doc: BaseComModelos,
-  suporte: InstanciaDeCenario,
+  suporte: ObjetoComModelo & Partial<Pick<InstanciaDeCenario, 'espelho'>>,
   ponto: { x: number; y: number; z: number },
 ) {
   const volume = volumeDaReferencia(doc, suporte.modelo)

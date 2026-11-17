@@ -1,6 +1,7 @@
 import { CenarioInvalido } from '../validacao'
 import { alteracoesDoGesto, alturaDoChao, posicaoNoMundo } from './chao'
 import type { ComandoDeCenario } from './comandos'
+import { quantidadeDeObjetosDoCenario, volumeDaMontagem } from './conjuntos'
 import {
   type DocumentoDeCenario,
   type InstanciaDeCenario,
@@ -10,6 +11,7 @@ import {
   type Transformacao,
 } from './documento'
 import { volumeDaReferencia } from './fontes'
+import { type EntidadeTransformavel, entidadesTransformaveis } from './organizacao'
 import { girarNaVertical } from './rotacao'
 import { criarSorteio } from './sorteio'
 import type { FonteDeAlturas } from './terreno'
@@ -23,7 +25,7 @@ export function espelharObjetos(
   ids: readonly string[],
   eixo: EixoDeComposicao,
 ): ComandoDeCenario[] {
-  return escolhidos(doc, ids).map((o) => ({
+  return instanciasEscolhidas(doc, ids).map((o) => ({
     tipo: 'instancia.atualizar',
     id: o.id,
     alteracoes: {
@@ -73,7 +75,7 @@ export function trocarModeloDosObjetos(
   entrada: ModeloDoCenario,
   fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
-  const objetos = escolhidos(doc, ids)
+  const objetos = instanciasEscolhidas(doc, ids)
   if (!objetos.length || !entrada.volume)
     throw new CenarioInvalido(['Escolha peças e um modelo com medidas conferidas'])
   const { id, comandos } = referenciarModelo(doc, entrada)
@@ -120,8 +122,18 @@ export function trocarModeloDosObjetos(
   return comandos
 }
 
-function escolhidos(doc: DocumentoDeCenario, ids: readonly string[]): InstanciaDeCenario[] {
-  const porId = new Map(doc.instancias.map((o) => [o.id, o]))
+function instanciasEscolhidas(
+  doc: DocumentoDeCenario,
+  ids: readonly string[],
+): InstanciaDeCenario[] {
+  const elementos = escolhidos(doc, ids)
+  const instancias = elementos.filter((e): e is InstanciaDeCenario => 'modelo' in e)
+  if (instancias.length !== elementos.length)
+    throw new CenarioInvalido(['Separe as peças do conjunto para espelhar ou trocar um modelo'])
+  return instancias
+}
+function escolhidos(doc: DocumentoDeCenario, ids: readonly string[]): EntidadeTransformavel[] {
+  const porId = new Map(entidadesTransformaveis(doc).map((o) => [o.id, o]))
   if (new Set(ids).size !== ids.length)
     throw new CenarioInvalido(['A seleção contém objetos repetidos'])
   if (ids.length > LIMITES_CENARIO_V2.comandos)
@@ -136,9 +148,10 @@ function escolhidos(doc: DocumentoDeCenario, ids: readonly string[]): InstanciaD
 /** Caixa de mundo exata do volume local, incluindo pivô, giro XYZ e escala por eixo. */
 export function volumeNoMundo(
   doc: DocumentoDeCenario,
-  o: InstanciaDeCenario,
+  o: EntidadeTransformavel,
   fonte?: FonteDeAlturas,
 ): VolumeDeComposicao {
+  if ('definicao' in o) return volumeDaMontagem(doc, o)
   const volume = volumeDaReferencia(doc, o.modelo)
   if (!volume)
     throw new CenarioInvalido([`Traga novamente o modelo para conferir suas medidas: ${o.nome}`])
@@ -147,13 +160,19 @@ export function volumeNoMundo(
 
 function mover(
   doc: DocumentoDeCenario,
-  o: InstanciaDeCenario,
+  o: EntidadeTransformavel,
   eixo: EixoDeComposicao,
   delta: number,
   fonte?: FonteDeAlturas,
 ): ComandoDeCenario {
-  const posicao = posicaoNoMundo(doc, o, fonte)
+  const posicao = 'definicao' in o ? { ...o.transformacao.posicao } : posicaoNoMundo(doc, o, fonte)
   posicao[eixo] += delta
+  if ('definicao' in o)
+    return {
+      tipo: 'montagem.atualizar',
+      id: o.id,
+      alteracoes: { transformacao: { ...o.transformacao, posicao } },
+    }
   return {
     tipo: 'instancia.atualizar',
     id: o.id,
@@ -249,12 +268,21 @@ export function repetirObjetos(
 ): ComandoDeCenario[] {
   const objetos = escolhidos(doc, ids),
     quantidade = objetos.length * receita.copias
+  const pecasNovas =
+    objetos.reduce(
+      (n, o) =>
+        n +
+        ('definicao' in o
+          ? doc.definicoesConjuntos!.find((d) => d.id === o.definicao)!.conteudo.instancias.length
+          : 1),
+      0,
+    ) * receita.copias
   if (
     !Number.isInteger(receita.copias) ||
     receita.copias < 1 ||
     !objetos.length ||
     quantidade > LIMITES_CENARIO_V2.comandos ||
-    quantidade + doc.instancias.length > LIMITES_CENARIO_V2.objetos ||
+    pecasNovas + quantidadeDeObjetosDoCenario(doc) > LIMITES_CENARIO_V2.objetos ||
     novosIds.length !== quantidade ||
     new Set(novosIds).size !== quantidade
   )
@@ -271,7 +299,7 @@ export function repetirObjetos(
   for (let i = 0; i < receita.copias; i++)
     for (const o of objetos) {
       const copia = structuredClone(o),
-        posicao = posicaoNoMundo(doc, o, fonte)
+        posicao = 'definicao' in o ? { ...o.transformacao.posicao } : posicaoNoMundo(doc, o, fonte)
       const transformacao: Transformacao = { ...structuredClone(o.transformacao), posicao }
       if (receita.tipo === 'fila')
         for (const eixo of ['x', 'y', 'z'] as const)
@@ -289,6 +317,11 @@ export function repetirObjetos(
       copia.id = novosIds[comandos.length]!
       copia.nome = `${o.nome.slice(0, 108)} ${i + 2}`
       copia.bloqueado = false
+      if ('definicao' in copia) {
+        copia.transformacao = transformacao
+        comandos.push({ tipo: 'montagem.definir', montagem: copia })
+        continue
+      }
       // Uma cópia de objeto apoiado fora da seleção mantém a posição visível, não um vínculo deslocado.
       if (copia.apoio.tipo !== 'terreno') copia.apoio = { tipo: 'absoluto' }
       Object.assign(copia, alteracoesDoGesto(doc, copia, transformacao, fonte))
@@ -318,6 +351,10 @@ export function sortearTransformacoes(
       fator = variacao.tamanhoMin + sorteio() * (variacao.tamanhoMax - variacao.tamanhoMin)
     t.rotacao = girarNaVertical(t.rotacao, (sorteio() * 2 - 1) * variacao.giro)
     t.escala = { x: t.escala.x * fator, y: t.escala.y * fator, z: t.escala.z * fator }
-    return { tipo: 'instancia.atualizar', id: o.id, alteracoes: { transformacao: t } }
+    return {
+      tipo: 'definicao' in o ? 'montagem.atualizar' : 'instancia.atualizar',
+      id: o.id,
+      alteracoes: { transformacao: t },
+    }
   })
 }

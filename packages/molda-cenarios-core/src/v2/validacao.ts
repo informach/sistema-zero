@@ -27,6 +27,7 @@ export function validarDocumento(
     ids = new Set<string>(),
     grupos = new Map(d.grupos.map((g) => [g.id, g])),
     objetos = new Map(d.instancias.map((o) => [o.id, o])),
+    montagens = new Set(d.montagens?.map((m) => m.id)),
     aguas = new Set(d.aguas.map((a) => a.id)),
     modelos = new Set<string>()
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO_V2.bytes)
@@ -105,6 +106,7 @@ export function validarDocumento(
       }
       const base = objetos.get(apoio.objeto)
       if (!base) {
+        if (montagens.has(apoio.objeto)) break
         erros.push(`Apoio ausente: ${o.id}`)
         break
       }

@@ -1,13 +1,17 @@
 import {
   alteracoesDoGesto,
+  alterarElemento,
   COLISOES,
   type Colisao,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  type EntidadeTransformavel,
+  entidadesTransformaveis,
   type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
   LIMITES_CENARIO_V2,
+  type MontagemDeConjunto,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Eye, EyeOff, Lock, LockOpen } from 'lucide-react'
@@ -313,6 +317,123 @@ function PainelDoObjeto({
   )
 }
 
+function PainelDaMontagem({
+  documento,
+  montagem,
+  executar,
+  aoEditar,
+}: {
+  documento: DocumentoDeCenario
+  montagem: MontagemDeConjunto
+  executar(comandos: ComandoDeCenario[]): void
+  aoEditar?(): void
+}): JSX.Element {
+  const flags = indiceDaOrganizacao(documento).flags.get(montagem.id),
+    trancado = Boolean(flags?.bloqueado)
+  const definicao = documento.definicoesConjuntos?.find((d) => d.id === montagem.definicao),
+    t = montagem.transformacao
+  const atualizar = (alteracoes: Partial<Omit<MontagemDeConjunto, 'id'>>) =>
+    executar([{ tipo: 'montagem.atualizar', id: montagem.id, alteracoes }])
+  return (
+    <div className="mcn-painel-corpo">
+      <p className="text-sm text-mld-muted">
+        {definicao?.nome ?? montagem.nome} · versão {definicao?.revisao}
+      </p>
+      <CampoTexto
+        rotulo={COPY.painel.nome}
+        valor={montagem.nome}
+        aoMudar={(nome) => atualizar({ nome })}
+        desligado={trancado}
+      />
+      {flags?.bloqueioHerdado ? (
+        <p className="text-sm text-mld-muted">Este conjunto está trancado na pasta ou camada.</p>
+      ) : null}
+      <fieldset className="mcn-grupo" disabled={trancado}>
+        <legend>{COPY.painel.lugar}</legend>
+        <div className="mcn-linha">
+          {(['x', 'y', 'z'] as const).map((e) => (
+            <CampoNumero
+              key={e}
+              rotulo={e.toUpperCase()}
+              valor={arredondar(t.posicao[e])}
+              sufixo={COPY.painel.metros}
+              aoMudar={(n) =>
+                atualizar({ transformacao: { ...t, posicao: { ...t.posicao, [e]: n } } })
+              }
+            />
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className="mcn-grupo" disabled={trancado}>
+        <legend>{COPY.painel.giro}</legend>
+        <div className="mcn-linha">
+          {(['x', 'y', 'z'] as const).map((e) => (
+            <CampoNumero
+              key={e}
+              rotulo={e.toUpperCase()}
+              valor={arredondar(t.rotacao[e] * GRAUS)}
+              passo={15}
+              sufixo="°"
+              aoMudar={(n) =>
+                atualizar({ transformacao: { ...t, rotacao: { ...t.rotacao, [e]: n / GRAUS } } })
+              }
+            />
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className="mcn-grupo" disabled={trancado}>
+        <legend>{COPY.painel.tamanho}</legend>
+        <CampoNumero
+          rotulo="Tamanho do conjunto"
+          valor={arredondar(t.escala.x, 3)}
+          passo={0.1}
+          min={0.01}
+          max={100}
+          sufixo="×"
+          aoMudar={(n) => atualizar({ transformacao: { ...t, escala: { x: n, y: n, z: n } } })}
+        />
+        <p className="text-sm text-mld-muted">As peças mantêm suas proporções.</p>
+      </fieldset>
+      <div className="mcn-linha">
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--outline"
+          disabled={Boolean(flags?.bloqueioHerdado)}
+          onClick={() => atualizar({ bloqueado: !montagem.bloqueado })}
+        >
+          {montagem.bloqueado ? <LockOpen aria-hidden="true" /> : <Lock aria-hidden="true" />}
+          {montagem.bloqueado ? COPY.painel.destrancar : COPY.painel.trancar}
+        </button>
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--outline"
+          disabled={trancado || Boolean(flags?.ocultacaoHerdada)}
+          onClick={() => atualizar({ oculto: !montagem.oculto })}
+        >
+          {montagem.oculto ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
+          {montagem.oculto ? COPY.painel.mostrar : COPY.painel.esconder}
+        </button>
+      </div>
+      {aoEditar ? (
+        <button type="button" className="sz-tool-pill sz-tool-pill--outline" onClick={aoEditar}>
+          Editar conjunto
+        </button>
+      ) : null}
+      <button
+        type="button"
+        className="sz-tool-pill sz-tool-pill--outline"
+        disabled={trancado}
+        onClick={() => executar([{ tipo: 'montagem.desvincular', id: montagem.id }])}
+      >
+        Separar peças
+      </button>
+      <p className="text-sm text-mld-muted">
+        Separar transforma esta cópia em peças independentes. Você pode desfazer.
+      </p>
+    </div>
+  )
+}
+
 /** O deslizante da hora só grava quando a pessoa solta: arrastar não vira dezenas de passos. */
 function HoraDoDia({ hora, aoMudar }: { hora: number; aoMudar(hora: number): void }): JSX.Element {
   const [valor, setValor] = useState(hora)
@@ -401,16 +522,18 @@ export function Painel({
   selecao,
   executar,
   fonte,
+  aoEditarConjunto,
 }: {
   documento: DocumentoDeCenario
   selecao: readonly string[]
   executar(comandos: ComandoDeCenario[]): void
   fonte?: FonteDeAlturas
+  aoEditarConjunto?(conjuntoId: string): void
 }): JSX.Element {
-  const porId = new Map(documento.instancias.map((o) => [o.id, o]))
+  const porId = new Map(entidadesTransformaveis(documento).map((o) => [o.id, o]))
   const escolhidos = selecao
     .map((id) => porId.get(id))
-    .filter((o): o is InstanciaDeCenario => Boolean(o))
+    .filter((o): o is EntidadeTransformavel => Boolean(o))
   const unico = escolhidos.length === 1 ? escolhidos[0] : undefined
   const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
   return (
@@ -423,13 +546,30 @@ export function Painel({
             : COPY.painel.cenario}
       </h2>
       {unico ? (
-        <PainelDoObjeto
-          key={unico.id}
-          documento={documento}
-          objeto={unico}
-          executar={executar}
-          fonte={fonte}
-        />
+        'definicao' in unico ? (
+          <PainelDaMontagem
+            documento={documento}
+            montagem={unico}
+            executar={executar}
+            aoEditar={
+              aoEditarConjunto
+                ? () =>
+                    aoEditarConjunto(
+                      documento.definicoesConjuntos!.find((d) => d.id === unico.definicao)!
+                        .conjunto,
+                    )
+                : undefined
+            }
+          />
+        ) : (
+          <PainelDoObjeto
+            key={unico.id}
+            documento={documento}
+            objeto={unico}
+            executar={executar}
+            fonte={fonte}
+          />
+        )
       ) : escolhidos.length > 1 ? (
         <div className="mcn-painel-corpo">
           <div className="mcn-linha">
@@ -443,11 +583,9 @@ export function Painel({
               onClick={() => {
                 const trancar = escolhidos.some((o) => !o.bloqueado)
                 executar(
-                  escolhidos.map((o) => ({
-                    tipo: 'instancia.atualizar' as const,
-                    id: o.id,
-                    alteracoes: { bloqueado: trancar },
-                  })),
+                  escolhidos.flatMap((o) =>
+                    alterarElemento(documento, o.id, { bloqueado: trancar }),
+                  ),
                 )
               }}
             >

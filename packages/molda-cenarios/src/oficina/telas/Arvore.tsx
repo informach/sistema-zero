@@ -3,7 +3,17 @@ import type {
   EntidadeOrganizavel,
   indiceDaOrganizacao,
 } from '@sistemazero/molda-cenarios-core/v2'
-import { Box, ChevronDown, ChevronRight, Eye, EyeOff, Folder, Lock, LockOpen } from 'lucide-react'
+import {
+  Box,
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Folder,
+  Lock,
+  LockOpen,
+} from 'lucide-react'
 import { type JSX, type KeyboardEvent, useId, useMemo, useRef, useState } from 'react'
 
 const ALTURA = 48
@@ -196,7 +206,7 @@ export function Arvore({
               pasta = indice.grupos.has(e.id),
               aberta = Boolean(busca) || !recolhidas.has(e.id)
             const flags = indice.flags.get(e.id)!,
-              Icone = pasta ? Folder : Box
+              Icone = pasta ? Folder : 'definicao' in e ? Boxes : Box
             const ativo = alvo === e.id || escolhidos.has(e.id)
             return (
               <div
@@ -254,7 +264,7 @@ export function Arvore({
                   type="button"
                   className="mld-piece mcn-arvore-nome"
                   tabIndex={-1}
-                  aria-label={`Escolher ${pasta ? 'pasta' : 'objeto'} ${e.nome}`}
+                  aria-label={`Escolher ${pasta ? 'pasta' : 'definicao' in e ? 'conjunto' : 'objeto'} ${e.nome}`}
                   aria-pressed={ativo}
                   title={e.nome}
                   draggable={!flags.bloqueado}

@@ -2,7 +2,9 @@ import {
   alteracoesDoGesto,
   type ComandoDeCenario,
   type DocumentoDeCenario,
+  type EntidadeTransformavel,
   entidadesDoCenario,
+  entidadesTransformaveis,
   type FonteDeAlturas,
   type FormaDeCenario,
   type InstanciaDeCenario,
@@ -98,7 +100,7 @@ export function novoIdAleatorio(): string {
 }
 
 function nomeLivre(doc: DocumentoDeCenario, base: string, extras: readonly string[] = []): string {
-  const usados = new Set([...doc.instancias.map((o) => o.nome), ...extras])
+  const usados = new Set([...entidadesTransformaveis(doc).map((o) => o.nome), ...extras])
   const limpo = base.trim().slice(0, 110) || 'Objeto'
   if (!usados.has(limpo)) return limpo
   for (let n = 2; n < 100_000; n++) if (!usados.has(`${limpo} ${n}`)) return `${limpo} ${n}`
@@ -187,6 +189,21 @@ export function comandosParaDuplicar(
     novos: string[] = [],
     nomes: string[] = []
   for (const id of ids) {
+    const montagem = doc.montagens?.find((m) => m.id === id)
+    if (montagem) {
+      const novo = novoId()
+      const nome = nomeLivre(doc, montagem.nome, nomes)
+      comandos.push({
+        tipo: 'montagem.duplicar',
+        id,
+        novoId: novo,
+        nome,
+        deslocamento: { x: PASSO_DA_COPIA, y: 0, z: PASSO_DA_COPIA },
+      })
+      novos.push(novo)
+      nomes.push(nome)
+      continue
+    }
     const original = doc.instancias.find((o) => o.id === id)
     if (!original) continue
     const copia: InstanciaDeCenario = structuredClone(original)
@@ -233,11 +250,11 @@ export function comandosDoGesto(
 ): ComandoDeCenario[] {
   const comandos: ComandoDeCenario[] = []
   const proximo = structuredClone(doc)
-  const originais = new Map(doc.instancias.map((o) => [o.id, o]))
+  const originais = new Map(entidadesTransformaveis(doc).map((o) => [o.id, o]))
   const profundidade = (id: string) => {
     let o = originais.get(id),
       n = 0
-    while (o?.apoio.tipo === 'objeto' && n < 64) {
+    while (o && 'apoio' in o && o.apoio.tipo === 'objeto' && n < 64) {
       o = originais.get(o.apoio.objeto)
       n++
     }
@@ -246,6 +263,16 @@ export function comandosDoGesto(
   // Os suportes mudam antes dos seus dependentes. Uma seleção da pilha inteira não pode
   // somar duas vezes a translação do pai ao recalcular o ponto de contato do filho.
   for (const mudanca of [...mudancas].sort((a, b) => profundidade(a.id) - profundidade(b.id))) {
+    const montagem = proximo.montagens?.find((m) => m.id === mudanca.id)
+    if (montagem) {
+      montagem.transformacao = mudanca.transformacao
+      comandos.push({
+        tipo: 'montagem.atualizar',
+        id: montagem.id,
+        alteracoes: { transformacao: mudanca.transformacao },
+      })
+      continue
+    }
     const objeto = proximo.instancias.find((o) => o.id === mudanca.id)
     if (!objeto) continue
     const alteracoes = mudanca.apoio
@@ -264,8 +291,12 @@ export function comandosDoGesto(
 /** A transformação de um objeto como a pessoa a vê: no mundo, com o apoio resolvido. */
 export function transformacaoNoMundo(
   doc: DocumentoDeCenario,
-  objeto: InstanciaDeCenario,
+  objeto: EntidadeTransformavel,
   fonte?: FonteDeAlturas,
 ): Transformacao {
-  return { ...objeto.transformacao, posicao: posicaoNoMundo(doc, objeto, fonte) }
+  return {
+    ...objeto.transformacao,
+    posicao:
+      'apoio' in objeto ? posicaoNoMundo(doc, objeto, fonte) : { ...objeto.transformacao.posicao },
+  }
 }

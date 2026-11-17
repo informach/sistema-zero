@@ -3,6 +3,7 @@ import {
   type ComandoDeCenario,
   type DocumentoDeCenario,
   entidadesDoCenario,
+  entidadesTransformaveis,
   executarLote,
   inverterLote,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -165,7 +166,7 @@ export function criarControlador(
       return null
     }
     fila.push({ revisaoEsperada: estado.revisao, comandos, operacaoId: novaOperacao() })
-    const vivos = new Set(depois.documento.instancias.map((o) => o.id))
+    const vivos = new Set(entidadesTransformaveis(depois.documento).map((o) => o.id))
     const selecao = estado.selecao.filter((s) => vivos.has(s))
     emitir({
       documento: depois.documento,
@@ -180,7 +181,7 @@ export function criarControlador(
 
   const receber = (novo: CenarioAberto) => {
     historico = { ...novo.historico }
-    const vivos = new Set(novo.documento.instancias.map((o) => o.id))
+    const vivos = new Set(entidadesTransformaveis(novo.documento).map((o) => o.id))
     emitir({
       documento: novo.documento,
       revisao: novo.revisao,
@@ -284,7 +285,7 @@ export function criarControlador(
     refazer: () => andar('refazer'),
     restaurar: (revisao) => andar(revisao),
     selecionar(ids, alvoDaArvore) {
-      const vivos = new Set(estado.documento.instancias.map((o) => o.id))
+      const vivos = new Set(entidadesTransformaveis(estado.documento).map((o) => o.id))
       const selecao = [...new Set(ids)].filter((s) => vivos.has(s))
       emitir({
         selecao,
@@ -299,7 +300,7 @@ export function criarControlador(
           emitir({ selecao: [], alvoDaArvore: null })
         return
       }
-      if (!estado.documento.instancias.some((o) => o.id === alvo)) return
+      if (!entidadesTransformaveis(estado.documento).some((o) => o.id === alvo)) return
       if (!acrescentar) {
         emitir({ selecao: [alvo], alvoDaArvore: alvo })
         return

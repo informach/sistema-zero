@@ -1,6 +1,7 @@
 import {
   type DocumentoDeCenario,
   encaixarNaGrade,
+  entidadesTransformaveis,
   type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
@@ -17,7 +18,7 @@ const euler = new Euler(0, 0, 0, 'XYZ')
 /** Matriz de mundo de um objeto do cenário, com o apoio já resolvido. Escreve em `saida`. */
 export function matrizDoObjeto(
   doc: Pick<DocumentoDeCenario, 'base' | 'modelos'> &
-    Partial<Pick<DocumentoDeCenario, 'instancias' | 'formas'>>,
+    Partial<Pick<DocumentoDeCenario, 'instancias' | 'formas' | 'montagens'>>,
   o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio' | 'modelo'>,
   saida: Matrix4,
   fonte?: FonteDeAlturas,
@@ -127,5 +128,9 @@ export function idsEscondidos(
   doc: DocumentoDeCenario,
   indice = indiceDaOrganizacao(doc),
 ): Set<string> {
-  return new Set(doc.instancias.filter((o) => indice.flags.get(o.id)?.oculto).map((o) => o.id))
+  return new Set(
+    entidadesTransformaveis(doc)
+      .filter((o) => indice.flags.get(o.id)?.oculto)
+      .map((o) => o.id),
+  )
 }

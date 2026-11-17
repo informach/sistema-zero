@@ -2,6 +2,7 @@ import {
   type ComandoDeCenario,
   chaveDaBase,
   type EncaixeDeComposicao,
+  entidadesTransformaveis,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   criarPalco,
@@ -384,7 +385,7 @@ function OficinaAberta({
     })
     palco.current = novo
     novo.definirDocumento(controlador.getState().documento)
-    if (controlador.getState().documento.instancias.length) novo.enquadrar()
+    if (entidadesTransformaveis(controlador.getState().documento).length) novo.enquadrar()
     return () => {
       palco.current = null
       novo.destruir()
@@ -562,7 +563,11 @@ function OficinaAberta({
         evento.preventDefault()
         const doc = controlador.getState().documento,
           escondidos = idsEscondidos(doc)
-        controlador.selecionar(doc.instancias.filter((o) => !escondidos.has(o.id)).map((o) => o.id))
+        controlador.selecionar(
+          entidadesTransformaveis(doc)
+            .filter((o) => !escondidos.has(o.id))
+            .map((o) => o.id),
+        )
       } else if (comando || evento.altKey) return
       else if (tecla === 'delete' || tecla === 'backspace') {
         evento.preventDefault()
@@ -633,7 +638,7 @@ function OficinaAberta({
               : 'Arraste no chão para espalhar. Solte para criar as peças.'
         : modoDeSelecao !== 'ponto'
           ? 'Arraste para escolher vários objetos.'
-          : documento.instancias.length === 0
+          : entidadesTransformaveis(documento).length === 0
             ? COPY.oficina.dicaVazio
             : ferramenta === 'mover' && !semObjetosEscolhidos
               ? COPY.oficina.dicaMover
@@ -1168,13 +1173,15 @@ function OficinaAberta({
                 ) : null}
                 {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
                   <>
-                    <Aparencia
-                      documento={documento}
-                      selecao={selecao}
-                      executar={executar}
-                      host={host}
-                      bibliotecas={bibliotecas}
-                    />
+                    {!documento.montagens?.some((m) => selecao.includes(m.id)) ? (
+                      <Aparencia
+                        documento={documento}
+                        selecao={selecao}
+                        executar={executar}
+                        host={host}
+                        bibliotecas={bibliotecas}
+                      />
+                    ) : null}
                     <Organizar
                       documento={documento}
                       selecao={selecao}

@@ -5,6 +5,8 @@ import {
   criarDocumentoVazio,
   referenciarConjunto,
 } from '@sistemazero/molda-cenarios-core/v2'
+import { comandosDoGesto, comandosParaDuplicar } from '../src/oficina/acoes'
+import { criarControlador } from '../src/oficina/controlador'
 import { criarHostHttp } from '../src/oficina/host-http'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
 import { CenarioDesatualizado } from '../src/oficina/portas'
@@ -279,6 +281,64 @@ test('host local recusa snapshot divergente de uma revisão ainda existente no c
     ),
   ).rejects.toThrow('diverge')
   expect((await host.abrirCenario(c.id)).revisao).toBe(0)
+})
+
+test('controlador mantém a raiz selecionada, grava o gesto e duplica como montagem no mesmo histórico', async () => {
+  const { host, conjunto, biblioteca, conteudo } = await base()
+  const mundo = await host.criarMundo('conta', 'Mundo'),
+    c = await host.criarCenario(mundo.id, 'Cena')
+  const ctl = criarControlador(host, await host.abrirCenario(c.id))
+  const { definicao, comandos } = referenciarConjunto(ctl.getState().documento, {
+    biblioteca: biblioteca.id,
+    conjunto: conjunto.id,
+    revisao: 1,
+    nome: conjunto.nome,
+    conteudo,
+  })
+  const transformacao = {
+    posicao: { x: 0, y: 0, z: 0 },
+    rotacao: { x: 0, y: 0, z: 0 },
+    escala: { x: 1, y: 1, z: 1 },
+  }
+  expect(
+    ctl.executar([
+      ...comandos,
+      {
+        tipo: 'montagem.definir',
+        montagem: {
+          id: 'jardim',
+          nome: 'Jardim',
+          grupo: null,
+          bloqueado: false,
+          oculto: false,
+          definicao: definicao.id,
+          transformacao,
+        },
+      },
+    ]),
+  ).toBe(true)
+  ctl.tocar('jardim', false)
+  expect(ctl.getState().selecao).toEqual(['jardim'])
+  const t = structuredClone(transformacao)
+  t.posicao.x = 4
+  expect(
+    ctl.executar(comandosDoGesto(ctl.getState().documento, [{ id: 'jardim', transformacao: t }])),
+  ).toBe(true)
+  expect(ctl.getState().selecao).toEqual(['jardim'])
+  const copias = comandosParaDuplicar(ctl.getState().documento, ['jardim'], () => 'copia')
+  expect(ctl.executar(copias.comandos)).toBe(true)
+  ctl.selecionar(copias.ids)
+  await ctl.terminar()
+  const salvo = await host.abrirCenario(c.id)
+  expect(salvo.documento.instancias).toHaveLength(0)
+  expect(salvo.documento.montagens!.map((m) => m.nome)).toEqual(['Jardim', 'Jardim 2'])
+  expect(salvo.documento.montagens![1]!.transformacao.posicao.x).toBe(5)
+  await ctl.desfazer()
+  expect(ctl.getState().selecao).toEqual([])
+  ctl.selecionar(['jardim'])
+  expect(ctl.getState().selecao).toEqual(['jardim'])
+  await ctl.refazer()
+  expect(ctl.getState().documento.montagens).toHaveLength(2)
 })
 
 test('host HTTP converte contexto/miniaturas e envia a fotografia da revisão pelo protocolo existente', async () => {

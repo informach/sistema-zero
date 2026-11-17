@@ -1,4 +1,5 @@
 import { CenarioInvalido } from '../validacao'
+import { quantidadeDeObjetosDoCenario, resolverConjuntos } from './conjuntos'
 import {
   type DocumentoDeCenario,
   type InstanciaDeCenario,
@@ -134,12 +135,13 @@ export function criarAmostradorDeEspalhamento(
   conferirDestino(doc, r)
   if (doc.base.tipo === 'perfil') falhar('Converta o perfil em terreno antes de espalhar objetos')
   if (doc.base.tipo === 'terreno' && !fonte) falhar('Aguarde o carregamento das alturas do terreno')
-  if (doc.instancias.length >= LIMITES_CENARIO_V2.objetos)
-    falhar('O cenário atingiu o limite de objetos')
+  const quantidade = quantidadeDeObjetosDoCenario(doc)
+  if (quantidade >= LIMITES_CENARIO_V2.objetos) falhar('O cenário atingiu o limite de objetos')
   const temChao = dominioDoChao(structuredClone(doc.base)),
     volumes = r.prototipos.map((p) => structuredClone(volumeDaReferencia(doc, p.modelo)!))
+  const consulta = r.evitarObjetos ? resolverConjuntos(doc).documento : doc
   const ocupados = r.evitarObjetos
-    ? doc.instancias.map((o) => retangulo(volumeNoMundo(doc, o, fonte)))
+    ? consulta.instancias.map((o) => retangulo(volumeNoMundo(consulta, o, fonte)))
     : []
   // Raio da esfera local limita a projeção XZ para qualquer giro e escala permitidos.
   const maior = Math.max(
@@ -162,7 +164,7 @@ export function criarAmostradorDeEspalhamento(
   const passo = Math.max(0.1, maior / 8),
     existentes = new GradeDeVolumes(passo)
   for (const v of ocupados) existentes.por(v)
-  const limite = Math.max(0, Math.min(r.limite, LIMITES_CENARIO_V2.objetos - doc.instancias.length))
+  const limite = Math.max(0, Math.min(r.limite, LIMITES_CENARIO_V2.objetos - quantidade))
 
   return {
     gerar(traco: ReceitaDeEspalhamento['traco'] = r.traco): ResultadoDeEspalhamento {
@@ -278,12 +280,18 @@ export function materializarEspalhamento(
   conferirDestino(doc, r)
   if (
     amostras.length > r.limite ||
-    amostras.length + doc.instancias.length > LIMITES_CENARIO_V2.objetos
+    amostras.length + quantidadeDeObjetosDoCenario(doc) > LIMITES_CENARIO_V2.objetos
   )
     falhar('A pincelada ultrapassa o limite de objetos')
   const ids = new Set(doc.instancias.map((o) => o.id)),
     entidades = new Set(
-      [...doc.grupos, ...doc.caminhos, ...doc.aguas, ...doc.marcadores].map((e) => e.id),
+      [
+        ...doc.grupos,
+        ...doc.caminhos,
+        ...doc.aguas,
+        ...doc.marcadores,
+        ...(doc.montagens ?? []),
+      ].map((e) => e.id),
     ),
     temChao = dominioDoChao(doc.base),
     proximos = new GradeDeAfastamento(r.afastamento)

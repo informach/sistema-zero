@@ -16,6 +16,11 @@ export interface FlagsDeOrganizacao {
   bloqueioHerdado: boolean
   ocultacaoHerdada: boolean
 }
+export type EntidadeTransformavel = DocumentoDeCenario['instancias'][number] | MontagemDeConjunto
+/** Unidades editáveis; peças internas de uma montagem pertencem à sua definição. */
+export function entidadesTransformaveis(doc: DocumentoDeCenario): EntidadeTransformavel[] {
+  return [...doc.instancias, ...(doc.montagens ?? [])]
+}
 
 export function referenciaDeModelo(e: EntidadeOrganizavel): string | null {
   if ('modelo' in e) return e.modelo
@@ -70,7 +75,7 @@ export function indiceDaOrganizacao(doc: DocumentoDeCenario) {
     lista.push(e)
     filhos.set(e.grupo, lista)
   }
-  const objetos = new Set(doc.instancias.map((o) => o.id))
+  const objetos = new Set(entidadesTransformaveis(doc).map((o) => o.id))
   return {
     entidades,
     grupos,
@@ -143,6 +148,8 @@ export function alterarElemento(
   if (grupo) return [{ tipo: 'grupo.definir', grupo: { ...grupo, ...alteracoes } }]
   if (doc.instancias.some((e) => e.id === id))
     return [{ tipo: 'instancia.atualizar', id, alteracoes }]
+  if (doc.montagens?.some((e) => e.id === id))
+    return [{ tipo: 'montagem.atualizar', id, alteracoes }]
   const caminho = doc.caminhos.find((e) => e.id === id)
   if (caminho) return [{ tipo: 'caminho.definir', caminho: { ...caminho, ...alteracoes } }]
   const agua = doc.aguas.find((e) => e.id === id)

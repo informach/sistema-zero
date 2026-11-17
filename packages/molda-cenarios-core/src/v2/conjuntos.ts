@@ -10,17 +10,87 @@ import {
   criarDocumentoVazio,
   type DocumentoDeCenario,
   DocumentoDeCenarioSchema,
+  type InstanciaDeCenario,
   LIMITES_CENARIO_V2,
+  type Transformacao,
 } from './documento'
+import { volumeDaReferencia } from './fontes'
 import { validarFragmento } from './fragmento'
 import { igual } from './igual'
 import { comporGiros } from './rotacao'
-import { transformarPonto } from './volume'
+import { transformarPonto, transformarVolume, type VolumeDeComposicao } from './volume'
 
 const falhar = (mensagem: string): never => {
   throw new CenarioInvalido([mensagem])
 }
 const semId = ({ id: _id, ...resto }: { id: string }) => resto
+
+/** Orçamento autoral inclui peças desenhadas dentro das montagens. */
+export function quantidadeDeObjetosDoCenario(doc: DocumentoDeCenario): number {
+  const definicoes = new Map(doc.definicoesConjuntos?.map((d) => [d.id, d]))
+  return (
+    doc.instancias.length +
+    (doc.montagens ?? []).reduce((total, m) => {
+      const d = definicoes.get(m.definicao)
+      if (!d) falhar('Uma montagem está sem definição fixada')
+      return total + d!.conteudo.instancias.length
+    }, 0)
+  )
+}
+
+function documentoDaDefinicao(f: DefinicaoDeConjunto['conteudo']): DocumentoDeCenario {
+  return {
+    ...criarDocumentoVazio('fonte', 'Conjunto'),
+    modelos: f.modelos,
+    instancias: f.instancias,
+    grupos: f.grupos,
+    ...(f.formas.length ? { formas: f.formas } : {}),
+    ...(f.texturas.length ? { texturas: f.texturas } : {}),
+    ...(f.camadas.length ? { camadas: f.camadas } : {}),
+  }
+}
+function transformacaoDaPeca(
+  f: DefinicaoDeConjunto['conteudo'],
+  m: MontagemDeConjunto,
+  o: InstanciaDeCenario,
+  fonte: DocumentoDeCenario,
+): Transformacao {
+  const p = posicaoNoMundo(fonte, o),
+    t = m.transformacao
+  return {
+    posicao: transformarPonto({ x: p.x - f.ancora.x, y: p.y - f.ancora.y, z: p.z - f.ancora.z }, t),
+    rotacao: comporGiros(t.rotacao, o.transformacao.rotacao),
+    escala: {
+      x: o.transformacao.escala.x * t.escala.x,
+      y: o.transformacao.escala.y * t.escala.y,
+      z: o.transformacao.escala.z * t.escala.z,
+    },
+  }
+}
+
+/** União dos volumes das peças transformadas, sem expandir nem clonar o resto da cena. */
+export function volumeDaMontagem(
+  doc: DocumentoDeCenario,
+  m: MontagemDeConjunto,
+): VolumeDeComposicao {
+  const f = doc.definicoesConjuntos?.find((d) => d.id === m.definicao)?.conteudo
+  if (!f) return falhar('Uma montagem está sem definição fixada')
+  const fonte = documentoDaDefinicao(f),
+    volume = {
+      min: { x: Infinity, y: Infinity, z: Infinity },
+      max: { x: -Infinity, y: -Infinity, z: -Infinity },
+    }
+  for (const o of f.instancias) {
+    const local = volumeDaReferencia(fonte, o.modelo)
+    if (!local) return falhar(`Confira as medidas da peça ${o.nome} antes de organizar o conjunto`)
+    const parte = transformarVolume(local, transformacaoDaPeca(f, m, o, fonte))
+    for (const eixo of ['x', 'y', 'z'] as const) {
+      volume.min[eixo] = Math.min(volume.min[eixo], parte.min[eixo])
+      volume.max[eixo] = Math.max(volume.max[eixo], parte.max[eixo])
+    }
+  }
+  return volume
+}
 
 /** A biblioteca e os agentes fixam referências sem sobrescrever aliases existentes. */
 export function referenciarConjunto(
@@ -77,6 +147,13 @@ export function resolverConjuntos(entrada: DocumentoDeCenario): {
   if (total > LIMITES_CENARIO_V2.objetos)
     falhar('A expansão dos conjuntos excede o orçamento de objetos')
   const montagens = doc.montagens ?? []
+  const raizes = new Set(montagens.map((m) => m.id))
+  for (const o of doc.instancias) {
+    if (o.apoio.tipo !== 'objeto' || !raizes.has(o.apoio.objeto)) continue
+    const posicao = posicaoNoMundo(doc, o)
+    o.transformacao = { ...o.transformacao, posicao }
+    o.apoio = { tipo: 'absoluto' }
+  }
   delete doc.montagens
   delete doc.definicoesConjuntos
   const usados = new Set(
@@ -173,15 +250,7 @@ export function resolverConjuntos(entrada: DocumentoDeCenario): {
   const montar = (m: MontagemDeConjunto) => {
     const f = fontes.get(m.definicao)!,
       tabela = tabelas.get(m.definicao)!
-    const fonte = {
-      ...criarDocumentoVazio('fonte', 'Conjunto'),
-      modelos: f.modelos,
-      instancias: f.instancias,
-      grupos: f.grupos,
-      ...(f.formas.length ? { formas: f.formas } : {}),
-      ...(f.texturas.length ? { texturas: f.texturas } : {}),
-      ...(f.camadas.length ? { camadas: f.camadas } : {}),
-    }
+    const fonte = documentoDaDefinicao(f)
     const grupos = new Map(f.grupos.map((g, i) => [g.id, reservar(`${m.id}/grupo/${i}`)]))
     reservar(m.id)
     const { definicao: _definicao, transformacao: _transformacao, ...raiz } = m
@@ -198,26 +267,14 @@ export function resolverConjuntos(entrada: DocumentoDeCenario): {
       origens.set(id, m.id)
     }
     for (const [i, o] of f.instancias.entries()) {
-      const p = posicaoNoMundo(fonte, o),
-        t = m.transformacao
-      const local = { x: p.x - f.ancora.x, y: p.y - f.ancora.y, z: p.z - f.ancora.z }
-      const id = reservar(`${m.id}/objeto/${i}`),
-        posicao = transformarPonto(local, t)
+      const id = reservar(`${m.id}/objeto/${i}`)
       doc.instancias.push({
         ...o,
         ...organizacao(o),
         id,
         modelo: tabela.modelos.get(o.modelo)!,
         apoio: { tipo: 'absoluto' },
-        transformacao: {
-          posicao,
-          rotacao: comporGiros(t.rotacao, o.transformacao.rotacao),
-          escala: {
-            x: o.transformacao.escala.x * t.escala.x,
-            y: o.transformacao.escala.y * t.escala.y,
-            z: o.transformacao.escala.z * t.escala.z,
-          },
-        },
+        transformacao: transformacaoDaPeca(f, m, o, fonte),
         ...(o.aparencia?.textura
           ? {
               aparencia: {

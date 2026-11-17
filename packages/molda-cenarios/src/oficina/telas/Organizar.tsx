@@ -45,6 +45,7 @@ export function Organizar({
   const [erro, setErro] = useState<string | null>(null)
   const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
   const trancado = !selecao.length || selecao.some((id) => indice.flags.get(id)?.bloqueado)
+  const temMontagem = Boolean(documento.montagens?.some((m) => selecao.includes(m.id)))
   const acao = (preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[]) => {
     try {
       executar(comMedidasConferidas(documento, selecao, medir, preparar))
@@ -105,8 +106,13 @@ export function Organizar({
           )}
         </div>
       </fieldset>
-      <fieldset className="mcn-grupo">
+      <fieldset className="mcn-grupo" disabled={trancado || temMontagem}>
         <legend>Espelhar ou trocar</legend>
+        {temMontagem ? (
+          <p className="text-sm text-mld-muted">
+            Separe as peças do conjunto para espelhar ou trocar um modelo.
+          </p>
+        ) : null}
         <p className="text-sm text-mld-muted">
           O espelho inverte a forma no eixo local, mantendo sua posição e apoio.
         </p>
@@ -124,7 +130,7 @@ export function Organizar({
           {botao('Trocar modelo', aoTrocar)}
         </div>
       </fieldset>
-      <fieldset className="mcn-grupo">
+      <fieldset className="mcn-grupo" disabled={trancado}>
         <legend>Repetir</legend>
         <label className="mcn-campo">
           <span>Disposição</span>

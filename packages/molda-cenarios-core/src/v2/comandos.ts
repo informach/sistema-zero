@@ -71,6 +71,7 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
       tipo: z.literal('montagem.duplicar'),
       id,
       novoId: z.string().min(1).max(160),
+      nome: z.string().min(1).max(120).optional(),
       deslocamento: VetorSchema,
     })
     .strict(),
@@ -286,6 +287,7 @@ export function executarLote(
         d.montagens!.push({
           ...atual,
           id: c.novoId,
+          nome: c.nome ?? atual.nome,
           transformacao: {
             ...atual.transformacao,
             posicao: {

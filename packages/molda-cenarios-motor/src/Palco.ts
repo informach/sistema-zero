@@ -14,6 +14,7 @@ import {
   type InstanciaDeCenario,
   indiceDaOrganizacao,
   type ModeloDoCenario,
+  resolverConjuntos,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -48,6 +49,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
 import { EspalhamentoDoPalco } from './Espalhamento'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
@@ -91,13 +93,6 @@ type EstadoDoModelo =
   | { estado: 'pronto'; modelo: ModeloCarregado; representacoes: RepresentacoesDoModelo }
   | { estado: 'falhou' }
 
-interface Local {
-  lote: LoteDoModelo
-  indice: number
-  caixa: Box3
-  matriz: Matrix4
-}
-
 interface Gesto {
   pivo: Matrix4
   inicio: Map<string, Matrix4>
@@ -123,9 +118,9 @@ void main() {
 
 class PalcoThree implements Palco {
   volumeDoModelo(id: string) {
-    const forma = this.documento?.formas?.find((f) => f.id === id)
+    const forma = this.visual?.formas?.find((f) => f.id === id)
     if (forma) return volumeDaForma(forma)
-    const digest = this.documento?.modelos.find((m) => m.id === id)?.digest
+    const digest = this.visual?.modelos.find((m) => m.id === id)?.digest
     const estado = digest ? this.modelos.get(digest) : undefined
     if (estado?.estado !== 'pronto') return null
     const { min, max } = estado.modelo.caixa
@@ -160,6 +155,9 @@ class PalcoThree implements Palco {
   private readonly planoDoChao = new Plane(new Vector3(0, 1, 0), 0)
 
   private documento: DocumentoDeCenario | null = null
+  private visual: DocumentoDeCenario | null = null
+  private origens: ReadonlyMap<string, string> = new Map()
+  private alvos = new Map<string, AlvoDeEdicao>()
   private temChao: (p: { x: number; z: number }) => boolean = () => false
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
@@ -175,7 +173,7 @@ class PalcoThree implements Palco {
       else this.opcoes.aoTexturas?.(estado)
     },
   )
-  private readonly locais = new Map<string, Local>()
+  private readonly locais = new Map<string, LocalDoObjeto>()
   private readonly matrizes = new Map<string, Matrix4>()
   private readonly trancados = new Set<string>()
   private selecao: string[] = []
@@ -270,7 +268,7 @@ class PalcoThree implements Palco {
       canvas,
       (pontos) => this.opcoes.aoPreverSelecao?.(pontos),
       (regiao, somar) => {
-        const candidatos = [...this.locais].map(([id, local]) => ({
+        const candidatos = [...this.alvos].map(([id, local]) => ({
           id,
           centro: local.caixa.getCenter(new Vector3()).applyMatrix4(local.matriz),
           bloqueado: this.trancados.has(id),
@@ -334,12 +332,15 @@ class PalcoThree implements Palco {
       return
     }
     this.documento = documento
+    const projecao = resolverConjuntos(documento)
+    this.visual = projecao.documento
+    this.origens = projecao.origens
     this.temChao = dominioDoChao(documento.base)
     this.espalhamento.contextoAlterado()
     this.aplicarChao(documento)
     this.aplicarLuz(documento.iluminacao.hora)
-    this.pedirModelos(documento)
-    this.pedirTexturas(documento)
+    this.pedirModelos(this.visual)
+    this.pedirTexturas(this.visual)
     // definir publica o estado sincronicamente e reconstrói uma única vez pelo callback.
     this.atualizarGrade()
   }
@@ -371,16 +372,16 @@ class PalcoThree implements Palco {
       this.modoDeSelecao = 'ponto'
       this.area.setTool('point')
     }
-    if (this.documento) {
-      this.pedirModelos(this.documento)
-      this.pedirTexturas(this.documento)
+    if (this.visual) {
+      this.pedirModelos(this.visual)
+      this.pedirTexturas(this.visual)
     }
     this.atualizarAlca()
   }
 
   recarregarModelos(): void {
     for (const [id, estado] of this.modelos) if (estado.estado === 'falhou') this.modelos.delete(id)
-    if (this.documento) this.pedirModelos(this.documento)
+    if (this.visual) this.pedirModelos(this.visual)
     this.espalhamento.invalidar()
   }
 
@@ -411,13 +412,20 @@ class PalcoThree implements Palco {
   }
 
   private pedirTexturas(doc: DocumentoDeCenario) {
-    const consulta = this.espalhamento.documentoDeConsulta() ?? doc
+    const consulta = this.espalhamento.documentoDeConsulta()
     const usadas = new Set(
-      [...doc.instancias, ...this.espalhamento.prototipos].flatMap((o) =>
+      doc.instancias.flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
+    )
+    const previas = new Set(
+      this.espalhamento.prototipos.flatMap((o) =>
         o.aparencia?.textura ? [o.aparencia.textura.id] : [],
       ),
     )
-    this.texturas.definir((consulta.texturas ?? []).filter((t) => usadas.has(t.id)))
+    const refs = [
+      ...(doc.texturas ?? []).filter((t) => usadas.has(t.id)),
+      ...(consulta?.texturas ?? []).filter((t) => previas.has(t.id)),
+    ]
+    this.texturas.definir([...new Map(refs.map((t) => [t.digest, t])).values()])
   }
 
   definirEncaixe(encaixe: Encaixe): void {
@@ -512,10 +520,10 @@ class PalcoThree implements Palco {
       return
     }
     const caixa = new Box3()
-    const escolhidos = ids?.length ? ids : [...this.locais.keys()]
+    const escolhidos = ids?.length ? ids : [...this.alvos.keys()]
     const cantos = new Box3()
     for (const id of escolhidos) {
-      const local = this.locais.get(id)
+      const local = this.alvos.get(id)
       if (!local) continue
       caixa.union(cantos.copy(local.caixa).applyMatrix4(local.matriz))
     }
@@ -583,6 +591,13 @@ class PalcoThree implements Palco {
         estado.modelo.descartar()
       }
     this.modelos.clear()
+    this.alvos.clear()
+    this.locais.clear()
+    this.matrizes.clear()
+    this.origens = new Map()
+    this.visual = null
+    this.documento = null
+    this.pendente = null
     this.texturas.descartar()
     this.limparChao()
     this.ceu.geometry.dispose()
@@ -768,17 +783,19 @@ class PalcoThree implements Palco {
   }
 
   private pedirModelos(doc: DocumentoDeCenario) {
-    const consulta = this.espalhamento?.documentoDeConsulta() ?? doc
+    const consulta = this.espalhamento?.documentoDeConsulta()
     const vivos = new Set<string>()
-    for (const modelo of consulta.modelos) {
+    for (const modelo of [...doc.modelos, ...(consulta?.modelos ?? [])]) {
       vivos.add(modelo.digest)
       if (!this.modelos.has(modelo.digest)) this.carregar(modelo)
     }
-    const usadas = new Set(
-      [...doc.instancias, ...(this.espalhamento?.prototipos ?? [])].map((o) => o.modelo),
-    )
-    for (const f of consulta.formas ?? []) {
-      if (!usadas.has(f.id)) continue
+    const usadas = new Set(doc.instancias.map((o) => o.modelo)),
+      previas = new Set(this.espalhamento?.prototipos.map((o) => o.modelo))
+    const formas = [
+      ...(doc.formas ?? []).filter((f) => usadas.has(f.id)),
+      ...(consulta?.formas ?? []).filter((f) => previas.has(f.id)),
+    ]
+    for (const f of formas) {
       const chave = chaveDaForma(f)
       vivos.add(chave)
       if (!this.modelos.has(chave)) {
@@ -852,11 +869,12 @@ class PalcoThree implements Palco {
 
   private reconstruir() {
     this.espalhamento?.recursosAlterados()
-    const doc = this.documento
+    const doc = this.visual
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
       this.opcoes.aoTexturas?.(this.estadoDasTexturas)
       this.locais.clear()
+      this.alvos.clear()
       this.superficies.definir([])
       this.loteFantasma.preencher([])
       for (const e of this.modelos.values())
@@ -876,6 +894,7 @@ class PalcoThree implements Palco {
     const texturas = new Map(doc.texturas?.map((t) => [t.id, t]) ?? [])
     const vistos = new Set<string>()
     this.trancados.clear()
+    for (const [id, flags] of organizacao.flags) if (flags.bloqueado) this.trancados.add(id)
     for (const o of doc.instancias) {
       if (organizacao.flags.get(o.id)?.bloqueado) this.trancados.add(o.id)
       if (escondidos.has(o.id)) continue
@@ -937,10 +956,16 @@ class PalcoThree implements Palco {
       for (const malha of local.lote.malhas) {
         const matriz = new Matrix4()
         malha.getMatrixAt(local.indice, matriz)
-        superficies.push({ id, geometria: malha.geometry, material: malha.material, matriz })
+        superficies.push({
+          id: this.origens.get(id) ?? id,
+          geometria: malha.geometry,
+          material: malha.material,
+          matriz,
+        })
       }
     }
     this.superficies.definir(superficies)
+    this.alvos = criarAlvosDeEdicao(this.documento!, this.locais, this.origens)
     this.opcoes.aoTexturas?.({
       ...this.estadoDasTexturas,
       falhas: [...this.estadoDasTexturas.falhas, ...falhasDeAcabamento],
@@ -952,7 +977,7 @@ class PalcoThree implements Palco {
   // ---- seleção e alça -----------------------------------------------------
 
   private movidos(): string[] {
-    return this.selecao.filter((id) => this.locais.has(id) && !this.trancados.has(id))
+    return this.selecao.filter((id) => this.alvos.has(id) && !this.trancados.has(id))
   }
 
   private atualizarSelecao() {
@@ -964,7 +989,7 @@ class PalcoThree implements Palco {
     this.contornos.comecar()
     let n = 0
     for (const id of this.selecao) {
-      const local = this.locais.get(id)
+      const local = this.alvos.get(id)
       if (!local) continue
       if (++n > 400) break
       this.contornos.por(local.matriz, local.caixa)
@@ -1006,12 +1031,12 @@ class PalcoThree implements Palco {
       ponto = new Vector3(),
       giro = new Quaternion(),
       escala = new Vector3()
-    for (const id of movidos) centro.add(ponto.setFromMatrixPosition(this.locais.get(id)!.matriz))
+    for (const id of movidos) centro.add(ponto.setFromMatrixPosition(this.alvos.get(id)!.matriz))
     centro.divideScalar(movidos.length)
     this.pivo.position.copy(centro)
     this.pivo.scale.set(1, 1, 1)
     if (movidos.length === 1 && this.ferramenta === 'tamanho') {
-      this.locais.get(movidos[0]!)!.matriz.decompose(ponto, giro, escala)
+      this.alvos.get(movidos[0]!)!.matriz.decompose(ponto, giro, escala)
       this.pivo.quaternion.copy(giro)
     } else this.pivo.quaternion.identity()
     this.pivo.updateMatrix()
@@ -1024,7 +1049,7 @@ class PalcoThree implements Palco {
     if (arrastando) {
       this.pivo.updateMatrix()
       const inicio = new Map<string, Matrix4>()
-      for (const id of this.movidos()) inicio.set(id, this.locais.get(id)!.matriz.clone())
+      for (const id of this.movidos()) inicio.set(id, this.alvos.get(id)!.matriz.clone())
       this.gesto = { pivo: this.pivo.matrix.clone(), inicio, apoios: new Map() }
       this.opcoes.aoGesto?.(true)
       return
@@ -1035,7 +1060,7 @@ class PalcoThree implements Palco {
     if (gesto) {
       const mudancas: MudancaDeTransformacao[] = []
       for (const [id, antes] of gesto.inicio) {
-        const local = this.locais.get(id)
+        const local = this.alvos.get(id)
         if (!local || local.matriz.equals(antes)) continue
         mudancas.push({
           id,
@@ -1058,7 +1083,10 @@ class PalcoThree implements Palco {
   private readonly aoMexerNaAlca = (): void => {
     const gesto = this.gesto
     if (!gesto) return
-    if (this.ferramenta === 'tamanho' && gesto.inicio.size > 1) {
+    if (
+      this.ferramenta === 'tamanho' &&
+      (gesto.inicio.size > 1 || [...gesto.inicio.keys()].some((id) => this.alvos.get(id)?.uniforme))
+    ) {
       const s = this.pivo.scale
       this.pivo.scale.setScalar(fatorUniforme(s.x, s.y, s.z))
     }
@@ -1074,7 +1102,7 @@ class PalcoThree implements Palco {
     this.pivo.updateMatrix()
     this.delta.multiplyMatrices(this.pivo.matrix, this.inversa.copy(gesto.pivo).invert())
     for (const [id, antes] of gesto.inicio) {
-      const local = this.locais.get(id)
+      const local = this.alvos.get(id)
       if (!local) continue
       local.matriz.multiplyMatrices(this.delta, antes)
       if (this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
@@ -1092,7 +1120,7 @@ class PalcoThree implements Palco {
             : { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
         )
       }
-      local.lote.atualizar(local.indice, local.matriz)
+      local.atualizar()
     }
     this.desenharContornos()
   }
@@ -1133,7 +1161,10 @@ class PalcoThree implements Palco {
     const acerto = this.raio.intersectObjects(malhas, false)[0]
     const lote = acerto?.object.userData.lote as LoteDoModelo | undefined
     const id = lote && acerto?.instanceId !== undefined ? lote.ids[acerto.instanceId] : undefined
-    this.opcoes.aoSelecionar?.(id ?? null, evento.shiftKey || evento.ctrlKey || evento.metaKey)
+    this.opcoes.aoSelecionar?.(
+      id ? (this.origens.get(id) ?? id) : null,
+      evento.shiftKey || evento.ctrlKey || evento.metaKey,
+    )
   }
 }
 
