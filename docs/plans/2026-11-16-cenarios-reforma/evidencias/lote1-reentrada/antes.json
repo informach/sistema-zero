@@ -3,9 +3,7 @@
     {
       "antigaFalha": true,
       "ignorouAntiga": false,
-      "falhas": [
-        "Leitura antiga interrompida"
-      ],
+      "falhas": ["Leitura antiga interrompida"],
       "volume": null
     },
     {

@@ -12,7 +12,8 @@
 
 ## Restrições gerais
 
-- **Correção de sequência solicitada e confirmada pela usuária:** fechar um lote por vez, na ordem. Prioridade exclusiva agora: encerrar o lote 1. Depois encerrar o 2; só então retomar o 3. Preservar o recorte já iniciado do 3, sem expandi-lo. Cada fechamento exige implementação integral, teste, revisão, documentação, commit e push. A autorização de execução contínua continua válida, sem aprovações intermediárias.
+- **Critério de conclusão definido pela usuária em 17/11:** cada lote se conclui após ser implementado, testado e revisado. A tarefa global só se conclui com implementação e testes de todos os lotes, full review, implantação e validação em staging. Não aguardar implantação para seguir ao próximo lote. Continuar documentando, commitando e enviando as alterações para a staging, sem afirmar que push já significa implantação. Os registros históricos abaixo que aguardavam deploy deixam de bloquear a sequência.
+- **Correção de sequência solicitada e confirmada pela usuária:** fechar um lote por vez, na ordem. Lote 1 revisado e concluído no critério acima; prioridade atual: encerrar o lote 2. Só então retomar o 3. Preservar o recorte já iniciado do 3, sem expandi-lo. A autorização de execução contínua continua válida, sem aprovações intermediárias.
 - Conferir `staging` local antes do trabalho; commits por caminhos; preservar alterações externas; push dos lotes verificados.
 - Uma verificação pesada por vez. Nunca manter playground, Next e e2e pesados juntos; uma sessão de typecheck.
 - Manter isolamento do jogo e do host. Núcleo sem React/Three/IO; dados autorais separados de câmera e ensaio.
@@ -26,7 +27,7 @@
 ## Lotes e critérios de fechamento
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
-- [ ] **1 — Equipe na plataforma:** conferir Members, gateway/BFF, migração 0151 em Postgres real, motor genérico, quatro telas conforme PDF, objetos básicos, GLB, acesso nos dois apps, fotos nos tamanhos/temas previstos e prova de operação no staging.
+- [x] **1 — Equipe na plataforma:** Members, gateway/BFF, migrações em Postgres real, motor genérico, quatro telas conforme PDF, objetos básicos, GLB, acesso nos dois apps, fotos nos tamanhos/temas previstos. Implementado, testado e revisado; [fechamento](../../plans/2026-11-16-cenarios-reforma/revisao-lote1-fechamento.md). Conferência da implantação do contrato mais recente transferida à validação global, conforme a usuária.
 - [ ] **2 — Bibliotecas:** GLTF/OBJ/FBX/pastas/ZIP, conversão em worker e recursos incorporados; pastas/etiquetas/busca/cota; biblioteca Meus moldes; carga do acervo da equipe e conversão da Faísca.
 - [ ] **3 — Objetos e ensaio:** encaixes/grade modular; escala por eixo; alinhar/distribuir/repetir/espelhar/trocar; espalhar determinístico; conjuntos reutilizáveis; blocos de rascunho; cor/textura; árvore/camadas/laço/cópia; histórico durável; ensaio com cápsula, três modos e modelo de biblioteca.
 - [ ] **4 — Terreno:** alturas Uint16 em peças por hash, resolução/tamanho, até oito camadas de solo/pintura, buracos; pincéis e receitas determinísticas (elevar/abaixar/aplainar/suavizar/rampa/platô/nível/ruído/erosão/morro/cratera); PNG de alturas; conversão do perfil do Arquipélago.
