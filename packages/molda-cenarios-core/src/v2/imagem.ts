@@ -1,5 +1,6 @@
 /** Conferência pura de PNG/WebP estáticos, compartilhada pelo importador e pelo servidor. */
 export class ImagemDeCenarioInvalida extends Error {}
+export const MAX_BYTES_DE_TEXTURA_CENARIO = 4 * 1024 * 1024
 function invalidar(mensagem: string): never {
   throw new ImagemDeCenarioInvalida(mensagem)
 }

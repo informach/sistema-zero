@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import { type DocumentoDeCenario, inverterLote } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  arquivosDoDocumento,
+  arquivosDosComandos,
+  type DocumentoDeCenario,
+  inverterLote,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
   buscaDoModelo,
@@ -74,23 +79,12 @@ export class CenariosEmMemoria implements CenariosRepository {
     }
     for (const c of this.cenariosGuardados.values()) {
       if (this.mundosGuardados.get(c.mundoId)?.espacoId !== espacoId) continue
-      for (const m of c.documento.modelos) usados.add(m.digest)
-      if (c.documento.base.tipo === 'terreno')
-        for (const p of c.documento.base.pecas) usados.add(p.digest)
+      for (const r of arquivosDoDocumento(c.documento)) usados.add(r.digest)
       for (const l of c.lotes)
-        for (const comando of [...l.comandos, ...(l.inversos ?? [])])
-          if (comando.tipo === 'modelo.definir') usados.add(comando.modelo.digest)
-          else if (comando.tipo === 'base.definir' && comando.base.tipo === 'terreno')
-            for (const p of comando.base.pecas) usados.add(p.digest)
-          else if (comando.tipo === 'cenario.restaurar') {
-            for (const m of comando.documento.modelos) usados.add(m.digest)
-            if (comando.documento.base.tipo === 'terreno')
-              for (const p of comando.documento.base.pecas) usados.add(p.digest)
-          }
+        for (const r of arquivosDosComandos([...l.comandos, ...(l.inversos ?? [])]))
+          usados.add(r.digest)
       for (const r of this.fotografias.get(c.id) ?? []) {
-        for (const m of r.documento.modelos) usados.add(m.digest)
-        if (r.documento.base.tipo === 'terreno')
-          for (const p of r.documento.base.pecas) usados.add(p.digest)
+        for (const a of arquivosDoDocumento(r.documento)) usados.add(a.digest)
       }
       if (c.capa) usados.add(c.capa)
     }
@@ -600,18 +594,13 @@ export class CenariosEmMemoria implements CenariosRepository {
     if (!c || !mundo) return []
     const candidatos = new Set<string>()
     const incluir = (d: DocumentoDeCenario) => {
-      for (const m of d.modelos) candidatos.add(m.digest)
-      if (d.base.tipo === 'terreno') for (const p of d.base.pecas) candidatos.add(p.digest)
+      for (const r of arquivosDoDocumento(d)) candidatos.add(r.digest)
     }
     incluir(c.documento)
     for (const r of this.fotografias.get(c.id) ?? []) incluir(r.documento)
     for (const l of c.lotes)
-      for (const op of [...l.comandos, ...(l.inversos ?? [])]) {
-        if (op.tipo === 'modelo.definir') candidatos.add(op.modelo.digest)
-        if (op.tipo === 'base.definir' && op.base.tipo === 'terreno')
-          for (const p of op.base.pecas) candidatos.add(p.digest)
-        if (op.tipo === 'cenario.restaurar') incluir(op.documento)
-      }
+      for (const r of arquivosDosComandos([...l.comandos, ...(l.inversos ?? [])]))
+        candidatos.add(r.digest)
     if (c.capa) candidatos.add(c.capa)
     this.cenariosGuardados.delete(id)
     this.pilhas.delete(id)

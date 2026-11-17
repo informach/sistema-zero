@@ -1,5 +1,9 @@
 import { inspectReferenceRaster } from '@sistemazero/molda/arquivos'
-import { conferirImagemDeCenario, digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  conferirImagemDeCenario,
+  digestDosBytes,
+  MAX_BYTES_DE_TEXTURA_CENARIO,
+} from '@sistemazero/molda-cenarios-core/v2'
 import type { TexturaParaImportar } from './portas'
 
 /** Preflight antes do decoder nativo, limite de pixels e conferência das dimensões decodificadas. */
@@ -55,7 +59,7 @@ export async function prepararChao(
       }
     }
     sinal?.throwIfAborted()
-    if (conteudo.size > 4 * 1024 * 1024)
+    if (conteudo.size > MAX_BYTES_DE_TEXTURA_CENARIO)
       throw Error('A imagem de chão pronta passa de 4 MB; escolha uma imagem menor')
     const digest = await digestDosBytes(new Uint8Array(await conteudo.arrayBuffer()))
     sinal?.throwIfAborted()

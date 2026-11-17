@@ -2,6 +2,7 @@ import {
   BYTES_DA_PECA,
   digestDosBytes,
   lerPecaDeAlturas,
+  MAX_BYTES_DE_TEXTURA_CENARIO,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
@@ -192,6 +193,8 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     espacoDoMundo.set(aberto.mundoId, aberto.espacoId)
     // Arquivos fixados continuam autorizados mesmo depois de apagar a biblioteca de origem.
     for (const ref of aberto.documento.modelos)
+      espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
+    for (const ref of aberto.documento.texturas ?? [])
       espacoDaBiblioteca.set(ref.biblioteca, aberto.espacoId)
     return {
       resumo: resumo(aberto, aberto.espacoId),
@@ -413,6 +416,46 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         proximo: string | null
       }>('GET', `bibliotecas/${bibliotecaId}/texturas${consulta.size ? `?${consulta}` : ''}`)
       return { ...pagina, itens: pagina.itens.map(textura) }
+    },
+    async conteudoDaTextura(ref, sinal) {
+      sinal?.throwIfAborted()
+      const espacoId = await acharEspacoDaBiblioteca(ref.biblioteca)
+      const { url } = await pedir<{ url: string }>(
+        'GET',
+        `espacos/${espacoId}/arquivos/${ref.digest}?tipo=textura&como=endereco`,
+        undefined,
+        sinal,
+      )
+      const resposta = await enviar(url, { signal: sinal, credentials: 'omit' })
+      if (!resposta.ok)
+        throw new ErroDaOficina('Não consegui carregar a textura', resposta.status, null, null)
+      if (!resposta.body) throw new ErroDaOficina('A textura está vazia', 0, null, null)
+      const leitor = resposta.body.getReader(),
+        partes: Uint8Array[] = []
+      let tamanho = 0,
+        completo = false
+      try {
+        while (true) {
+          sinal?.throwIfAborted()
+          const p = await leitor.read()
+          if (p.done) break
+          tamanho += p.value.byteLength
+          if (tamanho > MAX_BYTES_DE_TEXTURA_CENARIO) throw new Error('A textura excede 4 MB')
+          partes.push(p.value)
+        }
+        sinal?.throwIfAborted()
+        const bytes = new Uint8Array(tamanho)
+        let posicao = 0
+        for (const parte of partes) {
+          bytes.set(parte, posicao)
+          posicao += parte.byteLength
+        }
+        completo = true
+        return bytes.buffer
+      } finally {
+        if (!completo) await leitor.cancel().catch(() => undefined)
+        leitor.releaseLock()
+      }
     },
     async importarTexturas(bibliotecaId, texturas, aoAndar, sinal) {
       sinal?.throwIfAborted()

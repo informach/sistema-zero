@@ -13,6 +13,7 @@ import {
   LIMITES_CENARIO_V2,
   MarcadorSchema,
   ModeloDoCenarioSchema,
+  TexturaDoCenarioSchema,
 } from './documento'
 import { FormaDeCenarioSchema } from './formas'
 import { type OpcoesDeValidacao, validarDocumento } from './validacao'
@@ -25,6 +26,8 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('cenario.restaurar'), documento: DocumentoDeCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.definir'), modelo: ModeloDoCenarioSchema }).strict(),
   z.object({ tipo: z.literal('modelo.remover'), id }).strict(),
+  z.object({ tipo: z.literal('textura.definir'), textura: TexturaDoCenarioSchema }).strict(),
+  z.object({ tipo: z.literal('textura.remover'), id }).strict(),
   z.object({ tipo: z.literal('forma.definir'), forma: FormaDeCenarioSchema }).strict(),
   z.object({ tipo: z.literal('forma.remover'), id }).strict(),
   z.object({ tipo: z.literal('instancia.criar'), instancia: InstanciaSchema }).strict(),
@@ -148,6 +151,19 @@ export function executarLote(
         for (const o of d.instancias) if (o.modelo === c.forma.id) exigeLivre(d, o)
         d.formas ??= []
         definir(d.formas, c.forma)
+        break
+      case 'textura.definir':
+        for (const o of d.instancias)
+          if (o.aparencia?.textura?.id === c.textura.id) exigeLivre(d, o)
+        d.texturas ??= []
+        definir(d.texturas, c.textura)
+        break
+      case 'textura.remover':
+        existente(d.texturas ?? [], c.id)
+        if (d.instancias.some((o) => o.aparencia?.textura?.id === c.id))
+          throw new CenarioInvalido([`Textura em uso: ${c.id}`])
+        d.texturas = d.texturas?.filter((t) => t.id !== c.id)
+        if (!d.texturas?.length) delete d.texturas
         break
       case 'forma.remover':
         existente(d.formas ?? [], c.id)

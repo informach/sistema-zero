@@ -1,4 +1,7 @@
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type DocumentoDeCenario,
+  MAX_BYTES_DE_TEXTURA_CENARIO,
+} from '@sistemazero/molda-cenarios-core/v2'
 
 /**
  * Molda Cenários: os dados da oficina de cenários 3D.
@@ -52,7 +55,7 @@ export const LIMITES_DOS_CENARIOS = {
   modeloBytes: 64 * 1024 * 1024,
   miniaturaBytes: 256 * 1024,
   capaBytes: 512 * 1024,
-  texturaBytes: 4 * 1024 * 1024,
+  texturaBytes: MAX_BYTES_DE_TEXTURA_CENARIO,
   terrenoBytes: 8474,
   /** Arquivos reservados por chamada: o gateway limita os pedidos por minuto. */
   reservaPorChamada: 50,

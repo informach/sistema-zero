@@ -14,10 +14,14 @@ import {
   type BaseDeTerreno,
   type ComandoDeCenario,
   criarDocumentoVazio,
+  executarLote,
 } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
-import { CenarioArquivoAusenteError } from '../../src/domain/cenarios/cenarios.errors'
+import {
+  CenarioArquivoAusenteError,
+  CenarioInvalidoError,
+} from '../../src/domain/cenarios/cenarios.errors'
 import type {
   CenariosRepository,
   NovoModelo,
@@ -142,6 +146,160 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
   })
   beforeEach(async () => {
     await conn.sql.unsafe('truncate members.cenario_espacos cascade')
+  })
+
+  test('textura do cenário permanece nos lotes após remover da cabeça e apagar a biblioteca; a última cópia solta a imagem', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    await servico.reservarTexturas(ator, biblioteca.id, [imagem])
+    const [t] = await servico.registrarTexturas(
+      ator,
+      biblioteca.id,
+      [
+        {
+          nome: 'Terra',
+          pasta: '',
+          etiquetas: [],
+          digest: imagem.digest,
+          largura: 2,
+          altura: 2,
+          repeticaoMetros: 2,
+        },
+      ],
+      [{ ...imagem, largura: 2, altura: 2 }],
+      espaco.id,
+    )
+    const mundo = await servico.criarMundo(ator, espaco.id, 'Ilha'),
+      c = await servico.criarCenario(ator, mundo.id, 'Material')
+    const ref = { id: 'terra', textura: t!.id, biblioteca: biblioteca.id, digest: imagem.digest }
+    await servico.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'fixar-textura-01',
+      comandos: [{ tipo: 'textura.definir', textura: ref }],
+    })
+    await servico.editarCenario(ator, c.id, {
+      revisaoEsperada: 1,
+      operacaoId: 'retirar-textura-1',
+      comandos: [{ tipo: 'textura.remover', id: 'terra' }],
+    })
+    expect((await servico.apagarBiblioteca(ator, biblioteca.id)).apagar).toEqual([])
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(128)
+    expect((await servico.arquivo(ator, espaco.id, imagem.digest)).bytes).toBe(128)
+    const reaberto = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const volta = await reaberto.moverHistorico(ator, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 2,
+      operacaoId: 'voltar-textura-01',
+    })
+    expect(volta.documento.texturas).toEqual([ref])
+    const copia = await reaberto.duplicarCenario(ator, c.id)
+    expect((await reaberto.apagarCenario(ator, c.id)).apagar).toEqual([])
+    expect((await repo.cenario(copia.id))!.documento.texturas).toEqual([ref])
+    expect((await reaberto.apagarCenario(ator, copia.id)).apagar).toEqual([
+      `cenarios/${espaco.id}/blobs/${imagem.digest}`,
+    ])
+    expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(0)
+  })
+
+  test('serviço e transação recusam textura de outro espaço, papel incorreto e arquivo que desapareceu antes da trava', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const s = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const mundo = await s.criarMundo(ator, espaco.id, 'Mundo'),
+      c = await s.criarCenario(ator, mundo.id, 'Sem textura')
+    const lote = (d: string) => ({
+      revisaoEsperada: 0,
+      operacaoId: `negar-textura-${d.slice(0, 8)}`,
+      comandos: [
+        {
+          tipo: 'textura.definir',
+          textura: { id: 't', textura: 't', biblioteca: biblioteca.id, digest: d },
+        },
+      ] satisfies ComandoDeCenario[],
+    })
+    for (const [letra, tipo] of [
+      ['b', 'modelo'],
+      ['c', 'miniatura'],
+    ] as const) {
+      await repo.reservarBlobs(
+        espaco.id,
+        [{ digest: digest(letra), bytes: 1000, tipo }],
+        AGORA,
+        DEPOIS,
+      )
+      await repo.confirmarBlobs(
+        espaco.id,
+        [
+          {
+            digest: digest(letra),
+            bytes: 1000,
+            tipoDoConteudo: tipo === 'modelo' ? 'model/gltf-binary' : 'image/png',
+          },
+        ],
+        AGORA,
+      )
+      const erro = await s.editarCenario(ator, c.id, lote(digest(letra))).catch((e) => e)
+      expect(erro).toBeInstanceOf(CenarioInvalidoError)
+    }
+    const outro = await repo.espacoDaConta(randomUUID(), 10000, AGORA)
+    await repo.reservarBlobs(
+      outro.id,
+      [{ digest: digest('d'), bytes: 128, tipo: 'textura' }],
+      AGORA,
+      DEPOIS,
+    )
+    await repo.confirmarBlobs(
+      outro.id,
+      [{ digest: digest('d'), bytes: 128, tipoDoConteudo: 'image/png' }],
+      AGORA,
+    )
+    expect(await s.editarCenario(ator, c.id, lote(digest('d'))).catch((e) => e)).toBeInstanceOf(
+      CenarioInvalidoError,
+    )
+    const imagem = { digest: digest('e'), bytes: 128, tipoDoConteudo: 'image/png' as const }
+    await s.reservarTexturas(ator, biblioteca.id, [imagem])
+    await s.registrarTexturas(
+      ator,
+      biblioteca.id,
+      [
+        {
+          nome: 'Terra',
+          pasta: '',
+          etiquetas: [],
+          digest: imagem.digest,
+          largura: 2,
+          altura: 2,
+          repeticaoMetros: 2,
+        },
+      ],
+      [{ ...imagem, largura: 2, altura: 2 }],
+      espaco.id,
+    )
+    const atual = (await repo.cenario(c.id))!,
+      pedido = lote(imagem.digest)
+    const depois = executarLote(
+      { documento: atual.documento, revisao: 0 },
+      { revisaoEsperada: pedido.revisaoEsperada, comandos: pedido.comandos },
+    ).documento
+    await s.apagarBiblioteca(ator, biblioteca.id)
+    const erroDaTrava = await repo
+      .gravarLote(
+        {
+          cenarioId: c.id,
+          revisaoEsperada: 0,
+          documento: depois,
+          comandos: pedido.comandos,
+          operacaoId: pedido.operacaoId,
+          autorId: CONTA,
+        },
+        DEPOIS,
+      )
+      .catch((e) => e)
+    expect(erroDaTrava).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.cenario(c.id))!.revisao).toBe(0)
+    expect((await repo.cenario(c.id))!.documento.texturas).toBeUndefined()
   })
 
   test('formas, espelho, cor e contato local sobrevivem ao JSONB e ao histórico sem criar blobs', async () => {

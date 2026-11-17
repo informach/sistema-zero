@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { inverterLote } from '@sistemazero/molda-cenarios-core/v2'
+import { arquivosDoDocumento, inverterLote } from '@sistemazero/molda-cenarios-core/v2'
 import {
   and,
   asc,
@@ -331,7 +331,9 @@ export class DrizzleCenariosRepository implements CenariosRepository {
               and exists (
                 select 1 from jsonb_array_elements(l.comandos || coalesce(l.inversos, '[]'::jsonb)) e
                 where e -> 'modelo' ->> 'digest' = ${cenarioBlobs.digest}
+                  or e -> 'textura' ->> 'digest' = ${cenarioBlobs.digest}
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'modelos', '[]'::jsonb)) m where m ->> 'digest' = ${cenarioBlobs.digest})
+                  or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
                   or exists (select 1 from jsonb_array_elements(coalesce(e -> 'documento' -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
               )
@@ -343,6 +345,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             where w.espaco_id = ${espacoId}
               and (exists (select 1 from jsonb_array_elements(r.documento -> 'modelos') e
                 where e ->> 'digest' = ${cenarioBlobs.digest})
+                or exists (select 1 from jsonb_array_elements(coalesce(r.documento -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
                 or exists (select 1 from jsonb_array_elements(coalesce(r.documento -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest}))
           )`,
           sql`not exists (
@@ -351,6 +354,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             where w.espaco_id = ${espacoId}
               and (
                 c.capa = ${cenarioBlobs.digest}
+                or exists (select 1 from jsonb_array_elements(coalesce(c.documento -> 'texturas', '[]'::jsonb)) t where t ->> 'digest' = ${cenarioBlobs.digest})
                 or exists (select 1 from jsonb_array_elements(coalesce(c.documento -> 'base' -> 'pecas', '[]'::jsonb)) p where p ->> 'digest' = ${cenarioBlobs.digest})
                 or exists (
                   select 1 from jsonb_array_elements(c.documento -> 'modelos') e
@@ -916,19 +920,19 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   /** Extrai só referências conhecidas, sem baixar documentos inteiros nem varrer propriedades. */
   private async arquivosDosCenarios(tx: Transacao, ids: readonly string[]): Promise<string[]> {
     if (!ids.length) return []
-    const arquivosDoDocumento = (d: SQL) =>
+    const digestsNoJsonDoDocumento = (d: SQL) =>
       sql<
         string[]
-      >`array(select jsonb_array_elements_text(jsonb_path_query_array(${d}, '$.modelos[*].digest') || jsonb_path_query_array(${d}, '$.base.pecas[*].digest')))`
+      >`array(select jsonb_array_elements_text(jsonb_path_query_array(${d}, '$.modelos[*].digest') || jsonb_path_query_array(${d}, '$.texturas[*].digest') || jsonb_path_query_array(${d}, '$.base.pecas[*].digest')))`
     const cabecas = await tx
       .select({
-        digests: arquivosDoDocumento(sql`${cenarioCenarios.documento}`),
+        digests: digestsNoJsonDoDocumento(sql`${cenarioCenarios.documento}`),
         capa: cenarioCenarios.capa,
       })
       .from(cenarioCenarios)
       .where(inArray(cenarioCenarios.id, [...ids]))
     const fotos = await tx
-      .select({ digests: arquivosDoDocumento(sql`${cenarioRevisoes.documento}`) })
+      .select({ digests: digestsNoJsonDoDocumento(sql`${cenarioRevisoes.documento}`) })
       .from(cenarioRevisoes)
       .where(inArray(cenarioRevisoes.cenarioId, [...ids]))
     const comandos = sql`(${cenarioLotes.comandos} || coalesce(${cenarioLotes.inversos}, '[]'::jsonb))`
@@ -936,7 +940,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
       .select({
         digests: sql<
           string[]
-        >`array(select jsonb_array_elements_text(jsonb_path_query_array(${comandos}, '$[*].modelo.digest') || jsonb_path_query_array(${comandos}, '$[*].base.pecas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.base.pecas[*].digest')))`,
+        >`array(select jsonb_array_elements_text(jsonb_path_query_array(${comandos}, '$[*].modelo.digest') || jsonb_path_query_array(${comandos}, '$[*].textura.digest') || jsonb_path_query_array(${comandos}, '$[*].base.pecas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.modelos[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.texturas[*].digest') || jsonb_path_query_array(${comandos}, '$[*].documento.base.pecas[*].digest')))`,
       })
       .from(cenarioLotes)
       .where(inArray(cenarioLotes.cenarioId, [...ids]))
@@ -1150,24 +1154,31 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
       }
       // A biblioteca pode ter sido apagada entre a conferência do serviço e esta trava.
-      const conhecidos = new Set(antes.documento.modelos.map((m) => m.digest))
-      const novos = [...new Set(dados.documento.modelos.map((m) => m.digest))].filter(
-        (d) => !conhecidos.has(d),
+      const conhecidos = new Set(
+        arquivosDoDocumento(antes.documento).map((r) => `${r.tipo}:${r.digest}`),
       )
+      const referencias = arquivosDoDocumento(dados.documento).filter(
+        (r) => r.tipo !== 'terreno' && !conhecidos.has(`${r.tipo}:${r.digest}`),
+      )
+      const novos = [...new Set(referencias.map((r) => r.digest))]
       if (novos.length) {
         const confirmados = await tx
-          .select({ digest: cenarioBlobs.digest })
+          .select({ digest: cenarioBlobs.digest, tipo: cenarioBlobs.tipo })
           .from(cenarioBlobs)
           .where(
             and(
               eq(cenarioBlobs.espacoId, dono.espacoId),
               inArray(cenarioBlobs.digest, novos),
               isNotNull(cenarioBlobs.confirmadoEm),
-              eq(cenarioBlobs.tipo, 'modelo'),
+              inArray(cenarioBlobs.tipo, ['modelo', 'textura']),
             ),
           )
-        const presentes = new Set(confirmados.map((b) => b.digest))
-        const ausentes = novos.filter((d) => !presentes.has(d))
+        const presentes = new Set(confirmados.map((b) => `${b.tipo}:${b.digest}`))
+        const ausentes = [
+          ...new Set(
+            referencias.filter((r) => !presentes.has(`${r.tipo}:${r.digest}`)).map((r) => r.digest),
+          ),
+        ]
         if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
       }
       // Adota a cabeça anterior de projetos existentes; não presume um começo vazio.

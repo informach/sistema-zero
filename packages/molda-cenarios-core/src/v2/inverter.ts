@@ -1,5 +1,10 @@
 import { type ComandoDeCenario, igual } from './comandos'
-import { type DocumentoDeCenario, type GrupoDeCenario, LIMITES_CENARIO_V2 } from './documento'
+import {
+  type DocumentoDeCenario,
+  type GrupoDeCenario,
+  type InstanciaDeCenario,
+  LIMITES_CENARIO_V2,
+} from './documento'
 
 type Travavel = { id: string; bloqueado: boolean; grupo: string | null }
 const ENTIDADES = [
@@ -72,8 +77,15 @@ export function inverterLote(
   const formasDepois = new Map(depois.formas?.map((f) => [f.id, f]))
   const formasARestaurar = (antes.formas ?? []).filter((f) => !igual(f, formasDepois.get(f.id)))
   const fontesAlteradas = new Set(formasARestaurar.map((f) => f.id))
-  for (const o of [...antes.instancias, ...depois.instancias])
-    if (fontesAlteradas.has(o.modelo)) marcar(o)
+  const texturasDepois = new Map(depois.texturas?.map((t) => [t.id, t]))
+  const texturasARestaurar = (antes.texturas ?? []).filter(
+    (t) => !igual(t, texturasDepois.get(t.id)),
+  )
+  const texturasAlteradas = new Set(texturasARestaurar.map((t) => t.id))
+  const definicaoMudou = (o: InstanciaDeCenario) =>
+    fontesAlteradas.has(o.modelo) ||
+    Boolean(o.aparencia?.textura && texturasAlteradas.has(o.aparencia.textura.id))
+  for (const o of [...antes.instancias, ...depois.instancias]) if (definicaoMudou(o)) marcar(o)
   for (const m of mudancas) {
     for (const e of m.restaurar) {
       marcar(e)
@@ -104,16 +116,17 @@ export function inverterLote(
   }
 
   // 5. Devolve os modelos antes de quem os usa.
-  const destrancadosPorForma = new Set<string>()
+  const destrancadosPorDefinicao = new Set<string>()
   for (const o of depois.instancias)
-    if (o.bloqueado && fontesAlteradas.has(o.modelo)) {
+    if (o.bloqueado && definicaoMudou(o)) {
       comandos.push({ tipo: 'instancia.atualizar', id: o.id, alteracoes: { bloqueado: false } })
-      destrancadosPorForma.add(o.id)
+      destrancadosPorDefinicao.add(o.id)
     }
   const modelosDepois = new Map(depois.modelos.map((m) => [m.id, m]))
   for (const m of antes.modelos)
     if (!igual(m, modelosDepois.get(m.id))) comandos.push({ tipo: 'modelo.definir', modelo: m })
   for (const f of formasARestaurar) comandos.push({ tipo: 'forma.definir', forma: f })
+  for (const t of texturasARestaurar) comandos.push({ tipo: 'textura.definir', textura: t })
 
   // 6. Devolve e apaga as entidades.
   for (const m of mudancas) {
@@ -142,12 +155,15 @@ export function inverterLote(
   const formasAntes = new Set(antes.formas?.map((f) => f.id))
   for (const f of depois.formas ?? [])
     if (!formasAntes.has(f.id)) comandos.push({ tipo: 'forma.remover', id: f.id })
+  const texturasAntes = new Set(antes.texturas?.map((t) => t.id))
+  for (const t of depois.texturas ?? [])
+    if (!texturasAntes.has(t.id)) comandos.push({ tipo: 'textura.remover', id: t.id })
 
   const instanciasRestauradas = new Set(
     mudancas.find((m) => m.tipo === 'instancia')?.restaurar.map((o) => o.id),
   )
   for (const o of antes.instancias)
-    if (o.bloqueado && destrancadosPorForma.has(o.id) && !instanciasRestauradas.has(o.id))
+    if (o.bloqueado && destrancadosPorDefinicao.has(o.id) && !instanciasRestauradas.has(o.id))
       comandos.push({ tipo: 'instancia.atualizar', id: o.id, alteracoes: { bloqueado: true } })
 
   // 8. Fecha de novo os cadeados de grupo, dos filhos para os pais.

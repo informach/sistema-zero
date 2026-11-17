@@ -58,14 +58,16 @@ const entidade = z.object({
   propriedades: PropriedadesSchema.optional(),
 })
 
+const origemDeRecurso = { id, biblioteca: id, digest, nome: z.string().min(1).max(120).optional() }
+
+/** Uma imagem de biblioteca fixada pelo conteúdo; endereços de download não são autorais. */
+export const TexturaDoCenarioSchema = z.object({ ...origemDeRecurso, textura: id }).strict()
+
 /** Um modelo de biblioteca usado pelo cenário, fixado pelo conteúdo do arquivo. */
 export const ModeloDoCenarioSchema = z
   .object({
-    id,
-    biblioteca: id,
+    ...origemDeRecurso,
     modelo: id,
-    digest,
-    nome: z.string().min(1).max(120).optional(),
     /** Medida local do arquivo fixado por hash; usada pelas ferramentas de composição. */
     volume: z
       .object({ min: VetorSchema, max: VetorSchema })
@@ -124,6 +126,10 @@ export const InstanciaSchema = entidade
         cor: z
           .string()
           .regex(/^#[a-f0-9]{6}$/i)
+          .optional(),
+        textura: z
+          .object({ id, repeticaoMetros: z.number().finite().min(0.1).max(100) })
+          .strict()
           .optional(),
       })
       .strict()
@@ -203,6 +209,7 @@ export const DocumentoDeCenarioSchema = z
     eixoVertical: z.literal('y'),
     base: BaseSchema,
     modelos: z.array(ModeloDoCenarioSchema).max(LIMITES_CENARIO_V2.modelos),
+    texturas: z.array(TexturaDoCenarioSchema).min(1).max(256).optional(),
     formas: z.array(FormaDeCenarioSchema).min(1).max(2000).optional(),
     grupos: z.array(GrupoSchema).max(LIMITES_CENARIO_V2.objetos),
     instancias: z.array(InstanciaSchema).max(LIMITES_CENARIO_V2.objetos),
@@ -220,6 +227,7 @@ export type CaminhoDeCenario = z.infer<typeof CaminhoSchema>
 export type AguaDeCenario = z.infer<typeof AguaSchema>
 export type MarcadorDeCenario = z.infer<typeof MarcadorSchema>
 export type ModeloDoCenario = z.infer<typeof ModeloDoCenarioSchema>
+export type TexturaDoCenario = z.infer<typeof TexturaDoCenarioSchema>
 export type BaseDeCenario = z.infer<typeof BaseSchema>
 export type Transformacao = z.infer<typeof TransformacaoSchema>
 export type Propriedades = z.infer<typeof PropriedadesSchema>

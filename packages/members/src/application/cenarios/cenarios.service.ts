@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import {
+  arquivosDosComandos,
   CenarioInvalido,
   type ComandoDeCenario,
   ConflitoDeCenario,
@@ -823,12 +824,11 @@ export class CenariosService {
         `O lote aceita de 1 a ${LIMITES_CENARIO_V2.comandos} comandos`,
       ])
 
-    // Modelo novo na tabela do cenário precisa ser um arquivo guardado NESTE espaço.
-    const novos = new Set<string>()
-    for (const c of lote.comandos) {
-      if (c.tipo === 'modelo.definir') novos.add(c.modelo.digest)
-      if (c.tipo === 'cenario.restaurar') for (const m of c.documento.modelos) novos.add(m.digest)
-    }
+    // Referências de acervo só podem usar arquivos confirmados com o papel correto NESTE espaço.
+    // O relevo mantém sua prova específica de conteúdo, confirmada na transação pelo BFF.
+    const referencias = arquivosDosComandos(lote.comandos).filter((r) => r.tipo !== 'terreno')
+    const papeis = new Set(referencias.map((r) => `${r.tipo}:${r.digest}`))
+    const novos = new Set(referencias.map((r) => r.digest))
     const guardados = novos.size
       ? await this.repo.blobsConfirmados(espaco.id, [...novos])
       : new Map<string, { tipo: TipoDeBlob }>()
@@ -838,7 +838,12 @@ export class CenariosService {
       depois = executarLote(
         { documento: cenario.documento, revisao: cenario.revisao },
         { revisaoEsperada: lote.revisaoEsperada, comandos: lote.comandos },
-        { modeloExiste: (m) => !novos.has(m.digest) || guardados.get(m.digest)?.tipo === 'modelo' },
+        {
+          modeloExiste: (m) =>
+            !papeis.has(`modelo:${m.digest}`) || guardados.get(m.digest)?.tipo === 'modelo',
+          texturaExiste: (t) =>
+            !papeis.has(`textura:${t.digest}`) || guardados.get(t.digest)?.tipo === 'textura',
+        },
       )
     } catch (erro) {
       if (erro instanceof ConflitoDeCenario) throw new CenarioDesatualizadoError(erro.revisaoAtual)

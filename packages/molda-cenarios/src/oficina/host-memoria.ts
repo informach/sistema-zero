@@ -1,4 +1,6 @@
 import {
+  arquivosDoDocumento,
+  arquivosDosComandos,
   ConflitoDeCenario,
   criarDocumentoVazio,
   type DocumentoDeCenario,
@@ -86,20 +88,37 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     if (!espaco) throw new Error('Espaço não existe')
     return espaco
   }
-  const pecasDoCenario = (c: CenarioGuardado) => {
+  const arquivosFixados = (c: CenarioGuardado, tipo: 'terreno' | 'textura') => {
     const digests = new Set<string>()
     const incluir = (doc: DocumentoDeCenario) => {
-      if (doc.base.tipo === 'terreno') for (const p of doc.base.pecas) digests.add(p.digest)
+      for (const r of arquivosDoDocumento(doc)) if (r.tipo === tipo) digests.add(r.digest)
     }
     incluir(c.documento)
     for (const doc of c.versoes.values()) incluir(doc)
     for (const lote of c.lotes.values())
-      for (const op of [...lote.comandos, ...lote.inversos]) {
-        if (op.tipo === 'base.definir' && op.base.tipo === 'terreno')
-          for (const p of op.base.pecas) digests.add(p.digest)
-        if (op.tipo === 'cenario.restaurar') incluir(op.documento)
-      }
+      for (const r of arquivosDosComandos([...lote.comandos, ...lote.inversos]))
+        if (r.tipo === tipo) digests.add(r.digest)
     return digests
+  }
+  const pecasDoCenario = (c: CenarioGuardado) => arquivosFixados(c, 'terreno')
+  const soltarTexturas = (espacoId: string, candidatos: ReadonlySet<string>) => {
+    const usados = new Set(
+      [...texturas.values()]
+        .filter((t) => espacoDasBibliotecas.get(t.bibliotecaId) === espacoId)
+        .map((t) => t.digest),
+    )
+    for (const c of cenarios.values())
+      if (mundos.get(c.resumo.mundoId)?.espacoId === espacoId)
+        for (const d of arquivosFixados(c, 'textura')) usados.add(d)
+    for (const d of candidatos)
+      if (!usados.has(d)) {
+        const chave = `${espacoId}:${d}`,
+          bytes = conteudos.get(chave)
+        if (bytes) {
+          conteudos.delete(chave)
+          espacoDe(espacoId).usadoBytes -= bytes.byteLength
+        }
+      }
   }
   const soltarPecas = (espacoId: string, candidatos: ReadonlySet<string>) => {
     const usados = new Set<string>()
@@ -303,6 +322,14 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (!conteudo) throw new Error('O arquivo do modelo não foi encontrado')
       return conteudo.slice().buffer
     },
+    async conteudoDaTextura(ref, sinal) {
+      sinal?.throwIfAborted()
+      await esperar()
+      sinal?.throwIfAborted()
+      const espacoId = espacoDasBibliotecas.get(ref.biblioteca)
+      if (!espacoId) throw new Error('O espaço da textura não existe')
+      return exigir(conteudos, `${espacoId}:${ref.digest}`, 'A textura').slice().buffer
+    },
 
     async listarTexturas(bibliotecaId, filtro = {}) {
       await esperar()
@@ -375,23 +402,16 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       await esperar()
       const biblioteca = exigir(bibliotecas, bibliotecaId, 'A biblioteca')
       const espaco = espacoDe(biblioteca.espacoId)
+      const candidatos = new Set<string>()
       for (const id of ids) {
         const t = texturas.get(id)
         if (!t || t.bibliotecaId !== bibliotecaId) continue
         texturas.delete(id)
+        candidatos.add(t.digest)
         URL.revokeObjectURL(t.imagem)
-        if (
-          ![...texturas.values()].some(
-            (x) => x.digest === t.digest && espacoDasBibliotecas.get(x.bibliotecaId) === espaco.id,
-          )
-        ) {
-          const chave = `${espaco.id}:${t.digest}`
-          const bytes = conteudos.get(chave)?.byteLength ?? 0
-          conteudos.delete(chave)
-          espaco.usadoBytes -= bytes
-        }
       }
       contar(bibliotecaId)
+      soltarTexturas(espaco.id, candidatos)
     },
 
     async listarMundos(espacoId) {
@@ -425,14 +445,17 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async apagarMundo(id) {
       await esperar()
       const mundo = exigir(mundos, id, 'O mundo'),
-        candidatos = new Set<string>()
+        candidatos = new Set<string>(),
+        imagens = new Set<string>()
       for (const c of [...cenarios.values()])
         if (c.resumo.mundoId === id) {
           for (const d of pecasDoCenario(c)) candidatos.add(d)
+          for (const d of arquivosFixados(c, 'textura')) imagens.add(d)
           cenarios.delete(c.resumo.id)
         }
       mundos.delete(id)
       soltarPecas(mundo.espacoId, candidatos)
+      soltarTexturas(mundo.espacoId, imagens)
     },
 
     async listarCenarios(mundoId) {
@@ -522,6 +545,13 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         )
         const inversos = inverterLote(c.documento, depois.documento)
         const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+        for (const t of depois.documento.texturas ?? []) {
+          if (
+            espacoDasBibliotecas.get(t.biblioteca) !== mundo.espacoId ||
+            !conteudos.has(`${mundo.espacoId}:${t.digest}`)
+          )
+            throw new Error('A textura não pertence ao espaço do cenário')
+        }
         if (recursos && recursos.espacoId !== mundo.espacoId)
           throw new Error('O espaço não corresponde ao cenário')
         if (depois.documento.base.tipo === 'terreno') {
@@ -656,6 +686,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (mundo) {
         mundo.cenarios = Math.max(0, mundo.cenarios - 1)
         soltarPecas(mundo.espacoId, pecasDoCenario(c))
+        soltarTexturas(mundo.espacoId, arquivosFixados(c, 'textura'))
       }
     },
     async guardarCapa(cenarioId, imagem) {

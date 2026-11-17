@@ -4,12 +4,14 @@ import {
   DocumentoDeCenarioSchema,
   LIMITES_CENARIO_V2,
   type ModeloDoCenario,
+  type TexturaDoCenario,
 } from './documento'
 import { volumeDaReferencia } from './fontes'
 
 export interface OpcoesDeValidacao {
   /** Confere se o modelo fixado existe no acervo de quem valida (o servidor, em geral). */
   modeloExiste?: (modelo: ModeloDoCenario) => boolean
+  texturaExiste?: (textura: TexturaDoCenario) => boolean
 }
 
 export function validarDocumento(
@@ -35,6 +37,12 @@ export function validarDocumento(
     if (opcoes.modeloExiste && !opcoes.modeloExiste(m)) erros.push(`Modelo ausente: ${m.id}`)
   }
   const fontes = new Set(modelos)
+  const texturas = new Set<string>()
+  for (const t of d.texturas ?? []) {
+    if (texturas.has(t.id)) erros.push(`Textura duplicada: ${t.id}`)
+    texturas.add(t.id)
+    if (opcoes.texturaExiste && !opcoes.texturaExiste(t)) erros.push(`Textura ausente: ${t.id}`)
+  }
   for (const f of d.formas ?? []) {
     if (fontes.has(f.id)) erros.push(`Definição de forma duplicada: ${f.id}`)
     fontes.add(f.id)
@@ -62,6 +70,8 @@ export function validarDocumento(
   }
 
   for (const o of d.instancias) {
+    if (o.aparencia?.textura && !texturas.has(o.aparencia.textura.id))
+      erros.push(`Textura fora da tabela do cenário: ${o.id}`)
     if (!fontes.has(o.modelo)) erros.push(`Modelo fora da tabela do cenário: ${o.id}`)
     if (o.apoio.tipo === 'objeto' && o.apoio.contato && !volumeDaReferencia(d, o.modelo))
       erros.push(`O encaixe em superfície exige medidas do modelo: ${o.id}`)
