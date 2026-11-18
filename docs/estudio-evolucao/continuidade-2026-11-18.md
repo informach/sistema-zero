@@ -91,3 +91,81 @@ passaram. Relatório: `docs/qa/2026-11-18-studio-host-built-controls.md`.
 O job `contracts (ubuntu-24.04)` do run `44289781987` concluiu com sucesso, incluindo
 suíte isolada completa e typecheck, mas corresponde a `1d486e19b`; não estender essa
 aprovação aos commits posteriores. Confirmar o próximo SHA na fila do workflow.
+
+## Atualização da revisão de 18/11, após `0fd3f3e53`
+
+O run `44370922838` concluiu contratos Linux e Windows com sucesso, incluindo
+IndexedDB real em Chromium/WebKit. O cache da conexão já aberta elimina o adiamento
+do callback do idb-keyval no pagehide (`ef81ee398`). O teste CSP usa servidor HTTPS
+real, sem depender da interceptação de requests de OOPIF (`0fd3f3e53`); passou no
+Linux. A auditoria bruta do runtime passou nesta execução, sem filtro/exception de
+advisory. Os registros anteriores de falha permanecem históricos, não atuais.
+
+O runtime hospedado e os jobs Firefox, WebKit, Windows Chromium e duas shards Linux
+Chromium passaram. A terceira falhou na abertura do kit Phaser tático, com canvas
+CSS 0×0. A correção e a regressão estão descritas em
+`docs/qa/2026-11-18-studio-phaser-collapsed-preview.md`. Ainda confirmar nova CI.
+
+Há trabalho NÃO CONCLUÍDO na árvore para carga incremental do Blockly: lotes com
+cerca por workspace, cancelamento, proteção de histórico/save parcial e UI de falha
+com retry. Os 150 exemplos oficiais, sete projetos dos cursos e fixture headless
+de 10 mil blocos mantiveram seu conteúdo. Testes completos de navegador passaram
+com 2 mil e 5 mil blocos (salvar durante carga, pagehide, reabrir, editar,
+desfazer/refazer e executar). Isso NÃO fecha R2: todos os SVGs ainda são criados;
+não há virtualização completa das partes do programa.
+
+O novo caso real de 10 mil identificou estouro da pilha do structured clone nativo
+do IndexedDB ao gravar uma cadeia muito profunda. Não aumentar quota ou deadline
+para esconder isso. A fixture por áreas é um workload separado, ainda em revisão;
+nunca substituir a falha de cadeia profunda por alegação de homologação global.
+O fixture original está em `packages/studio/.cache/mission/incremental/long-chain-10000.json`.
+Os logs locais ignorados `.cache-incremental-*` contêm resultados intermediários,
+inclusive falhas. R1, R2, R4, R5 e as etapas seguintes continuam abertos.
+
+### Resultado posterior, `ae6e348a6`
+
+O run `44379411806` concluiu todos os browsers com sucesso, incluindo a regressão
+Phaser. Runtime hospedado, auditoria e contratos Windows passaram. Contratos Linux
+falharam: WebKit recuperou `in-flight-0`, não `exit-0`, no teste de pagehide real.
+Portanto o ajuste da conexão quente NÃO fecha R3. O fixture agora observa os eventos
+nativos de transação/commit em `window.name`, sem modificar a execução de produção,
+para diagnosticar a próxima ocorrência. Localmente passaram Chromium e WebKit
+(12 recargas imediatas e conflito de duas abas em cada motor), mas isso não elimina
+a falha Linux.
+
+R2 NÃO FOI COMMITADO como funcionalidade: as comparações de mesma máquina
+encontraram regressões de 15,46→36,90 s e tentativas posteriores de 77,13/92,12 s
+para 5 mil. Consultar `docs/qa/2026-11-18-studio-incremental-rejected-prototypes.md`
+e seus JSONs. As hipóteses que pioraram foram retiradas do fonte experimental.
+Há teste de fragmentação VERMELHO na ordem restaurada; não enfraquecê-lo nem
+apresentar a árvore toda como verificada. A última suíte ampla desse protótipo
+teve 4/5 casos de navegador aprovados e timeout de 120 s em 10 mil.
+
+Baseline adicional em `C:/Users/tocha/projects/sistema-zero-studio-baseline-20261118`,
+HEAD destacado em `ae6e348a6`. Só lê dependências por junctions da worktree da missão;
+nenhuma alteração na árvore compartilhada original. Os servidores 5301/5302 são
+apenas QA e precisam estar parados antes de comparar consumo de recursos ou de
+encerrar o laboratório. Não confundir bundle antigo com fonte experimental atual.
+
+### Checkpoint preservado e fora da PR
+
+O protótipo inteiro, suas fixtures e a regressão vermelha foram preservados no
+commit `582aa52b0`, branch remota `estudio-incremental-lab-20261118`. Não integrar
+essa branch como melhoria aprovada. A worktree da missão voltou para
+`estudio-missao-completar-20261118`; a PR não contém o carregador experimental.
+Os servidores de QA 5301 e 5302 foram encerrados após verificar seus processos.
+
+Para reproduzir sem tocar na missão ou na árvore compartilhada:
+
+```powershell
+git worktree add C:/Users/tocha/projects/sistema-zero-incremental-lab estudio-incremental-lab-20261118
+cd C:/Users/tocha/projects/sistema-zero-incremental-lab
+bun install --frozen-lockfile
+cd packages/studio
+bun test src/blockly/__tests__/incrementalWorkspaceLoad.test.ts -t fragment
+```
+
+Esse último comando deve reprovar (391 eventos, orçamento inferior a 64). Ele é
+evidência de problema preservado, não um teste a enfraquecer. O checkpoint passou
+typecheck; as medições e o E2E grande continuam reprovados. Os comandos e relatórios
+do protótipo estão nessa branch e os relatórios também ficam na branch da PR.
