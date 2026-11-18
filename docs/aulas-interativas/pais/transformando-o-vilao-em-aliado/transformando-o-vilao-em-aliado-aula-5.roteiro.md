@@ -60,7 +60,7 @@ E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, 
 
 **Clipe:** `video-a5-escola`
 
-**Na tela:** No "Dois mais cinco", mostrar a conta solta [na edição: 2 + 5 = ?]. No "Eu estou na casinha dois", mostrar a mesma conta com função [na edição: personagem na casa 2 e a estrela cinco casas à frente]. No "Não é só a matemática", listar as áreas, uma por vez [na edição: matemática, português, ciências, artes, planejamento]. No "inúmeros estudos", mostrar a apresentadora [na edição: câmera].
+**Na tela:** No "Dois mais cinco", mostrar a conta solta [na edição: 2 + 5 = ?]. No "Eu estou na casinha dois", mostrar a mesma conta com função [na edição: personagem na casa 2 e a estrela cinco casas à frente]. No "não é só na matemática", listar as áreas, uma por vez [na edição: matemática, português, ciências, artes, planejamento]. No "inúmeros estudos", mostrar a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
