@@ -318,7 +318,8 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
       STATE_BACKEND: 'memory',
       GATEWAY_CONFIG_PATH: './gateway.config.ts',
       TRUST_PROXY: 'false',
-      MAX_REQUEST_BODY_BYTES: '3004096',
+      // Use the gateway's canonical envelope, derived from its route contracts.
+      // Pinning the older Studio builder limit here prevents the current gateway from booting.
       METRICS_TOKEN: s.METRICS_TOKEN,
       JWT_HS256_SECRET: s.JWT_HS256_SECRET,
       ...JWT,
