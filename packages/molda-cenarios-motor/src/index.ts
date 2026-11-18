@@ -6,6 +6,8 @@ export type { ComandoDePreviaDoAmbiente, DonoDaPreviaDoAmbiente } from './edicao
 export type * from './escultura-tipos'
 export { fotografarComposicao } from './foto-composicao'
 export { converterArquivos, type EntradaDeImportacao } from './importacao/cliente'
+export type { EstadoDasColisoesVisiveis } from './jogo/colisoes-visiveis'
+export type { EstadoDosMarcadores } from './jogo/marcadores'
 export * from './matematica'
 export { encerrarFotografo, type FotoDoModelo, fotografarModelo } from './miniatura'
 export { criarPalco, estaTrancado } from './Palco'

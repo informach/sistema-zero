@@ -133,7 +133,18 @@ export function comandosParaGuardarMarcador(
   doc: DocumentoDeCenario,
   marcador: MarcadorDeCenario,
 ): ComandoDeMarcador[] {
-  const m = MarcadorSchema.parse({ ...marcador, nome: marcador.nome.trim() }),
+  const resultado = MarcadorSchema.safeParse({ ...marcador, nome: marcador.nome.trim() })
+  if (!resultado.success) {
+    const erro = resultado.error.issues[0]
+    throw Error(
+      erro?.path[0] === 'nome'
+        ? 'Dê um nome ao marcador, com até 120 caracteres.'
+        : erro?.code === 'custom'
+          ? erro.message
+          : 'Confira as medidas e os pontos do marcador.',
+    )
+  }
+  const m = resultado.data,
     comandos: ComandoDeMarcador[] = []
   if (m.configuracao?.tipo === 'inicio' && m.configuracao.principal)
     for (const anterior of doc.marcadores)
@@ -167,4 +178,17 @@ export function mudarApoioDoMarcador(
     noChao,
     posicao: { ...p, y: p.y - (noChao ? alturaDoChao(doc.base, p.x, p.z, fonte) : 0) },
   }
+}
+
+/** Colocar pelo palco conserva o desnível autoral, usando a mesma altura do chão. */
+export function mudarLugarDoMarcador(
+  doc: DocumentoDeCenario,
+  m: MarcadorDeCenario,
+  ponto: { x: number; y: number; z: number },
+  fonte?: FonteDeAlturas,
+): MarcadorDeCenario {
+  const antes = transformacaoDoMarcador(doc, m, fonte).posicao,
+    distancia = antes.y - alturaDoChao(doc.base, antes.x, antes.z, fonte),
+    y = ponto.y + distancia - (m.noChao ? alturaDoChao(doc.base, ponto.x, ponto.z, fonte) : 0)
+  return MarcadorSchema.parse({ ...m, posicao: { x: ponto.x, y, z: ponto.z } })
 }

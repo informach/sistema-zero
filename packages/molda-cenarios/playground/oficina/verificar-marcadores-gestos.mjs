@@ -416,6 +416,20 @@ try {
   assert.ok(Math.abs(poligono[3].z + 2) < 0.02)
   assert.ok(Math.abs(poligono[3].x) < 0.02)
   await pagina.evaluate(() => window.__gestos.palco.definirCapturaDeCaminho(null))
+  await pagina.evaluate(() =>
+    window.__gestos.definirCaptura(
+      { pontos: [], modo: 'adicionar', minimo: 1, maximo: 1, fechada: false },
+      'jogo',
+    ),
+  )
+  const local = await pixel({ x: 4, y: -0.05, z: -3 })
+  await pagina.mouse.click(local.x, local.y)
+  const colocacao = await pagina.evaluate(() => window.__gestos.captura().pontos)
+  assert.equal(colocacao.length, 1)
+  assert.ok(Math.abs(colocacao[0].x - 4) < 0.02)
+  assert.ok(Math.abs(colocacao[0].z + 3) < 0.02)
+  assert.equal(colocacao[0].y, 0)
+  await pagina.evaluate(() => window.__gestos.palco.definirCapturaDeCaminho(null, 'jogo'))
   await pagina.screenshot({ path: resolve(saida, 'retorno.png') })
   assert.deepEqual(erros, [])
   writeFileSync(

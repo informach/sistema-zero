@@ -369,16 +369,18 @@ function EditarChao({
   )
 }
 
-function TexturasDoMolda({
+export function TexturasDoMolda({
   host,
   bibliotecaId,
   aoFechar,
   aoMudar,
+  aoEscolher,
 }: {
   host: CenariosHost
   bibliotecaId: string
   aoFechar(): void
   aoMudar(): void
+  aoEscolher?(textura: TexturaDeBiblioteca): void
 }) {
   const carga = useCarga((sinal) => host.texturasMolda!.listar(sinal), [host])
   const trabalho = useRef<AbortController | null>(null)
@@ -428,9 +430,10 @@ function TexturasDoMolda({
                   void host
                     .texturasMolda!.preparar(bibliotecaId, t, controle.signal)
                     .then(
-                      () => {
+                      (textura) => {
                         if (!controle.signal.aborted) {
                           aoMudar()
+                          aoEscolher?.(textura)
                           aoFechar()
                         }
                       },

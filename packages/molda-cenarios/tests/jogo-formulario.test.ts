@@ -8,6 +8,7 @@ import {
 import {
   comandosParaGuardarMarcador,
   mudarApoioDoMarcador,
+  mudarLugarDoMarcador,
   NOMES_JOGO,
   novoMarcador,
   tipoDoMarcador,
@@ -80,6 +81,32 @@ test('trocar apoio conserva a altura mundial e os controles locais', () => {
   expect(mudarApoioDoMarcador(doc, apoiado, false, fonte)).toEqual(m)
   expect(apoiado.configuracao).toEqual(m.configuracao)
 })
+test('colocar por clique conserva o desnível e considera a superfície escolhida', () => {
+  const doc = criarDocumentoVazio('d', 'Colocação')
+  doc.base = {
+    tipo: 'terreno',
+    cobertura: 'grade',
+    origem: { x: -32, z: -32 },
+    colunas: 64,
+    linhas: 64,
+    passo: 1,
+    min: -10,
+    max: 20,
+    fundo: 0,
+    pecas: [],
+  }
+  const fonte = (x: number) => x / 2,
+    livre = novoMarcador(doc, 'pontual', 'l', { x: 4, y: 5, z: 0 }),
+    apoiado = mudarApoioDoMarcador(doc, livre, true, fonte),
+    ponto = { x: 10, y: 8, z: 0 }
+  expect(mudarLugarDoMarcador(doc, livre, ponto, fonte).posicao.y).toBe(11)
+  const movido = mudarLugarDoMarcador(doc, apoiado, ponto, fonte)
+  expect(movido.posicao.y).toBe(6)
+  expect(transformacaoDoMarcador(doc, movido, fonte).posicao.y).toBe(11)
+  expect(movido.configuracao).toEqual(livre.configuracao)
+  expect(livre.posicao).toEqual({ x: 4, y: 5, z: 0 })
+})
+
 test('propriedades preservam tipos e recusam duplicação, números vazios e valores inválidos', () => {
   const p = { texto: 'missão', numero: 0, ligado: false }
   expect(propriedadesDasLinhas(linhasDasPropriedades(p))).toEqual(p)

@@ -8,7 +8,7 @@ export interface CapturaDeCaminho {
   pontos: readonly Ponto3[]
   modo: 'adicionar' | 'mover' | 'inserir' | 'remover'
   fechada: boolean
-  minimo: 2 | 3
+  minimo: 1 | 2 | 3
   maximo: number
   selecionado?: number | null
   conservarAltura?: boolean
@@ -145,7 +145,7 @@ export class EdicaoDePontos {
         !Number.isInteger(config.maximo) ||
         config.maximo < config.minimo ||
         config.maximo > 4096 ||
-        ![2, 3].includes(config.minimo) ||
+        ![1, 2, 3].includes(config.minimo) ||
         (config.fechada && config.minimo !== 3) ||
         !['adicionar', 'mover', 'inserir', 'remover'].includes(config.modo) ||
         config.pontos.length > config.maximo ||

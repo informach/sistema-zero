@@ -1001,9 +1001,10 @@ class PalcoThree implements Palco {
         (!Number.isFinite(config.giroInicial) || Math.abs(config.giroInicial) > 100_000)
       )
         throw Error('O giro inicial do teste é inválido.')
-      const marco = !config.inicio
-        ? inicioDoCenario(this.documento, this.fonteDeAlturas(), config.marcadorDeInicio)
-        : null
+      const marco =
+        !config.inicio && config.marcadorDeInicio !== null
+          ? inicioDoCenario(this.documento, this.fonteDeAlturas(), config.marcadorDeInicio)
+          : null
       if (!config.inicio && config.marcadorDeInicio && !marco)
         throw Error('Escolha um ponto de início visível do cenário.')
       const pontoInicial = config.inicio ?? marco?.posicao,

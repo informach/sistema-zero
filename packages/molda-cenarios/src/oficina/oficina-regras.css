@@ -83,6 +83,14 @@
     overflow-wrap: anywhere;
     padding-inline: 6px;
   }
+  .mcn-jogo .mcn-caminho-item {
+    grid-template-columns: minmax(0, 1fr) minmax(64px, 30%);
+    align-items: center;
+  }
+  .mcn-jogo .mcn-caminho-item > button {
+    justify-content: flex-start;
+    text-align: start;
+  }
   .mcn-caminho-molde {
     display: grid;
     gap: 10px;

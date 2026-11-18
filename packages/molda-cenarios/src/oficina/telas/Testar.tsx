@@ -1,4 +1,8 @@
-import type { DocumentoDeCenario, ModeloDoCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type DocumentoDeCenario,
+  indiceDaOrganizacao,
+  type ModeloDoCenario,
+} from '@sistemazero/molda-cenarios-core/v2'
 import type {
   ComandoDoTeste,
   ConfiguracaoDoTeste,
@@ -47,7 +51,12 @@ export function PrepararTeste({
     [modeloId, setModeloId] = useState(modeloDaBiblioteca?.id ?? ''),
     [altura, setAltura] = useState(1.16),
     [nativa, setNativa] = useState(true),
-    [giro, setGiro] = useState(0)
+    [giro, setGiro] = useState(0),
+    [inicio, setInicio] = useState('principal')
+  const indice = indiceDaOrganizacao(documento),
+    inicios = documento.marcadores.filter(
+      (m) => m.configuracao?.tipo === 'inicio' && !indice.flags.get(m.id)?.oculto,
+    )
   const modelos =
     modeloDaBiblioteca && !documento.modelos.some((m) => m.id === modeloDaBiblioteca.id)
       ? [modeloDaBiblioteca, ...documento.modelos]
@@ -55,8 +64,20 @@ export function PrepararTeste({
   const modelo = modelos.find((m) => m.id === modeloId)
   return (
     <Dialogo titulo="Testar o cenário" aoFechar={fechar}>
-      <p>Entre no lugar que está no centro da vista. O teste não muda sua montagem.</p>
+      <p>Escolha onde começar a exploração. O teste não muda sua montagem.</p>
       <fieldset disabled={ocupado} className="mcn-teste-preparar">
+        <label className="mcn-campo">
+          Lugar de entrada
+          <select value={inicio} onChange={(e) => setInicio(e.target.value)}>
+            <option value="principal">Início principal (ou centro da vista)</option>
+            <option value="centro">Centro da vista</option>
+            {inicios.map((m) => (
+              <option key={m.id} value={`marco/${m.id}`}>
+                {m.nome}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="mcn-campo">
           <span>Como explorar</span>
           <select
@@ -142,6 +163,11 @@ export function PrepararTeste({
           onClick={() =>
             iniciar({
               modo,
+              ...(inicio === 'centro'
+                ? { marcadorDeInicio: null }
+                : inicio.startsWith('marco/')
+                  ? { marcadorDeInicio: inicio.slice(6) }
+                  : {}),
               ...(modelo ? { modelo, giroDoModelo: (giro * Math.PI) / 180 } : {}),
               ...(!modelo || !nativa ? { altura } : {}),
             })

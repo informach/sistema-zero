@@ -1,22 +1,27 @@
 import {
+  alturaDoChao,
   type ComandoDeCenario,
   capturarFragmento,
   chaveDaBase,
   type EncaixeDeComposicao,
   entidadesSelecionaveis,
   entidadesTransformaveis,
+  indiceDaOrganizacao,
   type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type ConfiguracaoDoTeste,
   criarPalco,
+  type DonoDosPontos,
   type EstadoDasAguas,
+  type EstadoDasColisoesVisiveis,
   type EstadoDasTexturas,
+  type EstadoDoAmbiente,
   type EstadoDosCaminhos,
+  type EstadoDosMarcadores,
   type EstadoDoTeste,
   type Estatisticas,
   type Ferramenta,
-  idsEscondidos,
   type ModoDeSelecao,
   type Palco,
   type Vista,
@@ -28,11 +33,14 @@ import {
   Boxes,
   Check,
   Clipboard,
+  Cloud,
   CloudOff,
   Copy,
   Flag,
+  Haze,
   History,
   Lasso,
+  Lightbulb,
   ListChecks,
   ListTree,
   Loader2,
@@ -95,6 +103,7 @@ import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
 import { encerrarPreparacao } from '../importar'
+import { NOMES_JOGO } from '../jogo-formulario'
 import { Chegando, Dialogo, Falhou, useCarga } from '../pecas'
 import type {
   Biblioteca,
@@ -106,9 +115,12 @@ import type {
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { comandosParaPropriedades } from '../propriedades-formulario'
 import { useAgua } from '../useAgua'
+import { useAmbiente } from '../useAmbiente'
 import { useCaminhos } from '../useCaminhos'
 import { useConjuntos } from '../useConjuntos'
+import { useJogo } from '../useJogo'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { useRetratos } from '../useRetratos'
 import { useTerreno } from '../useTerreno'
@@ -119,10 +131,13 @@ import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
+import { FERRAMENTAS_JOGO, FERRAMENTAS_LUZ, Jogo } from './Jogo'
+import { LuzECeu } from './LuzECeu'
 import { EscolherBibliotecas } from './Mundo'
 import { Organizacao } from './Organizacao'
 import { Organizar } from './Organizar'
 import { Painel } from './Painel'
+import { Propriedades } from './Propriedades'
 import { FERRAMENTAS_TERRENO_RAIL, NOMES_TERRENO, Terreno } from './Terreno'
 import { ControlesTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
@@ -327,6 +342,25 @@ function OficinaAberta({
     falhas: [],
     avisos: [],
   })
+  const [ambienteRender, setAmbienteRender] = useState<EstadoDoAmbiente>({
+    ceu: 'padrao',
+    luzes: 0,
+    sombrasLocais: 0,
+    resolucaoDasSombrasLocais: 512,
+    carregando: 0,
+    falhas: [],
+  })
+  const [marcadoresRender, setMarcadoresRender] = useState<EstadoDosMarcadores>({
+    carregando: 0,
+    falhas: [],
+  })
+  const [colisoes, setColisoes] = useState<EstadoDasColisoesVisiveis>({
+    fontes: 0,
+    triangulos: 0,
+    erro: null,
+  })
+  const [mostrarColisoes, setMostrarColisoes] = useState(false)
+  const bloqueioDaTransferencia = useRef(false)
   const [relevo, setRelevo] = useState<{
     chave: string
     estado: 'carregando' | 'pronto' | 'erro'
@@ -345,6 +379,7 @@ function OficinaAberta({
     controlador,
     palco,
     centro: centroParaColar,
+    bloqueado: bloqueioDaTransferencia,
   })
   const { documento, selecao: escolha, ferramenta, encaixe } = estado
   const transformaveis = useMemo(
@@ -372,6 +407,10 @@ function OficinaAberta({
     }
   }, [])
   const porConjunto = async (escolha: ConjuntoDeBiblioteca) => {
+    if (bloqueioDaTransferencia.current) {
+      setErroDoMolde('Termine ou cancele a edição atual antes de colocar um conjunto.')
+      return
+    }
     const origem = contexto.current
     if (!origem.mundo.bibliotecas.includes(escolha.bibliotecaId))
       throw new Error('Este conjunto não pertence às bibliotecas do mundo')
@@ -380,7 +419,7 @@ function OficinaAberta({
     setConjuntosCarregando((n) => n + 1)
     try {
       const versao = await host.versaoDoConjunto(escolha.id, escolha.revisao)
-      if (!montado.current || contexto.current !== origem) return
+      if (!montado.current || contexto.current !== origem || bloqueioDaTransferencia.current) return
       const ponto = centroDaVista(canvas.current, palco.current)
       if (!ponto) throw new Error('Aproxime a câmera do chão para colocar o conjunto')
       const preparado = comandosParaPorConjunto(
@@ -440,11 +479,67 @@ function OficinaAberta({
   })
   const caminhosAtual = useRef(caminhos)
   caminhosAtual.current = caminhos
-  const edicaoAberta = agua.ocupado || caminhos.ocupado
-  const aoEditarPontosDeCaminho = caminhos.aoEditarPontos,
-    aoCancelarPontosDeCaminho = caminhos.cancelar,
-    aoErroDePontosDeCaminho = caminhos.informarErro,
-    editarCaminho = caminhos.editar
+  const alturaNativa = useRef(1.16)
+  const alturaDoAvatar = useCallback(() => alturaNativa.current, [])
+  const centroParaMarcador = useCallback(() => {
+    const ponto = centroDaVista(canvas.current, palco.current),
+      doc = controlador.getState().documento
+    return ponto
+      ? {
+          ...ponto,
+          y: ponto.y ?? alturaDoChao(doc.base, ponto.x, ponto.z, palco.current?.fonteDeAlturas()),
+        }
+      : null
+  }, [controlador])
+  const jogo = useJogo({
+    controlador,
+    palco,
+    documento,
+    ativo: (aba === 'jogo' || aba === 'luz') && !emEnsaio,
+    centro: centroParaMarcador,
+    alturaDoAvatar,
+  })
+  const ambiente = useAmbiente({ controlador, palco, documento, ativo: aba === 'luz' && !emEnsaio })
+  const jogoAtual = useRef(jogo),
+    ambienteAtual = useRef(ambiente),
+    abaAtual = useRef(aba)
+  jogoAtual.current = jogo
+  ambienteAtual.current = ambiente
+  abaAtual.current = aba
+  const edicaoAberta = agua.ocupado || caminhos.ocupado || jogo.ocupado || ambiente.ocupado
+  bloqueioDaTransferencia.current =
+    edicaoAberta || terreno.ocupado || emEnsaio || janelaTeste || escolhendoPersonagem
+  const aoEditarPontosDeCaminho = useCallback(
+    (gesto: Parameters<typeof caminhos.aoEditarPontos>[0], dono: DonoDosPontos) => {
+      if (dono === 'jogo') jogoAtual.current.aoEditarPontos(gesto)
+      else caminhosAtual.current.aoEditarPontos(gesto)
+    },
+    [],
+  )
+  const aoCancelarPontosDeCaminho = useCallback((dono: DonoDosPontos) => {
+    if (dono === 'jogo') jogoAtual.current.cancelar()
+    else caminhosAtual.current.cancelar()
+  }, [])
+  const aoErroDePontosDeCaminho = useCallback((erro: string, dono: DonoDosPontos) => {
+    if (dono === 'jogo') jogoAtual.current.informarErro(erro)
+    else caminhosAtual.current.informarErro(erro)
+  }, [])
+  const editarCaminho = caminhos.editar
+  const aoSelecionarMarcador = useCallback(
+    (id: string) => {
+      if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado) return
+      if (controlador.getState().somarSelecao) {
+        controlador.tocar(id, true)
+        return
+      }
+      const m = controlador.getState().documento.marcadores.find((m) => m.id === id)
+      setAba(m?.configuracao?.tipo === 'luz' ? 'luz' : 'jogo')
+      setModoPainel('escolha')
+      setPainelAberto(true)
+      controlador.selecionar([id])
+    },
+    [controlador],
+  )
   const aoSelecionarCaminho = useCallback(
     (id: string) => {
       if (controlador.getState().somarSelecao) {
@@ -493,13 +588,23 @@ function OficinaAberta({
       !aguas.carregando &&
       !aguas.falhas.length &&
       !caminhosRender.carregando &&
-      !caminhosRender.falhas.length,
+      !caminhosRender.falhas.length &&
+      !ambienteRender.carregando &&
+      !ambienteRender.falhas.length &&
+      !marcadoresRender.carregando &&
+      !marcadoresRender.falhas.length,
     emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || edicaoAberta,
   })
 
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
-      if (aguaAtual.current.ocupado || caminhosAtual.current.ocupado) return false
+      if (
+        aguaAtual.current.ocupado ||
+        caminhosAtual.current.ocupado ||
+        jogoAtual.current.ocupado ||
+        ambienteAtual.current.ocupado
+      )
+        return false
       if (
         controlador.getState().documento.base.tipo === 'terreno' &&
         !palco.current?.fonteDeAlturas?.()
@@ -530,6 +635,10 @@ function OficinaAberta({
       aoTexturas: setTexturas,
       aoAguas: setAguas,
       aoCaminhos: setCaminhosRender,
+      aoAmbiente: setAmbienteRender,
+      aoMarcadores: setMarcadoresRender,
+      aoColisoesVisiveis: setColisoes,
+      aoSelecionarMarcador,
       aoSelecionarCaminho,
       aoEditarPontosDeCaminho,
       aoCancelarPontosDeCaminho,
@@ -560,7 +669,10 @@ function OficinaAberta({
       aoEsculpir,
       aoPreverTerreno,
       aoGesto: setGestoAtivo,
-      aoTeste: setTeste,
+      aoTeste: (estado) => {
+        if (estado) alturaNativa.current = estado.altura
+        setTeste(estado)
+      },
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
       aoTransformar: (mudancas) =>
@@ -600,12 +712,21 @@ function OficinaAberta({
     aoCapturarPontoDaAgua,
     aoSelecionarAgua,
     aoSelecionarCaminho,
+    aoSelecionarMarcador,
     aoEditarPontosDeCaminho,
     aoCancelarPontosDeCaminho,
     aoErroDePontosDeCaminho,
   ])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
+  useEffect(() => {
+    if (!emEnsaio && !janelaTeste)
+      palco.current?.definirGuiasDoJogo(aba === 'jogo' || aba === 'luz')
+  }, [aba, emEnsaio, janelaTeste])
+  useEffect(() => {
+    if (!emEnsaio && !janelaTeste && !gestoAtivo)
+      palco.current?.definirColisoesVisiveis(mostrarColisoes)
+  }, [mostrarColisoes, emEnsaio, janelaTeste, gestoAtivo])
   useEffect(() => {
     palco.current?.definirEscultura(
       aba === 'terreno' &&
@@ -646,15 +767,26 @@ function OficinaAberta({
   useEffect(() => palco.current?.definirSelecao(escolha), [escolha])
   useEffect(() => {
     palco.current?.definirFerramenta(
-      aba === 'objetos' && !estado.ocupado ? ferramenta : 'selecionar',
+      (aba === 'objetos' || aba === 'jogo' || aba === 'luz') &&
+        !estado.ocupado &&
+        !edicaoAberta &&
+        !emEnsaio
+        ? ferramenta
+        : 'selecionar',
     )
-  }, [ferramenta, aba, estado.ocupado])
+  }, [ferramenta, aba, estado.ocupado, edicaoAberta, emEnsaio])
   useEffect(
     () =>
       palco.current?.definirModoDeSelecao(
-        aba === 'objetos' && relevoPronto && !estado.ocupado && !emEnsaio ? modoDeSelecao : 'ponto',
+        (aba === 'objetos' || aba === 'jogo' || aba === 'luz') &&
+          relevoPronto &&
+          !estado.ocupado &&
+          !edicaoAberta &&
+          !emEnsaio
+          ? modoDeSelecao
+          : 'ponto',
       ),
-    [aba, relevoPronto, estado.ocupado, modoDeSelecao, emEnsaio],
+    [aba, relevoPronto, estado.ocupado, modoDeSelecao, emEnsaio, edicaoAberta],
   )
   useEffect(
     () =>
@@ -696,7 +828,9 @@ function OficinaAberta({
   const copiar = useCallback(() => {
     const atual = controlador.getState(),
       estruturais = new Set(
-        [...atual.documento.aguas, ...atual.documento.caminhos].map((e) => e.id),
+        [...atual.documento.aguas, ...atual.documento.caminhos, ...atual.documento.marcadores].map(
+          (e) => e.id,
+        ),
       )
     if (atual.selecao.some((id) => estruturais.has(id))) {
       duplicarPasta()
@@ -706,7 +840,8 @@ function OficinaAberta({
       atual.alvoDaArvore &&
       (atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore) ||
         atual.documento.aguas.some((a) => a.id === atual.alvoDaArvore) ||
-        atual.documento.caminhos.some((c) => c.id === atual.alvoDaArvore))
+        atual.documento.caminhos.some((c) => c.id === atual.alvoDaArvore) ||
+        atual.documento.marcadores.some((m) => m.id === atual.alvoDaArvore))
     ) {
       duplicarPasta()
       return
@@ -725,6 +860,10 @@ function OficinaAberta({
     ponto: LocalDeColocacao | null,
     aceite?: string,
   ) => {
+    if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado) {
+      setErroDoMolde('Termine ou cancele o rascunho antes de colocar um modelo.')
+      return
+    }
     if (escolhendoPersonagem) {
       if ('origem' in escolha) return
       if (!mundo.bibliotecas.includes(escolha.bibliotecaId)) return
@@ -744,6 +883,8 @@ function OficinaAberta({
           },
         },
       )
+      const altura = escolha.max[1] - escolha.min[1]
+      if (Number.isFinite(altura) && altura > 0) alturaNativa.current = altura
       setEscolhendoPersonagem(false)
       setJanelaTeste(true)
       return
@@ -753,6 +894,7 @@ function OficinaAberta({
     const alvo = troca.current
     const paraPincel = controlador.getState().ferramenta === 'espalhar'
     const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
+      if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado || ensaioAtivo.current) return
       if (paraCaminho) {
         const atual = caminhosAtual.current
         if (!idDoCaminho) {
@@ -880,13 +1022,20 @@ function OficinaAberta({
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
       if (ensaioAtivo.current) return
-      if (aguaAtual.current.ocupado || caminhosAtual.current.ocupado) {
+      if (
+        aguaAtual.current.ocupado ||
+        caminhosAtual.current.ocupado ||
+        jogoAtual.current.ocupado ||
+        ambienteAtual.current.ocupado
+      ) {
         if (
           evento.key === 'Escape' &&
           !(evento.target as HTMLElement | null)?.closest?.('dialog[open]')
         ) {
           evento.preventDefault()
-          if (caminhosAtual.current.ocupado) caminhosAtual.current.cancelar()
+          if (jogoAtual.current.ocupado) jogoAtual.current.cancelar()
+          else if (ambienteAtual.current.ocupado) ambienteAtual.current.cancelar()
+          else if (caminhosAtual.current.ocupado) caminhosAtual.current.cancelar()
           else aguaAtual.current.cancelar()
         }
         return
@@ -908,10 +1057,10 @@ function OficinaAberta({
       } else if (comando && tecla === 'a') {
         evento.preventDefault()
         const doc = controlador.getState().documento,
-          escondidos = idsEscondidos(doc)
+          indice = indiceDaOrganizacao(doc)
         controlador.selecionar(
           entidadesSelecionaveis(doc)
-            .filter((o) => !escondidos.has(o.id))
+            .filter((o) => !indice.flags.get(o.id)?.oculto)
             .map((o) => o.id),
         )
       } else if (comando || evento.altKey) return
@@ -926,7 +1075,7 @@ function OficinaAberta({
         controlador.selecionar([])
       } else if (tecla === 'f') palco.current?.enquadrar(controlador.getState().selecao)
       else if (tecla === 'b' || tecla === 'l') {
-        setAba('objetos')
+        if (abaAtual.current !== 'jogo' && abaAtual.current !== 'luz') setAba('objetos')
         controlador.definirFerramenta('selecionar')
         setModoDeSelecao(tecla === 'b' ? 'retangulo' : 'laco')
       } else {
@@ -934,7 +1083,7 @@ function OficinaAberta({
           ([, , , atalho]) => atalho.toLowerCase() === tecla,
         )
         if (!ferramentaDaTecla) return
-        setAba('objetos')
+        if (abaAtual.current !== 'jogo' && abaAtual.current !== 'luz') setAba('objetos')
         setModoDeSelecao('ponto')
         if (ferramentaDaTecla[0] === 'espalhar') abrirPincel()
         else controlador.definirFerramenta(ferramentaDaTecla[0])
@@ -1203,7 +1352,7 @@ function OficinaAberta({
             type="button"
             className="sz-tool-icon-btn"
             onClick={sair}
-            disabled={saindo || agua.aplicando}
+            disabled={saindo || edicaoAberta}
             aria-label={COPY.oficina.voltar}
             title={COPY.oficina.voltar}
           >
@@ -1235,10 +1384,18 @@ function OficinaAberta({
                 type="button"
                 aria-label={COPY.oficina.abas[valor]}
                 aria-pressed={aba === valor}
-                disabled={agua.aplicando}
+                disabled={
+                  agua.aplicando || caminhos.aplicando || jogo.aplicando || ambiente.aplicando
+                }
                 onClick={() => {
+                  if (valor === aba) return
+                  agua.cancelar()
+                  caminhos.cancelar()
+                  jogo.cancelar()
+                  ambiente.cancelar()
                   if (valor !== 'objetos') pincel.fechar()
                   setAba(valor)
+                  setModoPainel('escolha')
                 }}
                 className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
               >
@@ -1268,6 +1425,10 @@ function OficinaAberta({
               caminhosRender.falhas.length > 0 ||
               aguas.carregando > 0 ||
               aguas.falhas.length > 0 ||
+              ambienteRender.carregando > 0 ||
+              ambienteRender.falhas.length > 0 ||
+              marcadoresRender.carregando > 0 ||
+              marcadoresRender.falhas.length > 0 ||
               escolhendoPersonagem
             }
             onClick={() => {
@@ -1306,7 +1467,12 @@ function OficinaAberta({
               aria-label="Guardar escolha como conjunto"
               title="Guardar escolha como conjunto"
               disabled={
-                semEscolha || escolhaMista || estado.ocupado || !relevoPronto || conjuntos.ocupado
+                semEscolha ||
+                escolhaMista ||
+                estado.ocupado ||
+                !relevoPronto ||
+                conjuntos.ocupado ||
+                edicaoAberta
               }
               onClick={conjuntos.abrir}
             >
@@ -1526,39 +1692,148 @@ function OficinaAberta({
                 }}
               />
             ))
-          ) : aba === 'luz' ? (
-            HORAS.map(([hora, Icone, rotulo]) => (
+          ) : aba === 'jogo' ? (
+            <>
+              {FERRAMENTAS_JOGO.map(([tipo, Icone]) => (
+                <Ladrilho
+                  key={tipo}
+                  icone={Icone}
+                  rotulo={NOMES_JOGO[tipo]}
+                  desligado={jogo.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
+                  aoTocar={() => {
+                    jogo.iniciar(tipo)
+                    setGavetaAberta(false)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ))}
+              <hr className="mcn-fio" />
+              {FERRAMENTAS.filter(([f]) => f !== 'espalhar').map(([f, Icone, rotulo, atalho]) => (
+                <Ladrilho
+                  key={f}
+                  icone={Icone}
+                  rotulo={rotulo}
+                  atalho={atalho}
+                  ligado={ferramenta === f}
+                  desligado={edicaoAberta || estado.ocupado}
+                  aoTocar={() => controlador.definirFerramenta(f)}
+                />
+              ))}
               <Ladrilho
-                key={hora}
-                icone={Icone}
-                rotulo={rotulo}
-                ligado={documento.iluminacao.hora === hora}
-                aoTocar={() =>
-                  executar([
-                    {
-                      tipo: 'iluminacao.definir',
-                      iluminacao: { ...controlador.getState().documento.iluminacao, hora },
-                    },
-                  ])
-                }
+                icone={Scan}
+                rotulo="Colisões"
+                ligado={mostrarColisoes}
+                alternavel
+                desligado={edicaoAberta || !relevoPronto || estado.ocupado}
+                aoTocar={() => setMostrarColisoes((v) => !v)}
               />
-            ))
-          ) : (
-            <p className="mcn-chegando-aba">{COPY.oficina.chegando}</p>
-          )}
+              <Ladrilho
+                icone={Copy}
+                rotulo="Duplicar"
+                atalho="Ctrl+D"
+                desligado={edicaoAberta || semEscolha || estado.ocupado}
+                aoTocar={copiar}
+              />
+              <Ladrilho
+                icone={Trash2}
+                rotulo="Apagar"
+                atalho="Delete"
+                desligado={edicaoAberta || semEscolha || estado.ocupado}
+                aoTocar={apagar}
+              />
+            </>
+          ) : aba === 'luz' ? (
+            <>
+              {HORAS.map(([hora, Icone, rotulo]) => (
+                <Ladrilho
+                  key={hora}
+                  icone={Icone}
+                  rotulo={rotulo}
+                  ligado={(ambiente.rascunho?.iluminacao ?? documento.iluminacao).hora === hora}
+                  desligado={
+                    jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
+                  }
+                  aoTocar={() => {
+                    jogo.cancelar()
+                    ambiente.abrir('sol')
+                    const atual = ambiente.lerRascunho()
+                    if (atual) ambiente.mudar({ ...atual.iluminacao, hora })
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ))}
+              <hr className="mcn-fio" />
+              {(
+                [
+                  ['sol', Sun, 'Sol'],
+                  ['ambiente', Lightbulb, 'Ambiente'],
+                  ['ceu', Cloud, 'Céu'],
+                  ['nevoa', Haze, 'Névoa'],
+                ] as const
+              ).map(([secao, Icone, rotulo]) => (
+                <Ladrilho
+                  key={secao}
+                  icone={Icone}
+                  rotulo={rotulo}
+                  ligado={Boolean(ambiente.rascunho) && ambiente.secao === secao}
+                  desligado={
+                    jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
+                  }
+                  aoTocar={() => {
+                    jogo.cancelar()
+                    ambiente.abrir(secao)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ))}
+              {FERRAMENTAS_LUZ.map(([tipo, Icone]) => (
+                <Ladrilho
+                  key={tipo}
+                  icone={Icone}
+                  rotulo={NOMES_JOGO[tipo]}
+                  desligado={
+                    jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
+                  }
+                  aoTocar={() => {
+                    ambiente.cancelar()
+                    jogo.iniciar(tipo)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ))}
+              {FERRAMENTAS.filter(([f]) => f === 'mover' || f === 'girar').map(
+                ([f, Icone, rotulo, atalho]) => (
+                  <Ladrilho
+                    key={f}
+                    icone={Icone}
+                    rotulo={rotulo}
+                    atalho={atalho}
+                    ligado={ferramenta === f}
+                    desligado={edicaoAberta || estado.ocupado}
+                    aoTocar={() => controlador.definirFerramenta(f)}
+                  />
+                ),
+              )}
+            </>
+          ) : null}
         </nav>
 
         {/* biome-ignore lint/a11y/noStaticElementInteractions: área de soltar do arraste; pelo teclado, a gaveta põe o modelo com Enter */}
         <div
           className="mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           onDragOver={(evento) => {
-            if (emEnsaio || agua.ocupado) return
+            if (emEnsaio || agua.ocupado || jogo.ocupado || ambiente.ocupado) return
             if (!evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
             evento.preventDefault()
             evento.dataTransfer.dropEffect = 'copy'
           }}
           onDrop={(evento) => {
-            if (!emEnsaio && !agua.ocupado) aoSoltarNoPalco(evento)
+            if (!emEnsaio && !agua.ocupado && !jogo.ocupado && !ambiente.ocupado)
+              aoSoltarNoPalco(evento)
           }}
         >
           <div className="mcn-palco">
@@ -1804,6 +2079,81 @@ function OficinaAberta({
                   if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
                 }}
               />
+            ) : (aba === 'jogo' || aba === 'luz') && modoPainel !== 'organizacao' ? (
+              <>
+                {marcadoresRender.falhas.map((f) => (
+                  <p key={f.id} role="alert" className="mcn-recusa">
+                    {f.mensagem}
+                  </p>
+                ))}
+                {aba === 'luz' && !jogo.rascunho ? (
+                  <LuzECeu
+                    ambiente={ambiente}
+                    host={host}
+                    bibliotecas={bibliotecas}
+                    estado={ambienteRender}
+                    indisponivel={
+                      !relevoPronto ||
+                      estado.ocupado ||
+                      estado.salvamento !== 'guardado' ||
+                      jogo.ocupado
+                    }
+                  />
+                ) : null}
+                {!ambiente.rascunho ? (
+                  <Jogo
+                    jogo={jogo}
+                    documento={documento}
+                    selecao={escolha}
+                    fonte={fonte}
+                    palco={palco.current}
+                    apenasLuzes={aba === 'luz'}
+                    alturaDoAvatar={alturaDoAvatar}
+                    aoSelecionar={aoSelecionarMarcador}
+                    indisponivel={
+                      !relevoPronto ||
+                      estado.ocupado ||
+                      estado.salvamento !== 'guardado' ||
+                      ambiente.ocupado
+                    }
+                    aoCapturar={() => {
+                      setGavetaAberta(false)
+                      if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                        setPainelAberto(false)
+                    }}
+                  />
+                ) : null}
+                {mostrarColisoes ? (
+                  <section className="mcn-painel-corpo" aria-label="Inspeção das colisões">
+                    <h3>Colisões físicas</h3>
+                    {colisoes.erro ? (
+                      <p role="alert" className="mcn-recusa">
+                        {colisoes.erro}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-mld-muted">
+                        {colisoes.fontes} fontes · {colisoes.triangulos.toLocaleString('pt-BR')}{' '}
+                        triângulos. São as mesmas fontes do Testar.
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className="sz-tool-btn"
+                      onClick={() => setMostrarColisoes(false)}
+                    >
+                      Ocultar colisões
+                    </button>
+                  </section>
+                ) : null}
+                {!edicaoAberta && selecao.length > 0 ? (
+                  <Painel
+                    documento={documento}
+                    selecao={selecao}
+                    executar={executar}
+                    fonte={fonte}
+                  />
+                ) : null}
+              </>
             ) : modoPainel === 'organizacao' ? (
               <Organizacao
                 documento={documento}
@@ -1814,6 +2164,8 @@ function OficinaAberta({
                   const id = controlador.getState().alvoDaArvore
                   if (id && documento.caminhos.some((c) => c.id === id)) aoSelecionarCaminho(id)
                   else if (id && documento.aguas.some((a) => a.id === id)) aoSelecionarAgua(id)
+                  else if (id && documento.marcadores.some((m) => m.id === id))
+                    aoSelecionarMarcador(id)
                   else setModoPainel('escolha')
                 }}
                 somarSelecao={estado.somarSelecao}
@@ -1842,7 +2194,7 @@ function OficinaAberta({
                 {escolhaMista ? (
                   <p className="mcn-painel-corpo text-sm text-mld-muted">
                     {escolha.length} elementos escolhidos. Você pode copiar, duplicar, apagar ou
-                    organizar a escolha. Edite os pontos de cada caminho na aba Caminhos.
+                    organizar a escolha. Edite caminhos na aba Caminhos e marcadores na aba Jogo.
                   </p>
                 ) : relevoPronto ? (
                   <Painel
@@ -1914,6 +2266,35 @@ function OficinaAberta({
                 ) : null}
               </>
             )}
+            {!edicaoAberta && escolha.length === 1
+              ? (() => {
+                  const entidade = entidadesSelecionaveis(documento).find(
+                    (e) => e.id === escolha[0],
+                  )
+                  return entidade ? (
+                    <div className="mcn-painel-corpo">
+                      <Propriedades
+                        key={entidade.id}
+                        valor={entidade.propriedades}
+                        desligado={
+                          estado.ocupado ||
+                          !relevoPronto ||
+                          Boolean(indiceDaOrganizacao(documento).flags.get(entidade.id)?.bloqueado)
+                        }
+                        aoGuardar={(p) =>
+                          executar(
+                            comandosParaPropriedades(
+                              controlador.getState().documento,
+                              entidade.id,
+                              p,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                  ) : null
+                })()
+              : null}
           </aside>
         ) : null}
       </div>

@@ -45,7 +45,18 @@ export function propriedadesDasLinhas(linhas: readonly LinhaDePropriedade[]): Pr
       pares.push([chave, l.valor])
     }
   }
-  return PropriedadesSchema.parse(Object.fromEntries(pares))
+  const resultado = PropriedadesSchema.safeParse(Object.fromEntries(pares))
+  if (!resultado.success) {
+    const erro = resultado.error.issues[0]
+    throw Error(
+      erro?.code === 'custom'
+        ? erro.message
+        : erro?.code === 'too_big'
+          ? 'Cada texto pode ter no máximo 2.000 caracteres.'
+          : 'Use nomes sem espaços, com até 80 caracteres, para as propriedades.',
+    )
+  }
+  return resultado.data
 }
 
 /** A mesma propriedade tipada, nos comandos existentes de cada entidade. */

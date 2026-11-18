@@ -63,11 +63,11 @@
 
 **Intenção visual:** a usuária compõe o cenário olhando o palco. Nome, colocação e medidas vêm primeiro; parâmetros técnicos e propriedades ficam recolhidos. Conservar rail vertical, inspector, gaveta e componentes/tokens Molda da interface aprovada, com ações reais, unidades em metros e mensagens de prévia/guardar/cancelar. Nenhuma nova linguagem visual.
 
-- [ ] Rail Jogo: início, ponto, zona, rota, câmera, régua, escala e colisões; criar por cena/coordenadas e editar no inspector. Nada sem comportamento.
-- [ ] Nome/posição/giro/chão, forma/tamanho, lista de pontos, câmera, luz e propriedades com unidades, limites e ajuda curta. Ações avançadas recolhidas.
-- [ ] Rail Luz e céu mantém os presets de hora e abre controles reais de ambiente/panorama/névoa/luzes. Escolha de panorama reutiliza importação/biblioteca/Molda.
-- [ ] Integrar seleção, organização, copiar/colar, duplicar, Delete, undo/redo e reabertura. Proteger rascunhos contra ferramentas concorrentes e respostas atrasadas.
-- [ ] Conferir teclado/mouse/toque em 1440/1366/1024/390, claro/escuro, comparando com a casca aprovada. Revisar e preservar recorte.
+- [x] Rail Jogo: início, ponto, zona, rota, câmera, régua, escala e colisões; criar por cena/coordenadas e editar no inspector. Nada sem comportamento.
+- [x] Nome/posição/giro/chão, forma/tamanho, lista de pontos, câmera, luz e propriedades com unidades, limites e ajuda curta. Ações avançadas recolhidas.
+- [x] Rail Luz e céu mantém os presets de hora e abre controles reais de ambiente/panorama/névoa/luzes. Escolha de panorama reutiliza importação/biblioteca/Molda.
+- [x] Integrar seleção, organização, copiar/colar, duplicar, Delete, undo/redo e reabertura. Proteger rascunhos contra ferramentas concorrentes e respostas atrasadas.
+- [x] Conferir teclado/mouse/toque em 1440/1366/1024/390, claro/escuro, comparando com a casca aprovada. Revisar e preservar recorte. [Checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-interface.md).
 
 ## 7.5 — Fechamento exclusivo do lote
 
@@ -79,4 +79,4 @@
 
 ## Estado atual
 
-**Lote 7 aberto; 7.1, 7.2 e 7.3 implementados, testados e revisados. Única frente ativa seguinte: 7.4 — interface Jogo e Luz e céu.** [Núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md), [palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md) e [iluminação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-iluminacao.md). Lotes 0–6 fechados localmente. Interface 7.4 e fechamento integral 7.5 continuam pendentes. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 aberto; 7.1–7.4 implementados, testados e revisados localmente. Única frente ativa seguinte: 7.5 — fechamento integral do lote.** [Núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md), [palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md), [iluminação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-iluminacao.md) e [interface](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-interface.md). Lotes 0–6 fechados localmente. Lotes 8–10 e encerramento global continuam pendentes. Não há autorização nova de produção ou abertura a membros.

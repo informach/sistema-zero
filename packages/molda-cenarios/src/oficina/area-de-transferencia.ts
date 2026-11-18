@@ -30,9 +30,11 @@ export function alvosDaTransferencia(
     ? [estado.alvoDaArvore]
     : !estado.selecao.length &&
         estado.alvoDaArvore &&
-        [...estado.documento.aguas, ...estado.documento.caminhos].some(
-          (a) => a.id === estado.alvoDaArvore,
-        )
+        [
+          ...estado.documento.aguas,
+          ...estado.documento.caminhos,
+          ...estado.documento.marcadores,
+        ].some((a) => a.id === estado.alvoDaArvore)
       ? [estado.alvoDaArvore]
       : estado.selecao
 }
@@ -75,12 +77,14 @@ export function useAreaDeTransferencia({
   controlador,
   palco,
   centro,
+  bloqueado,
 }: {
   host: CenariosHost
   espaco: string
   controlador: ControladorDaOficina
   palco: RefObject<Palco | null>
   centro(): { x: number; z: number } | null
+  bloqueado?: RefObject<boolean>
 }) {
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [erro, setErro] = useState(false)
@@ -117,6 +121,10 @@ export function useAreaDeTransferencia({
   }, [controlador, palco, espaco])
   const copiar = useCallback(
     (recortar = false) => {
+      // Copiar lê o documento aceito, inclusive no botão "copiar água guardada".
+      // Recortar altera a autoria e precisa respeitar o dono do rascunho.
+      if (recortar && bloqueado?.current)
+        throw Error('Termine ou cancele a edição atual antes de recortar.')
       const fragmento = capturar(),
         texto = JSON.stringify(fragmento)
       if (
@@ -139,10 +147,11 @@ export function useAreaDeTransferencia({
       )
       return texto
     },
-    [capturar, controlador, host, informar, palco],
+    [capturar, controlador, host, informar, palco, bloqueado],
   )
   const aplicar = useCallback(
     (fragmento: FragmentoDeCenario, ponto: { x: number; y: number; z: number }) => {
+      if (bloqueado?.current) throw Error('Termine ou cancele a edição atual antes de colar.')
       if (fragmento.origem.espaco !== espaco)
         throw new Error('Não é possível colar objetos de outro espaço')
       const prefixo = novoIdAleatorio(),
@@ -155,16 +164,20 @@ export function useAreaDeTransferencia({
           ...ids.montagens.values(),
           ...ids.aguas.values(),
           ...ids.caminhos.values(),
+          ...ids.marcadores.values(),
         ],
         ids.raizes.length === 1 &&
-          [...ids.grupos.values(), ...ids.aguas.values(), ...ids.caminhos.values()].includes(
-            ids.raizes[0]!,
-          )
+          [
+            ...ids.grupos.values(),
+            ...ids.aguas.values(),
+            ...ids.caminhos.values(),
+            ...ids.marcadores.values(),
+          ].includes(ids.raizes[0]!)
           ? ids.raizes[0]!
           : undefined,
       )
     },
-    [controlador, espaco],
+    [controlador, espaco, bloqueado],
   )
   const colar = useCallback(
     (texto: string) => {
@@ -234,6 +247,10 @@ export function useAreaDeTransferencia({
   }, [host, colar, falhar])
   useEffect(() => {
     const transferir = (evento: ClipboardEvent) => {
+      if (bloqueado?.current && evento.type !== 'copy' && !editando(evento.target)) {
+        evento.preventDefault()
+        return
+      }
       if (evento.defaultPrevented || editando(evento.target) || !evento.clipboardData) return
       const ids = alvosDaTransferencia(controlador.getState())
       if (evento.type !== 'paste' && !ids.length) return
@@ -262,7 +279,7 @@ export function useAreaDeTransferencia({
       for (const tipo of ['copy', 'cut', 'paste'])
         globalThis.removeEventListener(tipo, transferir as EventListener)
     }
-  }, [controlador, copiar, colar, falhar, host])
+  }, [controlador, copiar, colar, falhar, host, bloqueado])
   return {
     mensagem,
     erro,
