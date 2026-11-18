@@ -10,6 +10,7 @@ import {
   type TilemapAsset,
   type TilemapLayer,
 } from '../../core/project'
+import { PINTA_SCENE_SCHEMA } from '../../core/projectConfig'
 import { quantizeFrames } from '../../core/quantizeFrames'
 import { decodeImageFile } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
@@ -131,7 +132,7 @@ export async function sceneToNative(
     const asset = sanitizePintaAsset({
       id: set.id,
       kind: 'map-set',
-      schema: 3,
+      schema: PINTA_SCENE_SCHEMA,
       name: `conjunto-${assets.length}`,
       createdAt: now,
       updatedAt: now,

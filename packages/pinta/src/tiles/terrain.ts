@@ -3,6 +3,7 @@ import {
   effectiveLayer,
   type TilemapAsset,
   type TileTerrain,
+  withPintaSchemaStamp,
 } from '../core/project'
 import { cellTile, makeCell } from './cell'
 import type { CellPos } from './cellGeometry'
@@ -125,9 +126,9 @@ export function terrainRegion(
   return out
 }
 export function setTilesetTerrain(ts: AnyTilesetAsset, terrain: TileTerrain): AnyTilesetAsset {
-  return {
+  // O carimbo do formato é calculado pelo que o conjunto usa, nunca escrito à mão.
+  return withPintaSchemaStamp({
     ...ts,
-    schema: 3,
     terrains: [...(ts.terrains ?? []).filter((t) => t.id !== terrain.id), terrain],
-  }
+  })
 }

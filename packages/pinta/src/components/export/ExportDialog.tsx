@@ -20,6 +20,7 @@ import {
   normalizeAssetName,
   type PintaAsset,
   resolveAssetPalette,
+  tilemapNeedsV3,
 } from '../../core/project'
 import { gifBlob, pixelAnimationGif, vectorAnimationGif } from '../../export/animationGif'
 import { assetBundleToJson } from '../../export/assetJson'
@@ -364,7 +365,7 @@ export function ExportDialog({
             <Button
               disabled={busy && mapTileset.kind === 'vector-tileset'}
               onClick={() => {
-                if (tilemap.schema === 3) {
+                if (tilemapNeedsV3(tilemap)) {
                   downloadAsyncPng(
                     exportPintaScene(
                       tilemap,

@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
 import { newId } from '../../core/id'
-import type { AnyTilesetAsset } from '../../core/project'
+import { type AnyTilesetAsset, withPintaSchemaStamp } from '../../core/project'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useEditorStores } from './editorContext'
@@ -32,7 +32,10 @@ export function TileAnimationPanel({
     if (next.length) animations[String(tile)] = next
     else delete animations[String(tile)]
     const { animations: _old, ...rest } = tileset
-    const after = { ...rest, schema: 3, ...(Object.keys(animations).length ? { animations } : {}) }
+    const after = withPintaSchemaStamp({
+      ...rest,
+      ...(Object.keys(animations).length ? { animations } : {}),
+    })
     const s = editor.getState()
     if (s.asset.id === tileset.id) s.commit(after)
     else s.commitLinked(s.asset, { before: [tileset], after: [after] })
@@ -44,7 +47,7 @@ export function TileAnimationPanel({
         onChange={(properties) => {
           const tileProperties = { ...tileset.tileProperties, [tile]: properties },
             s = editor.getState(),
-            next = { ...tileset, schema: 3, tileProperties }
+            next = withPintaSchemaStamp({ ...tileset, tileProperties })
           if (s.asset.id === tileset.id) s.commit(next)
           else s.commitLinked(s.asset, { before: [tileset], after: [next] })
         }}
