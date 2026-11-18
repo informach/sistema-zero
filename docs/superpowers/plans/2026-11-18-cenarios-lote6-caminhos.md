@@ -78,6 +78,8 @@
 
 **6.1 concluído no núcleo; próximo recorte exclusivo: 6.2, desenho, modelos e física. O lote 6 continua aberto.** Não há aba Caminhos nova entregue nem aceite artístico. As notas abaixo registram a sequência dos recortes anteriores; lotes 7–10 não iniciados.
 
+**Atualização de 6.2:** [integração ao Palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-palco.md) conecta as seis variantes ao desenho, seleção, apoios e física, com agrupamento, materiais e descarte. O ensaio local gerou capturas dia/noite e três ciclos estáveis. A prova da Faísca revelou custo de recortes distantes e bloqueio entre lajes; causas identificadas e corrigidas. **6.2 continua aberto**, principalmente para encontros sem sobreposição e pilares em modelos arqueados; não avançar a outro lote nem declarar acabamento aprovado.
+
 Primeiro recorte: [auditoria do núcleo de curvas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-auditoria.md), com reprodução/correção de valores infinitos, perda de precisão da área e alturas inválidas. Suíte do núcleo 206/8.490, motor 98/2.800 e oficina 92/595, sem falhas. **6.1 continua aberto:** contratos e geometria das seis variantes ainda pendem.
 
 [União das seis variantes e validação material](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-contratos.md) implementadas/testadas/revisadas em recorte de dados. Núcleo 212/8.517, motor 98/2.800, oficina 93/599, conversão 2/3.130 e Postgres real 39/349; tipagem conferida. **6.1 permanece aberto** até as operações/geometria/apoios/transferência. Não há interface de Caminhos entregue por este recorte.

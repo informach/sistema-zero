@@ -42,6 +42,26 @@ function area3d(p: ArrayLike<number>) {
   return soma
 }
 
+test('contornos distantes não consomem o orçamento de recorte de uma pequena peça', () => {
+  const b = {
+      ...base,
+      recortes: [
+        Array.from({ length: 256 }, (_, i) => ({
+          x: 40 + Math.cos((i * Math.PI) / 128) * 5,
+          z: 40 + Math.sin((i * Math.PI) / 128) * 5,
+        })),
+      ],
+    },
+    r = recortarMalhaNoChao(
+      parede(),
+      b,
+      abrirEdicaoDeTerreno(b, new Map()),
+      { x: 0, z: 0 },
+      { visitas: 32 },
+    )
+  expect(area3d(r.position!.valores)).toBeCloseTo(Math.SQRT2 * 2, 6)
+})
+
 test('recorte comum conserva parede vertical sobre a diagonal sem duplicar faces das duas células', () => {
   const m = parede(),
     antes = structuredClone(m),

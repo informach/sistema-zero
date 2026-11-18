@@ -85,9 +85,41 @@ export function recortarMalhaNoChao(
     vistos = new Set<string>()
   let ultimoTriangulo = -1,
     trabalho = 0
-  const dominio = dominioDoChao(base),
-    custoDoDominio =
-      base.tipo === 'terreno' ? (base.recortes ?? []).reduce((s, r) => s + r.length, 0) : 0
+  // Recortes distantes não participam desta malha. Filtrar antes da triangulação e da
+  // classificação de faces verticais evita cobrar o lago inteiro por cada laje da vila.
+  const caixa = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity }
+  for (let j = 0; j < indices.length; j++) {
+    const i = indices[j]!
+    const x = posicoes[i * 3]! + origem.x,
+      z = posicoes[i * 3 + 2]! + origem.z
+    caixa.x0 = Math.min(caixa.x0, x)
+    caixa.x1 = Math.max(caixa.x1, x)
+    caixa.z0 = Math.min(caixa.z0, z)
+    caixa.z1 = Math.max(caixa.z1, z)
+  }
+  const recortesPerto =
+      base.tipo === 'terreno'
+        ? (base.recortes ?? []).filter((r) => {
+            let x0 = Infinity,
+              x1 = -Infinity,
+              z0 = Infinity,
+              z1 = -Infinity
+            for (const p of r) {
+              x0 = Math.min(x0, p.x)
+              x1 = Math.max(x1, p.x)
+              z0 = Math.min(z0, p.z)
+              z1 = Math.max(z1, p.z)
+            }
+            return (
+              x0 <= caixa.x1 + 1e-6 &&
+              x1 >= caixa.x0 - 1e-6 &&
+              z0 <= caixa.z1 + 1e-6 &&
+              z1 >= caixa.z0 - 1e-6
+            )
+          })
+        : [],
+    dominio = dominioDoChao(base.tipo === 'terreno' ? { ...base, recortes: recortesPerto } : base),
+    custoDoDominio = recortesPerto.reduce((s, r) => s + r.length, 0)
   const anexar = (
     dados: ReturnType<typeof recortarAtributos>,
     sinal = 0,
@@ -149,7 +181,7 @@ export function recortarMalhaNoChao(
     )
   } else {
     const locais = (p: PontoNoChao) => ({ x: p.x - origem.x, z: p.z - origem.z }),
-      furos = (base.recortes ?? [])
+      furos = recortesPerto
         .flatMap((anel) => {
           const pontos = anel.map(locais),
             ids = triangularPoligono(pontos),

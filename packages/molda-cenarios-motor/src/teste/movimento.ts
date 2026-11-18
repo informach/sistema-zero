@@ -167,6 +167,8 @@ export class MovimentoDoTeste {
     const deslocamento = this.velocidade.clone().multiplyScalar(PASSO)
     let resultado = this.deslocar(this.posicao, deslocamento)
     // Autostep: testar o patamar dentro do alcance do pé antes de subir a cápsula.
+    // Numa junta de lajes, a borda arredondada da cápsula pode produzir normais para cima
+    // mesmo com avanço bloqueado. Quem autoriza a subida é o patamar físico, não esse sinal.
     const bloqueioHorizontal = Math.hypot(
       resultado.posicao.x - antes.x - deslocamento.x,
       resultado.posicao.z - antes.z - deslocamento.z,
@@ -176,47 +178,43 @@ export class MovimentoDoTeste {
       !this.nadando &&
       !saltar &&
       this.velocidade.y <= 0 &&
-      bloqueioHorizontal > 1e-5 &&
-      resultado.normais.some((n) => n.y < LIMITE_DA_INCLINACAO)
+      bloqueioHorizontal > 1e-5
     ) {
-      const alcance = new Vector3(deslocamento.x, 0, deslocamento.z)
-        .normalize()
-        .multiplyScalar(this.raio + 0.03)
-      const de = antes.clone().add(alcance)
-      de.y += this.degrau + 0.01
-      const ate = de.clone()
-      ate.y = antes.y + 0.01
-      const patamar = this.mundo.rastrear(de, ate)
-      if (
-        patamar &&
-        patamar.normal.y >= LIMITE_DA_INCLINACAO &&
-        patamar.ponto.y > antes.y + 0.01 &&
-        patamar.ponto.y <= antes.y + this.degrau
-      ) {
-        const subida = patamar.ponto.y - antes.y + 0.0001
-        const alto = this.mundo.resolver(
-          antes.clone().add(new Vector3(0, subida, 0)),
-          this.altura,
-          this.raio,
-        )
+      // Uma única sonda à frente pode cair na junta entre pedras. Conferir o apoio
+      // dentro da área real do pé evita exigir que cada peça seja um retângulo maciço.
+      for (const patamar of this.patamaresDoPasso(antes, deslocamento)) {
         if (
-          alto.posicao.y >= antes.y + subida - 1e-4 &&
-          Math.hypot(alto.posicao.x - antes.x, alto.posicao.z - antes.z) < 1e-4
+          patamar &&
+          patamar.normal.y >= LIMITE_DA_INCLINACAO &&
+          patamar.ponto.y > antes.y + 0.0001 &&
+          patamar.ponto.y <= antes.y + this.degrau
         ) {
-          const frente = this.mundo.resolver(
-            alto.posicao.clone().add(new Vector3(deslocamento.x, 0, deslocamento.z)),
+          const subida = patamar.ponto.y - antes.y + 0.0001
+          const alto = this.mundo.resolver(
+            antes.clone().add(new Vector3(0, subida, 0)),
             this.altura,
             this.raio,
           )
-          const melhora =
-            Math.hypot(
-              frente.posicao.x - antes.x - deslocamento.x,
-              frente.posicao.z - antes.z - deslocamento.z,
-            ) <
-            bloqueioHorizontal - 1e-5
-          if (melhora) {
-            resultado = frente
-            this.degrauEmCurso = patamar.ponto.clone()
+          if (
+            alto.posicao.y >= antes.y + subida - 1e-4 &&
+            Math.hypot(alto.posicao.x - antes.x, alto.posicao.z - antes.z) < 1e-4
+          ) {
+            const frente = this.mundo.resolver(
+              alto.posicao.clone().add(new Vector3(deslocamento.x, 0, deslocamento.z)),
+              this.altura,
+              this.raio,
+            )
+            const melhora =
+              Math.hypot(
+                frente.posicao.x - antes.x - deslocamento.x,
+                frente.posicao.z - antes.z - deslocamento.z,
+              ) <
+              bloqueioHorizontal - 1e-5
+            if (melhora) {
+              resultado = frente
+              this.degrauEmCurso = patamar.ponto.clone()
+              break
+            }
           }
         }
       }
@@ -287,6 +285,26 @@ export class MovimentoDoTeste {
           normais.push(n)
     }
     return { ...resultado, normais }
+  }
+  private patamaresDoPasso(antes: Vector3, deslocamento: Vector3) {
+    const frente = new Vector3(deslocamento.x, 0, deslocamento.z).normalize(),
+      lateral = new Vector3(-frente.z, 0, frente.x),
+      patamares: NonNullable<ReturnType<MundoDoTeste['rastrear']>>[] = []
+    if (!frente.lengthSq()) return patamares
+    for (const [avanco, lado] of [
+      [this.raio + 0.03, 0],
+      ...[0.25, 0.6, 0.9].flatMap((f) => [-0.5, 0, 0.5].map((l) => [f * this.raio, l * this.raio])),
+    ]) {
+      const de = antes.clone().addScaledVector(frente, avanco!).addScaledVector(lateral, lado!)
+      de.y += this.degrau + 0.01
+      const ate = de.clone()
+      // A folga é a mesma da subida validada; juntas podem deixar apenas milímetros.
+      ate.y = antes.y + 0.0001
+      const hit = this.mundo.rastrear(de, ate)
+      if (hit && !patamares.some((p) => Math.abs(p.ponto.y - hit.ponto.y) < 1e-6))
+        patamares.push(hit)
+    }
+    return patamares.sort((a, b) => a.ponto.y - b.ponto.y)
   }
   private apoiadoNoDegrau(posicao: Vector3): boolean {
     const apoio = this.degrauEmCurso

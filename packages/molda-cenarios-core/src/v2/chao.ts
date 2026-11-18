@@ -103,6 +103,9 @@ export function posicaoNoMundo(
       // Projeção autoral sem bytes não inventa a forma do terreno nem do GLB.
       if (
         (doc.base.tipo === 'terreno' && !fonte) ||
+        (fonte?.parteDoCaminho &&
+          o.apoio.parte &&
+          !fonte.parteDoCaminho(caminho.id, o.apoio.parte)) ||
         (caminho.acabamento && o.apoio.parte?.startsWith('pilar/') && !fonte?.parteDoCaminho)
       )
         return { ...p }

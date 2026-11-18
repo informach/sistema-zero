@@ -77,6 +77,8 @@ export interface Estatisticas {
 export interface OpcoesDoPalco {
   aoCapturarPontoDaAgua?(ponto: Ponto3): void
   aoSelecionarAgua?(id: string): void
+  aoSelecionarCaminho?(id: string): void
+  aoCaminhos?(estado: import('./curvas/caminhos').EstadoDosCaminhos): void
   aoAguas?(estado: import('./agua/aguas').EstadoDasAguas): void
   aoPreverTerreno?(estado: import('./escultura-tipos').EstadoDaEscultura): void
   aoEsculpir?(gesto: import('./escultura-tipos').GestoDeTerreno): void

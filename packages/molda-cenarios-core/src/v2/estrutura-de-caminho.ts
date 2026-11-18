@@ -7,6 +7,7 @@ import {
   perfilDaPonte,
 } from './curvas'
 import type { CaminhoDeCenario, Transformacao } from './documento'
+import { medidasDaPecaDeCaminho } from './medidas-de-caminho'
 import { ChaveDeParteDeCaminhoSchema } from './parametros-de-caminho'
 import type { FonteDeAlturas } from './terreno'
 import { curvaDoCaminho } from './topologia-de-caminho'
@@ -102,46 +103,17 @@ function encaixarModelo(
   ate: Ponto3,
   volume?: VolumeDeComposicao,
 ): PecaEstruturalDoCaminho {
-  if (!volume) return falhar('Confira as medidas do modelo antes de encaixá-lo no caminho.')
-  if (!c.encaixeModelo) return falhar('Escolha o eixo e confira o encaixe do modelo de caminho.')
-  const { eixo } = c.encaixeModelo,
-    transversal = eixo === 'x' ? 'z' : 'x',
-    medidas = {
-      x: volume.max.x - volume.min.x,
-      y: volume.max.y - volume.min.y,
-      z: volume.max.z - volume.min.z,
-    },
-    inicio = c.encaixeModelo.inicioLocal ?? volume.min[eixo],
-    fim = c.encaixeModelo.fimLocal ?? volume.max[eixo],
-    centroTransversal =
-      c.encaixeModelo.centroTransversalLocal ??
-      (volume.min[transversal] + volume.max[transversal]) / 2,
-    ponte = c.tipo === 'ponte',
-    baseLocal = ponte ? c.encaixeModelo.pisoLocal : (c.encaixeModelo.baseLocal ?? volume.min.y)
-  if (
-    !Object.values(volume.min).every(Number.isFinite) ||
-    !Object.values(volume.max).every(Number.isFinite) ||
-    !(medidas.x > 1e-6) ||
-    !(medidas.z > 1e-6) ||
-    medidas.y < 0 ||
-    (!ponte && !(medidas.y > 1e-6)) ||
-    baseLocal === undefined ||
-    !Number.isFinite(baseLocal) ||
-    baseLocal < volume.min.y - 1e-6 ||
-    baseLocal > volume.max.y + 1e-6
-  )
-    return falhar('As medidas, a base ou o piso local do modelo não permitem este encaixe.')
-  if (
-    !Number.isFinite(inicio) ||
-    !Number.isFinite(fim) ||
-    fim - inicio <= 1e-6 ||
-    inicio < volume.min[eixo] - 1e-6 ||
-    fim > volume.max[eixo] + 1e-6 ||
-    !Number.isFinite(centroTransversal) ||
-    centroTransversal < volume.min[transversal] - 1e-6 ||
-    centroTransversal > volume.max[transversal] + 1e-6
-  )
-    return falhar('As cabeceiras medidas precisam ficar dentro do volume original do modelo.')
+  const {
+      volume: limites,
+      eixo,
+      transversal,
+      medidas,
+      inicio,
+      fim,
+      centroTransversal,
+      baseLocal,
+    } = medidasDaPecaDeCaminho(c, volume),
+    ponte = c.tipo === 'ponte'
   const ref = referencial(de, ate, eixo),
     largura = c.largura / medidas[transversal],
     escala = {
@@ -153,9 +125,9 @@ function encaixarModelo(
     }
   escala[eixo] = ref.comprimento / (fim - inicio)
   const ancora = {
-      x: (volume.min.x + volume.max.x) / 2,
+      x: (limites.min.x + limites.max.x) / 2,
       y: baseLocal,
-      z: (volume.min.z + volume.max.z) / 2,
+      z: (limites.min.z + limites.max.z) / 2,
     },
     transformacao: Transformacao = { posicao: { x: 0, y: 0, z: 0 }, rotacao: ref.rotacao, escala },
     q = transformarPonto(
@@ -171,7 +143,7 @@ function encaixarModelo(
     chave: 'modelo/0',
     tipo: 'modelo',
     noTerreno: !ponte,
-    transformacao: conferirEnvelope(volume, transformacao),
+    transformacao: conferirEnvelope(limites, transformacao),
   }
 }
 

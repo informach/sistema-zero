@@ -21,6 +21,12 @@ for (const agua of documento.aguas) {
 const catalogo = JSON.parse(
   readFileSync(resolve(raiz, 'output/molda-cenarios/acervo/catalogo.json'), 'utf8'),
 ).modelos
+// Cópia de ensaio da importação recebe a curadoria de encaixe; fonte privada fica imutável.
+for (const caminho of documento.caminhos) {
+  const modelo = documento.modelos.find((m) => m.id === caminho.acabamento)
+  if (modelo?.digest === '65f405847e5ff3b19d6470afbd4ff5da843f61c9c3360a6b5b04e506bb7bae0f')
+    caminho.encaixeModelo = { eixo: 'x', baseLocal: 0, centroTransversalLocal: 0 }
+}
 const arquivos = Object.fromEntries(
   documento.modelos.map((ref) => {
     const m = catalogo.find((m) => m.id === ref.id && m.digest === ref.digest)

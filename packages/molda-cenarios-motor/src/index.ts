@@ -1,4 +1,5 @@
 export type { EstadoDasAguas } from './agua/aguas'
+export type { EstadoDosCaminhos } from './curvas/caminhos'
 export type * from './escultura-tipos'
 export { fotografarComposicao } from './foto-composicao'
 export { converterArquivos, type EntradaDeImportacao } from './importacao/cliente'

@@ -7,8 +7,8 @@ import {
   recortarMalhaNoChao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { BufferAttribute, BufferGeometry, Matrix4 } from 'three'
-import { transformarGeometriaEstatica } from '../geometria-instanciada'
 import type { ParteDoModelo } from '../modelos'
+import { lerParteEstatica } from './parte-estatica'
 
 export interface ParteConformada {
   geometria: BufferGeometry
@@ -40,43 +40,12 @@ export function conformarParteAoChao(
   estado: EstadoDoTerreno | null,
   origem: { x: number; z: number },
 ): ParteConformada {
-  const matriz = new Matrix4()
-      .makeTranslation(-origem.x, 0, -origem.z)
-      .multiply(mundo)
-      .multiply(parte.matriz),
-    fonte = transformarGeometriaEstatica(parte.geometria, matriz),
+  const matriz = new Matrix4().makeTranslation(-origem.x, 0, -origem.z).multiply(mundo),
+    fonte = lerParteEstatica(parte, matriz),
     geometria = new BufferGeometry()
   let descartada = false
   try {
-    const posicao = fonte.getAttribute('position'),
-      quantidade = fonte.index?.count ?? posicao.count,
-      inicio = fonte.drawRange.start,
-      numero = fonte.drawRange.count,
-      fim = numero === Infinity ? quantidade : inicio + numero
-    if (
-      !Number.isSafeInteger(inicio) ||
-      inicio < 0 ||
-      inicio % 3 ||
-      !Number.isSafeInteger(fim) ||
-      fim > quantidade ||
-      fim < inicio ||
-      (fim - inicio) % 3
-    )
-      throw Error('O intervalo de desenho da parte do modelo é inválido.')
-    const atributos = Object.fromEntries(
-        Object.entries(fonte.attributes).map(([nome, a]) => [
-          nome,
-          {
-            itemSize: a.itemSize,
-            // transformarGeometriaEstatica já decodificou atributos intercalados/normalizados.
-            valores: a.array,
-          },
-        ]),
-      ),
-      indices = fonte.index
-        ? fonte.index.array.slice(inicio, fim)
-        : Uint32Array.from({ length: fim - inicio }, (_, i) => i + inicio),
-      recorte = recortarMalhaNoChao({ atributos, indices }, base, estado, origem)
+    const recorte = recortarMalhaNoChao(fonte.malha, base, estado, origem)
     for (const [nome, a] of Object.entries(recorte))
       geometria.setAttribute(nome, new BufferAttribute(a.valores, a.itemSize))
     if (!geometria.hasAttribute('normal')) geometria.computeVertexNormals()
@@ -180,6 +149,6 @@ export function conformarParteAoChao(
     geometria.dispose()
     throw erro
   } finally {
-    fonte.dispose()
+    fonte.descartar()
   }
 }

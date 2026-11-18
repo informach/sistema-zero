@@ -14,6 +14,7 @@ import {
   dominioDoChao,
   type EncaixeDeComposicao,
   EncaixeDeComposicaoSchema,
+  type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
   lerRecursoDeTerreno,
@@ -61,6 +62,7 @@ import { AguasDoPalco, type EstadoDasAguas } from './agua/aguas'
 import { EdicaoDaAgua } from './agua/edicao'
 import { PontosDaAgua } from './agua/pontos'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
+import { CaminhosDoPalco, type EstadoDosCaminhos } from './curvas/caminhos'
 import { EspalhamentoDoPalco } from './Espalhamento'
 import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
@@ -219,6 +221,9 @@ class PalcoThree implements Palco {
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
   private readonly aguas: AguasDoPalco
+  private readonly caminhos = new CaminhosDoPalco()
+  private estadoDosCaminhos: EstadoDosCaminhos = { carregando: 0, falhas: [], avisos: [] }
+  private readonly alturaDoPlano: FonteDeAlturas = () => 0
   private readonly pontosDaAgua = new PontosDaAgua()
   private readonly edicaoDaAgua = new EdicaoDaAgua({
     prever: (operacao) => {
@@ -226,10 +231,12 @@ class PalcoThree implements Palco {
         throw Error('Aguarde o relevo antes de prever a água.')
       this.terreno.prever(operacao.terreno, operacao.regioes)
       this.aguas.atualizarTerreno(operacao.regioes)
+      this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(operacao.regioes))
     },
     restaurar: () => {
       this.terreno?.cancelarPrevia()
       this.aguas.atualizarTerreno()
+      this.caminhos.atualizarTerreno()
     },
   })
   private estadoDasAguas: EstadoDasAguas = { carregando: 0, falhas: [] }
@@ -288,7 +295,7 @@ class PalcoThree implements Palco {
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = PCFShadowMap
     this.aguas = new AguasDoPalco(this.renderer.capabilities.maxTextureSize)
-    this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo)
+    this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo, this.caminhos.grupo)
 
     this.camera.position.set(16, 13, 20)
     this.cena.fog = opcoes.fotografia ? null : this.nevoa
@@ -420,6 +427,7 @@ class PalcoThree implements Palco {
       aoEstado: (estado) => this.opcoes.aoPreverTerreno?.(estado),
       aoAtualizar: (regioes) => {
         this.aguas.atualizarTerreno(regioes)
+        this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(regioes))
         if (!this.destruido) this.reconstruir()
       },
       aplicar: (gesto) => {
@@ -604,7 +612,7 @@ class PalcoThree implements Palco {
         x: superficie.ponto.x,
         y: superficie.ponto.y,
         z: superficie.ponto.z,
-        apoio: this.apoiarNaSuperficie(superficie.id, superficie.ponto),
+        apoio: this.apoiarNaSuperficie(superficie.id, superficie.ponto, superficie.parte),
       }
     }
     if (!ponto) return null
@@ -628,7 +636,11 @@ class PalcoThree implements Palco {
   }
 
   fonteDeAlturas() {
-    return this.terreno?.altura
+    const fonte =
+      this.terreno?.altura ??
+      (this.documento?.base.tipo === 'plano' ? this.alturaDoPlano : undefined)
+    if (fonte) fonte.parteDoCaminho = (id, chave) => this.caminhos.parte(id, chave)
+    return fonte
   }
   estadoDoTerreno() {
     return this.terreno ? clonarEstadoDoTerreno(this.terreno.estado) : null
@@ -772,6 +784,11 @@ class PalcoThree implements Palco {
           this.estadoDasAguas.falhas[0]?.mensagem ??
             'Espere a água e suas margens terminarem de carregar.',
         )
+      if (this.estadoDosCaminhos.carregando || this.estadoDosCaminhos.falhas.length)
+        throw new Error(
+          this.estadoDosCaminhos.falhas[0]?.mensagem ??
+            'Espere os caminhos terminarem de carregar.',
+        )
       controle.signal.throwIfAborted()
       if (config.modelo) {
         const bytes = await conferirConteudoDoModelo(
@@ -785,6 +802,7 @@ class PalcoThree implements Palco {
       personagem = new PersonagemDoTeste(modelo, config)
       const chao = this.terreno?.fontesDoTeste() ?? []
       chao.push(...this.aguas.fontesDoTeste())
+      chao.push(...this.caminhos.fontesDoTeste())
       if (this.planoFisico) {
         this.planoFisico.updateWorldMatrix(true, false)
         chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
@@ -920,14 +938,20 @@ class PalcoThree implements Palco {
     this.atualizarAlca()
   }
 
-  private apoiarNaSuperficie(id: string, ponto: Vector3) {
+  private apoiarNaSuperficie(id: string, ponto: Vector3, parte?: string) {
     const doc = this.documento!
     // Medidas legadas são lidas do GLB para a consulta. O host confirma e grava essas mesmas
     // medidas no lote de colocação/gesto, junto do novo apoio, sem alterar o documento aqui.
     const modelos = doc.modelos.map((m) =>
       m.volume ? m : { ...m, volume: this.volumeDoModelo(m.id) ?? undefined },
     )
-    return apoioNaSuperficie({ ...doc, modelos }, id, ponto, this.fonteDeAlturas())
+    if (!parte && doc.caminhos.some((c) => c.id === id))
+      return {
+        tipo: 'terreno' as const,
+        deslocamento: ponto.y - alturaDoChao(doc.base, ponto.x, ponto.z, this.fonteDeAlturas()),
+        inclinar: false,
+      }
+    return apoioNaSuperficie({ ...doc, modelos }, id, ponto, this.fonteDeAlturas(), parte)
   }
 
   enquadrar(ids?: readonly string[]): void {
@@ -937,11 +961,16 @@ class PalcoThree implements Palco {
       return
     }
     const caixa = new Box3()
-    const escolhidos = ids?.length ? ids : [...this.alvos.keys()]
+    const escolhidos = ids?.length
+      ? ids
+      : [...this.alvos.keys(), ...(this.documento?.caminhos.map((c) => c.id) ?? [])]
     const cantos = new Box3()
     for (const id of escolhidos) {
       const local = this.alvos.get(id)
-      if (!local) continue
+      if (!local) {
+        caixa.union(this.caminhos.limitesDo(id, cantos))
+        continue
+      }
       caixa.union(cantos.copy(local.caixa).applyMatrix4(local.matriz))
     }
     const esfera = new Sphere()
@@ -1026,6 +1055,7 @@ class PalcoThree implements Palco {
     this.escultura.descartar()
     this.pontosDaAgua.descartar()
     this.aguas.descartar()
+    this.caminhos.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
@@ -1177,6 +1207,7 @@ class PalcoThree implements Palco {
 
   private limparChao() {
     this.aguas.limpar()
+    this.caminhos.limpar()
     this.planoFisico = null
     this.fundoDecorativo = null
     this.cargaDoTerreno?.abort()
@@ -1312,6 +1343,7 @@ class PalcoThree implements Palco {
       if (vivos.has(digest)) continue
       if (estado.estado === 'pronto') {
         this.aguas.esquecerModelo(estado.modelo)
+        this.caminhos.esquecerModelo(estado.modelo)
         estado.representacoes.descartar()
         estado.modelo.descartar()
       }
@@ -1371,10 +1403,24 @@ class PalcoThree implements Palco {
 
   private reconstruir() {
     if (this.documento) {
-      const projecao = resolverConjuntos(
-        this.edicaoDaAgua.projetar(this.documento),
-        this.fonteDeAlturas(),
+      const autoral = this.edicaoDaAgua.projetar(this.documento),
+        organizacao = indiceDaOrganizacao(autoral),
+        texturas = new Map(autoral.texturas?.map((t) => [t.id, t]))
+      this.estadoDosCaminhos = this.caminhos.definir(
+        autoral,
+        this.terreno,
+        (id) => {
+          const e = this.estadoDoModelo(id, autoral)
+          return e?.estado === 'pronto' ? e.modelo : null
+        },
+        (id) => {
+          const ref = texturas.get(id)
+          return ref ? (this.texturas.obter(ref.digest)?.textura ?? null) : null
+        },
+        idsEscondidos(autoral, organizacao),
       )
+      this.opcoes.aoCaminhos?.(this.estadoDosCaminhos)
+      const projecao = resolverConjuntos(autoral, this.fonteDeAlturas())
       this.visual = projecao.documento
       this.origens = projecao.origens
     }
@@ -1490,7 +1536,7 @@ class PalcoThree implements Palco {
         })
       }
     }
-    this.superficies.definir(superficies)
+    this.superficies.definir([...superficies, ...this.caminhos.superficies()])
     this.alvos = criarAlvosDeEdicao(
       this.documento!,
       this.locais,
@@ -1523,7 +1569,11 @@ class PalcoThree implements Palco {
     let n = 0
     for (const id of this.selecao) {
       const local = this.alvos.get(id)
-      if (!local) continue
+      if (!local) {
+        const caixa = this.caminhos.limitesDo(id, new Box3())
+        if (!caixa.isEmpty() && ++n <= 400) this.contornos.por(new Matrix4(), caixa)
+        continue
+      }
       if (++n > 400) break
       this.contornos.por(local.matriz, local.caixa)
     }
@@ -1679,7 +1729,7 @@ class PalcoThree implements Palco {
         gesto.apoios.set(
           id,
           usarObjeto
-            ? this.apoiarNaSuperficie(acerto.id, acerto.ponto)
+            ? this.apoiarNaSuperficie(acerto.id, acerto.ponto, acerto.parte)
             : { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
         )
       }
@@ -1743,6 +1793,14 @@ class PalcoThree implements Palco {
       return
     }
     const id = objeto?.id
+    if (
+      id &&
+      this.documento?.caminhos.some((c) => c.id === id) &&
+      this.opcoes.aoSelecionarCaminho
+    ) {
+      this.opcoes.aoSelecionarCaminho(id)
+      return
+    }
     this.opcoes.aoSelecionar?.(
       id ? (this.origens.get(id) ?? id) : null,
       evento.shiftKey || evento.ctrlKey || evento.metaKey,
