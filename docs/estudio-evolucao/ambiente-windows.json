@@ -1,0 +1,14 @@
+{
+  "measuredAt": "2026-11-18T01:14:17.120Z",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "arch": "x64",
+  "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+  "logicalCpus": 12,
+  "memoryBytes": 34142584832,
+  "node": "v24.15.0",
+  "playwright": "1.60.0",
+  "bun": "1.3.11",
+  "reference": "d9ebd3fefe174530c7daf08340f72ceb78ac8258",
+  "physicalDevicesTested": false
+}

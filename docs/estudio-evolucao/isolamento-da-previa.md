@@ -4,6 +4,11 @@ Estado em 17/11/2026. Tudo abaixo foi medido neste ambiente: Chromium 153 sem in
 **Firefox, Safari (WebKit), Android e iPad não foram medidos** (os navegadores não estão
 instalados aqui e não há aparelho). Onde o texto diz "isolado", leia "isolado no Chromium de mesa".
 
+Este é o registro da sessão inicial. A continuação no Windows mediu os três engines de
+laboratório, distinguiu Chromium completo de headless shell e encontrou uma falha de reinício
+também na referência original. Resultados novos: [`diagnostico-windows.md`](diagnostico-windows.md).
+Nenhuma das duas sessões homologa aparelhos móveis físicos.
+
 ## B0: a medição que mudou o desenho
 
 `packages/studio/scripts/measure-preview-isolation.mjs` usa páginas mínimas com o mesmo arranjo de
@@ -83,18 +88,24 @@ tira a marca; recarregar com a página viva roda sozinho como sempre; com a marc
 Limites, ditos com clareza:
 - a marca que o teste usa é posta à mão: não há aqui um navegador sem isolamento para congelar a
   aba de verdade;
-- "salvar antes de cada Rodar" não foi feito. O salvamento automático (1 s depois da edição, 5 s
-  no máximo) continua sendo o que protege o trabalho; uma edição feita no último segundo antes de
-  uma queda pode se perder;
+- na sessão inicial, "salvar antes de cada Rodar" não estava implementado. A continuação agora
+  drena os buffers e aguarda o serviço existente antes de Rodar/Rodar de novo. Parar cancela a
+  execução solicitada, sem cancelar a gravação; mudança de projeto, autoridade ou revisão e
+  falhas impedem uma execução tardia. O documento anterior permanece enquanto a gravação está
+  pendente, para o debounce automático não executar a revisão antes da confirmação;
+- fora de um comando explícito, a atualização automática ainda segue o autosave (1 s depois da
+  edição, 5 s no máximo); uma queda antes dessa gravação ainda pode perder a última edição;
 - um jogo que só trava depois de alguns segundos rodando (passou dos três batimentos) não deixa
   marca.
 
 ## O que falta no pacote B
 
-- **Salvar antes de rodar:** ver os limites do B1 acima. Não feito.
+- **Salvar antes de rodar:** implementado nos comandos explícitos; falta homologar o fluxo pelo
+  app conectado e a troca real de perfil, além das provas de laboratório.
 - **B2 (casca em outra origem):** só faz sentido medir e decidir depois de saber o que acontece no
   Firefox, no Safari e no Android. Depende também de um fato de deploy: o domínio do
-  `studio-runtime` precisa ser de outro **site** em relação aos apps. Não feito; decisão dela.
+  `studio-runtime` precisa ser de outro **site** em relação aos apps. Não implementado nesta
+  continuação; a missão fornecida pela dona autoriza a evolução e não exige nova aprovação rotineira.
 - **B4 (Jogo 2D em Worker):** estudo, não feito.
 - **Outros navegadores:** rodar o script com `SZ_MEASURE_BROWSERS=chromium,firefox,webkit` numa
   máquina que os tenha, e num Android de verdade.

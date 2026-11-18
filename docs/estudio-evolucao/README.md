@@ -3,6 +3,12 @@
 Registro vivo da missão. Branch `estudio-evolucao`, criada da `staging` em `bf6e895f` (17/11/2026).
 Nada aqui foi mesclado na `staging` nem implantado.
 
+Continuação em worktree isolada, a partir de `d9ebd3fef`:
+[`plano-execucao.md`](plano-execucao.md) cobre toda a missão fornecida pela dona,
+preservando a identidade visual. [`diagnostico-windows.md`](diagnostico-windows.md)
+registra inspeção, ambiente, medições novas e limites da evidência. Etapas pendentes
+continuam pendentes; esta continuação não é a conclusão global da missão.
+
 ## Regra que bloqueia qualquer entrega
 
 Os cursos **Cadê Todo Mundo?** e **Desafio do Primeiro Jogo — A Chave do Farol** foram gravados por
@@ -35,8 +41,8 @@ isolamento pode acrescentar bytes a ele.
 | A4 | Objetivos que rodam o jogo, no executor do servidor | **feito em parte**: o executor de verdade aprova os 17; falta a prova pela página da aula (Verificar e Enviar no app) |
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
 | B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
-| B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **feito** (só Chromium) |
-| B1 | Marca de execução (não rodar sozinho depois de uma queda) | **feito**; falta salvar antes de rodar |
+| B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **parcial**: o reinício após trabalho nativo falha no Chromium 148/Windows, inclusive com os arquivos originais da branch |
+| B1 | Marca de execução e salvar antes do comando explícito de Rodar | Marca já existente; salvamento explícito implementado nesta continuação, com testes de falha/cancelamento/autoridade; atualizações automáticas ainda seguem o autosave |
 | B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
 | B4 | Estudo do Jogo 2D em Worker | pendente |
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
@@ -165,6 +171,11 @@ texto digitado no código da Ponte. Conferido com os arquivos da `staging` no lu
 branch. Não foi investigado ainda (pode ser a revisão do Chromium daqui, 1243, diferente da que o
 pacote pede, ou um defeito real); fica na lista do pacote J. Os outros 16 casos do smoke passam.
 
-### O que máquina nenhuma confere
+### Materiais e limites da conferência
 
-O PDF de passo a passo e os vídeos gravados. A matriz afirma o que está nos roteiros e nos manifestos.
+A matriz afirma o que está nos roteiros e nos manifestos. A continuação inspecionou os dois PDFs
+versionados: índice de texto das 13 e 35 páginas, leitura dirigida e cinco páginas visuais
+completas das instruções protegidas.
+Hashes e páginas inspecionadas estão em `evidencias/pdf-inventario.json`. Os vídeos gravados
+não foram acessados; não se presume o conteúdo deles. A proteção integral continua sendo a
+confirmada pela dona para os dois cursos.

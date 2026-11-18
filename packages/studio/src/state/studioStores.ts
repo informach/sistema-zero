@@ -13,6 +13,7 @@ import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
+import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
 import {
   createLocalPersistenceAdapter,
   createProjectStore,
@@ -99,17 +100,21 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
 
 // Fallback fora de um <Studio> (lista de projetos/testes): serviço sobre a
 // store default + IndexedDB, espelhando o comportamento do app standalone.
-let defaultPersistenceService: PersistenceService | null = null
+// Returning to the same namespace creates a new lifetime/signal, so the string alone is not a key.
+let defaultPersistence: { scope: ProjectStorageScope; service: PersistenceService } | null = null
 
 /** Serviço de persistência da instância atual (Salvar explícito, flush). */
 export function useStudioPersistence(): PersistenceService {
   const stores = useContext(StudioStoresContext)
   if (stores) return stores.persistence
-  defaultPersistenceService ??= createPersistenceService(
-    useProjectStore,
-    createLocalPersistenceAdapter(),
-  )
-  return defaultPersistenceService
+  const scope = captureProjectStorageScope()
+  if (defaultPersistence?.scope !== scope) {
+    defaultPersistence = {
+      scope,
+      service: createPersistenceService(useProjectStore, createLocalPersistenceAdapter()),
+    }
+  }
+  return defaultPersistence.service
 }
 
 /** Buffers de edição que devem ser materializados antes de expor um snapshot. */

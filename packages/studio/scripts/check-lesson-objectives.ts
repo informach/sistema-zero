@@ -66,7 +66,13 @@ async function executar(): Promise<Map<string, boolean>> {
   const playwright = dirname(
     dirname(fileURLToPath(import.meta.resolve('playwright-core/package.json'))),
   )
-  symlinkSync(playwright, join(runtime, 'node_modules'), 'dir')
+  // Windows directory symlinks require privileges; junctions provide the same local
+  // directory resolution for the copied executor without elevating the test process.
+  symlinkSync(
+    playwright,
+    join(runtime, 'node_modules'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  )
   for (const nome of readdirSync(dirname(executor)).filter((n) => n.endsWith('.mjs')))
     writeFileSync(join(runtime, nome), readFileSync(join(dirname(executor), nome)))
   const scope = createCheckScope()

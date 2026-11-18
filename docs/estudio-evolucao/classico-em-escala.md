@@ -1,5 +1,11 @@
 # Clássico em escala (pacote C)
 
+As tabelas abaixo pertencem à sessão inicial no Linux. A continuação registra resultados novos
+e condições em [`diagnostico-windows.md`](diagnostico-windows.md). O script atual aceita
+`SZ_PROFILE_SAMPLES` (31 por padrão), mantém as amostras no JSON v2, calcula p50/p95 por rodada
+e separa a criação da fixture da carga do modelo. Não comparar esses números com as tabelas
+históricas como se fossem um antes/depois da mesma máquina.
+
 ## C0: quanto custa cada edição de bloco (17/11/2026)
 
 `packages/studio/scripts/profile-js-classic.ts` mede, num Blockly **sem tela**, as etapas que o

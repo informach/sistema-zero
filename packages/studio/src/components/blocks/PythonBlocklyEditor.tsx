@@ -3,6 +3,7 @@ import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
+import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import {
   MORE_BLOCKS_KIND,
   type MoreBlocksWorkspace,
@@ -369,6 +370,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       horizontal ? 'horizontal' : 'vertical',
     )
     const workspace = Blockly.inject(element, {
+      media: BLOCKLY_MEDIA_PATH,
       toolbox: observer ? undefined : currentTools.current,
       readOnly: observer,
       renderer: 'zelos',
