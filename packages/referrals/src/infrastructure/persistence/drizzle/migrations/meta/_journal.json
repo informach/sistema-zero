@@ -78,6 +78,13 @@
       "when": 1794767322906,
       "tag": "0010_gift-offer",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795015300706,
+      "tag": "0011_gift-slot",
+      "breakpoints": true
     }
   ]
 }
