@@ -1,4 +1,8 @@
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type DocumentoDeCenario,
+  type FonteDeAlturas,
+  posicaoDaMontagem,
+} from '@sistemazero/molda-cenarios-core/v2'
 import { Box3, Euler, Matrix4, Quaternion, Vector3 } from 'three'
 import type { LoteDoModelo } from './lotes'
 
@@ -21,6 +25,7 @@ export function criarAlvosDeEdicao(
   autoral: DocumentoDeCenario,
   locais: ReadonlyMap<string, LocalDoObjeto>,
   origens: ReadonlyMap<string, string>,
+  fonte?: FonteDeAlturas,
 ): Map<string, AlvoDeEdicao> {
   const alvos = new Map<string, AlvoDeEdicao>(),
     partes = new Map<string, { id: string; local: LocalDoObjeto }[]>()
@@ -43,8 +48,9 @@ export function criarAlvosDeEdicao(
     const filhos = partes.get(m.id)
     if (!filhos?.length) continue
     const t = m.transformacao
+    const p = posicaoDaMontagem(autoral, m, fonte)
     const matriz = new Matrix4().compose(
-      new Vector3(t.posicao.x, t.posicao.y, t.posicao.z),
+      new Vector3(p.x, p.y, p.z),
       new Quaternion().setFromEuler(new Euler(t.rotacao.x, t.rotacao.y, t.rotacao.z, 'XYZ')),
       new Vector3(t.escala.x, t.escala.y, t.escala.z),
     )

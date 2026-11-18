@@ -28,6 +28,18 @@ export const DefinicaoDeConjuntoSchema = z
 export const MontagemDeConjuntoSchema = GrupoSchema.extend({
   id: IdentificadorDeCenarioSchema.max(160),
   definicao: IdentificadorDeCenarioSchema,
+  /** Ausente nos conjuntos livres; o vínculo usa a mesma altura do terreno que os objetos. */
+  apoio: z
+    .discriminatedUnion('tipo', [
+      z.object({ tipo: z.literal('absoluto') }).strict(),
+      z
+        .object({
+          tipo: z.literal('terreno'),
+          deslocamento: z.number().finite().min(-10000).max(10000),
+        })
+        .strict(),
+    ])
+    .optional(),
   transformacao: TransformacaoSchema.refine(
     (t) => t.escala.x === t.escala.y && t.escala.y === t.escala.z,
     'O tamanho do conjunto precisa preservar suas proporções',

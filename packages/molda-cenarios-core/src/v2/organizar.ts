@@ -1,5 +1,11 @@
 import { CenarioInvalido } from '../validacao'
-import { alteracoesDoGesto, alturaDoChao, posicaoNoMundo } from './chao'
+import {
+  alteracoesDoGesto,
+  alteracoesDoGestoDaMontagem,
+  alturaDoChao,
+  posicaoDaMontagem,
+  posicaoNoMundo,
+} from './chao'
 import type { ComandoDeCenario } from './comandos'
 import { quantidadeDeObjetosDoCenario, volumeDaMontagem } from './conjuntos'
 import {
@@ -151,7 +157,7 @@ export function volumeNoMundo(
   o: EntidadeTransformavel,
   fonte?: FonteDeAlturas,
 ): VolumeDeComposicao {
-  if ('definicao' in o) return volumeDaMontagem(doc, o)
+  if ('definicao' in o) return volumeDaMontagem(doc, o, fonte)
   const volume = volumeDaReferencia(doc, o.modelo)
   if (!volume)
     throw new CenarioInvalido([`Traga novamente o modelo para conferir suas medidas: ${o.nome}`])
@@ -165,13 +171,14 @@ function mover(
   delta: number,
   fonte?: FonteDeAlturas,
 ): ComandoDeCenario {
-  const posicao = 'definicao' in o ? { ...o.transformacao.posicao } : posicaoNoMundo(doc, o, fonte)
+  const posicao =
+    'definicao' in o ? posicaoDaMontagem(doc, o, fonte) : posicaoNoMundo(doc, o, fonte)
   posicao[eixo] += delta
   if ('definicao' in o)
     return {
       tipo: 'montagem.atualizar',
       id: o.id,
-      alteracoes: { transformacao: { ...o.transformacao, posicao } },
+      alteracoes: alteracoesDoGestoDaMontagem(doc, o, { ...o.transformacao, posicao }, fonte),
     }
   return {
     tipo: 'instancia.atualizar',
@@ -299,7 +306,8 @@ export function repetirObjetos(
   for (let i = 0; i < receita.copias; i++)
     for (const o of objetos) {
       const copia = structuredClone(o),
-        posicao = 'definicao' in o ? { ...o.transformacao.posicao } : posicaoNoMundo(doc, o, fonte)
+        posicao =
+          'definicao' in o ? posicaoDaMontagem(doc, o, fonte) : posicaoNoMundo(doc, o, fonte)
       const transformacao: Transformacao = { ...structuredClone(o.transformacao), posicao }
       if (receita.tipo === 'fila')
         for (const eixo of ['x', 'y', 'z'] as const)
@@ -318,7 +326,7 @@ export function repetirObjetos(
       copia.nome = `${o.nome.slice(0, 108)} ${i + 2}`
       copia.bloqueado = false
       if ('definicao' in copia) {
-        copia.transformacao = transformacao
+        Object.assign(copia, alteracoesDoGestoDaMontagem(doc, copia, transformacao, fonte))
         comandos.push({ tipo: 'montagem.definir', montagem: copia })
         continue
       }

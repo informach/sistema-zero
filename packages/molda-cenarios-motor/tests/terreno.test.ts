@@ -2,12 +2,14 @@ import { expect, test } from 'bun:test'
 import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
+  clonarCampo,
   codificarBuracosDaPeca,
   codificarPecaDeAlturas,
   codificarPecaDePintura,
   codificarRecursoDeBuracos,
   criarBuracos,
   criarPinturaDeChao,
+  elevarTerreno,
   furarTerreno,
   lerRecursoDeTerreno,
   pintarChao,
@@ -41,6 +43,115 @@ const peca = (ox: number) =>
     ),
   )
 const raio = (x: number, z: number) => new Raycaster(new Vector3(x, 1000, z), new Vector3(0, -1, 0))
+const copiarEstado = (terreno: TerrenoDoPalco) => ({
+  campo: clonarCampo(terreno.estado.campo),
+  pintura: { ...terreno.estado.pintura, pesos: terreno.estado.pintura.pesos.slice() },
+  buracos: { ...terreno.estado.buracos, celulas: terreno.estado.buracos.celulas.slice() },
+})
+
+test('prévia muda só as peças atingidas, consulta a altura nova e cancela sem alterar os recursos', () => {
+  const b = {
+    ...base([]),
+    colunas: 192,
+    min: 0,
+    max: 255,
+    pecas: [0, 1, 2].map((coluna) => ({ coluna, linha: 0, digest: a })),
+  }
+  const recurso = lerRecursoDeTerreno(codificarPecaDeAlturas(new Float64Array(65 * 65), 0, 255))
+  const terreno = new TerrenoDoPalco(b, new Map([[a, recurso]]))
+  const original = terreno.estado,
+    distante = terreno.fontesDoTeste()[2]!.geometria,
+    estado = copiarEstado(terreno)
+  const alturas = elevarTerreno(estado.campo, { x: -490, z: 278, raio: 8, forca: 1 }, 3)
+  try {
+    terreno.prever(estado, { alturas })
+    expect(terreno.altura(-490, 278)).toBeCloseTo(3, 4)
+    expect(terreno.pontoSobRaio(raio(-490, 278))?.y).toBeCloseTo(3, 4)
+    expect(terreno.pontoParaEditar(raio(-490, 278), true)?.y).toBeCloseTo(0, 4)
+    expect(terreno.pontoParaEditar(raio(-490, 278))?.y).toBeCloseTo(3, 4)
+    expect(terreno.fontesDoTeste().some((f) => f.geometria === distante)).toBe(true)
+    expect(original.campo.alturas.every((v) => v === 0)).toBe(true)
+    terreno.cancelarPrevia()
+    expect(terreno.estado).toBe(original)
+    expect(terreno.altura(-490, 278)).toBe(0)
+    expect(terreno.pontoSobRaio(raio(-490, 278))?.y).toBe(0)
+    expect(terreno.fontesDoTeste().some((f) => f.geometria === distante)).toBe(true)
+  } finally {
+    terreno.descartar()
+  }
+})
+
+test('consulta de edição encontra o campo sob uma abertura sem acrescentar piso físico', () => {
+  const b = base([])
+  b.buracos = [{ coluna: 0, linha: 0, digest: a }]
+  const terreno = new TerrenoDoPalco(
+    b,
+    new Map([[a, lerRecursoDeTerreno(codificarRecursoDeBuracos(new Uint8Array(512).fill(255)))]]),
+  )
+  try {
+    const antes = terreno.fontesDoTeste().map((f) => f.geometria)
+    expect(terreno.pontoSobRaio(raio(-500, 268))).toBeNull()
+    expect(terreno.pontoParaEditar(raio(-500, 268))?.y).toBe(0)
+    expect(terreno.pontoSobRaio(raio(-500, 268))).toBeNull()
+    expect(terreno.fontesDoTeste().map((f) => f.geometria)).toEqual(antes)
+  } finally {
+    terreno.descartar()
+  }
+})
+
+test('a consulta de edição coincide com os triângulos vistos em raios oblíquos e nas divisas', () => {
+  const terreno = new TerrenoDoPalco(
+    base([
+      { coluna: 0, linha: 0, digest: a },
+      { coluna: 1, linha: 0, digest: b },
+    ]),
+    new Map([
+      [a, peca(0)],
+      [b, peca(64)],
+    ]),
+  )
+  try {
+    for (const [origem, destino] of [
+      [new Vector3(-600, 60, 450), new Vector3(-400, terreno.altura(-400, 300), 300)],
+      [new Vector3(-200, 60, 320), new Vector3(-350, terreno.altura(-350, 320), 320)],
+      [new Vector3(-384, 100, 300), new Vector3(-384, 0, 300)],
+      [new Vector3(-384, 60, 440), new Vector3(-384, terreno.altura(-384, 300), 300)],
+    ]) {
+      const r = new Raycaster(origem!, destino!.clone().sub(origem!).normalize()),
+        visto = terreno.pontoSobRaio(r),
+        editado = terreno.pontoParaEditar(r)
+      expect(visto).not.toBeNull()
+      expect(editado).not.toBeNull()
+      expect(editado!.distanceTo(visto!)).toBeLessThan(0.0001)
+      r.far = 0.001
+      expect(terreno.pontoParaEditar(r)).toBeNull()
+    }
+  } finally {
+    terreno.descartar()
+  }
+})
+
+test('pintar uma peça de fundo não importa a altura da peça vizinha', () => {
+  const b = base([{ coluna: 0, linha: 0, digest: a }])
+  b.solo = { camadas: [{ id: 'a', nome: 'Grama', cor: '#ffffff' }], pecas: [] }
+  const terreno = new TerrenoDoPalco(
+    b,
+    new Map([
+      [a, lerRecursoDeTerreno(codificarPecaDeAlturas(new Float64Array(65 * 65).fill(5), 0, 255))],
+    ]),
+  )
+  try {
+    const estado = copiarEstado(terreno)
+    const pintura = pintarChao(b, estado.pintura, { x: -382, z: 278, raio: 2, forca: 1 }, 0)
+    terreno.prever(estado, { pintura })
+    expect(terreno.altura(-382, 278)).toBe(0)
+    expect(terreno.pontoSobRaio(raio(-382, 278))?.y).toBe(0)
+    terreno.cancelarPrevia()
+    expect(terreno.pontoSobRaio(raio(-382, 278))?.y).toBe(0)
+  } finally {
+    terreno.descartar()
+  }
+})
 
 test('máscara e recorte retiram as mesmas faces da vista, seleção, cápsula e câmera', () => {
   const terrenoBase = base([])

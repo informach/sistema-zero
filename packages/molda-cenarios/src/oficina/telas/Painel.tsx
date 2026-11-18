@@ -1,6 +1,8 @@
 import {
   alteracoesDoGesto,
+  alteracoesDoGestoDaMontagem,
   alterarElemento,
+  alturaDoChao,
   COLISOES,
   type Colisao,
   type ComandoDeCenario,
@@ -12,6 +14,7 @@ import {
   indiceDaOrganizacao,
   LIMITES_CENARIO_V2,
   type MontagemDeConjunto,
+  posicaoDaMontagem,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Eye, EyeOff, Lock, LockOpen } from 'lucide-react'
@@ -322,23 +325,56 @@ function PainelDaMontagem({
   montagem,
   executar,
   aoEditar,
+  fonte,
 }: {
   documento: DocumentoDeCenario
   montagem: MontagemDeConjunto
   executar(comandos: ComandoDeCenario[]): void
   aoEditar?(): void
+  fonte?: FonteDeAlturas
 }): JSX.Element {
   const flags = indiceDaOrganizacao(documento).flags.get(montagem.id),
     trancado = Boolean(flags?.bloqueado)
   const definicao = documento.definicoesConjuntos?.find((d) => d.id === montagem.definicao),
-    t = montagem.transformacao
+    t = { ...montagem.transformacao, posicao: posicaoDaMontagem(documento, montagem, fonte) }
   const atualizar = (alteracoes: Partial<Omit<MontagemDeConjunto, 'id'>>) =>
-    executar([{ tipo: 'montagem.atualizar', id: montagem.id, alteracoes }])
+    executar([
+      {
+        tipo: 'montagem.atualizar',
+        id: montagem.id,
+        alteracoes: {
+          ...(alteracoes.transformacao
+            ? alteracoesDoGestoDaMontagem(documento, montagem, alteracoes.transformacao, fonte)
+            : {}),
+          ...alteracoes,
+        },
+      },
+    ])
   return (
     <div className="mcn-painel-corpo">
       <p className="text-sm text-mld-muted">
         {definicao?.nome ?? montagem.nome} · versão {definicao?.revisao}
       </p>
+      <label className="mcn-marcar">
+        <input
+          type="checkbox"
+          checked={montagem.apoio?.tipo === 'terreno'}
+          disabled={trancado}
+          onChange={(e) =>
+            atualizar({
+              transformacao: t,
+              apoio: e.target.checked
+                ? {
+                    tipo: 'terreno',
+                    deslocamento:
+                      t.posicao.y - alturaDoChao(documento.base, t.posicao.x, t.posicao.z, fonte),
+                  }
+                : { tipo: 'absoluto' },
+            })
+          }
+        />
+        Acompanhar terreno
+      </label>
       <CampoTexto
         rotulo={COPY.painel.nome}
         valor={montagem.nome}
@@ -423,7 +459,9 @@ function PainelDaMontagem({
         type="button"
         className="sz-tool-pill sz-tool-pill--outline"
         disabled={trancado}
-        onClick={() => executar([{ tipo: 'montagem.desvincular', id: montagem.id }])}
+        onClick={() =>
+          executar([{ tipo: 'montagem.desvincular', id: montagem.id, posicao: t.posicao }])
+        }
       >
         Separar peças
       </button>
@@ -550,6 +588,7 @@ export function Painel({
           <PainelDaMontagem
             documento={documento}
             montagem={unico}
+            fonte={fonte}
             executar={executar}
             aoEditar={
               aoEditarConjunto

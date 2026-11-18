@@ -150,6 +150,7 @@ try {
                 bloqueado: false,
                 oculto: false,
                 definicao: definicao.id,
+                apoio: { tipo: 'terreno', deslocamento: 0 },
                 transformacao: {
                   posicao: { x: 0, y: 0, z: 0 },
                   rotacao: { x: 0, y: 0, z: 0 },
@@ -209,6 +210,14 @@ try {
     await tecla('Control+a')
     await abrir()
     await p.getByRole('button', { name: 'Separar peças', exact: true }).waitFor()
+    const acompanhar = p.getByRole('checkbox', { name: 'Acompanhar terreno', exact: true })
+    assert.equal(await acompanhar.isChecked(), true)
+    await acompanhar.uncheck()
+    await salvo()
+    assert.equal((await ler()).documento.montagens[0].apoio.tipo, 'absoluto')
+    await acompanhar.check()
+    await salvo()
+    assert.equal((await ler()).documento.montagens[0].apoio.tipo, 'terreno')
     await p.screenshot({ path: resolve(saida, `conjunto-antes-${tema}-${largura}.png`) })
     await fechar()
     await tecla('Escape')
@@ -290,6 +299,7 @@ try {
       tema,
       largura,
       modeloReal: true,
+      acompanharTerreno: true,
       toqueNaRaiz: true,
       transformacoes: true,
       tamanhoUniforme: true,

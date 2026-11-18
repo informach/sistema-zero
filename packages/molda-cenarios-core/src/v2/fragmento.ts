@@ -1,6 +1,6 @@
 import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
-import { posicaoNoMundo } from './chao'
+import { posicaoDaMontagem, posicaoNoMundo } from './chao'
 import { resolverConjuntos } from './conjuntos'
 import { LIMITES_CONJUNTOS } from './conjuntos-schema'
 import { criarDocumentoVazio, type DocumentoDeCenario, LIMITES_CENARIO_V2 } from './documento'
@@ -94,7 +94,7 @@ export function capturarFragmento(
   const objetos = doc.instancias.filter((o) => ids.has(o.id)),
     montagens = doc.montagens?.filter((m) => ids.has(m.id)) ?? [],
     montagensEscolhidas = new Set(montagens.map((m) => m.id)),
-    expandido = montagens.length ? resolverConjuntos(doc) : null,
+    expandido = montagens.length ? resolverConjuntos(doc, fonte) : null,
     volumes = [
       ...objetos.map((o) => volumeNoMundo(doc, o, fonte)),
       ...(expandido?.documento.instancias
@@ -128,7 +128,15 @@ export function capturarFragmento(
     grupos: doc.grupos.filter((g) => ids.has(g.id)),
     ...(montagens.length
       ? {
-          montagens,
+          montagens: montagens.map((m) =>
+            m.apoio?.tipo === 'terreno'
+              ? {
+                  ...m,
+                  apoio: { tipo: 'absoluto' as const },
+                  transformacao: { ...m.transformacao, posicao: posicaoDaMontagem(doc, m, fonte) },
+                }
+              : m,
+          ),
           definicoesConjuntos: doc.definicoesConjuntos?.filter((d) =>
             montagens.some((m) => m.definicao === d.id),
           ),
@@ -307,7 +315,7 @@ export function capturarConteudoDeConjunto(
   espaco: string,
   fonte?: FonteDeAlturas,
 ): FragmentoBasico {
-  const expandido = resolverConjuntos(documento).documento
+  const expandido = resolverConjuntos(documento, fonte).documento
   return validarConteudoDeConjunto(capturarFragmento(expandido, escolha, espaco, fonte), espaco)
 }
 

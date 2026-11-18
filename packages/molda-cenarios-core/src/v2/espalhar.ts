@@ -137,9 +137,10 @@ export function criarAmostradorDeEspalhamento(
   if (doc.base.tipo === 'terreno' && !fonte) falhar('Aguarde o carregamento das alturas do terreno')
   const quantidade = quantidadeDeObjetosDoCenario(doc)
   if (quantidade >= LIMITES_CENARIO_V2.objetos) falhar('O cenário atingiu o limite de objetos')
-  const temChao = dominioDoChao(structuredClone(doc.base)),
+  const dominio = dominioDoChao(structuredClone(doc.base)),
+    temChao = (p: { x: number; z: number }) => dominio(p) && (!fonte?.temChao || fonte.temChao(p)),
     volumes = r.prototipos.map((p) => structuredClone(volumeDaReferencia(doc, p.modelo)!))
-  const consulta = r.evitarObjetos ? resolverConjuntos(doc).documento : doc
+  const consulta = r.evitarObjetos ? resolverConjuntos(doc, fonte).documento : doc
   const ocupados = r.evitarObjetos
     ? consulta.instancias.map((o) => retangulo(volumeNoMundo(consulta, o, fonte)))
     : []

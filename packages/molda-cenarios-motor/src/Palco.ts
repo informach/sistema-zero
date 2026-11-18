@@ -4,17 +4,24 @@ import {
   SceneAreaSelection,
 } from '@sistemazero/molda/palco'
 import {
+  type ArquivoDeTerreno,
   alturaDoChao,
   apoioNaSuperficie,
   chaveDaBase,
+  clonarEstadoDoTerreno,
   type DocumentoDeCenario,
+  digestDosBytes,
   dominioDoChao,
   type EncaixeDeComposicao,
   EncaixeDeComposicaoSchema,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
+  lerRecursoDeTerreno,
+  MAX_BYTES_RECURSO_TERRENO,
+  MAX_RECURSOS_TERRENO,
   type ModeloDoCenario,
   type RecursoDeTerreno,
+  referenciasDoTerreno,
   resolverConjuntos,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -51,6 +58,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
 import { EspalhamentoDoPalco } from './Espalhamento'
+import { EsculturaDoPalco } from './escultura'
+import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
@@ -205,6 +214,8 @@ class PalcoThree implements Palco {
   private chaveDoChao = ''
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
+  private readonly escultura: EsculturaDoPalco
+  private gradeAntesDaEscultura: boolean | null = null
   private recursosDoTerreno: ReadonlyMap<string, RecursoDeTerreno> = new Map()
   private planoFisico: Mesh | null = null
   private fundoDecorativo: Mesh | null = null
@@ -368,6 +379,33 @@ class PalcoThree implements Palco {
       aoAplicar: (gesto) => this.opcoes.aoEspalhar?.(gesto),
     })
     this.cena.add(this.espalhamento.grupo)
+    this.escultura = new EsculturaDoPalco(canvas, {
+      documento: () => this.documento,
+      terreno: () => this.terreno,
+      ponto: (x, y) => this.pontoParaEsculpir(x, y),
+      pedirQuadro: this.pedirQuadro,
+      aoGesto: (ativo) => {
+        this.toque = null
+        this.orbita.enabled = !ativo
+        if (ativo) {
+          this.gradeAntesDaEscultura = this.grade.visible
+          this.grade.visible = false
+        } else if (this.gradeAntesDaEscultura !== null) {
+          this.grade.visible = this.gradeAntesDaEscultura
+          this.gradeAntesDaEscultura = null
+        }
+        this.informarGesto('escultura', ativo)
+      },
+      aoEstado: (estado) => this.opcoes.aoPreverTerreno?.(estado),
+      aoAtualizar: () => {
+        if (!this.destruido) this.reconstruir()
+      },
+      aplicar: (gesto) => {
+        if (!this.opcoes.aoEsculpir) throw new Error('Este ambiente não recebe edições de terreno')
+        this.opcoes.aoEsculpir(gesto)
+      },
+    })
+    this.cena.add(this.escultura.grupo)
 
     canvas.addEventListener('pointerdown', this.aoApertar)
     canvas.addEventListener('pointerup', this.aoSoltar)
@@ -381,6 +419,7 @@ class PalcoThree implements Palco {
 
   definirDocumento(documento: DocumentoDeCenario): void {
     if (this.destruido) return
+    if (this.documento !== documento) this.escultura.contextoAlterado()
     if (this.documento !== documento && (this.teste || this.preparandoTeste)) this.encerrarTeste()
     if (this.gesto) {
       // No meio de um gesto a prévia é do palco; o documento novo entra quando ele acabar.
@@ -416,6 +455,7 @@ class PalcoThree implements Palco {
   }
 
   definirModoDeSelecao(modo: ModoDeSelecao): void {
+    if (modo !== 'ponto') this.definirEscultura(null)
     if (modo !== 'ponto') this.definirEspalhamento(null)
     this.modoDeSelecao = modo
     this.area.setTool(modo === 'retangulo' ? 'box' : modo === 'laco' ? 'lasso' : 'point')
@@ -423,6 +463,7 @@ class PalcoThree implements Palco {
   }
 
   definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void {
+    if (configuracao) this.escultura?.definir(null)
     if (!this.espalhamento.definir(configuracao)) return
     if (configuracao) {
       this.modoDeSelecao = 'ponto'
@@ -562,13 +603,78 @@ class PalcoThree implements Palco {
   fonteDeAlturas() {
     return this.terreno?.altura
   }
+  estadoDoTerreno() {
+    return this.terreno ? clonarEstadoDoTerreno(this.terreno.estado) : null
+  }
+
+  definirEscultura(configuracao: ConfiguracaoDaEscultura | null) {
+    if (configuracao) {
+      this.espalhamento.definir(null)
+      this.modoDeSelecao = 'ponto'
+      this.area.setTool('point')
+    }
+    this.escultura.definir(this.teste || this.preparandoTeste ? null : configuracao)
+    this.atualizarAlca()
+  }
+  finalizarEscultura(cancelar = false) {
+    if (this.destruido) return
+    this.escultura.finalizarEnvio(cancelar)
+    if (cancelar) {
+      const base = this.documento?.base
+      const usados = new Set(
+        base?.tipo === 'terreno' ? referenciasDoTerreno(base).map((p) => p.digest) : [],
+      )
+      this.recursosDoTerreno = new Map(
+        [...this.recursosDoTerreno].filter(([digest]) => usados.has(digest)),
+      )
+    }
+    this.atualizarAlca()
+  }
+  private pontoParaEsculpir(x: number, y: number) {
+    if (!this.terreno || this.teste || this.preparandoTeste) return null
+    const caixa = this.canvas.getBoundingClientRect()
+    if (x < caixa.left || x > caixa.right || y < caixa.top || y > caixa.bottom) return null
+    this.mirar(x, y)
+    const p = this.terreno.pontoParaEditar(this.raio, true)
+    return p ? { x: p.x, y: p.y, z: p.z } : null
+  }
+
+  async prepararRecursosDoTerreno(arquivos: readonly ArquivoDeTerreno[], sinal?: AbortSignal) {
+    const origem = this.documento
+    if (this.destruido || !origem) throw new Error('Abra um cenário para preparar o terreno')
+    if (origem.base.tipo === 'terreno' && !this.terreno)
+      throw new Error('Aguarde o relevo antes de editar')
+    if (arquivos.length > MAX_RECURSOS_TERRENO) throw new Error('O terreno tem peças demais')
+    sinal?.throwIfAborted()
+    const leitura = arquivos.map(({ digest, conteudo }) => {
+      if (
+        !/^[a-f0-9]{64}$/.test(digest) ||
+        !conteudo.byteLength ||
+        conteudo.byteLength > MAX_BYTES_RECURSO_TERRENO
+      )
+        throw new Error('O recurso de terreno é inválido')
+      return { digest, conteudo: conteudo.slice() }
+    })
+    const preparados = new Map<string, RecursoDeTerreno>()
+    for (const arquivo of leitura) {
+      sinal?.throwIfAborted()
+      if ((await digestDosBytes(arquivo.conteudo)) !== arquivo.digest)
+        throw new Error('O conteúdo não corresponde ao recurso de terreno')
+      preparados.set(arquivo.digest, lerRecursoDeTerreno(arquivo.conteudo))
+    }
+    sinal?.throwIfAborted()
+    if (this.destruido || this.documento !== origem)
+      throw new DOMException('O cenário mudou durante a preparação', 'AbortError')
+    this.recursosDoTerreno = new Map([...this.recursosDoTerreno, ...preparados])
+  }
 
   async iniciarTeste(config: ConfiguracaoDoTeste, sinal?: AbortSignal): Promise<void> {
     if (this.destruido || !this.documento || !this.visual)
       throw new Error('Abra um cenário antes de testar')
     if (this.documento.base.tipo === 'perfil')
       throw new Error('Converta o relevo antes de caminhar neste cenário')
-    if (this.gesto || this.gestosAtivos.size) throw new Error('Termine o gesto antes de testar')
+    if (this.gesto || this.gestosAtivos.size || this.escultura.ocupada)
+      throw new Error('Termine o gesto antes de testar')
     this.encerrarTeste()
     const controle = new AbortController(),
       cancelar = () => controle.abort()
@@ -648,6 +754,7 @@ class PalcoThree implements Palco {
       this.orbita.enabled = false
       this.area.setTool('point')
       this.definirEspalhamento(null)
+      this.definirEscultura(null)
       this.grade.visible = false
       if (this.fundoDecorativo) this.fundoDecorativo.visible = false
       this.contornos.definirVisivel(false)
@@ -792,6 +899,8 @@ class PalcoThree implements Palco {
     if (this.destruido) return Promise.resolve(null)
     const alcaVisivel = this.ajudanteDaAlca.visible
     const previaVisivel = this.espalhamento.grupo.visible
+    const cursorDoTerreno = this.escultura.grupo.visible
+    this.escultura.grupo.visible = false
     this.espalhamento.grupo.visible = false
     this.ajudanteDaAlca.visible = false
     this.contornos.definirVisivel(false)
@@ -810,6 +919,7 @@ class PalcoThree implements Palco {
     } finally {
       this.ajudanteDaAlca.visible = alcaVisivel
       this.espalhamento.grupo.visible = previaVisivel
+      this.escultura.grupo.visible = cursorDoTerreno
       this.contornos.definirVisivel(true)
       this.pedirQuadro()
     }
@@ -821,6 +931,7 @@ class PalcoThree implements Palco {
     this.destruido = true
     this.laco.dispose()
     this.espalhamento.descartar()
+    this.escultura.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
@@ -871,6 +982,7 @@ class PalcoThree implements Palco {
     const mexeu = this.teste ? this.teste.quadro() : this.orbita.update()
     this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
+    this.escultura.quadro()
     this.ceu.position.copy(this.camera.position)
     this.posicionarSol()
     this.renderer.render(this.cena, this.camera)
@@ -1156,6 +1268,14 @@ class PalcoThree implements Palco {
   }
 
   private reconstruir() {
+    if (
+      this.documento?.montagens?.length &&
+      (this.documento.base.tipo !== 'terreno' || this.terreno)
+    ) {
+      const projecao = resolverConjuntos(this.documento, this.fonteDeAlturas())
+      this.visual = projecao.documento
+      this.origens = projecao.origens
+    }
     this.espalhamento?.recursosAlterados()
     const doc = this.visual
     if (!doc) return
@@ -1259,7 +1379,12 @@ class PalcoThree implements Palco {
       }
     }
     this.superficies.definir(superficies)
-    this.alvos = criarAlvosDeEdicao(this.documento!, this.locais, this.origens)
+    this.alvos = criarAlvosDeEdicao(
+      this.documento!,
+      this.locais,
+      this.origens,
+      this.fonteDeAlturas(),
+    )
     this.falhaDeAcabamento = falhasDeAcabamento.length > 0
     this.opcoes.aoTexturas?.({
       ...this.estadoDasTexturas,
@@ -1299,6 +1424,7 @@ class PalcoThree implements Palco {
       !this.teste &&
       !this.preparandoTeste &&
       !this.espalhamento?.habilitado &&
+      !this.escultura?.habilitado &&
       this.modoDeSelecao === 'ponto' &&
       this.ferramenta !== 'selecionar' &&
       this.ferramenta !== 'espalhar' &&

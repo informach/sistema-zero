@@ -52,12 +52,12 @@
 
 **Interfaces:** sessão de pincel recebe ferramenta/parâmetros; lê um campo no início, aplica amostras espaçadas em metros e devolve região/arquivos ao fim. A prévia só atualiza peças tocadas e vizinhas para normais. A entrada é independente da taxa de eventos. O host confirma recursos antes do comando e pode recusar a prévia.
 
-- [ ] Desenhar altura e máscara sem faces duplicadas, com normais contínuas e UV em metros; respeitar drawRange e índice de 16 bits por peça.
-- [ ] Material mistura até oito camadas de cor/textura com repetição física e pesos, recursos compartilhados e descarte explícito. Mudança de camada mantém os pesos existentes conforme as operações puras.
-- [ ] Gesto com anel/raio/força/dureza, órbita alternativa e toque. Rampa em dois pontos; aplainar lê altura inicial; nivelar/platô usam altura explícita; carimbos de morro/cratera e ruído/erosão usam parâmetros limitados.
-- [ ] Cancelar em todos os caminhos; abortar fonte velha e não aplicar resposta atrasada sobre cabeça nova. Interditar Testar/captura enquanto gesto/upload estiver ativo.
-- [ ] Reassentar apoios de terreno e raízes de conjuntos usando a mesma fonte nova, preservando offsets e relações internas. Não alterar objetos com apoio livre/objeto/água indevidamente.
-- [ ] Provar com a cápsula do lote 3: relevo atualizado, borda de peça, recorte importado e buraco pintado têm a mesma malha visual/física. Conferir recursos após ciclos.
+- [x] Desenhar altura e máscara sem faces duplicadas, com normais contínuas e UV em metros; respeitar drawRange e índice de 16 bits por peça.
+- [x] Material mistura até oito camadas de cor/textura com repetição física e pesos, recursos compartilhados e descarte explícito. Mudança de camada mantém os pesos existentes conforme as operações puras.
+- [x] Gesto com anel/raio/força/dureza, órbita alternativa e toque. Rampa em dois pontos; aplainar lê altura inicial; nivelar/platô usam altura explícita; carimbos de morro/cratera e ruído/erosão usam parâmetros limitados.
+- [x] Cancelar em todos os caminhos; abortar fonte velha e não aplicar resposta atrasada sobre cabeça nova. Interditar Testar/captura enquanto gesto/upload estiver ativo.
+- [x] Reassentar apoios de terreno e raízes de conjuntos usando a mesma fonte nova, preservando offsets e relações internas. Não alterar objetos com apoio livre/objeto/água indevidamente.
+- [x] Provar com a cápsula do lote 3: relevo atualizado, borda de peça, recorte importado e buraco pintado têm a mesma malha visual/física. Conferir recursos após ciclos.
 
 ## 4.4 — Aba Terreno e arquivos
 
@@ -65,20 +65,20 @@
 
 **Interfaces:** painel mantém estado transitório separado do documento. Ações autorais entram no controlador existente, com um histórico por gesto/receita/importação. Chãos são escolhidos na biblioteca de texturas existente. Arquivos PNG entram no codec puro, sem conversão de precisão por Canvas.
 
-- [ ] Ferramentas básicas e avançadas no rail/painel conforme PDF; receitas plano/ilha/colinas/vale com semente; parâmetros simples e controles acessíveis com unidades.
-- [ ] Tamanho, resolução, intervalo de alturas e origem com resumo de cobertura e aviso antes de cortar relevo; falha não elimina terreno anterior.
-- [ ] Lista de até oito camadas, adicionar/retirar, textura/cor/repetição, pintura manual e automática por faixa de altura/inclinação; explicitar a ordem das regras.
-- [ ] Abrir/fechar buraco pela mesma ferramenta, sem apagar recortes importados silenciosamente.
-- [ ] Importar/exportar PNG de alturas 16 bits, mapear preto/branco e mostrar mensagens claras para formatos recusados. Exportar não muda documento.
-- [ ] Preservar alturas já convertidas da Faísca e a conversão do perfil do jogo, sem repetir a geografia. Toda operação permite undo/redo após reabrir.
+- [x] Ferramentas básicas e avançadas no rail/painel conforme PDF; receitas plano/ilha/colinas/vale com semente; parâmetros simples e controles acessíveis com unidades.
+- [x] Tamanho, resolução, intervalo de alturas e origem com resumo de cobertura e aviso antes de cortar relevo; falha não elimina terreno anterior.
+- [x] Lista de até oito camadas, adicionar/retirar, textura/cor/repetição, pintura manual e automática por faixa de altura/inclinação; explicitar a ordem das regras.
+- [x] Abrir/fechar buraco pela mesma ferramenta, sem apagar recortes importados silenciosamente.
+- [x] Importar/exportar PNG de alturas 16 bits, mapear preto/branco e mostrar mensagens claras para formatos recusados. Exportar não muda documento.
+- [x] Preservar alturas já convertidas da Faísca e a conversão do perfil do jogo, sem repetir a geografia. Toda operação permite undo/redo após reabrir.
 
 ## 4.5 — Fechamento do lote
 
-- [ ] Conferir especificação item a item e corrigir lacunas próprias. Nenhum botão sem comportamento nem prévia promovida a entrega.
-- [ ] Executar suítes pertinentes, tipagem e build; repetir contratos SQL/BFF, Testar, histórico, conjuntos e pincel de objetos após integração.
-- [ ] Chrome claro/escuro em 1440/1366/1024/390 px com teclado/mouse/toque emulado; elevar/abaixar/aplainar/suavizar, receitas e avançados, pintar/automatizar, buraco, PNG e alterar resolução; salvar/reabrir/undo/redo e falha de rede.
-- [ ] Registrar capturas/vídeos, métricas de recursos e ensaio da Faísca com peças reais e apoios. Não alegar aparelhos físicos por emulação nem direção de arte aprovada.
-- [ ] Revisar, relatar, commitar/push em staging. Só então abrir lote 5. Full review, implantação e validação remotas continuam no encerramento global.
+- [x] Conferir especificação item a item e corrigir lacunas próprias. Nenhum botão sem comportamento nem prévia promovida a entrega.
+- [x] Executar suítes pertinentes, tipagem e build; repetir contratos SQL/BFF, Testar, histórico, conjuntos e pincel de objetos após integração.
+- [x] Chrome claro/escuro em 1440/1366/1024/390 px com teclado/mouse/toque emulado; elevar/abaixar/aplainar/suavizar, receitas e avançados, pintar/automatizar, buraco, PNG e alterar resolução; salvar/reabrir/undo/redo e falha de rede.
+- [x] Registrar capturas/vídeos, métricas de recursos e ensaio da Faísca com peças reais e apoios. Não alegar aparelhos físicos por emulação nem direção de arte aprovada.
+- [x] Revisar, relatar, commitar/push em staging. Só então abrir lote 5. Full review, implantação e validação remotas continuam no encerramento global.
 
 
-Recorte 4.1–4.2 implementado, testado e revisado: [contratos e persistência](../../plans/2026-11-16-cenarios-reforma/revisao-lote4-contratos-terreno.md). O lote 4 continua aberto; próximo recorte 4.3, malha/material e gestos. Nenhum lote posterior foi iniciado.
+Recorte 4.1–4.2 implementado, testado e revisado: [contratos e persistência](../../plans/2026-11-16-cenarios-reforma/revisao-lote4-contratos-terreno.md). Lote 4 implementado, testado e revisado localmente em 18/11: [fechamento e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote4-terreno.md). Próximo lote exclusivo: 5, água. Implantação e prova remota permanecem no encerramento global.

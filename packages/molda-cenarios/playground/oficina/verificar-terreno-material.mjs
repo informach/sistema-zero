@@ -91,11 +91,17 @@ try {
           texturasProntas = false,
           medidas = null,
           falha = null
+        let leituras = 0,
+          preparoRecusado = false
         const palco = criarPalco(canvas, {
           carregarModelo: async () => {
             throw new Error('Não há modelo neste ensaio')
           },
-          carregarTerreno: async () => conteudo.buffer,
+          carregarTerreno: async () => {
+            leituras++
+            if (quantidade === 4) throw Error('O servidor ainda não confirmou esse arquivo')
+            return conteudo.buffer
+          },
           carregarTextura: async () => {
             // Exercita também a textura de espera na GPU, em todos os ciclos.
             while (!terrenoPronto) await new Promise((r) => setTimeout(r, 10))
@@ -113,6 +119,16 @@ try {
             medidas = e
           },
         })
+        if (quantidade === 4) {
+          palco.definirDocumento(core.criarDocumentoVazio('qa', 'Plano'))
+          await palco
+            .prepararRecursosDoTerreno([{ digest: 'a'.repeat(64), conteudo }])
+            .catch(() => {
+              preparoRecusado = true
+            })
+          await palco.prepararRecursosDoTerreno([{ digest, conteudo }])
+          palco.finalizarEscultura()
+        }
         palco.definirDocumento(core.validarDocumento(d))
         palco.enquadrar()
         const esperar = async () => {
@@ -134,13 +150,22 @@ try {
           const plano = await esperar()
           terrenoPronto = false
           medidas = null
+          if (quantidade === 4) await palco.prepararRecursosDoTerreno([{ digest, conteudo }])
           palco.definirDocumento(d)
           const solo = await esperar()
           ciclos.push({ plano, solo })
         }
         window.__materialTerreno = palco
         window.__materialDocumento = d
-        return { quantidade, medidas: inicial, ciclos, soloPronto: terrenoPronto, texturasProntas }
+        return {
+          quantidade,
+          medidas: inicial,
+          ciclos,
+          soloPronto: terrenoPronto,
+          texturasProntas,
+          leituras,
+          preparoRecusado,
+        }
       },
       { raiz, quantidade },
     )
@@ -158,6 +183,10 @@ try {
     await p.evaluate(() => window.__materialTerreno.destruir())
     assert.deepEqual(erros, [])
     assert.ok(resultado.medidas.triangulos >= 8192)
+    if (quantidade === 4) {
+      assert.equal(resultado.leituras, 0)
+      assert.equal(resultado.preparoRecusado, true)
+    }
     writeFileSync(resolve(saida, `recursos-${quantidade}.json`), JSON.stringify(resultado, null, 2))
     for (const ciclo of resultado.ciclos) {
       for (const campo of ['geometrias', 'texturas']) {

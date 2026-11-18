@@ -46,6 +46,8 @@ export const BaseDeTerrenoSchema = z
     min: altura,
     max: altura,
     fundo: altura,
+    /** Terreno nativo editável ocupa toda a grade; importados mantêm o domínio por peças. */
+    cobertura: z.literal('grade').optional(),
     solo: z
       .object({
         camadas: z.array(CamadaDeSoloSchema).min(1).max(8),
@@ -139,7 +141,10 @@ export interface PecaDeAlturas {
   max: number
   amostras: Uint16Array
 }
-export type FonteDeAlturas = (x: number, z: number) => number
+export type FonteDeAlturas = ((x: number, z: number) => number) & {
+  /** Presença de superfície carregada, distinta da altura matemática sob buracos. */
+  temChao?: (p: { x: number; z: number }) => boolean
+}
 export class TerrenoInvalido extends Error {}
 export class PecaDeTerrenoAusente extends TerrenoInvalido {}
 const invalidar = (frase: string): never => {

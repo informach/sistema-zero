@@ -1,5 +1,6 @@
 import type {
   AmostraSemId,
+  ArquivoDeTerreno,
   DocumentoDeCenario,
   EncaixeDeComposicao,
   FonteDeAlturas,
@@ -73,6 +74,8 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoPreverTerreno?(estado: import('./escultura-tipos').EstadoDaEscultura): void
+  aoEsculpir?(gesto: import('./escultura-tipos').GestoDeTerreno): void
   aoTeste?(estado: import('./teste/tipos').EstadoDoTeste | null): void
   /** Retratos isolados de composições, sem chão, céu ou elementos de edição. */
   fotografia?: boolean
@@ -103,6 +106,13 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  definirEscultura(configuracao: import('./escultura-tipos').ConfiguracaoDaEscultura | null): void
+  finalizarEscultura(cancelar?: boolean): void
+  /** Disponibiliza bytes autorais verificados antes da confirmação do lote no servidor. */
+  prepararRecursosDoTerreno(
+    arquivos: readonly ArquivoDeTerreno[],
+    sinal?: AbortSignal,
+  ): Promise<void>
   iniciarTeste(
     configuracao: import('./teste/tipos').ConfiguracaoDoTeste,
     sinal?: AbortSignal,
@@ -127,6 +137,8 @@ export interface Palco {
   volumeDoModelo(id: string): VolumeDeComposicao | null
   /** Ausente enquanto os bytes do relevo não estão prontos; não substitui altura por zero. */
   fonteDeAlturas(): FonteDeAlturas | undefined
+  /** Cópia independente para receitas, arquivos e troca de resolução. */
+  estadoDoTerreno(): import('@sistemazero/molda-cenarios-core/v2').EstadoDoTerreno | null
   /** Enquadra os objetos dados, ou o cenário inteiro. */
   enquadrar(ids?: readonly string[]): void
   /** Uma foto do palco agora, sem as alças de edição. */

@@ -5,6 +5,7 @@ import {
   criarDocumentoVazio,
   dominioDoChao,
   executarLote,
+  type FonteDeAlturas,
   inverterLote,
   LIMITES_ESPALHAMENTO,
   materializarEspalhamento,
@@ -50,6 +51,32 @@ const comIds = (
 ) => amostras.map((a, i) => ({ ...a, id: `novo-${i}` }))
 const amostrar = (d = cena(), r = receita()) =>
   comIds(criarAmostradorDeEspalhamento(d, r).gerar().amostras)
+
+test('terreno nativo plano recebe objetos sem peças de altura, e o pincel respeita buracos carregados', () => {
+  const d = cena()
+  d.base = {
+    tipo: 'terreno',
+    cobertura: 'grade',
+    origem: { x: -32, z: -32 },
+    colunas: 64,
+    linhas: 64,
+    passo: 1,
+    min: -10,
+    max: 20,
+    fundo: 0,
+    pecas: [],
+  }
+  const altura: FonteDeAlturas = () => 0
+  expect(
+    criarAmostradorDeEspalhamento(d, receita(), altura).gerar().amostras.length,
+  ).toBeGreaterThan(0)
+  altura.temChao = (p) => p.x < 0
+  const amostras = criarAmostradorDeEspalhamento(d, receita(), altura).gerar().amostras
+  expect(amostras.length).toBeGreaterThan(0)
+  expect(amostras.every((p) => p.x < 0)).toBe(true)
+  delete d.base.cobertura
+  expect(criarAmostradorDeEspalhamento(d, receita(), altura).gerar().amostras).toEqual([])
+})
 
 test('PRNG inteiro conserva a sequência e não usa o relógio; pincel determinístico conserva a origem', () => {
   const sorteio = criarSorteio(0)

@@ -123,6 +123,7 @@ export function chaveDaBase(b: BaseDeCenario): string {
     b.min,
     b.max,
     b.fundo,
+    b.cobertura ?? null,
     [...b.pecas]
       .sort((a, c) => a.linha - c.linha || a.coluna - c.coluna)
       .map((p) => [p.coluna, p.linha, p.digest]),

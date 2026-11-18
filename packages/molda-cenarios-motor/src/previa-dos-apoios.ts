@@ -48,7 +48,10 @@ export function prepararPreviaDosApoios(
       if (objeto) {
         objeto.transformacao = t
         objeto.apoio = { tipo: 'absoluto' }
-      } else if (montagem) montagem.transformacao = t
+      } else if (montagem) {
+        montagem.transformacao = t
+        montagem.apoio = { tipo: 'absoluto' }
+      }
     }
     for (const id of dependentes) {
       const local = locais.get(id)!,

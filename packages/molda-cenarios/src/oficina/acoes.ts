@@ -1,5 +1,6 @@
 import {
   alteracoesDoGesto,
+  alteracoesDoGestoDaMontagem,
   type ComandoDeCenario,
   type DocumentoDeCenario,
   type EntidadeTransformavel,
@@ -10,6 +11,8 @@ import {
   type InstanciaDeCenario,
   LIMITES_CENARIO_V2,
   type ModeloDoCenario,
+  type MontagemDeConjunto,
+  posicaoDaMontagem,
   posicaoNoMundo,
   referenciarConjunto,
   referenciarModelo,
@@ -197,7 +200,7 @@ export function comandosParaPorConjunto(
     conteudo: versao.conteudo,
   })
   const id = novoId()
-  const montagem = {
+  const montagem: MontagemDeConjunto = {
     id,
     nome: nomeLivre(doc, conjunto.nome),
     grupo: null,
@@ -218,6 +221,14 @@ export function comandosParaPorConjunto(
     ],
   }
   montagem.transformacao.posicao.y = (ponto.y ?? 0) - volumeDaMontagem(preparado, montagem).min.y
+  if (
+    ponto.apoio?.tipo === 'terreno' ||
+    (!ponto.apoio && (doc.base.tipo === 'terreno' || !ponto.y))
+  )
+    montagem.apoio = {
+      tipo: 'terreno',
+      deslocamento: montagem.transformacao.posicao.y - (ponto.y ?? 0),
+    }
   comandos.push({ tipo: 'montagem.definir', montagem })
   return { comandos, id }
 }
@@ -299,7 +310,7 @@ export function comandosDoGesto(
   const profundidade = (id: string) => {
     let o = originais.get(id),
       n = 0
-    while (o && 'apoio' in o && o.apoio.tipo === 'objeto' && n < 64) {
+    while (o && 'apoio' in o && o.apoio?.tipo === 'objeto' && n < 64) {
       o = originais.get(o.apoio.objeto)
       n++
     }
@@ -310,11 +321,20 @@ export function comandosDoGesto(
   for (const mudanca of [...mudancas].sort((a, b) => profundidade(a.id) - profundidade(b.id))) {
     const montagem = proximo.montagens?.find((m) => m.id === mudanca.id)
     if (montagem) {
-      montagem.transformacao = mudanca.transformacao
+      const alteracoes = alteracoesDoGestoDaMontagem(
+        proximo,
+        mudanca.apoio?.tipo === 'terreno'
+          ? { ...montagem, apoio: { tipo: 'terreno', deslocamento: 0 } }
+          : montagem,
+        mudanca.transformacao,
+        fonte,
+      )
+      if (mudanca.apoio && mudanca.apoio.tipo !== 'terreno') alteracoes.apoio = { tipo: 'absoluto' }
+      Object.assign(montagem, alteracoes)
       comandos.push({
         tipo: 'montagem.atualizar',
         id: montagem.id,
-        alteracoes: { transformacao: mudanca.transformacao },
+        alteracoes,
       })
       continue
     }
@@ -342,6 +362,8 @@ export function transformacaoNoMundo(
   return {
     ...objeto.transformacao,
     posicao:
-      'apoio' in objeto ? posicaoNoMundo(doc, objeto, fonte) : { ...objeto.transformacao.posicao },
+      'definicao' in objeto
+        ? posicaoDaMontagem(doc, objeto, fonte)
+        : posicaoNoMundo(doc, objeto, fonte),
   }
 }

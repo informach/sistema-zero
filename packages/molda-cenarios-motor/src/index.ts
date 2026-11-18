@@ -1,3 +1,4 @@
+export type * from './escultura-tipos'
 export { fotografarComposicao } from './foto-composicao'
 export { converterArquivos, type EntradaDeImportacao } from './importacao/cliente'
 export * from './matematica'

@@ -3,6 +3,7 @@ import {
   amostrasDaPeca,
   type CampoDeAlturas,
   campoDaBase,
+  clonarCampo,
   criarCampoDeAlturas,
   pecasDaRegiao,
   type RegiaoDoCampo,
@@ -37,6 +38,11 @@ export interface EstadoDoTerreno {
   pintura: PinturaDeChao
   buracos: BuracosDoTerreno
 }
+export const clonarEstadoDoTerreno = (e: EstadoDoTerreno): EstadoDoTerreno => ({
+  campo: clonarCampo(e.campo),
+  pintura: { ...e.pintura, pesos: e.pintura.pesos.slice() },
+  buracos: { ...e.buracos, celulas: e.buracos.celulas.slice() },
+})
 export type PapelDaPeca = 'alturas' | 'pintura' | 'buracos'
 export interface PecaDeEdicao {
   papel: PapelDaPeca

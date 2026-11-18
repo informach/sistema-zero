@@ -2361,6 +2361,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
               bloqueado: false,
               oculto: false,
               definicao: 'def',
+              apoio: { tipo: 'terreno', deslocamento: 0 },
               transformacao: {
                 posicao: { x: i * 10, y: 0, z: 0 },
                 rotacao: { x: 0, y: i * 0.3, z: 0 },
@@ -2387,6 +2388,10 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     for (let i = 0; i < cabecas.length; i++) {
       expect(cabecas[i]!.revisao).toBe(2)
       expect(cabecas[i]!.documento.montagens![0]!.transformacao.posicao.x).toBe(i * 10)
+      expect(cabecas[i]!.documento.montagens![0]!.apoio).toEqual({
+        tipo: 'terreno',
+        deslocamento: 0,
+      })
       expect(
         cabecas[i]!.documento.definicoesConjuntos![0]!.conteudo.instancias[0]!.aparencia!.cor,
       ).toBe('#bb4477')

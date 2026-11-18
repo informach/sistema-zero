@@ -50,7 +50,7 @@ export function dominioDoChao(base: BaseDeCenario): (p: Ponto) => boolean {
     const coluna = Math.min(maxColuna, Math.floor(x / CELULAS_DA_PECA)),
       linha = Math.min(maxLinha, Math.floor(z / CELULAS_DA_PECA))
     return (
-      pecas.has(`${coluna}:${linha}`) &&
+      (base.cobertura === 'grade' || pecas.has(`${coluna}:${linha}`)) &&
       !(base.recortes ?? []).some((poligono) => noPoligono(p, poligono))
     )
   }

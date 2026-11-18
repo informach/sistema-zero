@@ -8,7 +8,12 @@ import {
   inverterLote,
 } from '@sistemazero/molda-cenarios-core/v2'
 import type { Ferramenta } from '@sistemazero/molda-cenarios-motor'
-import { type CenarioAberto, CenarioDesatualizado, type CenariosHost } from './portas'
+import {
+  type CenarioAberto,
+  CenarioDesatualizado,
+  type CenariosHost,
+  type RecursoDeTerrenoParaGravar,
+} from './portas'
 
 export type Salvamento = 'guardado' | 'guardando' | 'erro' | 'desatualizado'
 
@@ -32,6 +37,7 @@ interface Envio {
   revisaoEsperada: number
   comandos: ComandoDeCenario[]
   operacaoId: string
+  recursos?: readonly RecursoDeTerrenoParaGravar[]
 }
 
 const HISTORICO_MAXIMO = 200
@@ -40,7 +46,7 @@ export interface ControladorDaOficina {
   getState(): EstadoDaOficina
   subscribe(ouvinte: () => void): () => void
   /** Aplica um lote na hora e o põe na fila de gravação. Falso quando o lote é recusado. */
-  executar(comandos: ComandoDeCenario[]): boolean
+  executar(comandos: ComandoDeCenario[], recursos?: readonly RecursoDeTerrenoParaGravar[]): boolean
   desfazer(): Promise<void>
   refazer(): Promise<void>
   restaurar(revisao: number): Promise<void>
@@ -127,7 +133,17 @@ export function criarControlador(
       while (fila.length) {
         const envio = fila[0]!
         try {
-          await host.editarCenario(id, envio.revisaoEsperada, envio.comandos, envio.operacaoId)
+          // Repetir a reserva/envio renova o prazo após falha sem trocar a identidade da operação.
+          const recursos = envio.recursos?.length
+            ? await host.guardarRecursos(id, envio.recursos)
+            : undefined
+          await host.editarCenario(
+            id,
+            envio.revisaoEsperada,
+            envio.comandos,
+            envio.operacaoId,
+            recursos,
+          )
           fila.shift()
         } catch (erro) {
           if (erro instanceof CenarioDesatualizado) {
@@ -145,7 +161,10 @@ export function criarControlador(
   }
 
   /** Aplica localmente e enfileira. Devolve o documento de antes, ou nulo na recusa. */
-  const aplicar = (comandos: ComandoDeCenario[]): DocumentoDeCenario | null => {
+  const aplicar = (
+    comandos: ComandoDeCenario[],
+    recursos?: readonly RecursoDeTerrenoParaGravar[],
+  ): DocumentoDeCenario | null => {
     if (
       !comandos.length ||
       estado.salvamento === 'desatualizado' ||
@@ -165,7 +184,14 @@ export function criarControlador(
       emitir({ recusa: mensagemDaRecusa(erro) })
       return null
     }
-    fila.push({ revisaoEsperada: estado.revisao, comandos, operacaoId: novaOperacao() })
+    fila.push({
+      revisaoEsperada: estado.revisao,
+      comandos,
+      operacaoId: novaOperacao(),
+      ...(recursos?.length
+        ? { recursos: recursos.map((r) => ({ digest: r.digest, conteudo: r.conteudo.slice() })) }
+        : {}),
+    })
     const vivos = new Set(entidadesTransformaveis(depois.documento).map((o) => o.id))
     const selecao = estado.selecao.filter((s) => vivos.has(s))
     emitir({
@@ -267,8 +293,8 @@ export function criarControlador(
       ouvintes.add(ouvinte)
       return () => ouvintes.delete(ouvinte)
     },
-    executar(comandos) {
-      const antes = aplicar(comandos)
+    executar(comandos, recursos) {
+      const antes = aplicar(comandos, recursos)
       if (!antes) return false
       const desfazer = inverterLote(antes, estado.documento)
       if (desfazer.length) {

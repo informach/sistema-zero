@@ -97,6 +97,7 @@ import type {
 import { useConjuntos } from '../useConjuntos'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { useRetratos } from '../useRetratos'
+import { useTerreno } from '../useTerreno'
 import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
@@ -106,6 +107,7 @@ import { EscolherBibliotecas } from './Mundo'
 import { Organizacao } from './Organizacao'
 import { Organizar } from './Organizar'
 import { Painel } from './Painel'
+import { FERRAMENTAS_TERRENO_RAIL, NOMES_TERRENO, Terreno } from './Terreno'
 import { ControlesTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
 
@@ -400,6 +402,11 @@ function OficinaAberta({
   const relevoPronto =
     documento.base.tipo !== 'terreno' ||
     (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
+  const terreno = useTerreno({ controlador, palco })
+  const aoEsculpir = terreno.aoEsculpir,
+    aoPreverTerreno = terreno.aoPrever
+  const terrenoOcupado = useRef(false)
+  terrenoOcupado.current = terreno.ocupado
   const fonte = relevoPronto ? palco.current?.fonteDeAlturas?.() : undefined
   const retratos = useRetratos({
     host,
@@ -407,7 +414,7 @@ function OficinaAberta({
     estado,
     palco,
     pronto: relevoPronto && !medidas?.carregando && !texturas.carregando && !texturas.falhas.length,
-    emGesto: gestoAtivo || emEnsaio || janelaTeste,
+    emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado,
   })
 
   const executar = useCallback(
@@ -461,6 +468,8 @@ function OficinaAberta({
       },
       aoEspalhar: aoAplicarPincel,
       aoPreverEspalhamento: aoPreverPincel,
+      aoEsculpir,
+      aoPreverTerreno,
       aoGesto: setGestoAtivo,
       aoTeste: setTeste,
       aoPreverSelecao: (pontos) =>
@@ -490,9 +499,46 @@ function OficinaAberta({
       palco.current = null
       novo.destruir()
     }
-  }, [host, controlador, aberto.resumo.id, mundo.espacoId, aoAplicarPincel, aoPreverPincel])
+  }, [
+    host,
+    controlador,
+    aberto.resumo.id,
+    mundo.espacoId,
+    aoAplicarPincel,
+    aoPreverPincel,
+    aoEsculpir,
+    aoPreverTerreno,
+  ])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
+  useEffect(() => {
+    palco.current?.definirEscultura(
+      aba === 'terreno' &&
+        documento.base.tipo === 'terreno' &&
+        relevoPronto &&
+        !emEnsaio &&
+        !janelaTeste
+        ? {
+            ...terreno.parametros,
+            ...(estado.ocupado || terreno.preparando || estado.salvamento !== 'guardado'
+              ? { pausa: 'Aguarde o salvamento do cenário.' }
+              : terreno.parametros.ferramenta === 'pintar' && !documento.base.solo
+                ? { pausa: 'Adicione e guarde as camadas de chão no painel antes de pintar.' }
+                : {}),
+          }
+        : null,
+    )
+  }, [
+    aba,
+    documento.base,
+    relevoPronto,
+    emEnsaio,
+    janelaTeste,
+    terreno.parametros,
+    terreno.preparando,
+    estado.ocupado,
+    estado.salvamento,
+  ])
   useEffect(
     () =>
       palco.current?.definirEspalhamento(
@@ -672,6 +718,7 @@ function OficinaAberta({
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
       if (ensaioAtivo.current) return
+      if (terrenoOcupado.current) return
       if (evento.defaultPrevented || digitando(evento.target)) return
       const comando = evento.ctrlKey || evento.metaKey
       const tecla = evento.key.toLowerCase()
@@ -1041,6 +1088,7 @@ function OficinaAberta({
               conjuntos.ocupado ||
               conjuntosCarregando > 0 ||
               gestoAtivo ||
+              terreno.ocupado ||
               escolhendoPersonagem
             }
             onClick={() => {
@@ -1250,6 +1298,21 @@ function OficinaAberta({
                 aoTocar={() => controlador.definirEncaixe(!encaixe)}
               />
             </>
+          ) : aba === 'terreno' ? (
+            FERRAMENTAS_TERRENO_RAIL.map(([f, Icone]) => (
+              <Ladrilho
+                key={f}
+                icone={Icone}
+                rotulo={NOMES_TERRENO[f]}
+                ligado={terreno.parametros.ferramenta === f}
+                desligado={terreno.ocupado || !relevoPronto}
+                aoTocar={() => {
+                  terreno.mudar('ferramenta', f)
+                  setModoPainel('escolha')
+                  setPainelAberto(true)
+                }}
+              />
+            ))
           ) : aba === 'luz' ? (
             HORAS.map(([hora, Icone, rotulo]) => (
               <Ladrilho
@@ -1446,7 +1509,19 @@ function OficinaAberta({
             className="mld-workshop-inspector mld-bar mcn-painel"
             aria-label={COPY.painel.titulo}
           >
-            {modoPainel === 'organizacao' ? (
+            {aba === 'terreno' && modoPainel !== 'organizacao' ? (
+              <Terreno
+                terreno={terreno}
+                documento={documento}
+                host={host}
+                bibliotecas={bibliotecas}
+                indisponivel={!relevoPronto || estado.ocupado || estado.salvamento !== 'guardado'}
+                aoPintar={() => {
+                  setGavetaAberta(false)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+              />
+            ) : modoPainel === 'organizacao' ? (
               <Organizacao
                 documento={documento}
                 selecao={selecao}

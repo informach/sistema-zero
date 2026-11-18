@@ -1,4 +1,5 @@
 import { CenarioInvalido } from '../validacao'
+import type { MontagemDeConjunto } from './conjuntos-schema'
 import type {
   BaseDeCenario,
   DocumentoDeCenario,
@@ -13,6 +14,37 @@ type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
   Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias' | 'montagens'>>
 type ObjetoComModelo = Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> &
   Partial<Pick<InstanciaDeCenario, 'modelo'>>
+
+/** A projeção autoral sem bytes conserva a posição gravada; o palco usa a fonte carregada. */
+export function posicaoDaMontagem(
+  doc: Pick<DocumentoDeCenario, 'base'>,
+  m: MontagemDeConjunto,
+  fonte?: FonteDeAlturas,
+) {
+  const p = m.transformacao.posicao
+  return m.apoio?.tipo === 'terreno' && (doc.base.tipo !== 'terreno' || fonte)
+    ? { ...p, y: alturaDoChao(doc.base, p.x, p.z, fonte) + m.apoio.deslocamento }
+    : { ...p }
+}
+export function alteracoesDoGestoDaMontagem(
+  doc: Pick<DocumentoDeCenario, 'base'>,
+  m: MontagemDeConjunto,
+  mundo: Transformacao,
+  fonte?: FonteDeAlturas,
+): Partial<Omit<MontagemDeConjunto, 'id'>> {
+  return {
+    transformacao: mundo,
+    ...(m.apoio?.tipo === 'terreno'
+      ? {
+          apoio: {
+            ...m.apoio,
+            deslocamento:
+              mundo.posicao.y - alturaDoChao(doc.base, mundo.posicao.x, mundo.posicao.z, fonte),
+          },
+        }
+      : {}),
+  }
+}
 
 function elevacaoDoVolume(doc: BaseComModelos, o: ObjetoComModelo): number {
   if (
@@ -58,7 +90,7 @@ export function posicaoNoMundo(
       z: p.z,
     }
   if (o.apoio.tipo === 'objeto' && o.apoio.contato) {
-    const suporte = suporteDoObjeto(doc, o.apoio.objeto)
+    const suporte = suporteDoObjeto(doc, o.apoio.objeto, fonte)
     if (cadeia.length >= 64 || cadeia.includes(o.apoio.objeto))
       throw new CenarioInvalido(['Ciclo de apoios'])
     const t = {
@@ -71,12 +103,20 @@ export function posicaoNoMundo(
   return { x: p.x, y: p.y, z: p.z }
 }
 
-function suporteDoObjeto(doc: BaseComModelos, id: string) {
+function suporteDoObjeto(doc: BaseComModelos, id: string, fonte?: FonteDeAlturas) {
   const suporte = doc.instancias?.find((o) => o.id === id)
   if (suporte) return suporte
   const montagem = doc.montagens?.find((m) => m.id === id)
   // O contato pertence ao espaço da raiz; não muda ao reorganizar suas peças internas.
-  if (montagem) return { ...montagem, apoio: { tipo: 'absoluto' as const } }
+  if (montagem)
+    return {
+      ...montagem,
+      transformacao: {
+        ...montagem.transformacao,
+        posicao: posicaoDaMontagem(doc, montagem, fonte),
+      },
+      apoio: { tipo: 'absoluto' as const },
+    }
   throw new CenarioInvalido([`Apoio ausente: ${id}`])
 }
 
@@ -101,7 +141,7 @@ export function apoioNaSuperficie(
   ponto: { x: number; y: number; z: number },
   fonte?: FonteDeAlturas,
 ): InstanciaDeCenario['apoio'] {
-  const suporte = suporteDoObjeto(doc, id)
+  const suporte = suporteDoObjeto(doc, id, fonte)
   const t = { ...suporte.transformacao, posicao: posicaoNoMundo(doc, suporte, fonte) }
   return {
     tipo: 'objeto',

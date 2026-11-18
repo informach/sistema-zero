@@ -21,6 +21,10 @@ export const MetadadosDeTerrenoSchema = z.union([
   z.object({ tipo: z.literal('buracos') }).strict(),
 ])
 export type MetadadosDeTerreno = z.infer<typeof MetadadosDeTerrenoSchema>
+export interface ArquivoDeTerreno {
+  digest: string
+  conteudo: Uint8Array
+}
 export const MAX_BYTES_RECURSO_TERRENO = 8 + LADO_DAS_AMOSTRAS ** 2 * 8
 export const BYTES_BURACOS_TERRENO = 8 + CELULAS_DA_PECA ** 2 / 8
 export const MAX_RECURSOS_TERRENO = 4096 * 3

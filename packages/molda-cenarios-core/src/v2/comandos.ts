@@ -65,7 +65,9 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('montagem.remover'), id }).strict(),
-  z.object({ tipo: z.literal('montagem.desvincular'), id }).strict(),
+  z
+    .object({ tipo: z.literal('montagem.desvincular'), id, posicao: VetorSchema.optional() })
+    .strict(),
   z
     .object({
       tipo: z.literal('montagem.duplicar'),
@@ -270,6 +272,11 @@ export function executarLote(
       case 'montagem.desvincular': {
         const atual = existente(d.montagens ?? [], c.id)
         exigeLivre(travas, atual)
+        if (atual.apoio?.tipo === 'terreno' && !c.posicao)
+          throw new CenarioInvalido([
+            'Carregue as alturas e informe a posição atual antes de separar o conjunto apoiado.',
+          ])
+        if (c.posicao) atual.transformacao = { ...atual.transformacao, posicao: c.posicao }
         const outras = d.montagens!.filter((m) => m.id !== c.id),
           definicoes = d.definicoesConjuntos
         d = resolverConjuntos({ ...d, montagens: [atual] }).documento
@@ -288,6 +295,14 @@ export function executarLote(
           ...atual,
           id: c.novoId,
           nome: c.nome ?? atual.nome,
+          ...(atual.apoio?.tipo === 'terreno'
+            ? {
+                apoio: {
+                  ...atual.apoio,
+                  deslocamento: atual.apoio.deslocamento + c.deslocamento.y,
+                },
+              }
+            : {}),
           transformacao: {
             ...atual.transformacao,
             posicao: {

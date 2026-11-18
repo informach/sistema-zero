@@ -1,5 +1,5 @@
 import { CenarioInvalido } from '../validacao'
-import { posicaoNoMundo } from './chao'
+import { posicaoDaMontagem, posicaoNoMundo } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import {
   type DefinicaoDeConjunto,
@@ -18,6 +18,7 @@ import { volumeDaReferencia } from './fontes'
 import { validarFragmento } from './fragmento'
 import { igual } from './igual'
 import { comporGiros } from './rotacao'
+import type { FonteDeAlturas } from './terreno'
 import { transformarPonto, transformarVolume, type VolumeDeComposicao } from './volume'
 
 const falhar = (mensagem: string): never => {
@@ -72,7 +73,9 @@ function transformacaoDaPeca(
 export function volumeDaMontagem(
   doc: DocumentoDeCenario,
   m: MontagemDeConjunto,
+  alturas?: FonteDeAlturas,
 ): VolumeDeComposicao {
+  m = { ...m, transformacao: { ...m.transformacao, posicao: posicaoDaMontagem(doc, m, alturas) } }
   const f = doc.definicoesConjuntos?.find((d) => d.id === m.definicao)?.conteudo
   if (!f) return falhar('Uma montagem está sem definição fixada')
   const fonte = documentoDaDefinicao(f),
@@ -116,7 +119,10 @@ export function referenciarConjunto(
 }
 
 /** Projeção de leitura: autoria conserva raízes e definições; o palco recebe peças resolvidas. */
-export function resolverConjuntos(entrada: DocumentoDeCenario): {
+export function resolverConjuntos(
+  entrada: DocumentoDeCenario,
+  alturas?: FonteDeAlturas,
+): {
   documento: DocumentoDeCenario
   origens: ReadonlyMap<string, string>
 } {
@@ -150,7 +156,7 @@ export function resolverConjuntos(entrada: DocumentoDeCenario): {
   const raizes = new Set(montagens.map((m) => m.id))
   for (const o of doc.instancias) {
     if (o.apoio.tipo !== 'objeto' || !raizes.has(o.apoio.objeto)) continue
-    const posicao = posicaoNoMundo(doc, o)
+    const posicao = posicaoNoMundo(doc, o, alturas)
     o.transformacao = { ...o.transformacao, posicao }
     o.apoio = { tipo: 'absoluto' }
   }
@@ -247,13 +253,20 @@ export function resolverConjuntos(entrada: DocumentoDeCenario): {
     }
     tabelas.set(id, { modelos, camadas })
   }
-  const montar = (m: MontagemDeConjunto) => {
+  const montar = (original: MontagemDeConjunto) => {
+    const m = {
+      ...original,
+      transformacao: {
+        ...original.transformacao,
+        posicao: posicaoDaMontagem(entrada, original, alturas),
+      },
+    }
     const f = fontes.get(m.definicao)!,
       tabela = tabelas.get(m.definicao)!
     const fonte = documentoDaDefinicao(f)
     const grupos = new Map(f.grupos.map((g, i) => [g.id, reservar(`${m.id}/grupo/${i}`)]))
     reservar(m.id)
-    const { definicao: _definicao, transformacao: _transformacao, ...raiz } = m
+    const { definicao: _definicao, transformacao: _transformacao, apoio: _apoio, ...raiz } = m
     doc.grupos.push(raiz)
     const organizacao = (e: { grupo: string | null; camada?: string | null }) => ({
       grupo: e.grupo ? grupos.get(e.grupo)! : m.id,

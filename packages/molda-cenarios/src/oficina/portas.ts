@@ -204,6 +204,8 @@ export interface CenarioAberto {
   revisao: number
   historico: { revisao: number; desfazer: number; refazer: number }
 }
+export type RecursoDeTerrenoParaGravar =
+  import('@sistemazero/molda-cenarios-core/v2').ArquivoDeTerreno
 export interface PaginaDeRevisoes {
   inicio: number | null
   retratoInicial: string | null
@@ -301,7 +303,7 @@ export interface CenariosHost {
   conteudoDoTerreno(cenarioId: string, digest: string, sinal?: AbortSignal): Promise<ArrayBuffer>
   guardarRecursos(
     cenarioId: string,
-    pecas: readonly { digest: string; conteudo: Uint8Array }[],
+    pecas: readonly RecursoDeTerrenoParaGravar[],
     sinal?: AbortSignal,
   ): Promise<{ espacoId: string; digests: string[] }>
 
