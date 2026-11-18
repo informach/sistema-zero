@@ -1,6 +1,6 @@
 {
   "format": "pinta-gallery",
-  "version": 2,
+  "version": 3,
   "assets": [
     {
       "id": "pydew-valley-fazendeiro",
@@ -2140,6 +2140,209 @@
           "width": 32,
           "height": 32,
           "rle": "DwACFR0AARUCAQEVGwABFQQCARUaAAEVBAIBFRkAARUCAgMWAQMBFRgAARUCAgMWAQMBFRgAARUCAgMWAQMBFRgAARUCAgMWAQMBFQwADRUCAgMWAQMNFQ0BAgIDFgEDDQENFgICAxYBAxoWAgIDFgEDDRYNAwICAxYOAw0VAgIDFgEDDRUMAAEVAgIDFgEDARUYAAEVAgIDFgEDARUMAA0VAgIDFgEDDRUNAQICAxYBAw0BDRYCAgMWAQMaFgICAxYBAw0WDQMCAgMWDgMNFQICAxYBAw0VDAABFQICAxYBAwEVGAABFQICAxYBAwEVGAABFQICAxYBAwEVGAABFQYEARUYAAEVBgQBFRkABhWNAA=="
+        }
+      ],
+      "solid": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "platform": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "pydew-valley-casa",
+      "name": "casa",
+      "createdAt": 1792886400000,
+      "updatedAt": 1792886400000,
+      "kind": "tileset",
+      "tileSize": 32,
+      "paletteId": "custom",
+      "customPalette": {
+        "name": "casa",
+        "colors": [
+          "",
+          "#3a2833",
+          "#e0b47c",
+          "#c18f5c",
+          "#b98758",
+          "#9a6a43",
+          "#74492f",
+          "#c8eef0",
+          "#7fcbdc",
+          "#ffffff",
+          "#e9cba3",
+          "#c99d66",
+          "#f3d6a6",
+          "#e6c08a",
+          "#cf9d66",
+          "#ad7a4c"
+        ]
+      },
+      "extraColors": [
+        "#fbf5e6",
+        "#e3d9c4",
+        "#a7cdf0",
+        "#4a7fb8",
+        "#6fa8dc",
+        "#86593a",
+        "#d9a032",
+        "#f5d353",
+        "#ebc58f",
+        "#5e3f2c",
+        "#da4f4a"
+      ],
+      "tiles": [
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQYNBQ4GEgUBBgUHAgYFBwEGCQUKBgUHAgYFBwoGCQQBBgUHAgYFBwEGCQQJBQEGAggBCQIIAgYFCAEGEgUBBgEIAQkDCAIGBQgBBhIFDgYSBQEGBQgCBgUIAQYJBQoGBQgCBgUICgYJBAEGBQgCBgUIAQYJBAkFAQYFCAIGBQgBBg0FAQYEBQEGBQgCBgUIAQYDBQEGDgUOBhEFEAMIBQgGEAMIBiAEKQUBBgoFAQYKBQEGQAUgBkAB"
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "FwEBBAIGAQEFABcCAQQCBgEBBQAXAgEEAgYBAQUAFwIBBAIGAQEFABcCAQQCBgEBBQAXAwEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUABQUBBgoFAQYGBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUACgUBBgoFAQYBBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUABAUBBgoFAQYHBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUACQUBBgoFAQYCBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAFwEBBAIGAQEFABcBAQQCBgEBBQA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "FgAKARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQE="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQZEBSAGIAQqBQEGCgUBBkoFIAYgBCQFAQYKBQEGCgUBBkUFIAYgBCkFAQYKBQEGCgUBBkAFIAZAAQ=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "CgEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "BQABAQIGAQQXAQUAAQECBgEEFwIFAAEBAgYBBBcCBQABAQIGAQQXAgUAAQECBgEEFwIFAAEBAgYBBBcDBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQGBQEGCgUBBgUFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQBBQEGCgUBBgoFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQHBQEGCgUBBgQFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQCBQEGCgUBBgkFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGAQQXAQUAAQECBgEEFwE="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "FgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBAQ=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "AQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAINAQsDDQELAQwGDQELAQwCDQELAw0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0JCwEMBg0JCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMAg0BCwMNAQsBDAYNAQsBDAINAQsDDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQkLAQwGDQkLAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQ=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "AQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAA=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "FgAKARYAAQEJAhYAAQEJAhYAAQEJAhYAAQEJAhYAAQEJAxYAAQEJBBYAAQEJBRYAAQEEBQEGBAUWAAEBCQUWAAEBCQUWAAEBCQYWAAEBCQQWAAEBCQUWAAEBCQUWAAEBCQUWAAEBCQUWAAEBCQYWAAEBCQQWAAEBCQUWAAEBAwUBBgUFFgABAQkFFgABAQkFFgABAQkGFgABAQkEFgABAQkFFgABAQgFAQYWAAEBCQUWAAEBCQUWAAEBCQYWAAoBFgAKAQ=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQZEBSAGIAQqBQEGCgUBBkoFIAYgBCQFAQYKBQEGCgUBBkUFIAYgBCkFAQYKBQEGCgUBBkAFIAZAAQ=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "CgEWAAkCAQEWAAkCAQEWAAkCAQEWAAkCAQEWAAkDAQEWAAkEAQEWAAkFAQEWAAUFAQYDBQEBFgAJBQEBFgAJBQEBFgAJBgEBFgAJBAEBFgAJBQEBFgAJBQEBFgAJBQEBFgAJBQEBFgAJBgEBFgAJBAEBFgAJBQEBFgAEBQEGBAUBARYACQUBARYACQUBARYACQYBARYACQQBARYACQUBARYACQUBARYACQUBARYACQUBARYACQYBARYACgEWAAoBFgA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "/wClABgBBwABARgOAQEGAAEBGA4BAQYAAQECDhYPAQEGAAEBAg4WDwEBBgABAQIOFg8BAQYAAQECDhYPAQEGAAEBAg4UEAIPAQEGAAEBAg4UEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDgIQEAkCEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDgIQEAkCEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDhQRAg8BAQYAAQECDhQRAg8BAQMA"
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "AwABAQEPAhISEAITAQ8BAQYAAQEBDwISEhACEwEPAQEGAAEBAQ8CEhIQAhMBDwEBBgABAQEPAhISEAITAQ8BAQYAAQEBDxQSAhMBDwEBBgABAQEPFBICEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABARgVAQEGAAEBGBUBAQcAGAFEAA=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "CgADARwAAQEDFgEBGgABAQUXAQEZAAEBBRcBARkAAQEFFwEBFgAEAQUXDQEJAAEBFhgBAQgAAQEWGAEBCAABARYYAQEIAAEBFg8BAQgAAQEWDwEBCAABAQIPEg4CDwEBCAABAQIPEg4CDwEBCAABAQIPBw4EGQcOAg8BAQgAAQECDxIOAg8BAQgAAQECDxIVAg8BAQgAAQEWDwEBCAABARYPAQEIAAEBAg8SDgIPAQEIAAEBAg8SDgIPAQEIAAEBAg8HDgQZBw4CDwEBCAABAQIPEg4CDwEBCAABAQIPEhUCDwEBCAABARYPAQEIAAEBAg8SDgIPAQEIAAEBAg8SDgIPAQEIAAEBAg8HDgQZBw4CDwEBCAABAQIPEg4CDwEBCAABAQIPEhUCDwEBCAABARYPAQEJABYBJQA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "cwAFARoAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBDwALAQIOAw8BAQ4AAQEQGAEBDgABARAOAQEOAAEBEA4BAQ4AAQEQDgEBDgABARAVAQEPAAEBAxUHAQEOAxUBDwEBDwABAQMVAQEFAAEBAQ4DFQEPAQEPAAEBAxUBAQUAAQEBDgMVAQ8BAQ8AAQEDFQEBBgABAQMVAQEQAAEBAxUBAQYAAQEDFQEBEAABAQMVAQEGAAEBAxUBARAAAQEDFQEBBgABAQMVAQEQAAEBAxUBAQYAAQEDFQEBEQADAQgAAwFJAA=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "/wBtAAgBFgACAQgOAgETAAEBAg4IGAIOAQERAAEBAg4KGAIOAQEPAAEBAg4MGAIOAQEOAAEBAw4KGAMOAQEOAAEBBA4IGAQOAQEPAAEBDg4BAREAAQEDFQYOAxUBARIAAQEDFQYOAxUBARIAAQEDFQYBAxUBARIAAQEDFQEBBAABAQMVAQESAAEBAxUBAQQAAQEDFQEBEgABAQMVAQEEAAEBAxUBARIAAQEDFQEBBAABAQMVAQESAAEBAxUBAQQAAQEDFQEBEgABAQMVAQEEAAEBAxUBARMAAwEGAAMBagA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "owAaAQUAAQEaGAEBBAABARoYAQEEAAEBGg4BAQQAAQEJDgIQBBoCEAkOAQEEAAEBCQ4BEAYaARAJDgEBBAABAQkOARAGGgEQCQ4BAQQAAQEJDgIQBBoCEAkOAQEEAAEBCQ4IEAkOAQEEAAEBCQ4IEAkOAQEEAAEBGg4BAQQAAQEaDgEBBAABARoOAQEEAAEBGg4BAQQAAQEaDgEBBAABARoVAQEEAAEBGhUBAQUAAgEDFRABAxUCAQcAAQEDFQEBDgABAQMVAQEIAAEBAxUBAQ4AAQEDFQEBCAABAQMVAQEOAAEBAxUBAQgAAQEDFQEBDgABAQMVAQEIAAEBAxUBAQ4AAQEDFQEBCAABAQMVAQEOAAEBAxUBAQgAAQEDFQEBDgABAQMVAQEJAAMBEAADASUA"
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "zQAGARgAAgEGDwIBFQABAQoPAQETAAEBAw8GEAMPAQERAAEBAw8EEAEVAxADDwEBDwABAQMPBRABAQQQAw8BAQ4AAQECDwYQAQEFEAIPAQENAAEBAg8HEAEBBhACDwEBDAABAQIPBxABAQYQAg8BAQwAAQECDwcQAQEGEAIPAQEMAAEBAg8BEAEVBRAEAQIQARUCDwEBDAABAQIPDhACDwEBDAABAQIPDhACDwEBDQABAQIPDBACDwEBDgABAQMPChADDwEBDwABAQMPCBADDwEBEQABAQMPAxABFQIQAw8BARMAAQEKDwEBFQACAQYPAgEYAAYBzQA="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "pgAUEwoAAhAUFAIQCgACFBASAhQKAAIQAhQQEgIUAhAKAAIUAhIMFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFAISAhQBEAMUARADFAEQARQCEgIUCgACEAIUAhIMFAISAhQCEAoAAhQCEgwUAhICFAoAAhACFAISDBQCEgIUAhAKAAIUAhICFAEQAxQBEAMUARABFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFAISDBQCEgIUCgACEAIUAhIMFAISAhQCEAoAAhQCEgIUARADFAEQAxQBEAEUAhICFAoAAhACFAISDBQCEgIUAhAKAAIUAhIMFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFBASAhQKAAIQAhQQEgIUAhAKABQUCgACEBQTAhCkAA=="
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "pAAcEwIAAhAcFAQAAhQYEgIUAgACEAIUGBICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFBgSAhQCAAIQAhQYEgIUBAAcFAIAAhAcE6AA"
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "rle": "oAAcEwQAHBQCEAIAAhQYEgIUBAACFBgSAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFBgSAhQEAAIUGBICFAIQAgAcFAQAHBMCEKIA"
         }
       ],
       "solid": [
@@ -18261,224 +18464,9 @@
             -1,
             -1
           ]
-        }
-      ]
-    },
-    {
-      "id": "pydew-valley-casa",
-      "name": "casa",
-      "createdAt": 1792886400000,
-      "updatedAt": 1792886400000,
-      "kind": "tileset",
-      "tileSize": 32,
-      "paletteId": "custom",
-      "customPalette": {
-        "name": "casa",
-        "colors": [
-          "",
-          "#3a2833",
-          "#e0b47c",
-          "#c18f5c",
-          "#b98758",
-          "#9a6a43",
-          "#74492f",
-          "#c8eef0",
-          "#7fcbdc",
-          "#ffffff",
-          "#e9cba3",
-          "#c99d66",
-          "#f3d6a6",
-          "#e6c08a",
-          "#cf9d66",
-          "#ad7a4c"
-        ]
-      },
-      "extraColors": [
-        "#fbf5e6",
-        "#e3d9c4",
-        "#a7cdf0",
-        "#4a7fb8",
-        "#6fa8dc",
-        "#86593a",
-        "#d9a032",
-        "#f5d353",
-        "#ebc58f",
-        "#5e3f2c",
-        "#da4f4a"
-      ],
-      "tiles": [
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQYNBQ4GEgUBBgUHAgYFBwEGCQUKBgUHAgYFBwoGCQQBBgUHAgYFBwEGCQQJBQEGAggBCQIIAgYFCAEGEgUBBgEIAQkDCAIGBQgBBhIFDgYSBQEGBQgCBgUIAQYJBQoGBQgCBgUICgYJBAEGBQgCBgUIAQYJBAkFAQYFCAIGBQgBBg0FAQYEBQEGBQgCBgUIAQYDBQEGDgUOBhEFEAMIBQgGEAMIBiAEKQUBBgoFAQYKBQEGQAUgBkAB"
         },
         {
-          "width": 32,
-          "height": 32,
-          "rle": "FwEBBAIGAQEFABcCAQQCBgEBBQAXAgEEAgYBAQUAFwIBBAIGAQEFABcCAQQCBgEBBQAXAwEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUABQUBBgoFAQYGBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUACgUBBgoFAQYBBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUABAUBBgoFAQYHBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAGAQCBgEBBQAXBQEEAgYBAQUACQUBBgoFAQYCBQEEAgYBAQUAFwUBBAIGAQEFABcFAQQCBgEBBQAXBgEEAgYBAQUAFwEBBAIGAQEFABcBAQQCBgEBBQA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "FgAKARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQE="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQZEBSAGIAQqBQEGCgUBBkoFIAYgBCQFAQYKBQEGCgUBBkUFIAYgBCkFAQYKBQEGCgUBBkAFIAZAAQ=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "CgEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "BQABAQIGAQQXAQUAAQECBgEEFwIFAAEBAgYBBBcCBQABAQIGAQQXAgUAAQECBgEEFwIFAAEBAgYBBBcDBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQGBQEGCgUBBgUFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQBBQEGCgUBBgoFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQHBQEGCgUBBgQFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGGAQFAAEBAgYBBBcFBQABAQIGAQQCBQEGCgUBBgkFBQABAQIGAQQXBQUAAQECBgEEFwUFAAEBAgYBBBcGBQABAQIGAQQXAQUAAQECBgEEFwE="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "FgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBAQ=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "AQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAYNAQsBDAINAQsDDQELAQwGDQELAQwCDQELAw0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0JCwEMBg0JCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMBg0BCwEMAg0BCwMNAQsBDAYNAQsBDAINAQsDDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQkLAQwGDQkLAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQELAQwGDQ=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "AQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoHAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBgIBAwEBFgABAQEKBwMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgYCAQMBARYAAQEBCgcDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAAEBAQoGAgEDAQEWAA=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "FgAKARYAAQEJAhYAAQEJAhYAAQEJAhYAAQEJAhYAAQEJAxYAAQEJBBYAAQEJBRYAAQEEBQEGBAUWAAEBCQUWAAEBCQUWAAEBCQYWAAEBCQQWAAEBCQUWAAEBCQUWAAEBCQUWAAEBCQUWAAEBCQYWAAEBCQQWAAEBCQUWAAEBAwUBBgUFFgABAQkFFgABAQkFFgABAQkGFgABAQkEFgABAQkFFgABAQgFAQYWAAEBCQUWAAEBCQUWAAEBCQYWAAoBFgAKAQ=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "IAGAAiADIAQlBQEGCgUBBgoFAQZEBSAGIAQqBQEGCgUBBkoFIAYgBCQFAQYKBQEGCgUBBkUFIAYgBCkFAQYKBQEGCgUBBkAFIAZAAQ=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "CgEWAAkCAQEWAAkCAQEWAAkCAQEWAAkCAQEWAAkDAQEWAAkEAQEWAAkFAQEWAAUFAQYDBQEBFgAJBQEBFgAJBQEBFgAJBgEBFgAJBAEBFgAJBQEBFgAJBQEBFgAJBQEBFgAJBQEBFgAJBgEBFgAJBAEBFgAJBQEBFgAEBQEGBAUBARYACQUBARYACQUBARYACQYBARYACQQBARYACQUBARYACQUBARYACQUBARYACQUBARYACQYBARYACgEWAAoBFgA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "/wClABgBBwABARgOAQEGAAEBGA4BAQYAAQECDhYPAQEGAAEBAg4WDwEBBgABAQIOFg8BAQYAAQECDhYPAQEGAAEBAg4UEAIPAQEGAAEBAg4UEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDgIQEAkCEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDgIQEAkCEAIPAQEGAAEBAg4CEBAJAhACDwEBBgABAQIOAhAQCQIQAg8BAQYAAQECDhQRAg8BAQYAAQECDhQRAg8BAQMA"
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "AwABAQEPAhISEAITAQ8BAQYAAQEBDwISEhACEwEPAQEGAAEBAQ8CEhIQAhMBDwEBBgABAQEPAhISEAITAQ8BAQYAAQEBDxQSAhMBDwEBBgABAQEPFBICEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABAQEPAhISFAITAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhQTAQ8BAQYAAQEBDwISEhQCEwEPAQEGAAEBAQ8CEhIUAhMBDwEBBgABARgVAQEGAAEBGBUBAQcAGAFEAA=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "CgADARwAAQEDFgEBGgABAQUXAQEZAAEBBRcBARkAAQEFFwEBFgAEAQUXDQEJAAEBFhgBAQgAAQEWGAEBCAABARYYAQEIAAEBFg8BAQgAAQEWDwEBCAABAQIPEg4CDwEBCAABAQIPEg4CDwEBCAABAQIPBw4EGQcOAg8BAQgAAQECDxIOAg8BAQgAAQECDxIVAg8BAQgAAQEWDwEBCAABARYPAQEIAAEBAg8SDgIPAQEIAAEBAg8SDgIPAQEIAAEBAg8HDgQZBw4CDwEBCAABAQIPEg4CDwEBCAABAQIPEhUCDwEBCAABARYPAQEIAAEBAg8SDgIPAQEIAAEBAg8SDgIPAQEIAAEBAg8HDgQZBw4CDwEBCAABAQIPEg4CDwEBCAABAQIPEhUCDwEBCAABARYPAQEJABYBJQA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "cwAFARoAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBGQABAQIOAw8BARkAAQECDgMPAQEZAAEBAg4DDwEBDwALAQIOAw8BAQ4AAQEQGAEBDgABARAOAQEOAAEBEA4BAQ4AAQEQDgEBDgABARAVAQEPAAEBAxUHAQEOAxUBDwEBDwABAQMVAQEFAAEBAQ4DFQEPAQEPAAEBAxUBAQUAAQEBDgMVAQ8BAQ8AAQEDFQEBBgABAQMVAQEQAAEBAxUBAQYAAQEDFQEBEAABAQMVAQEGAAEBAxUBARAAAQEDFQEBBgABAQMVAQEQAAEBAxUBAQYAAQEDFQEBEQADAQgAAwFJAA=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "/wBtAAgBFgACAQgOAgETAAEBAg4IGAIOAQERAAEBAg4KGAIOAQEPAAEBAg4MGAIOAQEOAAEBAw4KGAMOAQEOAAEBBA4IGAQOAQEPAAEBDg4BAREAAQEDFQYOAxUBARIAAQEDFQYOAxUBARIAAQEDFQYBAxUBARIAAQEDFQEBBAABAQMVAQESAAEBAxUBAQQAAQEDFQEBEgABAQMVAQEEAAEBAxUBARIAAQEDFQEBBAABAQMVAQESAAEBAxUBAQQAAQEDFQEBEgABAQMVAQEEAAEBAxUBARMAAwEGAAMBagA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "owAaAQUAAQEaGAEBBAABARoYAQEEAAEBGg4BAQQAAQEJDgIQBBoCEAkOAQEEAAEBCQ4BEAYaARAJDgEBBAABAQkOARAGGgEQCQ4BAQQAAQEJDgIQBBoCEAkOAQEEAAEBCQ4IEAkOAQEEAAEBCQ4IEAkOAQEEAAEBGg4BAQQAAQEaDgEBBAABARoOAQEEAAEBGg4BAQQAAQEaDgEBBAABARoVAQEEAAEBGhUBAQUAAgEDFRABAxUCAQcAAQEDFQEBDgABAQMVAQEIAAEBAxUBAQ4AAQEDFQEBCAABAQMVAQEOAAEBAxUBAQgAAQEDFQEBDgABAQMVAQEIAAEBAxUBAQ4AAQEDFQEBCAABAQMVAQEOAAEBAxUBAQgAAQEDFQEBDgABAQMVAQEJAAMBEAADASUA"
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "zQAGARgAAgEGDwIBFQABAQoPAQETAAEBAw8GEAMPAQERAAEBAw8EEAEVAxADDwEBDwABAQMPBRABAQQQAw8BAQ4AAQECDwYQAQEFEAIPAQENAAEBAg8HEAEBBhACDwEBDAABAQIPBxABAQYQAg8BAQwAAQECDwcQAQEGEAIPAQEMAAEBAg8BEAEVBRAEAQIQARUCDwEBDAABAQIPDhACDwEBDAABAQIPDhACDwEBDQABAQIPDBACDwEBDgABAQMPChADDwEBDwABAQMPCBADDwEBEQABAQMPAxABFQIQAw8BARMAAQEKDwEBFQACAQYPAgEYAAYBzQA="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "pgAUEwoAAhAUFAIQCgACFBASAhQKAAIQAhQQEgIUAhAKAAIUAhIMFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFAISAhQBEAMUARADFAEQARQCEgIUCgACEAIUAhIMFAISAhQCEAoAAhQCEgwUAhICFAoAAhACFAISDBQCEgIUAhAKAAIUAhICFAEQAxQBEAMUARABFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFAISDBQCEgIUCgACEAIUAhIMFAISAhQCEAoAAhQCEgIUARADFAEQAxQBEAEUAhICFAoAAhACFAISDBQCEgIUAhAKAAIUAhIMFAISAhQKAAIQAhQCEgwUAhICFAIQCgACFBASAhQKAAIQAhQQEgIUAhAKABQUCgACEBQTAhCkAA=="
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "pAAcEwIAAhAcFAQAAhQYEgIUAgACEAIUGBICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQCAAIQAhQCEhQUAhICFAQAAhQCEhQUAhICFAIAAhACFAISFBQCEgIUBAACFBgSAhQCAAIQAhQYEgIUBAAcFAIAAhAcE6AA"
-        },
-        {
-          "width": 32,
-          "height": 32,
-          "rle": "oAAcEwQAHBQCEAIAAhQYEgIUBAACFBgSAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFAISAhQBEAMUARADFAEQAxQBEAMUARABFAISAhQEAAIUAhIUFAISAhQCEAIAAhQCEhQUAhICFAQAAhQCEhQUAhICFAIQAgACFBgSAhQEAAIUGBICFAIQAgAcFAQAHBMCEKIA"
-        }
-      ],
-      "solid": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "platform": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "id": "pydew-valley-casa-e-objetos",
-      "name": "casa-e-objetos",
-      "createdAt": 1792886400000,
-      "updatedAt": 1792886400000,
-      "kind": "tilemap",
-      "tilesetId": "pydew-valley-casa",
-      "cols": 50,
-      "rows": 40,
-      "layers": [
-        {
-          "id": "pydew-valley-casa-e-objetos-camada-0",
+          "id": "pydew-valley-fazenda-camada-8",
           "name": "Piso da casa",
           "visible": true,
           "cells": [
@@ -20482,10 +20470,11 @@
             -1,
             -1,
             -1
-          ]
+          ],
+          "tilesetId": "pydew-valley-casa"
         },
         {
-          "id": "pydew-valley-casa-e-objetos-camada-1",
+          "id": "pydew-valley-fazenda-camada-9",
           "name": "Móveis de baixo",
           "visible": true,
           "cells": [
@@ -22489,10 +22478,11 @@
             -1,
             -1,
             -1
-          ]
+          ],
+          "tilesetId": "pydew-valley-casa"
         },
         {
-          "id": "pydew-valley-casa-e-objetos-camada-2",
+          "id": "pydew-valley-fazenda-camada-10",
           "name": "Paredes",
           "visible": true,
           "cells": [
@@ -24496,10 +24486,11 @@
             -1,
             -1,
             -1
-          ]
+          ],
+          "tilesetId": "pydew-valley-casa"
         },
         {
-          "id": "pydew-valley-casa-e-objetos-camada-3",
+          "id": "pydew-valley-fazenda-camada-11",
           "name": "Móveis de cima",
           "visible": true,
           "cells": [
@@ -26503,16 +26494,17 @@
             -1,
             -1,
             -1
-          ]
+          ],
+          "tilesetId": "pydew-valley-casa"
         },
         {
           "kind": "objects",
-          "id": "pydew-valley-casa-e-objetos-camada-4",
+          "id": "pydew-valley-fazenda-camada-12",
           "name": "Árvores",
           "visible": true,
           "objects": [
             {
-              "id": "pydew-valley-casa-e-objetos-obj-0",
+              "id": "pydew-valley-fazenda-obj-0",
               "name": "Large",
               "type": "arvore",
               "x": 635,
@@ -26524,7 +26516,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-1",
+              "id": "pydew-valley-fazenda-obj-1",
               "name": "Large",
               "type": "arvore",
               "x": 676,
@@ -26536,7 +26528,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-2",
+              "id": "pydew-valley-fazenda-obj-2",
               "name": "Large",
               "type": "arvore",
               "x": 832,
@@ -26548,7 +26540,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-3",
+              "id": "pydew-valley-fazenda-obj-3",
               "name": "Large",
               "type": "arvore",
               "x": 1096,
@@ -26560,7 +26552,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-4",
+              "id": "pydew-valley-fazenda-obj-4",
               "name": "Large",
               "type": "arvore",
               "x": 1233,
@@ -26572,7 +26564,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-5",
+              "id": "pydew-valley-fazenda-obj-5",
               "name": "Large",
               "type": "arvore",
               "x": 1029,
@@ -26584,7 +26576,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-6",
+              "id": "pydew-valley-fazenda-obj-6",
               "name": "Large",
               "type": "arvore",
               "x": 1190,
@@ -26596,7 +26588,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-7",
+              "id": "pydew-valley-fazenda-obj-7",
               "name": "Large",
               "type": "arvore",
               "x": 1179,
@@ -26608,7 +26600,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-8",
+              "id": "pydew-valley-fazenda-obj-8",
               "name": "Large",
               "type": "arvore",
               "x": 1226,
@@ -26620,7 +26612,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-9",
+              "id": "pydew-valley-fazenda-obj-9",
               "name": "Large",
               "type": "arvore",
               "x": 1220,
@@ -26632,7 +26624,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-10",
+              "id": "pydew-valley-fazenda-obj-10",
               "name": "Large",
               "type": "arvore",
               "x": 920,
@@ -26644,7 +26636,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-11",
+              "id": "pydew-valley-fazenda-obj-11",
               "name": "Large",
               "type": "arvore",
               "x": 826,
@@ -26656,7 +26648,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-12",
+              "id": "pydew-valley-fazenda-obj-12",
               "name": "Large",
               "type": "arvore",
               "x": 843,
@@ -26668,7 +26660,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-13",
+              "id": "pydew-valley-fazenda-obj-13",
               "name": "Small",
               "type": "arvore",
               "x": 694,
@@ -26680,7 +26672,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-14",
+              "id": "pydew-valley-fazenda-obj-14",
               "name": "Small",
               "type": "arvore",
               "x": 816,
@@ -26692,7 +26684,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-15",
+              "id": "pydew-valley-fazenda-obj-15",
               "name": "Small",
               "type": "arvore",
               "x": 815,
@@ -26704,7 +26696,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-16",
+              "id": "pydew-valley-fazenda-obj-16",
               "name": "Small",
               "type": "arvore",
               "x": 1014,
@@ -26716,7 +26708,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-17",
+              "id": "pydew-valley-fazenda-obj-17",
               "name": "Small",
               "type": "arvore",
               "x": 1127,
@@ -26728,7 +26720,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-18",
+              "id": "pydew-valley-fazenda-obj-18",
               "name": "Small",
               "type": "arvore",
               "x": 1234,
@@ -26740,7 +26732,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-19",
+              "id": "pydew-valley-fazenda-obj-19",
               "name": "Small",
               "type": "arvore",
               "x": 1190,
@@ -26752,7 +26744,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-20",
+              "id": "pydew-valley-fazenda-obj-20",
               "name": "Small",
               "type": "arvore",
               "x": 1230,
@@ -26764,7 +26756,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-21",
+              "id": "pydew-valley-fazenda-obj-21",
               "name": "Small",
               "type": "arvore",
               "x": 1170,
@@ -26776,7 +26768,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-22",
+              "id": "pydew-valley-fazenda-obj-22",
               "name": "Small",
               "type": "arvore",
               "x": 1220,
@@ -26788,7 +26780,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-23",
+              "id": "pydew-valley-fazenda-obj-23",
               "name": "Small",
               "type": "arvore",
               "x": 1210,
@@ -26800,7 +26792,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-24",
+              "id": "pydew-valley-fazenda-obj-24",
               "name": "Small",
               "type": "arvore",
               "x": 1211,
@@ -26812,7 +26804,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-25",
+              "id": "pydew-valley-fazenda-obj-25",
               "name": "Small",
               "type": "arvore",
               "x": 1207,
@@ -26824,7 +26816,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-26",
+              "id": "pydew-valley-fazenda-obj-26",
               "name": "Small",
               "type": "arvore",
               "x": 1238,
@@ -26836,7 +26828,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-27",
+              "id": "pydew-valley-fazenda-obj-27",
               "name": "Small",
               "type": "arvore",
               "x": 1179,
@@ -26848,7 +26840,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-28",
+              "id": "pydew-valley-fazenda-obj-28",
               "name": "Small",
               "type": "arvore",
               "x": 1208,
@@ -26860,7 +26852,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-29",
+              "id": "pydew-valley-fazenda-obj-29",
               "name": "Small",
               "type": "arvore",
               "x": 335,
@@ -26875,12 +26867,12 @@
         },
         {
           "kind": "objects",
-          "id": "pydew-valley-casa-e-objetos-camada-5",
-          "name": "Enfeites",
+          "id": "pydew-valley-fazenda-camada-13",
+          "name": "Enfeites da casa",
           "visible": true,
           "objects": [
             {
-              "id": "pydew-valley-casa-e-objetos-obj-30",
+              "id": "pydew-valley-fazenda-obj-30",
               "name": "",
               "type": "decor",
               "x": 325,
@@ -26892,7 +26884,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-31",
+              "id": "pydew-valley-fazenda-obj-31",
               "name": "",
               "type": "decor",
               "x": 366,
@@ -26904,7 +26896,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-32",
+              "id": "pydew-valley-fazenda-obj-32",
               "name": "",
               "type": "decor",
               "x": 410,
@@ -26916,7 +26908,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-33",
+              "id": "pydew-valley-fazenda-obj-33",
               "name": "",
               "type": "decor",
               "x": 680,
@@ -26928,7 +26920,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-34",
+              "id": "pydew-valley-fazenda-obj-34",
               "name": "",
               "type": "decor",
               "x": 745,
@@ -26940,7 +26932,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-35",
+              "id": "pydew-valley-fazenda-obj-35",
               "name": "",
               "type": "decor",
               "x": 713,
@@ -26952,7 +26944,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-36",
+              "id": "pydew-valley-fazenda-obj-36",
               "name": "",
               "type": "decor",
               "x": 756,
@@ -26964,7 +26956,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-37",
+              "id": "pydew-valley-fazenda-obj-37",
               "name": "",
               "type": "decor",
               "x": 1048,
@@ -26976,7 +26968,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-38",
+              "id": "pydew-valley-fazenda-obj-38",
               "name": "",
               "type": "decor",
               "x": 1212,
@@ -26988,7 +26980,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-39",
+              "id": "pydew-valley-fazenda-obj-39",
               "name": "",
               "type": "decor",
               "x": 1082,
@@ -27000,7 +26992,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-40",
+              "id": "pydew-valley-fazenda-obj-40",
               "name": "",
               "type": "decor",
               "x": 1143,
@@ -27012,7 +27004,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-41",
+              "id": "pydew-valley-fazenda-obj-41",
               "name": "",
               "type": "decor",
               "x": 1175,
@@ -27024,7 +27016,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-42",
+              "id": "pydew-valley-fazenda-obj-42",
               "name": "",
               "type": "decor",
               "x": 1168,
@@ -27036,7 +27028,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-43",
+              "id": "pydew-valley-fazenda-obj-43",
               "name": "",
               "type": "decor",
               "x": 1236,
@@ -27048,7 +27040,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-44",
+              "id": "pydew-valley-fazenda-obj-44",
               "name": "",
               "type": "decor",
               "x": 1210,
@@ -27060,7 +27052,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-45",
+              "id": "pydew-valley-fazenda-obj-45",
               "name": "",
               "type": "decor",
               "x": 698,
@@ -27072,7 +27064,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-46",
+              "id": "pydew-valley-fazenda-obj-46",
               "name": "",
               "type": "decor",
               "x": 1093,
@@ -27084,7 +27076,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-47",
+              "id": "pydew-valley-fazenda-obj-47",
               "name": "",
               "type": "decor",
               "x": 846,
@@ -27096,7 +27088,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-48",
+              "id": "pydew-valley-fazenda-obj-48",
               "name": "",
               "type": "decor",
               "x": 802,
@@ -27108,7 +27100,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-49",
+              "id": "pydew-valley-fazenda-obj-49",
               "name": "",
               "type": "decor",
               "x": 908,
@@ -27120,7 +27112,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-50",
+              "id": "pydew-valley-fazenda-obj-50",
               "name": "",
               "type": "decor",
               "x": 1093,
@@ -27132,7 +27124,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-51",
+              "id": "pydew-valley-fazenda-obj-51",
               "name": "",
               "type": "decor",
               "x": 1203,
@@ -27144,7 +27136,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-52",
+              "id": "pydew-valley-fazenda-obj-52",
               "name": "",
               "type": "decor",
               "x": 1197,
@@ -27156,7 +27148,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-53",
+              "id": "pydew-valley-fazenda-obj-53",
               "name": "",
               "type": "decor",
               "x": 1251,
@@ -27168,7 +27160,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-54",
+              "id": "pydew-valley-fazenda-obj-54",
               "name": "",
               "type": "decor",
               "x": 1195,
@@ -27180,7 +27172,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-55",
+              "id": "pydew-valley-fazenda-obj-55",
               "name": "",
               "type": "decor",
               "x": 1235,
@@ -27192,7 +27184,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-56",
+              "id": "pydew-valley-fazenda-obj-56",
               "name": "",
               "type": "decor",
               "x": 958,
@@ -27204,7 +27196,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-57",
+              "id": "pydew-valley-fazenda-obj-57",
               "name": "",
               "type": "decor",
               "x": 971,
@@ -27216,7 +27208,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-58",
+              "id": "pydew-valley-fazenda-obj-58",
               "name": "",
               "type": "decor",
               "x": 998,
@@ -27228,7 +27220,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-59",
+              "id": "pydew-valley-fazenda-obj-59",
               "name": "",
               "type": "decor",
               "x": 719,
@@ -27240,7 +27232,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-60",
+              "id": "pydew-valley-fazenda-obj-60",
               "name": "",
               "type": "decor",
               "x": 708,
@@ -27252,7 +27244,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-61",
+              "id": "pydew-valley-fazenda-obj-61",
               "name": "",
               "type": "decor",
               "x": 746,
@@ -27264,7 +27256,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-62",
+              "id": "pydew-valley-fazenda-obj-62",
               "name": "",
               "type": "decor",
               "x": 864,
@@ -27276,7 +27268,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-63",
+              "id": "pydew-valley-fazenda-obj-63",
               "name": "",
               "type": "decor",
               "x": 1177,
@@ -27288,7 +27280,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-64",
+              "id": "pydew-valley-fazenda-obj-64",
               "name": "",
               "type": "decor",
               "x": 373,
@@ -27300,7 +27292,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-65",
+              "id": "pydew-valley-fazenda-obj-65",
               "name": "",
               "type": "decor",
               "x": 646,
@@ -27312,7 +27304,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-66",
+              "id": "pydew-valley-fazenda-obj-66",
               "name": "",
               "type": "decor",
               "x": 808,
@@ -27324,7 +27316,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-67",
+              "id": "pydew-valley-fazenda-obj-67",
               "name": "",
               "type": "decor",
               "x": 1187,
@@ -27336,7 +27328,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-68",
+              "id": "pydew-valley-fazenda-obj-68",
               "name": "",
               "type": "decor",
               "x": 1251,
@@ -27348,7 +27340,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-69",
+              "id": "pydew-valley-fazenda-obj-69",
               "name": "",
               "type": "decor",
               "x": 1258,
@@ -27360,7 +27352,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-70",
+              "id": "pydew-valley-fazenda-obj-70",
               "name": "",
               "type": "decor",
               "x": 876,
@@ -27372,7 +27364,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-71",
+              "id": "pydew-valley-fazenda-obj-71",
               "name": "",
               "type": "decor",
               "x": 278,
@@ -27384,7 +27376,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-72",
+              "id": "pydew-valley-fazenda-obj-72",
               "name": "",
               "type": "decor",
               "x": 1026,
@@ -27396,7 +27388,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-73",
+              "id": "pydew-valley-fazenda-obj-73",
               "name": "",
               "type": "decor",
               "x": 413,
@@ -27408,7 +27400,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-74",
+              "id": "pydew-valley-fazenda-obj-74",
               "name": "",
               "type": "decor",
               "x": 368,
@@ -27420,7 +27412,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-75",
+              "id": "pydew-valley-fazenda-obj-75",
               "name": "",
               "type": "decor",
               "x": 447,
@@ -27432,7 +27424,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-76",
+              "id": "pydew-valley-fazenda-obj-76",
               "name": "",
               "type": "decor",
               "x": 616,
@@ -27444,7 +27436,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-77",
+              "id": "pydew-valley-fazenda-obj-77",
               "name": "",
               "type": "decor",
               "x": 586,
@@ -27456,7 +27448,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-78",
+              "id": "pydew-valley-fazenda-obj-78",
               "name": "",
               "type": "decor",
               "x": 606,
@@ -27468,7 +27460,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-79",
+              "id": "pydew-valley-fazenda-obj-79",
               "name": "",
               "type": "decor",
               "x": 588,
@@ -27480,7 +27472,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-80",
+              "id": "pydew-valley-fazenda-obj-80",
               "name": "",
               "type": "decor",
               "x": 576,
@@ -27492,7 +27484,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-81",
+              "id": "pydew-valley-fazenda-obj-81",
               "name": "",
               "type": "decor",
               "x": 368,
@@ -27504,7 +27496,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-82",
+              "id": "pydew-valley-fazenda-obj-82",
               "name": "",
               "type": "decor",
               "x": 558,
@@ -27516,7 +27508,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-83",
+              "id": "pydew-valley-fazenda-obj-83",
               "name": "",
               "type": "decor",
               "x": 600,
@@ -27528,7 +27520,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-84",
+              "id": "pydew-valley-fazenda-obj-84",
               "name": "",
               "type": "decor",
               "x": 423,
@@ -27540,7 +27532,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-85",
+              "id": "pydew-valley-fazenda-obj-85",
               "name": "",
               "type": "decor",
               "x": 552,
@@ -27552,7 +27544,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-86",
+              "id": "pydew-valley-fazenda-obj-86",
               "name": "",
               "type": "decor",
               "x": 529,
@@ -27564,7 +27556,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-87",
+              "id": "pydew-valley-fazenda-obj-87",
               "name": "",
               "type": "decor",
               "x": 521,
@@ -27579,12 +27571,12 @@
         },
         {
           "kind": "objects",
-          "id": "pydew-valley-casa-e-objetos-camada-6",
+          "id": "pydew-valley-fazenda-camada-14",
           "name": "Jogador",
           "visible": true,
           "objects": [
             {
-              "id": "pydew-valley-casa-e-objetos-obj-88",
+              "id": "pydew-valley-fazenda-obj-88",
               "name": "Start",
               "type": "jogador",
               "x": 781,
@@ -27594,7 +27586,7 @@
               "properties": {}
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-89",
+              "id": "pydew-valley-fazenda-obj-89",
               "name": "Trader",
               "type": "interacao",
               "x": 448,
@@ -27604,7 +27596,7 @@
               "properties": {}
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-90",
+              "id": "pydew-valley-fazenda-obj-90",
               "name": "Bed",
               "type": "interacao",
               "x": 704,
@@ -27617,12 +27609,12 @@
         },
         {
           "kind": "objects",
-          "id": "pydew-valley-casa-e-objetos-camada-7",
+          "id": "pydew-valley-fazenda-camada-15",
           "name": "Objetos",
           "visible": true,
           "objects": [
             {
-              "id": "pydew-valley-casa-e-objetos-obj-91",
+              "id": "pydew-valley-fazenda-obj-91",
               "name": "",
               "type": "enfeite",
               "x": 216,
@@ -27634,7 +27626,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-92",
+              "id": "pydew-valley-fazenda-obj-92",
               "name": "",
               "type": "enfeite",
               "x": 228,
@@ -27646,7 +27638,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-93",
+              "id": "pydew-valley-fazenda-obj-93",
               "name": "",
               "type": "enfeite",
               "x": 161,
@@ -27658,7 +27650,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-94",
+              "id": "pydew-valley-fazenda-obj-94",
               "name": "",
               "type": "enfeite",
               "x": 88,
@@ -27670,7 +27662,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-95",
+              "id": "pydew-valley-fazenda-obj-95",
               "name": "",
               "type": "enfeite",
               "x": 225,
@@ -27682,7 +27674,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-96",
+              "id": "pydew-valley-fazenda-obj-96",
               "name": "",
               "type": "enfeite",
               "x": 200,
@@ -27694,7 +27686,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-97",
+              "id": "pydew-valley-fazenda-obj-97",
               "name": "",
               "type": "enfeite",
               "x": 219,
@@ -27706,7 +27698,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-98",
+              "id": "pydew-valley-fazenda-obj-98",
               "name": "",
               "type": "enfeite",
               "x": 277,
@@ -27718,7 +27710,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-99",
+              "id": "pydew-valley-fazenda-obj-99",
               "name": "",
               "type": "enfeite",
               "x": 244,
@@ -27730,7 +27722,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-100",
+              "id": "pydew-valley-fazenda-obj-100",
               "name": "",
               "type": "enfeite",
               "x": 259,
@@ -27742,7 +27734,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-101",
+              "id": "pydew-valley-fazenda-obj-101",
               "name": "",
               "type": "enfeite",
               "x": 225,
@@ -27754,7 +27746,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-102",
+              "id": "pydew-valley-fazenda-obj-102",
               "name": "",
               "type": "enfeite",
               "x": 264,
@@ -27766,7 +27758,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-103",
+              "id": "pydew-valley-fazenda-obj-103",
               "name": "",
               "type": "enfeite",
               "x": 209,
@@ -27778,7 +27770,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-104",
+              "id": "pydew-valley-fazenda-obj-104",
               "name": "",
               "type": "enfeite",
               "x": 41,
@@ -27790,7 +27782,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-105",
+              "id": "pydew-valley-fazenda-obj-105",
               "name": "",
               "type": "enfeite",
               "x": 94,
@@ -27802,7 +27794,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-106",
+              "id": "pydew-valley-fazenda-obj-106",
               "name": "",
               "type": "enfeite",
               "x": 89,
@@ -27814,7 +27806,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-107",
+              "id": "pydew-valley-fazenda-obj-107",
               "name": "",
               "type": "enfeite",
               "x": 190,
@@ -27826,7 +27818,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-108",
+              "id": "pydew-valley-fazenda-obj-108",
               "name": "",
               "type": "enfeite",
               "x": 55,
@@ -27838,7 +27830,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-109",
+              "id": "pydew-valley-fazenda-obj-109",
               "name": "",
               "type": "enfeite",
               "x": 209,
@@ -27850,7 +27842,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-110",
+              "id": "pydew-valley-fazenda-obj-110",
               "name": "",
               "type": "enfeite",
               "x": 246,
@@ -27862,7 +27854,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-111",
+              "id": "pydew-valley-fazenda-obj-111",
               "name": "",
               "type": "enfeite",
               "x": 268,
@@ -27874,7 +27866,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-112",
+              "id": "pydew-valley-fazenda-obj-112",
               "name": "",
               "type": "enfeite",
               "x": 254,
@@ -27886,7 +27878,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-113",
+              "id": "pydew-valley-fazenda-obj-113",
               "name": "",
               "type": "enfeite",
               "x": 0,
@@ -27898,7 +27890,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-114",
+              "id": "pydew-valley-fazenda-obj-114",
               "name": "",
               "type": "enfeite",
               "x": 87,
@@ -27910,7 +27902,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-115",
+              "id": "pydew-valley-fazenda-obj-115",
               "name": "",
               "type": "enfeite",
               "x": 121,
@@ -27922,7 +27914,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-116",
+              "id": "pydew-valley-fazenda-obj-116",
               "name": "",
               "type": "enfeite",
               "x": 16,
@@ -27934,7 +27926,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-117",
+              "id": "pydew-valley-fazenda-obj-117",
               "name": "",
               "type": "enfeite",
               "x": 77,
@@ -27946,7 +27938,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-118",
+              "id": "pydew-valley-fazenda-obj-118",
               "name": "",
               "type": "enfeite",
               "x": 62,
@@ -27958,7 +27950,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-119",
+              "id": "pydew-valley-fazenda-obj-119",
               "name": "",
               "type": "enfeite",
               "x": 217,
@@ -27970,7 +27962,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-120",
+              "id": "pydew-valley-fazenda-obj-120",
               "name": "",
               "type": "enfeite",
               "x": 449,
@@ -27982,7 +27974,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-121",
+              "id": "pydew-valley-fazenda-obj-121",
               "name": "",
               "type": "enfeite",
               "x": 570,
@@ -27994,7 +27986,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-122",
+              "id": "pydew-valley-fazenda-obj-122",
               "name": "",
               "type": "enfeite",
               "x": 334,
@@ -28006,7 +27998,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-123",
+              "id": "pydew-valley-fazenda-obj-123",
               "name": "",
               "type": "enfeite",
               "x": 196,
@@ -28018,7 +28010,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-124",
+              "id": "pydew-valley-fazenda-obj-124",
               "name": "",
               "type": "enfeite",
               "x": 240,
@@ -28030,7 +28022,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-125",
+              "id": "pydew-valley-fazenda-obj-125",
               "name": "",
               "type": "enfeite",
               "x": 76,
@@ -28042,7 +28034,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-126",
+              "id": "pydew-valley-fazenda-obj-126",
               "name": "",
               "type": "enfeite",
               "x": 89,
@@ -28054,7 +28046,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-127",
+              "id": "pydew-valley-fazenda-obj-127",
               "name": "",
               "type": "enfeite",
               "x": 206,
@@ -28066,7 +28058,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-128",
+              "id": "pydew-valley-fazenda-obj-128",
               "name": "",
               "type": "enfeite",
               "x": 30,
@@ -28078,7 +28070,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-129",
+              "id": "pydew-valley-fazenda-obj-129",
               "name": "",
               "type": "enfeite",
               "x": 151,
@@ -28090,7 +28082,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-130",
+              "id": "pydew-valley-fazenda-obj-130",
               "name": "",
               "type": "enfeite",
               "x": 154,
@@ -28102,7 +28094,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-131",
+              "id": "pydew-valley-fazenda-obj-131",
               "name": "",
               "type": "enfeite",
               "x": 24,
@@ -28114,7 +28106,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-132",
+              "id": "pydew-valley-fazenda-obj-132",
               "name": "",
               "type": "enfeite",
               "x": 110,
@@ -28126,7 +28118,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-133",
+              "id": "pydew-valley-fazenda-obj-133",
               "name": "",
               "type": "enfeite",
               "x": 61,
@@ -28138,7 +28130,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-134",
+              "id": "pydew-valley-fazenda-obj-134",
               "name": "",
               "type": "enfeite",
               "x": 10,
@@ -28150,7 +28142,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-135",
+              "id": "pydew-valley-fazenda-obj-135",
               "name": "",
               "type": "enfeite",
               "x": 79,
@@ -28162,7 +28154,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-136",
+              "id": "pydew-valley-fazenda-obj-136",
               "name": "",
               "type": "enfeite",
               "x": 147,
@@ -28174,7 +28166,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-137",
+              "id": "pydew-valley-fazenda-obj-137",
               "name": "",
               "type": "enfeite",
               "x": 61,
@@ -28186,7 +28178,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-138",
+              "id": "pydew-valley-fazenda-obj-138",
               "name": "",
               "type": "enfeite",
               "x": 97,
@@ -28198,7 +28190,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-139",
+              "id": "pydew-valley-fazenda-obj-139",
               "name": "",
               "type": "enfeite",
               "x": 134,
@@ -28210,7 +28202,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-140",
+              "id": "pydew-valley-fazenda-obj-140",
               "name": "",
               "type": "enfeite",
               "x": 72,
@@ -28222,7 +28214,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-141",
+              "id": "pydew-valley-fazenda-obj-141",
               "name": "",
               "type": "enfeite",
               "x": 205,
@@ -28234,7 +28226,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-142",
+              "id": "pydew-valley-fazenda-obj-142",
               "name": "",
               "type": "enfeite",
               "x": 522,
@@ -28246,7 +28238,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-143",
+              "id": "pydew-valley-fazenda-obj-143",
               "name": "",
               "type": "enfeite",
               "x": 411,
@@ -28258,7 +28250,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-144",
+              "id": "pydew-valley-fazenda-obj-144",
               "name": "",
               "type": "enfeite",
               "x": 483,
@@ -28270,7 +28262,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-145",
+              "id": "pydew-valley-fazenda-obj-145",
               "name": "",
               "type": "enfeite",
               "x": 359,
@@ -28282,7 +28274,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-146",
+              "id": "pydew-valley-fazenda-obj-146",
               "name": "",
               "type": "enfeite",
               "x": 280,
@@ -28294,7 +28286,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-147",
+              "id": "pydew-valley-fazenda-obj-147",
               "name": "",
               "type": "enfeite",
               "x": 273,
@@ -28306,7 +28298,7 @@
               }
             },
             {
-              "id": "pydew-valley-casa-e-objetos-obj-148",
+              "id": "pydew-valley-fazenda-obj-148",
               "name": "",
               "type": "enfeite",
               "x": 481,
@@ -28319,7 +28311,8 @@
             }
           ]
         }
-      ]
+      ],
+      "schema": 3
     }
   ]
 }

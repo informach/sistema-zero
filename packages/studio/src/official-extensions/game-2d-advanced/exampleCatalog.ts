@@ -1,3 +1,4 @@
+import { pintaSceneExample } from '../map-2d/examples'
 import {
   arenaGoblinsExample,
   aventuraProfissionalExample,
@@ -100,6 +101,7 @@ export const GAME_KIT_EXAMPLE_SECTIONS = {
     }),
   ],
   maiores: [
+    pintaSceneExample('gk'),
     arenaGoblinsExample,
     florestaNinjaExample,
     aventuraProfissionalExample,

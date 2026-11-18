@@ -16,7 +16,7 @@ import type {
   TilemapObjectLayer,
   TilemapObjectPropertyValue,
 } from '../../core/project'
-import { PINTA_LIMITS } from '../../core/project'
+import { MAP_OBJECT_ROLES, MAP_OBJECT_SHAPES, PINTA_LIMITS } from '../../core/project'
 import {
   convertPropertyValue,
   isObjectPropertyKind,
@@ -32,7 +32,7 @@ import { Panel } from '../ui/Panel'
 interface MapObjectPanelProps {
   layer: TilemapObjectLayer
   selectedObjectId: string | null
-  onSelectObject: (id: string | null) => void
+  onSelectObject: (id: string | null, additive?: boolean) => void
   onUpdateObject: (id: string, patch: MapObjectPatch) => void
   onRemoveObject: (id: string) => void
   /** Troca/renomeia UMA propriedade (`previousKey` = renomear mantendo a ordem). */
@@ -77,7 +77,12 @@ export function MapObjectPanel({
                     type="button"
                     aria-pressed={active}
                     aria-label={COPY.tiles.pickObject(name)}
-                    onClick={() => onSelectObject(active ? null : object.id)}
+                    onClick={(event) =>
+                      onSelectObject(
+                        active && !event.shiftKey ? null : object.id,
+                        event.shiftKey || event.ctrlKey || event.metaKey,
+                      )
+                    }
                     className={`flex min-h-11 w-full items-center gap-2 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
                       active ? 'border-pin-accent' : 'border-transparent hover:bg-pin-bg'
                     }`}
@@ -153,6 +158,124 @@ function ObjectDetails({
           )}
         </LabeledField>
         <div className="grid grid-cols-2 gap-2">
+          <LabeledField label={COPY.tiles.objectShape}>
+            {(id) => (
+              <select
+                id={id}
+                className={FIELD}
+                value={object.shape ?? (isPointObject(object) ? 'point' : 'rect')}
+                onChange={(event) => {
+                  const shape = MAP_OBJECT_SHAPES.find((s) => s === event.target.value)
+                  if (shape)
+                    onUpdate({
+                      shape,
+                      ...(shape === 'point'
+                        ? { width: 0, height: 0 }
+                        : { width: object.width || 16, height: object.height || 16 }),
+                      ...((shape === 'polygon' || shape === 'polyline') && !object.points?.length
+                        ? {
+                            points: [
+                              { x: 0, y: 0 },
+                              { x: object.width || 16, y: 0 },
+                              { x: object.width || 16, y: object.height || 16 },
+                            ],
+                          }
+                        : {}),
+                    })
+                }}
+              >
+                {MAP_OBJECT_SHAPES.map((shape) => (
+                  <option key={shape} value={shape}>
+                    {COPY.tiles.objectShapes[shape]}
+                  </option>
+                ))}
+              </select>
+            )}
+          </LabeledField>
+          <LabeledField label={COPY.tiles.objectRotation}>
+            {(id) => (
+              <CommitInput
+                id={id}
+                numeric
+                value={String(object.rotation ?? 0)}
+                onCommit={(text) => onUpdate({ rotation: Number(text) })}
+              />
+            )}
+          </LabeledField>
+        </div>
+        <LabeledField label={COPY.tiles.objectRole}>
+          {(id) => (
+            <select
+              id={id}
+              className={FIELD}
+              value={object.role ?? ''}
+              onChange={(event) =>
+                onUpdate({ role: MAP_OBJECT_ROLES.find((role) => role === event.target.value) })
+              }
+            >
+              <option value="">{COPY.tiles.noRole}</option>
+              {MAP_OBJECT_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {COPY.tiles.objectRoles[role]}
+                </option>
+              ))}
+            </select>
+          )}
+        </LabeledField>
+        {object.shape === 'polygon' || object.shape === 'polyline' ? (
+          <LabeledField label={COPY.scene.pontosXY}>
+            {(id) => (
+              <CommitInput
+                id={id}
+                value={(object.points ?? []).map((p) => `${p.x},${p.y}`).join(' ')}
+                onCommit={(text) => {
+                  const points = text
+                    .trim()
+                    .split(/\s+/)
+                    .map((pair) => {
+                      const [x = NaN, y = NaN] = pair.split(',').map(Number)
+                      return { x, y }
+                    })
+                  if (
+                    points.length >= 2 &&
+                    points.length <= 256 &&
+                    points.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+                  )
+                    onUpdate({ points })
+                }}
+              />
+            )}
+          </LabeledField>
+        ) : null}
+        {object.art || object.setId ? (
+          <div className="flex gap-2">
+            {(['flipX', 'flipY'] as const).map((key, i) => (
+              <label key={key} className="flex items-center gap-1 text-xs">
+                <input
+                  type="checkbox"
+                  checked={object[key] === true}
+                  onChange={(e) => onUpdate({ [key]: e.target.checked ? true : undefined })}
+                />
+                {i ? COPY.scene.virarParaCima : COPY.scene.virarDeLado}
+              </label>
+            ))}
+          </div>
+        ) : null}
+        {object.art?.tile !== undefined ? (
+          <LabeledField label={COPY.scene.pecaDoDesenho}>
+            {(id) => (
+              <CommitInput
+                id={id}
+                numeric
+                value={String(object.art?.tile ?? 0)}
+                onCommit={(value) => {
+                  if (object.art) onUpdate({ art: { ...object.art, tile: Number(value) } })
+                }}
+              />
+            )}
+          </LabeledField>
+        ) : null}
+        <div className="grid grid-cols-2 gap-2">
           {(
             [
               ['x', COPY.tiles.objectX],
@@ -204,7 +327,7 @@ function ObjectDetails({
   )
 }
 
-function PropertyRow({
+export function PropertyRow({
   propertyKey,
   value,
   onRename,
@@ -268,8 +391,8 @@ function PropertyRow({
         ) : (
           <CommitInput
             aria-label={`${COPY.tiles.propertyValue}: ${propertyKey}`}
-            numeric={kind === 'number'}
-            value={String(value)}
+            numeric={kind === 'number' || kind === 'int' || kind === 'float'}
+            value={String(typeof value === 'object' ? value.value : value)}
             maxLength={kind === 'text' ? PINTA_LIMITS.maxObjectPropertyStringChars : undefined}
             onCommit={(text) => onChange(convertPropertyValue(text, kind))}
           />
@@ -307,7 +430,7 @@ function LabeledField({
  * mapa troca a seleção antes do blur; criar ponto/área; tocar no vazio) grava ao
  * desmontar — sem gravar nada quando o texto é o mesmo.
  */
-function CommitInput({
+export function CommitInput({
   value,
   onCommit,
   numeric = false,

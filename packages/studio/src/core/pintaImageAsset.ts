@@ -19,6 +19,8 @@ type ImageBinding = {
   proPath?: unknown
   sprite?: unknown
   tileset?: unknown
+  tilemapFront?: unknown
+  scene?: unknown
   tilemap?: unknown
 }
 
@@ -63,7 +65,9 @@ export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDeri
         !OUTPUT_EXTENSION[metadata.output.mime].test(asset.proPath))) ||
     asset.sprite !== undefined ||
     asset.tileset !== undefined ||
-    asset.tilemap !== undefined
+    asset.tilemap !== undefined ||
+    asset.tilemapFront !== undefined ||
+    asset.scene !== undefined
   )
     throw new Error(
       'A receita do Pinta não corresponde à imagem capturada. O original foi preservado.',

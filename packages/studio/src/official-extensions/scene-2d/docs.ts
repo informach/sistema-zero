@@ -85,10 +85,11 @@ ou repeti-la. O jogo compõe fundo, mundo, frente e placar automaticamente. Não
 desenhar a pista a cada quadro. O bloco comum **Limpar a tela** preserva os cenários automáticos
 no básico. A pista é plana, sem curvas ou relevo 3D.
 
+Métodos JavaScript de \`${api}\`:
 ${sceneMethods(api === 'SZGame2D' ? 'g2d' : 'gk')
   .map(
     (entry) =>
-      `- **${entry.message.replace(/%\d+/g, '…')}**: \`${api}.${entry.method}\`. ${entry.tooltip}`,
+      `- **${entry.message.replace(/%\d+/g, '…')}**: \`${entry.method}\`. ${entry.tooltip}`,
   )
   .join('\n')}
 ${examples ? `Abra **Descida da Neve (${basic ? 'Jogo 2D' : 'Jogo 2D Avançado'})**. O básico ensina controles, sprites e coleta. O intermediário combina controles, vida, encontros, placar e telas; exige seis estrelas na chegada. **Descida da Neve (Canvas)** deixa as contas e funções à mostra, sem extensão.` : ''}

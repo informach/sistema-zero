@@ -1281,6 +1281,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (!doc) return
     const item = clipboard.getState().get()
     if (!item) return
+    if (item.kind === 'objects') {
+      showToast(COPY.clipboard.objectsIntoDrawing)
+      return
+    }
     const shapes = currentShapes()
     const target = { width: doc.width, height: doc.height }
     let copies: VectorShape[]

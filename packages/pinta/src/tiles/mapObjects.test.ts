@@ -192,7 +192,7 @@ describe('sanitize: camadas de objetos', () => {
     const back = sanitizePintaAsset(raw) as TilemapAsset
     // O documento guarda até o teto do FORMATO (o editor ainda cria até `maxTilemapLayers`).
     expect(back.layers).toHaveLength(PINTA_MAP_FORMAT_LIMITS.maxLayers)
-    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(PINTA_LIMITS.maxTilemapLayers)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThanOrEqual(PINTA_LIMITS.maxTilemapLayers)
     expect(objectLayerOf(back).objects).toHaveLength(PINTA_LIMITS.maxTilemapObjects)
   })
 
@@ -307,9 +307,10 @@ describe('ops: peças por camada', () => {
     expect(removeLayer(map, objectLayerOf(map).id).layers).toHaveLength(1)
   })
 
-  it('o teto de 8 camadas vale para peças e objetos somados', () => {
+  it('o teto de camadas vale para peças, grupos e objetos somados', () => {
     let map = createTilemapAsset({ name: 'fase', tilesetId: 't', cols: 1, rows: 1 })
-    for (let i = 0; i < 10; i += 1) map = i % 2 ? addLayer(map, `p${i}`) : addObjectLayer(map, '')
+    for (let i = 0; i < PINTA_LIMITS.maxTilemapLayers + 2; i += 1)
+      map = i % 2 ? addLayer(map, `p${i}`) : addObjectLayer(map, '')
     expect(map.layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers)
   })
 })

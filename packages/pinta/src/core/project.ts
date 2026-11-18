@@ -80,6 +80,7 @@ export const PINTA_ASSET_KINDS = [
   'vector-sprite',
   'vector-background',
   'vector-tileset',
+  'map-set',
 ] as const
 
 export type PintaAssetKind = (typeof PINTA_ASSET_KINDS)[number]
@@ -98,7 +99,7 @@ export type PintaAssetRole = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 /** Estilo derivado do kind. `null` para o tilemap (herda o estilo das peças). */
 export function assetStyle(kind: PintaAssetKind): PintaAssetStyle | null {
-  if (kind === 'tilemap') return null
+  if (kind === 'tilemap' || kind === 'map-set') return null
   return kind.startsWith('vector') ? 'vector' : 'pixel'
 }
 
@@ -114,6 +115,7 @@ export function assetRole(kind: PintaAssetKind): PintaAssetRole {
     case 'vector-tileset':
       return 'tileset'
     case 'tilemap':
+    case 'map-set':
       return 'tilemap'
   }
 }
@@ -282,6 +284,95 @@ export interface TilesetAsset extends PintaAssetBase {
    * baixo). Mutuamente exclusivo com `solid` (sólido vence no conflito).
    */
   platform: boolean[]
+  schema?: number
+  animations?: Record<string, TileAnimationFrame[]>
+  terrains?: TileTerrain[]
+  tileProperties?: Record<string, Record<string, TilemapObjectPropertyValue>>
+}
+
+export interface TileAnimationFrame {
+  tile: number
+  duration: number
+}
+/** As oito posições Wang, em sentido horário, começando pela borda de cima. Zero = vazio. */
+export interface TileTerrain {
+  id: string
+  name: string
+  mode: 'corner' | 'edge' | 'mixed'
+  colors: string[]
+  tiles: Record<string, number[]>
+}
+
+/** Metadados das peças, compartilhados pelo pixel e pelo vetor. */
+export function sanitizeTilesetExtras(
+  record: Record<string, unknown>,
+  count: number,
+): Pick<TilesetAsset, 'schema' | 'animations' | 'terrains' | 'tileProperties'> {
+  const out: Pick<TilesetAsset, 'schema' | 'animations' | 'terrains' | 'tileProperties'> = {}
+  const validIndex = (key: string): boolean => /^(0|[1-9]\d*)$/.test(key) && Number(key) < count
+  if (record.animations && typeof record.animations === 'object') {
+    const entries = Object.entries(record.animations)
+      .filter(([key]) => validIndex(key))
+      .flatMap(([key, raw]) => {
+        if (!Array.isArray(raw)) return []
+        const frames: TileAnimationFrame[] = raw.slice(0, 64).flatMap((f) => {
+          if (
+            !f ||
+            typeof f !== 'object' ||
+            !Number.isInteger(f.tile) ||
+            f.tile < 0 ||
+            f.tile >= count ||
+            typeof f.duration !== 'number' ||
+            !Number.isFinite(f.duration)
+          )
+            return []
+          return [{ tile: f.tile, duration: clampInt(f.duration, 16, 60000) }]
+        })
+        return frames.length ? [[key, frames] as const] : []
+      })
+    if (entries.length) out.animations = Object.fromEntries(entries)
+  }
+  if (record.tileProperties && typeof record.tileProperties === 'object') {
+    const entries = Object.entries(record.tileProperties)
+      .filter(([key]) => validIndex(key))
+      .map(([key, value]) => [key, sanitizeObjectProperties(value)] as const)
+      .filter(([, value]) => Object.keys(value).length)
+    if (entries.length) out.tileProperties = Object.fromEntries(entries)
+  }
+  if (Array.isArray(record.terrains)) {
+    const terrains: TileTerrain[] = record.terrains.slice(0, 16).flatMap((t) => {
+      if (
+        !t ||
+        typeof t !== 'object' ||
+        !isTilesetRef(t.id) ||
+        !['corner', 'edge', 'mixed'].includes(t.mode) ||
+        !Array.isArray(t.colors) ||
+        !t.tiles ||
+        typeof t.tiles !== 'object'
+      )
+        return []
+      const colors = t.colors
+        .slice(0, 15)
+        .map((c: unknown) =>
+          typeof c === 'string' && /^#[\da-f]{6}$/i.test(c) ? c.toLowerCase() : '#808080',
+        )
+      const tiles = Object.fromEntries(
+        Object.entries(t.tiles).filter(
+          ([key, v]) =>
+            validIndex(key) &&
+            Array.isArray(v) &&
+            v.length === 8 &&
+            v.every((c) => Number.isInteger(c) && c >= 0 && c <= colors.length),
+        ),
+      )
+      return [
+        { id: t.id, name: sanitizeObjectText(t.name), mode: t.mode, colors, tiles } as TileTerrain,
+      ]
+    })
+    if (terrains.length) out.terrains = ensureUniqueIds(terrains)
+  }
+  if (count > LEGACY_MAP.tiles || Object.keys(out).length) out.schema = PINTA_MAP_SCHEMA
+  return out
 }
 
 /**
@@ -339,7 +430,35 @@ export interface TilemapTileLayer extends TilemapLayerCommon {
 }
 
 /** Valor de uma propriedade de objeto: texto, número ou sim/não. */
-export type TilemapObjectPropertyValue = string | number | boolean
+export type TilemapObjectPropertyValue =
+  | string
+  | number
+  | boolean
+  | {
+      type: 'int' | 'float' | 'color' | 'object' | 'asset'
+      value: string | number
+    }
+
+export const MAP_OBJECT_SHAPES = [
+  'point',
+  'rect',
+  'ellipse',
+  'polygon',
+  'polyline',
+  'art',
+  'set',
+] as const
+export type MapObjectShape = (typeof MAP_OBJECT_SHAPES)[number]
+export const MAP_OBJECT_ROLES = [
+  'start',
+  'danger',
+  'door',
+  'path',
+  'trigger',
+  'enemy',
+  'region',
+] as const
+export type MapObjectRole = (typeof MAP_OBJECT_ROLES)[number]
 
 /**
  * Um OBJETO do mapa: ponto de partida do jogador, inimigo, porta, área de
@@ -358,6 +477,14 @@ export interface TilemapObject {
   height: number
   /** Até `maxObjectProperties` pares; chaves em `OBJECT_PROPERTY_KEY_PATTERN`. */
   properties: Record<string, TilemapObjectPropertyValue>
+  shape?: MapObjectShape
+  points?: Array<{ x: number; y: number }>
+  rotation?: number
+  flipX?: true
+  flipY?: true
+  art?: { assetId: string; tile?: number }
+  setId?: string
+  role?: MapObjectRole
 }
 
 /** Camada de OBJETOS: não tem peças, só a lista de objetos. */
@@ -404,6 +531,13 @@ export interface TilemapAsset extends PintaAssetBase {
    * regravar), em vez de cortar o que não entende.
    */
   schema?: number
+}
+
+/** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
+export interface MapSetAsset extends PintaAssetBase {
+  kind: 'map-set'
+  schema: 3
+  map: TilemapAsset
 }
 
 export function isTileLayer(layer: TilemapLayer): layer is TilemapTileLayer {
@@ -494,7 +628,32 @@ export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
 
 /** O mapa usa este tileset (como padrão ou em alguma camada)? */
 export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): boolean {
-  return tilemapTilesetIds(tilemap).includes(tilesetId)
+  return (
+    tilemapTilesetIds(tilemap).includes(tilesetId) ||
+    tilemap.layers.some(
+      (l) => isObjectLayer(l) && l.objects.some((o) => o.art?.assetId === tilesetId),
+    )
+  )
+}
+
+/** Dependências visuais diretas. A travessia e a transação pertencem ao adaptador. */
+export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
+  const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
+  return map
+    ? [
+        ...new Set([
+          ...tilemapTilesetIds(map),
+          ...map.layers.flatMap((l) =>
+            isObjectLayer(l)
+              ? l.objects.flatMap((o) => [
+                  ...(o.art ? [o.art.assetId] : []),
+                  ...(o.setId ? [o.setId] : []),
+                ])
+              : [],
+          ),
+        ]),
+      ]
+    : []
 }
 
 /**
@@ -557,6 +716,7 @@ export function tilemapNeedsV3(tilemap: TilemapAsset): boolean {
       layer.properties !== undefined
     )
       return true
+    if (isObjectLayer(layer)) return layer.objects.some(objectNeedsV3)
     if (!isTileLayer(layer)) return false
     if (layer.collision !== undefined) return true
     // Peça acima do teto antigo ou virada: o código antigo descartaria a camada inteira.
@@ -608,6 +768,10 @@ export interface VectorBackgroundAsset extends PintaAssetBase {
 
 export interface VectorTilesetAsset extends PintaAssetBase {
   kind: 'vector-tileset'
+  schema?: number
+  animations?: Record<string, TileAnimationFrame[]>
+  terrains?: TileTerrain[]
+  tileProperties?: Record<string, Record<string, TilemapObjectPropertyValue>>
   /** Tile QUADRADO (o bloco de tilemap do Studio usa um número só). */
   tileSize: number
   /** O índice no array É o índice do tile no Studio (empacotamento row-major). */
@@ -629,6 +793,7 @@ export type PintaAsset =
   | VectorSpriteAsset
   | VectorBackgroundAsset
   | VectorTilesetAsset
+  | MapSetAsset
 
 /** Os dois estilos de tileset — o tilemap referencia qualquer um. */
 export type AnyTilesetAsset = TilesetAsset | VectorTilesetAsset
@@ -1096,7 +1261,7 @@ function sanitizeObjectText(value: unknown): string {
  * número não finito e o que passa do teto CAEM; texto longo é cortado. Montado
  * por `Object.fromEntries` (propriedade própria, nunca o protótipo).
  */
-function sanitizeObjectProperties(raw: unknown): Record<string, TilemapObjectPropertyValue> {
+export function sanitizeObjectProperties(raw: unknown): Record<string, TilemapObjectPropertyValue> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
   const entries: Array<[string, TilemapObjectPropertyValue]> = []
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
@@ -1109,13 +1274,95 @@ function sanitizeObjectProperties(raw: unknown): Record<string, TilemapObjectPro
       entries.push([key, value])
     } else if (typeof value === 'boolean') {
       entries.push([key, value])
+    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const v = value as Record<string, unknown>
+      if (
+        (v.type === 'int' || v.type === 'float') &&
+        typeof v.value === 'number' &&
+        Number.isFinite(v.value)
+      )
+        entries.push([
+          key,
+          { type: v.type, value: v.type === 'int' ? Math.round(v.value) : v.value },
+        ])
+      else if (
+        v.type === 'color' &&
+        typeof v.value === 'string' &&
+        /^#[\da-f]{6}([\da-f]{2})?$/i.test(v.value)
+      )
+        entries.push([key, { type: v.type, value: v.value.toLowerCase() }])
+      else if (
+        (v.type === 'object' || v.type === 'asset') &&
+        typeof v.value === 'string' &&
+        v.value.length > 0 &&
+        v.value.length <= 200
+      )
+        entries.push([key, { type: v.type, value: v.value }])
     }
   }
   return Object.fromEntries(entries)
 }
 
 /** Os objetos de uma camada: objeto sem id ou com medida inválida é DESCARTADO. */
-function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
+export function objectNeedsV3(o: TilemapObject): boolean {
+  return (
+    o.shape !== undefined ||
+    o.rotation !== undefined ||
+    o.flipX === true ||
+    o.flipY === true ||
+    o.role !== undefined ||
+    o.art !== undefined ||
+    o.setId !== undefined ||
+    Object.values(o.properties).some((v) => typeof v === 'object')
+  )
+}
+
+export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<TilemapObject> {
+  const out: Partial<TilemapObject> = {}
+  if (typeof o.shape === 'string' && (MAP_OBJECT_SHAPES as readonly string[]).includes(o.shape))
+    out.shape = o.shape as MapObjectShape
+  if (out.shape === 'polygon' || out.shape === 'polyline') {
+    if (Array.isArray(o.points))
+      out.points = o.points.slice(0, 256).flatMap((p) => {
+        if (
+          !p ||
+          typeof p !== 'object' ||
+          typeof p.x !== 'number' ||
+          typeof p.y !== 'number' ||
+          !Number.isFinite(p.x) ||
+          !Number.isFinite(p.y)
+        )
+          return []
+        const max = PINTA_MAP_FORMAT_LIMITS.maxObjectCoord
+        return [{ x: Math.max(-max, Math.min(max, p.x)), y: Math.max(-max, Math.min(max, p.y)) }]
+      })
+  }
+  if (typeof o.rotation === 'number' && Number.isFinite(o.rotation)) {
+    const angle = ((o.rotation % 360) + 360) % 360
+    if (angle) out.rotation = angle
+  }
+  if (o.flipX === true) out.flipX = true
+  if (o.flipY === true) out.flipY = true
+  if (typeof o.role === 'string' && (MAP_OBJECT_ROLES as readonly string[]).includes(o.role))
+    out.role = o.role as MapObjectRole
+  if (o.art && typeof o.art === 'object') {
+    const a = o.art as Record<string, unknown>
+    if (isTilesetRef(a.assetId))
+      out.art = {
+        assetId: a.assetId,
+        ...(typeof a.tile === 'number' &&
+        Number.isInteger(a.tile) &&
+        a.tile >= 0 &&
+        a.tile < PINTA_MAP_FORMAT_LIMITS.maxTiles
+          ? { tile: a.tile }
+          : {}),
+      }
+  }
+  if (isTilesetRef(o.setId)) out.setId = o.setId
+  return out
+}
+
+export function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
   if (!Array.isArray(raw)) return []
   const objects: TilemapObject[] = []
   for (const item of raw.slice(0, PINTA_LIMITS.maxTilemapObjects)) {
@@ -1136,6 +1383,7 @@ function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
       width,
       height,
       properties: sanitizeObjectProperties(o.properties),
+      ...sanitizeObjectExtras(o),
     })
   }
   return ensureUniqueIds(objects)
@@ -1233,6 +1481,11 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     }
     case 'tileset': {
       if (
+        record.schema !== undefined &&
+        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAP_SCHEMA)
+      )
+        return null
+      if (
         typeof record.tileSize !== 'number' ||
         !TILE_SIZES.includes(record.tileSize as (typeof TILE_SIZES)[number])
       ) {
@@ -1263,6 +1516,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         tiles,
         solid,
         platform,
+        ...sanitizeTilesetExtras(record, tiles.length),
       }
     }
     case 'tilemap': {
@@ -1346,6 +1600,24 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       // deixa de precisar (o mapa que cabe no formato antigo fica byte a byte como era).
       return tilemapNeedsV3(tilemap) ? { ...tilemap, schema: PINTA_MAP_SCHEMA } : tilemap
     }
+    case 'map-set': {
+      if (
+        record.schema !== 3 ||
+        !record.map ||
+        typeof record.map !== 'object' ||
+        (record.map as Record<string, unknown>).kind !== 'tilemap'
+      )
+        return null
+      const map = sanitizePintaAsset(record.map)
+      if (map?.kind !== 'tilemap') return null
+      if (
+        map.layers.some(
+          (l) => isObjectLayer(l) && l.objects.some((o) => o.setId || o.shape === 'set'),
+        )
+      )
+        return null
+      return { ...base, kind: 'map-set', schema: 3, map }
+    }
     // `vector` é o kind ANTIGO (pré paridade vetorial): migra para
     // `vector-background` aqui, sem tocar nos dados.
     case 'vector':
@@ -1383,6 +1655,11 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     }
     case 'vector-tileset': {
       if (
+        record.schema !== undefined &&
+        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAP_SCHEMA)
+      )
+        return null
+      if (
         typeof record.tileSize !== 'number' ||
         !VECTOR_TILE_SIZES.includes(record.tileSize as (typeof VECTOR_TILE_SIZES)[number])
       ) {
@@ -1398,7 +1675,15 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       const solid = tiles.map((_, i) => rawSolid[i] === true)
       const rawPlatform = Array.isArray(record.platform) ? record.platform : []
       const platform = tiles.map((_, i) => rawPlatform[i] === true && solid[i] !== true)
-      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid, platform }
+      return {
+        ...base,
+        kind: 'vector-tileset',
+        tileSize: record.tileSize,
+        tiles,
+        solid,
+        platform,
+        ...sanitizeTilesetExtras(record, tiles.length),
+      }
     }
     default:
       return null

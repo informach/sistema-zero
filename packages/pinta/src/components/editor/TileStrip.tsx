@@ -7,11 +7,12 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
+  type MapSetAsset,
   type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
@@ -32,9 +33,11 @@ import {
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaApp } from '../appContext'
 import { ToolButton } from '../ui/Button'
+import { Dialog } from '../ui/Dialog'
 import { ArrowUpToLine, BrickWall, Copy, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { DEFAULT_MAP_BRUSH, MapTerrainPanel } from './MapTerrainPanel'
 
 function PixelTileThumb({
   bitmap,
@@ -134,6 +137,8 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const frameIndex = useSession((state) => state.frameIndex)
+  const [details, setDetails] = useState(false),
+    [brush, setBrush] = useState(DEFAULT_MAP_BRUSH)
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   if (!isTilesetKind(asset)) return null
@@ -157,12 +162,17 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       gallery
         .getState()
         .assets.filter(
-          (a): a is TilemapAsset => a.kind === 'tilemap' && tilemapUsesTileset(a, asset.id),
+          (a): a is TilemapAsset | MapSetAsset =>
+            (a.kind === 'tilemap' && tilemapUsesTileset(a, asset.id)) ||
+            (a.kind === 'map-set' && tilemapUsesTileset(a.map, asset.id)),
         )
         .map((tilemap) => [tilemap.id, tilemap]),
     )
     for (const linked of editor.getState().linkedAssets ?? []) {
-      if (linked.kind === 'tilemap' && tilemapUsesTileset(linked, asset.id)) {
+      if (
+        (linked.kind === 'tilemap' && tilemapUsesTileset(linked, asset.id)) ||
+        (linked.kind === 'map-set' && tilemapUsesTileset(linked.map, asset.id))
+      ) {
         affectedById.set(linked.id, linked)
       }
     }
@@ -171,8 +181,10 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     const after: PintaAsset[] = []
     for (const tilemap of affected) {
       // Só as camadas que usam ESTE tileset: as de outras peças não mudam de índice.
-      const next = remapTilemapCells(tilemap, change, asset.id)
-      if (next === tilemap) continue
+      const source = tilemap.kind === 'map-set' ? tilemap.map : tilemap
+      const map = remapTilemapCells(source, change, asset.id)
+      if (map === source) continue
+      const next = tilemap.kind === 'map-set' ? { ...tilemap, map } : map
       before.push(tilemap)
       after.push({ ...next, updatedAt: Date.now() })
     }
@@ -206,6 +218,22 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     // O cartão branco da faixa azul (11/09/2026, no desenho da faixa de quadros do personagem).
     <div className={clsx('flex items-center gap-2 rounded-2xl bg-pin-surface p-2', className)}>
       <span className="pin-section-title px-1">{COPY.tiles.tiles}</span>
+      <ToolButton
+        tone="quiet"
+        icon={Copy}
+        label={COPY.scene.terrenosPropriedadesEAnimacao}
+        onClick={() => setDetails(true)}
+      />
+      {details ? (
+        <Dialog open title={COPY.scene.detalhesDaPeca} onClose={() => setDetails(false)}>
+          <MapTerrainPanel
+            tileset={asset}
+            tile={selectedIndex}
+            settings={brush}
+            onChange={setBrush}
+          />
+        </Dialog>
+      ) : null}
       <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto p-1">
         {asset.tiles.map((tile, index) => (
           <TileThumbButton

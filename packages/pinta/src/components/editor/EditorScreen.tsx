@@ -14,6 +14,8 @@
  * domina: rail horizontal em cima, paleta em linha única e prévia/animações colapsáveis (os
  * painéis ali seguem em cartão).
  */
+
+import { sceneObjects } from '@sistemazero/core/studio/pinta-scene-runtime'
 import type { JSX } from 'react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
@@ -69,6 +71,7 @@ import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
 import { LayerPanel } from './LayerPanel'
+import { MapSetEditor } from './MapSetEditor'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
@@ -324,6 +327,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
+  if (asset.kind === 'map-set') return <MapSetEditor />
   // Kinds vetoriais: o MESMO arranjo do pixel — caixa de ferramentas à
   // esquerda, palco no meio, UMA coluna direita `w-68` (prévia → cores →
   // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
@@ -445,6 +449,8 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         ...(payload.sprite ? { sprite: payload.sprite } : {}),
         ...(payload.tileset ? { tileset: payload.tileset } : {}),
         ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
+        ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
+        ...(payload.scene ? { scene: payload.scene } : {}),
       })
       const successCopy = payload.tilemap
         ? adapter.studioOwned
@@ -466,7 +472,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
     if (!adapter.sendGameToStudio || sending) return
     setSending(true)
     const payload = await exportForStudio().catch(() => null)
-    if (!payload?.tilemap) {
+    if (!payload?.tilemap && !payload?.scene) {
       setSending(false)
       showToast(COPY.sendToStudio.error)
       return
@@ -479,6 +485,28 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
       return
     }
     try {
+      const maps: NonNullable<import('../../core/types').PintaExportedAsset['maps']> = []
+      const visited = new Set([asset.id]),
+        queue = payload.scene ? [payload.scene] : []
+      for (const scene of queue)
+        for (const o of sceneObjects(scene))
+          if (o.role === 'door') {
+            const raw = o.properties.destino ?? o.properties.destination,
+              ref = typeof raw === 'object' ? raw.value : raw
+            const target = gallery.getState().assets.find((a) => a.id === ref || a.name === ref)
+            if (target?.kind !== 'tilemap' || visited.has(target.id)) continue
+            if (visited.size >= 16) throw new Error(COPY.scene.esteJogoPassouDe16MapasLigados)
+            visited.add(target.id)
+            const prepared = await buildStudioPayload(
+              target,
+              (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
+              { animationId: null, frameIndex: 0 },
+            )
+            if (!prepared || validateStudioPayloadSize(prepared) !== 'ok')
+              throw new Error(COPY.sendToStudio.tooBig)
+            maps.push({ ...prepared, id: target.id, name: target.name })
+            if (prepared.scene) queue.push(prepared.scene)
+          }
       const result = await adapter.sendGameToStudio({
         id: asset.id,
         name: asset.name,
@@ -486,7 +514,9 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         width: payload.width,
         height: payload.height,
         tilemap: payload.tilemap,
+        ...(payload.scene ? { scene: payload.scene } : {}),
         ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
+        ...(maps.length ? { maps } : {}),
       })
       showToast(
         result.ok ? COPY.sendToStudio.playSuccess : (result.error ?? COPY.sendToStudio.error),

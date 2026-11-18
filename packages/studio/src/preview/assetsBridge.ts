@@ -1,3 +1,5 @@
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { sanitizeSceneMeta, sanitizeTilemapMeta } from '../core/projectAssets'
 /**
  * Runtime injetado no `<head>` do iframe (ANTES dos runtimes de extensão e do
  * código do aluno) que semeia o MANIFESTO de assets do projeto em
@@ -90,6 +92,8 @@ function clampManifest(entries: Record<string, string>, prefix: string): Record<
 
 /** Entrada de metadado de preview de UM asset: mapa e/ou caixa de colisão. */
 export interface AssetPreviewMeta {
+  scene?: PintaScene
+  tilemapFront?: ProjectTilemapMeta
   tilemap?: ProjectTilemapMeta
   /** Caixa MEDIDA no desenho (fração do quadro) — o runtime aplica sozinho. */
   hitbox?: ProjectSpriteHitbox
@@ -113,19 +117,25 @@ function safeMetaManifest(
   for (const [name, entry] of Object.entries(meta)) {
     if (!Object.hasOwn(safeAssets, name)) continue
     const tilemap = safeTilemapEntry(entry?.tilemap)
+    const scene = sanitizeSceneMeta(entry?.scene),
+      tilemapFront = sanitizeTilemapMeta(entry?.tilemapFront)
     const hitbox = safeHitboxEntry(entry?.hitbox)
     const sprite = sanitizeSpriteMeta(entry?.sprite)
     // Entrada vazia não entra: meta sem conteúdo só inflaria o srcdoc.
-    if (!tilemap && !hitbox && !sprite) continue
+    if (!tilemap && !scene && !hitbox && !sprite) continue
     // Mapas e animações compartilham o orçamento de metadados do preview.
     const size =
       name.length +
+      (scene ? JSON.stringify(scene).length : 0) +
+      (tilemapFront ? JSON.stringify(tilemapFront).length : 0) +
       (sprite ? JSON.stringify(sprite).length : 0) +
       (tilemap ? tilemap.tileset.dataUrl.length + tilemap.grid.length : 0)
     if (totalChars + size > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
     totalChars += size
     out[name] = {
       ...(tilemap ? { tilemap } : {}),
+      ...(scene ? { scene } : {}),
+      ...(tilemapFront ? { tilemapFront } : {}),
       ...(hitbox ? { hitbox } : {}),
       ...(sprite ? { sprite } : {}),
     }

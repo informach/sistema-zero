@@ -57,6 +57,7 @@ export function customSizeSpecFor(kind: PintaAssetKind): CustomSizeSpec | null {
       // o spec precisa de min/max POR campo.
       return { fields: ['cols', 'rows'], min: 1, max: PINTA_LIMITS.maxTilemapCols }
     case 'tileset':
+    case 'map-set':
     case 'vector-tileset':
       return null
   }

@@ -90,7 +90,7 @@ describe('🚨 a borda e o domínio conhecem os MESMOS tipos de desenho', () => 
     expect([...kindsAceitosNaBorda()].sort()).toEqual([...PINTA_ASSET_KINDS].sort())
   })
 
-  it('a leitura da borda é de verdade (anti-vácuo: achou os 7)', () => {
-    expect(kindsAceitosNaBorda()).toHaveLength(7)
+  it('a leitura da borda é de verdade (anti-vácuo: achou os 8)', () => {
+    expect(kindsAceitosNaBorda()).toHaveLength(8)
   })
 })

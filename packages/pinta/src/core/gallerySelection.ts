@@ -1,4 +1,4 @@
-import { isTilesetKind, type PintaAsset, tilemapTilesetIds } from './project'
+import { isTilesetKind, type PintaAsset, pintaAssetDependencyIds } from './project'
 
 /**
  * Expande a seleção do PACK com as dependências: um mapa selecionado leva os
@@ -25,15 +25,15 @@ export function expandSelection(
   for (const asset of assets) {
     if (selectedIds.has(asset.id)) wanted.add(asset.id)
   }
-  for (const asset of assets) {
-    if (asset.kind !== 'tilemap' || !wanted.has(asset.id)) continue
-    // Todas as peças do mapa (a padrão e as de cada camada).
-    for (const tilesetId of tilemapTilesetIds(asset)) {
+  const queue = assets.filter((a) => wanted.has(a.id))
+  for (const asset of queue) {
+    for (const tilesetId of pintaAssetDependencyIds(asset)) {
       if (wanted.has(tilesetId)) continue
-      const tileset = assets.find((c) => isTilesetKind(c) && c.id === tilesetId)
+      const tileset = assets.find((c) => c.id === tilesetId)
       if (tileset) {
         wanted.add(tileset.id)
         autoIncluded.push(tileset.id)
+        queue.push(tileset)
       }
     }
   }

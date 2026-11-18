@@ -28,6 +28,7 @@ import {
   type StudioProBuildLimits,
   sanitizeProjectAssetLicense,
   sanitizeProjectAssets,
+  sanitizeSceneMeta,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
@@ -359,6 +360,8 @@ export interface NewAssetInput {
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
+  scene?: unknown
+  tilemapFront?: unknown
   tilemap?: unknown
 }
 
@@ -391,6 +394,8 @@ export interface UpdateAssetImageInput {
   /** Metadados do desenho de origem; ausentes seguem a regra da geometria. */
   sprite?: unknown
   tileset?: unknown
+  scene?: unknown
+  tilemapFront?: unknown
   tilemap?: unknown
   /** Revisão dos bytes na biblioteca pessoal. */
   libRevision?: number
@@ -1348,6 +1353,10 @@ export function createProjectStore(
         const sprite = isImage ? sanitizeSpriteMeta(input.sprite) : undefined
         const tileset = isImage ? sanitizeTilesetMeta(input.tileset) : undefined
         const tilemap = isImage ? sanitizeTilemapMeta(input.tilemap) : undefined
+        const scene = isImage ? sanitizeSceneMeta(input.scene) : undefined,
+          tilemapFront = isImage ? sanitizeTilemapMeta(input.tilemapFront) : undefined
+        if (input.scene && !scene)
+          return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
         let pintaImage: ProjectAsset['pintaImage']
         try {
           pintaImage = readPintaImageAssetMetadata({ ...input, kind })
@@ -1384,6 +1393,8 @@ export function createProjectStore(
           ...(sprite ? { sprite } : {}),
           ...(tileset ? { tileset } : {}),
           ...(tilemap ? { tilemap } : {}),
+          ...(scene ? { scene } : {}),
+          ...(tilemapFront ? { tilemapFront } : {}),
           ...(pintaImage ? { pintaImage } : {}),
         }
         if (isPythonProject(p)) {
@@ -1496,6 +1507,8 @@ export function createProjectStore(
             sprite: image.sprite,
             tileset: image.tileset,
             tilemap: image.tilemap,
+            scene: image.scene,
+            tilemapFront: image.tilemapFront,
           })
         } catch (error) {
           return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
@@ -1518,6 +1531,10 @@ export function createProjectStore(
             : undefined
         if (
           target.dataUrl === image.dataUrl &&
+          (image.scene === undefined ||
+            canonicalJson(target.scene ?? null) === canonicalJson(image.scene)) &&
+          (image.tilemapFront === undefined ||
+            canonicalJson(target.tilemapFront ?? null) === canonicalJson(image.tilemapFront)) &&
           (libRevision === undefined || target.libRevision === libRevision) &&
           (pintaImage === undefined ||
             canonicalJson(target.pintaImage ?? null) === canonicalJson(pintaImage))
@@ -1571,6 +1588,15 @@ export function createProjectStore(
           ? undefined
           : (sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined))
 
+        const scene = pintaImage
+          ? undefined
+          : (sanitizeSceneMeta(image.scene) ?? (sameGeometry ? target.scene : undefined))
+        const tilemapFront = pintaImage
+          ? undefined
+          : (sanitizeTilemapMeta(image.tilemapFront) ??
+            (sameGeometry ? target.tilemapFront : undefined))
+        if (image.scene && !scene)
+          return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
         // ⚠️ `name`, `id`, `libId` e `source` ficam INTOCADOS: os blocos referenciam
         // o asset PELO NOME (FieldAssetPicker serializa a string), então renomear
         // aqui quebraria o jogo em silêncio — e o nome no projeto pode divergir do
@@ -1590,6 +1616,10 @@ export function createProjectStore(
         else delete next.tileset
         if (tilemap) next.tilemap = tilemap
         else delete next.tilemap
+        if (scene) next.scene = scene
+        else delete next.scene
+        if (tilemapFront) next.tilemapFront = tilemapFront
+        else delete next.tilemapFront
 
         set({
           project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
@@ -1627,7 +1657,14 @@ export function createProjectStore(
         )
           return 'Imagem inválida ou grande demais.'
         // Os metadados de JavaScript (peças/mapa configurados aqui) não valem para a receita.
-        const { sprite: _sprite, tileset: _tileset, tilemap: _tilemap, ...kept } = target
+        const {
+          sprite: _sprite,
+          tileset: _tileset,
+          tilemap: _tilemap,
+          scene: _scene,
+          tilemapFront: _front,
+          ...kept
+        } = target
         const libRevision =
           typeof link.libRevision === 'number' &&
           Number.isFinite(link.libRevision) &&

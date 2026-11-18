@@ -56,6 +56,7 @@ const TILEMAP_SIZES = [
   { cols: 40, rows: 30 },
   { cols: 64, rows: 48 },
   { cols: 128, rows: 96 },
+  { cols: 256, rows: 192 },
 ] as const
 
 const STYLE_ORDER: PintaAssetStyle[] = ['pixel', 'vector']
@@ -68,6 +69,7 @@ const KINDS_BY_STYLE: Record<PintaAssetStyle, PintaAssetKind[]> = {
 
 /** Cor do cartão por PAPEL (personagem/cenário/peças/mapa), igual nos 2 estilos. */
 const KIND_RING_CLASSES: Record<PintaAssetKind, string> = {
+  'map-set': 'border-pin-kind-tilemap',
   'pixel-sprite': 'border-pin-kind-sprite',
   'pixel-background': 'border-pin-kind-background',
   tileset: 'border-pin-kind-tileset',
@@ -124,6 +126,8 @@ interface SizeChoice {
 
 function sizeChoicesFor(kind: PintaAssetKind): SizeChoice[] {
   switch (kind) {
+    case 'map-set':
+      return []
     case 'pixel-sprite':
       return SPRITE_FRAME_SIZES.map((size) => ({
         key: String(size),
@@ -140,13 +144,13 @@ function sizeChoicesFor(kind: PintaAssetKind): SizeChoice[] {
       return TILE_SIZES.map((size, index) => ({
         key: String(size),
         label: COPY.sizeScale[index] ?? '',
-        detail: `peças de ${size} × ${size}`,
+        detail: COPY.scene.dynamicPecasDe3(size, size),
       }))
     case 'tilemap':
       return TILEMAP_SIZES.map((size, index) => ({
         key: `${size.cols}x${size.rows}`,
         label: COPY.sizeScale[index] ?? '',
-        detail: `${size.cols} × ${size.rows} peças`,
+        detail: COPY.scene.dynamicPecas(size.cols, size.rows),
       }))
     case 'vector-sprite':
       return VECTOR_SPRITE_SIZES.map((size, index) => ({
@@ -164,7 +168,7 @@ function sizeChoicesFor(kind: PintaAssetKind): SizeChoice[] {
       return VECTOR_TILE_SIZES.map((size, index) => ({
         key: String(size),
         label: COPY.sizeScale[index] ?? '',
-        detail: `peças de ${size} × ${size}`,
+        detail: COPY.scene.dynamicPecasDe4(size, size),
       }))
   }
 }
@@ -185,6 +189,8 @@ function buildInput(
   tilesetId: string,
 ): NewAssetInput {
   switch (kind) {
+    case 'map-set':
+      throw new Error(COPY.scene.crieOConjuntoSelecionandoUmPedacoDo)
     case 'pixel-sprite': {
       const [w, h] = quadro(sizeKey)
       return { kind, name, frameSize: w, frameWidth: w, frameHeight: h }
@@ -548,7 +554,8 @@ export function NewAssetDialog({
                         ) : null}
                       </span>
                       <span className="text-xs text-pin-muted">
-                        {COPY.newAsset.tilesetPieces(tileset.tiles.length)} · {tileset.tileSize}×
+                        {COPY.newAsset.tilesetPieces(tileset.tiles.length)} · {tileset.tileSize}
+                        {COPY.scene.texto}
                         {tileset.tileSize}
                       </span>
                     </button>

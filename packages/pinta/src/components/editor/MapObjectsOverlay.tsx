@@ -12,11 +12,13 @@
  * resultado não depende de qual `<rect>` ficou por cima nem do layout.
  */
 import type { JSX, PointerEvent } from 'react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
 import {
+  effectiveLayer,
+  isLayerShown,
   isObjectLayer,
   type TilemapAsset,
   type TilemapObject,
@@ -33,8 +35,10 @@ import {
   snapToGrid,
   updateMapObject,
 } from '../../tiles/mapObjects'
+import { objectBounds } from '../../tiles/objectGeometry'
 import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
+import { MapObjectArtwork } from './MapObjectArtwork'
 
 /** Tira o foco do campo de texto (o blur dele grava o rascunho, de forma síncrona). */
 function commitFocusedField(): void {
@@ -47,6 +51,14 @@ function commitFocusedField(): void {
 type Handle = 'nw' | 'ne' | 'sw' | 'se'
 
 type Gesture =
+  | {
+      kind: 'marquee'
+      pointerId: number
+      base: TilemapAsset
+      objectId: ''
+      start: { x: number; y: number }
+      initialIds: readonly string[]
+    }
   | {
       kind: 'move'
       pointerId: number
@@ -92,7 +104,9 @@ interface MapObjectsOverlayProps {
   scale: number
   snap: boolean
   selectedObjectId: string | null
-  onSelectObject: (id: string | null) => void
+  selectedObjectIds?: readonly string[]
+  onSelectObject: (id: string | null, additive?: boolean) => void
+  onSelectObjects?: (ids: string[]) => void
 }
 
 export function MapObjectsOverlay({
@@ -105,12 +119,20 @@ export function MapObjectsOverlay({
   scale,
   snap,
   selectedObjectId,
+  selectedObjectIds = [],
   onSelectObject,
+  onSelectObjects,
 }: MapObjectsOverlayProps): JSX.Element {
   const { editor } = useEditorStores()
   const { showToast } = useToast()
   const svgRef = useRef<SVGSVGElement>(null)
   const gestureRef = useRef<Gesture | null>(null)
+  const [marquee, setMarquee] = useState<{
+    x: number
+    y: number
+    width: number
+    height: number
+  } | null>(null)
 
   const mapW = tilemap.cols * tileSize
   const mapH = tilemap.rows * tileSize
@@ -124,8 +146,18 @@ export function MapObjectsOverlay({
     const viewW = mapW + 2 * ring
     const viewH = mapH + 2 * ring
     return {
-      x: ((event.clientX - rect.left) * viewW) / rect.width - ring,
-      y: ((event.clientY - rect.top) * viewH) / rect.height - ring,
+      x:
+        ((event.clientX - rect.left) * viewW) / rect.width -
+        ring -
+        (activeLayerId
+          ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetX
+          : 0),
+      y:
+        ((event.clientY - rect.top) * viewH) / rect.height -
+        ring -
+        (activeLayerId
+          ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetY
+          : 0),
     }
   }
 
@@ -146,6 +178,7 @@ export function MapObjectsOverlay({
 
   function handleAt(object: TilemapObject, x: number, y: number): Handle | null {
     if (isPointObject(object)) return null
+    if (object.rotation) return null
     const reach = (HANDLE_PX / 2 + 2) * unit
     const corners: Array<[Handle, number, number]> = [
       ['nw', object.x, object.y],
@@ -173,6 +206,7 @@ export function MapObjectsOverlay({
     const asset = editor.getState().asset
     const layer = currentLayer()
     if (asset.kind !== 'tilemap' || !layer) return
+    if (effectiveLayer(asset, layer).locked) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     const p = pointFromEvent(event)
     // Alça do escolhido vem primeiro (fica por cima de tudo na tela).
@@ -192,7 +226,7 @@ export function MapObjectsOverlay({
     // Tocar num objeto (com qualquer ferramenta de objeto) escolhe e começa a arrastar.
     const hit = objectAt(layer, p.x, p.y, HIT_SLACK_PX * unit)
     if (hit) {
-      onSelectObject(hit.id)
+      onSelectObject(hit.id, event.shiftKey || event.metaKey || event.ctrlKey)
       gestureRef.current = {
         kind: 'move',
         pointerId: event.pointerId,
@@ -203,7 +237,24 @@ export function MapObjectsOverlay({
       }
       return
     }
-    if (tool === 'object-select' || p.x < 0 || p.y < 0 || p.x > mapW || p.y > mapH) {
+    if (tool === 'object-select') {
+      const additive = event.shiftKey || event.ctrlKey || event.metaKey
+      gestureRef.current = {
+        kind: 'marquee',
+        pointerId: event.pointerId,
+        base: asset,
+        objectId: '',
+        start: p,
+        initialIds: additive ? [...selectedObjectIds] : [],
+      }
+      if (!additive) {
+        if (onSelectObjects) onSelectObjects([])
+        else onSelectObject(null)
+      }
+      setMarquee({ x: p.x, y: p.y, width: 0, height: 0 })
+      return
+    }
+    if (p.x < 0 || p.y < 0 || p.x > mapW || p.y > mapH) {
       onSelectObject(null)
       return
     }
@@ -211,6 +262,26 @@ export function MapObjectsOverlay({
     const isPoint = tool === 'object-point'
     const object = createMapObject({
       name: nextObjectName(layer),
+      ...(tool === 'object-ellipse'
+        ? { shape: 'ellipse' as const }
+        : tool === 'object-polygon'
+          ? {
+              shape: 'polygon' as const,
+              points: [
+                { x: 0, y: 0 },
+                { x: tileSize, y: 0 },
+                { x: tileSize, y: tileSize },
+              ],
+            }
+          : tool === 'object-polyline'
+            ? {
+                shape: 'polyline' as const,
+                points: [
+                  { x: 0, y: 0 },
+                  { x: tileSize, y: tileSize },
+                ],
+              }
+            : {}),
       x: isPoint ? clampX(snapPoint(p.x)) : clampX(snapEdge(p.x)),
       y: isPoint ? clampY(snapPoint(p.y)) : clampY(snapEdge(p.y)),
     })
@@ -244,6 +315,29 @@ export function MapObjectsOverlay({
     if (!gesture || event.pointerId !== gesture.pointerId || !activeLayerId) return
     const asset = editor.getState().asset
     if (asset.kind !== 'tilemap') return
+    if (gesture.kind === 'marquee') {
+      const p = pointFromEvent(event),
+        r = {
+          x: Math.min(p.x, gesture.start.x),
+          y: Math.min(p.y, gesture.start.y),
+          width: Math.abs(p.x - gesture.start.x),
+          height: Math.abs(p.y - gesture.start.y),
+        }
+      setMarquee(r)
+      const ids = (currentLayer()?.objects ?? [])
+        .filter((o) => {
+          const b = objectBounds(o)
+          return (
+            b.x >= r.x &&
+            b.y >= r.y &&
+            b.x + b.width <= r.x + r.width &&
+            b.y + b.height <= r.y + r.height
+          )
+        })
+        .map((o) => o.id)
+      onSelectObjects?.([...new Set([...gesture.initialIds, ...ids])])
+      return
+    }
     const object = currentLayer()?.objects.find((o) => o.id === gesture.objectId)
     if (!object) return
     const p = pointFromEvent(event)
@@ -253,7 +347,15 @@ export function MapObjectsOverlay({
       const point = isPointObject(object)
       const x = clampX(point ? snapPoint(rawX) : snapEdge(rawX), object.width)
       const y = clampY(point ? snapPoint(rawY) : snapEdge(rawY), object.height)
-      apply(updateMapObject(asset, activeLayerId, object.id, { x, y }))
+      let next = updateMapObject(asset, activeLayerId, object.id, { x, y })
+      const baseLayer = objectLayerById(gesture.base, activeLayerId)
+      for (const original of baseLayer?.objects ?? [])
+        if (original.id !== object.id && selectedObjectIds.includes(original.id))
+          next = updateMapObject(next, activeLayerId, original.id, {
+            x: original.x + x - gesture.origin.x,
+            y: original.y + y - gesture.origin.y,
+          })
+      apply(next)
       return
     }
     if (gesture.kind === 'create') {
@@ -265,6 +367,27 @@ export function MapObjectsOverlay({
           y: Math.min(gesture.start.y, endY),
           width: Math.abs(endX - gesture.start.x),
           height: Math.abs(endY - gesture.start.y),
+          ...(object.shape === 'polygon' || object.shape === 'polyline'
+            ? {
+                points:
+                  object.shape === 'polygon'
+                    ? [
+                        { x: 0, y: Math.abs(endY - gesture.start.y) },
+                        { x: Math.abs(endX - gesture.start.x) / 2, y: 0 },
+                        {
+                          x: Math.abs(endX - gesture.start.x),
+                          y: Math.abs(endY - gesture.start.y),
+                        },
+                      ]
+                    : [
+                        { x: 0, y: 0 },
+                        {
+                          x: Math.abs(endX - gesture.start.x),
+                          y: Math.abs(endY - gesture.start.y),
+                        },
+                      ],
+              }
+            : {}),
         }),
       )
       return
@@ -289,6 +412,10 @@ export function MapObjectsOverlay({
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
     gestureRef.current = null
+    if (gesture.kind === 'marquee') {
+      setMarquee(null)
+      return
+    }
     const state = editor.getState()
     const asset = state.asset
     // Área desenhada sem arrastar (ou só numa direção) vira UMA peça de tamanho:
@@ -309,7 +436,9 @@ export function MapObjectsOverlay({
     state.commitGesture(gesture.base)
   }
 
-  const layers = tilemap.layers.filter(isObjectLayer).filter((layer) => layer.visible)
+  const layers = tilemap.layers
+    .filter(isObjectLayer)
+    .filter((layer) => isLayerShown(tilemap, layer))
 
   return (
     <svg
@@ -330,17 +459,59 @@ export function MapObjectsOverlay({
       onPointerCancel={endGesture}
     >
       <title>{COPY.tiles.objectsOverlay}</title>
+      {marquee ? (
+        <rect
+          x={
+            marquee.x +
+            (activeLayerId
+              ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetX
+              : 0)
+          }
+          y={
+            marquee.y +
+            (activeLayerId
+              ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetY
+              : 0)
+          }
+          width={marquee.width}
+          height={marquee.height}
+          fill="var(--color-pin-accent)"
+          fillOpacity={0.15}
+          stroke="var(--color-pin-accent)"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
       {layers.map((layer) => {
         const active = layer.id === activeLayerId
         return (
-          <g key={layer.id} data-layer-id={layer.id} opacity={active ? 1 : 0.45}>
+          <g
+            key={layer.id}
+            data-layer-id={layer.id}
+            opacity={(active ? 1 : 0.45) * effectiveLayer(tilemap, layer).opacity}
+            transform={`translate(${effectiveLayer(tilemap, layer).offsetX} ${effectiveLayer(tilemap, layer).offsetY})`}
+          >
             {layer.objects.map((object) => (
-              <MapObjectShape
+              <g
                 key={object.id}
-                object={object}
-                unit={unit}
-                selected={active && object.id === selectedObjectId}
-              />
+                transform={`rotate(${object.rotation ?? 0} ${object.x} ${object.y})`}
+              >
+                <MapObjectShape
+                  key={object.id}
+                  object={object}
+                  unit={unit}
+                  selected={
+                    active &&
+                    (object.id === selectedObjectId || selectedObjectIds.includes(object.id))
+                  }
+                />
+                {object.art || object.setId ? (
+                  <g
+                    transform={`translate(${object.flipX ? 2 * object.x + object.width : 0} ${object.flipY ? 2 * object.y + object.height : 0}) scale(${object.flipX ? -1 : 1} ${object.flipY ? -1 : 1})`}
+                  >
+                    <MapObjectArtwork object={object} />
+                  </g>
+                ) : null}
+              </g>
             ))}
           </g>
         )
@@ -389,12 +560,17 @@ function MapObjectShape({
   const handle = HANDLE_PX * unit
   return (
     <g data-object-id={object.id} data-object-kind="rect">
-      <rect
-        x={object.x}
-        y={object.y}
-        width={object.width}
-        height={object.height}
-        fill="var(--color-pin-accent, #2563eb)"
+      <path
+        d={
+          object.shape === 'ellipse'
+            ? `M ${object.x} ${object.y + object.height / 2} a ${object.width / 2} ${object.height / 2} 0 1 0 ${object.width} 0 a ${object.width / 2} ${object.height / 2} 0 1 0 ${-object.width} 0`
+            : object.points?.length
+              ? object.points
+                  .map((p, i) => `${i ? 'L' : 'M'} ${p.x + object.x} ${p.y + object.y}`)
+                  .join(' ') + (object.shape === 'polygon' ? ' Z' : '')
+              : `M ${object.x} ${object.y} h ${object.width} v ${object.height} h ${-object.width} Z`
+        }
+        fill={object.shape === 'polyline' ? 'none' : 'var(--color-pin-accent, #2563eb)'}
         fillOpacity={selected ? 0.22 : 0.12}
         stroke={stroke}
         strokeWidth={2}

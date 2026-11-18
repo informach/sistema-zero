@@ -153,7 +153,13 @@ for (const { key: game, name } of PYGAME_GAMES) {
         const kind = data ? data.kind : 'background'
         expect(KINDS[kind], `${file}: dado ${kind}`).toContain(document.kind)
         expect(document.name).toBe(stem)
-        if (data) expect(data).toMatchObject({ format: 'pinta', version: 1, name: stem, scale: 2 })
+        if (data)
+          expect(data).toMatchObject({
+            format: 'pinta',
+            version: game === 'pydew-valley' && stem === 'fazenda' ? 2 : 1,
+            name: stem,
+            scale: 2,
+          })
         if (document.kind === 'tilemap') {
           // Every tileset the map points to exists, in the order and with the names of the atlas.
           const tilesets = mapTilesetIds(document).map((id) => {

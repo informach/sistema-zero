@@ -149,6 +149,31 @@ def main():
     else:
         raise AssertionError('a plain PNG is not a map')
 
+    # Format 2: sixteen layers, a group, offset/opacity, all Tiled flags and typed objects.
+    asymmetric = pygame.Surface((8, 8), pygame.SRCALPHA)
+    asymmetric.fill((255, 0, 0), (0, 0, 4, 4))
+    asymmetric.fill((0, 255, 0), (4, 0, 4, 4))
+    asymmetric.fill((0, 0, 255), (0, 4, 4, 4))
+    asymmetric.fill((255, 255, 255), (4, 4, 4, 4))
+    layers = [{'id': 'g', 'type': 'group', 'name': 'Vila', 'visible': True, 'opacity': 0.5, 'offsetX': 2}]
+    for n in range(14):
+        layers.append({'id': str(n), 'parentId': 'g', 'type': 'tiles', 'name': f'Camada {n}', 'visible': True, 'tileset': 0, 'cells': [4096 if n == 0 else -1], 'front': False})
+    layers.append({'id': 'o', 'type': 'objects', 'name': 'Objetos', 'parentId': 'g', 'objects': [{'id': 'porta', 'name': 'Porta', 'type': 'porta', 'shape': 'ellipse', 'rotation': 45, 'role': 'door', 'width': 8, 'height': 8, 'x': 1, 'y': 2, 'properties': {'vidas': {'type': 'int', 'value': 3}}}]})
+    save(asymmetric, 'v2', {'format': 'pinta', 'version': 2, 'kind': 'map', 'name': 'v2', 'tileSize': 8, 'cols': 1, 'rows': 1, 'tilesets': [{'name': 'arte', 'columns': 1, 'count': 1, 'solid': [], 'platform': [], 'animations': {'0': [{'tile': 0, 'duration': 100}]}}], 'layers': layers})
+    modern = pinta.carregar_mapa('v2')
+    assert len(modern.camadas) == 16
+    assert modern.camada('Camada 0').peca(0, 0) == 0
+    assert modern.camada('Camada 0').opacidade == 0.5
+    assert modern.camada('Camada 0').deslocamento == (2, 0)
+    flipped = next(modern.camada('Camada 0').tiles())[2]
+    assert flipped.get_at((0, 0))[:3] == (0, 255, 0)
+    door = modern.camada('Objetos').com_nome('Porta')
+    assert door.forma == 'ellipse' and door.giro == 45 and door.papel == 'door'
+    assert door.x == 3 and door.propriedades['vidas'] == 3
+    pixels = pygame.Surface((16, 16), pygame.SRCALPHA)
+    modern.desenhar(pixels)
+    assert 120 <= pixels.get_at((2, 0)).a <= 130, pixels.get_at((2, 0))
+
     # An animation without frames, data that is not an object and a decompression bomb are
     # untrusted data: each fails with a clear message, never ZeroDivisionError or a huge buffer.
     save(sheet, 'vazio', {

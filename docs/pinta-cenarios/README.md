@@ -3,89 +3,45 @@
 Registro vivo da evolução do editor de mapas do Pinta para um editor de cenários 2D: diagnóstico,
 arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incremento fechado.
 
-## Estado
+## Estado em 17/11/2026
 
-| # | Incremento | Estado |
+A continuação implementa os incrementos 4b a 14 sobre os incrementos 1 a 4a já presentes
+na `staging` remota. A ordem de execução segue a tabela do plano. A identidade visual usa os
+mesmos tokens, tipografia, botões, painéis e barras do Pinta.
+Entrega isolada na branch `pinta-cenarios-finalizar`; a proteção completa declara versão de
+nuvem 3 para também barrar o cliente intermediário que declarava 2.
+
+| # | Entrega | Implementação |
 |---|---|---|
-| 1 | Trava de formato, só leitura | Implementado e testado localmente (17/11/2026). Sem prova em staging. |
-| 2 | Declarar a versão por tipo | Implementado na branch da evolução (17/11/2026). ⚠️ Só pode ir a produção depois do incremento 1 (PR da trava). |
-| 3 | Auxiliares de célula e histórico por buffer único | Implementado e testado localmente (17/11/2026). Sem mudança de comportamento. |
-| 4a | Documento do formato 3: camadas | Implementado e testado localmente (17/11/2026). Sem interface ainda. |
-| 4b | Documento do formato 3: objetos (formas, giro, papéis, propriedades tipadas) | Pendente. |
-| 4c | Documento do formato 3: conjuntos de peças (animação, terrenos, propriedades por peça) | Pendente. |
-| 4d | Documento do formato 3: conjuntos reutilizáveis | Pendente. |
-| 5 a 14 | Ver a tabela do plano abaixo | Pendentes. |
+| 1–2 | Trava de leitura e declaração por tipo | Já incorporadas à base remota; testes de frota mista preservados |
+| 3 | Células e histórico por buffers únicos | Preservado e integrado aos novos caminhos |
+| 4 | Documento v3 completo | Camadas, objetos tipados, metadados de peças e conjuntos |
+| 5 | Contrato e conversor de cena | PintaScene validado e dependências resolvidas |
+| 6 | Área visível e cache | Canvas recortado, blocos 32 × 32 e cache LRU |
+| 7 | Separar editor | Controlador de seleção e módulos/painéis extraídos |
+| 8 | Ferramentas, na sequência prevista | Camadas → transformações → objetos → propriedades → seleção → biblioteca → terrenos → espalhar → conjuntos → animação → níveis → teste → minimapa |
+| 9 | Python | PNG v2, leitor 1/2 e PyDew unificado em 16 camadas |
+| 10 | Assets e biblioteca do Studio | Cena e frente persistidas, sincronizadas e enviadas ao preview |
+| 11 | map-2d nos dois motores | 12 blocos, carga opcional e orçamento separado |
+| 12 | Jogar meu mapa v2 | Início, frente, colisão, portas e vínculos de biblioteca |
+| 13 | Destinos externos | Tiled JSON/TMX/TSX, Phaser offline, Pygame portátil e Godot nativo |
+| 14 | Referência e documentação | Vila e Floresta, exemplos dos dois motores, guias e evidências |
 
-### Incremento 1: o que foi provado e o que não foi
+A validação local, os ensaios em navegador e os limites de comprovação são registrados em
+[homologação](homologacao.md). Não há merge ou deploy nesta entrega. Aparelhos físicos e
+staging real precisam de ensaio no ambiente correspondente; não são apresentados como testes
+realizados. Mapas infinitos/isométricos/hexagonais estão fora do escopo declarado do plano.
 
-- **Provado por teste local** (`bun test`, happy-dom): um item da conta com versão acima do teto
-  não desce na reconciliação, não vira cópia na base vencida, não é restaurado no DELETE recusado
-  e não recebe a cópia local por cima; o aviso aparece e some; a galeria mostra o recado e o botão.
-  Suítes inteiras do Pinta (1.677 testes) e do member-shell (2.463) passam; tipagem dos dois aprovada.
-- **Não provado:** o comportamento contra o Members real (a recusa `CREATION_CLIENT_OUTDATED` na
-  reserva e no DELETE), em navegador e em staging. O aviso da galeria não foi fotografado.
-- **Risco residual conhecido:** o envio de desenho numa aula (`pinta-submission`) não tem trava de
-  formato, e o Members saneia esses envios com a cópia do Pinta que ele embute. Mapas não são
-  oferecidos nas aulas hoje.
-
-### Incremento 3: o que entrou
-
-- `packages/pinta/src/tiles/cell.ts`: a célula do mapa guarda a peça (bits 0 a 11) e como ela
-  está virada (bits 12 a 14, os mesmos do Tiled), dentro do `Int16Array` que já existia. Mapa sem
-  peça virada tem os mesmos números de antes. Quem lê o índice da peça (achatar, peça do topo,
-  remapear ao inserir ou tirar peça, os dois exportadores de imagem) passou a ler por `cellTile`.
-- `tiles/cellAccess.test.ts` lista os oito arquivos que indexam células e reprova um arquivo novo.
-- Histórico do editor (`core/history.ts`, `sharedOf`): as células de cada camada contam uma vez
-  enquanto algum passo as segura. Antes cada pincelada num mapa de 16 camadas custava as 16; agora
-  custa a camada tocada. Medido no teste: 20 passos onde antes cabiam 2, no mesmo orçamento.
-- **Limite conhecido:** o exportador de imagem para o Pygame (dados versão 1) ainda não leva o
-  giro da peça: ela sai desvirada. Entra com a versão 2 dos dados, no incremento 9.
-- Nenhuma ferramenta escreve os bits de giro ainda, então não há o que ver no navegador.
-
-### Incremento 4a: o que entrou
-
-- **Camadas** (`packages/pinta/src/core/project.ts`): grupo (`kind: 'group'`, lista plana com
-  `parentId`), cadeado, opacidade, deslocamento, parallax, propriedades de camada e camada de
-  colisão. Tudo opcional e omitido no valor padrão. `effectiveLayer` soma o que os grupos em volta
-  impõem; achatar, a peça do topo e os exportadores já respeitam grupo escondido.
-- **Tetos em dois níveis:** `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita LER (256 × 256,
-  32 camadas, 256 peças, 2 milhões de células); `PINTA_LIMITS` continua sendo o que o editor deixa
-  CRIAR (128 × 128, 8 camadas, 64 peças). O editor só sobe quando o desenho por área visível e a
-  entrega ao Estúdio estiverem prontos.
-- **Carimbo `schema: 3`** entra sozinho quando o mapa usa algo do formato e sai quando deixa de
-  usar. Um código que não conhece o número não lê o mapa.
-- **Envelope do `.pinta.json` na versão 3** só quando algum mapa precisa. Mapas acima de 128 × 128
-  viajam com as células compactadas (`cellsPacked`, `tiles/cellCodec.ts`); os demais, com a lista
-  de números de sempre, para o texto guardado não mudar.
-- Um serializador só para a camada de peças (`tileLayerToWire`), usado pelo wire, pelo arquivo e
-  pelos construtores de modelo.
-- Testes: `core/mapFormat3.test.ts` (19 casos). Suíte do Pinta: 1.710 testes, sem falha.
-
-**Ensaio de frota mista** (script descartável, 17/11/2026): o Pinta da `staging` em `237dc979`
-lendo um mapa do formato 3 com 13 camadas.
-
-| Caminho | Resultado no Pinta antigo |
-|---|---|
-| Registro direto (o IndexedDB do mesmo aparelho) | Lê e CORTA: sobram 5 das 13 camadas. |
-| `.pinta.json` versão 3 (o que desce da nuvem, o backup) | Recusa o arquivo inteiro com recado. Nada é gravado. |
-
-Ou seja: pela nuvem o mapa novo está protegido de um cliente antigo (ele não consegue ler para
-cortar, e o servidor recusará a subida quando a versão declarada subir, no incremento 2). No
-MESMO aparelho, um bundle antigo em cache ainda cortaria o registro local; não há como barrar
-isso por dentro do código antigo. O que protege é a nuvem ter a versão inteira.
-
-⚠️ **Por que o incremento 2 é obrigatório antes de qualquer ferramenta que grave o formato 3:**
-no Pinta antigo, quando a subida cai em base vencida e a versão da conta não pode ser lida, o
-código antigo avança a marca e sobe a cópia local por cima. Sem o servidor recusar (versão
-declarada 2), um aparelho com o Pinta antigo e uma cópia velha do mapa regravaria o mapa novo. Com
-a versão declarada, a reserva dele é recusada com `CREATION_CLIENT_OUTDATED`.
-
-**Não provado:** nada disto tem interface, então não há ensaio no navegador. O Members embute o
-sanitizador do Pinta para envios de aula; a suíte dele não foi rodada neste incremento.
+- [Diagnóstico e arquitetura](diagnostico-e-arquitetura.md)
+- [Guia de uso](guia-de-uso.md)
+- [Exportação para desenvolvedores](exportacao.md)
+- [Compatibilidade com Tiled](compatibilidade-tiled.md)
+- [Homologação e evidências](homologacao.md)
+- [Registro histórico dos primeiros incrementos](historico-inicial.md)
 
 ---
 
-## Contexto
+## Diagnóstico inicial
 
 O Pinta já tem mapas (tilesets, camadas de peças e de objetos, colisão por peça), mas a auditoria do código real mostrou quatro problemas que impedem chamá-lo de ferramenta de level design:
 
@@ -96,14 +52,14 @@ O Pinta já tem mapas (tilesets, camadas de peças e de objetos, colisão por pe
 
 Resultado pretendido: a criança monta um cenário pintando terrenos e pondo objetos, testa, leva ao Estúdio sem perder nada, programa lá, e também exporta para outros motores. Um desenvolvedor experiente encontra camadas, objetos tipados, colisões, terrenos inteligentes e exportação estruturada.
 
-## Como o trabalho será feito
+## Fluxo de entrega previsto
 
 - Branch `pinta-cenarios-2d`, criada da `staging` atualizada, em worktree próprio. Nada em `packages/molda-cenarios*`, `members/.../cenarios` ou nos documentos do plano de Cenários 3D. Sem merge nem deploy.
 - **Dois PRs para a `staging`, sem merge:**
   - **PR A (pequeno, só segurança de dados):** incrementos 1 e 2 abaixo. Precisa ir ao ar antes do resto, porque o servidor nunca rebaixa versão: se o leitor e o gravador saírem juntos e houver rollback, todo mapa fica travado com 409.
   - **PR B (a evolução):** incrementos 3 a 14, empilhado sobre o A.
 - Um incremento só fecha com núcleo + interface + testes + ensaio no navegador + commit. Uma verificação pesada por vez (regra do repositório).
-- O escopo é de muitas semanas. Sigo a ordem abaixo até onde der com qualidade comprovada; o PR lista o que ficou implementado, parcial e pendente.
+- A solicitação desta continuação exige todos os incrementos, na ordem do plano. O relatório discrimina implementação, validação local e validação que depende de ambiente externo.
 
 ## Decisões de arquitetura
 
@@ -127,7 +83,7 @@ Resultado pretendido: a criança monta um cenário pintando terrenos e pondo obj
 - Limites por adaptador: o bloco de aula mantém os tetos antigos (teto de 1,8 M caracteres em `lesson-block.ts`).
 - Histórico: os ops já são copy-on-write por camada; corrigir o estimador para contar buffers únicos, em vez de reescrever para patches.
 - Renderização com recorte pela área visível e cache de blocos de 32 × 32 células.
-- Mapa infinito e projeções isométrica/hexagonal ficam declarados como pendentes.
+- Mapa infinito e projeções isométrica/hexagonal ficam fora deste escopo.
 
 **Um contrato de cena para todos os destinos**
 - `packages/core/src/studio/pinta-scene.ts` (zod, no molde de `pinta-image.ts`). O Pinta converte documento → cena em `pinta/src/export/scene.ts`; ninguém mais converte.

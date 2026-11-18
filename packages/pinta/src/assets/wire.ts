@@ -17,6 +17,8 @@ import { packCells } from '../tiles/cellCodec'
  */
 export function pintaAssetToWire(asset: PintaAsset): unknown {
   switch (asset.kind) {
+    case 'map-set':
+      return { ...asset, map: pintaAssetToWire(asset.map) }
     case 'pixel-sprite':
       return {
         ...asset,

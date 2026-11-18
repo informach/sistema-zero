@@ -9,9 +9,12 @@
  * dele em `tilemapTilesetIds` (`tile-<s>-<i>`).
  */
 import type { TilemapAsset, VectorFrame, VectorTilesetAsset } from '../core/project'
+import { effectiveLayer, isTileLayer, tileLayerTilesetId, tilemapNeedsV3 } from '../core/project'
 import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
 import { sceneDefsMarkup, shapesToMarkup } from '../vector/svg'
+import { cellTile } from './cell'
+import { cellMatrix } from './chunks'
 import { drawableMapTile, type MapTilesets, resolveMapTilesets } from './mapTilesets'
 import { flattenWithTilesets } from './tilemapOps'
 
@@ -28,6 +31,21 @@ function symbolId(source: number, index: number): string {
   return source === 0 ? `tile-${index}` : `tile-${source}-${index}`
 }
 
+function vectorCells(map: TilemapAsset, resolved: Array<VectorTilesetAsset | null>) {
+  return map.layers.flatMap((l) => {
+    if (!isTileLayer(l) || l.collision) return []
+    const e = effectiveLayer(map, l),
+      source = resolved.findIndex((t) => t?.id === tileLayerTilesetId(map, l)),
+      ts = resolved[source]
+    if (!e.visible || !e.opacity || !ts) return []
+    return [...l.cells.entries()].flatMap(([i, value]) => {
+      const index = cellTile(value)
+      return index < 0 || index >= ts.tiles.length
+        ? []
+        : [{ index, source, value, col: i % map.cols, row: Math.floor(i / map.cols), e }]
+    })
+  })
+}
 /** As peças realmente usadas: chave `source:index` → formas. */
 function usedTiles(
   tilemap: TilemapAsset,
@@ -35,6 +53,15 @@ function usedTiles(
 ): Map<string, { source: number; index: number; shapes: VectorFrame }> {
   const flat = flattenWithTilesets(tilemap, undefined, drawableMapTile(tilemap, resolved))
   const used = new Map<string, { source: number; index: number; shapes: VectorFrame }>()
+  if (tilemapNeedsV3(tilemap)) {
+    for (const c of vectorCells(tilemap, resolved))
+      used.set(`${c.source}:${c.index}`, {
+        source: c.source,
+        index: c.index,
+        shapes: resolved[c.source]!.tiles[c.index] ?? [],
+      })
+    return used
+  }
   for (let at = 0; at < flat.tiles.length; at += 1) {
     const index = flat.tiles[at] ?? -1
     if (index < 0) continue
@@ -72,17 +99,45 @@ export function vectorTilemapSvg(tilemap: TilemapAsset, tilesets: MapTilesets): 
     })
 
   const uses: string[] = []
-  for (let row = 0; row < tilemap.rows; row += 1) {
-    for (let col = 0; col < tilemap.cols; col += 1) {
-      const at = row * tilemap.cols + col
-      const index = flat.tiles[at] ?? -1
-      const source = flat.sources[at] ?? 0
-      if (index < 0 || !used.has(`${source}:${index}`)) continue
+  if (tilemapNeedsV3(tilemap))
+    for (const c of vectorCells(tilemap, resolved)) {
+      const [a, b, d, e] = cellMatrix(c.value),
+        x = c.col * tile + c.e.offsetX + tile / 2,
+        y = c.row * tile + c.e.offsetY + tile / 2
       uses.push(
-        `  <use href="#${symbolId(source, index)}" x="${col * tile}" y="${row * tile}" width="${tile}" height="${tile}"/>`,
+        '<g opacity="' +
+          c.e.opacity +
+          '" transform="translate(' +
+          x +
+          ' ' +
+          y +
+          ') matrix(' +
+          [a, b, d, e, 0, 0].join(' ') +
+          ')"><use href="#' +
+          symbolId(c.source, c.index) +
+          '" x="' +
+          -tile / 2 +
+          '" y="' +
+          -tile / 2 +
+          '" width="' +
+          tile +
+          '" height="' +
+          tile +
+          '"/></g>',
       )
     }
-  }
+  if (!tilemapNeedsV3(tilemap))
+    for (let row = 0; row < tilemap.rows; row += 1) {
+      for (let col = 0; col < tilemap.cols; col += 1) {
+        const at = row * tilemap.cols + col
+        const index = flat.tiles[at] ?? -1
+        const source = flat.sources[at] ?? 0
+        if (index < 0 || !used.has(`${source}:${index}`)) continue
+        uses.push(
+          `  <use href="#${symbolId(source, index)}" x="${col * tile}" y="${row * tile}" width="${tile}" height="${tile}"/>`,
+        )
+      }
+    }
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,

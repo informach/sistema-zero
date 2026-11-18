@@ -6,6 +6,7 @@ import {
   validateManifest,
 } from '#extensions'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
+import { mapTwoDBootstrap, mapTwoDBootstrapVariant } from '../map-2d/bootstrap'
 import { gameKitPromptSummary } from './aiSummary'
 import { gameKitBlocks, gameKitToolboxCategory } from './blocks'
 import { gameKitManifest } from './manifest'
@@ -18,7 +19,7 @@ export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
   documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameKitDocs),
   examples: defineExtensionExamples(
-    48,
+    49,
     async () => (await import('./exampleCatalog')).gameKitExamples,
   ),
   conflictsWith: fullscreenConflictsFor('game-2d-advanced'),
@@ -31,7 +32,8 @@ export const gameKitExtension: ExtensionDefinition = {
     toolboxCategory: gameKitToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).gameKitRuntime,
+    loadBootstrapScript: (context) => mapTwoDBootstrap('gk', context),
+    bootstrapVariant: mapTwoDBootstrapVariant,
     lifecycle: GAME_2D_ADVANCED_LIFECYCLE,
   },
   ai: {

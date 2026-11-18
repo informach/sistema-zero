@@ -41,6 +41,7 @@ export {
   isObjectLayer,
   isPintaAssetLike,
   isTileLayer,
+  type MapSetAsset,
   OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_ASSET_KINDS,
   PINTA_LIMITS,
@@ -48,6 +49,7 @@ export {
   type PintaAsset,
   type PintaAssetKind,
   sanitizePintaAsset,
+  type TileAnimationFrame,
   type TilemapAsset,
   type TilemapLayer,
   type TilemapObject,
@@ -55,6 +57,7 @@ export {
   type TilemapObjectPropertyValue,
   type TilemapTileLayer,
   type TilesetAsset,
+  type TileTerrain,
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'

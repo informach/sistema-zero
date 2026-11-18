@@ -153,12 +153,18 @@ describe('catálogos lazy das extensões oficiais', () => {
   it('preserva quantidade e ordem da saída validada e sanitizada', async () => {
     for (const extension of OFFICIAL_CATALOG) {
       const golden = goldenCatalogs[extension.manifest.id as keyof typeof goldenCatalogs]
-      expect(extension.examples.count).toBe(golden.count)
+      const sceneExample = ['game-2d', 'game-2d-advanced'].includes(extension.manifest.id)
+      expect(extension.examples.count).toBe(golden.count + (sceneExample ? 1 : 0))
       expect('examples' in extension.manifest).toBe(false)
 
       const examples = await loadExtensionExamples(extension)
-      const sha256 = createHash('sha256').update(JSON.stringify(examples)).digest('hex')
-      expect(examples).toHaveLength(golden.count)
+      expect(examples).toHaveLength(golden.count + (sceneExample ? 1 : 0))
+      // A adição da cena não pode alterar nenhum exemplo publicado nem sua ordem.
+      const previous = sceneExample
+        ? examples.filter((e) => !e.name.startsWith('A Vila e a Floresta'))
+        : examples
+      expect(previous).toHaveLength(golden.count)
+      const sha256 = createHash('sha256').update(JSON.stringify(previous)).digest('hex')
       expect(sha256).toBe(golden.sha256)
     }
   })

@@ -14,6 +14,7 @@ import {
   pintaImageOutputMime,
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
+import { thumbnailBitmap, thumbnailShapes } from '../core/assetThumb'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
@@ -39,6 +40,7 @@ import {
   renderPintaImage,
   renderPintaImageSvg,
 } from './portableImageRender'
+import { exportPintaScene } from './scene'
 
 export interface PintaPortableImage {
   dataUrl: string
@@ -172,6 +174,7 @@ async function fingerprint(
   tilesets: readonly AnyTilesetAsset[],
   rule: PintaImageDependencyRule,
   signal?: AbortSignal,
+  assets?: readonly PintaAsset[],
 ): Promise<PintaImageDerivation['provenance']> {
   signal?.throwIfAborted()
   const sourceText = assetToJson(source)
@@ -180,7 +183,7 @@ async function fingerprint(
       ? []
       : rule === 'default-tileset'
         ? tilesets.slice(0, 1)
-        : tilesets
+        : (assets ?? tilesets)
   const texts = depends.map((tileset) => ({ drawingId: tileset.id, text: assetToJson(tileset) }))
   const sourceSha256 = await sha256Hex(sourceText)
   signal?.throwIfAborted()
@@ -220,6 +223,7 @@ export async function inspectPintaImageForStudio(
     captured.tilesets,
     dependencyRule(captured.source, options.selection),
     signal,
+    captured.assets,
   )
 }
 
@@ -229,6 +233,8 @@ async function prepare(
   recipeInput: PintaImageRecipe,
   limitsInput: PintaImageTargetLimits,
   signal?: AbortSignal,
+  assetsInput?: readonly PintaAsset[],
+  raster?: PintaImageRaster,
 ) {
   signal?.throwIfAborted()
   // All caller-owned data is snapshotted before the first await, including typed pixel arrays.
@@ -240,6 +246,42 @@ async function prepare(
   ]
   const tilesets = mapTilesetsOf(source, given)
   const selected = select(source, tilesets, recipe)
+  const assets = assetsInput ? structuredClone([...assetsInput]) : undefined
+  if (source.kind === 'tilemap' && selected.data?.kind === 'map' && selected.data.version === 2) {
+    const byId = new Map((assets ?? given).map((a) => [a.id, a]))
+    selected.data.scene = await exportPintaScene(
+      source,
+      (id) => byId.get(id) ?? null,
+      async (a) => {
+        const bitmap = thumbnailBitmap(a),
+          doc = thumbnailShapes(a)
+        const selection = isTilesetKind(a)
+          ? tilesetSheetSelection(a, 1)
+          : bitmap
+            ? {
+                scene: { kind: 'pixel' as const, bitmap, colors: resolveAssetPalette(a) },
+                width: bitmap.width,
+                height: bitmap.height,
+              }
+            : doc
+              ? { scene: { kind: 'vector' as const, doc }, width: doc.width, height: doc.height }
+              : null
+        if (!selection) return null
+        const bytes = await renderPintaImage(
+          selection.scene,
+          selection.width,
+          selection.height,
+          limits,
+          signal,
+          raster,
+        )
+        let binary = ''
+        for (const n of bytes) binary += String.fromCharCode(n)
+        return `data:image/png;base64,${btoa(binary)}`
+      },
+    )
+    selected.data.version = 2
+  }
   // The destination asked for the real vector: never fall back to PNG in silence.
   if (recipe.output === 'svg' && !pintaImageSceneIsVector(selected.scene))
     throw new Error(
@@ -255,6 +297,7 @@ async function prepare(
     tilesets,
     pintaImageDependencyRule(recipe.selection.kind),
     signal,
+    assets,
   )
   return {
     recipe,
@@ -351,13 +394,14 @@ export async function deriveLoadedPintaImage(
     tileset?: AnyTilesetAsset | null
     /** Every tileset the map uses, default first (`map` draws and depends on all of them). */
     tilesets?: readonly AnyTilesetAsset[]
+    assets?: readonly PintaAsset[]
     signal?: AbortSignal
     raster?: PintaImageRaster
   } = {},
 ): Promise<PintaPortableImage> {
   const { signal, raster } = options
   const tilesets = options.tilesets ?? (options.tileset ? [options.tileset] : [])
-  const prepared = await prepare(source, tilesets, recipe, limits, signal)
+  const prepared = await prepare(source, tilesets, recipe, limits, signal, options.assets, raster)
   return finish(prepared, signal, raster)
 }
 
@@ -383,7 +427,14 @@ export async function exportPintaImageForStudio(
       ? undefined
       : PintaImageDerivationSchema.shape.provenance.parse(options.expectedProvenance)
   const captured = await capture(recipe.drawingId, namespace, signal)
-  const prepared = await prepare(captured.source, captured.tilesets, recipe, limits, signal)
+  const prepared = await prepare(
+    captured.source,
+    captured.tilesets,
+    recipe,
+    limits,
+    signal,
+    captured.assets,
+  )
   signal?.throwIfAborted()
   if (
     expectedProvenance !== undefined &&

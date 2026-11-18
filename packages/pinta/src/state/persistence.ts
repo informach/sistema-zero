@@ -18,6 +18,7 @@ import {
   isCompatibleMapTileset,
   isTilesetKind,
   type PintaAsset,
+  pintaAssetDependencyIds,
   sanitizePintaAsset,
   tilemapTilesetIds,
 } from '../core/project'
@@ -517,7 +518,13 @@ export async function capturePintaAssetForImage(
   id: string,
   options: { namespace?: string; signal?: AbortSignal } = {},
 ): Promise<
-  | { ok: true; source: PintaAsset; tileset: AnyTilesetAsset | null; tilesets: AnyTilesetAsset[] }
+  | {
+      ok: true
+      source: PintaAsset
+      tileset: AnyTilesetAsset | null
+      tilesets: AnyTilesetAsset[]
+      assets?: PintaAsset[]
+    }
   | { ok: false; reason: 'not-found' | 'source-changed' | 'needs-tileset' }
 > {
   const store = getStoreHandle(options.namespace?.trim())
@@ -526,6 +533,45 @@ export async function capturePintaAssetForImage(
   const first = safeSanitize(await get<unknown>(assetKey(id), store))
   signal?.throwIfAborted()
   if (!first || first.id !== id) return { ok: false, reason: 'not-found' }
+  if (
+    pintaAssetDependencyIds(first).some(
+      (dep) => first.kind !== 'tilemap' || !tilemapTilesetIds(first).includes(dep),
+    )
+  ) {
+    const discovered = new Map<string, PintaAsset>([[first.id, first]])
+    for (const value of discovered.values())
+      for (const dep of pintaAssetDependencyIds(value))
+        if (!discovered.has(dep)) {
+          if (discovered.size >= 225) return { ok: false, reason: 'needs-tileset' }
+          const asset = safeSanitize(await get<unknown>(assetKey(dep), store))
+          signal?.throwIfAborted()
+          if (!asset || asset.id !== dep) return { ok: false, reason: 'needs-tileset' }
+          discovered.set(dep, asset)
+        }
+    const ids = [...discovered.keys()],
+      snapshot = (await getMany<unknown>(ids.map(assetKey), store)).map(safeSanitize)
+    signal?.throwIfAborted()
+    if (
+      snapshot.some(
+        (a, i) =>
+          !a ||
+          a.id !== ids[i] ||
+          pintaAssetDependencyIds(a).join('\u0000') !==
+            pintaAssetDependencyIds(discovered.get(ids[i]!)!).join('\u0000'),
+      )
+    )
+      return { ok: false, reason: 'source-changed' }
+    const source = snapshot[0]!,
+      assets = snapshot.slice(1).filter((a): a is PintaAsset => a !== null),
+      map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
+    const tilesets = map
+      ? tilemapTilesetIds(map).flatMap((id) => {
+          const a = assets.find((v) => v.id === id)
+          return a && isTilesetKind(a) ? [a] : []
+        })
+      : []
+    return { ok: true, source, assets, tileset: tilesets[0] ?? null, tilesets }
+  }
   if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null, tilesets: [] }
   const tilesetIds = tilemapTilesetIds(first)
   const values = await getMany<unknown>([assetKey(id), ...tilesetIds.map(assetKey)], store)

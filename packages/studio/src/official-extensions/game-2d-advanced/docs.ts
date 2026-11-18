@@ -8,29 +8,23 @@ const paletteGuide = GAME_KIT_PALETTE.map(
 const sceneReference = sceneDocumentation('SZGameKit', true)
 export const gameKitDocs = `## Jogo 2D Avançado
 
-Esta extensão traz uma base reutilizável: o motor cuida de telas, estados,
-tempo, entrada, carregamento e canvas; você cria as regras. O movimento usa
-velocidade × \`dt\`, por isso mantém o ritmo em computadores diferentes. Menu,
-pausa, carregando, fim e vitória já vêm prontos, e a UI usa a letra do bloco
-**Usar a fonte** (padrão Baloo 2), offline, sem substituir fontes escolhidas.
+O motor cuida de telas, estados, tempo, entrada, carregamento e canvas; você cria
+as regras. Movimento usa velocidade × \`dt\`. Menu, pausa, carregamento, fim e
+vitória são prontos. **Usar a fonte** escolhe a letra da UI (padrão Baloo 2, offline).
 
 ### Onde encontrar as ferramentas
 
-A paleta tem famílias e seções. Primeiro escolha o assunto; depois, a tarefa.
-Os kits de gênero ficam reunidos na última família, **Kits prontos**.
+Na paleta, escolha a família e a seção da tarefa. Gêneros ficam em **Kits prontos**.
 
 ${paletteGuide}
 
-Desenho, telas, texto, som e interação usam os blocos desta extensão.
-HTML, CSS e Canvas diretamente pertencem à etapa de JavaScript sem extensão.
+Use os blocos da extensão; HTML, CSS e Canvas diretos pertencem à etapa sem extensão.
 
 ### Unidades do movimento
 
-No Jogo 2D básico, várias ações usam pixels por quadro, em simulação fixa de
-60 passos por segundo; a pista informa por segundo nos próprios blocos.
-Aqui, velocidades são em pixels por segundo e o tempo do quadro é em segundos.
-Use esse tempo nas ações que o pedem. A troca de extensão exige adaptar as
-unidades; os valores de um jogo salvo nunca são convertidos silenciosamente.
+Aqui, velocidades são em pixels por segundo; \`dt\` é o tempo do quadro em segundos.
+O básico usa pixels por quadro a 60 passos/s, exceto a pista, indicada por segundo.
+Ao trocar de extensão, adapte as unidades: jogos salvos não são convertidos.
 
 ### Começando (a receita)
 

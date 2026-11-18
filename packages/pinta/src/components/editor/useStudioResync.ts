@@ -37,6 +37,8 @@ async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
     ...(payload.sprite ? { sprite: payload.sprite } : {}),
     ...(payload.tileset ? { tileset: payload.tileset } : {}),
     ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
+    ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
+    ...(payload.scene ? { scene: payload.scene } : {}),
   })
 }
 

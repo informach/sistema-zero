@@ -15,8 +15,7 @@
  * certo; para RETOMAR o próprio trabalho seria fatal, porque cada abertura do bloco criaria um
  * desenho novo. Por isso este módulo fala com o `importPintaJson` DIRETO e nunca com o store.
  */
-import { isTilesetKind, type PintaAsset, tilemapUsesTileset } from '../core/project'
-import { collectMapTilesetsFrom } from '../tiles/mapTilesets'
+import type { PintaAsset } from '../core/project'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 
 export interface AssetImportResult {
@@ -45,11 +44,41 @@ export function assetBundleToJson(
   asset: PintaAsset,
   galleryAssets: readonly PintaAsset[],
 ): string | null {
-  if (asset.kind !== 'tilemap') return assetToJson(asset)
-  // Mapa com várias peças leva TODAS (a padrão primeiro); as que sumiram da
-  // galeria ficam de fora e as camadas delas voltam sem aparência, como sempre.
-  const tilesets = collectMapTilesetsFrom(asset, galleryAssets)
-  return tilesets.length > 0 ? galleryToPintaJson([...tilesets, asset]) : null
+  if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') return assetToJson(asset)
+  const byId = new Map(galleryAssets.map((a) => [a.id, a])),
+    seen = new Set<string>(),
+    ordered: PintaAsset[] = []
+  const visit = (a: PintaAsset): boolean => {
+    if (seen.has(a.id)) return true
+    seen.add(a.id)
+    const map = a.kind === 'tilemap' ? a : a.kind === 'map-set' ? a.map : null
+    if (map) {
+      const refs = [
+        ...new Set([
+          map.tilesetId,
+          ...map.layers.flatMap((l) =>
+            l.kind === 'objects'
+              ? l.objects.flatMap((o) => [
+                  ...(o.art ? [o.art.assetId] : []),
+                  ...(o.setId ? [o.setId] : []),
+                ])
+              : l.kind === 'group'
+                ? []
+                : l.tilesetId
+                  ? [l.tilesetId]
+                  : [],
+          ),
+        ]),
+      ]
+      for (const id of refs) {
+        const dep = byId.get(id)
+        if (!dep || !visit(dep)) return false
+      }
+    }
+    ordered.push(a)
+    return true
+  }
+  return visit(asset) ? galleryToPintaJson(ordered) : null
 }
 
 /**
@@ -61,10 +90,10 @@ export function isTilemapBundle(assets: readonly PintaAsset[]): boolean {
   const maps = assets.filter((asset) => asset.kind === 'tilemap')
   const map = maps[0]
   if (maps.length !== 1 || map?.kind !== 'tilemap') return false
-  const rest = assets.filter((asset) => asset !== map)
-  if (rest.length === 0 || !rest.every(isTilesetKind)) return false
-  if (!rest.some((tileset) => tileset.id === map.tilesetId)) return false
-  return rest.every((tileset) => tilemapUsesTileset(map, tileset.id))
+  const bundle = assetBundleToJson(map, assets)
+  if (!bundle) return false
+  const ids = new Set(importPintaJson(bundle).assets.map((a) => a.id))
+  return assets.length > 1 && ids.size === assets.length && assets.every((a) => ids.has(a.id))
 }
 
 /**

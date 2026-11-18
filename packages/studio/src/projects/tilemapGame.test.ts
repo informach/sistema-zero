@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { behaviorStatements, type JSStatement, type SZIRInput } from '#ir'
+import { behaviorStatements, type JSStatement, type SZIRInput, SZIRInputSchema } from '#ir'
 import { assembleTilemapGameProject, type TilemapGamePayload } from './tilemapGame'
 
 const DATA = 'data:image/png;base64,AAAA'
@@ -39,6 +39,67 @@ function loopBody(ir: SZIRInput): JSStatement[] {
 }
 
 describe('assembleTilemapGameProject', () => {
+  it('cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição', () => {
+    const scene = {
+      version: 1,
+      id: 'vila',
+      name: 'vila',
+      tileSize: 16,
+      cols: 4,
+      rows: 4,
+      tilesets: [
+        { id: 'ts', name: 'ts', image: DATA, columns: 1, count: 1, solid: [], platform: [] },
+      ],
+      layers: [
+        {
+          id: 'o',
+          name: 'Objetos',
+          kind: 'objects',
+          visible: true,
+          objects: [
+            {
+              id: 's',
+              name: 'Início',
+              type: '',
+              shape: 'point',
+              role: 'start',
+              x: 48,
+              y: 32,
+              width: 0,
+              height: 0,
+              properties: {},
+            },
+          ],
+        },
+      ],
+    }
+    const project = assembleTilemapGameProject(
+      payload({
+        id: 'vila',
+        libRevision: 7,
+        scene,
+        maps: [
+          {
+            id: 'cabana',
+            libRevision: 8,
+            name: 'cabana',
+            dataUrl: DATA,
+            width: 16,
+            height: 16,
+            scene: { ...scene, id: 'cabana', name: 'cabana' },
+          },
+        ],
+      }),
+    )
+    expect(project?.assets?.map((a) => a.libId)).toEqual(['personal:vila', 'personal:cabana'])
+    expect(project?.assets?.map((a) => a.libRevision)).toEqual([7, 8])
+    const nodes = project?.ir ? behaviorStatements(project.ir) : []
+    expect(nodes.find((s) => s.type === 'g2d:createSprite')).toMatchObject({ x: 48, y: 32 })
+    expect(nodes.some((s) => s.type === 'g2d:sceneEvent' && s.method === 'mapArea')).toBe(true)
+    expect(project?.blocksState).toBeTruthy()
+    expect(SZIRInputSchema.safeParse(project?.ir).success).toBe(true)
+    expect(project?.files['script.js']).toContain('drawMapScene')
+  })
   it('monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos', () => {
     const project = assembleTilemapGameProject(payload())
     if (!project?.ir) throw new Error('esperava projeto com IR')

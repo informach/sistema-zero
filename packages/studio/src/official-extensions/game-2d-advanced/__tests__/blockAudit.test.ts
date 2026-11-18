@@ -11,9 +11,9 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { mapTwoDBootstrap } from '../../map-2d/bootstrap'
 import { isSceneNameBlock, SCENE_METHODS, sceneBlockType } from '../../scene-2d/catalog'
 import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
-import { gameKitRuntime } from '../runtime'
 
 /**
  * Auditoria GENÉRICA de todos os blocos do Jogo 2D Avançado (clone do
@@ -39,14 +39,14 @@ const exprDefs = gameKitBlocks.filter((def) => Boolean(def.output))
 // `scene-2d/names.test.ts`.
 const pipelineExprDefs = exprDefs.filter((def) => !isSceneNameBlock(def.type))
 
-function loadRuntimeKeys(): Set<string> {
+function loadRuntimeKeys(source: string): Set<string> {
   const win = {
     addEventListener() {},
     SZGameKit: undefined,
     performance: { now: () => 0 },
     devicePixelRatio: 1,
   } as unknown as Record<string, unknown>
-  new Function('window', 'requestAnimationFrame', gameKitRuntime)(win, () => 0)
+  new Function('window', 'requestAnimationFrame', source)(win, () => 0)
   const api = win.SZGameKit as Record<string, unknown> | undefined
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return new Set(Object.keys(api))
@@ -57,13 +57,7 @@ function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
     const scene = SCENE_METHODS.find((entry) => sceneBlockType('gk', entry) === type)
-    if (scene?.args.some((arg) => arg.field === 'sprite') || scene?.method === 'collectTrackItem') {
-      const frame = ws.newBlock('sz_frame_start')
-      const sprite = ws.newBlock('sz_gk_create_character')
-      sprite.setFieldValue('jogador', 'NAME')
-      frame.getInput('CHILDREN')?.connection?.connect(sprite.previousConnection!)
-    }
-    attachBlockInContractContext({
+    const target = attachBlockInContractContext({
       workspace: ws,
       type,
       kind,
@@ -71,6 +65,19 @@ function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
       expressionInput: 'X',
       loopHost: 'sz_gk_on_update',
     })
+    if (scene?.args.some((arg) => arg.field === 'sprite') || scene?.method === 'collectTrackItem') {
+      const frame =
+        ws.getTopBlocks(false).find((b) => b.type === 'sz_frame_start') ??
+        ws.newBlock('sz_frame_start')
+      const slot = frame.getInput('CHILDREN')!.connection!,
+        first = slot.targetConnection
+      if (first) slot.disconnect()
+      const sprite = ws.newBlock('sz_gk_create_character')
+      sprite.setFieldValue('jogador', 'NAME')
+      slot.connect(sprite.previousConnection!)
+      if (first) sprite.nextConnection!.connect(first)
+      if (kind === 'expr') target.getParent()?.setFieldValue('jogador', 'CHAR')
+    }
     return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
@@ -92,10 +99,10 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
 
 let runtimeKeys: Set<string>
 
-beforeAll(() => {
+beforeAll(async () => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameKitBlocks)
-  runtimeKeys = loadRuntimeKeys()
+  runtimeKeys = loadRuntimeKeys(await mapTwoDBootstrap('gk'))
 })
 
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
@@ -103,7 +110,7 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
     // Inclui os dois blocos-lista de nome (cenário e pista), ocultos na paleta.
     // Quatro comandos visuais nativos substituem os blocos Canvas nos exemplos.
-    expect(gameKitBlocks.length).toBe(392)
+    expect(gameKitBlocks.length).toBe(404)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -189,7 +196,10 @@ describe('Auditoria Jogo 2D Avançado — pipeline completo por bloco', () => {
       if (kind === 'statement') {
         expect(String(ir[0]?.type).startsWith('gk:')).toBe(true)
       } else {
-        const host = ir[0] as { type?: string; x?: { type?: string } }
+        const host = ir.find((s) => s.type === 'gk:placeCharacter') as {
+          type?: string
+          x?: { type?: string }
+        }
         expect(host.type).toBe('gk:placeCharacter')
         expect(String(host.x?.type).startsWith('gk:')).toBe(true)
       }

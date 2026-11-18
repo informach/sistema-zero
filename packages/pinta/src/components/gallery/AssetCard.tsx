@@ -35,6 +35,7 @@ export { thumbnailBitmap, thumbnailShapes }
 
 /** Cor do chip por PAPEL (a mesma nos dois estilos — é como a criança pensa). */
 const KIND_CHIP_CLASSES: Record<PintaAsset['kind'], string> = {
+  'map-set': 'bg-pin-kind-tilemap',
   'pixel-sprite': 'bg-pin-kind-sprite',
   'pixel-background': 'bg-pin-kind-background',
   tileset: 'bg-pin-kind-tileset',
@@ -242,6 +243,7 @@ export function AssetThumb({
         />
       ) : null}
       {asset.kind === 'tilemap' ? <TilemapThumb asset={asset} findAsset={findAsset} /> : null}
+      {asset.kind === 'map-set' ? <TilemapThumb asset={asset.map} findAsset={findAsset} /> : null}
     </div>
   )
 }

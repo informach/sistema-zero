@@ -1,8 +1,6 @@
 /**
  * PyDew Valley: the farmer, the trader, trees, crops, soil, rain and icons, plus the farm map
- * split in two Pinta maps (the original Tiled map has 16 layers; a Pinta map holds 8):
- *   `fazenda`        water, ground, grass, decoration, hills, fence, collision and farmable soil
- *   `casa-e-objetos` the house (floor, rugs, walls, furniture) and the object layers
+ * in one Pinta map with all sixteen original layers.
  * Everything is drawn at half size and played at double (32 px pieces = 64 px in the game).
  */
 import type { Drawing, MapDrawing, MapObject, TilesetDrawing } from '../drawing'
@@ -76,7 +74,7 @@ export function drawings(): Drawing[] {
       tiles('Paredes', house, maps.paredes),
       tiles('Móveis de cima', house, maps.moveisDeCima),
       objects('Árvores', maps.arvores),
-      objects('Enfeites', maps.decoracao),
+      objects('Enfeites da casa', maps.decoracao),
       objects('Jogador', maps.jogador),
       objects('Objetos', maps.objetos),
     ],
@@ -93,7 +91,6 @@ export function drawings(): Drawing[] {
     icons(),
     soilTiles(),
     wetSoilTiles(),
-    farm,
-    houseAndObjects,
+    { ...farm, layers: [...farm.layers, ...houseAndObjects.layers] },
   ]
 }

@@ -22,6 +22,7 @@ import {
   type PintaAsset,
   type PintaAssetRole,
   type PintaAssetStyle,
+  pintaAssetDependencyIds,
   remapTilemapTilesetIds,
   resolveAssetPalette,
   sanitizeSourceRef,
@@ -127,12 +128,16 @@ export async function exportImageAndSourceForStudio(
   signal?.throwIfAborted()
   const image = await deriveLoadedPintaImage(captured.source, recipe, limits, {
     tilesets: captured.tilesets,
+    assets: captured.assets,
     signal,
   })
   signal?.throwIfAborted()
   // Todas as peças do mapa, como no caminho da galeria (`exportAssetForStudio`): o registro da
   // biblioteca pessoal é o mesmo, venha o desenho pela imagem ou pela ponte.
-  const canonical = await exportResolvedForStudio(captured.source, captured.tilesets)
+  const canonical = await exportResolvedForStudio(
+    captured.source,
+    captured.assets ?? captured.tilesets,
+  )
   signal?.throwIfAborted()
   return canonical.ok ? { ...canonical, image } : canonical
 }
@@ -421,6 +426,8 @@ async function thumbFor(
   findAsset: (id: string) => PintaAsset | null,
 ): Promise<string | null> {
   switch (asset.kind) {
+    case 'map-set':
+      return thumbFor(asset.map, findAsset)
     case 'pixel-sprite': {
       const frame = asset.animations[0]?.frames[0]
       const flat = frame ? flattenCels(frame, asset.layers) : null
@@ -560,6 +567,8 @@ function imageSelectionSummary(
   // Only true is reported, so pixel facts keep the exact shape they always had.
   const vector = { vector: true } as const
   switch (asset.kind) {
+    case 'map-set':
+      return imageSelectionSummary(asset.map, findAsset)
     case 'pixel-sprite':
     case 'vector-sprite':
       return {
@@ -636,15 +645,21 @@ export async function exportAssetForStudio(
   const asset = await persistence.loadAssetById(id)
   signal?.throwIfAborted()
   if (!asset) return { ok: false, reason: 'not-found' }
-  // buildStudioPayload só resolve OUTRO asset no caso tilemap→tileset; carregar
-  // a galeria inteira aqui seria desperdício.
   const linked: PintaAsset[] = []
-  if (asset.kind === 'tilemap') {
-    for (const tilesetId of tilemapTilesetIds(asset)) {
-      const tileset = await persistence.loadAssetById(tilesetId)
-      if (tileset) linked.push(tileset)
-    }
-  }
+  const visited = new Set([asset.id]),
+    queue = [asset]
+  for (const current of queue)
+    for (const id of pintaAssetDependencyIds(current))
+      if (!visited.has(id)) {
+        if (visited.size >= 225)
+          return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
+        visited.add(id)
+        const dependency = await persistence.loadAssetById(id)
+        if (!dependency)
+          return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
+        linked.push(dependency)
+        queue.push(dependency)
+      }
   signal?.throwIfAborted()
   const result = await exportResolvedForStudio(asset, linked)
   signal?.throwIfAborted()
@@ -690,6 +705,8 @@ async function exportResolvedForStudio(
       ...(payload.sprite ? { sprite: payload.sprite } : {}),
       ...(payload.tileset ? { tileset: payload.tileset } : {}),
       ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
+      ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
+      ...(payload.scene ? { scene: payload.scene } : {}),
     },
   }
 }

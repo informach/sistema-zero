@@ -100,6 +100,25 @@ export function exampleQaTestTimeoutMs(contract: ExampleQAContract): number {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'game-2d:A Vila e a Floresta',
+    name: 'A Vila e a Floresta',
+    experience: 'game',
+    promise:
+      'Explorar o cenário completo do Pinta com água animada, frente, objetos tipados e conjuntos.',
+    scenario:
+      'Andar com setas, respeitar as paredes, entrar na cabana pela porta e voltar à vila; conferir as propriedades nos blocos.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:A Vila e a Floresta (Avançado)',
+    name: 'A Vila e a Floresta (Avançado)',
+    experience: 'game',
+    promise: 'Explorar as mesmas 18 camadas do Pinta no motor avançado, sem achatar o cenário.',
+    scenario:
+      'Iniciar, andar com setas, atravessar a porta da cabana e voltar; ler objetos, propriedades e áreas.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'core:Descida da Neve (Canvas)',
     name: 'Descida da Neve (Canvas)',
     experience: 'game',

@@ -9,10 +9,10 @@ nota mais abaixo). Diagnóstico e plano: `docs/pinta-cenarios/README.md`.
   `PINTA_MAX_READ_FORMAT_VERSION` (o que este código lê), `PINTA_MAP_WRITE_FORMAT_VERSION` (o que
   mapas e peças declaram ao subir) e `pintaWriteFormatVersion(kind)`. A versão declarada é função
   do TIPO do desenho, nunca do conteúdo.
-- ⚠️⚠️ **A escrita fica um passo atrás da leitura, de propósito.** O servidor nunca rebaixa a
-  versão de um item. Se o leitor e o gravador fossem ao ar juntos e houvesse rollback, todo mapa
-  ficaria recusado (409). Hoje a escrita ainda declara 1; ela só sobe depois de este leitor estar
-  em produção.
+- A trava de leitura deve ser publicada antes do gravador. O leitor e o gravador completos
+  usam versão de nuvem 3 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
+  A implementação parcial de camadas já declarava 2, por isso não pode regravar a cena completa.
+  O servidor não rebaixa versão; em rollback, a trava preserva o desenho e pede atualização.
 - `PintaPersistence.getReadIssues?()` (`PintaReadIssue`): desenhos que o armazenamento conhece e
   este código não lê. A galeria (`galleryStore.readIssues`) mostra o aviso
   `COPY.gallery.newerFormat` com "Atualizar a página" e NÃO os põe na lista. O host preenche (ver o
@@ -2252,19 +2252,14 @@ Pinta — inclusive o que não é peça (onde o jogador começa, inimigos, porta
 - Testes: `mapObjectsUi.test.tsx` (rascunho com e sem foco, sem desfazer vazio, Delete com
   janela, chave recusada) e o caso "a camada sem as peças dela" de `mapObjects.test.ts`.
 
-⚠️⚠️ **Risco registrado (M3, sem conserto no Pinta): cliente ANTIGO regravando pela nuvem.** Um
-bundle anterior às camadas de objetos (outro aparelho com a aba aberta) desce o mapa novo pelo
-`sanitizePintaAsset` DELE, que descarta a camada de objetos e corta as camadas 5 a 8 (o teto era
-4), e grava o resultado no IndexedDB local. Se a criança mexer nele lá, a subida leva o mapa
-cortado por cima do da conta. O Pinta não alcança o código velho; a proteção barata existe no
-Members: a reserva recusa com `CREATION_CLIENT_OUTDATED` quem declara `formatVersion` menor que o
-guardado (o Molda já usa). Para ligá-la, o host (member-shell, não este pacote) teria de: subir
-os mapas com `formatVersion: 2` em `pinta-cloud-persistence.ts` (todo mapa, não só o que precisa
-de v2: senão apagar a camada de objetos rebaixaria para 1 e o próprio cliente novo seria
-recusado), criar a nuvem do Pinta com `maxFormatVersion: 2` em `pinta-client.tsx` e
-`molda-client.tsx` (senão o DELETE de um item v2 é recusado), e o mesmo no canal `lesson-pinta`.
-Mesmo assim o aparelho velho guarda a cópia cortada no disco local e, depois do F5, a edição dele
-sobe (é o que a criança viu e editou). Janela: até a aba antiga recarregar.
+**M3: proteção implementada (17/11/2026).** A nuvem declara a versão por tipo com
+`pintaWriteFormatVersion`; leitura, conflito e remoção preservam versões futuras. O cliente
+completo declara 3 e recusa leituras acima disso. O servidor barra a regravação por clientes
+anteriores, inclusive a implementação parcial que declarava 2. A galeria apresenta atualização
+quando encontra formato futuro. Testes e limites de homologação: `docs/pinta-cenarios/`.
+A proteção depende da ordem de publicação leitor → gravador. Uma aba antiga no mesmo aparelho
+não pode ser corrigida localmente pelo bundle novo; a nuvem conserva a cópia íntegra. Envios
+em aula não têm trava de formato; mapas continuam fora dos tipos oferecidos na autoria.
 
 ## PNG com os dados do Pinta dentro, para o pygame (10/2026)
 

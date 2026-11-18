@@ -565,6 +565,10 @@ export function PixelCanvas(): JSX.Element {
     if (!selectAllowed()) return
     const item = clipboard.getState().get()
     if (!item) return
+    if (item.kind === 'objects') {
+      showToast(COPY.clipboard.objectsIntoDrawing)
+      return
+    }
     if (item.kind === 'shapes') {
       showToast(COPY.clipboard.vectorIntoPixel)
       return
@@ -872,7 +876,7 @@ export function PixelCanvas(): JSX.Element {
           <ToolButton
             icon={Copy}
             label={COPY.selection.duplicate}
-            shortcut="Ctrl+D"
+            shortcut={COPY.scene.ctrlD}
             onClick={duplicateSelection}
           />
           <ToolButton
@@ -888,7 +892,7 @@ export function PixelCanvas(): JSX.Element {
           <ToolButton
             icon={Trash2}
             label={COPY.selection.remove}
-            shortcut="Delete"
+            shortcut={COPY.scene.delete}
             onClick={deleteSelection}
           />
         </div>

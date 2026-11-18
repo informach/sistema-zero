@@ -33,6 +33,7 @@ export {
   ChevronRight,
   ChevronsDown,
   ChevronsUp,
+  ChevronUp,
   Circle,
   CircleDot,
   ClipboardCopy,
