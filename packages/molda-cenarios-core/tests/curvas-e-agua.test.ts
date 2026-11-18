@@ -549,7 +549,8 @@ test('rio: cava o leito, a água nunca sobe e as quedas aparecem', () => {
   expect(rio.quedas[0]!.altura).toBeGreaterThan(10)
   expect(Math.abs(rio.quedas[0]!.topo.x)).toBeLessThan(8)
   expect(rio.quedas[0]!.base.x).toBeGreaterThan(rio.quedas[0]!.topo.x)
-  expect(rio.superficie.posicoes.length).toBe(rio.eixo.length * 2 * 3)
+  // Margem, eixo e margem: a linha central conserva a cota nas curvas.
+  expect(rio.superficie.posicoes.length).toBe(rio.eixo.length * 3 * 3)
   expect(menorNormalY(rio.superficie)).toBeGreaterThan(0)
   expect(rio.superficie.posicoes[1]).toBe(Math.fround(rio.eixo[0]!.y))
   expect(() =>

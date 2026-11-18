@@ -62,6 +62,7 @@ test('rio cava uma cópia, retorna regiões para o mesmo histórico e preserva o
     { x: -20, z: 0 },
     { x: 20, z: 0 },
   ])
+  expect(prepararConsultaDaAgua(r.agua).superficie?.posicoes.length).toBe(r.agua.pontos.length * 9)
   expect(r.agua.pontos.every((p, i, a) => !i || p.y <= a[i - 1]!.y)).toBe(true)
   expect(r.regioes.alturas).toBeTruthy()
   expect(alturaDoCampo(r.terreno!.campo, 0, 0)).toBeLessThan(alturaDoCampo(e.campo, 0, 0))
