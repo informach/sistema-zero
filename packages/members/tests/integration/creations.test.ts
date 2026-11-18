@@ -236,6 +236,43 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('Pinta capacidade 4 bloqueia gravador 3 durante a reserva e após o commit', async () => {
+    const ctx = buildWithTools()
+    const first = await saveItem(ctx, 'pinta', 'precisao', { kind: 'tilemap', formatVersion: 3 })
+    const promoted = await json(
+      await reserve(ctx, 'pinta', 'precisao', {
+        kind: 'tilemap',
+        formatVersion: 4,
+        baseRevision: first.item.revision,
+      }),
+    )
+    const old = () =>
+      reserve(ctx, 'pinta', 'precisao', {
+        kind: 'tilemap',
+        formatVersion: 3,
+        baseRevision: first.item.revision,
+      })
+    for (const confirmed of [false, true]) {
+      if (confirmed)
+        expect((await commit(ctx, 'pinta', 'precisao', promoted.revision)).status).toBe(200)
+      const refused = await old()
+      expect(refused.status).toBe(409)
+      expect(await json(refused)).toMatchObject({
+        error: { code: 'CREATION_CLIENT_OUTDATED' },
+        details: { requiredVersion: 4 },
+      })
+    }
+    expect((await listOf(ctx, 'pinta'))[0].formatVersion).toBe(4)
+    const oldDelete = await req(ctx.app, 'DELETE', '/members/creations/pinta/precisao', {
+      baseRevision: promoted.revision,
+      maxFormatVersion: 3,
+    })
+    expect(oldDelete.status).toBe(409)
+    expect(await json(oldDelete)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 4 },
+    })
+  })
   test('a versão verificada do documento precisa coincidir com a reserva em ambos os sentidos', async () => {
     const ctx = buildWithTools()
     for (const [reservedVersion, verifiedVersion] of [

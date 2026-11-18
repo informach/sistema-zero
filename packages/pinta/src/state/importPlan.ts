@@ -181,7 +181,17 @@ export function planImport(
         ? remapMapAssets(source, idMap, names)
         : source.kind === 'map-set'
           ? { ...source, map: remapMapAssets(source.map, idMap, names) }
-          : source,
+          : isTilesetKind(source) && source.tileProperties
+            ? {
+                ...source,
+                tileProperties: Object.fromEntries(
+                  Object.entries(source.tileProperties).map(([tile, properties]) => [
+                    tile,
+                    mapPropertyRefs(properties, idMap, 'asset'),
+                  ]),
+                ),
+              }
+            : source,
   }))
   return { pairs, idMap, skipped, error }
 }

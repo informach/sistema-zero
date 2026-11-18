@@ -6,7 +6,8 @@
  *
  * Sai com erro em qualquer diferença. O ensaio com pygame de verdade só roda quando o pygame-ce
  * está instalado; sem ele a linha sai como "não realizado" (com `--exigir-pygame`, vira erro).
- * Tiled, Godot e navegador NÃO são executados aqui.
+ * GODOT=<executável> também confere o projeto no motor real; --exigir-godot torna isso obrigatório.
+ * Tiled (programa) e navegador NÃO são executados aqui.
  */
 import { spawnSync } from 'node:child_process'
 import { mkdtemp, rm } from 'node:fs/promises'
@@ -63,7 +64,30 @@ try {
     console.log(
       'não realizado  Pygame de verdade (test-pinta-scene-package.py): o pygame-ce não está instalado',
     )
-  console.log('não realizado  Tiled (programa), Godot e navegador: este script não os executa')
+  if (process.env.GODOT) {
+    const invokeGodot = (args: string[]) =>
+      spawnSync(process.env.GODOT!, args, { encoding: 'utf8', timeout: 30_000, windowsHide: true })
+    const imported = invokeGodot(['--headless', '--path', join(temp, 'godot'), '--import'])
+    const tested =
+      imported.status === 0
+        ? invokeGodot([
+            '--headless',
+            '--path',
+            join(temp, 'godot'),
+            '--script',
+            join(repo, 'packages/pinta/scripts/homologacao/test-godot.gd'),
+            '--quit-after',
+            '180',
+          ])
+        : imported
+    const output = `${imported.stdout ?? ''}${imported.stderr ?? ''}${tested.stdout ?? ''}${tested.stderr ?? ''}`
+    if (tested.status !== 0 || /(?:SCRIPT ERROR|ERROR):/.test(output))
+      problems.push(`Godot real: ${tested.error ?? ''}\n${output}`)
+    else done(`Godot real: ${tested.stdout.trim()}`)
+  } else if (process.argv.includes('--exigir-godot'))
+    problems.push('Godot: configure GODOT com o executável da versão-alvo.')
+  else console.log('não realizado  Godot real: GODOT não foi configurado')
+  console.log('não realizado  Tiled (programa) e navegador: este script não os executa')
 } finally {
   await rm(temp, { recursive: true, force: true })
 }

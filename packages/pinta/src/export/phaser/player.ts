@@ -11,7 +11,7 @@ class PintaGame extends Phaser.Scene {
     this.surface=this.textures.createCanvas('pinta-view',640,480);
     this.add.image(0,0,'pinta-view').setOrigin(0);
     const hero=this.add.rectangle(0,0,12,12,0x4ade80).setOrigin(0).setVisible(false);
-    hero.w=12;hero.h=12;this.physics.add.existing(hero);this.hero=hero;
+    this.physics.add.existing(hero);this.hero=hero;
     this.keys=this.input.keyboard.createCursorKeys();
     let collision=null;
     this.maps=createMap2D({
@@ -41,7 +41,7 @@ class PintaGame extends Phaser.Scene {
     for(const door of this.maps.mapObjects('mapa','door'))this.maps.useMapDoor('mapa',hero,door);
     const ctx=this.surface.context;ctx.clearRect(0,0,640,480);ctx.fillStyle='#e8edf4';ctx.fillRect(0,0,640,480);
     this.maps.drawMapScene('mapa','back');
-    ctx.fillStyle='#4ade80';ctx.fillRect(hero.x-Math.max(0,hero.x-320),hero.y-Math.max(0,hero.y-240),hero.w,hero.h);
+    ctx.fillStyle='#4ade80';ctx.fillRect(hero.x-Math.max(0,hero.x-320),hero.y-Math.max(0,hero.y-240),hero.width,hero.height);
     this.maps.drawMapScene('mapa','front');this.surface.refresh();
   }
 }

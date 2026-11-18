@@ -36,6 +36,14 @@ export async function sceneToNative(
   const assets: PintaAsset[] = [],
     warnings: string[] = [],
     now = Date.now()
+  for (const owner of [scene, ...(scene.sets ?? [])])
+    for (const layer of owner.layers)
+      if (layer.kind === 'objects')
+        for (const object of layer.objects)
+          if (object.x < 0 || object.y < 0)
+            throw new TiledImportError(
+              `O objeto ${object.name || object.id} tem coordenada negativa. O documento do Pinta ainda não guarda objetos fora do canto inicial; mova o objeto no Tiled antes de importar.`,
+            )
   const quantize = (image: RGBAImage, name: string) => {
     if (image.width * image.height > 4_194_304)
       throw new TiledImportError('Imagem acima do orçamento de importação.')

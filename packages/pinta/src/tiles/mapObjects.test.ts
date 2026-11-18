@@ -14,6 +14,7 @@ import {
   isObjectLayer,
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   remapTilemapTilesetIds,
   sanitizePintaAsset,
   type TilemapAsset,
@@ -393,7 +394,7 @@ describe('fronteiras: wire, .pinta.json e .pinta-tilemap.json', () => {
 
     // Versão futura: recusa com o recado, não lê pela metade.
     const future = JSON.parse(v2)
-    future.version = 5
+    future.version = PINTA_MAX_SCHEMA + 1
     expect(importPintaJson(JSON.stringify(future)).assets).toEqual([])
   })
 

@@ -61,12 +61,14 @@ import {
   emptyPaletteLibrary,
   mergePaletteLibraries,
   PINTA_LIMITS,
+  PINTA_MAX_SCHEMA,
   paletteLibraryContentKey,
+  pintaAssetSchema,
   sanitizePaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import { conflictCopyName, uniqueCreationName } from './creation-names'
-import type { CloudCreationSummary, CreationsCloud } from './creations-cloud'
+import type { CloudCreationSummary, CloudDownload, CreationsCloud } from './creations-cloud'
 import { createStoredSyncedMarks, reconcileCreations, type SyncedMarks } from './creations-sync'
 import { perfSpanAsync } from './perf'
 
@@ -96,7 +98,11 @@ export interface PintaCloudReadIssue {
 export interface PintaFormatMemoryEntry {
   /** O carimbo `schema` do desenho na última sincronia confirmada (subida ou descida). */
   schema: number
-  /** O `updatedAt` da última gravação local feita POR ESTE código (a nossa assinatura). */
+  /** Revisão confirmada à qual o floor pertence; não acompanha marcas de outra instância. */
+  revision?: number
+  /** Assinatura deste gravador: `writtenAt` antigo, sozinho, não autentica um documento. */
+  signature?: { at: number; schema: number; revision: number; maxSchema: number; writerId: string }
+  /** Campo legado mantido para leitores anteriores; sozinho não autentica a gravação. */
   writtenAt?: number
   /** Já foi visto cortado e ainda não foi resolvido: continua valendo mesmo se editarem por cima. */
   cut?: true
@@ -128,16 +134,35 @@ function isFormatMemoryEntry(value: unknown): value is PintaFormatMemoryEntry {
   return (
     typeof entry.schema === 'number' &&
     Number.isFinite(entry.schema) &&
+    (entry.revision === undefined ||
+      (Number.isInteger(entry.revision) && Number(entry.revision) >= 0)) &&
+    (entry.signature === undefined || isFormatSignature(entry.signature)) &&
     (entry.writtenAt === undefined || typeof entry.writtenAt === 'number') &&
     (entry.cut === undefined || entry.cut === true)
+  )
+}
+
+function isFormatSignature(
+  value: unknown,
+): value is NonNullable<PintaFormatMemoryEntry['signature']> {
+  if (!value || typeof value !== 'object') return false
+  const signature = value as Record<string, unknown>
+  return (
+    typeof signature.at === 'number' &&
+    Number.isFinite(signature.at) &&
+    typeof signature.writerId === 'string' &&
+    signature.writerId.length > 0 &&
+    [signature.schema, signature.revision, signature.maxSchema].every(
+      (n) => Number.isInteger(n) && Number(n) >= 0,
+    )
   )
 }
 
 /**
  * Memória de formato em `localStorage`, por perfil. Lê do storage a cada consulta (o registro é
  * pequeno: só desenhos com carimbo) para enxergar o que outra aba gravou. Storage indisponível
- * ou cheio = fica só em memória; sem memória a checagem simplesmente não acontece (nunca
- * bloqueia uma subida por engano).
+ * ou cheio = fica só em memória. Após reiniciar sem essa memória, o espelho confere o remoto
+ * antes da primeira subida de um desenho cuja revisão já era conhecida.
  */
 export function createStoredPintaFormatMemory(storageKey: string): PintaFormatMemory {
   let store: Storage | null = null
@@ -169,7 +194,9 @@ export function createStoredPintaFormatMemory(storageKey: string): PintaFormatMe
       if (entries.size === 0) store.removeItem(storageKey)
       else store.setItem(storageKey, JSON.stringify(Object.fromEntries(entries)))
     } catch {
-      // Cota cheia ou storage bloqueado: segue só em memória.
+      // Não releia o valor antigo depois de uma escrita que falhou: ele apagaria a
+      // proteção que acabamos de guardar. Esta instância segue só em memória.
+      store = null
     }
   }
   return {
@@ -187,12 +214,11 @@ export function createStoredPintaFormatMemory(storageKey: string): PintaFormatMe
 }
 
 /**
- * O carimbo `schema` de um desenho LIDO do disco (o sanitizador do pacote o recalcula a cada
- * leitura, e a gravação também). Zero = sem carimbo.
+ * O carimbo necessário ao conteúdo, sem confiar num campo `schema` antigo mantido pelo editor.
+ * Zero = sem carimbo. A gravação nativa usa o mesmo contrato.
  */
 function schemaStampOf(asset: PintaAsset): number {
-  const schema = (asset as { schema?: unknown }).schema
-  return typeof schema === 'number' && Number.isFinite(schema) ? schema : 0
+  return pintaAssetSchema(asset)
 }
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
@@ -328,53 +354,204 @@ export function createCloudMirroredPintaPersistence(options: {
 
   /** Só mapas, peças e conjuntos levam carimbo; os outros tipos nem entram na memória. */
   const hasFormat = (kind: string): boolean => pintaWriteFormatVersion(kind) > 1
+  const writerId = crypto.randomUUID()
 
-  /** Uma DESCIDA gravou o desenho: o local ficou igual à conta, com este carimbo. */
-  function rememberDownloaded(asset: PintaAsset): void {
+  // A assinatura de um autosave não prova que o cache que a criança abriu estava inteiro.
+  // Guarda a base observada antes dela enquanto falta o floor confirmado pela conta.
+  const unverifiedBases = new Map<string, number>()
+  const observedRevisions = new Map<string, number>()
+  const verifiedLegacy = new Map<string, number>()
+  const formatChecks = new Map<string, Promise<CloudDownload | undefined>>()
+
+  function knownFormatFloor(id: string): boolean {
+    const revision = marks.revision(id)
+    const entry = formatMemory.get(id)
+    if (entry && revision !== undefined && entry.revision === revision) {
+      verifiedLegacy.delete(id)
+      return true
+    }
+    return revision !== undefined && verifiedLegacy.get(id) === revision
+  }
+
+  function needsFormatBaseline(asset: PintaAsset): boolean {
+    return (
+      hasFormat(asset.kind) && (marks.revision(asset.id) ?? 0) > 0 && !knownFormatFloor(asset.id)
+    )
+  }
+
+  function observeUnverifiedBase(asset: PintaAsset): void {
+    if (hasFormat(asset.kind) && !observedRevisions.has(asset.id))
+      observedRevisions.set(
+        asset.id,
+        formatMemory.get(asset.id)?.revision ?? marks.revision(asset.id) ?? 0,
+      )
+    if (!unverifiedBases.has(asset.id) && needsFormatBaseline(asset))
+      unverifiedBases.set(asset.id, schemaStampOf(asset))
+  }
+
+  async function observeBeforeWrite(asset: PintaAsset): Promise<void> {
+    if (!hasFormat(asset.kind)) return
+    const entry = formatMemory.get(asset.id)
+    const inspect = needsFormatBaseline(asset) || (entry && schemaStampOf(asset) < entry.schema)
+    if (!inspect || unverifiedBases.has(asset.id)) return
+    // Só lê o disco: a rede nunca entra no caminho do autosave. Se a base local não puder ser
+    // lida, ela continua desconhecida; salvar a edição não pode autenticá-la como íntegra.
+    const before = await local.loadAssetById(asset.id).catch(() => null)
+    if (before) lostFormat(before) // Marca o cache cortado ANTES de autenticar a nova edição.
+    if (!observedRevisions.has(asset.id))
+      observedRevisions.set(asset.id, entry?.revision ?? marks.revision(asset.id) ?? 0)
+    if (!needsFormatBaseline(asset) || unverifiedBases.has(asset.id)) return
+    unverifiedBases.set(asset.id, before ? schemaStampOf(before) : 0)
+  }
+
+  async function verifyFormatBaseline(
+    id: string,
+    baseRevision: number,
+  ): Promise<CloudDownload | undefined> {
+    const existing = formatChecks.get(id)
+    if (existing) return existing
+    const check = (async () => {
+      const downloaded = await cloud.download(id)
+      if (downloaded && downloaded.summary.itemId !== id)
+        throw new Error('Não foi possível conferir o desenho guardado na conta.')
+      if (downloaded && noteUnreadable(downloaded.summary)) return undefined
+      const remote =
+        downloaded && !downloaded.summary.deletedAt
+          ? sanitizePintaAsset(assetFromJson(downloaded.json).asset)
+          : null
+      if (downloaded && !downloaded.summary.deletedAt && (!remote || remote.id !== id))
+        throw new Error('Não foi possível conferir o desenho guardado na conta.')
+      const schema = remote ? schemaStampOf(remote) : 0
+      const revision = downloaded?.summary.revision ?? baseRevision
+      const entry = formatMemory.get(id)
+      if (entry?.revision !== undefined && entry.revision > revision)
+        throw new Error('O desenho mudou durante a conferência. Tente de novo.')
+      const cut = remote && (entry?.cut || schema > (unverifiedBases.get(id) ?? 0))
+      formatMemory.set(id, {
+        schema,
+        revision,
+        ...(entry?.signature ? { signature: entry.signature } : {}),
+        writtenAt: entry?.writtenAt ?? remote?.updatedAt ?? marks.get(id),
+        ...(cut ? { cut: true as const } : {}),
+      })
+      if (schema === 0) verifiedLegacy.set(id, revision)
+      else verifiedLegacy.delete(id)
+      unverifiedBases.delete(id)
+      return remote && downloaded ? downloaded : undefined
+    })()
+    formatChecks.set(id, check)
+    try {
+      return await check
+    } finally {
+      if (formatChecks.get(id) === check) formatChecks.delete(id)
+    }
+  }
+
+  /** A descida foi preservada: no próprio id ou na cópia de um conflito já resolvido. */
+  function rememberDownloaded(asset: PintaAsset, revision: number, localVersion = asset): void {
     const schema = schemaStampOf(asset)
-    if (schema > 0) formatMemory.set(asset.id, { schema, writtenAt: asset.updatedAt })
+    unverifiedBases.delete(asset.id)
+    observedRevisions.set(asset.id, revision)
+    if (schema === 0 && hasFormat(asset.kind)) verifiedLegacy.set(asset.id, revision)
+    else verifiedLegacy.delete(asset.id)
+    if (schema > 0)
+      formatMemory.set(asset.id, {
+        schema,
+        revision,
+        writtenAt: localVersion.updatedAt,
+        signature: {
+          at: localVersion.updatedAt,
+          schema: schemaStampOf(localVersion),
+          revision,
+          maxSchema: PINTA_MAX_SCHEMA,
+          writerId,
+        },
+      })
     else formatMemory.delete(asset.id)
   }
 
   /**
-   * Uma SUBIDA foi confirmada com este carimbo. A assinatura da nossa última gravação fica como
-   * está: a criança pode ter salvo de novo enquanto o envio estava em voo.
+   * Uma SUBIDA confirmou este floor. Conserva o instante/conteúdo da última gravação e só
+   * confirma sua revisão causal quando ela pertence a esta instância, derivada do envio.
    */
-  function rememberUploaded(id: string, schema: number, updatedAt: number): void {
+  function rememberUploaded(
+    id: string,
+    schema: number,
+    updatedAt: number,
+    revision: number,
+    baseRevision: number,
+  ): void {
+    if (observedRevisions.get(id) === baseRevision) observedRevisions.set(id, revision)
+    if (schema === 0) verifiedLegacy.set(id, revision)
+    else verifiedLegacy.delete(id)
     const entry = formatMemory.get(id)
-    if (entry) formatMemory.set(id, { schema, writtenAt: entry.writtenAt ?? updatedAt })
-    else if (schema > 0) formatMemory.set(id, { schema, writtenAt: updatedAt })
+    const signature = entry?.signature
+    const acknowledged =
+      signature && signature.writerId === writerId && signature.revision === baseRevision
+        ? { ...signature, revision }
+        : signature
+    if (entry || schema > 0)
+      formatMemory.set(id, {
+        schema,
+        revision,
+        writtenAt: entry?.writtenAt ?? updatedAt,
+        ...(acknowledged ? { signature: acknowledged } : {}),
+        ...(entry?.cut ? { cut: true } : {}),
+      })
   }
 
   /**
-   * Este código vai gravar o desenho no aparelho: assina a gravação (o `updatedAt` dela). Feito
+   * Este código vai gravar o desenho no aparelho: assina conteúdo, capacidade e origem. Feito
    * ANTES de gravar, para nenhuma leitura ver o registro novo sem a assinatura; se a gravação
    * falhar, a assinatura de um `updatedAt` que não está no disco não combina com nada.
    */
   function noteWrittenHere(asset: PintaAsset): void {
     if (!hasFormat(asset.kind)) return
     const entry = formatMemory.get(asset.id) ?? { schema: 0 }
-    if (entry.writtenAt !== asset.updatedAt)
-      formatMemory.set(asset.id, { ...entry, writtenAt: asset.updatedAt })
+    formatMemory.set(asset.id, {
+      ...entry,
+      writtenAt: asset.updatedAt,
+      signature: {
+        at: asset.updatedAt,
+        schema: schemaStampOf(asset),
+        revision:
+          observedRevisions.get(asset.id) ?? entry.revision ?? marks.revision(asset.id) ?? 0,
+        maxSchema: PINTA_MAX_SCHEMA,
+        writerId,
+      },
+    })
   }
 
   /**
-   * O registro local perdeu recursos por uma gravação que não saiu deste código? Carimbo menor
-   * que o da última sincronia E `updatedAt` que não é o da nossa última gravação. Uma vez visto,
-   * fica marcado (`cut`) até ser resolvido: editar por cima do registro cortado não o conserta.
+   * Carimbo menor que o floor só é legítimo com assinatura capaz de ler esse floor e vinculada
+   * à mesma revisão. Uma vez visto, o corte fica marcado até ser resolvido: assinar uma nova
+   * edição por cima do cache cortado não o conserta.
    */
+  function signedFor(asset: PintaAsset, schema: number, revision: number | undefined): boolean {
+    const signature = formatMemory.get(asset.id)?.signature
+    return (
+      !!signature &&
+      signature.at === asset.updatedAt &&
+      signature.schema === schemaStampOf(asset) &&
+      signature.revision === revision &&
+      signature.maxSchema >= schema
+    )
+  }
+
   function lostFormat(asset: PintaAsset): boolean {
     if (!hasFormat(asset.kind)) return false
     const entry = formatMemory.get(asset.id)
     if (!entry) return false
     if (entry.cut) return true
-    if (schemaStampOf(asset) >= entry.schema || entry.writtenAt === asset.updatedAt) return false
+    const schema = schemaStampOf(asset)
+    if (schema >= entry.schema || signedFor(asset, entry.schema, entry.revision)) return false
     formatMemory.set(asset.id, { ...entry, cut: true })
     return true
   }
 
   /** Carimbo do que cada envio em voo leu do disco, para lembrar na confirmação. */
   const sendingSchema = new Map<string, number>()
+  const sendingBase = new Map<string, number>()
 
   /**
    * Quando o envio de cada desenho COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
@@ -387,11 +564,15 @@ export function createCloudMirroredPintaPersistence(options: {
     cloud.enqueueUpload(
       asset.id,
       async () => {
+        // Fixa a base causal antes de qualquer await; marcas compartilhadas podem avançar.
+        const entry = formatMemory.get(asset.id)
+        const floorRevision = entry?.revision ?? marks.revision(asset.id) ?? 0
+        const baseRevision = Math.min(floorRevision, entry?.signature?.revision ?? floorRevision)
         // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
         // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
         sendingAt.set(asset.id, now())
         // Sempre o estado MAIS RECENTE do disco (a fila pode rodar depois de mais edições).
-        const current = await local.loadAssetById(asset.id)
+        let current = await local.loadAssetById(asset.id)
         if (!current) {
           sendingAt.delete(asset.id)
           return null
@@ -409,14 +590,38 @@ export function createCloudMirroredPintaPersistence(options: {
           sendingAt.delete(asset.id)
           return null
         }
+        observeUnverifiedBase(current)
+        let checkedDownload: CloudDownload | undefined
+        if (unverifiedBases.has(asset.id)) {
+          try {
+            checkedDownload = await verifyFormatBaseline(asset.id, baseRevision)
+          } catch (error) {
+            sendingAt.delete(asset.id)
+            throw error // A fila existente faz retry; nenhuma edição local depende da rede.
+          }
+          // A criança pode ter salvo/apagado enquanto a conta era consultada.
+          current = await local.loadAssetById(asset.id)
+          if (!current || readIssues.has(asset.id)) {
+            sendingAt.delete(asset.id)
+            return null
+          }
+        }
         // O registro perdeu recursos por uma gravação de código mais antigo (outra aba): não
         // sobe. A versão da conta volta e a daqui fica como cópia.
         if (lostFormat(current)) {
           sendingAt.delete(asset.id)
-          void resolveLostFormat(asset.id).catch(() => undefined)
+          void resolveLostFormat(asset.id, checkedDownload).catch(() => undefined)
           return null
         }
+        const checkedFloor = formatMemory.get(asset.id)?.revision ?? verifiedLegacy.get(asset.id)
+        if (
+          hasFormat(current.kind) &&
+          baseRevision > 0 &&
+          (checkedFloor === undefined || checkedFloor < baseRevision)
+        )
+          throw new Error('O desenho mudou durante a conferência. Tente de novo.')
         sendingSchema.set(asset.id, schemaStampOf(current))
+        sendingBase.set(asset.id, baseRevision)
         return {
           json: assetToJson(current),
           meta: {
@@ -424,7 +629,7 @@ export function createCloudMirroredPintaPersistence(options: {
             kind: current.kind,
             updatedAt: current.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
-            baseRevision: marks.revision(asset.id) ?? 0,
+            baseRevision,
             // Por TIPO, nunca pelo conteúdo (ver `pinta-format.ts` no core). Versão 1 não vai no
             // corpo: é o padrão do servidor, e o pedido fica igual ao de antes.
             ...(pintaWriteFormatVersion(current.kind) > 1
@@ -440,7 +645,10 @@ export function createCloudMirroredPintaPersistence(options: {
         marks.set(itemId, updatedAt, revision)
         const sentSchema = sendingSchema.get(itemId)
         sendingSchema.delete(itemId)
-        if (sentSchema !== undefined) rememberUploaded(itemId, sentSchema, updatedAt)
+        const baseRevision = sendingBase.get(itemId) ?? 0
+        sendingBase.delete(itemId)
+        if (sentSchema !== undefined)
+          rememberUploaded(itemId, sentSchema, updatedAt, revision, baseRevision)
         // A criança apagou o desenho com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
         // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
@@ -477,15 +685,27 @@ export function createCloudMirroredPintaPersistence(options: {
       const mine = await local.loadAssetById(id)
       // A versão da nuvem É a deste aparelho (mesmo `updatedAt`: outra aba deste perfil subiu
       // antes de as marcas se encontrarem): só avança a marca — cópia aqui seria uma duplicata.
-      if (remote && mine && remote.updatedAt === mine.updatedAt) {
+      if (
+        remote &&
+        mine &&
+        remote.updatedAt === mine.updatedAt &&
+        (!hasFormat(mine.kind) || assetToJson(remote) === assetToJson(mine))
+      ) {
         marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
-        rememberDownloaded(remote)
+        rememberDownloaded(remote, downloaded.summary.revision)
         return
       }
       // O registro daqui foi cortado por código mais antigo: não é um conflito de duas edições
       // boas. A versão da conta volta no mesmo id (a daqui fica como cópia) e nada sobe por cima.
-      if (remote && mine && lostFormat(mine)) {
-        await resolveLostFormat(id)
+      if (
+        remote &&
+        mine &&
+        (lostFormat(mine) ||
+          (hasFormat(mine.kind) &&
+            schemaStampOf(remote) > schemaStampOf(mine) &&
+            !signedFor(mine, schemaStampOf(remote), downloaded.summary.revision)))
+      ) {
+        await resolveLostFormat(id, downloaded)
         return
       }
       if (remote) {
@@ -499,6 +719,15 @@ export function createCloudMirroredPintaPersistence(options: {
         await local.persistAssets([copy])
         emitChangedSoon()
         enqueue(copy)
+        // Só rebaseia depois de guardar a edição remota. O formato dela foi conservado e
+        // a próxima CAS pode usar essa revisão sem repetir o mesmo conflito indefinidamente.
+        const current = await local.loadAssetById(id)
+        if (
+          current &&
+          (schemaStampOf(current) >= schemaStampOf(remote) ||
+            signedFor(current, schemaStampOf(remote), downloaded.summary.revision))
+        )
+          rememberDownloaded(remote, downloaded.summary.revision, current)
       }
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
     }
@@ -517,13 +746,13 @@ export function createCloudMirroredPintaPersistence(options: {
    * conta guarda um formato que este código não lê. Nuvem SEM o item: não há versão inteira para
    * proteger; o que há aqui sobe.
    */
-  async function resolveLostFormat(id: string): Promise<void> {
+  async function resolveLostFormat(id: string, checkedDownload?: CloudDownload): Promise<void> {
     // Aberto no editor: nem baixa (cada autosave passaria por aqui). Fica para quando fechar.
     if (options.isAssetOpen?.(id)) {
       skippedOpen.add(id)
       return
     }
-    const downloaded = await cloud.download(id)
+    const downloaded = checkedDownload ?? (await cloud.download(id))
     if (!downloaded || downloaded.summary.deletedAt) {
       formatMemory.delete(id)
       const current = await local.loadAssetById(id)
@@ -547,13 +776,13 @@ export function createCloudMirroredPintaPersistence(options: {
       : remote
     taken.add(restored.name)
     const copy: PintaAsset | null =
-      mine && mine.updatedAt !== remote.updatedAt
+      mine && (mine.updatedAt !== remote.updatedAt || assetToJson(mine) !== assetToJson(remote))
         ? { ...mine, id: crypto.randomUUID(), name: copyName(mine.name, taken), updatedAt: now() }
         : null
     // Uma gravação só: ou entram a versão da conta e a cópia, ou nada muda.
     await local.persistAssets(copy ? [restored, copy] : [restored])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
-    rememberDownloaded(restored)
+    rememberDownloaded(restored, downloaded.summary.revision)
     emitChangedSoon()
     if (copy) enqueue(copy)
     console.warn(
@@ -626,7 +855,7 @@ export function createCloudMirroredPintaPersistence(options: {
       : remote
     await local.persistAssets([restored])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
-    rememberDownloaded(restored)
+    rememberDownloaded(restored, downloaded.summary.revision)
     marks.clearTombstone(id)
     emitChangedSoon()
     console.warn('[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho', {
@@ -874,13 +1103,15 @@ export function createCloudMirroredPintaPersistence(options: {
       localUpdatedAt: async (itemId) => (await local.loadAssetById(itemId))?.updatedAt ?? null,
       fetch: async (summary: CloudCreationSummary, signal: AbortSignal) => {
         const downloaded = await cloud.download(summary.itemId, { signal })
-        if (!downloaded) return null
+        // O arquivo pode ter mudado entre a listagem e o download.
+        if (!downloaded || noteUnreadable(downloaded.summary)) return null
+        if (downloaded.summary.revision !== summary.revision) return null
         const parsed = assetFromJson(downloaded.json)
         const asset = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
         if (!asset || asset.id !== summary.itemId) return null
         return asset
       },
-      apply: async (_summary, asset) => {
+      apply: async (summary, asset) => {
         // Nome já usado por OUTRO desenho local: sufixo (a galeria exige nome único).
         const owner = nameOwner.get(asset.name)
         const named =
@@ -895,7 +1126,7 @@ export function createCloudMirroredPintaPersistence(options: {
         // Grava DIRETO no local (id preservado), fora do embrulho: não é edição.
         await local.persistAssets([named])
         // O local ficou igual à conta: é este o carimbo a comparar daqui em diante.
-        rememberDownloaded(named)
+        rememberDownloaded(named, summary.revision)
         emitChangedSoon()
         return true
       },
@@ -977,11 +1208,13 @@ export function createCloudMirroredPintaPersistence(options: {
 
   return {
     async persistAsset(asset) {
+      await observeBeforeWrite(asset)
       noteWrittenHere(asset)
       await local.persistAsset(asset)
       enqueue(asset)
     },
     async persistAssets(assets) {
+      for (const asset of assets) await observeBeforeWrite(asset)
       for (const asset of assets) noteWrittenHere(asset)
       await local.persistAssets(assets)
       for (const asset of assets) enqueue(asset)
@@ -992,17 +1225,35 @@ export function createCloudMirroredPintaPersistence(options: {
       enqueueRemove(id)
       marks.delete(id)
       formatMemory.delete(id)
+      unverifiedBases.delete(id)
+      observedRevisions.delete(id)
+      verifiedLegacy.delete(id)
     },
     async loadAssetById(id) {
       const asset = await local.loadAssetById(id)
       // Marca o corte ANTES de o editor abrir e salvar por cima (a assinatura da gravação dele
       // esconderia o corte da subida).
-      if (asset) lostFormat(asset)
+      if (asset) {
+        const entry = formatMemory.get(id),
+          signature = entry?.signature
+        if (
+          signature &&
+          signature.at === asset.updatedAt &&
+          signature.schema === schemaStampOf(asset) &&
+          signature.maxSchema >= (entry?.schema ?? 0)
+        )
+          observedRevisions.set(id, signature.revision)
+        observeUnverifiedBase(asset)
+        lostFormat(asset)
+      }
       return asset
     },
     async listAllAssets() {
       const localAssets = await local.listAllAssets()
-      for (const asset of localAssets) lostFormat(asset)
+      for (const asset of localAssets) {
+        observeUnverifiedBase(asset)
+        lostFormat(asset)
+      }
       // A galeria abre AGORA com o que há neste aparelho; a reconciliação com a nuvem corre
       // em segundo plano (single-flight) e avisa o pacote: `sync-start` → a galeria mostra
       // "buscando…", `changed` a cada lote que desce (a galeria relê), `sync-end` no fim.
@@ -1044,6 +1295,9 @@ export function createCloudMirroredPintaPersistence(options: {
     dispose() {
       unsubscribeOpenState?.()
       unsubscribeOpenState = null
+      unverifiedBases.clear()
+      observedRevisions.clear()
+      verifiedLegacy.clear()
     },
   }
 }

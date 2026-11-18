@@ -1,23 +1,31 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## Formato 4, tetos em dois níveis e carimbo na gravação (18/11/2026)
+## Formatos 4/5, tetos em dois níveis e carimbo na gravação (18/11/2026)
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
-**Carimbo `schema` e envelope `.pinta.json` têm dois números agora.**
+**Bloqueio local ainda aberto (issue 026):** uma aba que já tinha RAM4 pode executar seu
+gravador antigo e substituir a chave IndexedDB do documento5, mesmo recusando leitura fria5.
+Não há checkpoint autoritativo local. A proteção da conta não resolve isso sem nuvem; esta
+revisão não aprova release. Reprodutor e contrato necessário estão na rodada de review.
+
+**Carimbo `schema` e envelope `.pinta.json` dependem do conteúdo.**
 - `PINTA_MAP_SCHEMA = 3`: o que é de CAMADAS (grupos, opacidade, deslocamento, trava, colisão,
   peça virada, mapa grande, conjunto de peças com mais de 64 peças).
 - `PINTA_SCENE_SCHEMA = 4`: a CENA COMPLETA. No mapa, qualquer objeto com forma, giro, espelho,
-  papel, arte, instância de conjunto ou propriedade tipada (`objectNeedsV4`). Nas peças, animação,
-  terreno ou propriedade de peça (`tilesetNeedsV4`). O desenho do tipo conjunto é sempre 4.
+  papel, arte, instância de conjunto ou propriedade tipada (`objectNeedsV4`), e propriedades
+  tipadas de camadas/grupos. Nas peças, animação, terreno ou propriedade (`tilesetNeedsV4`).
+- `PINTA_PRECISE_SCHEMA = 5`: offsets fracionários de camada. O leitor completo 4 também
+  os arredondava, conservando o carimbo 4; ele precisa recusar o novo documento. Conjuntos
+  exigem pelo menos 4 e acompanham o 5 do mapa interno. `PINTA_MAX_SCHEMA = 5`.
 - Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
   completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
   recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado
   medido no cabeçalho de `core/mapFormat4.test.ts`.
 - Quem só usa camadas continua em 3; documento antigo continua sem carimbo e byte a byte igual
-  (conferido contra o código de bf6e895f). A leitura aceita 3 e 4, inclusive o mapa completo que
+  (conferido contra o código de bf6e895f). A leitura aceita 3, 4 e 5, inclusive o mapa completo que
   já foi gravado com 3: ele é lido inteiro e passa a 4.
-- `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou 4)?", que é a pergunta do
+- `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou superior)?", que é a pergunta do
   desenho e da entrega ao Estúdio. Para o número, use `tilemapSchemaFor`, `tilesetSchemaFor` ou
   `pintaAssetSchema`. ⚠️ Não compare `asset.schema === 3`: use as funções.
 - ⚠️ O que o carimbo NÃO resolve: o leitor de PEÇAS de bf6e895f não confere `schema` (lê e descarta
@@ -54,7 +62,7 @@ vazios somem do desenho (mapa vazio fazia o conjunto pedir formato novo sem usar
 pega `.cells.forEach/map/some/...`, `for (... of x.cells)` e a máscara escrita na mão (`& 4095`,
 `>> 12`). Arquivo novo que leia células reprova até entrar na lista com o que faz.
 
-Testes: `core/mapFormat4.test.ts`, `tiles/sets.test.ts`, `tiles/tilesetMetadata.test.ts`, e os
+Testes: `core/mapFormat4.test.ts`, `core/mapFormat5.test.ts`, `tiles/sets.test.ts`, `tiles/tilesetMetadata.test.ts`, e os
 blocos novos em `state/{persistence,galleryStore,clipboardStore,editorStore}.test.ts`.
 
 ## Trava de formato na nuvem: o leitor (17/11/2026)
@@ -67,8 +75,10 @@ nota mais abaixo). Diagnóstico e plano: `docs/pinta-cenarios/README.md`.
   mapas e peças declaram ao subir) e `pintaWriteFormatVersion(kind)`. A versão declarada é função
   do TIPO do desenho, nunca do conteúdo.
 - A trava de leitura deve ser publicada antes do gravador. O leitor e o gravador completos
-  usam versão de nuvem 3 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
-  A implementação parcial de camadas já declarava 2, por isso não pode regravar a cena completa.
+  usam versão de nuvem 4 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
+  A implementação parcial de camadas declarava 2, a cena completa anterior declarava 3;
+  ambas precisam ser barradas ao gravar o documento preciso 5. Nuvem e nativo são eixos distintos.
+  Esta branch não executa rollout: ver o procedimento em `docs/pinta-cenarios/diagnostico-e-arquitetura.md`.
   O servidor não rebaixa versão; em rollback, a trava preserva o desenho e pede atualização.
 - `PintaPersistence.getReadIssues?()` (`PintaReadIssue`): desenhos que o armazenamento conhece e
   este código não lê. A galeria (`galleryStore.readIssues`) mostra o aviso

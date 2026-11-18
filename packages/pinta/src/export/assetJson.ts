@@ -15,7 +15,11 @@
  * certo; para RETOMAR o próprio trabalho seria fatal, porque cada abertura do bloco criaria um
  * desenho novo. Por isso este módulo fala com o `importPintaJson` DIRETO e nunca com o store.
  */
-import type { PintaAsset } from '../core/project'
+import {
+  PINTA_DEPENDENCY_ASSET_LIMIT,
+  type PintaAsset,
+  pintaAssetDependencyIds,
+} from '../core/project'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 
 export interface AssetImportResult {
@@ -33,9 +37,9 @@ export function assetToJson(asset: PintaAsset): string {
 /**
  * Um desenho PORTÁTIL para baixar no Pinta completo.
  *
- * Quase todo asset é autônomo. O mapa é a exceção: sem o tileset apontado por `tilesetId` ele
- * volta como uma grade sem aparência. Por isso o arquivo de UM mapa leva primeiro as peças e
- * depois o mapa; `galleryStore.importAssets` já troca os ids e religa os dois no restauro.
+ * O mapa precisa dos seus tilesets e as propriedades tipadas podem apontar para outros recursos
+ * em mapas ou peças. O pacote conserva essa cadeia inteira, com dependências antes de quem as
+ * usa quando não há ciclos; `galleryStore.importAssets` troca e religa os ids no restauro.
  *
  * `null` recusa produzir um mapa quebrado. Esta função é interna da UI e não muda o contrato de
  * `assetToJson`, que precisa continuar sendo exatamente UM asset para o bloco de aula.
@@ -44,41 +48,29 @@ export function assetBundleToJson(
   asset: PintaAsset,
   galleryAssets: readonly PintaAsset[],
 ): string | null {
-  if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') return assetToJson(asset)
+  const dependencies = pintaAssetDependencyIds(asset)
+  if (dependencies.length === 0) return assetToJson(asset)
   const byId = new Map(galleryAssets.map((a) => [a.id, a])),
-    seen = new Set<string>(),
+    seen = new Set<string>([asset.id]),
     ordered: PintaAsset[] = []
-  const visit = (a: PintaAsset): boolean => {
-    if (seen.has(a.id)) return true
-    seen.add(a.id)
-    const map = a.kind === 'tilemap' ? a : a.kind === 'map-set' ? a.map : null
-    if (map) {
-      const refs = [
-        ...new Set([
-          map.tilesetId,
-          ...map.layers.flatMap((l) =>
-            l.kind === 'objects'
-              ? l.objects.flatMap((o) => [
-                  ...(o.art ? [o.art.assetId] : []),
-                  ...(o.setId ? [o.setId] : []),
-                ])
-              : l.kind === 'group'
-                ? []
-                : l.tilesetId
-                  ? [l.tilesetId]
-                  : [],
-          ),
-        ]),
-      ]
-      for (const id of refs) {
-        const dep = byId.get(id)
-        if (!dep || !visit(dep)) return false
-      }
+  // Iterativo: propriedades podem ligar recursos em ciclos ou cadeias longas. O teto é o da
+  // captura de imagens; ultrapassá-lo recusa o pacote inteiro em vez de omitir referências.
+  const pending = [{ asset, dependencies, next: 0 }]
+  while (pending.length) {
+    const frame = pending[pending.length - 1]!
+    const id = frame.dependencies[frame.next++]
+    if (id === undefined) {
+      ordered.push(frame.asset)
+      pending.pop()
+      continue
     }
-    ordered.push(a)
-    return true
+    if (seen.has(id)) continue
+    const dependency = byId.get(id)
+    if (!dependency || seen.size >= PINTA_DEPENDENCY_ASSET_LIMIT) return null
+    seen.add(id)
+    pending.push({ asset: dependency, dependencies: pintaAssetDependencyIds(dependency), next: 0 })
   }
-  return visit(asset) ? galleryToPintaJson(ordered) : null
+  return galleryToPintaJson(ordered)
 }
 
 /**

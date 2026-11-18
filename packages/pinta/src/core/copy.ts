@@ -13,6 +13,8 @@ export const COPY = {
     unpackedTooLarge: 'O pacote aberto passou de 128 MiB.',
     left: 'À esquerda',
     right: 'À direita',
+    setCropAlignment:
+      'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

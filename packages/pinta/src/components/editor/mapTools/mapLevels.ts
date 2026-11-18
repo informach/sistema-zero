@@ -77,7 +77,9 @@ export interface MapFeatures {
   objectDetails: boolean
   /** Cadeado, subir e descer, e as peças de cada camada. */
   layerOrder: boolean
-  /** Transparência, grupos, colisão, deslocamento e propriedades da camada. */
+  /** Marcar uma camada de peças como barreira. */
+  layerCollision: boolean
+  /** Transparência, grupos, deslocamento e propriedades da camada. */
   layerAdvanced: boolean
   playtest: boolean
 }
@@ -85,15 +87,16 @@ export interface MapFeatures {
 const FEATURE_LEVEL: Record<keyof MapFeatures, MapLevel> = {
   playtest: 'start',
   transform: 'create',
-  terrain: 'create',
+  terrain: 'start',
   scatter: 'create',
   minimap: 'create',
-  library: 'create',
+  library: 'start',
   objectArrange: 'create',
   objectDetails: 'create',
   layerOrder: 'create',
-  animation: 'advanced',
-  sets: 'advanced',
+  animation: 'create',
+  sets: 'create',
+  layerCollision: 'create',
   layerAdvanced: 'advanced',
 }
 
@@ -125,7 +128,7 @@ export function mapFeaturesInUse(
     )
       used.layerAdvanced = true
     if (isTileLayer(layer)) {
-      if (layer.collision) used.layerAdvanced = true
+      if (layer.collision) used.layerCollision = true
       if (layer.tilesetId && layer.tilesetId !== map.tilesetId) used.layerOrder = true
       if (!used.transform && layer.cells.some((cell) => cell >= 0 && cellFlags(cell) !== 0))
         used.transform = true

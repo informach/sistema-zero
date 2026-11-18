@@ -300,12 +300,25 @@ describe('níveis das ferramentas', () => {
       Object.entries(start)
         .filter(([, on]) => on)
         .map(([key]) => key),
-    ).toEqual(['playtest'])
+    ).toEqual(['playtest', 'terrain', 'library'])
     const create = mapFeaturesFor('create')
     expect(create.terrain && create.scatter && create.library && create.minimap).toBe(true)
     expect(create.transform && create.objectDetails && create.layerOrder).toBe(true)
-    expect(create.animation || create.sets || create.layerAdvanced).toBe(false)
+    expect(create.sets).toBe(true)
+    expect(create.animation).toBe(true)
+    expect(create.layerCollision).toBe(true)
+    expect(create.layerAdvanced).toBe(false)
     expect(Object.values(mapFeaturesFor('advanced')).every(Boolean)).toBe(true)
+  })
+  it('colisão de camada aparece em Criar mais e continua acessível quando o mapa a usa', () => {
+    expect(mapFeaturesFor('start').layerCollision).toBe(false)
+    const m = mapa()
+    tileLayerAt(m).collision = true
+    const used = mapFeaturesInUse(m, [pecas()])
+    expect(used).toEqual({ layerCollision: true })
+    const start = mapFeaturesFor('start', used)
+    expect(start.layerCollision).toBe(true)
+    expect(start.layerAdvanced).toBe(false)
   })
   it('o que o mapa já usa aparece em qualquer nível', () => {
     let m = mapa()

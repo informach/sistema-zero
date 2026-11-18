@@ -80,7 +80,7 @@ describe('mapa antigo', () => {
         locked: false,
         opacity: 1,
         offsetX: 0,
-        offsetY: 0.2,
+        offsetY: 0,
         parallaxX: 1,
         parallaxY: 1,
         properties: {},
@@ -109,6 +109,46 @@ describe('mapa antigo', () => {
 })
 
 describe('camadas do formato 3', () => {
+  it('frações de pixel sobrevivem ao registro, wire e arquivo em todos os tipos de camada', () => {
+    const raw = com([
+      grupo('g', { offsetX: 16.5, offsetY: 0.25 }),
+      pecas('a', { parentId: 'g', offsetX: -0.25, offsetY: -16.5 }),
+      {
+        id: 'o',
+        kind: 'objects',
+        name: 'Objetos',
+        visible: true,
+        offsetX: 0.2,
+        offsetY: -0.2,
+        objects: [],
+      },
+    ])
+    const read = ler(raw)!
+    // Até o leitor completo de schema 4 arredondava offsets; ele deve recusar esta extensão.
+    expect(read.schema).toBe(5)
+    expect(envelopeVersionFor([read])).toBe(5)
+    expect(read.layers.map((l) => [l.offsetX, l.offsetY])).toEqual([
+      [16.5, 0.25],
+      [-0.25, -16.5],
+      [0.2, -0.2],
+    ])
+    expect(effectiveLayer(read, read.layers[1]!)).toMatchObject({ offsetX: 16.25, offsetY: -16.25 })
+    expect(pintaAssetFromWire(pintaAssetToWire(raw))).toEqual(read)
+    expect(importPintaJson(galleryToPintaJson([raw])).assets).toEqual([read])
+    const capped = ler(
+      com([
+        pecas('a', { offsetX: 1e20, offsetY: -1e20 }),
+        pecas('b', { offsetX: Number.POSITIVE_INFINITY, offsetY: Number.NaN }),
+      ]),
+    )!
+    expect(capped.layers[0]).toMatchObject({
+      offsetX: PINTA_MAP_FORMAT_LIMITS.maxLayerOffset,
+      offsetY: -PINTA_MAP_FORMAT_LIMITS.maxLayerOffset,
+    })
+    expect(capped.layers[1]?.offsetX).toBeUndefined()
+    expect(capped.layers[1]?.offsetY).toBeUndefined()
+  })
+
   it('guarda cadeado, opacidade, deslocamento, parallax, colisão e propriedades, e carimba o mapa', () => {
     const camada = pecas('a', {
       locked: true,

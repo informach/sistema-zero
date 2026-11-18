@@ -271,6 +271,19 @@ function MapLayerDetails({
           </IconButton>
         </div>
       ) : null}
+      {features.layerCollision && isTileLayer(layer) ? (
+        <label className="flex min-h-11 items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={layer.collision === true}
+            onChange={() => {
+              if (!commit((m) => toggleMapLayerCollision(m, layer.id)))
+                showToast(COPY.layers.lockedWarning)
+            }}
+          />
+          {COPY.tiles.layerCollision}
+        </label>
+      ) : null}
       {features.layerAdvanced ? (
         <>
           <label className="flex flex-col text-xs font-bold text-pin-muted">
@@ -324,19 +337,6 @@ function MapLayerDetails({
                 ))}
             </select>
           </label>
-          {isTileLayer(layer) ? (
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={layer.collision === true}
-                onChange={() => {
-                  if (!commit((m) => toggleMapLayerCollision(m, layer.id)))
-                    showToast(COPY.layers.lockedWarning)
-                }}
-              />
-              {COPY.tiles.layerCollision}
-            </label>
-          ) : null}
           <details>
             <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold text-pin-muted">
               {COPY.scene.deslocamentoEDistancia}

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import type { MapSetAsset, TilemapAsset } from '../core/project'
 import { createPixelSpriteAsset, createVectorBackgroundAsset } from '../core/project'
 import {
   clearIdbMock,
@@ -141,6 +142,29 @@ describe('autosave com centenas de desenhos (medição)', () => {
 })
 
 describe('carimbo `schema` na gravação (o que faz outro código recusar em vez de cortar)', () => {
+  it('frações são gravadas e reabertas com schema 5 no mapa e no conjunto externo', async () => {
+    const { createTilemapAsset } = await import('../core/project')
+    const mapa = createTilemapAsset({ name: 'fracao', tilesetId: 'pecas', cols: 2, rows: 2 })
+    mapa.layers[0]!.offsetX = 0.25
+    const conjunto: MapSetAsset = {
+      id: 'conjunto',
+      kind: 'map-set',
+      name: 'conjunto',
+      createdAt: 1,
+      updatedAt: 1,
+      schema: 4,
+      map: mapa,
+    }
+    await persistAsset(mapa)
+    await persistAsset(conjunto)
+    const rawMap = idbMockDb('sistema-zero-pinta').get(`pinta:asset:${mapa.id}`) as TilemapAsset
+    const rawSet = idbMockDb('sistema-zero-pinta').get('pinta:asset:conjunto') as MapSetAsset
+    expect(rawMap.schema).toBe(5)
+    expect(rawMap.layers[0]?.offsetX).toBe(0.25)
+    expect(rawSet.schema).toBe(5)
+    expect(rawSet.map.schema).toBe(5)
+    expect(await createPintaPersistence().loadAssetById(conjunto.id)).toEqual(rawSet)
+  })
   it('🚨 o registro NO DISCO leva o carimbo do conteúdo, mesmo que o desenho em memória não leve', async () => {
     const { createTilemapAsset, createTilesetAsset, isObjectLayer } = await import(
       '../core/project'

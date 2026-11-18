@@ -22,10 +22,12 @@ export function MapLibraryPanel({
   selectedId,
   allowSets = true,
   position,
+  snapObjects = true,
 }: {
   layerId: string
   selectedId: string | null
   allowSets?: boolean
+  snapObjects?: boolean
   /** Onde o ponteiro esteve por último no palco, em pixels do mapa (ou o meio do que se vê). */
   position?: () => { x: number; y: number } | null
 }): JSX.Element {
@@ -50,38 +52,46 @@ export function MapLibraryPanel({
     const ts = find(m.tilesetId),
       tileSize = ts && isTilesetKind(ts) ? ts.tileSize : 16
     const layer = m.layers.find((l) => l.id === layerId)
-    if (layer && effectiveLayer(m, layer).locked) {
+    if (!layer || !isObjectLayer(layer)) return
+    const offset = effectiveLayer(m, layer)
+    if (offset.locked) {
       showToast(COPY.layers.lockedWarning)
       return
     }
     const width =
-      'frameWidth' in a
-        ? a.frameWidth
-        : 'width' in a
-          ? a.width
-          : isTilesetKind(a)
-            ? a.tileSize
-            : tileSize
+      a.kind === 'map-set'
+        ? a.map.cols * tileSize
+        : 'frameWidth' in a
+          ? a.frameWidth
+          : 'width' in a
+            ? a.width
+            : isTilesetKind(a)
+              ? a.tileSize
+              : tileSize
     const height =
-      'frameHeight' in a
-        ? a.frameHeight
-        : 'height' in a
-          ? a.height
-          : isTilesetKind(a)
-            ? a.tileSize
-            : tileSize
+      a.kind === 'map-set'
+        ? a.map.rows * tileSize
+        : 'frameHeight' in a
+          ? a.frameHeight
+          : 'height' in a
+            ? a.height
+            : isTilesetKind(a)
+              ? a.tileSize
+              : tileSize
     // O desenho nasce onde o ponteiro esteve por último (na casa da grade), dentro do mapa.
     const target = position?.() ?? { x: (m.cols * tileSize) / 2, y: (m.rows * tileSize) / 2 }
-    const cell = (value: number, size: number, cells: number): number =>
-      Math.max(
+    const cell = (value: number, size: number, cells: number, shift: number): number => {
+      const local = value - shift - size / 2
+      return Math.max(
         0,
         Math.min(
-          Math.max(0, cells * tileSize - size),
-          Math.floor((value - size / 2) / tileSize + 0.5) * tileSize,
+          Math.max(0, cells * tileSize - size - shift),
+          snapObjects ? Math.round(local / tileSize) * tileSize : Math.round(local),
         ),
       )
-    const x = cell(target.x, width, m.cols),
-      y = cell(target.y, height, m.rows)
+    }
+    const x = cell(target.x, width, m.cols, offset.offsetX),
+      y = cell(target.y, height, m.rows, offset.offsetY)
     commitIfChanged(
       s,
       a.kind === 'map-set'

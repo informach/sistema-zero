@@ -17,6 +17,7 @@ import {
   type AnyTilesetAsset,
   isCompatibleMapTileset,
   isTilesetKind,
+  PINTA_DEPENDENCY_ASSET_LIMIT,
   type PintaAsset,
   pintaAssetDependencyIds,
   sanitizePintaAsset,
@@ -537,19 +538,16 @@ export async function capturePintaAssetForImage(
   const first = safeSanitize(await get<unknown>(assetKey(id), store))
   signal?.throwIfAborted()
   if (!first || first.id !== id) return { ok: false, reason: 'not-found' }
-  if (
-    pintaAssetDependencyIds(first).some(
-      (dep) => first.kind !== 'tilemap' || !tilemapTilesetIds(first).includes(dep),
-    )
-  ) {
-    const discovered = new Map<string, PintaAsset>([[first.id, first]])
+  const captureDependencies = async (seed: PintaAsset) => {
+    const discovered = new Map<string, PintaAsset>([[seed.id, seed]])
     for (const value of discovered.values())
       for (const dep of pintaAssetDependencyIds(value))
         if (!discovered.has(dep)) {
-          if (discovered.size >= 225) return { ok: false, reason: 'needs-tileset' }
+          if (discovered.size >= PINTA_DEPENDENCY_ASSET_LIMIT)
+            return { ok: false, reason: 'needs-tileset' } as const
           const asset = safeSanitize(await get<unknown>(assetKey(dep), store))
           signal?.throwIfAborted()
-          if (!asset || asset.id !== dep) return { ok: false, reason: 'needs-tileset' }
+          if (!asset || asset.id !== dep) return { ok: false, reason: 'needs-tileset' } as const
           discovered.set(dep, asset)
         }
     const ids = [...discovered.keys()],
@@ -564,18 +562,28 @@ export async function capturePintaAssetForImage(
             pintaAssetDependencyIds(discovered.get(ids[i]!)!).join('\u0000'),
       )
     )
-      return { ok: false, reason: 'source-changed' }
+      return { ok: false, reason: 'source-changed' } as const
     const source = snapshot[0]!,
       assets = snapshot.slice(1).filter((a): a is PintaAsset => a !== null),
       map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
-    const tilesets = map
-      ? tilemapTilesetIds(map).flatMap((id) => {
-          const a = assets.find((v) => v.id === id)
-          return a && isTilesetKind(a) ? [a] : []
-        })
-      : []
-    return { ok: true, source, assets, tileset: tilesets[0] ?? null, tilesets }
+    const base = map ? assets.find((a) => a.id === map.tilesetId && isTilesetKind(a)) : null
+    if (map && (!base || !isTilesetKind(base)))
+      return { ok: false, reason: 'needs-tileset' } as const
+    const tilesets =
+      map && base && isTilesetKind(base)
+        ? tilemapTilesetIds(map).flatMap((id) => {
+            const a = assets.find((v) => v.id === id)
+            return a && isTilesetKind(a) && isCompatibleMapTileset(base, a) ? [a] : []
+          })
+        : []
+    return { ok: true, source, assets, tileset: tilesets[0] ?? null, tilesets } as const
   }
+  if (
+    pintaAssetDependencyIds(first).some(
+      (dep) => first.kind !== 'tilemap' || !tilemapTilesetIds(first).includes(dep),
+    )
+  )
+    return captureDependencies(first)
   if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null, tilesets: [] }
   const tilesetIds = tilemapTilesetIds(first)
   const values = await getMany<unknown>([assetKey(id), ...tilesetIds.map(assetKey)], store)
@@ -585,10 +593,14 @@ export async function capturePintaAssetForImage(
     !source ||
     source.id !== id ||
     source.kind !== 'tilemap' ||
-    tilemapTilesetIds(source).join('\u0000') !== tilesetIds.join('\u0000')
+    pintaAssetDependencyIds(source).join('\u0000') !== pintaAssetDependencyIds(first).join('\u0000')
   )
     return { ok: false, reason: 'source-changed' }
   const found = values.slice(1).map((value) => safeSanitize(value))
+  // O mapa pode só apontar para peças, mas as peças podem apontar para outros recursos. Promove
+  // ao mesmo caminho transacional completo; mapas antigos sem essas relações mantêm uma leitura.
+  if (found.some((asset) => asset && pintaAssetDependencyIds(asset).length > 0))
+    return captureDependencies(source)
   const tileset = found[0]
   if (!tileset || tileset.id !== source.tilesetId || !isTilesetKind(tileset))
     return { ok: false, reason: 'needs-tileset' }

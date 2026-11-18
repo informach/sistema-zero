@@ -40,6 +40,8 @@
     "./morada/schema": "./src/morada/schema.ts"
   },
   "scripts": {
+    "gen:pinta-scene-transform": "bun scripts/gen-pinta-scene-transform.ts",
+    "check:pinta-scene-transform": "bun scripts/gen-pinta-scene-transform.ts --check",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "biome check .",

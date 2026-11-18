@@ -105,6 +105,7 @@ function TilemapWorkspace({
           ids={c.selectedObjectIds}
           onSelect={c.chooseObjects}
           position={c.placementPoint}
+          snapObjects={c.snapObjects}
         />
       ) : null}
       {features.library ? (
@@ -113,6 +114,7 @@ function TilemapWorkspace({
           selectedId={c.selectedObjectId}
           allowSets={!setEditor && features.sets}
           position={c.placementPoint}
+          snapObjects={c.snapObjects}
         />
       ) : null}
     </>

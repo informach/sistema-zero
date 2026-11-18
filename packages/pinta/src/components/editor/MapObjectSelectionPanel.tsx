@@ -1,8 +1,14 @@
 import { type JSX, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { effectiveLayer, isObjectLayer, type TilemapObject } from '../../core/project'
+import {
+  effectiveLayer,
+  isObjectLayer,
+  isTilesetKind,
+  type TilemapObject,
+} from '../../core/project'
 import { shortcut } from '../../core/shortcuts'
 import { removeMapObject } from '../../tiles/mapObjects'
+import { objectBounds } from '../../tiles/objectGeometry'
 import {
   arrangeObjects,
   type ObjectArrange,
@@ -21,15 +27,17 @@ export function MapObjectSelectionPanel({
   ids,
   onSelect,
   position,
+  snapObjects = true,
 }: {
   layerId: string
   ids: readonly string[]
+  snapObjects?: boolean
   onSelect: (ids: string[]) => void
   /** Onde o ponteiro esteve por último no palco, em pixels do mapa (ou o meio do que se vê). */
   position?: () => { x: number; y: number } | null
 }): JSX.Element {
   const { editor } = useEditorStores(),
-    { clipboard } = usePintaApp(),
+    { clipboard, gallery } = usePintaApp(),
     { showToast } = useToast(),
     [arrange, setArrange] = useState<ObjectArrange>('left')
   /** Nada mudou: se a camada está trancada, diz por quê. */
@@ -72,7 +80,27 @@ export function MapObjectSelectionPanel({
     // O que foi copiado cai com o MEIO onde o ponteiro esteve por último (sem ponteiro, um
     // pouco ao lado do original, como antes).
     const target = position?.()
-    const [dx, dy] = target ? pasteOffset(item.objects, target) : [16, 16]
+    const layer = s.asset.layers.find((l) => l.id === layerId)
+    if (!layer || !isObjectLayer(layer)) return
+    const offset = effectiveLayer(s.asset, layer)
+    let [dx, dy] = target
+      ? pasteOffset(item.objects, {
+          x: target.x - offset.offsetX,
+          y: target.y - offset.offsetY,
+        })
+      : [16, 16]
+    if (snapObjects && item.objects.length) {
+      const tilesetId = s.asset.tilesetId
+      const ts = gallery.getState().assets.find((a) => a.id === tilesetId)
+      const size = ts && isTilesetKind(ts) ? ts.tileSize : 16
+      const boxes = item.objects.map(objectBounds),
+        minX = Math.min(...boxes.map((b) => b.x)),
+        minY = Math.min(...boxes.map((b) => b.y))
+      // Pontos ficam no meio da casa; desenhos e grupos encaixam pela borda, como no palco.
+      const phase = item.objects.every((o) => o.width === 0 && o.height === 0) ? size / 2 : 0
+      dx = Math.max(-minX, Math.round((minX + dx - phase) / size) * size + phase - minX)
+      dy = Math.max(-minY, Math.round((minY + dy - phase) / size) * size + phase - minY)
+    }
     const next = pasteObjects(s.asset, layerId, item.objects, dx, dy)
     if (next === s.asset) {
       warnLocked()

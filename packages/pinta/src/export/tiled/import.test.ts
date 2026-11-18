@@ -130,7 +130,7 @@ linha 2</property>
       peso: { type: 'float', value: 1.5 },
       ligado: true,
       desligado: false,
-      cor: { type: 'color', value: '#000000ff' },
+      cor: { type: 'color', value: '#000000' },
       longo: 'linha 1\nlinha 2',
     })
   })

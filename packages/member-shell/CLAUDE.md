@@ -1,6 +1,21 @@
 # CLAUDE.md — @sistemazero/member-shell
 
-## Pinta: item da conta em formato mais novo não é lido (17/11/2026)
+## Pinta: proteção de formato e proveniência (18/11/2026)
+
+A versão de nuvem é 4 para mapas/peças/conjuntos; o documento nativo preciso é 5.
+Conferir tanto a versão listada como a efetivamente baixada. Sob quota, a memória de formato
+abandona o storage indisponível e mantém o floor em memória. Após reinício, uma revisão
+sincronizada sem proveniência conhecida precisa conferir o remoto no produtor antes do upload;
+o autosave continua local. Assinar uma edição não comprova que o cache inicial estava íntegro.
+Floor e assinatura pertencem à revisão que foi realmente observada. `writtenAt` sozinho
+também é escrito pelo cliente antigo: não autentica a gravação. Manter revisão causal e
+capacidade do assinante; uma marca nova compartilhada não pode retaggar RAM antiga.
+Recuperar o canônico e conservar a edição cortada em cópia. Ver issues 001/004/022/023/025 em
+`.compozy/tasks/pinta-full-review-20261118/reviews-001/` e os testes de nuvem do community-kids.
+Essas regras protegem o canônico na conta. A perda local independente de nuvem continua
+aberta na issue 026 do Pinta; não alegar recuperação offline apenas por usar este espelho.
+
+### Proteção de leitura existente desde 17/11/2026
 
 `lib/pinta-cloud-persistence.ts` baixava e passava pelo `sanitizePintaAsset` em TRÊS caminhos: a
 reconciliação, a base vencida na subida (`resolveStale`) e o DELETE recusado
