@@ -28,6 +28,7 @@ export class SuperficiesDosObjetos {
   private entradas: (SuperficieDoObjeto & { caixa: Box3 })[] = []
   private readonly indice = new IndiceDeCaixas()
   private readonly porChave = new Map<string, number[]>()
+  private readonly porGeometria = new Map<BufferGeometry, number[]>()
   private sonda: Mesh | null = null
   private readonly normal = new Vector3()
   private readonly matrizNormal = new Matrix3()
@@ -47,12 +48,16 @@ export class SuperficiesDosObjetos {
 
   definir(fontes: readonly SuperficieDoObjeto[]) {
     this.porChave.clear()
+    this.porGeometria.clear()
     this.entradas = fontes.map((f, i) => {
       if (!f.geometria.boundingBox) f.geometria.computeBoundingBox()
       const chave = f.chave ?? f.id,
         anteriores = this.porChave.get(chave) ?? []
       anteriores.push(i)
       this.porChave.set(chave, anteriores)
+      const mesmas = this.porGeometria.get(f.geometria) ?? []
+      mesmas.push(i)
+      this.porGeometria.set(f.geometria, mesmas)
       return {
         ...f,
         matriz: f.matriz.clone(),
@@ -79,6 +84,18 @@ export class SuperficiesDosObjetos {
       else e.matriz.copy(matriz)
       e.caixa.copy(e.geometria.boundingBox!).applyMatrix4(e.matriz)
       this.indice.atualizar(i, e.caixa)
+    }
+  }
+
+  /** Reprojeta o índice somente das peças cujos buffers o dono atualizou. */
+  invalidarGeometrias(geometrias: Iterable<BufferGeometry>): void {
+    for (const g of new Set(geometrias)) {
+      this.consulta.invalidateGeometry(g)
+      for (const i of this.porGeometria.get(g) ?? []) {
+        const entrada = this.entradas[i]!
+        entrada.caixa.copy(g.boundingBox!).applyMatrix4(entrada.matriz)
+        this.indice.atualizar(i, entrada.caixa)
+      }
     }
   }
 
@@ -120,6 +137,7 @@ export class SuperficiesDosObjetos {
     this.consulta.dispose()
     this.entradas = []
     this.porChave.clear()
+    this.porGeometria.clear()
     this.indice.definir([])
     this.sonda = null
   }

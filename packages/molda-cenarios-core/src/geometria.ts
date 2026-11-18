@@ -57,14 +57,15 @@ function cortar(p: Vertice[], plano: PlanoDeRecorte, inverter = false): Vertice[
   }
   return r
 }
-/** Recorta atributos/UV junto à geometria; não pinta máscaras nem empilha pisos na junção. */
-export function recortarAtributos(
-  original: MalhaParaRecorte,
-  planos: readonly PlanoDeRecorte[],
-  excluir: readonly (readonly { x: number; z: number }[])[] = [],
-): Record<string, { valores: Float32Array<ArrayBuffer>; itemSize: number }> {
+/** Valida uma fonte uma vez antes de recortá-la por setores ou células. */
+export function conferirMalhaParaRecorte(original: MalhaParaRecorte) {
   const pos = original.atributos.position
-  if (pos?.itemSize !== 3 || pos.valores.length % 3)
+  if (
+    pos?.itemSize !== 3 ||
+    !Number.isSafeInteger(pos.valores.length) ||
+    pos.valores.length < 0 ||
+    pos.valores.length % 3
+  )
     throw new Error('Posições inválidas para o recorte')
   const quantidade = pos.valores.length / 3
   const nomes = Object.keys(original.atributos)
@@ -80,11 +81,27 @@ export function recortarAtributos(
       if (!Number.isFinite(a.valores[i])) throw new Error('Atributo não finito no recorte')
   }
   const indices = original.indices
-  if ((indices?.length ?? quantidade) % 3) throw new Error('Triângulos incompletos no recorte')
+  if (
+    !Number.isSafeInteger(indices?.length ?? quantidade) ||
+    (indices?.length ?? quantidade) < 0 ||
+    (indices?.length ?? quantidade) % 3
+  )
+    throw new Error('Triângulos incompletos no recorte')
   if (indices)
     for (let i = 0; i < indices.length; i++)
       if (!Number.isInteger(indices[i]) || indices[i]! < 0 || indices[i]! >= quantidade)
         throw new Error('Índice inválido no recorte')
+  return { quantidade, nomes, indices }
+}
+
+/** Recorta atributos/UV junto à geometria; não pinta máscaras nem empilha pisos na junção. */
+export function recortarAtributos(
+  original: MalhaParaRecorte,
+  planos: readonly PlanoDeRecorte[],
+  excluir: readonly (readonly { x: number; z: number }[])[] = [],
+): Record<string, { valores: Float32Array<ArrayBuffer>; itemSize: number }> {
+  const { quantidade, nomes, indices } = conferirMalhaParaRecorte(original),
+    pos = original.atributos.position!
   const box = { min: { x: Infinity, z: Infinity }, max: { x: -Infinity, z: -Infinity } }
   for (let i = 0; i < quantidade; i++) {
     const x = pos.valores[i * 3]!,
