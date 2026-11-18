@@ -1,14 +1,15 @@
-# Aula 4. Interesse, dificuldade e apoio para continuar
+# Aula 4. Programar não é um bicho de sete cabeças
 
-**Objetivo:** Compreender o papel do interesse e do apoio ajustado na participação da criança diante de uma dificuldade.
+**Objetivo:** Entender que programar é um passo a passo para chegar a um objetivo e o que esse processo treina.
 
-**Ideia central:** Uma intenção que importa para a criança pode dar sentido à tentativa; o apoio e o desafio precisam acompanhar suas necessidades.
+**Ideia central:** A programação já está no dia a dia. Com blocos coloridos, a criança pratica sequência, observação e mudança de rota.
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. Um motivo para querer tentar | Relacionar interesse, autoria e envolvimento sem tratar foco como garantia. |
-| 2. O apoio acompanha a necessidade | Explicar demonstração, realização conjunta e tentativa com apoio disponível, sem prescrever uma sequência fixa. |
+| 1. Programar não é um bicho de sete cabeças | Desmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação. |
+| 2. Um passo a passo para chegar a um objetivo | Definir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo. |
+| 3. O que esse vai e volta treina | Relacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo. |
 
-**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A apostila e o resgate do presente não são critérios de conclusão.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

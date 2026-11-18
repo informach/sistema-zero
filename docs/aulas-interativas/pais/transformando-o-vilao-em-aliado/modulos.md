@@ -4,21 +4,22 @@
 
 **Para quem:** pais e responsáveis, na Área dos pais do Kids. Audiência `kids`, `learner = parents`, gravado e fora da Jornada.
 
-**Descrição curta:** Uma possibilidade de usar a tela para criar e praticar habilidades cognitivas para a vida.
+**Descrição curta:** Como transformar as telas, o maior vilão dos pais, no maior aliado do desenvolvimento dos filhos.
 
-**Descrição longa:** A tela pode oferecer mais do que conteúdo pronto. Neste minicurso para pais e responsáveis, a Helena mostra como criar pode envolver planejamento, escolhas, tentativas e ajustes, e apresenta a criação de jogos como uma possibilidade de reunir essas experiências. Exemplos, relatos de famílias e uma demonstração ajudam a compreender o papel do interesse, do apoio e da conversa. São seis aulas para acompanhar no próprio ritmo, sem tarefas ou avaliações. Ao final, um presente permite à família conhecer a proposta na prática: o Cadê Todo Mundo por sete dias.
+**Descrição longa:** Tirar a tela da vida dos filhos, ninguém consegue. Mas dá para tornar produtivo o tempo que eles já passam ali. Neste minicurso, a Helena mostra a diferença entre assistir, jogar e criar, explica o que são as funções executivas e por que criar jogos treina habilidades cognitivas para a vida: planejamento, sequência, foco, flexibilidade e lidar com o erro. Com exemplos do dia a dia, relatos de pais e crianças, a história da própria família e uma demonstração de como uma regra de jogo é construída. São sete aulas para acompanhar no seu ritmo, sem tarefas. No final, um presente: sete dias de Cadê Todo Mundo para o seu filho criar o primeiro jogo.
 
 ## Módulo 1: A tela como espaço de criação
 
-**Resumo:** Compreender os usos da tela e as habilidades envolvidas na criação; ver uma ideia virar regra e resultado; conhecer o papel do interesse, do apoio, da aprendizagem e da conversa; receber uma oportunidade de experimentar com o filho.
+**Resumo:** Trocar a pergunta "como tirar a tela" por "o que oferecer dentro dela"; distinguir assistir, jogar e criar; entender as funções executivas; conhecer a origem do projeto e as portas de entrada para cada criança; ver que programar é um passo a passo; responder às dúvidas sobre foco e dificuldade; acompanhar o ciclo de criação e uma demonstração; receber o presente.
 
-- [A tela pode ter outros usos](transformando-o-vilao-em-aliado-aula-1.md)
-- [O que uma criança exercita quando cria](transformando-o-vilao-em-aliado-aula-2.md)
-- [Como criar jogos coloca isso em prática](transformando-o-vilao-em-aliado-aula-3.md)
-- [Interesse, dificuldade e apoio para continuar](transformando-o-vilao-em-aliado-aula-4.md)
-- [O que essa experiência pode levar para a vida](transformando-o-vilao-em-aliado-aula-5.md)
-- [Uma oportunidade para experimentar com seu filho](transformando-o-vilao-em-aliado-aula-6.md)
+- [O vilão que não dá para tirar](transformando-o-vilao-em-aliado-aula-1.md)
+- [Assistir, jogar ou criar](transformando-o-vilao-em-aliado-aula-2.md)
+- [De onde veio essa ideia e por onde começar](transformando-o-vilao-em-aliado-aula-3.md)
+- [Programar não é um bicho de sete cabeças](transformando-o-vilao-em-aliado-aula-4.md)
+- [Será que meu filho consegue?](transformando-o-vilao-em-aliado-aula-5.md)
+- [Como nasce um jogo](transformando-o-vilao-em-aliado-aula-6.md)
+- [Um presente para vocês experimentarem](transformando-o-vilao-em-aliado-aula-7.md)
 
-**Formato:** seis aulas e 13 partes com vídeo, sem duração fixada antecipadamente. Apostila opcional de consulta. Sem quiz, tarefas, ficha de observação semanal ou exigência de participação do filho durante o minicurso.
+**Formato:** sete aulas e 21 partes com vídeo. Depoimentos de famílias inseridos na edição. Sem quiz nem tarefas. Apostila opcional de consulta.
 
-**Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro, conforme o contrato da plataforma. O resgate do presente é independente do certificado. A prática acontece depois, com o presente, e não integra os critérios de conclusão deste minicurso.
+**Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro. O presente é independente do certificado.
