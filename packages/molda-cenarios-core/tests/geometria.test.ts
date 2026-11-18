@@ -59,3 +59,23 @@ test('atributos e índices inconsistentes são recusados antes de produzir uma m
   n.atributos.position!.valores = [Number.NaN, 0, 0]
   expect(() => recortarAtributos(n, [])).toThrow()
 })
+
+test('aresta quase coincidente não extrapola vértices nem atributos ao recortar', () => {
+  const fonte: MalhaParaRecorte = {
+    atributos: {
+      position: { itemSize: 3, valores: [5e-8, 0, 0, 2e-7, 1, 1, 5e-8, 0, 1] },
+      uv: { itemSize: 2, valores: [0, 0, 1, 1, 0, 1] },
+    },
+  }
+  for (const escala of [1, 1000, 0.001]) {
+    const r = recortarAtributos(fonte, [{ x: escala, z: 0, limite: 0 }])
+    for (const [i, v] of Array.from(r.position!.valores).entries()) {
+      expect(v).toBeGreaterThanOrEqual(i % 3 === 0 ? 5e-8 - 1e-14 : 0)
+      expect(v).toBeLessThanOrEqual(i % 3 === 0 ? 2e-7 + 1e-14 : 1)
+    }
+    for (const v of r.uv!.valores) {
+      expect(v).toBeGreaterThanOrEqual(0)
+      expect(v).toBeLessThanOrEqual(1)
+    }
+  }
+})

@@ -42,5 +42,7 @@ export const PilaresDePonteSchema = z
   .object({
     espacamento: z.number().finite().min(0.5).max(200),
     largura: z.number().finite().min(0.05).max(10),
+    /** Distância de cada linha de apoios ao centro da ponte, em metros. */
+    afastamentoLateral: z.number().finite().min(0).max(50).optional(),
   })
   .strict()

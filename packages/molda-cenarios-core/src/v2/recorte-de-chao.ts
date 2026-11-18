@@ -1,7 +1,7 @@
 import {
   conferirMalhaParaRecorte,
   type MalhaParaRecorte,
-  type PlanoDeRecorte,
+  planosDoPoligonoConvexo as planosDoPoligono,
   recortarAtributos,
 } from '../geometria'
 import { pontoNoPoligono } from '../poligonos'
@@ -25,23 +25,6 @@ const limiteDeTrabalho = () =>
   )
 const inicioDaFaixa = (min: number, max: number) =>
   Math.floor(min) - (Math.abs(max - min) < 1e-9 && Math.abs(min - Math.round(min)) < 1e-9 ? 1 : 0)
-function planosDoPoligono(p: readonly PontoNoChao[]): PlanoDeRecorte[] {
-  const origem = p[0]!
-  let area = 0
-  for (let i = 0; i < p.length; i++) {
-    const a = p[i]!,
-      b = p[(i + 1) % p.length]!
-    area += (a.x - origem.x) * (b.z - origem.z) - (b.x - origem.x) * (a.z - origem.z)
-  }
-  const sentido = area > 0 ? 1 : -1
-  return p.map((a, i) => {
-    const b = p[(i + 1) % p.length]!,
-      x = sentido * (b.z - a.z),
-      z = -sentido * (b.x - a.x)
-    return { x, z, limite: x * a.x + z * a.z }
-  })
-}
-
 /**
  * Recorte comum de pisos e modelos sobre o solo. Conserva altura local e todos os atributos;
  * quem chama aplica a altura do campo depois. Divide pela mesma diagonal da física e elimina

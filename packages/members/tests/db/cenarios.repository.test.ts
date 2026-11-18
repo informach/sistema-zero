@@ -2823,7 +2823,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
         id: 'ponte',
         tipo: 'ponte',
         cotas: { de: 3, ate: 4 },
-        pilares: { espacamento: 4, largura: 0.4 },
+        pilares: { espacamento: 4, largura: 0.4, afastamentoLateral: 0.6 },
       },
     ].map((caminho) => CaminhoSchema.parse(caminho))
     const lote = {

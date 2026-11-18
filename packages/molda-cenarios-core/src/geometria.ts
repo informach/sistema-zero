@@ -34,18 +34,44 @@ export interface PlanoDeRecorte {
   z: number
   limite: number
 }
+/** Semiplanos internos de um contorno convexo, sem depender da orientação do anel. */
+export function planosDoPoligonoConvexo(p: readonly { x: number; z: number }[]): PlanoDeRecorte[] {
+  if (p.length < 3 || p.some((v) => !Number.isFinite(v.x) || !Number.isFinite(v.z)))
+    throw Error('Contorno inválido para o recorte')
+  const origem = p[0]!
+  let area = 0
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i]!,
+      b = p[(i + 1) % p.length]!
+    area += (a.x - origem.x) * (b.z - origem.z) - (b.x - origem.x) * (a.z - origem.z)
+  }
+  if (Math.abs(area) < 1e-12) throw Error('Contorno sem área para o recorte')
+  const sentido = area > 0 ? 1 : -1
+  return p.map((a, i) => {
+    const b = p[(i + 1) % p.length]!,
+      x = sentido * (b.z - a.z),
+      z = -sentido * (b.x - a.x)
+    return { x, z, limite: x * a.x + z * a.z }
+  })
+}
 function cortar(p: Vertice[], plano: PlanoDeRecorte, inverter = false): Vertice[] {
   const sinal = inverter ? -1 : 1,
-    dist = (v: Vertice) =>
-      sinal * (plano.x * v.position![0]! + plano.z * v.position![2]! - plano.limite),
+    tolerancia = Math.hypot(plano.x, plano.z) * 1e-7,
+    dist = (v: Vertice) => {
+      const d = sinal * (plano.x * v.position![0]! + plano.z * v.position![2]! - plano.limite)
+      // A classificação e a interpolação precisam usar a mesma fronteira. Aceitar
+      // um vértice por tolerância e interpolar pela distância original extrapola
+      // a aresta quando ambos os extremos estão do mesmo lado do plano.
+      return Math.abs(d) <= tolerancia ? 0 : d
+    },
     r: Vertice[] = []
   for (let i = 0; i < p.length; i++) {
     const a = p[i]!,
       b = p[(i + 1) % p.length]!,
       da = dist(a),
       db = dist(b),
-      dentroA = da <= 1e-7,
-      dentroB = db <= 1e-7
+      dentroA = da <= 0,
+      dentroB = db <= 0
     if (dentroA) r.push(a)
     if (dentroA !== dentroB) {
       const t = da / (da - db),

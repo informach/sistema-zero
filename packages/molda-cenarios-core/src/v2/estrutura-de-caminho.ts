@@ -31,10 +31,17 @@ export interface EstruturaDoCaminho {
 export interface FontesDaEstrutura {
   /** Face inferior real do GLB já encaixado. Nulo onde o modelo não oferece apoio. */
   baseDoTabuleiro?: (ponto: PontoNoChao) => number | null
+  /** Altura de referência da tampa real sob a área do pilar, inclusive entre tábuas. */
+  baseDoPilar?: (ponto: PontoNoChao, largura: number) => number | null
   /** Consulta de contato: não mede o perfil nem prepara as demais peças. */
   somenteParte?: string
 }
 const MAX_PECAS = 20_000
+const apoiosInternos = (comprimento: number, passo: number) => {
+  const n = comprimento / passo,
+    inteiro = Math.round(n)
+  return Math.max(0, Math.ceil(Math.abs(n - inteiro) < 1e-9 ? inteiro : n) - 1)
+}
 const falhar = (mensagem: string): never => {
   throw new CenarioInvalido([mensagem])
 }
@@ -178,7 +185,7 @@ export function parteEstruturalExiste(c: CaminhoDeCenario, chave: string): boole
         c.pontos[1]!.x - c.pontos[0]!.x,
         c.pontos[1]!.z - c.pontos[0]!.z,
       ),
-      nPilares = c.pilares ? Math.max(0, Math.ceil(comprimento / c.pilares.espacamento) - 1) : 0
+      nPilares = c.pilares ? apoiosInternos(comprimento, c.pilares.espacamento) : 0
     if (tipo === 'pilar') return indice < nPilares * 2
     if (c.acabamento) return tipo === 'modelo' && indice === 0
     if (tipo === 'tabuleiro') return indice === 0
@@ -216,7 +223,7 @@ export function estruturaDoCaminho(
       ate = { ...b, y: c.cotas?.ate ?? lerAltura(alturaEm, b) },
       ref = referencial(de, ate),
       nPostes = Math.max(1, Math.ceil(ref.horizontal / 2)),
-      nPilares = c.pilares ? Math.max(0, Math.ceil(ref.horizontal / c.pilares.espacamento) - 1) : 0
+      nPilares = c.pilares ? apoiosInternos(ref.horizontal, c.pilares.espacamento) : 0
     conferirQuantidade(
       (c.acabamento ? 1 : 1 + (c.guardas ? 2 + (nPostes + 1) * 2 : 0)) + nPilares * 2,
     )
@@ -257,7 +264,7 @@ export function estruturaDoCaminho(
       }
     }
     if (c.pilares && (!somente || somente.startsWith('pilar/'))) {
-      if (c.acabamento && !fontes.baseDoTabuleiro)
+      if (c.acabamento && !fontes.baseDoTabuleiro && !fontes.baseDoPilar)
         return falhar(
           'Carregue a geometria inferior real do tabuleiro antes de acrescentar pilares ao modelo.',
         )
@@ -266,16 +273,20 @@ export function estruturaDoCaminho(
         const t = ((i + 1) * c.pilares.espacamento) / ref.horizontal
         for (let lado = 0; lado < 2; lado++) {
           if (somente && somente !== `pilar/${i * 2 + lado}`) continue
-          const z = (lado === 0 ? -1 : 1) * Math.max(0, (c.largura - c.pilares.largura) / 3),
+          const z =
+              (lado === 0 ? -1 : 1) *
+              (c.pilares.afastamentoLateral ?? Math.max(0, (c.largura - c.pilares.largura) / 3)),
             p = transformarPonto({ x: ref.comprimento * t, y: 0, z }, raiz)
           if (alturaEm.temChao && !alturaEm.temChao(p)) {
             semChao = true
             continue
           }
           const fundo = lerAltura(alturaEm, p),
-            topo = c.acabamento
-              ? fontes.baseDoTabuleiro!(p)
-              : p.y - (c.espessura * ref.comprimento) / ref.horizontal
+            topo = fontes.baseDoPilar
+              ? fontes.baseDoPilar(p, Math.min(c.pilares.largura, c.largura))
+              : c.acabamento
+                ? fontes.baseDoTabuleiro!(p)
+                : p.y - (c.espessura * ref.comprimento) / ref.horizontal
           if (topo === null) {
             semChao = true
             continue

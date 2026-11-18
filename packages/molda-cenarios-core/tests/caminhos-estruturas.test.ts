@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { CaminhoSchema, transformarPonto } from '../src/v2'
-import { estruturaDoCaminho } from '../src/v2/estrutura-de-caminho'
+import { estruturaDoCaminho, parteEstruturalExiste } from '../src/v2/estrutura-de-caminho'
 
 const comum = {
   id: 'c',
@@ -16,6 +16,40 @@ const comum = {
   ],
 }
 const volume = { min: { x: 2, y: -2, z: 4 }, max: { x: 6, y: 3, z: 6 } }
+
+test('arredondamento das cabeceiras não acrescenta um par de pilares no fim da ponte', () => {
+  const c = CaminhoSchema.parse({
+    ...comum,
+    tipo: 'ponte',
+    pontos: [
+      { x: 16.9, z: 0 },
+      { x: 19.1, z: 0 },
+    ],
+    cotas: { de: 3, ate: 3 },
+    pilares: { espacamento: 2.2 / 3, largura: 0.1 },
+  })
+  expect(estruturaDoCaminho(c, () => 0).pecas.filter((p) => p.tipo === 'pilar')).toHaveLength(4)
+  expect(parteEstruturalExiste(c, 'pilar/3')).toBe(true)
+  expect(parteEstruturalExiste(c, 'pilar/4')).toBe(false)
+})
+
+test('afastamento medido posiciona os apoios sob o piso sem mudar os identificadores', () => {
+  const c = CaminhoSchema.parse({
+      ...comum,
+      tipo: 'ponte',
+      cotas: { de: 3, ate: 3 },
+      pilares: { espacamento: 4, largura: 0.3, afastamentoLateral: 0.4 },
+    }),
+    r = estruturaDoCaminho(c, () => 0),
+    pilares = r.pecas.filter((p) => p.tipo === 'pilar')
+  expect(pilares.map((p) => p.chave)).toEqual(['pilar/0', 'pilar/1', 'pilar/2', 'pilar/3'])
+  if (c.tipo !== 'ponte') throw Error('A amostra precisa ser uma ponte')
+  for (const p of pilares) expect(Math.abs(p.transformacao.posicao.z)).toBeCloseTo(0.4, 7)
+  for (const afastamentoLateral of [0.1, 1.5])
+    expect(
+      CaminhoSchema.safeParse({ ...c, pilares: { ...c.pilares, afastamentoLateral } }).success,
+    ).toBe(false)
+})
 
 test('tabuleiro nativo encontra as duas cabeceiras e deixa o vão livre', () => {
   const c = CaminhoSchema.parse({

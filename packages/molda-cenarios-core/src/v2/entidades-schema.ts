@@ -204,6 +204,20 @@ export const CaminhoSchema = z
       })
       .strict()
       .superRefine((v, ctx) => {
+        if (v.pilares) {
+          const p = v.pilares,
+            afastamento = p.afastamentoLateral ?? Math.max(0, (v.largura - p.largura) / 3)
+          if (
+            afastamento * 2 < p.largura - 1e-7 ||
+            afastamento + p.largura / 2 > v.largura / 2 + 1e-7
+          )
+            ctx.addIssue({
+              code: 'custom',
+              path: ['pilares'],
+              message:
+                'As duas linhas de pilares precisam caber sob a ponte sem se sobrepor. Confira a largura e o afastamento lateral.',
+            })
+        }
         if (v.acabamento && v.encaixeModelo?.pisoLocal === undefined)
           ctx.addIssue({
             code: 'custom',

@@ -1,15 +1,18 @@
 import {
-  alturaDoChao,
   type CaminhoDeCenario,
   type DocumentoDeCenario,
   estruturaDoCaminho,
   type FonteDeAlturas,
   type PecaEstruturalDoCaminho,
+  PilarSemSuperficie,
+  pilarEntreSuperficies,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
+  Box3,
   type BoxGeometry,
-  type BufferGeometry,
+  BufferAttribute,
+  BufferGeometry,
   Euler,
   type Material,
   Matrix4,
@@ -20,6 +23,7 @@ import type { ModeloCarregado, ParteDoModelo } from '../modelos'
 import type { TerrenoDoPalco } from '../Terreno'
 import { MundoDoTeste } from '../teste/colisoes'
 import { conformarParteAoChao, type ParteConformada } from './geometria'
+import { lerParteEstatica } from './parte-estatica'
 
 export interface PartePreparadaDeCaminho {
   geometria: BufferGeometry
@@ -67,67 +71,79 @@ export function montarEstrutura(
       }),
     precisaBase = caminho.tipo === 'ponte' && Boolean(caminho.pilares),
     consulta = precisaBase ? new MundoDoTeste(rigidas) : null,
-    de = new Vector3(),
-    ate = new Vector3(),
-    inferior = (p: { x: number; z: number }) => {
-      if (!consulta) return null
-      // Raio de baixo para cima: primeiro triângulo é a face inferior real do modelo/tabuleiro.
-      return (
-        consulta.rastrear(de.set(p.x, -100001, p.z), ate.set(p.x, 100001, p.z))?.ponto.y ?? null
-      )
-    },
     partes: PartePreparadaDeCaminho[] = [],
     referencias = new Map<string, PecaEstruturalDoCaminho>(),
     descartaveis: (() => void)[] = []
   let vertices = 0
+  const preparados = new Map<string, ReturnType<typeof pilarEntreSuperficies>>(),
+    prismas = new Map<number, ReturnType<typeof lerParteEstatica>>()
+  let temLacunas = false
+  const chaveDoPilar = (x: number, z: number, largura: number) => `${x}:${z}:${largura}`
+  const prepararBaseDoPilar = (p: { x: number; z: number }, largura: number) => {
+    const chave = chaveDoPilar(p.x, p.z, largura),
+      anterior = preparados.get(chave)
+    if (anterior) return anterior.alturaNoCentro
+    try {
+      const regiao = new Box3(
+          new Vector3(p.x - largura / 2, -100001, p.z - largura / 2),
+          new Vector3(p.x + largura / 2, 100001, p.z + largura / 2),
+        ),
+        triangulos = consulta!.triangulosNaCaixa(regiao)
+      for (let i = 0; i < triangulos.length; i += 3) {
+        triangulos[i] = triangulos[i]! - p.x
+        triangulos[i + 2] = triangulos[i + 2]! - p.z
+      }
+      let prisma = prismas.get(largura)
+      if (!prisma) {
+        prisma = lerParteEstatica(
+          {
+            geometria: cubo,
+            matriz: new Matrix4().makeScale(largura, 1, largura).setPosition(0, 0.5, 0),
+          },
+          new Matrix4(),
+        )
+        prismas.set(largura, prisma)
+      }
+      const dados = pilarEntreSuperficies(
+        prisma.malha,
+        triangulos,
+        doc.base,
+        terreno?.estado ?? null,
+        p,
+      )
+      preparados.set(chave, dados)
+      if (dados.contato.area < dados.contato.total * 0.9999) temLacunas = true
+      return dados.alturaNoCentro
+    } catch (erro) {
+      if (erro instanceof PilarSemSuperficie) return null
+      throw erro
+    }
+  }
   try {
     const finais = precisaBase
-      ? estruturaDoCaminho(caminho, altura, volume, { baseDoTabuleiro: inferior })
+      ? estruturaDoCaminho(caminho, altura, volume, { baseDoPilar: prepararBaseDoPilar })
       : inicial
     for (const p of finais.pecas) {
       referencias.set(p.chave, p)
       const matriz = matrizDaEstrutura(p.transformacao)
       if (p.tipo === 'pilar') {
-        // Cubo normalizado: bottom=0, top=1. Cada tampa mede suas duas superfícies reais.
-        const g = cubo.clone().translate(0, 0.5, 0),
-          t = p.transformacao,
-          xz = new Matrix4().makeScale(t.escala.x, 1, t.escala.z)
-        xz.setPosition(t.posicao.x, 0, t.posicao.z)
-        let r: ParteConformada
-        try {
-          r = conformarParteAoChao(
-            { geometria: g, matriz: new Matrix4() },
-            xz,
-            doc.base,
-            terreno?.estado ?? null,
-            origem,
-          )
-        } finally {
-          g.dispose()
-        }
-        descartaveis.push(() => r.descartar())
-        const pos = r.geometria.getAttribute('position')
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i) + origem.x,
-            z = pos.getZ(i) + origem.z,
-            fundo = alturaDoChao(doc.base, x, z, altura),
-            fracao = pos.getY(i) - fundo,
-            topo = inferior({ x, z })
-          if (topo === null || topo < fundo - 1e-5)
-            throw Error(
-              'Um pilar ultrapassa a face inferior do tabuleiro. Ajuste largura ou posição dos apoios.',
-            )
-          pos.setY(i, fundo + fracao * Math.max(0, topo - fundo))
-        }
-        r.geometria.computeVertexNormals()
-        r.geometria.computeBoundingBox()
-        r.geometria.computeBoundingSphere()
+        const t = p.transformacao,
+          origemDoPilar = { x: t.posicao.x, z: t.posicao.z },
+          preparado = preparados.get(chaveDoPilar(origemDoPilar.x, origemDoPilar.z, t.escala.x)),
+          geometria = new BufferGeometry()
+        descartaveis.push(() => geometria.dispose())
+        if (!preparado) throw Error('A superfície do pilar precisa ser preparada antes do desenho')
+        for (const [nome, a] of Object.entries(preparado.atributos))
+          geometria.setAttribute(nome, new BufferAttribute(a.valores, a.itemSize))
+        geometria.computeVertexNormals()
+        geometria.computeBoundingBox()
+        geometria.computeBoundingSphere()
         partes.push({
-          geometria: r.geometria,
-          matriz: new Matrix4().makeTranslation(origem.x, 0, origem.z),
+          geometria,
+          matriz: new Matrix4().makeTranslation(origemDoPilar.x, 0, origemDoPilar.z),
           parte: p.chave,
         })
-        vertices += pos.count
+        vertices += geometria.getAttribute('position').count
       } else
         for (const f of p.tipo === 'modelo'
           ? fonte
@@ -158,7 +174,12 @@ export function montarEstrutura(
     return {
       partes,
       referencias,
-      avisos: finais.avisos,
+      avisos: [
+        ...finais.avisos,
+        ...(temLacunas
+          ? ['Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio.']
+          : []),
+      ],
       descartar() {
         for (const limpar of descartaveis) limpar()
       },
@@ -167,6 +188,7 @@ export function montarEstrutura(
     for (const limpar of descartaveis) limpar()
     throw erro
   } finally {
+    for (const prisma of prismas.values()) prisma.descartar()
     consulta?.descartar()
   }
 }
