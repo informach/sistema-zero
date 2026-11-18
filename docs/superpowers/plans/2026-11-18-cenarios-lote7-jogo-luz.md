@@ -59,6 +59,10 @@
 
 **Files:** oficina `useJogo.ts`, `useAmbiente.ts`, `telas/{Jogo,LuzECeu,Propriedades,MarcadorPontos}.tsx` e componentes por responsabilidade; `Oficina.tsx`, CSS prefixado.
 
+**Execução interna, uma etapa de cada vez:** primeiro adaptadores puros/formulários e posse da captura de pontos; depois hooks de rascunho/guarda; em seguida painéis/rail e integração; por último QA da interface nas quatro larguras. Isso não fecha o lote nem dispensa 7.5. A captura compartilhada terá dono explícito (Caminhos/Jogo): um efeito inativo não poderá encerrar a edição de outro painel. Jogo e Luz usarão a projeção de comandos já testada em 7.3, sem uma fila de autoria paralela.
+
+**Intenção visual:** a usuária compõe o cenário olhando o palco. Nome, colocação e medidas vêm primeiro; parâmetros técnicos e propriedades ficam recolhidos. Conservar rail vertical, inspector, gaveta e componentes/tokens Molda da interface aprovada, com ações reais, unidades em metros e mensagens de prévia/guardar/cancelar. Nenhuma nova linguagem visual.
+
 - [ ] Rail Jogo: início, ponto, zona, rota, câmera, régua, escala e colisões; criar por cena/coordenadas e editar no inspector. Nada sem comportamento.
 - [ ] Nome/posição/giro/chão, forma/tamanho, lista de pontos, câmera, luz e propriedades com unidades, limites e ajuda curta. Ações avançadas recolhidas.
 - [ ] Rail Luz e céu mantém os presets de hora e abre controles reais de ambiente/panorama/névoa/luzes. Escolha de panorama reutiliza importação/biblioteca/Molda.

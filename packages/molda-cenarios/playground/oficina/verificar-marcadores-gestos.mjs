@@ -82,15 +82,17 @@ try {
       let gestos = 0,
         captura = null,
         cancelamentos = 0
-      const colisoes = []
+      const colisoes = [],
+        donos = []
       const palco = criarPalco(canvas, {
         movimentoReduzido: true,
         aoColisoesVisiveis: (e) => colisoes.push(e),
-        aoEditarPontosDeCaminho: (g) => {
+        aoEditarPontosDeCaminho: (g, dono) => {
           if (g.documentoDeOrigem !== ctl.getState().documento)
             throw Error('Cabeça antiga publicou pontos')
           captura = { ...captura, pontos: g.pontos, selecionado: g.selecionado }
-          palco.definirCapturaDeCaminho(captura)
+          donos.push(dono)
+          palco.definirCapturaDeCaminho(captura, dono)
         },
         aoCancelarPontosDeCaminho: () => {
           captura = null
@@ -129,9 +131,10 @@ try {
         gestos: () => gestos,
         colisoes,
         captura: () => captura,
-        definirCaptura: (c) => {
+        donos,
+        definirCaptura: (c, dono = 'caminhos') => {
           captura = c
-          palco.definirCapturaDeCaminho(c)
+          palco.definirCapturaDeCaminho(c, dono)
         },
         cancelamentos: () => cancelamentos,
       }
@@ -328,17 +331,22 @@ try {
       alvo: { x: 0, y: 0, z: 0 },
       campoDeVisao: 48,
     })
-    window.__gestos.definirCaptura({
-      pontos: [
-        { x: -2, y: 1.5, z: 0 },
-        { x: 2, y: 1.5, z: 0 },
-      ],
-      modo: 'mover',
-      minimo: 2,
-      maximo: 512,
-      fechada: false,
-      conservarDistanciaDoChao: true,
-    })
+    window.__gestos.definirCaptura(
+      {
+        pontos: [
+          { x: -2, y: 1.5, z: 0 },
+          { x: 2, y: 1.5, z: 0 },
+        ],
+        modo: 'mover',
+        minimo: 2,
+        maximo: 512,
+        fechada: false,
+        conservarDistanciaDoChao: true,
+      },
+      'jogo',
+    )
+    // Um efeito do painel inativo não pode apagar a captura do Jogo.
+    palco.definirCapturaDeCaminho(null, 'caminhos')
   })
   const pixel = (p) =>
     pagina.evaluate(
@@ -384,7 +392,8 @@ try {
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
   assert.deepEqual(await pagina.evaluate(() => window.__gestos.captura().pontos), pontos)
   await pagina.screenshot({ path: resolve(saida, 'pontos-elevados.png') })
-  await pagina.evaluate(() => window.__gestos.palco.definirCapturaDeCaminho(null))
+  assert.ok(await pagina.evaluate(() => window.__gestos.donos.includes('jogo')))
+  await pagina.evaluate(() => window.__gestos.palco.definirCapturaDeCaminho(null, 'jogo'))
   await pagina.evaluate(() =>
     window.__gestos.definirCaptura({
       pontos: [

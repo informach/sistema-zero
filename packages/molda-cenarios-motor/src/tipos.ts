@@ -20,6 +20,7 @@ export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho' | 'espalha
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
 export type Tema = 'light' | 'dark'
 export type ModoDeSelecao = 'ponto' | 'retangulo' | 'laco'
+export type DonoDosPontos = 'caminhos' | 'jogo'
 
 export interface ConfiguracaoDoEspalhamento {
   /** Mantém a paleta carregada enquanto parâmetros ou destino precisam ser corrigidos. */
@@ -80,9 +81,12 @@ export interface OpcoesDoPalco {
   aoColisoesVisiveis?(estado: import('./jogo/colisoes-visiveis').EstadoDasColisoesVisiveis): void
   aoSelecionarMarcador?(id: string): void
   aoMarcadores?(estado: import('./jogo/marcadores').EstadoDosMarcadores): void
-  aoEditarPontosDeCaminho?(gesto: import('./curvas/edicao-de-pontos').GestoDePontosDeCaminho): void
-  aoCancelarPontosDeCaminho?(): void
-  aoErroDePontosDeCaminho?(mensagem: string): void
+  aoEditarPontosDeCaminho?(
+    gesto: import('./curvas/edicao-de-pontos').GestoDePontosDeCaminho,
+    dono: DonoDosPontos,
+  ): void
+  aoCancelarPontosDeCaminho?(dono: DonoDosPontos): void
+  aoErroDePontosDeCaminho?(mensagem: string, dono: DonoDosPontos): void
   aoCapturarPontoDaAgua?(ponto: Ponto3): void
   aoSelecionarAgua?(id: string): void
   aoSelecionarCaminho?(id: string): void
@@ -124,8 +128,12 @@ export interface Palco {
   preverAmbiente(
     origem: DocumentoDeCenario,
     comandos: readonly import('./edicao-com-terreno').ComandoDePreviaDoAmbiente[],
+    dono?: import('./edicao-com-terreno').DonoDaPreviaDoAmbiente,
   ): void
-  finalizarPreviaDeAmbiente(cancelar?: boolean): void
+  finalizarPreviaDeAmbiente(
+    cancelar?: boolean,
+    dono?: import('./edicao-com-terreno').DonoDaPreviaDoAmbiente,
+  ): void
   /** Inspeção dos triângulos reais usados pelo Testar, somente na edição. */
   definirColisoesVisiveis(visiveis: boolean): void
   /** Vista de edição em coordenadas mundiais, sem editar a câmera do Testar. */
@@ -135,6 +143,7 @@ export interface Palco {
   definirGuiasDoJogo(visiveis: boolean): void
   definirCapturaDeCaminho(
     configuracao: import('./curvas/edicao-de-pontos').CapturaDeCaminho | null,
+    dono?: DonoDosPontos,
   ): void
   preverCaminho(origem: DocumentoDeCenario, operacao: OperacaoDeCaminhoPreparada): void
   finalizarPreviaDeCaminho(cancelar?: boolean): void

@@ -62,7 +62,11 @@ import { AmbienteDoPalco, type EstadoDoAmbiente } from './ambiente/ambiente'
 import { CaminhosDoPalco, type EstadoDosCaminhos } from './curvas/caminhos'
 import { type CapturaDeCaminho, EdicaoDePontos } from './curvas/edicao-de-pontos'
 import { EspalhamentoDoPalco } from './Espalhamento'
-import { type ComandoDePreviaDoAmbiente, EdicaoComTerreno } from './edicao-com-terreno'
+import {
+  type ComandoDePreviaDoAmbiente,
+  type DonoDaPreviaDoAmbiente,
+  EdicaoComTerreno,
+} from './edicao-com-terreno'
 import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
@@ -95,6 +99,7 @@ import type { ComandoDoTeste, ConfiguracaoDoTeste, EntradaDoTeste } from './test
 import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
   ConfiguracaoDoEspalhamento,
+  DonoDosPontos,
   Encaixe,
   Ferramenta,
   ModoDeSelecao,
@@ -215,6 +220,7 @@ class PalcoThree implements Palco {
   private readonly alturaDoPlano: FonteDeAlturas = () => 0
   private readonly pontosDaAgua = new PontosDeAutoria()
   private readonly pontosDoCaminho: EdicaoDePontos
+  private donoDosPontos: DonoDosPontos | null = null
   private readonly edicaoDoAmbiente = new EdicaoComTerreno({
     prever: (operacao) => {
       if (!this.terreno || !operacao.terreno)
@@ -436,12 +442,15 @@ class PalcoThree implements Palco {
         this.orbita.enabled = !ativo
         this.informarGesto('pontos', ativo)
       },
-      aoEditar: (gesto) => this.opcoes.aoEditarPontosDeCaminho?.(gesto),
+      aoEditar: (gesto) =>
+        this.opcoes.aoEditarPontosDeCaminho?.(gesto, this.donoDosPontos ?? 'caminhos'),
       aoCancelar: () => {
-        this.definirCapturaDeCaminho(null)
-        this.opcoes.aoCancelarPontosDeCaminho?.()
+        const dono = this.donoDosPontos ?? 'caminhos'
+        this.definirCapturaDeCaminho(null, dono)
+        this.opcoes.aoCancelarPontosDeCaminho?.(dono)
       },
-      aoErro: (mensagem) => this.opcoes.aoErroDePontosDeCaminho?.(mensagem),
+      aoErro: (mensagem) =>
+        this.opcoes.aoErroDePontosDeCaminho?.(mensagem, this.donoDosPontos ?? 'caminhos'),
       pedirQuadro: this.pedirQuadro,
     })
     this.cena.add(this.pontosDoCaminho.grupo)
@@ -464,6 +473,7 @@ class PalcoThree implements Palco {
       this.edicaoDoAmbiente.finalizar(true)
       this.pontosDaAgua.definir(null)
       this.pontosDoCaminho.contextoAlterado()
+      this.donoDosPontos = null
     }
     if (this.documento !== documento) this.escultura.contextoAlterado()
     if (this.documento !== documento && (this.teste || this.preparandoTeste)) this.encerrarTeste()
@@ -559,7 +569,10 @@ class PalcoThree implements Palco {
   }
 
   definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void {
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de abrir o pincel.')
     if (configuracao) this.definirCapturaDeAgua(null)
+    if (configuracao) this.definirCapturaDeCaminho(null, this.donoDosPontos ?? 'caminhos')
     if (configuracao) this.escultura?.definir(null)
     if (!this.espalhamento.definir(configuracao)) return
     if (configuracao) {
@@ -725,9 +738,11 @@ class PalcoThree implements Palco {
   }
 
   definirEscultura(configuracao: ConfiguracaoDaEscultura | null) {
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de esculpir.')
     if (configuracao) {
       this.definirCapturaDeAgua(null)
-      this.definirCapturaDeCaminho(null)
+      this.definirCapturaDeCaminho(null, this.donoDosPontos ?? 'caminhos')
       this.espalhamento.definir(null)
       this.modoDeSelecao = 'ponto'
       this.area.setTool('point')
@@ -737,10 +752,13 @@ class PalcoThree implements Palco {
   }
   definirCapturaDeAgua(pontos: readonly Ponto3[] | null) {
     if (this.destruido) return
+    if (pontos && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de editar a água.')
     if (pontos && (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada))
       throw Error('Termine o gesto antes de escolher os pontos da água.')
     if (pontos) {
       this.pontosDoCaminho.definir(null)
+      this.donoDosPontos = null
       this.espalhamento.definir(null)
       this.escultura.definir(null)
       this.modoDeSelecao = 'ponto'
@@ -751,8 +769,14 @@ class PalcoThree implements Palco {
     this.atualizarAlca()
     this.pedirQuadro()
   }
-  definirCapturaDeCaminho(configuracao: CapturaDeCaminho | null) {
+  definirCapturaDeCaminho(configuracao: CapturaDeCaminho | null, dono: DonoDosPontos = 'caminhos') {
     if (this.destruido) return
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de editar pontos.')
+    if (this.donoDosPontos && this.donoDosPontos !== dono) {
+      if (!configuracao) return
+      throw Error('Termine a edição de pontos atual antes de abrir outra ferramenta.')
+    }
     if (
       configuracao &&
       (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada)
@@ -767,10 +791,15 @@ class PalcoThree implements Palco {
     }
     this.toque = null
     this.pontosDoCaminho.definir(configuracao)
+    this.donoDosPontos = configuracao ? dono : null
     this.atualizarAlca()
     this.pedirQuadro()
   }
-  preverAmbiente(origem: DocumentoDeCenario, comandos: readonly ComandoDePreviaDoAmbiente[]) {
+  preverAmbiente(
+    origem: DocumentoDeCenario,
+    comandos: readonly ComandoDePreviaDoAmbiente[],
+    dono: DonoDaPreviaDoAmbiente = 'luz',
+  ) {
     if (
       this.destruido ||
       this.teste ||
@@ -782,13 +811,14 @@ class PalcoThree implements Palco {
       this.espalhamento.habilitado
     )
       throw Error('Termine a ferramenta atual e saia do Testar antes de prever o ambiente.')
-    this.edicaoDoAmbiente.preverComandos(origem, this.documento, comandos)
+    this.edicaoDoAmbiente.preverComandos(origem, this.documento, comandos, dono)
     this.pedirTexturas(this.edicaoDoAmbiente.projetar(origem))
     this.reconstruir()
   }
-  finalizarPreviaDeAmbiente(cancelar = true) {
+  finalizarPreviaDeAmbiente(cancelar = true, dono: DonoDaPreviaDoAmbiente = 'luz') {
     if (this.destruido || this.edicaoDoAmbiente.tipo !== 'ambiente') return
-    this.edicaoDoAmbiente.finalizar(cancelar, 'ambiente')
+    if (this.edicaoDoAmbiente.dono !== dono) return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'ambiente', dono)
     if (cancelar) {
       if (this.documento) this.pedirTexturas(this.documento)
       this.reconstruir()

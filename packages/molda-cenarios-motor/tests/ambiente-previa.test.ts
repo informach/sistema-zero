@@ -55,6 +55,25 @@ test('panorama e sua referência são previstos atomicamente e uma falha mantém
   ).toThrow('somente')
   expect(e.projetar(d)).toBe(previa)
 })
+test('painel inativo não pode encerrar nem substituir a prévia de outro dono', () => {
+  const d = criarDocumentoVazio('d', 'Dono'),
+    e = new EdicaoComTerreno({ prever() {}, restaurar() {} }),
+    comandos: ComandoDePreviaDoAmbiente[] = [
+      { tipo: 'iluminacao.definir', iluminacao: { hora: 20 } },
+    ]
+  e.preverComandos(d, d, comandos, 'jogo')
+  const visual = e.projetar(d)
+  e.finalizar(true, 'ambiente', 'luz')
+  expect(e.projetar(d)).toBe(visual)
+  expect(e.dono).toBe('jogo')
+  expect(() => e.preverComandos(d, d, comandos, 'luz')).toThrow('Termine a prévia')
+  e.finalizar(true, 'ambiente', 'jogo')
+  expect(e.ativa).toBe(false)
+  e.preverComandos(d, d, comandos, 'luz')
+  e.finalizar(true, 'ambiente', 'jogo')
+  expect(e.dono).toBe('luz')
+})
+
 test('nova cabeça, fechamento e ferramenta concorrente conservam a posse da prévia', () => {
   const d = criarDocumentoVazio('d', 'Luz'),
     e = new EdicaoComTerreno({ prever() {}, restaurar() {} }),

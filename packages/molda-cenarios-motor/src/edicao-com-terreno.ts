@@ -14,11 +14,13 @@ export type ComandoDePreviaDoAmbiente = Extract<
   ComandoDeCenario,
   { tipo: 'iluminacao.definir' | 'marcador.definir' | 'textura.definir' }
 >
+export type DonoDaPreviaDoAmbiente = 'jogo' | 'luz'
 export class EdicaoComTerreno {
   private previa: {
     origem: DocumentoDeCenario
     visual: DocumentoDeCenario
     tipo: 'agua' | 'caminho' | 'ambiente'
+    dono?: DonoDaPreviaDoAmbiente
   } | null = null
   constructor(
     private readonly terreno: {
@@ -31,6 +33,9 @@ export class EdicaoComTerreno {
   }
   get tipo() {
     return this.previa?.tipo ?? null
+  }
+  get dono() {
+    return this.previa?.dono ?? null
   }
   prever(origem: DocumentoDeCenario, atual: DocumentoDeCenario | null, operacao: Operacao) {
     if (atual !== origem)
@@ -63,10 +68,11 @@ export class EdicaoComTerreno {
     origem: DocumentoDeCenario,
     atual: DocumentoDeCenario | null,
     comandos: readonly ComandoDePreviaDoAmbiente[],
+    dono: DonoDaPreviaDoAmbiente = 'luz',
   ) {
     if (atual !== origem)
       throw new DOMException('O cenário mudou durante a preparação', 'AbortError')
-    if (this.previa && this.previa.tipo !== 'ambiente')
+    if (this.previa && (this.previa.tipo !== 'ambiente' || this.previa.dono !== dono))
       throw Error('Termine a prévia atual antes de preparar outra ferramenta.')
     if (
       comandos.some(
@@ -83,11 +89,16 @@ export class EdicaoComTerreno {
         comandos,
       },
     ).documento
-    this.previa = { origem, visual, tipo: 'ambiente' }
+    this.previa = { origem, visual, tipo: 'ambiente', dono }
   }
-  finalizar(cancelar: boolean, tipo?: 'agua' | 'caminho' | 'ambiente') {
+  finalizar(
+    cancelar: boolean,
+    tipo?: 'agua' | 'caminho' | 'ambiente',
+    dono?: DonoDaPreviaDoAmbiente,
+  ) {
     if (!this.previa) return
     if (tipo && this.previa.tipo !== tipo) return
+    if (dono && this.previa.dono !== dono) return
     const alterouTerreno = this.previa.tipo !== 'ambiente'
     this.previa = null
     if (cancelar && alterouTerreno) this.terreno.restaurar()

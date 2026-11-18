@@ -200,7 +200,29 @@ try {
         { tipo: 'iluminacao.definir', iluminacao: { ...q.noite, hora: 18 + i / 3 } },
       ])
   })
-  await foto('noite-previa')
+  const noite = await foto('noite-previa')
+  const protecoes = await pagina.evaluate(() => {
+    const q = window.__ambienteQA
+    q.palco.finalizarPreviaDeAmbiente(true, 'jogo')
+    let pontos = false,
+      agua = false
+    try {
+      q.palco.definirCapturaDeAgua([])
+    } catch {
+      agua = true
+    }
+    try {
+      q.palco.definirCapturaDeCaminho(
+        { pontos: [], modo: 'adicionar', minimo: 2, maximo: 128, fechada: false },
+        'jogo',
+      )
+    } catch {
+      pontos = true
+    }
+    return { pontos, agua }
+  })
+  assert.deepEqual(protecoes, { pontos: true, agua: true })
+  assert.deepEqual(await foto('previa-preservada'), noite)
   const previa = await pagina.evaluate(() => {
     const q = window.__ambienteQA
     return {
@@ -415,6 +437,7 @@ try {
     JSON.stringify(
       {
         previa,
+        protecoes,
         preparo,
         salvou,
         respostaAntigaInofensiva: true,
