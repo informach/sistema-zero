@@ -9,7 +9,7 @@
 | 1. "Será que ele vai ter foco?" | Responder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo. |
 | 2. "Será que não vai ser difícil?" | Responder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte. |
 | 3. Também ajuda na escola | Mostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento. |
-| 4. O que a gente mais deseja: que eles sejam felizes | Retomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige. |
+| 4. O que a gente mais deseja: que eles sejam felizes | Retomar a reflexão da primeira aula: a felicidade que desejamos passa pela autonomia e pelas habilidades que a vida adulta exige. |
 
 **Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 

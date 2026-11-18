@@ -10,11 +10,15 @@
     },
     {
       "key": "video-a6-demonstracao",
-      "plannedVideo": "Título: Uma regra de cada vez\n\nDemonstrar a criação de duas regras de um esconde-esconde e explicar a causa e consequência. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: Uma regra de cada vez\n\nDemonstrar, em captura de tela, a criação de duas regras de um esconde-esconde. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a6-causa",
+      "plannedVideo": "Título: Fui eu que causei isso\n\nExplicar a causa e consequência: a criança percebe que é agente do que acontece. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "video-a6-familia",
-      "plannedVideo": "Título: O assunto que abre a conversa\n\nMostrar como o jogo vira assunto em casa e ponto de partida para outras conversas. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: O assunto que abre a conversa\n\nMostrar como o jogo vira assunto em casa e ponto de partida para outras conversas. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a6",
@@ -46,7 +50,7 @@
     {
       "key": "demonstracao",
       "title": "Uma regra de cada vez",
-      "objective": "Demonstrar a criação de duas regras de um esconde-esconde e explicar a causa e consequência.",
+      "objective": "Demonstrar, em captura de tela, a criação de duas regras de um esconde-esconde.",
       "intent": "explanation",
       "blockKeys": [
         "video-a6-demonstracao"
@@ -58,6 +62,24 @@
         "version": 1,
         "blockIds": [
           "video-a6-demonstracao"
+        ]
+      }
+    },
+    {
+      "key": "causa",
+      "title": "Fui eu que causei isso",
+      "objective": "Explicar a causa e consequência: a criança percebe que é agente do que acontece.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a6-causa"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a6-causa"
         ]
       }
     },

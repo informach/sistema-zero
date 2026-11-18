@@ -41,15 +41,15 @@ H = Helena, V = Vivianne. Cada linha é um trecho da transcrição e onde ele es
 | --- | --- | --- | --- |
 | 00:20 a 00:30 | H, V | Teste de áudio e espera dos participantes | Cortado: logística |
 | 00:30 | H | Abertura, presente no final, apresentação, unir tecnologia e desenvolvimento | Aula 1, Parte 1 |
-| 00:32 a 00:33 | V | Crianças nasceram no digital, guerra perdida, escolas usam telas; o joguinho como desenvolvimento de habilidades; Roblox e tutorial só para passar de fase | Aula 1, Parte 1 |
+| 00:32 a 00:33 | V | Crianças nasceram no digital, guerra perdida, escolas usam telas; habilidades para a vida; Roblox e tutorial só para passar de fase | Aula 1, Parte 1 (habilidades ditas de forma ampla; "a construção de um joguinho" foi para a Aula 2, Parte 3) |
 | 00:33 a 00:35 | H | O que desejamos para os filhos, autonomia, "guarda isso" | Aula 1, Parte 1 (convites a comentar cortados) |
 | 00:35 | H | Mundo de telas, lousa na escola | Aula 1, Parte 1 |
 | 00:35 a 00:37 | H, V | Como tirar a tela; ninguém consegue; uso mais produtivo | Aula 1, Parte 2 (pergunta ao público virou pergunta retórica) |
 | 00:37 | V | Não é colocar mais tempo, a mesma meia hora, repertório, limiar baixo diante do erro | Aula 1, Parte 2 |
 | 00:37 a 00:40 | H | A grande pergunta; tela que só entretém e tela que faz pensar | Aula 1, Parte 2 |
-| 00:40 a 00:41 | V | Jogos com tutorial são memorização e cópia; na criação há raciocínio, hipótese, foco, planejamento; função executiva | Aula 1, Parte 2 |
-| 00:41 | V | Briga ao desligar; início, meio e fim; sair saciada e orgulhosa | Aula 1, Parte 2 |
-| 00:41 a 00:44 | H | Receio de aumentar o tempo de tela; depoimento dos pais; substituição | Aula 1, Parte 3 |
+| 00:40 a 00:41 | V | Jogos com tutorial são memorização e cópia; na criação há raciocínio, hipótese, foco, planejamento; função executiva | Aula 2, Parte 3 (movido para depois da proposta) |
+| 00:41 | V | Briga ao desligar; início, meio e fim; sair saciada e orgulhosa | Aula 2, Parte 3 (o problema fica na Aula 1; a resposta vem depois da proposta) |
+| 00:41 a 00:44 | H | Receio de aumentar o tempo de tela; depoimento dos pais; substituição | Aula 2, Parte 4 (movido para depois da proposta) |
 | 00:44 a 00:46 | H | Fogo; tecnologia como ferramenta; assistir, jogar e criar | Aula 2, Parte 1 |
 | 00:46 a 00:48 | V | Função executiva em detalhe; jogar alcança parte superficial; criar é habilidade para a vida; Lego com e sem manual | Aula 2, Parte 2 |
 | 00:48 a 00:51 | H | Criar jogo é meio e não fim; jogo pronto e criar; motivação e orgulho | Aula 2, Parte 3 |
@@ -81,28 +81,58 @@ H = Helena, V = Vivianne. Cada linha é um trecho da transcrição e onde ele es
 | 01:35 a 01:37 | V | "Não sou a favor dos jogos"; só tende a aumentar; ChatGPT e o médico; crianças compartilhando os jogos | Aula 6, Parte 1 |
 | 01:37 | H | Crianças pensando menos e recebendo tudo pronto | Aula 6, Parte 1 |
 | 01:37 a 01:41 | H | Demonstração do esconde-esconde: clique, visibilidade, contador | Aula 6, Parte 2 |
-| 01:41 a 01:43 | V | Causa e consequência; "é sempre culpa do outro"; quanto mais, mais; somar ou tirar ponto muda o jogo | Aula 6, Parte 2 |
-| 01:43 a 01:46 | H | Conversa de família; o André antes e hoje; depoimento dos pais; assunto na mesa | Aula 6, Parte 3 |
-| 01:46 a 01:48 | V | O Dé: troca de turno, irritabilidade, leitura de sinais, pares, hiperfoco virou ponto de interesse | Aula 6, Parte 3 (relato da psicóloga, sem nome) |
-| 01:48 a 01:49 | H | O jogo foi o pontapé inicial | Aula 6, Parte 3 |
+| 01:41 a 01:43 | V | Causa e consequência; "é sempre culpa do outro"; quanto mais, mais; somar ou tirar ponto muda o jogo | Aula 6, Parte 3 |
+| 01:43 a 01:46 | H | Conversa de família; o André antes e hoje; depoimento dos pais; assunto na mesa | Aula 6, Parte 4 |
+| 01:46 a 01:48 | V | O Dé: troca de turno, irritabilidade, leitura de sinais, pares, hiperfoco virou ponto de interesse | Aula 6, Parte 4 (relato da psicóloga, sem nome) |
+| 01:48 a 01:49 | H | O jogo foi o pontapé inicial | Aula 6, Parte 4 |
 | 01:50 a 01:54 | H | Segurança da plataforma: conta, perfil, privacidade, áudio, aparelho, código | Aula 7, Parte 1 |
-| 01:54 a 01:55 | H | Cadê Todo Mundo, sete dias, tudo na mesma plataforma | Aula 7, Partes 1 e 2 |
-| 01:55 a 01:57 | H, V | Segundo projeto e cupom | Cortado: segunda oferta. A descrição do Cadê feita pela Vivianne (primeira experiência, um tipo de jogo) está na Aula 7, Parte 2 |
-| 01:57 a 01:59 | H | Um perfil no presente e dois por conta para quem continuar; gratuito e sem cartão; 5 a 17 anos; abaixo de 9 com adulto | Aula 7, Parte 2 |
-| 01:59 a 02:00 | H | Cadastro; sem spam; relatório semanal desativável | Aula 7, Parte 2 (QR code virou botão) |
+| 01:54 a 01:55 | H | Cadê Todo Mundo, sete dias, tudo na mesma plataforma | Aula 7, Partes 2 e 3 |
+| 01:55 a 01:57 | H, V | Segundo projeto e cupom | Cortado: segunda oferta. A descrição do Cadê feita pela Vivianne (primeira experiência, um tipo de jogo) está na Aula 7, Parte 3 |
+| 01:57 a 01:59 | H | Um perfil no presente e dois por conta para quem continuar; gratuito e sem cartão; 5 a 17 anos; abaixo de 9 com adulto | Aula 7, Parte 3 |
+| 01:59 a 02:00 | H | Cadastro; sem spam; relatório semanal desativável | Aula 7, Parte 3 (QR code virou botão) |
 | 02:00 a 02:01 | H | Preço e desconto do segundo projeto | Cortado: segunda oferta |
-| 02:01 | H | Os dias contam a partir do cadastro | Aula 7, Parte 2 |
-| 02:02 a 02:03 | H | Mensagem final: a tela pode ser onde ele descobre que é capaz de criar | Aula 7, Parte 2 |
-| 02:03 a 02:04 | V | "Eu vi essa evolução no Dé"; robótica uma vez por semana e levar para casa | Aula 7, Parte 2 |
-| 02:04 a 02:06 | H | Cursos e ferramentas: Pensa, Pinta, Molda, Estúdio | Aula 7, Parte 1 |
+| 02:01 | H | Os dias contam a partir do cadastro | Aula 7, Parte 3 |
+| 02:02 a 02:03 | H | Mensagem final: a tela pode ser onde ele descobre que é capaz de criar | Aula 7, Parte 3 |
+| 02:03 a 02:04 | V | "Eu vi essa evolução no Dé"; robótica uma vez por semana e levar para casa | Aula 7, Parte 3 |
+| 02:04 a 02:06 | H | Cursos e ferramentas: Pensa, Pinta, Molda, Estúdio | Aula 7, Parte 2 |
 | 02:06 a 02:09 | H, V | Prazo de inscrição e pedido de extensão | Cortado: logística |
-| 02:09 a 02:12 | H, V | Abertura a feedback, área de atendimento, sugestão do jogo de avião; despedidas | Feedback e avião na Aula 7, Parte 1; despedidas cortadas |
+| 02:09 a 02:12 | H, V | Abertura a feedback, área de atendimento, sugestão do jogo de avião; despedidas | Feedback e avião na Aula 7, Parte 2; despedidas cortadas |
+
+## Correções didáticas em relação ao encontro
+
+A dona pediu, em 18/11/2026, que a adaptação também corrigisse falhas de condução do encontro. O conteúdo é o mesmo; mudaram a ordem e as amarrações.
+
+| Problema no encontro | Correção no curso |
+| --- | --- |
+| A reflexão "o que você deseja para o futuro do seu filho" foi aberta com a promessa de retomar, mas só voltou de passagem, trocando autonomia por felicidade, e nunca foi fechada | Aula 5, Parte 4 retoma de forma explícita e liga felicidade e autonomia; Aula 7, Parte 3 fecha a reflexão antes da mensagem final |
+| A criação de jogos apareceu logo na abertura e na comparação dos tipos de tela, antes de a proposta ser apresentada | A Aula 1 trata só do uso da tela, de forma ampla. A proposta de criar jogos nasce na Aula 2, depois dos três usos e da função executiva; o que se dizia antes sobre "a criação" foi para a Aula 2, Parte 3 |
+| O receio de aumentar o tempo de tela foi respondido antes de existir uma proposta a que ele se referisse | O receio e o depoimento dos pais vêm logo depois da proposta (Aula 2, Parte 4) |
+| A briga na hora de desligar foi respondida com "início, meio e fim" da criação antes de a criação ser apresentada | O problema é nomeado na Aula 1; a resposta vem na Aula 2, Parte 3, com "lembra da briga na hora de desligar?" |
+| "Depois eu mostro o vídeo" do menino que encontrou uma forma de se expressar: o vídeo passou sem ser ligado à promessa | Aula 3, Parte 2 avisa que ele será ouvido adiante; Aula 5, Parte 4 aponta que é ele, depois do corte |
+| "Tenho um exemplo mais na frente" sobre a conversa em família, sem amarração | Aula 3, Parte 3 anuncia; Aula 6, Parte 4 abre cumprindo a promessa |
+| O ciclo de criação foi interrompido no quarto passo; o quinto e o sexto apareceram no meio de outros exemplos | Aula 6, Parte 1 apresenta as seis etapas em sequência e só depois faz as relações com a redação, o trabalho e o ChatGPT |
+| A demonstração dos blocos não foi ligada à explicação anterior sobre programação | Aula 6, Parte 2 abre com "lembra dos bloquinhos coloridos?" |
+| A mensagem final veio depois das instruções de cadastro e antes de outros argumentos | Aula 7, Parte 3: descrição do presente, argumentos finais, fechamento da reflexão, mensagem final e, por último, como pegar o presente |
+
+## Acréscimos de costura (segunda revisão, 18/11/2026)
+
+Frases que não estavam no encontro e foram escritas para o formato de curso. Não trazem argumento novo.
+
+- Mapa do curso no fim da Aula 1 e uma ponte no início e no fim de cada aula.
+- Definição simples de função executiva ("o conjunto de habilidades que a gente usa para dar conta de uma tarefa do começo ao fim") e de controle inibitório ("conseguir segurar o impulso"), na Aula 2, Parte 2.
+- "Criar um jogo é o Lego sem manual", ligando o exemplo do Lego à proposta (Aula 2).
+- Níveis de suporte dirigidos ao responsável ("você fez pelo seu filho; daqui a pouco faz junto"), em vez da primeira pessoa da terapeuta (Aula 5, Parte 2).
+- Apresentação da Helena como mãe já na abertura, anunciando a história da Aula 3.
+- Gancho do presente na abertura da Aula 1: gera curiosidade sem revelar o que é (decisão da dona, 18/11/2026). O presente só é revelado na Aula 7; nenhuma aula anterior, imagem de edição ou resumo deve adiantar o que ele é.
+- Segurança da plataforma dita em segunda pessoa ("você autoriza"), em vez de "o responsável" e "o pai" (Aula 7, Parte 1).
+- Parágrafo que fecha a reflexão sobre o futuro dos filhos (Aula 7, Parte 3).
 
 ## Pontos de interpretação da transcrição
 
 A transcrição automática tem falhas. Estes trechos foram interpretados e merecem conferência da dona na leitura dos roteiros:
 
 - "tarefas notas" (01:31) foi escrito como "tarefas chatas".
+- "decorando a tabela" (01:25) foi escrito como "decorando a tabuada".
 - "Laopa" foi tratado como o nome da clínica e substituído por "terapia" (Aula 3) e por "as crianças compartilhando umas com as outras" (Aula 6).
 - "lousa mágica" (00:35) foi escrito como "lousa digital".
 - O ciclo de criação foi escrito com seis etapas (imaginar, planejar, programar, testar, melhorar, compartilhar) a partir da fala; conferir com o slide.
@@ -114,14 +144,14 @@ Os cortes exibidos no encontro são fixos no curso, no mesmo ponto:
 
 | Aula e parte | Corte |
 | --- | --- |
-| Aula 1, Parte 3 | Pais: receio do tempo de tela e substituição |
+| Aula 2, Parte 4 | Pais: receio do tempo de tela e substituição |
 | Aula 2, Parte 3 | Crianças e pais: "parece um superpoder" |
 | Aula 3, Parte 3 | Criança: como são feitos Roblox, Fortnite e God of War |
 | Aula 3, Parte 3 | Pais: Jeffrey, Rafa, Bernardo e a independência |
 | Aula 5, Parte 1 | Pais: foco |
 | Aula 5, Parte 2 | Isabela: "quando eu consegui, eu fiquei feliz" |
 | Aula 5, Parte 4 | Crianças: felicidade ao criar |
-| Aula 6, Parte 3 | Pais: conversa em casa |
+| Aula 6, Parte 4 | Pais: conversa em casa |
 
 A transcrição de cada corte está no roteiro. Os nomes de quem fala em cada corte precisam ser conferidos nos slides, porque a transcrição não os identifica. Confirmar com a família da Isabela a autorização de nome e imagem para o curso; a autorização registrada era para a apresentação.
 
@@ -135,5 +165,5 @@ A fala afirma, como no encontro, que existem inúmeros estudos sobre programaç�
 
 ## Pendências
 
-- Apostila: `caderno-conteudo.json` e `apostila.pdf` ainda são da versão de 17/11. Reescrever depois da aprovação dos roteiros.
-- Gravação e edição dos 21 clipes; importação no Admin e publicação.
+- Apostila refeita em 18/11/2026 a partir dos roteiros. A frase da Isabela aparece sem o nome dela, e a apostila não revela o presente.
+- Gravação e edição dos 23 clipes; importação no Admin e publicação.

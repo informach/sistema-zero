@@ -2,7 +2,7 @@
 
 Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. Refação de 18/11/2026: o curso passa a ser o conteúdo integral do encontro de 13/11/2026, na voz da Helena, organizado em sete aulas na mesma ordem em que foi apresentado.
 
-**Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
+**Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. A ordem foi corrigida onde o encontro se adiantou ou deixou uma promessa sem fechar; as correções estão listadas em Fontes. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
 
 **Convite único:** o Cadê Todo Mundo por sete dias, na Aula 7. Nenhuma outra aula oferece nada, e nenhum outro projeto, cupom ou plano é oferecido.
 
@@ -10,7 +10,7 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 | --- | --- |
 | Título, descrições e organização | [Módulos](modulos.md) |
 | Fonte, regra de adaptação e matriz de cobertura | [Fontes](fontes.md) |
-| Consulta opcional (ainda da versão anterior, ver Estado) | [Apostila](apostila.pdf) |
+| Consulta opcional | [Apostila](apostila.pdf) |
 
 | Aula | Conteúdo | Roteiro | Importação no Admin |
 | --- | --- | --- | --- |
@@ -24,20 +24,20 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 
 ## Gravação e edição
 
-- São **21 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs.
+- São **23 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs.
 - O **Na tela** de cada parte cita trechos da fala e indica as imagens a inserir, que correspondem aos slides usados no encontro.
 - Os **depoimentos são fixos**: os mesmos cortes exibidos no encontro entram no ponto marcado em cada roteiro, com a Helena apresentando e comentando. A transcrição de cada corte está no roteiro para localizar o arquivo. Identificar nome e vínculo de quem fala, distinguindo Débora, mãe do Bernardo, da filha da Helena.
 - **Isabela:** a história e o corte estão na Aula 5. A autorização dada pela família foi para a apresentação; confirmar a autorização de nome e imagem para o curso antes de publicar.
-- **Demonstração (Aula 6, Parte 2):** captura manual do Estúdio em três estados, com a preparação descrita no roteiro.
+- **Demonstração (Aula 6, Parte 2):** clipe só de captura de tela, com a fala por cima; captura manual do Estúdio em três estados, com a preparação descrita no roteiro.
 
 | Aula | Chave do clipe | Título da parte |
 | --- | --- | --- |
 | 1 | `video-a1-abertura` | O maior vilão dos pais |
 | 1 | `video-a1-pergunta` | A pergunta que muda tudo |
-| 1 | `video-a1-tempo` | Mais tempo de tela? |
 | 2 | `video-a2-tres-usos` | Assistir, jogar ou criar |
 | 2 | `video-a2-funcoes` | Função executiva e o exemplo do Lego |
 | 2 | `video-a2-criar` | Criar em vez de só consumir |
+| 2 | `video-a2-tempo` | Mais tempo de tela? |
 | 3 | `video-a3-historia` | De onde veio tudo isso |
 | 3 | `video-a3-reconhece` | Você reconhece o seu filho aqui? |
 | 3 | `video-a3-mundo` | Entrar no mundo dele |
@@ -50,8 +50,10 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 | 5 | `video-a5-feliz` | O que a gente mais deseja: que eles sejam felizes |
 | 6 | `video-a6-ciclo` | O ciclo de criação de um jogo |
 | 6 | `video-a6-demonstracao` | Uma regra de cada vez |
+| 6 | `video-a6-causa` | Fui eu que causei isso |
 | 6 | `video-a6-familia` | O assunto que abre a conversa |
-| 7 | `video-a7-plataforma` | Onde o presente é entregue |
+| 7 | `video-a7-plataforma` | Você no controle |
+| 7 | `video-a7-ferramentas` | O que tem lá dentro |
 | 7 | `video-a7-presente` | O presente: sete dias de Cadê Todo Mundo |
 
 As chaves de clipe mudaram em relação à versão de 17/11, porque as partes são outras. Nenhum vídeo havia sido gravado ou vinculado. Os manifestos listam as chaves antigas em `retireBlockKeys`.
@@ -67,6 +69,6 @@ As chaves de clipe mudaram em relação à versão de 17/11, porque as partes s�
 
 ## Estado desta entrega
 
-Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 21 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
+Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
 
-**Apostila:** o PDF e o `caderno-conteudo.json` ainda são os da versão de 17/11 (seis aulas). Serão reescritos para espelhar esta versão depois que a dona aprovar os roteiros. Até lá, não publicar a apostila junto com o curso novo.
+**Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 17 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).

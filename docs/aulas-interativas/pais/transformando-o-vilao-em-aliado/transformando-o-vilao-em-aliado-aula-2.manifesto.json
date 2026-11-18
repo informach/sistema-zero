@@ -17,6 +17,10 @@
       "plannedVideo": "Título: Criar em vez de só consumir\n\nApresentar a proposta de criar em vez de só consumir, usando o interesse da criança a favor. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
+      "key": "video-a2-tempo",
+      "plannedVideo": "Título: Mais tempo de tela?\n\nResponder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
       "key": "resumo-a2",
       "content": {
         "kind": "rich_text",
@@ -67,8 +71,7 @@
       "objective": "Apresentar a proposta de criar em vez de só consumir, usando o interesse da criança a favor.",
       "intent": "explanation",
       "blockKeys": [
-        "video-a2-criar",
-        "resumo-a2"
+        "video-a2-criar"
       ],
       "workspaceKey": null,
       "externalTool": null,
@@ -77,6 +80,25 @@
         "version": 1,
         "blockIds": [
           "video-a2-criar"
+        ]
+      }
+    },
+    {
+      "key": "tempo",
+      "title": "Mais tempo de tela?",
+      "objective": "Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a2-tempo",
+        "resumo-a2"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a2-tempo"
         ]
       }
     }

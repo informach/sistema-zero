@@ -1,5 +1,5 @@
 /**
- * Apostila de consulta do minicurso para pais "Transformando o vilão em aliado" (17/11/2026), pela Receita do
+ * Apostila de consulta do minicurso para pais "Transformando o vilão em aliado" (refeita em 18/11/2026), pela Receita do
  * Passo a passo do projeto (`../caderno-visual/README.md`): capa com a composição fixa, abertura
  * com o mapa das aulas, uma ou duas folhas por aula com o cabeçalho simples da receita (curso
  * para pais não tem cena de jogo) e os cards de `../caderno-visual/visual.ts`. Só o nome do
@@ -96,7 +96,7 @@ const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${n
 const slide = (arquivo: string) =>
   `data:image/jpeg;base64,${readFileSync(resolve(scriptDir, 'slides', arquivo)).toString('base64')}`
 
-/** A regra do Cadê Todo Mundo que a Helena mostra na demonstração da Aula 3. */
+/** A regra do Cadê Todo Mundo que a Helena mostra na demonstração da Aula 6. */
 const B = criarBlocos([...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks])
 const drawings: Record<string, { area: string; corpo: () => string }> = {
   'cade-regra': {
@@ -238,8 +238,8 @@ const cover = capaHtml({
   iconeSelo: 'livro',
   linha1: 'Transformando',
   linha2: 'o vilão em aliado',
-  frase: 'Como criar pode colocar habilidades cognitivas para a vida em prática.',
-  fraseBaixo: 'Um minicurso para pais, em seis aulas.',
+  frase: 'Como fazer das telas o maior aliado no desenvolvimento dos seus filhos.',
+  fraseBaixo: 'Um minicurso para pais, em sete aulas.',
   tema: 'capa--vilao',
   selo: material,
 })
@@ -316,7 +316,11 @@ if (process.argv.includes('--html-only')) process.exit(0)
 const browser = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-].find(existsSync)
+  process.env.CHROME_PATH ?? '',
+  '/opt/pw-browsers/chromium',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+].find((caminho) => caminho && existsSync(caminho) && statSync(caminho).isFile())
 if (!browser) throw new Error('Chrome ou Edge não encontrado para gerar a apostila.')
 const temporary = mkdtempSync(join(tmpdir(), 'sistema-zero-caderno-'))
 const htmlPath = join(temporary, 'caderno.html')
@@ -328,6 +332,7 @@ try {
     browser,
     [
       '--headless=new',
+      ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
       '--disable-gpu',
       '--no-first-run',
       '--no-default-browser-check',

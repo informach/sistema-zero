@@ -6,7 +6,7 @@
 
 **Descrição curta:** Como transformar as telas, o maior vilão dos pais, no maior aliado do desenvolvimento dos filhos.
 
-**Descrição longa:** Tirar a tela da vida dos filhos, ninguém consegue. Mas dá para tornar produtivo o tempo que eles já passam ali. Neste minicurso, a Helena mostra a diferença entre assistir, jogar e criar, explica o que são as funções executivas e por que criar jogos treina habilidades cognitivas para a vida: planejamento, sequência, foco, flexibilidade e lidar com o erro. Com exemplos do dia a dia, relatos de pais e crianças, a história da própria família e uma demonstração de como uma regra de jogo é construída. São sete aulas para acompanhar no seu ritmo, sem tarefas. No final, um presente: sete dias de Cadê Todo Mundo para o seu filho criar o primeiro jogo.
+**Descrição longa:** Tirar a tela da vida dos filhos, ninguém consegue. Mas dá para tornar produtivo o tempo que eles já passam ali. Neste minicurso, a Helena mostra a diferença entre assistir, jogar e criar, explica o que são as funções executivas e por que criar jogos treina habilidades cognitivas para a vida: planejamento, sequência, foco, flexibilidade e lidar com o erro. Com exemplos do dia a dia, relatos de pais e crianças, a história da própria família e uma demonstração de como uma regra de jogo é construída. São sete aulas para acompanhar no seu ritmo, sem tarefas. No final, um presente espera por você e pelo seu filho.
 
 ## Módulo 1: A tela como espaço de criação
 
@@ -20,6 +20,6 @@
 - [Como nasce um jogo](transformando-o-vilao-em-aliado-aula-6.md)
 - [Um presente para vocês experimentarem](transformando-o-vilao-em-aliado-aula-7.md)
 
-**Formato:** sete aulas e 21 partes com vídeo. Depoimentos de famílias inseridos na edição. Sem quiz nem tarefas. Apostila opcional de consulta.
+**Formato:** sete aulas e 23 partes com vídeo. Depoimentos de famílias inseridos na edição. Sem quiz nem tarefas. Apostila opcional de consulta.
 
 **Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro. O presente é independente do certificado.

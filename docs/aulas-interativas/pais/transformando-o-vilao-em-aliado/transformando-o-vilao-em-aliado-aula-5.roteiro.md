@@ -15,7 +15,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 ```text
 Uma coisa que muita gente me pergunta é: "Será que o meu filho vai conseguir ter foco para isso? Será que ele vai conseguir prestar atenção mesmo, parar para fazer?" Escuta estes pais.
 
-São exemplos de que, por tudo isso de que a gente já falou, na criação a criança consegue ter foco.
+Viu? Quando a atividade é a criação, a criança consegue ter foco, por tudo o que a gente já conversou.
 
 E, vamos combinar: foco nas telas e nos jogos, eles têm. A gente queria era que eles tivessem foco para as outras coisas que não fossem a tela. É aí que entra o aliado: usar o interesse, o personagem, a própria criação a nosso favor.
 
@@ -45,15 +45,13 @@ Vai muito também do incentivo dos pais. "Vamos sentar aqui, todo mundo junto, p
 
 E é importante dizer: a Isabela não é uma menina muito das telas. Ela não tem muito esse contato com os jogos em si. E, em menos de dez minutos, ela conseguiu ter acesso a isso e aprender.
 
-A frase final dela é a que mais tem peso: "Quando eu consegui, eu fiquei feliz." É isso. Quando ela conseguiu, ela ficou muito feliz. Então ela vai querer continuar, vai querer criar outras coisas.
+A frase final dela é a que mais tem peso: "Quando eu consegui, eu fiquei feliz." É isso. Quando ela conseguiu, ela ficou muito feliz. Ela se sentiu orgulhosa de ter concluído. Por isso eu tenho certeza de que ela vai querer continuar, vai querer criar outros jogos. É esse orgulho que faz a criança seguir em frente.
 
 E a partir desse momento eu consigo ir aumentando um pouco o nível de dificuldade. Quer dizer, exigindo um pouco mais dessa criança em concentração, em interpretação, em elaboração de hipóteses. E ela vai dando conta de ampliar cada vez mais essas estratégias. A gente cai, de novo, nas habilidades que são importantes para a vida.
 
 Pensa num adulto. Eu tenho um problema. Como eu resolvo? Se eu souber só um caminho e esse caminho não servir naquele momento, acabou, eu não resolvo. A gente consegue muito mais porque já tem essa caixinha de repertório bem ampla. A maioria dos adultos tem.
 
-Ela se sentiu muito orgulhosa de ter concluído, e é por isso que eu tenho certeza de que ela vai querer criar mais jogos. É isso que possibilita caminhar.
-
-Isso vai muito ao encontro do que na terapia se chama de níveis de suporte. "Ah, mas você fez pelo menino." Fiz mesmo, para ele ver que é legal. Daqui a pouco eu faço junto com ele. Olha eu tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
+Esse caminho, de exigir um pouco mais a cada vez, vai muito ao encontro do que na terapia se chama de níveis de suporte. E vale para você, em casa. Talvez no começo você pense: "Ah, mas eu fiz pelo meu filho." Fez mesmo, para ele ver que é legal. Daqui a pouco você faz junto com ele. Aí você está tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
 
 E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, eu tenho mais respostas, eu tenho mais hipóteses. Então eu consigo testar mais, com a certeza de que, se eu errar, eu estou amparado. Até chegar à fase adulta, em que a gente já consegue elaborar melhor para lidar com os contextos da vida. Clique em Próxima parte.
 ```
@@ -62,30 +60,30 @@ E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, 
 
 **Clipe:** `video-a5-escola`
 
-**Na tela:** No "Dois mais cinco", mostrar a conta solta [na edição: 2 + 5 = ?]. No "Eu estou na casinha dois", mostrar a mesma conta com função [na edição: personagem na casa 2 e a estrela cinco casas à frente]. No "Não é só a matemática", listar as áreas, uma por vez [na edição: matemática, português, ciências, artes, planejamento]. No "inúmeros estudos", mostrar a apresentadora [na edição: câmera].
+**Na tela:** No "Dois mais cinco", mostrar a conta solta [na edição: 2 + 5 = ?]. No "Eu estou na casinha dois", mostrar a mesma conta com função [na edição: personagem na casa 2 e a estrela cinco casas à frente]. No "não é só na matemática", listar as áreas, uma por vez [na edição: matemática, português, ciências, artes, planejamento]. No "inúmeros estudos", mostrar a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
 Tem um outro benefício que vem junto com isso tudo: ajuda muito na escola.
 
-A escola tende a explicar as coisas da matéria de uma forma muito abstrata para a criança, sem um "mas para que isso? O que eu vou fazer com isso?".
+A escola tende a explicar as coisas da matéria de uma forma muito abstrata para a criança, sem responder àquele "mas para que serve isso? O que eu vou fazer com isso?".
 
-Um exemplo bem simples. Dois mais cinco. A escola ensina assim: dois mais cinco, dois mais quatro, cinco mais seis. Vai ensinando a fazer conta, vai decorando a tabela, vai fazendo conta, muita conta, para ir decorando e conseguir resolver os problemas.
+Um exemplo bem simples. Dois mais cinco. A escola ensina assim: dois mais cinco, dois mais quatro, cinco mais seis. Vai ensinando a fazer conta, vai decorando a tabuada, vai fazendo conta, muita conta, para ir decorando e conseguir resolver os problemas.
 
-Já na criação do jogo, você acaba aprendendo várias coisas da escola de forma natural, de uma forma que faz sentido para as crianças e os adolescentes. Olha o mesmo exemplo. Eu quero levar o meu personagem até a estrela. Eu estou na casinha dois. Quantos passos eu preciso avançar com ele até chegar à estrela?
+Já na criação do jogo, você acaba aprendendo várias coisas da escola de forma natural, de uma forma que faz sentido para as crianças e os adolescentes. Olha o mesmo exemplo. Eu quero levar o meu personagem até a estrela. Eu estou na casinha dois. Quantos passos eu preciso avançar com ele até chegar à estrela? É a mesma conta. Só que agora ela serve para alguma coisa.
 
 É um exemplo simples. Mas, quando eu dou uma função, um objetivo do interesse da criança para ela fazer aquela conta, o aprendizado vem de uma forma mais natural e melhor.
 
-E são vários aspectos da matemática que a criação ajuda. Não é só a matemática. Ajuda no português, porque trabalha muito o escrever diálogos e o criar escolhas. Nas ciências, tem muita questão de movimento e de gravidade. E a criança aprende de forma natural, sem parecer difícil.
+A criação ajuda em vários aspectos da matemática. E não é só na matemática. Ajuda no português, porque trabalha muito o escrever diálogos e o criar escolhas. Nas ciências, tem muita questão de movimento e de gravidade. E a criança aprende de forma natural, sem parecer difícil.
 
-Eu tenho uma amiga que é professora, doutora em matemática e física, e que dá muita aula particular. O filho dela também cria jogos. E ela me disse assim: "Nossa, se todos os meus alunos tivessem esse hábito de criar jogos desde o início, eu acho que eu estava sem aluno agora." Porque ela dá aula para quem fica de recuperação. Faz muita diferença aprender quando existe um sentido, algo que faz sentido para eles.
+Eu tenho uma amiga que é professora, doutora em matemática e física, e que dá muita aula particular. O filho dela também cria jogos. E ela me disse assim: "Nossa, se todos os meus alunos tivessem esse hábito de criar jogos desde o início, eu acho que eu estava sem aluno agora." Porque ela dá aula para quem fica de recuperação. Faz muita diferença aprender quando aquilo faz sentido para eles.
 
 Nas artes também. Na criação de jogos, você tem a possibilidade de criar personagens e cenários, de imaginar um personagem, imaginar um cenário e dar vida a isso. De criar o próprio mundo.
 
 E tem o planejamento: organizar o começo, o desafio e o final. Criar um jogo não é simplesmente fazer qualquer coisa. Você tem que planejar certinho como vai funcionar. Tem que ter coerência, tem que ter sentido, tem que ter um objetivo. Eu tenho que planejar toda a trajetória. Nesse processo, a criança trabalha muitas coisas para a vida, e para a escola também.
 
-E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia existem inúmeros estudos mostrando como a programação e a criação de jogos desenvolvem essas habilidades. Não é falar por falar. Está comprovado com inúmeras crianças e adolescentes. Já existem vários estudos sobre isso. Clique em Próxima parte.
+E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia existem inúmeros estudos mostrando como a programação e a criação de jogos desenvolvem essas habilidades. Não é falar por falar. Está comprovado com inúmeras crianças e adolescentes. Clique em Próxima parte.
 ```
 
 ## Parte 4. O que a gente mais deseja: que eles sejam felizes
@@ -101,11 +99,11 @@ E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia e
 ```text
 Além de desenvolver isso tudo, existe ainda o prazer de criar.
 
-Lá no início eu te perguntei o que você deseja para os seus filhos. "Ah, que ele seja feliz." "Ah, que ele tenha autonomia." Eu dei o exemplo de que, para mim, a autonomia é muito importante. Mas, se eu pensar, pensar mesmo, o que eu mais desejo para o meu filho é que ele seja feliz.
+E agora é a hora de retomar aquela reflexão da primeira aula, que eu te pedi para guardar: o que você deseja para os seus filhos. "Ah, que ele seja feliz." "Ah, que ele tenha autonomia." Eu contei que, para mim, a autonomia sempre pesou muito. Mas, se eu pensar, pensar mesmo, o que eu mais desejo para o meu filho é que ele seja feliz. E você vai ver que as duas coisas andam juntas.
 
 E é legal porque a criação de jogos traz muita empolgação e felicidade para as crianças e os adolescentes. Olha só como eles se sentem.
 
-Deu para ver como as crianças se sentem felizes e animadas quando podem dizer que criaram algo, que foram elas que fizeram.
+Deu para ver como as crianças se sentem felizes e animadas quando podem dizer que criaram algo, que foram elas que fizeram. E reparou no menino que disse que criar é uma forma de expressar as ideias dele, de mostrar o que ele pensa? É aquele de quem eu te falei, que mostra mais do que fala.
 
 E vale a gente parar um pouco aqui, porque isso é importante. Toda mãe, quando perguntam o que ela espera para o filho, responde: que ele seja feliz. Mas, primeiro: o que é a felicidade para mim? E o que é a felicidade para ele?
 
@@ -115,5 +113,7 @@ A gente pensa muito na criança de agora. Mas pensa a longo prazo. Se eu pego um
 
 Tá. Quais são os pré-requisitos para ele entrar numa faculdade? Ele tem que ter memória de trabalho. Tem que dar conta da frustração. Tem que controlar a ansiedade. Tem que ter controle emocional, controle inibitório. Tem que dar conta de lidar com as tarefas chatas, porque elas existem mesmo dentro de um curso que foi a escolha dele. A própria psicóloga do André conta que foi fazer psicologia fugindo da matemática, e lá tinha estatística. E aí, como eu consigo estratégias para lidar com a aula de matemática, que não é o meu forte? Tudo isso é pré-requisito.
 
-Então, quando a gente fala de felicidade, eu tenho que pensar no desenvolvimento e em quais habilidades são necessárias para que ele consiga estar dentro da sociedade, ter autonomia e ter independência. Clique em Concluir aula para continuar.
+Então, quando a gente fala de felicidade, eu tenho que pensar no desenvolvimento e em quais habilidades são necessárias para que ele consiga estar dentro da sociedade, ter autonomia e ter independência.
+
+Percebe como fecha? A felicidade que a gente deseja para eles passa pela autonomia. E a autonomia se constrói com essas habilidades, que eles podem treinar desde agora, no tempo de tela que já têm. Clique em Concluir aula para continuar.
 ```

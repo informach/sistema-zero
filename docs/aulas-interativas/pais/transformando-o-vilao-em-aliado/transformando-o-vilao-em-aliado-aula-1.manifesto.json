@@ -6,15 +6,11 @@
   "blocks": [
     {
       "key": "video-a1-abertura",
-      "plannedVideo": "Título: O maior vilão dos pais\n\nAbrir o curso, retomar o que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: O maior vilão dos pais\n\nAbrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "video-a1-pergunta",
-      "plannedVideo": "Título: A pergunta que muda tudo\n\nTrocar a pergunta: da tela que só entretém para a tela que faz pensar, com início, meio e fim. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
-    },
-    {
-      "key": "video-a1-tempo",
-      "plannedVideo": "Título: Mais tempo de tela?\n\nResponder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: A pergunta que muda tudo\n\nTrocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a1",
@@ -37,7 +33,7 @@
     {
       "key": "abertura",
       "title": "O maior vilão dos pais",
-      "objective": "Abrir o curso, retomar o que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital.",
+      "objective": "Abrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital.",
       "intent": "explanation",
       "blockKeys": [
         "video-a1-abertura"
@@ -55,28 +51,10 @@
     {
       "key": "pergunta",
       "title": "A pergunta que muda tudo",
-      "objective": "Trocar a pergunta: da tela que só entretém para a tela que faz pensar, com início, meio e fim.",
+      "objective": "Trocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar.",
       "intent": "explanation",
       "blockKeys": [
-        "video-a1-pergunta"
-      ],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [
-          "video-a1-pergunta"
-        ]
-      }
-    },
-    {
-      "key": "tempo",
-      "title": "Mais tempo de tela?",
-      "objective": "Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição.",
-      "intent": "explanation",
-      "blockKeys": [
-        "video-a1-tempo",
+        "video-a1-pergunta",
         "resumo-a1",
         "apostila"
       ],
@@ -86,7 +64,7 @@
       "completion": {
         "version": 1,
         "blockIds": [
-          "video-a1-tempo"
+          "video-a1-pergunta"
         ]
       }
     }
