@@ -23,7 +23,10 @@ export interface GltfExtensionUsage {
 }
 
 /** Inventory schema extension points, never arbitrary extras or extension payloads. No execution. */
-export function readGltfExtensions(json: Record<string, unknown>): GltfExtensionUsage {
+export function readGltfExtensions(
+  json: Record<string, unknown>,
+  acceptedRequiredExtensions: readonly string[] = [],
+): GltfExtensionUsage {
   const unhandled = names(json.extensionsUsed, 'extensionsUsed'),
     required = names(json.extensionsRequired, 'extensionsRequired'),
     declared = new Set(unhandled)
@@ -33,11 +36,12 @@ export function readGltfExtensions(json: Record<string, unknown>): GltfExtension
       `extensionsRequired[${i}]`,
       'A extensão obrigatória também precisa estar em extensionsUsed.',
     )
-  if (required.length)
+  const unsupported = required.find((name) => !acceptedRequiredExtensions.includes(name))
+  if (unsupported)
     throw new GltfInputError(
       'unsupported',
       'extensionsRequired[0]',
-      `O arquivo precisa da extensão ${required[0]}, que ainda não é suportada.`,
+      `O arquivo precisa da extensão ${unsupported}, que ainda não é suportada.`,
     )
   const occurrences: GltfExtensionUsage['occurrences'] = []
   function point(input: unknown, path: string): Record<string, unknown> | null {

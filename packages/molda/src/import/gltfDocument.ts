@@ -41,9 +41,10 @@ export function readGltfDocument(
   bytes: Uint8Array,
   files: readonly GltfLocalFile[] = [],
   entryPath = 'model.gltf',
+  options: { acceptedRequiredExtensions?: readonly string[] } = {},
 ): GltfDocumentRead {
   const envelope = readGltfEnvelope(bytes),
-    extensions = readGltfExtensions(envelope.json),
+    extensions = readGltfExtensions(envelope.json, options.acceptedRequiredExtensions),
     resources = readGltfResources(envelope, files, entryPath)
   if (resources.status === 'missing') return resources
   const { json, format, unknownChunkTypes } = envelope,

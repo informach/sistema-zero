@@ -65,11 +65,11 @@ interface PacoteCompilado {
 
 `CenaCompilada` terá identificador de formato/versão próprios, fonte/revisão, arquivos por digest/caminho, referências visuais, transformações finais, colisões, terreno/alturas/pintura, águas, marcadores e ambiente. Schema estrito, relações verificadas e limites de trabalho/bytes antes de alocar. `PreparacaoDaCena` mantém a projeção resolvida e as referências usadas para o adaptador, sem transferir campos editoriais como malhas.
 
-- [ ] Escrever e executar testes que falham antes da implementação: nomes de arquivo hostis; arquivo ausente/digest inválido; transformação não finita; terreno sem alturas; apoio/conjunto/ocultação herdados; fonte/revisão; panorama e modelos realmente usados; biblioteca desconhecida/restrita; malha de 65.000/65.001 vértices; índices e atributos inválidos; excedente de destino.
-- [ ] Implementar `prepararCenaParaCompilacao(documento, fonte, contexto, alturas?)`: validar documento, resolver conjuntos, ocultação e assentamento com funções existentes; selecionar dependências usadas e gerar avisos de licença. Não editar o argumento.
-- [ ] Implementar `dividirMalhaParaExportacao(malha, limite = 65_000)`: remapear índices/atributos por triângulo, conservando winding, sem cortar triângulos ou exceder o limite. Rejeitar limites/índices/layout inválidos antes de copiar dados.
-- [ ] Implementar `avaliarOrcamentoDaCena` usando bytes e malhas materiais efetivos. Os três tetos do Estúdio são independentes; relatório inclui excedentes e alternativa de junção estática, sem alterar automaticamente a cena.
-- [ ] Definir schema/leitor portáteis e tabelas de arquivos/referências verificáveis para todos os consumidores. Tipagem, suíte do núcleo, revisão e checkpoint com API real antes de seguir.
+- [x] Escrever e executar testes que falham antes da implementação: nomes de arquivo hostis; arquivo ausente/digest inválido; transformação não finita; terreno sem alturas; apoio/conjunto/ocultação herdados; fonte/revisão; panorama e modelos realmente usados; biblioteca desconhecida/restrita; malha de 65.000/65.001 vértices; índices e atributos inválidos; excedente de destino.
+- [x] Implementar `prepararCenaParaCompilacao(documento, fonte, contexto, alturas?)`: validar documento, resolver conjuntos, ocultação e assentamento com funções existentes; selecionar dependências usadas e gerar avisos de licença. Não editar o argumento.
+- [x] Implementar `dividirMalhaParaExportacao(malha, limite = 65_000)`: remapear índices/atributos por triângulo, conservando winding, sem cortar triângulos ou exceder o limite. Rejeitar limites/índices/layout inválidos antes de copiar dados.
+- [x] Implementar `avaliarOrcamentoDaCena` usando bytes e malhas materiais efetivos. Os três tetos do Estúdio são independentes; relatório inclui excedentes e alternativa de junção estática, sem alterar automaticamente a cena.
+- [x] Definir schema/leitor portáteis e tabelas de arquivos/referências verificáveis para todos os consumidores. Tipagem, suíte do núcleo, revisão e checkpoint com API real antes de seguir.
 
 **Prova de comportamento:**
 
@@ -139,4 +139,4 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto, exclusivamente em 8.1.** Regras iniciais de divisão de malha, licenças e orçamento implementadas/testadas/revisadas; [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-limites.md). Próximos contrato/leitor portátil e preparação de cena/dependências. Nenhum exportador v2 foi declarado entregue. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.
+**Lote 8 aberto; 8.1 fechado, exclusivamente em 8.2.** [Contrato de 8.1](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-contrato.md). Superfícies compartilhadas, inspeção/divisão, alturas e primeiro GLB conferido: [checkpoint parcial de 8.2](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-superficies-glb.md). Pintura, montagem completa e comparação/ciclos continuam pendentes antes de 8.3. Nenhum exportador v2 completo foi declarado entregue. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.
