@@ -1,4 +1,5 @@
 import { Vector3 } from 'three'
+import type { FonteDeAguaDoTeste } from './agua'
 import type { MundoDoTeste } from './colisoes'
 import { PercursoDoTeste } from './percurso'
 import type { ModoDoTeste } from './tipos'
@@ -31,11 +32,14 @@ export class MovimentoDoTeste {
   private readonly inicio: Vector3
   private readonly degrau: number
   private readonly gravidade = 16
+  private readonly limiteDaQueda: number
+  private degrauEmCurso: Vector3 | null = null
 
   constructor(
     private readonly mundo: MundoDoTeste,
     inicio: Vector3,
     readonly altura: number,
+    private readonly agua?: FonteDeAguaDoTeste,
   ) {
     if (!Number.isFinite(altura) || altura < 0.3 || altura > 10)
       throw new Error('Escolha um personagem entre 0,3 e 10 metros de altura')
@@ -43,11 +47,26 @@ export class MovimentoDoTeste {
     this.inicio = inicio.clone()
     this.raio = altura * 0.17
     this.degrau = altura * 0.19
+    this.limiteDaQueda = (mundo.limiteInferior ?? inicio.y) - 100
+    const contato = mundo.resolver(
+      this.posicao.clone().add(new Vector3(0, -0.02, 0)),
+      altura,
+      this.raio,
+    )
+    if (
+      contato.normais.some((n) => n.y >= LIMITE_DA_INCLINACAO) &&
+      Math.hypot(contato.posicao.x - this.posicao.x, contato.posicao.z - this.posicao.z) < 0.01
+    ) {
+      this.posicao.copy(contato.posicao)
+      this.inicio.copy(contato.posicao)
+      this.noChao = true
+    }
   }
   definirModo(modo: ModoDoTeste) {
     if (this.modo === modo) return
     if (modo === 'voo' || this.modo === 'voo') this.percurso.finalizar(this.posicao)
     this.modo = modo
+    this.degrauEmCurso = null
     this.velocidade.set(0, 0, 0)
     this.acumulado = 0
   }
@@ -57,6 +76,7 @@ export class MovimentoDoTeste {
     this.velocidade.set(0, 0, 0)
     this.acumulado = 0
     this.noChao = false
+    this.degrauEmCurso = null
     this.caiu = false
     this.pausado = true
   }
@@ -68,7 +88,7 @@ export class MovimentoDoTeste {
     }
     const saltar = entrada.saltar && !this.puloApertado
     this.puloApertado = entrada.saltar
-    this.acumulado += Math.min(delta, 0.1)
+    this.acumulado += delta
     let primeiro = true
     while (this.acumulado >= PASSO) {
       this.acumulado -= PASSO
@@ -81,7 +101,25 @@ export class MovimentoDoTeste {
       noChaoAntes = this.noChao
     const direcao = new Vector3(entrada.x, 0, entrada.z)
     if (direcao.lengthSq() > 1) direcao.normalize()
-    const velocidade = this.modo === 'voo' ? (entrada.correr ? 14 : 6) : entrada.correr ? 3.4 : 1.5
+    const agua = this.modo === 'voo' ? null : this.agua?.(this.posicao.x, this.posicao.z)
+    this.nadando = Boolean(
+      agua &&
+        this.posicao.y + this.altura * 0.6 < agua.nivel &&
+        this.posicao.y > agua.nivel - agua.profundidade - this.altura,
+    )
+    if (this.nadando || saltar) this.degrauEmCurso = null
+    const velocidade =
+      this.modo === 'voo'
+        ? entrada.correr
+          ? 14
+          : 6
+        : this.nadando
+          ? entrada.correr
+            ? 1.8
+            : 1.2
+          : entrada.correr
+            ? 3.4
+            : 1.5
     const aceleracao = (direcao.lengthSq() ? 10 : 16) * PASSO
     this.velocidade.x = aproximar(this.velocidade.x, direcao.x * velocidade, aceleracao)
     this.velocidade.z = aproximar(this.velocidade.z, direcao.z * velocidade, aceleracao)
@@ -95,9 +133,23 @@ export class MovimentoDoTeste {
       this.noChao = false
       return
     }
-    if (saltar && this.noChao)
+    if (saltar && this.noChao && !this.nadando)
       this.velocidade.y = Math.sqrt(2 * this.gravidade * this.altura * 0.55)
-    this.velocidade.y = Math.max(-25, this.velocidade.y - this.gravidade * PASSO)
+    if (this.nadando && agua) {
+      const alvo = agua.nivel - this.altura * 0.65
+      const forca =
+        (alvo - this.posicao.y) * 14 -
+        this.velocidade.y * 5 +
+        entrada.vertical * 4 +
+        (entrada.saltar ? 4 : 0)
+      this.velocidade.y = Math.max(-3, Math.min(3, this.velocidade.y + forca * PASSO))
+    } else {
+      const proxima = this.posicao
+        .clone()
+        .add(new Vector3(this.velocidade.x * PASSO, 0, this.velocidade.z * PASSO))
+      if (this.velocidade.y <= 0 && this.apoiadoNoDegrau(proxima)) this.velocidade.y = 0
+      else this.velocidade.y = Math.max(-25, this.velocidade.y - this.gravidade * PASSO)
+    }
     const deslocamento = this.velocidade.clone().multiplyScalar(PASSO)
     let resultado = this.deslocar(this.posicao, deslocamento)
     // Autostep: testar o patamar dentro do alcance do pé antes de subir a cápsula.
@@ -107,6 +159,7 @@ export class MovimentoDoTeste {
     )
     if (
       noChaoAntes &&
+      !this.nadando &&
       !saltar &&
       this.velocidade.y <= 0 &&
       bloqueioHorizontal > 1e-5 &&
@@ -147,13 +200,19 @@ export class MovimentoDoTeste {
               frente.posicao.z - antes.z - deslocamento.z,
             ) <
             bloqueioHorizontal - 1e-5
-          if (melhora) resultado = frente
+          if (melhora) {
+            resultado = frente
+            this.degrauEmCurso = patamar.ponto.clone()
+          }
         }
       }
     }
     this.posicao.copy(resultado.posicao)
+    const apoioDoDegrau = this.apoiadoNoDegrau(this.posicao)
     this.noChao =
-      resultado.normais.some((n) => n.y >= LIMITE_DA_INCLINACAO) && this.velocidade.y <= 0
+      (resultado.normais.some((n) => n.y >= LIMITE_DA_INCLINACAO) || apoioDoDegrau) &&
+      this.velocidade.y <= 0
+    if (!apoioDoDegrau) this.degrauEmCurso = null
     // Manter contato ao descer rampas pequenas; não atravessa buracos ou cola no fundo distante.
     if (!this.noChao && noChaoAntes && !saltar && this.velocidade.y <= 0) {
       const baixo = this.mundo.resolver(
@@ -196,7 +255,7 @@ export class MovimentoDoTeste {
       PASSO,
       noChaoAntes && this.noChao && !this.nadando && !saltar,
     )
-    if (this.posicao.y < this.inicio.y - 100) {
+    if (this.posicao.y < this.limiteDaQueda) {
       this.caiu = true
       this.percurso.finalizar(this.posicao)
       this.velocidade.set(0, 0, 0)
@@ -214,5 +273,22 @@ export class MovimentoDoTeste {
           normais.push(n)
     }
     return { ...resultado, normais }
+  }
+  private apoiadoNoDegrau(posicao: Vector3): boolean {
+    const apoio = this.degrauEmCurso
+    if (
+      !apoio ||
+      Math.abs(posicao.y - apoio.y) > 0.03 ||
+      Math.hypot(posicao.x - apoio.x, posicao.z - apoio.z) > this.raio + 0.04
+    )
+      return false
+    const de = apoio.clone()
+    de.y += 0.03
+    const ate = apoio.clone()
+    ate.y -= 0.03
+    const real = this.mundo.rastrear(de, ate)
+    return Boolean(
+      real && real.normal.y >= LIMITE_DA_INCLINACAO && Math.abs(real.ponto.y - apoio.y) < 0.01,
+    )
   }
 }

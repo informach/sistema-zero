@@ -120,11 +120,14 @@ Parte 3.7 implementada, testada e revisada. [Eficiência](../../plans/2026-11-16
 
 **Interfaces:** sessão de ensaio separada do documento, com três modos: terceira pessoa, primeira pessoa e voo. Cápsula com MeshBVH; avatar genérico ou modelo da biblioteca; o perfil do Arquipélago usa sua própria física mais adiante.
 
-- [ ] Implementar gravidade, chão real, objetos por tipo de colisão, degraus, inclinação e fronteiras; não criar piso onde houver fundo/furo.
-- [ ] Implementar os três modos, controles de teclado/mouse/toque, entrada/saída e retorno à edição na mesma vista.
-- [ ] Aceitar personagem da biblioteca com escala e pose corretas; conservar animações disponíveis do arquivo.
-- [ ] Derivar cápsula e câmera da altura do personagem em uso; conferir o Cute Characters em aproximadamente 1,16 m, a reserva da Morada e os marcos da Faísca. Registrar caminhada em primeira e terceira pessoa, com vídeo; voo não substitui a travessia (issue 267).
-- [ ] Medidor de percurso da sessão: pontos de início/fim, distância direta, distância percorrida caminhando e tempo. Descontar pausas e excluir voo/teletransporte/retomada; registrar percursos reais sem reposicionar automaticamente a geografia. A régua autoral permanece no lote 7 (issue 267).
-- [ ] Exercitar Faísca convertida, formas, espelhos, conjuntos, carregamento e estados de erro no ensaio.
-- [ ] Conferir toda a lista normativa do lote 3, rodar regressões/tipagem/build pertinentes, revisar tudo e versionar evidências e relatório.
-- [ ] Só então marcar o lote 3 como concluído e iniciar o 4. Não aguardar implantação intermediária e não declarar o projeto global concluído.
+- [x] Implementar gravidade, chão real, objetos por tipo de colisão, degraus, inclinação e fronteiras; não criar piso onde houver fundo/furo.
+- [x] Implementar os três modos, controles de teclado/mouse/toque, entrada/saída e retorno à edição na mesma vista.
+- [x] Aceitar personagem da biblioteca com escala e pose corretas; conservar animações disponíveis do arquivo.
+- [x] Derivar cápsula e câmera da altura do personagem em uso; conferir o Cute Characters em aproximadamente 1,16 m, a reserva da Morada e os marcos da Faísca. Registrar caminhada em primeira e terceira pessoa, com vídeo; voo não substitui a travessia (issue 267).
+- [x] Medidor de percurso da sessão: pontos de início/fim, distância direta, distância percorrida caminhando e tempo. Descontar pausas e excluir voo/teletransporte/retomada; registrar percursos reais sem reposicionar automaticamente a geografia. A régua autoral permanece no lote 7 (issue 267).
+- [x] Exercitar Faísca convertida, formas, espelhos, conjuntos, carregamento e estados de erro no ensaio.
+- [x] Conferir toda a lista normativa do lote 3, rodar regressões/tipagem/build pertinentes, revisar tudo e versionar evidências e relatório.
+- [x] Só então marcar o lote 3 como concluído e iniciar o 4. Não aguardar implantação intermediária e não declarar o projeto global concluído.
+
+
+Fechamento de 17/11: lote 3 implementado, testado e revisado em escopo local. [Relatório integral e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-testar.md). As notas anteriores registram checkpoints históricos; implantação e validação remotas continuam no encerramento global. Próximo lote: 4, terreno.

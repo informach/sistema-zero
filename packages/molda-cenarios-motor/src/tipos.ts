@@ -77,7 +77,7 @@ export interface OpcoesDoPalco {
   /** Retratos isolados de composições, sem chão, céu ou elementos de edição. */
   fotografia?: boolean
   /** Os bytes do GLB de um modelo da tabela do cenário. O host decide de onde vêm. */
-  carregarModelo(modelo: ModeloDoCenario): Promise<ArrayBuffer>
+  carregarModelo(modelo: ModeloDoCenario, sinal?: AbortSignal): Promise<ArrayBuffer>
   carregarTextura?(textura: TexturaDoCenario, sinal: AbortSignal): Promise<ArrayBuffer>
   aoTexturas?(estado: EstadoDasTexturas): void
   carregarTerreno?(digest: string, sinal: AbortSignal): Promise<ArrayBuffer>

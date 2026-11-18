@@ -476,18 +476,23 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       sinal?.throwIfAborted()
       await pedir('POST', prefixo, { espacoId: reserva.espacoId, digest }, sinal)
     },
-    async conteudoDoModelo(ref) {
+    async conteudoDoModelo(ref, sinal) {
+      sinal?.throwIfAborted()
       const espacoId = ref.espacoId ?? (await acharEspacoDaBiblioteca(ref.biblioteca))
+      sinal?.throwIfAborted()
       // O app diz onde o arquivo está; a busca vai direto ao armazenamento, sem os cabeçalhos da
       // sessão (com eles o navegador barraria o pedido a outra origem).
       const { url } = await pedir<{ url: string }>(
         'GET',
         `espacos/${espacoId}/arquivos/${ref.digest}?tipo=modelo&como=endereco`,
+        undefined,
+        sinal,
       )
       let resposta: Response
       try {
-        resposta = await enviar(url)
+        resposta = await enviar(url, { signal: sinal })
       } catch {
+        sinal?.throwIfAborted()
         throw new ErroDaOficina('Sem conexão agora. Tente de novo.', 0, null, null)
       }
       if (!resposta.ok)

@@ -1,4 +1,4 @@
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import type { DocumentoDeCenario, ModeloDoCenario } from '@sistemazero/molda-cenarios-core/v2'
 import type {
   ComandoDoTeste,
   ConfiguracaoDoTeste,
@@ -32,26 +32,38 @@ export function PrepararTeste({
   erro,
   iniciar,
   fechar,
+  modeloDaBiblioteca,
+  escolherNaBiblioteca,
 }: {
   documento: DocumentoDeCenario
   ocupado: boolean
   erro: string | null
   iniciar(config: ConfiguracaoDoTeste): void
   fechar(): void
+  modeloDaBiblioteca?: ModeloDoCenario | null
+  escolherNaBiblioteca(): void
 }): JSX.Element {
   const [modo, setModo] = useState<ModoDoTeste>('terceira'),
-    [modeloId, setModeloId] = useState(''),
+    [modeloId, setModeloId] = useState(modeloDaBiblioteca?.id ?? ''),
     [altura, setAltura] = useState(1.16),
     [nativa, setNativa] = useState(true),
     [giro, setGiro] = useState(0)
-  const modelo = documento.modelos.find((m) => m.id === modeloId)
+  const modelos =
+    modeloDaBiblioteca && !documento.modelos.some((m) => m.id === modeloDaBiblioteca.id)
+      ? [modeloDaBiblioteca, ...documento.modelos]
+      : documento.modelos
+  const modelo = modelos.find((m) => m.id === modeloId)
   return (
     <Dialogo titulo="Testar o cenário" aoFechar={fechar}>
       <p>Entre no lugar que está no centro da vista. O teste não muda sua montagem.</p>
       <fieldset disabled={ocupado} className="mcn-teste-preparar">
-        <label>
-          Como explorar
-          <select value={modo} onChange={(e) => setModo(e.target.value as ModoDoTeste)}>
+        <label className="mcn-campo">
+          <span>Como explorar</span>
+          <select
+            aria-label="Como explorar"
+            value={modo}
+            onChange={(e) => setModo(e.target.value as ModoDoTeste)}
+          >
             {MODOS.map(([id, nome]) => (
               <option key={id} value={id}>
                 {nome}
@@ -59,9 +71,10 @@ export function PrepararTeste({
             ))}
           </select>
         </label>
-        <label>
-          Personagem
+        <label className="mcn-campo">
+          <span>Personagem</span>
           <select
+            aria-label="Personagem"
             value={modeloId}
             onChange={(e) => {
               setModeloId(e.target.value)
@@ -69,13 +82,16 @@ export function PrepararTeste({
             }}
           >
             <option value="">Boneco de referência</option>
-            {documento.modelos.map((m) => (
+            {modelos.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.nome ?? m.id}
               </option>
             ))}
           </select>
         </label>
+        <button type="button" className="sz-tool-pill" onClick={escolherNaBiblioteca}>
+          Escolher personagem da biblioteca
+        </button>
         {modelo ? (
           <label className="mcn-opcao">
             <input type="checkbox" checked={nativa} onChange={(e) => setNativa(e.target.checked)} />
@@ -83,9 +99,10 @@ export function PrepararTeste({
           </label>
         ) : null}
         {!modelo || !nativa ? (
-          <label>
-            Altura em metros
+          <label className="mcn-campo">
+            <span>Altura em metros</span>
             <input
+              aria-label="Altura em metros"
               type="number"
               min={0.3}
               max={10}
@@ -96,14 +113,18 @@ export function PrepararTeste({
           </label>
         ) : (
           <p>
-            O corpo e a câmera vão acompanhar a altura real do GLB. Os clipes disponíveis poderão
+            O corpo e a câmera vão acompanhar a altura real do modelo. Os clipes disponíveis poderão
             ser escolhidos no teste.
           </p>
         )}
         {modelo ? (
-          <label>
-            Frente do modelo
-            <select value={giro} onChange={(e) => setGiro(Number(e.target.value))}>
+          <label className="mcn-campo">
+            <span>Frente do modelo</span>
+            <select
+              aria-label="Frente do modelo"
+              value={giro}
+              onChange={(e) => setGiro(Number(e.target.value))}
+            >
               {[0, 90, 180, 270].map((g) => (
                 <option key={g} value={g}>
                   {g}°
@@ -114,7 +135,7 @@ export function PrepararTeste({
         ) : null}
         <button
           type="button"
-          className="sz-tool-btn sz-tool-btn--primary"
+          className="sz-tool-pill sz-tool-pill--primary"
           disabled={
             (!modelo || !nativa) && (!Number.isFinite(altura) || altura < 0.3 || altura > 10)
           }
@@ -218,6 +239,7 @@ export function ControlesTeste({
           </select>
         </label>
         <span>Altura: {numero(estado.altura)} m</span>
+        {estado.nadando ? <span>Nadando</span> : null}
         <button
           type="button"
           className="sz-tool-pill"
@@ -285,7 +307,18 @@ export function ControlesTeste({
             Zerar
           </button>
         </div>
-        <small>Pausas, voo, salto, queda e retorno ao início não entram na caminhada.</small>
+        <small>Conta só a caminhada no chão. Pausas, voo, nado e retornos ficam de fora.</small>
+        {p.inicio && p.fim ? (
+          <details>
+            <summary>Pontos do percurso</summary>
+            <p>
+              Início: {numero(p.inicio.x)}; {numero(p.inicio.y)}; {numero(p.inicio.z)} m
+            </p>
+            <p>
+              Fim: {numero(p.fim.x)}; {numero(p.fim.y)}; {numero(p.fim.z)} m
+            </p>
+          </details>
+        ) : null}
       </div>
       {estado.pausado || estado.caiu ? (
         <div className="mcn-teste-pausa mld-float" role="status">
@@ -317,11 +350,13 @@ export function ControlesTeste({
                     ['andando', 'Andando'],
                     ['correndo', 'Correndo'],
                     ['saltando', 'No ar'],
+                    ['nadando', 'Na água'],
                   ] as const
                 ).map(([id, nome]) => (
                   <label key={id}>
                     {nome}
                     <select
+                      aria-label={nome}
                       value={clipes[id] ?? ''}
                       onChange={(e) => {
                         const proxima = { ...clipes, [id]: e.target.value }

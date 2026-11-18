@@ -27,10 +27,10 @@
 
 **Interfaces:** fontes de geometria com matriz e volume; `MundoDoTeste` fornece resolução de cápsula, chão e bloqueio de câmera. `MovimentoDoTeste` recebe entrada normalizada/delta explícito e devolve estado transitório. `PercursoDoTeste` recebe somente passos aceitos, nunca documento.
 
-- [ ] Testes de chão, parede fina, rampa, degrau, teto, abismo/recorte, transformações não uniformes, cápsula e nenhuma colisão.
-- [ ] Consultas BVH com broad phase, árvores compartilhadas, descarte e limites de iteração/subpassos; sem varredura total por quadro.
-- [ ] Gravidade, queda, salto, inclinação máxima, subida de degrau com espaço superior e fronteiras reais. Sem túnel por delta grande nem piso invisível.
-- [ ] Medidor testa pausa, curvas, voo, reposição, queda e retomada sem somar distâncias artificiais.
+- [x] Testes de chão, parede fina, rampa, degrau, teto, abismo/recorte, transformações não uniformes, cápsula e nenhuma colisão.
+- [x] Consultas BVH com broad phase, árvores compartilhadas, descarte e limites de iteração/subpassos; sem varredura total por quadro.
+- [x] Gravidade, queda, salto, inclinação máxima, subida de degrau com espaço superior e fronteiras reais. Sem túnel por delta grande nem piso invisível.
+- [x] Medidor testa pausa, curvas, voo, reposição, queda e retomada sem somar distâncias artificiais.
 
 ## 2. Sessão do palco e avatar
 
@@ -38,28 +38,31 @@
 
 **Interfaces:** `iniciarTeste(config,sinal)`, `configurarTeste(...)`, `entradaDoTeste(...)`, `medirTeste(...)`, `encerrarTeste()`; estado/callback sem classes Three para a UI. GLB já passa pela conferência de digest existente.
 
-- [ ] Preparar fontes apenas ao iniciar; entrada cancelável, sem deixar palco bloqueado em falha. Descartar cena de teste ao sair/reabrir/destruir.
-- [ ] Três câmeras, zoom/oclusão, controles de mouse/teclado/toque, pausa por visibilidade/foco e retorno exato à edição.
-- [ ] Avatar genérico e GLB animável, alinhamento dos pés, altura medida, escala uniforme e clipes disponíveis selecionáveis; esconder corpo em primeira pessoa.
-- [ ] Animação e câmera usam tempo ativo limitado, nunca tempo de aba suspensa. Nenhuma revisão de documento por andar ou mover câmera.
+- [x] Preparar fontes apenas ao iniciar; entrada cancelável, sem deixar palco bloqueado em falha. Descartar cena de teste ao sair/reabrir/destruir.
+- [x] Três câmeras, zoom/oclusão, controles de mouse/teclado/toque, pausa por visibilidade/foco e retorno exato à edição.
+- [x] Avatar genérico e GLB animável, alinhamento dos pés, altura medida, escala uniforme e clipes disponíveis selecionáveis; esconder corpo em primeira pessoa.
+- [x] Animação e câmera usam tempo ativo limitado, nunca tempo de aba suspensa. Nenhuma revisão de documento por andar ou mover câmera.
 
 ## 3. Interface e provas jogáveis
 
 **Files:** oficina `telas/{Oficina,Testar}.tsx`, regras CSS e captura de retratos; playground `verificar-teste.mjs`.
 
-- [ ] Botão Testar destacado conforme identidade Molda; configuração pequena, controles claros e retorno acessível em celular. Nenhuma segunda oficina.
-- [ ] Indicadores de modo, altura, pausa/queda, percurso e iniciar/finalizar/zerar medição; rótulos humanos sem expor implementação.
-- [ ] Chrome claro/escuro, 1.440/1.366×768/1.024/390 px, teclado/mouse/toque emulado; erros de carga, cancelamento e vários ciclos de entrada/saída.
-- [ ] Percorrer formas, GLBs, espelhos e conjuntos; conferir documento/histórico intocados. Registrar vídeos primeira/terceira pessoa e comparação com voo.
-- [ ] Faísca convertida com avatar real de aproximadamente 1,16 m, lote da Morada e percursos existentes; câmera, colisão, retomada de edição e medição. Não deslocar geografia automaticamente.
+- [x] Botão Testar destacado conforme identidade Molda; configuração pequena, controles claros e retorno acessível em celular. Nenhuma segunda oficina.
+- [x] Indicadores de modo, altura, pausa/queda, percurso e iniciar/finalizar/zerar medição; rótulos humanos sem expor implementação.
+- [x] Chrome claro/escuro, 1.440/1.366×768/1.024/390 px, teclado/mouse/toque emulado; erros de carga, cancelamento e vários ciclos de entrada/saída.
+- [x] Percorrer formas, GLBs, espelhos e conjuntos; conferir documento/histórico intocados. Registrar vídeos primeira/terceira pessoa e comparação com voo.
+- [x] Faísca convertida com avatar real de aproximadamente 1,16 m, lote da Morada e percursos existentes; câmera, colisão, retomada de edição e medição. Não deslocar geografia automaticamente.
 
 ## 4. Fechamento exclusivo do lote 3
 
-- [ ] Repassar cada item normativo de 3.1–3.8 contra código/testes; corrigir lacunas antes de marcar lote concluído.
-- [ ] Rodar regressões pertinentes de núcleo/motor/oficina, contratos, Members/BFF/gateway, SQL, tipagem e build. Resolver falhas próprias sem ocultar outras.
-- [ ] Revisar mudanças, recursos e evidências; registrar implementado/provisório/limites sem aprovação artística automática.
-- [ ] Commit e push dos caminhos próprios em staging. Só então iniciar lote 4. Implantação/validação remota e full review global permanecem no final.
+- [x] Repassar cada item normativo de 3.1–3.8 contra código/testes; corrigir lacunas antes de marcar lote concluído.
+- [x] Rodar regressões pertinentes de núcleo/motor/oficina, contratos, Members/BFF/gateway, SQL, tipagem e build. Resolver falhas próprias sem ocultar outras.
+- [x] Revisar mudanças, recursos e evidências; registrar implementado/provisório/limites sem aprovação artística automática.
+- [x] Commit e push dos caminhos próprios em staging. Só então iniciar lote 4. Implantação/validação remota e full review global permanecem no final.
 
 ## Checkpoint funcional, parte 3.8 ainda aberta
 
 Sessão e medidor genéricos funcionam nos cinco layouts; testes de colisão/movimento/representações/clipes passaram. [Registro do checkpoint e pendências concretas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote3-testar.md). Não marcar os itens acima como integralmente concluídos: faltam os ensaios reais e a revisão de fechamento.
+
+
+Fechamento de 17/11: lote 3 implementado, testado e revisado em escopo local. [Relatório integral e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote3-testar.md). As notas anteriores registram checkpoints históricos; implantação e validação remotas continuam no encerramento global. Próximo lote: 4, terreno.

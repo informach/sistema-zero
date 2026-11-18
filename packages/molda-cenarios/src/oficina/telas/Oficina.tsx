@@ -3,6 +3,7 @@ import {
   chaveDaBase,
   type EncaixeDeComposicao,
   entidadesTransformaveis,
+  type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type ConfiguracaoDoTeste,
@@ -241,14 +242,30 @@ function OficinaAberta({
   const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
   const [teste, setTeste] = useState<EstadoDoTeste | null>(null)
+  const [escolhendoPersonagem, setEscolhendoPersonagem] = useState(false)
+  const [personagemDaBiblioteca, setPersonagemDaBiblioteca] = useState<ModeloDoCenario | null>(null)
   const [janelaTeste, setJanelaTeste] = useState(false)
   const [preparandoTeste, setPreparandoTeste] = useState(false)
   const [erroTeste, setErroTeste] = useState<string | null>(null)
+  const [conjuntosCarregando, setConjuntosCarregando] = useState(0)
   const controleDoTeste = useRef<AbortController | null>(null)
   const emEnsaio = Boolean(teste) || preparandoTeste
   const ensaioAtivo = useRef(false)
-  ensaioAtivo.current = emEnsaio || janelaTeste
-  useEffect(() => () => controleDoTeste.current?.abort(), [])
+  ensaioAtivo.current = emEnsaio || janelaTeste || escolhendoPersonagem
+  // biome-ignore lint/correctness/useExhaustiveDependencies: outra conexão/controlador encerra a sessão transitória anterior
+  useEffect(() => {
+    setTeste(null)
+    setJanelaTeste(false)
+    setPreparandoTeste(false)
+    setErroTeste(null)
+    setEscolhendoPersonagem(false)
+    setPersonagemDaBiblioteca(null)
+    setConjuntosCarregando(0)
+    return () => {
+      controleDoTeste.current?.abort()
+      controleDoTeste.current = null
+    }
+  }, [controlador])
   const arrastado = useRef<EscolhaDeModelo | null>(null)
   const troca = useRef<readonly string[] | null>(null)
   const [trocando, setTrocando] = useState(0)
@@ -330,28 +347,34 @@ function OficinaAberta({
       throw new Error('Este conjunto não pertence às bibliotecas do mundo')
     if (escolha.id === conjunto?.id)
       throw new Error('Um conjunto não pode conter uma cópia de si mesmo')
-    const versao = await host.versaoDoConjunto(escolha.id, escolha.revisao)
-    if (!montado.current || contexto.current !== origem) return
-    const ponto = centroDaVista(canvas.current, palco.current)
-    if (!ponto) throw new Error('Aproxime a câmera do chão para colocar o conjunto')
-    const preparado = comandosParaPorConjunto(
-      controlador.getState().documento,
-      escolha,
-      versao,
-      ponto,
-    )
-    if (!controlador.executar(preparado.comandos))
-      throw new Error(controlador.getState().recusa ?? 'Não consegui colocar o conjunto')
-    controlador.selecionar([preparado.id])
-    controlador.definirFerramenta('mover')
-    setAba('objetos')
-    setModoDeSelecao('ponto')
+    setConjuntosCarregando((n) => n + 1)
+    try {
+      const versao = await host.versaoDoConjunto(escolha.id, escolha.revisao)
+      if (!montado.current || contexto.current !== origem) return
+      const ponto = centroDaVista(canvas.current, palco.current)
+      if (!ponto) throw new Error('Aproxime a câmera do chão para colocar o conjunto')
+      const preparado = comandosParaPorConjunto(
+        controlador.getState().documento,
+        escolha,
+        versao,
+        ponto,
+      )
+      if (!controlador.executar(preparado.comandos))
+        throw new Error(controlador.getState().recusa ?? 'Não consegui colocar o conjunto')
+      controlador.selecionar([preparado.id])
+      controlador.definirFerramenta('mover')
+      setAba('objetos')
+      setModoDeSelecao('ponto')
+    } finally {
+      if (montado.current && contexto.current === origem)
+        setConjuntosCarregando((n) => Math.max(0, n - 1))
+    }
   }
   const pincel = usePincelDeObjetos({
     controlador,
     documento,
     palco,
-    ativo: ferramenta === 'espalhar',
+    ativo: ferramenta === 'espalhar' && !emEnsaio && !janelaTeste && !escolhendoPersonagem,
   })
   const aoAplicarPincel = pincel.aoAplicar,
     aoPreverPincel = pincel.aoPrever
@@ -404,12 +427,15 @@ function OficinaAberta({
     const tela = canvas.current
     if (!tela) return
     const novo = criarPalco(tela, {
-      carregarModelo: (modelo) =>
-        host.conteudoDoModelo({
-          biblioteca: modelo.biblioteca,
-          digest: modelo.digest,
-          espacoId: mundo.espacoId,
-        }),
+      carregarModelo: (modelo, sinal) =>
+        host.conteudoDoModelo(
+          {
+            biblioteca: modelo.biblioteca,
+            digest: modelo.digest,
+            espacoId: mundo.espacoId,
+          },
+          sinal,
+        ),
       carregarTerreno: (digest, sinal) => host.conteudoDoTerreno(aberto.resumo.id, digest, sinal),
       carregarTextura: (ref, sinal) =>
         host.conteudoDaTextura({ ...ref, espacoId: mundo.espacoId }, sinal),
@@ -546,6 +572,29 @@ function OficinaAberta({
     ponto: LocalDeColocacao | null,
     aceite?: string,
   ) => {
+    if (escolhendoPersonagem) {
+      if ('origem' in escolha) return
+      if (!mundo.bibliotecas.includes(escolha.bibliotecaId)) return
+      const existente = documento.modelos.find(
+        (m) => m.digest === escolha.digest && m.biblioteca === escolha.bibliotecaId,
+      )
+      setPersonagemDaBiblioteca(
+        existente ?? {
+          id: `ensaio/${escolha.id}`,
+          biblioteca: escolha.bibliotecaId,
+          modelo: escolha.id,
+          digest: escolha.digest,
+          nome: escolha.nome,
+          volume: {
+            min: { x: escolha.min[0], y: escolha.min[1], z: escolha.min[2] },
+            max: { x: escolha.max[0], y: escolha.max[1], z: escolha.max[2] },
+          },
+        },
+      )
+      setEscolhendoPersonagem(false)
+      setJanelaTeste(true)
+      return
+    }
     const alvo = troca.current
     const paraPincel = controlador.getState().ferramenta === 'espalhar'
     const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
@@ -765,9 +814,30 @@ function OficinaAberta({
           documento={documento}
           ocupado={preparandoTeste}
           erro={erroTeste}
+          modeloDaBiblioteca={personagemDaBiblioteca}
+          escolherNaBiblioteca={() => {
+            setJanelaTeste(false)
+            setEscolhendoPersonagem(true)
+            setGavetaAberta(true)
+          }}
           iniciar={(config) => void iniciarTeste(config)}
           fechar={encerrarTeste}
         />
+      ) : null}
+      {escolhendoPersonagem ? (
+        <div className="mcn-andamento" role="status">
+          <span>Escolha um personagem na biblioteca. Ele será usado só no teste.</span>
+          <button
+            type="button"
+            className="sz-tool-pill"
+            onClick={() => {
+              setEscolhendoPersonagem(false)
+              setJanelaTeste(true)
+            }}
+          >
+            Voltar à preparação
+          </button>
+        </div>
       ) : null}
       {retratos.erro ? (
         <div className="mcn-andamento" role="alert">
@@ -958,6 +1028,32 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--primary mcn-botao-testar"
+            disabled={
+              preparandoTeste ||
+              estado.ocupado ||
+              estado.salvamento !== 'guardado' ||
+              !relevoPronto ||
+              Boolean(medidas?.carregando) ||
+              preparandoMolde ||
+              conjuntos.ocupado ||
+              conjuntosCarregando > 0 ||
+              gestoAtivo ||
+              escolhendoPersonagem
+            }
+            onClick={() => {
+              if (teste) encerrarTeste()
+              else {
+                setErroTeste(null)
+                setJanelaTeste(true)
+              }
+            }}
+          >
+            <Play aria-hidden="true" />
+            {teste ? 'Editar' : COPY.oficina.testar}
+          </button>
           <div
             className="contents"
             inert={emEnsaio}
@@ -1059,30 +1155,6 @@ function OficinaAberta({
               <ListTree aria-hidden="true" />
             </button>
           </div>
-          <button
-            type="button"
-            className="sz-tool-pill sz-tool-pill--primary"
-            disabled={
-              preparandoTeste ||
-              estado.ocupado ||
-              estado.salvamento !== 'guardado' ||
-              !relevoPronto ||
-              Boolean(medidas?.carregando) ||
-              preparandoMolde ||
-              conjuntos.ocupado ||
-              gestoAtivo
-            }
-            onClick={() => {
-              if (teste) encerrarTeste()
-              else {
-                setErroTeste(null)
-                setJanelaTeste(true)
-              }
-            }}
-          >
-            <Play aria-hidden="true" />
-            {teste ? 'Editar' : COPY.oficina.testar}
-          </button>
         </div>
       </header>
 
@@ -1351,12 +1423,12 @@ function OficinaAberta({
               atualizacaoDosConjuntos={conjuntos.atualizacao}
               aoPorConjunto={porConjunto}
               conjuntoEmEdicao={conjunto?.id}
-              modo={pincel.ativo ? 'pincel' : 'colocar'}
+              modo={escolhendoPersonagem ? 'personagem' : pincel.ativo ? 'pincel' : 'colocar'}
               aberta={gavetaAberta}
               aoMudarAbertura={setGavetaAberta}
               host={host}
               bibliotecas={bibliotecas}
-              moldesDisponiveis={moldesDisponiveis}
+              moldesDisponiveis={moldesDisponiveis && !escolhendoPersonagem}
               preparandoMolde={preparandoMolde}
               aoPor={(modelo) => void escolherModelo(modelo, null)}
               aoArrastar={(modelo) => {

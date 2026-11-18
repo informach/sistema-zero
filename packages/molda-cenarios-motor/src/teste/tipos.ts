@@ -8,10 +8,18 @@ export interface PontoDoTeste {
 }
 export interface ConfiguracaoDoTeste {
   modo: ModoDoTeste
+  /** Ponto de partida da sessão fornecido pelo host, em metros; não edita o cenário. */
+  inicio?: PontoDoTeste
   /** Metros; modelo escolhido mantém sua escala nativa quando omitida. */
   altura?: number
   modelo?: ModeloDoCenario
-  clipes?: { parado?: string; andando?: string; correndo?: string; saltando?: string }
+  clipes?: {
+    parado?: string
+    andando?: string
+    correndo?: string
+    saltando?: string
+    nadando?: string
+  }
   /** Frente local do modelo, em radianos. Não modifica o GLB. */
   giroDoModelo?: number
 }

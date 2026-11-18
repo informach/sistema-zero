@@ -1,0 +1,179 @@
+{
+  "resultados": [
+    {
+      "caso": "rampa",
+      "estado": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 0.0010288351917179723,
+          "y": 0.662566975328332,
+          "z": 0.6259502408852693
+        },
+        "altura": 1.16,
+        "velocidade": 1.5,
+        "clipes": [],
+        "percurso": {
+          "estado": "medindo",
+          "inicio": {
+            "x": 0,
+            "y": 0.000010000000000887771,
+            "z": -3.9999999999999996
+          },
+          "fim": {
+            "x": 0.0010288351917179723,
+            "y": 0.662566975328332,
+            "z": 0.6259502408852693
+          },
+          "direta": 4.673157223463015,
+          "caminhada": 4.707432927313888,
+          "segundos": 3.3083333333333242
+        }
+      },
+      "saiuDaAgua": null,
+      "autoriaPreservada": true
+    },
+    {
+      "caso": "espelho",
+      "estado": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 0.0010288351917128098,
+          "y": 0.6568153413414038,
+          "z": -0.6029437049375566
+        },
+        "altura": 1.16,
+        "velocidade": 1.5,
+        "clipes": [],
+        "percurso": {
+          "estado": "medindo",
+          "inicio": {
+            "x": 0,
+            "y": 0.000009999999999111414,
+            "z": 4
+          },
+          "fim": {
+            "x": 0.0010288351917128098,
+            "y": 0.6568153413414038,
+            "z": -0.6029437049375566
+          },
+          "direta": 4.649568266596452,
+          "caminhada": 4.683718332865891,
+          "segundos": 3.2916666666666576
+        }
+      },
+      "saiuDaAgua": null,
+      "autoriaPreservada": true
+    },
+    {
+      "caso": "conjunto",
+      "estado": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 5.602943704937611,
+          "y": 0.6568153413414176,
+          "z": -0.0010288351917163766
+        },
+        "altura": 1.16,
+        "velocidade": 1.5,
+        "clipes": [],
+        "percurso": {
+          "estado": "medindo",
+          "inicio": {
+            "x": 1,
+            "y": 0.000009999999999999593,
+            "z": 0
+          },
+          "fim": {
+            "x": 5.602943704937611,
+            "y": 0.6568153413414176,
+            "z": -0.0010288351917163766
+          },
+          "direta": 4.649568266596508,
+          "caminhada": 4.6837183328659915,
+          "segundos": 3.2916666666666576
+        }
+      },
+      "saiuDaAgua": null,
+      "autoriaPreservada": true
+    },
+    {
+      "caso": "agua",
+      "estado": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": false,
+        "nadando": true,
+        "posicao": {
+          "x": 1.1091666666666677,
+          "y": -0.7604601795353609,
+          "z": 0
+        },
+        "altura": 1.16,
+        "velocidade": 1.2,
+        "clipes": [],
+        "percurso": {
+          "estado": "medindo",
+          "inicio": {
+            "x": -1,
+            "y": -1.99999,
+            "z": 0
+          },
+          "fim": {
+            "x": -1,
+            "y": -1.99999,
+            "z": 0
+          },
+          "direta": 0,
+          "caminhada": 0,
+          "segundos": 0
+        }
+      },
+      "saiuDaAgua": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 5.080833333333378,
+          "y": -1.99999,
+          "z": -2.0684121497219356e-15
+        },
+        "altura": 1.16,
+        "velocidade": 1.5,
+        "clipes": [],
+        "percurso": {
+          "estado": "medindo",
+          "inicio": {
+            "x": -1,
+            "y": -1.99999,
+            "z": 0
+          },
+          "fim": {
+            "x": 5.080833333333378,
+            "y": -1.99999,
+            "z": -2.0684121497219356e-15
+          },
+          "direta": 6.080833333333378,
+          "caminhada": 2.487500000000035,
+          "segundos": 1.6583333333333299
+        }
+      },
+      "autoriaPreservada": true
+    }
+  ],
+  "erros": []
+}

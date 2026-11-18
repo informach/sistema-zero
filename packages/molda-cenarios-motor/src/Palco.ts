@@ -69,6 +69,7 @@ import { RepresentacoesDoModelo } from './representacoes'
 import { escolherNaArea } from './selecao-area'
 import { type SuperficieDoObjeto, SuperficiesDosObjetos } from './superficies'
 import { TerrenoDoPalco } from './Terreno'
+import { AguasDoTeste } from './teste/agua'
 import { MundoDoTeste } from './teste/colisoes'
 import { prepararColisoesDoTeste } from './teste/fontes'
 import { PersonagemDoTeste } from './teste/personagem'
@@ -159,6 +160,7 @@ class PalcoThree implements Palco {
   private readonly nevoa = new Fog(0xdff1fb, 200, 1800)
   private nevoaDaBase = { perto: 200, longe: 1800 }
   private readonly limitesDaCena = new Box3()
+  private readonly focoDoTeste = new Vector3()
   private readonly limitesDoChao = new Box3()
   private readonly contornos: Contornos
   private readonly fantasma = criarPartesDoFantasma()
@@ -203,6 +205,7 @@ class PalcoThree implements Palco {
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
   private planoFisico: Mesh | null = null
+  private fundoDecorativo: Mesh | null = null
   private teste: SessaoDoTeste | null = null
   private preparandoTeste: AbortController | null = null
   private vistaDaEdicao: {
@@ -212,6 +215,7 @@ class PalcoThree implements Palco {
     near: number
     fov: number
     grade: boolean
+    fundo: boolean
   } | null = null
   private cargaDoTerreno: AbortController | null = null
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
@@ -564,6 +568,7 @@ class PalcoThree implements Palco {
     const controle = new AbortController(),
       cancelar = () => controle.abort()
     this.preparandoTeste = controle
+    this.atualizarAlca()
     sinal?.addEventListener('abort', cancelar, { once: true })
     let modelo: ModeloCarregado | null = null,
       mundo: MundoDoTeste | null = null,
@@ -574,7 +579,7 @@ class PalcoThree implements Palco {
       controle.signal.throwIfAborted()
       if (config.modelo) {
         const bytes = await conferirConteudoDoModelo(
-          await this.opcoes.carregarModelo(config.modelo),
+          await this.opcoes.carregarModelo(config.modelo, controle.signal),
           config.modelo.digest,
         )
         controle.signal.throwIfAborted()
@@ -598,16 +603,26 @@ class PalcoThree implements Palco {
       } finally {
         pacote.descartar()
       }
-      const foco = this.orbita.target.clone(),
+      if (
+        config.inicio &&
+        ![config.inicio.x, config.inicio.y, config.inicio.z].every(
+          (n) => Number.isFinite(n) && Math.abs(n) <= 100_000,
+        )
+      )
+        throw new Error('O ponto inicial do teste é inválido')
+      const foco = config.inicio
+          ? new Vector3(config.inicio.x, config.inicio.y, config.inicio.z)
+          : this.orbita.target.clone(),
         inicio = foco.clone()
       this.superficies.limites(this.limitesDaCena)
-      const topo =
-        Math.max(
-          foco.y,
-          this.limitesDaCena.isEmpty() ? 0 : this.limitesDaCena.max.y,
-          this.documento.base.tipo === 'terreno' ? this.documento.base.max : 0,
-        ) +
-        personagem.altura * 2
+      const topo = config.inicio
+        ? foco.y + personagem.altura
+        : Math.max(
+            foco.y,
+            this.limitesDaCena.isEmpty() ? 0 : this.limitesDaCena.max.y,
+            this.documento.base.tipo === 'terreno' ? this.documento.base.max : 0,
+          ) +
+          personagem.altura * 2
       const de = new Vector3(foco.x, topo, foco.z),
         ate = new Vector3(foco.x, Math.min(foco.y - 1000, -1000), foco.z)
       const piso = mundo.rastrear(de, ate)
@@ -623,12 +638,15 @@ class PalcoThree implements Palco {
         near: this.camera.near,
         fov: this.camera.fov,
         grade: this.grade.visible,
+        fundo: this.fundoDecorativo?.visible ?? false,
       }
       this.orbita.enabled = false
       this.area.setTool('point')
       this.definirEspalhamento(null)
       this.grade.visible = false
+      if (this.fundoDecorativo) this.fundoDecorativo.visible = false
       this.contornos.definirVisivel(false)
+      const escondidosDoTeste = idsEscondidos(this.visual!)
       this.teste = new SessaoDoTeste(
         this.canvas,
         this.camera,
@@ -639,6 +657,7 @@ class PalcoThree implements Palco {
         config,
         (estado) => this.opcoes.aoTeste?.(estado),
         this.pedirQuadro,
+        new AguasDoTeste(this.visual!.aguas.filter((a) => !escondidosDoTeste.has(a.id))).nivel,
       )
       this.preparandoTeste = null
       this.atualizarAlca()
@@ -683,6 +702,7 @@ class PalcoThree implements Palco {
       this.camera.fov = vista.fov
       this.camera.updateProjectionMatrix()
       this.grade.visible = vista.grade
+      if (this.fundoDecorativo) this.fundoDecorativo.visible = vista.fundo
       this.contornos.definirVisivel(true)
       this.area.setTool(
         this.modoDeSelecao === 'retangulo'
@@ -695,6 +715,7 @@ class PalcoThree implements Palco {
       this.pedirQuadro()
     }
     if (tinha) this.opcoes.aoTeste?.(null)
+    this.atualizarAlca()
   }
 
   private apoiarNaSuperficie(id: string, ponto: Vector3) {
@@ -859,13 +880,13 @@ class PalcoThree implements Palco {
     const r = recorteDaCamera(
       this.limitesDaCena,
       this.camera.position,
-      this.orbita.target,
+      this.teste ? this.teste.foco(this.focoDoTeste) : this.orbita.target,
       this.camera.fov,
       this.camera.aspect,
       Boolean(this.opcoes.fotografia),
     )
     this.orbita.maxDistance = r.orbita
-    const perto = this.teste ? Math.max(0.005, this.teste.estado().altura * 0.015) : r.perto
+    const perto = this.teste ? Math.max(0.005, this.teste.altura * 0.015) : r.perto
     if (this.camera.near !== perto || this.camera.far !== r.longe) {
       this.camera.near = perto
       this.camera.far = r.longe
@@ -895,7 +916,7 @@ class PalcoThree implements Palco {
   }
 
   private posicionarSol() {
-    const alvo = this.orbita.target
+    const alvo = this.teste ? this.teste.foco(this.focoDoTeste) : this.orbita.target
     const alcance = Math.min(260, Math.max(24, this.camera.position.distanceTo(alvo) * 1.4))
     const camera = this.sol.shadow.camera
     if (Math.abs(camera.right - alcance) > alcance * 0.08) {
@@ -938,6 +959,7 @@ class PalcoThree implements Palco {
 
   private limparChao() {
     this.planoFisico = null
+    this.fundoDecorativo = null
     this.cargaDoTerreno?.abort()
     this.cargaDoTerreno = null
     this.terreno?.descartar()
@@ -1004,6 +1026,7 @@ class PalcoThree implements Palco {
     fora.rotation.x = -Math.PI / 2
     fora.position.y = -0.03
     fora.receiveShadow = true
+    this.fundoDecorativo = fora
 
     const lote = new Mesh(
       new PlaneGeometry(largura, comprimento),

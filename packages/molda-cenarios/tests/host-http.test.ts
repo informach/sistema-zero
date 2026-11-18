@@ -561,6 +561,44 @@ describe('a oficina falando com o app', () => {
     ).rejects.toThrow('esta versão')
   })
 
+  test('cancelar a leitura do avatar interrompe o pedido de bytes e conserva o erro de cancelamento', async () => {
+    let avisar!: () => void
+    const iniciou = new Promise<void>((r) => {
+      avisar = r
+    })
+    let leituras = 0
+    const host = criarHostHttp({
+      buscar: async () => Response.json({ url: 'https://r2/avatar' }),
+      enviar: async (_url, opcoes) =>
+        new Promise<Response>((_resolve, reject) => {
+          leituras++
+          const sinal = opcoes!.signal!
+          sinal.addEventListener('abort', () => reject(sinal.reason), { once: true })
+          avisar()
+        }),
+    })
+    const controle = new AbortController()
+    const pedido = host
+      .conteudoDoModelo(
+        { espacoId: ESPACO, biblioteca: BIBLIOTECA, digest: digest('a') },
+        controle.signal,
+      )
+      .then(
+        () => null,
+        (e) => e,
+      )
+    await iniciou
+    controle.abort()
+    expect((await pedido).name).toBe('AbortError')
+    expect(leituras).toBe(1)
+    await expect(
+      host.conteudoDoModelo(
+        { espacoId: ESPACO, biblioteca: BIBLIOTECA, digest: digest('a') },
+        controle.signal,
+      ),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+    expect(leituras).toBe(1)
+  })
   test('o arquivo do modelo: o app diz onde está e a busca vai direto ao armazenamento', async () => {
     const { host, pedidos, baixados } = montar((p) => {
       if (p.caminho === 'espacos')

@@ -45,7 +45,7 @@ export function Gaveta({
   preparandoMolde?: boolean
   aberta: boolean
   aoMudarAbertura(aberta: boolean): void
-  modo?: 'colocar' | 'pincel'
+  modo?: 'colocar' | 'pincel' | 'personagem'
   aoPorConjunto?(conjunto: ConjuntoDeBiblioteca): Promise<void>
   conjuntoEmEdicao?: string
   atualizacaoDosConjuntos?: number
@@ -236,7 +236,9 @@ export function Gaveta({
                     aria-label={
                       modo === 'pincel'
                         ? `Usar ${modelo.nome} no pincel`
-                        : COPY.gaveta.por(modelo.nome)
+                        : modo === 'personagem'
+                          ? `Usar ${modelo.nome} como personagem`
+                          : COPY.gaveta.por(modelo.nome)
                     }
                     title={modelo.nome}
                     onClick={() => aoPor(modelo)}

@@ -1,4 +1,5 @@
 import { type PerspectiveCamera, type Scene, Vector3 } from 'three'
+import type { FonteDeAguaDoTeste } from './agua'
 import type { MundoDoTeste } from './colisoes'
 import { ControlesDoTeste } from './controles'
 import { MovimentoDoTeste } from './movimento'
@@ -23,11 +24,15 @@ export class SessaoDoTeste {
     config: ConfiguracaoDoTeste,
     private readonly aoEstado: (estado: EstadoDoTeste) => void,
     private readonly pedirQuadro: () => void,
+    agua?: FonteDeAguaDoTeste,
   ) {
-    this.movimento = new MovimentoDoTeste(mundo, inicio, personagem.altura)
+    this.movimento = new MovimentoDoTeste(mundo, inicio, personagem.altura, agua)
     this.movimento.definirModo(config.modo)
     camera.getWorldDirection(this.direcao)
     this.yaw = Math.atan2(-this.direcao.x, -this.direcao.z)
+    personagem.grupo.position.copy(this.movimento.posicao)
+    personagem.grupo.rotation.y = this.yaw + Math.PI
+    personagem.atualizar(0, 0, this.movimento.noChao, false)
     this.controles = new ControlesDoTeste(
       canvas,
       (x, y) => {
@@ -56,6 +61,14 @@ export class SessaoDoTeste {
       clipes: this.personagem.clipes,
       percurso: m.percurso.ler(),
     }
+  }
+  get altura() {
+    return this.movimento.altura
+  }
+  foco(destino: Vector3) {
+    destino.copy(this.movimento.posicao)
+    destino.y += this.movimento.altura * 0.86
+    return destino
   }
   comandar(comando: ComandoDoTeste) {
     const m = this.movimento
@@ -96,8 +109,8 @@ export class SessaoDoTeste {
     if (velocidade > 0.05)
       this.personagem.grupo.rotation.y = Math.atan2(m.velocidade.x, m.velocidade.z)
     this.personagem.grupo.position.copy(m.posicao)
-    if (!m.pausado && !m.caiu && delta < 0.25)
-      this.personagem.atualizar(Math.min(0.1, delta), velocidade, m.noChao, entrada.correr)
+    if (!m.pausado && !m.caiu && delta <= 0.25)
+      this.personagem.atualizar(delta, velocidade, m.noChao, entrada.correr, m.nadando)
     this.atualizarCamera()
     if (agora - this.aviso > 100) {
       this.aviso = agora

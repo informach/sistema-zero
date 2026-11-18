@@ -448,8 +448,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       for (const id of ids) if (modelos.get(id)?.bibliotecaId === bibliotecaId) modelos.delete(id)
       contar(bibliotecaId)
     },
-    async conteudoDoModelo(ref) {
+    async conteudoDoModelo(ref, sinal) {
+      sinal?.throwIfAborted()
       await esperar()
+      sinal?.throwIfAborted()
       const conteudo = conteudos.get(ref.digest)
       if (!conteudo) throw new Error('O arquivo do modelo não foi encontrado')
       return conteudo.slice().buffer

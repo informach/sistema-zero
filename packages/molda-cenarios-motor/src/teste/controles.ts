@@ -56,7 +56,11 @@ export class ControlesDoTeste {
     }
   }
   definirToque(entrada: Partial<EntradaDoTeste>) {
-    this.toque = { ...this.toque, ...entrada }
+    const limitar = (n: number) => (Number.isFinite(n) ? Math.max(-1, Math.min(1, n)) : 0)
+    for (const eixo of ['frente', 'lado', 'vertical'] as const)
+      if (eixo in entrada) this.toque[eixo] = limitar(entrada[eixo] ?? 0)
+    if ('correr' in entrada) this.toque.correr = entrada.correr === true
+    if ('saltar' in entrada) this.toque.saltar = entrada.saltar === true
   }
   limpar() {
     this.teclas.clear()
@@ -64,6 +68,7 @@ export class ControlesDoTeste {
     this.ponteiro = null
   }
   private readonly apertar = (e: KeyboardEvent) => {
+    if (e.defaultPrevented) return
     const alvo = e.target as HTMLElement | null
     if (alvo?.closest('input,textarea,select,[contenteditable="true"]')) return
     if (e.code === 'Escape') {
@@ -71,6 +76,11 @@ export class ControlesDoTeste {
       this.perderFoco()
       return
     }
+    if (
+      (e.code === 'Space' || e.code === 'Enter') &&
+      alvo?.closest('button,summary,a,[role="button"]')
+    )
+      return
     if (!TECLAS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey) return
     e.preventDefault()
     this.teclas.add(e.code)

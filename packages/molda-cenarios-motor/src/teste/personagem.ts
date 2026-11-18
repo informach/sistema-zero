@@ -25,6 +25,7 @@ export class PersonagemDoTeste {
   private mixer: AnimationMixer | null = null
   private acao: AnimationAction | null = null
   private readonly acoes = new Map<string, AnimationAction>()
+  private readonly velocidades = new Map<string, number>()
   private readonly posicoes = new Map<Object3D, Vector3>()
   private escolhas: ConfiguracaoDoTeste['clipes']
   private readonly pernas: Group[] = []
@@ -60,6 +61,7 @@ export class PersonagemDoTeste {
         }
       })
       this.mixer = new AnimationMixer(modelo.raiz)
+      this.grupo.updateMatrixWorld(true)
       this.prepararClipes()
       this.clipes = [...this.acoes.keys()]
     } else {
@@ -107,25 +109,47 @@ export class PersonagemDoTeste {
       this.modelo.animacoes ?? [],
       this.escolhas?.saltando,
       this.posicoes,
+      (nome, velocidade) => this.velocidades.set(nome, velocidade),
     ))
       if (clipe.duration > 0 && !this.acoes.has(clipe.name))
         this.acoes.set(clipe.name, this.mixer.clipAction(clipe))
   }
-  atualizar(delta: number, velocidade: number, noChao: boolean, correndo: boolean) {
+  atualizar(
+    delta: number,
+    velocidade: number,
+    noChao: boolean,
+    correndo: boolean,
+    nadando = false,
+  ) {
     this.tempo += delta
-    const nome = !noChao
-      ? this.escolhas?.saltando
-      : velocidade > 0.1
-        ? correndo
-          ? this.escolhas?.correndo
-          : this.escolhas?.andando
-        : this.escolhas?.parado
+    const nome = nadando
+      ? this.escolhas?.nadando
+      : !noChao
+        ? this.escolhas?.saltando
+        : velocidade > 0.1
+          ? correndo
+            ? this.escolhas?.correndo
+            : this.escolhas?.andando
+          : this.escolhas?.parado
     const proxima = nome ? (this.acoes.get(nome) ?? null) : null
     if (this.acao !== proxima) {
-      this.acao?.fadeOut(0.15)
-      proxima?.reset().fadeIn(0.15).play()
+      const anterior = this.acao
+      anterior?.fadeOut(0.15)
+      if (proxima) {
+        proxima.reset()
+        if (anterior) proxima.fadeIn(0.15)
+        else proxima.setEffectiveWeight(1)
+        proxima.play()
+      }
       this.acao = proxima
     }
+    const velocidadeDoClipe = nome ? this.velocidades.get(nome) : 0
+    if (proxima)
+      proxima.setEffectiveTimeScale(
+        noChao && velocidade > 0.1 && velocidadeDoClipe && velocidadeDoClipe > 0.05
+          ? Math.max(0.2, Math.min(2.5, velocidade / velocidadeDoClipe))
+          : 1,
+      )
     this.mixer?.update(delta)
     if (!this.modelo)
       for (const [i, p] of this.pernas.entries())

@@ -1,0 +1,16 @@
+{
+  "alturaNativa": 1.1700404965322315,
+  "clipes": [
+    "parado_relaxado",
+    "andar_frente",
+    "correr_frente",
+    "pulo_no_ar"
+  ],
+  "primeiraPessoa": true,
+  "terceiraPessoa": true,
+  "caminharCorrerCurvarPular": true,
+  "autoriaPreservada": true,
+  "personagemDaBibliotecaSemObjetoAutoral": true,
+  "medida": "Percurso\nConcluído\nDireta\n8,86 m\nCaminhada\n9,48 m\nTempo ativo\n5,5 s\nMedir caminhada\nZerar\nConta só a caminhada no chão. Pausas, voo, nado e retornos ficam de fora.\nPontos do percurso",
+  "erros": []
+}

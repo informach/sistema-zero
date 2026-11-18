@@ -9,6 +9,21 @@ const piso = () => ({
 })
 const parado = { x: 0, z: 0, vertical: 0, correr: false, saltar: false }
 const andar = { ...parado, x: 1 }
+test('quadros lentos preservam o tempo ativo e a distância do passo fixo', () => {
+  const chao = piso(),
+    mundo = new MundoDoTeste([chao])
+  const resultados = [1 / 120, 0.2].map((delta) => {
+    const movimento = new MovimentoDoTeste(mundo, new Vector3(0, 0.001, 0), 1.16)
+    movimento.percurso.iniciar(movimento.posicao)
+    for (let i = 0; i < Math.round(2 / delta); i++) movimento.avancar(delta, andar)
+    return { posicao: movimento.posicao.clone(), medida: movimento.percurso.ler() }
+  })
+  expect(resultados[1]!.posicao.x).toBeCloseTo(resultados[0]!.posicao.x, 5)
+  expect(resultados[1]!.medida.segundos).toBeCloseTo(2, 5)
+  expect(resultados[1]!.medida.caminhada).toBeCloseTo(resultados[0]!.medida.caminhada, 5)
+  mundo.descartar()
+  chao.geometria.dispose()
+})
 function executar(m: MovimentoDoTeste, entrada: typeof andar, segundos: number) {
   for (let i = 0; i < Math.round(segundos * 120); i++) m.avancar(1 / 120, entrada)
 }
@@ -137,4 +152,43 @@ test('cápsula pequena em queda rápida não atravessa piso fino', () => {
   expect(m.noChao).toBe(true)
   mundo.descartar()
   chao.geometria.dispose()
+})
+test('início junto ao piso já está apoiado; início no vazio permanece em queda', () => {
+  const chao = piso(),
+    mundo = new MundoDoTeste([chao])
+  const apoiado = new MovimentoDoTeste(mundo, new Vector3(0, 0.001, 0), 1.16),
+    vazio = new MovimentoDoTeste(mundo, new Vector3(30, 0.001, 0), 1.16)
+  expect(apoiado.noChao).toBe(true)
+  expect(apoiado.posicao.y).toBeCloseTo(0, 3)
+  expect(vazio.noChao).toBe(false)
+  mundo.descartar()
+  chao.geometria.dispose()
+})
+test('descida maior que cem metros só termina se passar do fundo real do cenário', () => {
+  const chao = piso(),
+    mundo = new MundoDoTeste([chao]),
+    m = new MovimentoDoTeste(mundo, new Vector3(0, 150, 0), 1.16)
+  executar(m, parado, 8)
+  expect(m.caiu).toBe(false)
+  expect(m.posicao.y).toBeCloseTo(0, 3)
+  mundo.descartar()
+  chao.geometria.dispose()
+})
+test('subir degraus continua sendo caminhada no medidor, sem registrar como salto', () => {
+  const chao = piso(),
+    degraus = Array.from({ length: 5 }, (_, i) => ({
+      geometria: new BoxGeometry(0.45, (i + 1) * 0.18, 3),
+      matriz: new Matrix4().makeTranslation(1 + i * 0.45 + 0.225, (i + 1) * 0.09, 0),
+    }))
+  const mundo = new MundoDoTeste([chao, ...degraus]),
+    m = new MovimentoDoTeste(mundo, new Vector3(0, 0.001, 0), 1.16)
+  m.percurso.iniciar(m.posicao)
+  executar(m, andar, 2)
+  const medida = m.percurso.ler()
+  expect(m.posicao.y).toBeGreaterThan(0.7)
+  expect(medida.caminhada).toBeGreaterThanOrEqual(medida.direta - 0.02)
+  expect(medida.segundos).toBeGreaterThan(1.98)
+  mundo.descartar()
+  chao.geometria.dispose()
+  for (const d of degraus) d.geometria.dispose()
 })

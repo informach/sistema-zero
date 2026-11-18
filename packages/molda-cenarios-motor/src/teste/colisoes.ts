@@ -15,6 +15,7 @@ interface Entrada {
 
 /** Árvores por geometria, caixas por instância; os triângulos finais são medidos no mundo. */
 export class MundoDoTeste {
+  readonly limiteInferior: number | null
   private readonly geometrias = new Map<
     BufferGeometry,
     { copia: BufferGeometry; arvore: MeshBVH }
@@ -70,6 +71,8 @@ export class MundoDoTeste {
         })
       }
       this.indice.definir(this.entradas.map((e) => e.caixa))
+      const volume = this.indice.limites(new Box3())
+      this.limiteInferior = volume.isEmpty() ? null : volume.min.y
     } catch (e) {
       this.descartar()
       throw e

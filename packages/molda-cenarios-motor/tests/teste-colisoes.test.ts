@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { BoxGeometry, Matrix4, PlaneGeometry, Vector3 } from 'three'
+import { TerrenoDoPalco } from '../src/Terreno'
 import { MundoDoTeste } from '../src/teste/colisoes'
 
 test('cápsula encontra piso real e parede fina sem modificar o índice da malha', () => {
@@ -36,6 +37,36 @@ test('abismo permanece sem piso, broad phase compartilha árvores e câmera não
   expect(mundo.resolver(new Vector3(0, -0.1, 0), 1.16, 0.19).candidatos).toBeLessThan(10)
   mundo.descartar()
   g.dispose()
+})
+test('o recorte real do terreno permanece um furo para cápsula e câmera', () => {
+  const terreno = new TerrenoDoPalco(
+    {
+      tipo: 'terreno',
+      origem: { x: -32, z: -32 },
+      passo: 1,
+      colunas: 64,
+      linhas: 64,
+      min: 0,
+      max: 255,
+      fundo: 0,
+      pecas: [],
+      recortes: [
+        [
+          { x: -2, z: -2 },
+          { x: 2, z: -2 },
+          { x: 2, z: 2 },
+          { x: -2, z: 2 },
+        ],
+      ],
+    },
+    new Map(),
+  )
+  const mundo = new MundoDoTeste(terreno.fontesDoTeste())
+  expect(mundo.resolver(new Vector3(0, -0.1, 0), 1.16, 0.19).normais).toHaveLength(0)
+  expect(mundo.rastrear(new Vector3(0, 2, 0), new Vector3(0, -2, 0))).toBeNull()
+  expect(mundo.resolver(new Vector3(4, -0.1, 0), 1.16, 0.19).posicao.y).toBeCloseTo(0, 3)
+  mundo.descartar()
+  terreno.descartar()
 })
 test('cápsula resolve no mundo mesmo com escala não uniforme, rotação e fontes invertidas', () => {
   const g = new BoxGeometry(2, 1, 2)
