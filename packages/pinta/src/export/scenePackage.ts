@@ -126,6 +126,8 @@ export async function buildScenePackage(
     readme.push(
       'Execute python -m http.server 8000 nesta pasta e abra http://localhost:8000.',
       'O Phaser 3.90.0 está incluído no pacote (licença MIT). Não precisa de internet.',
+      'No jogo, pintaGame.maps.mapResourceImage("mapa", referencia) encontra uma arte citada por propriedade neste cenário. Retorna o caminho da imagem ou null.',
+      'mapObjectById("mapa", referencia) encontra o objeto ligado; mapLayerProperty("mapa", id, chave) e mapTileProperty("mapa", tilesetId, indice, chave) leem propriedades sem perder zero, falso ou texto vazio.',
     )
   } else if (target === 'pygame') {
     const { pygameSceneModule, pygameMain } = await import('./pygameProject')
@@ -136,6 +138,8 @@ export async function buildScenePackage(
       'Instale: python -m pip install -r requirements.txt',
       'Rode: python main.py',
       'Use as setas; Esc fecha. Para capturar: python main.py --frames 60 --screenshot mapa.png',
+      'Mundo.recurso_imagem(referencia) retorna o caminho de uma arte deste mapa; Mundo.imagem(caminho) carrega a Surface. Não depende de outra galeria.',
+      'Mundo.objeto_por_id(referencia), propriedade_camada(id, chave) e propriedade_peca(tilesetId, indice, chave) resolvem os dados das propriedades; ausentes retornam None.',
     )
   } else if (target === 'godot') {
     const g = await import('./godot/project')
@@ -145,6 +149,7 @@ export async function buildScenePackage(
     readme.push(
       'Abra project.godot no Godot 4.7.2 (versão homologada) e execute a cena.',
       'O projeto cria TileMapLayer, TileSetAtlasSource, objetos e jogador a partir de maps.json.',
+      'O script expõe recurso_imagem(referencia), objeto_por_id(referencia), propriedade_camada(id, chave) e propriedade_peca(tilesetId, indice, chave). Recursos são caminhos do pacote; ausentes retornam null.',
     )
   }
   files['LEIA-ME.txt'] = readme.join('\n')

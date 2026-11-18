@@ -19,16 +19,16 @@ export const mapTwoDUsed = (code: string): boolean => codeUsesPintaScenePlayer(c
 export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): string =>
   !context || mapTwoDUsed(context.code) ? '' : MAP_TWO_D_WITHOUT_SCENE_VARIANT
 /**
- * Tetos ABSOLUTOS do motor com cenário, em caracteres. Revisão de 18/11/2026: 433.815 no Jogo 2D
- * e 422.113 no Avançado (o cenário soma cerca de 13,4 mil a cada motor).
+ * Tetos ABSOLUTOS do motor com cenário, em caracteres. Revisão de 18/11/2026: 435.572 no Jogo 2D
+ * e 423.870 no Avançado (o cenário soma cerca de 15,1 mil a cada motor).
  * A folga é menor que 1%: o bastante para um ajuste pequeno, pouco demais para outro
  * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos de sempre
  * (422.500 no Jogo 2D e 415.000 no Avançado).
  */
 export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 437_900, gk: 426_000 } as const
-// 18/11, revisão afim e colisão: 13.381 caracteres sobre o legado, incluindo geometria
+// 18/11, recursos e consultas: 15.138 caracteres sobre o legado, incluindo geometria
 // canônica gerada. A carga é lazy; os tetos absolutos e do bundle inicial não sobem.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 14_000
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 15_500
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `

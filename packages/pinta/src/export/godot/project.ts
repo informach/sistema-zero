@@ -55,6 +55,38 @@ func _ready() -> void:
 func _texture(path: String) -> Texture2D:
     return load("res://" + path)
 
+func propriedade(object: Variant, key: String) -> Variant:
+    if not object is Dictionary:
+        return null
+    var value: Variant = object.get("properties",{}).get(key)
+    return value.get("value") if value is Dictionary else value
+
+func objeto_por_id(reference: String) -> Variant:
+    for entry in map_objects:
+        if entry.data.id == reference:
+            return entry.data
+    return null
+
+func recurso_imagem(reference: String) -> Variant:
+    for resource in scene_data.get("art",[]) + scene_data.tilesets:
+        if resource.id == reference:
+            return resource.image
+    return null
+
+func propriedade_camada(reference: String, key: String) -> Variant:
+    for layer in scene_data.layers:
+        if layer.id == reference:
+            return propriedade(layer,key)
+    return null
+
+func propriedade_peca(reference: String, tile: float, key: String) -> Variant:
+    if not is_finite(tile) or floorf(tile) != tile or tile < 0:
+        return null
+    for tileset in scene_data.tilesets:
+        if tileset.id == reference and tile < tileset.count:
+            return propriedade({"properties":tileset.get("tileProperties",{}).get(str(int(tile)),{})},key)
+    return null
+
 func _art_tile(animation: Dictionary, time_ms: float) -> int:
     var total: float = 0
     for frame in animation.frames:

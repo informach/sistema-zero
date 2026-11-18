@@ -244,8 +244,24 @@ class Mundo:
 
     @staticmethod
     def propriedade(objeto, chave):
-        valor = objeto.get('properties', {}).get(chave)
+        valor = (objeto or {}).get('properties', {}).get(chave)
         return valor.get('value') if isinstance(valor, dict) else valor
+
+    def objeto_por_id(self, referencia):
+        return next((o for o in self.objetos if o['id'] == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        recurso = next((a for a in self.dados.get('art', []) + self.dados['tilesets'] if a['id'] == referencia), None)
+        return recurso['image'] if recurso else None
+
+    def propriedade_camada(self, referencia, chave):
+        return self.propriedade(next((l for l in self.dados['layers'] if l['id'] == referencia), None), chave)
+
+    def propriedade_peca(self, referencia, peca, chave):
+        ts = next((t for t in self.dados['tilesets'] if t['id'] == referencia), None)
+        if not ts or isinstance(peca, bool) or not isinstance(peca, (int, float)) or not math.isfinite(peca) or peca != int(peca) or not 0 <= peca < ts['count']:
+            return None
+        return self.propriedade({'properties': ts.get('tileProperties', {}).get(str(int(peca)), {})}, chave)
 
     @staticmethod
     def contem(objeto, x, y):

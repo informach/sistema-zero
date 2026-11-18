@@ -12,6 +12,14 @@ func _run() -> void:
     root.add_child(world)
     await process_frame
     world.set_physics_process(false)
+    var layer_id: String = world.scene_data.layers[0].id
+    var reference: String = world.propriedade_camada(layer_id,"resource")
+    var resource_image: Image = world._texture(world.recurso_imagem(reference)).get_image()
+    var ts: String = world.scene_data.tilesets[0].id
+    if world.propriedade_camada(layer_id,"score") != 0 or resource_image.get_pixel(8,8) != Color.YELLOW or world.propriedade_peca(ts,0,"allowed") != false or world.propriedade_peca(ts,0,"empty") != "" or world.objeto_por_id(world.propriedade_peca(ts,0,"related")).name != "Árvore QA" or world.recurso_imagem("missing") != null or world.objeto_por_id("missing") != null or world.propriedade_peca(ts,0.5,"allowed") != null:
+        push_error("Resource references failed")
+        quit(1)
+        return
     for child in world.player.get_children():
         if child is Camera2D:
             child.enabled = false
@@ -38,5 +46,5 @@ func _run() -> void:
         push_error("Resource frame mismatch: " + JSON.stringify(samples))
         quit(1)
         return
-    print(JSON.stringify({"godot_frames":samples,"gpu":gpu,"version":world.scene_data.version}))
+    print(JSON.stringify({"godot_frames":samples,"gpu":gpu,"references":true,"version":world.scene_data.version}))
     quit(0)

@@ -127,6 +127,99 @@ function tocador(
   return { api, grades, colisoes: () => colisoes }
 }
 
+it('scene references resolve inside their map without changing legacy property values', () => {
+  const first = PintaSceneSchema.parse(scene)
+  first.layers[0] = {
+    ...first.layers[0]!,
+    properties: { lives: { type: 'int', value: 0 } },
+  }
+  const ts = first.tilesets[0]!
+  ts.tileProperties = {
+    '0': { allowed: false, empty: '', related: { type: 'object', value: 'a' } },
+  }
+  const withArt = { ...first, art: [{ id: 'private', image: 'first.png', width: 16, height: 16 }] }
+  const second = { ...withArt, id: 'second', art: [{ ...withArt.art[0], image: 'second.png' }] }
+  const { api } = tocador(null, null, {
+    meta: (name: string) => ({ scene: name === 'second' ? second : withArt }),
+  })
+  api.createMapScene('one', 'first')
+  api.createMapScene('two', 'second')
+  expect(api.mapResourceImage('one', 'private')).toBe('first.png')
+  expect(api.mapResourceImage('two', 'private')).toBe('second.png')
+  expect(api.mapResourceImage('one', 'ts')).toBe('pixels')
+  expect(api.mapResourceImage('one', '__proto__')).toBeNull()
+  const related = api.mapTileProperty('one', 'ts', 0, 'related')
+  expect(related).toBe('a')
+  expect(api.mapObjectById('one', String(related))?.name).toBe('Área')
+  expect(api.mapObjectById('one', 'missing')).toBeNull()
+  expect(api.mapLayerProperty('one', 'g', 'lives')).toBe(0)
+  expect(api.mapLayerProperty('one', 'missing', 'lives')).toBeNull()
+  expect(api.mapTileProperty('one', 'ts', 0, 'allowed')).toBe(false)
+  expect(api.mapTileProperty('one', 'ts', 0, 'empty')).toBe('')
+  expect(api.mapTileProperty('one', 'ts', 0, 'toString')).toBeNull()
+  for (const invalid of [-1, 1, 0.5, Number.NaN])
+    expect(api.mapTileProperty('one', 'ts', invalid, 'allowed')).toBeNull()
+  expect(withArt.art[0]!.image).toBe('first.png')
+})
+
+it('object references inside two instances resolve to the corresponding set child', () => {
+  const sample = PintaSceneSchema.parse(scene)
+  const local = {
+    id: 'child',
+    name: 'Child',
+    type: '',
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    properties: { sibling: { type: 'object' as const, value: 'sibling' } },
+  }
+  sample.sets = [
+    {
+      id: 'set',
+      cols: 1,
+      rows: 1,
+      layers: [
+        {
+          id: 'children',
+          name: 'Children',
+          kind: 'objects',
+          visible: true,
+          objects: [local, { ...local, id: 'sibling', name: 'Sibling', properties: {} }],
+        },
+      ],
+    },
+  ]
+  sample.layers = [
+    {
+      id: 'instances',
+      name: 'Instances',
+      kind: 'objects',
+      visible: true,
+      objects: ['left', 'right'].map((id, x) => ({
+        id,
+        name: id,
+        type: '',
+        shape: 'set',
+        setId: 'set',
+        x: x * 16,
+        y: 0,
+        width: 16,
+        height: 16,
+        properties: {},
+      })),
+    },
+  ]
+  const { api } = tocador(null, null, { meta: () => ({ scene: sample }) })
+  api.createMapScene('map', 'fixture')
+  for (const id of ['left', 'right']) {
+    const child = api.mapObjectById('map', `${id}/child`)
+    const ref = api.mapObjectProperty(child, 'sibling')
+    expect(ref).toBe(`${id}/sibling`)
+    expect(api.mapObjectById('map', String(ref))?.x).toBe(id === 'left' ? 0 : 16)
+  }
+})
+
 it('scene 2 animates the selected sequence in both JavaScript game engines', () => {
   const sample = PintaSceneSchema.parse({
     ...scene,

@@ -6,6 +6,10 @@ export interface MapTwoDApi {
   collideMapScene(sprite: unknown, name: string): void
   mapObjects(name: string, type: string): PintaSceneObject[]
   mapObjectNamed(name: string, objectName: string): PintaSceneObject | null
+  mapObjectById(name: string, id: string): PintaSceneObject | null
+  mapResourceImage(name: string, id: string): string | null
+  mapLayerProperty(name: string, layerId: string, key: string): unknown
+  mapTileProperty(name: string, tilesetId: string, tile: number, key: string): unknown
   mapObjectProperty(object: unknown, key: string): unknown
   mapObjectField(object: unknown, key: string): unknown
   mapInArea(sprite: unknown, object: unknown): boolean

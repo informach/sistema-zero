@@ -512,6 +512,12 @@ class Mapa:
         if self.cena:
             escala = dados.get('scale', 1)
             self.cena['tileSize'] *= escala
+            for arte in self.cena.get('art', []):
+                arte['width'] *= escala
+                arte['height'] *= escala
+                if arte.get('sprite'):
+                    arte['sprite']['frameWidth'] *= escala
+                    arte['sprite']['frameHeight'] *= escala
             for grupo in [self.cena] + self.cena.get('sets', []):
                 for layer in grupo['layers']:
                     for key in ('offsetX', 'offsetY'):
@@ -602,6 +608,23 @@ class Mapa:
         if self._cena:
             return [pygame.Rect(r) for r in self._cena.solidos]
         return [rect for camada in self.camadas_de_pecas for rect in camada.solidos()]
+
+    def objeto_por_id(self, referencia):
+        """O objeto de uma propriedade de referência, ou None se ele não existe."""
+        return next((objeto for objeto in self.objetos() if objeto.id == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        """A Surface da arte referenciada neste mapa, inclusive uma versão guardada."""
+        caminho = self._cena.recurso_imagem(referencia) if self._cena else None
+        return self._cena.imagem(caminho) if caminho else None
+
+    def propriedade_camada(self, referencia, chave):
+        """Lê uma propriedade pelo ID da camada, conservando seu valor tipado."""
+        return self._cena.propriedade_camada(referencia, chave) if self._cena else None
+
+    def propriedade_peca(self, referencia, peca, chave):
+        """Lê uma propriedade pela referência do conjunto e pelo índice da peça."""
+        return self._cena.propriedade_peca(referencia, peca, chave) if self._cena else None
 
     def desenhar(self, superficie, deslocamento=(0, 0), frente=False):
         """Desenha as camadas de peças visíveis (as de trás, ou só as da frente)."""
@@ -854,8 +877,24 @@ class _CenaCompleta:
 
     @staticmethod
     def propriedade(objeto, chave):
-        valor = objeto.get('properties', {}).get(chave)
+        valor = (objeto or {}).get('properties', {}).get(chave)
         return valor.get('value') if isinstance(valor, dict) else valor
+
+    def objeto_por_id(self, referencia):
+        return next((o for o in self.objetos if o['id'] == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        recurso = next((a for a in self.dados.get('art', []) + self.dados['tilesets'] if a['id'] == referencia), None)
+        return recurso['image'] if recurso else None
+
+    def propriedade_camada(self, referencia, chave):
+        return self.propriedade(next((l for l in self.dados['layers'] if l['id'] == referencia), None), chave)
+
+    def propriedade_peca(self, referencia, peca, chave):
+        ts = next((t for t in self.dados['tilesets'] if t['id'] == referencia), None)
+        if not ts or isinstance(peca, bool) or not isinstance(peca, (int, float)) or not math.isfinite(peca) or peca != int(peca) or not 0 <= peca < ts['count']:
+            return None
+        return self.propriedade({'properties': ts.get('tileProperties', {}).get(str(int(peca)), {})}, chave)
 
     @staticmethod
     def contem(objeto, x, y):

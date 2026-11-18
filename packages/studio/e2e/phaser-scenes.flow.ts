@@ -8,16 +8,66 @@ type Game = {
     mapSize(name: string, axis: string): number
     mapObjects(name: string, type: string): Array<{ name: string }>
     createMapScene(name: string, asset: string): void
+    mapResourceImage(name: string, id: string): string | null
+    mapLayerProperty(name: string, id: string, key: string): unknown
+    mapTileProperty(name: string, id: string, tile: number, key: string): unknown
+    mapObjectById(name: string, id: string): { name: string } | null
   }
 }
 
-test('Phaser portátil anima a versão fixada e conserva o último quadro', async ({ page }, info) => {
+test('Phaser portátil anima a versão fixada e conserva o último quadro', async ({
+  page,
+  request,
+}, info) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.clock.setFixedTime(1000)
   await page.goto('http://127.0.0.1:5293/resources/')
   await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
   await page.evaluate(() => window.pintaGame.maps.createMapScene('mapa', 'recursos-qa'))
+  const scenes = (await (
+    await request.get('http://127.0.0.1:5293/resources/maps.json')
+  ).json()) as Record<string, PintaScene>
+  const sample = scenes['recursos-qa']!
+  const references = await page.evaluate(
+    async ({ layer, tileset }) => {
+      const maps = window.pintaGame.maps
+      const id = maps.mapLayerProperty('mapa', layer, 'resource')
+      const url = maps.mapResourceImage('mapa', String(id))
+      if (!url) throw new Error('Property-only resource missing')
+      const image = new Image()
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve()
+        image.onerror = reject
+        image.src = url
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = image.width
+      canvas.height = image.height
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(image, 0, 0)
+      return {
+        pixel: [...ctx.getImageData(8, 8, 1, 1).data],
+        score: maps.mapLayerProperty('mapa', layer, 'score'),
+        allowed: maps.mapTileProperty('mapa', tileset, 0, 'allowed'),
+        empty: maps.mapTileProperty('mapa', tileset, 0, 'empty'),
+        related: maps.mapObjectById(
+          'mapa',
+          String(maps.mapTileProperty('mapa', tileset, 0, 'related')),
+        )?.name,
+        missing: maps.mapResourceImage('mapa', 'missing'),
+      }
+    },
+    { layer: sample.layers[0]!.id, tileset: sample.tilesets[0]!.id },
+  )
+  expect(references).toEqual({
+    pixel: [255, 255, 0, 255],
+    score: 0,
+    allowed: false,
+    empty: '',
+    related: 'Árvore QA',
+    missing: null,
+  })
   const samples: number[][] = []
   for (const [time, expected] of [
     [1000, [255, 0, 0, 255]],
