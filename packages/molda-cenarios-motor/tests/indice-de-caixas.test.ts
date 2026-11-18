@@ -2,6 +2,19 @@ import { expect, test } from 'bun:test'
 import { Box3, Ray, Vector3 } from 'three'
 import { IndiceDeCaixas } from '../src/indice-de-caixas'
 
+test('margem de seleção amplia apenas a consulta, sem mover caixas ou alterar a física padrão', () => {
+  const caixa = new Box3(new Vector3(0, 0, 0), new Vector3(1, 1, 0)),
+    antes = caixa.clone(),
+    indice = new IndiceDeCaixas(),
+    raio = new Ray(new Vector3(-0.01, 0.5, 3), new Vector3(0, 0, -1))
+  indice.definir([caixa])
+  expect(indice.consultar(raio)).toEqual([])
+  expect(indice.consultar(raio, 0.02)).toEqual([0])
+  expect(caixa).toEqual(antes)
+  expect(indice.limites(new Box3())).toEqual(antes)
+  expect(() => indice.consultar(raio, NaN)).toThrow('Margem')
+})
+
 test('índice e refit concordam com a varredura em 20 mil caixas sem alterar suas fontes', () => {
   const caixas = Array.from(
     { length: 20_000 },
