@@ -42,3 +42,5 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 - API de progresso/cancelamento não altera autoria. Entre partes de trabalho, permitir que o navegador processe cancelamento; não prometer interrupção no meio de uma operação síncrona indivisível.
 - Ensaiar terreno com relevo/buracos/recortes/pintura, encontros, piso conformado, ponte/apoios, lago de catálogo, água procedural, conjunto e atores/reflexos. Reabrir o pacote sem o palco autoral. Comparar superfícies, física e metadados e fazer três ciclos de compilação/cancelamento/descarte.
 - Só fechar 8.2 depois da integração e dessas provas; seguir então para 8.3. O subpath público `motor/compilar` ainda não existe porque o compilador completo não está entregue. Não antecipar lotes 9–10 ou implantação.
+
+**Conferência já implementada e testada em recorte:** [conteúdo/alturas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-conteudo-alturas.md). A montagem final ainda precisa chamar essa conferência; não tratar a existência do leitor como entrega do pacote completo.
