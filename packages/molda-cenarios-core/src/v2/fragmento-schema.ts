@@ -4,7 +4,7 @@ import {
   LIMITES_CONJUNTOS,
   MontagemDeConjuntoSchema,
 } from './conjuntos-schema'
-import { AguaSchema } from './entidades-schema'
+import { AguaSchema, CaminhoSchema } from './entidades-schema'
 import { FragmentoBasicoSchema } from './fragmento-base-schema'
 
 export { PrefixoDeColagemSchema } from './fragmento-base-schema'
@@ -12,6 +12,7 @@ export { PrefixoDeColagemSchema } from './fragmento-base-schema'
 /** Clipboard conserva cópias vivas; definições contêm somente o fragmento básico, sem recursão. */
 export const FragmentoDeCenarioSchema = FragmentoBasicoSchema.extend({
   aguas: z.array(AguaSchema).min(1).max(256).optional(),
+  caminhos: z.array(CaminhoSchema).min(1).max(2000).optional(),
   definicoesConjuntos: z
     .array(DefinicaoDeConjuntoSchema)
     .min(1)

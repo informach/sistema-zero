@@ -100,6 +100,49 @@ function cena() {
   return d
 }
 
+test('copiar montagem e objeto apoiado remapeia o vínculo para a nova raiz', () => {
+  const doc = cena()
+  doc.formas = [
+    { id: 'caixa', nome: 'Caixa', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 },
+  ]
+  const t = {
+    posicao: { x: 10, y: 9, z: 20 },
+    rotacao: { x: 0, y: 0, z: 0 },
+    escala: { x: 1, y: 1, z: 1 },
+  }
+  doc.instancias = [
+    {
+      id: 'apoiado',
+      nome: 'Apoiado',
+      modelo: 'caixa',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      colisao: 'caixa',
+      transformacao: t,
+      apoio: apoioNaSuperficie(doc, 'copia', t.posicao),
+    },
+  ]
+  const f = capturarFragmento(doc, ['copia', 'apoiado'], 'conta'),
+    destino = criarDocumentoVazio('d', 'D'),
+    colado = executarLote(
+      { documento: destino, revisao: 0 },
+      {
+        revisaoEsperada: 0,
+        comandos: [
+          {
+            tipo: 'fragmento.colar',
+            fragmento: f,
+            prefixo: 'p',
+            ponto: { x: f.ancora.x + 5, y: f.ancora.y + 1, z: f.ancora.z },
+          },
+        ],
+      },
+    ).documento
+  expect(colado.instancias[0]!.apoio).toMatchObject({ tipo: 'objeto', objeto: 'p/conjunto/0' })
+  expect(posicaoNoMundo(colado, colado.instancias[0]!)).toEqual({ x: 15, y: 10, z: 20 })
+})
+
 test('montagem fixa revisão e preserva a composição sem gravar clones na origem', () => {
   const doc = cena(),
     antes = structuredClone(doc),

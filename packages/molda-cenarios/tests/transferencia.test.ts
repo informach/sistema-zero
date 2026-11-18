@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import {
   apoioNaAgua,
+  CaminhoSchema,
   capturarFragmento,
   criarDocumentoVazio,
   prepararOperacaoDeAgua,
@@ -36,6 +37,41 @@ function origem() {
   ]
   return d
 }
+
+test('caminho escolhido pela árvore usa o clipboard, recorte e undo existentes após reabrir', async () => {
+  const host = criarHostEmMemoria(),
+    mundo = await host.criarMundo('conta', 'Mundo'),
+    c = await host.criarCenario(mundo.id, 'Passeio'),
+    doc = { ...origem(), id: c.id }
+  doc.caminhos = [
+    CaminhoSchema.parse({
+      id: 'trilha',
+      nome: 'Trilha',
+      tipo: 'trilha',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      acabamento: null,
+      largura: 2,
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 10, z: 0 },
+      ],
+    }),
+  ]
+  await host.editarCenario(c.id, 0, [{ tipo: 'cenario.restaurar', documento: doc }], 'fixture')
+  const ctl = criarControlador(host, await host.abrirCenario(c.id))
+  ctl.selecionar([], 'trilha')
+  const alvos = alvosDaTransferencia(ctl.getState()),
+    f = capturarFragmento(doc, alvos, 'conta')
+  expect(alvos).toEqual(['trilha'])
+  expect(ctl.executar(comandosParaRecortarEscolha(doc, f, alvos))).toBe(true)
+  await ctl.terminar()
+  const reaberto = criarControlador(host, await host.abrirCenario(c.id))
+  expect(reaberto.getState().documento.caminhos).toEqual([])
+  await reaberto.desfazer()
+  expect(reaberto.getState().documento).toEqual(doc)
+})
 
 test('recortar água mantém o objeto apoiado fora da escolha; undo restaura água e vínculo', async () => {
   const host = criarHostEmMemoria(),

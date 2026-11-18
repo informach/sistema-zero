@@ -28,7 +28,9 @@ export function alvosDaTransferencia(
     ? [estado.alvoDaArvore]
     : !estado.selecao.length &&
         estado.alvoDaArvore &&
-        estado.documento.aguas.some((a) => a.id === estado.alvoDaArvore)
+        [...estado.documento.aguas, ...estado.documento.caminhos].some(
+          (a) => a.id === estado.alvoDaArvore,
+        )
       ? [estado.alvoDaArvore]
       : estado.selecao
 }

@@ -6,6 +6,7 @@ import { LIMITES_CONJUNTOS } from './conjuntos-schema'
 import { criarDocumentoVazio, type DocumentoDeCenario, LIMITES_CENARIO_V2 } from './documento'
 import { transladarAgua, volumeDaAgua } from './fragmento-agua'
 import { type FragmentoBasico, FragmentoBasicoSchema } from './fragmento-base-schema'
+import { transladarCaminho, volumeDoCaminho } from './fragmento-caminho'
 import {
   type FragmentoDeCenario,
   FragmentoDeCenarioSchema,
@@ -35,10 +36,22 @@ export function validarFragmento(valor: unknown): FragmentoDeCenario {
   const lido = FragmentoDeCenarioSchema.safeParse(valor)
   if (!lido.success) falhar('O conteúdo copiado não é um fragmento de cenário válido')
   const f = lido.data!
-  if (!f.instancias.length && !f.grupos.length && !f.montagens?.length && !f.aguas?.length)
+  if (
+    !f.instancias.length &&
+    !f.grupos.length &&
+    !f.montagens?.length &&
+    !f.aguas?.length &&
+    !f.caminhos?.length
+  )
     falhar('O conteúdo copiado está vazio')
   const entidades = new Set(
-    [...f.instancias, ...f.grupos, ...(f.montagens ?? []), ...(f.aguas ?? [])].map((e) => e.id),
+    [
+      ...f.instancias,
+      ...f.grupos,
+      ...(f.montagens ?? []),
+      ...(f.aguas ?? []),
+      ...(f.caminhos ?? []),
+    ].map((e) => e.id),
   )
   if (f.raizes.some((id) => !entidades.has(id))) falhar('A escolha copiada contém uma raiz ausente')
   if (new TextEncoder().encode(JSON.stringify(f)).length > LIMITES_CENARIO_V2.bytes)
@@ -50,6 +63,7 @@ export function validarFragmento(valor: unknown): FragmentoDeCenario {
     instancias: f.instancias,
     grupos: f.grupos,
     ...(f.aguas?.length ? { aguas: f.aguas } : {}),
+    ...(f.caminhos?.length ? { caminhos: f.caminhos } : {}),
     ...(f.formas.length ? { formas: f.formas } : {}),
     ...(f.texturas.length ? { texturas: f.texturas } : {}),
     ...(f.camadas.length ? { camadas: f.camadas } : {}),
@@ -87,7 +101,9 @@ export function capturarFragmento(
   }
   if (!ids.size) falhar('Escolha objetos ou uma pasta para copiar')
   const permitidos = new Set(
-    [...doc.grupos, ...doc.instancias, ...(doc.montagens ?? []), ...doc.aguas].map((e) => e.id),
+    [...doc.grupos, ...doc.instancias, ...(doc.montagens ?? []), ...doc.aguas, ...doc.caminhos].map(
+      (e) => e.id,
+    ),
   )
   if ([...ids].some((id) => !permitidos.has(id)))
     falhar('Esta pasta contém elementos que ainda não podem ser copiados como objetos')
@@ -100,6 +116,7 @@ export function capturarFragmento(
     }
   }
   const aguas = doc.aguas.filter((a) => ids.has(a.id)),
+    caminhos = doc.caminhos.filter((c) => ids.has(c.id)),
     objetos = doc.instancias.filter((o) => ids.has(o.id)),
     montagens = doc.montagens?.filter((m) => ids.has(m.id)) ?? [],
     montagensEscolhidas = new Set(montagens.map((m) => m.id)),
@@ -107,6 +124,7 @@ export function capturarFragmento(
     volumes = [
       ...objetos.map((o) => volumeNoMundo(doc, o, fonte)),
       ...aguas.map(volumeDaAgua),
+      ...caminhos.map((c) => volumeDoCaminho(doc, c, fonte)),
       ...(expandido?.documento.instancias
         .filter((o) => montagensEscolhidas.has(expandido.origens.get(o.id) ?? ''))
         .map((o) => volumeNoMundo(expandido.documento, o, fonte)) ?? []),
@@ -121,14 +139,15 @@ export function capturarFragmento(
       }
     : { x: 0, y: 0, z: 0 }
   const modelos = new Set(objetos.map((o) => o.modelo)),
-    texturas = new Set(objetos.map((o) => o.aparencia?.textura?.id)),
+    texturas = new Set([...objetos, ...caminhos].map((o) => o.aparencia?.textura?.id)),
     camadas = new Set(
-      [...doc.grupos, ...objetos, ...montagens, ...aguas]
+      [...doc.grupos, ...objetos, ...montagens, ...aguas, ...caminhos]
         .filter((e) => ids.has(e.id))
         .map((e) => e.camada),
     )
   for (const a of aguas)
     if ((a.tipo === 'lago' || a.tipo === 'represa') && a.modelo) modelos.add(a.modelo)
+  for (const c of caminhos) if (c.acabamento) modelos.add(c.acabamento)
   return validarFragmento({
     formato: 'molda-cenario-fragmento',
     versao: 1,
@@ -141,6 +160,7 @@ export function capturarFragmento(
     camadas: doc.camadas?.filter((c) => camadas.has(c.id)) ?? [],
     grupos: doc.grupos.filter((g) => ids.has(g.id)),
     ...(aguas.length ? { aguas } : {}),
+    ...(caminhos.length ? { caminhos } : {}),
     ...(montagens.length
       ? {
           montagens: montagens.map((m) =>
@@ -175,14 +195,21 @@ export function idsDoFragmento(f: FragmentoDeCenario, prefixo: string) {
   const instancias = new Map(f.instancias.map((o, i) => [o.id, `${prefixo}/objeto/${i}`])),
     grupos = new Map(f.grupos.map((g, i) => [g.id, `${prefixo}/grupo/${i}`])),
     montagens = new Map(f.montagens?.map((m, i) => [m.id, `${prefixo}/conjunto/${i}`])),
-    aguas = new Map(f.aguas?.map((a, i) => [a.id, `${prefixo}/agua/${i}`]))
+    aguas = new Map(f.aguas?.map((a, i) => [a.id, `${prefixo}/agua/${i}`])),
+    caminhos = new Map(f.caminhos?.map((c, i) => [c.id, `${prefixo}/caminho/${i}`]))
   return {
     instancias,
     grupos,
     montagens,
     aguas,
+    caminhos,
     raizes: f.raizes.map(
-      (id) => instancias.get(id) ?? grupos.get(id) ?? montagens.get(id) ?? aguas.get(id)!,
+      (id) =>
+        instancias.get(id) ??
+        grupos.get(id) ??
+        montagens.get(id) ??
+        aguas.get(id) ??
+        caminhos.get(id)!,
     ),
   }
 }
@@ -204,6 +231,7 @@ export function colarFragmento(
     ...ids.grupos.values(),
     ...ids.montagens.values(),
     ...ids.aguas.values(),
+    ...ids.caminhos.values(),
   ])
     if (ocupados.has(id)) falhar('O identificador desta colagem já foi usado')
   const modelos = new Map<string, string>(),
@@ -273,6 +301,22 @@ export function colarFragmento(
   })
   doc.grupos.push(...f.grupos.map((g) => ({ ...g, ...organizacao(g), id: ids.grupos.get(g.id)! })))
   const delta = { x: ponto.x - f.ancora.x, y: ponto.y - f.ancora.y, z: ponto.z - f.ancora.z }
+  doc.caminhos.push(
+    ...(f.caminhos ?? []).map((c) => ({
+      ...transladarCaminho(c, delta),
+      ...organizacao(c),
+      id: ids.caminhos.get(c.id)!,
+      acabamento: c.acabamento ? modelos.get(c.acabamento)! : null,
+      ...(c.aparencia?.textura
+        ? {
+            aparencia: {
+              ...c.aparencia,
+              textura: { ...c.aparencia.textura, id: texturas.get(c.aparencia.textura.id)! },
+            },
+          }
+        : {}),
+    })),
+  )
   doc.aguas.push(
     ...(f.aguas ?? []).map((a) => {
       const movida = { ...transladarAgua(a, delta), ...organizacao(a), id: ids.aguas.get(a.id)! }
@@ -331,7 +375,13 @@ export function colarFragmento(
         },
         apoio:
           o.apoio.tipo === 'objeto'
-            ? { ...o.apoio, objeto: ids.instancias.get(o.apoio.objeto)! }
+            ? {
+                ...o.apoio,
+                objeto:
+                  ids.instancias.get(o.apoio.objeto) ??
+                  ids.montagens.get(o.apoio.objeto) ??
+                  ids.caminhos.get(o.apoio.objeto)!,
+              }
             : o.apoio.tipo === 'agua'
               ? {
                   ...o.apoio,
@@ -370,6 +420,10 @@ export function validarConteudoDeConjunto(valor: unknown, espaco?: string): Frag
   if (valor && typeof valor === 'object' && 'aguas' in valor)
     falhar(
       'Água não faz parte de um conjunto de objetos. Use copiar e colar para levar a composição completa.',
+    )
+  if (valor && typeof valor === 'object' && 'caminhos' in valor)
+    falhar(
+      'Caminhos não fazem parte de um conjunto de objetos. Use copiar e colar para levar a composição completa.',
     )
   const lido = FragmentoBasicoSchema.safeParse(valor)
   if (!lido.success) falhar('O conteúdo do conjunto está fora do formato')

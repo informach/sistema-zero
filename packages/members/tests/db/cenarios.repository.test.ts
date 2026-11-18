@@ -2851,6 +2851,78 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect(refeito.documento).toEqual(salvo.documento)
   })
 
+  test('caminhos copiados usam o mesmo JSONB e histórico sem copiar o terreno', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      montar = () =>
+        new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set<string>() }),
+      s = montar(),
+      [espaco] = await s.espacos(ator),
+      mundo = await s.criarMundo(ator, espaco!.id, 'Passeio'),
+      c = await s.criarCenario(ator, mundo.id, 'Destino'),
+      origem = criarDocumentoVazio('origem', 'Origem')
+    origem.caminhos = [
+      CaminhoSchema.parse({
+        id: 'ponte',
+        nome: 'Ponte',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        tipo: 'ponte',
+        acabamento: null,
+        largura: 3,
+        cotas: { de: 4, ate: 5 },
+        pontos: [
+          { x: 0, z: 0 },
+          { x: 20, z: 0 },
+        ],
+      }),
+    ]
+    const fragmento = capturarFragmento(origem, ['ponte'], espaco!.id),
+      lote = {
+        revisaoEsperada: 0,
+        operacaoId: randomUUID(),
+        comandos: [
+          {
+            tipo: 'fragmento.colar' as const,
+            fragmento,
+            prefixo: 'p',
+            ponto: {
+              x: fragmento.ancora.x + 10,
+              y: fragmento.ancora.y + 2,
+              z: fragmento.ancora.z + 4,
+            },
+          },
+        ],
+      }
+    await s.editarCenario(ator, c.id, lote)
+    await montar().editarCenario(ator, c.id, lote)
+    const salvo = await montar().abrirCenario(ator, c.id)
+    expect(salvo.revisao).toBe(1)
+    expect(salvo.documento.caminhos[0]).toMatchObject({
+      id: 'p/caminho/0',
+      cotas: { de: 6, ate: 7 },
+      pontos: [
+        { x: 10, z: 4 },
+        { x: 30, z: 4 },
+      ],
+    })
+    expect(salvo.documento.base).toEqual(origem.base)
+    expect((await repo.lotesEntre(c.id, 0, 1))[0]!.comandos).toEqual(lote.comandos)
+    expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.caminhos).toEqual([])
+    const refeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
+  })
+
   test('fragmento com água e apoio conserva JSONB, replay idempotente e undo/redo após reabrir', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
       montar = () =>
