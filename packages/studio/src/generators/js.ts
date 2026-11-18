@@ -165,15 +165,25 @@ const GRASS_FRAGMENT_SHADER = [
   '}',
 ].join('\n')
 
-/** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
-function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
-  for (const s of statements) {
-    if (s.type === type) return true
-    for (const body of jsChildBodies(s)) {
-      if (treeHasStatementType(body, type)) return true
+/**
+ * Todos os tipos de statement da árvore (corpos aninhados inclusos), numa varredura só.
+ *
+ * Antes cada pergunta ("tem `bloomSetup`?", "tem `physicsLiteSetup`?") andava a árvore inteira
+ * de novo, e a geração fazia dezenas delas por edição: no perfil de 17/11/2026 isso era 79% do
+ * tempo de gerar um projeto de 5 mil blocos. Com pilha explícita: árvore funda não estoura.
+ */
+function statementTypesIn(statements: JSStatement[]): ReadonlySet<JSStatement['type']> {
+  const types = new Set<JSStatement['type']>()
+  const pending: JSStatement[][] = [statements]
+  while (pending.length > 0) {
+    const list = pending.pop()
+    if (!list) continue
+    for (const statement of list) {
+      types.add(statement.type)
+      for (const body of jsChildBodies(statement)) pending.push(body)
     }
   }
-  return false
+  return types
 }
 
 /** Fontes de imagem usadas por blocos Canvas, em ordem e sem duplicatas. */
@@ -277,16 +287,17 @@ function treeUsesThreeNamespace(value: unknown): boolean {
 }
 
 /** Imports que os facilitadores Canvas 3D exigem, deduplicados contra os explícitos. */
-function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
+function injectedCanvas3DImports(
+  statements: JSStatement[],
+  types: ReadonlySet<JSStatement['type']> = statementTypesIn(statements),
+): JSStatement[] {
   const existingNamedModules = new Set(
     statements.filter((statement) => statement.type === 'importNamed').map((s) => s.module),
   )
   const injected: JSStatement[] = []
   const needsCore =
     treeUsesThreeNamespace(statements) ||
-    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) =>
-      treeHasStatementType(statements, type as JSStatement['type']),
-    )
+    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) => types.has(type as JSStatement['type']))
   const hasCore = statements.some(
     (statement) =>
       statement.type === 'importStar' && statement.module === 'three' && statement.name === 'THREE',
@@ -297,7 +308,7 @@ function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
 
   const seenModules = new Set<string>()
   for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
-    if (!needed || !treeHasStatementType(statements, macroType as JSStatement['type'])) continue
+    if (!needed || !types.has(macroType as JSStatement['type'])) continue
     for (const entry of needed) {
       if (existingNamedModules.has(entry.module) || seenModules.has(entry.module)) continue
       seenModules.add(entry.module)
@@ -344,7 +355,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // Statements começam após o header (1-indexed).
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
-  const needsPhysicsLite = treeHasStatementType(statements, 'physicsLiteSetup')
+  const needsPhysicsLite = statementTypesIn(statements).has('physicsLiteSetup')
   let physicsLiteInserted = false
   let canvasImagesOpened = false
   for (const stmt of statements) {
@@ -432,7 +443,7 @@ function generateBehaviorJSWithMap(
     currentLine += countLines(piece)
   }
 
-  const needsPhysicsLite = treeHasStatementType(ordered, 'physicsLiteSetup')
+  const needsPhysicsLite = statementTypesIn(ordered).has('physicsLiteSetup')
   if (needsPhysicsLite) {
     const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
     pieces.push(runtime)
