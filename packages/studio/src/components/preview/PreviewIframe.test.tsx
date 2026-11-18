@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import 'fake-indexeddb/auto'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { clear } from 'idb-keyval'
 import { createEmptyProject, type Project } from '#core'
 import { useHighlightStore } from '../../state/highlightStore'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
@@ -10,7 +13,8 @@ import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
 
 describe('PreviewIframe', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await clear(captureProjectStorageScope().store)
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
     useUIStore.setState({ previewRunning: true })
   })

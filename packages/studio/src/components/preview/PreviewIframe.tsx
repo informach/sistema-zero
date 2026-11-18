@@ -40,13 +40,15 @@ import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useHighlightStoreApi } from '../../state/highlightStore'
 import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
+import { usePendingEditorEdits, useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
+import { createRunPreparation } from './prepareRun'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -89,6 +91,12 @@ export function chosenCoverPausesSnapshots(
 
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
+  const projectStore = useProjectStoreApi()
+  const persistence = useStudioPersistence()
+  const pendingEdits = usePendingEditorEdits()
+  const [preparingRun, setPreparingRun] = useState(false)
+  const [preparationError, setPreparationError] = useState<string | null>(null)
+  const [sourceVersion, setSourceVersion] = useState(0)
   const fullProject = useProjectStore((s) => javaScriptProject(s.project))
   const { projectId, html, css, js, ir, installedExtensions, extraFiles, assets, hasChosenCover } =
     useProjectStore(
@@ -105,6 +113,30 @@ export function PreviewIframe(): JSX.Element {
         assets: javaScriptProject(s.project)?.assets ?? EMPTY_ASSETS,
       })),
     )
+  const runIdentity = useMemo(
+    () => ({
+      projectId,
+      editingAccess: execution.editingAccess,
+      writerEpoch: execution.writerEpoch,
+    }),
+    [projectId, execution.editingAccess, execution.writerEpoch],
+  )
+  const preparation = useMemo(
+    () =>
+      createRunPreparation({
+        project: () => {
+          const project = projectStore.getState().project
+          return runIdentity.editingAccess === 'author' && project?.id === runIdentity.projectId
+            ? project
+            : null
+        },
+        flush: () => pendingEdits?.flush(),
+        save: () => persistence.save(),
+        pending: setPreparingRun,
+        error: setPreparationError,
+      }),
+    [projectStore, runIdentity, persistence, pendingEdits],
+  )
   const pushLog = useLogsStore((s) => s.push)
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
@@ -273,37 +305,41 @@ export function PreviewIframe(): JSX.Element {
   const handleTogglePreviewRunning = () => {
     if (execution.editingAccess === 'observer') return
     if (previewRunning) {
+      preparation.cancel()
       setPreviewRunning(false)
       return
     }
-    // Garante que o mirror reflete a última escrita ANTES de reconstruir o doc.
-    processStorageNow()
-    markCurrentProjectStarted()
-    setPreviewRunning(true)
-    focusOnLoadRef.current = true // Play explícito → foca o jogo p/ o teclado funcionar
-    rerenderPreview()
+    handleRefresh()
   }
 
   const handleRefresh = () => {
     if (execution.editingAccess === 'observer') return
-    // Atualizar implica executar: se estava parado, religa o Play.
-    // Descarrega a última escrita ao mirror antes de o doc ser reconstruído.
-    processStorageNow()
-    markCurrentProjectStarted()
-    if (!previewRunning) setPreviewRunning(true)
-    focusOnLoadRef.current = true // ação explícita → foca o jogo (teclado)
-    rerenderPreview()
+    setPreparationError(null)
+    void preparation.run(() => {
+      processStorageNow()
+      markCurrentProjectStarted()
+      setSourceVersion((version) => version + 1)
+      setPreviewRunning(true)
+      focusOnLoadRef.current = true
+      rerenderPreview()
+    })
   }
+
+  useEffect(() => {
+    setPreparationError(null)
+    return () => preparation.cancel()
+  }, [preparation])
 
   const installedIds = uniqueExtensionIds(
     installedExtensions.map((extension) => extension.id),
   ).join(',')
 
-  const debouncedHtml = useDebounced(html, 800)
-  const debouncedCss = useDebounced(css, 800)
-  const debouncedJs = useDebounced(js, 800)
-  const debouncedIds = useDebounced(installedIds, 800)
-  const debouncedExtraFiles = useDebounced(extraFiles, 800)
+  const sourceIdentity = `${projectId}:${sourceVersion}`
+  const debouncedHtml = useDebounced(html, 800, sourceIdentity)
+  const debouncedCss = useDebounced(css, 800, sourceIdentity)
+  const debouncedJs = useDebounced(js, 800, sourceIdentity)
+  const debouncedIds = useDebounced(installedIds, 800, sourceIdentity)
+  const debouncedExtraFiles = useDebounced(extraFiles, 800, sourceIdentity)
 
   const [runtimeAttempt, setRuntimeAttempt] = useState(0)
   const [extensionRuntimeState, setExtensionRuntimeState] = useState<{
@@ -542,7 +578,7 @@ export function PreviewIframe(): JSX.Element {
     // novo responde ao próximo pedido normalmente.
   }, [projectId, previewRunning, previewPaused, hasChosenCover])
 
-  const doc = useMemo(() => {
+  const candidateDoc = useMemo(() => {
     if (execution.editingAccess === 'observer') return PAUSED_PREVIEW_DOC
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.
     if (!previewRunning) return PAUSED_PREVIEW_DOC
@@ -609,6 +645,19 @@ export function PreviewIframe(): JSX.Element {
     renderNonce,
     execution.editingAccess,
   ])
+
+  // An automatic source debounce must not bypass an explicit run awaiting a save.
+  // Retain the committed game during preparation/failure; Stop still installs the blank doc.
+  const committedDoc = useRef({ projectId, document: PAUSED_PREVIEW_DOC })
+  const doc =
+    previewRunning &&
+    (preparingRun || preparationError !== null) &&
+    committedDoc.current.projectId === projectId
+      ? committedDoc.current.document
+      : candidateDoc
+  useLayoutEffect(() => {
+    committedDoc.current = { projectId, document: doc }
+  }, [doc, projectId])
 
   const [remoteDocument, setRemoteDocument] = useState<{
     document: string
@@ -865,16 +914,27 @@ export function PreviewIframe(): JSX.Element {
       run: () =>
         runningRef.current ? handlersRef.current.refresh() : handlersRef.current.toggle(),
       stop: () => {
+        preparation.cancel()
+        setPreparationError(null)
         if (runningRef.current) handlersRef.current.toggle()
       },
       reload: () => handlersRef.current.refresh(),
     }),
-    [],
+    [preparation],
   )
   const extensionRuntimeFailed =
     extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
   const gameErrorHint = gameError ? (glossErrorMessage(gameError.text) ?? undefined) : undefined
   const runState = useMemo<ProRunState>(() => {
+    if (preparingRun)
+      return {
+        phase: 'preparing',
+        canRun: false,
+        canStop: !observer,
+        detail: 'Guardando o projeto…',
+      }
+    if (preparationError)
+      return { phase: 'error', canRun: !observer, canStop: !observer, error: preparationError }
     if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
     if (extensionRuntimeFailed || courseModelError)
       return {
@@ -900,6 +960,8 @@ export function PreviewIframe(): JSX.Element {
       return { phase: 'preparing', step: { index: 1, total: 1 }, canRun: false, canStop: !observer }
     return { phase: 'running', canRun: !observer, canStop: !observer }
   }, [
+    preparingRun,
+    preparationError,
     previewRunning,
     observer,
     extensionRuntimeFailed,
