@@ -1,6 +1,7 @@
 import { pontoNoPoligono } from '../poligonos'
 import { CenarioInvalido } from '../validacao'
 import { alturaDoChao } from './chao'
+import type { ComandoDeCenario } from './comandos'
 import type { DocumentoDeCenario, MarcadorDeCenario, Transformacao } from './documento'
 import { MarcadorSchema } from './entidades-schema'
 import type { ConfiguracaoDeMarcador } from './marcadores-schema'
@@ -206,4 +207,28 @@ export function inicioDoCenario(doc: DocumentoDeCenario, fonte?: FonteDeAlturas,
         giro: marcador.giro,
       }
     : null
+}
+
+/** Associação é metadado, não posse. Remover o objeto não apaga o marco que ficou. */
+export function comandosParaSoltarAssociacoesDeMarcadores(
+  doc: DocumentoDeCenario,
+  ids: readonly string[],
+): ComandoDeCenario[] {
+  const indice = indiceDaOrganizacao(doc),
+    removidos = new Set<string>(),
+    fila = [...ids]
+  for (let i = 0; i < fila.length; i++) {
+    const id = fila[i]!
+    if (removidos.has(id)) continue
+    removidos.add(id)
+    if (indice.grupos.has(id)) for (const filho of indice.filhos.get(id) ?? []) fila.push(filho.id)
+  }
+  const mantidos = doc.marcadores.filter(
+    (m) => !removidos.has(m.id) && m.objeto && removidos.has(m.objeto),
+  )
+  if (mantidos.some((m) => indice.flags.get(m.id)?.bloqueado))
+    throw new CenarioInvalido(['Destranque os marcadores associados antes de apagar o objeto.'])
+  return mantidos.length
+    ? [{ tipo: 'marcadores.desassociar', objetos: [...new Set(mantidos.map((m) => m.objeto!))] }]
+    : []
 }

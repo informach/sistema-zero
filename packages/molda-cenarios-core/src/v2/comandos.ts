@@ -120,6 +120,7 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('agua.remover'), id }).strict(),
   z.object({ tipo: z.literal('marcador.definir'), marcador: MarcadorSchema }).strict(),
   z.object({ tipo: z.literal('marcador.remover'), id }).strict(),
+  z.object({ tipo: z.literal('marcadores.desassociar'), objetos: idsOrganizaveis }).strict(),
   z.object({ tipo: z.literal('base.definir'), base: BaseSchema }).strict(),
   z.object({ tipo: z.literal('iluminacao.definir'), iluminacao: IluminacaoSchema }).strict(),
   z.object({ tipo: z.literal('cenario.renomear'), nome: z.string().min(1).max(120) }).strict(),
@@ -500,6 +501,15 @@ export function executarLote(
       case 'marcador.remover':
         d.marcadores = removerTravavel(travas, d.marcadores, c.id)
         break
+      case 'marcadores.desassociar': {
+        const objetos = new Set(c.objetos)
+        for (const m of d.marcadores)
+          if (m.objeto && objetos.has(m.objeto)) {
+            exigeLivre(travas, m)
+            m.objeto = null
+          }
+        break
+      }
       case 'base.definir':
         d.base = c.base
         break

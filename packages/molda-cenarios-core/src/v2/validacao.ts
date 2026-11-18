@@ -26,6 +26,14 @@ export function validarDocumento(
   valor: unknown,
   opcoes: OpcoesDeValidacao = {},
 ): DocumentoDeCenario {
+  return validarDocumentoInterno(valor, opcoes)
+}
+
+function validarDocumentoInterno(
+  valor: unknown,
+  opcoes: OpcoesDeValidacao,
+  associacoesDaRaiz?: ReadonlySet<string>,
+): DocumentoDeCenario {
   const r = DocumentoDeCenarioSchema.safeParse(valor)
   if (!r.success)
     throw new CenarioInvalido(r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`))
@@ -38,6 +46,9 @@ export function validarDocumento(
     aguas = new Set(d.aguas.map((a) => a.id)),
     caminhos = new Map(d.caminhos.map((c) => [c.id, c])),
     modelos = new Set<string>()
+  // A expansão física de conjuntos não cria nem apaga as identidades autorais
+  // às quais os metadados do jogo estão associados. Esse contexto é só interno.
+  const associaveis = associacoesDaRaiz ?? new Set([...objetos.keys(), ...montagens])
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO_V2.bytes)
     erros.push('Documento excede o orçamento de bytes')
 
@@ -172,7 +183,7 @@ export function validarDocumento(
   if (d.aguas.filter((a) => a.tipo === 'mar').length > 1) erros.push('Só cabe um mar por cenário')
 
   for (const m of d.marcadores)
-    if (m.objeto && !objetos.has(m.objeto)) erros.push(`Objeto do marcador ausente: ${m.id}`)
+    if (m.objeto && !associaveis.has(m.objeto)) erros.push(`Objeto do marcador ausente: ${m.id}`)
   if (
     d.marcadores.filter((m) => m.configuracao?.tipo === 'inicio' && m.configuracao.principal)
       .length > 1
@@ -216,7 +227,7 @@ export function validarDocumento(
         if (opcoes.texturaExiste && !opcoes.texturaExiste(t))
           throw new CenarioInvalido([`Textura ausente no conjunto: ${t.id}`])
     }
-    validarDocumento(resolverConjuntos(d).documento, opcoes)
+    validarDocumentoInterno(resolverConjuntos(d).documento, opcoes, associaveis)
   }
   return d
 }

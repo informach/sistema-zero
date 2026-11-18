@@ -3095,7 +3095,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
           posicao: { x: 2, y: 3, z: 4 },
           giro: 0.4,
           noChao: false,
-          objeto: null,
+          objeto: i === 1 ? 'objeto-jogo' : null,
           propriedades: { texto: 'Oficina', numero: 1.25, sim: true },
           configuracao,
         }),
@@ -3110,6 +3110,35 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
         revisaoEsperada: 0,
         operacaoId: randomUUID(),
         comandos: [
+          {
+            tipo: 'forma.definir' as const,
+            forma: {
+              id: 'forma-jogo',
+              nome: 'Bloco',
+              tipo: 'caixa' as const,
+              largura: 1,
+              altura: 1,
+              comprimento: 1,
+            },
+          },
+          {
+            tipo: 'instancia.criar' as const,
+            instancia: {
+              id: 'objeto-jogo',
+              nome: 'Oficina',
+              modelo: 'forma-jogo',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              colisao: 'caixa' as const,
+              apoio: { tipo: 'absoluto' as const },
+              transformacao: {
+                posicao: { x: 0, y: 0, z: 0 },
+                rotacao: { x: 0, y: 0, z: 0 },
+                escala: { x: 1, y: 1, z: 1 },
+              },
+            },
+          },
           ...marcadores.map((marcador) => ({ tipo: 'marcador.definir' as const, marcador })),
           { tipo: 'iluminacao.definir' as const, iluminacao },
         ],
@@ -3134,6 +3163,24 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       operacaoId: randomUUID(),
     })
     expect(refeito.documento).toEqual(salvo.documento)
+    await montar().editarCenario(ator, c.id, {
+      revisaoEsperada: 3,
+      operacaoId: randomUUID(),
+      comandos: [
+        { tipo: 'marcadores.desassociar', objetos: ['objeto-jogo'] },
+        { tipo: 'instancia.remover', id: 'objeto-jogo' },
+      ],
+    })
+    const semObjeto = await montar().abrirCenario(ator, c.id)
+    expect(semObjeto.documento.instancias).toEqual([])
+    expect(semObjeto.documento.marcadores[1]!.objeto).toBeNull()
+    expect(semObjeto.documento.marcadores[1]!.propriedades).toEqual(marcadores[1]!.propriedades)
+    const restaurado = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 4,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(restaurado.documento).toEqual(salvo.documento)
   })
 
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {
