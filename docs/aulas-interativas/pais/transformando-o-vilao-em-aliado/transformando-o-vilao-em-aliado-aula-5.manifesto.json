@@ -2,53 +2,110 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-5",
-  "title": "O que essa experiência pode levar para a vida",
+  "title": "Será que meu filho consegue?",
   "blocks": [
     {
       "key": "video-a5-foco",
-      "plannedVideo": "Título: Quando um conhecimento ganha uma função\n\nExplicar matemática contextualizada, organização de uma história e adaptação de estratégias a outro contexto, além do uso consciente de respostas prontas. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "plannedVideo": "Título: \"Será que ele vai ter foco?\"\n\nResponder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a5-suporte",
-      "plannedVideo": "Título: Criar também pode abrir uma conversa\n\nExplicar expressão, organização do pensamento, reciprocidade e ampliação de assuntos a partir da criação. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a5-dificil",
+      "plannedVideo": "Título: \"Será que não vai ser difícil?\"\n\nResponder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a5-escola",
+      "plannedVideo": "Título: Também ajuda na escola\n\nMostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a5-feliz",
+      "plannedVideo": "Título: O que a gente mais deseja: que eles sejam felizes\n\nRetomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a5",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nA criação pode dar sentido a conteúdos e oferecer um assunto compartilhado. As relações com outras situações são construídas com exemplos, convivência e apoio."
+        "markdown": "## Para consultar\n\nA resistência do início passa rápido com incentivo. O apoio diminui aos poucos, até a criança dizer \"não fala, deixa eu pensar\". O que ela aprende criando ganha sentido na escola e na vida."
       }
     }
   ],
   "sections": [
     {
       "key": "foco",
-      "title": "Quando um conhecimento ganha uma função",
-      "objective": "Explicar matemática contextualizada, organização de uma história e adaptação de estratégias a outro contexto, além do uso consciente de respostas prontas.",
+      "title": "\"Será que ele vai ter foco?\"",
+      "objective": "Responder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo.",
       "intent": "explanation",
-      "blockKeys": ["video-a5-foco"],
+      "blockKeys": [
+        "video-a5-foco"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a5-foco"]
+        "blockIds": [
+          "video-a5-foco"
+        ]
       }
     },
     {
-      "key": "suporte",
-      "title": "Criar também pode abrir uma conversa",
-      "objective": "Explicar expressão, organização do pensamento, reciprocidade e ampliação de assuntos a partir da criação.",
+      "key": "dificil",
+      "title": "\"Será que não vai ser difícil?\"",
+      "objective": "Responder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte.",
       "intent": "explanation",
-      "blockKeys": ["video-a5-suporte", "resumo-a5"],
+      "blockKeys": [
+        "video-a5-dificil"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a5-suporte"]
+        "blockIds": [
+          "video-a5-dificil"
+        ]
+      }
+    },
+    {
+      "key": "escola",
+      "title": "Também ajuda na escola",
+      "objective": "Mostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a5-escola"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a5-escola"
+        ]
+      }
+    },
+    {
+      "key": "feliz",
+      "title": "O que a gente mais deseja: que eles sejam felizes",
+      "objective": "Retomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a5-feliz",
+        "resumo-a5"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a5-feliz"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["para-casa-a5", "quiz-a5"]
+  "retireBlockKeys": [
+    "video-a5-suporte",
+    "para-casa-a5",
+    "quiz-a5"
+  ]
 }

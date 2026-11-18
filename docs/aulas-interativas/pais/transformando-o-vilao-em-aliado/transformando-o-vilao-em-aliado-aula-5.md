@@ -1,14 +1,16 @@
-# Aula 5. O que essa experiência pode levar para a vida
+# Aula 5. Será que meu filho consegue?
 
-**Objetivo:** Compreender relações entre a criação, a aprendizagem escolar e a conversa, distinguindo oportunidade de prática de resultado automático.
+**Objetivo:** Responder às dúvidas sobre foco e dificuldade, ver como a criação ajuda na escola e ligar tudo ao desejo de que os filhos sejam felizes.
 
-**Ideia central:** Explicar uma escolha e reconhecer uma estratégia ajudam a construir pontes entre a criação e outras situações.
+**Ideia central:** O foco na tela eles já têm. Com apoio no início e exigência crescente, a criança amplia o repertório que vai usar na escola e na vida.
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. Quando um conhecimento ganha uma função | Explicar matemática contextualizada, organização de uma história e adaptação de estratégias a outro contexto, além do uso consciente de respostas prontas. |
-| 2. Criar também pode abrir uma conversa | Explicar expressão, organização do pensamento, reciprocidade e ampliação de assuntos a partir da criação. |
+| 1. "Será que ele vai ter foco?" | Responder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo. |
+| 2. "Será que não vai ser difícil?" | Responder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte. |
+| 3. Também ajuda na escola | Mostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento. |
+| 4. O que a gente mais deseja: que eles sejam felizes | Retomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige. |
 
-**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A apostila e o resgate do presente não são critérios de conclusão.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

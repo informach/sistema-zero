@@ -1,15 +1,15 @@
-# Aula 3. Como criar jogos coloca isso em prática
+# Aula 3. De onde veio essa ideia e por onde começar
 
-**Objetivo:** Ver uma ideia se transformar em regra e resultado, compreendendo o ciclo de criação e as oportunidades de decisão e investigação.
+**Objetivo:** Conhecer a história que deu origem ao projeto e reconhecer no próprio filho as portas de entrada para a criação.
 
-**Ideia central:** O jogo é uma possibilidade concreta de praticar planejamento, escolhas, testes e ajustes, com orientação.
+**Ideia central:** O interesse que a criança já tem é a porta de entrada. Quando o adulto entra no mundo dela, ela abre portas para o dele.
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. Uma ideia pode virar um jogo | Apresentar a criação de jogos, o ciclo de trabalho e a programação com blocos. |
-| 2. Uma regra, um teste e um resultado | Mostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável. |
-| 3. O que a demonstração permite perceber | Relacionar ações observadas às habilidades, à agência e à investigação de problemas. |
+| 1. De onde veio tudo isso | Contar a história da família, do André que jogava muito ao André que ensina a criar jogos. |
+| 2. Você reconhece o seu filho aqui? | Reconhecer o filho em seis situações e ver como cada uma se liga à criação. |
+| 3. Entrar no mundo dele | Mostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar. |
 
-**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A apostila e o resgate do presente não são critérios de conclusão.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

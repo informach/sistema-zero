@@ -2,83 +2,91 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-6",
-  "title": "Uma oportunidade para experimentar com seu filho",
+  "title": "Como nasce um jogo",
   "blocks": [
     {
-      "key": "video-a6-conversa",
-      "plannedVideo": "Título: A criança cria, a família acompanha\n\nExplicar expectativas, participação do responsável e acesso ao ambiente sem transformar a apresentação em um tour. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a6-ciclo",
+      "plannedVideo": "Título: O ciclo de criação de um jogo\n\nApresentar o ciclo de criação e a relação dele com a redação, o trabalho e o pensar por conta própria. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a6-primeiro-passo",
-      "plannedVideo": "Título: O presente para conhecer essa possibilidade\n\nApresentar o Cadê Todo Mundo como experiência prática posterior, com acesso direto e sem avaliação. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a6-demonstracao",
+      "plannedVideo": "Título: Uma regra de cada vez\n\nDemonstrar a criação de duas regras de um esconde-esconde e explicar a causa e consequência. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "perguntas-a6",
+      "key": "video-a6-familia",
+      "plannedVideo": "Título: O assunto que abre a conversa\n\nMostrar como o jogo vira assunto em casa e ponto de partida para outras conversas. Fala completa em transformando-o-vilao-em-aliado-aula-6.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "resumo-a6",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nO Cadê Todo Mundo é a oportunidade de experimentar depois do minicurso. O responsável acompanha conforme a necessidade da criança; a apostila é consulta opcional.\n\nO presente é a experiência prática, depois do minicurso. Não é necessário emitir certificado para acessá-lo. Depois de assistir às partes, use **Baixar meu certificado** para registrar a conclusão do minicurso."
-      }
-    },
-    {
-      "key": "presente",
-      "content": {
-        "kind": "materials",
-        "title": "O presente: Cadê Todo Mundo por 7 dias",
-        "items": [
-          {
-            "id": "presente-cade",
-            "kind": "text",
-            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
-          },
-          {
-            "id": "presente-cade-link",
-            "kind": "link",
-            "label": "Pegar o presente do Cadê Todo Mundo",
-            "url": "https://sistemazero.com.br/bolsa/vilao-em-aliado-cade"
-          }
-        ]
-      }
-    },
-    {
-      "key": "certificado",
-      "content": {
-        "kind": "certificate",
-        "title": "Certificado de conclusão",
-        "introLine": "Certificamos que",
-        "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
-        "bodyText": "Conheceu possibilidades de usar a tela para criar e praticar habilidades cognitivas para a vida, com participação da família."
+        "markdown": "## Para consultar\n\nO ciclo de criação tem seis etapas: imaginar, planejar, programar, testar, melhorar e compartilhar. Nada vem pronto: cada regra é pensada pela criança, que percebe que a consequência vem da ação dela."
       }
     }
   ],
   "sections": [
     {
-      "key": "conversa",
-      "title": "A criança cria, a família acompanha",
-      "objective": "Explicar expectativas, participação do responsável e acesso ao ambiente sem transformar a apresentação em um tour.",
+      "key": "ciclo",
+      "title": "O ciclo de criação de um jogo",
+      "objective": "Apresentar o ciclo de criação e a relação dele com a redação, o trabalho e o pensar por conta própria.",
       "intent": "explanation",
-      "blockKeys": ["video-a6-conversa"],
+      "blockKeys": [
+        "video-a6-ciclo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a6-conversa"]
+        "blockIds": [
+          "video-a6-ciclo"
+        ]
       }
     },
     {
-      "key": "primeiro-passo",
-      "title": "O presente para conhecer essa possibilidade",
-      "objective": "Apresentar o Cadê Todo Mundo como experiência prática posterior, com acesso direto e sem avaliação.",
-      "intent": "delivery",
-      "blockKeys": ["video-a6-primeiro-passo", "perguntas-a6", "presente", "certificado"],
+      "key": "demonstracao",
+      "title": "Uma regra de cada vez",
+      "objective": "Demonstrar a criação de duas regras de um esconde-esconde e explicar a causa e consequência.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a6-demonstracao"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a6-primeiro-passo", "certificado"]
+        "blockIds": [
+          "video-a6-demonstracao"
+        ]
+      }
+    },
+    {
+      "key": "familia",
+      "title": "O assunto que abre a conversa",
+      "objective": "Mostrar como o jogo vira assunto em casa e ponto de partida para outras conversas.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a6-familia",
+        "resumo-a6"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a6-familia"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["quiz-a6"]
+  "retireBlockKeys": [
+    "video-a6-conversa",
+    "video-a6-primeiro-passo",
+    "perguntas-a6",
+    "presente",
+    "certificado",
+    "quiz-a6"
+  ]
 }

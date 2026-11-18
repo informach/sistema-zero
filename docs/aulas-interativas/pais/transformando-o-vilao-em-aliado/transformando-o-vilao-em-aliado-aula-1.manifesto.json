@@ -2,21 +2,25 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-1",
-  "title": "A tela pode ter outros usos",
+  "title": "O vilão que não dá para tirar",
   "blocks": [
     {
-      "key": "video-a1-pergunta",
-      "plannedVideo": "Título: O que acontece dentro da tela\n\nRelacionar a preocupação com as telas ao desenvolvimento e à participação da criança. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a1-abertura",
+      "plannedVideo": "Título: O maior vilão dos pais\n\nAbrir o curso, retomar o que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a1-tres-usos",
-      "plannedVideo": "Título: Assistir, jogar e criar\n\nDistinguir usos da tela sem desvalorizar o lazer nem transformar todo uso em obrigação produtiva. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a1-pergunta",
+      "plannedVideo": "Título: A pergunta que muda tudo\n\nTrocar a pergunta: da tela que só entretém para a tela que faz pensar, com início, meio e fim. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a1-tempo",
+      "plannedVideo": "Título: Mais tempo de tela?\n\nResponder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a1",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nAssistir, jogar e criar são experiências diferentes. O curso apresenta uma possibilidade de criação dentro dos limites e da rotina da família."
+        "markdown": "## Para consultar\n\nA grande pergunta não é como tirar a tela, e sim o que oferecer dentro dela. A proposta usa o mesmo tempo de tela que a criança já tem, de forma mais produtiva."
       }
     },
     {
@@ -31,33 +35,65 @@
   ],
   "sections": [
     {
-      "key": "pergunta",
-      "title": "O que acontece dentro da tela",
-      "objective": "Relacionar a preocupação com as telas ao desenvolvimento e à participação da criança.",
+      "key": "abertura",
+      "title": "O maior vilão dos pais",
+      "objective": "Abrir o curso, retomar o que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital.",
       "intent": "explanation",
-      "blockKeys": ["video-a1-pergunta"],
+      "blockKeys": [
+        "video-a1-abertura"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-pergunta"]
+        "blockIds": [
+          "video-a1-abertura"
+        ]
       }
     },
     {
-      "key": "tres-usos",
-      "title": "Assistir, jogar e criar",
-      "objective": "Distinguir usos da tela sem desvalorizar o lazer nem transformar todo uso em obrigação produtiva.",
+      "key": "pergunta",
+      "title": "A pergunta que muda tudo",
+      "objective": "Trocar a pergunta: da tela que só entretém para a tela que faz pensar, com início, meio e fim.",
       "intent": "explanation",
-      "blockKeys": ["video-a1-tres-usos", "resumo-a1", "apostila"],
+      "blockKeys": [
+        "video-a1-pergunta"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-tres-usos"]
+        "blockIds": [
+          "video-a1-pergunta"
+        ]
+      }
+    },
+    {
+      "key": "tempo",
+      "title": "Mais tempo de tela?",
+      "objective": "Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a1-tempo",
+        "resumo-a1",
+        "apostila"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a1-tempo"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["para-casa-a1", "quiz-a1"]
+  "retireBlockKeys": [
+    "video-a1-tres-usos",
+    "para-casa-a1",
+    "quiz-a1"
+  ]
 }

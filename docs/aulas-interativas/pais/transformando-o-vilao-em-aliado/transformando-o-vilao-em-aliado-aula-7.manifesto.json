@@ -1,0 +1,87 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-7",
+  "title": "Um presente para vocês experimentarem",
+  "blocks": [
+    {
+      "key": "video-a7-plataforma",
+      "plannedVideo": "Título: Onde o presente é entregue\n\nExplicar a segurança da plataforma, o controle do responsável e as ferramentas de criação. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a7-presente",
+      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "presente",
+      "content": {
+        "kind": "materials",
+        "title": "O presente: Cadê Todo Mundo por 7 dias",
+        "items": [
+          {
+            "id": "presente-cade",
+            "kind": "text",
+            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
+          },
+          {
+            "id": "presente-cade-link",
+            "kind": "link",
+            "label": "Pegar o presente do Cadê Todo Mundo",
+            "url": "https://sistemazero.com.br/bolsa/vilao-em-aliado-cade"
+          }
+        ]
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
+        "bodyText": "Conheceu como usar a tela para criar e treinar habilidades cognitivas para a vida, com a participação da família."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "plataforma",
+      "title": "Onde o presente é entregue",
+      "objective": "Explicar a segurança da plataforma, o controle do responsável e as ferramentas de criação.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a7-plataforma"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a7-plataforma"
+        ]
+      }
+    },
+    {
+      "key": "presente",
+      "title": "O presente: sete dias de Cadê Todo Mundo",
+      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, e deixar a mensagem final.",
+      "intent": "delivery",
+      "blockKeys": [
+        "video-a7-presente",
+        "presente",
+        "certificado"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a7-presente",
+          "certificado"
+        ]
+      }
+    }
+  ]
+}
