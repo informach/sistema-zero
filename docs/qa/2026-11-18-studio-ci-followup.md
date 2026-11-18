@@ -35,3 +35,25 @@ Não há exceção automática, downgrade forçado ou filtro para transformar es
 resultado em aprovação. A retirada do aviso não demonstra ausência de custo
 patológico em globs não confiáveis; os limites e o isolamento dos builds continuam
 necessários. Confirmar novamente a auditoria oficial no próximo run.
+
+## Nova rodada e correções posteriores
+
+`44348035213`, SHA `b40a335dd`: Docker, duas shards Chromium, Firefox/WebKit
+selecionados e medição passaram. O runner Windows de navegador sofreu ECONNRESET
+durante `npm ci`; não é resultado dos fluxos do produto. Contratos em Linux e
+Windows reprovaram o caso real de reload no WebKit. A investigação e correção
+estão em [Transação de saída](2026-11-18-studio-exit-transactions.md).
+
+A interceptação por contexto ainda não fechou o player público no Linux. A fixture
+passa a usar um servidor HTTPS real em loopback e uma imagem GIF de um pixel,
+contando GETs recebidos pelo servidor. Não depende mais da interceptação do primeiro
+pedido do iframe opaco, cuja corrida aparecia como resolução DNS de `evil.test`.
+Um certificado de teste é gerado com OpenSSL em pasta temporária validada e removido
+com o servidor; sua chave nunca entra no Git ou nos artefatos. Somente este teste
+aceita o certificado autoassinado. CSP e sandbox do produto permanecem idênticos.
+
+O controle estrito exige imagem completa sem pixels e nenhum GET no servidor;
+o criativo exige pixels decodificados e exatamente o GET `/creative`. Três repetições
+Windows passaram em 7 segundos. É prova com rede real local, sem serviço externo;
+confirmar também no Linux. O mock anterior e os passes Windows isolados não eram
+suficientes para declarar a falha encerrada.

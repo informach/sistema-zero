@@ -1,6 +1,10 @@
 import { expect, type Page, test } from '@playwright/test'
 import { createEmptyProject } from '../src/core/project'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
+import { createPassiveImageServer } from './helpers/passiveImageServer'
+
+// Only the generated loopback fixture certificate is self-signed.
+test.use({ ignoreHTTPSErrors: true })
 
 async function mountPlayerDocument(page: Page, html: string): Promise<void> {
   await page.evaluate((srcdoc) => {
@@ -18,31 +22,26 @@ async function mountPlayerDocument(page: Page, html: string): Promise<void> {
 
 test('player público estrito bloqueia GET passivo; perfil criativo é opt-in real', async ({
   page,
-  context,
 }) => {
   const project = createEmptyProject('security-profile', 'Segurança')
-  let requests = 0
-  await context.route('https://evil.test/**', async (route) => {
-    requests++
-    await route.fulfill({
-      status: 200,
-      contentType: 'image/gif',
-      body: Buffer.from('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==', 'base64'),
-    })
-  })
-  await page.goto('/')
+  const server = await createPassiveImageServer()
+  try {
+    await page.goto('/')
 
-  project.files['index.html'] = '<img alt="" src="https://evil.test/strict">'
-  const strict = await renderProjectToPreviewDocAsync(project, { securityProfile: 'strict' })
-  await mountPlayerDocument(page, strict)
-  const image = page.getByTestId('public-player').contentFrame().locator('img')
-  await expect(image).toHaveJSProperty('complete', true)
-  await expect(image).toHaveJSProperty('naturalWidth', 0)
-  expect(requests).toBe(0)
+    project.files['index.html'] = `<img alt="" src="${server.origin}/strict">`
+    const strict = await renderProjectToPreviewDocAsync(project, { securityProfile: 'strict' })
+    await mountPlayerDocument(page, strict)
+    const image = page.getByTestId('public-player').contentFrame().locator('img')
+    await expect(image).toHaveJSProperty('complete', true)
+    await expect(image).toHaveJSProperty('naturalWidth', 0)
+    expect(server.requests).toEqual([])
 
-  project.files['index.html'] = '<img alt="" src="https://evil.test/creative">'
-  const creative = await renderProjectToPreviewDocAsync(project, { securityProfile: 'creative' })
-  await mountPlayerDocument(page, creative)
-  await expect.poll(() => requests).toBe(1)
-  await expect(image).toHaveJSProperty('naturalWidth', 1)
+    project.files['index.html'] = `<img alt="" src="${server.origin}/creative">`
+    const creative = await renderProjectToPreviewDocAsync(project, { securityProfile: 'creative' })
+    await mountPlayerDocument(page, creative)
+    await expect(image).toHaveJSProperty('naturalWidth', 1)
+    expect(server.requests).toEqual(['/creative'])
+  } finally {
+    await server.dispose()
+  }
 })
