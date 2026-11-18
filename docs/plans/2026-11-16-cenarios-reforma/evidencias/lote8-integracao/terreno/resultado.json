@@ -1,0 +1,1897 @@
+{
+  "ciclos": [
+    {
+      "arquivos": 25,
+      "bytes": 6654785,
+      "nos": 18,
+      "colisoes": 7,
+      "gpu": {
+        "base": {
+          "geometries": 0,
+          "textures": 1
+        },
+        "alocados": {
+          "geometries": 22,
+          "textures": 17
+        },
+        "depois": {
+          "geometries": 0,
+          "textures": 1
+        }
+      }
+    },
+    {
+      "arquivos": 25,
+      "bytes": 6654785,
+      "nos": 18,
+      "colisoes": 7,
+      "gpu": {
+        "base": {
+          "geometries": 0,
+          "textures": 1
+        },
+        "alocados": {
+          "geometries": 22,
+          "textures": 17
+        },
+        "depois": {
+          "geometries": 0,
+          "textures": 1
+        }
+      }
+    },
+    {
+      "arquivos": 25,
+      "bytes": 6654785,
+      "nos": 18,
+      "colisoes": 7,
+      "gpu": {
+        "base": {
+          "geometries": 0,
+          "textures": 1
+        },
+        "alocados": {
+          "geometries": 22,
+          "textures": 17
+        },
+        "depois": {
+          "geometries": 0,
+          "textures": 1
+        }
+      }
+    }
+  ],
+  "provas": [
+    {
+      "x": 0,
+      "z": -6,
+      "altura": 1
+    },
+    {
+      "x": 6,
+      "z": -6,
+      "altura": 1
+    },
+    {
+      "x": -6,
+      "z": 0,
+      "altura": -1.8750286102294922
+    },
+    {
+      "x": 16,
+      "z": -4,
+      "altura": -0.49988555908203125
+    },
+    {
+      "x": 20,
+      "z": 20,
+      "altura": -0.24994277954101562
+    }
+  ],
+  "comparativos": [
+    {
+      "nome": "geral",
+      "erroMedio": 0.09210720486111111,
+      "maximo": 40,
+      "canaisAcima16": 2
+    },
+    {
+      "nome": "aproximacao",
+      "erroMedio": 0.13389865451388888,
+      "maximo": 15,
+      "canaisAcima16": 0
+    },
+    {
+      "nome": "rasante",
+      "erroMedio": 0.11904405381944444,
+      "maximo": 29,
+      "canaisAcima16": 1
+    }
+  ],
+  "avisos": [],
+  "autoriaIntacta": true,
+  "recursos": {
+    "geometries": 40,
+    "textures": 27
+  },
+  "cena": {
+    "formato": "molda-cena-compilada",
+    "versao": 1,
+    "nome": "Pacote integrado",
+    "unidade": "metro",
+    "eixoVertical": "y",
+    "fonte": {
+      "cenario": "integracao",
+      "revisao": 7,
+      "digest": "6b2057637c59fbee871a6cd87d16317fb80c9ea7e9a8abd3839231bc8c6133c4"
+    },
+    "arquivos": [
+      {
+        "caminho": "ceu/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67.png",
+        "digest": "39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "bytes": 118,
+        "mime": "image/png",
+        "papel": "ceu",
+        "largura": 8,
+        "altura": 4
+      },
+      {
+        "caminho": "modelos/modelo-0.glb",
+        "digest": "024a26dcacbeeff33e5c4249e3fe175951b3d6bdd44bef120cc2314b62e0c9e9",
+        "bytes": 2440,
+        "mime": "model/gltf-binary",
+        "papel": "modelo",
+        "malhas": 1,
+        "triangulos": 12,
+        "verticesMaximos": 36
+      },
+      {
+        "caminho": "colisoes/objeto-0.glb",
+        "digest": "43e9116b811db54aaf9fdc1d5dd0ca560f188f091450482c7c2181ac000757f9",
+        "bytes": 1700,
+        "mime": "model/gltf-binary",
+        "papel": "colisao",
+        "malhas": 1,
+        "triangulos": 12,
+        "verticesMaximos": 24
+      },
+      {
+        "caminho": "modelos/modelo-1.glb",
+        "digest": "3bf42177d448e9a65c6db7f9b781e1ea899de00e88e521955058f7259716be89",
+        "bytes": 1551712,
+        "mime": "model/gltf-binary",
+        "papel": "modelo",
+        "malhas": 6,
+        "triangulos": 5810,
+        "verticesMaximos": 1706
+      },
+      {
+        "caminho": "colisoes/objeto-1.glb",
+        "digest": "60e047d0d5f800efa49cdd0cbd9c1c2c1cc79ca3ca0b0f1566c4a1442594fb96",
+        "bytes": 9460,
+        "mime": "model/gltf-binary",
+        "papel": "colisao",
+        "malhas": 1,
+        "triangulos": 416,
+        "verticesMaximos": 238
+      },
+      {
+        "caminho": "colisoes/chao-0.glb",
+        "digest": "ecc531c10078d7d7e13cc58d2869abe089d612a57cbc1ffe25b42685eb25de94",
+        "bytes": 577572,
+        "mime": "model/gltf-binary",
+        "papel": "colisao",
+        "malhas": 1,
+        "triangulos": 7390,
+        "verticesMaximos": 22170
+      },
+      {
+        "caminho": "terreno/terreno-2.glb",
+        "digest": "6ad5137ee6ecfb60cb87a55347cbabd52c6d471ab08885c41606a39e28fc52ca",
+        "bytes": 776460,
+        "mime": "model/gltf-binary",
+        "papel": "terreno",
+        "malhas": 1,
+        "triangulos": 7551,
+        "verticesMaximos": 22653
+      },
+      {
+        "caminho": "caminhos/caminho-3.glb",
+        "digest": "503d0e8b98eed8747a82948278d640dea16bde477b689ccaa160afae0633dcf7",
+        "bytes": 73556,
+        "mime": "model/gltf-binary",
+        "papel": "caminho",
+        "malhas": 1,
+        "triangulos": 708,
+        "verticesMaximos": 2124
+      },
+      {
+        "caminho": "caminhos/caminho-4.glb",
+        "digest": "e1eadc6fea95e34addd3cdc290e1090a39bcb3d33b89fbfcb7317a55fe4db8a5",
+        "bytes": 1017008,
+        "mime": "model/gltf-binary",
+        "papel": "caminho",
+        "malhas": 1,
+        "triangulos": 3904,
+        "verticesMaximos": 3220
+      },
+      {
+        "caminho": "colisoes/caminho-0.glb",
+        "digest": "4bdc9576966ce52f05bdb402a86b7b8b5f42bf16426222891ed378c8997c2215",
+        "bytes": 101976,
+        "mime": "model/gltf-binary",
+        "papel": "colisao",
+        "malhas": 1,
+        "triangulos": 3904,
+        "verticesMaximos": 3220
+      },
+      {
+        "caminho": "aguas/agua-5.glb",
+        "digest": "1cc4d784b3e394a9409f557f2dac1640a9188bccafb4fed90778b3875bd37e30",
+        "bytes": 1572,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 3,
+        "verticesMaximos": 9
+      },
+      {
+        "caminho": "aguas/agua-6.glb",
+        "digest": "e38bbf9ab0df19f43445361dc8ce4ca57ece212974cb9e7d7389e9dde485863b",
+        "bytes": 1568,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 3,
+        "verticesMaximos": 9
+      },
+      {
+        "caminho": "aguas/agua-7.glb",
+        "digest": "319de216e9afde59cbfdaac6e2020e367eb57c36e137f5f39dd3d4e7198084ef",
+        "bytes": 1456,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 2,
+        "verticesMaximos": 6
+      },
+      {
+        "caminho": "aguas/agua-8.glb",
+        "digest": "565f701f9a27e33ebddd7c6d84dfbd5e6c978d5c05e4c43e628f6edaf31716ed",
+        "bytes": 1452,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 2,
+        "verticesMaximos": 6
+      },
+      {
+        "caminho": "aguas/agua-9.glb",
+        "digest": "08ad96d54f047ddeab9cf9bad7c2d43a95a81ffeaef93f084bd4c31ce1052f08",
+        "bytes": 4592,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 2,
+        "verticesMaximos": 6
+      },
+      {
+        "caminho": "aguas/agua-10.glb",
+        "digest": "81ec6e8649e5ea39f2ae387d7cf8b92a5cc8d011a7a1b811422f7c874594cbae",
+        "bytes": 981272,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 3310,
+        "verticesMaximos": 2216
+      },
+      {
+        "caminho": "aguas/agua-11.glb",
+        "digest": "f6cd04dd48a0a5ea3ae271a574f5b5354b8df9a4ef25753d53875de127cf43f5",
+        "bytes": 597372,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 798,
+        "verticesMaximos": 775
+      },
+      {
+        "caminho": "aguas/agua-12.glb",
+        "digest": "d0b2f1d2af5bfc44bd09525e08e14b7408c961e271ba936e625d9b9c50305807",
+        "bytes": 570500,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 44,
+        "verticesMaximos": 72
+      },
+      {
+        "caminho": "aguas/agua-13.glb",
+        "digest": "1359df75e7535c63866894bafd918520291d8ee533b81887dbfe182beef596b8",
+        "bytes": 90048,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 600,
+        "verticesMaximos": 1800
+      },
+      {
+        "caminho": "aguas/agua-14.glb",
+        "digest": "7c47d0db3677f1a9f80d13fcb15099ac0bd5d2a64381b240b5a1a24c46e82478",
+        "bytes": 107016,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 480,
+        "verticesMaximos": 363
+      },
+      {
+        "caminho": "aguas/agua-15.glb",
+        "digest": "62de622b40befb18966845d5227358828b5e219423ee030958f517a73542553a",
+        "bytes": 90448,
+        "mime": "model/gltf-binary",
+        "papel": "agua",
+        "malhas": 1,
+        "triangulos": 2220,
+        "verticesMaximos": 1237
+      },
+      {
+        "caminho": "colisoes/agua-0.glb",
+        "digest": "e3c67eb0c8fb1f8cbf307c2524e0f2c5962f2801ed448cda0618af490db8b7ab",
+        "bytes": 74260,
+        "mime": "model/gltf-binary",
+        "papel": "colisao",
+        "malhas": 1,
+        "triangulos": 3310,
+        "verticesMaximos": 2216
+      },
+      {
+        "caminho": "terreno/alturas.bin",
+        "digest": "8bf7665ade003380890b4ed7efc8ea72b7123ba0cae0dccedb400fbc21502983",
+        "bytes": 16900,
+        "mime": "application/octet-stream",
+        "papel": "alturas"
+      },
+      {
+        "caminho": "terreno/alturas.png",
+        "digest": "08e165acb9e38f02e0940c2c1cd32ea908f7aa313060c6ba68e7e53e90c039d6",
+        "bytes": 231,
+        "mime": "image/png",
+        "papel": "alturas",
+        "largura": 65,
+        "altura": 65
+      },
+      {
+        "caminho": "terreno/buracos.bin",
+        "digest": "f0c500e2401e1aee33d11ae25ae14e574820fbdb1731670af1888f88f3c17794",
+        "bytes": 4096,
+        "mime": "application/octet-stream",
+        "papel": "buracos"
+      }
+    ],
+    "entidades": [
+      {
+        "id": "conjunto",
+        "nome": "Conjunto transformado",
+        "tipo": "montagem",
+        "grupo": null,
+        "matriz": [
+          0.917810624741386,
+          0,
+          -0.7730612246852292,
+          0,
+          0,
+          1.2,
+          0,
+          0,
+          0.7730612246852292,
+          0,
+          0.917810624741386,
+          0,
+          18,
+          0,
+          -4,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 15.739035413282494,
+            "y": 0,
+            "z": -6.304389406734354
+          },
+          "max": {
+            "x": 20.260964586717506,
+            "y": 0.96,
+            "z": -1.6956105932656458
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "a",
+        "nome": "a",
+        "tipo": "objeto",
+        "grupo": null,
+        "propriedades": {
+          "uso": "ensaio"
+        },
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 1,
+            "y": 1,
+            "z": -5
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "b",
+        "nome": "b",
+        "tipo": "objeto",
+        "grupo": null,
+        "propriedades": {
+          "uso": "ensaio"
+        },
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          6,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 5,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 7,
+            "y": 1,
+            "z": -5
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "ator",
+        "nome": "Cute Characters",
+        "tipo": "objeto",
+        "grupo": null,
+        "propriedades": {
+          "ator": true
+        },
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          -3,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 1.585983872048883,
+            "y": 0.0035682092782272313,
+            "z": -3.26800219272954
+          },
+          "max": {
+            "x": 2.414016341773593,
+            "y": 1.1736087058104587,
+            "z": -2.7489341804131997
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "conjunto/objeto/0",
+        "nome": "a",
+        "tipo": "objeto",
+        "grupo": "conjunto",
+        "propriedades": {
+          "uso": "ensaio"
+        },
+        "matriz": [
+          1.1013727496896633,
+          0,
+          -0.927673469622275,
+          0,
+          0,
+          0.96,
+          0,
+          0,
+          1.1595918370278437,
+          0,
+          1.376715937112079,
+          0,
+          18,
+          0,
+          -4,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 15.739035413282494,
+            "y": 0,
+            "z": -6.304389406734354
+          },
+          "max": {
+            "x": 20.260964586717506,
+            "y": 0.96,
+            "z": -1.6956105932656458
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "mar",
+        "nome": "Mar",
+        "tipo": "agua",
+        "grupo": null,
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1016,
+            "y": -1,
+            "z": -1016
+          },
+          "max": {
+            "x": 1032,
+            "y": -1,
+            "z": 1032
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "lago",
+        "nome": "Lago de catálogo",
+        "tipo": "agua",
+        "grupo": null,
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 2.7025370597839355,
+            "y": -1.399999976158142,
+            "z": 5.984644889831543
+          },
+          "max": {
+            "x": 13.46055555343628,
+            "y": 0.239127516746521,
+            "z": 13.95801043510437
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "trilha",
+        "nome": "Trilha",
+        "tipo": "caminho",
+        "grupo": null,
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -6,
+            "y": -1.8750286102294922,
+            "z": -1
+          },
+          "max": {
+            "x": 16.184288024902344,
+            "y": -0.48841238021850586,
+            "z": 3.982872247695923
+          }
+        },
+        "oculto": false
+      },
+      {
+        "id": "ponte",
+        "nome": "Ponte de catálogo",
+        "tipo": "caminho",
+        "grupo": null,
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 7,
+            "y": 0,
+            "z": 4.000000000000001
+          },
+          "max": {
+            "x": 9,
+            "y": 0.5082325595994326,
+            "z": 16
+          }
+        },
+        "oculto": false
+      }
+    ],
+    "nos": [
+      {
+        "id": "visual-0",
+        "entidade": "a",
+        "arquivo": "modelos/modelo-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 1,
+            "y": 1,
+            "z": -5
+          }
+        }
+      },
+      {
+        "id": "visual-1",
+        "entidade": "b",
+        "arquivo": "modelos/modelo-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          6,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 5,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 7,
+            "y": 1,
+            "z": -5
+          }
+        }
+      },
+      {
+        "id": "visual-2",
+        "entidade": "ator",
+        "arquivo": "modelos/modelo-1.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          -3,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 1.585983872048883,
+            "y": 0.0035682092782272313,
+            "z": -3.26800219272954
+          },
+          "max": {
+            "x": 2.414016341773593,
+            "y": 1.1736087058104587,
+            "z": -2.7489341804131997
+          }
+        }
+      },
+      {
+        "id": "visual-3",
+        "entidade": "conjunto/objeto/0",
+        "arquivo": "modelos/modelo-0.glb",
+        "matriz": [
+          1.1013727496896633,
+          0,
+          -0.927673469622275,
+          0,
+          0,
+          0.96,
+          0,
+          0,
+          1.1595918370278437,
+          0,
+          1.376715937112079,
+          0,
+          18,
+          0,
+          -4,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 15.739035413282494,
+            "y": 0,
+            "z": -6.304389406734354
+          },
+          "max": {
+            "x": 20.260964586717506,
+            "y": 0.96,
+            "z": -1.6956105932656458
+          }
+        }
+      },
+      {
+        "id": "visual-4",
+        "entidade": null,
+        "arquivo": "terreno/terreno-2.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -8,
+          0,
+          -8,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -8,
+            "y": -2,
+            "z": -8
+          },
+          "max": {
+            "x": 24,
+            "y": 0,
+            "z": 24
+          }
+        }
+      },
+      {
+        "id": "visual-5",
+        "entidade": "trilha",
+        "arquivo": "caminhos/caminho-3.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -6,
+          0,
+          0,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -6,
+            "y": -1.8750286102294922,
+            "z": -1
+          },
+          "max": {
+            "x": 16.184288024902344,
+            "y": -0.48841238021850586,
+            "z": 3.982872247695923
+          }
+        }
+      },
+      {
+        "id": "visual-6",
+        "entidade": "ponte",
+        "arquivo": "caminhos/caminho-4.glb",
+        "matriz": [
+          0.45951124540487825,
+          0,
+          0,
+          0,
+          0,
+          0.45951124540487825,
+          0,
+          0,
+          0,
+          0,
+          0.9713663019147699,
+          0,
+          7.989189833793112,
+          0.22575622547965132,
+          10.020181833508984,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 7,
+            "y": 0,
+            "z": 4.000000000000001
+          },
+          "max": {
+            "x": 9,
+            "y": 0.5082325595994326,
+            "z": 16
+          }
+        }
+      },
+      {
+        "id": "visual-7",
+        "entidade": "mar",
+        "arquivo": "aguas/agua-5.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1,
+          -512,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1016,
+            "y": -1,
+            "z": -1016
+          },
+          "max": {
+            "x": 1032,
+            "y": -1,
+            "z": -8
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-8",
+        "entidade": "mar",
+        "arquivo": "aguas/agua-6.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1,
+          528,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1016,
+            "y": -1,
+            "z": 24
+          },
+          "max": {
+            "x": 1032,
+            "y": -1,
+            "z": 1032
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-9",
+        "entidade": "mar",
+        "arquivo": "aguas/agua-7.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -512,
+          -1,
+          8,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1016,
+            "y": -1,
+            "z": -8
+          },
+          "max": {
+            "x": -8,
+            "y": -1,
+            "z": 24
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-10",
+        "entidade": "mar",
+        "arquivo": "aguas/agua-8.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          528,
+          -1,
+          8,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 24,
+            "y": -1,
+            "z": -8
+          },
+          "max": {
+            "x": 1032,
+            "y": -1,
+            "z": 24
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-11",
+        "entidade": "mar",
+        "arquivo": "aguas/agua-9.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1,
+          8,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -8,
+            "y": -1,
+            "z": -8
+          },
+          "max": {
+            "x": 24,
+            "y": -1,
+            "z": 24
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-12",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-10.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 3.3475823402404785,
+            "y": -1.399999976158142,
+            "z": 6.111349582672119
+          },
+          "max": {
+            "x": 12.80983304977417,
+            "y": 0.239127516746521,
+            "z": 13.865522861480713
+          }
+        }
+      },
+      {
+        "id": "visual-13",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-11.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 2.7025370597839355,
+            "y": 0.004999995231628418,
+            "z": 5.984644889831543
+          },
+          "max": {
+            "x": 13.46055555343628,
+            "y": 0.16200006008148193,
+            "z": 13.95801043510437
+          }
+        }
+      },
+      {
+        "id": "visual-14",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-12.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 8.51143592596054,
+            "y": 0.040000081062316895,
+            "z": 8.72000002861023
+          },
+          "max": {
+            "x": 8.788564026355743,
+            "y": 0.10000002384185791,
+            "z": 9.039999961853027
+          }
+        }
+      },
+      {
+        "id": "visual-15",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-13.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8.054347038269043,
+          -0.017999887466430664,
+          9.969491004943848,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 3.809896945953369,
+            "y": -0.017999887466430664,
+            "z": 6.361231565475464
+          },
+          "max": {
+            "x": 12.298797130584717,
+            "y": 0.017999887466430664,
+            "z": 13.577750444412231
+          }
+        },
+        "efeito": "agua"
+      },
+      {
+        "id": "visual-16",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-14.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 3.80056095123291,
+            "y": 0.008000016212463379,
+            "z": 6.351450204849243
+          },
+          "max": {
+            "x": 12.308132648468018,
+            "y": 0.1520000696182251,
+            "z": 13.587627410888672
+          }
+        }
+      },
+      {
+        "id": "visual-17",
+        "entidade": "lago",
+        "arquivo": "aguas/agua-15.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 3.9917778968811035,
+            "y": -1.379999976605177,
+            "z": 6.694296836853027
+          },
+          "max": {
+            "x": 12.088479042053223,
+            "y": -0.051905155181884766,
+            "z": 13.251087665557861
+          }
+        }
+      }
+    ],
+    "colisoes": [
+      {
+        "id": "colisao-0",
+        "entidade": "a",
+        "arquivo": "colisoes/objeto-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -1,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 1,
+            "y": 1,
+            "z": -5
+          }
+        },
+        "tipo": "caixa"
+      },
+      {
+        "id": "colisao-1",
+        "entidade": "b",
+        "arquivo": "colisoes/objeto-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          6,
+          0,
+          -6,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 5,
+            "y": 0,
+            "z": -7
+          },
+          "max": {
+            "x": 7,
+            "y": 1,
+            "z": -5
+          }
+        },
+        "tipo": "caixa"
+      },
+      {
+        "id": "colisao-2",
+        "entidade": "ator",
+        "arquivo": "colisoes/objeto-1.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          -3,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 1.5859838724136353,
+            "y": 0.0035682134330272675,
+            "z": -3.422484427690506
+          },
+          "max": {
+            "x": 2.414016366004944,
+            "y": 1.173608660697937,
+            "z": -2.5944519340991974
+          }
+        },
+        "tipo": "capsula"
+      },
+      {
+        "id": "colisao-3",
+        "entidade": "conjunto/objeto/0",
+        "arquivo": "colisoes/objeto-0.glb",
+        "matriz": [
+          1.1013727496896633,
+          0,
+          -0.927673469622275,
+          0,
+          0,
+          0.96,
+          0,
+          0,
+          1.1595918370278437,
+          0,
+          1.376715937112079,
+          0,
+          18,
+          0,
+          -4,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 15.739035413282494,
+            "y": 0,
+            "z": -6.304389406734354
+          },
+          "max": {
+            "x": 20.260964586717506,
+            "y": 0.96,
+            "z": -1.6956105932656458
+          }
+        },
+        "tipo": "caixa"
+      },
+      {
+        "id": "colisao-4",
+        "entidade": null,
+        "arquivo": "colisoes/chao-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -8,
+          0,
+          -8,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": -8,
+            "y": -2,
+            "z": -8
+          },
+          "max": {
+            "x": 24,
+            "y": 0,
+            "z": 24
+          }
+        },
+        "tipo": "terreno"
+      },
+      {
+        "id": "colisao-5",
+        "entidade": "ponte",
+        "arquivo": "colisoes/caminho-0.glb",
+        "matriz": [
+          0.45951124540487825,
+          0,
+          0,
+          0,
+          0,
+          0.45951124540487825,
+          0,
+          0,
+          0,
+          0,
+          0.9713663019147699,
+          0,
+          7.989189833793112,
+          0.22575622547965132,
+          10.020181833508984,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 7,
+            "y": 0,
+            "z": 4.000000000000001
+          },
+          "max": {
+            "x": 9,
+            "y": 0.5082325595994326,
+            "z": 16
+          }
+        },
+        "tipo": "caminho"
+      },
+      {
+        "id": "colisao-6",
+        "entidade": "lago",
+        "arquivo": "colisoes/agua-0.glb",
+        "matriz": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          8,
+          -1.399999976158142,
+          10,
+          1
+        ],
+        "volume": {
+          "min": {
+            "x": 3.3475823402404785,
+            "y": -1.399999976158142,
+            "z": 6.111349582672119
+          },
+          "max": {
+            "x": 12.80983304977417,
+            "y": 0.239127516746521,
+            "z": 13.865522861480713
+          }
+        },
+        "tipo": "agua"
+      }
+    ],
+    "terreno": {
+      "origem": {
+        "x": -8,
+        "z": -8
+      },
+      "passo": 0.5,
+      "colunas": 64,
+      "linhas": 64,
+      "min": -10,
+      "max": 20,
+      "fundo": -2,
+      "cobertura": "grade",
+      "pecas": [
+        {
+          "coluna": 0,
+          "linha": 0
+        }
+      ],
+      "recortes": [
+        [
+          {
+            "x": 3,
+            "z": 5
+          },
+          {
+            "x": 13,
+            "z": 5
+          },
+          {
+            "x": 13,
+            "z": 15
+          },
+          {
+            "x": 3,
+            "z": 15
+          }
+        ]
+      ],
+      "alturas": "terreno/alturas.bin",
+      "pngAlturas": "terreno/alturas.png",
+      "buracos": "terreno/buracos.bin"
+    },
+    "aguas": [
+      {
+        "id": "mar",
+        "nome": "Mar",
+        "grupo": null,
+        "bloqueado": false,
+        "oculto": false,
+        "aparencia": {
+          "corRasa": "#78c7cb",
+          "corProfunda": "#286c8e",
+          "opacidadeRasa": 0.45,
+          "opacidadeProfunda": 0.85,
+          "profundidadeDeCor": 4,
+          "ondas": {
+            "altura": 0,
+            "comprimento": 3,
+            "velocidade": 0
+          },
+          "espuma": {
+            "largura": 0.35,
+            "intensidade": 0.35,
+            "cor": "#e7fcff"
+          }
+        },
+        "tipo": "mar",
+        "nivel": -1
+      },
+      {
+        "id": "lago",
+        "nome": "Lago de catálogo",
+        "grupo": null,
+        "bloqueado": false,
+        "oculto": false,
+        "aparencia": {
+          "corRasa": "#78c7cb",
+          "corProfunda": "#286c8e",
+          "opacidadeRasa": 0.45,
+          "opacidadeProfunda": 0.85,
+          "profundidadeDeCor": 4,
+          "ondas": {
+            "altura": 0,
+            "comprimento": 3,
+            "velocidade": 0
+          },
+          "espuma": {
+            "largura": 0.35,
+            "intensidade": 0.35,
+            "cor": "#e7fcff"
+          }
+        },
+        "modelo": "lago-modelo",
+        "centro": {
+          "x": 8,
+          "z": 10
+        },
+        "giro": 0,
+        "escala": 1,
+        "nivel": 0,
+        "profundidade": 2,
+        "contorno": [
+          {
+            "x": -4.2,
+            "z": -3.6
+          },
+          {
+            "x": 4.3,
+            "z": -3.6
+          },
+          {
+            "x": 4.3,
+            "z": 3.6
+          },
+          {
+            "x": -4.2,
+            "z": 3.6
+          }
+        ],
+        "recorte": [
+          {
+            "x": -5,
+            "z": -5
+          },
+          {
+            "x": 5,
+            "z": -5
+          },
+          {
+            "x": 5,
+            "z": 5
+          },
+          {
+            "x": -5,
+            "z": 5
+          }
+        ],
+        "encaixeModelo": {
+          "nivelLocal": 1.399999976158142,
+          "materiaisDaAgua": [
+            "agua"
+          ],
+          "materiaisSolidos": [
+            "cor"
+          ]
+        },
+        "tipo": "lago"
+      }
+    ],
+    "caminhos": [
+      {
+        "id": "trilha",
+        "nome": "Trilha",
+        "grupo": null,
+        "bloqueado": false,
+        "oculto": false,
+        "pontos": [
+          {
+            "x": -6,
+            "z": 0
+          },
+          {
+            "x": 0,
+            "z": 0
+          },
+          {
+            "x": 16,
+            "z": 3
+          }
+        ],
+        "acabamento": null,
+        "largura": 2,
+        "tipo": "trilha"
+      },
+      {
+        "id": "ponte",
+        "nome": "Ponte de catálogo",
+        "grupo": null,
+        "bloqueado": false,
+        "oculto": false,
+        "pontos": [
+          {
+            "x": 8,
+            "z": 4
+          },
+          {
+            "x": 8,
+            "z": 16
+          }
+        ],
+        "acabamento": "ponte",
+        "largura": 2,
+        "encaixeModelo": {
+          "eixo": "z",
+          "pisoLocal": 0
+        },
+        "tipo": "ponte",
+        "cotas": {
+          "de": 0,
+          "ate": 0
+        },
+        "espessura": 0.2,
+        "guardas": true,
+        "alturaDaGuarda": 0.7
+      }
+    ],
+    "marcadores": [],
+    "texturas": [
+      {
+        "id": "padrao",
+        "arquivo": "ceu/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67.png"
+      }
+    ],
+    "fontes": {
+      "modelos": [
+        {
+          "id": "lago-modelo",
+          "biblioteca": "reino",
+          "digest": "87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+          "nome": "Lago",
+          "modelo": "lago_nadavel"
+        },
+        {
+          "id": "avatar",
+          "biblioteca": "cute",
+          "digest": "10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+          "nome": "avatar",
+          "modelo": "avatar"
+        },
+        {
+          "id": "ponte",
+          "biblioteca": "adventure",
+          "digest": "8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+          "nome": "ponte",
+          "modelo": "ponte"
+        }
+      ],
+      "texturas": [
+        {
+          "id": "padrao",
+          "biblioteca": "propria",
+          "digest": "39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+          "textura": "padrao"
+        }
+      ],
+      "conjuntos": [
+        {
+          "id": "def",
+          "biblioteca": "reino",
+          "conjunto": "ensaio",
+          "revisao": 1
+        }
+      ]
+    },
+    "licencas": [
+      {
+        "id": "adventure",
+        "nome": "Adventure Land",
+        "licenca": "restrita"
+      },
+      {
+        "id": "cute",
+        "nome": "Cute Characters",
+        "licenca": "restrita"
+      },
+      {
+        "id": "propria",
+        "nome": "Padrão próprio do ensaio",
+        "licenca": "propria"
+      },
+      {
+        "id": "reino",
+        "nome": "Reino",
+        "licenca": "restrita"
+      }
+    ],
+    "ambiente": {
+      "hora": 12,
+      "ceu": {
+        "tipo": "panorama",
+        "textura": "padrao",
+        "giro": 0.4,
+        "intensidade": 0.8
+      }
+    }
+  }
+}

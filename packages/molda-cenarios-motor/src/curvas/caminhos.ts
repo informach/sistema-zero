@@ -227,7 +227,7 @@ export class CaminhosDoPalco {
           ...(p.parte ? { parte: p.parte } : {}),
         })
         if ((modelo || estrutural) && c.colisao !== 'nenhuma')
-          colisoes.push({ geometria: p.geometria, matriz: p.matriz })
+          colisoes.push({ objeto: c.id, geometria: p.geometria, matriz: p.matriz })
       }
       return {
         chave: '',

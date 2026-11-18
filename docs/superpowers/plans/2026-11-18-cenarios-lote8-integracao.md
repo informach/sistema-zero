@@ -48,3 +48,9 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 **Superfícies de solo já conferidas em recorte:** [setores, pintura portátil e encontros](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-solo-caminhos.md). Partição do piso/detalhes e solução portátil dos decals foram comparadas com o palco e o GLB reaberto; água e montagem continuam pendentes.
 
 **Água em recorte:** [acabamento e leitura exata na GPU](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-agua-portatil.md). A comparação encontrou/corrigiu um erro de endereçamento do shader existente. Gradiente, alpha e espuma estáticos passaram no GLB reaberto; oceano, restauração dos efeitos e integração final continuam pendentes.
+
+## Atualização — compilador integrado
+
+[Primeiro pacote integrado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-integracao.md): `compilarCenario` e o subpath público `motor/compilar` existem, e o oceano está integrado. Piso próprio e terreno/catálogo passaram em três ciclos completos/cancelados, reabertura independente, consultas físicas, mesmas câmeras e validação Khronos. Foram corrigidos o recorte de piso com rotação no nó e a recompressão WebP. As afirmações acima sobre montagem/subpath inexistentes descrevem o ponto inicial deste plano.
+
+8.2 permanece ativo até a junção estática com identidade e as provas restantes. Não iniciar outro lote ou implantação. A restauração das ondas e os consumidores pertencem à sequência planejada do próprio lote 8.

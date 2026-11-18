@@ -40,15 +40,16 @@ export * from './entidades-schema'
  */
 const id = IdentificadorDeCenarioSchema
 
+export const BasePlanaSchema = z
+  .object({
+    tipo: z.literal('plano'),
+    largura: z.number().finite().min(8).max(8192),
+    comprimento: z.number().finite().min(8).max(8192),
+  })
+  .strict()
 export const BaseSchema = z.discriminatedUnion('tipo', [
   BaseDeTerrenoSchema,
-  z
-    .object({
-      tipo: z.literal('plano'),
-      largura: z.number().finite().min(8).max(8192),
-      comprimento: z.number().finite().min(8).max(8192),
-    })
-    .strict(),
+  BasePlanaSchema,
   /** Relevo calculado por um jogo. Só para abrir cenários v1 até a conversão em terreno. */
   z
     .object({

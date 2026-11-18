@@ -3,6 +3,7 @@ import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar
 import type { AnimationClip, Mesh, Object3D } from 'three'
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
 import type { ArquivosDaCompilacao } from './arquivos'
+import { prepararImagensDoGlb } from './imagens-glb'
 import { inspecionarGlbDaCompilacao } from './inspecao-glb'
 
 /** Serializa somente raízes já preparadas: shaders de solo/água precisam de acabamento portátil.
@@ -56,19 +57,25 @@ export async function gravarGlbCompilado(
     )
       throw Error('O GLB excede o orçamento de memória ou de partes da compilação.')
   })
-  const resultado = await new GLTFExporter().parseAsync(raiz, {
-    binary: true,
-    onlyVisible: true,
-    maxTextureSize: 4096,
-    animations: [...animacoes],
-    includeCustomExtensions: false,
-  })
+  const imagens = prepararImagensDoGlb(raiz)
+  let resultado: ArrayBuffer | { [key: string]: unknown }
+  try {
+    resultado = await new GLTFExporter().parseAsync(raiz, {
+      binary: true,
+      onlyVisible: true,
+      maxTextureSize: 4096,
+      animations: [...animacoes],
+      includeCustomExtensions: false,
+    })
+  } finally {
+    imagens.descartar()
+  }
   sinal.throwIfAborted()
   if (!(resultado instanceof ArrayBuffer)) throw Error('O exportador não produziu um arquivo GLB.')
   const bytes = normalizeGlbImagePadding(new Uint8Array(resultado)),
     medidas = inspecionarGlbDaCompilacao(bytes)
   sinal.throwIfAborted()
-  return arquivos.adicionar(caminho, bytes, {
+  return arquivos.adicionarDeduplicado(caminho, bytes, {
     mime: 'model/gltf-binary',
     papel,
     malhas: medidas.malhas,
