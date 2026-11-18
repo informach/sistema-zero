@@ -18,6 +18,8 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 - Atores, skins, morphs e modelos com clipes seguem `normalizarRaizAnimavel`, nunca a geometria da pose inicial. Clonar o esqueleto, dividir por material e manter binds/clipes; isso já foi provado com fixture acima de 65.000 vértices e Cute real. Ainda integrar aparência/reflexo e projeção portátil de UV de atores, sem perder canais ou expressão.
 - Para UV de ator, usar a pose inicial apenas como referencial de projeção: a geometria exportada continua com posições-base, juntas, pesos e morphs. Preservar triângulos inclusive se uma pose temporariamente os colapsar. O remapeamento precisa distribuir canais de morph às partes e conservar a hierarquia dos ossos.
 
+**Recortes conferidos:** [objetos/metadados](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-objetos-metadados.md) e [acabamento de atores](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-acabamento-atores.md) implementam os itens acima. A integração final permanece pendente; o estado de 8.2 não muda para concluído.
+
 ## Terreno, caminhos e colisões
 
 - Extrair todas as superfícies dos geradores próprios da execução, sem câmera/LOD. O piso de reserva do terreno pode conter várias peças em um mesh: separar por setores a partir dos triângulos existentes antes de assar texturas. Não regerar terreno por um segundo algoritmo.

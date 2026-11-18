@@ -116,6 +116,18 @@ test('hierarquia profunda não chega à recursão do decoder', () => {
   ).toThrow(/profunda/)
 })
 
+test('morph que o Three não conserva é recusado antes do carregamento', () => {
+  const { j, bin } = exemplo()
+  const bytes = glb(
+    {
+      ...j,
+      meshes: [{ primitives: [{ attributes: { POSITION: 0 }, targets: [{ TANGENT: 0 }] }] }],
+    },
+    bin,
+  )
+  expect(() => inspecionarGlbDaCompilacao(bytes, { fonte: true })).toThrow(/morph/)
+})
+
 test('imagem de fonte com padding do exportador é normalizada sem alterar o hash autoral; saída continua estrita', () => {
   const { j, bin } = exemplo(),
     png = new Uint8Array(

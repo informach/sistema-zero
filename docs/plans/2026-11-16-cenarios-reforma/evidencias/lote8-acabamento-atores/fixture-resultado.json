@@ -1,0 +1,41 @@
+{
+  "ref": {
+    "caminho": "modelos/ator.glb",
+    "digest": "dcd82eb966ab09bebecb45ca298152751598423c82d048fcca1fce208fd70e68",
+    "bytes": 3515468,
+    "mime": "model/gltf-binary",
+    "papel": "modelo",
+    "malhas": 2,
+    "triangulos": 21667,
+    "verticesMaximos": 64998
+  },
+  "espelho": {
+    "x": true,
+    "y": false,
+    "z": false
+  },
+  "partes": 2,
+  "vertices": [
+    64998,
+    3
+  ],
+  "clipes": 1,
+  "quadros": [
+    {
+      "tempo": 0.125,
+      "erroMaximoMetros": 0
+    },
+    {
+      "tempo": 0.25,
+      "erroMaximoMetros": 0
+    },
+    {
+      "tempo": 0.5,
+      "erroMaximoMetros": 0
+    },
+    {
+      "tempo": 0.75,
+      "erroMaximoMetros": 0
+    }
+  ]
+}

@@ -4,7 +4,8 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-animacao'),
+  espelhar = process.env.CENARIOS_QA_ATOR_REFLEXO === '1',
+  saida = resolve(raiz, `output/cenarios-reforma/lote8-animacao${espelhar ? '-espelho' : ''}`),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true }),
@@ -22,8 +23,12 @@ try {
         { ArquivosDaCompilacao } = await import(urls.arquivos),
         { gravarGlbCompilado } = await import(urls.glb),
         { lerGlb } = await import(urls.modelos),
+        { matrizDoEspelho } = await import(urls.representacoes),
         original = modeloAnimavelDeEnsaio(),
-        normal = normalizarRaizAnimavel(original.raiz, [original.clip]),
+        caixa = new T.Box3().setFromObject(original.raiz),
+        espelho = { x: urls.espelhar, y: false, z: false },
+        reflexo = matrizDoEspelho(caixa, espelho),
+        normal = normalizarRaizAnimavel(original.raiz, [original.clip], { caixa, espelho }),
         sinal = new AbortController().signal,
         arquivos = new ArquivosDaCompilacao(sinal),
         a = new T.AnimationMixer(original.raiz)
@@ -62,7 +67,8 @@ try {
               const origem = ids.getX(i),
                 esperado = original.malha
                   .getVertexPosition(origem, new T.Vector3())
-                  .applyMatrix4(original.malha.matrixWorld),
+                  .applyMatrix4(original.malha.matrixWorld)
+                  .applyMatrix4(reflexo),
                 obtido = parte.getVertexPosition(i, new T.Vector3()).applyMatrix4(parte.matrixWorld)
               erro = Math.max(erro, esperado.distanceTo(obtido))
             }
@@ -74,6 +80,7 @@ try {
           blocos.push(String.fromCharCode(...bytes.subarray(i, i + 16384)))
         return {
           ref,
+          espelho,
           partes: partes.length,
           vertices: partes.map((n) => n.geometry.getAttribute('position').count),
           clipes: carregado.animacoes.length,
@@ -102,6 +109,8 @@ try {
       arquivos: modulo('packages/molda-cenarios-motor/src/compilar/arquivos.ts'),
       glb: modulo('packages/molda-cenarios-motor/src/compilar/arquivos-glb.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),
+      representacoes: modulo('packages/molda-cenarios-motor/src/representacoes.ts'),
+      espelhar,
     },
   )
   writeFileSync(resolve(saida, 'ator.glb'), Buffer.from(r.glb, 'base64'))

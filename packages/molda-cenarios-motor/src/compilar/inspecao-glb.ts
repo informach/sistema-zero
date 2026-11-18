@@ -75,6 +75,14 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
     let partes = 0,
       tris = 0
     for (const p of m.primitives) {
+      if (
+        p.targets.some((t) =>
+          [...t.keys()].some((canal) => !['POSITION', 'NORMAL'].includes(canal)),
+        )
+      )
+        throw Error(
+          'Um canal de morph não pode ser preservado pelo leitor/exportador glTF instalado.',
+        )
       if (p.topology.kind !== 'triangles') throw Error('A compilação exige malhas de triângulos.')
       const indice = p.attributes.get('POSITION')
       if (indice === undefined) throw Error('Uma malha não possui posições.')

@@ -1,5 +1,6 @@
 import type { InstanciaDeCenario } from '@sistemazero/molda-cenarios-core/v2'
 import {
+  type Box3,
   type BufferGeometry,
   Matrix4,
   type MeshStandardMaterial,
@@ -11,6 +12,17 @@ import { transformarGeometriaEstatica } from './geometria-instanciada'
 import { LoteDoModelo } from './lotes'
 import type { ModeloCarregado, ParteDoModelo } from './modelos'
 import { geometriaParaTextura, materialDaTextura } from './projecao-textura'
+
+/** Reflexo no mesmo centro do modelo, compartilhado pelo palco e pelo compilador. */
+export function matrizDoEspelho(caixa: Box3, espelho?: InstanciaDeCenario['espelho']) {
+  const centro = caixa.getCenter(new Vector3())
+  return new Matrix4()
+    .makeTranslation(centro.x, centro.y, centro.z)
+    .multiply(
+      new Matrix4().makeScale(espelho?.x ? -1 : 1, espelho?.y ? -1 : 1, espelho?.z ? -1 : 1),
+    )
+    .multiply(new Matrix4().makeTranslation(-centro.x, -centro.y, -centro.z))
+}
 
 /** Variantes visuais locais compartilham o GLB e os materiais, com descarte por uso. */
 export class RepresentacoesDoModelo {
@@ -38,13 +50,7 @@ export class RepresentacoesDoModelo {
     if (!acabamento && chave === '000') return this.base
     const guardada = this.variantes.get(chave)
     if (guardada) return guardada.lote
-    const centro = this.modelo.caixa.getCenter(new Vector3())
-    const reflexao = new Matrix4()
-      .makeTranslation(centro.x, centro.y, centro.z)
-      .multiply(
-        new Matrix4().makeScale(espelho?.x ? -1 : 1, espelho?.y ? -1 : 1, espelho?.z ? -1 : 1),
-      )
-      .multiply(new Matrix4().makeTranslation(-centro.x, -centro.y, -centro.z))
+    const reflexao = matrizDoEspelho(this.modelo.caixa, espelho)
     const geometrias: BufferGeometry[] = [],
       partes: ParteDoModelo[] = []
     const chavesDeMateriais: string[] = []

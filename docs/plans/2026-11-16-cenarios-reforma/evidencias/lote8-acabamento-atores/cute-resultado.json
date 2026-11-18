@@ -1,0 +1,90 @@
+{
+  "ref": {
+    "caminho": "modelos/cute-ensaio.glb",
+    "digest": "c2866c3df980832480fa5876db818c3b9403d0f90379ddcfc89e0abfd3308e1e",
+    "bytes": 1539448,
+    "mime": "model/gltf-binary",
+    "papel": "modelo",
+    "malhas": 6,
+    "triangulos": 5810,
+    "verticesMaximos": 10212
+  },
+  "espelho": {
+    "x": true,
+    "y": false,
+    "z": false
+  },
+  "acabamento": true,
+  "alturaOriginal": 1.1700404965322315,
+  "alturaCompilada": 1.1700404965322315,
+  "pecasOriginais": 6,
+  "pecasCompiladas": 6,
+  "clipes": [
+    "parado_relaxado",
+    "andar_frente",
+    "correr_frente",
+    "pulo_no_ar"
+  ],
+  "quadros": [
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 0.5375000238418579,
+      "erroMaximoMetros": 7.965850201685498e-15
+    },
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 1.0750000476837158,
+      "erroMaximoMetros": 7.965199680382007e-15
+    },
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 2.1500000953674316,
+      "erroMaximoMetros": 7.965524941033753e-15
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.10000000149011612,
+      "erroMaximoMetros": 7.962380754733545e-15
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.20000000298023224,
+      "erroMaximoMetros": 7.965850201685498e-15
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.4000000059604645,
+      "erroMaximoMetros": 7.965850201685498e-15
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.07916666567325592,
+      "erroMaximoMetros": 7.965850201685498e-15
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.15833333134651184,
+      "erroMaximoMetros": 7.965199680382007e-15
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.3166666626930237,
+      "erroMaximoMetros": 7.965416520816504e-15
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.15833333134651184,
+      "erroMaximoMetros": 7.958911307781591e-15
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.3166666626930237,
+      "erroMaximoMetros": 7.965850201685498e-15
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.6333333253860474,
+      "erroMaximoMetros": 7.965850201685498e-15
+    }
+  ]
+}
