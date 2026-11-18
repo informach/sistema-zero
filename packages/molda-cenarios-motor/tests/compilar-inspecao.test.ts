@@ -115,3 +115,29 @@ test('hierarquia profunda não chega à recursão do decoder', () => {
     inspecionarGlbDaCompilacao(glb({ ...j, nodes, scenes: [{ nodes: [0] }] }, bin)),
   ).toThrow(/profunda/)
 })
+
+test('imagem de fonte com padding do exportador é normalizada sem alterar o hash autoral; saída continua estrita', () => {
+  const { j, bin } = exemplo(),
+    png = new Uint8Array(
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVR4AWL6z8DwHwSZGEEkw38GAAAAAP//4+5legAAAAZJREFUAwBBDwb/5c5bAAAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    ),
+    completo = new Uint8Array(bin.length + 100)
+  completo.set(bin)
+  completo.set(png, bin.length)
+  const bytes = glb(
+      {
+        ...j,
+        buffers: [{ byteLength: completo.length }],
+        bufferViews: [...j.bufferViews, { buffer: 0, byteOffset: bin.length, byteLength: 100 }],
+        images: [{ bufferView: 1, mimeType: 'image/png' }],
+      },
+      completo,
+    ),
+    antes = bytes.slice()
+  expect(inspecionarGlbDaCompilacao(bytes, { fonte: true }).bytesDePixels).toBe(16)
+  expect(() => inspecionarGlbDaCompilacao(bytes)).toThrow()
+  expect(bytes).toEqual(antes)
+})
