@@ -33,14 +33,9 @@ import {
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
-  BackSide,
   Box3,
   BufferGeometry,
-  Color,
-  DirectionalLight,
-  Fog,
   Group,
-  HemisphereLight,
   LineBasicMaterial,
   LineSegments,
   Matrix4,
@@ -54,9 +49,7 @@ import {
   Quaternion,
   Raycaster,
   Scene,
-  ShaderMaterial,
   Sphere,
-  SphereGeometry,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -65,10 +58,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { AguasDoPalco, type EstadoDasAguas } from './agua/aguas'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
+import { AmbienteDoPalco, type EstadoDoAmbiente } from './ambiente/ambiente'
 import { CaminhosDoPalco, type EstadoDosCaminhos } from './curvas/caminhos'
 import { type CapturaDeCaminho, EdicaoDePontos } from './curvas/edicao-de-pontos'
 import { EspalhamentoDoPalco } from './Espalhamento'
-import { EdicaoComTerreno } from './edicao-com-terreno'
+import { type ComandoDePreviaDoAmbiente, EdicaoComTerreno } from './edicao-com-terreno'
 import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
@@ -80,7 +74,6 @@ import {
   encaixar,
   fatorUniforme,
   idsEscondidos,
-  luzDaHora,
   matrizDoObjeto,
   transformacaoDaMatriz,
 } from './matematica'
@@ -134,23 +127,6 @@ interface Gesto {
   atualizarSuperficies(): void
 }
 
-const CEU_VERTICE = /* glsl */ `
-varying vec3 vDirecao;
-void main() {
-  vDirecao = normalize(position);
-  vec4 p = modelViewMatrix * vec4(position, 1.0);
-  gl_Position = projectionMatrix * p;
-}`
-const CEU_FRAGMENTO = /* glsl */ `
-uniform vec3 uCeu;
-uniform vec3 uHorizonte;
-varying vec3 vDirecao;
-void main() {
-  float t = pow(clamp(vDirecao.y * 1.6, 0.0, 1.0), 0.55);
-  gl_FragColor = vec4(mix(uHorizonte, uCeu, t), 1.0);
-  #include <colorspace_fragment>
-}`
-
 class PalcoThree implements Palco {
   volumeDoModelo(id: string) {
     const forma = this.visual?.formas?.find((f) => f.id === id)
@@ -178,11 +154,8 @@ class PalcoThree implements Palco {
     new BufferGeometry(),
     new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.24, depthWrite: false }),
   )
-  private readonly ceu: Mesh<SphereGeometry, ShaderMaterial>
-  private readonly luzDoCeu = new HemisphereLight(0xffffff, 0x8a9a7a, 2)
-  private readonly sol = new DirectionalLight(0xffffff, 1.7)
-  private readonly nevoa = new Fog(0xdff1fb, 200, 1800)
-  private nevoaDaBase = { perto: 200, longe: 1800 }
+  private readonly ambiente: AmbienteDoPalco
+  private estadoDoAmbiente: EstadoDoAmbiente | null = null
   private readonly limitesDaCena = new Box3()
   private readonly focoDoTeste = new Vector3()
   private readonly limitesDoChao = new Box3()
@@ -323,39 +296,12 @@ class PalcoThree implements Palco {
     this.cena.add(this.colisoesVisiveis.grupo)
 
     this.camera.position.set(16, 13, 20)
-    this.cena.fog = opcoes.fotografia ? null : this.nevoa
-
-    this.ceu = new Mesh(
-      new SphereGeometry(1, 32, 16),
-      new ShaderMaterial({
-        vertexShader: CEU_VERTICE,
-        fragmentShader: CEU_FRAGMENTO,
-        uniforms: { uCeu: { value: new Color() }, uHorizonte: { value: new Color() } },
-        side: BackSide,
-        depthWrite: false,
-        depthTest: false,
-        fog: false,
-      }),
+    this.ambiente = new AmbienteDoPalco(
+      this.cena,
+      opcoes.fotografia,
+      this.renderer.capabilities.maxTextureSize,
     )
-    this.ceu.scale.setScalar(3000)
-    this.ceu.renderOrder = -1000
-    this.ceu.frustumCulled = false
-    this.ceu.visible = !opcoes.fotografia
-    this.cena.add(this.ceu)
-
-    this.sol.castShadow = true
-    this.sol.shadow.mapSize.set(2048, 2048)
-    this.sol.shadow.bias = -0.0004
-    this.sol.shadow.normalBias = 0.05
-    this.cena.add(
-      this.luzDoCeu,
-      this.sol,
-      this.sol.target,
-      this.chao,
-      this.objetos,
-      this.pivo,
-      this.grade,
-    )
+    this.cena.add(this.chao, this.objetos, this.pivo, this.grade)
 
     this.loteFantasma = new LoteDoModelo(this.objetos, this.fantasma.partes)
     this.contornos = new Contornos(this.cena, COR_DA_SELECAO)
@@ -507,7 +453,6 @@ class PalcoThree implements Palco {
     canvas.ownerDocument.defaultView?.addEventListener('keydown', this.cancelarAlcaPelaTecla, true)
     canvas.ownerDocument.defaultView?.addEventListener('blur', this.aoCancelar)
 
-    this.aplicarLuz(12)
     this.laco = new DemandRenderLoop(canvas, this.renderer, this.camera, this.quadro)
   }
 
@@ -534,7 +479,6 @@ class PalcoThree implements Palco {
     this.temChao = dominioDoChao(documento.base)
     this.espalhamento.contextoAlterado()
     this.aplicarChao(documento)
-    this.aplicarLuz(documento.iluminacao.hora)
     this.pedirModelos(this.visual)
     this.pedirTexturas(this.visual)
     // definir publica o estado sincronicamente e reconstrói uma única vez pelo callback.
@@ -669,6 +613,7 @@ class PalcoThree implements Palco {
     if (doc.base.tipo === 'terreno')
       for (const camada of doc.base.solo?.camadas ?? [])
         if (camada.textura) usadas.add(camada.textura.id)
+    if (doc.iluminacao.ceu?.tipo === 'panorama') usadas.add(doc.iluminacao.ceu.textura)
     const previas = new Set(
       this.espalhamento.prototipos.flatMap((o) =>
         o.aparencia?.textura ? [o.aparencia.textura.id] : [],
@@ -824,6 +769,30 @@ class PalcoThree implements Palco {
     this.pontosDoCaminho.definir(configuracao)
     this.atualizarAlca()
     this.pedirQuadro()
+  }
+  preverAmbiente(origem: DocumentoDeCenario, comandos: readonly ComandoDePreviaDoAmbiente[]) {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gestosAtivos.size ||
+      this.pontosDoCaminho.habilitada ||
+      this.pontosDaAgua.habilitada ||
+      this.escultura.habilitado ||
+      this.espalhamento.habilitado
+    )
+      throw Error('Termine a ferramenta atual e saia do Testar antes de prever o ambiente.')
+    this.edicaoDoAmbiente.preverComandos(origem, this.documento, comandos)
+    this.pedirTexturas(this.edicaoDoAmbiente.projetar(origem))
+    this.reconstruir()
+  }
+  finalizarPreviaDeAmbiente(cancelar = true) {
+    if (this.destruido || this.edicaoDoAmbiente.tipo !== 'ambiente') return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'ambiente')
+    if (cancelar) {
+      if (this.documento) this.pedirTexturas(this.documento)
+      this.reconstruir()
+    } else this.atualizarAlca()
   }
   preverAgua(origem: DocumentoDeCenario, operacao: OperacaoDeAguaPreparada) {
     if (
@@ -1195,6 +1164,8 @@ class PalcoThree implements Palco {
       const estados = [...this.modelos.values()]
       const falhaDeCaminho = this.estadoDosCaminhos.falhas[0]
       if (falhaDeCaminho) throw new Error(`${falhaDeCaminho.nome}: ${falhaDeCaminho.mensagem}`)
+      const falhaDoAmbiente = this.estadoDoAmbiente?.falhas[0]
+      if (falhaDoAmbiente) throw Error(falhaDoAmbiente)
       if (
         estados.some((e) => e.estado === 'falhou') ||
         this.estadoDasTexturas.falhas.length ||
@@ -1204,6 +1175,7 @@ class PalcoThree implements Palco {
       if (
         !estados.some((e) => e.estado === 'carregando') &&
         !this.estadoDasTexturas.carregando &&
+        !this.estadoDoAmbiente?.carregando &&
         (this.documento?.base.tipo !== 'terreno' || this.terreno)
       )
         return
@@ -1234,8 +1206,7 @@ class PalcoThree implements Palco {
     this.contornos.definirVisivel(false)
     try {
       this.atualizarRecorte()
-      this.posicionarSol()
-      this.ceu.position.copy(this.camera.position)
+      this.posicionarAmbiente()
       this.renderer.render(this.cena, this.camera)
       const origem = this.renderer.domElement
       const escala = Math.min(1, largura / Math.max(1, origem.width))
@@ -1269,6 +1240,7 @@ class PalcoThree implements Palco {
     this.caminhos.descartar()
     this.marcadores.descartar()
     this.colisoesVisiveis.descartar()
+    this.ambiente.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerdown', this.protegerGestoDaAlca, true)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
@@ -1307,9 +1279,6 @@ class PalcoThree implements Palco {
     this.pendente = null
     this.texturas.descartar()
     this.limparChao()
-    this.ceu.geometry.dispose()
-    this.ceu.material.dispose()
-    this.sol.shadow.dispose()
     this.renderer.dispose()
     if (this.opcoes.fotografia) this.renderer.forceContextLoss()
   }
@@ -1341,8 +1310,7 @@ class PalcoThree implements Palco {
       performance.now() / 1000,
       Boolean(this.opcoes.movimentoReduzido),
     )
-    this.ceu.position.copy(this.camera.position)
-    this.posicionarSol()
+    this.posicionarAmbiente()
     this.renderer.render(this.cena, this.camera)
     this.medir()
     return mexeu || aguaAnimada
@@ -1369,8 +1337,7 @@ class PalcoThree implements Palco {
       this.camera.far = r.longe
       this.camera.updateProjectionMatrix()
     }
-    this.nevoa.near = Math.max(this.nevoaDaBase.perto, r.nevoaInicio)
-    this.nevoa.far = Math.max(this.nevoaDaBase.longe, r.nevoaFim, this.nevoa.near + 1)
+    this.ambiente.atualizarNevoa(r.nevoaInicio, r.nevoaFim)
   }
 
   private medir() {
@@ -1392,35 +1359,9 @@ class PalcoThree implements Palco {
     })
   }
 
-  private posicionarSol() {
+  private posicionarAmbiente() {
     const alvo = this.teste ? this.teste.foco(this.focoDoTeste) : this.orbita.target
-    const alcance = Math.min(260, Math.max(24, this.camera.position.distanceTo(alvo) * 1.4))
-    const camera = this.sol.shadow.camera
-    if (Math.abs(camera.right - alcance) > alcance * 0.08) {
-      camera.left = -alcance
-      camera.right = alcance
-      camera.top = alcance
-      camera.bottom = -alcance
-      camera.near = 1
-      camera.far = 900
-      camera.updateProjectionMatrix()
-    }
-    this.sol.target.position.copy(alvo)
-    this.sol.position.copy(alvo).addScaledVector(this.direcaoDoSol, 400)
-  }
-
-  private readonly direcaoDoSol = new Vector3(0.4, 0.8, 0.4)
-
-  private aplicarLuz(hora: number) {
-    const luz = luzDaHora(hora)
-    this.direcaoDoSol.set(luz.sol.x, luz.sol.y, luz.sol.z)
-    this.sol.color.setHex(luz.corDoSol)
-    this.sol.intensity = luz.forcaDoSol
-    this.luzDoCeu.intensity = luz.forcaDoCeu
-    this.luzDoCeu.color.setHex(0xffffff)
-    this.ceu.material.uniforms.uCeu!.value.setHex(luz.corDoCeu)
-    this.ceu.material.uniforms.uHorizonte!.value.setHex(luz.corDoHorizonte)
-    this.nevoa.color.setHex(luz.corDoHorizonte)
+    this.ambiente.quadro(this.camera, alvo)
   }
 
   // ---- chão ---------------------------------------------------------------
@@ -1490,9 +1431,10 @@ class PalcoThree implements Palco {
           this.opcoes.aoTerreno?.({ estado: 'erro', chave, erro: e })
           this.pedirQuadro()
         })
-      this.nevoa.near = Math.max(120, meio.x * 1.8, meio.z * 1.8)
-      this.nevoa.far = Math.max(900, meio.x * 8, meio.z * 8)
-      this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
+      this.ambiente.definirNevoaDaBase(
+        Math.max(120, meio.x * 1.8, meio.z * 1.8),
+        Math.max(900, meio.x * 8, meio.z * 8),
+      )
       return
     }
     this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
@@ -1525,9 +1467,7 @@ class PalcoThree implements Palco {
 
     this.chao.add(fora, lote)
     const alcance = Math.max(largura, comprimento)
-    this.nevoa.near = Math.max(120, alcance * 0.9)
-    this.nevoa.far = Math.max(900, alcance * 4)
-    this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
+    this.ambiente.definirNevoaDaBase(Math.max(120, alcance * 0.9), Math.max(900, alcance * 4))
   }
 
   // ---- modelos e objetos --------------------------------------------------
@@ -1688,6 +1628,12 @@ class PalcoThree implements Palco {
       const autoral = this.edicaoDoAmbiente.projetar(this.documento),
         organizacao = indiceDaOrganizacao(autoral),
         texturas = new Map(autoral.texturas?.map((t) => [t.id, t]))
+      const ambiente = this.ambiente.definir(autoral, this.fonteDeAlturas(), (ref) => ({
+        textura: this.texturas.obter(ref.digest)?.textura,
+        erro: this.estadoDasTexturas.falhas.find((f) => f.digest === ref.digest)?.mensagem,
+      }))
+      this.estadoDoAmbiente = ambiente
+      this.opcoes.aoAmbiente?.(ambiente)
       this.estadoDosCaminhos = this.caminhos.definir(
         autoral,
         this.terreno,

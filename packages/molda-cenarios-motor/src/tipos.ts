@@ -76,6 +76,7 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoAmbiente?(estado: import('./ambiente/ambiente').EstadoDoAmbiente): void
   aoColisoesVisiveis?(estado: import('./jogo/colisoes-visiveis').EstadoDasColisoesVisiveis): void
   aoSelecionarMarcador?(id: string): void
   aoMarcadores?(estado: import('./jogo/marcadores').EstadoDosMarcadores): void
@@ -119,6 +120,12 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  /** Prévia da mesma fila de comandos, sem criar revisões enquanto os controles mudam. */
+  preverAmbiente(
+    origem: DocumentoDeCenario,
+    comandos: readonly import('./edicao-com-terreno').ComandoDePreviaDoAmbiente[],
+  ): void
+  finalizarPreviaDeAmbiente(cancelar?: boolean): void
   /** Inspeção dos triângulos reais usados pelo Testar, somente na edição. */
   definirColisoesVisiveis(visiveis: boolean): void
   /** Vista de edição em coordenadas mundiais, sem editar a câmera do Testar. */

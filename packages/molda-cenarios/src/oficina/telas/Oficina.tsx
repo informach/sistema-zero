@@ -1533,7 +1533,14 @@ function OficinaAberta({
                 icone={Icone}
                 rotulo={rotulo}
                 ligado={documento.iluminacao.hora === hora}
-                aoTocar={() => executar([{ tipo: 'iluminacao.definir', iluminacao: { hora } }])}
+                aoTocar={() =>
+                  executar([
+                    {
+                      tipo: 'iluminacao.definir',
+                      iluminacao: { ...controlador.getState().documento.iluminacao, hora },
+                    },
+                  ])
+                }
               />
             ))
           ) : (

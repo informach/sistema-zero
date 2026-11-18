@@ -49,11 +49,11 @@
 
 **Files:** motor `ambiente/*`, `Palco.ts`, `texturas.ts`; oficina integração de textura existente; testes CPU/browser.
 
-- [ ] Preservar hora padrão e aplicar overrides de sol/ambiente; alvo e sombras acompanham a região visível sem mover a luz autoral.
-- [ ] Luz pontual/foco por marcador, com direção/cor/força/alcance/penumbra e orçamento de sombras. Descarte de targets/maps ao remover ou ocultar.
-- [ ] Cor de céu e panorama equiretangular da biblioteca/Molda, com rotação/intensidade; resposta antiga não troca o céu atual. Névoa linear coerente com o horizonte, opção desligada.
-- [ ] Prévia do painel com cancelamento, confirmação única e histórico; evitar uma revisão por slider/quadro.
-- [ ] Conferir dia/noite, sombras, cor/panorama, espera/falha/reentrada e renderer após ciclos. Revisar/checkpoint.
+- [x] Preservar hora padrão e aplicar overrides de sol/ambiente; alvo e sombras acompanham a região visível sem mover a luz autoral.
+- [x] Luz pontual/foco por marcador, com direção/cor/força/alcance/penumbra e orçamento de sombras. Descarte de targets/maps ao remover ou ocultar.
+- [x] Cor de céu e panorama equiretangular da biblioteca/Molda, com rotação/intensidade; resposta antiga não troca o céu atual. Névoa linear coerente com o horizonte, opção desligada. Pipeline de conteúdo existente; seletor visual em 7.4.
+- [x] API de prévia com cancelamento, confirmação única e histórico; evitar uma revisão por slider/quadro. Controles do painel em 7.4.
+- [x] Conferir dia/noite, sombras, cor/panorama, espera/falha/reentrada e renderer após ciclos. [Revisão e checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-iluminacao.md).
 
 ## 7.4 — Interface Jogo e Luz e céu
 
@@ -75,4 +75,4 @@
 
 ## Estado atual
 
-**Lote 7 aberto; 7.1 e 7.2 implementados, testados e revisados. Única frente ativa seguinte: 7.3 — sol, ambiente, luzes, céu e névoa.** [Fechamento do núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md) e [checkpoint do palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md). Lotes 0–6 fechados localmente. Iluminação, controles de Jogo/Luz e fechamento integral continuam pendentes. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 aberto; 7.1, 7.2 e 7.3 implementados, testados e revisados. Única frente ativa seguinte: 7.4 — interface Jogo e Luz e céu.** [Núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md), [palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md) e [iluminação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-iluminacao.md). Lotes 0–6 fechados localmente. Interface 7.4 e fechamento integral 7.5 continuam pendentes. Não há autorização nova de produção ou abertura a membros.

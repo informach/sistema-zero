@@ -1,6 +1,8 @@
 export type { EstadoDasAguas } from './agua/aguas'
+export type { EstadoDoAmbiente } from './ambiente/ambiente'
 export type { EstadoDosCaminhos } from './curvas/caminhos'
 export type { CapturaDeCaminho, GestoDePontosDeCaminho } from './curvas/edicao-de-pontos'
+export type { ComandoDePreviaDoAmbiente } from './edicao-com-terreno'
 export type * from './escultura-tipos'
 export { fotografarComposicao } from './foto-composicao'
 export { converterArquivos, type EntradaDeImportacao } from './importacao/cliente'
