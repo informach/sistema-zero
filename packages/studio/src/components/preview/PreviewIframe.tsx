@@ -95,6 +95,7 @@ export function PreviewIframe(): JSX.Element {
   const persistence = useStudioPersistence()
   const pendingEdits = usePendingEditorEdits()
   const [preparingRun, setPreparingRun] = useState(false)
+  const [preparationError, setPreparationError] = useState<string | null>(null)
   const [sourceVersion, setSourceVersion] = useState(0)
   const fullProject = useProjectStore((s) => javaScriptProject(s.project))
   const { projectId, html, css, js, ir, installedExtensions, extraFiles, assets, hasChosenCover } =
@@ -133,6 +134,7 @@ export function PreviewIframe(): JSX.Element {
         flush: () => pendingEdits?.flush(),
         save: () => persistence.save(),
         pending: setPreparingRun,
+        error: setPreparationError,
       }),
     [projectStore, runIdentity, persistence, pendingEdits],
   )
@@ -353,7 +355,10 @@ export function PreviewIframe(): JSX.Element {
     })
   }
 
-  useEffect(() => () => preparation.cancel(), [preparation])
+  useEffect(() => {
+    setPreparationError(null)
+    return () => preparation.cancel()
+  }, [preparation])
 
   const installedIds = uniqueExtensionIds(
     installedExtensions.map((extension) => extension.id),
@@ -678,7 +683,9 @@ export function PreviewIframe(): JSX.Element {
   // Retain the committed game during preparation; Stop still installs the blank doc.
   const committedDoc = useRef({ projectId, document: PAUSED_PREVIEW_DOC })
   const doc =
-    previewRunning && preparingRun && committedDoc.current.projectId === projectId
+    previewRunning &&
+    (preparingRun || preparationError !== null) &&
+    committedDoc.current.projectId === projectId
       ? committedDoc.current.document
       : candidateDoc
   useLayoutEffect(() => {
@@ -955,6 +962,7 @@ export function PreviewIframe(): JSX.Element {
         runningRef.current ? handlersRef.current.refresh() : handlersRef.current.toggle(),
       stop: () => {
         preparation.cancel()
+        setPreparationError(null)
         if (runningRef.current) handlersRef.current.toggle()
       },
       reload: () => handlersRef.current.refresh(),
@@ -972,6 +980,8 @@ export function PreviewIframe(): JSX.Element {
         canStop: !observer,
         detail: 'Guardando o projeto…',
       }
+    if (preparationError)
+      return { phase: 'error', canRun: !observer, canStop: !observer, error: preparationError }
     if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
     if (extensionRuntimeFailed || courseModelError)
       return {
@@ -998,6 +1008,7 @@ export function PreviewIframe(): JSX.Element {
     return { phase: 'running', canRun: !observer, canStop: !observer }
   }, [
     preparingRun,
+    preparationError,
     previewRunning,
     observer,
     extensionRuntimeFailed,

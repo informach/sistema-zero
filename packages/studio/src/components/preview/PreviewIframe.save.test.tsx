@@ -91,7 +91,7 @@ it('Parar while saving preserves the write and prevents a late start', async () 
   expect(f.stores.proRun.getState().state?.phase).toBe('idle')
 })
 
-it('falha de gravação não impede rodar: o jogo roda, o código fica e o selo guarda o erro', async () => {
+it('falha de gravação preserva o código e impede executar revisão não confirmada', async () => {
   const f = fixture()
   const code = 'window.DO_NOT_LOSE = true;'
   act(() => {
@@ -99,14 +99,14 @@ it('falha de gravação não impede rodar: o jogo roda, o código fica e o selo 
     f.stores.proRun.getState().actions?.run()
   })
   await act(async () => f.fail(new Error('Cota excedida')))
-  await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('running'))
-  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(code))
+  await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('error'))
+  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).not.toContain(btoa(code))
   expect(f.stores.project.getState().isDirty).toBe(true)
   expect(f.stores.project.getState().saveError).toContain('Cota excedida')
   expect(f.stores.project.getState().project?.files?.['script.js']).toBe(code)
 })
 
-it('gravação que nunca responde não prende o Rodar', async () => {
+it('gravação lenta mantém a intenção cancelável sem executar o código não confirmado', async () => {
   const f = fixture()
   const code = 'window.SLOW_SAVE = true;'
   act(() => {
@@ -114,10 +114,13 @@ it('gravação que nunca responde não prende o Rodar', async () => {
     f.stores.proRun.getState().actions?.run()
   })
   expect(f.stores.proRun.getState().state?.phase).toBe('preparing')
-  await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('running'), {
-    timeout: 3000,
-  })
-  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(code))
+  await act(async () => Bun.sleep(1600))
+  expect(f.stores.proRun.getState().state?.phase).toBe('preparing')
+  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).not.toContain(btoa(code))
+  act(() => f.stores.proRun.getState().actions?.stop())
+  expect(f.stores.proRun.getState().state?.phase).toBe('idle')
+  await act(async () => f.confirm())
+  expect(f.stores.proRun.getState().state?.phase).toBe('idle')
 })
 
 it('Rodar sem mudança troca a prévia no mesmo instante e não grava de novo', async () => {
