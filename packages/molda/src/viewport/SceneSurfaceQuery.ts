@@ -78,6 +78,16 @@ export class SceneSurfaceQuery {
     for (const geometry of live) if (!this.entries.has(geometry)) this.entries.set(geometry, null)
   }
 
+  /** The owner revised its draw positions; retire only this geometry's immutable snapshot. */
+  invalidateGeometry(geometry: BufferGeometry): void {
+    if (this.disposed) throw new Error('Consulta de superfície já descartada.')
+    if (!this.entries.has(geometry)) return
+    geometry.computeBoundingBox()
+    geometry.computeBoundingSphere()
+    disposeEntry(this.entries.get(geometry) ?? null)
+    this.entries.set(geometry, null)
+  }
+
   intersect(object: Mesh, raycaster: Raycaster): Intersection[] {
     if (this.disposed || !object.layers.test(raycaster.layers)) return []
     const geometry = object.geometry
