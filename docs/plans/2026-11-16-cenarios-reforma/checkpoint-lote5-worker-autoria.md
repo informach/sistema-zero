@@ -11,3 +11,15 @@ O preparo da água roda em um worker por operação, sobre uma cópia privada ca
 Evidências: [preparo e cancelamento no Chrome](evidencias/lote5-agua/worker-preparo.json) e [worker no build local](evidencias/lote5-agua/worker-build-local.json). O primeiro ensaio verificou rio com 97 estações, alteração do leito, mar, erro tratado, PNG pelo worker anterior e cancelamento; a requisição de 2.048² células continuava pendente enquanto a página atendia dois quadros. Não é uma medida homologada de FPS. A oficina do terreno também foi novamente exercitada em 1440/1366/1024/390 px, claro/escuro/toque emulado, sem erros. Suíte da oficina: 83 testes/544 verificações; tipagem e Biome aprovados. A entrada específica da água ainda precisa ser incluída no bundle pelo fluxo de interface em implementação e validada ali.
 
 Próximo: ligar a captura/prévia à mesma cabeça autoral, impedir aplicação de resultado atrasado, guardar/descartar a prévia corretamente e testar cancelamento, navegação, Testar e histórico com a operação inteira. Depois vêm os controles e os critérios de fechamento de 5.4–5.5, dentro do mesmo lote.
+
+## Continuação — captura e prévia vinculadas à cabeça
+
+O palco agora recebe pontos de água pelo mesmo fluxo de clique/toque e órbita já existente. As alças têm quantidade limitada, valores finitos e descarte próprio. Arrastar a câmera não insere pontos. A escolha de uma água compara sua distância com as superfícies dos objetos; não acrescenta colisores.
+
+`EdicaoDaAgua` mantém o documento autoral intacto e projeta a água somente na cena de edição, incluindo apoios e conjuntos. Prévia de rio/barragem usa a cópia de terreno preparada pelo worker. Cancelamento e troca de cabeça restauram as alturas; respostas da cabeça anterior são recusadas. Testar e retratos são bloqueados enquanto captura/prévia estiverem abertas. Recursos preparados sem uso são liberados do cache local ao cancelar.
+
+`guardarAgua` reutiliza a fila do terreno e conserva água+leito em um passo. O encerramento agora distingue a prévia da água da escultura, sem finalizar o gesto errado. Uma água inalterada não cria revisão. Falha anterior à fila restaura a prévia; depois da aceitação os recursos continuam pertencendo à fila de retomada.
+
+Verificação local de 18/11: 98 testes do motor (2.800 asserções) e 86 da oficina (557 asserções), tipagem de ambos e Biome passaram. `verificar-agua-edicao.mjs` passou em Chrome com WebGL: um clique capturado, órbita sem ponto extra, altura do leito em prévia 8 m, restauração para 10 m, cabeça nova preservada, resposta antiga recusada e seleção do mar pela cena. É prova técnica local, sem homologação de aparelho físico ou direção de arte.
+
+**Ainda aberto:** integração dos formulários, edição de pontos, avisos de transbordo e ciclo completo da aba Água. Este recorte não fecha 5.3, 5.4 nem o lote 5.

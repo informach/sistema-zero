@@ -4,6 +4,7 @@ import {
   type BaseDeTerreno,
   prepararOperacaoDeAgua,
 } from '@sistemazero/molda-cenarios-core/v2'
+import { guardarAgua } from '../src/oficina/agua-autoria'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
 import { gravarEstadoDoTerreno } from '../src/oficina/terreno-autoria'
@@ -43,6 +44,61 @@ async function preparar() {
   }
   return { host, cenario, controlador, base, documentoDeOrigem, estado, palco, finais }
 }
+
+test('aplicação da água encerra sua prévia uma vez e conserva o histórico da escultura', async () => {
+  const q = await preparar(),
+    finais: boolean[] = []
+  const operacao = prepararOperacaoDeAgua(
+    { id: 'rio', nome: 'Rio' },
+    {
+      tipo: 'rio',
+      pontos: [
+        { x: 8, z: 32 },
+        { x: 56, z: 32 },
+      ],
+      largura: 4,
+      profundidade: 2,
+    },
+    q.estado,
+  )
+  const palco = { ...q.palco, finalizarPreviaDeAgua: (cancelar = true) => finais.push(cancelar) }
+  expect(await guardarAgua({ ...q, palco, operacao })).toEqual({ alterado: true, guardado: true })
+  expect(finais).toEqual([false])
+  expect(q.finais).toEqual([])
+  expect(q.controlador.getState().documento.aguas[0]?.id).toBe('rio')
+  await q.controlador.desfazer()
+  expect(q.controlador.getState().documento.aguas).toEqual([])
+  expect(q.controlador.getState().documento.base).toEqual(q.base)
+})
+
+test('água inalterada não cria revisão e cancela a prévia', async () => {
+  const q = await preparar(),
+    finais: boolean[] = [],
+    operacao = prepararOperacaoDeAgua({ id: 'mar', nome: 'Mar' }, { tipo: 'mar', nivel: 12 }, null),
+    palco = { ...q.palco, finalizarPreviaDeAgua: (cancelar = true) => finais.push(cancelar) }
+  await guardarAgua({ ...q, palco, operacao })
+  const doc = q.controlador.getState().documento,
+    revisao = (await q.host.abrirCenario(q.cenario.id)).revisao
+  expect(await guardarAgua({ ...q, palco, operacao, documentoDeOrigem: doc })).toEqual({
+    alterado: false,
+    guardado: true,
+  })
+  expect((await q.host.abrirCenario(q.cenario.id)).revisao).toBe(revisao)
+  expect(finais).toEqual([false, true])
+})
+
+test('resposta de água atrasada restaura prévia sem substituir a cabeça atual', async () => {
+  const q = await preparar(),
+    finais: boolean[] = [],
+    operacao = prepararOperacaoDeAgua({ id: 'mar', nome: 'Mar' }, { tipo: 'mar', nivel: 12 }, null),
+    palco = { ...q.palco, finalizarPreviaDeAgua: (cancelar = true) => finais.push(cancelar) }
+  q.controlador.executar([{ tipo: 'cenario.renomear', nome: 'Outra cabeça' }])
+  const atual = q.controlador.getState().documento
+  await expect(guardarAgua({ ...q, palco, operacao })).rejects.toThrow('O cenário mudou')
+  expect(q.controlador.getState().documento).toBe(atual)
+  expect(q.controlador.getState().documento.aguas).toEqual([])
+  expect(finais).toEqual([true])
+})
 
 test('intenção de água sem alterar alturas não é descartada como terreno sem mudança', async () => {
   const q = await preparar(),

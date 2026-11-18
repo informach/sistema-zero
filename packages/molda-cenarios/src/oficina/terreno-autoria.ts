@@ -24,6 +24,7 @@ export async function gravarEstadoDoTerreno({
   regioes,
   sinal,
   antes = [],
+  finalizar,
 }: {
   controlador: ControladorDaOficina
   palco: Pick<Palco, 'prepararRecursosDoTerreno' | 'finalizarEscultura'>
@@ -33,6 +34,8 @@ export async function gravarEstadoDoTerreno({
   regioes: RegioesDeTerreno
   sinal?: AbortSignal
   antes?: readonly ComandoDeCenario[]
+  /** Água usa sua própria prévia, conservando a mesma fila de binários e histórico. */
+  finalizar?(cancelar: boolean): void
 }): Promise<{ alterado: boolean; guardado: boolean }> {
   let enfileirado = false
   const conferirOrigem = () => {
@@ -72,7 +75,8 @@ export async function gravarEstadoDoTerreno({
     await controlador.terminar()
     return { alterado: true, guardado: controlador.getState().salvamento === 'guardado' }
   } finally {
-    palco.finalizarEscultura(!enfileirado)
+    if (finalizar) finalizar(!enfileirado)
+    else palco.finalizarEscultura(!enfileirado)
   }
 }
 

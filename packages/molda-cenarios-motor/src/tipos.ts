@@ -7,6 +7,7 @@ import type {
   FormaDeCenario,
   InstanciaDeCenario,
   ModeloDoCenario,
+  OperacaoDeAguaPreparada,
   ReceitaDeEspalhamento,
   TexturaDoCenario,
   Transformacao,
@@ -74,6 +75,8 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoCapturarPontoDaAgua?(ponto: Ponto3): void
+  aoSelecionarAgua?(id: string): void
   aoAguas?(estado: import('./agua/aguas').EstadoDasAguas): void
   aoPreverTerreno?(estado: import('./escultura-tipos').EstadoDaEscultura): void
   aoEsculpir?(gesto: import('./escultura-tipos').GestoDeTerreno): void
@@ -107,6 +110,10 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  /** null encerra a captura; [] inicia uma sequência. Os pontos são somente alças locais. */
+  definirCapturaDeAgua(pontos: readonly Ponto3[] | null): void
+  preverAgua(origem: DocumentoDeCenario, operacao: OperacaoDeAguaPreparada): void
+  finalizarPreviaDeAgua(cancelar?: boolean): void
   definirEscultura(configuracao: import('./escultura-tipos').ConfiguracaoDaEscultura | null): void
   finalizarEscultura(cancelar?: boolean): void
   /** Disponibiliza bytes autorais verificados antes da confirmação do lote no servidor. */
