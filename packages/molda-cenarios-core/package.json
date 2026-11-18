@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./runtime": "./src/runtime.ts",
     "./v2": "./src/v2/index.ts",
-    "./geometria": "./src/geometria.ts"
+    "./geometria": "./src/geometria.ts",
+    "./compilar": "./src/compilar/index.ts"
   },
   "scripts": {
     "test": "bun test",
