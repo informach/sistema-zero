@@ -25,7 +25,7 @@ export interface CampoDeAlturas {
   min: number
   max: number
   /** `(colunas + 1) × (linhas + 1)` amostras, linha a linha (z cresce a cada linha). */
-  alturas: Float32Array
+  alturas: Float64Array
 }
 
 /** Retângulo de amostras alteradas, com os dois cantos incluídos. */
@@ -47,7 +47,22 @@ export function criarCampoDeAlturas(
   for (const n of [forma.colunas, forma.linhas])
     if (!Number.isInteger(n) || n < CELULAS_DA_PECA || n > 4096 || n % CELULAS_DA_PECA)
       invalidar('O tamanho do terreno precisa ser múltiplo de 64 células, até 4096')
-  if (!(forma.passo > 0) || !(forma.max > forma.min) || altura < forma.min || altura > forma.max)
+  if (
+    ![forma.passo, forma.min, forma.max, forma.origem.x, forma.origem.z, altura].every(
+      Number.isFinite,
+    ) ||
+    forma.passo < 0.25 ||
+    forma.passo > 32 ||
+    forma.min < -10000 ||
+    forma.max > 10000 ||
+    Math.abs(forma.origem.x) > 100000 ||
+    Math.abs(forma.origem.z) > 100000 ||
+    forma.colunas * forma.passo > 8192 ||
+    forma.linhas * forma.passo > 8192 ||
+    !(forma.max > forma.min) ||
+    altura < forma.min ||
+    altura > forma.max
+  )
     invalidar('A forma do campo de alturas é inválida')
   return {
     origem: { x: forma.origem.x, z: forma.origem.z },
@@ -56,7 +71,8 @@ export function criarCampoDeAlturas(
     linhas: forma.linhas,
     min: forma.min,
     max: forma.max,
-    alturas: new Float32Array((forma.colunas + 1) * (forma.linhas + 1)).fill(altura),
+    // Precisão de trabalho conserva todos os Uint16 mesmo perto de ±10 km com faixa estreita.
+    alturas: new Float64Array((forma.colunas + 1) * (forma.linhas + 1)).fill(altura),
   }
 }
 

@@ -10,6 +10,7 @@ import {
   inverterLote,
   LIMITES_CENARIO_V2,
   LoteDeCenarioSchema,
+  TAMANHOS_RECURSO_TERRENO,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type AberturaDosCenarios,
@@ -940,7 +941,7 @@ export class CenariosService {
       !recursos.length ||
       recursos.length > LIMITES_DOS_CENARIOS.reservaPorChamada ||
       recursos.some(
-        (r) => !/^[a-f0-9]{64}$/.test(r.digest) || r.bytes !== LIMITES_DOS_CENARIOS.terrenoBytes,
+        (r) => !/^[a-f0-9]{64}$/.test(r.digest) || !TAMANHOS_RECURSO_TERRENO.includes(r.bytes),
       )
     )
       throw new ValidationError('Envie de 1 a 50 peças de terreno válidas por reserva')

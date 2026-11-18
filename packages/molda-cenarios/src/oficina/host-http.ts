@@ -1,8 +1,9 @@
 import {
-  BYTES_DA_PECA,
   digestDosBytes,
-  lerPecaDeAlturas,
+  lerRecursoDeTerreno,
   MAX_BYTES_DE_TEXTURA_CENARIO,
+  MAX_BYTES_RECURSO_TERRENO,
+  MAX_RECURSOS_TERRENO,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Biblioteca,
@@ -673,7 +674,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         throw new ErroDaOficina('Não consegui carregar o relevo', resposta.status, null, null)
       if (!resposta.body) throw new ErroDaOficina('A peça de terreno está vazia', 0, null, null)
       const leitor = resposta.body.getReader(),
-        bytes = new Uint8Array(BYTES_DA_PECA)
+        bytes = new Uint8Array(MAX_BYTES_RECURSO_TERRENO)
       let posicao = 0,
         completo = false
       try {
@@ -687,9 +688,12 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
           posicao += parte.value.byteLength
         }
         sinal?.throwIfAborted()
-        if (posicao !== bytes.byteLength) throw new Error('A peça de terreno está incompleta')
+        const conteudo = bytes.slice(0, posicao)
+        lerRecursoDeTerreno(conteudo)
+        if ((await digestDosBytes(conteudo)) !== digest)
+          throw new Error('O hash da peça de terreno é inválido')
         completo = true
-        return bytes.buffer
+        return conteudo.buffer
       } finally {
         if (!completo) await leitor.cancel().catch(() => undefined)
         leitor.releaseLock()
@@ -697,13 +701,13 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     },
     async guardarRecursos(cenarioId, pecas, sinal) {
       const unicas = [...new Map(pecas.map((p) => [p.digest, p])).values()]
-      if (unicas.length > 4096) throw new Error('O terreno tem peças demais')
+      if (unicas.length > MAX_RECURSOS_TERRENO) throw new Error('O terreno tem peças demais')
       let espacoId = espacoDoCenario.get(cenarioId)
       for (let i = 0; i < unicas.length; i += POR_LOTE) {
         const lote = unicas.slice(i, i + POR_LOTE)
         for (const p of lote) {
           sinal?.throwIfAborted()
-          lerPecaDeAlturas(p.conteudo)
+          lerRecursoDeTerreno(p.conteudo)
           if ((await digestDosBytes(p.conteudo)) !== p.digest)
             throw new Error('O hash da peça de terreno é inválido')
         }

@@ -127,6 +127,23 @@ export function chaveDaBase(b: BaseDeCenario): string {
       .sort((a, c) => a.linha - c.linha || a.coluna - c.coluna)
       .map((p) => [p.coluna, p.linha, p.digest]),
     (b.recortes ?? []).map((p) => p.map((v) => [v.x, v.z])),
+    b.solo
+      ? [
+          b.solo.camadas.map((c) => [
+            c.id,
+            c.nome,
+            c.cor,
+            c.textura?.id ?? null,
+            c.textura?.repeticaoMetros ?? null,
+          ]),
+          [...b.solo.pecas]
+            .sort((a, c) => a.linha - c.linha || a.coluna - c.coluna)
+            .map((p) => [p.coluna, p.linha, p.digest]),
+        ]
+      : null,
+    [...(b.buracos ?? [])]
+      .sort((a, c) => a.linha - c.linha || a.coluna - c.coluna)
+      .map((p) => [p.coluna, p.linha, p.digest]),
   ])
 }
 

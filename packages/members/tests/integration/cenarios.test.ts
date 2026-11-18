@@ -327,7 +327,11 @@ test('recursos do relevo são reservados pelo cenário autorizado e a prova só 
     }),
   )
   const caminho = `/members/cenarios/cenarios/${c.id}/recursos/reservar`
-  const recursos = [{ digest: digest('e'), bytes: 8474 }]
+  const recursos = [
+    { digest: digest('e'), bytes: 8474 },
+    { digest: digest('f'), bytes: 33808 },
+    { digest: digest('a'), bytes: 520 },
+  ]
   const reserva = await pedir(ctx.app, 'POST', caminho, { recursos })
   expect(reserva.status).toBe(200)
   expect((await json(reserva)).enviar[0]).toMatchObject({

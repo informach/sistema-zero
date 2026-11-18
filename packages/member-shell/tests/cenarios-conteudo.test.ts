@@ -1,12 +1,43 @@
 import { expect, mock, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { AMOSTRAS_DA_PECA, codificarPecaDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  AMOSTRAS_DA_PECA,
+  codificarPecaDeAlturas,
+  codificarPecaDePintura,
+  codificarRecursoDeBuracos,
+  criarPinturaDeChao,
+} from '@sistemazero/molda-cenarios-core/v2'
 
 mock.module('server-only', () => ({}))
 const { conferirUploadDeCenario, conferirImagemDeCenario, ConteudoDeCenarioInvalido } =
   await import('../src/server/cenarios-conteudo')
 
 const sha = (b: Uint8Array) => createHash('sha256').update(b).digest('hex')
+
+test('pintura e buracos recebem prova de formato no stream, incluindo oito camadas', async () => {
+  const pintura = codificarPecaDePintura(criarPinturaDeChao({ colunas: 64, linhas: 64 }, 8), 0, 0)
+  const buracos = codificarRecursoDeBuracos(new Uint8Array(512))
+  for (const [bytes, metadados] of [
+    [pintura, { tipo: 'pintura', camadas: 8 }],
+    [buracos, { tipo: 'buracos' }],
+  ] as const) {
+    const prova = await conferirUploadDeCenario(
+      fonte(bytes, 'application/octet-stream', 7).objeto,
+      sha(bytes),
+      'terreno',
+    )
+    expect(prova.terreno).toEqual(metadados)
+    const corrompido = bytes.slice()
+    corrompido[7] = 1
+    await expect(
+      conferirUploadDeCenario(
+        fonte(corrompido, 'application/octet-stream').objeto,
+        sha(corrompido),
+        'terreno',
+      ),
+    ).rejects.toBeInstanceOf(ConteudoDeCenarioInvalido)
+  }
+})
 
 test('prova de terreno vem do cabeçalho real e recusa troca de hash, MIME e versão', async () => {
   const bytes = codificarPecaDeAlturas(new Float64Array(AMOSTRAS_DA_PECA), -10, 40)

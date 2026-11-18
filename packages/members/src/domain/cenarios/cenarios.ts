@@ -2,6 +2,8 @@ import {
   type DocumentoDeCenario,
   type FragmentoBasico,
   MAX_BYTES_DE_TEXTURA_CENARIO,
+  MAX_BYTES_RECURSO_TERRENO,
+  type MetadadosDeTerreno,
 } from '@sistemazero/molda-cenarios-core/v2'
 
 /**
@@ -35,7 +37,7 @@ export interface ConferenciaDeBlob {
   digest: string
   bytes: number
   tipoDoConteudo: TipoDeConteudo
-  terreno?: { min: number; max: number }
+  terreno?: MetadadosDeTerreno
 }
 export const ehImagemDeCenario = (tipo: TipoDeBlob) =>
   tipo === 'miniatura' || tipo === 'capa' || tipo === 'textura'
@@ -59,7 +61,7 @@ export const LIMITES_DOS_CENARIOS = {
   miniaturaBytes: 256 * 1024,
   capaBytes: 512 * 1024,
   texturaBytes: MAX_BYTES_DE_TEXTURA_CENARIO,
-  terrenoBytes: 8474,
+  terrenoBytes: MAX_BYTES_RECURSO_TERRENO,
   /** Arquivos reservados por chamada: o gateway limita os pedidos por minuto. */
   reservaPorChamada: 50,
   paginaDeModelos: 200,

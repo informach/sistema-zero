@@ -338,7 +338,11 @@ export function executarLote(
         break
       case 'textura.remover':
         existente(d.texturas ?? [], c.id)
-        if (d.instancias.some((o) => o.aparencia?.textura?.id === c.id))
+        if (
+          d.instancias.some((o) => o.aparencia?.textura?.id === c.id) ||
+          (d.base.tipo === 'terreno' &&
+            d.base.solo?.camadas.some((camada) => camada.textura?.id === c.id))
+        )
           throw new CenarioInvalido([`Textura em uso: ${c.id}`])
         d.texturas = d.texturas?.filter((t) => t.id !== c.id)
         if (!d.texturas?.length) delete d.texturas

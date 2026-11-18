@@ -1,12 +1,13 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import {
-  BYTES_DA_PECA,
   conferirBlocoBinarioGlb,
   conferirImagemDeCenario as conferirImagemDoNucleo,
   conferirInicioGlb,
   GLB_MAX_BYTES,
-  lerPecaDeAlturas,
+  lerRecursoDeTerreno,
+  MAX_BYTES_RECURSO_TERRENO,
+  type MetadadosDeTerreno,
   tamanhoDoInicioGlb,
 } from '@sistemazero/molda-cenarios-core/v2'
 
@@ -27,7 +28,7 @@ export interface ConferenciaDeUpload {
   tipoDoConteudo: MimeDeCenario
   largura?: number
   altura?: number
-  terreno?: { min: number; max: number }
+  terreno?: MetadadosDeTerreno
 }
 export class ConteudoDeCenarioInvalido extends Error {}
 function invalidar(mensagem: string): never {
@@ -56,7 +57,7 @@ export async function conferirUploadDeCenario(
       mime = objeto.contentType
     const limite =
       tipo === 'terreno'
-        ? BYTES_DA_PECA
+        ? MAX_BYTES_RECURSO_TERRENO
         : tipo === 'modelo'
           ? GLB_MAX_BYTES
           : (tipo === 'textura' ? 4096 : tipo === 'miniatura' ? 256 : 512) * 1024
@@ -114,11 +115,10 @@ export async function conferirUploadDeCenario(
     if (lidos !== tamanho || hash.digest('hex') !== digest)
       invalidar('O conteúdo recebido não corresponde ao arquivo enviado')
     let imagem: { largura: number; altura: number } | null = null
-    let terreno: { min: number; max: number } | undefined
+    let terreno: MetadadosDeTerreno | undefined
     if (tipo === 'terreno') {
       try {
-        const peca = lerPecaDeAlturas(memoria)
-        terreno = { min: peca.min, max: peca.max }
+        terreno = lerRecursoDeTerreno(memoria).metadados
       } catch (e) {
         invalidar(e instanceof Error ? e.message : 'A peça de terreno é inválida')
       }

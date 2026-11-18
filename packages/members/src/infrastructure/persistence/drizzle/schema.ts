@@ -51,6 +51,7 @@ import type {
   ComandoDeCenario,
   DocumentoDeCenario,
   FragmentoBasico,
+  MetadadosDeTerreno,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { isNull, sql } from 'drizzle-orm'
 import {
@@ -3259,7 +3260,7 @@ export const cenarioBlobs = members.table(
     tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
       'model/gltf-binary' | 'image/webp' | 'image/png' | 'application/octet-stream'
     >(),
-    terreno: jsonb('terreno').$type<{ min: number; max: number }>(),
+    terreno: jsonb('terreno').$type<MetadadosDeTerreno>(),
     bytes: integer('bytes').notNull(),
     /** Nulo enquanto a reserva espera o envio; preenchido quando o BFF confere o arquivo. */
     confirmadoEm: timestamp('confirmado_em', { withTimezone: true }),
@@ -3279,7 +3280,21 @@ export const cenarioBlobs = members.table(
     ),
     check(
       'cenario_blobs_terreno_check',
-      sql`case when ${t.tipo} = 'terreno' then ${t.bytes} = 8474 and (${t.confirmadoEm} is null or (${t.terreno} is not null and jsonb_typeof(${t.terreno} -> 'min') = 'number' and jsonb_typeof(${t.terreno} -> 'max') = 'number' and (${t.terreno} ->> 'min')::numeric >= -10000 and (${t.terreno} ->> 'max')::numeric <= 10000 and (${t.terreno} ->> 'min')::numeric < (${t.terreno} ->> 'max')::numeric) is true) else ${t.terreno} is null end`,
+      sql`case when ${t.tipo} = 'terreno' then
+        ${t.bytes} in (8474, 520, 4233, 8458, 12683, 16908, 21133, 25358, 29583, 33808)
+        and (${t.confirmadoEm} is null or (
+          ${t.terreno} is not null and (
+            (${t.bytes} = 8474 and not (${t.terreno} ? 'tipo') and
+              jsonb_typeof(${t.terreno} -> 'min') = 'number' and jsonb_typeof(${t.terreno} -> 'max') = 'number' and
+              (${t.terreno} ->> 'min')::numeric >= -10000 and (${t.terreno} ->> 'max')::numeric <= 10000 and
+              (${t.terreno} ->> 'min')::numeric < (${t.terreno} ->> 'max')::numeric) or
+            (${t.bytes} = 520 and ${t.terreno} ->> 'tipo' = 'buracos') or
+            (${t.terreno} ->> 'tipo' = 'pintura' and jsonb_typeof(${t.terreno} -> 'camadas') = 'number' and
+              (${t.terreno} ->> 'camadas')::numeric between 1 and 8 and
+              (${t.terreno} ->> 'camadas')::numeric = trunc((${t.terreno} ->> 'camadas')::numeric) and
+              ${t.bytes} = 8 + 4225 * (${t.terreno} ->> 'camadas')::numeric)
+          )
+        ) is true) else ${t.terreno} is null end`,
     ),
     check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
     check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),

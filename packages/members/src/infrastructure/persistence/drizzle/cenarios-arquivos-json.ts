@@ -3,11 +3,16 @@ import { type SQL, sql } from 'drizzle-orm'
 // Caminhos estruturais conhecidos. Propriedades de usuário nunca fixam arquivos por acaso.
 const camposDosObjetos = ['modelos[*].digest', 'texturas[*].digest'] as const
 const camposDosConjuntos = camposDosObjetos.map((c) => `definicoesConjuntos[*].conteudo.${c}`)
-const camposDoDocumento = [...camposDosObjetos, ...camposDosConjuntos, 'base.pecas[*].digest']
+const camposDoTerreno = [
+  'base.pecas[*].digest',
+  'base.solo.pecas[*].digest',
+  'base.buracos[*].digest',
+]
+const camposDoDocumento = [...camposDosObjetos, ...camposDosConjuntos, ...camposDoTerreno]
 const camposDosComandos = [
   'modelo.digest',
   'textura.digest',
-  'base.pecas[*].digest',
+  ...camposDoTerreno,
   ...camposDosObjetos.map((c) => `fragmento.${c}`),
   ...camposDosConjuntos.map((c) => `fragmento.${c}`),
   ...camposDosObjetos.map((c) => `definicao.conteudo.${c}`),

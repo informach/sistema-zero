@@ -1,5 +1,6 @@
 import type { ComandoDeCenario } from './comandos'
 import type { DocumentoDeCenario } from './documento'
+import { referenciasDoTerreno } from './recursos-de-terreno'
 
 export interface ArquivoReferenciado {
   digest: string
@@ -34,7 +35,9 @@ export function arquivosDoDocumento(doc: DocumentoDeCenario): ArquivoReferenciad
     ...(doc.texturas?.map((t): ArquivoReferenciado => ({ digest: t.digest, tipo: 'textura' })) ??
       []),
     ...(doc.base.tipo === 'terreno'
-      ? doc.base.pecas.map((p): ArquivoReferenciado => ({ digest: p.digest, tipo: 'terreno' }))
+      ? referenciasDoTerreno(doc.base).map(
+          (p): ArquivoReferenciado => ({ digest: p.digest, tipo: 'terreno' }),
+        )
       : []),
     ...(doc.definicoesConjuntos?.flatMap((d) => [
       ...d.conteudo.modelos.map((m): ArquivoReferenciado => ({ digest: m.digest, tipo: 'modelo' })),
@@ -82,7 +85,7 @@ export function arquivosDosComandos(comandos: readonly ComandoDeCenario[]): Arqu
         return [{ digest: c.textura.digest, tipo: 'textura' }]
       case 'base.definir':
         return c.base.tipo === 'terreno'
-          ? c.base.pecas.map((p) => ({ digest: p.digest, tipo: 'terreno' }))
+          ? referenciasDoTerreno(c.base).map((p) => ({ digest: p.digest, tipo: 'terreno' }))
           : []
       case 'cenario.restaurar':
         return arquivosDoDocumento(c.documento)

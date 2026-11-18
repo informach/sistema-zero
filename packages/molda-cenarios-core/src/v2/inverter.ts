@@ -208,6 +208,8 @@ export function inverterLote(
   for (const f of depois.formas ?? [])
     if (!formasAntes.has(f.id)) comandos.push({ tipo: 'forma.remover', id: f.id })
   const texturasAntes = new Set(antes.texturas?.map((t) => t.id))
+  // Soltar referências de solo antes de retirar texturas que só existiam na base nova.
+  if (!igual(antes.base, depois.base)) comandos.push({ tipo: 'base.definir', base: antes.base })
   for (const t of depois.texturas ?? [])
     if (!texturasAntes.has(t.id)) comandos.push({ tipo: 'textura.remover', id: t.id })
 
@@ -227,7 +229,6 @@ export function inverterLote(
       comandos.push({ tipo: 'camada.definir', camada: c })
 
   // 9. O que é do cenário inteiro.
-  if (!igual(antes.base, depois.base)) comandos.push({ tipo: 'base.definir', base: antes.base })
   if (!igual(antes.iluminacao, depois.iluminacao))
     comandos.push({ tipo: 'iluminacao.definir', iluminacao: antes.iluminacao })
   if (antes.nome !== depois.nome) comandos.push({ tipo: 'cenario.renomear', nome: antes.nome })

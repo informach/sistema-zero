@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import {
   arquivosDoDocumento,
+  conferirMetadadosDoTerreno,
   espacosDoDocumento,
   espacosDosComandos,
   inverterLote,
+  metadadosDoTerrenoCorrespondem,
+  referenciasDoTerreno,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   and,
@@ -598,15 +601,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   ): Promise<void> {
     const pecas = conferidos.filter((c) => c.tipoDoConteudo === 'application/octet-stream')
     for (const c of pecas) {
-      if (
-        !c.terreno ||
-        !Number.isFinite(c.terreno.min) ||
-        !Number.isFinite(c.terreno.max) ||
-        c.terreno.min < -10000 ||
-        c.terreno.max > 10000 ||
-        c.terreno.max <= c.terreno.min ||
-        c.bytes !== 8474
-      )
+      if (!conferirMetadadosDoTerreno(c.terreno, c.bytes))
         throw new CenarioArquivoAusenteError([c.digest])
       await executor
         .update(cenarioBlobs)
@@ -1221,7 +1216,8 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     // O BFF só pode confirmar peças que este documento passa a referenciar.
     const base = dados.documento.base
     const recursos = dados.recursosConferidos ?? []
-    const usados = new Set(base.tipo === 'terreno' ? base.pecas.map((p) => p.digest) : [])
+    const esperados = base.tipo === 'terreno' ? referenciasDoTerreno(base) : []
+    const usados = new Set(esperados.map((p) => p.digest))
     if (
       recursos.some((r) => !usados.has(r.digest) || r.tipoDoConteudo !== 'application/octet-stream')
     )
@@ -1239,12 +1235,10 @@ export class DrizzleCenariosRepository implements CenariosRepository {
             isNotNull(cenarioBlobs.confirmadoEm),
           ),
         )
-      const presentes = new Set(
-        confirmados
-          .filter((p) => p.terreno?.min === base.min && p.terreno?.max === base.max)
-          .map((p) => p.digest),
-      )
-      const ausentes = [...usados].filter((d) => !presentes.has(d))
+      const presentes = new Map(confirmados.map((p) => [p.digest, p.terreno]))
+      const ausentes = esperados
+        .filter((p) => !metadadosDoTerrenoCorrespondem(presentes.get(p.digest), p.esperado))
+        .map((p) => p.digest)
       if (ausentes.length) throw new CenarioArquivoAusenteError(ausentes)
     }
     // A biblioteca pode ter sido apagada entre a conferência do serviço e esta trava.

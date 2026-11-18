@@ -22,6 +22,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
+import { chaveDoBlob } from '../../src/domain/cenarios/cenarios'
 import {
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
@@ -180,6 +181,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       'utf8',
     )
     for (const comando of retratosDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
+    const soloDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0162_young_roulette.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of soloDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
@@ -1011,6 +1021,102 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     })
     expect(refaz.documento.formas).toEqual([forma])
     expect(refaz.documento.instancias).toEqual(d.instancias)
+  })
+
+  test('pintura e buracos exigem prova do papel e das camadas, com histórico e coleta por último dono', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
+    const servico = new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() })
+    const [espaco] = await servico.espacos(ator)
+    const mundo = await servico.criarMundo(ator, espaco!.id, 'Mundo')
+    const cenario = await servico.criarCenario(ator, mundo.id, 'Solo')
+    const a = digest('a'),
+      b = digest('b')
+    const base: BaseDeTerreno = {
+      tipo: 'terreno',
+      origem: { x: 0, z: 0 },
+      passo: 1,
+      colunas: 64,
+      linhas: 64,
+      min: -10,
+      max: 40,
+      fundo: 0,
+      pecas: [],
+      solo: {
+        camadas: [
+          { id: 'grama', nome: 'Grama', cor: '#80b050' },
+          { id: 'terra', nome: 'Terra', cor: '#907050' },
+        ],
+        pecas: [{ coluna: 0, linha: 0, digest: a }],
+      },
+      buracos: [{ coluna: 0, linha: 0, digest: b }],
+    }
+    const prova = [
+      {
+        digest: a,
+        bytes: 8458,
+        tipoDoConteudo: 'application/octet-stream' as const,
+        terreno: { tipo: 'pintura' as const, camadas: 2 },
+      },
+      {
+        digest: b,
+        bytes: 520,
+        tipoDoConteudo: 'application/octet-stream' as const,
+        terreno: { tipo: 'buracos' as const },
+      },
+    ]
+    await servico.reservarRecursos(
+      ator,
+      cenario.id,
+      prova.map(({ digest, bytes }) => ({ digest, bytes })),
+    )
+    const lote = {
+      revisaoEsperada: 0,
+      operacaoId: 'solo-prova-0001',
+      comandos: [{ tipo: 'base.definir' as const, base }],
+    }
+    const semProva = await servico.editarCenario(ator, cenario.id, lote).catch((e: unknown) => e)
+    expect(semProva).toBeInstanceOf(CenarioArquivoAusenteError)
+    const divergente = {
+      ...base,
+      solo: {
+        ...base.solo!,
+        camadas: [...base.solo!.camadas, { id: 'areia', nome: 'Areia', cor: '#ccb060' }],
+      },
+    }
+    const falha = await servico
+      .editarCenario(
+        ator,
+        cenario.id,
+        { ...lote, comandos: [{ tipo: 'base.definir', base: divergente }] },
+        { espacoId: espaco!.id, conferidos: prova },
+      )
+      .catch((e: unknown) => e)
+    expect(falha).toBeInstanceOf(CenarioArquivoAusenteError)
+    expect((await repo.blobsConfirmados(espaco!.id, [a, b])).size).toBe(0)
+    expect((await repo.cenario(cenario.id))!.revisao).toBe(0)
+    await servico.editarCenario(ator, cenario.id, lote, { espacoId: espaco!.id, conferidos: prova })
+    expect((await repo.blobsConfirmados(espaco!.id, [a, b])).size).toBe(2)
+    const semBuracos = { ...base, buracos: [] }
+    await servico.editarCenario(ator, cenario.id, {
+      revisaoEsperada: 1,
+      operacaoId: 'solo-prova-0002',
+      comandos: [{ tipo: 'base.definir', base: semBuracos }],
+    })
+    const desfeito = await servico.moverHistorico(ator, cenario.id, {
+      revisaoEsperada: 2,
+      acao: 'desfazer',
+      operacaoId: 'solo-undo-0001',
+    })
+    expect(desfeito.documento.base).toEqual(base)
+    const copia = await servico.duplicarCenario(ator, cenario.id)
+    expect((await servico.apagarCenario(ator, cenario.id)).apagar).not.toContain(
+      chaveDoBlob(espaco!.id, b),
+    )
+    expect((await repo.blobsConfirmados(espaco!.id, [a, b])).size).toBe(2)
+    const removidos = await servico.apagarCenario(ator, copia.id)
+    expect(removidos.apagar).toContain(chaveDoBlob(espaco!.id, a))
+    expect(removidos.apagar).toContain(chaveDoBlob(espaco!.id, b))
+    expect((await repo.blobsConfirmados(espaco!.id, [a, b])).size).toBe(0)
   })
 
   test('peças do relevo só confirmam junto com o lote válido; conflito e falha desfazem toda a confirmação', async () => {

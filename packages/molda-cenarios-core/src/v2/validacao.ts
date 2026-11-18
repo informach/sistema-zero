@@ -45,6 +45,10 @@ export function validarDocumento(
     texturas.add(t.id)
     if (opcoes.texturaExiste && !opcoes.texturaExiste(t)) erros.push(`Textura ausente: ${t.id}`)
   }
+  if (d.base.tipo === 'terreno')
+    for (const camada of d.base.solo?.camadas ?? [])
+      if (camada.textura && !texturas.has(camada.textura.id))
+        erros.push(`Textura fora da tabela do cenário: solo/${camada.id}`)
   for (const f of d.formas ?? []) {
     if (fontes.has(f.id)) erros.push(`Definição de forma duplicada: ${f.id}`)
     fontes.add(f.id)

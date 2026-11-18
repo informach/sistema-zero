@@ -1,4 +1,5 @@
 import 'server-only'
+import { MAX_RECURSOS_TERRENO } from '@sistemazero/molda-cenarios-core/v2'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation, isSupportSession } from '../lib/act'
@@ -132,7 +133,9 @@ const LoteComRecursosBody = z
       .max(80)
       .regex(/^[A-Za-z0-9_-]+$/),
     comandos: z.array(z.record(z.string(), z.unknown())).min(1).max(500),
-    recursos: z.object({ espacoId: Uuid, digests: z.array(Digest).min(1).max(4096) }).strict(),
+    recursos: z
+      .object({ espacoId: Uuid, digests: z.array(Digest).min(1).max(MAX_RECURSOS_TERRENO) })
+      .strict(),
   })
   .strict()
 const TexturasBody = z.object({

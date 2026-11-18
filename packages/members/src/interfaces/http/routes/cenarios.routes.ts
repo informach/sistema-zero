@@ -1,4 +1,8 @@
-import type { ComandoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  type ComandoDeCenario,
+  MAX_BYTES_RECURSO_TERRENO,
+  MAX_RECURSOS_TERRENO,
+} from '@sistemazero/molda-cenarios-core/v2'
 import { Elysia, type TSchema, t } from 'elysia'
 import type { CenariosService } from '../../../application/cenarios/cenarios.service'
 import { type Ator, LICENCAS, LIMITES_DOS_CENARIOS } from '../../../domain/cenarios/cenarios'
@@ -468,7 +472,12 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           {
             params: Id,
             body: t.Object({
-              recursos: Varios(t.Object({ digest: DIGEST, bytes: t.Literal(8474) })),
+              recursos: Varios(
+                t.Object({
+                  digest: DIGEST,
+                  bytes: t.Integer({ minimum: 1, maximum: MAX_BYTES_RECURSO_TERRENO }),
+                }),
+              ),
             }),
           },
         )
@@ -536,14 +545,21 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
               conferidos: t.Array(
                 t.Object({
                   digest: DIGEST,
-                  bytes: t.Literal(8474),
+                  bytes: t.Integer({ minimum: 1, maximum: MAX_BYTES_RECURSO_TERRENO }),
                   tipoDoConteudo: t.Literal('application/octet-stream'),
-                  terreno: t.Object({
-                    min: t.Number({ minimum: -10000, maximum: 10000 }),
-                    max: t.Number({ minimum: -10000, maximum: 10000 }),
-                  }),
+                  terreno: t.Union([
+                    t.Object({
+                      min: t.Number({ minimum: -10000, maximum: 10000 }),
+                      max: t.Number({ minimum: -10000, maximum: 10000 }),
+                    }),
+                    t.Object({
+                      tipo: t.Literal('pintura'),
+                      camadas: t.Integer({ minimum: 1, maximum: 8 }),
+                    }),
+                    t.Object({ tipo: t.Literal('buracos') }),
+                  ]),
                 }),
-                { maxItems: 4096 },
+                { maxItems: MAX_RECURSOS_TERRENO },
               ),
             }),
           },

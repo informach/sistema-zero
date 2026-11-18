@@ -3,6 +3,9 @@ import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
   codificarPecaDeAlturas,
+  codificarPecaDePintura,
+  codificarRecursoDeBuracos,
+  criarPinturaDeChao,
   digestDosBytes,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarHostHttp } from '../src/oficina/host-http'
@@ -22,6 +25,74 @@ const base = (digests: string[]): BaseDeTerreno => ({
   max: 255,
   fundo: 0,
   pecas: digests.map((digest, coluna) => ({ coluna, linha: 0, digest })),
+})
+
+test('pintura e buracos compartilham upload, isolamento, histórico e coleta existentes', async () => {
+  const host = criarHostEmMemoria({ equipe: true }),
+    mundo = await host.criarMundo('conta', 'Mundo')
+  const c = await host.criarCenario(mundo.id, 'Solo')
+  const arquivos = await Promise.all(
+    [
+      codificarPecaDePintura(criarPinturaDeChao({ colunas: 64, linhas: 64 }, 8), 0, 0),
+      codificarRecursoDeBuracos(new Uint8Array(512).fill(255)),
+    ].map(async (conteudo) => ({ conteudo, digest: await digestDosBytes(conteudo) })),
+  )
+  const recursos = await host.guardarRecursos(c.id, arquivos)
+  const terreno: BaseDeTerreno = {
+    ...base(['a'.repeat(64)]),
+    pecas: [],
+    solo: {
+      camadas: Array.from({ length: 8 }, (_, i) => ({
+        id: `solo-${i}`,
+        nome: `Solo ${i}`,
+        cor: '#80b050',
+      })),
+      pecas: [{ coluna: 0, linha: 0, digest: arquivos[0]!.digest }],
+    },
+    buracos: [{ coluna: 0, linha: 0, digest: arquivos[1]!.digest }],
+  }
+  const errado = {
+    ...terreno,
+    solo: { ...terreno.solo!, camadas: terreno.solo!.camadas.slice(0, 7) },
+  }
+  await expect(
+    host.editarCenario(
+      c.id,
+      0,
+      [{ tipo: 'base.definir', base: errado }],
+      'solo-invalido-01',
+      recursos,
+    ),
+  ).rejects.toThrow('corresponde')
+  expect((await host.abrirCenario(c.id)).revisao).toBe(0)
+  await host.editarCenario(
+    c.id,
+    0,
+    [{ tipo: 'base.definir', base: terreno }],
+    'solo-valido-01',
+    recursos,
+  )
+  await expect(
+    host.editarCenario(
+      c.id,
+      1,
+      [{ tipo: 'base.definir', base: { tipo: 'plano', largura: 64, comprimento: 64 } }],
+      'solo-sem-referencia',
+      recursos,
+    ),
+  ).rejects.toThrow('não usa')
+  await host.moverHistorico(c.id, 1, 'desfazer', 'solo-undo-01')
+  await host.moverHistorico(c.id, 2, 'refazer', 'solo-redo-01')
+  expect((await host.abrirCenario(c.id)).documento.base).toEqual(terreno)
+  const copia = await host.duplicarCenario(c.id)
+  await host.apagarCenario(c.id)
+  for (const arquivo of arquivos)
+    expect(new Uint8Array(await host.conteudoDoTerreno(copia.id, arquivo.digest))).toEqual(
+      arquivo.conteudo,
+    )
+  expect((await host.espacos())[0]!.usadoBytes).toBe(33808 + 520)
+  await host.apagarCenario(copia.id)
+  expect((await host.espacos())[0]!.usadoBytes).toBe(0)
 })
 
 test('host HTTP reserva em lotes, sobe condicionalmente e pede confirmação junto com a edição', async () => {

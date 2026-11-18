@@ -50,6 +50,9 @@ export function aplicarTexturaAosObjetos(
       .filter((o) => !escolhidos.has(o.id))
       .flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
   )
+  if (doc.base.tipo === 'terreno')
+    for (const camada of doc.base.solo?.camadas ?? [])
+      if (camada.textura) aindaUsadas.add(camada.textura.id)
   for (const antiga of antigas)
     if (antiga !== id && !aindaUsadas.has(antiga))
       comandos.push({ tipo: 'textura.remover', id: antiga })

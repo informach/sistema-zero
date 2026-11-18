@@ -10,7 +10,10 @@ import {
   executarLote,
   inverterLote,
   LoteDeCenarioSchema,
-  lerPecaDeAlturas,
+  lerRecursoDeTerreno,
+  MAX_RECURSOS_TERRENO,
+  metadadosDoTerrenoCorrespondem,
+  referenciasDoTerreno,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarConjuntosEmMemoria, type PrepararLoteDoEnsaio } from './conjuntos-em-memoria'
 import { criarImagensEmMemoria } from './imagens-em-memoria'
@@ -200,13 +203,20 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       }
       if (recursos && recursos.espacoId !== mundo.espacoId)
         throw new Error('O espaço não corresponde ao cenário')
+      const usadosNoTerreno = new Set(
+        depois.documento.base.tipo === 'terreno'
+          ? referenciasDoTerreno(depois.documento.base).map((p) => p.digest)
+          : [],
+      )
+      if (recursos?.digests.some((d) => !usadosNoTerreno.has(d)))
+        throw new Error('O lote não usa todos os recursos de terreno informados')
       if (depois.documento.base.tipo === 'terreno') {
         const base = depois.documento.base
-        for (const p of base.pecas) {
-          const dados = lerPecaDeAlturas(
+        for (const p of referenciasDoTerreno(base)) {
+          const dados = lerRecursoDeTerreno(
             exigir(recursosDeTerreno, `${mundo.espacoId}:${p.digest}`, 'A peça de terreno'),
           )
-          if (dados.min !== base.min || dados.max !== base.max)
+          if (!metadadosDoTerrenoCorrespondem(dados.metadados, p.esperado))
             throw new Error('A peça não corresponde ao terreno')
         }
       }
@@ -658,11 +668,11 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       const mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
       const espaco = espacoDe(mundo.espacoId)
       const unicas = new Map(pecas.map((p) => [p.digest, p.conteudo]))
-      if (unicas.size > 4096) throw new Error('O terreno tem peças demais')
+      if (unicas.size > MAX_RECURSOS_TERRENO) throw new Error('O terreno tem peças demais')
       let novosBytes = 0
       for (const [digest, bytes] of unicas) {
         sinal?.throwIfAborted()
-        lerPecaDeAlturas(bytes)
+        lerRecursoDeTerreno(bytes)
         if ((await digestDosBytes(bytes)) !== digest)
           throw new Error('O hash da peça de terreno é inválido')
         if (!recursosDeTerreno.has(`${espaco.id}:${digest}`)) novosBytes += bytes.length

@@ -8,6 +8,28 @@ export const BYTES_DA_PECA = 24 + AMOSTRAS_DA_PECA * 2
 const MAGIC = 0x54485a53 // SZHT, little endian
 const altura = z.number().finite().min(-10_000).max(10_000)
 const dimensao = z.number().int().min(CELULAS_DA_PECA).max(4096).multipleOf(CELULAS_DA_PECA)
+export const ReferenciaDePecaSchema = z
+  .object({
+    coluna: z.number().int().nonnegative(),
+    linha: z.number().int().nonnegative(),
+    digest: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict()
+export const CamadaDeSoloSchema = z
+  .object({
+    id: z.string().min(1).max(240),
+    nome: z.string().trim().min(1).max(120),
+    cor: z.string().regex(/^#[a-fA-F0-9]{6}$/),
+    textura: z
+      .object({
+        id: z.string().min(1).max(240),
+        repeticaoMetros: z.number().finite().min(0.1).max(100),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+export type CamadaDeSolo = z.infer<typeof CamadaDeSoloSchema>
 
 export const BaseDeTerrenoSchema = z
   .object({
@@ -24,6 +46,14 @@ export const BaseDeTerrenoSchema = z
     min: altura,
     max: altura,
     fundo: altura,
+    solo: z
+      .object({
+        camadas: z.array(CamadaDeSoloSchema).min(1).max(8),
+        pecas: z.array(ReferenciaDePecaSchema).max(4096),
+      })
+      .strict()
+      .optional(),
+    buracos: z.array(ReferenciaDePecaSchema).max(4096).optional(),
     /** Furos importados, em coordenadas de mundo; não alteram as alturas de apoio. */
     recortes: z
       .array(
@@ -41,17 +71,7 @@ export const BaseDeTerrenoSchema = z
       )
       .max(128)
       .optional(),
-    pecas: z
-      .array(
-        z
-          .object({
-            coluna: z.number().int().nonnegative(),
-            linha: z.number().int().nonnegative(),
-            digest: z.string().regex(/^[a-f0-9]{64}$/),
-          })
-          .strict(),
-      )
-      .max(4096),
+    pecas: z.array(ReferenciaDePecaSchema).max(4096),
   })
   .strict()
   .superRefine((b, ctx) => {
@@ -80,21 +100,37 @@ export const BaseDeTerrenoSchema = z
       })
     if (b.colunas * b.passo > 8192 || b.linhas * b.passo > 8192)
       ctx.addIssue({ code: 'custom', message: 'O terreno passa de 8192 metros', path: ['passo'] })
-    const ocupados = new Set<string>()
-    b.pecas.forEach((p, i) => {
-      const chave = `${p.coluna}:${p.linha}`
-      if (
-        p.coluna >= b.colunas / CELULAS_DA_PECA ||
-        p.linha >= b.linhas / CELULAS_DA_PECA ||
-        ocupados.has(chave)
-      )
+    const camadas = new Set<string>()
+    b.solo?.camadas.forEach((c, i) => {
+      if (camadas.has(c.id))
         ctx.addIssue({
           code: 'custom',
-          message: 'A peça se repete ou está fora do terreno',
-          path: ['pecas', i],
+          message: 'Camada de solo repetida',
+          path: ['solo', 'camadas', i],
         })
-      ocupados.add(chave)
+      camadas.add(c.id)
     })
+    for (const [lista, caminho] of [
+      [b.pecas, ['pecas']],
+      [b.solo?.pecas ?? [], ['solo', 'pecas']],
+      [b.buracos ?? [], ['buracos']],
+    ] as const) {
+      const ocupados = new Set<string>()
+      lista.forEach((p, i) => {
+        const chave = `${p.coluna}:${p.linha}`
+        if (
+          p.coluna >= b.colunas / CELULAS_DA_PECA ||
+          p.linha >= b.linhas / CELULAS_DA_PECA ||
+          ocupados.has(chave)
+        )
+          ctx.addIssue({
+            code: 'custom',
+            message: 'A peça se repete ou está fora do terreno',
+            path: [...caminho, i],
+          })
+        ocupados.add(chave)
+      })
+    }
   })
 
 export type BaseDeTerreno = z.infer<typeof BaseDeTerrenoSchema>
