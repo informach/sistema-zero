@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   alinharObjetos,
   alteracoesDoGesto,
+  apoioNaAgua,
   type ComandoDeCenario,
   criarDocumentoVazio,
   type DocumentoDeCenario,
@@ -78,6 +79,8 @@ test('troca conserva base visual, proporções, espelho e vínculos com pivôs e
     const lago = d.aguas[0]!
     if (lago.tipo !== 'lago') throw new Error('Lago esperado')
     lago.recorte = lago.contorno
+    // A pose mundial pedida exige um apoio coerente no referencial da água.
+    if (o.apoio.tipo === 'agua') o.apoio = apoioNaAgua(d, 'lago', o.transformacao)
     const antes = structuredClone(d),
       base = volumeNoMundo(d, o).min.y
     const novo = {

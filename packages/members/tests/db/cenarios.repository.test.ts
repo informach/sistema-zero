@@ -11,6 +11,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:tes
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import {
+  AguaSchema,
+  apoioNaAgua,
   type BaseDeTerreno,
   type ComandoDeCenario,
   capturarFragmento,
@@ -2658,6 +2660,129 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       .catch((e: unknown) => e)
     expect(recusado).toBeInstanceOf(CenarioInvalidoError)
     expect((await reaberto.abrirCenario(ator, c.id)).revisao).toBe(3)
+  })
+
+  test('água e pose de apoio conservam variantes e aparência no JSONB, replay, resposta repetida e histórico', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      montar = () =>
+        new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set<string>() }),
+      s = montar(),
+      [espaco] = await s.espacos(ator),
+      m = await s.criarMundo(ator, espaco!.id, 'Água'),
+      c = await s.criarCenario(ator, m.id, 'Lago')
+    const doc = criarDocumentoVazio(c.id, 'Lago'),
+      comum = { nome: 'Água', grupo: null, oculto: false, bloqueado: false },
+      contorno = [
+        { x: -8, z: -8 },
+        { x: 8, z: -8 },
+        { x: 8, z: 8 },
+        { x: -8, z: 8 },
+      ],
+      lago = {
+        ...comum,
+        tipo: 'lago',
+        id: 'lago',
+        modelo: null,
+        centro: { x: 0, z: 0 },
+        giro: 0.4,
+        escala: 2,
+        nivel: 3,
+        profundidade: 2,
+        contorno,
+        recorte: contorno,
+        origemPreenchimento: { x: 1, z: 1 },
+        ilhas: [
+          [
+            { x: -1, z: -1 },
+            { x: 1, z: -1 },
+            { x: 0, z: 1 },
+          ],
+        ],
+        aparencia: { corRasa: '#abcdef', ondas: { altura: 0.1, comprimento: 2, velocidade: 0.5 } },
+      }
+    doc.aguas = [
+      AguaSchema.parse(lago),
+      AguaSchema.parse({ ...comum, tipo: 'mar', id: 'mar', nivel: -2, nado: false }),
+      AguaSchema.parse({
+        ...lago,
+        tipo: 'represa',
+        id: 'represa',
+        barragem: { de: { x: -3, z: -5 }, ate: { x: 3, z: -5 }, crista: 4, largura: 2 },
+      }),
+      AguaSchema.parse({
+        ...comum,
+        tipo: 'rio',
+        id: 'rio',
+        largura: 3,
+        profundidade: 1.4,
+        profundidadeDoLeito: 2,
+        correnteza: 1,
+        suave: true,
+        controle: [
+          { x: 20, z: 0 },
+          { x: 30, z: 0 },
+        ],
+        pontos: [
+          { x: 20, y: 4, z: 0 },
+          { x: 30, y: 2, z: 0 },
+        ],
+      }),
+      AguaSchema.parse({
+        ...comum,
+        tipo: 'cachoeira',
+        id: 'queda',
+        largura: 3,
+        giro: 0,
+        topo: { x: 30, y: 4, z: 0 },
+        base: { x: 30, y: 0, z: 0 },
+        nado: false,
+      }),
+    ]
+    doc.formas = [
+      { id: 'f', nome: 'Barco de teste', tipo: 'caixa', largura: 2, altura: 1, comprimento: 4 },
+    ]
+    const t = {
+      posicao: { x: 3, y: 3.2, z: 3 },
+      rotacao: { x: 0.1, y: 0.2, z: 0.3 },
+      escala: { x: 2, y: 3, z: 1 },
+    }
+    doc.instancias = [
+      {
+        ...comum,
+        id: 'barco',
+        modelo: 'f',
+        colisao: 'caixa',
+        transformacao: t,
+        apoio: apoioNaAgua(doc, 'lago', t),
+      },
+    ]
+    const comandos: ComandoDeCenario[] = [
+      { tipo: 'forma.definir', forma: doc.formas[0]! },
+      ...doc.aguas.map((agua) => ({ tipo: 'agua.definir' as const, agua })),
+      { tipo: 'instancia.criar', instancia: doc.instancias[0]! },
+    ]
+    const lote = { revisaoEsperada: 0, operacaoId: randomUUID(), comandos }
+    await s.editarCenario(ator, c.id, lote)
+    await montar().editarCenario(ator, c.id, lote)
+    const salvo = await montar().abrirCenario(ator, c.id)
+    expect(salvo.revisao).toBe(1)
+    expect(salvo.documento.aguas).toEqual(doc.aguas)
+    expect(salvo.documento.instancias[0]!.apoio).toEqual(doc.instancias[0]!.apoio)
+    expect((await repo.lotesEntre(c.id, 0, 1))[0]!.comandos).toEqual(comandos)
+    expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.aguas).toEqual([])
+    expect(desfeito.documento.instancias).toEqual([])
+    const refeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
   })
 
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {

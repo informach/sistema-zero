@@ -1,4 +1,5 @@
 import { CenarioInvalido, poligonoSimples } from '../validacao'
+import { transformacaoDoApoioNaAgua } from './apoio-na-agua'
 import { resolverConjuntos } from './conjuntos'
 import {
   type DocumentoDeCenario,
@@ -7,6 +8,7 @@ import {
   type ModeloDoCenario,
   type TexturaDoCenario,
 } from './documento'
+import { TransformacaoSchema } from './entidades-schema'
 import { volumeDaReferencia } from './fontes'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
 
@@ -97,6 +99,15 @@ export function validarDocumento(
       erros.push(`O encaixe em superfície exige medidas do modelo: ${o.id}`)
     if (o.apoio.tipo === 'agua' && !aguas.has(o.apoio.agua))
       erros.push(`Água de apoio ausente: ${o.id}`)
+    else if (o.apoio.tipo === 'agua') {
+      try {
+        if (!TransformacaoSchema.safeParse(transformacaoDoApoioNaAgua(d, o.apoio)).success)
+          erros.push(`O apoio de água ultrapassa os limites da transformação: ${o.id}`)
+      } catch (erro) {
+        if (!(erro instanceof CenarioInvalido)) throw erro
+        erros.push(...erro.problemas.map((p) => `${p} (${o.id})`))
+      }
+    }
     const vistos = new Set([o.id])
     let apoio = o.apoio
     while (apoio.tipo === 'objeto') {

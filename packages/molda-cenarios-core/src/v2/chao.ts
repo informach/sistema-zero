@@ -1,4 +1,5 @@
 import { CenarioInvalido } from '../validacao'
+import { apoioNaAgua, transformacaoDoApoioNaAgua } from './apoio-na-agua'
 import type { MontagemDeConjunto } from './conjuntos-schema'
 import type {
   BaseDeCenario,
@@ -11,7 +12,7 @@ import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { destransformarPonto, transformarPonto, transformarVolume } from './volume'
 
 type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
-  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias' | 'montagens'>>
+  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias' | 'montagens' | 'aguas'>>
 type ObjetoComModelo = Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> &
   Partial<Pick<InstanciaDeCenario, 'modelo'>>
 
@@ -83,6 +84,7 @@ export function posicaoNoMundo(
   cadeia: readonly string[] = [],
 ): { x: number; y: number; z: number } {
   const p = o.transformacao.posicao
+  if (o.apoio.tipo === 'agua') return transformacaoDoApoioNaAgua(doc, o.apoio).posicao
   if (o.apoio.tipo === 'terreno')
     return {
       x: p.x,
@@ -93,14 +95,26 @@ export function posicaoNoMundo(
     const suporte = suporteDoObjeto(doc, o.apoio.objeto, fonte)
     if (cadeia.length >= 64 || cadeia.includes(o.apoio.objeto))
       throw new CenarioInvalido(['Ciclo de apoios'])
-    const t = {
-      ...suporte.transformacao,
-      posicao: posicaoNoMundo(doc, suporte, fonte, [...cadeia, o.apoio.objeto]),
-    }
+    const t = transformacaoResolvida(doc, suporte, fonte, [...cadeia, o.apoio.objeto])
     const q = transformarPonto(refletirContato(doc, suporte, o.apoio.contato), t)
     return { x: q.x, y: q.y + o.apoio.deslocamento + elevacaoDoVolume(doc, o), z: q.z }
   }
   return { x: p.x, y: p.y, z: p.z }
+}
+
+/** Uma única pose efetiva para desenho, volumes, contato, cópia e edição. */
+export function transformacaoResolvida(
+  doc: BaseComModelos,
+  o: ObjetoComModelo,
+  fonte?: FonteDeAlturas,
+  cadeia: readonly string[] = [],
+): Transformacao {
+  if (o.apoio.tipo === 'agua') return transformacaoDoApoioNaAgua(doc, o.apoio)
+  return {
+    posicao: posicaoNoMundo(doc, o, fonte, cadeia),
+    rotacao: { ...o.transformacao.rotacao },
+    escala: { ...o.transformacao.escala },
+  }
 }
 
 function suporteDoObjeto(doc: BaseComModelos, id: string, fonte?: FonteDeAlturas) {
@@ -142,7 +156,7 @@ export function apoioNaSuperficie(
   fonte?: FonteDeAlturas,
 ): InstanciaDeCenario['apoio'] {
   const suporte = suporteDoObjeto(doc, id, fonte)
-  const t = { ...suporte.transformacao, posicao: posicaoNoMundo(doc, suporte, fonte) }
+  const t = transformacaoResolvida(doc, suporte, fonte)
   return {
     tipo: 'objeto',
     objeto: id,
@@ -162,6 +176,8 @@ export function alteracoesDoGesto(
   mundo: Transformacao,
   fonte?: FonteDeAlturas,
 ): Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> {
+  if (o.apoio.tipo === 'agua')
+    return { transformacao: mundo, apoio: apoioNaAgua(doc, o.apoio.agua, mundo) }
   if (o.apoio.tipo === 'objeto' && o.apoio.contato && o.transformacao) {
     const atual = posicaoNoMundo(doc, { ...o, transformacao: o.transformacao }, fonte)
     const mesmaPosicao =

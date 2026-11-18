@@ -5,6 +5,7 @@ import {
   alturaDoChao,
   posicaoDaMontagem,
   posicaoNoMundo,
+  transformacaoResolvida,
 } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import { quantidadeDeObjetosDoCenario, volumeDaMontagem } from './conjuntos'
@@ -92,7 +93,7 @@ export function trocarModeloDosObjetos(
   for (const o of objetos) {
     const base = volumeNoMundo(doc, o, fonte).min.y
     const copia = { ...o, modelo: id }
-    const mundo = { ...structuredClone(o.transformacao), posicao: posicaoNoMundo(doc, o, fonte) }
+    const mundo = transformacaoResolvida(doc, o, fonte)
     mundo.posicao.y += base - volumeNoMundo(novo, copia, fonte).min.y
     let alteracoes = alteracoesDoGesto(novo, copia, mundo, fonte)
     if (o.apoio.tipo === 'terreno') {
@@ -107,16 +108,6 @@ export function trocarModeloDosObjetos(
       alteracoes.apoio = {
         ...o.apoio,
         deslocamento: o.apoio.deslocamento + mundo.posicao.y - posicaoNoMundo(doc, o, fonte).y,
-      }
-    } else if (o.apoio.tipo === 'agua') {
-      const suporte = doc.aguas.find((a) => o.apoio.tipo === 'agua' && a.id === o.apoio.agua)
-      if (suporte?.tipo !== 'lago')
-        throw new CenarioInvalido(['A água de apoio não está disponível'])
-      alteracoes.apoio = {
-        ...o.apoio,
-        deslocamento:
-          o.apoio.deslocamento +
-          (mundo.posicao.y - posicaoNoMundo(doc, o, fonte).y) / suporte.escala,
       }
     }
     comandos.push({
@@ -161,7 +152,7 @@ export function volumeNoMundo(
   const volume = volumeDaReferencia(doc, o.modelo)
   if (!volume)
     throw new CenarioInvalido([`Traga novamente o modelo para conferir suas medidas: ${o.nome}`])
-  return transformarVolume(volume, { ...o.transformacao, posicao: posicaoNoMundo(doc, o, fonte) })
+  return transformarVolume(volume, transformacaoResolvida(doc, o, fonte))
 }
 
 function mover(
@@ -183,7 +174,12 @@ function mover(
   return {
     tipo: 'instancia.atualizar',
     id: o.id,
-    alteracoes: alteracoesDoGesto(doc, o, { ...o.transformacao, posicao }, fonte),
+    alteracoes: alteracoesDoGesto(
+      doc,
+      o,
+      { ...transformacaoResolvida(doc, o, fonte), posicao },
+      fonte,
+    ),
   }
 }
 
@@ -308,7 +304,12 @@ export function repetirObjetos(
       const copia = structuredClone(o),
         posicao =
           'definicao' in o ? posicaoDaMontagem(doc, o, fonte) : posicaoNoMundo(doc, o, fonte)
-      const transformacao: Transformacao = { ...structuredClone(o.transformacao), posicao }
+      const transformacao: Transformacao = {
+        ...('definicao' in o
+          ? structuredClone(o.transformacao)
+          : transformacaoResolvida(doc, o, fonte)),
+        posicao,
+      }
       if (receita.tipo === 'fila')
         for (const eixo of ['x', 'y', 'z'] as const)
           posicao[eixo] += receita.deslocamento[eixo] * (i + 1)
@@ -355,14 +356,19 @@ export function sortearTransformacoes(
     throw new CenarioInvalido(['Confira a semente e o intervalo de variação'])
   const sorteio = criarSorteio(semente)
   return escolhidos(doc, ids).map((o) => {
-    const t = structuredClone(o.transformacao),
+    const t =
+        'definicao' in o || o.apoio.tipo !== 'agua'
+          ? structuredClone(o.transformacao)
+          : transformacaoResolvida(doc, o),
       fator = variacao.tamanhoMin + sorteio() * (variacao.tamanhoMax - variacao.tamanhoMin)
     t.rotacao = girarNaVertical(t.rotacao, (sorteio() * 2 - 1) * variacao.giro)
     t.escala = { x: t.escala.x * fator, y: t.escala.y * fator, z: t.escala.z * fator }
+    if ('definicao' in o)
+      return { tipo: 'montagem.atualizar', id: o.id, alteracoes: { transformacao: t } }
     return {
-      tipo: 'definicao' in o ? 'montagem.atualizar' : 'instancia.atualizar',
+      tipo: 'instancia.atualizar',
       id: o.id,
-      alteracoes: { transformacao: t },
+      alteracoes: o.apoio.tipo === 'agua' ? alteracoesDoGesto(doc, o, t) : { transformacao: t },
     }
   })
 }

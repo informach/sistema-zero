@@ -45,6 +45,7 @@ export function girarNaVertical(
 ): Transformacao['rotacao'] {
   if (![r.x, r.y, r.z, angulo].every(Number.isFinite))
     throw new RangeError('O giro precisa ter valores finitos')
+  if (angulo === 0) return { ...r }
   if (r.x === 0 && r.z === 0) return { ...r, y: r.y + angulo }
   const c1 = Math.cos(r.x / 2),
     c2 = Math.cos(r.y / 2),

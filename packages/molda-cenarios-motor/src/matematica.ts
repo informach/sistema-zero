@@ -5,8 +5,8 @@ import {
   type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
-  posicaoNoMundo,
   type Transformacao,
+  transformacaoResolvida,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Euler, type Matrix4, Quaternion, Vector3 } from 'three'
 
@@ -18,14 +18,15 @@ const euler = new Euler(0, 0, 0, 'XYZ')
 /** Matriz de mundo de um objeto do cenário, com o apoio já resolvido. Escreve em `saida`. */
 export function matrizDoObjeto(
   doc: Pick<DocumentoDeCenario, 'base' | 'modelos'> &
-    Partial<Pick<DocumentoDeCenario, 'instancias' | 'formas' | 'montagens'>>,
+    Partial<Pick<DocumentoDeCenario, 'instancias' | 'formas' | 'montagens' | 'aguas'>>,
   o: Pick<InstanciaDeCenario, 'transformacao' | 'apoio' | 'modelo'>,
   saida: Matrix4,
   fonte?: FonteDeAlturas,
 ): Matrix4 {
-  const p = posicaoNoMundo(doc, o, fonte),
-    r = o.transformacao.rotacao,
-    s = o.transformacao.escala
+  const t = transformacaoResolvida(doc, o, fonte),
+    p = t.posicao,
+    r = t.rotacao,
+    s = t.escala
   posicao.set(p.x, p.y, p.z)
   giro.setFromEuler(euler.set(r.x, r.y, r.z, 'XYZ'))
   escala.set(s.x, s.y, s.z)

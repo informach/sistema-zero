@@ -1,6 +1,6 @@
 import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
-import { posicaoDaMontagem, posicaoNoMundo } from './chao'
+import { posicaoDaMontagem, transformacaoResolvida } from './chao'
 import { resolverConjuntos } from './conjuntos'
 import { LIMITES_CONJUNTOS } from './conjuntos-schema'
 import { criarDocumentoVazio, type DocumentoDeCenario, LIMITES_CENARIO_V2 } from './documento'
@@ -144,7 +144,7 @@ export function capturarFragmento(
       : {}),
     instancias: objetos.map((o) => ({
       ...o,
-      transformacao: { ...o.transformacao, posicao: posicaoNoMundo(doc, o, fonte) },
+      transformacao: transformacaoResolvida(doc, o, fonte),
       apoio: o.apoio.tipo === 'objeto' && ids.has(o.apoio.objeto) ? o.apoio : { tipo: 'absoluto' },
     })),
   })

@@ -13,10 +13,10 @@ import {
   type ModeloDoCenario,
   type MontagemDeConjunto,
   posicaoDaMontagem,
-  posicaoNoMundo,
   referenciarConjunto,
   referenciarModelo,
   type Transformacao,
+  transformacaoResolvida,
   trocarModeloDosObjetos,
   type VolumeDeComposicao,
   volumeDaMontagem,
@@ -266,10 +266,7 @@ export function comandosParaDuplicar(
     copia.id = novoId()
     copia.nome = nomeLivre(doc, original.nome, nomes)
     copia.bloqueado = false
-    const mundo = {
-      ...structuredClone(original.transformacao),
-      posicao: posicaoNoMundo(doc, original, fonte),
-    }
+    const mundo = transformacaoResolvida(doc, original, fonte)
     mundo.posicao.x += PASSO_DA_COPIA
     mundo.posicao.z += PASSO_DA_COPIA
     Object.assign(copia, alteracoesDoGesto(doc, original, mundo, fonte))
@@ -359,11 +356,7 @@ export function transformacaoNoMundo(
   objeto: EntidadeTransformavel,
   fonte?: FonteDeAlturas,
 ): Transformacao {
-  return {
-    ...objeto.transformacao,
-    posicao:
-      'definicao' in objeto
-        ? posicaoDaMontagem(doc, objeto, fonte)
-        : posicaoNoMundo(doc, objeto, fonte),
-  }
+  return 'definicao' in objeto
+    ? { ...objeto.transformacao, posicao: posicaoDaMontagem(doc, objeto, fonte) }
+    : transformacaoResolvida(doc, objeto, fonte)
 }

@@ -4,6 +4,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import {
+  AguaSchema,
   capturarFragmento,
   conteudoDoCenarioDeConjunto,
   criarDocumentoVazio,
@@ -796,6 +797,81 @@ describe('Molda Cenários: mundos e cenários', () => {
     expect(revisoes.itens.map((r: { revisao: number }) => r.revisao)).toEqual([2, 1])
     expect(revisoes.itens[0].autorId).toBeUndefined()
   })
+  test('água por HTTP conserva aparência e perfil no histórico e recusa rio ascendente sem trocar a cabeça', async () => {
+    const { ctx, cenario } = await comCenario(),
+      caminho = `/members/cenarios/cenarios/${cenario.id}`,
+      agua = AguaSchema.parse({
+        id: 'rio',
+        nome: 'Rio',
+        tipo: 'rio',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        largura: 3,
+        profundidade: 1.4,
+        profundidadeDoLeito: 2,
+        correnteza: 1.5,
+        suave: true,
+        controle: [
+          { x: 0, z: 0 },
+          { x: 10, z: 0 },
+        ],
+        pontos: [
+          { x: 0, y: 4, z: 0 },
+          { x: 10, y: 2, z: 0 },
+        ],
+        nado: false,
+        aparencia: { corRasa: '#aabbcc' },
+      })
+    const salvo = await pedir(
+      ctx.app,
+      'POST',
+      `${caminho}/lotes`,
+      lote(0, 'agua-op-0001', [{ tipo: 'agua.definir', agua }]),
+    )
+    expect(salvo.status).toBe(200)
+    expect((await json(await pedir(ctx.app, 'GET', caminho))).documento.aguas).toEqual([agua])
+    const recusado = await pedir(
+      ctx.app,
+      'POST',
+      `${caminho}/lotes`,
+      lote(1, 'agua-op-0002', [
+        {
+          tipo: 'agua.definir',
+          agua: {
+            ...agua,
+            pontos: [
+              { x: 0, y: 2, z: 0 },
+              { x: 10, y: 4, z: 0 },
+            ],
+          },
+        },
+      ]),
+    )
+    expect(recusado.status).toBe(422)
+    expect((await json(await pedir(ctx.app, 'GET', caminho))).revisao).toBe(1)
+    expect(
+      (
+        await pedir(ctx.app, 'POST', `${caminho}/historico`, {
+          revisaoEsperada: 1,
+          operacaoId: 'agua-undo-0001',
+          acao: 'desfazer',
+        })
+      ).status,
+    ).toBe(200)
+    expect((await json(await pedir(ctx.app, 'GET', caminho))).documento.aguas).toEqual([])
+    expect(
+      (
+        await pedir(ctx.app, 'POST', `${caminho}/historico`, {
+          revisaoEsperada: 2,
+          operacaoId: 'agua-redo-0001',
+          acao: 'refazer',
+        })
+      ).status,
+    ).toBe(200)
+    expect((await json(await pedir(ctx.app, 'GET', caminho))).documento.aguas).toEqual([agua])
+  })
+
   test('lote que não vale responde 422 com os problemas e não grava nada', async () => {
     const { ctx, cenario } = await comCenario()
     const caminho = `/members/cenarios/cenarios/${cenario.id}`

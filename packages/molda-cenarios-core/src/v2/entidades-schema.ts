@@ -101,6 +101,8 @@ export const ApoioSchema = z.discriminatedUnion('tipo', [
       deslocamento: numero,
       giro: numero,
       escala: fator,
+      /** Pose local completa; ausente nos apoios antigos de giro Y e escala uniforme. */
+      pose: z.object({ rotacao: VetorSchema, escala: EscalaSchema }).strict().optional(),
     })
     .strict(),
 ])

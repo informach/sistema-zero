@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { VetorSchema } from '../documento'
 import { CenarioInvalido } from '../validacao'
-import { posicaoNoMundo } from './chao'
+import { alteracoesDoGesto, transformacaoResolvida } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import type { DocumentoDeCenario } from './documento'
 import { volumeDaReferencia } from './fontes'
@@ -45,15 +45,20 @@ export function girarObjetosNaVertical(
   return ids.map((id) => {
     const o = doc.instancias.find((o) => o.id === id)
     if (!o) throw new CenarioInvalido([`Objeto ausente: ${id}`])
+    const t = o.apoio.tipo === 'agua' ? transformacaoResolvida(doc, o) : o.transformacao
+    const mundo = { ...t, rotacao: girarNaVertical(t.rotacao, angulo) }
     return {
       tipo: 'instancia.atualizar',
       id,
-      alteracoes: {
-        transformacao: {
-          ...o.transformacao,
-          rotacao: girarNaVertical(o.transformacao.rotacao, angulo),
-        },
-      },
+      alteracoes:
+        o.apoio.tipo === 'agua'
+          ? alteracoesDoGesto(doc, o, mundo)
+          : {
+              transformacao: {
+                ...o.transformacao,
+                rotacao: girarNaVertical(o.transformacao.rotacao, angulo),
+              },
+            },
     }
   })
 }
@@ -72,7 +77,8 @@ export function levarObjetosAoAndar(
     const volume = volumeDaReferencia(doc, o?.modelo)
     if (!o || !volume)
       throw new CenarioInvalido(['Confira as medidas das peças antes de mudar de andar'])
-    const t = { ...o.transformacao, posicao: { ...posicaoNoMundo(doc, o, fonte), y: 0 } }
+    const t = transformacaoResolvida(doc, o, fonte)
+    t.posicao.y = 0
     t.posicao.y = altura - transformarVolume(volume, t).min.y
     return {
       tipo: 'instancia.atualizar',

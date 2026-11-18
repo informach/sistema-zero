@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  apoioNaAgua,
   apoioNaSuperficie,
   type ComandoDeCenario,
   posicaoNoMundo,
+  transformacaoResolvida,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   comandosDoGesto,
@@ -12,6 +14,7 @@ import {
   comandosParaPor,
   comandosParaTrocar,
   comMedidasConferidas,
+  transformacaoNoMundo,
 } from '../src/oficina/acoes'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -513,6 +516,74 @@ describe('controlador da oficina', () => {
     expect(controlador.getState().documento.nome).toBe('De outro lugar')
     expect(controlador.getState().podeDesfazer).toBe(true)
   })
+})
+
+test('editar e duplicar apoio de água usa a pose visível e a conserva ao reabrir e desfazer', async () => {
+  const { controlador, host, cenario } = await abrir()
+  const contorno = [
+      { x: -10, z: -10 },
+      { x: 10, z: -10 },
+      { x: 0, z: 10 },
+    ],
+    agua = {
+      id: 'lago',
+      nome: 'Lago',
+      tipo: 'lago' as const,
+      modelo: null,
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      centro: { x: 5, z: 6 },
+      giro: 0.4,
+      escala: 2,
+      nivel: 3,
+      profundidade: 2,
+      contorno,
+      recorte: contorno,
+    }
+  controlador.executar([{ tipo: 'agua.definir', agua }])
+  const doc = controlador.getState().documento,
+    t = {
+      posicao: { x: 5, y: 3.2, z: 6 },
+      rotacao: { x: 0.3, y: -0.4, z: 0.6 },
+      escala: { x: 2, y: 3, z: 1 },
+    },
+    objeto = {
+      id: 'barco',
+      nome: 'Barco',
+      modelo: 'f',
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      colisao: 'caixa' as const,
+      transformacao: t,
+      apoio: apoioNaAgua(doc, agua.id, t),
+    }
+  controlador.executar([
+    {
+      tipo: 'forma.definir',
+      forma: { id: 'f', nome: 'Barco', tipo: 'caixa', largura: 2, altura: 1, comprimento: 3 },
+    },
+    { tipo: 'instancia.criar', instancia: objeto },
+  ])
+  controlador.executar([{ tipo: 'agua.definir', agua: { ...agua, nivel: 7, escala: 3 } }])
+  const atual = controlador.getState().documento,
+    mundo = transformacaoNoMundo(atual, atual.instancias[0]!),
+    copia = comandosParaDuplicar(atual, ['barco'], () => 'copia')
+  expect(mundo.escala).toEqual({ x: 3, y: 4.5, z: 1.5 })
+  expect(controlador.executar(copia.comandos)).toBe(true)
+  await controlador.terminar()
+  const salvo = await host.abrirCenario(cenario.id),
+    n = salvo.documento.instancias.find((o) => o.id === 'copia')!
+  const pose = transformacaoResolvida(salvo.documento, n)
+  expect(pose.posicao.x).toBeCloseTo(mundo.posicao.x + 1)
+  expect(pose.posicao.z).toBeCloseTo(mundo.posicao.z + 1)
+  expect(pose.posicao.y).toBeCloseTo(mundo.posicao.y)
+  expect(pose.escala).toEqual(mundo.escala)
+  await controlador.desfazer()
+  expect(controlador.getState().documento.instancias).toHaveLength(1)
+  await controlador.refazer()
+  expect(controlador.getState().documento).toEqual(salvo.documento)
 })
 
 describe('host em memória', () => {

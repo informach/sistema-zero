@@ -184,3 +184,18 @@ test('limites de trabalho recusam rio excessivo antes de escavar a origem', () =
     ),
   ).toThrow()
 })
+
+test('preenchimento usa a altura real do clique entre vértices, sem alagar um ponto seco por arredondamento', () => {
+  const e = estado(8)
+  e.campo.alturas[32 * 65 + 32] = 0
+  expect(() =>
+    prepararOperacaoDeAgua(identidade, { tipo: 'lago', ponto: { x: 0.49, z: 0 }, nivel: 2 }, e),
+  ).toThrow('acima do chão')
+  const r = prepararOperacaoDeAgua(
+    identidade,
+    { tipo: 'lago', ponto: { x: 0.6, z: 0 }, nivel: 5 },
+    e,
+  )
+  expect(r.agua.tipo).toBe('lago')
+  expect(prepararConsultaDaAgua(r.agua).em(0.6, 0)?.nivel).toBe(5)
+})

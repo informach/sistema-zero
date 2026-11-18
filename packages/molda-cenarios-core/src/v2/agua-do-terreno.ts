@@ -20,13 +20,21 @@ const invalidar = (frase: string): never => {
   throw new CenarioInvalido([frase])
 }
 
-function amostraMaisProxima(campo: CampoDeAlturas, p: PontoNoChao) {
+function amostraDaBaixada(campo: CampoDeAlturas, p: PontoNoChao) {
   if (!Number.isFinite(p.x) || !Number.isFinite(p.z)) invalidar('O ponto da água é inválido')
-  const ix = Math.round((p.x - campo.origem.x) / campo.passo),
-    iz = Math.round((p.z - campo.origem.z) / campo.passo)
-  return ix < 0 || iz < 0 || ix > campo.colunas || iz > campo.linhas
-    ? null
-    : iz * (campo.colunas + 1) + ix
+  const x = (p.x - campo.origem.x) / campo.passo,
+    z = (p.z - campo.origem.z) / campo.passo
+  if (x < 0 || z < 0 || x > campo.colunas || z > campo.linhas) return null
+  const ix = Math.min(campo.colunas - 1, Math.floor(x)),
+    iz = Math.min(campo.linhas - 1, Math.floor(z)),
+    largura = campo.colunas + 1,
+    a = iz * largura + ix,
+    b = a + 1,
+    c = a + largura,
+    triangulo = x - ix + z - iz <= 1 ? [a, b, c] : [b, c, c + 1]
+  // Do ponto ao vértice mais baixo do seu triângulo há uma descida contínua. Arredondar o
+  // clique podia escolher um vértice seco ou preencher a bacia de um ponto ainda acima da água.
+  return triangulo.reduce((menor, i) => (campo.alturas[i]! < campo.alturas[menor]! ? i : menor))
 }
 
 export interface LagoNoTerreno {
@@ -58,8 +66,8 @@ export function encherLago(
   const maxPontos = opcoes.maxPontos ?? 256
   if (!Number.isFinite(nivel) || !Number.isInteger(maxPontos) || maxPontos < 8 || maxPontos > 4096)
     invalidar('O nível ou o limite de pontos do lago é inválido')
-  const semente = amostraMaisProxima(campo, ponto)
-  if (semente === null || !(campo.alturas[semente]! < nivel)) return null
+  const semente = amostraDaBaixada(campo, ponto)
+  if (semente === null || !(alturaDoCampo(campo, ponto.x, ponto.z) < nivel)) return null
   const largura = campo.colunas + 1,
     h = campo.alturas,
     dentro = new Uint8Array(h.length),
@@ -285,7 +293,7 @@ export function nivelDeTransbordo(
   const maxAmostras = opcoes.maxAmostras ?? 2_000_000
   if (!Number.isSafeInteger(maxAmostras) || maxAmostras < 1 || maxAmostras > 4097 ** 2)
     invalidar('O limite da busca de transbordo precisa estar entre 1 e 16.785.409 amostras')
-  const semente = amostraMaisProxima(campo, ponto)
+  const semente = amostraDaBaixada(campo, ponto)
   if (semente === null) return null
   const largura = campo.colunas + 1,
     h = campo.alturas,
@@ -294,29 +302,38 @@ export function nivelDeTransbordo(
     custo = new Float64Array(h.length)
   // Fila de prioridade (menor custo primeiro; empate pelo índice, para a ordem ser única).
   let fila = new Int32Array(1024),
+    passagens = new Int32Array(1024),
     tamanho = 0
   const antes = (a: number, b: number) => custo[a]! < custo[b]! || (custo[a] === custo[b] && a < b)
-  const entrar = (i: number, teto: number) => {
+  const entrar = (i: number, teto: number, anterior: number) => {
     if (visto[i]) return
     visto[i] = 1
     custo[i] = Math.max(h[i]!, teto)
+    const passagem = h[i]! >= teto ? i : anterior
     if (tamanho === fila.length) {
       const maior = new Int32Array(fila.length * 2)
       maior.set(fila)
       fila = maior
+      const novasPassagens = new Int32Array(passagens.length * 2)
+      novasPassagens.set(passagens)
+      passagens = novasPassagens
     }
     let k = tamanho++
     while (k > 0) {
       const pai = (k - 1) >> 1
       if (!antes(i, fila[pai]!)) break
       fila[k] = fila[pai]!
+      passagens[k] = passagens[pai]!
       k = pai
     }
     fila[k] = i
+    passagens[k] = passagem
   }
   const sair = () => {
     const topo = fila[0]!,
-      ultimo = fila[--tamanho]!
+      passagem = passagens[0]!,
+      ultimo = fila[--tamanho]!,
+      ultimaPassagem = passagens[tamanho]!
     let k = 0
     for (;;) {
       let filho = k * 2 + 1
@@ -324,34 +341,43 @@ export function nivelDeTransbordo(
       if (filho + 1 < tamanho && antes(fila[filho + 1]!, fila[filho]!)) filho++
       if (!antes(fila[filho]!, ultimo)) break
       fila[k] = fila[filho]!
+      passagens[k] = passagens[filho]!
       k = filho
     }
     fila[k] = ultimo
-    return topo
+    passagens[k] = ultimaPassagem
+    return { indice: topo, passagem }
   }
-  entrar(semente, Number.NEGATIVE_INFINITY)
-  let passagem = semente,
-    visitadas = 0
+  // -1 conserva o próprio clique quando sua altura, entre vértices, é o limite inicial.
+  entrar(semente, alturaDoCampo(campo, ponto.x, ponto.z), -1)
+  let visitadas = 0
   while (tamanho) {
-    const i = sair(),
+    const { indice: i, passagem } = sair(),
       ix = i % largura,
       iz = (i - ix) / largura
     if (++visitadas > maxAmostras) return null
-    // A amostra que define o custo é a passagem mais alta vencida até aqui.
-    if (h[i]! >= custo[passagem]!) passagem = i
     if (ix === 0 || iz === 0 || ix === campo.colunas || iz === campo.linhas)
       return {
         nivel: custo[i]!,
-        saida: {
-          x: campo.origem.x + (passagem % largura) * campo.passo,
-          z: campo.origem.z + Math.floor(passagem / largura) * campo.passo,
-        },
-        naBorda: passagem === i,
+        saida:
+          passagem < 0
+            ? { ...ponto }
+            : {
+                x: campo.origem.x + (passagem % largura) * campo.passo,
+                z: campo.origem.z + Math.floor(passagem / largura) * campo.passo,
+              },
+        naBorda:
+          passagem === i ||
+          (passagem < 0 &&
+            (ponto.x === campo.origem.x ||
+              ponto.z === campo.origem.z ||
+              ponto.x === campo.origem.x + campo.colunas * campo.passo ||
+              ponto.z === campo.origem.z + campo.linhas * campo.passo)),
       }
-    entrar(i - 1, custo[i]!)
-    entrar(i + 1, custo[i]!)
-    entrar(i - largura, custo[i]!)
-    entrar(i + largura, custo[i]!)
+    entrar(i - 1, custo[i]!, passagem)
+    entrar(i + 1, custo[i]!, passagem)
+    entrar(i - largura, custo[i]!, passagem)
+    entrar(i + largura, custo[i]!, passagem)
   }
   return null
 }

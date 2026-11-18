@@ -27,11 +27,11 @@
 **Interfaces:** `AguaSchema` conserva os lagos/mar existentes e acrescenta dados discriminados para rio, represa e cachoeira. Aparência limitada e área de nado são dados explícitos. A consulta pura recebe água, ponto e fonte de terreno e devolve presença, nível, profundidade e correnteza; não usa o material como fonte da física.
 
 - [x] Escrever testes de cada variante, valores inválidos, anéis/ilhas fora da margem, referências ausentes, mais de um mar e limites de pontos. Executar antes da implementação.
-- [ ] Auditar o núcleo existente: precisão do transbordo em intervalos estreitos de alturas, conectividade, margem simplificada, ilhas, vazamento pela borda, limites de trabalho e caso sem baixada. Corrigir por testes vermelhos/verdes.
-- [ ] Integrar `encherLago`/`nivelDeTransbordo`, `cavarRio`, `represar` e as funções de curva necessárias. Manter determinismo e indicar estimativas de área/volume conforme a resolução.
-- [ ] Definir os descritores resultantes em coordenadas documentadas, sem gravar malhas Three. Rio e barragem retornam também as regiões de terreno alteradas; o leito não sobe a jusante e a barragem não abaixa terreno existente.
+- [x] Auditar o núcleo existente: precisão do transbordo em intervalos estreitos de alturas, conectividade, margem simplificada, ilhas, vazamento pela borda, limites de trabalho e caso sem baixada. Corrigir por testes vermelhos/verdes.
+- [x] Integrar `encherLago`/`nivelDeTransbordo`, `cavarRio`, `represar` e as funções de curva necessárias. Manter determinismo e indicar estimativas de área/volume conforme a resolução.
+- [x] Definir os descritores resultantes em coordenadas documentadas, sem gravar malhas Three. Rio e barragem retornam também as regiões de terreno alteradas; o leito não sobe a jusante e a barragem não abaixa terreno existente.
 - [x] Implementar cobertura/nível compartilhados: excluir ilhas, considerar transformações dos lagos importados, largura/perfil do rio, cachoeira sem volume horizontal fictício, profundidade e opção de nado. Conferir correnteza e sobreposição por nível.
-- [ ] Conferir autoria/inversão, cópia, organização e recursos dos tipos novos. Rodar núcleo/tipagem, revisar e preservar o recorte.
+- [x] Conferir autoria/inversão, cópia, organização e recursos dos tipos novos. Rodar núcleo/tipagem, revisar e preservar o recorte.
 
 ## 5.2 — Água visível e integração física no palco
 
@@ -82,3 +82,5 @@
 Somente 5.1 em andamento. A primeira auditoria reproduziu perda de precisão no teto de transbordo: `9999,123456789` tornava-se `9999,123046875` na fila de prioridade Float32. O custo passou a Float64, acompanhando o campo do lote 4. Outro teste reproduziu orçamento NaN aceito; a busca agora exige limite inteiro finito de 1 a 4097² amostras. Os dois testes falharam antes e passaram após a correção, junto dos 14 casos anteriores de curvas/água. Isso não fecha a auditoria nem o lote: esquemas novos, material, palco e interface de água permanecem pendentes.
 
 Esquemas e consulta de cobertura integrados e revisados em recorte próprio: [checkpoint 5.1](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-contratos-consulta.md). O lote continua aberto; ainda faltam operações de preenchimento/escavação, vínculos à água, renderer, gestos e interface.
+
+**Estado atual:** 5.1 implementado, testado e revisado no escopo de contratos, hidrologia e cobertura. Operações preservadas em `245487fea`/`11e545a3f`; revisão dos vínculos, clique entre vértices, saída de transbordo e armazenamento descrita no mesmo checkpoint. Só o lote 5 segue ativo, agora em **5.2**. Não há nova interface ou material entregue por este fechamento de subetapa; transação de água com binários do terreno continua em 5.3. Lotes 6–10 não iniciados.
