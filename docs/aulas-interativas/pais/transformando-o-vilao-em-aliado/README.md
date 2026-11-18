@@ -2,7 +2,7 @@
 
 Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. Refação de 18/11/2026: o curso passa a ser o conteúdo integral do encontro de 13/11/2026, na voz da Helena, organizado em sete aulas na mesma ordem em que foi apresentado.
 
-**Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
+**Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. A ordem foi corrigida onde o encontro se adiantou ou deixou uma promessa sem fechar; as correções estão listadas em Fontes. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
 
 **Convite único:** o Cadê Todo Mundo por sete dias, na Aula 7. Nenhuma outra aula oferece nada, e nenhum outro projeto, cupom ou plano é oferecido.
 
@@ -34,10 +34,10 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 | --- | --- | --- |
 | 1 | `video-a1-abertura` | O maior vilão dos pais |
 | 1 | `video-a1-pergunta` | A pergunta que muda tudo |
-| 1 | `video-a1-tempo` | Mais tempo de tela? |
 | 2 | `video-a2-tres-usos` | Assistir, jogar ou criar |
 | 2 | `video-a2-funcoes` | Função executiva e o exemplo do Lego |
 | 2 | `video-a2-criar` | Criar em vez de só consumir |
+| 2 | `video-a2-tempo` | Mais tempo de tela? |
 | 3 | `video-a3-historia` | De onde veio tudo isso |
 | 3 | `video-a3-reconhece` | Você reconhece o seu filho aqui? |
 | 3 | `video-a3-mundo` | Entrar no mundo dele |

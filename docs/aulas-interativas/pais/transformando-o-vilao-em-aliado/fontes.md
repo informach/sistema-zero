@@ -41,15 +41,15 @@ H = Helena, V = Vivianne. Cada linha é um trecho da transcrição e onde ele es
 | --- | --- | --- | --- |
 | 00:20 a 00:30 | H, V | Teste de áudio e espera dos participantes | Cortado: logística |
 | 00:30 | H | Abertura, presente no final, apresentação, unir tecnologia e desenvolvimento | Aula 1, Parte 1 |
-| 00:32 a 00:33 | V | Crianças nasceram no digital, guerra perdida, escolas usam telas; o joguinho como desenvolvimento de habilidades; Roblox e tutorial só para passar de fase | Aula 1, Parte 1 |
+| 00:32 a 00:33 | V | Crianças nasceram no digital, guerra perdida, escolas usam telas; habilidades para a vida; Roblox e tutorial só para passar de fase | Aula 1, Parte 1 (habilidades ditas de forma ampla; "a construção de um joguinho" foi para a Aula 2, Parte 3) |
 | 00:33 a 00:35 | H | O que desejamos para os filhos, autonomia, "guarda isso" | Aula 1, Parte 1 (convites a comentar cortados) |
 | 00:35 | H | Mundo de telas, lousa na escola | Aula 1, Parte 1 |
 | 00:35 a 00:37 | H, V | Como tirar a tela; ninguém consegue; uso mais produtivo | Aula 1, Parte 2 (pergunta ao público virou pergunta retórica) |
 | 00:37 | V | Não é colocar mais tempo, a mesma meia hora, repertório, limiar baixo diante do erro | Aula 1, Parte 2 |
 | 00:37 a 00:40 | H | A grande pergunta; tela que só entretém e tela que faz pensar | Aula 1, Parte 2 |
-| 00:40 a 00:41 | V | Jogos com tutorial são memorização e cópia; na criação há raciocínio, hipótese, foco, planejamento; função executiva | Aula 1, Parte 2 |
-| 00:41 | V | Briga ao desligar; início, meio e fim; sair saciada e orgulhosa | Aula 1, Parte 2 |
-| 00:41 a 00:44 | H | Receio de aumentar o tempo de tela; depoimento dos pais; substituição | Aula 1, Parte 3 |
+| 00:40 a 00:41 | V | Jogos com tutorial são memorização e cópia; na criação há raciocínio, hipótese, foco, planejamento; função executiva | Aula 2, Parte 3 (movido para depois da proposta) |
+| 00:41 | V | Briga ao desligar; início, meio e fim; sair saciada e orgulhosa | Aula 2, Parte 3 (o problema fica na Aula 1; a resposta vem depois da proposta) |
+| 00:41 a 00:44 | H | Receio de aumentar o tempo de tela; depoimento dos pais; substituição | Aula 2, Parte 4 (movido para depois da proposta) |
 | 00:44 a 00:46 | H | Fogo; tecnologia como ferramenta; assistir, jogar e criar | Aula 2, Parte 1 |
 | 00:46 a 00:48 | V | Função executiva em detalhe; jogar alcança parte superficial; criar é habilidade para a vida; Lego com e sem manual | Aula 2, Parte 2 |
 | 00:48 a 00:51 | H | Criar jogo é meio e não fim; jogo pronto e criar; motivação e orgulho | Aula 2, Parte 3 |
@@ -98,6 +98,22 @@ H = Helena, V = Vivianne. Cada linha é um trecho da transcrição e onde ele es
 | 02:06 a 02:09 | H, V | Prazo de inscrição e pedido de extensão | Cortado: logística |
 | 02:09 a 02:12 | H, V | Abertura a feedback, área de atendimento, sugestão do jogo de avião; despedidas | Feedback e avião na Aula 7, Parte 1; despedidas cortadas |
 
+## Correções didáticas em relação ao encontro
+
+A dona pediu, em 18/11/2026, que a adaptação também corrigisse falhas de condução do encontro. O conteúdo é o mesmo; mudaram a ordem e as amarrações.
+
+| Problema no encontro | Correção no curso |
+| --- | --- |
+| A reflexão "o que você deseja para o futuro do seu filho" foi aberta com a promessa de retomar, mas só voltou de passagem, trocando autonomia por felicidade, e nunca foi fechada | Aula 5, Parte 4 retoma de forma explícita e liga felicidade e autonomia; Aula 7, Parte 2 fecha a reflexão antes da mensagem final |
+| A criação de jogos apareceu logo na abertura e na comparação dos tipos de tela, antes de a proposta ser apresentada | A Aula 1 trata só do uso da tela, de forma ampla. A proposta de criar jogos nasce na Aula 2, depois dos três usos e da função executiva; o que se dizia antes sobre "a criação" foi para a Aula 2, Parte 3 |
+| O receio de aumentar o tempo de tela foi respondido antes de existir uma proposta a que ele se referisse | O receio e o depoimento dos pais vêm logo depois da proposta (Aula 2, Parte 4) |
+| A briga na hora de desligar foi respondida com "início, meio e fim" da criação antes de a criação ser apresentada | O problema é nomeado na Aula 1; a resposta vem na Aula 2, Parte 3, com "lembra da briga na hora de desligar?" |
+| "Depois eu mostro o vídeo" do menino que encontrou uma forma de se expressar: o vídeo passou sem ser ligado à promessa | Aula 3, Parte 2 avisa que ele será ouvido adiante; Aula 5, Parte 4 aponta que é ele, depois do corte |
+| "Tenho um exemplo mais na frente" sobre a conversa em família, sem amarração | Aula 3, Parte 3 anuncia; Aula 6, Parte 3 abre cumprindo a promessa |
+| O ciclo de criação foi interrompido no quarto passo; o quinto e o sexto apareceram no meio de outros exemplos | Aula 6, Parte 1 apresenta as seis etapas em sequência e só depois faz as relações com a redação, o trabalho e o ChatGPT |
+| A demonstração dos blocos não foi ligada à explicação anterior sobre programação | Aula 6, Parte 2 abre com "lembra dos bloquinhos coloridos?" |
+| A mensagem final veio depois das instruções de cadastro e antes de outros argumentos | Aula 7, Parte 2: descrição do presente, argumentos finais, fechamento da reflexão, mensagem final e, por último, como pegar o presente |
+
 ## Pontos de interpretação da transcrição
 
 A transcrição automática tem falhas. Estes trechos foram interpretados e merecem conferência da dona na leitura dos roteiros:
@@ -114,7 +130,7 @@ Os cortes exibidos no encontro são fixos no curso, no mesmo ponto:
 
 | Aula e parte | Corte |
 | --- | --- |
-| Aula 1, Parte 3 | Pais: receio do tempo de tela e substituição |
+| Aula 2, Parte 4 | Pais: receio do tempo de tela e substituição |
 | Aula 2, Parte 3 | Crianças e pais: "parece um superpoder" |
 | Aula 3, Parte 3 | Criança: como são feitos Roblox, Fortnite e God of War |
 | Aula 3, Parte 3 | Pais: Jeffrey, Rafa, Bernardo e a independência |

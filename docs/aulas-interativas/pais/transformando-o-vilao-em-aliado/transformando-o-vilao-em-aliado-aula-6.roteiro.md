@@ -6,7 +6,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 
 **Clipe:** `video-a6-ciclo`
 
-**Na tela:** No "O primeiro passo é imaginar", mostrar o ciclo e destacar a etapa [na edição: ciclo com seis etapas: imaginar, planejar, programar, testar, melhorar, compartilhar; destacar imaginar]. No "Depois, ela vai ter que planejar", destacar planejar. No "Depois vem a criação mesmo", destacar programar [na edição: blocos coloridos]. No "Depois ela vai testar", destacar testar. No "Vamos melhorar um pouquinho", destacar melhorar. No "a gente compartilha", destacar compartilhar. No "Pensa numa coisa simples: o ChatGPT", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "O primeiro passo é imaginar", mostrar o ciclo e destacar a etapa [na edição: ciclo com seis etapas: imaginar, planejar, programar, testar, melhorar, compartilhar; destacar imaginar]. No "Depois, ela vai ter que planejar", destacar planejar. No "Depois vem a criação mesmo", destacar programar [na edição: blocos coloridos]. No "Depois ela vai testar", destacar testar. No "vem o quinto passo: melhorar", destacar melhorar. No "o sexto passo é compartilhar", destacar compartilhar. No "a relação desse ciclo com a vida", voltar para a apresentadora [na edição: câmera]. No "Pensa numa coisa simples: o ChatGPT", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
@@ -21,23 +21,29 @@ Depois vem a criação mesmo, que é a parte da programação. E, como eu te exp
 
 Depois ela vai testar o que fez. Será que funcionou?
 
-Antes de continuar, olha a relação desses três primeiros passos com o dia a dia escolar. Onde eles ajudam? Na redação. Eu preciso imaginar uma situação. Preciso planejar: saber qual é o assunto, quais são os personagens, qual vai ser o contexto. Preciso entender o início, o meio e o fim, quer dizer, uma sequenciação de acontecimentos, para depois criar essa história. E, criada a história, eu tenho que montar tudo numa linha cronológica e com sentido.
+Testou, e aí vem o quinto passo: melhorar. Ver o que está para mais, o que está para menos, o que precisa ajustar.
+
+E o sexto passo é compartilhar: mostrar para os outros o que criou.
+
+Agora olha a relação desse ciclo com a vida. Onde os três primeiros passos ajudam na escola? Na redação. Eu preciso imaginar uma situação. Preciso planejar: saber qual é o assunto, quais são os personagens, qual vai ser o contexto. Preciso entender o início, o meio e o fim, quer dizer, uma sequenciação de acontecimentos, para depois criar essa história. E, criada a história, eu tenho que montar tudo numa linha cronológica e com sentido.
 
 Uma criança menor começa a soltar partes. Na hora em que você une, não tem uma coerência final. Numa redação, ela não alcançaria sucesso.
 
 Já o testar sai da escola. Lá, eu entrego a redação e vem a nota, que é outro contexto. Mas pensa no trabalho. A psicóloga do André me deu o exemplo dela: criar uma rotina para uma criança. Ela imagina, pensa nos personagens, em como é o dia a dia daquela criança, coloca tudo no papel. E depois testa, para ver se está para mais, se está para menos, se tem que enxugar, se tem que adaptar.
 
-E aí a gente cai no quinto passo. Vamos melhorar um pouquinho. Eu vou adaptando de acordo com cada pessoa.
+Aí ela cai no quinto passo. Vamos melhorar um pouquinho. Ela vai adaptando de acordo com cada pessoa.
 
-Deu certo? Vem o sexto passo. O que a gente mais faz enquanto mãe? A gente compartilha. "Nossa, isso deu certo para o meu filho. Tenta fazer aí." "Olha, eu consegui fazer isso, foi muito legal. Eu fiz por esse caminho, por esse método." Na criação dos jogos também se compartilha.
+E, deu certo? O que a gente mais faz enquanto mãe? A gente compartilha. "Nossa, isso deu certo para o meu filho. Tenta fazer aí." "Olha, eu consegui fazer isso, foi muito legal. Eu fiz por esse caminho, por esse método."
 
-E olha que interessante. Essa mesma psicóloga já me disse: "Eu não sou a favor dos jogos, não." Mas é aquilo do início: se está aí, a gente não tem como acabar com isso. Pelo contrário, isso só tende a aumentar.
+Na criação dos jogos é igual. Imagina o final de uma criação: as crianças compartilhando a experiência umas com as outras, querendo mostrar os joguinhos que criaram, e aquelas que estão ouvindo querendo fazer algo a mais ou algo diferente. Olha a flexibilidade cognitiva sendo trabalhada. Olha a ampliação de repertório.
+
+E tem uma coisa interessante. Essa mesma psicóloga já me disse: "Eu não sou a favor dos jogos, não." Mas é aquilo do início: se está aí, a gente não tem como acabar com isso. Pelo contrário, isso só tende a aumentar.
 
 Pensa numa coisa simples: o ChatGPT. Se eu tenho um menino que não tem crítica e conhecimento, ele vai responder tudo no ChatGPT. Vai sair da escola? Vai. Vai sair da faculdade? Vai. Caiu no campo de trabalho. E agora? Você senta na frente do médico, ele olha para você e fala: "Espera aí, deixa eu perguntar para o ChatGPT." Você vai voltar lá? Não. Então eu tenho que ter um mínimo de conhecimento e de crítica para entender se o que esse programa me entregou é verídico.
 
 E isso está ficando sério. As crianças e os adolescentes estão cada vez tendo que pensar menos e recebendo mais as coisas prontas. As consequências disso não são boas. A gente precisa colocar as nossas crianças para pensar. Elas têm que pensar, e não ficar recebendo tudo pronto. Isso é muito importante.
 
-Agora volta para os joguinhos e imagina o final de uma criação: as crianças compartilhando a experiência umas com as outras, querendo mostrar os joguinhos que criaram, e aquelas que estão ouvindo querendo fazer algo a mais ou algo diferente. Olha a flexibilidade cognitiva sendo trabalhada. Olha a ampliação de repertório. Clique em Próxima parte.
+Na próxima parte, você vai ver esse pensar acontecendo, numa regra de jogo sendo construída. Clique em Próxima parte.
 ```
 
 ## Parte 2. Uma regra de cada vez
@@ -51,7 +57,7 @@ Agora volta para os joguinhos e imagina o final de uma criação: as crianças c
 **Fala da Helena:**
 
 ```text
-Eu vou te mostrar rapidamente um exemplo de uma ferramenta para a criança criar um jogo, só para você ver que é bem tranquilinho.
+Lembra dos bloquinhos coloridos? Eu vou te mostrar rapidamente um exemplo de uma ferramenta para a criança criar um jogo, só para você ver que é bem tranquilinho.
 
 Isto aqui é a ferramenta. Vamos supor que eu quero criar um jogo de esconde-esconde. Eu tenho os esconderijos aqui. E eu quero que, na hora em que eu clicar, o esconderijo desapareça e mostre o animal que está escondido atrás. Simples assim.
 
@@ -95,7 +101,7 @@ Porque, se eu coloco que eu quero que conte ponto, o meu jogo toma um rumo. Se e
 **Fala da Helena:**
 
 ```text
-Voltando à conversa em família. Tem muita criança que não é de conversar, de falar, que não tem muito assunto.
+Eu prometi te contar como a conversa sobre o jogo mudou a nossa casa. Tem muita criança que não é de conversar, de falar, que não tem muito assunto.
 
 Quem vê o meu filho hoje não consegue imaginar que ele já foi assim. Um tempo atrás, ele não era de conversar, não. Hoje a gente tem que falar: "Calma, calma. Vamos acalmar o coração. Resume aí." Porque senão ele quer ficar falando o tempo todo sobre o que está criando. O pensamento dele está o tempo todo querendo criar alguma coisa.
 

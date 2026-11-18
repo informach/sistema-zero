@@ -35,7 +35,7 @@ E o terceiro uso é o criar. É dele que a gente vai falar agora. Clique em Pró
 **Fala da Helena:**
 
 ```text
-Antes de falar do criar, eu quero te apresentar uma expressão que a gente vai lembrar o curso inteiro: função executiva.
+Antes de falar do criar, eu quero te apresentar uma expressão que a gente vai lembrar o curso inteiro: função executiva. Com ela, fica fácil entender por que criar faz tanta diferença.
 
 No desenvolvimento dessas habilidades, e é o que se trabalha na terapia, a função executiva é imprescindível para a nossa vida. Por quê? Porque é por meio da função executiva que eu desenvolvo a minha memória de trabalho. Quer dizer: eu tenho que memorizar dados e informações para fazer uso deles em algum outro momento, e tenho que adaptar essas informações de acordo com o contexto. Aí entram a memória de curto e a de longo prazo, que já é uma outra conversa.
 
@@ -63,9 +63,17 @@ A proposta que eu quero trazer para você é esta: em vez de só assistir, ou em
 
 E a gente não deve encarar o criar jogo como um fim, mas como um meio, uma ferramenta. Ele é o caminho que vai proporcionar esse treinamento de habilidades cognitivas para a vida deles. Eu tenho trabalhado de perto com isso, tenho visto muitas famílias experimentarem e tenho visto a diferença que faz. Por isso eu quero te apresentar essa proposta de colocar os filhos para criarem, e não apenas consumirem.
 
+Porque a construção de um joguinho, olhando de perto, nada mais é do que o desenvolvimento daquelas habilidades que são importantes para a vida: a frustração, o tempo de espera, a sequenciação. A criança tem que dar conta de um passo a passo, tem que elaborar, tem que criar, tem que organizar, tem que mudar a estratégia.
+
 Quando você joga um jogo pronto, já está tudo decidido ali. É como o Lego com o manual: já está decidido como tem que ser feito. A criança vai seguir o roteiro que quem criou o jogo determinou para ela.
 
-Mas quando ela cria, é ela que vai inventar as regras. É ela que vai ter que montar tudo. Vai ter que lidar com o erro e com a frustração, porque não vai acertar de primeira. Não vai. Só que ela tem a motivação da criação, porque a criação em si é motivadora. Não é como numa rotina qualquer do dia a dia, em que a criança erra, se frustra, não quer mais, e pronto, acabou. Normalmente o que acontece é que a criança quer fazer dar certo no jogo dela, porque tem outras coisas envolvidas ali: o orgulho de falar "fui eu que fiz isso".
+E pensa nos joguinhos a que eles já têm acesso. A maioria já tem tutorial. Eles assistem para conseguir passar para a frente, para encontrar o objeto que dá mais moeda ou mais vida. Em momento algum eles estão desenvolvendo raciocínio lógico. O máximo que eles alcançam é memorizar um conteúdo para poder replicar. E aí eu tenho só uma mera cópia. Eu não tenho um aprendizado, nem uma ampliação dessas estratégias que eles possam levar para outros contextos da vida.
+
+Quando a criança cria, é diferente. Ela vai ter que ter raciocínio lógico, um raciocínio coerente com aquele assunto. Vai ter que pensar em hipóteses para resolver os probleminhas, vai ter que ter foco, vai ter que planejar. Tudo isso é função executiva.
+
+É ela que vai inventar as regras. É ela que vai ter que montar tudo. Vai ter que lidar com o erro e com a frustração, porque não vai acertar de primeira. Não vai. Só que ela tem a motivação da criação, porque a criação em si é motivadora. Não é como numa rotina qualquer do dia a dia, em que a criança erra, se frustra, não quer mais, e pronto, acabou. Normalmente o que acontece é que a criança quer fazer dar certo no jogo dela, porque tem outras coisas envolvidas ali: o orgulho de falar "fui eu que fiz isso".
+
+E lembra da briga na hora de desligar? Como a criação tem uma sequência, com início, meio e fim, a criança consegue construir esse raciocínio e desenvolver essa habilidade com o tempo certo de finalizar. Existe um final, como numa história. E nesse final ela acaba se sentindo orgulhosa de ter construído algo, e sai saciada. É uma coisa que os joguinhos do dia a dia, o YouTube e os vídeos não permitem.
 
 Dá para pensar nisso pelo hiperfoco, que se usa muito no trabalho terapêutico. Se eu uso o hiperfoco da criança a meu favor, eu ensino as habilidades de que ela necessita. Se eu pego qualquer outro interesse que não é o da criança, eu posso até ensinar, mas vou ter muito mais dificuldade. Na criação, eu estou usando a construção de um projeto que é da própria criança, onde tem o interesse dela, o personagem dela.
 
@@ -73,5 +81,23 @@ E eu falo muito "criança", mas isso vale também para o adolescente. Chega até
 
 Olha só o que aconteceu com algumas crianças quando, em vez de só jogar, passou a criar.
 
-Deu para ver um pouquinho da empolgação das crianças, como elas ficam quando fazem uma coisa que é delas, que elas criaram. Muita coisa muda quando elas deixam o papel de espectadoras e passam a ser protagonistas. Clique em Concluir aula para continuar.
+Deu para ver um pouquinho da empolgação das crianças, como elas ficam quando fazem uma coisa que é delas, que elas criaram. Muita coisa muda quando elas deixam o papel de espectadoras e passam a ser protagonistas. Clique em Próxima parte.
+```
+
+## Parte 4. Mais tempo de tela?
+
+**Clipe:** `video-a2-tempo`
+
+**Na tela:** No "um grande receio dos pais", mostrar a apresentadora [na edição: câmera]. No "o que acontece é uma substituição", destacar a ideia [na edição: mesmo tempo de tela, uso diferente].
+
+**Depoimento (inserir na edição, não gravar):** Corte dos pais sobre o tempo de tela, o mesmo exibido no encontro de 13/11. Inserir depois de "o que eles viveram." Identificar nome e vínculo de cada pessoa. Transcrição do corte: "Fernando passava muito tempo nas telas, mas ele mais assistia. Não desenvolvia nada, era mais assistindo vídeos, youtubers e outras coisas. Ele gostou demais, ficou super empolgado, se envolveu bastante." "É uma preocupação da nossa casa, sempre, de ser meio passivo, de estar só recebendo. Isso era um medo inicial nosso, de ele realmente ficar mais em tempo de tela. Mas isso não aconteceu. Surpreendentemente para nós, ele não ficou com maior tempo de tela; ficou às vezes com o mesmo tempo." "Assim como alguns pais, eu também tive o receio de que aumentasse ainda mais o tempo de tela, mas eu percebi que houve uma substituição. Em vez de ele estar consumindo a tela de uma forma passiva, como espectador, somente assistindo, ele está consumindo a tela de uma forma produtiva e criativa. Isso fez muita diferença."
+
+**Fala da Helena:**
+
+```text
+Toda vez que eu apresento essa proposta, aparece um grande receio dos pais: "Ai, meu Deus, mas se eu oferecer uma outra atividade na tela, meu filho vai ficar com mais tempo de tela ainda. E isso eu não quero. Eu quero é diminuir, e não aumentar o tempo de tela."
+
+Para não ficar só eu falando, eu trouxe alguns pais que já entraram nesse processo, que compraram essa ideia e colocaram os filhos para criar. Eles também tinham esse receio. Escuta o que eles viveram.
+
+Você pôde ouvir da boca de outros pais: o que acontece é uma substituição, e não um aumento do tempo de tela. É aquilo que a gente combinou lá no início: a proposta é usar o mesmo tempo de tela que ele já usa, só que de uma forma mais produtiva. Clique em Concluir aula para continuar.
 ```

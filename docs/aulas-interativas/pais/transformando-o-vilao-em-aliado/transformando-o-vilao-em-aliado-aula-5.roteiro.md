@@ -101,11 +101,11 @@ E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia e
 ```text
 Além de desenvolver isso tudo, existe ainda o prazer de criar.
 
-Lá no início eu te perguntei o que você deseja para os seus filhos. "Ah, que ele seja feliz." "Ah, que ele tenha autonomia." Eu dei o exemplo de que, para mim, a autonomia é muito importante. Mas, se eu pensar, pensar mesmo, o que eu mais desejo para o meu filho é que ele seja feliz.
+E agora é a hora de retomar aquela reflexão da primeira aula, que eu te pedi para guardar: o que você deseja para os seus filhos. "Ah, que ele seja feliz." "Ah, que ele tenha autonomia." Eu contei que, para mim, a autonomia sempre pesou muito. Mas, se eu pensar, pensar mesmo, o que eu mais desejo para o meu filho é que ele seja feliz. E você vai ver que as duas coisas andam juntas.
 
 E é legal porque a criação de jogos traz muita empolgação e felicidade para as crianças e os adolescentes. Olha só como eles se sentem.
 
-Deu para ver como as crianças se sentem felizes e animadas quando podem dizer que criaram algo, que foram elas que fizeram.
+Deu para ver como as crianças se sentem felizes e animadas quando podem dizer que criaram algo, que foram elas que fizeram. E reparou no menino que disse que criar é uma forma de expressar as ideias dele, de mostrar o que ele pensa? É aquele de quem eu te falei, que mostra mais do que fala.
 
 E vale a gente parar um pouco aqui, porque isso é importante. Toda mãe, quando perguntam o que ela espera para o filho, responde: que ele seja feliz. Mas, primeiro: o que é a felicidade para mim? E o que é a felicidade para ele?
 
@@ -115,5 +115,7 @@ A gente pensa muito na criança de agora. Mas pensa a longo prazo. Se eu pego um
 
 Tá. Quais são os pré-requisitos para ele entrar numa faculdade? Ele tem que ter memória de trabalho. Tem que dar conta da frustração. Tem que controlar a ansiedade. Tem que ter controle emocional, controle inibitório. Tem que dar conta de lidar com as tarefas chatas, porque elas existem mesmo dentro de um curso que foi a escolha dele. A própria psicóloga do André conta que foi fazer psicologia fugindo da matemática, e lá tinha estatística. E aí, como eu consigo estratégias para lidar com a aula de matemática, que não é o meu forte? Tudo isso é pré-requisito.
 
-Então, quando a gente fala de felicidade, eu tenho que pensar no desenvolvimento e em quais habilidades são necessárias para que ele consiga estar dentro da sociedade, ter autonomia e ter independência. Clique em Concluir aula para continuar.
+Então, quando a gente fala de felicidade, eu tenho que pensar no desenvolvimento e em quais habilidades são necessárias para que ele consiga estar dentro da sociedade, ter autonomia e ter independência.
+
+Percebe como fecha? A felicidade que a gente deseja para eles passa pela autonomia. E a autonomia se constrói com essas habilidades, que eles podem treinar desde agora, no tempo de tela que já têm. Clique em Concluir aula para continuar.
 ```

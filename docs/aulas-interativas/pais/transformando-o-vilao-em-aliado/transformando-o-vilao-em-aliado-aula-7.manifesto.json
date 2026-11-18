@@ -10,7 +10,7 @@
     },
     {
       "key": "video-a7-presente",
-      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "presente",
@@ -65,7 +65,7 @@
     {
       "key": "presente",
       "title": "O presente: sete dias de Cadê Todo Mundo",
-      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, e deixar a mensagem final.",
+      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final.",
       "intent": "delivery",
       "blockKeys": [
         "video-a7-presente",

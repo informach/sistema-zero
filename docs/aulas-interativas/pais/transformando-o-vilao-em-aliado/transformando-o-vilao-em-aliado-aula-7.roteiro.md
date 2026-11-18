@@ -69,17 +69,19 @@ Ele é totalmente gratuito. Não tem que preencher cartão, nem nada. E os sete 
 
 No presente, você cadastra o perfil de uma criança. Se depois fizer sentido para vocês continuarem na plataforma, cada conta pode ter duas crianças, então dá para cadastrar os irmãos.
 
-Para pegar, é só clicar no botão do presente, aqui embaixo do vídeo. Você vai cair na página de cadastro e se cadastrar como responsável. E não se preocupe: ninguém vai ficar mandando spam. O e-mail que a plataforma manda é o relatório semanal do que a criança fez, e você pode desativar isso também, na área dos responsáveis. Não tem e-mail de venda. Pode ficar tranquilo.
-
-Feito o cadastro, a sua criança ou o seu adolescente vai ter uma experiência de sete dias para fazer a primeira criação.
-
 E pensa no seguinte. Hoje, o que muita escola tem é aula de robótica. Algumas têm aula de Lego. Mas é aquilo: uma vez na semana. Imagina levar isso para dentro de casa. Final de semana os meninos estão ali, na tela, não tem jeito. E, a partir do momento em que eles começam a criar, eles vão querer sempre mais. E aí se desenvolve muito mais.
 
 A psicóloga do André viu isso nele. Ela acompanhou essa evolução de perto. Como ela diz, foi uma coisa que, sem querer, ela experimentou, testou e vivenciou. E dá muito certo. A gente não tem mais como ir contra as telas.
 
-A mensagem que eu quero deixar para você é esta: a tela não precisa ser só o lugar onde o seu filho encontra jogos para jogar. Ela também pode ser o lugar onde ele descobre que é capaz de criar.
+Lá na primeira aula eu te pedi para pensar no que você mais deseja para o futuro do seu filho. Autonomia, felicidade, que ele dê conta da vida. Tudo o que a gente viu aqui, planejar, seguir um passo a passo, lidar com o erro, tentar de novo, se expressar, conversar, é treino exatamente para esse futuro. E ele pode começar agora, no tempo de tela que o seu filho já tem.
+
+Então a mensagem que eu quero deixar para você é esta: a tela não precisa ser só o lugar onde o seu filho encontra jogos para jogar. Ela também pode ser o lugar onde ele descobre que é capaz de criar.
 
 O vilão pode virar aliado. Tudo depende de como a tela é usada.
+
+Para pegar o presente, é só clicar no botão do presente, aqui embaixo do vídeo. Você vai cair na página de cadastro e se cadastrar como responsável. E não se preocupe: ninguém vai ficar mandando spam. O e-mail que a plataforma manda é o relatório semanal do que a criança fez, e você pode desativar isso também, na área dos responsáveis. Não tem e-mail de venda. Pode ficar tranquilo.
+
+Feito o cadastro, a sua criança ou o seu adolescente vai ter uma experiência de sete dias para fazer a primeira criação.
 
 Muito obrigada por ter ficado comigo até aqui. O presente está logo abaixo. E, para registrar a conclusão do curso, é só baixar o seu certificado.
 ```

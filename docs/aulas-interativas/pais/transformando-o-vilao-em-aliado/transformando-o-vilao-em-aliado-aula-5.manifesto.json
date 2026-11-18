@@ -18,7 +18,7 @@
     },
     {
       "key": "video-a5-feliz",
-      "plannedVideo": "Título: O que a gente mais deseja: que eles sejam felizes\n\nRetomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: O que a gente mais deseja: que eles sejam felizes\n\nRetomar a reflexão da primeira aula: a felicidade que desejamos passa pela autonomia e pelas habilidades que a vida adulta exige. Fala completa em transformando-o-vilao-em-aliado-aula-5.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a5",
@@ -86,7 +86,7 @@
     {
       "key": "feliz",
       "title": "O que a gente mais deseja: que eles sejam felizes",
-      "objective": "Retomar o desejo de que os filhos sejam felizes e as habilidades que a vida adulta exige.",
+      "objective": "Retomar a reflexão da primeira aula: a felicidade que desejamos passa pela autonomia e pelas habilidades que a vida adulta exige.",
       "intent": "explanation",
       "blockKeys": [
         "video-a5-feliz",

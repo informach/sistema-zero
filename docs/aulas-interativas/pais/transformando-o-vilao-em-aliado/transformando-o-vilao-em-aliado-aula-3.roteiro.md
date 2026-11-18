@@ -41,7 +41,7 @@ Agora eu quero que você pense se reconhece o seu filho em alguma destas situaç
 
 "Ele sabe tudo sobre um assunto." Tem criança para quem tudo é dinossauro, ou tudo é o espaço. Tem um tema específico de que ela gosta muito. Isso pode ser uma oportunidade: pode virar o tema de um jogo. Aí o interesse surge naturalmente, porque ela já gosta muito daquele tema, e eu consigo criar um jogo sobre qualquer assunto que eu quiser. É uma porta de entrada.
 
-"Ele precisa saber sempre o que vai acontecer." Para criar um jogo, a gente tem que programar. E não é um bicho de sete cabeças, como muita gente pensa; daqui a pouco eu falo mais sobre isso. Mas, na programação, uma regra dá sempre o mesmo resultado. É previsível, é bem específico: se eu colocar isso, sempre vai dar aquilo. Então essa previsibilidade sempre vai existir.
+"Ele precisa saber sempre o que vai acontecer." Para criar um jogo, a gente tem que programar. E não é um bicho de sete cabeças, como muita gente pensa; a próxima aula é inteira sobre isso. Mas, na programação, uma regra dá sempre o mesmo resultado. É previsível, é bem específico: se eu colocar isso, sempre vai dar aquilo. Então essa previsibilidade sempre vai existir.
 
 "Ele se frustra quando perde." A gente já falou sobre a motivação. Quando ele está motivado por criar, ele fica mais disposto a errar. O próprio jogo vai motivar o seu filho a querer encontrar o resultado, e ele vai conseguir desenvolver mais essa questão do erro.
 
@@ -49,7 +49,7 @@ Agora eu quero que você pense se reconhece o seu filho em alguma destas situaç
 
 "Ele não larga a tela." Esse é o caso da maioria. E é aquilo que a gente estava falando: o tempo de tela vai ser o mesmo. A função que a gente dá para essa tela, o papel dela, é que vai ser diferente.
 
-"Ele mostra mais do que fala." Tem criança que é mais caladinha, que não fala tanto. Eu conheço um menino autista que tem muita dificuldade para falar. Custou para ele conseguir gravar um vídeo contando a experiência dele. E o que ele disse foi que a melhor coisa é que ele teve uma forma de se expressar. Por meio do jogo, a criança consegue se expressar. Não necessariamente com palavras, mas ela consegue colocar ali as ideias, o pensamento e o que está sentindo, de forma concreta. Clique em Próxima parte.
+"Ele mostra mais do que fala." Tem criança que é mais caladinha, que não fala tanto. Eu conheço um menino autista que tem muita dificuldade para falar. Custou para ele conseguir gravar um vídeo contando a experiência dele. E o que ele disse foi que a melhor coisa é que ele teve uma forma de se expressar. Por meio do jogo, a criança consegue se expressar. Não necessariamente com palavras, mas ela consegue colocar ali as ideias, o pensamento e o que está sentindo, de forma concreta. Mais adiante no curso você vai ouvir isso dele mesmo. Clique em Próxima parte.
 ```
 
 ## Parte 3. Entrar no mundo dele
@@ -71,7 +71,7 @@ Por meio disso, eu estou dentro do interesse dele e vou puxar assunto. Ele vai c
 
 Porque quando eu entro no mundo dessa criança, ela abre portas para vir para o meu. Quando eu falo de jogo, quando eu peço para ele me explicar como fez, como construiu, o que foi mais difícil, eu posso começar a falar de mim. "Olha, lá no meu trabalho também deu errado. Aí eu pensei: como foi que o seu personagem fez? O que você fez para poder consertar?" "Ah, eu fiz assim." "Nossa, ótima ideia! Eu posso aplicar isso lá também."
 
-Olha só: eu estou trabalhando com ele a ampliação de repertório e de estratégias para solucionar problemas em outros contextos. Estou ampliando ainda mais as funções executivas.
+Olha só: eu estou trabalhando com ele a ampliação de repertório e de estratégias para solucionar problemas em outros contextos. Estou ampliando ainda mais as funções executivas. Lá na frente eu te conto como essa conversa mudou a nossa casa.
 
 E falando no interesse da criança, eu quero te mostrar um menino que gostava muito de jogar. A criação dele partiu exatamente do interesse dele.
 

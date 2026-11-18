@@ -23,16 +23,18 @@ A gente vive num mundo de telas. O mundo hoje é tecnológico. Até na escola a 
 
 E as nossas crianças já nasceram nesse mundo digital. Então essa é uma guerra praticamente perdida. A pergunta passa a ser outra: como amenizar esses prejuízos, como tornar esse uso menos prejudicial, mais instrutivo e alinhado ao desenvolvimento?
 
-É isso que eu vou te mostrar neste curso. A construção de um joguinho, por exemplo, nada mais é do que o desenvolvimento de habilidades que são importantes para a vida: lidar com a frustração, ter tempo de espera, fazer a sequenciação. A criança tem que dar conta de um passo a passo, tem que elaborar, tem que criar, tem que organizar, tem que mudar a estratégia.
+É isso que eu vou te mostrar neste curso: como fazer um bom uso, já que não tem como não fazer o uso. Em algum momento da vida eles vão lidar com esse contexto.
 
-É fazer um bom uso, já que não tem como não fazer o uso. Em algum momento da vida eles vão lidar com esse contexto. E o que a gente mais vê são crianças com o celular na mão. Então, em vez de ficar jogando RPG, Roblox, assistindo a tutorial só para vencer a fase, só para passar para a frente, vamos aproveitar isso para eles desenvolverem essas habilidades cognitivas. Clique em Próxima parte.
+Porque a mesma tela pode servir para desenvolver habilidades que são importantes para a vida: lidar com a frustração, ter tempo de espera, seguir uma sequência, dar conta de um passo a passo, elaborar, organizar, mudar a estratégia.
+
+O que a gente mais vê são crianças com o celular na mão. Então, em vez de ficar só jogando RPG, Roblox, assistindo a tutorial só para vencer a fase, só para passar para a frente, vamos aproveitar esse tempo para eles desenvolverem essas habilidades cognitivas. Clique em Próxima parte.
 ```
 
 ## Parte 2. A pergunta que muda tudo
 
 **Clipe:** `video-a1-pergunta`
 
-**Na tela:** No "tirar a tela, ninguém vai conseguir", mostrar a apresentadora [na edição: câmera]. No "o que eu posso oferecer dentro dessa tela para desenvolver o meu filho", mostrar a pergunta [na edição: pergunta em destaque]. No "a tela pode só entreter", comparar os dois usos [na edição: tela que só entretém e tela que faz pensar, lado a lado]. No "E tem a questão da briga na hora de desligar", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "tirar a tela, ninguém vai conseguir", mostrar a apresentadora [na edição: câmera]. No "o que eu posso oferecer dentro dessa tela para desenvolver o meu filho", mostrar a pergunta [na edição: pergunta em destaque]. No "a tela pode só entreter", comparar os dois usos [na edição: tela que só entretém e tela que faz pensar, lado a lado]. No "Que tela é essa, que faz pensar?", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
@@ -51,27 +53,6 @@ A mesma tela pode ter várias funções, como tudo na vida. Primeiro, a tela pod
 
 Em contrapartida, existe a tela que faz pensar. E quando eu uso a tela para pensar, em vez de ter aqueles problemas, eu tenho a possibilidade de desenvolver nas crianças e nos adolescentes o raciocínio lógico, a resolução de problemas, o foco, o planejamento, o aprender a lidar com o erro e várias outras habilidades.
 
-Pensa nos joguinhos a que eles já têm acesso. A maioria já tem tutorial. Eles assistem para conseguir passar para a frente, para encontrar o objeto que dá mais moeda ou mais vida. Em momento algum eles estão desenvolvendo raciocínio lógico. O máximo que eles alcançam é memorizar um conteúdo para poder replicar. E aí eu tenho só uma mera cópia. Eu não tenho um aprendizado, nem uma ampliação dessas estratégias que eles possam levar para outros contextos da vida.
-
-Já na criação, a criança vai ter que ter raciocínio lógico, um raciocínio coerente com aquele assunto. Ela vai ter que pensar em hipóteses para resolver os probleminhas, vai ter que ter foco, vai ter que planejar. Tudo isso é função executiva, que é o que se trabalha bastante na terapia.
-
-E tem a questão da briga na hora de desligar. Como a criação tem uma sequência, com início, meio e fim, a criança consegue construir esse raciocínio e desenvolver essa habilidade com o tempo certo de finalizar. Existe um final, como numa história. E nesse final ela acaba se sentindo orgulhosa de ter construído algo, e sai saciada. É uma coisa que os joguinhos do dia a dia, o YouTube e os vídeos não permitem. Clique em Próxima parte.
+Que tela é essa, que faz pensar? E o que o seu filho pode fazer nela? É isso que a gente vai ver a partir da próxima aula. Clique em Concluir aula para continuar.
 ```
 
-## Parte 3. Mais tempo de tela?
-
-**Clipe:** `video-a1-tempo`
-
-**Na tela:** No "um grande receio dos pais", mostrar a apresentadora [na edição: câmera]. No "o que acontece é uma substituição", destacar a ideia [na edição: mesmo tempo de tela, uso diferente].
-
-**Depoimento (inserir na edição, não gravar):** Corte dos pais sobre o tempo de tela, o mesmo exibido no encontro de 13/11. Inserir depois de "o que eles viveram." Identificar nome e vínculo de cada pessoa. Transcrição do corte: "Fernando passava muito tempo nas telas, mas ele mais assistia. Não desenvolvia nada, era mais assistindo vídeos, youtubers e outras coisas. Ele gostou demais, ficou super empolgado, se envolveu bastante." "É uma preocupação da nossa casa, sempre, de ser meio passivo, de estar só recebendo. Isso era um medo inicial nosso, de ele realmente ficar mais em tempo de tela. Mas isso não aconteceu. Surpreendentemente para nós, ele não ficou com maior tempo de tela; ficou às vezes com o mesmo tempo." "Assim como alguns pais, eu também tive o receio de que aumentasse ainda mais o tempo de tela, mas eu percebi que houve uma substituição. Em vez de ele estar consumindo a tela de uma forma passiva, como espectador, somente assistindo, ele está consumindo a tela de uma forma produtiva e criativa. Isso fez muita diferença."
-
-**Fala da Helena:**
-
-```text
-Toda vez que eu falo sobre esse assunto, aparece um grande receio dos pais: "Ai, meu Deus, mas se eu oferecer uma outra atividade na tela, meu filho vai ficar com mais tempo de tela ainda. E isso eu não quero. Eu quero é diminuir, e não aumentar o tempo de tela."
-
-Para não ficar só eu falando, eu trouxe alguns pais que já entraram nesse processo, que compraram essa ideia e colocaram os filhos para criar. Eles também tinham esse receio. Escuta o que eles viveram.
-
-Você pôde ouvir da boca de outros pais: o que acontece é uma substituição, e não um aumento do tempo de tela. A proposta é usar o mesmo tempo de tela que ele já usa, só que de uma forma mais produtiva. Clique em Concluir aula para continuar.
-```

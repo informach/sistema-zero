@@ -6,9 +6,8 @@
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. O maior vilão dos pais | Abrir o curso, retomar o que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. |
-| 2. A pergunta que muda tudo | Trocar a pergunta: da tela que só entretém para a tela que faz pensar, com início, meio e fim. |
-| 3. Mais tempo de tela? | Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição. |
+| 1. O maior vilão dos pais | Abrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. |
+| 2. A pergunta que muda tudo | Trocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar. |
 
 **Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
