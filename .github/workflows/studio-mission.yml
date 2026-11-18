@@ -10,7 +10,8 @@ permissions:
 
 concurrency:
   group: studio-mission-${{ github.ref }}
-  cancel-in-progress: true
+  # Preserve a running qualification and its evidence; the latest pending commit runs next.
+  cancel-in-progress: false
 
 jobs:
   contracts:
@@ -56,6 +57,8 @@ jobs:
         with:
           name: studio-contracts-${{ matrix.os }}
           path: packages/studio/.cache/mission
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 14
 
   browsers:
@@ -127,6 +130,8 @@ jobs:
         if: always()
         with:
           name: studio-browser-${{ matrix.id }}
+          include-hidden-files: true
+          if-no-files-found: error
           path: |
             packages/studio/.cache/mission
             packages/studio/.cache/playwright-results
@@ -161,4 +166,56 @@ jobs:
         with:
           name: studio-isolation-measurement
           path: packages/studio/.cache/mission
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  hosted-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: bun install --frozen-lockfile
+      - name: Audit trusted runtime dependencies
+        working-directory: packages/studio-runtime
+        run: bun run audit:image
+      - name: Build disposable execution image
+        working-directory: packages/studio-runtime
+        run: bun run build:image
+      - name: Real build and validation in the sandbox without network
+        working-directory: packages/studio-runtime
+        run: |
+          bun tests/image-smoke.ts
+          bun tests/validation-smoke.ts
+      - name: Prepare pinned Python runtime
+        env:
+          STUDIO_PYTHON_BUILD_TEST_VENDOR_DIRECTORY: .cache/studio-python-runtime/vendor
+        run: bun packages/studio/scripts/build-python-runtime.ts
+      - name: Execute Python and Three objectives in isolated containers
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: |
+          bun packages/studio-runtime/tests/python-mission-smoke.ts
+          bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+          bun packages/studio-runtime/tests/three-objectives-smoke.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-hosted-runtime
+          include-hidden-files: true
+          path: |
+            .cache/studio-python-runtime/playtest-docker/**/native-output.json
+            .cache/studio-python-runtime/playtest-docker/**/python-playtest-result.json
+            .cache/studio-python-runtime/playtest-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/process.json
+            .cache/studio-python-runtime/mission-docker/**/judge.json
+            .cache/studio-python-runtime/mission-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-result.json
+            .cache/studio-python-runtime/three-objectives/**/summary.json
           retention-days: 14
