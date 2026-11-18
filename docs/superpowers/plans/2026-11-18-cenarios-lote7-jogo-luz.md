@@ -27,12 +27,12 @@
 
 **Files:** core `src/v2/{entidades-schema,documento,comandos,inverter,validacao,organizacao,fragmento,fragmento-schema,arquivos-referenciados}.ts`; novos `marcadores-schema.ts`, `marcadores.ts`, `iluminacao.ts`, `fragmento-marcador.ts`; testes específicos.
 
-- [ ] Testar antes: configurações antigas/novas, limites, polígonos inválidos, rotas vazias, câmera/foco sem direção, referências e orçamento de luzes/sombras.
-- [ ] Implementar schemas opcionais estritos, configuração/pose/volumes mundiais, consultas de zona/rota/início e geometria limitada compartilhável. Conferir terreno e giro sem alterar descritor.
-- [ ] Integrar validação, comandos existentes de marcador/iluminação, propriedades em entidades, locks, inversão e replay; nova configuração não perde campos antigos.
-- [ ] Estender o fragmento existente a marcadores, remapeando objeto associado quando copiado e preservando referências externas com pose/propriedades corretas. Deslocar raiz/alvos uma vez; conservar coordenadas locais.
-- [ ] Proteger referências de panorama na validação e remoção de texturas; conferir arquivos/licenças no fluxo de serviço já existente.
-- [ ] Núcleo, tipagem, autoria/host e Postgres pertinentes; revisão e checkpoint sem declarar UI entregue.
+- [x] Testar antes: configurações antigas/novas, limites, polígonos inválidos, rotas vazias, câmera/foco sem direção, referências e orçamento de luzes/sombras.
+- [x] Implementar schemas opcionais estritos, configuração/pose/volumes mundiais, consultas de zona/rota/início e geometria limitada compartilhável. Conferir terreno e giro sem alterar descritor.
+- [x] Integrar validação, comandos existentes de marcador/iluminação, propriedades em entidades, locks, inversão e replay; nova configuração não perde campos antigos.
+- [x] Estender o fragmento existente a marcadores, remapeando objeto associado quando copiado e preservando referências externas com pose/propriedades corretas. Deslocar raiz/alvos uma vez; conservar coordenadas locais.
+- [x] Proteger referências de panorama na validação e remoção de texturas; conferir arquivos/licenças no fluxo de serviço já existente.
+- [x] Núcleo, tipagem, autoria/host e Postgres pertinentes; revisão e checkpoint sem declarar UI entregue.
 
 ## 7.2 — Palco, helpers e câmeras
 
@@ -75,4 +75,4 @@
 
 ## Estado atual
 
-**Lote 7 aberto, somente 7.1 em execução.** Contratos, consultas e fragmento puro implementados e verificados no primeiro [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-contratos-consultas.md); revisão de vínculos/limites e conclusão de 7.1 ainda pendentes. Lotes 0–6 fechados localmente. Nenhuma entrega do lote 7 será considerada concluída apenas pelo contrato de dados. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 aberto; 7.1 implementado, testado e revisado no núcleo/persistência. Única frente ativa seguinte: 7.2 — helpers, seleção e câmeras.** [Fechamento do núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md). Lotes 0–6 fechados localmente. Renderer, controles de Jogo/Luz e fechamento integral continuam pendentes. Não há autorização nova de produção ou abertura a membros.

@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–6 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md). Lote 7 aberto, somente 7.1 em execução: contratos, consultas e fragmento puro no primeiro [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-contratos-consultas.md), sem UI/renderer novo concluído. Lotes 8–10 e encerramento global pendentes.
+**Estado atual, 18/11:** lotes 0–6 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md). Lote 7 aberto: 7.1 implementado, testado e revisado no núcleo/persistência. [Fechamento](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md). Única frente ativa seguinte: 7.2, helpers e câmeras, sem UI/renderer novo concluído. Lotes 8–10 e encerramento global pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
