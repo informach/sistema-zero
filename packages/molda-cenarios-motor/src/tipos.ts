@@ -76,6 +76,8 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoSelecionarMarcador?(id: string): void
+  aoMarcadores?(estado: import('./jogo/marcadores').EstadoDosMarcadores): void
   aoEditarPontosDeCaminho?(gesto: import('./curvas/edicao-de-pontos').GestoDePontosDeCaminho): void
   aoCancelarPontosDeCaminho?(): void
   aoErroDePontosDeCaminho?(mensagem: string): void
@@ -116,6 +118,8 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  /** Guias editoriais; nunca aparecem em Testar ou em retratos. */
+  definirGuiasDoJogo(visiveis: boolean): void
   definirCapturaDeCaminho(
     configuracao: import('./curvas/edicao-de-pontos').CapturaDeCaminho | null,
   ): void
