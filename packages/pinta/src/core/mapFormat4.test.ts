@@ -42,6 +42,7 @@ import {
   type MapSetAsset,
   PINTA_MAP_SCHEMA,
   PINTA_MAX_SCHEMA,
+  PINTA_PRECISE_SCHEMA,
   PINTA_SCENE_SCHEMA,
   type PintaAsset,
   pintaAssetSchema,
@@ -120,7 +121,7 @@ const lerPecas = (cru: unknown): TilesetAsset => {
 describe('frota mista: o que faz o código intermediário recusar em vez de cortar', () => {
   it('o carimbo e o envelope da cena completa são maiores que os que ele conhecia', () => {
     expect(PINTA_SCENE_SCHEMA).toBeGreaterThan(CONHECIDO_PELO_INTERMEDIARIO.schema)
-    expect(PINTA_MAX_SCHEMA).toBe(PINTA_SCENE_SCHEMA)
+    expect(PINTA_MAX_SCHEMA).toBe(PINTA_PRECISE_SCHEMA)
     // O formato só de camadas continua no número que ele lê inteiro.
     expect(PINTA_MAP_SCHEMA).toBe(CONHECIDO_PELO_INTERMEDIARIO.schema)
     const completo = lerMapa(mapa([objeto({ shape: 'ellipse' })]))
@@ -175,6 +176,39 @@ describe('frota mista: o que faz o código intermediário recusar em vez de cort
       expect(assetNeedsV3(lido)).toBe(true)
       expect(envelopeVersionFor([lido])).toBe(3)
     }
+  })
+
+  it.each([
+    'tiles',
+    'objects',
+    'group',
+  ] as const)('propriedade tipada da camada %s exige formato 4 em todas as gravações', (kind) => {
+    const base = lerMapa(mapa())
+    const properties = { premio: { type: 'asset' as const, value: 'heroi' } }
+    const common = { id: 'camada', name: 'Camada', visible: true, properties }
+    const layer =
+      kind === 'tiles'
+        ? { ...common, cells: new Int16Array(2) }
+        : kind === 'objects'
+          ? { ...common, kind, objects: [] }
+          : { ...common, kind }
+    // Migra também o registro completo gravado incorretamente com schema 3.
+    const lido = lerMapa({ ...base, schema: 3, layers: [...base.layers, layer] })
+    expect(lido.schema).toBeGreaterThan(CONHECIDO_PELO_INTERMEDIARIO.schema)
+    expect(withPintaSchemaStamp({ ...lido, schema: 3 }).schema).toBe(4)
+    expect((pintaAssetToWire(lido) as { schema: number }).schema).toBe(4)
+    expect(envelopeVersionFor([lido])).toBeGreaterThan(CONHECIDO_PELO_INTERMEDIARIO.envelope)
+    expect(importPintaJson(galleryToPintaJson([lido])).assets).toEqual([lido])
+    expect(lido.layers.find((l) => l.id === 'camada')?.properties).toEqual(properties)
+    const primitive = lerMapa({
+      ...base,
+      layers: [
+        ...base.layers,
+        { ...layer, properties: { premio: 'heroi', quantidade: 3, aberto: true } },
+      ],
+    })
+    expect(primitive.schema).toBe(3)
+    expect(envelopeVersionFor([primitive])).toBe(3)
   })
 
   it('mapa antigo (ponto e retângulo, texto, número, sim/não) sai sem carimbo e byte a byte igual', () => {
@@ -235,7 +269,7 @@ describe('frota mista: o que faz o código intermediário recusar em vez de cort
     expect(sanitizePintaAsset({ ...mapa(), schema: PINTA_MAX_SCHEMA + 1 })).toBeNull()
     expect(sanitizePintaAsset(pecas({ schema: PINTA_MAX_SCHEMA + 1 }))).toBeNull()
     const arquivo = JSON.parse(galleryToPintaJson([lerMapa(mapa())]))
-    arquivo.version = 5
+    arquivo.version = PINTA_MAX_SCHEMA + 1
     const { assets, warnings } = importPintaJson(JSON.stringify(arquivo))
     expect(assets).toEqual([])
     expect(warnings).toHaveLength(1)
@@ -358,7 +392,7 @@ describe('conjunto (map-set)', () => {
   })
 
   it('sem carimbo, com carimbo futuro ou com carimbo que não é número: recusado', () => {
-    for (const schema of [2, 5, '4', null])
+    for (const schema of [2, PINTA_MAX_SCHEMA + 1, '4', null])
       expect(sanitizePintaAsset(conjunto(mapa(), schema))).toBeNull()
     const { schema: _semCarimbo, ...semCarimbo } = conjunto(mapa())
     expect(sanitizePintaAsset(semCarimbo)).toBeNull()

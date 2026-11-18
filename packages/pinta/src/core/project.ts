@@ -33,6 +33,7 @@ import {
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
   PINTA_MAX_SCHEMA,
+  PINTA_PRECISE_SCHEMA,
   PINTA_SCENE_SCHEMA,
   TILE_SIZES,
   uniqueAnimationName,
@@ -55,6 +56,7 @@ export {
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
   PINTA_MAX_SCHEMA,
+  PINTA_PRECISE_SCHEMA,
   PINTA_SCENE_SCHEMA,
   SPRITE_FRAME_SIZES,
   TILE_SIZES,
@@ -421,7 +423,7 @@ export interface TilemapLayerCommon {
   locked?: true
   /** 0 a 1. Ausente = 1 (opaca). */
   opacity?: number
-  /** Deslocamento do desenho da camada, em pixels do mapa. Ausente = 0. */
+  /** Deslocamento do desenho da camada, em pixels do mapa, inclusive frações. Ausente = 0. */
   offsetX?: number
   offsetY?: number
   /** Quanto a camada acompanha a câmera (1 = junto; 0,5 = metade, parece mais longe). Ausente = 1. */
@@ -554,7 +556,8 @@ export interface TilemapAsset extends PintaAssetBase {
   /**
    * Carimbo do formato, gravado só quando o mapa usa algo que o formato anterior não descreve:
    * 3 para o que é de camadas (`tilemapNeedsV3`), 4 para o que é da cena completa
-   * (`tilemapNeedsV4`). Um código que não conhece o número NÃO lê o mapa (devolve `null` sem
+   * (`tilemapNeedsV4`), 5 para offsets fracionários (`tilemapNeedsV5`). Um código que não conhece
+   * o número NÃO lê o mapa (devolve `null` sem
    * regravar), em vez de cortar o que não entende.
    */
   schema?: number
@@ -564,8 +567,8 @@ export interface TilemapAsset extends PintaAssetBase {
 export interface MapSetAsset extends PintaAssetBase {
   kind: 'map-set'
   /**
-   * Sempre 4 quando sai do sanitizador ou da gravação (`withPintaSchemaStamp`). O tipo aceita
-   * número para ler o 3 que as primeiras versões gravaram.
+   * 4, ou 5 se o mapa interno usa offsets fracionários. O tipo aceita número para ler também
+   * o 3 que as primeiras versões gravaram.
    */
   schema: number
   map: TilemapAsset
@@ -667,24 +670,34 @@ export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): bo
   )
 }
 
-/** Dependências visuais diretas. A travessia e a transação pertencem ao adaptador. */
+/** Orçamento da captura portátil já usado pelo adaptador de imagens; nunca corta um pacote. */
+export const PINTA_DEPENDENCY_ASSET_LIMIT = 225
+
+/** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
 export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
-  return map
-    ? [
-        ...new Set([
-          ...tilemapTilesetIds(map),
-          ...map.layers.flatMap((l) =>
-            isObjectLayer(l)
-              ? l.objects.flatMap((o) => [
-                  ...(o.art ? [o.art.assetId] : []),
-                  ...(o.setId ? [o.setId] : []),
-                ])
-              : [],
-          ),
-        ]),
-      ]
-    : []
+  const ids = new Set<string>(map ? tilemapTilesetIds(map) : [])
+  const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
+    for (const value of Object.values(properties ?? {}))
+      if (typeof value === 'object' && value.type === 'asset' && typeof value.value === 'string')
+        ids.add(value.value)
+  }
+  if (map)
+    for (const layer of map.layers) {
+      addProperties(layer.properties)
+      if (isObjectLayer(layer))
+        for (const object of layer.objects) {
+          if (object.art) ids.add(object.art.assetId)
+          if (object.setId) ids.add(object.setId)
+          addProperties(object.properties)
+        }
+    }
+  if (isTilesetKind(asset))
+    for (const properties of Object.values(asset.tileProperties ?? {})) addProperties(properties)
+  // Referência a si mesmo já está no documento raiz; não é uma dependência externa que deva
+  // impedir apagar esse mesmo desenho. As propriedades continuam preservadas no documento.
+  ids.delete(asset.id)
+  return [...ids]
 }
 
 /**
@@ -728,7 +741,7 @@ export function tilemapNeedsV2(tilemap: TilemapAsset): boolean {
 const LEGACY_MAP = { cols: 128, rows: 128, layers: 8, tiles: 64 } as const
 
 /**
- * O mapa usa algo que o formato de antes das camadas não descreve (formato 3 OU 4)? É a
+ * O mapa usa algo que o formato de antes das camadas não descreve (formato 3 ou superior)? É a
  * pergunta de quem decide entre o caminho antigo e o da cena (desenho, entrega ao Estúdio). Um
  * mapa que cabe no formato anterior continua saindo exatamente como antes. Para saber QUAL
  * carimbo o mapa leva, use `tilemapSchemaFor`.
@@ -738,17 +751,38 @@ export function tilemapNeedsV3(tilemap: TilemapAsset): boolean {
 }
 
 /**
- * O mapa usa algo que só a cena completa descreve (formato 4)? Hoje são os objetos: forma,
- * giro, espelho, papel, arte, instância de conjunto e propriedade tipada.
+ * O mapa usa algo da cena completa (formato 4 ou superior)? Hoje são os objetos: forma,
+ * giro, espelho, papel, arte, instância de conjunto e propriedade tipada de objeto ou camada.
+ * Para o número exato, use `tilemapSchemaFor`: o leitor completo de 4 arredondava frações.
  */
 export function tilemapNeedsV4(tilemap: TilemapAsset): boolean {
-  return tilemap.layers.some((layer) => isObjectLayer(layer) && layer.objects.some(objectNeedsV4))
+  return (
+    tilemapNeedsV5(tilemap) ||
+    tilemap.layers.some(
+      (layer) =>
+        Object.values(layer.properties ?? {}).some((value) => typeof value === 'object') ||
+        (isObjectLayer(layer) && layer.objects.some(objectNeedsV4)),
+    )
+  )
+}
+
+/** Frações de pixel precisam recusar também o leitor completo publicado com schema 4. */
+export function tilemapNeedsV5(tilemap: TilemapAsset): boolean {
+  const fractional = (value: number | undefined) =>
+    value !== undefined && Number.isFinite(value) && !Number.isInteger(value)
+  return tilemap.layers.some((layer) => fractional(layer.offsetX) || fractional(layer.offsetY))
 }
 
 /** O carimbo que este mapa precisa levar, ou `undefined` quando cabe no formato antigo. */
 export function tilemapSchemaFor(tilemap: TilemapAsset): number | undefined {
+  if (tilemapNeedsV5(tilemap)) return PINTA_PRECISE_SCHEMA
   if (tilemapNeedsV4(tilemap)) return PINTA_SCENE_SCHEMA
   return tilemapNeedsLayersFormat(tilemap) ? PINTA_MAP_SCHEMA : undefined
+}
+
+/** O conjunto externo também protege o formato do seu documento interno. */
+export function mapSetSchemaFor(map: TilemapAsset): number {
+  return Math.max(PINTA_SCENE_SCHEMA, tilemapSchemaFor(map) ?? 0)
 }
 
 /**
@@ -757,7 +791,7 @@ export function tilemapSchemaFor(tilemap: TilemapAsset): number | undefined {
  * compara para perceber um registro que perdeu recursos.
  */
 export function pintaAssetSchema(asset: PintaAsset): number {
-  if (asset.kind === 'map-set') return PINTA_SCENE_SCHEMA
+  if (asset.kind === 'map-set') return mapSetSchemaFor(asset.map)
   if (asset.kind === 'tilemap') return tilemapSchemaFor(asset) ?? 0
   if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')
     return tilesetSchemaFor(asset) ?? 0
@@ -773,8 +807,9 @@ export function pintaAssetSchema(asset: PintaAsset): number {
 export function withPintaSchemaStamp<T extends PintaAsset>(asset: T): T {
   if (asset.kind === 'map-set') {
     const map = withPintaSchemaStamp(asset.map)
-    if (map === asset.map && asset.schema === PINTA_SCENE_SCHEMA) return asset
-    return { ...asset, schema: PINTA_SCENE_SCHEMA, map }
+    const schema = mapSetSchemaFor(map)
+    if (map === asset.map && asset.schema === schema) return asset
+    return { ...asset, schema, map }
   }
   if (asset.kind !== 'tilemap' && asset.kind !== 'tileset' && asset.kind !== 'vector-tileset')
     return asset
@@ -1295,8 +1330,8 @@ function sanitizeLayerCommon(
     ...(typeof l.parentId === 'string' && l.parentId ? { parentId: l.parentId } : {}),
     ...(l.locked === true ? { locked: true as const } : {}),
     ...(opacity !== undefined && opacity !== 1 ? { opacity } : {}),
-    ...(offsetX !== undefined && Math.round(offsetX) !== 0 ? { offsetX: Math.round(offsetX) } : {}),
-    ...(offsetY !== undefined && Math.round(offsetY) !== 0 ? { offsetY: Math.round(offsetY) } : {}),
+    ...(offsetX !== undefined && offsetX !== 0 ? { offsetX } : {}),
+    ...(offsetY !== undefined && offsetY !== 0 ? { offsetY } : {}),
     ...(parallaxX !== undefined && parallaxX !== 1 ? { parallaxX } : {}),
     ...(parallaxY !== undefined && parallaxY !== 1 ? { parallaxY } : {}),
     ...(Object.keys(properties).length > 0 ? { properties } : {}),
@@ -1691,9 +1726,11 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       return schema === undefined ? tilemap : { ...tilemap, schema }
     }
     case 'map-set': {
-      // Lê o 3 das primeiras versões e o 4; devolve sempre 4.
+      // Lê os conjuntos 3/4 anteriores e 5 com frações; o carimbo acompanha o mapa interno.
       if (
-        (record.schema !== PINTA_MAP_SCHEMA && record.schema !== PINTA_SCENE_SCHEMA) ||
+        (record.schema !== PINTA_MAP_SCHEMA &&
+          record.schema !== PINTA_SCENE_SCHEMA &&
+          record.schema !== PINTA_PRECISE_SCHEMA) ||
         !record.map ||
         typeof record.map !== 'object' ||
         (record.map as Record<string, unknown>).kind !== 'tilemap'
@@ -1707,7 +1744,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         )
       )
         return null
-      return { ...base, kind: 'map-set', schema: PINTA_SCENE_SCHEMA, map }
+      return { ...base, kind: 'map-set', schema: mapSetSchemaFor(map), map }
     }
     // `vector` é o kind ANTIGO (pré paridade vetorial): migra para
     // `vector-background` aqui, sem tocar nos dados.

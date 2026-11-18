@@ -10,7 +10,7 @@ import { gameTwoDExtension } from '../../game-2d'
 import { gameTwoDRuntime } from '../../game-2d/runtime'
 import { gameKitExtension } from '../../game-2d-advanced'
 import { gameKitRuntime } from '../../game-2d-advanced/runtime'
-import { MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS } from '../bootstrap'
+import { MAP_TWO_D_FRAGMENT_MAX_CHARS, MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS } from '../bootstrap'
 
 /**
  * O caminho REAL do host, e não a função do fragmento chamada na mão: a prévia e a capa usam
@@ -95,7 +95,11 @@ describe('variante do cenário pelo caminho do host', () => {
     // Os tetos de sempre valem para o motor sem cenário (bundle.test.ts e runtimePayload.test.ts).
     expect(medidas['g2d sem'] ?? 0).toBeLessThan(422_500)
     expect(medidas['gk sem'] ?? 0).toBeLessThan(415_000)
-    expect((medidas['g2d com'] ?? 0) - (medidas['g2d sem'] ?? 0)).toBeLessThan(12_000)
-    expect((medidas['gk com'] ?? 0) - (medidas['gk sem'] ?? 0)).toBeLessThan(12_000)
+    expect((medidas['g2d com'] ?? 0) - (medidas['g2d sem'] ?? 0)).toBeLessThan(
+      MAP_TWO_D_FRAGMENT_MAX_CHARS,
+    )
+    expect((medidas['gk com'] ?? 0) - (medidas['gk sem'] ?? 0)).toBeLessThan(
+      MAP_TWO_D_FRAGMENT_MAX_CHARS,
+    )
   })
 })

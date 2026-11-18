@@ -557,9 +557,11 @@ jobs:
         run: 'python -m pip install --only-binary=:all: pygame-ce==2.5.7'
       - name: Conferir a ponte e os materiais do Pinta com pygame-ce real
         run: |
+          bun packages/core/scripts/gen-pinta-scene-transform.ts --check
           python -I -B packages/studio/scripts/python/test-pygame-bridge.py
           python -I -B packages/studio/scripts/python/test-pinta-module.py
           python -I -B packages/studio/scripts/python/test-pinta-module.py --sem-pygame
+          python -I -B packages/pinta/scripts/homologacao/test-pydew-pinta.py
       - name: Conferir o PNG de cenário e o projeto Pygame portátil do Pinta com pygame-ce real
         env:
           PYTHON: python
@@ -726,6 +728,11 @@ jobs:
       - name: Instalar o compilador confiável para os jogos Pro
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
 
+      - name: Cenários do Pinta e pacote Phaser em desktop e toque
+        if: matrix.shard == 1
+        working-directory: packages/studio
+        run: bun run test:e2e:pinta-scenes
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
@@ -735,7 +742,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: studio-playwright-chromium-${{ matrix.shard }}
-          path: packages/studio/.cache/playwright-results
+          path: |
+            packages/studio/.cache/playwright-results
+            packages/studio/.cache/pinta-scenes-results
           retention-days: 7
 
   studio-e2e-firefox:

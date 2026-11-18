@@ -5,7 +5,7 @@ import {
   type TileTerrain,
   withPintaSchemaStamp,
 } from '../core/project'
-import { cellTile, makeCell } from './cell'
+import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile, makeCell } from './cell'
 import type { CellPos } from './cellGeometry'
 import { tileLayerById, withTileLayer } from './tilemapOps'
 export function seededChoice(seed: number, x: number, y: number): number {
@@ -15,6 +15,32 @@ export function seededChoice(seed: number, x: number, y: number): number {
 }
 const slots = (mode: TileTerrain['mode']): number[] =>
   mode === 'edge' ? [0, 2, 4, 6] : mode === 'corner' ? [1, 3, 5, 7] : [0, 1, 2, 3, 4, 5, 6, 7]
+/** Encaixes no espaço VISUAL: diagonal primeiro, depois os espelhos, como a célula desenhada. */
+function visualPattern(terrain: TileTerrain, cell: number): number[] | undefined {
+  const pattern = terrain.tiles[String(cellTile(cell))]
+  if (!pattern || !cellFlags(cell)) return pattern
+  const points = [
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+  ]
+  const transformed = Array<number>(8).fill(0),
+    flags = cellFlags(cell)
+  for (const [slot, point] of points.entries()) {
+    let [x, y] = point as [number, number]
+    if (flags & CELL_FLIP_D) [x, y] = [y, x]
+    if (flags & CELL_FLIP_H) x = -x
+    if (flags & CELL_FLIP_V) y = -y
+    const target = points.findIndex(([px, py]) => px === x && py === y)
+    transformed[target] = pattern[slot] ?? 0
+  }
+  return transformed
+}
 function key(c: number, r: number, s: number): string {
   return [
     `h:${c}:${r}`,
@@ -63,7 +89,7 @@ export function paintTerrain(
   const cells = new Int16Array(layer.cells)
   for (const [at, p] of neighbors) {
     const tile = cellTile(cells[at] ?? -1),
-      known = terrain.tiles[String(tile)]
+      known = visualPattern(terrain, cells[at] ?? -1)
     // A vizinha com uma peça de FORA do terreno (uma árvore, uma casa) não é mexida: só a casa
     // que a criança pintou pode trocar uma peça que não é deste terreno.
     if (!painted.has(at) && tile >= 0 && !known) continue
@@ -103,7 +129,10 @@ export function terrainRegion(
     return []
   const signature = (at: number): string => {
     const tile = cellTile(layer.cells[at] ?? -1)
-    return terrain ? JSON.stringify(terrain.tiles[String(tile)] ?? []) : String(tile)
+    if (!terrain) return String(tile)
+    if (tile < 0) return 'empty'
+    const pattern = visualPattern(terrain, layer.cells[at] ?? -1)
+    return pattern ? `terrain:${JSON.stringify(pattern)}` : `outside:${layer.cells[at]}`
   }
   const target = signature(start.row * map.cols + start.col),
     seen = new Set<number>(),

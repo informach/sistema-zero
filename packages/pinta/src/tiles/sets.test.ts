@@ -7,6 +7,7 @@ import { describe, expect, it } from 'bun:test'
 import { pintaAssetToWire } from '../assets/wire'
 import {
   createTilemapAsset,
+  effectiveLayer,
   isObjectLayer,
   isTileLayer,
   type MapSetAsset,
@@ -19,6 +20,7 @@ import {
   type TilemapTileLayer,
   tilemapNeedsV3,
   tilemapSchemaFor,
+  withPintaSchemaStamp,
 } from '../core/project'
 import { CELL_FLIP_H, cellFlags, cellTile } from './cell'
 import { addMapObject, createMapObject } from './mapObjects'
@@ -324,4 +326,81 @@ describe('detachMapSet', () => {
     }
     expect(detachMapSet(trancado, layerId, instanciaId, set, TILE)).toBe(trancado)
   })
+})
+
+describe('recorte visual de conjuntos com deslocamento', () => {
+  it('peças desalinhadas fora do recorte não impedem guardar o pedaço', () => {
+    const map = mapaBase(),
+      layer = pecas(map)[0]!
+    layer.cells.fill(-1)
+    layer.cells[11] = 3
+    layer.offsetX = 0.5
+    const set = createMapSet(map, { col: 0, row: 0, cols: 1, rows: 1 }, TILE, 'vazio')
+    expect([...pecas(set.map)[0]!.cells]).toEqual([-1])
+    // Mesmo começando fora do recorte, uma peça que entra pela borda não pode sumir.
+    layer.cells[11] = -1
+    layer.cells[0] = 3
+    layer.offsetX = -0.5
+    expect(() => createMapSet(map, { col: 0, row: 0, cols: 1, rows: 1 }, TILE, 'meia')).toThrow(
+      /grade/,
+    )
+  })
+  it('copia as peças visíveis e compensa também o deslocamento herdado sem perder grupos', () => {
+    const map = mapaBase(),
+      layer = pecas(map)[0]!
+    map.layers = [
+      { id: 'grupo', kind: 'group', name: 'Vila', visible: true, offsetX: 32, offsetY: -16 },
+      { ...layer, parentId: 'grupo', offsetX: -16, offsetY: 32 },
+    ]
+    const set = createMapSet(map, { col: 1, row: 1, cols: 2, rows: 1 }, TILE, 'visual')
+    const cropped = pecas(set.map)[0]!
+    expect([...cropped.cells]).toEqual([0, 1])
+    expect(cropped.parentId).toBe(set.map.layers[0]!.id)
+    expect(effectiveLayer(set.map, cropped)).toMatchObject({ offsetX: 0, offsetY: 0 })
+    expect([...layer.cells]).toEqual([...Array(12).keys()])
+  })
+  it('recusa meia peça explicitamente e não altera o mapa', () => {
+    const map = mapaBase(),
+      layer = pecas(map)[0]!
+    layer.offsetX = 0.5
+    const before = structuredClone(map)
+    expect(() => createMapSet(map, { col: 0, row: 0, cols: 2, rows: 1 }, TILE, 'meia')).toThrow(
+      /grade/,
+    )
+    expect(map).toEqual(before)
+  })
+})
+
+it('recorte de objetos conserva deslocamentos fracionários e a posição visual do grupo', () => {
+  let map = mapaBase()
+  map.layers = map.layers.map((l) =>
+    isTileLayer(l) ? { ...l, cells: new Int16Array(l.cells.length).fill(-1) } : l,
+  )
+  const owner = objetos(map)
+  map.layers = [
+    ...map.layers.slice(0, -1),
+    {
+      id: 'grupo-fracionario',
+      kind: 'group',
+      name: 'Jardim',
+      visible: true,
+      offsetX: 16.5,
+      offsetY: 0.25,
+    },
+    { ...owner, parentId: 'grupo-fracionario' },
+  ]
+  map = addMapObject(
+    map,
+    owner.id,
+    createMapObject({ name: 'flor', x: 3, y: 2, width: 4, height: 4 }),
+  )
+  const set = createMapSet(map, { col: 1, row: 0, cols: 1, rows: 1 }, TILE, 'jardim')
+  const copied = objetos(set.map),
+    object = copied.objects[0]!,
+    e = effectiveLayer(set.map, copied)
+  expect(object.x + e.offsetX).toBe(3.5)
+  expect(object.y + e.offsetY).toBe(2.25)
+  expect(sanitizePintaAsset(JSON.parse(JSON.stringify(pintaAssetToWire(set))))).toEqual(
+    withPintaSchemaStamp(set),
+  )
 })

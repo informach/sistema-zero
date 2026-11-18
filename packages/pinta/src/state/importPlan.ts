@@ -144,6 +144,7 @@ export function planImport(
   eligible: readonly PintaAsset[],
   incomingTilesetIds: ReadonlySet<string>,
   taken: Set<string>,
+  nameForCopy: (asset: PintaAsset) => string = (asset) => asset.name,
 ): ImportPlan {
   const idMap = new Map<string, string>()
   const names = new Map<string, string>()
@@ -161,7 +162,7 @@ export function planImport(
       error ??= COPY.gallery.restoreMissingTileset
       continue
     }
-    const name = uniqueName(asset.name, taken)
+    const name = uniqueName(nameForCopy(asset), taken)
     if (!name) {
       skipped += 1
       error ??= COPY.newAsset.nameTaken
@@ -181,7 +182,17 @@ export function planImport(
         ? remapMapAssets(source, idMap, names)
         : source.kind === 'map-set'
           ? { ...source, map: remapMapAssets(source.map, idMap, names) }
-          : source,
+          : isTilesetKind(source) && source.tileProperties
+            ? {
+                ...source,
+                tileProperties: Object.fromEntries(
+                  Object.entries(source.tileProperties).map(([tile, properties]) => [
+                    tile,
+                    mapPropertyRefs(properties, idMap, 'asset'),
+                  ]),
+                ),
+              }
+            : source,
   }))
   return { pairs, idMap, skipped, error }
 }

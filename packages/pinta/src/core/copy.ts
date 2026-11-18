@@ -13,6 +13,8 @@ export const COPY = {
     unpackedTooLarge: 'O pacote aberto passou de 128 MiB.',
     left: 'À esquerda',
     right: 'À direita',
+    setCropAlignment:
+      'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>
@@ -240,6 +242,8 @@ export const COPY = {
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     drawingInUse: 'Este desenho ainda é usado por um mapa ou conjunto.',
     cancel: 'Cancelar',
+    recoveredLocal:
+      'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
     storageBudget:
       'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',

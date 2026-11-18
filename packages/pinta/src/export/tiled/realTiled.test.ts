@@ -117,7 +117,7 @@ const esperada: PintaScene = {
           properties: {
             aberta: false,
             chave: { type: 'int', value: 3 },
-            cor: { type: 'color', value: '#112233ff' },
+            cor: { type: 'color', value: '#112233' },
             dono: { type: 'object', value: 'object-2' },
             peso: { type: 'float', value: 1.5 },
             senha: '1234',

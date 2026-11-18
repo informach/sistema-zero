@@ -9,6 +9,121 @@ import { addObjectLayer } from '../tiles/tilemapOps'
 import { exportPintaScene } from './scene'
 import { drawScene } from './sceneDrawing'
 
+it('tile art objects use the same animation clock as terrain, including inside reflected sets', () => {
+  const scene = PintaSceneSchema.parse({
+    version: 1,
+    id: 'map',
+    name: 'map',
+    tileSize: 16,
+    cols: 4,
+    rows: 2,
+    tilesets: [
+      {
+        id: 'ts',
+        name: 'ts',
+        image: 'tiles',
+        columns: 2,
+        count: 2,
+        solid: [],
+        platform: [],
+        animations: {
+          0: [
+            { tile: 0, duration: 100 },
+            { tile: 1, duration: 100 },
+          ],
+        },
+      },
+    ],
+    sets: [
+      {
+        id: 'set',
+        cols: 1,
+        rows: 1,
+        layers: [
+          {
+            id: 'art',
+            kind: 'objects',
+            name: 'Art',
+            visible: true,
+            objects: [
+              {
+                id: 'flower',
+                name: 'Flower',
+                type: '',
+                shape: 'art',
+                art: { assetId: 'ts', tile: 0 },
+                x: 0,
+                y: 0,
+                width: 16,
+                height: 16,
+                properties: {},
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    layers: [
+      {
+        id: 'objects',
+        name: 'Objects',
+        visible: true,
+        kind: 'objects',
+        objects: [
+          {
+            id: 'direct',
+            name: 'Direct',
+            type: '',
+            shape: 'art',
+            art: { assetId: 'ts', tile: 0 },
+            x: 0,
+            y: 0,
+            width: 16,
+            height: 16,
+            properties: {},
+          },
+          {
+            id: 'copy',
+            name: 'Copy',
+            type: '',
+            shape: 'set',
+            setId: 'set',
+            x: 16,
+            y: 0,
+            width: 16,
+            height: 16,
+            flipX: true,
+            properties: {},
+          },
+        ],
+      },
+    ],
+  })
+  const image = createCanvas(32, 16),
+    brush = image.getContext('2d')
+  brush.fillStyle = 'red'
+  brush.fillRect(0, 0, 16, 16)
+  brush.fillStyle = 'blue'
+  brush.fillRect(16, 0, 16, 16)
+  for (const [time, channel] of [
+    [0, 0],
+    [150, 2],
+    [250, 0],
+  ]) {
+    const canvas = createCanvas(64, 32),
+      ctx = canvas.getContext('2d')
+    drawScene(
+      ctx as unknown as CanvasRenderingContext2D,
+      scene,
+      new Map([['ts', image as unknown as CanvasImageSource]]),
+      'back',
+      time,
+    )
+    expect(ctx.getImageData(4, 4, 1, 1).data[channel!]).toBe(255)
+    expect(ctx.getImageData(20, 4, 1, 1).data[channel!]).toBe(255)
+  }
+})
+
 it('soltar um conjunto conserva os pixels nos quatro giros e espelhos', async () => {
   const ts = createTilesetAsset({ name: 'Peças', tileSize: 16 })
   ts.tiles = [ts.tiles[0]!]

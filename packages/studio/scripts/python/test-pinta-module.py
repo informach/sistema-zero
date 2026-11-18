@@ -39,6 +39,9 @@ class _Superficie:
     def get_height(self):
         return self.tamanho[1]
 
+    def get_bitsize(self):
+        return 32
+
     def subsurface(self, area):
         return _Superficie(tuple(area)[2:], self.historia + (('recorte', tuple(area)),))
 
@@ -62,6 +65,8 @@ def _pygame_de_mentira():
     modulo.SRCALPHA = 65536
     modulo.Rect = modulo.FRect = _Retangulo
     modulo.Surface = _Superficie
+    # Só a decodificação da imagem é substituída; o PNG iTXt e o módulo do aluno são reais.
+    modulo.image = types.SimpleNamespace(load=lambda _caminho: _Superficie((32, 32)))
     modulo.time = types.SimpleNamespace(get_ticks=lambda: modulo.relogio)
     modulo.display = types.SimpleNamespace(get_init=lambda: False, get_surface=lambda: None)
     modulo.transform = types.SimpleNamespace(
@@ -105,6 +110,77 @@ def save(surface, name, data=None):
     pygame.image.save(surface, str(path))
     if data is not None:
         path.write_bytes(with_pinta_data(path.read_bytes(), data))
+
+
+def objetos_do_mapa_com_conjuntos(salvar):
+    """O wrapper público deve expor os objetos que o compositor realmente executa."""
+    import copy
+    for escala in (1, 2):
+        objetos = [
+            {'id': 'copy', 'name': 'Casa', 'type': 'casa', 'shape': 'set', 'setId': 'house',
+             'x': 0, 'y': 0, 'width': 16, 'height': 16, 'flipX': True, 'properties': {}},
+            {'id': 'outside', 'name': 'Fora', 'type': 'item', 'x': 20, 'y': 20,
+             'width': 2, 'height': 2, 'properties': {}}]
+        layers = [
+            {'id': 'ground', 'kind': 'tiles', 'name': 'Chão', 'tilesetId': 't', 'cells': [-1] * 4},
+            {'id': 'group', 'kind': 'group', 'name': 'Vila', 'offsetX': 3, 'offsetY': 5},
+            {'id': 'objects', 'kind': 'objects', 'name': 'Objetos', 'parentId': 'group', 'objects': objetos},
+            {'id': 'hidden', 'kind': 'objects', 'name': 'Escondidos', 'visible': False, 'objects': [
+                {'id': 'hidden', 'name': 'Escondido', 'type': 'item', 'x': 1, 'y': 1,
+                 'width': 1, 'height': 1, 'properties': {}}]}]
+        scene = {'version': 1, 'name': 'vila', 'cols': 2, 'rows': 2, 'tileSize': 16,
+                 'tilesets': [{'id': 't', 'name': 'pecas', 'columns': 1, 'count': 1,
+                               'solid': [], 'platform': [], 'image': 'unused.png'}],
+                 'layers': layers, 'sets': [{'id': 'house', 'name': 'Casa', 'cols': 1, 'rows': 1,
+                    'layers': [{'id': 'inside', 'kind': 'objects', 'name': 'Dentro', 'objects': [
+                        {'id': 'a', 'name': 'Chave', 'type': 'item', 'x': 2, 'y': 0,
+                         'width': 4, 'height': 4, 'properties': {
+                             'local': {'type': 'object', 'value': 'b'},
+                             'external': {'type': 'object', 'value': 'outside'},
+                             'vida': {'type': 'int', 'value': 3}}},
+                        {'id': 'b', 'name': 'Baú', 'type': 'item', 'x': 8, 'y': 8,
+                         'width': 2, 'height': 2, 'properties': {}}]}]}]}
+        # As camadas legadas do PNG já vêm na escala de apresentação; a cena conserva a autoral.
+        legacy = copy.deepcopy(layers)
+        for layer in legacy:
+            layer['type'] = layer.pop('kind')
+            if layer['type'] == 'tiles':
+                layer['tileset'] = 0
+            for key in ('offsetX', 'offsetY'):
+                if key in layer:
+                    layer[key] *= escala
+            for obj in layer.get('objects', []):
+                for key in ('x', 'y', 'width', 'height'):
+                    obj[key] *= escala
+        data = {'format': 'pinta', 'version': 2, 'kind': 'map', 'name': 'vila', 'scale': escala,
+                'tileSize': 16 * escala, 'cols': 2, 'rows': 2,
+                'tilesets': [{'name': 'pecas', 'columns': 1, 'count': 1, 'solid': [], 'platform': []}],
+                'layers': legacy, 'scene': scene}
+        nome = f'conjunto-{escala}'
+        salvar(nome, data)
+        mapa = pinta.carregar_mapa(nome)
+        publicos = mapa.objetos()
+        ids = [obj.id for obj in publicos]
+        assert ids == ['copy', 'outside', 'copy/a', 'copy/b'], ids
+        assert ids == [obj['id'] for obj in mapa._cena.objetos]
+        assert [obj.id for obj in mapa.objetos('item')] == ['outside', 'copy/a', 'copy/b']
+        assert mapa.objetos('inexistente') == []
+        a, b = publicos[2:]
+        assert (a.x, a.y, a.largura, a.altura, a.giro) == (17 * escala, 9 * escala, 4 * escala, 4 * escala, 180)
+        assert (b.x, b.y, b.largura, b.altura, b.giro) == (11 * escala, 15 * escala, 2 * escala, 2 * escala, 180)
+        assert a.propriedades == {'local': 'copy/b', 'external': 'outside', 'vida': 3}
+        assert a.tipos_das_propriedades == {'local': 'object', 'external': 'object', 'vida': 'int'}
+        assert a is mapa.objetos('item')[1], 'consultar novamente conserva a identidade do objeto'
+        # v1 e v2 sem cena continuam lendo as camadas e devolvendo as mesmas instâncias.
+        for versao in (1, 2):
+            antigo = dict(data, version=versao)
+            antigo.pop('scene')
+            salvar(nome, antigo)
+            mapa_antigo = pinta.carregar_mapa(nome)
+            assert mapa_antigo._cena is None
+            assert [obj.id for obj in mapa_antigo.objetos()] == ['copy', 'outside', 'hidden']
+            assert mapa_antigo.objetos('item')[0] is mapa_antigo.camada('Objetos')[1]
+    return 6
 
 
 def main():
@@ -231,6 +307,9 @@ def main():
     pixels = pygame.Surface((16, 16), pygame.SRCALPHA)
     modern.desenhar(pixels)
     assert 120 <= pixels.get_at((2, 0)).a <= 130, pixels.get_at((2, 0))
+
+    objetos_do_mapa_com_conjuntos(lambda nome, dados: save(
+        pygame.Surface((32, 32), pygame.SRCALPHA), nome, dados))
 
     # An animation without frames, data that is not an object and a decompression bomb are
     # untrusted data: each fails with a clear message, never ZeroDivisionError or a huge buffer.
@@ -366,6 +445,8 @@ def logica_sem_pygame():
     assert cena.peca(vivo, 2 | D, 500).historia == (('recorte', (32, 16, 16, 16)), ('giro', 90), ('espelho', False, True))
     assert pinta.Objeto({'name': 'bau', 'properties': {'ouro': {'type': 'int', 'value': 3}, 'aberto': True}}).propriedades == {'ouro': 3, 'aberto': True}
     conferidos += 4
+    conferidos += objetos_do_mapa_com_conjuntos(
+        lambda nome, dados: Path('assets', nome + '.png').write_bytes(png_minimo(dados)))
     print(f'pinta (sem pygame): {conferidos} conferências de lógica pura passaram.')
 
 

@@ -53,6 +53,9 @@ export interface PintaGalleryState {
   loadError: string | null
   /** Erro da última mutação (criar/renomear/duplicar/apagar) — copy amigável. */
   mutateError: string | null
+  /** One-shot informational feedback after an atomic conflict recovery. */
+  recoveryNotice: string | null
+  acknowledgeRecovery: () => void
   /**
    * Último ESTILO usado (pixel/vetor) — pré-seleciona o primeiro passo do
    * "Criar novo". Derivado do asset mais recente no load; atualizado no create.
@@ -140,6 +143,8 @@ export function createGalleryStore(
     attachPersistence: () => () => {},
     loadError: null,
     mutateError: null,
+    recoveryNotice: null,
+    acknowledgeRecovery: () => set({ recoveryNotice: null }),
     lastStyle: 'pixel',
 
     async load() {
@@ -316,7 +321,7 @@ export function createGalleryStore(
         return false
       }
       try {
-        await persistence.deleteAsset(id)
+        await persistence.deleteAsset(id, asset)
         set((state) => ({ assets: state.assets.filter((a) => a.id !== id), mutateError: null }))
         return true
       } catch {
@@ -480,6 +485,9 @@ export function createGalleryStore(
           syncGeneration += 1
           store.setState({ syncing: true })
         } else if (event.type === 'changed') {
+          reloadSoon()
+        } else if (event.type === 'recovered') {
+          store.setState({ recoveryNotice: COPY.gallery.recoveredLocal })
           reloadSoon()
         } else if (event.type === 'sync-end') {
           if (reloadTimer) {

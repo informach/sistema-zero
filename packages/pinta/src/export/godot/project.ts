@@ -21,6 +21,7 @@ var maps: Dictionary
 var world: Node2D
 var player: CharacterBody2D
 var animated_cells: Array = []
+var animated_art: Array = []
 var elapsed: float = 0.0
 var map_objects: Array = []
 
@@ -44,6 +45,11 @@ func _effective(layers: Array, layer: Dictionary) -> Dictionary:
 
 func _ready() -> void:
     maps = JSON.parse_string(FileAccess.get_file_as_string("res://maps.json"))
+    # JSON usa float; Array.has distingue float de int. Normalize os índices na fronteira.
+    for data in maps.values():
+        for tileset in data.tilesets:
+            tileset.solid = PackedInt32Array(tileset.solid)
+            tileset.platform = PackedInt32Array(tileset.platform)
     _load_map(JSON.parse_string(FileAccess.get_file_as_string("res://start.json")))
 
 func _texture(path: String) -> Texture2D:
@@ -53,6 +59,7 @@ func _load_map(key: String) -> void:
     if world:
         world.queue_free()
     animated_cells.clear()
+    animated_art.clear()
     map_objects.clear()
     scene_data = maps[key]
     world = Node2D.new()
@@ -82,7 +89,7 @@ func _load_map(key: String) -> void:
             break
     print("Pinta: ", key, " / ", scene_data.layers.size(), " camadas")
 
-func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dictionary) -> void:
+func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
     var groups: Dictionary = inherited.duplicate()
     for layer in layers:
         var owner_node: Node2D = groups.get(layer.get("parentId", ""), parent)
@@ -139,7 +146,14 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
                 if ts.get("animations",{}).has(str(tile)):
                     animated_cells.append({"layer":tile_layer,"position":position,"frames":ts.animations[str(tile)],"columns":int(ts.columns),"flags":cell & 28672})
         elif layer.kind == "objects":
-            for object in layer.objects:
+            for original in layer.objects:
+                var object: Dictionary = original.duplicate(true)
+                if not prefix.is_empty():
+                    object.id = prefix + str(original.id)
+                    for key in object.get("properties",{}):
+                        var value: Variant = object.properties[key]
+                        if value is Dictionary and value.get("type","") == "object" and local_ids.has(str(value.value)):
+                            value.value = prefix + str(value.value)
                 var item := Node2D.new()
                 item.name = object.name if object.name else object.id
                 item.position = Vector2(object.x,object.y)
@@ -185,7 +199,11 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
                             instance.position = Vector2(object.width if object.get("flipX",false) else 0,object.height if object.get("flipY",false) else 0)
                             instance.scale = Vector2(-sx if object.get("flipX",false) else sx,-sy if object.get("flipY",false) else sy)
                             item.add_child(instance)
-                            _layers(definition.layers,instance,int(definition.cols),int(definition.rows),{})
+                            var child_ids: Dictionary = {}
+                            for child_layer in definition.layers:
+                                for child in child_layer.get("objects",[]):
+                                    child_ids[str(child.id)] = true
+                            _layers(definition.layers,instance,int(definition.cols),int(definition.rows),{},str(object.id) + "/",child_ids)
                 elif object.has("art"):
                     var picture := Sprite2D.new()
                     picture.centered = false
@@ -198,11 +216,13 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
                             art = candidate
                     if not art.is_empty():
                         picture.texture = _texture(art.image)
-                        if object.art.has("tile"):
+                        if art.has("columns"):
                             picture.region_enabled = true
-                            var tile: int = int(object.art.tile)
+                            var tile: int = int(object.art.get("tile",0))
                             var size: int = int(scene_data.tileSize)
                             picture.region_rect = Rect2((tile % int(art.columns))*size,(tile / int(art.columns))*size,size,size)
+                            if art.get("animations",{}).has(str(tile)):
+                                animated_art.append({"sprite":picture,"frames":art.animations[str(tile)],"columns":int(art.columns),"size":size})
                         picture.scale = Vector2(object.width / picture.get_rect().size.x,object.height / picture.get_rect().size.y)
                         picture.flip_h = object.get("flipX",false)
                         picture.flip_v = object.get("flipY",false)
@@ -245,5 +265,17 @@ func _physics_process(delta: float) -> void:
             if time < 0:
                 var tile: int = int(frame.tile)
                 animation.layer.set_cell(animation.position,0,Vector2i(tile % animation.columns,tile / animation.columns),animation.flags)
+                break
+    for animation in animated_art:
+        var total: float = 0
+        for frame in animation.frames:
+            total += frame.duration
+        var time: float = fmod(elapsed,total)
+        for frame in animation.frames:
+            time -= frame.duration
+            if time < 0:
+                var tile: int = int(frame.tile)
+                var size: int = int(animation.size)
+                animation.sprite.region_rect = Rect2((tile % animation.columns)*size,(tile / animation.columns)*size,size,size)
                 break
 `

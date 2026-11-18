@@ -1,5 +1,9 @@
 # Homologação: A Vila e a Floresta
 
+A rodada posterior com correções, comandos atuais e motores reais está em
+[QA de 18/11/2026](revisao-2026-11-18/qa.md). Este documento conserva os limites da rodada
+anterior; não substitui a matriz da missão nem comprova ensaios que ela não executou.
+
 Revisado em 18/11/2026, depois da revisão da entrega de 17/11/2026. Este registro separa o que
 tem teste automático, o que é um script que se roda, o que é só uma captura de tela feita à mão
 e o que não foi realizado. Nada aqui vale como ensaio em produção, em aparelho físico ou nos

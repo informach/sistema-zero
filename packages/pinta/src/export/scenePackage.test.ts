@@ -14,9 +14,120 @@ import { strFromU8, unzipSync } from 'fflate'
 import { PHASER_SHA256, PHASER_VERSION } from '../../scripts/generate-phaser'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
+import { createTilemapAsset, createTilesetAsset } from '../core/project'
+import { createMapSet } from '../tiles/sets'
 import { parseGodotText, validateAtlasCoordinates, validateGodotProject } from './godot/textFormat'
 import { importPintaJson } from './projectJson'
 import { buildScenePackage, type ScenePackageTarget, scenePackageBlob } from './scenePackage'
+import { TiledSceneCompatibilityError } from './tiled/export'
+
+function shearedArt() {
+  const ts = createTilesetAsset({ name: 'Peças', tileSize: 16 })
+  ts.tiles = [ts.tiles[0]!]
+  ts.tiles[0]!.data.fill(1)
+  const source = createTilemapAsset({ name: 'Original', tilesetId: ts.id, cols: 2, rows: 2 })
+  source.layers.push({
+    id: 'art',
+    name: 'Art',
+    kind: 'objects',
+    visible: true,
+    objects: [
+      {
+        id: 'child',
+        name: 'Child',
+        type: '',
+        x: 6,
+        y: 4,
+        width: 4,
+        height: 4,
+        rotation: 45,
+        shape: 'art',
+        art: { assetId: ts.id, tile: 0 },
+        properties: {},
+      },
+    ],
+  })
+  const set = createMapSet(source, { col: 0, row: 0, cols: 1, rows: 1 }, 16, 'Conjunto')
+  const root = createTilemapAsset({ name: 'Shear', tilesetId: ts.id, cols: 8, rows: 8 })
+  root.layers.push({
+    id: 'objects',
+    name: 'Objects',
+    kind: 'objects',
+    visible: true,
+    objects: [
+      {
+        id: 'copy',
+        name: 'Copy',
+        type: '',
+        x: 32,
+        y: 32,
+        width: 32,
+        height: 48,
+        flipX: true,
+        shape: 'set',
+        setId: set.id,
+        properties: {},
+      },
+    ],
+  })
+  return { root, assets: [root, set, ts] }
+}
+
+it('Pygame and Godot retain affine art and explicitly report omitted incompatible Tiled supplements', async () => {
+  const { root, assets } = shearedArt()
+  for (const target of ['pygame', 'godot'] as const) {
+    const files = await buildScenePackage(root, assets, target, { imageOf: nativeImageOf })
+    expect(
+      Object.keys(files).some(
+        (path) => path.endsWith('mapa.json') || path.endsWith('.tmx') || path.endsWith('.tsx'),
+      ),
+    ).toBe(false)
+    expect(files['COMPATIBILIDADE-TILED.txt']).toContain('cisalhamento')
+    expect(files['LEIA-ME.txt']).toContain('COMPATIBILIDADE-TILED.txt')
+    const scene = JSON.parse(files['maps.json'] as string)[root.name] as PintaScene
+    expect(
+      scene.sets?.[0]?.layers.flatMap((l) => (l.kind === 'objects' ? l.objects : []))[0]?.rotation,
+    ).toBe(45)
+    expect(importPintaJson(files['desenhos.pinta.json'] as string).assets.length).toBe(3)
+    expect(files[target === 'pygame' ? 'main.py' : 'project.godot']).toBeDefined()
+    expect(files['mapas/mapa-0/images/tiles-0.png']).toBeInstanceOf(Uint8Array)
+  }
+  for (const target of ['tiled', 'phaser'] as const)
+    await expect(
+      buildScenePackage(root, assets, target, { imageOf: nativeImageOf }),
+    ).rejects.toBeInstanceOf(TiledSceneCompatibilityError)
+})
+
+const pygame = [process.env.PYTHON, 'python3', 'python'].find(
+  (name) => name && spawnSync(name, ['-I', '-c', 'import pygame']).status === 0,
+)
+it.skipIf(!pygame)(
+  'the portable Pygame package actually renders the sheared child footprint',
+  async () => {
+    const { root, assets } = shearedArt(),
+      files = await buildScenePackage(root, assets, 'pygame', { imageOf: nativeImageOf }),
+      folder = await mkdtemp(join(tmpdir(), 'pinta-affine-'))
+    try {
+      for (const [path, contents] of Object.entries(files)) {
+        await mkdir(dirname(join(folder, path)), { recursive: true })
+        await writeFile(join(folder, path), contents)
+      }
+      const script = `import sys\nsys.path.insert(0,sys.argv[1])\nimport pygame\nfrom pinta_cenario import Mundo\npygame.init()\npygame.display.set_mode((128,128))\nm=Mundo(sys.argv[1],${JSON.stringify(root.name)})\nscreen=pygame.Surface((128,128),pygame.SRCALPHA)\nm.desenhar(screen,camera=(0,0),personagem=False)\nassert screen.get_at((52,52)).a>0,'center of affine art missing'\nassert screen.get_at((47,45)).a==0,'bounding rectangle was painted instead of sheared image'\nassert screen.get_at((57,59)).a==0,'bounding rectangle was painted instead of sheared image'\npygame.quit()\n`
+      const result = spawnSync(pygame!, ['-I', '-c', script, folder], {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          SDL_VIDEODRIVER: 'dummy',
+          SDL_AUDIODRIVER: 'dummy',
+          PYGAME_HIDE_SUPPORT_PROMPT: '1',
+        },
+      })
+      expect(result.status, result.stderr).toBe(0)
+    } finally {
+      await rm(folder, { recursive: true, force: true })
+    }
+  },
+)
 
 /** O Python desta máquina (`PYTHON`, `python3` ou `python`), ou null quando não há nenhum. */
 const python =

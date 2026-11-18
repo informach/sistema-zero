@@ -51,6 +51,7 @@ import {
   type PintaAssetKindName,
   type PintaBlock,
   pintaAssetKindOf,
+  pintaLessonLimitIssue,
   type StudioBlock,
 } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
@@ -861,6 +862,11 @@ export function canonicalizeBlockContent(
   if (content.kind !== 'pinta') return content
   const asset = pintaAssetFromWire(content.initialAsset)
   if (!asset) throw new InvalidContentCommandError('O desenho inicial do Pinta é inválido')
+  if (pintaLessonLimitIssue(asset)) {
+    throw new InvalidContentCommandError(
+      'O desenho inicial excede os limites do Pinta para esta aula',
+    )
+  }
   const initialAsset = pintaAssetToWire(asset)
   if (JSON.stringify(initialAsset).length > MAX_PINTA_ASSET_CHARS) {
     throw new InvalidContentCommandError('Desenho inicial excede o tamanho máximo permitido')

@@ -3,11 +3,20 @@ import type {
   PintaSceneLayer,
   PintaSceneObject,
 } from '@sistemazero/core/studio/pinta-scene'
-import { sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
+import {
+  sceneLayerState,
+  transformSceneSetObject,
+} from '@sistemazero/core/studio/pinta-scene-runtime'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from '../../tiles/cell'
 import { cellMatrix } from '../../tiles/chunks'
 
 type Property = { name: string; type: string; value: unknown }
+export class TiledSceneCompatibilityError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'TiledSceneCompatibilityError'
+  }
+}
 export function cellToGid(cell: number, firstgid: number): number {
   return cell < 0
     ? 0
@@ -48,7 +57,24 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
   const firstgid = new Map<string, number>(),
     ids = new Map<string, number>()
   for (const l of scene.layers)
-    if (l.kind === 'objects') for (const o of l.objects) ids.set(o.id, ++objectId)
+    if (l.kind === 'objects')
+      for (const o of l.objects) {
+        ids.set(o.id, ++objectId)
+        const set = scene.sets?.find((s) => s.id === o.setId)
+        for (const layer of set?.layers ?? [])
+          if (layer.kind === 'objects')
+            for (const child of layer.objects) ids.set(`${o.id}/${child.id}`, ++objectId)
+      }
+  const properties = (
+    values: Record<string, unknown> | undefined,
+    prefix = '',
+    localIds: readonly string[] = [],
+  ) =>
+    tiledProperties(values).map((p) => {
+      const stable = String(p.value),
+        target = localIds.includes(stable) ? [prefix, stable].join('/') : stable
+      return p.type === 'object' ? { ...p, value: ids.get(target) ?? 0 } : p
+    })
   const tilesets = scene.tilesets.map((ts, i) => {
     const start = first
     firstgid.set(ts.id, start)
@@ -82,7 +108,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
               }
             : {}),
           properties: [
-            ...tiledProperties(ts.tileProperties?.[id]),
+            ...properties(ts.tileProperties?.[id]),
             ...(ts.solid.includes(id) ? [{ name: 'solid', type: 'bool', value: true }] : []),
             ...(ts.platform.includes(id) ? [{ name: 'platform', type: 'bool', value: true }] : []),
           ],
@@ -133,9 +159,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
           firstgid.get(o.art.assetId) ?? artFirst.get(o.art.assetId) ?? 0,
         )
       : undefined
-    const properties = tiledProperties(o.properties).map((p) =>
-      p.type === 'object' ? { ...p, value: ids.get(String(p.value)) ?? 0 } : p,
-    )
+    const objectProperties = properties(o.properties)
     const angle = ((o.rotation ?? 0) * Math.PI) / 180
     return {
       id: ids.get(o.id) ?? ++objectId,
@@ -153,7 +177,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       ...(o.shape === 'polygon' ? { polygon: o.points ?? [] } : {}),
       ...(o.shape === 'polyline' ? { polyline: o.points ?? [] } : {}),
       properties: [
-        ...properties,
+        ...objectProperties,
         {
           name: 'pinta:object',
           type: 'string',
@@ -176,6 +200,9 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
     const sx = o.width / (set.cols * scene.tileSize),
       sy = o.height / (set.rows * scene.tileSize),
       angle = ((o.rotation ?? 0) * Math.PI) / 180
+    const localIds = set.layers.flatMap((l) =>
+      l.kind === 'objects' ? l.objects.map((c) => c.id) : [],
+    )
     const point = (x: number, y: number) => {
       const px = (o.flipX ? set.cols * scene.tileSize - x : x) * sx,
         py = (o.flipY ? set.rows * scene.tileSize - y : y) * sy
@@ -222,22 +249,18 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
         })
       if (l.kind === 'objects')
         for (const child of l.objects) {
-          const p = point(child.x + e.offsetX, child.y + e.offsetY)
-          objects.push(
-            object({
-              ...child,
-              id: `${o.id}/${child.id}`,
-              x: p.x,
-              y: p.y,
-              width: child.width * sx,
-              height: child.height * sy,
-              rotation:
-                (o.rotation ?? 0) +
-                (!!o.flipX !== !!o.flipY ? -(child.rotation ?? 0) : (child.rotation ?? 0)),
-              flipX: !!o.flipX !== !!child.flipX ? true : undefined,
-              flipY: !!o.flipY !== !!child.flipY ? true : undefined,
-            }),
+          const transformed = transformSceneSetObject(
+            o,
+            { ...child, x: child.x + e.offsetX, y: child.y + e.offsetY },
+            set.cols * scene.tileSize,
+            set.rows * scene.tileSize,
+            localIds,
           )
+          if (child.art && transformed.shape === 'polygon' && !child.points)
+            throw new TiledSceneCompatibilityError(
+              'O Tiled não representa uma imagem com cisalhamento (shear). Use a mesma escala nos dois lados do conjunto ou retire o giro do desenho interno.',
+            )
+          objects.push(object(transformed))
         }
       return [
         {
@@ -252,7 +275,10 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
           parallaxy: (owner.parallaxY ?? 1) * e.parallaxY,
           draworder: 'index',
           objects,
-          properties: [{ name: 'pinta:expanded', type: 'bool', value: true }],
+          properties: [
+            ...properties(l.properties, o.id, localIds),
+            { name: 'pinta:expanded', type: 'bool', value: true },
+          ],
         },
       ]
     })
@@ -271,7 +297,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       x: 0,
       y: 0,
       properties: [
-        ...tiledProperties(l.properties),
+        ...properties(l.properties),
         { name: 'pinta:id', type: 'string', value: l.id },
         ...(l.kind === 'tiles' && l.front
           ? [{ name: 'pinta:front', type: 'bool', value: true }]

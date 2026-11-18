@@ -29,6 +29,20 @@ export function drawScene(
   camera = { x: 0, y: 0 },
 ): void {
   const size = scene.tileSize
+  function animatedTile(
+    tile: number,
+    animations: PintaScene['tilesets'][number]['animations'],
+  ): number {
+    const frames = animations?.[tile]
+    if (frames?.length) {
+      let at = time % frames.reduce((n, frame) => n + frame.duration, 0)
+      for (const frame of frames) {
+        at -= frame.duration
+        if (at < 0) return frame.tile
+      }
+    }
+    return tile
+  }
   function paint(layers: PintaSceneLayer[], cols: number, view = camera): void {
     for (const l of layers) {
       const e = sceneLayerState(layers, l)
@@ -42,18 +56,7 @@ export function drawScene(
         if (ts && image)
           l.cells.forEach((value, i) => {
             if (value < 0) return
-            let tile = cellTile(value)
-            const frames = ts.animations?.[tile]
-            if (frames?.length) {
-              let at = time % frames.reduce((n, f) => n + f.duration, 0)
-              for (const f of frames) {
-                at -= f.duration
-                if (at < 0) {
-                  tile = f.tile
-                  break
-                }
-              }
-            }
+            const tile = animatedTile(cellTile(value), ts.animations)
             ctx.save()
             ctx.translate(((i % cols) + 0.5) * size, (Math.floor(i / cols) + 0.5) * size)
             ctx.transform(...cellMatrix(value), 0, 0)
@@ -89,7 +92,7 @@ export function drawScene(
               ts = scene.tilesets.find((t) => t.id === o.art?.assetId)
             if (image) {
               if (ts) {
-                const tile = o.art.tile ?? 0
+                const tile = animatedTile(o.art.tile ?? 0, ts.animations)
                 ctx.drawImage(
                   image,
                   (tile % ts.columns) * size,

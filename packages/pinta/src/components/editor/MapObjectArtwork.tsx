@@ -1,6 +1,11 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { isTilesetKind, type PintaAsset, type TilemapObject } from '../../core/project'
+import {
+  isTilesetKind,
+  type PintaAsset,
+  pintaAssetDependencyIds,
+  type TilemapObject,
+} from '../../core/project'
 import { buildStudioPayload } from '../../export/studioBridge'
 import { usePintaGallery } from '../appContext'
 
@@ -9,21 +14,50 @@ type ArtworkImage = { dataUrl: string; width: number; height: number } | null
  * Uma imagem por DESENHO, dividida por todos os objetos que o usam: cem árvores iguais no
  * mapa montam a folha uma vez só. O desenho editado é outro objeto, então ganha entrada nova.
  */
-const artworkCache = new WeakMap<PintaAsset, Promise<ArtworkImage>>()
+const artworkCache = new WeakMap<
+  PintaAsset,
+  {
+    dependencies: Map<string, PintaAsset | null>
+    image: Promise<ArtworkImage>
+  }
+>()
+function artworkDependencies(
+  asset: PintaAsset,
+  find: (id: string) => PintaAsset | null,
+): Map<string, PintaAsset | null> {
+  const dependencies = new Map<string, PintaAsset | null>(),
+    pending = [asset]
+  const seen = new Set([asset.id])
+  while (pending.length)
+    for (const id of pintaAssetDependencyIds(pending.pop()!)) {
+      if (seen.has(id)) continue
+      seen.add(id)
+      const dependency = find(id)
+      dependencies.set(id, dependency)
+      if (dependency) pending.push(dependency)
+    }
+  return dependencies
+}
 export function artworkImage(
   asset: PintaAsset,
   find: (id: string) => PintaAsset | null,
   build: typeof buildStudioPayload = buildStudioPayload,
 ): Promise<ArtworkImage> {
   const cached = artworkCache.get(asset)
-  if (cached) return cached
+  const dependencies = artworkDependencies(asset, find)
+  if (
+    cached &&
+    cached.dependencies.size === dependencies.size &&
+    [...dependencies].every(([id, dependency]) => cached.dependencies.get(id) === dependency)
+  )
+    return cached.image
   const source = asset.kind === 'map-set' ? asset.map : asset
   const pending = build(source, find, { animationId: null, frameIndex: 0 })
     .then((result) =>
       result ? { dataUrl: result.dataUrl, width: result.width, height: result.height } : null,
     )
     .catch(() => null)
-  artworkCache.set(asset, pending)
+  artworkCache.set(asset, { dependencies, image: pending })
   return pending
 }
 

@@ -133,6 +133,32 @@ async function ativarObjetos(): Promise<void> {
 }
 
 describe('níveis do editor de mapa', () => {
+  it('colisão de camada em Criar mais não abre controles técnicos e permanece ao voltar para Começar', async () => {
+    await abrirMapa()
+    expect(screen.queryByRole('checkbox', { name: COPY.tiles.layerCollision })).toBeNull()
+    fireEvent.change(nivel(), { target: { value: 'create' } })
+    const collision = screen.getByRole('checkbox', {
+      name: COPY.tiles.layerCollision,
+    }) as HTMLInputElement
+    expect(collision.checked).toBe(false)
+    expect(screen.queryByRole('slider', { name: /Opacidade/ })).toBeNull()
+    expect(screen.queryByText(COPY.tiles.layerParent)).toBeNull()
+    expect(screen.queryByText(COPY.scene.deslocamentoEDistancia)).toBeNull()
+    expect(ferramenta(COPY.tiles.addGroup)).toBeNull()
+    fireEvent.click(collision)
+    expect(collision.checked).toBe(true)
+    expect(screen.queryByRole('slider', { name: /Opacidade/ })).toBeNull()
+    expect(screen.queryByText(COPY.scene.deslocamentoEDistancia)).toBeNull()
+    fireEvent.change(nivel(), { target: { value: 'start' } })
+    expect(
+      (screen.getByRole('checkbox', { name: COPY.tiles.layerCollision }) as HTMLInputElement)
+        .checked,
+    ).toBe(true)
+    fireEvent.change(nivel(), { target: { value: 'advanced' } })
+    expect(screen.getByRole('slider', { name: /Opacidade/ })).toBeTruthy()
+    expect(screen.getByText(COPY.tiles.layerParent)).toBeTruthy()
+    expect(screen.getByText(COPY.scene.deslocamentoEDistancia)).toBeTruthy()
+  })
   it('perfil novo abre em "Começar": poucas ferramentas, poucos painéis e o teste', async () => {
     await abrirMapa()
     expect(nivel().value).toBe('start')
@@ -143,7 +169,7 @@ describe('níveis do editor de mapa', () => {
     expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.scene.testarComPersonagem })).toBeTruthy()
     expect(screen.queryByText(COPY.scene.oMapaInteiro)).toBeNull()
-    expect(screen.queryByText(COPY.scene.terrenoInteligente)).toBeNull()
+    expect(screen.getByText(COPY.scene.terrenoInteligente)).toBeTruthy()
     expect(screen.queryByText(COPY.tiles.turnTile)).toBeNull()
     expect(ferramenta(COPY.tiles.addGroup)).toBeNull()
     expect(ferramenta(COPY.tiles.addLayer)).toBeTruthy()
@@ -354,7 +380,7 @@ describe('objetos do mapa', () => {
     fireEvent.click(desfazer())
     await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
   })
-  it('colar põe a cópia onde o ponteiro esteve por último', async () => {
+  it('colar põe a cópia onde o ponteiro esteve por último sem encaixe', async () => {
     const { container } = await abrirMapa({ level: 'advanced', prepare: comObjetos })
     await ativarObjetos()
     const svg = palcoDeObjetos(container)
@@ -362,6 +388,7 @@ describe('objetos do mapa', () => {
     tocar(svg, 8, 8)
     await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.copiar }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.objectSnap }))
     fireEvent.pointerMove(svg, at(72, 40))
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.colar }))
     await noDisco(async () => {
@@ -674,5 +701,93 @@ describe('testar com personagem', () => {
     fireEvent.click(lado)
     await waitFor(() => expect(lado.getAttribute('aria-pressed')).toBe('true'))
     expect(cima.getAttribute('aria-pressed')).toBe('false')
+  })
+})
+
+describe('inserção e colagem no espaço da camada', () => {
+  const deslocado = (m: TilemapAsset): TilemapAsset => {
+    const next = comObjetos(m),
+      layer = next.layers.at(-1)!
+    return {
+      ...next,
+      layers: [
+        ...next.layers.slice(0, -1),
+        {
+          id: 'grupo-deslocado',
+          kind: 'group',
+          name: 'Vila',
+          visible: true,
+          offsetX: 16,
+          offsetY: 8,
+        },
+        { ...layer, parentId: 'grupo-deslocado', offsetX: 16, offsetY: 8 },
+      ],
+    }
+  }
+  for (const snap of [false, true])
+    it(`biblioteca desconta offset herdado e respeita encaixe ${snap}`, async () => {
+      const { container } = await abrirMapa({
+        level: 'create',
+        prepare: deslocado,
+        extra: async (seed) => {
+          await seed.getState().create({ kind: 'pixel-sprite', name: 'arvore', frameSize: 16 })
+        },
+      })
+      await ativarObjetos()
+      const svg = palcoDeObjetos(container)
+      if (!snap) fireEvent.click(screen.getByRole('button', { name: COPY.tiles.objectSnap }))
+      fireEvent.pointerMove(svg, at(59, 43))
+      fireEvent.click(
+        await screen.findByRole('button', { name: COPY.scene.dynamicPorNoMapa('arvore') }),
+      )
+      await noDisco(async () => {
+        const [object] = objetos(await mapaDoDisco())
+        expect([object?.x, object?.y]).toEqual(snap ? [16, 16] : [19, 19])
+      })
+    })
+  for (const snap of [false, true])
+    it(`colar desconta offset herdado e respeita encaixe ${snap}`, async () => {
+      const { container } = await abrirMapa({ level: 'create', prepare: deslocado })
+      await ativarObjetos()
+      const svg = palcoDeObjetos(container)
+      fireEvent.click(screen.getByRole('button', { name: COPY.tiles.objectPoint }))
+      tocar(svg, 40, 24)
+      await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.copiar }))
+      if (!snap) fireEvent.click(screen.getByRole('button', { name: COPY.tiles.objectSnap }))
+      fireEvent.pointerMove(svg, at(75, 43))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.colar }))
+      await noDisco(async () => {
+        const list = objetos(await mapaDoDisco())
+        expect(list).toHaveLength(2)
+        expect([list[1]!.x, list[1]!.y]).toEqual(snap ? [40, 24] : [43, 27])
+      })
+    })
+  it('Começar mostra a biblioteca de desenhos', async () => {
+    await abrirMapa({ prepare: comObjetos })
+    await ativarObjetos()
+    expect(screen.getByText(COPY.scene.desenhosDaBiblioteca)).toBeTruthy()
+  })
+})
+
+it('biblioteca usa o tamanho inteiro do conjunto para posicioná-lo dentro do mapa', async () => {
+  const { container } = await abrirMapa({
+    level: 'create',
+    prepare: comObjetos,
+    extra: async (seed, map) => {
+      await seed
+        .getState()
+        .createPrepared(createMapSet(map, { col: 0, row: 0, cols: 2, rows: 1 }, 16, 'casa-grande'))
+    },
+  })
+  await ativarObjetos()
+  const svg = palcoDeObjetos(container)
+  fireEvent.pointerMove(svg, at(88, 40))
+  fireEvent.click(
+    await screen.findByRole('button', { name: COPY.scene.dynamicPorNoMapa('casa-grande') }),
+  )
+  await noDisco(async () => {
+    const [object] = objetos(await mapaDoDisco())
+    expect([object?.x, object?.y, object?.width, object?.height]).toEqual([64, 32, 32, 16])
   })
 })
