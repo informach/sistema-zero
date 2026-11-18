@@ -69,7 +69,7 @@ describe('variante do cenário pelo caminho do host', () => {
 
     it(`${nome}: jogo com bloco de cenário recebe o motor completo, dentro do teto`, async () => {
       for (const contexto of [COM_CENARIO, COM_CENARIO_NO_EXTRA]) {
-        const [daPrevia] = await loadExtensionBootstrapScripts([extensao], contexto)
+        const daPrevia = (await loadExtensionBootstrapScripts([extensao], contexto))[0] ?? ''
         const doExport = await loadExtensionBootstrapScript(extensao, contexto)
         expect(doExport).toBe(daPrevia)
         expect(daPrevia).toContain('createMap2D')
@@ -93,9 +93,9 @@ describe('variante do cenário pelo caminho do host', () => {
       medidas[`${alvo} com`] = (await loadExtensionBootstrapScript(extensao, COM_CENARIO)).length
     }
     // Os tetos de sempre valem para o motor sem cenário (bundle.test.ts e runtimePayload.test.ts).
-    expect(medidas['g2d sem']).toBeLessThan(422_500)
-    expect(medidas['gk sem']).toBeLessThan(415_000)
-    expect(medidas['g2d com'] - medidas['g2d sem']).toBeLessThan(12_000)
-    expect(medidas['gk com'] - medidas['gk sem']).toBeLessThan(12_000)
+    expect(medidas['g2d sem'] ?? 0).toBeLessThan(422_500)
+    expect(medidas['gk sem'] ?? 0).toBeLessThan(415_000)
+    expect((medidas['g2d com'] ?? 0) - (medidas['g2d sem'] ?? 0)).toBeLessThan(12_000)
+    expect((medidas['gk com'] ?? 0) - (medidas['gk sem'] ?? 0)).toBeLessThan(12_000)
   })
 })

@@ -60,7 +60,53 @@ Pendências desta frente: abrir os pacotes no Tiled e no Godot de verdade; teste
 para o Phaser, para o teste com personagem e para o jogo no Studio; uma execução registrada de
 `test-pinta-scene-package.py` com pygame-ce.
 
-<!-- outras frentes: preenchido pelo coordenador -->
+### Formato, versões e sincronia
+
+| O que a revisão achou | O que foi feito |
+|---|---|
+| O carimbo `schema: 3` era o mesmo para o formato só de camadas e o completo; o código anterior lia o mapa completo e cortava formas, giro, papéis, propriedades, animações e conjuntos, sem aviso | O formato completo carimba **4** (registro e envelope `.pinta.json`); só camadas segue 3; mapa antigo sai byte a byte igual. Conferido rodando o código de `bf6e895f` contra o que este grava: com 4 ele recusa. O carimbo passou a ser recalculado também na gravação |
+| Um registro cortado no aparelho por um bundle antigo podia subir à nuvem pelo código novo | O código lembra o carimbo da última sincronia; registro local que PERDEU formato não sobe: a versão da conta volta e a local vira cópia |
+| Leitor e gravador da versão 3 da nuvem saíram juntos | **Não resolvido por código.** Os números ficam (a `staging` já tem itens em 3). O comentário de `pinta-format.ts` diz o procedimento de release e o que acontece num rollback; a ordem de publicação em produção é decisão da dona |
+| Os tetos de criação subiram junto com os de leitura, sem a medição prevista | Criação voltou a 128 × 128, 8 camadas e 64 peças; leitura segue 256 × 256, 32 e 256. O envio de aula tem a régua dos tetos antigos (`pintaLessonLimitIssue`) |
+| O rascunho da aula lia item de formato futuro sem conferir | Confere antes de ler |
+| Soltar um conjunto gravava chaves no valor padrão e cortava conjunto maior que o mapa | Omite os padrões e recusa |
+| O teste de arquitetura das células só via `cells[` | Vê também `.cells.forEach` e afins, e as máscaras fora de `tiles/cell.ts` |
+
+Limites conhecidos: o leitor de PEÇAS de `bf6e895f` e todo o código da `main` não conferem o
+carimbo do registro; para eles só a trava da nuvem e a checagem de formato perdido protegem. Sem
+`localStorage`, essa checagem não acontece. A régua dos tetos da aula vale no envio do desenho pela
+criança (testado no Members), mas não na autoria do bloco pelo Admin; e o transporte do rascunho
+de aula não repassa a versão da nuvem (vale a recusa pelo carimbo do documento).
+
+### Editor de mapas
+
+| O que a revisão achou | O que foi feito |
+|---|---|
+| O terreno inteligente apagava ou trocava peças vizinhas que não eram do terreno | Vizinha de fora do terreno não é tocada |
+| O balde ignorava o giro da peça e gravava passo de desfazer vazio; outros seis pontos também | Balde usa a casa do carimbo com os bits; toda ação só grava quando algo mudou |
+| Cache de blocos recriado a cada movimento acima do teto; peça animada redesenhava todos os blocos | Bloco vazio não ocupa memória, o teto acompanha os blocos visíveis, a chave de animação é por bloco. ⚠️ Num mapa cheio com zoom baixo o cache pode passar de 32 MB: não foi medido em navegador |
+| Campos que gravavam a cada tecla; vírgula que não entrava; minimapa redesenhado a cada movimento | Gravam ao sair do campo; minimapa espera o fim do gesto e mostra a área visível |
+| Camada trancada recusava em silêncio | Avisa, como no editor de pixel |
+| `TilemapEditor.tsx` não tinha sido dividido (1.266 linhas) | 214 linhas; controlador, gestos, pincel, palco, teclado e animação em `mapTools/` |
+| Teste com personagem era uma bolinha que andava em passos | Personagem da galeria (ou um boneco), movimento contínuo, colisão, vista de cima e de lado com pulo, câmera, portas e lugares perigosos. A lógica é pura e testada; **o desenho na tela não foi conferido em navegador** |
+| Níveis só filtravam botões, abriam em Avançado e não eram lembrados | Padrão "Começar", lembrado por perfil, filtra caixa e painéis, soma com a curadoria da aula e mostra o que o mapa já usa |
+| Polígono nascia triângulo fixo; pontos só por texto | Criação ponto a ponto, pontos arrastáveis, ponto novo no trecho, alças em objeto girado |
+
+### Estúdio
+
+| O que a revisão achou | O que foi feito |
+|---|---|
+| Todo jogo 2D carregava o motor de cenários (10,7 KB a mais), contra "jogos sem mapa não pagam um byte" | Corrigido e testado pelo mesmo caminho da prévia. Teto próprio e absoluto para a variante completa (437.900 e 426.000 caracteres) |
+| "Colidir com cenário" não fazia nada no Jogo 2D Avançado | Corrigido, com teste de colisão que roda o texto dos dois motores |
+| Mapa que saía do envelope antigo deixava o desenho velho no jogo e a sincronização nunca assentava | Desenho com cena remove o metadado antigo |
+| A prévia levava a folha da frente (que ninguém lia) e a cena mesmo sem bloco de cenário | A folha da frente saiu; a cena só vai quando o jogo usa bloco de cenário |
+| Um desenho com peças configuradas no Estúdio pedia sincronização para sempre | Compara só imagem, cena e os dois metadados de mapa |
+| Projeto quase cheio aceitava o cenário e perdia a imagem ao reabrir | A cena conta nos dois lados; no estouro sai só a cena, com aviso |
+| "Jogar meu mapa" congelava o início e o tamanho do mundo no programa | Usa os blocos que leem do cenário na hora de rodar |
+| Os blocos antigos não diziam para usar o bloco novo quando o mapa só tem cena | Recado novo, sem mudar nenhum bloco. Os tetos dos dois motores seguem valendo (420.434 de 422.500 e 408.733 de 415.000) |
+
+Os dois cursos gravados não foram tocados: a matriz de compatibilidade e os projetos das aulas
+passam depois de cada frente.
 
 - [Diagnóstico e arquitetura](diagnostico-e-arquitetura.md)
 - [Guia de uso](guia-de-uso.md)
