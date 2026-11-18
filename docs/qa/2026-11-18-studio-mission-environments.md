@@ -75,3 +75,20 @@ consultado em 18/11/2026. Não se aplicou downgrade forçado de Vite nem exceç�
 auditoria. A auditoria é um job obrigatório independente: sua falha continua
 reprovando o workflow, enquanto os ensaios Docker podem produzir evidências
 separadas. Isso não fecha a revisão de segurança nem autoriza publicação.
+
+## Medição de isolamento e fingerprint do executor
+
+Os [dados originais do runner Linux](2026-11-18-studio-isolation-linux.json) foram
+baixados do artefato `14417674186`, run `44284088297`, SHA `09057c335`, sem editar
+os números. Chromium 148 isolou `srcdoc` e outro site (atraso máximo de 50–62 ms),
+mas não mesma origem (cerca de 5 segundos). Firefox 150 isolou somente outro site
+com os cabeçalhos do host (50 ms). WebKit 26.4 ficou bloqueado por cerca de 5 segundos
+em todos os arranjos. É um ensaio sintético headless de bloqueio nativo, não uma
+aprovação de todos os runtimes. R1 continua aberto.
+
+O job Docker da rodada `44289781987` chegou ao gate de fingerprint e recusou o
+perfil anterior. A reprodução local com o mesmo Bun 1.3.11 também falhou.
+Após executar o gerador canônico, somente `runtime/validation-profile.json` mudou;
+os três contratos gerados permaneceram idênticos. `check:validation-profile` passou.
+O novo fingerprint representa os arquivos efetivamente integrados da staging.
+A construção e os testes da imagem ainda precisam passar no GitHub; não houve deploy.
