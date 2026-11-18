@@ -3,6 +3,9 @@ import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
   codificarPecaDeAlturas,
+  codificarPecaDePintura,
+  codificarRecursoDeBuracos,
+  criarPinturaDeChao,
   digestDosBytes,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { carregarPecasDeTerreno } from '../src/recursos-terreno'
@@ -36,6 +39,24 @@ test('carregamento confere hash, formato e intervalo; arquivos repetidos são li
   )
   expect(chamadas).toBe(1)
   expect(dados.size).toBe(1)
+  const reutilizados = await carregarPecasDeTerreno(
+    b,
+    async () => {
+      throw new Error('Não deveria reler')
+    },
+    new AbortController().signal,
+    dados,
+  )
+  expect(reutilizados.get(digest)).toBe(dados.get(digest))
+  const intervaloDoCache = await carregarPecasDeTerreno(
+    { ...b, max: 100 },
+    async () => {
+      throw new Error('Não deveria ler')
+    },
+    new AbortController().signal,
+    dados,
+  ).catch((e: unknown) => e)
+  expect(intervaloDoCache).toBeInstanceOf(Error)
   const trocado = await carregarPecasDeTerreno(
     b,
     async () => arquivo(1).buffer,
@@ -56,6 +77,51 @@ test('carregamento confere hash, formato e intervalo; arquivos repetidos são li
     new AbortController().signal,
   ).catch((e: unknown) => e)
   expect(versao).toBeInstanceOf(Error)
+})
+
+test('carrega pintura e buracos uma vez por hash e recusa papel ou quantidade de camadas divergente', async () => {
+  const pintura = codificarPecaDePintura(criarPinturaDeChao({ colunas: 64, linhas: 64 }, 8), 0, 0),
+    buracos = codificarRecursoDeBuracos(new Uint8Array(512)),
+    dp = await digestDosBytes(pintura),
+    db = await digestDosBytes(buracos)
+  const b: BaseDeTerreno = {
+    ...base([]),
+    colunas: 64,
+    solo: {
+      camadas: Array.from({ length: 8 }, (_, i) => ({
+        id: `c${i}`,
+        nome: `Solo ${i}`,
+        cor: '#ffffff',
+      })),
+      pecas: [{ coluna: 0, linha: 0, digest: dp }],
+    },
+    buracos: [{ coluna: 0, linha: 0, digest: db }],
+  }
+  let chamadas = 0
+  const carregar = async (d: string) => {
+    chamadas++
+    return (d === dp ? pintura : buracos).buffer
+  }
+  const recursos = await carregarPecasDeTerreno(b, carregar, new AbortController().signal)
+  expect(chamadas).toBe(2)
+  expect(recursos.get(dp)?.tipo).toBe('pintura')
+  expect(recursos.get(db)?.tipo).toBe('buracos')
+  await expect(
+    carregarPecasDeTerreno(
+      { ...b, buracos: [{ coluna: 0, linha: 0, digest: dp }] },
+      carregar,
+      new AbortController().signal,
+      recursos,
+    ),
+  ).rejects.toThrow('corresponde')
+  await expect(
+    carregarPecasDeTerreno(
+      { ...b, solo: { ...b.solo!, camadas: b.solo!.camadas.slice(0, 7) } },
+      carregar,
+      new AbortController().signal,
+      recursos,
+    ),
+  ).rejects.toThrow('corresponde')
 })
 
 test('leituras são limitadas a quatro e cancelamento interrompe a fila', async () => {

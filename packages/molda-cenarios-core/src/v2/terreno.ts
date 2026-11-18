@@ -270,6 +270,30 @@ export function malhaDaPecaDeTerreno(
     invalidar('A peça não pertence a este terreno')
   if (peca.min !== base.min || peca.max !== base.max || peca.amostras.length !== AMOSTRAS_DA_PECA)
     invalidar('A peça não corresponde ao terreno')
+  return malhaDeGradeNaPeca(
+    base,
+    referencia,
+    (x, z) =>
+      peca.min + (peca.amostras[z * LADO_DAS_AMOSTRAS + x]! / 65535) * (peca.max - peca.min),
+  )
+}
+
+/** Mesma triangulação para bytes publicados e campos transitórios. Altura recebe índices locais. */
+export function malhaDeGradeNaPeca(
+  base: Pick<BaseDeTerreno, 'origem' | 'colunas' | 'linhas' | 'passo'>,
+  referencia: { coluna: number; linha: number },
+  altura: (x: number, z: number) => number,
+  celulaAberta?: (x: number, z: number) => boolean,
+) {
+  if (
+    !Number.isInteger(referencia.coluna) ||
+    !Number.isInteger(referencia.linha) ||
+    referencia.coluna < 0 ||
+    referencia.linha < 0 ||
+    referencia.coluna >= base.colunas / CELULAS_DA_PECA ||
+    referencia.linha >= base.linhas / CELULAS_DA_PECA
+  )
+    invalidar('A peça está fora do terreno')
   const vertices = new Float32Array(AMOSTRAS_DA_PECA * 3)
   const uvs = new Float32Array(AMOSTRAS_DA_PECA * 2)
   const indices = new Uint16Array(CELULAS_DA_PECA ** 2 * 6)
@@ -278,11 +302,20 @@ export function malhaDaPecaDeTerreno(
     for (let x = 0; x <= CELULAS_DA_PECA; x++) {
       const i = z * LADO_DAS_AMOSTRAS + x
       vertices[i * 3] = x * base.passo
-      vertices[i * 3 + 1] = peca.min + (peca.amostras[i]! / 65535) * (peca.max - peca.min)
+      const y = altura(x, z)
+      if (!Number.isFinite(y)) invalidar('A altura da malha é inválida')
+      vertices[i * 3 + 1] = y
       vertices[i * 3 + 2] = z * base.passo
       uvs[i * 2] = (referencia.coluna * CELULAS_DA_PECA + x) / base.colunas
       uvs[i * 2 + 1] = (referencia.linha * CELULAS_DA_PECA + z) / base.linhas
       if (x === CELULAS_DA_PECA || z === CELULAS_DA_PECA) continue
+      if (
+        celulaAberta?.(
+          referencia.coluna * CELULAS_DA_PECA + x,
+          referencia.linha * CELULAS_DA_PECA + z,
+        )
+      )
+        continue
       const a = i,
         b = i + 1,
         c = i + LADO_DAS_AMOSTRAS,
@@ -297,6 +330,6 @@ export function malhaDaPecaDeTerreno(
     },
     vertices,
     uvs,
-    indices,
+    indices: n === indices.length ? indices : indices.slice(0, n),
   }
 }

@@ -14,6 +14,7 @@ import {
   type InstanciaDeCenario,
   indiceDaOrganizacao,
   type ModeloDoCenario,
+  type RecursoDeTerreno,
   resolverConjuntos,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -204,6 +205,7 @@ class PalcoThree implements Palco {
   private chaveDoChao = ''
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
+  private recursosDoTerreno: ReadonlyMap<string, RecursoDeTerreno> = new Map()
   private planoFisico: Mesh | null = null
   private fundoDecorativo: Mesh | null = null
   private teste: SessaoDoTeste | null = null
@@ -470,6 +472,9 @@ class PalcoThree implements Palco {
     const usadas = new Set(
       doc.instancias.flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
     )
+    if (doc.base.tipo === 'terreno')
+      for (const camada of doc.base.solo?.camadas ?? [])
+        if (camada.textura) usadas.add(camada.textura.id)
     const previas = new Set(
       this.espalhamento.prototipos.flatMap((o) =>
         o.aparencia?.textura ? [o.aparencia.textura.id] : [],
@@ -841,6 +846,7 @@ class PalcoThree implements Palco {
     this.locais.clear()
     this.matrizes.clear()
     this.origens = new Map()
+    this.recursosDoTerreno = new Map()
     this.visual = null
     this.documento = null
     this.pendente = null
@@ -990,9 +996,10 @@ class PalcoThree implements Palco {
         (async () => {
           throw new Error('O host não oferece os arquivos do terreno')
         })
-      void carregarPecasDeTerreno(base, carregar, controle.signal)
+      void carregarPecasDeTerreno(base, carregar, controle.signal, this.recursosDoTerreno)
         .then((recursos) => {
           if (this.destruido || this.cargaDoTerreno !== controle || controle.signal.aborted) return
+          this.recursosDoTerreno = recursos
           this.terreno = new TerrenoDoPalco(base, recursos)
           this.chao.add(this.terreno.grupo)
           this.atualizarGrade()
@@ -1016,6 +1023,7 @@ class PalcoThree implements Palco {
       return
     }
     this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
+    this.recursosDoTerreno = new Map()
     const largura = meio.x * 2,
       comprimento = meio.z * 2
 
@@ -1172,6 +1180,10 @@ class PalcoThree implements Palco {
     const porLote = new Map<LoteDoModelo, ItemDoLote[]>()
     const falhasDeAcabamento: EstadoDasTexturas['falhas'] = []
     const texturas = new Map(doc.texturas?.map((t) => [t.id, t]) ?? [])
+    this.terreno?.definirTexturas((id) => {
+      const ref = texturas.get(id)
+      return ref ? this.texturas.obter(ref.digest)?.textura : undefined
+    })
     const vistos = new Set<string>()
     this.trancados.clear()
     for (const [id, flags] of organizacao.flags) if (flags.bloqueado) this.trancados.add(id)

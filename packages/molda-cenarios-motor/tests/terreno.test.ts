@@ -2,11 +2,19 @@ import { expect, test } from 'bun:test'
 import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
+  codificarBuracosDaPeca,
   codificarPecaDeAlturas,
-  lerPecaDeAlturas,
+  codificarPecaDePintura,
+  codificarRecursoDeBuracos,
+  criarBuracos,
+  criarPinturaDeChao,
+  furarTerreno,
+  lerRecursoDeTerreno,
+  pintarChao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { type BufferGeometry, Group, type Mesh, Raycaster, Vector3 } from 'three'
 import { TerrenoDoPalco } from '../src/Terreno'
+import { MundoDoTeste } from '../src/teste/colisoes'
 
 const a = 'a'.repeat(64),
   b = 'b'.repeat(64)
@@ -22,7 +30,7 @@ const base = (pecas: BaseDeTerreno['pecas']): BaseDeTerreno => ({
   pecas,
 })
 const peca = (ox: number) =>
-  lerPecaDeAlturas(
+  lerRecursoDeTerreno(
     codificarPecaDeAlturas(
       Float64Array.from(
         { length: AMOSTRAS_DA_PECA },
@@ -33,6 +41,76 @@ const peca = (ox: number) =>
     ),
   )
 const raio = (x: number, z: number) => new Raycaster(new Vector3(x, 1000, z), new Vector3(0, -1, 0))
+
+test('máscara e recorte retiram as mesmas faces da vista, seleção, cápsula e câmera', () => {
+  const terrenoBase = base([])
+  terrenoBase.recortes = [
+    [
+      { x: -484, z: 280 },
+      { x: -476, z: 280 },
+      { x: -476, z: 288 },
+      { x: -484, z: 288 },
+    ],
+  ]
+  const buracos = criarBuracos(terrenoBase)
+  furarTerreno(terrenoBase, buracos, { x: -500, z: 268, raio: 3 })
+  terrenoBase.buracos = [{ coluna: 0, linha: 0, digest: a }]
+  const dados = lerRecursoDeTerreno(
+    codificarRecursoDeBuracos(codificarBuracosDaPeca(buracos, 0, 0)),
+  )
+  const terreno = new TerrenoDoPalco(terrenoBase, new Map([[a, dados]]))
+  const mundo = new MundoDoTeste(terreno.fontesDoTeste())
+  try {
+    expect(terreno.pontoSobRaio(raio(-500, 268))).toBeNull()
+    expect(terreno.pontoSobRaio(raio(-480, 284))).toBeNull()
+    expect(terreno.pontoSobRaio(raio(-510, 258))).not.toBeNull()
+    expect(mundo.rastrear(new Vector3(-500, 2, 268), new Vector3(-500, -2, 268))).toBeNull()
+    expect(mundo.resolver(new Vector3(-500, -0.1, 268), 1.16, 0.19).normais).toHaveLength(0)
+  } finally {
+    mundo.descartar()
+    terreno.descartar()
+  }
+})
+
+test('uma peça inteiramente aberta não cria malha vazia nem piso sob o buraco', () => {
+  const terrenoBase = base([])
+  terrenoBase.buracos = [{ coluna: 0, linha: 0, digest: a }]
+  const recurso = lerRecursoDeTerreno(codificarRecursoDeBuracos(new Uint8Array(512).fill(255)))
+  const terreno = new TerrenoDoPalco(terrenoBase, new Map([[a, recurso]]))
+  try {
+    expect(terreno.fontesDoTeste()).toHaveLength(1)
+    expect(terreno.pontoSobRaio(raio(-500, 268))).toBeNull()
+    expect(terreno.pontoSobRaio(raio(-300, 300))).not.toBeNull()
+  } finally {
+    terreno.descartar()
+  }
+})
+
+test('pintura em área sem peça de altura cria superfície própria, sem plano duplicado', () => {
+  const terrenoBase = base([])
+  terrenoBase.solo = {
+    camadas: [
+      { id: 'a', nome: 'Verde', cor: '#00ff00' },
+      { id: 'b', nome: 'Vermelho', cor: '#ff0000' },
+    ],
+    pecas: [{ coluna: 0, linha: 0, digest: a }],
+  }
+  const pintura = criarPinturaDeChao(terrenoBase, 2)
+  pintarChao(terrenoBase, pintura, { x: -500, z: 268, raio: 6, forca: 1 }, 1)
+  const recurso = lerRecursoDeTerreno(codificarPecaDePintura(pintura, 0, 0))
+  const terreno = new TerrenoDoPalco(terrenoBase, new Map([[a, recurso]]))
+  try {
+    expect(terreno.grupo.children).toHaveLength(2)
+    const malha = terreno.grupo.children[0] as Mesh<BufferGeometry>
+    const cor = malha.geometry.getAttribute('color'),
+      i = 6 * 65 + 6
+    expect(cor.getX(i)).toBe(1)
+    expect(cor.getY(i)).toBe(0)
+    expect(terreno.pontoSobRaio(raio(-500, 268))?.y).toBe(0)
+  } finally {
+    terreno.descartar()
+  }
+})
 
 test('recortes importados retiram a superfície da seleção, sem plano invisível por baixo', () => {
   const b = base([{ coluna: 0, linha: 0, digest: a }])
