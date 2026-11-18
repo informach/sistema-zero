@@ -11,6 +11,12 @@ export function errosDaTopologiaDoCaminho(c: CaminhoDeCenario): string[] {
     )
   )
     erros.push(`Pontos repetidos: ${c.id}`)
+  if ((c.tipo === 'cerca' || c.tipo === 'muro') && !c.fechada) {
+    const a = c.pontos[0]!,
+      b = c.pontos.at(-1)!
+    if (Math.hypot(a.x - b.x, a.z - b.z) < 1e-6)
+      erros.push(`Marque a curva como fechada em vez de repetir o primeiro apoio: ${c.id}`)
+  }
   // Transladar primeiro evita cancelamento de área em polígonos pequenos longe da origem.
   if (c.tipo === 'praca') {
     const origem = c.pontos[0]!

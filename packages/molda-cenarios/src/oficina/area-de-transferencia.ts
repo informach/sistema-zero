@@ -2,6 +2,7 @@ import {
   type ComandoDeCenario,
   capturarFragmento,
   type DocumentoDeCenario,
+  type FonteDeAlturas,
   type FragmentoDeCenario,
   idsDoFragmento,
   indiceDaOrganizacao,
@@ -11,6 +12,7 @@ import type { Palco } from '@sistemazero/molda-cenarios-motor'
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { conferirMedidasDoDocumento, novoIdAleatorio } from './acoes'
 import { comandosParaRemoverAgua } from './agua-remocao'
+import { comandosParaRemoverCaminho } from './caminho-remocao'
 import type { ControladorDaOficina } from './controlador'
 import type { CenariosHost } from './portas'
 
@@ -40,6 +42,7 @@ export function comandosParaRecortarEscolha(
   doc: DocumentoDeCenario,
   fragmento: FragmentoDeCenario,
   alvos: readonly string[],
+  fonte?: FonteDeAlturas,
 ): ComandoDeCenario[] {
   const removidos = new Set(fragmento.instancias.map((o) => o.id))
   return [
@@ -47,6 +50,11 @@ export function comandosParaRecortarEscolha(
       comandosParaRemoverAgua(doc, a.id).filter(
         (c) =>
           c.tipo !== 'agua.remover' && (c.tipo !== 'instancia.atualizar' || !removidos.has(c.id)),
+      ),
+    ),
+    ...(fragmento.caminhos ?? []).flatMap((c) =>
+      comandosParaRemoverCaminho(doc, c.id, fonte, removidos).filter(
+        (cmd) => cmd.tipo !== 'caminho.remover',
       ),
     ),
     { tipo: 'elementos.remover', ids: [...alvos] },
@@ -118,6 +126,7 @@ export function useAreaDeTransferencia({
             controlador.getState().documento,
             fragmento,
             alvosDaTransferencia(controlador.getState()),
+            palco.current?.fonteDeAlturas?.(),
           ),
         )
       )
@@ -130,7 +139,7 @@ export function useAreaDeTransferencia({
       )
       return texto
     },
-    [capturar, controlador, host, informar],
+    [capturar, controlador, host, informar, palco],
   )
   const aplicar = useCallback(
     (fragmento: FragmentoDeCenario, ponto: { x: number; y: number; z: number }) => {
@@ -143,7 +152,9 @@ export function useAreaDeTransferencia({
       controlador.selecionar(
         [...ids.instancias.values()],
         ids.raizes.length === 1 &&
-          [...ids.grupos.values(), ...ids.aguas.values()].includes(ids.raizes[0]!)
+          [...ids.grupos.values(), ...ids.aguas.values(), ...ids.caminhos.values()].includes(
+            ids.raizes[0]!,
+          )
           ? ids.raizes[0]!
           : undefined,
       )

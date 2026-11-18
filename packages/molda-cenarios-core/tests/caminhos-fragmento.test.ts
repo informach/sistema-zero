@@ -35,7 +35,13 @@ function cena() {
       bloqueado: false,
       oculto: false,
       acabamento: 'm',
-      encaixeModelo: { eixo: 'x', pisoLocal: 0.3 },
+      encaixeModelo: {
+        eixo: 'x',
+        pisoLocal: 0.3,
+        inicioLocal: -0.8,
+        fimLocal: 0.8,
+        centroTransversalLocal: 0.1,
+      },
       largura: 3,
       aparencia: { cor: '#bbaacc', textura: { id: 't', repeticaoMetros: 2 } },
       pontos:
@@ -83,6 +89,7 @@ test('pasta com seis variantes cola em uma revisão com aliases e desfaz sem alt
   for (const [i, c] of novo.caminhos.entries()) {
     expect(c.pontos[0]).toEqual({ x: 20, z: d.caminhos[i]!.pontos[0]!.z - 10 })
     expect(c.acabamento).toBe('novo/modelo/0')
+    expect(c.encaixeModelo).toEqual(d.caminhos[i]!.encaixeModelo)
     expect(c.aparencia?.textura?.id).toBe('novo/textura/0')
     expect(c.camada).toBe('novo/camada/0')
     expect(c.grupo).toBe('novo/grupo/0')

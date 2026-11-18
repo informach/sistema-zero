@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs'
 import {
   AguaSchema,
   apoioNaAgua,
+  apoioNaSuperficie,
   type BaseDeTerreno,
   CaminhoSchema,
   type ComandoDeCenario,
@@ -2877,7 +2878,28 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
         ],
       }),
     ]
-    const fragmento = capturarFragmento(origem, ['ponte'], espaco!.id),
+    origem.formas = [
+      { id: 'f', nome: 'Caixa', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 },
+    ]
+    const t = {
+      posicao: { x: 10, y: 4.5, z: 0 },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    }
+    origem.instancias = [
+      {
+        id: 'o',
+        nome: 'Caixa',
+        modelo: 'f',
+        grupo: null,
+        bloqueado: false,
+        oculto: false,
+        colisao: 'caixa',
+        transformacao: t,
+        apoio: apoioNaSuperficie(origem, 'ponte', t.posicao, undefined, 'tabuleiro/0'),
+      },
+    ]
+    const fragmento = capturarFragmento(origem, ['ponte', 'o'], espaco!.id),
       lote = {
         revisaoEsperada: 0,
         operacaoId: randomUUID(),
@@ -2907,6 +2929,11 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       ],
     })
     expect(salvo.documento.base).toEqual(origem.base)
+    expect(salvo.documento.instancias[0]!.apoio).toMatchObject({
+      tipo: 'objeto',
+      objeto: 'p/caminho/0',
+      parte: 'tabuleiro/0',
+    })
     expect((await repo.lotesEntre(c.id, 0, 1))[0]!.comandos).toEqual(lote.comandos)
     expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
     const desfeito = await montar().moverHistorico(ator, c.id, {
@@ -2915,6 +2942,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       operacaoId: randomUUID(),
     })
     expect(desfeito.documento.caminhos).toEqual([])
+    expect(desfeito.documento.instancias).toEqual([])
     const refeito = await montar().moverHistorico(ator, c.id, {
       revisaoEsperada: 2,
       acao: 'refazer',

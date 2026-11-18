@@ -1,5 +1,6 @@
 import { CenarioInvalido } from '../validacao'
 import { transformacaoDoApoioNaAgua } from './apoio-na-agua'
+import { transformacaoResolvida } from './chao'
 import { resolverConjuntos } from './conjuntos'
 import {
   type DocumentoDeCenario,
@@ -9,6 +10,7 @@ import {
   type TexturaDoCenario,
 } from './documento'
 import { TransformacaoSchema } from './entidades-schema'
+import { parteEstruturalExiste } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
 import { errosDaTopologiaDoCaminho } from './topologia-de-caminho'
@@ -33,6 +35,7 @@ export function validarDocumento(
     objetos = new Map(d.instancias.map((o) => [o.id, o])),
     montagens = new Set(d.montagens?.map((m) => m.id)),
     aguas = new Set(d.aguas.map((a) => a.id)),
+    caminhos = new Map(d.caminhos.map((c) => [c.id, c])),
     modelos = new Set<string>()
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO_V2.bytes)
     erros.push('Documento excede o orçamento de bytes')
@@ -123,10 +126,29 @@ export function validarDocumento(
       }
       const base = objetos.get(apoio.objeto)
       if (!base) {
+        const caminho = caminhos.get(apoio.objeto)
+        if (caminho) {
+          if (!apoio.contato || !apoio.parte || !parteEstruturalExiste(caminho, apoio.parte))
+            erros.push(`Parte do caminho ausente ou incompatível: ${o.id}`)
+          if (caminho.acabamento && !volumeDaReferencia(d, caminho.acabamento))
+            erros.push(`O encaixe no caminho exige medidas do modelo: ${o.id}`)
+          if (apoio.contato && apoio.parte) {
+            try {
+              if (!TransformacaoSchema.safeParse(transformacaoResolvida(d, o)).success)
+                erros.push(`O apoio do caminho ultrapassa os limites da transformação: ${o.id}`)
+            } catch (erro) {
+              if (!(erro instanceof CenarioInvalido)) throw erro
+              erros.push(...erro.problemas.map((p) => `${p} (${o.id})`))
+            }
+          }
+          break
+        }
+        if (apoio.parte) erros.push(`Parte de caminho aplicada a outro tipo de objeto: ${o.id}`)
         if (montagens.has(apoio.objeto)) break
         erros.push(`Apoio ausente: ${o.id}`)
         break
       }
+      if (apoio.parte) erros.push(`Parte de caminho aplicada a outro tipo de objeto: ${o.id}`)
       apoio = base.apoio
     }
   }

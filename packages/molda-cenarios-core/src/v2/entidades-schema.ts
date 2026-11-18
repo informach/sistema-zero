@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, VetorSchema } from '../documento'
 import { AparenciaDaAguaSchema, EncaixeDoModeloDeAguaSchema } from './parametros-de-agua'
 import {
+  ChaveDeParteDeCaminhoSchema,
   EncaixeDeModeloDeCaminhoSchema,
   MoldeDeEstradaSchema,
   PilaresDePonteSchema,
@@ -96,6 +97,8 @@ export const ApoioSchema = z.discriminatedUnion('tipo', [
       deslocamento: numero,
       /** Ponto local da superfície original. Ausente nos apoios legados com posição já resolvida. */
       contato: VetorSchema.optional(),
+      /** Parte estável de uma estrutura de caminho, não índice interno da malha GLB. */
+      parte: ChaveDeParteDeCaminhoSchema.optional(),
     })
     .strict(),
   z

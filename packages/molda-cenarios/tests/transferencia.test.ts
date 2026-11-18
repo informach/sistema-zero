@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import {
   apoioNaAgua,
+  apoioNaSuperficie,
   CaminhoSchema,
   capturarFragmento,
   criarDocumentoVazio,
@@ -11,6 +12,7 @@ import {
   alvosDaTransferencia,
   comandosParaRecortarEscolha,
 } from '../src/oficina/area-de-transferencia'
+import { comandosParaRemoverCaminho } from '../src/oficina/caminho-remocao'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostHttp } from '../src/oficina/host-http'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -37,6 +39,81 @@ function origem() {
   ]
   return d
 }
+
+test('recorte de ponte conserva dependente externo e undo devolve o apoio na parte', async () => {
+  const host = criarHostEmMemoria(),
+    mundo = await host.criarMundo('conta', 'Mundo'),
+    c = await host.criarCenario(mundo.id, 'Ponte'),
+    doc = { ...origem(), id: c.id }
+  doc.caminhos = [
+    CaminhoSchema.parse({
+      id: 'ponte',
+      nome: 'Ponte',
+      tipo: 'ponte',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      acabamento: null,
+      largura: 3,
+      cotas: { de: 3, ate: 3 },
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 10, z: 0 },
+      ],
+    }),
+  ]
+  const o = doc.instancias[0]!
+  o.transformacao.posicao = { x: 3, y: 3, z: 0 }
+  o.apoio = apoioNaSuperficie(doc, 'ponte', o.transformacao.posicao, undefined, 'tabuleiro/0')
+  await host.editarCenario(c.id, 0, [{ tipo: 'cenario.restaurar', documento: doc }], 'fixture')
+  const ctl = criarControlador(host, await host.abrirCenario(c.id)),
+    f = capturarFragmento(doc, ['ponte'], 'conta'),
+    pose = transformacaoResolvida(doc, o)
+  expect(ctl.executar(comandosParaRecortarEscolha(doc, f, ['ponte']))).toBe(true)
+  await ctl.terminar()
+  const novo = (await host.abrirCenario(c.id)).documento
+  expect(novo.caminhos).toEqual([])
+  expect(novo.instancias[0]!.apoio.tipo).toBe('absoluto')
+  expect(transformacaoResolvida(novo, novo.instancias[0]!)).toEqual(pose)
+  const reaberto = criarControlador(host, await host.abrirCenario(c.id))
+  await reaberto.desfazer()
+  expect(reaberto.getState().documento).toEqual(doc)
+  doc.instancias[0]!.bloqueado = true
+  expect(() => comandosParaRemoverCaminho(doc, 'ponte')).toThrow('Destranque')
+})
+
+test('recortar pasta com ponte e seiscentos dependentes usa um comando de remoção', () => {
+  const doc = origem()
+  doc.grupos = [{ id: 'g', nome: 'Passeio', grupo: null, oculto: false, bloqueado: false }]
+  doc.caminhos = [
+    CaminhoSchema.parse({
+      id: 'ponte',
+      nome: 'Ponte',
+      tipo: 'ponte',
+      grupo: 'g',
+      bloqueado: false,
+      oculto: false,
+      acabamento: null,
+      largura: 3,
+      cotas: { de: 3, ate: 3 },
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 10, z: 0 },
+      ],
+    }),
+  ]
+  const o = doc.instancias[0]!,
+    contato = apoioNaSuperficie(doc, 'ponte', { x: 3, y: 3, z: 0 }, undefined, 'tabuleiro/0')
+  doc.instancias = Array.from({ length: 600 }, (_, i) => ({
+    ...structuredClone(o),
+    id: `o${i}`,
+    grupo: 'g',
+    apoio: contato,
+  }))
+  const f = capturarFragmento(doc, ['g'], 'conta'),
+    comandos = comandosParaRecortarEscolha(doc, f, ['g'])
+  expect(comandos).toEqual([{ tipo: 'elementos.remover', ids: ['g'] }])
+})
 
 test('caminho escolhido pela árvore usa o clipboard, recorte e undo existentes após reabrir', async () => {
   const host = criarHostEmMemoria(),

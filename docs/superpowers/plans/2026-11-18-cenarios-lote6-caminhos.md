@@ -24,13 +24,15 @@
 
 **Files:** core `src/v2/{entidades-schema,curvas,validacao,comandos,inverter,fragmento,index}.ts`; novos módulos específicos de caminho; testes do núcleo.
 
-- [ ] Escrever testes de trilha/praça existentes e das seis variantes, limites, valores inválidos, referências, auto-interseção, largura e controles insuficientes.
-- [ ] Auditar suavização/reamostragem, finitude e quantidade antes de alocar; UV em metros, juntas, winding, polígonos côncavos, curvas fechadas e edição de pontos. Preservar as correções de precisão/escavação usadas pelo rio.
-- [ ] Definir intenção e resultado preparados: descritor, perfil/avisos, regiões e campo somente quando a estrada molda o relevo. Conferir diagonais grandes e orçamento de visitas/cópias.
-- [ ] Compartilhar a representação geométrica com picking, colisão e futura compilação: piso no terreno e máscaras/recortes, lances modulares e perfil de ponte. Orçamento de peças e triângulos explícito.
-- [ ] Integrar colocação/apoio em estruturas, especialmente no tabuleiro, pelo contrato de apoio em superfície existente. Conferir transformação do encaixe, movimentação/edição do caminho e referências sem criar outro sistema de apoios.
-- [ ] Conferir organização, recursos e histórico. Estender o fragmento existente aos caminhos e aos seus acabamentos/texturas; preservar apoios/referências e deslocamento. Pastas com marcadores ainda dependem do lote 7.
-- [ ] Rodar núcleo/tipagem, revisar e preservar o recorte antes de expandir o motor.
+- [x] Escrever testes de trilha/praça existentes e das seis variantes, limites, valores inválidos, referências, auto-interseção, largura e controles insuficientes.
+- [x] Auditar suavização/reamostragem, finitude e quantidade antes de alocar; UV em metros, juntas, winding, polígonos côncavos, curvas fechadas e edição de pontos. Preservar as correções de precisão/escavação usadas pelo rio.
+- [x] Definir intenção e resultado preparados: descritor, perfil/avisos, regiões e campo somente quando a estrada molda o relevo. Conferir diagonais grandes e orçamento de visitas/cópias.
+- [x] Compartilhar a representação geométrica com picking, colisão e futura compilação: piso no terreno e máscaras/recortes, lances modulares e perfil de ponte. Orçamento de peças e triângulos explícito.
+- [x] Integrar colocação/apoio em estruturas, especialmente no tabuleiro, pelo contrato de apoio em superfície existente. Conferir transformação do encaixe, movimentação/edição do caminho e referências sem criar outro sistema de apoios.
+- [x] Conferir organização, recursos e histórico. Estender o fragmento existente aos caminhos e aos seus acabamentos/texturas; preservar apoios/referências e deslocamento. Pastas com marcadores ainda dependem do lote 7.
+- [x] Rodar núcleo/tipagem, revisar e preservar o recorte antes de expandir o motor.
+
+**6.1 implementado, testado e revisado no núcleo.** Representação pura e contrato de apoios prontos; sua instalação no desenho/picking/física é 6.2. Envelopes de pilares não substituem a conformação real das tampas. [Revisão e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-estruturas-apoios.md).
 
 ## 6.2 — Desenho, materiais, modelos e física
 
@@ -74,7 +76,7 @@
 
 ## Estado atual
 
-Lote 6 iniciado apenas pela leitura e pelo planejamento. **6.1 em andamento; nenhum requisito de Caminhos declarado implementado.** O núcleo de curvas do Claude é matéria-prima preservada e será auditado/integrado, não refeito sem necessidade. Lotes 7–10 não iniciados.
+**6.1 concluído no núcleo; próximo recorte exclusivo: 6.2, desenho, modelos e física. O lote 6 continua aberto.** Não há aba Caminhos nova entregue nem aceite artístico. As notas abaixo registram a sequência dos recortes anteriores; lotes 7–10 não iniciados.
 
 Primeiro recorte: [auditoria do núcleo de curvas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-auditoria.md), com reprodução/correção de valores infinitos, perda de precisão da área e alturas inválidas. Suíte do núcleo 206/8.490, motor 98/2.800 e oficina 92/595, sem falhas. **6.1 continua aberto:** contratos e geometria das seis variantes ainda pendem.
 
@@ -83,3 +85,5 @@ Primeiro recorte: [auditoria do núcleo de curvas](../../plans/2026-11-16-cenari
 [Preparo e moldagem de estrada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-operacoes.md) implementados/testados/revisados: operações das seis variantes, cópia imutável e orçamento antes da alocação, ponte com vão/invasão e topologia comum. Núcleo 220/8.564 e tipagem passaram. **6.1 continua aberto**, seguindo para geometria/apoios/transferência. Não iniciar lote 7 nem declarar a aba Caminhos entregue.
 
 [Piso conformado e clipboard](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-piso-transferencia.md) conferidos no núcleo e no histórico: triângulos do chão, máscaras/recortes, juntas, precisão e orçamento; seis variantes transferidas pelo contrato existente. Núcleo 235/10.007, motor 98/2.800, oficina 94/603, Members 51/244 e Postgres 40/356, sem falhas. **6.1 ainda aberto:** faltam estruturas modulares, acabamentos GLB e apoios antes da integração do desenho no palco. A geometria pura não equivale a ferramenta visual entregue.
+
+**Fechamento de 6.1:** [estruturas e apoios](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-estruturas-apoios.md) implementados/testados/revisados. Núcleo 254/10.117, motor 98/2.800, oficina 96/610, Members 51/244 e Postgres 40/358, sem falhas; tipagem de cinco pacotes, build e regressão dos workers compilados passaram. **Somente 6.2 é a próxima frente.** Renderer/picking/física de Caminhos, depois pontos/worker, interface e fechamento do lote continuam pendentes.

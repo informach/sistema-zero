@@ -7,12 +7,18 @@ import type {
   InstanciaDeCenario,
   Transformacao,
 } from './documento'
+import { estruturaDoCaminho } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
 import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { destransformarPonto, transformarPonto, transformarVolume } from './volume'
 
 type BaseComModelos = Pick<DocumentoDeCenario, 'base'> &
-  Partial<Pick<DocumentoDeCenario, 'modelos' | 'formas' | 'instancias' | 'montagens' | 'aguas'>>
+  Partial<
+    Pick<
+      DocumentoDeCenario,
+      'modelos' | 'formas' | 'instancias' | 'montagens' | 'aguas' | 'caminhos'
+    >
+  >
 type ObjetoComModelo = Pick<InstanciaDeCenario, 'transformacao' | 'apoio'> &
   Partial<Pick<InstanciaDeCenario, 'modelo'>>
 
@@ -92,6 +98,19 @@ export function posicaoNoMundo(
       z: p.z,
     }
   if (o.apoio.tipo === 'objeto' && o.apoio.contato) {
+    const caminho = doc.caminhos?.find((c) => o.apoio.tipo === 'objeto' && c.id === o.apoio.objeto)
+    if (caminho) {
+      // Projeção autoral sem bytes não inventa a forma do terreno nem do GLB.
+      if (
+        (doc.base.tipo === 'terreno' && !fonte) ||
+        (caminho.acabamento && o.apoio.parte?.startsWith('pilar/') && !fonte?.parteDoCaminho)
+      )
+        return { ...p }
+      const parte = superficieDoCaminho(doc, caminho.id, o.apoio.parte, fonte),
+        q = transformarPonto(o.apoio.contato, parte.transformacao)
+      if (parte.noTerreno) q.y += alturaDoChao(doc.base, q.x, q.z, fonte)
+      return { x: q.x, y: q.y + o.apoio.deslocamento + elevacaoDoVolume(doc, o), z: q.z }
+    }
     const suporte = suporteDoObjeto(doc, o.apoio.objeto, fonte)
     if (cadeia.length >= 64 || cadeia.includes(o.apoio.objeto))
       throw new CenarioInvalido(['Ciclo de apoios'])
@@ -134,6 +153,38 @@ function suporteDoObjeto(doc: BaseComModelos, id: string, fonte?: FonteDeAlturas
   throw new CenarioInvalido([`Apoio ausente: ${id}`])
 }
 
+function superficieDoCaminho(
+  doc: BaseComModelos,
+  id: string,
+  chave: string | undefined,
+  fonte?: FonteDeAlturas,
+) {
+  if (!chave) throw new CenarioInvalido(['Parte do caminho ausente'])
+  const caminho = doc.caminhos?.find((c) => c.id === id)
+  if (!caminho) throw new CenarioInvalido([`Apoio ausente: ${id}`])
+  // A fonte do palco reutiliza as partes já usadas no desenho, inclusive a base real de
+  // um pilar em GLB arqueado. Consultas puras sem esse cache usam o mesmo plano numérico.
+  const parte = fonte?.parteDoCaminho
+    ? fonte.parteDoCaminho(id, chave)
+    : estruturaDoCaminho(
+        caminho,
+        fonte ?? (() => 0),
+        volumeDaReferencia(doc, caminho.acabamento ?? undefined),
+        { somenteParte: chave },
+      ).pecas.find((p) => p.chave === chave)
+  if (!parte)
+    throw new CenarioInvalido([`Parte do caminho sem superfície disponível: ${id}/${chave}`])
+  const { posicao, rotacao, escala } = parte.transformacao
+  if (
+    ![...Object.values(posicao), ...Object.values(rotacao), ...Object.values(escala)].every(
+      Number.isFinite,
+    ) ||
+    !Object.values(escala).every((v) => v > 0)
+  )
+    throw new CenarioInvalido(['A superfície do caminho tem uma transformação inválida'])
+  return parte
+}
+
 /** Reflexão é a própria inversa. O contato permanece no espaço original do GLB. */
 function refletirContato(
   doc: BaseComModelos,
@@ -154,7 +205,21 @@ export function apoioNaSuperficie(
   id: string,
   ponto: { x: number; y: number; z: number },
   fonte?: FonteDeAlturas,
+  parte?: string,
 ): InstanciaDeCenario['apoio'] {
+  if (doc.caminhos?.some((c) => c.id === id)) {
+    const superficie = superficieDoCaminho(doc, id, parte, fonte),
+      q = { ...ponto }
+    if (superficie.noTerreno) q.y -= alturaDoChao(doc.base, q.x, q.z, fonte)
+    return {
+      tipo: 'objeto',
+      objeto: id,
+      deslocamento: 0,
+      parte,
+      contato: destransformarPonto(q, superficie.transformacao),
+    }
+  }
+  if (parte) throw new CenarioInvalido(['Parte de caminho aplicada a outro tipo de objeto'])
   const suporte = suporteDoObjeto(doc, id, fonte)
   const t = transformacaoResolvida(doc, suporte, fonte)
   return {
@@ -191,7 +256,7 @@ export function alteracoesDoGesto(
         elevacaoDoVolume(doc, { ...o, transformacao: o.transformacao }) -
         o.apoio.deslocamento,
     }
-    const apoio = apoioNaSuperficie(doc, o.apoio.objeto, q, fonte)
+    const apoio = apoioNaSuperficie(doc, o.apoio.objeto, q, fonte, o.apoio.parte)
     if (apoio.tipo !== 'objeto') throw new CenarioInvalido(['Superfície inválida'])
     return {
       transformacao: mundo,

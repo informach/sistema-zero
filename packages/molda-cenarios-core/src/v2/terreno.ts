@@ -144,6 +144,14 @@ export interface PecaDeAlturas {
 export type FonteDeAlturas = ((x: number, z: number) => number) & {
   /** Presença de superfície carregada, distinta da altura matemática sob buracos. */
   temChao?: (p: { x: number; z: number }) => boolean
+  /** Consulta opcional à mesma parte estrutural usada pelo desenho e pelo picking. */
+  parteDoCaminho?: (
+    id: string,
+    parte: string,
+  ) => Pick<
+    import('./estrutura-de-caminho').PecaEstruturalDoCaminho,
+    'transformacao' | 'noTerreno'
+  > | null
 }
 export class TerrenoInvalido extends Error {}
 export class PecaDeTerrenoAusente extends TerrenoInvalido {}
