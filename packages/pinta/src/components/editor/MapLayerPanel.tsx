@@ -8,6 +8,7 @@ import {
   type TilemapAsset,
   type TilemapLayer,
   tileLayerTilesetId,
+  tilemapTilesetIds,
 } from '../../core/project'
 import {
   addMapGroup,
@@ -16,6 +17,13 @@ import {
   toggleMapLayerCollision,
   updateMapLayer,
 } from '../../tiles/layerTree'
+import {
+  freezeMapTilesets,
+  linkMapTilesets,
+  type ResourceVersionEdit,
+  removeUnusedMapResourceVersions,
+} from '../../tiles/resourceVersions'
+import { usePintaApp } from '../appContext'
 import { Button, IconButton } from '../ui/Button'
 import {
   BringToFront,
@@ -37,6 +45,7 @@ import { CommitInput } from './MapObjectPanel'
 import { MapProperties } from './MapProperties'
 import { commitIfChanged } from './mapTools/commitGuard'
 import { ALL_MAP_FEATURES, type MapFeatures } from './mapTools/mapLevels'
+import { RESOURCE_VERSION_MESSAGES } from './mapTools/resourceVersionMessages'
 import type { TilemapSidebarProps } from './TilemapPanels'
 
 export function MapLayerPanel({
@@ -65,7 +74,17 @@ export function MapLayerPanel({
   | 'onSetLayerTileset'
 > & { features?: MapFeatures }): JSX.Element {
   const { editor } = useEditorStores()
+  const { showToast } = useToast()
+  const { gallery } = usePintaApp()
   const tileLayerCount = tilemap.layers.filter(isTileLayer).length
+  const versionEdit = (edit: (map: TilemapAsset) => ResourceVersionEdit): void => {
+    const state = editor.getState()
+    if (state.asset.kind !== 'tilemap' || state.asset.id !== tilemap.id) return
+    const result = edit(state.asset)
+    if (result.ok) commitIfChanged(state, result.map)
+    else showToast(RESOURCE_VERSION_MESSAGES[result.reason])
+  }
+  const find = (id: string) => gallery.getState().assets.find((asset) => asset.id === id) ?? null
   const commit = (edit: (map: TilemapAsset) => TilemapAsset): void => {
     const state = editor.getState()
     if (state.asset.kind === 'tilemap') commitIfChanged(state, edit(state.asset))
@@ -172,11 +191,17 @@ export function MapLayerPanel({
                         {COPY.tiles.layerTilesetMissing}
                       </option>
                     )}
-                    {layerTilesetChoices.map((choice) => (
-                      <option key={choice.id} value={choice.id}>
-                        {choice.name}
-                      </option>
-                    ))}
+                    {layerTilesetChoices.map((choice) => {
+                      const position =
+                        tilemap.resources?.findIndex((v) => v.asset.id === choice.id) ?? -1
+                      return (
+                        <option key={choice.id} value={choice.id}>
+                          {position >= 0
+                            ? COPY.scene.savedResourceName(choice.name, position + 1)
+                            : choice.name}
+                        </option>
+                      )
+                    })}
                   </select>
                 </label>
               ) : null}
@@ -201,6 +226,39 @@ export function MapLayerPanel({
           <Group aria-hidden="true" />
           {COPY.tiles.addGroup}
         </Button>
+      ) : null}
+      {features.layerAdvanced ? (
+        <>
+          <Button
+            variant="barOutline"
+            className="mt-2 w-full"
+            onClick={() => versionEdit((map) => freezeMapTilesets(map, find))}
+          >
+            {COPY.scene.keepTilesetVersions}
+          </Button>
+          {tilemapTilesetIds(tilemap).some((id) =>
+            tilemap.resources?.some((version) => version.asset.id === id),
+          ) ? (
+            <Button
+              variant="barOutline"
+              className="mt-2 w-full"
+              onClick={() => versionEdit((map) => linkMapTilesets(map, find))}
+            >
+              {COPY.scene.followTilesets}
+            </Button>
+          ) : null}
+          {tilemap.resources?.length ? (
+            <Button
+              variant="barOutline"
+              className="mt-2 w-full"
+              onClick={() =>
+                versionEdit((map) => ({ ok: true, map: removeUnusedMapResourceVersions(map) }))
+              }
+            >
+              {COPY.scene.clearUnusedVersions}
+            </Button>
+          ) : null}
+        </>
       ) : null}
     </Panel>
   )

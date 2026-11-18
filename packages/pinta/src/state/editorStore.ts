@@ -6,30 +6,11 @@
  * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import { bitmapBytes, createHistory, type SharedPart } from '../core/history'
-import { isObjectLayer, isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
-import type { VectorShape } from '../vector/model'
+import { assetBytes } from '../core/assetMemory'
+import { createHistory, type SharedPart } from '../core/history'
+import { isTileLayer, type PintaAsset } from '../core/project'
 
-/**
- * Bytes aproximados de um shape: a base cobre os campos fixos; path/texto/
- * polígono carregam payload variável (um `d` de pincel chega a 20k chars) —
- * sem isso o orçamento do undo reteria MUITO mais memória do que estima.
- */
-function shapeBytes(shape: VectorShape): number {
-  let bytes = 128
-  if (shape.type === 'path') bytes += shape.d.length * 2
-  else if (shape.type === 'text') bytes += shape.text.length * 2
-  else if (shape.type === 'polygon') bytes += shape.points.length * 16
-  // A FIGURA carrega o PNG inteiro em base64: sem contá-lo, o orçamento de
-  // 16 MB do undo erraria por ordens de grandeza (uma figura vale ~128 bytes
-  // aqui e centenas de KB na memória) e a sessão comeria RAM em silêncio.
-  else if (shape.type === 'image') bytes += shape.src.length * 2
-  return bytes
-}
-
-function shapesBytes(shapes: VectorShape[]): number {
-  return shapes.reduce((sum, shape) => sum + shapeBytes(shape), 0)
-}
+export { assetBytes } from '../core/assetMemory'
 
 export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
 
@@ -95,61 +76,6 @@ function mergeLinkedAssets(
   return [...merged.values()]
 }
 
-/** Bytes aproximados de um asset (payload dominante = bitmaps). */
-export function assetBytes(asset: PintaAsset, countCells = true): number {
-  const bitmaps: PintaBitmap[] = []
-  switch (asset.kind) {
-    case 'map-set':
-      return assetBytes(asset.map, countCells)
-    case 'pixel-sprite':
-      // Cada quadro é uma PILHA de cels (um por camada) — contar só o primeiro
-      // subestimaria o snapshot em N× e furaria o orçamento do undo.
-      for (const animation of asset.animations)
-        for (const cels of animation.frames) bitmaps.push(...cels)
-      break
-    case 'pixel-background':
-      bitmaps.push(...asset.cels)
-      break
-    case 'tileset':
-      bitmaps.push(...asset.tiles)
-      break
-    case 'tilemap':
-      // Camada de objetos: ~96 bytes por objeto + o texto das propriedades (estimativa do
-      // orçamento de undo, como o `shapeBytes` do vetor).
-      return asset.layers.reduce(
-        (sum, layer) =>
-          sum +
-          64 +
-          (isTileLayer(layer)
-            ? // As células entram por `snapshotShared` (uma vez por buffer); aqui só o resto.
-              countCells
-              ? layer.cells.byteLength
-              : 0
-            : isObjectLayer(layer)
-              ? layer.objects.reduce(
-                  (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
-                  0,
-                )
-              : 0),
-        128,
-      )
-    case 'vector-background':
-      return 256 + shapesBytes(asset.shapes)
-    case 'vector-sprite':
-      return (
-        256 +
-        asset.animations.reduce(
-          (sum, animation) =>
-            sum + animation.frames.reduce((s, frame) => s + shapesBytes(frame), 64),
-          0,
-        )
-      )
-    case 'vector-tileset':
-      return 256 + asset.tiles.reduce((sum, tile) => sum + shapesBytes(tile), 64)
-  }
-  return bitmaps.reduce((sum, bitmap) => sum + bitmapBytes(bitmap), 128)
-}
-
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
 function snapshotBytes(snapshot: EditorSnapshot): number {
   let bytes = assetBytes(snapshot.asset, false)
@@ -168,7 +94,10 @@ export function* snapshotShared(
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
   for (const asset of maps) {
     if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') continue
-    for (const layer of (asset.kind === 'map-set' ? asset.map : asset).layers)
+    const map = asset.kind === 'map-set' ? asset.map : asset
+    for (const resource of map.resources ?? [])
+      yield { key: resource.asset, bytes: assetBytes(resource.asset) }
+    for (const layer of map.layers)
       if (isTileLayer(layer)) yield { key: layer.cells, bytes: layer.cells.byteLength }
   }
 }

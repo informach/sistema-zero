@@ -151,6 +151,13 @@ describe('tetos de mapa do desenho de aula (os de criação, não os de leitura)
     expect(pintaLessonLimitIssue({ kind: 'map-set', map: mapa() })).toBeNull()
     expect(pintaLessonLimitIssue({ kind: 'map-set', map: mapa({ cols: 200 }) })).toBe('cols')
   })
+  it('peças embutidas no mapa mantêm os mesmos tetos da aula', () => {
+    expect(pintaLessonLimitIssue(mapa({ resources: [{ asset: pecas(64) }] }))).toBeNull()
+    expect(pintaLessonLimitIssue(mapa({ resources: [{ asset: pecas(65) }] }))).toBe('tiles')
+    expect(
+      pintaLessonLimitIssue(mapa({ resources: [{ asset: pecas(65, 'vector-tileset') }] })),
+    ).toBe('tiles')
+  })
 
   it('desenho que não é mapa nem peças, e JSON estranho, nunca têm problema de tamanho de mapa', () => {
     for (const outro of [

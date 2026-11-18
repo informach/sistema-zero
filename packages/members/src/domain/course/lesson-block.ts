@@ -374,7 +374,23 @@ export function pintaLessonLimitIssue(asset: unknown): PintaLessonLimitIssue | n
     case 'tilemap':
       if (size(record.cols) > PINTA_LESSON_MAP_LIMITS.maxCols) return 'cols'
       if (size(record.rows) > PINTA_LESSON_MAP_LIMITS.maxRows) return 'rows'
-      return count(record.layers) > PINTA_LESSON_MAP_LIMITS.maxLayers ? 'layers' : null
+      if (count(record.layers) > PINTA_LESSON_MAP_LIMITS.maxLayers) return 'layers'
+      if (
+        Array.isArray(record.resources) &&
+        record.resources.some(
+          (version) =>
+            version &&
+            typeof version === 'object' &&
+            'asset' in version &&
+            version.asset &&
+            typeof version.asset === 'object' &&
+            'kind' in version.asset &&
+            (version.asset.kind === 'tileset' || version.asset.kind === 'vector-tileset') &&
+            pintaLessonLimitIssue(version.asset) === 'tiles',
+        )
+      )
+        return 'tiles'
+      return null
     case 'tileset':
     case 'vector-tileset':
       return count(record.tiles) > PINTA_LESSON_MAP_LIMITS.maxTiles ? 'tiles' : null

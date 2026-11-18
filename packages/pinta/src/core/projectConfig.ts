@@ -1,3 +1,4 @@
+import { PINTA_RESOURCE_NATIVE_SCHEMA } from '@sistemazero/core/creations'
 import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from './palette'
@@ -106,8 +107,12 @@ export const PINTA_SCENE_SCHEMA = 4
 /** Offsets fracionários: o leitor completo de schema 4 arredondava esses valores. */
 export const PINTA_PRECISE_SCHEMA = 5
 
+/** Versões de recursos autocontidas e animação específica de objeto. */
+export const PINTA_RESOURCE_SCHEMA = PINTA_RESOURCE_NATIVE_SCHEMA
+export const PINTA_RESOURCE_LIMITS = { maxVersions: 32, maxSnapshotBytes: 8 * 1024 * 1024 } as const
+
 /** O maior carimbo que este código sabe ler. */
-export const PINTA_MAX_SCHEMA = PINTA_PRECISE_SCHEMA
+export const PINTA_MAX_SCHEMA = PINTA_RESOURCE_SCHEMA
 
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)

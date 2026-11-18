@@ -1,5 +1,6 @@
 import { type JSX, useState } from 'react'
 import { COPY } from '../../core/copy'
+import { embeddedTilesetOf, mergeMapResourceVersions } from '../../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
@@ -15,6 +16,7 @@ import {
   pasteObjects,
   pasteOffset,
 } from '../../tiles/objectSelection'
+import { mapResourceVersionsForObjects } from '../../tiles/resourceVersions'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
@@ -58,7 +60,16 @@ export function MapObjectSelectionPanel({
   function copy(cut = false): void {
     const selected = objects()
     if (!selected.length) return
-    clipboard.getState().set({ kind: 'objects', objects: structuredClone(selected) })
+    const source = editor.getState().asset
+    const resources =
+      source.kind === 'tilemap' ? mapResourceVersionsForObjects(source, selected) : []
+    clipboard.getState().set(
+      structuredClone({
+        kind: 'objects',
+        objects: selected,
+        ...(resources.length ? { resources } : {}),
+      }),
+    )
     if (cut) {
       const s = editor.getState()
       if (s.asset.kind === 'tilemap') {
@@ -91,7 +102,8 @@ export function MapObjectSelectionPanel({
       : [16, 16]
     if (snapObjects && item.objects.length) {
       const tilesetId = s.asset.tilesetId
-      const ts = gallery.getState().assets.find((a) => a.id === tilesetId)
+      const ts =
+        embeddedTilesetOf(s.asset) ?? gallery.getState().assets.find((a) => a.id === tilesetId)
       const size = ts && isTilesetKind(ts) ? ts.tileSize : 16
       const boxes = item.objects.map(objectBounds),
         minX = Math.min(...boxes.map((b) => b.x)),
@@ -101,10 +113,18 @@ export function MapObjectSelectionPanel({
       dx = Math.max(-minX, Math.round((minX + dx - phase) / size) * size + phase - minX)
       dy = Math.max(-minY, Math.round((minY + dy - phase) / size) * size + phase - minY)
     }
-    const next = pasteObjects(s.asset, layerId, item.objects, dx, dy)
+    let next = pasteObjects(s.asset, layerId, item.objects, dx, dy)
     if (next === s.asset) {
       warnLocked()
       return
+    }
+    if (item.resources?.length) {
+      const resources = mergeMapResourceVersions(s.asset.resources ?? [], item.resources)
+      if (!resources) {
+        showToast(COPY.scene.resourcePasteFailed)
+        return
+      }
+      next = { ...next, resources }
     }
     const oldIds = new Set(
       s.asset.layers.flatMap((l) => (isObjectLayer(l) ? l.objects.map((o) => o.id) : [])),

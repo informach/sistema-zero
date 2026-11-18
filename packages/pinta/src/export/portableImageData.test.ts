@@ -7,7 +7,9 @@ import {
   type PintaImageRecipe,
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
 import { unzlibSync } from 'fflate'
+import { resourceScenario } from '../../scripts/homologacao/resources'
 import {
   type AnyTilesetAsset,
   createBitmap,
@@ -21,6 +23,7 @@ import {
 } from '../core/project'
 import { tileLayerAt } from '../testing/fixtures'
 import { addMapObject, createMapObject } from '../tiles/mapObjects'
+import { freezeMapTilesets } from '../tiles/resourceVersions'
 import { addLayer, addObjectLayer, toggleLayerFront } from '../tiles/tilemapOps'
 import { makeRect } from '../vector/shapes'
 import { assetToJson } from './assetJson'
@@ -69,6 +72,32 @@ function nativeRaster(): PintaImageRaster {
 function bytesOf(image: PintaPortableImage): Uint8Array {
   return new Uint8Array(Buffer.from(image.dataUrl.split(',')[1]!, 'base64'))
 }
+
+test('o PNG jogável leva o atlas inteiro da animação fixada, além da folha do terreno', async () => {
+  const scenario = resourceScenario(true)
+  const frozen = freezeMapTilesets(
+    scenario.map,
+    (id) => scenario.assets.find((a) => a.id === id) ?? null,
+  )
+  if (!frozen.ok) throw new Error(frozen.reason)
+  const map = frozen.map
+  const image = await deriveLoadedPintaImage(map, recipe(map, { kind: 'map' }, 1), limits, {
+    tilesets: [],
+    assets: [],
+    raster: nativeRaster(),
+  })
+  const data = await pintaData(image),
+    scene = PintaSceneSchema.parse(data.scene)
+  expect(scene.version).toBe(2)
+  const art = scene.art!.find((a) => a.id === scene.resources![0]!.id)!
+  const atlas = await loadImage(art.image)
+  expect([atlas.width, atlas.height]).toEqual([48, 32])
+  const canvas = createCanvas(atlas.width, atlas.height),
+    ctx = canvas.getContext('2d')
+  ctx.drawImage(atlas, 0, 0)
+  expect([...ctx.getImageData(8, 24, 1, 1).data]).toEqual([255, 0, 0, 255])
+  expect([...ctx.getImageData(40, 24, 1, 1).data]).toEqual([0, 0, 255, 255])
+})
 
 /**
  * Lê os `iTXt` de um PNG, conferindo assinatura e CRCs: o espelho do `ler_dados` do

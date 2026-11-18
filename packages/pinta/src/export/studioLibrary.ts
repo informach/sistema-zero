@@ -15,6 +15,7 @@ import type {
   PintaImageSelectionSummary,
   PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
   assetRole,
   assetStyle,
@@ -222,7 +223,7 @@ function reusable(copy: PintaAsset, source: PintaAsset, gallery: Map<string, Pin
   if (copy.kind !== source.kind) return false
   if (isTilesetKind(copy) && isTilesetKind(source)) return copy.tileSize === source.tileSize
   if (copy.kind === 'tilemap') {
-    const tileset = gallery.get(copy.tilesetId)
+    const tileset = embeddedTilesetOf(copy) ?? gallery.get(copy.tilesetId)
     return !!tileset && isTilesetKind(tileset)
   }
   return true
@@ -286,7 +287,14 @@ async function importDrawingsNow(
     (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
   )
   const chosenTilesetIds = new Set(ordered.filter(isTilesetKind).map((asset) => asset.id))
-  if (ordered.some((asset) => asset.kind === 'tilemap' && !chosenTilesetIds.has(asset.tilesetId)))
+  if (
+    ordered.some(
+      (asset) =>
+        asset.kind === 'tilemap' &&
+        !chosenTilesetIds.has(asset.tilesetId) &&
+        !embeddedTilesetOf(asset),
+    )
+  )
     return {
       ok: false,
       reason: 'invalid',
@@ -613,7 +621,7 @@ function imageSelectionSummary(
         ...(asset.kind === 'vector-tileset' ? { ...vector, ...turtleShapeFacts(asset.tiles) } : {}),
       }
     case 'tilemap': {
-      const tileset = findAsset(asset.tilesetId)
+      const tileset = embeddedTilesetOf(asset) ?? findAsset(asset.tilesetId)
       if (!tileset || !isTilesetKind(tileset))
         return { kind: 'unavailable', reason: 'needs-tileset' }
       return {
@@ -668,7 +676,7 @@ export async function exportAssetForStudio(
 export async function exportLoadedAssetForStudio(
   asset: PintaAsset,
 ): Promise<ExportForStudioResult> {
-  if (asset.kind === 'tilemap') {
+  if (asset.kind === 'tilemap' && pintaAssetDependencyIds(asset).length) {
     return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
   }
   return exportResolvedForStudio(asset, [])

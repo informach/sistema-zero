@@ -10,11 +10,13 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Porta 
 await mkdir(join(pinta, '.cache'), { recursive: true })
 const temporary = await mkdtemp(join(pinta, '.cache/authority-'))
 const { extracted } = await prepareAuthorityBaseline(root, temporary)
+const { extracted: previous } = await prepareAuthorityBaseline(root, temporary, '899d2596f')
 const proof = join(temporary, 'proof')
 await mkdir(proof)
 for (const [version, src] of [
   ['current', join(pinta, 'src')],
   ['old', join(extracted, 'packages/pinta/src')],
+  ['previous', join(previous, 'packages/pinta/src')],
 ]) {
   const entry = join(temporary, `${version}.ts`)
   const modulePath = (file: string) => JSON.stringify(join(src!, file).replaceAll('\\', '/'))
@@ -22,7 +24,8 @@ for (const [version, src] of [
     entry,
     `import * as persistence from ${modulePath('state/persistence.ts')};
 import * as project from ${modulePath('core/project.ts')};
-Object.assign(window, { pinta026: { ...persistence, ...project } });`,
+import * as clipboard from ${modulePath('state/clipboardStore.ts')};
+Object.assign(window, { pinta026: { ...persistence, ...project, ...clipboard } });`,
   )
   const result = await Bun.build({ entrypoints: [entry], target: 'browser', outdir: proof })
   if (!result.success) throw new AggregateError(result.logs, 'Não compilou a prova')

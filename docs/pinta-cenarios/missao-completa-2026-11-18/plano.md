@@ -13,8 +13,9 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
 - Dados autorais são separados de geometria/render, interface, comportamento e exportação.
 - Limites dependem de orçamento verificável de células, imagens, histórico, render e salvamento.
 - Cada destino precisa consumir os mesmos dados completos; não entregar seletor sem suporte.
-- Provas de navegador, motor nativo, ambiente autenticado e aparelho físico são distintas.
-- Não declarar completo teste que requer conta/dispositivo/participante ainda indisponível.
+- Provas de navegador, motor nativo e ambiente autenticado são distintas. O usuário disponibilizou
+  a conta de staging e restringiu a homologação de aparelhos a esta máquina, aceitando simulações
+  de toque e CPU; não declarar teste físico externo nem participação de crianças.
 
 ## Execução, na ordem da missão
 
@@ -24,8 +25,11 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
-- [ ] 1b. Referências autorais a animações e versões de recursos: definir resolução e
+- [x] 1b. Referências autorais a animações e versões de recursos: definir resolução e
   retenção reais; integrar edição, histórico, biblioteca e formato protegido.
+  Implementação verificada: documento 6, catálogo imutável, UI existente, importação,
+  histórico e cena 2 nos motores. Ver `recursos-e-animacoes.md`. Escrita de nuvem 5 depende
+  de verificar o rollout A do leitor em staging.
 - [ ] 2a. Fechamento completo de recursos visuais e lógicos no contrato compartilhado;
   render/animação/ordem/propriedades em Jogo2D, Avançado, Python e atualização sem apagar programa.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;

@@ -127,6 +127,138 @@ function tocador(
   return { api, grades, colisoes: () => colisoes }
 }
 
+it('scene 2 animates the selected sequence in both JavaScript game engines', () => {
+  const sample = PintaSceneSchema.parse({
+    ...scene,
+    version: 2,
+    art: [
+      {
+        id: 'tree',
+        image: 'tree',
+        width: 32,
+        height: 32,
+        sprite: {
+          frameWidth: 16,
+          frameHeight: 16,
+          columns: 2,
+          animations: [
+            { id: 'idle', name: 'Parado', loop: true, frames: [{ tile: 0, duration: 100 }] },
+            {
+              id: 'wind',
+              name: 'Vento',
+              loop: false,
+              frames: [
+                { tile: 2, duration: 100 },
+                { tile: 3, duration: 100 },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+    layers: [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Árvores',
+        visible: true,
+        objects: [
+          {
+            id: 'tree-object',
+            name: 'Árvore',
+            type: '',
+            x: 0,
+            y: 0,
+            width: 16,
+            height: 16,
+            properties: {},
+            art: { assetId: 'tree', animationId: 'wind' },
+          },
+        ],
+      },
+    ],
+  })
+  for (const elapsed of [0, 150, 10000]) {
+    const ctx = contextoDeMentira()
+    const realNow = Date.now
+    let now = 1000
+    Date.now = () => now
+    try {
+      const { api } = tocador(
+        ctx,
+        { complete: true, naturalWidth: 32 },
+        { meta: () => ({ scene: sample }) },
+      )
+      api.createMapScene('map', 'asset')
+      now += elapsed
+      api.drawMapScene('map', 'back')
+      expect(ctx.desenhos.at(-1)).toEqual([elapsed < 100 ? 0 : 16, 16, 16, 16, 0, 0, 16, 16])
+    } finally {
+      Date.now = realNow
+    }
+  }
+})
+
+it('tile objects animate in scene 2 while published scene 1 keeps its static behavior', () => {
+  for (const version of [1, 2]) {
+    const sample = PintaSceneSchema.parse({
+      ...scene,
+      version,
+      tilesets: [
+        {
+          ...scene.tilesets[0],
+          columns: 2,
+          count: 2,
+          animations: {
+            0: [
+              { tile: 0, duration: 16 },
+              { tile: 1, duration: 10000 },
+            ],
+          },
+        },
+      ],
+      layers: [
+        {
+          id: 'objects',
+          kind: 'objects',
+          name: 'Objects',
+          visible: true,
+          objects: [
+            {
+              id: 'tile-object',
+              name: 'Tree',
+              type: '',
+              x: 0,
+              y: 0,
+              width: 16,
+              height: 16,
+              properties: {},
+              art: { assetId: 'ts', tile: 0 },
+            },
+          ],
+        },
+      ],
+    })
+    const ctx = contextoDeMentira(),
+      realNow = Date.now
+    let now = 1000
+    Date.now = () => now
+    try {
+      const { api } = tocador(
+        ctx,
+        { complete: true, naturalWidth: 32 },
+        { meta: () => ({ scene: sample }) },
+      )
+      api.createMapScene('map', 'asset')
+      now += 100
+      api.drawMapScene('map', 'back')
+      expect(ctx.desenhos.at(-1)?.[0]).toBe(version === 2 ? 16 : 0)
+    } finally {
+      Date.now = realNow
+    }
+  }
+})
+
 it('a collision set scaled 2 by 2 fills every covered root cell', () => {
   const sample = PintaSceneSchema.parse({
     ...scene,

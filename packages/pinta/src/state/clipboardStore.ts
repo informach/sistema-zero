@@ -15,18 +15,21 @@
  * que dar o da aba B).
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { pintaAssetFromWire, pintaAssetToWire } from '../assets/wire'
 import { decodeBitmap, encodeBitmap } from '../core/bitmapCodec'
+import { sanitizeMapResourceVersions } from '../core/mapResourceVersions'
 import { PALETTE_SIZE } from '../core/palette'
 import {
   PINTA_LIMITS,
   type PintaBitmap,
   sanitizeTilemapObjects,
   type TilemapObject,
+  type TilemapResourceVersion,
 } from '../core/project'
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 
 export type PintaClipboardItem =
-  | { kind: 'objects'; objects: TilemapObject[] }
+  | { kind: 'objects'; objects: TilemapObject[]; resources?: TilemapResourceVersion[] }
   | { kind: 'pixel'; bitmap: PintaBitmap; colors: readonly string[] }
   | { kind: 'shapes'; shapes: VectorShape[]; width: number; height: number }
 
@@ -50,10 +53,11 @@ const MAX_DOC_SIDE = 4096
 const HEX = /^#[0-9a-f]{6}$/i
 
 interface MirrorEnvelope {
-  v: 1
+  v: 1 | 2
   at: number
   kind: 'pixel' | 'shapes' | 'objects'
   objects?: unknown
+  resources?: unknown
   bitmap?: unknown
   colors?: unknown
   shapes?: unknown
@@ -80,7 +84,20 @@ function defaultMirror(): ClipboardMirror | null {
 
 function serialize(item: PintaClipboardItem, at: number): string {
   if (item.kind === 'objects')
-    return JSON.stringify({ v: 1, at, kind: 'objects', objects: item.objects })
+    return JSON.stringify({
+      v: item.resources?.length || item.objects.some((o) => o.art?.animationId) ? 2 : 1,
+      at,
+      kind: 'objects',
+      objects: item.objects,
+      ...(item.resources?.length
+        ? {
+            resources: item.resources.map((version) => ({
+              ...version,
+              asset: pintaAssetToWire(version.asset),
+            })),
+          }
+        : {}),
+    })
   const envelope: MirrorEnvelope =
     item.kind === 'pixel'
       ? { v: 1, at, kind: 'pixel', bitmap: encodeBitmap(item.bitmap), colors: [...item.colors] }
@@ -101,10 +118,25 @@ export function parseClipboardMirror(
   }
   if (!raw || typeof raw !== 'object') return null
   const env = raw as Partial<MirrorEnvelope>
-  if (env.v !== 1 || typeof env.at !== 'number' || !Number.isFinite(env.at)) return null
+  if (
+    (env.v !== 1 && env.v !== 2) ||
+    typeof env.at !== 'number' ||
+    !Number.isFinite(env.at) ||
+    (env.v === 2 && env.kind !== 'objects')
+  )
+    return null
   if (env.kind === 'objects') {
     const objects = sanitizeTilemapObjects(env.objects)
-    return objects.length ? { item: { kind: 'objects', objects }, at: env.at } : null
+    if (env.v === 1 && (env.resources !== undefined || objects.some((o) => o.art?.animationId)))
+      return null
+    const resources = sanitizeMapResourceVersions(env.resources, pintaAssetFromWire)
+    if (!resources) return null
+    return objects.length
+      ? {
+          item: { kind: 'objects', objects, ...(resources.length ? { resources } : {}) },
+          at: env.at,
+        }
+      : null
   }
   if (env.kind === 'pixel') {
     const bitmap = decodeBitmap(env.bitmap)

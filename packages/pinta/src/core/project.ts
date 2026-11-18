@@ -16,6 +16,7 @@ import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
+import { sanitizeMapResourceVersions } from './mapResourceVersions'
 import {
   DEFAULT_PALETTE_ID,
   getPalette,
@@ -34,6 +35,7 @@ import {
   PINTA_MAP_SCHEMA,
   PINTA_MAX_SCHEMA,
   PINTA_PRECISE_SCHEMA,
+  PINTA_RESOURCE_SCHEMA,
   PINTA_SCENE_SCHEMA,
   TILE_SIZES,
   uniqueAnimationName,
@@ -510,7 +512,7 @@ export interface TilemapObject {
   rotation?: number
   flipX?: true
   flipY?: true
-  art?: { assetId: string; tile?: number }
+  art?: { assetId: string; tile?: number; animationId?: string }
   setId?: string
   role?: MapObjectRole
 }
@@ -553,6 +555,8 @@ export interface TilemapAsset extends PintaAssetBase {
   rows: number
   /** Nasce com 1 camada ("Chão"); peças, objetos e grupos dividem o teto de camadas. */
   layers: TilemapLayer[]
+  /** Versões de arte com ID próprio: editar a biblioteca não altera uma versão guardada. */
+  resources?: TilemapResourceVersion[]
   /**
    * Carimbo do formato, gravado só quando o mapa usa algo que o formato anterior não descreve:
    * 3 para o que é de camadas (`tilemapNeedsV3`), 4 para o que é da cena completa
@@ -674,7 +678,7 @@ export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): bo
 export const PINTA_DEPENDENCY_ASSET_LIMIT = 225
 
 /** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
-export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
+export function pintaAssetReferenceIds(asset: PintaAsset): string[] {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   const ids = new Set<string>(map ? tilemapTilesetIds(map) : [])
   const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
@@ -696,6 +700,17 @@ export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
     for (const properties of Object.values(asset.tileProperties ?? {})) addProperties(properties)
   // Referência a si mesmo já está no documento raiz; não é uma dependência externa que deva
   // impedir apagar esse mesmo desenho. As propriedades continuam preservadas no documento.
+  ids.delete(asset.id)
+  return [...ids]
+}
+
+/** Dependências externas: versões autocontidas não exigem um registro mutável na galeria. */
+export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
+  const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
+  const ids = new Set(pintaAssetReferenceIds(asset))
+  for (const version of map?.resources ?? [])
+    for (const id of pintaAssetReferenceIds(version.asset)) ids.add(id)
+  for (const version of map?.resources ?? []) ids.delete(version.asset.id)
   ids.delete(asset.id)
   return [...ids]
 }
@@ -768,13 +783,26 @@ export function tilemapNeedsV4(tilemap: TilemapAsset): boolean {
 
 /** Frações de pixel precisam recusar também o leitor completo publicado com schema 4. */
 export function tilemapNeedsV5(tilemap: TilemapAsset): boolean {
+  if (tilemapNeedsV6(tilemap)) return true
   const fractional = (value: number | undefined) =>
     value !== undefined && Number.isFinite(value) && !Number.isInteger(value)
   return tilemap.layers.some((layer) => fractional(layer.offsetX) || fractional(layer.offsetY))
 }
 
+export function tilemapNeedsV6(tilemap: TilemapAsset): boolean {
+  return (
+    !!tilemap.resources?.length ||
+    tilemap.layers.some(
+      (layer) =>
+        isObjectLayer(layer) &&
+        layer.objects.some((object) => object.art?.animationId !== undefined),
+    )
+  )
+}
+
 /** O carimbo que este mapa precisa levar, ou `undefined` quando cabe no formato antigo. */
 export function tilemapSchemaFor(tilemap: TilemapAsset): number | undefined {
+  if (tilemapNeedsV6(tilemap)) return PINTA_RESOURCE_SCHEMA
   if (tilemapNeedsV5(tilemap)) return PINTA_PRECISE_SCHEMA
   if (tilemapNeedsV4(tilemap)) return PINTA_SCENE_SCHEMA
   return tilemapNeedsLayersFormat(tilemap) ? PINTA_MAP_SCHEMA : undefined
@@ -916,6 +944,13 @@ export type PintaAsset =
 
 /** Os dois estilos de tileset — o tilemap referencia qualquer um. */
 export type AnyTilesetAsset = TilesetAsset | VectorTilesetAsset
+
+export type VersionablePintaAsset = Exclude<PintaAsset, TilemapAsset | MapSetAsset>
+export interface TilemapResourceVersion {
+  sourceId: string
+  capturedAt: number
+  asset: VersionablePintaAsset
+}
 
 export function isTilesetKind(asset: PintaAsset): asset is AnyTilesetAsset {
   return asset.kind === 'tileset' || asset.kind === 'vector-tileset'
@@ -1472,6 +1507,7 @@ export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<Tilema
     if (isTilesetRef(a.assetId))
       out.art = {
         assetId: a.assetId,
+        ...(isTilesetRef(a.animationId) ? { animationId: a.animationId } : {}),
         ...(typeof a.tile === 'number' &&
         Number.isInteger(a.tile) &&
         a.tile >= 0 &&
@@ -1653,6 +1689,9 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (!isFinitePositiveInt(record.cols, PINTA_MAP_FORMAT_LIMITS.maxCols)) return null
       if (!isFinitePositiveInt(record.rows, PINTA_MAP_FORMAT_LIMITS.maxRows)) return null
       const cellCount = record.cols * record.rows
+      const resources = sanitizeMapResourceVersions(record.resources, sanitizePintaAsset)
+      if (!resources) return null
+      if (resources.some((version) => version.asset.id === base.id)) return null
       if (!Array.isArray(record.layers)) return null
       const layers = ensureUniqueIds(
         record.layers
@@ -1718,6 +1757,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         cols: record.cols,
         rows: record.rows,
         layers: sanitizeLayerTree(layers),
+        ...(resources.length ? { resources } : {}),
       }
       // O carimbo acompanha o conteúdo: 3 quando o mapa só usa camadas, 4 quando usa a cena
       // completa, e sai quando deixa de precisar (o mapa que cabe no formato antigo fica byte a
@@ -1726,11 +1766,12 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       return schema === undefined ? tilemap : { ...tilemap, schema }
     }
     case 'map-set': {
-      // Lê os conjuntos 3/4 anteriores e 5 com frações; o carimbo acompanha o mapa interno.
+      // O conjunto acompanha a capacidade do mapa interno, incluindo suas versões de recursos.
       if (
         (record.schema !== PINTA_MAP_SCHEMA &&
           record.schema !== PINTA_SCENE_SCHEMA &&
-          record.schema !== PINTA_PRECISE_SCHEMA) ||
+          record.schema !== PINTA_PRECISE_SCHEMA &&
+          record.schema !== PINTA_RESOURCE_SCHEMA) ||
         !record.map ||
         typeof record.map !== 'object' ||
         (record.map as Record<string, unknown>).kind !== 'tilemap'

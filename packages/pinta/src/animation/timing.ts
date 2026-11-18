@@ -1,0 +1,78 @@
+import type { PintaEasing } from '../core/project'
+
+/** Curva suave (ease-in-out) — devagar nas pontas, rápido no meio. */
+function easeInOutQuad(p: number): number {
+  return p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2
+}
+
+/**
+ * Duração total de uma passada da animação em ms (quadros ÷ fps). A suavização
+ * NÃO muda esse total — só redistribui QUANDO cada quadro aparece.
+ */
+export function animationDurationMs(frameCount: number, fps: number): number {
+  const safeFps = Math.min(Math.max(fps, 1), 60)
+  return (Math.max(frameCount, 0) * 1000) / safeFps
+}
+
+/**
+ * Índice do quadro em `elapsedMs`. Com `loop` dá a volta; sem loop TRAVA no
+ * último quadro (a prévia mostra o fim, não some). Com `easing: 'ease'` a
+ * mesma volta segura mais nas pontas (mesma duração total).
+ */
+export function frameIndexAt(
+  elapsedMs: number,
+  fps: number,
+  frameCount: number,
+  loop: boolean,
+  easing: PintaEasing = 'linear',
+): number {
+  if (frameCount <= 0) return 0
+  const safeFps = Math.min(Math.max(fps, 1), 60)
+  if (easing === 'linear') {
+    const step = Math.floor(Math.max(elapsedMs, 0) / (1000 / safeFps))
+    if (loop) return step % frameCount
+    return Math.min(step, frameCount - 1)
+  }
+  // Suave: warp da FASE dentro de uma passada (o total = frameCount/fps não muda).
+  const cycleMs = animationDurationMs(frameCount, fps)
+  if (cycleMs <= 0) return 0
+  const t = Math.max(elapsedMs, 0)
+  const phase = loop ? (t % cycleMs) / cycleMs : Math.min(t / cycleMs, 1)
+  return Math.min(Math.floor(easeInOutQuad(phase) * frameCount), frameCount - 1)
+}
+
+/**
+ * Inverso de `easeInOutQuad` — a curva é estritamente crescente em [0,1], então
+ * tem inverso. Serve para perguntar "em que ponto da passada o quadro k entra?".
+ */
+function easeInOutQuadInverse(eased: number): number {
+  const e = Math.min(Math.max(eased, 0), 1)
+  return e < 0.5 ? Math.sqrt(e / 2) : 1 - Math.sqrt((1 - e) / 2)
+}
+
+/**
+ * Quanto CADA quadro fica na tela, em ms, numa passada da animação.
+ *
+ * No `linear` é sempre `1000/fps`. No `ease` a prévia mostra os quadros das
+ * pontas por mais tempo e os do meio por menos — e isso não é enfeite do
+ * player, é a animação que a criança montou. Quem exporta (GIF) precisa dos
+ * MESMOS tempos, senão o arquivo que ela manda para alguém não é o que ela viu.
+ *
+ * A soma bate exatamente com `animationDurationMs` (as fatias se encaixam pelas
+ * bordas), então a passada dura o mesmo nos dois modos.
+ */
+export function frameDurationsMs(
+  frameCount: number,
+  fps: number,
+  easing: PintaEasing = 'linear',
+): number[] {
+  if (frameCount <= 0) return []
+  const safeFps = Math.min(Math.max(fps, 1), 60)
+  if (easing === 'linear') return Array.from({ length: frameCount }, () => 1000 / safeFps)
+  const cycleMs = animationDurationMs(frameCount, fps)
+  return Array.from({ length: frameCount }, (_, k) => {
+    const from = easeInOutQuadInverse(k / frameCount)
+    const to = k + 1 >= frameCount ? 1 : easeInOutQuadInverse((k + 1) / frameCount)
+    return (to - from) * cycleMs
+  })
+}

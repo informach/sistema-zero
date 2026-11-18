@@ -1,6 +1,37 @@
 import type { PintaScene, PintaSceneLayer, PintaSceneObject } from './pinta-scene'
 
 export { sceneObjectTransformSource } from './pinta-scene-transform.generated'
+/** Source crop shared by the editor and JavaScript players. Self-contained for portable builds. */
+export function sceneArtFrame(
+  art: NonNullable<PintaScene['art']>[number],
+  animationId: string | undefined,
+  elapsedMs: number,
+): { x: number; y: number; width: number; height: number } {
+  const sprite = art.sprite
+  if (!sprite) return { x: 0, y: 0, width: art.width, height: art.height }
+  const animation = sprite.animations.find((a) => a.id === animationId)
+  let tile = sprite.animations[0]!.frames[0]!.tile
+  if (animation) {
+    const total = animation.frames.reduce((sum, f) => sum + f.duration, 0)
+    let at = animation.loop
+      ? Math.max(0, elapsedMs) % total
+      : Math.min(Math.max(0, elapsedMs), total)
+    tile = animation.frames.at(-1)!.tile
+    for (const frame of animation.frames) {
+      at -= frame.duration
+      if (at < 0) {
+        tile = frame.tile
+        break
+      }
+    }
+  }
+  return {
+    x: (tile % sprite.columns) * sprite.frameWidth,
+    y: Math.floor(tile / sprite.columns) * sprite.frameHeight,
+    width: sprite.frameWidth,
+    height: sprite.frameHeight,
+  }
+}
 export function sceneLayerState(
   layers: PintaSceneLayer[],
   layer: PintaSceneLayer,

@@ -1,7 +1,8 @@
 import { expect, type Page, test } from '@playwright/test'
 
 type Proof = typeof import('../../pinta/src/state/persistence') &
-  typeof import('../../pinta/src/core/project')
+  typeof import('../../pinta/src/core/project') &
+  typeof import('../../pinta/src/state/clipboardStore')
 declare global {
   interface Window {
     pinta026: Proof
@@ -50,6 +51,109 @@ async function seed(page: Page, namespace: string) {
     return map.id
   }, namespace)
 }
+
+test('espelho 2 do clipboard conserva arte privada e é recusado pelos leitores antigos', async ({
+  page,
+  context,
+}) => {
+  await proof(page)
+  const text = await page.evaluate(() => {
+    const p = window.pinta026,
+      asset = p.createPixelSpriteAsset({ name: 'tree', frameSize: 16 })
+    const store = p.createClipboardStore({ namespace: 'clipboard-six' })
+    store.getState().set({
+      kind: 'objects',
+      objects: [
+        {
+          id: 'tree',
+          name: 'Tree',
+          type: '',
+          x: 0,
+          y: 0,
+          width: 16,
+          height: 16,
+          properties: {},
+          art: { assetId: asset.id, animationId: asset.animations[0]!.id },
+        },
+      ],
+      resources: [{ sourceId: 'original-tree', capturedAt: 100, asset }],
+    })
+    return localStorage.getItem(`${p.CLIPBOARD_STORAGE_KEY}:clipboard-six`)!
+  })
+  expect(JSON.parse(text).v).toBe(2)
+  expect(
+    await page.evaluate((text) => window.pinta026.parseClipboardMirror(text)?.item.kind, text),
+  ).toBe('objects')
+  for (const version of ['old', 'previous']) {
+    const older = await context.newPage()
+    await proof(older, version)
+    expect(
+      await older.evaluate((text) => window.pinta026.parseClipboardMirror(text), text),
+    ).toBeNull()
+  }
+})
+
+test('leitor nativo 5 recusa leitura e gravação sobre a versão 6 offline', async ({
+  context,
+  page,
+}) => {
+  const namespace = `resource-026-${Date.now()}`
+  const previous = await context.newPage()
+  await proof(previous, 'previous')
+  expect(await previous.evaluate(() => window.pinta026.PINTA_MAX_SCHEMA)).toBe(5)
+  const id = await seed(previous, namespace)
+  await previous.evaluate(
+    async ({ id, namespace }) => {
+      window.client026 = window.pinta026.createPintaPersistence({ namespace })
+      const asset = await window.client026.loadAssetById(id)
+      if (!asset) throw new Error('Previous RAM missing')
+      window.ram026 = asset
+    },
+    { id, namespace },
+  )
+  await proof(page)
+  await context.setOffline(true)
+  await page.evaluate(
+    async ({ id, namespace }) => {
+      const p = window.pinta026,
+        client = p.createPintaPersistence({ namespace })
+      const asset = await client.loadAssetById(id)
+      if (asset?.kind !== 'tilemap') throw new Error('Map missing')
+      const sprite = p.createPixelSpriteAsset({ name: 'tree', frameSize: 16 })
+      sprite.id = 'frozen-tree'
+      await client.persistAsset({
+        ...asset,
+        name: 'native-six',
+        resources: [{ sourceId: 'tree-source', capturedAt: 100, asset: sprite }],
+      })
+    },
+    { id, namespace },
+  )
+  await page.close()
+  expect(await previous.evaluate((id) => window.client026.loadAssetById(id), id)).toBeNull()
+  await expect(
+    previous.evaluate(async () => {
+      await window.client026.persistAsset({ ...window.ram026, name: 'old-five-edit' })
+    }),
+  ).rejects.toThrow('Atualize a página antes de alterar este desenho.')
+  await context.setOffline(false)
+  const reopened = await context.newPage()
+  await proof(reopened)
+  const maps = await reopened.evaluate(async (namespace) => {
+    const assets = await window.pinta026.createPintaPersistence({ namespace }).listAllAssets()
+    return assets.filter((a) => a.kind === 'tilemap')
+  }, namespace)
+  expect(
+    maps.some(
+      (a) =>
+        a.id === id &&
+        a.name === 'native-six' &&
+        a.kind === 'tilemap' &&
+        a.resources?.[0]?.asset.id === 'frozen-tree',
+    ),
+  ).toBe(true)
+  expect(maps).toHaveLength(1)
+})
 
 test('026: RAM4 real, promoção5, páginas fechadas e recuperação offline na galeria', async ({
   context,

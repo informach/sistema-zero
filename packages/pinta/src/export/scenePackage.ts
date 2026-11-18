@@ -10,6 +10,7 @@ import {
   TiledSceneCompatibilityError,
   tiledMap,
   tiledMapXml,
+  tiledSceneWarnings,
   tiledTilesetXml,
 } from './tiled/export'
 export type ScenePackageTarget = 'tiled' | 'phaser' | 'pygame' | 'godot'
@@ -54,6 +55,7 @@ export async function buildScenePackage(
       tiledStart = `${folder}/mapa.json`
     }
     try {
+      tiledWarnings.push(...tiledSceneWarnings(scene).map((text) => `Mapa ${map.name}: ${text}`))
       const tiled = tiledMap(scene)
       files[`${folder}/mapa.json`] = JSON.stringify(tiled, null, 2)
       files[`${folder}/mapa.tmx`] = tiledMapXml(tiled, true)
@@ -104,9 +106,9 @@ export async function buildScenePackage(
   ]
   if (tiledWarnings.length) {
     files['COMPATIBILIDADE-TILED.txt'] =
-      `Suplementos Tiled não criados\n\n${tiledWarnings.join('\n\n')}\n`
+      `Compatibilidade com Tiled\n\n${tiledWarnings.join('\n\n')}\n`
     readme.push(
-      'Leia COMPATIBILIDADE-TILED.txt: alguns mapas deste projeto não têm suplemento Tiled; os dados do destino escolhido foram conservados.',
+      'Leia COMPATIBILIDADE-TILED.txt para conferir diferenças de execução ou suplementos não criados. Os dados do destino escolhido foram conservados.',
       '',
     )
   }

@@ -10,9 +10,26 @@ import {
   type ScenePackageTarget,
   scenePackageBlob,
 } from '../../src/export/scenePackage'
+import { packSpritesheet } from '../../src/export/spritesheet'
 import { bitmapToRGBA } from '../../src/pixel/render'
 import { vilaEFloresta } from './fixture'
 export async function nativeImageOf(asset: PintaAsset): Promise<string | null> {
+  if (asset.kind === 'pixel-sprite') {
+    const pack = packSpritesheet(asset),
+      canvas = createCanvas(pack.columns * pack.frameWidth, pack.rows * pack.frameHeight),
+      ctx = canvas.getContext('2d')
+    for (const cell of pack.cells)
+      ctx.putImageData(
+        new ImageData(
+          bitmapToRGBA(cell.bitmap, resolveAssetPalette(asset)),
+          cell.bitmap.width,
+          cell.bitmap.height,
+        ),
+        cell.col * pack.frameWidth,
+        cell.row * pack.frameHeight,
+      )
+    return canvas.toDataURL('image/png')
+  }
   if (asset.kind === 'tileset') {
     const cols = Math.min(8, asset.tiles.length),
       rows = Math.ceil(asset.tiles.length / cols),

@@ -7,8 +7,36 @@ type Game = {
   maps: {
     mapSize(name: string, axis: string): number
     mapObjects(name: string, type: string): Array<{ name: string }>
+    createMapScene(name: string, asset: string): void
   }
 }
+
+test('Phaser portátil anima a versão fixada e conserva o último quadro', async ({ page }, info) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.clock.setFixedTime(1000)
+  await page.goto('http://127.0.0.1:5293/resources/')
+  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
+  await page.evaluate(() => window.pintaGame.maps.createMapScene('mapa', 'recursos-qa'))
+  const samples: number[][] = []
+  for (const [time, expected] of [
+    [1000, [255, 0, 0, 255]],
+    [1300, [0, 255, 0, 255]],
+    [1600, [0, 0, 255, 255]],
+    [11000, [0, 0, 255, 255]],
+  ] as const) {
+    await page.clock.setFixedTime(time)
+    const read = () =>
+      page.evaluate(() => [...window.pintaGame.surface.context.getImageData(24, 24, 1, 1).data])
+    await expect.poll(read).toEqual([...expected])
+    samples.push(await read())
+  }
+  expect(errors).toEqual([])
+  await info.attach('phaser-resource-frames', {
+    body: JSON.stringify(samples),
+    contentType: 'application/json',
+  })
+})
 declare global {
   interface Window {
     pintaGame: Game

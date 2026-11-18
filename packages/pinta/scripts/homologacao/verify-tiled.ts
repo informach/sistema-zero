@@ -41,7 +41,10 @@ const decode = async (url: string) => {
 }
 
 /** Os problemas do pacote em `folder` (lista vazia = tudo confere). */
-export async function verifyTiledPackage(folder: string): Promise<string[]> {
+export async function verifyTiledPackage(
+  folder: string,
+  mapFiles: readonly string[] = ['mapa.json', 'mapa.tmx'],
+): Promise<string[]> {
   const problems: string[] = []
   const scenes = Object.values(
     JSON.parse(await readFile(join(folder, 'maps.json'), 'utf8')) as Record<string, PintaScene>,
@@ -62,7 +65,7 @@ export async function verifyTiledPackage(folder: string): Promise<string[]> {
           }
         : {}),
     }
-    for (const file of ['mapa.json', 'mapa.tmx']) {
+    for (const file of mapFiles) {
       const path = join(folder, `mapas/mapa-${index}`, file),
         where = `mapas/mapa-${index}/${file}`
       try {

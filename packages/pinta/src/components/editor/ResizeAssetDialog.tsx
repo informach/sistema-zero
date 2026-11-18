@@ -10,6 +10,7 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { type ResizeTarget, resizeAsset, resizeCuts } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
+import { embeddedTilesetOf } from '../../core/mapResourceVersions'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import { usePintaGallery } from '../appContext'
 import { CustomSizeFields } from '../gallery/CustomSizeFields'
@@ -45,7 +46,7 @@ export function ResizeAssetDialog({
   // Mapa: o tamanho da peça faz os OBJETOS andarem junto com as células.
   const tileSize = usePintaGallery((state) => {
     if (asset.kind !== 'tilemap') return undefined
-    const tileset = state.assets.find((a) => a.id === asset.tilesetId)
+    const tileset = embeddedTilesetOf(asset) ?? state.assets.find((a) => a.id === asset.tilesetId)
     return tileset && isTilesetKind(tileset) ? tileset.tileSize : undefined
   })
 

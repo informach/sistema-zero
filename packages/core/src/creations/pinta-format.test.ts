@@ -4,8 +4,19 @@ import {
   PINTA_MAP_WRITE_FORMAT_VERSION,
   PINTA_MAX_READ_FORMAT_VERSION,
   pintaCanReadFormatVersion,
+  pintaCanWriteNativeSchema,
   pintaWriteFormatVersion,
 } from './pinta-format'
+
+test('o rollout só do leitor nunca envia documento 6 declarando nuvem 4', () => {
+  expect(pintaCanWriteNativeSchema(6, 4)).toBe(false)
+  expect(pintaCanWriteNativeSchema(6, 5)).toBe(true)
+  expect(pintaCanWriteNativeSchema(5, 3)).toBe(false)
+  expect(pintaCanWriteNativeSchema(5, 4)).toBe(true)
+  expect(pintaCanWriteNativeSchema(4, 3)).toBe(true)
+  expect(pintaCanWriteNativeSchema(0, 1)).toBe(true)
+  for (const schema of [-1, 1.5, NaN, 7]) expect(pintaCanWriteNativeSchema(schema, 5)).toBe(false)
+})
 
 test('a versão declarada depende só do tipo do desenho', () => {
   for (const kind of ['tilemap', 'tileset', 'vector-tileset', 'map-set']) {
@@ -29,13 +40,13 @@ test('nunca se declara uma versão que este código não lê', () => {
 })
 
 test('a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3', () => {
-  expect(PINTA_MAX_READ_FORMAT_VERSION).toBe(4)
+  expect(PINTA_MAX_READ_FORMAT_VERSION).toBeGreaterThanOrEqual(4)
   for (const kind of ['tilemap', 'map-set', 'tileset', 'vector-tileset']) {
     expect(pintaWriteFormatVersion(kind)).toBe(4)
     expect(3 >= pintaWriteFormatVersion(kind)).toBe(false)
   }
   expect(pintaCanReadFormatVersion(4)).toBe(true)
-  expect(pintaCanReadFormatVersion(5)).toBe(false)
+  expect(pintaCanReadFormatVersion(PINTA_MAX_READ_FORMAT_VERSION + 1)).toBe(false)
 })
 
 test('o gravador completo supera o cliente intermediário que só entende camadas', () => {
@@ -64,6 +75,6 @@ test('os números de hoje estão travados: mudar é seguir o procedimento do pin
   expect({
     leitura: PINTA_MAX_READ_FORMAT_VERSION as number,
     escrita: PINTA_MAP_WRITE_FORMAT_VERSION as number,
-  }).toEqual({ leitura: 4, escrita: 4 })
+  }).toEqual({ leitura: 5, escrita: 4 })
   expect(pintaCanReadFormatVersion(PINTA_MAP_WRITE_FORMAT_VERSION)).toBe(true)
 })

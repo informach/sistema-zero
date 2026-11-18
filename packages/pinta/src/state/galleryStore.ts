@@ -6,6 +6,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
+import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import { createAsset, type NewAssetInput } from '../core/newAsset'
 import { perfSpanAsync } from '../core/perf'
 import {
@@ -356,7 +357,8 @@ export function createGalleryStore(
         if (
           asset.kind === 'tilemap' &&
           !currentTilesetIds.has(asset.tilesetId) &&
-          !incomingTilesetIds.has(asset.tilesetId)
+          !incomingTilesetIds.has(asset.tilesetId) &&
+          !embeddedTilesetOf(asset)
         ) {
           skipped += 1
           importError ??= COPY.gallery.restoreMissingTileset

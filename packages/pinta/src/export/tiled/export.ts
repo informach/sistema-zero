@@ -11,6 +11,15 @@ import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from '../.
 import { cellMatrix } from '../../tiles/chunks'
 
 type Property = { name: string; type: string; value: unknown }
+export function tiledSceneWarnings(scene: PintaScene): string[] {
+  return (scene.art ?? []).flatMap((a) =>
+    a.sprite?.animations.some((v) => !v.loop)
+      ? [
+          `O Tiled repete as animações de ${a.id}. A opção de parar no último quadro é conservada nos metadados do Pinta, mas o Tiled não a executa.`,
+        ]
+      : [],
+  )
+}
 export class TiledSceneCompatibilityError extends Error {
   constructor(message: string) {
     super(message)
@@ -132,31 +141,67 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
         })) ?? [],
     }
   })
-  const artFirst = new Map<string, number>()
+  const artFirst = new Map<string, Map<string | undefined, number>>()
+  const allObjects = [scene.layers, ...(scene.sets ?? []).map((s) => s.layers)]
+    .flat()
+    .flatMap((l) => (l.kind === 'objects' ? l.objects : []))
   for (const [i, a] of (scene.art ?? []).entries()) {
-    artFirst.set(a.id, first)
-    tilesets.push({
-      firstgid: first++,
-      name: `Objeto ${i + 1}`,
-      tilewidth: a.width,
-      tileheight: a.height,
-      tilecount: 1,
-      columns: 1,
-      margin: 0,
-      spacing: 0,
-      image: `images/art-${i}.png`,
-      imagewidth: a.width,
-      imageheight: a.height,
-      properties: [{ name: 'pinta:art', type: 'string', value: a.id }],
-      tiles: [],
-      wangsets: [],
-    })
+    const variants = new Map<string | undefined, number>()
+    artFirst.set(a.id, variants)
+    const sprite = a.sprite
+    const count = sprite ? (sprite.columns * a.height) / sprite.frameHeight : 1
+    const animations =
+      sprite?.animations.filter((v) =>
+        allObjects.some((o) => o.art?.assetId === a.id && o.art.animationId === v.id),
+      ) ?? []
+    // A static copy and animated instances can share one atlas without making the static copy play.
+    for (const animation of [undefined, ...animations]) {
+      variants.set(animation?.id, first)
+      tilesets.push({
+        firstgid: first,
+        name: `Objeto ${i + 1}`,
+        tilewidth: sprite?.frameWidth ?? a.width,
+        tileheight: sprite?.frameHeight ?? a.height,
+        tilecount: count,
+        columns: sprite?.columns ?? 1,
+        margin: 0,
+        spacing: 0,
+        image: `images/art-${i}.png`,
+        imagewidth: a.width,
+        imageheight: a.height,
+        properties: [
+          { name: 'pinta:art', type: 'string', value: a.id },
+          ...(animation ? [{ name: 'pinta:animation', type: 'string', value: animation.id }] : []),
+          ...(sprite
+            ? [{ name: 'pinta:sprite', type: 'string', value: JSON.stringify(sprite) }]
+            : []),
+        ],
+        tiles: animation
+          ? [
+              {
+                id: animation.frames[0]!.tile,
+                properties: [],
+                animation: animation.frames.map((f) => ({
+                  tileid: f.tile,
+                  duration: Math.max(1, Math.round(f.duration)),
+                })),
+              },
+            ]
+          : [],
+        wangsets: [],
+      })
+      first += count
+    }
   }
   function object(o: PintaSceneObject): Record<string, unknown> {
+    const sprite = scene.art?.find((a) => a.id === o.art?.assetId)?.sprite
+    const animation = sprite?.animations.find((a) => a.id === o.art?.animationId)
+    const tile =
+      animation?.frames[0]?.tile ?? sprite?.animations[0]?.frames[0]?.tile ?? o.art?.tile ?? 0
     const gid = o.art
       ? cellToGid(
-          (o.art.tile ?? 0) | (o.flipX ? CELL_FLIP_H : 0) | (o.flipY ? CELL_FLIP_V : 0),
-          firstgid.get(o.art.assetId) ?? artFirst.get(o.art.assetId) ?? 0,
+          tile | (o.flipX ? CELL_FLIP_H : 0) | (o.flipY ? CELL_FLIP_V : 0),
+          firstgid.get(o.art.assetId) ?? artFirst.get(o.art.assetId)?.get(o.art.animationId) ?? 0,
         )
       : undefined
     const objectProperties = properties(o.properties)
@@ -360,6 +405,10 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
     properties: [
       { name: 'pinta:id', type: 'string', value: scene.id },
       { name: 'pinta:name', type: 'string', value: scene.name },
+      ...(scene.version === 2 ? [{ name: 'pinta:sceneVersion', type: 'int', value: 2 }] : []),
+      ...(scene.resources?.length
+        ? [{ name: 'pinta:resources', type: 'string', value: JSON.stringify(scene.resources) }]
+        : []),
       ...(scene.sets?.length
         ? [{ name: 'pinta:sets', type: 'string', value: JSON.stringify(scene.sets) }]
         : []),

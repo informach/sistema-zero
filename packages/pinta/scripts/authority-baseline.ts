@@ -4,13 +4,17 @@ import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 export const AUTHORITY_BASELINE = '567b93f95'
 
 /** Real published reader/writer and its relative graph; no replacement legacy writer. */
-export async function prepareAuthorityBaseline(root: string, temporary: string) {
-  const extracted = join(temporary, 'baseline')
+export async function prepareAuthorityBaseline(
+  root: string,
+  temporary: string,
+  revision = AUTHORITY_BASELINE,
+) {
+  const extracted = join(temporary, `baseline-${revision}`)
   const copied = new Set<string>()
   const sources = new Map<string, string | null>()
   function gitShow(path: string): string | null {
     if (sources.has(path)) return sources.get(path) ?? null
-    const result = Bun.spawnSync(['git', 'show', `${AUTHORITY_BASELINE}:${path}`], {
+    const result = Bun.spawnSync(['git', 'show', `${revision}:${path}`], {
       cwd: root,
       stdout: 'pipe',
       stderr: 'pipe',
@@ -47,6 +51,7 @@ export async function prepareAuthorityBaseline(root: string, temporary: string) 
   }
   await copyModule('packages/pinta/src/state/persistence.ts')
   await copyModule('packages/pinta/src/core/project.ts')
+  await copyModule('packages/pinta/src/state/clipboardStore.ts')
   await symlink(
     join(root, 'packages/pinta/node_modules'),
     join(extracted, 'packages/pinta/node_modules'),

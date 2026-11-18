@@ -87,5 +87,32 @@ func run() -> void:
     for frame in range(2):
         await physics_frame
     require(game.scene_data.name == "vila-e-floresta", "Porta não voltou à vila")
+    if "--gpu" in OS.get_cmdline_user_args():
+        game.set_physics_process(false)
+        for child_node in game.player.get_children():
+            if child_node is Camera2D:
+                child_node.enabled = false
+        game.player.global_position = Vector2(32,32)
+        var water: Array = []
+        var second_frame: float = game.animated_cells[0].frames[0].duration + 1
+        for time_ms in [0,second_frame]:
+            game.elapsed = time_ms
+            game._physics_process(0)
+            await process_frame
+            await RenderingServer.frame_post_draw
+            var frame_image := root.get_texture().get_image()
+            var hero := frame_image.get_pixel(33,33)
+            require([hero.r8,hero.g8,hero.b8] == [74,222,128], "GPU não desenhou o personagem no início")
+            water.append(frame_image.get_region(Rect2i(448,224,16,16)).get_data())
+        require(water[0] != water[1], "GPU não animou a água")
+        game.player.global_position = Vector2(88,40)
+        await process_frame
+        await RenderingServer.frame_post_draw
+        var final_image := root.get_texture().get_image()
+        var covered := final_image.get_pixel(88,40)
+        require([covered.r8,covered.g8,covered.b8] != [74,222,128], "GPU não desenhou o primeiro plano sobre o personagem")
+        final_image.save_png("res://vila-gpu.png")
+        if not failed:
+            print("Godot GPU: pixels do personagem, água animada e primeiro plano conferidos")
     print("Godot QA: 18 camadas, objetos, IDs únicos, referências, origem afim, animação, movimento, colisão e portas; falhas=", failed)
     quit(1 if failed else 0)

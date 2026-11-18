@@ -11,7 +11,7 @@ export const VILA_SCENE_ASSETS: ProjectAsset[] = [
     width: 512,
     height: 384,
     scene: {
-      version: 1,
+      version: 2,
       id: 'vila-e-floresta',
       name: 'vila-e-floresta',
       tileSize: 16,
@@ -925,6 +925,19 @@ export const VILA_SCENE_ASSETS: ProjectAsset[] = [
             'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAABlSURBVDiNY2AYaMCITXBjlu9/bOL+0zZjqGeiiQvePdiA1QVCCgHEu0A/qAErm+ouYMGm0H/GS5w2ogOKA3EYGIA1EHWuzGdgYGBgmL7lBCMDAwNDpo/FfwYGBobDtHABxQZQDAB+qhZQjIepCAAAAABJRU5ErkJggg==',
           width: 16,
           height: 16,
+          sprite: {
+            frameWidth: 16,
+            frameHeight: 16,
+            columns: 1,
+            animations: [
+              {
+                id: 'morador-parado',
+                name: 'parado',
+                loop: true,
+                frames: [{ tile: 0, duration: 125 }],
+              },
+            ],
+          },
         },
       ],
     },

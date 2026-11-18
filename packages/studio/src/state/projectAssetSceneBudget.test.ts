@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { createEmptyProject, type ProjectAsset, sanitizeProjectAssets } from '#core'
+import { assertProjectContentPreserved } from '../core/projectDocument'
 import { createProjectStore } from './projectStore'
 
 /**
@@ -32,6 +33,72 @@ const quaseCheio = (): ProjectAsset[] =>
     dataUrl: ENORME,
   }))
 const GRANDE = cena(`data:image/png;base64,${'D'.repeat(300_000)}`)
+
+test('cena 2 atualiza arte e animação sem reescrever o programa; um leitor que corte a cena é recusado', () => {
+  const makeScene = (id: string) => ({
+    ...cena(PNG),
+    version: 2 as const,
+    art: [
+      {
+        id,
+        image: PNG,
+        width: 16,
+        height: 16,
+        sprite: {
+          frameWidth: 16,
+          frameHeight: 16,
+          columns: 1,
+          animations: [
+            { id: 'wind', name: 'Vento', loop: true, frames: [{ tile: 0, duration: 100 }] },
+          ],
+        },
+      },
+    ],
+    resources: [{ id, sourceId: 'original-tree', capturedAt: 100 }],
+    layers: [
+      ...cena(PNG).layers,
+      {
+        id: 'objects',
+        kind: 'objects' as const,
+        name: 'Árvores',
+        visible: true,
+        objects: [
+          {
+            id: 'tree',
+            name: 'Árvore',
+            type: '',
+            x: 0,
+            y: 0,
+            width: 16,
+            height: 16,
+            properties: {},
+            art: { assetId: id, animationId: 'wind' },
+          },
+        ],
+      },
+    ],
+  })
+  const store = createProjectStore(),
+    base = createEmptyProject('continuar', 'Meu jogo')
+  base.files['script.js'] = 'let pontos = 17;\n'
+  store.getState().hydrateProject({ ...base, mode: 'bridge', bridgeCodeAhead: true })
+  expect(
+    store.getState().addAsset({ name: 'vila', dataUrl: PNG, scene: makeScene('tree-v1') }),
+  ).toBeNull()
+  const before = store.getState().project!,
+    asset = before.assets![0]!,
+    next = makeScene('tree-v2')
+  expect(store.getState().updateAssetImage(asset.id, { dataUrl: PNG, scene: next })).toBeNull()
+  const after = store.getState().project!
+  expect(after.files).toEqual(before.files)
+  expect(after.ir).toEqual(before.ir)
+  expect(after.blocksState).toEqual(before.blocksState)
+  expect(sanitizeProjectAssets(after.assets)[0]?.scene).toEqual(next)
+  const { scene: _dropped, ...legacy } = after.assets![0]!
+  expect(() =>
+    assertProjectContentPreserved({ assets: after.assets }, { assets: [legacy] }),
+  ).toThrow('Nenhuma cópia foi gravada')
+})
 
 function aberto(extra: ProjectAsset[] = []) {
   const store = createProjectStore()

@@ -8,7 +8,8 @@ export function withinLessonMapLimits(asset: PintaAsset): boolean {
     return (
       asset.cols <= limits.maxCols &&
       asset.rows <= limits.maxRows &&
-      asset.layers.length <= limits.maxLayers
+      asset.layers.length <= limits.maxLayers &&
+      (asset.resources ?? []).every((version) => withinLessonMapLimits(version.asset))
     )
   if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')
     return asset.tiles.length <= limits.maxTiles

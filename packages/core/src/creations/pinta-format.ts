@@ -18,7 +18,7 @@
  * A maior versão que este código sabe LER. Itens acima disso ficam intocados na nuvem: a galeria
  * não baixa, não copia e não sobe por cima, e pede para atualizar a página.
  */
-export const PINTA_MAX_READ_FORMAT_VERSION = 4
+export const PINTA_MAX_READ_FORMAT_VERSION = 5
 
 /**
  * A versão que mapas, conjuntos de peças e conjuntos DECLARAM ao subir.
@@ -82,6 +82,10 @@ export const PINTA_MAX_READ_FORMAT_VERSION = 4
  */
 export const PINTA_MAP_WRITE_FORMAT_VERSION = 4
 
+// Rollout A: native 6 (embedded resources and selected sprite animations) is readable.
+// Writers remain at 4 until this reader has been deployed and verified in staging.
+// Producers reject native 6 with declaration 4; the local authoritative checkpoint stays intact.
+
 /** Tipos de desenho cujo formato evolui com o editor de cenários. */
 const VERSIONED_KINDS: ReadonlySet<string> = new Set([
   'tilemap',
@@ -102,4 +106,25 @@ export function pintaWriteFormatVersion(kind: string): number {
 /** Este código consegue ler um item que a nuvem lista com esta versão? Ausente = 1. */
 export function pintaCanReadFormatVersion(version: number | undefined | null): boolean {
   return (version ?? 1) <= PINTA_MAX_READ_FORMAT_VERSION
+}
+
+/** O documento 6 exige a barreira de nuvem 5, inclusive durante o rollout só do leitor. */
+export const PINTA_RESOURCE_NATIVE_SCHEMA = 6
+const MIN_CLOUD_FORMAT_BY_NATIVE_SCHEMA = [1, 1, 1, 2, 3, 4, 5] as const
+export function pintaCanWriteNativeSchema(schema: number, declaredFormatVersion: number): boolean {
+  if (!Number.isSafeInteger(schema) || schema < 0) return false
+  const minimum = MIN_CLOUD_FORMAT_BY_NATIVE_SCHEMA[schema]
+  return (
+    minimum !== undefined &&
+    Number.isSafeInteger(declaredFormatVersion) &&
+    declaredFormatVersion >= minimum
+  )
+}
+
+export class PintaClientOutdatedError extends Error {
+  readonly code = 'CREATION_CLIENT_OUTDATED'
+  constructor() {
+    super('Atualize a página para guardar este formato de desenho na sua conta.')
+    this.name = 'PintaClientOutdatedError'
+  }
 }

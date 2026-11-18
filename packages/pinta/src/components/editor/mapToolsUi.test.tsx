@@ -13,6 +13,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createRef } from 'react'
 import { COPY } from '../../core/copy'
 import {
+  createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
   isObjectLayer,
@@ -357,6 +358,61 @@ describe('terreno, espalhar e animação da peça', () => {
 })
 
 describe('objetos do mapa', () => {
+  it('arte: guardar versão, desfazer/refazer, reconectar e limpar sem perder a animação escolhida', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 })
+    sprite.animations.push({
+      ...structuredClone(sprite.animations[0]!),
+      id: 'vento',
+      name: 'vento',
+    })
+    await abrirMapa({
+      level: 'advanced',
+      prepare: comObjetos,
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sprite)
+      },
+    })
+    await ativarObjetos()
+    fireEvent.click(
+      await screen.findByRole('button', { name: COPY.scene.dynamicPorNoMapa('arvore') }),
+    )
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.pickObject('arvore') }))
+    fireEvent.change(screen.getByLabelText(COPY.scene.objectAnimation), {
+      target: { value: 'vento' },
+    })
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())[0]!.art?.animationId).toBe('vento'),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.keepResourceVersion }))
+    let frozenId = ''
+    await noDisco(async () => {
+      const saved = await mapaDoDisco()
+      expect(saved.resources).toHaveLength(1)
+      frozenId = saved.resources![0]!.asset.id
+      expect(frozenId).not.toBe(sprite.id)
+      expect(objetos(saved)[0]!.art).toMatchObject({ assetId: frozenId, animationId: 'vento' })
+    })
+    fireEvent.click(desfazer())
+    await noDisco(async () => expect((await mapaDoDisco()).resources).toBeUndefined())
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await noDisco(async () => expect((await mapaDoDisco()).resources![0]!.asset.id).toBe(frozenId))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.followResource }))
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())[0]!.art).toMatchObject({
+        assetId: sprite.id,
+        animationId: 'vento',
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.clearUnusedVersions }))
+    await noDisco(async () => expect((await mapaDoDisco()).resources).toBeUndefined())
+    fireEvent.change(screen.getByLabelText(COPY.scene.objectAnimation), { target: { value: '' } })
+    await noDisco(async () => {
+      const saved = await mapaDoDisco()
+      expect(objetos(saved)[0]!.art?.animationId).toBeUndefined()
+      expect(saved.schema).toBe(4)
+    })
+  }, 15000)
   it('Delete sem nada escolhido não cria desfazer', async () => {
     await abrirMapa({ level: 'advanced', prepare: comObjetos })
     await ativarObjetos()

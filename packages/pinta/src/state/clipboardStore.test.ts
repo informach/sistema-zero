@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { newId } from '../core/id'
+import { createPixelSpriteAsset } from '../core/project'
 import { bmp, rows } from '../testing/fixtures'
+import { createMapObject } from '../tiles/mapObjects'
 import type { VectorShape } from '../vector/model'
 import {
   CLIPBOARD_MIRROR_MAX_CHARS,
@@ -42,6 +44,34 @@ function rect(id = newId()): VectorShape {
 }
 
 describe('clipboardStore (área de transferência do app)', () => {
+  it('objetos com versões e animações usam espelho 2 sem perder os bytes das artes', () => {
+    const mirror = fakeMirror(),
+      source = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 })
+    source.animations[0]!.frames[0]![0]!.data[0] = 3
+    const object = createMapObject({
+      shape: 'art',
+      art: { assetId: source.id, animationId: source.animations[0]!.id },
+    })
+    createClipboardStore({ mirror })
+      .getState()
+      .set({
+        kind: 'objects',
+        objects: [object],
+        resources: [{ sourceId: 'original-tree', capturedAt: 100, asset: source }],
+      })
+    const text = mirror.getItem(CLIPBOARD_STORAGE_KEY)!
+    const raw = JSON.parse(text)
+    expect(raw.v).toBe(2)
+    const restored = createClipboardStore({ mirror }).getState().get()
+    expect(restored).toEqual({
+      kind: 'objects',
+      objects: [object],
+      resources: [{ sourceId: 'original-tree', capturedAt: 100, asset: source }],
+    })
+    expect(parseClipboardMirror(JSON.stringify({ ...raw, v: 1 }))).toBeNull()
+    raw.resources[0].asset.schema = 99
+    expect(parseClipboardMirror(JSON.stringify(raw))).toBeNull()
+  })
   it('pixel: o que uma instância guarda, OUTRA instância lê pelo espelho (aba nova)', () => {
     const mirror = fakeMirror()
     const a = createClipboardStore({ mirror })

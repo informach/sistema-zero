@@ -15,6 +15,7 @@ import {
   pintaImageRecipeKey,
 } from '@sistemazero/core/studio/pinta-image'
 import { thumbnailBitmap, thumbnailShapes } from '../core/assetThumb'
+import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
@@ -151,7 +152,10 @@ function select(
  * list is empty and the selection is refused. The fingerprint and the atlas read the same list.
  */
 function mapTilesetsOf(source: PintaAsset, given: readonly AnyTilesetAsset[]): AnyTilesetAsset[] {
-  if (source.kind !== 'tilemap' || !given.some((tileset) => tileset.id === source.tilesetId))
+  if (
+    source.kind !== 'tilemap' ||
+    (!embeddedTilesetOf(source) && !given.some((tileset) => tileset.id === source.tilesetId))
+  )
     return []
   return resolveMapTilesets(source, given).filter(
     (tileset): tileset is AnyTilesetAsset => tileset !== null,
@@ -178,12 +182,16 @@ async function fingerprint(
 ): Promise<PintaImageDerivation['provenance']> {
   signal?.throwIfAborted()
   const sourceText = assetToJson(source)
+  const captured = new Map((assets ?? tilesets).map((asset) => [asset.id, asset]))
+  // An embedded tileset is captured by the map, even when there is no external gallery record.
+  // Append only absent IDs so established provenance ordering remains unchanged.
+  for (const tileset of tilesets) captured.set(tileset.id, tileset)
   const depends =
     source.kind !== 'tilemap' || rule === 'none'
       ? []
       : rule === 'default-tileset'
         ? tilesets.slice(0, 1)
-        : (assets ?? tilesets)
+        : [...captured.values()]
   const texts = depends.map((tileset) => ({ drawingId: tileset.id, text: assetToJson(tileset) }))
   const sourceSha256 = await sha256Hex(sourceText)
   signal?.throwIfAborted()
@@ -255,15 +263,17 @@ async function prepare(
           doc = thumbnailShapes(a)
         const selection = isTilesetKind(a)
           ? tilesetSheetSelection(a, 1)
-          : bitmap
-            ? {
-                scene: { kind: 'pixel' as const, bitmap, colors: resolveAssetPalette(a) },
-                width: bitmap.width,
-                height: bitmap.height,
-              }
-            : doc
-              ? { scene: { kind: 'vector' as const, doc }, width: doc.width, height: doc.height }
-              : null
+          : a.kind === 'pixel-sprite' || a.kind === 'vector-sprite'
+            ? spritesheetSelection(a, 1)
+            : bitmap
+              ? {
+                  scene: { kind: 'pixel' as const, bitmap, colors: resolveAssetPalette(a) },
+                  width: bitmap.width,
+                  height: bitmap.height,
+                }
+              : doc
+                ? { scene: { kind: 'vector' as const, doc }, width: doc.width, height: doc.height }
+                : null
         if (!selection) return null
         const bytes = await renderPintaImage(
           selection.scene,

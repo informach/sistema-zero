@@ -11,6 +11,7 @@
  */
 import { createStore, get, getMany, keys, setMany, update } from 'idb-keyval'
 import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
+import { withMapResourceVersions } from '../core/mapResourceVersions'
 import type { PaletteLibrary } from '../core/paletteLibrary'
 import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
@@ -708,12 +709,15 @@ export async function capturePintaAssetForImage(
   }
   const assets = [...discovered.values()].filter((a) => a.id !== id)
   const map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
-  const base = map ? assets.find((a) => a.id === map.tilesetId && isTilesetKind(a)) : null
+  const find = map
+    ? withMapResourceVersions(map, (ref) => snapshot.assets.get(ref) ?? null)
+    : (ref: string) => snapshot.assets.get(ref) ?? null
+  const base = map ? find(map.tilesetId) : null
   if (map && (!base || !isTilesetKind(base))) return { ok: false, reason: 'needs-tileset' }
   const tilesets =
     map && base && isTilesetKind(base)
       ? tilemapTilesetIds(map).flatMap((ref) => {
-          const asset = snapshot.assets.get(ref)
+          const asset = find(ref)
           return asset && isTilesetKind(asset) && isCompatibleMapTileset(base, asset) ? [asset] : []
         })
       : []

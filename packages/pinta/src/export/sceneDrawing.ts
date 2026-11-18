@@ -1,5 +1,5 @@
 import type { PintaScene, PintaSceneLayer } from '@sistemazero/core/studio/pinta-scene'
-import { sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellTile } from '../tiles/cell'
 import { cellMatrix } from '../tiles/chunks'
 
@@ -104,7 +104,23 @@ export function drawScene(
                   o.width,
                   o.height,
                 )
-              } else ctx.drawImage(image, 0, 0, o.width, o.height)
+              } else {
+                const art = scene.art?.find((a) => a.id === o.art?.assetId)
+                if (art) {
+                  const frame = sceneArtFrame(art, o.art.animationId, time)
+                  ctx.drawImage(
+                    image,
+                    frame.x,
+                    frame.y,
+                    frame.width,
+                    frame.height,
+                    0,
+                    0,
+                    o.width,
+                    o.height,
+                  )
+                }
+              }
             }
           }
           ctx.restore()

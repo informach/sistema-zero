@@ -1,4 +1,4 @@
-import { transformSceneSetObject } from '../src/studio/pinta-scene-runtime'
+import { sceneArtFrame, transformSceneSetObject } from '../src/studio/pinta-scene-runtime'
 
 // Capturar a função ANTES do bundler: a minificação pode introduzir templates e
 // renomear símbolos. O texto portátil deve ser estável em dev e produção.
@@ -9,7 +9,9 @@ const source = new Bun.Transpiler({
   minifySyntax: false,
   minifyIdentifiers: false,
 })
-  .transformSync(`var transformSceneSetObject=(${transformSceneSetObject.toString()});`)
+  .transformSync(
+    `var transformSceneSetObject=(${transformSceneSetObject.toString()});var sceneArtFrame=(${sceneArtFrame.toString()});`,
+  )
   .trim()
 if (source.includes('`')) throw new Error('O compositor portátil exige fonte sem templates.')
 if (process.argv.includes('--check')) {

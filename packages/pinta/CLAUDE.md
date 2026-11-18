@@ -1,6 +1,6 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## Formatos 4/5, tetos em dois níveis e carimbo na gravação (18/11/2026)
+## Formatos 4/5/6, tetos em dois níveis e carimbo na gravação (18/11/2026)
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
@@ -21,13 +21,18 @@ Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/
   tipadas de camadas/grupos. Nas peças, animação, terreno ou propriedade (`tilesetNeedsV4`).
 - `PINTA_PRECISE_SCHEMA = 5`: offsets fracionários de camada. O leitor completo 4 também
   os arredondava, conservando o carimbo 4; ele precisa recusar o novo documento. Conjuntos
-  exigem pelo menos 4 e acompanham o 5 do mapa interno. `PINTA_MAX_SCHEMA = 5`.
+  exigem pelo menos 4 e acompanham o formato do mapa interno.
+- `PINTA_RESOURCE_SCHEMA = 6`: catálogo de versões autocontidas de artes e seleção de animação
+  por objeto. `PINTA_MAX_SCHEMA = 6`. IDs da cópia são imutáveis; `sourceId` é proveniência,
+  não dependência externa. Teto de 32 versões / 8 MiB físicos; limpeza explícita e histórico
+  compartilhando as mesmas cópias. Contrato e provas em
+  `docs/pinta-cenarios/missao-completa-2026-11-18/recursos-e-animacoes.md`.
 - Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
   completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
   recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado
   medido no cabeçalho de `core/mapFormat4.test.ts`.
 - Quem só usa camadas continua em 3; documento antigo continua sem carimbo e byte a byte igual
-  (conferido contra o código de bf6e895f). A leitura aceita 3, 4 e 5, inclusive o mapa completo que
+  (conferido contra o código de bf6e895f). A leitura aceita 3, 4, 5 e 6, inclusive o mapa completo que
   já foi gravado com 3: ele é lido inteiro e passa a 4.
 - `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou superior)?", que é a pergunta do
   desenho e da entrega ao Estúdio. Para o número, use `tilemapSchemaFor`, `tilesetSchemaFor` ou
@@ -86,7 +91,10 @@ nota mais abaixo). Diagnóstico e plano: `docs/pinta-cenarios/README.md`.
   mapas e peças declaram ao subir) e `pintaWriteFormatVersion(kind)`. A versão declarada é função
   do TIPO do desenho, nunca do conteúdo.
 - A trava de leitura deve ser publicada antes do gravador. O leitor e o gravador completos
-  usam versão de nuvem 4 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
+  usam versão de escrita de nuvem 4 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
+  O rollout A do documento 6 lê nuvem 5, conserva o gravador 4 e recusa enviar nativo 6 com
+  declaração 4 sem apagar o checkpoint. Depois de verificar esse leitor publicado em staging,
+  o rollout B habilita o gravador 5. Nunca publique o gravador novo antes do leitor.
   A implementação parcial de camadas declarava 2, a cena completa anterior declarava 3;
   ambas precisam ser barradas ao gravar o documento preciso 5. Nuvem e nativo são eixos distintos.
   Esta branch não executa rollout: ver o procedimento em `docs/pinta-cenarios/diagnostico-e-arquitetura.md`.

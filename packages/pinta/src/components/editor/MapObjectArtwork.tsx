@@ -1,4 +1,5 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
+import { useAnimationPlayer } from '../../animation/player'
 import { COPY } from '../../core/copy'
 import {
   isTilesetKind,
@@ -8,6 +9,7 @@ import {
 } from '../../core/project'
 import { buildStudioPayload } from '../../export/studioBridge'
 import { usePintaGallery } from '../appContext'
+import { useEditor } from './editorContext'
 
 type ArtworkImage = { dataUrl: string; width: number; height: number } | null
 /**
@@ -69,11 +71,15 @@ export function MapObjectArtwork({
   source?: PintaAsset
 }): JSX.Element | null {
   const assets = usePintaGallery((s) => s.assets)
-  const asset = source ?? assets.find((a) => a.id === (object.art?.assetId ?? object.setId))
+  const map = useEditor((state) => state.asset)
+  const resources =
+    map.kind === 'tilemap' ? map.resources : map.kind === 'map-set' ? map.map.resources : undefined
   const find = useMemo(() => {
     const byId = new Map(assets.map((a) => [a.id, a]))
+    for (const version of resources ?? []) byId.set(version.asset.id, version.asset)
     return (id: string) => byId.get(id) ?? null
-  }, [assets])
+  }, [assets, resources])
+  const asset = source ?? find(object.art?.assetId ?? object.setId ?? '')
   const [image, setImage] = useState<ArtworkImage>(null)
   useEffect(() => {
     let active = true
@@ -89,7 +95,36 @@ export function MapObjectArtwork({
     }
   }, [asset, find])
   if (!image || !asset) return null
-  const index = object.art?.tile ?? 0
+  return (
+    <ArtworkFrame
+      key={`${asset.id}:${object.art?.animationId ?? ''}`}
+      object={object}
+      asset={asset}
+      image={image}
+    />
+  )
+}
+
+function ArtworkFrame({
+  object,
+  asset,
+  image,
+}: {
+  object: TilemapObject
+  asset: PintaAsset
+  image: NonNullable<ArtworkImage>
+}): JSX.Element {
+  const animations =
+    asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite' ? asset.animations : []
+  const selected = animations.findIndex((animation) => animation.id === object.art?.animationId)
+  const animation = animations[selected]
+  const frame = useAnimationPlayer({
+    playing: !!animation,
+    frameCount: animation?.frames.length ?? 1,
+    fps: animation?.fps ?? 1,
+    loop: animation?.loop ?? false,
+    easing: animation?.easing,
+  })
   const sw =
     'frameWidth' in asset ? asset.frameWidth : isTilesetKind(asset) ? asset.tileSize : image.width
   const sh =
@@ -99,8 +134,11 @@ export function MapObjectArtwork({
         ? asset.tileSize
         : image.height
   const columns = Math.max(1, Math.floor(image.width / sw))
+  const index = animation ? selected * columns + frame : (object.art?.tile ?? 0)
   return (
     <svg
+      role="img"
+      aria-label={object.name || COPY.scene.desenhoDoObjeto}
       x={object.x}
       y={object.y}
       width={object.width}
