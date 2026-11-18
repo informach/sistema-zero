@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium, webkit } from '@playwright/test'
 
 const url = process.argv[2]
@@ -11,6 +12,7 @@ for (const [name, engine] of [
 ]) {
   if (selected !== 'all' && selected !== name) continue
   const browser = await engine.launch({ headless: true })
+  const lifecycleSamples = []
   try {
     const context = await browser.newContext()
     context.on('page', (page) =>
@@ -23,6 +25,7 @@ for (const [name, engine] of [
     for (let round = 0; round < 12; round++) {
       if (cdp) await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 })
       await page.evaluate((round) => {
+        window.storageHarness.clearLifecycle()
         window.storageHarness.edit(`in-flight-${round}`)
         window.storageHarness.startSave()
         window.storageHarness.edit(`exit-${round}`)
@@ -31,9 +34,26 @@ for (const [name, engine] of [
       await page.reload({ waitUntil: 'commit' })
       if (cdp) await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
       await page.waitForFunction(() => Boolean(window.storageHarness))
+      const observed = await page.evaluate(() => ({
+        state: window.storageHarness.read(),
+        previousLifecycle: window.storageHarness.previousLifecycle,
+        recoveredProjectIds: window.storageHarness.recoveredProjectIds,
+        recoveredHead: window.storageHarness.recoveredHead,
+      }))
+      lifecycleSamples.push({ round, ...observed })
+      await mkdir('.cache/mission', { recursive: true })
+      await writeFile(
+        `.cache/mission/storage-lifecycle-${name}.json`,
+        JSON.stringify(
+          { engine: name, browser: browser.version(), samples: lifecycleSamples },
+          null,
+          2,
+        ),
+      )
       assert.equal(
-        (await page.evaluate(() => window.storageHarness.read())).text.content,
+        observed.state.text.content,
         `exit-${round}`,
+        JSON.stringify({ engine: name, round, ...observed }),
       )
     }
     const first = await context.newPage(),

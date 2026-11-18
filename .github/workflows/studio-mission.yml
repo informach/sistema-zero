@@ -47,6 +47,15 @@ jobs:
       - name: Install browser required by the real IndexedDB lifecycle test
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium webkit
+      - name: Capture Linux WebKit exit lifecycle before the full suite
+        if: runner.os == 'Linux'
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: webkit
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-targeted.txt
       - name: Complete isolated Studio suite
         working-directory: packages/studio
         run: |

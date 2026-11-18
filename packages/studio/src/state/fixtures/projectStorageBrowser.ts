@@ -25,9 +25,53 @@ import { createProjectStorageScope } from '../projectStorageRuntime'
 import type { ProjectStoreApi } from '../projectStore'
 import { prepareProjectForHost } from '../projectValidation'
 
+// Observe real browser transactions. window.name survives the same-origin reload
+// even when the departing document cannot deliver another async callback.
+const previousLifecycle = window.name
+function lifecycle(event: string) {
+  const previous: unknown = window.name ? JSON.parse(window.name) : []
+  const entries = Array.isArray(previous)
+    ? previous.filter((value) => typeof value === 'string')
+    : []
+  window.name = JSON.stringify([...entries.slice(-39), event])
+}
+const transaction = IDBDatabase.prototype.transaction
+const transactionIds = new WeakMap<IDBTransaction, number>()
+let transactionNumber = 0
+IDBDatabase.prototype.transaction = function (...args) {
+  const id = ++transactionNumber
+  lifecycle(`transaction:${id}:${String(args[1] ?? 'readonly')}`)
+  try {
+    const opened = transaction.apply(this, args)
+    transactionIds.set(opened, id)
+    opened.addEventListener('complete', () => lifecycle(`complete:${id}`))
+    opened.addEventListener('abort', () =>
+      lifecycle(`abort:${id}:${opened.error?.name ?? 'unknown'}`),
+    )
+    return opened
+  } catch (error) {
+    lifecycle(`transaction-error:${id}:${error instanceof Error ? error.name : 'unknown'}`)
+    throw error
+  }
+}
+const commit = IDBTransaction.prototype.commit
+IDBTransaction.prototype.commit = function () {
+  const id = transactionIds.get(this) ?? 'unknown'
+  lifecycle(`commit-request:${id}`)
+  try {
+    commit.call(this)
+    lifecycle(`commit-requested:${id}`)
+  } catch (error) {
+    lifecycle(`commit-error:${id}:${error instanceof Error ? error.name : 'unknown'}`)
+    throw error
+  }
+}
+window.addEventListener('beforeunload', () => lifecycle('beforeunload'))
+window.addEventListener('pagehide', () => lifecycle('pagehide'))
+
 const id = new URLSearchParams(location.search).get('project') ?? 'reload'
 const scope = createProjectStorageScope('storage-browser')
-await recoverProjectWrites(scope, id)
+const recoveredProjectIds = await recoverProjectWrites(scope, id)
 const [meta, files, stateRecord, assets, blocks, head] = await readValues(scope.store, [
   projectMetaKey(id),
   projectFilesKey(id),
@@ -101,11 +145,22 @@ createPersistenceService(store, {
   scopeIdentity: scope.identity,
   load: async () => null,
   save,
-  flushOnExit: (p) => stageProjectExit(p, { puts: projectStorageEntries(p) }, scope),
+  flushOnExit: (p) => {
+    lifecycle(
+      `flush:${p.tree?.['main.ts']?.kind === 'file' ? p.tree['main.ts'].content : 'unknown'}`,
+    )
+    return stageProjectExit(p, { puts: projectStorageEntries(p) }, scope)
+  },
   appliesSavesInCallOrder: true,
 }).attach()
 Object.assign(window, {
   storageHarness: {
+    previousLifecycle,
+    recoveredProjectIds,
+    recoveredHead: isLocalHead(head) ? head : null,
+    clearLifecycle: () => {
+      window.name = '[]'
+    },
     read: () => ({
       text: state.project!.tree!['main.ts'],
       dirty: state.isDirty,
