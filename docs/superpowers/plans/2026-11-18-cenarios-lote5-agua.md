@@ -52,23 +52,25 @@
 
 **Interfaces:** ferramenta ativa recebe parâmetros, captura um ponto de preenchimento ou uma sequência curta de pontos e devolve uma intenção sobre uma cabeça específica. O worker devolve descritor de água, estatísticas/avisos e, quando necessário, campo/regiões. Confirmar enfileira água e terreno como uma única operação.
 
-- [ ] Clique numa baixada com prévia do lago e teto de transbordo. Explicar ausência de bacia/vazamento; confirmar antes de guardar água que alcança a borda.
-- [ ] Capturar nascente→foz do rio, duas pontas da barragem e ponto a montante, topo/base da cachoeira. Permitir conferir/editar pontos e cancelar com teclado ou toque, sem criar outro sistema de navegação.
-- [ ] Preparar leito/barragem e recursos antes da cabeça otimista; preservar um passo de desfazer para a intenção inteira. Reutilizar envio, prova e nova tentativa dos binários do terreno.
-- [ ] Proteger cancelamento, cabeça nova, resposta atrasada e desmontagem; bloquear Testar/retratos durante operação. Prévia não concede progresso à plataforma nem grava por quadro.
-- [ ] Testar no-op, falha de upload, resposta perdida, undo/redo/reabertura e recurso compartilhado. Revisar e preservar o recorte.
+- [x] Clique numa baixada com prévia do lago e teto de transbordo. Explicar ausência de bacia/vazamento; confirmar antes de guardar água que alcança a borda.
+- [x] Capturar nascente→foz do rio, duas pontas da barragem e ponto a montante, topo/base da cachoeira. Permitir conferir/editar pontos e cancelar com teclado ou toque, sem criar outro sistema de navegação.
+- [x] Preparar leito/barragem e recursos antes da cabeça otimista; preservar um passo de desfazer para a intenção inteira. Reutilizar envio, prova e nova tentativa dos binários do terreno.
+- [x] Proteger cancelamento, cabeça nova, resposta atrasada e desmontagem; bloquear Testar/retratos durante operação. Prévia não concede progresso à plataforma nem grava por quadro.
+- [x] Testar no-op, falha de upload, resposta perdida, undo/redo/reabertura e recurso compartilhado. Revisar e preservar o recorte.
 
 ## 5.4 — Aba Água na identidade Molda
 
 **Files:** oficina `useAgua.ts`, `telas/Agua.tsx` e componentes específicos de parâmetros/pontos, `telas/Oficina.tsx`, CSS prefixado. Conservar a decomposição por responsabilidade.
 
-- [ ] Rail e painel com Mar e Encher de água como entrada simples; Rio, Represa e Cachoeira no mesmo fluxo, sem botões sem comportamento.
-- [ ] Nível, profundidade, largura, correnteza, nado e material com limites, unidades e rótulos acessíveis. Pontos também editáveis por números/teclado; indicar direção nascente→foz.
-- [ ] Selecionar/renomear/apagar águas existentes, alternar visibilidade e camada, editar parâmetros e recalcular margens quando apropriado. Conservar os nomes/dados de navegação existentes.
-- [ ] Mostrar prévia e avisos úteis do resultado, erro claro e nova tentativa, sem expor caminhos de armazenamento ou peças internas do worker.
-- [ ] Conferir inspector recolhido, drawer e abas em 1440/1366/1024/390 px, claro/escuro, teclado/mouse/toque emulado; revisar o recorte.
+- [x] Rail e painel com Mar e Encher de água como entrada simples; Rio, Represa e Cachoeira no mesmo fluxo, sem botões sem comportamento.
+- [x] Nível, profundidade, largura, correnteza, nado e material com limites, unidades e rótulos acessíveis. Pontos também editáveis por números/teclado; indicar direção nascente→foz.
+- [x] Selecionar/renomear/apagar águas existentes, alternar visibilidade e camada, editar parâmetros e recalcular margens quando apropriado. Conservar os nomes/dados de navegação existentes.
+- [x] Mostrar prévia e avisos úteis do resultado, erro claro e nova tentativa, sem expor caminhos de armazenamento ou peças internas do worker.
+- [x] Conferir inspector recolhido, drawer e abas em 1440/1366/1024/390 px, claro/escuro, teclado/mouse/toque emulado; revisar o recorte.
 
 ## 5.5 — Fechamento exclusivo do lote
+
+- [ ] Estender o fragmento/área de transferência existente às águas, com referências, apoios, deslocamento e histórico. Não criar outro clipboard; a extensão de caminhos/marcadores segue nos lotes 6/7.
 
 - [ ] Conferir cada requisito da aba Água na especificação; corrigir lacunas próprias antes de expandir para caminhos.
 - [ ] Rodar núcleo, motor, oficina/hosts, serviço/HTTP/BFF/Postgres pertinentes, tipagem e build. Verificar contratos de terreno, conjuntos, fila, histórico, cota e referências após a integração.
@@ -92,3 +94,5 @@ Primeira conferência de 5.3: teste vermelho reproduziu a perda de um comando de
 Worker de água integrado em recorte próprio, com transferência de cópias, término/cancelamento e executor compartilhado com o terreno. [Provas e revisão da compilação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-worker-autoria.md). A construção explícita preserva o reconhecimento do worker pelo Vite, conferido também pelos controles do build local. **5.3 permanece aberto:** captura, prévia, aplicação e suas proteções ainda pendem; a aba completa e o fechamento vêm depois.
 
 Captura, projeção de prévia e helper de aplicação integrados ao palco/fila, com testes de imutabilidade, cancelamento, mudança de cabeça, seleção, no-op e histórico. Chrome conferiu restauração real do relevo e bloqueio de Testar/retratos. Detalhes no mesmo checkpoint. **5.3 segue aberto até conectar o fluxo aos controles e avisos da aba Água**; não iniciar lote 6.
+
+**Continuação: 5.3 e 5.4 implementados, testados e revisados localmente.** [Interface, correção de cache, testes e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-interface.md). O lote 5 permanece aberto em **5.5**, agora fechando a extensão transversal de água à mesma área de transferência, antes de concluir a revisão do lote. Lotes 6–10 não iniciados. Sem validação remota antecipada.

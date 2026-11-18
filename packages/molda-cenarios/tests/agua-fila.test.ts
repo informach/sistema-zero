@@ -35,14 +35,18 @@ async function preparar() {
   await controlador.terminar()
   const documentoDeOrigem = controlador.getState().documento,
     estado = abrirEdicaoDeTerreno(base, new Map()),
-    finais: boolean[] = []
+    finais: boolean[] = [],
+    descartados: string[][] = []
   const palco = {
     async prepararRecursosDoTerreno() {},
+    descartarRecursosDoTerreno(digests: readonly string[]) {
+      descartados.push([...digests])
+    },
     finalizarEscultura(cancelar = false) {
       finais.push(cancelar)
     },
   }
-  return { host, cenario, controlador, base, documentoDeOrigem, estado, palco, finais }
+  return { host, cenario, controlador, base, documentoDeOrigem, estado, palco, finais, descartados }
 }
 
 test('aplicação da água encerra sua prévia uma vez e conserva o histórico da escultura', async () => {
@@ -273,6 +277,8 @@ test('cabeça nova durante o preparo impede água e relevo atrasados de substitu
   await q.controlador.terminar()
   const salvo = await q.host.abrirCenario(q.cenario.id)
   expect(salvo.documento.nome).toBe('Outra edição')
+  expect(q.descartados).toHaveLength(1)
+  expect(q.descartados[0]).toHaveLength(1)
   expect(salvo.documento.aguas).toEqual([])
   expect(salvo.documento.base).toEqual(q.base)
   expect(q.finais).toEqual([true])

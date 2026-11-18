@@ -673,9 +673,9 @@ class PalcoThree implements Palco {
   }
   finalizarPreviaDeAgua(cancelar = true) {
     if (this.destruido) return
+    if (!this.edicaoDaAgua.ativa) return
     this.edicaoDaAgua.finalizar(cancelar)
     if (cancelar) {
-      this.limparRecursosNaoReferenciados()
       this.reconstruir()
     }
     this.atualizarAlca()
@@ -694,6 +694,15 @@ class PalcoThree implements Palco {
     this.recursosDoTerreno = new Map(
       [...this.recursosDoTerreno].filter(([digest]) => usados.has(digest)),
     )
+  }
+  descartarRecursosDoTerreno(digests: readonly string[]) {
+    const base = this.documento?.base
+    const usados = new Set(
+      base?.tipo === 'terreno' ? referenciasDoTerreno(base).map((p) => p.digest) : [],
+    )
+    const restantes = new Map(this.recursosDoTerreno)
+    for (const digest of digests) if (!usados.has(digest)) restantes.delete(digest)
+    this.recursosDoTerreno = restantes
   }
   private pontoParaEsculpir(x: number, y: number) {
     if (!this.terreno || this.teste || this.preparandoTeste) return null

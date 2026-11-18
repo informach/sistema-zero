@@ -55,7 +55,24 @@ try {
   await painel.getByRole('button', { name: 'Exportar alturas em PNG 16 bits', exact: true }).click()
   const download = await downloadPromise
   await download.saveAs(resolve(saida, 'alturas.png'))
-  assert.ok(workers.length >= 2)
+  await pagina.getByRole('button', { name: 'Água', exact: true }).click()
+  await painel.locator('.mcn-agua-acoes').getByRole('button', { name: 'Mar', exact: true }).click()
+  const nivel = painel.getByRole('spinbutton', { name: 'Nível da água', exact: true })
+  await nivel.fill('-1')
+  await nivel.press('Tab')
+  await painel.getByRole('button', { name: 'Ver prévia', exact: true }).click()
+  await painel.getByRole('heading', { name: 'Prévia · ainda não guardada', exact: true }).waitFor()
+  await painel.getByRole('button', { name: 'Guardar água', exact: true }).click()
+  await painel.getByRole('heading', { name: /Águas do cenário/ }).waitFor()
+  await pagina.getByText('Guardado', { exact: true }).waitFor()
+  const final = await pagina.evaluate(
+    async (id) => (await window.__cenarios.host.abrirCenario(id)).documento,
+    id,
+  )
+  assert.equal(final.aguas[0].tipo, 'mar')
+  assert.equal(final.aguas[0].nivel, -1)
+  assert.ok(workers.length >= 3)
+  assert.ok(workers.some((url) => url.includes('agua.worker-')))
   assert.ok(
     workers.every(
       (url) =>
@@ -66,12 +83,20 @@ try {
   writeFileSync(
     resolve(saida, 'resultado.json'),
     JSON.stringify(
-      { terreno: true, png16: true, workers: workers.map((url) => new URL(url).pathname), erros },
+      {
+        terreno: true,
+        png16: true,
+        agua: true,
+        workers: workers.map((url) => new URL(url).pathname),
+        erros,
+      },
       null,
       2,
     ),
   )
-  console.log(JSON.stringify({ terreno: true, png16: true, workers: workers.length, erros }))
+  console.log(
+    JSON.stringify({ terreno: true, png16: true, agua: true, workers: workers.length, erros }),
+  )
 } finally {
   await navegador.close()
 }

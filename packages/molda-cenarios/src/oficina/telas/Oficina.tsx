@@ -8,6 +8,7 @@ import {
 import {
   type ConfiguracaoDoTeste,
   criarPalco,
+  type EstadoDasAguas,
   type EstadoDasTexturas,
   type EstadoDoTeste,
   type Estatisticas,
@@ -79,6 +80,7 @@ import {
   type LocalDeColocacao,
   novoIdAleatorio,
 } from '../acoes'
+import { NOMES_AGUA } from '../agua-formulario'
 import { useAreaDeTransferencia } from '../area-de-transferencia'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
@@ -94,10 +96,12 @@ import type {
   MoldeDisponivel,
   Mundo,
 } from '../portas'
+import { useAgua } from '../useAgua'
 import { useConjuntos } from '../useConjuntos'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { useRetratos } from '../useRetratos'
 import { useTerreno } from '../useTerreno'
+import { Agua, FERRAMENTAS_AGUA } from './Agua'
 import { Aparencia } from './Aparencia'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
@@ -305,6 +309,7 @@ function OficinaAberta({
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
   const [gestoAtivo, setGestoAtivo] = useState(false)
   const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
+  const [aguas, setAguas] = useState<EstadoDasAguas>({ carregando: 0, falhas: [] })
   const [relevo, setRelevo] = useState<{
     chave: string
     estado: 'carregando' | 'pronto' | 'erro'
@@ -403,6 +408,20 @@ function OficinaAberta({
     documento.base.tipo !== 'terreno' ||
     (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
   const terreno = useTerreno({ controlador, palco })
+  const agua = useAgua({ controlador, palco, documento, ativo: aba === 'agua' && !emEnsaio })
+  const aguaAtual = useRef(agua)
+  aguaAtual.current = agua
+  const aoCapturarPontoDaAgua = agua.aoCapturarPonto
+  const editarAgua = agua.editar
+  const aoSelecionarAgua = useCallback(
+    (id: string) => {
+      setAba('agua')
+      setModoPainel('escolha')
+      setPainelAberto(true)
+      editarAgua(id)
+    },
+    [editarAgua],
+  )
   const aoEsculpir = terreno.aoEsculpir,
     aoPreverTerreno = terreno.aoPrever
   const terrenoOcupado = useRef(false)
@@ -413,12 +432,19 @@ function OficinaAberta({
     controlador,
     estado,
     palco,
-    pronto: relevoPronto && !medidas?.carregando && !texturas.carregando && !texturas.falhas.length,
-    emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado,
+    pronto:
+      relevoPronto &&
+      !medidas?.carregando &&
+      !texturas.carregando &&
+      !texturas.falhas.length &&
+      !aguas.carregando &&
+      !aguas.falhas.length,
+    emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || agua.ocupado,
   })
 
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
+      if (aguaAtual.current.ocupado) return false
       if (
         controlador.getState().documento.base.tipo === 'terreno' &&
         !palco.current?.fonteDeAlturas?.()
@@ -447,6 +473,9 @@ function OficinaAberta({
       carregarTextura: (ref, sinal) =>
         host.conteudoDaTextura({ ...ref, espacoId: mundo.espacoId }, sinal),
       aoTexturas: setTexturas,
+      aoAguas: setAguas,
+      aoCapturarPontoDaAgua,
+      aoSelecionarAgua,
       aoTerreno: ({ estado, chave, erro }) =>
         setRelevo({
           chave,
@@ -508,6 +537,8 @@ function OficinaAberta({
     aoPreverPincel,
     aoEsculpir,
     aoPreverTerreno,
+    aoCapturarPontoDaAgua,
+    aoSelecionarAgua,
   ])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
@@ -718,6 +749,16 @@ function OficinaAberta({
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
       if (ensaioAtivo.current) return
+      if (aguaAtual.current.ocupado) {
+        if (
+          evento.key === 'Escape' &&
+          !(evento.target as HTMLElement | null)?.closest?.('dialog[open]')
+        ) {
+          evento.preventDefault()
+          aguaAtual.current.cancelar()
+        }
+        return
+      }
       if (terrenoOcupado.current) return
       if (evento.defaultPrevented || digitando(evento.target)) return
       const comando = evento.ctrlKey || evento.metaKey
@@ -1030,7 +1071,7 @@ function OficinaAberta({
             type="button"
             className="sz-tool-icon-btn"
             onClick={sair}
-            disabled={saindo}
+            disabled={saindo || agua.aplicando}
             aria-label={COPY.oficina.voltar}
             title={COPY.oficina.voltar}
           >
@@ -1062,6 +1103,7 @@ function OficinaAberta({
                 type="button"
                 aria-label={COPY.oficina.abas[valor]}
                 aria-pressed={aba === valor}
+                disabled={agua.aplicando}
                 onClick={() => {
                   if (valor !== 'objetos') pincel.fechar()
                   setAba(valor)
@@ -1089,6 +1131,9 @@ function OficinaAberta({
               conjuntosCarregando > 0 ||
               gestoAtivo ||
               terreno.ocupado ||
+              agua.ocupado ||
+              aguas.carregando > 0 ||
+              aguas.falhas.length > 0 ||
               escolhendoPersonagem
             }
             onClick={() => {
@@ -1135,6 +1180,7 @@ function OficinaAberta({
               type="button"
               className="sz-tool-icon-btn"
               aria-label="Copiar e colar"
+              disabled={agua.ocupado}
               title="Copiar, recortar e colar"
               onClick={() => setTransferenciaAberta(true)}
             >
@@ -1145,7 +1191,7 @@ function OficinaAberta({
               className="sz-tool-icon-btn"
               aria-label="Versões do cenário"
               title="Versões do cenário"
-              disabled={estado.ocupado || estado.salvamento !== 'guardado'}
+              disabled={estado.ocupado || estado.salvamento !== 'guardado' || agua.ocupado}
               onClick={() => {
                 setVersoesAbertas(true)
                 void retratos.fotografar()
@@ -1156,7 +1202,7 @@ function OficinaAberta({
             <button
               type="button"
               className="sz-tool-icon-btn"
-              disabled={!estado.podeDesfazer}
+              disabled={!estado.podeDesfazer || agua.ocupado}
               onClick={controlador.desfazer}
               aria-label={COPY.oficina.desfazer}
               title={`${COPY.oficina.desfazer} (Ctrl+Z)`}
@@ -1166,7 +1212,7 @@ function OficinaAberta({
             <button
               type="button"
               className="sz-tool-icon-btn"
-              disabled={!estado.podeRefazer}
+              disabled={!estado.podeRefazer || agua.ocupado}
               onClick={controlador.refazer}
               aria-label={COPY.oficina.refazer}
               title={`${COPY.oficina.refazer} (Ctrl+Y)`}
@@ -1313,6 +1359,21 @@ function OficinaAberta({
                 }}
               />
             ))
+          ) : aba === 'agua' ? (
+            FERRAMENTAS_AGUA.map(([tipo, Icone]) => (
+              <Ladrilho
+                key={tipo}
+                icone={Icone}
+                rotulo={NOMES_AGUA[tipo]}
+                ligado={agua.aberto && agua.formulario.tipo === tipo}
+                desligado={agua.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
+                aoTocar={() => {
+                  agua.iniciar(tipo)
+                  setModoPainel('escolha')
+                  setPainelAberto(true)
+                }}
+              />
+            ))
           ) : aba === 'luz' ? (
             HORAS.map(([hora, Icone, rotulo]) => (
               <Ladrilho
@@ -1332,13 +1393,13 @@ function OficinaAberta({
         <div
           className="mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           onDragOver={(evento) => {
-            if (emEnsaio) return
+            if (emEnsaio || agua.ocupado) return
             if (!evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
             evento.preventDefault()
             evento.dataTransfer.dropEffect = 'copy'
           }}
           onDrop={(evento) => {
-            if (!emEnsaio) aoSoltarNoPalco(evento)
+            if (!emEnsaio && !agua.ocupado) aoSoltarNoPalco(evento)
           }}
         >
           <div className="mcn-palco">
@@ -1369,6 +1430,25 @@ function OficinaAberta({
               style={emEnsaio ? { display: 'none' } : undefined}
               inert={emEnsaio}
             >
+              {aguas.carregando > 0 ? (
+                <p role="status" className="mld-float">
+                  Carregando água e margens…
+                </p>
+              ) : null}
+              {aguas.falhas.length ? (
+                <div role="alert" className="mld-float mcn-andamento">
+                  <span>
+                    {aguas.falhas[0]!.nome}: {aguas.falhas[0]!.mensagem}
+                  </span>
+                  <button
+                    type="button"
+                    className="sz-tool-btn"
+                    onClick={() => palco.current?.recarregarModelos()}
+                  >
+                    Tentar carregar de novo
+                  </button>
+                </div>
+              ) : null}
               {texturas.carregando > 0 ? (
                 <p className="mld-float" role="status">
                   Carregando {texturas.carregando}{' '}
@@ -1518,6 +1598,16 @@ function OficinaAberta({
                 indisponivel={!relevoPronto || estado.ocupado || estado.salvamento !== 'guardado'}
                 aoPintar={() => {
                   setGavetaAberta(false)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+              />
+            ) : aba === 'agua' && modoPainel !== 'organizacao' ? (
+              <Agua
+                agua={agua}
+                documento={documento}
+                indisponivel={!relevoPronto || estado.ocupado || estado.salvamento !== 'guardado'}
+                executar={executar}
+                aoCapturar={() => {
                   if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
                 }}
               />

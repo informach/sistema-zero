@@ -7,7 +7,7 @@
 @source "./";
 
 @layer components {
-  .mcn-terreno select {
+  :is(.mcn-terreno, .mcn-agua) select {
     width: 100%;
     min-height: 40px;
     padding: 8px 10px;
@@ -17,12 +17,12 @@
     color: var(--color-mld-text);
     font: inherit;
   }
-  .mcn-terreno summary {
+  :is(.mcn-terreno, .mcn-agua) summary {
     cursor: pointer;
     font-size: 0.8125rem;
     font-weight: 800;
   }
-  .mcn-terreno .sz-tool-btn {
+  :is(.mcn-terreno, .mcn-agua) .sz-tool-btn {
     min-height: 40px;
     padding: 8px 12px;
     border: 1px solid var(--color-mld-border);
@@ -32,18 +32,18 @@
     font-size: 0.8125rem;
     font-weight: 700;
   }
-  .mcn-terreno .sz-tool-btn:hover:not(:disabled) {
+  :is(.mcn-terreno, .mcn-agua) .sz-tool-btn:hover:not(:disabled) {
     background: var(--color-mld-bg);
     border-color: var(--color-mld-accent);
   }
-  .mcn-terreno :is(select, summary, .sz-tool-btn):focus-visible {
+  :is(.mcn-terreno, .mcn-agua) :is(select, summary, .sz-tool-btn):focus-visible {
     outline: 2px solid var(--color-mld-accent);
     outline-offset: 2px;
   }
-  .mcn-terreno .sz-tool-btn:disabled {
+  :is(.mcn-terreno, .mcn-agua) .sz-tool-btn:disabled {
     opacity: 0.5;
   }
-  .mcn-terreno :where(fieldset > legend > svg) {
+  :is(.mcn-terreno, .mcn-agua) :where(fieldset > legend > svg) {
     display: inline-block;
     width: 18px;
     height: 18px;
@@ -54,6 +54,42 @@
     display: grid;
     gap: 14px;
     margin-block: 16px;
+  }
+  .mcn-agua-acoes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mcn-agua-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px 40px;
+    gap: 6px;
+    padding-block: 8px;
+    border-bottom: 1px solid var(--color-mld-border);
+  }
+  .mcn-agua-item > :where(.mcn-campo) {
+    grid-column: 1 / -1;
+  }
+  .mcn-agua-item > button {
+    overflow-wrap: anywhere;
+  }
+  .mcn-agua-material,
+  .mcn-agua-ponto {
+    display: grid;
+    gap: 10px;
+    padding-block: 10px;
+  }
+  .mcn-agua-material > fieldset {
+    border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .mcn-agua-pontos {
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .mcn-agua-ponto + .mcn-agua-ponto {
+    border-top: 1px solid var(--color-mld-border);
   }
   .mcn-teste-preparar label,
   .mcn-teste-clipes label {

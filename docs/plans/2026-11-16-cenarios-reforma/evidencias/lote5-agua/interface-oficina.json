@@ -1,0 +1,46 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "mar": true,
+    "historico": true,
+    "renomear": true,
+    "ocultar": true,
+    "rio": true,
+    "cachoeira": true,
+    "represa": true,
+    "ilhaSeca": true,
+    "recalcularNivel": true,
+    "cancelarVazamento": true,
+    "falhaRetomada": true,
+    "reabertura": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1366,
+    "mar": true,
+    "historico": true,
+    "renomear": true,
+    "ocultar": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "mar": true,
+    "historico": true,
+    "renomear": true,
+    "ocultar": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "mar": true,
+    "historico": true,
+    "renomear": true,
+    "ocultar": true,
+    "erros": []
+  }
+]

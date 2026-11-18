@@ -121,6 +121,8 @@ export interface Palco {
     arquivos: readonly ArquivoDeTerreno[],
     sinal?: AbortSignal,
   ): Promise<void>
+  /** Libera somente o preparo cancelado indicado; nunca remove arquivos da cabeça atual. */
+  descartarRecursosDoTerreno(digests: readonly string[]): void
   iniciarTeste(
     configuracao: import('./teste/tipos').ConfiguracaoDoTeste,
     sinal?: AbortSignal,

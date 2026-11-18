@@ -11,5 +11,6 @@
   "selecoes": [
     "mar"
   ],
+  "cacheDeOutraFerramentaPreservada": true,
   "erros": []
 }

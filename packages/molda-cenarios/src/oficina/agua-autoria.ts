@@ -16,7 +16,13 @@ export async function guardarAgua({
   sinal,
 }: {
   controlador: ControladorDaOficina
-  palco: Pick<Palco, 'prepararRecursosDoTerreno' | 'finalizarEscultura' | 'finalizarPreviaDeAgua'>
+  palco: Pick<
+    Palco,
+    | 'prepararRecursosDoTerreno'
+    | 'finalizarEscultura'
+    | 'finalizarPreviaDeAgua'
+    | 'descartarRecursosDoTerreno'
+  >
   documentoDeOrigem: DocumentoDeCenario
   operacao: OperacaoDeAguaPreparada
   sinal?: AbortSignal

@@ -27,7 +27,10 @@ export async function gravarEstadoDoTerreno({
   finalizar,
 }: {
   controlador: ControladorDaOficina
-  palco: Pick<Palco, 'prepararRecursosDoTerreno' | 'finalizarEscultura'>
+  palco: Pick<
+    Palco,
+    'prepararRecursosDoTerreno' | 'finalizarEscultura' | 'descartarRecursosDoTerreno'
+  >
   documentoDeOrigem: DocumentoDeCenario
   base: BaseDeTerreno
   estado: EstadoDoTerreno
@@ -38,6 +41,7 @@ export async function gravarEstadoDoTerreno({
   finalizar?(cancelar: boolean): void
 }): Promise<{ alterado: boolean; guardado: boolean }> {
   let enfileirado = false
+  let preparados: string[] = []
   const conferirOrigem = () => {
     sinal?.throwIfAborted()
     if (controlador.getState().documento !== documentoDeOrigem)
@@ -66,6 +70,7 @@ export async function gravarEstadoDoTerreno({
     conferirOrigem()
     const novos = [...arquivos.values()]
     await palco.prepararRecursosDoTerreno(novos, sinal)
+    preparados = novos.map((a) => a.digest)
     conferirOrigem()
     const comandos: ComandoDeCenario[] = [...antes]
     if (mudouBase) comandos.push({ tipo: 'base.definir', base: nova })
@@ -75,6 +80,7 @@ export async function gravarEstadoDoTerreno({
     await controlador.terminar()
     return { alterado: true, guardado: controlador.getState().salvamento === 'guardado' }
   } finally {
+    if (!enfileirado && preparados.length) palco.descartarRecursosDoTerreno(preparados)
     if (finalizar) finalizar(!enfileirado)
     else palco.finalizarEscultura(!enfileirado)
   }

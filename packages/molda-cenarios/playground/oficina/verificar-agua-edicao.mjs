@@ -163,6 +163,30 @@ try {
   assert.equal(resultado.autoriaIntacta, true)
   assert.deepEqual(resultado.selecoes, ['mar'])
   await pagina.screenshot({ path: resolve(saida, 'selecao-mar.png') })
+  resultado.cacheDeOutraFerramentaPreservada = await pagina.evaluate(async () => {
+    const { p, core, doc } = window.aguaQA
+    p.definirDocumento(doc)
+    await p.aguardarRecursos()
+    const estado = p.estadoDoTerreno(),
+      regioes = { alturas: { x0: 32, z0: 32, x1: 32, z1: 32 } }
+    estado.campo.alturas[32 * 65 + 32] = 12
+    const pecas = core.prepararPecasEditadas(doc.base, estado, regioes),
+      arquivos = [],
+      referencias = []
+    for (const peca of pecas) {
+      const digest = peca.conteudo ? await core.digestDosBytes(peca.conteudo) : null
+      if (digest) arquivos.push({ digest, conteudo: peca.conteudo })
+      referencias.push({ papel: peca.papel, coluna: peca.coluna, linha: peca.linha, digest })
+    }
+    const base = core.baseComPecasEditadas(doc.base, referencias)
+    await p.prepararRecursosDoTerreno(arquivos)
+    // Efeito de mudança de cabeça da aba Água, sem uma prévia sua em andamento.
+    p.finalizarPreviaDeAgua(true)
+    p.definirDocumento({ ...doc, base })
+    await p.aguardarRecursos()
+    return p.fonteDeAlturas()(32, 32) > 11.99
+  })
+  assert.equal(resultado.cacheDeOutraFerramentaPreservada, true)
   await pagina.evaluate(() => window.aguaQA.p.destruir())
   assert.deepEqual(erros, [])
   writeFileSync(resolve(saida, 'resultado.json'), JSON.stringify({ ...resultado, erros }, null, 2))
