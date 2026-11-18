@@ -109,10 +109,21 @@ export function useStudioPersistence(): PersistenceService {
   if (stores) return stores.persistence
   const scope = captureProjectStorageScope()
   if (defaultPersistence?.scope !== scope) {
-    defaultPersistence = {
-      scope,
-      service: createPersistenceService(useProjectStore, createLocalPersistenceAdapter()),
-    }
+    const service = createPersistenceService(useProjectStore, createLocalPersistenceAdapter())
+    defaultPersistence = { scope, service }
+    // A troca de perfil aborta este sinal NA HORA, antes de qualquer rerender. É o único ponto em
+    // que o projeto ainda é com certeza do perfil antigo: grava o que falta no banco DELE e esvazia
+    // a store default, senão o serviço do perfil novo gravaria o projeto antigo no banco novo.
+    scope.signal?.addEventListener(
+      'abort',
+      () => {
+        const state = useProjectStore.getState()
+        if (!state.project) return
+        if (state.isDirty) void service.save().catch(() => {})
+        state.unloadProject()
+      },
+      { once: true },
+    )
   }
   return defaultPersistence.service
 }

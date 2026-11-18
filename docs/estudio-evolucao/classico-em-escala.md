@@ -17,6 +17,10 @@ rodadas, em milissegundos, nesta máquina (não compare com números de outra).
 cd packages/studio && bun scripts/profile-js-classic.ts
 ```
 
+Desde a continuação (18/11/2026) o padrão são 31 rodadas, com p50 e p95, e o `--json` mudou de
+formato: era uma lista de resultados e agora é `{ version: 2, resultados, amostras }`. Nenhum script
+do repositório lê esse JSON; quem guardou um arquivo do formato antigo precisa ler `resultados`.
+
 | Blocos | Estado (KB) | Linhas de código | Abrir | Serializar | Virar texto | Ler a IR | Diagnósticos | Gerar | **Por edição** |
 |---|---|---|---|---|---|---|---|---|---|
 | 80 (o Farol) | 8 | 50 | 53 | 0,3 | 0,05 | 0,7 | 3,5 | 1,8 | **6** |

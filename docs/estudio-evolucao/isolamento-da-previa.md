@@ -104,8 +104,8 @@ Limites, ditos com clareza:
   app conectado e a troca real de perfil, além das provas de laboratório.
 - **B2 (casca em outra origem):** só faz sentido medir e decidir depois de saber o que acontece no
   Firefox, no Safari e no Android. Depende também de um fato de deploy: o domínio do
-  `studio-runtime` precisa ser de outro **site** em relação aos apps. Não implementado nesta
-  continuação; a missão fornecida pela dona autoriza a evolução e não exige nova aprovação rotineira.
+  `studio-runtime` precisa ser de outro **site** em relação aos apps. Não implementado.
+  Escolher e configurar esse domínio é decisão dela (é mudança de deploy, não só de código).
 - **B4 (Jogo 2D em Worker):** estudo, não feito.
 - **Outros navegadores:** rodar o script com `SZ_MEASURE_BROWSERS=chromium,firefox,webkit` numa
   máquina que os tenha, e num Android de verdade.
