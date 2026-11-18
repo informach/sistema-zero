@@ -60,6 +60,11 @@ jobs:
         run: |
           set -o pipefail
           bunx tsc --noEmit 2>&1 | tee .cache/mission/types.txt
+      - name: Reference diagnostics and scoped-name measurement
+        working-directory: packages/studio
+        run: |
+          bun scripts/reference-diagnostics-golden.ts > .cache/mission/reference-diagnostics.json
+          bun scripts/profile-reference-scopes.ts > .cache/mission/reference-scopes.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
