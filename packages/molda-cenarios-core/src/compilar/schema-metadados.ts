@@ -108,6 +108,7 @@ export const TerrenoCompiladoSchema = z
     linhas: z.number().int().min(64).max(4096).multipleOf(64),
     min: z.number().finite().min(-10_000).max(10_000),
     max: z.number().finite().min(-10_000).max(10_000),
+    fundo: z.number().finite().min(-10_000).max(10_000),
     cobertura: z.enum(['grade', 'pecas']),
     pecas: z
       .array(
@@ -131,3 +132,4 @@ export const TerrenoCompiladoSchema = z
     if (t.recortes.some((p) => !poligonoSimples(p)))
       ctx.addIssue({ code: 'custom', message: 'Um recorte do terreno compilado é inválido.' })
   })
+export type TerrenoCompilado = z.infer<typeof TerrenoCompiladoSchema>

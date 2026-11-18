@@ -139,4 +139,4 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto; 8.1 fechado, próximo 8.2.** Contrato, preparação, inventário, limites, licenças e orçamento implementados/testados/revisados; [checkpoint de 8.1](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-contrato.md). Nenhum exportador v2 foi declarado entregue. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.
+**Lote 8 aberto; 8.1 fechado, exclusivamente em 8.2.** [Contrato de 8.1](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-contrato.md). Superfícies compartilhadas, inspeção/divisão, alturas e primeiro GLB conferido: [checkpoint parcial de 8.2](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-superficies-glb.md). Pintura, montagem completa e comparação/ciclos continuam pendentes antes de 8.3. Nenhum exportador v2 completo foi declarado entregue. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.

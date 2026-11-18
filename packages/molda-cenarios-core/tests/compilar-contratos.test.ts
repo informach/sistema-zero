@@ -142,6 +142,7 @@ test('terreno fixa dimensões e arquivos de altura corretos; não trata bytes fa
       linhas: 64,
       min: -10,
       max: 20,
+      fundo: 0,
       cobertura: 'grade',
       pecas: [],
       recortes: [],
