@@ -18,10 +18,11 @@ try {
   await p.goto('http://127.0.0.1:4541/?vazio=1')
   await p.waitForLoadState('networkidle')
   const resultado = await p.evaluate(
-    async ({ coreUrl, motorUrl, tresUrl }) => {
+    async ({ coreUrl, motorUrl, tresUrl, colisaoUrl }) => {
       const core = await import(coreUrl),
         T = await import(tresUrl),
-        { MarcadoresDoPalco } = await import(motorUrl)
+        { MarcadoresDoPalco } = await import(motorUrl),
+        { ColisoesVisiveis } = await import(colisaoUrl)
       document.querySelector('#root').remove()
       const canvas = document.createElement('canvas')
       canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%'
@@ -111,6 +112,35 @@ try {
         })
       }
       window.__guiasQA = {
+        ciclosDeColisoes: () => {
+          const guias = new ColisoesVisiveis(),
+            ciclos = []
+          chao.updateWorldMatrix(true, false)
+          cena.add(guias.grupo)
+          try {
+            for (let i = 0; i < 3; i++) {
+              const estado = guias.definir([{ geometria: chao.geometry, matriz: chao.matrixWorld }])
+              renderizar()
+              const ativo = {
+                ...renderer.info.memory,
+                desenhos: renderer.info.render.calls,
+                linhas: renderer.info.render.lines,
+              }
+              guias.limpar()
+              renderizar()
+              ciclos.push({
+                estado,
+                ativo,
+                limpo: { ...renderer.info.memory, linhas: renderer.info.render.lines },
+              })
+            }
+            return ciclos
+          } finally {
+            guias.descartar()
+            cena.remove(guias.grupo)
+            renderizar()
+          }
+        },
         dia: renderizar,
         noite: () => {
           cena.background.set('#18263e')
@@ -135,12 +165,14 @@ try {
       coreUrl: modulo('packages/molda-cenarios-core/src/v2/index.ts'),
       motorUrl: modulo('packages/molda-cenarios-motor/src/jogo/marcadores.ts'),
       tresUrl: modulo('node_modules/three/build/three.module.js'),
+      colisaoUrl: modulo('packages/molda-cenarios-motor/src/jogo/colisoes-visiveis.ts'),
     },
   )
   await p.screenshot({ path: resolve(saida, 'dia.png') })
   await p.evaluate(() => window.__guiasQA.noite())
   await p.screenshot({ path: resolve(saida, 'noite.png') })
   const ocultou = await p.evaluate(() => window.__guiasQA.ocultar())
+  const ciclosColisoes = await p.evaluate(() => window.__guiasQA.ciclosDeColisoes())
   await p.evaluate(() => window.__guiasQA.destruir())
   assert.deepEqual(resultado.estado.falhas, [])
   assert.equal(resultado.selecionado, 'm0')
@@ -148,11 +180,18 @@ try {
   assert.equal(ocultou, 0)
   assert.deepEqual(erros, [])
   for (const ciclo of resultado.ciclos) assert.deepEqual(ciclo, resultado.ciclos[0])
+  for (const ciclo of ciclosColisoes) {
+    assert.deepEqual(ciclo, ciclosColisoes[0])
+    assert.equal(ciclo.estado.erro, null)
+    assert.equal(ciclo.estado.triangulos, 2)
+    assert.equal(ciclo.ativo.geometries - ciclo.limpo.geometries, 1)
+    assert.equal(ciclo.limpo.linhas, 0)
+  }
   writeFileSync(
     resolve(saida, 'resultado.json'),
-    JSON.stringify({ ...resultado, ocultou, erros }, null, 2),
+    JSON.stringify({ ...resultado, ocultou, ciclosColisoes, erros }, null, 2),
   )
-  console.log(JSON.stringify({ ...resultado, ocultou, erros }))
+  console.log(JSON.stringify({ ...resultado, ocultou, ciclosColisoes, erros }))
 } finally {
   await navegador.close()
 }

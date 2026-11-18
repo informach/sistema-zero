@@ -1,0 +1,53 @@
+{
+  "retratoSemGuias": true,
+  "escolhidos": [
+    "m",
+    "m"
+  ],
+  "areas": [
+    [
+      "m"
+    ],
+    [
+      "m"
+    ]
+  ],
+  "estados": [
+    {
+      "carregando": 0,
+      "falhas": []
+    },
+    {
+      "carregando": 0,
+      "falhas": []
+    }
+  ],
+  "autoriaPreservada": true,
+  "teste": {
+    "estado": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 0,
+        "y": 0.000009999999999999593,
+        "z": 0
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "protegeu": true
+  },
+  "erros": []
+}

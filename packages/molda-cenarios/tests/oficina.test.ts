@@ -3,6 +3,7 @@ import {
   apoioNaAgua,
   apoioNaSuperficie,
   type ComandoDeCenario,
+  MarcadorSchema,
   posicaoNoMundo,
   transformacaoResolvida,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -322,6 +323,56 @@ describe('ações da aba Objetos', () => {
     expect(comandosParaApagar(controlador.getState().documento, [a, 'fantasma'])).toEqual([
       { tipo: 'instancia.remover', id: a },
     ])
+  })
+  test('gizmo misto grava objeto e zona no mesmo histórico e respeita o bloqueio do marcador', async () => {
+    const { controlador } = await abrir(),
+      o = por(controlador, ids()),
+      m = MarcadorSchema.parse({
+        id: 'm',
+        nome: 'Zona',
+        grupo: null,
+        oculto: false,
+        bloqueado: false,
+        posicao: { x: 0, y: 0, z: 0 },
+        giro: 0,
+        noChao: true,
+        objeto: o,
+        configuracao: { tipo: 'zona', forma: { tipo: 'caixa', tamanho: { x: 2, y: 2, z: 2 } } },
+      })
+    expect(controlador.executar([{ tipo: 'marcador.definir', marcador: m }])).toBe(true)
+    const antes = structuredClone(controlador.getState().documento),
+      t = {
+        posicao: { x: 5, y: 2, z: 3 },
+        rotacao: { x: 0, y: 2, z: 0 },
+        escala: { x: 2, y: 2, z: 2 },
+      }
+    expect(
+      controlador.executar(
+        comandosDoGesto(antes, [
+          { id: o, transformacao: t },
+          { id: 'm', transformacao: t },
+        ]),
+      ),
+    ).toBe(true)
+    expect(controlador.getState().documento.marcadores[0]!.posicao).toEqual(t.posicao)
+    expect(controlador.getState().documento.marcadores[0]!.configuracao).toMatchObject({
+      forma: { tamanho: { x: 4, y: 4, z: 4 } },
+    })
+    await controlador.desfazer()
+    expect(controlador.getState().documento).toEqual(antes)
+    expect(
+      controlador.executar([{ tipo: 'marcador.definir', marcador: { ...m, bloqueado: true } }]),
+    ).toBe(true)
+    const bloqueado = structuredClone(controlador.getState().documento)
+    expect(
+      controlador.executar(
+        comandosDoGesto(bloqueado, [
+          { id: o, transformacao: t },
+          { id: 'm', transformacao: t },
+        ]),
+      ),
+    ).toBe(false)
+    expect(controlador.getState().documento).toEqual(bloqueado)
   })
 })
 

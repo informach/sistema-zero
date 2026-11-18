@@ -209,6 +209,27 @@ export function inicioDoCenario(doc: DocumentoDeCenario, fonte?: FonteDeAlturas,
     : null
 }
 
+/** Medidas em metros. Cada trecho da rota usa sua amostragem real sobre o relevo. */
+export function medidasDoMarcador(doc: Base, m: MarcadorDeCenario, fonte?: FonteDeAlturas) {
+  const c = m.configuracao
+  if (c?.tipo === 'regua') {
+    const a = transformacaoDoMarcador(doc, m, fonte).posicao,
+      b = pontoDoMarcador(doc, m, c.fim, fonte),
+      total = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z)
+    return { segmentos: [total], total }
+  }
+  if (c?.tipo !== 'rota') throw new CenarioInvalido(['Escolha uma régua ou rota para medir.'])
+  const rota = rotaDoMarcador(doc, m, fonte),
+    { divisoes } = planoDeAmostragemDaRota(c)
+  let inicio = 0
+  const segmentos = divisoes.map((n) => {
+    const de = inicio
+    inicio += n
+    return rota.distancias[inicio]! - rota.distancias[de]!
+  })
+  return { segmentos, total: rota.comprimento }
+}
+
 /** Associação é metadado, não posse. Remover o objeto não apaga o marco que ficou. */
 export function comandosParaSoltarAssociacoesDeMarcadores(
   doc: DocumentoDeCenario,

@@ -12,6 +12,10 @@ export interface CapturaDeCaminho {
   maximo: number
   selecionado?: number | null
   conservarAltura?: boolean
+  /** Rotas sobre relevo conservam o desnível de cada controle ao arrastar. */
+  conservarDistanciaDoChao?: boolean
+  /** Base horizontal de uma zona, inclusive ao criar ou inserir novos controles. */
+  alturaFixa?: number
   /** Reserva a edição sem aceitar gestos durante preparação ou aplicação. */
   interativa?: boolean
 }
@@ -23,7 +27,7 @@ export interface GestoDePontosDeCaminho {
 interface Fontes {
   documento(): DocumentoDeCenario | null
   camera: Camera
-  ponto(x: number, y: number): Ponto3 | null
+  ponto(x: number, y: number, alturaFixa?: number): Ponto3 | null
   altura(x: number, z: number): number
   aoGesto(ativo: boolean): void
   aoEditar(gesto: GestoDePontosDeCaminho): void
@@ -60,7 +64,7 @@ export class EdicaoDePontos {
       canvas,
       (p) => {
         const indice = this.sessao?.indice ?? this.proximo(p.clientX, p.clientY),
-          ponto = fontes.ponto(p.clientX, p.clientY)
+          ponto = fontes.ponto(p.clientX, p.clientY, this.configuracao?.alturaFixa)
         return indice !== null && ponto
           ? { ponto, indice, clientX: p.clientX, clientY: p.clientY }
           : null
@@ -91,7 +95,14 @@ export class EdicaoDePontos {
           const inicial = this.sessao.pontos[p.indice]!,
             x = inicial.x + p.ponto.x - this.sessao.de.ponto.x,
             z = inicial.z + p.ponto.z - this.sessao.de.ponto.z,
-            y = this.configuracao?.conservarAltura ? inicial.y : fontes.altura(x, z)
+            y =
+              this.configuracao?.alturaFixa ??
+              (this.configuracao?.conservarAltura
+                ? inicial.y
+                : fontes.altura(x, z) +
+                  (this.configuracao?.conservarDistanciaDoChao
+                    ? inicial.y - fontes.altura(inicial.x, inicial.z)
+                    : 0))
           if (!Number.isFinite(y)) return
           this.pontos[p.indice] = { x, y, z }
           this.desenhar()
@@ -125,7 +136,13 @@ export class EdicaoDePontos {
     if (this.destruido || igual(this.configuracao, config)) return
     if (
       config &&
-      (!Number.isInteger(config.maximo) ||
+      ((config.conservarAltura && config.conservarDistanciaDoChao) ||
+        (config.alturaFixa != null &&
+          (!Number.isFinite(config.alturaFixa) ||
+            Math.abs(config.alturaFixa) > 100_000 ||
+            config.conservarDistanciaDoChao ||
+            config.pontos.some((p) => Math.abs(p.y - config.alturaFixa!) > 1e-4))) ||
+        !Number.isInteger(config.maximo) ||
         config.maximo < config.minimo ||
         config.maximo > 4096 ||
         ![2, 3].includes(config.minimo) ||
@@ -230,15 +247,34 @@ export class EdicaoDePontos {
       this.fontes.aoErro(`Este caminho aceita no máximo ${c.maximo} pontos.`)
       return true
     }
-    const ponto = this.fontes.ponto(x, y)
+    const ponto = this.fontes.ponto(x, y, c.alturaFixa)
     if (!ponto) return true
     if (c.modo === 'inserir') {
       const trecho = this.trechoProximo(x, y)
       if (trecho === null) return true
+      if (c.conservarDistanciaDoChao) {
+        const a = this.pontos[trecho]!,
+          b = this.pontos[(trecho + 1) % this.pontos.length]!,
+          dx = b.x - a.x,
+          dz = b.z - a.z,
+          t = Math.max(
+            0,
+            Math.min(1, ((ponto.x - a.x) * dx + (ponto.z - a.z) * dz) / (dx * dx + dz * dz || 1)),
+          ),
+          de = a.y - this.fontes.altura(a.x, a.z),
+          ate = b.y - this.fontes.altura(b.x, b.z)
+        ponto.y = this.fontes.altura(ponto.x, ponto.z) + de + (ate - de) * t
+      }
       // Usar o ponto capturado no chão; o segmento selecionado é o que foi visto na tela.
       this.pontos.splice(trecho + 1, 0, { x: ponto.x, y: ponto.y, z: ponto.z })
       this.selecionado = trecho + 1
     } else {
+      const anterior = this.pontos.at(-1)
+      if (c.conservarDistanciaDoChao && anterior)
+        ponto.y =
+          this.fontes.altura(ponto.x, ponto.z) +
+          anterior.y -
+          this.fontes.altura(anterior.x, anterior.z)
       this.pontos.push({ x: ponto.x, y: ponto.y, z: ponto.z })
       this.selecionado = this.pontos.length - 1
     }

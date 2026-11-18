@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { criarDocumentoVazio, MarcadorSchema } from '@sistemazero/molda-cenarios-core/v2'
-import { Box3, PerspectiveCamera, Raycaster, Vector2, Vector3 } from 'three'
+import { Box3, Matrix4, PerspectiveCamera, Raycaster, Vector2, Vector3 } from 'three'
 import { MarcadoresDoPalco } from '../src/jogo/marcadores'
 
 function cena() {
@@ -20,6 +20,50 @@ function cena() {
   ]
   return d
 }
+
+test('prévia da rota acompanha relevo não linear ao mover e escalar, sem escalar o terreno', () => {
+  const d = cena(),
+    guias = new MarcadoresDoPalco()
+  d.base = {
+    tipo: 'terreno',
+    cobertura: 'grade',
+    origem: { x: -32, z: -32 },
+    colunas: 64,
+    linhas: 64,
+    passo: 1,
+    min: -10,
+    max: 20,
+    fundo: 0,
+    pecas: [],
+  }
+  d.marcadores[0]!.configuracao = {
+    tipo: 'rota',
+    pontos: [
+      { x: 0, y: 1, z: 0 },
+      { x: 4, y: 1, z: 0 },
+    ],
+    fechada: false,
+    seguirTerreno: true,
+  }
+  const fonte = (x: number) => (x * x) / 10,
+    antes = structuredClone(d)
+  try {
+    guias.definir(d, fonte)
+    const alvo = guias.alvos().get('m')!,
+      matriz = new Matrix4().makeScale(2, 3, 1)
+    matriz.setPosition(2, 0.4, 0)
+    alvo.matriz.copy(matriz)
+    alvo.atualizar()
+    const g = (guias.grupo.children[0] as import('three').LineSegments).geometry,
+      pos = g.getAttribute('position')
+    for (let i = 0; i < g.drawRange.count; i++)
+      expect(pos.getY(i)).toBeCloseTo(fonte(pos.getX(i)) + 3, 5)
+    expect(guias.limitesDo('m', new Box3()).max.y).toBeCloseTo(13, 5)
+    expect(d).toEqual(antes)
+  } finally {
+    guias.descartar()
+  }
+})
 test('guia compartilha buffers, picking segue os segmentos e ocultar retira a escolha', () => {
   const d = cena(),
     m = new MarcadoresDoPalco(),
@@ -146,6 +190,48 @@ test('pintura e alturas distantes não reamostram rotas; altura sobre o percurso
     expect(m.limitesDo('m', new Box3()).max.y).toBeCloseTo(2, 6)
   } finally {
     m.descartar()
+  }
+})
+
+test('escultura na raiz distante dos controles invalida a compensação de altura da rota', () => {
+  const d = cena()
+  d.base = {
+    tipo: 'terreno',
+    cobertura: 'grade',
+    origem: { x: -32, z: -32 },
+    colunas: 64,
+    linhas: 64,
+    passo: 1,
+    min: -10,
+    max: 20,
+    fundo: 0,
+    pecas: [],
+  }
+  d.marcadores[0]!.configuracao = {
+    tipo: 'rota',
+    pontos: [
+      { x: 10, y: 1, z: 0 },
+      { x: 14, y: 1, z: 0 },
+    ],
+    fechada: false,
+    seguirTerreno: true,
+  }
+  for (const noChao of [true, false]) {
+    const m = new MarcadoresDoPalco()
+    let altura = 0
+    const fonte = (x: number) => (Math.abs(x) < 1 ? altura : 0)
+    d.marcadores[0]!.noChao = noChao
+    try {
+      m.definir(d, fonte)
+      altura = 5
+      m.atualizarTerreno({ alturas: { x0: 31, z0: 31, x1: 33, z1: 33 } })
+      m.definir(d, fonte)
+      const caixa = m.limitesDo('m', new Box3())
+      expect(caixa.min.y).toBeCloseTo(noChao ? 1 : -4, 5)
+      expect(caixa.max.y).toBeCloseTo(noChao ? 1 : -4, 5)
+    } finally {
+      m.descartar()
+    }
   }
 })
 

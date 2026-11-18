@@ -17,15 +17,19 @@ import {
   type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
+  inicioDoCenario,
   lerRecursoDeTerreno,
   MAX_BYTES_RECURSO_TERRENO,
   MAX_RECURSOS_TERRENO,
   type ModeloDoCenario,
+  marcadorRedimensionavel,
   type OperacaoDeAguaPreparada,
   type OperacaoDeCaminhoPreparada,
   type RecursoDeTerreno,
   referenciasDoTerreno,
   resolverConjuntos,
+  type VistaDeCamera,
+  VistaDeCameraSchema,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -69,6 +73,7 @@ import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
+import { ColisoesVisiveis } from './jogo/colisoes-visiveis'
 import { MarcadoresDoPalco } from './jogo/marcadores'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
 import {
@@ -191,11 +196,15 @@ class PalcoThree implements Palco {
   private readonly raio = new Raycaster()
   private readonly ndc = new Vector2()
   private readonly planoDoChao = new Plane(new Vector3(0, 1, 0), 0)
+  private readonly planoDosControles = new Plane(new Vector3(0, 1, 0), 0)
 
   private documento: DocumentoDeCenario | null = null
   private visual: DocumentoDeCenario | null = null
   private origens: ReadonlyMap<string, string> = new Map()
   private alvos = new Map<string, AlvoDeEdicao>()
+  private ponteiroDaAlca: number | null = null
+  private readonly colisoesVisiveis = new ColisoesVisiveis()
+  private mostrarColisoes = false
   private temChao: (p: { x: number; z: number }) => boolean = () => false
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
@@ -266,6 +275,7 @@ class PalcoThree implements Palco {
     grade: boolean
     fundo: boolean
     guias: boolean
+    colisoes: boolean
   } | null = null
   private cargaDoTerreno: AbortController | null = null
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
@@ -309,6 +319,8 @@ class PalcoThree implements Palco {
     this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo, this.caminhos.grupo)
     this.marcadores.grupo.visible = false
     this.cena.add(this.marcadores.grupo)
+    this.colisoesVisiveis.grupo.visible = false
+    this.cena.add(this.colisoesVisiveis.grupo)
 
     this.camera.position.set(16, 13, 20)
     this.cena.fog = opcoes.fotografia ? null : this.nevoa
@@ -385,6 +397,7 @@ class PalcoThree implements Palco {
           ...(this.documento?.aguas ?? []),
           ...(this.documento?.marcadores ?? []),
         ]) {
+          if (this.alvos.has(e.id)) continue
           const caixa = this.caminhos.limitesDo(e.id, new Box3())
           if (caixa.isEmpty()) this.aguas.limitesDo(e.id, caixa)
           if (caixa.isEmpty()) this.marcadores.limitesDo(e.id, caixa)
@@ -469,7 +482,7 @@ class PalcoThree implements Palco {
     this.pontosDoCaminho = new EdicaoDePontos(canvas, {
       documento: () => this.documento,
       camera: this.camera,
-      ponto: (x, y) => this.pontoNoChao(x, y),
+      ponto: (x, y, altura) => this.pontoParaControles(x, y, altura),
       altura: (x, z) =>
         this.documento ? alturaDoChao(this.documento.base, x, z, this.fonteDeAlturas()) : NaN,
       aoGesto: (ativo) => {
@@ -488,8 +501,11 @@ class PalcoThree implements Palco {
     this.cena.add(this.pontosDoCaminho.grupo)
 
     canvas.addEventListener('pointerdown', this.aoApertar)
+    canvas.addEventListener('pointerdown', this.protegerGestoDaAlca, true)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
+    canvas.ownerDocument.defaultView?.addEventListener('keydown', this.cancelarAlcaPelaTecla, true)
+    canvas.ownerDocument.defaultView?.addEventListener('blur', this.aoCancelar)
 
     this.aplicarLuz(12)
     this.laco = new DemandRenderLoop(canvas, this.renderer, this.camera, this.quadro)
@@ -534,8 +550,50 @@ class PalcoThree implements Palco {
     if (visiveis && this.opcoes.fotografia)
       throw Error('Retratos de composição não contêm guias de edição.')
     this.guiasDoJogo = visiveis
-    this.atualizarGuias()
+    this.reconstruir()
     this.atualizarSelecao()
+    this.pedirQuadro()
+  }
+
+  definirColisoesVisiveis(visiveis: boolean): void {
+    if (this.destruido || this.teste || this.preparandoTeste || this.gesto)
+      throw Error('Termine o gesto e saia do Testar antes de inspecionar colisões.')
+    if (visiveis && this.opcoes.fotografia)
+      throw Error('Retratos de composição não contêm a inspeção de colisões.')
+    this.mostrarColisoes = visiveis
+    this.atualizarColisoesVisiveis()
+    this.pedirQuadro()
+  }
+
+  capturarCamera(): VistaDeCamera {
+    if (this.destruido || this.teste || this.preparandoTeste)
+      throw Error('Use a câmera de edição fora do Testar.')
+    return VistaDeCameraSchema.parse({
+      posicao: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+      alvo: { x: this.orbita.target.x, y: this.orbita.target.y, z: this.orbita.target.z },
+      campoDeVisao: this.camera.fov,
+    })
+  }
+
+  restaurarCamera(vista: VistaDeCamera): void {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gestosAtivos.size ||
+      this.pontosDoCaminho.habilitada ||
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada
+    )
+      throw Error('Termine o gesto e saia do Testar antes de restaurar a câmera.')
+    const v = VistaDeCameraSchema.parse(vista)
+    this.camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+    this.orbita.target.set(v.alvo.x, v.alvo.y, v.alvo.z)
+    this.camera.fov = v.campoDeVisao
+    this.camera.updateProjectionMatrix()
+    this.camera.lookAt(this.orbita.target)
+    this.orbita.update()
+    this.atualizarRecorte()
     this.pedirQuadro()
   }
 
@@ -693,6 +751,21 @@ class PalcoThree implements Palco {
       z,
       ...(andar ? { apoio: { tipo: 'absoluto' as const } } : {}),
     }
+  }
+
+  private pontoParaControles(x: number, y: number, altura?: number): Ponto3 | null {
+    if (altura == null) return this.pontoNoChao(x, y)
+    if (!this.documento || (this.documento.base.tipo === 'terreno' && !this.terreno)) return null
+    this.mirar(x, y)
+    this.planoDosControles.constant = -altura
+    const p = this.raio.ray.intersectPlane(this.planoDosControles, new Vector3())
+    return p
+      ? {
+          x: encaixar(p.x, this.encaixe.grade, this.encaixe.origem.x),
+          y: altura,
+          z: encaixar(p.z, this.encaixe.grade, this.encaixe.origem.z),
+        }
+      : null
   }
 
   fonteDeAlturas() {
@@ -911,19 +984,7 @@ class PalcoThree implements Palco {
         controle.signal.throwIfAborted()
       }
       personagem = new PersonagemDoTeste(modelo, config)
-      const chao = this.terreno?.fontesDoTeste() ?? []
-      chao.push(...this.aguas.fontesDoTeste())
-      chao.push(...this.caminhos.fontesDoTeste())
-      if (this.planoFisico) {
-        this.planoFisico.updateWorldMatrix(true, false)
-        chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
-      }
-      const pacote = prepararColisoesDoTeste(
-        this.visual!,
-        this.superficies.fontesDoTeste(),
-        this.locais,
-        chao,
-      )
+      const pacote = this.prepararColisoes()
       try {
         mundo = new MundoDoTeste(pacote.fontes)
       } finally {
@@ -936,12 +997,24 @@ class PalcoThree implements Palco {
         )
       )
         throw new Error('O ponto inicial do teste é inválido')
-      const foco = config.inicio
-          ? new Vector3(config.inicio.x, config.inicio.y, config.inicio.z)
+      if (
+        config.giroInicial != null &&
+        (!Number.isFinite(config.giroInicial) || Math.abs(config.giroInicial) > 100_000)
+      )
+        throw Error('O giro inicial do teste é inválido.')
+      const marco = !config.inicio
+        ? inicioDoCenario(this.documento, this.fonteDeAlturas(), config.marcadorDeInicio)
+        : null
+      if (!config.inicio && config.marcadorDeInicio && !marco)
+        throw Error('Escolha um ponto de início visível do cenário.')
+      const pontoInicial = config.inicio ?? marco?.posicao,
+        configuracao = { ...config, giroInicial: config.giroInicial ?? marco?.giro },
+        foco = pontoInicial
+          ? new Vector3(pontoInicial.x, pontoInicial.y, pontoInicial.z)
           : this.orbita.target.clone(),
         inicio = foco.clone()
       this.superficies.limites(this.limitesDaCena)
-      const topo = config.inicio
+      const topo = pontoInicial
         ? foco.y + personagem.altura
         : Math.max(
             foco.y,
@@ -966,6 +1039,7 @@ class PalcoThree implements Palco {
         grade: this.grade.visible,
         fundo: this.fundoDecorativo?.visible ?? false,
         guias: this.marcadores.grupo.visible,
+        colisoes: this.colisoesVisiveis.grupo.visible,
       }
       this.orbita.enabled = false
       this.area.setTool('point')
@@ -973,6 +1047,7 @@ class PalcoThree implements Palco {
       this.definirEscultura(null)
       this.grade.visible = false
       this.marcadores.grupo.visible = false
+      this.colisoesVisiveis.grupo.visible = false
       if (this.fundoDecorativo) this.fundoDecorativo.visible = false
       this.contornos.definirVisivel(false)
       const escondidosDoTeste = idsEscondidos(this.visual!)
@@ -983,7 +1058,7 @@ class PalcoThree implements Palco {
         mundo,
         personagem,
         inicio,
-        config,
+        configuracao,
         (estado) => this.opcoes.aoTeste?.(estado),
         this.pedirQuadro,
         new AguasDoTeste(
@@ -1036,6 +1111,7 @@ class PalcoThree implements Palco {
       this.camera.updateProjectionMatrix()
       this.grade.visible = vista.grade
       this.marcadores.grupo.visible = vista.guias
+      this.colisoesVisiveis.grupo.visible = vista.colisoes
       if (this.fundoDecorativo) this.fundoDecorativo.visible = vista.fundo
       this.contornos.definirVisivel(true)
       this.area.setTool(
@@ -1149,7 +1225,9 @@ class PalcoThree implements Palco {
     const previaVisivel = this.espalhamento.grupo.visible
     const cursorDoTerreno = this.escultura.grupo.visible
     const guiasVisiveis = this.marcadores.grupo.visible
+    const colisoesVisiveis = this.colisoesVisiveis.grupo.visible
     this.marcadores.grupo.visible = false
+    this.colisoesVisiveis.grupo.visible = false
     this.escultura.grupo.visible = false
     this.espalhamento.grupo.visible = false
     this.ajudanteDaAlca.visible = false
@@ -1171,6 +1249,7 @@ class PalcoThree implements Palco {
       this.espalhamento.grupo.visible = previaVisivel
       this.escultura.grupo.visible = cursorDoTerreno
       this.marcadores.grupo.visible = guiasVisiveis
+      this.colisoesVisiveis.grupo.visible = colisoesVisiveis
       this.contornos.definirVisivel(true)
       this.pedirQuadro()
     }
@@ -1189,9 +1268,17 @@ class PalcoThree implements Palco {
     this.aguas.descartar()
     this.caminhos.descartar()
     this.marcadores.descartar()
+    this.colisoesVisiveis.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
+    this.canvas.removeEventListener('pointerdown', this.protegerGestoDaAlca, true)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
+    this.canvas.ownerDocument.defaultView?.removeEventListener(
+      'keydown',
+      this.cancelarAlcaPelaTecla,
+      true,
+    )
+    this.canvas.ownerDocument.defaultView?.removeEventListener('blur', this.aoCancelar)
     this.area.dispose()
     this.alca.detach()
     this.alca.dispose()
@@ -1241,9 +1328,10 @@ class PalcoThree implements Palco {
       this.guiasDoJogo &&
       !this.teste &&
       !this.preparandoTeste &&
+      !this.gesto &&
       this.camera.aspect !== this.aspectoDasGuias
     )
-      this.atualizarGuias()
+      this.reconstruir()
     this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
     this.escultura.quadro()
@@ -1557,6 +1645,43 @@ class PalcoThree implements Palco {
     this.opcoes.aoMarcadores?.(estado)
   }
 
+  private prepararColisoes() {
+    const chao = this.terreno?.fontesDoTeste() ?? []
+    chao.push(...this.aguas.fontesDoTeste(), ...this.caminhos.fontesDoTeste())
+    if (this.planoFisico) {
+      this.planoFisico.updateWorldMatrix(true, false)
+      chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
+    }
+    return prepararColisoesDoTeste(
+      this.visual!,
+      this.superficies.fontesDoTeste(),
+      this.locais,
+      chao,
+    )
+  }
+
+  private atualizarColisoesVisiveis() {
+    if (this.teste || this.preparandoTeste) return
+    const visivel =
+      this.mostrarColisoes &&
+      !this.opcoes.fotografia &&
+      Boolean(this.visual) &&
+      (this.visual!.base.tipo !== 'terreno' || Boolean(this.terreno))
+    this.colisoesVisiveis.grupo.visible = visivel
+    if (!visivel) {
+      this.colisoesVisiveis.limpar()
+      this.opcoes.aoColisoesVisiveis?.({ fontes: 0, triangulos: 0, erro: null })
+      return
+    }
+    const pacote = this.prepararColisoes()
+    try {
+      const estado = this.colisoesVisiveis.definir(pacote.fontes)
+      this.opcoes.aoColisoesVisiveis?.(estado)
+    } finally {
+      pacote.descartar()
+    }
+  }
+
   private reconstruir() {
     this.atualizarGuias()
     if (this.documento) {
@@ -1585,6 +1710,7 @@ class PalcoThree implements Palco {
     const doc = this.visual
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
+      this.atualizarColisoesVisiveis()
       this.opcoes.aoTexturas?.(this.estadoDasTexturas)
       this.locais.clear()
       this.alvos.clear()
@@ -1700,7 +1826,9 @@ class PalcoThree implements Palco {
       this.origens,
       this.fonteDeAlturas(),
     )
+    for (const [id, alvo] of this.marcadores.alvos()) this.alvos.set(id, alvo)
     this.falhaDeAcabamento = falhasDeAcabamento.length > 0
+    this.atualizarColisoesVisiveis()
     this.opcoes.aoTexturas?.({
       ...this.estadoDasTexturas,
       falhas: [...this.estadoDasTexturas.falhas, ...falhasDeAcabamento],
@@ -1715,6 +1843,14 @@ class PalcoThree implements Palco {
   private movidos(): string[] {
     // Uma escolha mista nunca move silenciosamente só seus objetos.
     if (this.selecao.some((id) => !this.alvos.has(id))) return []
+    if (
+      this.ferramenta === 'tamanho' &&
+      this.selecao.some((id) => {
+        const m = this.marcadores.marcador(id)
+        return m && !marcadorRedimensionavel(m)
+      })
+    )
+      return []
     return this.selecao.filter((id) => this.alvos.has(id) && !this.trancados.has(id))
   }
 
@@ -1768,6 +1904,11 @@ class PalcoThree implements Palco {
     this.alca.setMode(
       this.ferramenta === 'mover' ? 'translate' : this.ferramenta === 'girar' ? 'rotate' : 'scale',
     )
+    const giroVertical =
+      this.ferramenta === 'girar' && movidos.some((id) => this.marcadores.marcador(id))
+    this.alca.showX = !giroVertical
+    this.alca.showY = true
+    this.alca.showZ = !giroVertical
     // O tamanho segue os eixos do próprio objeto; mover e girar seguem os do mundo.
     this.alca.setSpace(this.ferramenta === 'tamanho' ? 'local' : 'world')
     if (this.alca.object !== this.pivo) this.alca.attach(this.pivo)
@@ -1829,6 +1970,7 @@ class PalcoThree implements Palco {
     }
     const gesto = this.gesto
     this.gesto = null
+    this.ponteiroDaAlca = null
     this.informarGesto('alca', false)
     // Uma cabeça nova invalida o gesto iniciado na anterior, como no pincel de objetos.
     if (gesto && !gesto.cancelado && (!this.pendente || this.pendente === gesto.documento)) {
@@ -1880,7 +2022,26 @@ class PalcoThree implements Palco {
       const local = this.alvos.get(id)
       if (!local) continue
       local.matriz.multiplyMatrices(this.delta, antes)
-      if (this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
+      const marcador = this.marcadores.marcador(id)
+      if (marcador) {
+        // O apoio do marcador é sua raiz, não a base de uma caixa de seleção.
+        // Mover X/Z conserva a distância ao relevo; Y edita essa distância.
+        const eixo = this.alca.axis ?? ''
+        if (
+          marcador.noChao &&
+          (this.ferramenta !== 'mover' || !eixo.includes('Y')) &&
+          this.documento
+        )
+          local.matriz.elements[13] =
+            marcador.posicao.y +
+            alturaDoChao(
+              this.documento.base,
+              local.matriz.elements[12]!,
+              local.matriz.elements[14]!,
+              this.fonteDeAlturas(),
+            )
+      }
+      if (!marcador && this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
         const caixa = local.caixa.clone().applyMatrix4(local.matriz)
         const p = new Vector3().setFromMatrixPosition(local.matriz)
         const raio = new Raycaster(new Vector3(p.x, caixa.max.y + 0.01, p.z), new Vector3(0, -1, 0))
@@ -1899,6 +2060,11 @@ class PalcoThree implements Palco {
     }
     gesto.atualizarApoios()
     gesto.atualizarSuperficies()
+    if (
+      this.mostrarColisoes &&
+      [...gesto.inicio.keys()].some((id) => !this.marcadores.marcador(id))
+    )
+      this.atualizarColisoesVisiveis()
     this.desenharContornos()
   }
 
@@ -1917,6 +2083,7 @@ class PalcoThree implements Palco {
     if (this.teste || this.preparandoTeste) return
     if (this.espalhamento.habilitado || this.escultura.habilitado) return
     if (evento.button !== 0 || this.modoDeSelecao !== 'ponto') return
+    if (this.gesto) this.ponteiroDaAlca ??= evento.pointerId
     if (this.pontosDaAgua.habilitada && this.toque) {
       this.toque = null
       return
@@ -1931,6 +2098,21 @@ class PalcoThree implements Palco {
       this.pendente ??= this.gesto.documento
       this.alca.reset()
       this.alca.dragging = false
+    }
+  }
+
+  private readonly protegerGestoDaAlca = (e: PointerEvent): void => {
+    if (this.gesto && this.ponteiroDaAlca !== null && this.ponteiroDaAlca !== e.pointerId) {
+      this.aoCancelar()
+      e.stopImmediatePropagation()
+    }
+  }
+
+  private readonly cancelarAlcaPelaTecla = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && this.gesto) {
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      this.aoCancelar()
     }
   }
 

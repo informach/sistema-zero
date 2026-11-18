@@ -3,6 +3,7 @@ import {
   criarDocumentoVazio,
   inicioDoCenario,
   MarcadorSchema,
+  medidasDoMarcador,
   pontoDoMarcador,
   pontoLocalDoMarcador,
   rotaDoMarcador,
@@ -24,6 +25,27 @@ const marcador = (configuracao: unknown) =>
     objeto: null,
     configuracao,
   })
+
+test('régua e rota medem metros no mundo, com trechos e total sem somar o giro ou a posição', () => {
+  const d = criarDocumentoVazio('d', 'Medidas'),
+    regua = marcador({ tipo: 'regua', fim: { x: 3, y: 4, z: 0 } })
+  expect(medidasDoMarcador(d, regua)).toEqual({ segmentos: [5], total: 5 })
+  const rota = marcador({
+      tipo: 'rota',
+      pontos: [
+        { x: 0, y: 0, z: 0 },
+        { x: 3, y: 4, z: 0 },
+        { x: 3, y: 4, z: 4 },
+      ],
+      fechada: false,
+      seguirTerreno: false,
+    }),
+    medidas = medidasDoMarcador(d, rota)
+  expect(medidas.segmentos[0]).toBeCloseTo(5, 10)
+  expect(medidas.segmentos[1]).toBeCloseTo(4, 10)
+  expect(medidas.total).toBeCloseTo(9, 10)
+  expect(() => medidasDoMarcador(d, marcador({ tipo: 'ponto' }))).toThrow('medir')
+})
 test('pose de marcador e câmera giram o alvo local uma vez; ida e volta conservam o ponto', () => {
   const d = criarDocumentoVazio('d', 'Giro'),
     m = marcador({ tipo: 'camera', alvo: { x: 3, y: 1, z: 0 }, campoDeVisao: 48 })

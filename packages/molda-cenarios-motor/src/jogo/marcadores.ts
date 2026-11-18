@@ -1,4 +1,5 @@
 import {
+  alturaDoChao,
   type DocumentoDeCenario,
   type FonteDeAlturas,
   indiceDaOrganizacao,
@@ -38,6 +39,7 @@ interface Entrada {
   cor: Color
   deslocamento: number
   indice: number
+  relevoOriginal?: Float64Array
 }
 const MAX_VERTICES = 600_000
 const CORES = {
@@ -173,10 +175,39 @@ export class MarcadoresDoPalco {
     this.indice.definir(this.ordem.map((e) => e.caixa))
     return estado
   }
-  private gravar(e: Entrada) {
+  private gravar(e: Entrada, previa = false) {
     const { position: pos, color: cor } = this.atributos!
+    const rota =
+        previa &&
+        e.marcador.configuracao?.tipo === 'rota' &&
+        e.marcador.configuracao.seguirTerreno &&
+        this.documento,
+      base = this.documento?.base,
+      altura = (x: number, z: number) => alturaDoChao(base!, x, z, this.fonte),
+      p = e.marcador.posicao,
+      c = Math.cos(e.marcador.giro),
+      s = Math.sin(e.marcador.giro),
+      alturaAtual = rota ? altura(e.matriz.elements[12]!, e.matriz.elements[14]!) : 0
+    if (rota && !e.relevoOriginal) {
+      e.relevoOriginal = new Float64Array(e.linhas.length / 3)
+      const raiz = altura(p.x, p.z)
+      for (let i = 0; i < e.linhas.length; i += 3)
+        e.relevoOriginal[i / 3] =
+          altura(
+            p.x + c * e.linhas[i]! + s * e.linhas[i + 2]!,
+            p.z - s * e.linhas[i]! + c * e.linhas[i + 2]!,
+          ) - raiz
+    }
+    e.caixa.makeEmpty()
     for (let i = 0; i < e.linhas.length; i += 3) {
       this.ponto.fromArray(e.linhas, i).applyMatrix4(e.matriz)
+      // O relevo não é um volume rígido nem cresce ao redimensionar a rota.
+      if (rota)
+        this.ponto.y +=
+          altura(this.ponto.x, this.ponto.z) -
+          alturaAtual -
+          e.relevoOriginal![i / 3]! * e.matriz.elements[5]!
+      e.caixa.expandByPoint(this.ponto)
       const indice = e.deslocamento + i / 3
       pos.setXYZ(indice, this.ponto.x, this.ponto.y, this.ponto.z)
       cor.setXYZ(indice, e.cor.r, e.cor.g, e.cor.b)
@@ -194,18 +225,20 @@ export class MarcadoresDoPalco {
           pecas: [],
           caixa: e.local,
           matriz: e.matriz,
-          uniforme: !(
-            e.marcador.configuracao?.tipo === 'zona' &&
-            e.marcador.configuracao.forma.tipo !== 'esfera'
-          ),
+          uniforme:
+            e.marcador.configuracao?.tipo === 'escala' ||
+            (e.marcador.configuracao?.tipo === 'zona' &&
+              e.marcador.configuracao.forma.tipo === 'esfera'),
           atualizar: () => {
-            e.caixa.copy(e.local).applyMatrix4(e.matriz)
+            this.gravar(e, true)
             this.indice.atualizar(e.indice, e.caixa)
-            this.gravar(e)
           },
         },
       ]),
     )
+  }
+  marcador(id: string): Readonly<MarcadorDeCenario> | undefined {
+    return this.entradas.get(id)?.marcador
   }
   limitesDo(id: string, destino: Box3): Box3 {
     const e = this.entradas.get(id)
@@ -266,6 +299,10 @@ export class MarcadoresDoPalco {
         if (
           !r ||
           base?.tipo !== 'terreno' ||
+          (e.marcador.posicao.x >= base.origem.x + r.x0 * base.passo &&
+            e.marcador.posicao.x <= base.origem.x + r.x1 * base.passo &&
+            e.marcador.posicao.z >= base.origem.z + r.z0 * base.passo &&
+            e.marcador.posicao.z <= base.origem.z + r.z1 * base.passo) ||
           (e.caixa.max.x >= base.origem.x + r.x0 * base.passo &&
             e.caixa.min.x <= base.origem.x + r.x1 * base.passo &&
             e.caixa.max.z >= base.origem.z + r.z0 * base.passo &&

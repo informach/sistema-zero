@@ -10,6 +10,10 @@ export interface ConfiguracaoDoTeste {
   modo: ModoDoTeste
   /** Ponto de partida da sessão fornecido pelo host, em metros; não edita o cenário. */
   inicio?: PontoDoTeste
+  /** Giro Y inicial em radianos; zero olha para -Z, como a seta do início. */
+  giroInicial?: number
+  /** Início secundário escolhido explicitamente; ausente usa o principal visível. */
+  marcadorDeInicio?: string
   /** Metros; modelo escolhido mantém sua escala nativa quando omitida. */
   altura?: number
   modelo?: ModeloDoCenario

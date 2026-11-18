@@ -76,6 +76,7 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoColisoesVisiveis?(estado: import('./jogo/colisoes-visiveis').EstadoDasColisoesVisiveis): void
   aoSelecionarMarcador?(id: string): void
   aoMarcadores?(estado: import('./jogo/marcadores').EstadoDosMarcadores): void
   aoEditarPontosDeCaminho?(gesto: import('./curvas/edicao-de-pontos').GestoDePontosDeCaminho): void
@@ -118,6 +119,11 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  /** Inspeção dos triângulos reais usados pelo Testar, somente na edição. */
+  definirColisoesVisiveis(visiveis: boolean): void
+  /** Vista de edição em coordenadas mundiais, sem editar a câmera do Testar. */
+  capturarCamera(): import('@sistemazero/molda-cenarios-core/v2').VistaDeCamera
+  restaurarCamera(vista: import('@sistemazero/molda-cenarios-core/v2').VistaDeCamera): void
   /** Guias editoriais; nunca aparecem em Testar ou em retratos. */
   definirGuiasDoJogo(visiveis: boolean): void
   definirCapturaDeCaminho(

@@ -38,12 +38,12 @@
 
 **Files:** motor novos `jogo/*`, `ambiente/*`; `Palco.ts`, `tipos.ts`, `teste/{fontes,sessao}.ts`; testes geométricos/picking/recursos.
 
-- [ ] Desenhar/selecionar início, ponto, zonas, rotas, câmera, régua e referência de escala, respeitando ocultação, camada e distância. Helpers fora do Testar/retratos/exportação de geometria.
-- [ ] Seleção por clique/área/laço e encaixe/movimento pelo fluxo comum; edição de pontos com captura/alças existente. Cancelar, segundo dedo, cabeça nova e desmontagem não publicam intermediários.
-- [ ] Capturar/restaurar câmera autoral (posição, alvo e campo de visão), vistas de edição e enquadramento; câmera de teste continua isolada do documento.
-- [ ] Inspeção visual das fontes de colisão reais (nenhuma/caixa/cápsula/malha), com recursos compartilhados e limites; conferir contra a física.
-- [ ] Início principal alimenta Testar; chão/volume e personagem nativo preservados. Régua mede segmentos e total em metros; referência de escala coerente com o avatar escolhido.
-- [ ] Testes, picking, ciclos de descarte e revisão/checkpoint do motor.
+- [x] Desenhar/selecionar início, ponto, zonas, rotas, câmera, régua e referência de escala, respeitando ocultação, camada e distância. Helpers fora do Testar/retratos/exportação de geometria.
+- [x] Seleção por clique/área/laço e encaixe/movimento pelo fluxo comum; edição de pontos com captura/alças existente. Cancelar, segundo dedo, cabeça nova e desmontagem não publicam intermediários.
+- [x] Capturar/restaurar câmera autoral (posição, alvo e campo de visão), vistas de edição e enquadramento; câmera de teste continua isolada do documento.
+- [x] Inspeção visual das fontes de colisão reais (nenhuma/caixa/cápsula/malha), com recursos compartilhados e limites; conferir contra a física.
+- [x] Início principal alimenta Testar; chão/volume e personagem nativo preservados. Régua mede segmentos e total em metros; referência de escala em metros conferida com o avatar nativo. Seleção de personagem na interface em 7.4.
+- [x] Testes, picking, ciclos de descarte e revisão/checkpoint do motor. [Evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md).
 
 ## 7.3 — Sol, ambiente, luzes, céu e névoa
 
@@ -75,4 +75,4 @@
 
 ## Estado atual
 
-**Lote 7 aberto; 7.1 implementado, testado e revisado no núcleo/persistência. Única frente ativa seguinte: 7.2 — helpers, seleção e câmeras.** [Fechamento do núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md). Lotes 0–6 fechados localmente. Renderer, controles de Jogo/Luz e fechamento integral continuam pendentes. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 aberto; 7.1 e 7.2 implementados, testados e revisados. Única frente ativa seguinte: 7.3 — sol, ambiente, luzes, céu e névoa.** [Fechamento do núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md) e [checkpoint do palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md). Lotes 0–6 fechados localmente. Iluminação, controles de Jogo/Luz e fechamento integral continuam pendentes. Não há autorização nova de produção ou abertura a membros.

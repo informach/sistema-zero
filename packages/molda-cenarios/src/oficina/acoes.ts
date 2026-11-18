@@ -1,6 +1,7 @@
 import {
   alteracoesDoGesto,
   alteracoesDoGestoDaMontagem,
+  alteracoesDoGestoDoMarcador,
   type ComandoDeCenario,
   type DocumentoDeCenario,
   type EntidadeTransformavel,
@@ -316,6 +317,18 @@ export function comandosDoGesto(
   // Os suportes mudam antes dos seus dependentes. Uma seleção da pilha inteira não pode
   // somar duas vezes a translação do pai ao recalcular o ponto de contato do filho.
   for (const mudanca of [...mudancas].sort((a, b) => profundidade(a.id) - profundidade(b.id))) {
+    const marcador = proximo.marcadores.find((m) => m.id === mudanca.id)
+    if (marcador) {
+      const alteracoes = alteracoesDoGestoDoMarcador(
+        proximo,
+        marcador,
+        mudanca.transformacao,
+        fonte,
+      )
+      Object.assign(marcador, alteracoes)
+      comandos.push({ tipo: 'marcador.definir', marcador: { ...marcador, ...alteracoes } })
+      continue
+    }
     const montagem = proximo.montagens?.find((m) => m.id === mudanca.id)
     if (montagem) {
       const alteracoes = alteracoesDoGestoDaMontagem(

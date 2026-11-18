@@ -85,12 +85,19 @@ try {
   await pagina.mouse.click(720, 450)
   await pagina.waitForFunction(() => window.__guiasIntegradas.escolhidos.length > 0)
   await pagina.screenshot({ path: resolve(saida, 'editor.png') })
-  await pagina.evaluate(() => window.__guiasIntegradas.palco.definirModoDeSelecao('retangulo'))
-  await pagina.mouse.move(100, 100)
-  await pagina.mouse.down()
-  await pagina.mouse.move(1340, 800, { steps: 12 })
-  await pagina.mouse.up()
-  assert.ok(await pagina.evaluate(() => window.__guiasIntegradas.areas.at(-1).includes('m')))
+  for (const modo of ['retangulo', 'laco']) {
+    await pagina.evaluate((m) => window.__guiasIntegradas.palco.definirModoDeSelecao(m), modo)
+    await pagina.mouse.move(100, 100)
+    await pagina.mouse.down()
+    if (modo === 'laco') {
+      await pagina.mouse.move(1340, 100, { steps: 6 })
+      await pagina.mouse.move(1340, 800, { steps: 6 })
+      await pagina.mouse.move(100, 800, { steps: 6 })
+      await pagina.mouse.move(100, 100, { steps: 6 })
+    } else await pagina.mouse.move(1340, 800, { steps: 12 })
+    await pagina.mouse.up()
+    assert.deepEqual(await pagina.evaluate(() => window.__guiasIntegradas.areas.at(-1)), ['m'])
+  }
   await pagina.evaluate(async () => {
     const { palco } = window.__guiasIntegradas
     palco.definirModoDeSelecao('ponto')
