@@ -1,13 +1,13 @@
 import { expect, test } from 'bun:test'
 import { criarDocumentoVazio, prepararOperacaoDeAgua } from '@sistemazero/molda-cenarios-core/v2'
-import { EdicaoDaAgua } from '../src/agua/edicao'
-import { PontosDaAgua } from '../src/agua/pontos'
+import { EdicaoComTerreno } from '../src/edicao-com-terreno'
+import { PontosDeAutoria } from '../src/pontos-de-autoria'
 
 const preparar = () => {
   const documento = criarDocumentoVazio('c', 'Água')
   const r = prepararOperacaoDeAgua({ id: 'mar', nome: 'Mar' }, { tipo: 'mar', nivel: -1 }, null)
   let restauracoes = 0
-  const edicao = new EdicaoDaAgua({
+  const edicao = new EdicaoComTerreno({
     prever() {},
     restaurar() {
       restauracoes++
@@ -57,7 +57,7 @@ test('prévia inválida não destrói uma prévia válida nem publica dois mares
   expect(q.restauracoes()).toBe(0)
 })
 test('pontos são alças finitas limitadas, com descarte explícito e sem mutar entradas', () => {
-  const p = new PontosDaAgua(),
+  const p = new PontosDeAutoria(),
     pontos = [
       { x: 2, y: 1, z: 3 },
       { x: 8, y: 0, z: 6 },

@@ -22,6 +22,7 @@ import {
   MAX_RECURSOS_TERRENO,
   type ModeloDoCenario,
   type OperacaoDeAguaPreparada,
+  type OperacaoDeCaminhoPreparada,
   type RecursoDeTerreno,
   referenciasDoTerreno,
   resolverConjuntos,
@@ -59,11 +60,11 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { AguasDoPalco, type EstadoDasAguas } from './agua/aguas'
-import { EdicaoDaAgua } from './agua/edicao'
-import { PontosDaAgua } from './agua/pontos'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
 import { CaminhosDoPalco, type EstadoDosCaminhos } from './curvas/caminhos'
+import { type CapturaDeCaminho, EdicaoDePontos } from './curvas/edicao-de-pontos'
 import { EspalhamentoDoPalco } from './Espalhamento'
+import { EdicaoComTerreno } from './edicao-com-terreno'
 import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
@@ -78,6 +79,7 @@ import {
   transformacaoDaMatriz,
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
+import { PontosDeAutoria } from './pontos-de-autoria'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
 import { carregarPecasDeTerreno } from './recursos-terreno'
@@ -224,11 +226,12 @@ class PalcoThree implements Palco {
   private readonly caminhos = new CaminhosDoPalco()
   private estadoDosCaminhos: EstadoDosCaminhos = { carregando: 0, falhas: [], avisos: [] }
   private readonly alturaDoPlano: FonteDeAlturas = () => 0
-  private readonly pontosDaAgua = new PontosDaAgua()
-  private readonly edicaoDaAgua = new EdicaoDaAgua({
+  private readonly pontosDaAgua = new PontosDeAutoria()
+  private readonly pontosDoCaminho: EdicaoDePontos
+  private readonly edicaoDoAmbiente = new EdicaoComTerreno({
     prever: (operacao) => {
       if (!this.terreno || !operacao.terreno)
-        throw Error('Aguarde o relevo antes de prever a água.')
+        throw Error('Aguarde o relevo antes de prever a mudança.')
       this.terreno.prever(operacao.terreno, operacao.regioes)
       this.aguas.atualizarTerreno(operacao.regioes)
       this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(operacao.regioes))
@@ -437,6 +440,27 @@ class PalcoThree implements Palco {
     })
     this.cena.add(this.escultura.grupo)
 
+    this.pontosDoCaminho = new EdicaoDePontos(canvas, {
+      documento: () => this.documento,
+      camera: this.camera,
+      ponto: (x, y) => this.pontoNoChao(x, y),
+      altura: (x, z) =>
+        this.documento ? alturaDoChao(this.documento.base, x, z, this.fonteDeAlturas()) : NaN,
+      aoGesto: (ativo) => {
+        this.toque = null
+        this.orbita.enabled = !ativo
+        this.informarGesto('pontos', ativo)
+      },
+      aoEditar: (gesto) => this.opcoes.aoEditarPontosDeCaminho?.(gesto),
+      aoCancelar: () => {
+        this.definirCapturaDeCaminho(null)
+        this.opcoes.aoCancelarPontosDeCaminho?.()
+      },
+      aoErro: (mensagem) => this.opcoes.aoErroDePontosDeCaminho?.(mensagem),
+      pedirQuadro: this.pedirQuadro,
+    })
+    this.cena.add(this.pontosDoCaminho.grupo)
+
     canvas.addEventListener('pointerdown', this.aoApertar)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
@@ -450,8 +474,9 @@ class PalcoThree implements Palco {
   definirDocumento(documento: DocumentoDeCenario): void {
     if (this.destruido) return
     if (this.documento !== documento) {
-      this.edicaoDaAgua.finalizar(true)
+      this.edicaoDoAmbiente.finalizar(true)
       this.pontosDaAgua.definir(null)
+      this.pontosDoCaminho.contextoAlterado()
     }
     if (this.documento !== documento) this.escultura.contextoAlterado()
     if (this.documento !== documento && (this.teste || this.preparandoTeste)) this.encerrarTeste()
@@ -461,7 +486,7 @@ class PalcoThree implements Palco {
       return
     }
     this.documento = documento
-    const projecao = resolverConjuntos(this.edicaoDaAgua.projetar(documento))
+    const projecao = resolverConjuntos(this.edicaoDoAmbiente.projetar(documento))
     this.visual = projecao.documento
     this.origens = projecao.origens
     this.temChao = dominioDoChao(documento.base)
@@ -649,6 +674,7 @@ class PalcoThree implements Palco {
   definirEscultura(configuracao: ConfiguracaoDaEscultura | null) {
     if (configuracao) {
       this.definirCapturaDeAgua(null)
+      this.definirCapturaDeCaminho(null)
       this.espalhamento.definir(null)
       this.modoDeSelecao = 'ponto'
       this.area.setTool('point')
@@ -661,6 +687,7 @@ class PalcoThree implements Palco {
     if (pontos && (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada))
       throw Error('Termine o gesto antes de escolher os pontos da água.')
     if (pontos) {
+      this.pontosDoCaminho.definir(null)
       this.espalhamento.definir(null)
       this.escultura.definir(null)
       this.modoDeSelecao = 'ponto'
@@ -671,25 +698,64 @@ class PalcoThree implements Palco {
     this.atualizarAlca()
     this.pedirQuadro()
   }
+  definirCapturaDeCaminho(configuracao: CapturaDeCaminho | null) {
+    if (this.destruido) return
+    if (
+      configuracao &&
+      (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada)
+    )
+      throw Error('Termine o gesto antes de editar os pontos do caminho.')
+    if (configuracao) {
+      this.pontosDaAgua.definir(null)
+      this.espalhamento.definir(null)
+      this.escultura.definir(null)
+      this.modoDeSelecao = 'ponto'
+      this.area.setTool('point')
+    }
+    this.toque = null
+    this.pontosDoCaminho.definir(configuracao)
+    this.atualizarAlca()
+    this.pedirQuadro()
+  }
   preverAgua(origem: DocumentoDeCenario, operacao: OperacaoDeAguaPreparada) {
     if (
       this.destruido ||
       this.teste ||
       this.preparandoTeste ||
       this.gesto ||
-      this.escultura.ocupada
+      this.escultura.ocupada ||
+      this.pontosDoCaminho.ocupada
     )
       throw Error('Termine o gesto antes de prever a água.')
-    this.edicaoDaAgua.prever(origem, this.documento, operacao)
+    this.edicaoDoAmbiente.prever(origem, this.documento, operacao)
     this.reconstruir()
   }
   finalizarPreviaDeAgua(cancelar = true) {
     if (this.destruido) return
-    if (!this.edicaoDaAgua.ativa) return
-    this.edicaoDaAgua.finalizar(cancelar)
+    if (this.edicaoDoAmbiente.tipo !== 'agua') return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'agua')
     if (cancelar) {
       this.reconstruir()
     }
+    this.atualizarAlca()
+  }
+  preverCaminho(origem: DocumentoDeCenario, operacao: OperacaoDeCaminhoPreparada) {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gesto ||
+      this.escultura.ocupada ||
+      this.pontosDoCaminho.ocupada
+    )
+      throw Error('Termine o gesto antes de prever o caminho.')
+    this.edicaoDoAmbiente.prever(origem, this.documento, operacao)
+    this.reconstruir()
+  }
+  finalizarPreviaDeCaminho(cancelar = true) {
+    if (this.destruido || this.edicaoDoAmbiente.tipo !== 'caminho') return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'caminho')
+    if (cancelar) this.reconstruir()
     this.atualizarAlca()
   }
   finalizarEscultura(cancelar = false) {
@@ -763,8 +829,9 @@ class PalcoThree implements Palco {
       this.gesto ||
       this.gestosAtivos.size ||
       this.escultura.ocupada ||
-      this.edicaoDaAgua.ativa ||
-      this.pontosDaAgua.habilitada
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada ||
+      this.pontosDoCaminho.habilitada
     )
       throw new Error('Termine o gesto antes de testar')
     this.encerrarTeste()
@@ -1016,8 +1083,12 @@ class PalcoThree implements Palco {
 
   capturar(largura = 640): Promise<Blob | null> {
     if (this.destruido) return Promise.resolve(null)
-    if (this.edicaoDaAgua.ativa || this.pontosDaAgua.habilitada)
-      return Promise.reject(Error('Conclua ou cancele a edição da água antes de criar retratos.'))
+    if (
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada ||
+      this.pontosDoCaminho.habilitada
+    )
+      return Promise.reject(Error('Conclua ou cancele a edição antes de criar retratos.'))
     const alcaVisivel = this.ajudanteDaAlca.visible
     const previaVisivel = this.espalhamento.grupo.visible
     const cursorDoTerreno = this.escultura.grupo.visible
@@ -1053,6 +1124,8 @@ class PalcoThree implements Palco {
     this.laco.dispose()
     this.espalhamento.descartar()
     this.escultura.descartar()
+    this.pontosDoCaminho.descartar()
+    this.edicaoDoAmbiente.finalizar(false)
     this.pontosDaAgua.descartar()
     this.aguas.descartar()
     this.caminhos.descartar()
@@ -1403,7 +1476,7 @@ class PalcoThree implements Palco {
 
   private reconstruir() {
     if (this.documento) {
-      const autoral = this.edicaoDaAgua.projetar(this.documento),
+      const autoral = this.edicaoDoAmbiente.projetar(this.documento),
         organizacao = indiceDaOrganizacao(autoral),
         texturas = new Map(autoral.texturas?.map((t) => [t.id, t]))
       this.estadoDosCaminhos = this.caminhos.definir(
@@ -1588,8 +1661,9 @@ class PalcoThree implements Palco {
       !this.preparandoTeste &&
       !this.espalhamento?.habilitado &&
       !this.escultura?.habilitado &&
-      !this.edicaoDaAgua.ativa &&
+      !this.edicaoDoAmbiente.ativa &&
       !this.pontosDaAgua.habilitada &&
+      !this.pontosDoCaminho?.habilitada &&
       this.modoDeSelecao === 'ponto' &&
       this.ferramenta !== 'selecionar' &&
       this.ferramenta !== 'espalhar' &&
@@ -1779,7 +1853,8 @@ class PalcoThree implements Palco {
     if (Math.hypot(evento.clientX - toque.x, evento.clientY - toque.y) > TOQUE_MAXIMO_PX) return
     // Soltar em cima de uma alça é o fim de um gesto, não uma escolha.
     if (this.gesto || this.alca.dragging || this.alca.axis) return
-    if (this.edicaoDaAgua.ativa) return
+    if (this.pontosDoCaminho.clicar(evento.clientX, evento.clientY)) return
+    if (this.edicaoDoAmbiente.ativa) return
     if (this.pontosDaAgua.habilitada) {
       const ponto = this.pontoNoChao(evento.clientX, evento.clientY)
       if (ponto) this.opcoes.aoCapturarPontoDaAgua?.(ponto)

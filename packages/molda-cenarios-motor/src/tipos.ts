@@ -8,6 +8,7 @@ import type {
   InstanciaDeCenario,
   ModeloDoCenario,
   OperacaoDeAguaPreparada,
+  OperacaoDeCaminhoPreparada,
   ReceitaDeEspalhamento,
   TexturaDoCenario,
   Transformacao,
@@ -75,6 +76,9 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoEditarPontosDeCaminho?(gesto: import('./curvas/edicao-de-pontos').GestoDePontosDeCaminho): void
+  aoCancelarPontosDeCaminho?(): void
+  aoErroDePontosDeCaminho?(mensagem: string): void
   aoCapturarPontoDaAgua?(ponto: Ponto3): void
   aoSelecionarAgua?(id: string): void
   aoSelecionarCaminho?(id: string): void
@@ -112,6 +116,11 @@ export interface OpcoesDoPalco {
 }
 
 export interface Palco {
+  definirCapturaDeCaminho(
+    configuracao: import('./curvas/edicao-de-pontos').CapturaDeCaminho | null,
+  ): void
+  preverCaminho(origem: DocumentoDeCenario, operacao: OperacaoDeCaminhoPreparada): void
+  finalizarPreviaDeCaminho(cancelar?: boolean): void
   /** null encerra a captura; [] inicia uma sequência. Os pontos são somente alças locais. */
   definirCapturaDeAgua(pontos: readonly Ponto3[] | null): void
   preverAgua(origem: DocumentoDeCenario, operacao: OperacaoDeAguaPreparada): void

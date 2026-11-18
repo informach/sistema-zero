@@ -49,9 +49,9 @@
 
 **Files:** captura de pontos/alças no motor; oficina preparação em worker e autoria sobre `terreno-autoria.ts`; testes de fila e browser.
 
-- [ ] Reutilizar o gesto de pontos para criar linhas/polígonos e cabeceiras. Selecionar/mover pontos, inserir no trecho e remover respeitando o mínimo, com Escape/cancelamento e toque.
+- [x] Reutilizar o gesto de pontos para criar linhas/polígonos e cabeceiras. Selecionar/mover pontos, inserir no trecho e remover respeitando o mínimo, com Escape/cancelamento e toque.
 - [ ] Numerais editáveis e direção/fechamento legíveis; órbita não insere pontos. Proteger Testar, retratos e operações concorrentes durante o preparo.
-- [ ] Preparar campo/recursos antes de enfileirar estrada+caminho; guardar uma revisão, atualizar objetos/conjuntos apoiados no terreno, sem perder o gesto ou publicar campos intermediários. Reusar nova tentativa de upload, idempotência e prova de recursos.
+- [x] Preparar campo/recursos antes de enfileirar estrada+caminho; guardar uma revisão, atualizar objetos/conjuntos apoiados no terreno, sem perder o gesto ou publicar campos intermediários. Reusar nova tentativa de upload, idempotência e prova de recursos.
 - [ ] Conferir no-op, cancelamento, resposta atrasada, mudança de cabeça, desmontagem, falha de envio, undo/redo e reabertura. Preservar água/terreno e seus recursos.
 - [ ] Revisar e preservar o recorte.
 
@@ -76,7 +76,9 @@
 
 ## Estado atual
 
-**6.1 concluído no núcleo; próximo recorte exclusivo: 6.2, desenho, modelos e física. O lote 6 continua aberto.** Não há aba Caminhos nova entregue nem aceite artístico. As notas abaixo registram a sequência dos recortes anteriores; lotes 7–10 não iniciados.
+**Lote 6 aberto. 6.1 e 6.2 implementados, testados e revisados. 6.3 em andamento:** API de pontos, worker e autoria verificadas; [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-pontos-autoria.md). Próxima tarefa exclusiva: integrar coordenadas editáveis, captura e preparação à oficina e concluir a aba Caminhos. O worker novo foi exercitado no Vite; ainda falta sua ligação ao build da interface. Lotes 7–10 não iniciados.
+
+### Registros anteriores
 
 **Atualização de 6.2:** [integração ao Palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-palco.md) conecta as seis variantes ao desenho, seleção, apoios e física, com agrupamento, materiais e descarte. O ensaio local gerou capturas dia/noite e três ciclos estáveis. A prova da Faísca revelou custo de recortes distantes e bloqueio entre lajes; causas identificadas e corrigidas. **6.2 continua aberto**, principalmente para encontros sem sobreposição e pilares em modelos arqueados; não avançar a outro lote nem declarar acabamento aprovado.
 
