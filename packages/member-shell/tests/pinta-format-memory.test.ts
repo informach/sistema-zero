@@ -89,6 +89,7 @@ test('revisão, capacidade e autoria da assinatura sobrevivem à reabertura sem 
     const entry = {
       schema: 5,
       revision: 3,
+      localRevision: 'native-revision-026',
       writtenAt: 20,
       signature: { at: 20, schema: 4, revision: 3, maxSchema: 5, writerId: 'sessao-B' },
     }

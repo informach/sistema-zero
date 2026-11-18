@@ -19,6 +19,9 @@
  * ⚠️ Nada aqui pode importar de `components/`, `lesson/` ou `state/` — há um teste que percorre o
  * grafo e reprova se React entrar. Ver `assets/purity.test.ts`.
  */
+
+export { inheritPintaLocalOrigin, pintaLocalRevisionOf } from '../core/localAssetOrigin'
+export { PintaLocalConflictError, PintaLocalStorageError } from '../core/localStorageErrors'
 export {
   createAsset,
   createLessonAsset,

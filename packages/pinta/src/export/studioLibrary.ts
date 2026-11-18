@@ -53,7 +53,8 @@ export { capturePintaAssetForImage, setPintaStorageNamespace } from '../state/pe
 export type { PintaPortableImage } from './portableImage'
 export type { PintaExportedAsset }
 
-/** Native fingerprints only. No canvas, export or personal-library write. `selection` is the
+/** Native fingerprints only. No canvas, export or imported artwork. Local authority may
+ * migrate/recover existing records atomically. `selection` is the
  * kind being checked: a `map` depends on every tileset of the map, the flat `tilemap` only on
  * the default one (absent = the historical answer, the default tileset for a map). */
 export async function inspectImageForStudio(
@@ -641,26 +642,17 @@ export async function exportAssetForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  const persistence = createPintaPersistence({ namespace })
-  const asset = await persistence.loadAssetById(id)
+  const captured = await capturePintaAssetForImage(id, { namespace, signal })
   signal?.throwIfAborted()
-  if (!asset) return { ok: false, reason: 'not-found' }
-  const linked: PintaAsset[] = []
-  const visited = new Set([asset.id]),
-    queue = [asset]
-  for (const current of queue)
-    for (const id of pintaAssetDependencyIds(current))
-      if (!visited.has(id)) {
-        if (visited.size >= 225)
-          return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
-        visited.add(id)
-        const dependency = await persistence.loadAssetById(id)
-        if (!dependency)
-          return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
-        linked.push(dependency)
-        queue.push(dependency)
-      }
-  signal?.throwIfAborted()
+  if (!captured.ok)
+    return captured.reason === 'needs-tileset'
+      ? { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
+      : { ok: false, reason: captured.reason }
+  const asset = captured.source
+  const linked = captured.assets ?? captured.tilesets
+  const present = new Set([asset.id, ...linked.map((a) => a.id)])
+  if ([asset, ...linked].some((a) => pintaAssetDependencyIds(a).some((id) => !present.has(id))))
+    return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
   const result = await exportResolvedForStudio(asset, linked)
   signal?.throwIfAborted()
   return result

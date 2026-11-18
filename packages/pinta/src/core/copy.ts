@@ -242,6 +242,8 @@ export const COPY = {
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     drawingInUse: 'Este desenho ainda é usado por um mapa ou conjunto.',
     cancel: 'Cancelar',
+    recoveredLocal:
+      'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
     storageBudget:
       'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',

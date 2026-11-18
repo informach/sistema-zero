@@ -17,8 +17,12 @@ import {
   setIdbReadGuard,
 } from '../testing/idbMock'
 
-const { capturePintaAssetForImage, getPintaStorageNamespace, setPintaStorageNamespace } =
-  await import('../state/persistence')
+const {
+  capturePintaAssetForImage,
+  createPintaPersistence,
+  getPintaStorageNamespace,
+  setPintaStorageNamespace,
+} = await import('../state/persistence')
 const { exportPintaImageForStudio } = await import('./portableImage')
 const { exportImageForStudio, inspectImageForStudio } = await import('./studioLibrary')
 const { browserPintaImageRaster } = await import('./portableImageRender')
@@ -63,7 +67,7 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
-describe('native-source capture uses one profile and one map/dependency transaction', () => {
+describe('native-source capture uses one atomic authority snapshot in one profile', () => {
   test('profile change after discovery cannot redirect either member of the captured pair', async () => {
     const { source, tileset } = mapFixture()
     seed('a', source, tileset)
@@ -76,11 +80,18 @@ describe('native-source capture uses one profile and one map/dependency transact
     expect(captured.ok).toBe(true)
     if (!captured.ok) throw new Error('capture required')
     expect([captured.source.name, captured.tileset?.name]).toEqual(['mapa', 'pecas'])
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 2, set: 0, setMany: 0 })
+    expect(idbMockStats()).toMatchObject({
+      atomic: 1,
+      atomicKeys: 4,
+      get: 0,
+      getMany: 0,
+      set: 0,
+      setMany: 0,
+    })
     expect(getPintaStorageNamespace()).toBe('b')
   })
 
-  test('a source and dependency update between discovery and transaction yields the same new pair', async () => {
+  test('an outside update cannot mix a source with dependencies from another snapshot', async () => {
     const { source, tileset } = mapFixture()
     seed('a', source, tileset)
     setIdbReadGuard(() => {
@@ -88,22 +99,22 @@ describe('native-source capture uses one profile and one map/dependency transact
     })
     const captured = await capturePintaAssetForImage(source.id, { namespace: 'a' })
     if (!captured.ok) throw new Error('capture required')
-    expect([captured.source.name, captured.tileset?.name]).toEqual(['mapa-novo', 'pecas-novas'])
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 2 })
+    expect([captured.source.name, captured.tileset?.name]).toEqual(['mapa', 'pecas'])
+    expect(idbMockStats()).toMatchObject({ atomic: 1, atomicKeys: 4 })
   })
 
-  test('a changed dependency reference fails closed instead of mixing or retrying', async () => {
+  test('a changed dependency reference cannot enter an already captured transaction', async () => {
     const { source, tileset } = mapFixture()
     const other = createTilesetAsset({ name: 'outro', tileSize: 16 })
     seed('a', source, tileset, other)
     setIdbReadGuard(() => {
       seed('a', { ...source, tilesetId: other.id })
     })
-    expect(await capturePintaAssetForImage(source.id, { namespace: 'a' })).toEqual({
-      ok: false,
-      reason: 'source-changed',
-    })
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 2 })
+    const captured = await capturePintaAssetForImage(source.id, { namespace: 'a' })
+    if (!captured.ok) throw new Error(captured.reason)
+    expect(captured.source.kind === 'tilemap' && captured.source.tilesetId).toBe(tileset.id)
+    expect(captured.tileset?.id).toBe(tileset.id)
+    expect(idbMockStats()).toMatchObject({ atomic: 1, atomicKeys: 4 })
   })
 
   test('missing source/dependency and a dependency of the wrong kind are explicit failures', async () => {
@@ -146,7 +157,14 @@ describe('native-source capture uses one profile and one map/dependency transact
         (error: unknown) => error,
       ),
     ).toBeInstanceOf(DOMException)
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 0, set: 0, setMany: 0 })
+    expect(idbMockStats()).toMatchObject({
+      atomic: 1,
+      atomicKeys: 2,
+      get: 0,
+      getMany: 0,
+      set: 0,
+      setMany: 0,
+    })
   })
 })
 
@@ -179,13 +197,16 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
       expect(first.dependencies[0]?.drawingId).toBe(tileset.id)
       const timestamps = [source.updatedAt, tileset.updatedAt]
       tileset.tiles[0]!.data[0] = 1
-      seed('a', tileset)
+      const client = createPintaPersistence({ namespace: 'a' })
+      const base = await client.loadAssetById(tileset.id)
+      if (base?.kind !== 'tileset') throw new Error('Peças ausentes')
+      await client.persistAsset({ ...base, tiles: tileset.tiles })
       const second = await inspectImageForStudio(source.id, { namespace: 'a' })
       expect([source.updatedAt, tileset.updatedAt]).toEqual(timestamps)
       expect(second.sourceSha256).toBe(first.sourceSha256)
       expect(second.dependencies[0]?.sha256).not.toBe(first.dependencies[0]?.sha256)
       expect(allocations()).toBe(0)
-      expect(idbMockStats()).toMatchObject({ get: 2, getMany: 2, set: 0, setMany: 0 })
+      expect(idbMockStats().atomic).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -266,7 +287,7 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
       expect(image.derivation.recipe.scale).toBe(1)
       expect(image.derivation.output.width).toBe(8)
       expect(image.derivation.output.bytes).toBeGreaterThan(1)
-      expect(reads).toEqual(['sistema-zero-pinta-a'])
+      expect(reads).toEqual(['sistema-zero-pinta-a', 'sistema-zero-pinta-a'])
       expect(getPintaStorageNamespace()).toBe('b')
       expect(idbMockStats()).toMatchObject({ set: 0, setMany: 0 })
     })
@@ -286,7 +307,7 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
       expect(allocations()).toBe(count)
       expect(second.derivation.output.sha256).toBe(originalHash)
       expect(second.derivation.recipe.scale).toBe(1)
-      expect(idbMockStats()).toMatchObject({ get: 2, set: 0, setMany: 0 })
+      expect(idbMockStats()).toMatchObject({ atomic: 2, set: 0, setMany: 0 })
       expect(idbMockDb('sistema-zero-pinta-a')).toEqual(before)
       const oldTimestamp = source.updatedAt
       source.animations[0]!.frames[0]![0]!.data.fill(2)
@@ -353,7 +374,7 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
           (error: unknown) => error,
         ),
       ).toBeInstanceOf(Error)
-      expect(idbMockStats()).toMatchObject({ get: 1, set: 0, setMany: 0 })
+      expect(idbMockStats()).toMatchObject({ atomic: 1, set: 0, setMany: 0 })
     })
   })
 })
@@ -382,7 +403,7 @@ describe('a map with a tileset per layer: one transaction for every tileset', ()
     expect(captured.tileset?.id).toBe(tileset.id)
     // The incompatible one (another tile size) is never part of the map, as in Pinta.
     expect(captured.tilesets.map((item) => item.id)).toEqual([tileset.id, other.id])
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 4 })
+    expect(idbMockStats()).toMatchObject({ atomic: 1, atomicKeys: 8 })
   })
 
   test('a missing layer tileset is left out; a missing default still needs the tileset', async () => {
@@ -407,7 +428,10 @@ describe('a map with a tileset per layer: one transaction for every tileset', ()
     expect(asMap.dependencies.map((item) => item.drawingId)).toEqual([tileset.id, other.id])
     expect(asMap.sourceSha256).toBe(flat.sourceSha256)
     // Editing only the layer tileset changes the map's provenance, not the flat image's.
-    seed('a', { ...other, name: 'enfeites novos' })
+    const client = createPintaPersistence({ namespace: 'a' })
+    const base = await client.loadAssetById(other.id)
+    if (!base) throw new Error('Peças ausentes')
+    await client.persistAsset({ ...base, name: 'enfeites novos' })
     expect(
       await inspectImageForStudio(source.id, { namespace: 'a', selection: 'tilemap' }),
     ).toEqual(flat)
@@ -417,7 +441,7 @@ describe('a map with a tileset per layer: one transaction for every tileset', ()
     ).not.toEqual(asMap.dependencies[1])
   })
 
-  test('a layer moving to another tileset between the reads fails closed', async () => {
+  test('a layer cannot move to another tileset inside the captured transaction', async () => {
     const { source, tileset, other } = layeredMap()
     const third = createTilesetAsset({ name: 'terceiro', tileSize: 16 })
     seed('a', source, tileset, other, third)
@@ -429,9 +453,8 @@ describe('a map with a tileset per layer: one transaction for every tileset', ()
         ),
       })
     })
-    expect(await capturePintaAssetForImage(source.id, { namespace: 'a' })).toEqual({
-      ok: false,
-      reason: 'source-changed',
-    })
+    const captured = await capturePintaAssetForImage(source.id, { namespace: 'a' })
+    if (!captured.ok) throw new Error(captured.reason)
+    expect(captured.tilesets.map((t) => t.id)).toEqual([tileset.id, other.id])
   })
 })

@@ -59,11 +59,14 @@ import {
   assetFromJson,
   assetToJson,
   emptyPaletteLibrary,
+  inheritPintaLocalOrigin,
   mergePaletteLibraries,
   PINTA_LIMITS,
   PINTA_MAX_SCHEMA,
+  PintaLocalConflictError,
   paletteLibraryContentKey,
   pintaAssetSchema,
+  pintaLocalRevisionOf,
   sanitizePaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
@@ -78,6 +81,7 @@ export type PintaCloudPersistenceEvent =
   | { type: 'changed' }
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
+  | { type: 'recovered'; names: string[] }
 
 /**
  * Um desenho guardado na conta num formato mais novo que o deste navegador. Ele fica intocado na
@@ -96,6 +100,8 @@ export interface PintaCloudReadIssue {
  * que perdeu recursos (ver o cabeçalho). Só existe para desenho que já sincronizou COM carimbo.
  */
 export interface PintaFormatMemoryEntry {
+  /** Native revision whose bytes were actually synchronized; independent of wall clocks. */
+  localRevision?: string
   /** O carimbo `schema` do desenho na última sincronia confirmada (subida ou descida). */
   schema: number
   /** Revisão confirmada à qual o floor pertence; não acompanha marcas de outra instância. */
@@ -134,6 +140,8 @@ function isFormatMemoryEntry(value: unknown): value is PintaFormatMemoryEntry {
   return (
     typeof entry.schema === 'number' &&
     Number.isFinite(entry.schema) &&
+    (entry.localRevision === undefined ||
+      (typeof entry.localRevision === 'string' && entry.localRevision.length > 0)) &&
     (entry.revision === undefined ||
       (Number.isInteger(entry.revision) && Number(entry.revision) >= 0)) &&
     (entry.signature === undefined || isFormatSignature(entry.signature)) &&
@@ -225,7 +233,7 @@ function schemaStampOf(asset: PintaAsset): number {
 export interface PintaPersistenceLike {
   persistAsset(asset: PintaAsset): Promise<void>
   persistAssets(assets: readonly PintaAsset[]): Promise<void>
-  deleteAsset(id: string): Promise<void>
+  deleteAsset(id: string, base?: PintaAsset): Promise<void>
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
@@ -431,6 +439,7 @@ export function createCloudMirroredPintaPersistence(options: {
         schema,
         revision,
         ...(entry?.signature ? { signature: entry.signature } : {}),
+        ...(entry?.localRevision ? { localRevision: entry.localRevision } : {}),
         writtenAt: entry?.writtenAt ?? remote?.updatedAt ?? marks.get(id),
         ...(cut ? { cut: true as const } : {}),
       })
@@ -454,10 +463,15 @@ export function createCloudMirroredPintaPersistence(options: {
     observedRevisions.set(asset.id, revision)
     if (schema === 0 && hasFormat(asset.kind)) verifiedLegacy.set(asset.id, revision)
     else verifiedLegacy.delete(asset.id)
-    if (schema > 0)
+    const localRevision =
+      assetToJson(asset) === assetToJson(localVersion)
+        ? pintaLocalRevisionOf(localVersion)
+        : undefined
+    if (schema > 0 || localRevision)
       formatMemory.set(asset.id, {
         schema,
         revision,
+        ...(localRevision ? { localRevision } : {}),
         writtenAt: localVersion.updatedAt,
         signature: {
           at: localVersion.updatedAt,
@@ -480,6 +494,7 @@ export function createCloudMirroredPintaPersistence(options: {
     updatedAt: number,
     revision: number,
     baseRevision: number,
+    localRevision: string | undefined,
   ): void {
     if (observedRevisions.get(id) === baseRevision) observedRevisions.set(id, revision)
     if (schema === 0) verifiedLegacy.set(id, revision)
@@ -490,10 +505,11 @@ export function createCloudMirroredPintaPersistence(options: {
       signature && signature.writerId === writerId && signature.revision === baseRevision
         ? { ...signature, revision }
         : signature
-    if (entry || schema > 0)
+    if (entry || schema > 0 || localRevision)
       formatMemory.set(id, {
         schema,
         revision,
+        ...(localRevision ? { localRevision } : {}),
         writtenAt: entry?.writtenAt ?? updatedAt,
         ...(acknowledged ? { signature: acknowledged } : {}),
         ...(entry?.cut ? { cut: true } : {}),
@@ -559,6 +575,15 @@ export function createCloudMirroredPintaPersistence(options: {
    * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
    */
   const sendingAt = new Map<string, number>()
+  const sendingLocalRevision = new Map<string, string | undefined>()
+
+  function hasLocalChanges(asset: PintaAsset, syncedAt = marks.get(asset.id)): boolean {
+    if (asset.updatedAt !== syncedAt) return true
+    const revision = pintaLocalRevisionOf(asset)
+    // A pre-authority sync mark has no causal native base. Preserve it conservatively
+    // once; only a confirmed download/upload can establish that base.
+    return revision !== undefined && revision !== formatMemory.get(asset.id)?.localRevision
+  }
 
   function enqueue(asset: PintaAsset): void {
     cloud.enqueueUpload(
@@ -580,7 +605,7 @@ export function createCloudMirroredPintaPersistence(options: {
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é este `updatedAt`): não
         // sobe — zero HTTP. É o que segura o editor, que persiste `[salvo, ...ligados]` e
         // reenfileirava peças/mapas intocados a cada autosave.
-        if (marks.get(asset.id) === current.updatedAt) {
+        if (!hasLocalChanges(current)) {
           sendingAt.delete(asset.id)
           return null
         }
@@ -622,6 +647,7 @@ export function createCloudMirroredPintaPersistence(options: {
           throw new Error('O desenho mudou durante a conferência. Tente de novo.')
         sendingSchema.set(asset.id, schemaStampOf(current))
         sendingBase.set(asset.id, baseRevision)
+        sendingLocalRevision.set(asset.id, pintaLocalRevisionOf(current))
         return {
           json: assetToJson(current),
           meta: {
@@ -648,7 +674,15 @@ export function createCloudMirroredPintaPersistence(options: {
         const baseRevision = sendingBase.get(itemId) ?? 0
         sendingBase.delete(itemId)
         if (sentSchema !== undefined)
-          rememberUploaded(itemId, sentSchema, updatedAt, revision, baseRevision)
+          rememberUploaded(
+            itemId,
+            sentSchema,
+            updatedAt,
+            revision,
+            baseRevision,
+            sendingLocalRevision.get(itemId),
+          )
+        sendingLocalRevision.delete(itemId)
         // A criança apagou o desenho com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
         // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
@@ -780,9 +814,10 @@ export function createCloudMirroredPintaPersistence(options: {
         ? { ...mine, id: crypto.randomUUID(), name: copyName(mine.name, taken), updatedAt: now() }
         : null
     // Uma gravação só: ou entram a versão da conta e a cópia, ou nada muda.
-    await local.persistAssets(copy ? [restored, copy] : [restored])
+    const replacement = inheritPintaLocalOrigin(restored, mine)
+    await local.persistAssets(copy ? [replacement, copy] : [replacement])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
-    rememberDownloaded(restored, downloaded.summary.revision)
+    rememberDownloaded(replacement, downloaded.summary.revision)
     emitChangedSoon()
     if (copy) enqueue(copy)
     console.warn(
@@ -1007,6 +1042,9 @@ export function createCloudMirroredPintaPersistence(options: {
   const emit = (event: PintaCloudPersistenceEvent) => {
     for (const listener of listeners) listener(event)
   }
+  const unsubscribeLocal = local.subscribe?.((event) => {
+    if (event.type === 'recovered' || event.type === 'changed') emit(event)
+  })
   // `changed` coalescido: cada desenho que desce avisaria uma vez; a galeria relê em lote.
   let changedTimer: ReturnType<typeof setTimeout> | null = null
   const emitChangedSoon = () => {
@@ -1088,6 +1126,8 @@ export function createCloudMirroredPintaPersistence(options: {
       local: localAssets.filter((asset) => !readIssues.has(asset.id)),
       cloud: assetSummaries.filter((summary) => !readIssues.has(summary.itemId)),
       marks,
+      hasLocalChanges: (asset, at) =>
+        pintaLocalRevisionOf(asset) ? hasLocalChanges(asset, at) : undefined,
       now,
       budgetMs,
       // Peças ANTES dos mapas: o `tilesetId` do mapa aponta para elas.
@@ -1124,9 +1164,13 @@ export function createCloudMirroredPintaPersistence(options: {
         takenNames.add(named.name)
         nameOwner.set(named.name, named.id)
         // Grava DIRETO no local (id preservado), fora do embrulho: não é edição.
-        await local.persistAssets([named])
+        const replacement = inheritPintaLocalOrigin(
+          named,
+          localAssets.find((a) => a.id === named.id),
+        )
+        await local.persistAssets([replacement])
         // O local ficou igual à conta: é este o carimbo a comparar daqui em diante.
-        rememberDownloaded(named, summary.revision)
+        rememberDownloaded(replacement, summary.revision)
         emitChangedSoon()
         return true
       },
@@ -1156,7 +1200,7 @@ export function createCloudMirroredPintaPersistence(options: {
       },
       deleteLocal: async (itemId) => {
         const item = localAssets.find((asset) => asset.id === itemId)
-        await local.deleteAsset(itemId)
+        await local.deleteAsset(itemId, item)
         formatMemory.delete(itemId)
         if (item && nameOwner.get(item.name) === itemId) {
           nameOwner.delete(item.name)
@@ -1210,17 +1254,29 @@ export function createCloudMirroredPintaPersistence(options: {
     async persistAsset(asset) {
       await observeBeforeWrite(asset)
       noteWrittenHere(asset)
-      await local.persistAsset(asset)
+      try {
+        await local.persistAsset(asset)
+      } catch (error) {
+        if (error instanceof PintaLocalConflictError)
+          for (const copy of error.forks.values()) enqueue(copy)
+        throw error
+      }
       enqueue(asset)
     },
     async persistAssets(assets) {
       for (const asset of assets) await observeBeforeWrite(asset)
       for (const asset of assets) noteWrittenHere(asset)
-      await local.persistAssets(assets)
+      try {
+        await local.persistAssets(assets)
+      } catch (error) {
+        if (error instanceof PintaLocalConflictError)
+          for (const copy of error.forks.values()) enqueue(copy)
+        throw error
+      }
       for (const asset of assets) enqueue(asset)
     },
-    async deleteAsset(id) {
-      await local.deleteAsset(id)
+    async deleteAsset(id, base) {
+      await local.deleteAsset(id, base)
       // A lápide (com a revisão conhecida) ANTES de apagar a marca.
       enqueueRemove(id)
       marks.delete(id)
@@ -1270,7 +1326,14 @@ export function createCloudMirroredPintaPersistence(options: {
         listeners.delete(listener)
       }
     },
-    getReadIssues: () => [...readIssues.values()],
+    getReadIssues: () => [
+      ...new Map(
+        [...(local.getReadIssues?.() ?? []), ...readIssues.values()].map((issue) => [
+          issue.id,
+          issue,
+        ]),
+      ).values(),
+    ],
     async syncPaletteLibrary() {
       if (!cloud.supported) return
       const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
@@ -1293,6 +1356,7 @@ export function createCloudMirroredPintaPersistence(options: {
         }
       : {}),
     dispose() {
+      unsubscribeLocal?.()
       unsubscribeOpenState?.()
       unsubscribeOpenState = null
       unverifiedBases.clear()

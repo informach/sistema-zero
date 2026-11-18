@@ -1,15 +1,16 @@
 /**
- * Persistência LOCAL (IndexedDB via idb-keyval) — cada asset é um registro
- * independente (`pinta:asset:<id>`); não há documento de projeto. `Uint8Array`
- * passa no structured clone, então o modelo é gravado DIRETO (sem codec — o
- * RLE só existe no `.pinta.json` de export).
+ * Persistência LOCAL (IndexedDB via idb-keyval). Cada asset é independente;
+ * mapas/peças/conjuntos têm autoridade versionada `pinta:local:document:<id>` e
+ * espelho legado `pinta:asset:<id>`. Não há PNG achatado como documento autoral.
+ * Buffers passam no structured clone, sem codec; RLE só no `.pinta.json` portátil.
  *
  * Namespace por PERFIL: o host chama `setPintaStorageNamespace(viewerId)`
  * ANTES de montar o <PintaApp> (mesmo contrato do studio) — um DB por criança,
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, del, get, getMany, keys, setMany, update } from 'idb-keyval'
+import { createStore, get, getMany, keys, setMany, update } from 'idb-keyval'
+import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
 import type { PaletteLibrary } from '../core/paletteLibrary'
 import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
@@ -25,6 +26,23 @@ import {
   withPintaSchemaStamp,
 } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
+import { withAssetTransaction } from './assetAuthorityDb'
+import {
+  deleteLocalRecord,
+  LOCAL_ASSET_PREFIX,
+  type LocalSnapshot,
+  PintaLocalConflictError,
+  PintaStorageBudgetError,
+  resolveLocalRecords,
+  selectLocalAssetRecords,
+  writeLocalRecords,
+} from './localAssetAuthority'
+
+export {
+  PintaLocalConflictError,
+  PintaLocalStorageError,
+  PintaStorageBudgetError,
+} from './localAssetAuthority'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -133,6 +151,7 @@ export type PintaPersistenceEvent =
   | { type: 'changed' }
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
+  | { type: 'recovered'; names: string[] }
 
 /**
  * Um desenho que existe na conta num formato mais novo que o deste código. Ele NÃO é carregado:
@@ -181,12 +200,21 @@ function crossTabChannelFor(storeHandle: StoreHandle, dbName: string): Broadcast
     try {
       channel = new BroadcastChannel(`pinta:assets:${dbName}`)
       channel.onmessage = (
-        event: MessageEvent<{ ids?: unknown; paletteLibraryChanged?: unknown }>,
+        event: MessageEvent<{
+          ids?: unknown
+          paletteLibraryChanged?: unknown
+          recoveredNames?: unknown
+        }>,
       ) => {
         const ids = event.data?.ids
         if (Array.isArray(ids)) {
           const cache = backupSizeCaches.get(storeHandle)
           if (cache) for (const id of ids) if (typeof id === 'string') cache.remove(id)
+          emitPersistenceEvent(storeHandle, { type: 'changed' })
+        }
+        const recovered = event.data?.recoveredNames
+        if (Array.isArray(recovered) && recovered.every((name) => typeof name === 'string')) {
+          emitPersistenceEvent(storeHandle, { type: 'recovered', names: recovered })
         }
         if (event.data?.paletteLibraryChanged === true) {
           emitPersistenceEvent(storeHandle, { type: 'palette-library-changed' })
@@ -216,6 +244,22 @@ function notifyOtherTabs(storeHandle: StoreHandle, dbName: string, ids: readonly
     crossTabChannelFor(storeHandle, dbName)?.postMessage({ ids })
   } catch {
     // Canal fechado/indisponível: o inventário da outra aba se alinha na próxima carga.
+  }
+}
+
+function reportLocalRecovery(storeHandle: StoreHandle, snapshot: LocalSnapshot): void {
+  if (!snapshot.recovered.length) return
+  const names = snapshot.recovered.map((a) => a.name)
+  backupSizeCaches.get(storeHandle)?.seed([...snapshot.assets.values()])
+  emitPersistenceEvent(storeHandle, { type: 'changed' })
+  emitPersistenceEvent(storeHandle, { type: 'recovered', names })
+  try {
+    crossTabChannelFor(storeHandle, dbNames.get(storeHandle) ?? '')?.postMessage({
+      ids: [...snapshot.assets.keys(), ...snapshot.documents.keys()],
+      recoveredNames: names,
+    })
+  } catch {
+    // All copies and the authority already committed; the next list still finds them.
   }
 }
 
@@ -284,7 +328,7 @@ export function runSerializedWrite(
 export interface PintaPersistence {
   persistAsset(asset: PintaAsset): Promise<void>
   persistAssets(assets: readonly PintaAsset[]): Promise<void>
-  deleteAsset(id: string): Promise<void>
+  deleteAsset(id: string, base?: PintaAsset): Promise<void>
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
   /**
@@ -336,16 +380,6 @@ async function listAssetsForStore(storeHandle: StoreHandle): Promise<PintaAsset[
 }
 
 /** Erro específico para a UI explicar por que a mutação não foi persistida. */
-export class PintaStorageBudgetError extends Error {
-  readonly projectedBytes: number
-
-  constructor(projectedBytes: number) {
-    super('A galeria ultrapassaria o limite portátil de 32 MiB.')
-    this.name = 'PintaStorageBudgetError'
-    this.projectedBytes = projectedBytes
-  }
-}
-
 export function isPintaStorageBudgetError(error: unknown): error is PintaStorageBudgetError {
   return error instanceof PintaStorageBudgetError
 }
@@ -365,6 +399,51 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   const storeHandle = getStoreHandle(options.namespace)
   const dbName = dbNames.get(storeHandle) ?? ''
   const backupSizeCache = backupSizeCacheFor(storeHandle)
+  const observed = new Map<string, string | null>()
+  let readIssues: PintaReadIssue[] = []
+  const accept = (
+    snapshot: LocalSnapshot,
+    writtenIds?: readonly string[],
+    readIds?: readonly string[],
+  ) => {
+    readIssues = readIds
+      ? [
+          ...new Map(
+            [...readIssues.filter((issue) => !readIds.includes(issue.id)), ...snapshot.issues].map(
+              (issue) => [issue.id, issue],
+            ),
+          ).values(),
+        ]
+      : snapshot.issues
+    for (const [id, asset] of snapshot.assets) {
+      recordPintaLocalOrigin(asset, dbName, snapshot.documents.get(id)?.revision ?? null)
+      if (
+        writtenIds
+          ? writtenIds.includes(id)
+          : (!readIds || readIds.includes(id)) && !observed.has(id)
+      )
+        observed.set(id, snapshot.documents.get(id)?.revision ?? null)
+    }
+    for (const [id, doc] of snapshot.documents)
+      if (
+        !doc.asset &&
+        (writtenIds
+          ? writtenIds.includes(id)
+          : (!readIds || readIds.includes(id)) && !observed.has(id))
+      )
+        observed.set(id, doc.revision)
+    if (!readIds) backupSizeCache.seed([...snapshot.assets.values()])
+    reportLocalRecovery(storeHandle, snapshot)
+  }
+  const readSnapshot = async (ids?: readonly string[]) => {
+    const snapshot = await withAssetTransaction(
+      storeHandle,
+      resolveLocalRecords,
+      ids ? selectLocalAssetRecords(ids) : undefined,
+    )
+    accept(snapshot, undefined, ids)
+    return snapshot
+  }
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return
     // O carimbo `schema` é recalculado a cada gravação. O editor muda o mapa em memória sem
@@ -375,6 +454,44 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
     )
     const changed = [...unique.values()]
+    // A mixed gallery budgets canonical maps, not legacy mirrors. The incremental
+    // sprite-only path is retained only in galleries without protected documents.
+    if (
+      changed.some(
+        (a) =>
+          a.kind === 'tilemap' ||
+          a.kind === 'map-set' ||
+          a.kind === 'tileset' ||
+          a.kind === 'vector-tileset',
+      ) ||
+      (await keys(storeHandle)).some(
+        (key) => typeof key === 'string' && key.startsWith(LOCAL_ASSET_PREFIX),
+      )
+    ) {
+      await runSerializedWrite(storeHandle, async () => {
+        const snapshot = await withAssetTransaction(storeHandle, (records) =>
+          writeLocalRecords(records, changed, observed, dbName),
+        )
+        if (!snapshot.forks.size)
+          for (const asset of assets)
+            recordPintaLocalOrigin(
+              asset,
+              dbName,
+              snapshot.documents.get(asset.id)?.revision ?? null,
+            )
+        accept(
+          snapshot,
+          snapshot.forks.size ? snapshot.recovered.map((a) => a.id) : changed.map((a) => a.id),
+        )
+        notifyOtherTabs(
+          storeHandle,
+          dbName,
+          [...changed, ...snapshot.recovered].map((a) => a.id),
+        )
+        if (snapshot.forks.size) throw new PintaLocalConflictError(snapshot.forks)
+      })
+      return
+    }
     await perfSpanAsync('pinta:persist', () =>
       runSerializedWrite(storeHandle, async () => {
         // O orçamento é projetado pelo INVENTÁRIO (total corrente − tocados + novos), sem
@@ -434,18 +551,20 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   return {
     persistAsset: (asset) => persistAssetsForStore([asset]),
     persistAssets: persistAssetsForStore,
-    deleteAsset: (id) =>
+    deleteAsset: (id, base) =>
       runSerializedWrite(storeHandle, async () => {
-        await del(assetKey(id), storeHandle)
+        const snapshot = await withAssetTransaction(storeHandle, (records) =>
+          deleteLocalRecord(records, id, observed, dbName, base),
+        )
+        accept(snapshot, [id])
         backupSizeCache.remove(id)
         notifyOtherTabs(storeHandle, dbNames.get(storeHandle) ?? '', [id])
       }),
     async loadAssetById(id) {
-      const raw = await get<unknown>(assetKey(id), storeHandle)
-      return safeSanitize(raw)
+      return (await readSnapshot([id])).assets.get(id) ?? null
     },
     async listAllAssets() {
-      const assets = await listAssetsForStore(storeHandle)
+      const assets = [...(await readSnapshot()).assets.values()]
       assets.sort((a, b) => b.updatedAt - a.updatedAt)
       // A carga da galeria SEMEIA o inventário do orçamento (é a mesma leitura) e mede os
       // bytes em fatias ociosas: o custo de codificar a galeria inteira (RLE+JSON) sai do
@@ -462,6 +581,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
         listeners.delete(listener)
       }
     },
+    getReadIssues: () => readIssues,
     async loadPaletteLibrary() {
       const raw = await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle)
       return sanitizePaletteLibrary(raw)
@@ -495,25 +615,38 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   }
 }
 
+const defaultClients = new Map<string, PintaPersistence>()
+function defaultPersistence(): PintaPersistence {
+  const namespace = getPintaStorageNamespace()
+  let client = defaultClients.get(namespace)
+  if (!client) {
+    client = createPintaPersistence({ namespace })
+    defaultClients.set(namespace, client)
+  }
+  return client
+}
 export function persistAsset(asset: PintaAsset): Promise<void> {
-  return createPintaPersistence().persistAsset(asset)
+  return defaultPersistence().persistAsset(asset)
 }
 
 /** Grava um conjunto relacionado atomicamente no IndexedDB do perfil atual. */
 export function persistAssets(assets: readonly PintaAsset[]): Promise<void> {
-  return createPintaPersistence().persistAssets(assets)
+  return defaultPersistence().persistAssets(assets)
 }
 
-export function deleteAsset(id: string): Promise<void> {
-  return createPintaPersistence().deleteAsset(id)
+export async function deleteAsset(id: string, base?: PintaAsset): Promise<void> {
+  const client = defaultPersistence()
+  // The historical standalone API explicitly deletes by ID. Capture its base now;
+  // gallery/editor callers supply the snapshot they actually displayed instead.
+  return client.deleteAsset(id, base ?? (await client.loadAssetById(id)) ?? undefined)
 }
 
 export function loadAssetById(id: string): Promise<PintaAsset | null> {
-  return createPintaPersistence().loadAssetById(id)
+  return defaultPersistence().loadAssetById(id)
 }
 
 /**
- * A map and EVERY tileset it uses must come from one readonly transaction in the captured
+ * A map and EVERY tileset it uses must come from one authority transaction in the captured
  * profile. `tileset` is the map's default (the flat `tilemap` image and the legacy single
  * dependency); `tilesets` lists the default first and then the other layers' tilesets in
  * `tilemapTilesetIds` order, keeping only the ones present and compatible (the same rule as
@@ -530,90 +663,76 @@ export async function capturePintaAssetForImage(
       tilesets: AnyTilesetAsset[]
       assets?: PintaAsset[]
     }
-  | { ok: false; reason: 'not-found' | 'source-changed' | 'needs-tileset' }
+  | { ok: false; reason: 'not-found' | 'needs-tileset' }
 > {
   const store = getStoreHandle(options.namespace?.trim())
-  const signal = options.signal
-  signal?.throwIfAborted()
-  const first = safeSanitize(await get<unknown>(assetKey(id), store))
-  signal?.throwIfAborted()
-  if (!first || first.id !== id) return { ok: false, reason: 'not-found' }
-  const captureDependencies = async (seed: PintaAsset) => {
-    const discovered = new Map<string, PintaAsset>([[seed.id, seed]])
-    for (const value of discovered.values())
-      for (const dep of pintaAssetDependencyIds(value))
-        if (!discovered.has(dep)) {
-          if (discovered.size >= PINTA_DEPENDENCY_ASSET_LIMIT)
-            return { ok: false, reason: 'needs-tileset' } as const
-          const asset = safeSanitize(await get<unknown>(assetKey(dep), store))
-          signal?.throwIfAborted()
-          if (!asset || asset.id !== dep) return { ok: false, reason: 'needs-tileset' } as const
-          discovered.set(dep, asset)
-        }
-    const ids = [...discovered.keys()],
-      snapshot = (await getMany<unknown>(ids.map(assetKey), store)).map(safeSanitize)
-    signal?.throwIfAborted()
-    if (
-      snapshot.some(
-        (a, i) =>
-          !a ||
-          a.id !== ids[i] ||
-          pintaAssetDependencyIds(a).join('\u0000') !==
-            pintaAssetDependencyIds(discovered.get(ids[i]!)!).join('\u0000'),
-      )
-    )
-      return { ok: false, reason: 'source-changed' } as const
-    const source = snapshot[0]!,
-      assets = snapshot.slice(1).filter((a): a is PintaAsset => a !== null),
-      map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
-    const base = map ? assets.find((a) => a.id === map.tilesetId && isTilesetKind(a)) : null
-    if (map && (!base || !isTilesetKind(base)))
-      return { ok: false, reason: 'needs-tileset' } as const
-    const tilesets =
-      map && base && isTilesetKind(base)
-        ? tilemapTilesetIds(map).flatMap((id) => {
-            const a = assets.find((v) => v.id === id)
-            return a && isTilesetKind(a) && isCompatibleMapTileset(base, a) ? [a] : []
-          })
-        : []
-    return { ok: true, source, assets, tileset: tilesets[0] ?? null, tilesets } as const
-  }
-  if (
-    pintaAssetDependencyIds(first).some(
-      (dep) => first.kind !== 'tilemap' || !tilemapTilesetIds(first).includes(dep),
-    )
+  options.signal?.throwIfAborted()
+  const snapshot = await withAssetTransaction(
+    store,
+    resolveLocalRecords,
+    selectLocalAssetRecords([id], options.signal),
   )
-    return captureDependencies(first)
-  if (first.kind !== 'tilemap') return { ok: true, source: first, tileset: null, tilesets: [] }
-  const tilesetIds = tilemapTilesetIds(first)
-  const values = await getMany<unknown>([assetKey(id), ...tilesetIds.map(assetKey)], store)
-  signal?.throwIfAborted()
-  const source = safeSanitize(values[0])
-  if (
-    !source ||
-    source.id !== id ||
-    source.kind !== 'tilemap' ||
-    pintaAssetDependencyIds(source).join('\u0000') !== pintaAssetDependencyIds(first).join('\u0000')
-  )
-    return { ok: false, reason: 'source-changed' }
-  const found = values.slice(1).map((value) => safeSanitize(value))
-  // O mapa pode só apontar para peças, mas as peças podem apontar para outros recursos. Promove
-  // ao mesmo caminho transacional completo; mapas antigos sem essas relações mantêm uma leitura.
-  if (found.some((asset) => asset && pintaAssetDependencyIds(asset).length > 0))
-    return captureDependencies(source)
-  const tileset = found[0]
-  if (!tileset || tileset.id !== source.tilesetId || !isTilesetKind(tileset))
-    return { ok: false, reason: 'needs-tileset' }
-  const tilesets: AnyTilesetAsset[] = [tileset]
-  for (const [index, candidate] of found.entries()) {
-    if (index === 0 || !candidate || candidate.id !== tilesetIds[index]) continue
-    if (isTilesetKind(candidate) && isCompatibleMapTileset(tileset, candidate))
-      tilesets.push(candidate)
+  options.signal?.throwIfAborted()
+  reportLocalRecovery(store, snapshot)
+  for (const [assetId, asset] of snapshot.assets)
+    recordPintaLocalOrigin(
+      asset,
+      dbNames.get(store) ?? '',
+      snapshot.documents.get(assetId)?.revision ?? null,
+    )
+  const source = snapshot.assets.get(id)
+  if (!source) return { ok: false, reason: 'not-found' }
+  const discovered = new Map<string, PintaAsset>([[id, source]])
+  const pending = [source]
+  while (pending.length) {
+    const next = pending.pop()
+    if (!next) break
+    for (const ref of pintaAssetDependencyIds(next)) {
+      if (discovered.has(ref)) continue
+      if (discovered.size >= PINTA_DEPENDENCY_ASSET_LIMIT)
+        return { ok: false, reason: 'needs-tileset' }
+      const linked = snapshot.assets.get(ref)
+      if (!linked) {
+        // Existing flat-map exports deliberately skip unavailable optional layer sheets.
+        if (
+          next.kind === 'tilemap' &&
+          ref !== next.tilesetId &&
+          tilemapTilesetIds(next).includes(ref)
+        )
+          continue
+        return { ok: false, reason: 'needs-tileset' }
+      }
+      discovered.set(ref, linked)
+      pending.push(linked)
+    }
   }
-  return { ok: true, source, tileset, tilesets }
+  const assets = [...discovered.values()].filter((a) => a.id !== id)
+  const map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
+  const base = map ? assets.find((a) => a.id === map.tilesetId && isTilesetKind(a)) : null
+  if (map && (!base || !isTilesetKind(base))) return { ok: false, reason: 'needs-tileset' }
+  const tilesets =
+    map && base && isTilesetKind(base)
+      ? tilemapTilesetIds(map).flatMap((ref) => {
+          const asset = snapshot.assets.get(ref)
+          return asset && isTilesetKind(asset) && isCompatibleMapTileset(base, asset) ? [asset] : []
+        })
+      : []
+  const hasExtraDependencies = [...discovered.values()].some((asset) =>
+    pintaAssetDependencyIds(asset).some(
+      (ref) =>
+        asset.id !== id || source.kind !== 'tilemap' || !tilemapTilesetIds(source).includes(ref),
+    ),
+  )
+  return {
+    ok: true,
+    source,
+    ...(hasExtraDependencies ? { assets } : {}),
+    tileset: tilesets[0] ?? null,
+    tilesets,
+  }
 }
 
 /** Carrega todos os assets saneados do perfil atual, do mais novo ao mais antigo. */
 export function listAllAssets(): Promise<PintaAsset[]> {
-  return createPintaPersistence().listAllAssets()
+  return defaultPersistence().listAllAssets()
 }

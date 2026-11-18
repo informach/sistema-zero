@@ -166,7 +166,7 @@ describe('referências tipadas conservadas nas fronteiras do Pinta', () => {
     )
   })
 
-  it('mudança de referência tipada durante a descoberta recusa um snapshot incompleto', async () => {
+  it('referência tipada concorrente não entra no snapshot transacional já iniciado', async () => {
     const { sprites, tileset, assets } = fixture()
     await createPintaPersistence({ namespace: 'refs-race' }).persistAssets(assets)
     setIdbReadGuard((key) => {
@@ -176,10 +176,14 @@ describe('referências tipadas conservadas nas fronteiras do Pinta', () => {
           tileProperties: { '0': { premio: ref(sprites[0]!.id) } },
         })
     })
-    expect(await capturePintaAssetForImage(tileset.id, { namespace: 'refs-race' })).toEqual({
-      ok: false,
-      reason: 'source-changed',
-    })
+    const captured = await capturePintaAssetForImage(tileset.id, { namespace: 'refs-race' })
+    if (!captured.ok) throw new Error(captured.reason)
+    expect(new Set([captured.source, ...(captured.assets ?? [])].map((a) => a.id))).toContain(
+      sprites[3]!.id,
+    )
+    expect(captured.source.kind === 'tileset' && captured.source.tileProperties).toEqual(
+      tileset.tileProperties,
+    )
   })
 
   it('referência ao próprio documento conserva o pacote sem impedir sua exclusão', async () => {

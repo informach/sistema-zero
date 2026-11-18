@@ -144,6 +144,7 @@ export function planImport(
   eligible: readonly PintaAsset[],
   incomingTilesetIds: ReadonlySet<string>,
   taken: Set<string>,
+  nameForCopy: (asset: PintaAsset) => string = (asset) => asset.name,
 ): ImportPlan {
   const idMap = new Map<string, string>()
   const names = new Map<string, string>()
@@ -161,7 +162,7 @@ export function planImport(
       error ??= COPY.gallery.restoreMissingTileset
       continue
     }
-    const name = uniqueName(asset.name, taken)
+    const name = uniqueName(nameForCopy(asset), taken)
     if (!name) {
       skipped += 1
       error ??= COPY.newAsset.nameTaken

@@ -136,7 +136,7 @@ describe('autosave com centenas de desenhos (medição)', () => {
     otherTab.close()
     resetIdbMockStats()
     await persistence.persistAsset({ ...y, updatedAt: y.updatedAt + 1 })
-    // Releu SÓ o X (esquecido pelo aviso), não a galeria inteira.
+    // Releu só X; a classificação do banco lê chaves, não os outros desenhos.
     expect(idbMockStats().getManyKeys).toBe(1)
   })
 })
@@ -163,7 +163,9 @@ describe('carimbo `schema` na gravação (o que faz outro código recusar em vez
     expect(rawMap.layers[0]?.offsetX).toBe(0.25)
     expect(rawSet.schema).toBe(5)
     expect(rawSet.map.schema).toBe(5)
-    expect(await createPintaPersistence().loadAssetById(conjunto.id)).toEqual(rawSet)
+    expect(structuredClone(await createPintaPersistence().loadAssetById(conjunto.id))).toEqual(
+      rawSet,
+    )
   })
   it('🚨 o registro NO DISCO leva o carimbo do conteúdo, mesmo que o desenho em memória não leve', async () => {
     const { createTilemapAsset, createTilesetAsset, isObjectLayer } = await import(

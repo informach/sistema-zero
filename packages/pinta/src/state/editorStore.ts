@@ -181,6 +181,11 @@ export function createEditorStore(options: {
   autosaveDelayMs?: number
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
+  /** A persistência confirmou a edição num fork; adota esse documento, sem alterar o original. */
+  recoverPersisted?: (
+    error: unknown,
+    sourceId: string,
+  ) => { asset: PintaAsset; linked: PintaAsset[] } | null
 }): PintaEditorStore {
   const history = createHistory<EditorSnapshot>({
     sizeOf: snapshotBytes,
@@ -225,6 +230,23 @@ export function createEditorStore(options: {
             )
             return { ok: true }
           } catch (error) {
+            const recovered = !dirty ? options.recoverPersisted?.(error, snapshot.id) : null
+            if (recovered) {
+              history.clear()
+              currentLinked = recovered.linked
+              options.onSaved?.(recovered.asset, recovered.linked)
+              set({
+                asset: recovered.asset,
+                savedAsset: recovered.asset,
+                linkedAssets: recovered.linked,
+                dirty: false,
+                saveState: 'saved',
+                saveError: null,
+                canUndo: false,
+                canRedo: false,
+              })
+              return { ok: true }
+            }
             dirty = true
             const message =
               options.persistErrorMessage?.(error) ??
@@ -256,6 +278,9 @@ export function createEditorStore(options: {
       linked?: { before: PintaAsset[]; after: PintaAsset[] },
     ): void {
       const current = get().asset
+      // A controller from a gesture that began before conflict recovery may still finish.
+      // It must never put the old document back into the adopted copy or its history.
+      if (next.id !== current.id) return
       const previousLinked = linked
         ? mergeLinkedAssets(currentLinked, linked.before)
         : currentLinked
@@ -297,7 +322,7 @@ export function createEditorStore(options: {
       },
 
       commitGesture(base) {
-        if (base === get().asset) return
+        if (base.id !== get().asset.id || base === get().asset) return
         history.record({ asset: base, linkedMaps: currentLinked })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()

@@ -35,6 +35,7 @@ import {
   isPintaStorageBudgetError,
   markPintaAssetClosed,
   markPintaAssetOpen,
+  PintaLocalConflictError,
 } from '../../state/persistence'
 import {
   createSessionStore,
@@ -719,6 +720,15 @@ function AssetChangeReporter({ onChange }: { onChange: (asset: PintaAsset) => vo
   return null
 }
 
+function AssetOpenMarker(): null {
+  const id = useEditor((state) => state.asset.id)
+  useEffect(() => {
+    markPintaAssetOpen(id)
+    return () => markPintaAssetClosed(id)
+  }, [id])
+  return null
+}
+
 export function EditorScreen({
   assetId,
   fit = false,
@@ -741,6 +751,14 @@ export function EditorScreen({
         persistErrorMessage: (error) =>
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
+        recoverPersisted: (error, sourceId) => {
+          if (!(error instanceof PintaLocalConflictError)) return null
+          const copy = error.forks.get(sourceId)
+          if (!copy) return null
+          showToast(COPY.gallery.recoveredLocal)
+          gallery.getState().acknowledgeRecovery()
+          return { asset: copy, linked: [...error.forks.values()].filter((a) => a.id !== copy.id) }
+        },
       }),
       session: createSessionStore(sessionDefaultsFor(asset, fit)),
     }
@@ -751,13 +769,6 @@ export function EditorScreen({
   useEffect(() => {
     if (!stores) closeEditor()
   }, [stores, closeEditor])
-
-  // Enquanto este editor está montado, o desenho conta como ABERTO (o host não grava por
-  // baixo dele — ver `isPintaAssetOpen`).
-  useEffect(() => {
-    markPintaAssetOpen(assetId)
-    return () => markPintaAssetClosed(assetId)
-  }, [assetId])
 
   // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`. De layout, não
   // de efeito (28/10/2026, teste intermitente no CI): ao voltar para a galeria, o desregistro
@@ -864,6 +875,7 @@ export function EditorScreen({
 
   return (
     <PintaEditorProvider value={editorContext}>
+      <AssetOpenMarker />
       {adapter.onChange ? <AssetChangeReporter onChange={adapter.onChange} /> : null}
       <div className="flex min-h-0 flex-1 flex-col">
         <EditorTopbar
@@ -898,7 +910,7 @@ function EditorBodyBound(): JSX.Element {
   return (
     <>
       <CoachMarks id={coach} title={coachCopy.title} tips={coachCopy.tips} />
-      <EditorBody asset={asset} />
+      <EditorBody key={asset.id} asset={asset} />
     </>
   )
 }
