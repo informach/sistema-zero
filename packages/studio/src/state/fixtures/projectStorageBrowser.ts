@@ -8,6 +8,7 @@ import {
 import { readValues } from '../idbTransaction'
 import {
   coordinatedProjectWrite,
+  projectExitRecoveryStatus,
   recoverProjectWrites,
   stageProjectExit,
 } from '../projectStorageCoordinator'
@@ -28,6 +29,8 @@ import { prepareProjectForHost } from '../projectValidation'
 // Observe real browser transactions. window.name survives the same-origin reload
 // even when the departing document cannot deliver another async callback.
 const previousLifecycle = window.name
+let exitCommit = false
+const abortExit = new URLSearchParams(location.search).has('abort-exit')
 function lifecycle(event: string) {
   const previous: unknown = window.name ? JSON.parse(window.name) : []
   const entries = Array.isArray(previous)
@@ -59,6 +62,10 @@ IDBTransaction.prototype.commit = function () {
   const id = transactionIds.get(this) ?? 'unknown'
   lifecycle(`commit-request:${id}`)
   try {
+    if (exitCommit && abortExit) {
+      lifecycle(`injected-abort:${id}`)
+      this.abort()
+    }
     commit.call(this)
     lifecycle(`commit-requested:${id}`)
   } catch (error) {
@@ -70,7 +77,25 @@ window.addEventListener('beforeunload', () => lifecycle('beforeunload'))
 window.addEventListener('pagehide', () => lifecycle('pagehide'))
 
 const id = new URLSearchParams(location.search).get('project') ?? 'reload'
-const scope = createProjectStorageScope('storage-browser')
+const nativeScope = createProjectStorageScope('storage-browser')
+// Fault injection belongs to this fixture, never to the production storage path.
+const deniedExit = new URLSearchParams(location.search).has('deny-exit')
+const scope =
+  deniedExit && nativeScope.exitJournalStorage
+    ? {
+        ...nativeScope,
+        exitJournalStorage: new Proxy(nativeScope.exitJournalStorage, {
+          get(target, key) {
+            if (key === 'setItem')
+              return () => {
+                throw new DOMException('Injected quota exhaustion', 'QuotaExceededError')
+              }
+            const value = Reflect.get(target, key)
+            return typeof value === 'function' ? value.bind(target) : value
+          },
+        }),
+      }
+    : nativeScope
 const recoveredProjectIds = await recoverProjectWrites(scope, id)
 const [meta, files, stateRecord, assets, blocks, head] = await readValues(scope.store, [
   projectMetaKey(id),
@@ -149,8 +174,14 @@ createPersistenceService(store, {
     lifecycle(
       `flush:${p.tree?.['main.ts']?.kind === 'file' ? p.tree['main.ts'].content : 'unknown'}`,
     )
-    return stageProjectExit(p, { puts: projectStorageEntries(p) }, scope)
+    exitCommit = true
+    try {
+      return stageProjectExit(p, { puts: projectStorageEntries(p) }, scope)
+    } finally {
+      exitCommit = false
+    }
   },
+  exitRecoveryStatus: projectExitRecoveryStatus,
   appliesSavesInCallOrder: true,
 }).attach()
 Object.assign(window, {

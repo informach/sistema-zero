@@ -1,4 +1,5 @@
 import type { EditableStudioProject } from '../core/editableProject'
+import { encodeExitJournal } from './exitJournalCodec'
 import {
   conditionalGeneration,
   conditionalWrite,
@@ -17,8 +18,10 @@ import {
   projectFilesKey,
   projectHeadKey,
   projectMetaKey,
+  projectMigrationKey,
   projectRecoveryKey,
   projectStateKey,
+  projectThumbKey,
 } from './projectStorageKeys'
 import {
   assembleProjectRecord,
@@ -37,6 +40,14 @@ import {
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
 import { toProjectSummary } from './projectSummary'
+import {
+  acknowledgeSynchronousExitJournal,
+  type ExitJournalEntry,
+  ExitJournalError,
+  hasSynchronousExitJournal,
+  readSynchronousExitJournal,
+  stageSynchronousExitJournal,
+} from './synchronousExitJournal'
 
 export const PRO_APPLICATION_LIMITS = Object.freeze({
   operations: 20,
@@ -80,6 +91,35 @@ function latestRecoveries(values: readonly unknown[]): RecoveryWrite[] {
 }
 type Budget = Record<string, number>
 const snapshotTokens = new WeakMap<{ id: string }, string>()
+const exitCopies = new WeakMap<
+  object,
+  { storage?: Storage; key?: string; encoded?: string; error?: string }
+>()
+
+export function projectExitRecoveryStatus(project: { id: string }): {
+  recoverable: boolean
+  error?: string
+} {
+  const revision = readLocalRevision(project)
+  const copy = revision && exitCopies.get(revision)
+  try {
+    if (
+      copy?.storage &&
+      copy.key &&
+      copy.encoded &&
+      copy.storage.getItem(copy.key) === copy.encoded
+    )
+      return { recoverable: true }
+  } catch {
+    /* A permission change cannot acknowledge a recovery copy. */
+  }
+  return {
+    recoverable: false,
+    error:
+      copy?.error ??
+      'As alterações ainda não têm uma cópia de recuperação confirmada. Salve ou exporte antes de fechar esta aba.',
+  }
+}
 
 function journal(value: unknown): ProApplicationRecord[] {
   if (value === undefined) return []
@@ -195,6 +235,7 @@ async function commit(
   scope: ProjectStorageScope,
   incoming: RecoveryWrite,
   generation: number,
+  rejectEqualSequence = false,
 ): Promise<void> {
   const { projectId: id, head, write, applications } = incoming
   const recoveryKey = projectRecoveryKey(id, head.writer)
@@ -221,6 +262,30 @@ async function commit(
       if (!current && meta && head.base === null) throw new ProjectWriteConflict()
       if (current?.token !== head.token && !acceptsLocalHead(current, head))
         throw new ProjectWriteConflict()
+      if (
+        rejectEqualSequence &&
+        current &&
+        current.token !== head.token &&
+        current.writer === head.writer &&
+        current.base === head.base &&
+        current.sequence === head.sequence
+      )
+        throw new ProjectWriteConflict()
+      if (rejectEqualSequence) {
+        const existingApplications = journal(oldJournal)
+        for (const record of applications) {
+          const previous = existingApplications.find(
+            (saved) => saved.operationId === record.operationId,
+          )
+          if (!previous) continue
+          try {
+            if (encodeExitJournal(previous) === encodeExitJournal(record)) continue
+          } catch {
+            // Unable to prove complete equality: preserve the entire source as a copy.
+          }
+          throw new ProjectWriteConflict()
+        }
+      }
       let history = journalWrite(id, oldJournal, oldBudget, applications)
       if (incoming.resetApplications) {
         const totals = { ...budget(oldBudget) }
@@ -261,7 +326,7 @@ export function coordinatedProjectWrite(
   resetApplications = false,
 ): Promise<void> {
   const incoming = { ...prepare(project, write, scope), resetApplications }
-  return commit(scope, incoming, generation).then(() => {
+  return commit(scope, incoming, generation).then(async () => {
     const stamp = readLocalRevision(project)!
     stamp.lineage.durableToken = incoming.head.token
     stamp.lineage.recovery = false
@@ -272,6 +337,21 @@ export function coordinatedProjectWrite(
     }
     while (stamp.lineage.saved.size > PRO_APPLICATION_LIMITS.operations)
       stamp.lineage.saved.delete(stamp.lineage.saved.values().next().value!)
+    exitCopies.delete(stamp)
+    if (hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity)) {
+      try {
+        for (const entry of readSynchronousExitJournal(
+          scope.exitJournalStorage,
+          scope.identity,
+          project.id,
+        ))
+          await retireMatchingSynchronousRecovery(scope, entry, synchronousRecovery(entry))
+      } catch (error) {
+        // The live document is confirmed. Keep an unverified mirror instead of
+        // converting a cleanup failure into data deletion or a false save failure.
+        console.warn('[studio] cópia de recuperação preservada:', error)
+      }
+    }
   })
 }
 
@@ -283,18 +363,63 @@ export function stageProjectExit(
   incompleteBlocks = false,
 ): Promise<void> {
   const incoming = { ...prepare(project, write, scope), incompleteBlocks }
+  let synchronousFailure: unknown
+  let synchronousKey: string | undefined
+  let synchronousEncoded: string | undefined
+  try {
+    synchronousKey = stageSynchronousExitJournal(
+      scope.exitJournalStorage,
+      scope.identity,
+      {
+        projectId: incoming.projectId,
+        writer: incoming.head.writer,
+        token: incoming.head.token,
+      },
+      incoming,
+    )
+    synchronousEncoded = scope.exitJournalStorage?.getItem(synchronousKey) ?? undefined
+    if (!synchronousEncoded)
+      throw new ExitJournalError('A cópia de recuperação não foi confirmada.')
+  } catch (error) {
+    synchronousFailure = error
+  }
+  const revision = readLocalRevision(project)!
+  exitCopies.set(revision, {
+    storage: scope.exitJournalStorage,
+    key: synchronousKey,
+    encoded: synchronousEncoded,
+    ...(synchronousFailure
+      ? {
+          error:
+            synchronousFailure instanceof Error
+              ? synchronousFailure.message
+              : 'Não foi possível guardar a cópia de recuperação.',
+        }
+      : {}),
+  })
   interruptConditionalTransactions(scope.identity)
-  return writeInOneTransaction(scope.store, {
+  const native = writeInOneTransaction(scope.store, {
     puts: [[projectRecoveryKey(project.id, incoming.head.writer), incoming]],
   })
+  // Still request native recovery on quota/availability failure. The service must
+  // keep dirty state and warn before leaving when no synchronous copy exists.
+  return native
+    .catch((error) => {
+      if (!projectExitRecoveryStatus(project).recoverable) throw error
+    })
+    .then(() => {
+      if (synchronousFailure && scope.exitJournalStorage) throw synchronousFailure
+    })
 }
 
 /** Kept when conflicting; recovery never replaces a newer writer's document. */
-export async function recoverProjectWrites(
+async function recoverIndexedProjectWrites(
   scope: ProjectStorageScope,
   projectId?: string,
   knownKeys?: readonly IDBValidKey[],
-): Promise<string[]> {
+  synchronousTokens: ReadonlySet<string> = new Set(),
+  mustCopy?: (recovery: RecoveryWrite) => boolean,
+): Promise<{ recovered: string[]; consumed: Set<string> }> {
   const keys = (knownKeys ?? (await readAllKeys(scope.store))).filter(
     (key): key is string =>
       typeof key === 'string' &&
@@ -304,10 +429,18 @@ export async function recoverProjectWrites(
   )
   const values = await readValues(scope.store, keys)
   const recovered: string[] = []
+  const consumed = new Set<string>()
   for (const recovery of latestRecoveries(values)) {
     try {
-      await commit(scope, recovery, conditionalGeneration(scope.identity))
+      if (mustCopy?.(recovery)) throw new ProjectWriteConflict()
+      await commit(
+        scope,
+        recovery,
+        conditionalGeneration(scope.identity),
+        synchronousTokens.has(recovery.head.token),
+      )
       recovered.push(recovery.projectId)
+      consumed.add(recovery.head.token)
     } catch (error) {
       // One failed recovery (quota, incompatible journal or corrupt draft) must not
       // prevent access to the committed document or the rest of the profile.
@@ -315,13 +448,271 @@ export async function recoverProjectWrites(
         try {
           const copied = await copyConflictingRecovery(scope, recovery)
           if (copied) recovered.push(copied)
+          const [remaining] = await readValues(scope.store, [
+            projectRecoveryKey(recovery.projectId, recovery.head.writer),
+          ])
+          if (copied || remaining === undefined) consumed.add(recovery.head.token)
         } catch {
           /* The complete original draft stays in its recovery partition. */
         }
       }
     }
   }
-  return recovered
+  return { recovered, consumed }
+}
+
+function synchronousRecovery(entry: ExitJournalEntry): RecoveryWrite {
+  const recovery = latestRecoveries([entry.value])[0]
+  if (
+    !recovery ||
+    recovery.projectId !== entry.projectId ||
+    recovery.head.writer !== entry.writer ||
+    recovery.head.token !== entry.token
+  )
+    throw new ExitJournalError(
+      'A identidade da cópia de recuperação é inválida. Ela foi preservada.',
+    )
+  const knownFields = [
+    'version',
+    'projectId',
+    'head',
+    'write',
+    'applications',
+    'resetApplications',
+    'incompleteBlocks',
+    'replacesRecovery',
+  ]
+  if (
+    Object.keys(recovery).some((key) => !knownFields.includes(key)) ||
+    Object.keys(recovery.head).some(
+      (key) => !['version', 'writer', 'token', 'base', 'sequence'].includes(key),
+    ) ||
+    Object.keys(recovery.write).some((key) => !['puts', 'deletes'].includes(key)) ||
+    recovery.head.sequence < 0 ||
+    !Array.isArray(recovery.applications) ||
+    (recovery.resetApplications === true && recovery.applications.length > 0) ||
+    (recovery.resetApplications !== undefined && typeof recovery.resetApplications !== 'boolean') ||
+    (recovery.incompleteBlocks !== undefined && typeof recovery.incompleteBlocks !== 'boolean') ||
+    (recovery.replacesRecovery !== undefined &&
+      (!Array.isArray(recovery.replacesRecovery) ||
+        recovery.replacesRecovery.some(
+          (source) =>
+            !source ||
+            typeof source.key !== 'string' ||
+            typeof source.token !== 'string' ||
+            Object.keys(source).some((key) => key !== 'key' && key !== 'token') ||
+            !source.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${entry.projectId}:`),
+        )))
+  )
+    throw new ExitJournalError(
+      'O contrato da cópia de recuperação é incompatível. Ela foi preservada.',
+    )
+  const keys = new Set([
+    projectMetaKey(entry.projectId),
+    projectFilesKey(entry.projectId),
+    projectStateKey(entry.projectId),
+    projectBlocksKey(entry.projectId),
+    projectAssetsKey(entry.projectId),
+    projectThumbKey(entry.projectId),
+  ])
+  if (
+    !Array.isArray(recovery.write.puts) ||
+    recovery.write.puts.some(
+      (pair) =>
+        !Array.isArray(pair) ||
+        pair.length !== 2 ||
+        typeof pair[0] !== 'string' ||
+        !keys.has(pair[0]),
+    ) ||
+    (recovery.write.deletes !== undefined &&
+      (!Array.isArray(recovery.write.deletes) ||
+        recovery.write.deletes.some((key) => typeof key !== 'string' || !keys.has(key)))) ||
+    !projectFromRecovery(recovery)
+  )
+    throw new ExitJournalError(
+      'A cópia de recuperação contém partições incompatíveis. Ela foi preservada.',
+    )
+  const putKeys = recovery.write.puts.map(([key]) => key)
+  const deleteKeys = recovery.write.deletes ?? []
+  const applications = journal(recovery.applications)
+  if (
+    new Set(putKeys).size !== putKeys.length ||
+    new Set(deleteKeys).size !== deleteKeys.length ||
+    deleteKeys.some((key) => putKeys.includes(key)) ||
+    new Set(applications.map((record) => record.operationId)).size !== applications.length
+  )
+    throw new ExitJournalError(
+      'A cópia de recuperação contém operações repetidas ou conflitantes. Ela foi preservada.',
+    )
+  return recovery
+}
+
+async function matchesCommittedRecovery(
+  scope: ProjectStorageScope,
+  recovery: RecoveryWrite,
+): Promise<boolean> {
+  const puts = recovery.write.puts ?? []
+  const deletes = recovery.write.deletes ?? []
+  const [head, applications, ...values] = await readValues(scope.store, [
+    projectHeadKey(recovery.projectId),
+    projectApplicationsKey(recovery.projectId),
+    ...puts.map(([key]) => key),
+    ...deletes,
+  ])
+  if (!isLocalHead(head) || head.deleted) return false
+  try {
+    if (
+      !puts.every(
+        ([, value], index) => encodeExitJournal(value) === encodeExitJournal(values[index]),
+      )
+    )
+      return false
+    if (!deletes.every((_, index) => values[puts.length + index] === undefined)) return false
+    const saved = journal(applications)
+    return recovery.applications.every((record) =>
+      saved.some(
+        (other) =>
+          other.operationId === record.operationId &&
+          encodeExitJournal(other) === encodeExitJournal(record),
+      ),
+    )
+  } catch {
+    return false
+  }
+}
+
+async function retireMatchingSynchronousRecovery(
+  scope: ProjectStorageScope,
+  entry: ExitJournalEntry,
+  incoming: RecoveryWrite,
+): Promise<boolean> {
+  if (!(await matchesCommittedRecovery(scope, incoming))) return false
+  const key = projectRecoveryKey(incoming.projectId, incoming.head.writer)
+  await conditionalWrite(
+    scope.store,
+    scope.identity,
+    conditionalGeneration(scope.identity),
+    [key],
+    ([current]) => {
+      const pending = current as RecoveryWrite | undefined
+      if (pending?.head?.token !== entry.token) return { write: {}, result: undefined }
+      if (encodeExitJournal(current) !== entry.encoded)
+        throw new ExitJournalError(
+          'A mesma revisão contém recuperações diferentes. Ambas foram preservadas.',
+        )
+      return { write: { deletes: [key] }, result: undefined }
+    },
+  )
+  try {
+    acknowledgeSynchronousExitJournal(scope.exitJournalStorage, entry)
+  } catch (error) {
+    console.warn('[studio] cópia confirmada; limpeza de recuperação pendente:', error)
+  }
+  return true
+}
+
+/** Replay the same recovery protocol; no competing model, writer or project store. */
+export async function recoverProjectWrites(
+  scope: ProjectStorageScope,
+  projectId?: string,
+  knownKeys?: readonly IDBValidKey[],
+): Promise<string[]> {
+  let entries: ExitJournalEntry[]
+  try {
+    entries = readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, projectId)
+  } catch (error) {
+    if (projectId) throw error
+    console.warn('[studio] cópia de recuperação preservada:', error)
+    return (await recoverIndexedProjectWrites(scope, projectId, knownKeys)).recovered
+  }
+  const pending: ExitJournalEntry[] = []
+  for (const entry of entries) {
+    try {
+      if (!(await retireMatchingSynchronousRecovery(scope, entry, synchronousRecovery(entry))))
+        pending.push(entry)
+    } catch (error) {
+      if (projectId) throw error
+      console.warn('[studio] cópia de recuperação preservada:', error)
+    }
+  }
+  entries = pending
+  const groups = new Map<string, RecoveryWrite[]>()
+  const groupKey = (value: RecoveryWrite) =>
+    JSON.stringify([value.projectId, value.head.writer, value.head.base, value.head.sequence])
+  const comparable = (value: RecoveryWrite) =>
+    encodeExitJournal({ ...value, head: { ...value.head, token: '' } })
+  for (const entry of entries) {
+    const value = synchronousRecovery(entry)
+    const key = groupKey(value)
+    const group = groups.get(key) ?? []
+    group.push(value)
+    groups.set(key, group)
+  }
+  const ambiguous = new Set<string>()
+  const mustCopy = (value: RecoveryWrite) => {
+    const key = groupKey(value)
+    if (ambiguous.has(key)) return true
+    const peers = groups.get(key)
+    if (
+      peers?.some(
+        (peer) => peer.head.token !== value.head.token && comparable(peer) !== comparable(value),
+      )
+    ) {
+      ambiguous.add(key)
+      return true
+    }
+    return false
+  }
+  const tokens = new Set(entries.map((entry) => entry.token))
+  const first = await recoverIndexedProjectWrites(scope, projectId, knownKeys, tokens, mustCopy)
+  const recovered = new Set(first.recovered)
+  const consumed = first.consumed
+  for (const entry of entries) {
+    try {
+      const incoming = synchronousRecovery(entry)
+      if (!consumed.has(entry.token) && !(await matchesCommittedRecovery(scope, incoming))) {
+        const key = projectRecoveryKey(incoming.projectId, incoming.head.writer)
+        await conditionalWrite(
+          scope.store,
+          scope.identity,
+          conditionalGeneration(scope.identity),
+          [key],
+          ([existing]) => {
+            if (existing !== undefined && encodeExitJournal(existing) !== entry.encoded)
+              throw new ExitJournalError(
+                'Outra recuperação deste escritor ainda está pendente. Ambas foram preservadas.',
+              )
+            return {
+              write: existing === undefined ? { puts: [[key, incoming]] } : {},
+              result: undefined,
+            }
+          },
+        )
+        const next = await recoverIndexedProjectWrites(
+          scope,
+          incoming.projectId,
+          undefined,
+          tokens,
+          mustCopy,
+        )
+        for (const id of next.recovered) recovered.add(id)
+        for (const token of next.consumed) consumed.add(token)
+        if (!consumed.has(entry.token))
+          throw new ExitJournalError(
+            'A cópia de recuperação ainda não pôde ser aplicada. Ela foi preservada.',
+          )
+      }
+      try {
+        acknowledgeSynchronousExitJournal(scope.exitJournalStorage, entry)
+      } catch (error) {
+        console.warn('[studio] cópia confirmada; limpeza de recuperação pendente:', error)
+      }
+    } catch (error) {
+      if (projectId) throw error
+      console.warn('[studio] cópia de recuperação preservada:', error)
+    }
+  }
+  return [...recovered]
 }
 
 function projectFromRecovery(recovery: RecoveryWrite): StoredProjectRecord | null {
@@ -424,12 +815,26 @@ async function copyConflictingRecovery(
     scope.store,
     scope.identity,
     conditionalGeneration(scope.identity),
-    [stagedKey, projectMetaKey(id), projectHeadKey(id), ...sources.map((entry) => entry.key)],
-    ([latest, existing, targetHead, ...ancestors]) => {
+    [
+      stagedKey,
+      projectMetaKey(id),
+      projectHeadKey(id),
+      projectMigrationKey(id),
+      ...sources.map((entry) => entry.key),
+    ],
+    ([latest, existing, targetHead, provenance, ...ancestors]) => {
       const draft = latest as RecoveryWrite | undefined
       if (draft?.head.token !== recovery.head.token) return { write: {}, result: undefined }
       // An inconsistent live head cannot stand in for a recovered document.
       if (!existing && targetHead && !(isLocalHead(targetHead) && targetHead.deleted))
+        return { write: {}, result: undefined }
+      // Keep inverse patches and all source journal fields with the recovered copy.
+      const archived = provenance as { exitRecovery?: RecoveryWrite } | undefined
+      if (
+        existing &&
+        !(isLocalHead(targetHead) && targetHead.deleted) &&
+        archived?.exitRecovery?.head.token !== recovery.head.token
+      )
         return { write: {}, result: undefined }
       const deletes = [
         stagedKey,
@@ -446,6 +851,7 @@ async function copyConflictingRecovery(
               ? []
               : [
                   ...projectStorageEntries(copy),
+                  [projectMigrationKey(id), { exitRecovery: recovery }],
                   [
                     projectHeadKey(id),
                     {

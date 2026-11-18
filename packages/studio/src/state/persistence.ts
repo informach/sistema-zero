@@ -62,6 +62,7 @@ import {
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
 import { type ProjectSummary, toProjectSummary } from './projectSummary'
+import { hasSynchronousExitJournal } from './synchronousExitJournal'
 
 export type { ProjectSummary } from './projectSummary'
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
@@ -853,7 +854,10 @@ async function listAllProjectsInternal(
   const scope = storageScope ?? captureProjectStorageScope()
   const kvStore = scope.store
   let allKeys = await readAllKeys(kvStore)
-  if (allKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX))) {
+  if (
+    hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity) ||
+    allKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX))
+  ) {
     notifyRecoveredProjects(scope, await recoverProjectWrites(scope, undefined, allKeys))
     allKeys = await readAllKeys(kvStore)
   }

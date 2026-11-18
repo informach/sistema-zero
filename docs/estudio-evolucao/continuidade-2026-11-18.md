@@ -169,3 +169,44 @@ Esse último comando deve reprovar (391 eventos, orçamento inferior a 64). Ele 
 evidência de problema preservado, não um teste a enfraquecer. O checkpoint passou
 typecheck; as medições e o E2E grande continuam reprovados. Os comandos e relatórios
 do protótipo estão nessa branch e os relatórios também ficam na branch da PR.
+
+
+## Continuação: perda nativa de journal e cópia síncrona
+
+O run `44386420665` concluiu todos os jobs de navegador, runtime hospedado,
+auditoria bruta e contratos Windows com sucesso. Contratos Linux falharam na
+primeira recarga WebKit: `exit-0` foi capturado e o commit nativo solicitado,
+mas reabriu `in-flight-0`. Não reinterpretar esse resultado como sucesso.
+
+A correção atual evolui o mesmo journal/CAS com uma cópia síncrona imutável e
+codec plano versionado. Não cria outra base de projetos. Conflitos conservam
+o projeto original e arquivam o journal completo junto da cópia recuperada.
+Quota negada não reconhece um save e solicita confirmação nativa ao sair.
+Relatório: `docs/qa/2026-11-18-studio-synchronous-exit-journal.md`.
+
+Verificação local final deste lote: 374 testes de estado/persistência, 2068
+asserções; 43 contratos pedagógicos, 192 asserções; typecheck incremental sem
+erros. Chromium/WebKit passaram 12 recargas por motor e conflitos de duas abas,
+inclusive com aborto nativo injetado (18,32 s). Chromium verificou diálogo
+nativo e retenção dos dados ao cancelar saída com quota síncrona negada.
+A suíte completa e a falha Linux original ainda precisam passar no SHA novo.
+
+O orçamento de 2.000.000 caracteres é somente da cópia de recuperação, não é
+um aumento de quota do projeto nem uma promessa de durabilidade universal.
+Sem essa cópia é necessário concluir save/export antes de sair. R3 permanece
+em qualificação. R1, R2, R4, R5 e as etapas profissionais pendentes continuam
+abertos; o protótipo Blockly rejeitado continua fora da PR.
+
+Reproduzir o lote, dentro de packages/studio:
+
+```powershell
+bun test src/state src/persistence
+$env:STUDIO_STORAGE_BROWSER='all'
+$env:STUDIO_STORAGE_EXIT_FAULT='abort'
+bun test src/state/projectStorageBrowser.test.ts
+$env:STUDIO_STORAGE_EXIT_FAULT=''
+bunx tsc --noEmit
+```
+
+O workflow executa o caso normal Linux antes da suíte e o caso de aborto em
+ambos os SOs, conserva evidências separadas e não reduz a suíte isolada completa.

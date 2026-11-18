@@ -56,6 +56,15 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-targeted.txt
+      - name: Recovery with an aborted native exit transaction
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: all
+          STUDIO_STORAGE_EXIT_FAULT: abort
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-aborted.txt
       - name: Complete isolated Studio suite
         working-directory: packages/studio
         run: |

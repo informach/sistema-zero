@@ -100,7 +100,7 @@ import {
   renameProjectMeta,
 } from './persistence'
 import { beginProjectOpening } from './projectOpening'
-import { bindProjectToDurableHead } from './projectStorageCoordinator'
+import { bindProjectToDurableHead, projectExitRecoveryStatus } from './projectStorageCoordinator'
 import {
   advanceLocalRevision,
   copyLocalRevision,
@@ -2031,6 +2031,7 @@ export function createLocalPersistenceAdapter(
     flushOnExit: (project, options) =>
       persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),
     localScope: scope,
+    exitRecoveryStatus: projectExitRecoveryStatus,
     // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
     // nascem: o serviço não precisa encadear os saves (ver `appliesSavesInCallOrder`).
     appliesSavesInCallOrder: true,
