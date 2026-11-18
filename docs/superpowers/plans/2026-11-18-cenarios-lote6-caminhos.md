@@ -39,11 +39,11 @@
 **Files:** motor `src/curvas/*`, `Palco.ts`, seleção e fontes do Testar; testes de geometria/picking/colisão e helpers browser.
 
 - [x] Desenhar trilha e praça com encaixe correto no terreno e acabamento/texture do catálogo quando escolhido. Conferir bordas/juntas, água adjacente e ausência de superfícies duplicadas.
-- [ ] Integrar a estrada ao campo modificado e às regiões; atualizar objetos/conjuntos apoiados no terreno sem perder o gesto ou publicar campos intermediários.
-- [ ] Cercas/muros com módulos medidos, eixo explícito, juntas e apoios em desnível. Instanciar/compartilhar recursos; colisão conforme a geometria visível.
+- [x] Integrar o desenho da estrada ao campo preparado e às regiões; preservar a atualização dos apoios pelo campo compartilhado. Gesto e publicação atômica estrada+campo são conferidos em 6.3.
+- [x] Cercas/muros com módulos medidos, eixo explícito, juntas e apoios em desnível. Instanciar/compartilhar recursos; colisão conforme a geometria visível.
 - [x] Ponte nativa de referência e acabamento de catálogo com encaixe explícito nas cabeceiras; tabuleiro transitável, vão livre e pilares coerentes. Não criar piso invisível sobre a água.
-- [ ] Seleção, visibilidade/camada, reentrada e descarte, com alertas úteis para modelo/encaixe inválido. Reusar o loop de render e cache.
-- [ ] Conferir dia/noite, enquadramento do avatar, UV, física e recursos após ciclos; tipagem/revisão do recorte.
+- [x] Seleção, visibilidade/camada, reentrada e descarte, com alertas úteis para modelo/encaixe inválido. Reusar o loop de render e cache.
+- [x] Conferir dia/noite, enquadramento do avatar, UV, física e recursos após ciclos; tipagem/revisão do recorte.
 
 ## 6.3 — Pontos, prévia, worker e autoria
 
@@ -51,7 +51,7 @@
 
 - [ ] Reutilizar o gesto de pontos para criar linhas/polígonos e cabeceiras. Selecionar/mover pontos, inserir no trecho e remover respeitando o mínimo, com Escape/cancelamento e toque.
 - [ ] Numerais editáveis e direção/fechamento legíveis; órbita não insere pontos. Proteger Testar, retratos e operações concorrentes durante o preparo.
-- [ ] Preparar campo/recursos antes de enfileirar estrada+caminho; guardar uma revisão. Reusar nova tentativa de upload, idempotência e prova de recursos.
+- [ ] Preparar campo/recursos antes de enfileirar estrada+caminho; guardar uma revisão, atualizar objetos/conjuntos apoiados no terreno, sem perder o gesto ou publicar campos intermediários. Reusar nova tentativa de upload, idempotência e prova de recursos.
 - [ ] Conferir no-op, cancelamento, resposta atrasada, mudança de cabeça, desmontagem, falha de envio, undo/redo e reabertura. Preservar água/terreno e seus recursos.
 - [ ] Revisar e preservar o recorte.
 
@@ -95,3 +95,5 @@ Primeiro recorte: [auditoria do núcleo de curvas](../../plans/2026-11-16-cenari
 **6.2 em andamento:** [conformação e picking](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-conformacao.md) implementados/testados/revisados como componentes, ainda sem gerenciador de Caminhos no Palco. Recorte compartilhado de peças 3D, preservação do acervo, atualização regional e invalidação do índice físico de seleção. Núcleo 261/10.145, motor 104/3.456, oficina 96/610 e consulta Molda 4/7.916, sem falhas; tipagem/build/regressão dos workers conferidos. Montagem de módulos, materiais, integração de cena/picking/Testar e avaliação visual continuam em 6.2.
 
 **Pontes de catálogo e pilares conferidos:** [revisão e medidas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-pontes.md). Três modelos reais atravessados nos dois sentidos; tampas pelos triângulos do tabuleiro, bases pelo campo, aviso para juntas, afastamento medido e recursos estáveis após três ciclos. Recorte quase coincidente corrigido com reprodução mínima; núcleo 274, motor 117, oficina 96, Members 51 e Postgres 40 testes aprovados, além de tipagem/build/workers e repetição completa da Faísca. **6.2 permanece aberto:** terminar estrada e módulos em relevo antes de pontos/worker/interface. Não iniciar lote 7.
+
+**Fechamento de 6.2:** [revisão do desenho e da física](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-renderer-fechamento.md). Estrada moldada e módulos reais no relevo, contato de bases, colisão do muro, recursos estáveis, dia/noite e preservação do acervo conferidos. Somente **6.3 — pontos, prévia, worker e autoria** é a frente ativa seguinte. Aba Caminhos e revisão integral do lote ainda pendentes; lotes 7–10 não iniciados.
