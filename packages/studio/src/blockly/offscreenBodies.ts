@@ -45,7 +45,7 @@ function isArea(block: Blockly.Block): boolean {
 
 export function createOffscreenBodies(
   workspace: Blockly.WorkspaceSvg,
-  options: { minBlocks?: number } = {},
+  options: { minBlocks?: number; onChange?: (detached: number) => void } = {},
 ): OffscreenBodies {
   const minBlocks = options.minBlocks ?? OFFSCREEN_BODIES_MIN_BLOCKS
   const detached = new Map<string, Detached>()
@@ -108,7 +108,7 @@ export function createOffscreenBodies(
     }
   }
 
-  function syncNow(): void {
+  function syncPass(): void {
     scheduled = false
     if (disposed) return
     // Corpos de blocos que já não existem (apagados, canvas recarregado) saem da conta.
@@ -138,6 +138,14 @@ export function createOffscreenBodies(
         visitChain(first, origin.y + first.relativeCoords.y, top, bottom)
       }
     }
+  }
+
+  let published = -1
+  function syncNow(): void {
+    syncPass()
+    if (disposed || detached.size === published) return
+    published = detached.size
+    options.onChange?.(published)
   }
 
   function sync(): void {

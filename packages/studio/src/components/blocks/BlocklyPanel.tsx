@@ -1196,7 +1196,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     })
     appliedToolboxRef.current = initialToolbox
     // Projeto muito grande: o corpo dos blocos longe da vista sai da página (`offscreenBodies.ts`).
-    const offscreenBodies = createOffscreenBodies(injected)
+    const offscreenBodies = createOffscreenBodies(injected, {
+      // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
+      onChange: (count) => {
+        container.dataset.szOffscreenBodies = String(count)
+      },
+    })
     // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
