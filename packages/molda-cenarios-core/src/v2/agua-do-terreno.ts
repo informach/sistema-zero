@@ -283,13 +283,15 @@ export function nivelDeTransbordo(
   opcoes: { maxAmostras?: number } = {},
 ): { nivel: number; saida: PontoNoChao; naBorda: boolean } | null {
   const maxAmostras = opcoes.maxAmostras ?? 2_000_000
+  if (!Number.isSafeInteger(maxAmostras) || maxAmostras < 1 || maxAmostras > 4097 ** 2)
+    invalidar('O limite da busca de transbordo precisa estar entre 1 e 16.785.409 amostras')
   const semente = amostraMaisProxima(campo, ponto)
   if (semente === null) return null
   const largura = campo.colunas + 1,
     h = campo.alturas,
     visto = new Uint8Array(h.length),
     // Ponto mais alto do melhor caminho da semente até cada amostra.
-    custo = new Float32Array(h.length)
+    custo = new Float64Array(h.length)
   // Fila de prioridade (menor custo primeiro; empate pelo índice, para a ordem ser única).
   let fila = new Int32Array(1024),
     tamanho = 0

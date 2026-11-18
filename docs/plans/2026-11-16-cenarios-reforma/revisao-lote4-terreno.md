@@ -67,4 +67,6 @@ O build mantém o aviso de chunk: motor ≈837 kB / 224 kB gzip; worker de terre
 
 ## Continuidade
 
+O trabalho foi preservado em `e2cf24fe5`; a atualização da frente Pinta foi incorporada sem conflitos em `40ed89058` e enviada para `origin/staging`. Núcleo, motor e oficina passaram novamente após o merge, assim como a tipagem completa de Members e member-shell. Nenhuma validação de implantação foi antecipada.
+
 O próximo lote exclusivo é **5 — Água**, sobre esta base de terreno. Caminhos, jogo/luz/céu, exportações, agentes, limpeza, composição final da Faísca e full review continuam na sequência do plano. Implantação e validação da staging fecham o trabalho global; o acesso geral aos membros permanece condicionado à decisão da coordenação.
