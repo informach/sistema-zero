@@ -18,6 +18,7 @@ export async function guardarOperacaoComTerreno({
   regioes,
   finalizar,
   sinal,
+  conferir,
 }: {
   controlador: ControladorDaOficina
   palco: Pick<
@@ -30,6 +31,7 @@ export async function guardarOperacaoComTerreno({
   regioes: RegioesDeTerreno
   finalizar(cancelar: boolean): void
   sinal?: AbortSignal
+  conferir?(): void
 }) {
   let enfileirado = false,
     finalizado = false
@@ -37,6 +39,7 @@ export async function guardarOperacaoComTerreno({
     sinal?.throwIfAborted()
     if (controlador.getState().documento !== documentoDeOrigem)
       throw new DOMException('O cenário mudou durante a preparação', 'AbortError')
+    conferir?.()
     if (terreno) {
       if (documentoDeOrigem.base.tipo !== 'terreno')
         throw Error('Prepare o relevo antes de moldar o terreno.')

@@ -161,3 +161,28 @@ test('escolha substitui apenas a seleção, resolve colisão de IDs e desfaz a r
   d.instancias[0]!.bloqueado = true
   expect(() => aplicar(d, aplicarTexturaAosObjetos(d, ['o'], nova))).toThrow('bloqueado')
 })
+
+test('restaurar o material de um objeto conserva a textura ainda usada por um caminho', () => {
+  const d = aplicar(cena(), porTextura(cena()))
+  d.caminhos = [
+    {
+      id: 'c',
+      nome: 'Trilha',
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      tipo: 'trilha',
+      acabamento: null,
+      largura: 2.5,
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 8, z: 0 },
+      ],
+      aparencia: { textura: { id: textura.id, repeticaoMetros: 2 } },
+    },
+  ]
+  const depois = aplicar(d, aplicarTexturaAosObjetos(d, ['o'], null))
+  expect(depois.texturas).toEqual([textura])
+  expect(depois.caminhos[0]!.aparencia).toEqual(d.caminhos[0]!.aparencia)
+  expect(depois.instancias[0]!.aparencia?.textura).toBeUndefined()
+})

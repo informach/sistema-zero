@@ -50,20 +50,20 @@
 **Files:** captura de pontos/alças no motor; oficina preparação em worker e autoria sobre `terreno-autoria.ts`; testes de fila e browser.
 
 - [x] Reutilizar o gesto de pontos para criar linhas/polígonos e cabeceiras. Selecionar/mover pontos, inserir no trecho e remover respeitando o mínimo, com Escape/cancelamento e toque.
-- [ ] Numerais editáveis e direção/fechamento legíveis; órbita não insere pontos. Proteger Testar, retratos e operações concorrentes durante o preparo.
+- [x] Numerais editáveis e direção/fechamento legíveis; órbita não insere pontos. Proteger Testar, retratos e operações concorrentes durante o preparo.
 - [x] Preparar campo/recursos antes de enfileirar estrada+caminho; guardar uma revisão, atualizar objetos/conjuntos apoiados no terreno, sem perder o gesto ou publicar campos intermediários. Reusar nova tentativa de upload, idempotência e prova de recursos.
-- [ ] Conferir no-op, cancelamento, resposta atrasada, mudança de cabeça, desmontagem, falha de envio, undo/redo e reabertura. Preservar água/terreno e seus recursos.
-- [ ] Revisar e preservar o recorte.
+- [x] Conferir no-op, cancelamento, resposta atrasada, mudança de cabeça, desmontagem, falha de envio, undo/redo e reabertura. Preservar água/terreno e seus recursos.
+- [x] Revisar e preservar o recorte.
 
 ## 6.4 — Aba Caminhos na identidade Molda
 
 **Files:** `useCaminhos.ts`, `telas/Caminhos.tsx` e componentes específicos; integração em `Oficina.tsx`; CSS prefixado.
 
-- [ ] Rail com trilha/praça simples e estrada/cerca/muro/ponte no mesmo fluxo; nenhum botão sem comportamento.
-- [ ] Largura, suavização, material/textura, módulo, altura/encaixe e moldagem com limites/unidades acessíveis. Modelos escolhidos pela biblioteca existente, com medidas conferidas.
-- [ ] Criar, selecionar, nomear, editar, ocultar, camada, copiar/colar e remover caminhos pelo histórico existente. Reaproveitar o alvo da árvore.
-- [ ] Mostrar prévia, avisos de invasão/vão/juntas/orçamento e erro com nova tentativa. Não expor caminhos internos de armazenamento ao usuário.
-- [ ] Conferir inspector, drawer, abas e teclado/mouse/toque em 1440/1366/1024/390, claro/escuro. Revisar o recorte.
+- [x] Rail com trilha/praça simples e estrada/cerca/muro/ponte no mesmo fluxo; nenhum botão sem comportamento.
+- [x] Largura, suavização, material/textura, módulo, altura/encaixe e moldagem com limites/unidades acessíveis. Modelos escolhidos pela biblioteca existente, com medidas conferidas.
+- [x] Criar, selecionar, nomear, editar, ocultar, camada, copiar/colar e remover caminhos pelo histórico existente. Reaproveitar o alvo da árvore.
+- [x] Mostrar prévia, avisos de invasão/vão/juntas/orçamento e erro com nova tentativa. Não expor caminhos internos de armazenamento ao usuário.
+- [x] Conferir inspector, drawer, abas e teclado/mouse/toque em 1440/1366/1024/390, claro/escuro. Revisar o recorte.
 
 ## 6.5 — Fechamento exclusivo do lote
 
@@ -76,7 +76,7 @@
 
 ## Estado atual
 
-**Lote 6 aberto. 6.1 e 6.2 implementados, testados e revisados. 6.3 em andamento:** API de pontos, worker e autoria verificadas; [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-pontos-autoria.md). Próxima tarefa exclusiva: integrar coordenadas editáveis, captura e preparação à oficina e concluir a aba Caminhos. O worker novo foi exercitado no Vite; ainda falta sua ligação ao build da interface. Lotes 7–10 não iniciados.
+**Lote 6 aberto. 6.1–6.4 implementados, testados e revisados localmente. Única frente ativa: 6.5 — revisão integral e fechamento do lote.** [Interface e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-interface.md). Pontos, coordenadas, biblioteca, autoria e quatro workers estão ligados à oficina e verificados. Lotes 7–10 não iniciados.
 
 ### Registros anteriores
 

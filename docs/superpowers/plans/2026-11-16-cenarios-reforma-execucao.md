@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–5 fechados localmente. Lote 6 aberto: 6.1/6.2 concluídos; API de pontos, worker e autoria de 6.3 verificados, ainda faltando ligação dos controles à oficina. [Último checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-pontos-autoria.md). Lotes 7–10 e encerramento global pendentes.
+**Estado atual, 18/11:** lotes 0–5 fechados localmente. Lote 6 aberto: 6.1–6.4 implementados, testados e revisados. Única frente ativa: 6.5, revisão integral e fechamento. [Interface e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-interface.md). Lotes 7–10 e encerramento global pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.

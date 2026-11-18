@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const endereco = process.env.CENARIOS_QA_PREVIEW ?? 'http://127.0.0.1:4542',
-  saida = resolve(import.meta.dirname, '../../../../output/cenarios-reforma/lote5-worker-producao')
+  saida = resolve(import.meta.dirname, '../../../../output/cenarios-reforma/lote6-worker-producao')
 mkdirSync(saida, { recursive: true })
 const navegador = await chromium.launch({ channel: 'chrome', headless: true })
 try {
@@ -71,8 +71,25 @@ try {
   )
   assert.equal(final.aguas[0].tipo, 'mar')
   assert.equal(final.aguas[0].nivel, -1)
-  assert.ok(workers.length >= 3)
+  await pagina.getByRole('button', { name: 'Caminhos', exact: true }).click()
+  await pagina.getByRole('button', { name: 'Trilha', exact: true }).first().click()
+  for (const x of [0, 8]) {
+    await painel.getByRole('button', { name: 'Adicionar por coordenadas', exact: true }).click()
+    const campo = painel.getByRole('spinbutton', { name: / X$/ })
+    await campo.fill(String(x))
+    await campo.press('Tab')
+  }
+  await painel.getByRole('button', { name: 'Ver prévia', exact: true }).click()
+  await painel.getByRole('heading', { name: 'Prévia · ainda não guardada', exact: true }).waitFor()
+  await painel.getByRole('button', { name: 'Guardar caminho', exact: true }).click()
+  await painel.getByRole('heading', { name: /Caminhos do cenário/ }).waitFor()
+  await pagina.waitForFunction(
+    async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 1,
+    id,
+  )
+  assert.ok(workers.length >= 4)
   assert.ok(workers.some((url) => url.includes('agua.worker-')))
+  assert.ok(workers.some((url) => url.includes('caminho.worker-')))
   assert.ok(
     workers.every(
       (url) =>
@@ -87,6 +104,7 @@ try {
         terreno: true,
         png16: true,
         agua: true,
+        caminhos: true,
         workers: workers.map((url) => new URL(url).pathname),
         erros,
       },
@@ -95,7 +113,14 @@ try {
     ),
   )
   console.log(
-    JSON.stringify({ terreno: true, png16: true, agua: true, workers: workers.length, erros }),
+    JSON.stringify({
+      terreno: true,
+      png16: true,
+      agua: true,
+      caminhos: true,
+      workers: workers.length,
+      erros,
+    }),
   )
 } finally {
   await navegador.close()

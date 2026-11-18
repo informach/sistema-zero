@@ -66,6 +66,12 @@ export class CaminhosDoPalco {
   ): EstadoDosCaminhos {
     const estado: EstadoDosCaminhos = { carregando: 0, falhas: [], avisos: [] }
     if (this.descartado) return estado
+    if (documento.base.tipo === 'terreno' && !terreno) {
+      this.limpar()
+      this.terreno = null
+      estado.carregando = documento.caminhos.length
+      return estado
+    }
     if (this.terreno !== terreno) {
       this.limpar()
       this.terreno = terreno

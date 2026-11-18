@@ -92,6 +92,28 @@ test('editar uma trilha conserva sua ordem e a precedência dos encontros', () =
   expect(edicao.projetar(doc).caminhos[0]!.nome).toBe('Novo acabamento')
 })
 
+test('modelo escolhido existe só na prévia e não pode sobrescrever uma referência usada', () => {
+  const doc = criarDocumentoVazio('d', 'Teste'),
+    op = caminho(),
+    modelo = { id: 'm', modelo: 'm', biblioteca: 'b', digest: 'a'.repeat(64) },
+    edicao = new EdicaoComTerreno({ prever() {}, restaurar() {} }),
+    operacao = {
+      ...op,
+      modelos: [modelo],
+      caminho: { ...op.caminho, acabamento: 'm', encaixeModelo: { eixo: 'x' as const } },
+    }
+  edicao.prever(doc, doc, operacao)
+  expect(edicao.projetar(doc).modelos).toEqual([modelo])
+  expect(doc.modelos).toEqual([])
+  edicao.finalizar(true)
+  expect(edicao.projetar(doc).modelos).toEqual([])
+  doc.modelos = [modelo]
+  expect(() =>
+    edicao.prever(doc, doc, { ...operacao, modelos: [{ ...modelo, digest: 'b'.repeat(64) }] }),
+  ).toThrow()
+  expect(doc.modelos[0]!.digest).toBe('a'.repeat(64))
+})
+
 test('alças em movimento reutilizam os buffers e desenham somente os pontos ativos', () => {
   const p = new PontosDeAutoria(8, 10),
     pontos = [

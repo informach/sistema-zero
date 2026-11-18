@@ -10,6 +10,7 @@ import {
   criarPalco,
   type EstadoDasAguas,
   type EstadoDasTexturas,
+  type EstadoDosCaminhos,
   type EstadoDoTeste,
   type Estatisticas,
   type Ferramenta,
@@ -83,6 +84,8 @@ import {
 import { NOMES_AGUA } from '../agua-formulario'
 import { comandosParaRemoverAgua } from '../agua-remocao'
 import { useAreaDeTransferencia } from '../area-de-transferencia'
+import { NOMES_CAMINHO } from '../caminho-formulario'
+import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
 import { encerrarPreparacao } from '../importar'
@@ -98,12 +101,14 @@ import type {
   Mundo,
 } from '../portas'
 import { useAgua } from '../useAgua'
+import { useCaminhos } from '../useCaminhos'
 import { useConjuntos } from '../useConjuntos'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
 import { useRetratos } from '../useRetratos'
 import { useTerreno } from '../useTerreno'
 import { Agua, FERRAMENTAS_AGUA } from './Agua'
 import { Aparencia } from './Aparencia'
+import { Caminhos, FERRAMENTAS_CAMINHOS } from './Caminhos'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
 import { Formas } from './Formas'
@@ -311,6 +316,11 @@ function OficinaAberta({
   const [gestoAtivo, setGestoAtivo] = useState(false)
   const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
   const [aguas, setAguas] = useState<EstadoDasAguas>({ carregando: 0, falhas: [] })
+  const [caminhosRender, setCaminhosRender] = useState<EstadoDosCaminhos>({
+    carregando: 0,
+    falhas: [],
+    avisos: [],
+  })
   const [relevo, setRelevo] = useState<{
     chave: string
     estado: 'carregando' | 'pronto' | 'erro'
@@ -410,6 +420,28 @@ function OficinaAberta({
     (relevo?.chave === chaveDaBase(documento.base) && relevo.estado === 'pronto')
   const terreno = useTerreno({ controlador, palco })
   const agua = useAgua({ controlador, palco, documento, ativo: aba === 'agua' && !emEnsaio })
+  const caminhos = useCaminhos({
+    controlador,
+    palco,
+    documento,
+    ativo: aba === 'caminhos' && !emEnsaio,
+  })
+  const caminhosAtual = useRef(caminhos)
+  caminhosAtual.current = caminhos
+  const edicaoAberta = agua.ocupado || caminhos.ocupado
+  const aoEditarPontosDeCaminho = caminhos.aoEditarPontos,
+    aoCancelarPontosDeCaminho = caminhos.cancelar,
+    aoErroDePontosDeCaminho = caminhos.informarErro,
+    editarCaminho = caminhos.editar
+  const aoSelecionarCaminho = useCallback(
+    (id: string) => {
+      setAba('caminhos')
+      setModoPainel('escolha')
+      setPainelAberto(true)
+      editarCaminho(id)
+    },
+    [editarCaminho],
+  )
   const aguaAtual = useRef(agua)
   aguaAtual.current = agua
   const aoCapturarPontoDaAgua = agua.aoCapturarPonto
@@ -439,13 +471,15 @@ function OficinaAberta({
       !texturas.carregando &&
       !texturas.falhas.length &&
       !aguas.carregando &&
-      !aguas.falhas.length,
-    emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || agua.ocupado,
+      !aguas.falhas.length &&
+      !caminhosRender.carregando &&
+      !caminhosRender.falhas.length,
+    emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || edicaoAberta,
   })
 
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
-      if (aguaAtual.current.ocupado) return false
+      if (aguaAtual.current.ocupado || caminhosAtual.current.ocupado) return false
       if (
         controlador.getState().documento.base.tipo === 'terreno' &&
         !palco.current?.fonteDeAlturas?.()
@@ -475,6 +509,11 @@ function OficinaAberta({
         host.conteudoDaTextura({ ...ref, espacoId: mundo.espacoId }, sinal),
       aoTexturas: setTexturas,
       aoAguas: setAguas,
+      aoCaminhos: setCaminhosRender,
+      aoSelecionarCaminho,
+      aoEditarPontosDeCaminho,
+      aoCancelarPontosDeCaminho,
+      aoErroDePontosDeCaminho,
       aoCapturarPontoDaAgua,
       aoSelecionarAgua,
       aoTerreno: ({ estado, chave, erro }) =>
@@ -540,6 +579,10 @@ function OficinaAberta({
     aoPreverTerreno,
     aoCapturarPontoDaAgua,
     aoSelecionarAgua,
+    aoSelecionarCaminho,
+    aoEditarPontosDeCaminho,
+    aoCancelarPontosDeCaminho,
+    aoErroDePontosDeCaminho,
   ])
 
   useEffect(() => palco.current?.definirDocumento(documento), [documento])
@@ -635,7 +678,8 @@ function OficinaAberta({
     if (
       atual.alvoDaArvore &&
       (atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore) ||
-        atual.documento.aguas.some((a) => a.id === atual.alvoDaArvore))
+        atual.documento.aguas.some((a) => a.id === atual.alvoDaArvore) ||
+        atual.documento.caminhos.some((c) => c.id === atual.alvoDaArvore))
     ) {
       duplicarPasta()
       return
@@ -677,9 +721,24 @@ function OficinaAberta({
       setJanelaTeste(true)
       return
     }
+    const paraCaminho = aba === 'caminhos',
+      idDoCaminho = caminhosAtual.current.rascunho?.id
     const alvo = troca.current
     const paraPincel = controlador.getState().ferramenta === 'espalhar'
     const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
+      if (paraCaminho) {
+        const atual = caminhosAtual.current
+        if (!idDoCaminho) {
+          atual.informarErro('Escolha um tipo de caminho antes da peça.')
+          return
+        }
+        if (atual.rascunho?.id !== idDoCaminho) return
+        atual.usarModelo(modelo)
+        setGavetaAberta(false)
+        setPainelAberto(true)
+        setModoPainel('escolha')
+        return
+      }
       if (paraPincel) {
         if (controlador.getState().ferramenta === 'espalhar') pincel.adicionar(modelo)
         return
@@ -754,6 +813,20 @@ function OficinaAberta({
       }
       return
     }
+    if (alvo && !atual.selecao.length && atual.documento.caminhos.some((c) => c.id === alvo)) {
+      try {
+        controlador.executar(
+          comandosParaRemoverCaminho(atual.documento, alvo, palco.current?.fonteDeAlturas()),
+        )
+      } catch (e) {
+        setAba('caminhos')
+        setPainelAberto(true)
+        caminhosAtual.current.informarErro(
+          e instanceof Error ? e.message : 'Não consegui remover o caminho.',
+        )
+      }
+      return
+    }
     const pasta = alvo && atual.documento.grupos.some((g) => g.id === alvo)
     const comandos = comandosParaApagar(
       atual.documento,
@@ -766,13 +839,14 @@ function OficinaAberta({
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
       if (ensaioAtivo.current) return
-      if (aguaAtual.current.ocupado) {
+      if (aguaAtual.current.ocupado || caminhosAtual.current.ocupado) {
         if (
           evento.key === 'Escape' &&
           !(evento.target as HTMLElement | null)?.closest?.('dialog[open]')
         ) {
           evento.preventDefault()
-          aguaAtual.current.cancelar()
+          if (caminhosAtual.current.ocupado) caminhosAtual.current.cancelar()
+          else aguaAtual.current.cancelar()
         }
         return
       }
@@ -1148,7 +1222,9 @@ function OficinaAberta({
               conjuntosCarregando > 0 ||
               gestoAtivo ||
               terreno.ocupado ||
-              agua.ocupado ||
+              edicaoAberta ||
+              caminhosRender.carregando > 0 ||
+              caminhosRender.falhas.length > 0 ||
               aguas.carregando > 0 ||
               aguas.falhas.length > 0 ||
               escolhendoPersonagem
@@ -1197,7 +1273,7 @@ function OficinaAberta({
               type="button"
               className="sz-tool-icon-btn"
               aria-label="Copiar e colar"
-              disabled={agua.ocupado}
+              disabled={edicaoAberta}
               title="Copiar, recortar e colar"
               onClick={() => setTransferenciaAberta(true)}
             >
@@ -1208,7 +1284,7 @@ function OficinaAberta({
               className="sz-tool-icon-btn"
               aria-label="Versões do cenário"
               title="Versões do cenário"
-              disabled={estado.ocupado || estado.salvamento !== 'guardado' || agua.ocupado}
+              disabled={estado.ocupado || estado.salvamento !== 'guardado' || edicaoAberta}
               onClick={() => {
                 setVersoesAbertas(true)
                 void retratos.fotografar()
@@ -1219,7 +1295,7 @@ function OficinaAberta({
             <button
               type="button"
               className="sz-tool-icon-btn"
-              disabled={!estado.podeDesfazer || agua.ocupado}
+              disabled={!estado.podeDesfazer || edicaoAberta}
               onClick={controlador.desfazer}
               aria-label={COPY.oficina.desfazer}
               title={`${COPY.oficina.desfazer} (Ctrl+Z)`}
@@ -1229,7 +1305,7 @@ function OficinaAberta({
             <button
               type="button"
               className="sz-tool-icon-btn"
-              disabled={!estado.podeRefazer || agua.ocupado}
+              disabled={!estado.podeRefazer || edicaoAberta}
               onClick={controlador.refazer}
               aria-label={COPY.oficina.refazer}
               title={`${COPY.oficina.refazer} (Ctrl+Y)`}
@@ -1386,6 +1462,22 @@ function OficinaAberta({
                 desligado={agua.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
                 aoTocar={() => {
                   agua.iniciar(tipo)
+                  setModoPainel('escolha')
+                  setPainelAberto(true)
+                }}
+              />
+            ))
+          ) : aba === 'caminhos' ? (
+            FERRAMENTAS_CAMINHOS.map(([tipo, Icone]) => (
+              <Ladrilho
+                key={tipo}
+                icone={Icone}
+                rotulo={NOMES_CAMINHO[tipo]}
+                ligado={caminhos.rascunho?.tipo === tipo}
+                desligado={caminhos.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
+                aoTocar={() => {
+                  caminhos.iniciar(tipo)
+                  setGavetaAberta(false)
                   setModoPainel('escolha')
                   setPainelAberto(true)
                 }}
@@ -1583,7 +1675,15 @@ function OficinaAberta({
               atualizacaoDosConjuntos={conjuntos.atualizacao}
               aoPorConjunto={porConjunto}
               conjuntoEmEdicao={conjunto?.id}
-              modo={escolhendoPersonagem ? 'personagem' : pincel.ativo ? 'pincel' : 'colocar'}
+              modo={
+                escolhendoPersonagem
+                  ? 'personagem'
+                  : aba === 'caminhos'
+                    ? 'caminho'
+                    : pincel.ativo
+                      ? 'pincel'
+                      : 'colocar'
+              }
               aberta={gavetaAberta}
               aoMudarAbertura={setGavetaAberta}
               host={host}
@@ -1629,13 +1729,43 @@ function OficinaAberta({
                   if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
                 }}
               />
+            ) : aba === 'caminhos' && modoPainel !== 'organizacao' ? (
+              <Caminhos
+                caminhos={caminhos}
+                documento={documento}
+                host={host}
+                bibliotecas={bibliotecas}
+                estado={caminhosRender}
+                {...(fonte ? { fonte } : {})}
+                medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                indisponivel={!relevoPronto || estado.ocupado || estado.salvamento !== 'guardado'}
+                executar={executar}
+                aoCopiar={(id) => {
+                  controlador.selecionar([], id)
+                  void transferencia.copiar()
+                }}
+                aoCapturar={() => {
+                  setGavetaAberta(false)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+                aoEscolherModelo={() => {
+                  caminhos.setCapturando(false)
+                  setGavetaAberta(true)
+                  if (globalThis.matchMedia?.('(max-width: 899px)').matches) setPainelAberto(false)
+                }}
+              />
             ) : modoPainel === 'organizacao' ? (
               <Organizacao
                 documento={documento}
                 selecao={selecao}
                 selecionar={controlador.selecionar}
                 executar={executar}
-                aoDetalhes={() => setModoPainel('escolha')}
+                aoDetalhes={() => {
+                  const id = controlador.getState().alvoDaArvore
+                  if (id && documento.caminhos.some((c) => c.id === id)) aoSelecionarCaminho(id)
+                  else if (id && documento.aguas.some((a) => a.id === id)) aoSelecionarAgua(id)
+                  else setModoPainel('escolha')
+                }}
                 somarSelecao={estado.somarSelecao}
                 alvo={estado.alvoDaArvore}
               />

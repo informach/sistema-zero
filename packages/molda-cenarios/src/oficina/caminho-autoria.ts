@@ -1,5 +1,6 @@
 import {
   type DocumentoDeCenario,
+  documentoDaOperacaoDeCaminho,
   igual,
   type OperacaoDeCaminhoPreparada,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -32,9 +33,19 @@ export function guardarCaminho({
     controlador,
     palco,
     documentoDeOrigem,
-    comandos: igual(anterior, operacao.caminho)
-      ? []
-      : [{ tipo: 'caminho.definir', caminho: operacao.caminho }],
+    comandos: [
+      ...(operacao.modelos ?? []).map((modelo) => ({ tipo: 'modelo.definir' as const, modelo })),
+      ...(operacao.texturas ?? []).map((textura) => ({
+        tipo: 'textura.definir' as const,
+        textura,
+      })),
+      ...(igual(anterior, operacao.caminho)
+        ? []
+        : [{ tipo: 'caminho.definir' as const, caminho: operacao.caminho }]),
+    ],
+    conferir: () => {
+      documentoDaOperacaoDeCaminho(documentoDeOrigem, operacao)
+    },
     ...(operacao.terreno ? { terreno: operacao.terreno } : {}),
     regioes: operacao.regioes,
     finalizar: (cancelar) => palco.finalizarPreviaDeCaminho(cancelar),

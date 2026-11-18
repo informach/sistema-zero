@@ -49,6 +49,29 @@ const base: BaseDeTerreno = {
 }
 const semModelo = () => null
 
+test('terreno ainda chegando deixa os caminhos em espera, sem publicar uma falha de geometria', () => {
+  const d = criarDocumentoVazio('d', 'Carregamento'),
+    c = new CaminhosDoPalco(),
+    t = new TerrenoDoPalco(base, new Map())
+  d.base = base
+  d.caminhos = [CaminhoSchema.parse({ ...comum, tipo: 'estrada' })]
+  try {
+    expect(c.definir(d, null, semModelo, semModelo, new Set())).toEqual({
+      carregando: 1,
+      falhas: [],
+      avisos: [],
+    })
+    expect(c.superficies()).toHaveLength(0)
+    expect(c.definir(d, t, semModelo, semModelo, new Set()).falhas).toEqual([])
+    expect(c.superficies().length).toBeGreaterThan(0)
+    expect(c.definir(d, null, semModelo, semModelo, new Set()).carregando).toBe(1)
+    expect(c.superficies()).toHaveLength(0)
+  } finally {
+    c.descartar()
+    t.descartar()
+  }
+})
+
 test('agrupamento rígido conserva drawRange de cada material e os buffers compartilhados', () => {
   const g = new BoxGeometry(4, 1, 2),
     material = new MeshStandardMaterial()

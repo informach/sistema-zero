@@ -44,9 +44,8 @@ try {
         cancelamentos = 0
       const p = criarPalco(canvas, {
         carregarTerreno: (digest, sinal) => host.conteudoDoTerreno(cenario.id, digest, sinal),
-        carregarModelo: async () => {
-          throw Error('Ensaio nativo')
-        },
+        carregarModelo: async () =>
+          (await fetch('/acervo/caminho_terra_reto.804d14830d95.glb')).arrayBuffer(),
         aoEditarPontosDeCaminho: (g) => {
           if (g.documentoDeOrigem !== controlador.getState().documento)
             throw Error('Gesto de outra cabeça')
@@ -159,7 +158,7 @@ try {
   await pagina.screenshot({ path: resolve(saida, 'pontos.png') })
   const resultado = await pagina.evaluate(
     async ({ oficina }) => {
-      const { p, host, controlador, cenario } = window.__pontosQA,
+      const { p, core, host, controlador, cenario } = window.__pontosQA,
         { processarCaminhoNoWorker } = await import(`${oficina}/processar-caminho-no-worker.ts`),
         { guardarCaminho } = await import(`${oficina}/caminho-autoria.ts`)
       if (controlador.getState().revisao !== 0) throw Error('Editar pontos não pode criar revisões')
@@ -252,6 +251,52 @@ try {
       } catch (e) {
         cancelouWorker = e.name === 'AbortError'
       }
+      const bytes = new Uint8Array(
+          await (await fetch('/acervo/caminho_terra_reto.804d14830d95.glb')).arrayBuffer(),
+        ),
+        modelo = {
+          id: 'catalogo',
+          biblioteca: 'qa',
+          modelo: 'piso',
+          digest: await core.digestDosBytes(bytes),
+        },
+        intencaoModelo = {
+          id: 'piso',
+          nome: 'Piso de catálogo',
+          grupo: null,
+          oculto: false,
+          bloqueado: false,
+          acabamento: 'catalogo',
+          tipo: 'trilha',
+          largura: 2.6,
+          pontos: [
+            { x: 8, z: 20 },
+            { x: 20, z: 20 },
+          ],
+          encaixeModelo: { eixo: 'x' },
+        },
+        opModelo = { ...core.prepararOperacaoDeCaminho(intencaoModelo, null), modelos: [modelo] },
+        cabeca = controlador.getState().documento
+      p.preverCaminho(cabeca, opModelo)
+      await p.aguardarRecursos()
+      const modeloNaPrevia = Boolean(p.volumeDoModelo('catalogo')) && cabeca.modelos.length === 0
+      p.finalizarPreviaDeCaminho(true)
+      const descartouModelo = !p.volumeDoModelo('catalogo')
+      const opInvalida = {
+        ...opModelo,
+        caminho: {
+          ...opModelo.caminho,
+          encaixeModelo: { eixo: 'x', inicioLocal: -100, fimLocal: 100 },
+        },
+      }
+      p.preverCaminho(cabeca, opInvalida)
+      let recusouEncaixe = false
+      try {
+        await p.aguardarRecursos()
+      } catch {
+        recusouEncaixe = true
+      }
+      p.finalizarPreviaDeCaminho(true)
       return {
         salvo,
         revisao: final.revisao,
@@ -262,6 +307,9 @@ try {
         bloqueioTeste,
         bloqueioRetrato,
         cancelouWorker,
+        modeloNaPrevia,
+        descartouModelo,
+        recusouEncaixe,
         avisos: window.__pontosQA.avisos(),
       }
     },
@@ -285,6 +333,9 @@ try {
   assert.equal(resultado.bloqueioTeste, true)
   assert.equal(resultado.bloqueioRetrato, true)
   assert.equal(resultado.cancelouWorker, true)
+  assert.equal(resultado.modeloNaPrevia, true)
+  assert.equal(resultado.descartouModelo, true)
+  assert.equal(resultado.recusouEncaixe, true)
 } finally {
   await browser.close()
 }

@@ -1,5 +1,6 @@
 import {
   type DocumentoDeCenario,
+  documentoDaOperacaoDeCaminho,
   type OperacaoDeAguaPreparada,
   type OperacaoDeCaminhoPreparada,
   validarDocumento,
@@ -35,11 +36,10 @@ export class EdicaoComTerreno {
       lista.some((v) => v.id === item.id)
         ? lista.map((v) => (v.id === item.id ? item : v))
         : [...lista, item]
-    const visual = validarDocumento(
+    const visual =
       'agua' in operacao
-        ? { ...origem, aguas: substituir(origem.aguas, operacao.agua) }
-        : { ...origem, caminhos: substituir(origem.caminhos, operacao.caminho) },
-    )
+        ? validarDocumento({ ...origem, aguas: substituir(origem.aguas, operacao.agua) })
+        : documentoDaOperacaoDeCaminho(origem, operacao)
     this.finalizar(true)
     try {
       if (operacao.terreno) this.terreno.prever(operacao)

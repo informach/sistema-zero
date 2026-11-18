@@ -12,6 +12,8 @@ export interface CapturaDeCaminho {
   maximo: number
   selecionado?: number | null
   conservarAltura?: boolean
+  /** Reserva a edição sem aceitar gestos durante preparação ou aplicação. */
+  interativa?: boolean
 }
 export interface GestoDePontosDeCaminho {
   documentoDeOrigem: DocumentoDeCenario
@@ -150,7 +152,10 @@ export class EdicaoDePontos {
   private habilitarEntrada() {
     this.entrada.setEnabled(
       Boolean(
-        this.configuracao && !this.alt && ['adicionar', 'mover'].includes(this.configuracao.modo),
+        this.configuracao &&
+          this.configuracao.interativa !== false &&
+          !this.alt &&
+          ['adicionar', 'mover'].includes(this.configuracao.modo),
       ),
     )
   }
@@ -211,7 +216,7 @@ export class EdicaoDePontos {
   clicar(x: number, y: number) {
     const c = this.configuracao
     if (!c) return false
-    if (this.alt || this.sessao) return true
+    if (c.interativa === false || this.alt || this.sessao) return true
     this.canvas.focus({ preventScroll: true })
     const indice = this.proximo(x, y)
     if (indice !== null) {
@@ -277,6 +282,7 @@ export class EdicaoDePontos {
       else this.fontes.aoCancelar()
     }
     if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (this.configuracao?.interativa === false) return
       e.preventDefault()
       e.stopImmediatePropagation()
       if (this.sessao) this.entrada.cancel()

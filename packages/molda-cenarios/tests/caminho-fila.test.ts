@@ -105,6 +105,24 @@ test('sem mudança não cria revisão e editar acabamento não repete a moldagem
   expect(q.finais).toEqual([false, true])
 })
 
+test('referência do catálogo e caminho são guardados e desfeitos juntos sem colocar objetos', async () => {
+  const q = await preparar(),
+    modelo = { id: 'm', modelo: 'm', biblioteca: 'b', digest: 'a'.repeat(64) },
+    op = processarCaminho({
+      intencao: { ...intencao('trilha'), acabamento: 'm', encaixeModelo: { eixo: 'x' } },
+      estado: null,
+    }),
+    operacao = { ...op, modelos: [modelo] }
+  await guardarCaminho({ ...q, operacao })
+  const salvo = await q.host.abrirCenario(q.cenario.id)
+  expect(salvo.revisao).toBe(2)
+  expect(salvo.documento.modelos).toEqual([modelo])
+  expect(salvo.documento.instancias).toEqual([])
+  await q.controlador.desfazer()
+  expect(q.controlador.getState().documento.modelos).toEqual([])
+  expect(q.controlador.getState().documento.caminhos).toEqual([])
+})
+
 test('falha de upload e resposta perdida retomam estrada e campo sem duplicar revisão', async () => {
   const q = await preparar(),
     operacao = processarCaminho({ intencao: intencao(), estado: q.estado }),

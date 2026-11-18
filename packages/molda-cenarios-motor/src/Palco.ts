@@ -750,12 +750,21 @@ class PalcoThree implements Palco {
     )
       throw Error('Termine o gesto antes de prever o caminho.')
     this.edicaoDoAmbiente.prever(origem, this.documento, operacao)
+    const visual = this.edicaoDoAmbiente.projetar(origem)
+    this.pedirModelos(visual)
+    this.pedirTexturas(visual)
     this.reconstruir()
   }
   finalizarPreviaDeCaminho(cancelar = true) {
     if (this.destruido || this.edicaoDoAmbiente.tipo !== 'caminho') return
     this.edicaoDoAmbiente.finalizar(cancelar, 'caminho')
-    if (cancelar) this.reconstruir()
+    if (cancelar) {
+      if (this.documento) {
+        this.pedirModelos(this.documento)
+        this.pedirTexturas(this.documento)
+      }
+      this.reconstruir()
+    }
     this.atualizarAlca()
   }
   finalizarEscultura(cancelar = false) {
@@ -1063,6 +1072,8 @@ class PalcoThree implements Palco {
       sinal?.throwIfAborted()
       if (this.destruido) throw new Error('O palco foi encerrado')
       const estados = [...this.modelos.values()]
+      const falhaDeCaminho = this.estadoDosCaminhos.falhas[0]
+      if (falhaDeCaminho) throw new Error(`${falhaDeCaminho.nome}: ${falhaDeCaminho.mensagem}`)
       if (
         estados.some((e) => e.estado === 'falhou') ||
         this.estadoDasTexturas.falhas.length ||
