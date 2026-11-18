@@ -11,7 +11,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 **Fala da Helena:**
 
 ```text
-Eu quero aproveitar para te contar de onde veio isso tudo.
+Agora eu quero te contar de onde veio isso tudo.
 
 Eu sou da área de tecnologia, junto com o meu marido, o Júlio, que também é da área. E a gente tem dois filhos autistas, que fazem terapia já há alguns anos.
 
@@ -65,7 +65,7 @@ Agora eu quero que você pense se reconhece o seu filho em alguma destas situaç
 **Fala da Helena:**
 
 ```text
-E o que a gente pode fazer com isso? Imagina que o menino está lá, construindo o joguinho, e você chega do trabalho. É claro que ele vai querer te mostrar. Primeiro, porque é jogo. Segundo, porque é tela.
+E, quando a criança se expressa pelo jogo, abre-se uma oportunidade enorme para a gente. Imagina que o menino está lá, construindo o joguinho, e você chega do trabalho. É claro que ele vai querer te mostrar. Primeiro, porque é jogo. Segundo, porque é tela.
 
 Por meio disso, eu estou dentro do interesse dele e vou puxar assunto. Ele vai conseguir trazer um pensamento mais organizado, vai verbalizar, vai se esforçar para se fazer entender. Eu vou conseguir ter uma relação de proximidade maior, porque estou falando sobre o jogo dele. E daí eu consigo estender para as outras atividades do dia a dia.
 
@@ -79,5 +79,7 @@ Ele usou esse interesse para descobrir como foram feitos os jogos de que ele tan
 
 Agora escuta o que alguns pais começaram a perceber depois que os filhos começaram a criar.
 
-Olha o que os pais percebem: a autonomia crescendo, a criatividade, a organização nas tarefas do dia a dia. São várias coisas que os pais vão percebendo que realmente estão mudando na vida dos filhos. Clique em Concluir aula para continuar.
+Olha o que os pais percebem: a autonomia crescendo, a criatividade, a organização nas tarefas do dia a dia. São várias coisas que os pais vão percebendo que realmente estão mudando na vida dos filhos.
+
+Talvez você esteja pensando: "Tá, mas para criar um jogo tem que programar. Isso não é difícil demais?" É o que a gente vai ver na próxima aula. Clique em Concluir aula para continuar.
 ```

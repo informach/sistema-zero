@@ -11,7 +11,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 **Fala da Helena:**
 
 ```text
-Agora eu quero te mostrar o ciclo clássico da criação de um jogo.
+Você já viu por que criar desenvolve tanto, e que programar não é difícil. Agora eu quero te mostrar como um jogo nasce, do começo ao fim: o ciclo clássico da criação de um jogo.
 
 O primeiro passo é imaginar. Quais vão ser os personagens? Qual vai ser o mundo em que eles vão viver? Qual é o objetivo daquele jogo? A criança imagina.
 
@@ -125,5 +125,7 @@ E isso ajuda muito na interação social, principalmente com os pares. Quando os
 
 Hoje em dia, é muito difícil o André falar de jogo com ela. Ele fala sobre todos os assuntos. Jogo nem aparece. Porque ele descobriu o prazer e a oportunidade de conversar, de estar com o outro, de fazer coisas tão agradáveis quanto o jogo. Aquilo que era o hiperfoco, hoje ela entende como um ponto de interesse. E ele consegue participar, e participar bem, feliz, com prazer e com qualidade, de qualquer outro contexto.
 
-E é isso mesmo. Hoje a gente consegue conversar sobre qualquer assunto com ele. Mas o assunto dos jogos foi um pontapé inicial para ele começar a conseguir conversar mais, porque antes ele era mais inacessível. Foi por meio desse pontapé inicial que hoje a gente consegue conversar sobre qualquer assunto com ele. Foi muito importante. Clique em Concluir aula para continuar.
+E é isso mesmo. Hoje a gente consegue conversar sobre qualquer assunto com ele. Mas o assunto dos jogos foi um pontapé inicial para ele começar a conseguir conversar mais, porque antes ele era mais inacessível. Foi por meio desse pontapé inicial que hoje a gente consegue conversar sobre qualquer assunto com ele. Foi muito importante.
+
+Na próxima aula, que é a última, chegou a hora do presente. Clique em Concluir aula para continuar.
 ```

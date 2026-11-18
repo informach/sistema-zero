@@ -15,7 +15,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 ```text
 Uma coisa que muita gente me pergunta é: "Será que o meu filho vai conseguir ter foco para isso? Será que ele vai conseguir prestar atenção mesmo, parar para fazer?" Escuta estes pais.
 
-São exemplos de que, por tudo isso de que a gente já falou, na criação a criança consegue ter foco.
+Viu? Quando a atividade é a criação, a criança consegue ter foco, por tudo o que a gente já conversou.
 
 E, vamos combinar: foco nas telas e nos jogos, eles têm. A gente queria era que eles tivessem foco para as outras coisas que não fossem a tela. É aí que entra o aliado: usar o interesse, o personagem, a própria criação a nosso favor.
 
@@ -51,9 +51,9 @@ E a partir desse momento eu consigo ir aumentando um pouco o nível de dificulda
 
 Pensa num adulto. Eu tenho um problema. Como eu resolvo? Se eu souber só um caminho e esse caminho não servir naquele momento, acabou, eu não resolvo. A gente consegue muito mais porque já tem essa caixinha de repertório bem ampla. A maioria dos adultos tem.
 
-Ela se sentiu muito orgulhosa de ter concluído, e é por isso que eu tenho certeza de que ela vai querer criar mais jogos. É isso que possibilita caminhar.
+Ela se sentiu muito orgulhosa de ter concluído, e é por isso que eu tenho certeza de que ela vai querer criar mais jogos. É esse orgulho que faz a criança seguir em frente.
 
-Isso vai muito ao encontro do que na terapia se chama de níveis de suporte. "Ah, mas você fez pelo menino." Fiz mesmo, para ele ver que é legal. Daqui a pouco eu faço junto com ele. Olha eu tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
+Isso vai muito ao encontro do que na terapia se chama de níveis de suporte. E vale para você, em casa. Talvez no começo você pense: "Ah, mas eu fiz pelo meu filho." Fez mesmo, para ele ver que é legal. Daqui a pouco você faz junto com ele. Aí você está tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
 
 E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, eu tenho mais respostas, eu tenho mais hipóteses. Então eu consigo testar mais, com a certeza de que, se eu errar, eu estou amparado. Até chegar à fase adulta, em que a gente já consegue elaborar melhor para lidar com os contextos da vida. Clique em Próxima parte.
 ```
@@ -69,9 +69,9 @@ E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, 
 ```text
 Tem um outro benefício que vem junto com isso tudo: ajuda muito na escola.
 
-A escola tende a explicar as coisas da matéria de uma forma muito abstrata para a criança, sem um "mas para que isso? O que eu vou fazer com isso?".
+A escola tende a explicar as coisas da matéria de uma forma muito abstrata para a criança, sem responder àquele "mas para que serve isso? O que eu vou fazer com isso?".
 
-Um exemplo bem simples. Dois mais cinco. A escola ensina assim: dois mais cinco, dois mais quatro, cinco mais seis. Vai ensinando a fazer conta, vai decorando a tabela, vai fazendo conta, muita conta, para ir decorando e conseguir resolver os problemas.
+Um exemplo bem simples. Dois mais cinco. A escola ensina assim: dois mais cinco, dois mais quatro, cinco mais seis. Vai ensinando a fazer conta, vai decorando a tabuada, vai fazendo conta, muita conta, para ir decorando e conseguir resolver os problemas.
 
 Já na criação do jogo, você acaba aprendendo várias coisas da escola de forma natural, de uma forma que faz sentido para as crianças e os adolescentes. Olha o mesmo exemplo. Eu quero levar o meu personagem até a estrela. Eu estou na casinha dois. Quantos passos eu preciso avançar com ele até chegar à estrela?
 

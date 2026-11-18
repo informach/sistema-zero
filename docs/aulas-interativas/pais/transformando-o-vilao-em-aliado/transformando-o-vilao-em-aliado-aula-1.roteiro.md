@@ -13,7 +13,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 ```text
 Oi! A gente está aqui para falar sobre como transformar o maior vilão dos pais, que são as telas, no nosso maior aliado para ajudar no desenvolvimento dos nossos filhos. E eu já quero avisar: no final do curso tem um presente para você. Então fica comigo até o final, que é um bom presente.
 
-Para quem não me conhece, meu nome é Helena e eu sou da área de tecnologia. A nossa conversa aqui vai unir a tecnologia com o desenvolvimento das nossas crianças e dos nossos adolescentes.
+Para quem não me conhece, meu nome é Helena. Eu sou da área de tecnologia e sou mãe, e mais adiante eu te conto como esse assunto entrou na minha casa. A nossa conversa aqui vai unir a tecnologia com o desenvolvimento das nossas crianças e dos nossos adolescentes.
 
 A primeira coisa que eu quero fazer é uma reflexão: o que a gente mais deseja para os nossos filhos? Para mim, o que sempre pesou e pesa muito é a autonomia. Eu sempre pensei assim: eu quero que o meu filho e a minha filha, quando eu não estiver mais aqui, sejam autônomos e consigam lidar com a vida sem precisar de mim.
 
@@ -39,13 +39,11 @@ O que a gente mais vê são crianças com o celular na mão. Então, em vez de f
 **Fala da Helena:**
 
 ```text
-Dentro desse mundo em que a gente vive hoje, como a gente conseguiria tirar a tela da vida do nosso filho?
+Dentro desse mundo em que a gente vive hoje, tirar a tela, ninguém vai conseguir. Mas a gente tem como fazer um uso mais produtivo. Então a questão é: o que essa tela pode nos proporcionar?
 
-A verdade é que tirar a tela, ninguém vai conseguir. É um vilão contra o qual a gente não tem como ganhar essa batalha. Mas a gente tem como fazer um uso mais produtivo. Então a questão é: o que essa tela pode nos proporcionar?
+E não é colocar mais tempo. A gente não vai incluir tempo nenhum. É o tempo de uso que eles já têm. Usar, ele já usa. "Meu filho usa todos os dias, durante meia hora." Ok. Então vamos tornar essa meia hora produtiva. Vamos fazer com que ele se desenvolva nessa meia hora, que ele construa algo, que ele aumente o repertório de imaginação, de estratégia, de interpretação, e que aprenda a lidar com a frustração.
 
-E não é colocar mais tempo. A gente não vai incluir tempo nenhum. É o tempo de uso que eles já têm. Usar, ele já usa. "Meu filho usa todos os dias, durante meia hora." Ok. Então vamos tornar essa meia hora produtiva. Vamos fazer com que ele se desenvolva nessa meia hora, que ele construa algo, que ele aumente o repertório: de imaginação, de estratégia, de interpretação e de frustração.
-
-Porque as nossas crianças hoje não lidam bem com a frustração. O que a gente mais vê é um limiar muito baixo diante do erro. Então vamos pegar o que eles já usam e tornar produtivo.
+Porque as nossas crianças hoje não lidam bem com a frustração. O que a gente mais vê é um limiar muito baixo diante do erro.
 
 A grande pergunta não é mais "como eu tiro a tela da vida do meu filho?", e sim "o que eu posso oferecer dentro dessa tela para desenvolver o meu filho?".
 
@@ -53,6 +51,8 @@ A mesma tela pode ter várias funções, como tudo na vida. Primeiro, a tela pod
 
 Em contrapartida, existe a tela que faz pensar. E quando eu uso a tela para pensar, em vez de ter aqueles problemas, eu tenho a possibilidade de desenvolver nas crianças e nos adolescentes o raciocínio lógico, a resolução de problemas, o foco, o planejamento, o aprender a lidar com o erro e várias outras habilidades.
 
-Que tela é essa, que faz pensar? E o que o seu filho pode fazer nela? É isso que a gente vai ver a partir da próxima aula. Clique em Concluir aula para continuar.
+Que tela é essa, que faz pensar? E o que o seu filho pode fazer nela? É isso que a gente vai ver daqui para a frente.
+
+O caminho é este. Primeiro, os três jeitos de usar a tela, e qual deles mais desenvolve. Depois, de onde veio essa ideia, dentro da minha casa, e por onde o seu filho pode começar. Aí eu te mostro como isso funciona na prática, e que não é difícil. A gente conversa sobre as dúvidas que os pais mais têm. E, no final, tem o presente, para vocês experimentarem em casa. Clique em Concluir aula para continuar.
 ```
 

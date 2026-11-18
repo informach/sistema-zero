@@ -114,11 +114,23 @@ A dona pediu, em 18/11/2026, que a adaptação também corrigisse falhas de cond
 | A demonstração dos blocos não foi ligada à explicação anterior sobre programação | Aula 6, Parte 2 abre com "lembra dos bloquinhos coloridos?" |
 | A mensagem final veio depois das instruções de cadastro e antes de outros argumentos | Aula 7, Parte 2: descrição do presente, argumentos finais, fechamento da reflexão, mensagem final e, por último, como pegar o presente |
 
+## Acréscimos de costura (segunda revisão, 18/11/2026)
+
+Frases que não estavam no encontro e foram escritas para o formato de curso. Não trazem argumento novo.
+
+- Mapa do curso no fim da Aula 1 e uma ponte no início e no fim de cada aula.
+- Definição simples de função executiva ("o conjunto de habilidades que a gente usa para dar conta de uma tarefa do começo ao fim") e de controle inibitório ("conseguir segurar o impulso"), na Aula 2, Parte 2.
+- "Criar um jogo é o Lego sem manual", ligando o exemplo do Lego à proposta (Aula 2).
+- Níveis de suporte dirigidos ao responsável ("você fez pelo seu filho; daqui a pouco faz junto"), em vez da primeira pessoa da terapeuta (Aula 5, Parte 2).
+- Apresentação da Helena como mãe já na abertura, anunciando a história da Aula 3.
+- Parágrafo que fecha a reflexão sobre o futuro dos filhos (Aula 7, Parte 2).
+
 ## Pontos de interpretação da transcrição
 
 A transcrição automática tem falhas. Estes trechos foram interpretados e merecem conferência da dona na leitura dos roteiros:
 
 - "tarefas notas" (01:31) foi escrito como "tarefas chatas".
+- "decorando a tabela" (01:25) foi escrito como "decorando a tabuada".
 - "Laopa" foi tratado como o nome da clínica e substituído por "terapia" (Aula 3) e por "as crianças compartilhando umas com as outras" (Aula 6).
 - "lousa mágica" (00:35) foi escrito como "lousa digital".
 - O ciclo de criação foi escrito com seis etapas (imaginar, planejar, programar, testar, melhorar, compartilhar) a partir da fala; conferir com o slide.

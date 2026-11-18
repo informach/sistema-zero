@@ -13,11 +13,11 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 ```text
 Para criar um jogo, você tem que usar a programação. Só que, quando a gente fala em programação, muita gente pensa: "Ai, aquela tela preta, aqueles números, aquele trem difícil." Todo mundo já fica meio assustado.
 
-Mas não. Isso é coisa do passado. Hoje em dia a gente tem formas de programar muito mais simples e acessíveis para a criança. O pensamento computacional é o mesmo. Todo o raciocínio, o pensamento, o passo a passo, é o mesmo. Mas hoje existem formas muito didáticas e fáceis: a criança arrasta bloquinhos coloridos para conseguir programar e fazer o joguinho.
+Mas não. Isso é coisa do passado. Hoje em dia a gente tem formas de programar muito mais simples e acessíveis para a criança. O pensamento computacional é o mesmo: o raciocínio, o passo a passo. Mas hoje a criança arrasta bloquinhos coloridos para conseguir programar e fazer o joguinho.
 
-E a programação em si nunca foi tão difícil. Ela está no dia a dia de todo mundo. A forma de expressar é que sempre foi mais complexa. Agora não é mais: com bloquinhos coloridos, eu já consigo expressar essa ideia.
+Na verdade, a programação em si nunca foi tão difícil. Ela está no dia a dia de todo mundo. A forma de expressar é que sempre foi complexa, e agora não é mais.
 
-Vou te dar um exemplo. Às vezes a gente acha que programação é uma coisa muito difícil, mas todo mundo já programou, no sentido de aplicar o pensamento computacional no dia a dia. Muita gente já fez rotina visual para as crianças. Isso não deixa de ser uma programação. Tem uma lógica ali.
+Vou te dar um exemplo. Todo mundo já programou, no sentido de aplicar o pensamento computacional no dia a dia. Muita gente já fez rotina visual para as crianças. Isso não deixa de ser uma programação. Tem uma lógica ali.
 
 Olha só: "Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes." Um exemplo simples.
 
@@ -49,7 +49,7 @@ Então essa dita programação nada mais é do que aquilo que a gente já vive n
 
 Olha este exemplo. Eu tenho um caminho, tenho alguns obstáculos e tenho o alvo, que é a estrela. Eu sou a bolinha. E eu tenho que programar essa bolinha para chegar até a estrela. Então eu vou passar o passo a passo para ela. Isso é programar.
 
-Eu vou dizer o que ela tem que fazer: se tem que subir, se tem que descer, se tem que ir para a direita, se tem que ir para a esquerda. Programação é isso. É você passar um passo a passo para o programa, para ele executar esse passo a passo e atingir o objetivo que você quer. No caso do jogo, o objetivo vai ser cada funcionalidade, cada parte do nosso jogo.
+Eu vou dizer o que ela tem que fazer: se tem que subir, se tem que descer, se tem que ir para a direita, se tem que ir para a esquerda. O programa executa esse passo a passo e atinge o objetivo que eu quero. No caso do jogo, o objetivo vai ser cada funcionalidade, cada parte do nosso jogo.
 
 Como eu programo essa bolinha para chegar lá? Eu vou para cima. Depois para cima de novo. Depois vou para a direita, para a direita de novo, e para a direita mais uma vez. Pronto, cheguei ao meu alvo. Isso é programação.
 
@@ -69,9 +69,9 @@ E nesse processo todo eles vão praticar e aprender várias coisas. Nesse exempl
 **Fala da Helena:**
 
 ```text
-Trazendo isso para as nossas habilidades, o que eu tenho aqui? Um treinamento de percepção global do ambiente. Eu tenho que perceber o todo, o cenário inteiro, para entender qual é o meu ponto de partida e qual é o caminho que eu devo seguir. E, ao mesmo tempo, eu tenho que perceber o ponto importante dentro desse todo.
+Esse observar, ajustar e tentar de novo treina uma habilidade muito importante: a percepção global do ambiente. Eu tenho que perceber o todo, o cenário inteiro, para entender qual é o meu ponto de partida e qual é o caminho que eu devo seguir. E, ao mesmo tempo, eu tenho que perceber o ponto importante dentro desse todo.
 
-Leva isso para o dia a dia. A criança entra num ambiente. Ela não pode olhar só para o carrinho, porque senão ela esbarra num obstáculo, derruba alguma coisa, é sem educação com alguém que cumprimentou. Ela tem que primeiro parar e olhar aquela sala toda.
+Leva isso para o dia a dia. A criança entra num ambiente. Ela não pode olhar só para o carrinho, porque senão ela esbarra num obstáculo, derruba alguma coisa, deixa sem resposta alguém que cumprimentou. Ela tem que primeiro parar e olhar aquela sala toda.
 
 Pensa na sala de aula. Eu chego e tenho que olhar para aquela estrutura toda: observar onde estão as carteiras, onde está o colega, se a professora está falando, se eu posso entrar, se eu não posso, se eu tenho que esperar. Qual é a pista que a pessoa me deu, diante desse cenário, para eu construir o meu caminho até chegar à minha carteira?
 
@@ -87,5 +87,7 @@ A psicóloga que acompanha o André me contou uma história muito legal de um pa
 
 Ele aprendeu ali que caminhos diferentes podem levar a lugares diferentes, e que esse lugar diferente pode ser encantador. Ele não precisa ficar preso só naquele que está dentro do padrão. O joguinho proporciona bastante isso.
 
-Então, só para reforçar tudo o que se desenvolve ao criar: o raciocínio lógico, a resolução de problemas, o foco, o planejamento, o lidar com o erro. É tudo aquilo de que a gente já falou. É o treinamento mesmo de habilidades cognitivas para a vida. Clique em Concluir aula para continuar.
+Então, só para reforçar tudo o que se desenvolve ao criar: o raciocínio lógico, a resolução de problemas, o foco, o planejamento, o lidar com o erro. É tudo aquilo de que a gente já falou. É o treinamento mesmo de habilidades cognitivas para a vida.
+
+Na próxima aula, eu respondo às duas dúvidas que eu mais escuto dos pais: "será que ele vai ter foco?" e "será que não vai ser difícil?". Clique em Concluir aula para continuar.
 ```
