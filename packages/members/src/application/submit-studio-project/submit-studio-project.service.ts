@@ -23,6 +23,7 @@ import {
   MAX_PINTA_ASSET_CHARS,
   MAX_STUDIO_PROJECT_CHARS,
   MAX_SUBMISSION_MESSAGE_CHARS,
+  pintaLessonLimitIssue,
   type SubmissionBlockKind,
 } from '../../domain/course/lesson-block'
 import { deterministicSourceId } from '../../domain/gamification/source-id'
@@ -201,6 +202,10 @@ export class SubmitStudioProjectService {
       const asset = pintaAssetFromWire(project)
       if (!asset) throw new ValidationError('O desenho do Pinta é inválido')
       submissionProject = pintaAssetToWire(asset)
+      // A aula mantém os tetos antigos de mapa e de peças (128 × 128, 8 camadas, 64 peças),
+      // mesmo com o documento do Pinta aceitando ler mais.
+      if (pintaLessonLimitIssue(submissionProject))
+        throw new ValidationError('O desenho passou do tamanho que a aula aceita')
     }
 
     // Teto de tamanho do jsonb (anti-DoS), aplicado ao payload canônico persistido.

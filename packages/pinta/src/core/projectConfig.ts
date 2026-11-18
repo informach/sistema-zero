@@ -18,6 +18,12 @@ import type {
  * "sem teto, igual o Estúdio") — o que limita é o orçamento portátil de 32 MiB do backup
  * (`MAX_BACKUP_FILE_BYTES`, com recado próprio) e, na nuvem, os tetos do members. A galeria tem
  * BUSCA por nome/tipo/jogo para continuar navegável com centenas de desenhos.
+ *
+ * São DOIS níveis (18/11/2026). Este é o que o editor deixa CRIAR: mapa de até 128 × 128
+ * células, 8 camadas e 64 peças por conjunto. O que o documento aceita ao ser LIDO é maior e
+ * mora em `PINTA_MAP_FORMAT_LIMITS`. Um mapa grande que chega por importação abre e pode ser
+ * pintado, mas crescer, ganhar camada ou ganhar peça além destes tetos é recusado (a operação
+ * devolve o mesmo desenho). Estes números só sobem depois de medir o autosave no aparelho.
  */
 export const PINTA_LIMITS = {
   maxAnimations: 12,
@@ -25,11 +31,11 @@ export const PINTA_LIMITS = {
   minFrameSize: 8,
   maxFrameSize: 128,
   maxBitmapSize: 512,
-  maxTiles: 256,
-  maxTilemapCols: 256,
-  maxTilemapRows: 256,
+  maxTiles: 64,
+  maxTilemapCols: 128,
+  maxTilemapRows: 128,
   /** Camadas de peças E de objetos, somadas. */
-  maxTilemapLayers: 32,
+  maxTilemapLayers: 8,
   /** Objetos por camada de objetos. */
   maxTilemapObjects: 512,
   maxObjectProperties: 16,
@@ -37,7 +43,11 @@ export const PINTA_LIMITS = {
   maxObjectPropertyStringChars: 200,
   /** Nome e tipo de um objeto do mapa. */
   maxObjectNameChars: 48,
-  /** Maior coordenada/medida de objeto em pixels do mapa (256 colunas × peça de 48). */
+  /**
+   * Maior coordenada/medida de objeto em pixels do mapa (256 colunas × peça de 48). É a do
+   * formato, de propósito: um objeto de um mapa grande importado não pode ser puxado para dentro
+   * do teto de criação quando o mapa cresce.
+   */
   maxObjectCoord: 256 * 48,
   maxPixelLayers: 4,
   maxShapes: 500,
@@ -47,8 +57,9 @@ export const PINTA_LIMITS = {
 } as const
 
 /**
- * Limites de leitura do documento. O editor oferece os mesmos tetos após a medição de
- * persistência de 2.097.152 células no IndexedDB; cada destino mantém seu próprio orçamento.
+ * O que o DOCUMENTO do mapa aceita ao ser LIDO (o sanitizador, a importação), separado do que o
+ * editor deixa CRIAR (`PINTA_LIMITS`). Um mapa grande que chegue por importação ou de outro
+ * aparelho é lido inteiro, nunca cortado. Cada destino mantém o seu próprio orçamento.
  *
  * `maxCells` é o orçamento que segura a memória: colunas × linhas × camadas de peças.
  */
@@ -67,8 +78,26 @@ export const PINTA_MAP_FORMAT_LIMITS = {
   maxObjectCoord: 256 * 48,
 } as const
 
-/** O número gravado em `schema` quando o desenho usa algo deste formato. */
+/**
+ * Carimbo `schema` do registro para o que o formato de CAMADAS descreve: grupos, propriedades de
+ * camada, peças viradas, mapa grande, conjunto de peças com mais de 64 peças.
+ */
 export const PINTA_MAP_SCHEMA = 3
+
+/**
+ * Carimbo `schema` para o que só a CENA COMPLETA descreve: formas, giro, papel e propriedades
+ * tipadas de objeto, arte e instância de conjunto, animações, terrenos e propriedades de peça, e
+ * o desenho do tipo conjunto.
+ *
+ * É um número separado do 3 porque já existe código publicado que conhece o 3 só com camadas. Se
+ * a cena completa também gravasse 3, aquele código abriria o mapa, jogaria fora o que não conhece
+ * e salvaria o resto por cima. Com 4 ele recusa o mapa (devolve `null`) e o registro fica como
+ * está. Quem só usa camadas continua gravando 3.
+ */
+export const PINTA_SCENE_SCHEMA = 4
+
+/** O maior carimbo que este código sabe ler. */
+export const PINTA_MAX_SCHEMA = PINTA_SCENE_SCHEMA
 
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)

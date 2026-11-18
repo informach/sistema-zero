@@ -1,26 +1,44 @@
 import { type JSX, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { isObjectLayer, type TilemapObject } from '../../core/project'
+import { effectiveLayer, isObjectLayer, type TilemapObject } from '../../core/project'
 import { shortcut } from '../../core/shortcuts'
 import { removeMapObject } from '../../tiles/mapObjects'
-import { arrangeObjects, type ObjectArrange, pasteObjects } from '../../tiles/objectSelection'
+import {
+  arrangeObjects,
+  type ObjectArrange,
+  pasteObjects,
+  pasteOffset,
+} from '../../tiles/objectSelection'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
+import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
+import { commitIfChanged } from './mapTools/commitGuard'
 import { useActionShortcuts } from './useActionShortcuts'
 export function MapObjectSelectionPanel({
   layerId,
   ids,
   onSelect,
+  position,
 }: {
   layerId: string
   ids: readonly string[]
   onSelect: (ids: string[]) => void
+  /** Onde o ponteiro esteve por último no palco, em pixels do mapa (ou o meio do que se vê). */
+  position?: () => { x: number; y: number } | null
 }): JSX.Element {
   const { editor } = useEditorStores(),
     { clipboard } = usePintaApp(),
+    { showToast } = useToast(),
     [arrange, setArrange] = useState<ObjectArrange>('left')
+  /** Nada mudou: se a camada está trancada, diz por quê. */
+  const warnLocked = (): void => {
+    const a = editor.getState().asset
+    const layer = a.kind === 'tilemap' ? a.layers.find((l) => l.id === layerId) : null
+    if (a.kind === 'tilemap' && layer && effectiveLayer(a, layer).locked)
+      showToast(COPY.layers.lockedWarning)
+  }
   const objects = (): TilemapObject[] => {
     const a = editor.getState().asset
     return a.kind === 'tilemap'
@@ -36,8 +54,14 @@ export function MapObjectSelectionPanel({
     if (cut) {
       const s = editor.getState()
       if (s.asset.kind === 'tilemap') {
-        s.commit(selected.reduce((m, o) => removeMapObject(m, layerId, o.id), s.asset))
-        onSelect([])
+        if (
+          commitIfChanged(
+            s,
+            selected.reduce((m, o) => removeMapObject(m, layerId, o.id), s.asset),
+          )
+        )
+          onSelect([])
+        else warnLocked()
       }
     }
   }
@@ -45,8 +69,15 @@ export function MapObjectSelectionPanel({
     const item = clipboard.getState().get(),
       s = editor.getState()
     if (item?.kind !== 'objects' || s.asset.kind !== 'tilemap') return
-    const next = pasteObjects(s.asset, layerId, item.objects)
-    if (next === s.asset) return
+    // O que foi copiado cai com o MEIO onde o ponteiro esteve por último (sem ponteiro, um
+    // pouco ao lado do original, como antes).
+    const target = position?.()
+    const [dx, dy] = target ? pasteOffset(item.objects, target) : [16, 16]
+    const next = pasteObjects(s.asset, layerId, item.objects, dx, dy)
+    if (next === s.asset) {
+      warnLocked()
+      return
+    }
     const oldIds = new Set(
       s.asset.layers.flatMap((l) => (isObjectLayer(l) ? l.objects.map((o) => o.id) : [])),
     )
@@ -121,7 +152,8 @@ export function MapObjectSelectionPanel({
         className="mt-2 w-full"
         onClick={() => {
           const s = editor.getState()
-          if (s.asset.kind === 'tilemap') s.commit(arrangeObjects(s.asset, layerId, ids, arrange))
+          if (s.asset.kind !== 'tilemap') return
+          if (!commitIfChanged(s, arrangeObjects(s.asset, layerId, ids, arrange))) warnLocked()
         }}
       >
         {COPY.scene.organizar}

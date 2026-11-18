@@ -401,7 +401,10 @@ export function PreviewIframe(): JSX.Element {
   // Metadados de preview (mapa de tiles do Pinta/fatiador) — mesmo ciclo de vida
   // do manifesto; ENTRA nas deps do doc: reenviar um mapa alterado tem que
   // atualizar o preview sem reload manual.
-  const assetsMeta = useMemo(() => assetMetaManifest(assets), [assets])
+  const assetsMeta = useMemo(
+    () => assetMetaManifest(assets, bootstrapContext),
+    [assets, bootstrapContext],
+  )
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
   // Binários 3D (modelo GLB / céu HDR) — canal próprio (o de imagem os filtraria).

@@ -1,3 +1,16 @@
+import {
+  CELL_FLAGS_MASK,
+  CELL_FLIP_D,
+  CELL_FLIP_H,
+  CELL_FLIP_V,
+  CELL_MAX_TILES,
+} from '../tiles/cell'
+
+/**
+ * O Python embutido lê a célula com as MESMAS máscaras do `tiles/cell.ts`: os números entram no
+ * texto a partir das constantes de lá, nunca escritos à mão.
+ */
+const PECA = CELL_MAX_TILES - 1
 export const pygameSceneModule = `"""Cenários do Pinta: dados editáveis em maps.json; imagens locais, sem rede."""
 import json
 import math
@@ -28,7 +41,7 @@ class Mundo:
             for i, celula in enumerate(camada['cells']):
                 if celula < 0:
                     continue
-                tile = celula & 4095
+                tile = celula & ${PECA}
                 rect = pygame.FRect(i % self.dados['cols'] * self.tamanho + e['x'], i // self.dados['cols'] * self.tamanho + e['y'], self.tamanho, self.tamanho)
                 if camada.get('collision') or tile in ts['solid']:
                     self.solidos.append(rect)
@@ -58,7 +71,7 @@ class Mundo:
                     for i, celula in enumerate(camada['cells']):
                         if celula < 0:
                             continue
-                        tile = celula & 4095
+                        tile = celula & ${PECA}
                         if not (camada.get('collision') or tile in ts['solid'] or tile in ts['platform']):
                             continue
                         x = i % conjunto['cols'] * self.tamanho + e['x']
@@ -95,10 +108,11 @@ class Mundo:
         return self.imagens[caminho]
 
     def peca(self, ts, celula, tempo):
-        tile, flags = celula & 4095, celula & 28672
+        tile, flags = celula & ${PECA}, celula & ${CELL_FLAGS_MASK}
         quadros = ts.get('animations', {}).get(str(tile), [])
-        if quadros:
-            atual = tempo % sum(q['duration'] for q in quadros)
+        total = sum(q['duration'] for q in quadros)
+        if quadros and total > 0:
+            atual = tempo % total
             for q in quadros:
                 atual -= q['duration']
                 if atual < 0:
@@ -108,9 +122,9 @@ class Mundo:
         if chave not in self.pecas:
             t = self.tamanho
             imagem = self.imagem(ts['image']).subsurface((tile % ts['columns'] * t, tile // ts['columns'] * t, t, t))
-            if flags & 16384:
+            if flags & ${CELL_FLIP_D}:
                 imagem = pygame.transform.flip(pygame.transform.rotate(imagem, 90), False, True)
-            self.pecas[chave] = pygame.transform.flip(imagem, bool(flags & 4096), bool(flags & 8192))
+            self.pecas[chave] = pygame.transform.flip(imagem, bool(flags & ${CELL_FLIP_H}), bool(flags & ${CELL_FLIP_V}))
         return self.pecas[chave]
 
     def desenhar(self, tela, frente=False, camadas=None, cols=None, deslocamento=(0, 0), profundidade=0, camera=None, personagem=True):

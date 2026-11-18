@@ -266,7 +266,7 @@ export async function buildClassicFileMap(
     assetsScriptSrc = 'sz-assets.js'
     files['public/sz-assets.js'] = buildAssetsRuntime(
       manifest,
-      assetMetaManifest(project.assets),
+      assetMetaManifest(project.assets, bootstrapContext),
       soundsExport,
       models3dExport,
     )

@@ -24,7 +24,7 @@ describe('customSizeSpecFor', () => {
     const quadro = { fields: ['width', 'height'] as const, min: 8, max: 128 }
     expect(customSizeSpecFor('pixel-sprite')).toEqual(quadro)
     expect(customSizeSpecFor('vector-sprite')).toEqual(quadro)
-    expect(customSizeSpecFor('tilemap')).toEqual({ fields: ['cols', 'rows'], min: 1, max: 256 })
+    expect(customSizeSpecFor('tilemap')).toEqual({ fields: ['cols', 'rows'], min: 1, max: 128 })
   })
 
   test('peças ficam FORA (whitelist dura do motor)', () => {

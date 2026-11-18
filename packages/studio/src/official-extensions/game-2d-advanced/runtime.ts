@@ -486,7 +486,9 @@ ${gameKitShellRuntime}
     var entry = Object.prototype.hasOwnProperty.call(ASSET_META, an) ? ASSET_META[an] : null;
     var meta = (entry && entry.tilemap && typeof entry.tilemap === 'object') ? entry.tilemap : null;
     if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' || typeof meta.grid !== 'string') {
-      warn('o desenho "' + an + '" não veio com um MAPA do Pinta — envie o MAPA pelo foguete do Pinta');
+      // Só a cena (mapa grande ou rico demais para este bloco): aponta o bloco novo.
+      if (entry && (entry.scene || entry.hasScene)) warn('o desenho "' + an + '" é um cenário. Use o bloco "Criar cenário do meu desenho"');
+      else warn('o desenho "' + an + '" não veio com um MAPA do Pinta — envie o MAPA pelo foguete do Pinta');
       return;
     }
     var solid = Object.create(null);

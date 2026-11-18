@@ -891,3 +891,15 @@
  * por `IntersectionObserver` desde sempre (`useNearViewport` no `AssetCard`, `paint={near}`).
  * O que o `content-visibility` poupava a mais era o layout de meia dúzia de nós.
  */
+
+/*
+ * Controles de deslizar do editor de mapa: o alvo de toque tem 44px de altura (a barrinha
+ * continua fina; quem cresce é a área que recebe o dedo).
+ */
+[data-pinta-theme] .pin-range {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0;
+  accent-color: var(--color-pin-accent);
+  cursor: pointer;
+}

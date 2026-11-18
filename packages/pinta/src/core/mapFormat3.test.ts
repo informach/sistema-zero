@@ -25,6 +25,7 @@ import {
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
+  PINTA_MAX_SCHEMA,
   sanitizePintaAsset,
   type TilemapAsset,
   type TilemapLayer,
@@ -91,11 +92,19 @@ describe('mapa antigo', () => {
     expect(lido && tilemapNeedsV3(lido)).toBe(false)
   })
 
-  it('o editor oferece o teto medido no IndexedDB, dentro do formato', () => {
-    expect(PINTA_LIMITS.maxTilemapLayers).toBe(32)
-    expect(PINTA_LIMITS.maxTilemapCols).toBe(256)
-    expect(PINTA_LIMITS.maxTiles).toBe(256)
-    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(256)
+  it('o editor cria até o teto antigo; o formato lê mais do que o editor cria', () => {
+    const criar: { camadas: number; colunas: number; linhas: number; pecas: number } = {
+      camadas: PINTA_LIMITS.maxTilemapLayers,
+      colunas: PINTA_LIMITS.maxTilemapCols,
+      linhas: PINTA_LIMITS.maxTilemapRows,
+      pecas: PINTA_LIMITS.maxTiles,
+    }
+    expect(criar).toEqual({ camadas: 8, colunas: 128, linhas: 128, pecas: 64 })
+    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(criar.camadas)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxCols).toBeGreaterThan(criar.colunas)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxRows).toBeGreaterThan(criar.linhas)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxTiles).toBeGreaterThan(criar.pecas)
+    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(128)
   })
 })
 
@@ -155,7 +164,7 @@ describe('camadas do formato 3', () => {
   })
 
   it('formato mais novo que este código não é lido (nem pela metade)', () => {
-    expect(ler({ ...mapa(), schema: PINTA_MAP_SCHEMA + 1 })).toBeNull()
+    expect(ler({ ...mapa(), schema: PINTA_MAX_SCHEMA + 1 })).toBeNull()
     expect(ler({ ...mapa(), schema: 'tres' })).toBeNull()
   })
 })

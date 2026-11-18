@@ -3,6 +3,7 @@ import {
   effectiveLayer,
   type TilemapAsset,
   type TileTerrain,
+  withPintaSchemaStamp,
 } from '../core/project'
 import { cellTile, makeCell } from './cell'
 import type { CellPos } from './cellGeometry'
@@ -39,9 +40,11 @@ export function paintTerrain(
   if (!layer || effectiveLayer(map, layer).locked) return { map, unmatched: 0 }
   const active = slots(terrain.mode),
     constraints = new Map<string, number>(),
-    neighbors = new Map<number, CellPos>()
+    neighbors = new Map<number, CellPos>(),
+    painted = new Set<number>()
   for (const p of positions) {
     if (p.col < 0 || p.row < 0 || p.col >= map.cols || p.row >= map.rows) continue
+    painted.add(p.row * map.cols + p.col)
     for (const s of active)
       constraints.set(key(p.col, p.row, s), Math.max(0, Math.min(terrain.colors.length, color)))
     for (let dy = -1; dy <= 1; dy++)
@@ -59,8 +62,15 @@ export function paintTerrain(
   let unmatched = 0
   const cells = new Int16Array(layer.cells)
   for (const [at, p] of neighbors) {
-    const old = terrain.tiles[String(cellTile(cells[at] ?? -1))] ?? Array(8).fill(0)
+    const tile = cellTile(cells[at] ?? -1),
+      known = terrain.tiles[String(tile)]
+    // A vizinha com uma peça de FORA do terreno (uma árvore, uma casa) não é mexida: só a casa
+    // que a criança pintou pode trocar uma peça que não é deste terreno.
+    if (!painted.has(at) && tile >= 0 && !known) continue
+    const old = known ?? Array(8).fill(0)
     const desired = old.map((v, s) => constraints.get(key(p.col, p.row, s)) ?? v)
+    // Vizinha que não ganhou nenhum encaixe novo fica como está (não sorteia outra variação).
+    if (!painted.has(at) && active.every((s) => desired[s] === old[s])) continue
     if (active.every((s) => desired[s] === 0)) {
       cells[at] = -1
       continue
@@ -116,9 +126,9 @@ export function terrainRegion(
   return out
 }
 export function setTilesetTerrain(ts: AnyTilesetAsset, terrain: TileTerrain): AnyTilesetAsset {
-  return {
+  // O carimbo do formato é calculado pelo que o conjunto usa, nunca escrito à mão.
+  return withPintaSchemaStamp({
     ...ts,
-    schema: 3,
     terrains: [...(ts.terrains ?? []).filter((t) => t.id !== terrain.id), terrain],
-  }
+  })
 }

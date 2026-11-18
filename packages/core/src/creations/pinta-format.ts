@@ -14,17 +14,59 @@
  * única camada nova de um mapa faria o próprio cliente atual declarar menos e ser recusado.
  */
 
-/** A maior versão que este código sabe LER. Itens acima disso ficam intocados na nuvem. */
+/**
+ * A maior versão que este código sabe LER. Itens acima disso ficam intocados na nuvem: a galeria
+ * não baixa, não copia e não sobe por cima, e pede para atualizar a página.
+ */
 export const PINTA_MAX_READ_FORMAT_VERSION = 3
 
 /**
- * A versão que mapas e conjuntos de peças DECLARAM ao subir.
+ * A versão que mapas, conjuntos de peças e conjuntos DECLARAM ao subir.
  *
- * A trava de leitura precisa estar publicada antes do gravador. O servidor não rebaixa
- * versões. A implementação intermediária (somente camadas v3) já declara 2; por isso a cena
- * completa declara 3. Aquele cliente não pode regravar formas, terrenos ou conjuntos que
- * ainda não conhece, mesmo quando os dois documentos usam o mesmo `schema` de registro.
- * Em rollback, leitores com a trava preservam o item na nuvem e pedem atualização.
+ * ⚠️ O ESTADO DE VERDADE (18/11/2026), sem enfeite:
+ *
+ * A regra do projeto é "a escrita fica um passo atrás da leitura": primeiro se publica um código
+ * que LÊ a versão N, e só num deploy seguinte um código que GRAVA N. Assim, se o segundo deploy
+ * for desfeito, o código que volta ainda lê tudo o que foi gravado.
+ *
+ * Esta entrega NÃO cumpre a regra: leitura 3 e escrita 3 saem no MESMO deploy. Foi escolhido de
+ * propósito, e os números não devem ser "consertados" sem ler o resto:
+ *
+ * - Produção (`main`) não tem trava nenhuma: não manda `formatVersion` e não confere a versão ao
+ *   ler. Não existe em produção um código que leia 3 e grave menos, então não havia como publicar
+ *   a leitura antes sem fazer um deploy só para isso.
+ * - O cliente intermediário (só camadas), que já rodou em homologação, lê até 2 e declara 2. A
+ *   cena completa precisa declarar MAIS que 2 para o servidor recusar aquele cliente
+ *   (`CREATION_CLIENT_OUTDATED`): ele abriria um mapa com formas, terrenos ou conjuntos, cortaria
+ *   o que não conhece e subiria o resto por cima.
+ * - Homologação já tem itens gravados com 3. Baixar o número deixaria esses itens ilegíveis para
+ *   o próprio código atual.
+ *
+ * O QUE ACONTECE NUM ROLLBACK para um código que lê menos que 3 (ou que não tem trava):
+ *
+ * - Todo item que ESTE código tocou fica com versão 3 no servidor, e o servidor nunca rebaixa.
+ * - O código antigo COM trava (lê até 2) não baixa esses itens e toda subida deles leva 409 para
+ *   sempre, até a página voltar a ter um código que leia 3. A criança vê o aviso de atualizar a
+ *   página e continua editando a cópia local, que não sobe.
+ * - O código antigo SEM trava (o de produção hoje) baixa o item, lê pelo sanitizador dele e
+ *   descarta o que não conhece NA CÓPIA LOCAL. A subida dessa cópia cortada é recusada com 409,
+ *   porque ela não declara versão (conta como 1). Isso depende de o SERVIDOR manter a recusa por
+ *   `format_version` (migração 0075, que produção já tem); um rollback que tirasse a recusa do
+ *   servidor deixaria a cópia cortada subir.
+ * - Nos dois casos nada se perde NA NUVEM: o item fica inteiro na conta. As edições feitas
+ *   durante o rollback ficam só no aparelho. Quando o código novo volta, a cópia local cortada
+ *   não sobe por cima (`PintaFormatMemory` em `pinta-cloud-persistence.ts`).
+ *
+ * COMO SUBIR A VERSÃO DAQUI EM DIANTE (para o 4 e seguintes):
+ *
+ * 1. Deploy A: suba só `PINTA_MAX_READ_FORMAT_VERSION` para N, com o leitor de N pronto e
+ *    testado. A escrita continua em N - 1. Publique e espere as abas antigas saírem de circulação
+ *    (a galeria avisa e pede atualização).
+ * 2. Deploy B: suba `PINTA_MAP_WRITE_FORMAT_VERSION` para N.
+ * 3. Rollback de B volta para A, que lê N: nenhum item fica preso.
+ *
+ * O teste ao lado trava "leitura >= escrita" e os dois números de hoje, para que uma mudança
+ * aqui seja sempre uma decisão e nunca um acidente.
  */
 export const PINTA_MAP_WRITE_FORMAT_VERSION = 3
 

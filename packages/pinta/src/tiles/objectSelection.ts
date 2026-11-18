@@ -25,6 +25,23 @@ export function cloneObjects(objects: readonly TilemapObject[], dx = 16, dy = 16
     ),
   }))
 }
+/** Quanto deslocar os objetos copiados para o MEIO do grupo cair em `target` (sem sair do mapa). */
+export function pasteOffset(
+  objects: readonly TilemapObject[],
+  target: { x: number; y: number },
+): [number, number] {
+  if (!objects.length) return [0, 0]
+  const boxes = objects.map(objectBounds)
+  const minX = Math.min(...boxes.map((b) => b.x)),
+    minY = Math.min(...boxes.map((b) => b.y)),
+    maxX = Math.max(...boxes.map((b) => b.x + b.width)),
+    maxY = Math.max(...boxes.map((b) => b.y + b.height))
+  // Nenhum objeto pode passar de zero: o `cloneObjects` prenderia só ele e desmontaria o grupo.
+  return [
+    Math.max(-minX, Math.round(target.x - (minX + maxX) / 2)),
+    Math.max(-minY, Math.round(target.y - (minY + maxY) / 2)),
+  ]
+}
 export function pasteObjects(
   map: TilemapAsset,
   layerId: string,

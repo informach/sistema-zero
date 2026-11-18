@@ -23,36 +23,44 @@ import { cloneBitmap } from '../pixel/bitmap'
 import { cellTile, withCellTile } from './cell'
 
 type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
+
+/**
+ * Os metadados por peça (animações, propriedades, terrenos) acompanham a peça quando ela muda de
+ * índice. `at` é onde uma peça ENTROU (os índices de `at` em diante sobem 1) ou, com `remove`, a
+ * que SAIU (ela some dos metadados e as de cima descem 1).
+ *
+ * Um mapa que fica vazio SOME (a chave sai do desenho): `animations: {}` faria o conjunto pedir
+ * o formato mais novo sem usar nada dele. O terreno continua existindo mesmo sem peça marcada.
+ */
 function remapTileMetadata<A extends AnyTilesetAsset>(asset: A, at: number, remove = false): A {
   const index = (n: number) => (remove ? (n === at ? -1 : n > at ? n - 1 : n) : n >= at ? n + 1 : n)
-  const remap = <T>(
-    values: Record<string, T> | undefined,
-    convert: (v: T) => T,
-  ): Record<string, T> | undefined =>
-    values
-      ? Object.fromEntries(
-          Object.entries(values).flatMap(([k, v]) =>
-            index(Number(k)) < 0 ? [] : [[String(index(Number(k))), convert(v)]],
-          ),
+  const remap = <T>(values: Record<string, T>, convert: (v: T) => T | null): Record<string, T> =>
+    Object.fromEntries(
+      Object.entries(values).flatMap(([k, v]) => {
+        const next = index(Number(k))
+        const converted = next < 0 ? null : convert(v)
+        return converted === null ? [] : [[String(next), converted]]
+      }),
+    )
+  const { animations: oldAnimations, tileProperties: oldProperties, ...rest } = asset
+  const animations = oldAnimations
+    ? remap(oldAnimations, (frames) => {
+        // Quadro que apontava para a peça removida sai; animação sem quadro nenhum sai inteira.
+        const kept = frames.flatMap((f) =>
+          index(f.tile) < 0 ? [] : [{ ...f, tile: index(f.tile) }],
         )
-      : undefined
-  const animations = remap(asset.animations, (frames) =>
-    frames.flatMap((f) => (index(f.tile) < 0 ? [] : [{ ...f, tile: index(f.tile) }])),
-  )
+        return kept.length ? kept : null
+      })
+    : undefined
+  const tileProperties = oldProperties ? remap(oldProperties, (v) => v) : undefined
   return {
-    ...asset,
-    ...(animations
-      ? {
-          animations: Object.fromEntries(
-            Object.entries(animations).filter(([, frames]) => frames.length),
-          ),
-        }
-      : {}),
-    ...(asset.tileProperties ? { tileProperties: remap(asset.tileProperties, (v) => v) } : {}),
+    ...rest,
+    ...(animations && Object.keys(animations).length ? { animations } : {}),
+    ...(tileProperties && Object.keys(tileProperties).length ? { tileProperties } : {}),
     ...(asset.terrains
-      ? { terrains: asset.terrains.map((t) => ({ ...t, tiles: remap(t.tiles, (v) => v) ?? {} })) }
+      ? { terrains: asset.terrains.map((t) => ({ ...t, tiles: remap(t.tiles, (v) => v) })) }
       : {}),
-  }
+  } as A
 }
 
 function emptyTileFor<A extends AnyTilesetAsset>(asset: A): TileOf<A> {
@@ -106,7 +114,11 @@ export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number
   platform.splice(index + 1, 0, asset.platform[index] === true)
   const next = remapTileMetadata(asset, index + 1)
   if (asset.animations?.[index])
-    next.animations = { ...next.animations, [index + 1]: next.animations?.[index] ?? [] }
+    // A cópia ganha a animação da original, com quadros próprios (editar uma não mexe na outra).
+    next.animations = {
+      ...next.animations,
+      [index + 1]: (next.animations?.[index] ?? []).map((frame) => ({ ...frame })),
+    }
   if (asset.tileProperties?.[index])
     next.tileProperties = {
       ...next.tileProperties,

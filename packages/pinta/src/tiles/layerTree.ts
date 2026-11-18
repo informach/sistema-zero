@@ -1,3 +1,4 @@
+import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
   effectiveLayer,
@@ -17,7 +18,12 @@ export function addMapGroup(map: TilemapAsset, name: string): TilemapAsset {
     ...map,
     layers: [
       ...map.layers,
-      { id: newId(), kind: 'group', name: name.trim().slice(0, 30) || 'Grupo', visible: true },
+      {
+        id: newId(),
+        kind: 'group',
+        name: name.trim().slice(0, 30) || COPY.tiles.group,
+        visible: true,
+      },
     ],
   }
 }

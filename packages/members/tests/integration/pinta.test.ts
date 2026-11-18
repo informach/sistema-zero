@@ -8,7 +8,12 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { createLessonAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import {
+  createAsset,
+  createLessonAsset,
+  pintaAssetFromWire,
+  pintaAssetToWire,
+} from '@sistemazero/pinta/assets'
 import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -227,6 +232,27 @@ describe('bloco Pinta — entrega', () => {
     })
     // 400 é a convenção do serviço para entrada inválida (o error-handler normaliza).
     expect(res.status).toBe(400)
+  })
+
+  // O documento do Pinta aceita LER conjuntos de até 256 peças; a aula segue com o teto de 64.
+  test('conjunto de peças acima do teto da aula é recusado; no teto, passa', async () => {
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+    const base = createAsset({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (base.kind !== 'tileset') throw new Error('fixture Pinta inválida')
+    const peca = base.tiles[0]
+    if (!peca) throw new Error('fixture Pinta sem peça')
+    const comPecas = (quantas: number) =>
+      pintaAssetToWire({
+        ...base,
+        tiles: Array.from({ length: quantas }, () => ({ ...peca, data: peca.data.slice() })),
+        solid: Array.from({ length: quantas }, () => false),
+      })
+
+    const noTeto = await enviar(app, lessonId, blockId, { asset: comPecas(64) })
+    expect(noTeto.status).toBeLessThan(300)
+    const acima = await enviar(app, lessonId, blockId, { asset: comPecas(65) })
+    expect(acima.status).toBe(400)
   })
 
   test('kind conhecido com estrutura incompleta é recusado e não abre o gate', async () => {

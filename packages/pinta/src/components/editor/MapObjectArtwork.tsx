@@ -1,15 +1,38 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { isTilesetKind, type TilemapObject } from '../../core/project'
+import { isTilesetKind, type PintaAsset, type TilemapObject } from '../../core/project'
 import { buildStudioPayload } from '../../export/studioBridge'
 import { usePintaGallery } from '../appContext'
+
+type ArtworkImage = { dataUrl: string; width: number; height: number } | null
+/**
+ * Uma imagem por DESENHO, dividida por todos os objetos que o usam: cem árvores iguais no
+ * mapa montam a folha uma vez só. O desenho editado é outro objeto, então ganha entrada nova.
+ */
+const artworkCache = new WeakMap<PintaAsset, Promise<ArtworkImage>>()
+export function artworkImage(
+  asset: PintaAsset,
+  find: (id: string) => PintaAsset | null,
+  build: typeof buildStudioPayload = buildStudioPayload,
+): Promise<ArtworkImage> {
+  const cached = artworkCache.get(asset)
+  if (cached) return cached
+  const source = asset.kind === 'map-set' ? asset.map : asset
+  const pending = build(source, find, { animationId: null, frameIndex: 0 })
+    .then((result) =>
+      result ? { dataUrl: result.dataUrl, width: result.width, height: result.height } : null,
+    )
+    .catch(() => null)
+  artworkCache.set(asset, pending)
+  return pending
+}
 
 export function MapObjectArtwork({
   object,
   source,
 }: {
   object: TilemapObject
-  source?: import('../../core/project').PintaAsset
+  source?: PintaAsset
 }): JSX.Element | null {
   const assets = usePintaGallery((s) => s.assets)
   const asset = source ?? assets.find((a) => a.id === (object.art?.assetId ?? object.setId))
@@ -17,23 +40,16 @@ export function MapObjectArtwork({
     const byId = new Map(assets.map((a) => [a.id, a]))
     return (id: string) => byId.get(id) ?? null
   }, [assets])
-  const [image, setImage] = useState<{ dataUrl: string; width: number; height: number } | null>(
-    null,
-  )
+  const [image, setImage] = useState<ArtworkImage>(null)
   useEffect(() => {
     let active = true
     if (!asset) {
       setImage(null)
       return
     }
-    const source = asset.kind === 'map-set' ? asset.map : asset
-    void buildStudioPayload(source, find, { animationId: null, frameIndex: 0 })
-      .then((result) => {
-        if (active) setImage(result)
-      })
-      .catch(() => {
-        if (active) setImage(null)
-      })
+    void artworkImage(asset, find).then((result) => {
+      if (active) setImage(result)
+    })
     return () => {
       active = false
     }

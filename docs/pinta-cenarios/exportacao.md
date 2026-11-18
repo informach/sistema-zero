@@ -6,7 +6,7 @@ O backup nativo acompanha os projetos para conservar os dados editáveis do Pint
 | Saída | Como executar/usar |
 |---|---|
 | `.pinta.json` | **Trazer de volta** na galeria; inclui folhas, arte e conjuntos necessários |
-| PNG com dados | `pinta.carregar(...)` no Pygame; metadados 1 para legados, 2 para cenas completas |
+| PNG com dados | `pinta.carregar_mapa('nome')` no Pygame (o módulo `pinta` do Studio); dados versão 1 para mapas antigos, 2 para cenas completas |
 | Tiled JSON/TMX + TSX | abrir `mapa.json` ou `mapa.tmx`; imagens e folhas ficam no pacote |
 | Phaser | servir a pasta por HTTP e abrir `index.html`; Phaser 3.90.0 e licença incluídos |
 | Pygame | instalar `pygame-ce`; executar `python main.py` na pasta extraída |
@@ -14,7 +14,8 @@ O backup nativo acompanha os projetos para conservar os dados editáveis do Pint
 
 O pacote inclui `maps.json` e `start.json` para a cena inicial e as portas. O Phaser funciona
 sem CDN: o JavaScript distribuído tem hash verificado por
-`bun packages/pinta/scripts/generate-phaser.ts --check`. Não abra pelo protocolo `file:`;
+`bun packages/pinta/scripts/generate-phaser.ts --check` (ou `bun run check:phaser` em
+`packages/pinta`). Não abra pelo protocolo `file:`;
 o exemplo carrega JSON e imagens por HTTP.
 
 No pacote Tiled, abra `mapas/mapa-N/mapa.json` ou `mapa.tmx`. A importação do Tiled escolhe
@@ -23,8 +24,10 @@ O orçamento de 128 MiB do pacote não aumenta o teto de 32 MiB do backup nativo
 
 O projeto Pygame contém o módulo de cena, imagens e exemplo de controle. A opção
 `python main.py --frames 10 --screenshot captura.png` permite ensaio sem interação.
-O Godot gera `TileMapLayer`, `TileSetAtlasSource`, colisão, animação, arte, áreas, caminhos e
-personagem nativos. Os grupos mantêm seus deslocamentos e opacidade; o parallax usa `Parallax2D`.
+O script do projeto Godot (`pinta.gd`) cria `TileMapLayer`, `TileSetAtlasSource`, colisão,
+animação, arte, áreas, caminhos e personagem a partir do `maps.json`; o parallax usa
+`Parallax2D`. O projeto não foi aberto no Godot nesta entrega (não realizado): ver a
+[homologação](homologacao.md).
 
 No Studio, use os blocos **Criar cenário do meu desenho**, **Desenhar cenário** (fundo/frente),
 **Colidir com cenário**, objetos por tipo/nome, leitura de campo/propriedade, área, porta,
@@ -36,14 +39,21 @@ Para regenerar a referência e os arquivos derivados:
 ```powershell
 bun packages/pinta/scripts/homologacao/generate.ts
 bun packages/pinta/scripts/homologacao/studio-assets.ts
+bun packages/pinta/scripts/pygame-gallery/generate.ts
 bun packages/studio/scripts/gen-pinta-scene-python.ts
 bun packages/studio/scripts/gen-python-text-sources.ts
 bun packages/studio/scripts/generate-pygame-games.ts
 bun packages/studio/scripts/gen-server-examples.ts
 ```
 
-Os pacotes são gravados em `output/pinta-cenarios/`, ignorado pelo Git. O gerador usa datas
-e identificadores fixos. Depois de alterar PyDew, regenere também a cobertura dos blocos com
+Para só conferir, sem gravar: `bun run check:homologacao`, `bun run check:pygame-gallery` e
+`bun run check:phaser` em `packages/pinta`; `bun scripts/gen-pinta-scene-python.ts --check`,
+`bun run check:python-text-sources` e `bun run check:pygame-games` em `packages/studio`.
+
+`generate.ts` grava os pacotes em `output/pinta-cenarios/`, ignorado pelo Git (ou na pasta
+passada como argumento). O gerador usa datas e identificadores fixos. `generate-pygame-games.ts`
+recodifica os sons `.ogg` com o ffmpeg da máquina; os bytes mudam de uma versão do ffmpeg para
+outra, então confira o `git status` antes de guardar o resultado. Depois de alterar PyDew, regenere também a cobertura dos blocos com
 `packages/studio/scripts/python/pygame-block-coverage.ts`, usando Python com pygame-ce.
 
 Mapas ortogonais finitos são o domínio comum. Colisão no JavaScript usa a grade física existente;
