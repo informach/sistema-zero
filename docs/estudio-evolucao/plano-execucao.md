@@ -35,8 +35,12 @@ estivesse homologada. Dependências externas devem ser discriminadas.
 
 - [x] Localizar branch, preservar árvore compartilhada e fixar referência.
 - [x] Conferir matriz e testes A1–A5 existentes sem regravar referências.
-- [ ] Executar matriz e projetos protegidos neste Windows; guardar saída e ambiente.
-- [ ] Executar gestos no navegador e conferir capturas antes/depois.
+- [x] Indexar o texto dos PDFs dos dois cursos (48 páginas), com leitura dirigida e
+  cinco páginas visuais completas; registrar hashes sem alterar os originais.
+- [x] Executar matriz e projetos protegidos neste Windows; 43 + 15 testes aprovados.
+- [x] Executar os 399 gestos no navegador, comparar as fontes e registrar 13 capturas
+  de depois, preservando as capturas anteriores; inspeção visual representativa.
+- [x] Aprovar 49 objetivos de estrutura e 17 de execução pelo executor real do servidor.
 - [ ] Completar A4 na página real de homologação: verificar, enviar e concluir.
 - [ ] Inventariar capacidades reais dos dez runtimes, executores, IDE e armazenamento.
 - [ ] Medir baseline local: blocos 80/500/2.000/5.000/10.000, Pro modular, runtimes,
@@ -51,12 +55,15 @@ Arquivos: matriz em `docs/aulas-interativas-tecnico/qa/`, testes em
 
 ### 1. Isolamento e integridade antes de executar — em andamento
 
-- [ ] B1: materializar buffers e salvar antes de Rodar/Rodar de novo; falha mantém
+- [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo; falha mantém
   código e impede nova execução; Parar cancela a intenção sem cancelar a gravação.
-- [ ] Testar edição/troca de projeto/perfil/desmontagem enquanto salva, clique duplo,
-  erro de cota, observador e host que persiste por callback.
-- [ ] Medir Chromium/Firefox/WebKit com scripts existentes; registrar processo,
-  atraso do editor, tempo de Parar e salvamento durante programa hostil.
+- [x] Testar edição/troca de projeto/desmontagem enquanto salva, clique duplo,
+  erro de cota, observador, geração de escritor e confirmação assíncrona do host.
+- [ ] Homologar troca real de perfil no app conectado durante um salvamento.
+- [x] Medir atraso/clique nos três engines de laboratório e discriminar o headless
+  shell do Chromium completo; artefatos e ambiente versionados.
+- [ ] Completar medição de processo, tempo de Parar e salvamento em todos os engines
+  durante programa hostil; o reinício nativo ainda reprova no Chromium 148.
 - [ ] B2: reutilizar `StudioPlayerOriginAdapter` e contratos do runtime quando a
   medição exigir outra origem; validar CSP, sandbox, remetente, expiração e release.
 - [ ] B4: estudar Worker/OffscreenCanvas no Jogo 2D, com matriz DOM/áudio/input;
@@ -158,6 +165,7 @@ Arquivos: `components/preview/PreviewIframe.tsx`, `runTripwire.ts`,
 ## Evidência e limites
 
 Os resultados históricos no README são da sessão anterior, não validações desta.
-Vídeos/PDF e aparelhos físicos não foram acessados nesta sessão. Ausência de acesso
+Vídeos e aparelhos físicos não foram acessados nesta sessão. Os PDFs estão inventariados
+em `evidencias/pdf-inventario.json`, com o alcance real da inspeção. Ausência de acesso
 nunca deve virar marcação de teste aprovado. A matriz estática não substitui navegador,
 e navegador emulado não substitui dispositivo físico de 8 GB ou GPU integrada.
