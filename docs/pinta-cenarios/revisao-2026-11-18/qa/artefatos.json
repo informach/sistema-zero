@@ -1,6 +1,6 @@
 {
   "sourceCommit": "b19b4149d8456b19f1e6b60dc8b118ec20e9d899",
-  "generated": "2026-11-18T11:24:52.942Z",
+  "generated": "2026-11-18T11:27:07.753Z",
   "artifacts": [
     {
       "file": "formato-legado.json",
@@ -45,17 +45,22 @@
     {
       "file": "suplementar.json",
       "bytes": 2337,
-      "sha256": "a8a78ff4dfb317104c097b2981b8fc644ca2c26b398292cbd4c60387c7df012e"
+      "sha256": "b29c9c588d9fd16c28a401cdbcbd32feae08660ad69995a7617c5d55f474b002"
     },
     {
       "file": "tiled/mapa-0.json",
-      "bytes": 70476,
-      "sha256": "61a9125c28e671b57d1ecd3fc4ad04b22201b51c3145656c7883bed33856c95e"
+      "bytes": 70432,
+      "sha256": "19fb45cbe619e171e374d8ff582ada82ed1553f1adc9444494e31b352bdf328d"
     },
     {
       "file": "tiled/mapa-1.json",
-      "bytes": 3138,
-      "sha256": "09f7aab6b99d1cc01e8e1f7f3bccc2f6ca6b655e7a0bfe6d0fadcb8627fd4674"
+      "bytes": 3134,
+      "sha256": "8f172d5ab3241aa1a287fe5ee92c7ca76913c509b703b529b3e556e5ea109d0f"
+    },
+    {
+      "file": "tiled/origem.json",
+      "bytes": 819,
+      "sha256": "bf3a6369a29fb33f0b5cf8f29cd6e34a6178c2ce770ea9f0d739509e82d252f5"
     },
     {
       "file": "tiled-locked.json",

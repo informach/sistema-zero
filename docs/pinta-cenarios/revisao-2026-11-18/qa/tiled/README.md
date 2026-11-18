@@ -3,6 +3,9 @@
 `mapa-0.json` e `mapa-1.json` são os arquivos efetivamente gravados pelo executável
 Windows do Tiled ao abrir os TMX da Vila/Cabana. Não são fixtures escritas à mão.
 Os caminhos de imagens/TSX continuam relativos à estrutura do pacote original.
+As cópias versionadas normalizam somente LF e espaços no fim da linha. O JSON é
+integralmente igual ao da saída bruta; [origem.json](origem.json) conserva os hashes
+brutos e normalizados e a comprovação dessa igualdade.
 
 Para reproduzir a comparação na raiz do repositório:
 
