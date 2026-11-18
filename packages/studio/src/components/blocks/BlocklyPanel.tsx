@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import { javaScriptProject } from '../../core/editableProject'
 import 'blockly/blocks'
 import { useShallow } from 'zustand/react/shallow'
@@ -81,6 +82,7 @@ function blocklyWorkspaceConfiguration(
   root: Element | null,
 ): Blockly.BlocklyOptions {
   return {
+    media: BLOCKLY_MEDIA_PATH,
     theme: szThemeFor(theme, root),
     renderer: 'zelos',
     grid: { spacing: 24, length: 3, colour: szGridColourFor(theme, root), snap: true },
