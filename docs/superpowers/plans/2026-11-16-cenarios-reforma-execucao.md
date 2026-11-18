@@ -13,7 +13,7 @@
 ## Restrições gerais
 
 - **Critério de conclusão definido pela usuária em 17/11:** cada lote se conclui após ser implementado, testado e revisado. A tarefa global só se conclui com implementação e testes de todos os lotes, full review, implantação e validação em staging. Não aguardar implantação para seguir ao próximo lote. Continuar documentando, commitando e enviando as alterações para a staging, sem afirmar que push já significa implantação. Os registros históricos abaixo que aguardavam deploy deixam de bloquear a sequência.
-- **Sequência solicitada e confirmada pela usuária:** fechar um lote por vez, na ordem. Lotes 0–5 concluídos localmente; única frente ativa: lote 6, Caminhos. Não iniciar o 7 antes do fechamento do 6. A autorização de execução contínua continua válida, sem aprovações intermediárias.
+- **Sequência solicitada e confirmada pela usuária:** fechar um lote por vez, na ordem. Lotes 0–6 concluídos localmente; próxima frente exclusiva: lote 7, Jogo, luz e céu. Não iniciar o 8 antes do fechamento do 7. A autorização de execução contínua continua válida, sem aprovações intermediárias.
 - Conferir `staging` local antes do trabalho; commits por caminhos; preservar alterações externas; push dos lotes verificados.
 - Uma verificação pesada por vez. Nunca manter playground, Next e e2e pesados juntos; uma sessão de typecheck.
 - Manter isolamento do jogo e do host. Núcleo sem React/Three/IO; dados autorais separados de câmera e ensaio.
@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–5 fechados localmente. Lote 6 aberto: 6.1–6.4 implementados, testados e revisados. Única frente ativa: 6.5, revisão integral e fechamento. [Interface e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-interface.md). Lotes 7–10 e encerramento global pendentes.
+**Estado atual, 18/11:** lotes 0–6 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md). Próxima frente exclusiva: lote 7, Jogo, luz e céu. Lotes 8–10 e encerramento global pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
@@ -37,7 +37,7 @@
 - [x] **3 — Objetos e ensaio:** encaixes/grade modular; escala por eixo; alinhar/distribuir/repetir/espelhar/trocar; espalhar determinístico; conjuntos reutilizáveis; blocos de rascunho; cor/textura; árvore/camadas/laço/cópia; histórico durável; ensaio com cápsula, três modos e modelo de biblioteca.
 - [x] **4 — Terreno:** alturas Uint16 em peças por hash, resolução/tamanho, até oito camadas de solo/pintura, buracos; pincéis e receitas determinísticas (elevar/abaixar/aplainar/suavizar/rampa/platô/nível/ruído/erosão/morro/cratera); PNG de alturas; conversão do perfil do Arquipélago. [Revisão local e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote4-terreno.md).
 - [x] **5 — Água:** mar, encher lago por ponto, rio com leito e correnteza, represa, cachoeira; água/espuma/profundidade; nado e física correspondentes.
-- [ ] **6 — Caminhos:** trilha/praça/estrada que molda terreno, cerca/muro/ponte ao longo da curva, inserção/remoção e alças na cena.
+- [x] **6 — Caminhos:** trilha/praça/estrada que molda terreno, cerca/muro/ponte ao longo da curva, inserção/remoção e alças na cena.
 - [ ] **7 — Jogo/luz/céu:** início, marcadores, zonas, rotas, propriedades, colisões visíveis, câmeras/régua/referência de escala; sol, ambiente, luz pontual/foco, sombras, céu 360°, névoa/hora.
 - [ ] **8 — Exportação:** compilador único, malhas limitadas e GLBs simples/licenças; ZIP three.js e exemplo jogável; GLB único; Python/Raylib externo e módulo oficial; asset scene3d e blocos do Estúdio nos quatro destinos; perfil/carregamento publicado no Arquipélago; orçamentos e junção por região.
 - [ ] **9 — Agentes:** manter CLI/MCP existentes; comandos de intenção, consultas de altura/região/orçamento/validação, busca por dimensões, captura em palco aberto e headless, guia; demonstrar edição sem aba aberta e desfazer na oficina.

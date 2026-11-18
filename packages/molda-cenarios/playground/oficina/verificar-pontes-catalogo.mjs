@@ -148,7 +148,11 @@ try {
           ),
           solidos = solidosOriginais,
           baseDoTabuleiro = new MundoDoTeste(solidos),
-          comparacoes = []
+          comparacoes = [],
+          contatos = []
+        const documentoComPilares = { ...d, caminhos: [...d.caminhos.slice(0, -1), cp] },
+          fonteDoApoio = () => 0
+        fonteDoApoio.parteDoCaminho = (id, parte) => caminhos.parte(id, parte)
         for (const parte of caminhos
           .superficies()
           .filter((s) => s.id === def.id && s.parte?.startsWith('pilar/'))) {
@@ -171,6 +175,21 @@ try {
                 new T.Vector3(ponto.x, -10, ponto.z),
                 new T.Vector3(ponto.x, 20, ponto.z),
               )
+              if (hit && contatos.length < 16)
+                contatos.push({
+                  apoio: core.apoioNaSuperficie(
+                    documentoComPilares,
+                    def.id,
+                    ponto,
+                    fonteDoApoio,
+                    parte.parte,
+                  ),
+                  transformacao: {
+                    posicao: { ...ponto },
+                    rotacao: { x: 0, y: 0, z: 0 },
+                    escala: { x: 1, y: 1, z: 1 },
+                  },
+                })
               comparacoes.push({
                 parte: parte.parte,
                 erro: hit ? ponto.y - hit.ponto.y : null,
@@ -187,6 +206,24 @@ try {
           }
         }
         baseDoTabuleiro.descartar()
+        const elevada = {
+          ...documentoComPilares,
+          caminhos: [...d.caminhos.slice(0, -1), { ...cp, cotas: { de: 6, ate: 6 } }],
+        }
+        const estadoElevado = caminhos.definir(
+          elevada,
+          null,
+          (id) => modelos.get(id) ?? null,
+          () => null,
+          new Set(),
+        )
+        const erroDoContato = Math.max(
+          ...contatos.map((o) =>
+            Math.abs(
+              core.posicaoNoMundo(elevada, o, fonteDoApoio).y - o.transformacao.posicao.y - 3,
+            ),
+          ),
+        )
         // Manter na imagem a configuração de apoio realmente conferida acima.
         d.caminhos[d.caminhos.length - 1] = cp
         caminhos.definir(
@@ -228,6 +265,9 @@ try {
           comparacoes,
           percursos,
           pilares: cp.pilares,
+          estadoElevado,
+          contatosConferidos: contatos.length,
+          erroDoContato,
           largura,
         })
       }
@@ -315,6 +355,9 @@ try {
   assert.deepEqual(erros, [])
   assert.deepEqual(resultado.estado.falhas, [])
   for (const r of resultado.resultados) {
+    assert.deepEqual(r.estadoElevado.falhas, [])
+    assert.ok(r.contatosConferidos > 0)
+    assert.ok(r.erroDoContato < 0.00001, `${r.id}: o contato não acompanhou a tampa real`)
     assert.deepEqual(r.comPilares.falhas, [])
     assert.ok(r.comparacoes.length > 0)
     assert.equal(

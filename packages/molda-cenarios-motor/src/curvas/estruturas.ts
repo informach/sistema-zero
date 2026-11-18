@@ -3,9 +3,9 @@ import {
   type DocumentoDeCenario,
   estruturaDoCaminho,
   type FonteDeAlturas,
-  type PecaEstruturalDoCaminho,
   PilarSemSuperficie,
   pilarEntreSuperficies,
+  type SuperficieDeCaminho,
   type Transformacao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -72,7 +72,7 @@ export function montarEstrutura(
     precisaBase = caminho.tipo === 'ponte' && Boolean(caminho.pilares),
     consulta = precisaBase ? new MundoDoTeste(rigidas) : null,
     partes: PartePreparadaDeCaminho[] = [],
-    referencias = new Map<string, PecaEstruturalDoCaminho>(),
+    referencias = new Map<string, SuperficieDeCaminho>(),
     descartaveis: (() => void)[] = []
   let vertices = 0
   const preparados = new Map<string, ReturnType<typeof pilarEntreSuperficies>>(),
@@ -133,6 +133,16 @@ export function montarEstrutura(
           geometria = new BufferGeometry()
         descartaveis.push(() => geometria.dispose())
         if (!preparado) throw Error('A superfície do pilar precisa ser preparada antes do desenho')
+        referencias.set(p.chave, {
+          ...p,
+          perfilVertical: (x, z) => ({
+            inferior: altura(x, z),
+            superior: preparado.alturaSuperiorEm({
+              x: x - origemDoPilar.x,
+              z: z - origemDoPilar.z,
+            }),
+          }),
+        })
         for (const [nome, a] of Object.entries(preparado.atributos))
           geometria.setAttribute(nome, new BufferAttribute(a.valores, a.itemSize))
         geometria.computeVertexNormals()

@@ -1,0 +1,13 @@
+{
+  "terreno": true,
+  "png16": true,
+  "agua": true,
+  "caminhos": true,
+  "workers": [
+    "/assets/terreno.worker-C5TkUF-T.js",
+    "/assets/terreno.worker-C5TkUF-T.js",
+    "/assets/agua.worker-BMJF0kXj.js",
+    "/assets/caminho.worker-iuyJL_mv.js"
+  ],
+  "erros": []
+}

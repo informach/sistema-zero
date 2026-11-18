@@ -106,11 +106,15 @@ export function posicaoNoMundo(
         (fonte?.parteDoCaminho &&
           o.apoio.parte &&
           !fonte.parteDoCaminho(caminho.id, o.apoio.parte)) ||
-        (caminho.acabamento && o.apoio.parte?.startsWith('pilar/') && !fonte?.parteDoCaminho)
+        (o.apoio.parte?.startsWith('pilar/') && !fonte?.parteDoCaminho)
       )
         return { ...p }
       const parte = superficieDoCaminho(doc, caminho.id, o.apoio.parte, fonte),
         q = transformarPonto(o.apoio.contato, parte.transformacao)
+      if (parte.perfilVertical) {
+        const { inferior, superior } = perfilVertical(parte, q)
+        q.y = inferior + (o.apoio.contato.y + 0.5) * (superior - inferior)
+      }
       if (parte.noTerreno) q.y += alturaDoChao(doc.base, q.x, q.z, fonte)
       return { x: q.x, y: q.y + o.apoio.deslocamento + elevacaoDoVolume(doc, o), z: q.z }
     }
@@ -167,7 +171,7 @@ function superficieDoCaminho(
   if (!caminho) throw new CenarioInvalido([`Apoio ausente: ${id}`])
   // A fonte do palco reutiliza as partes já usadas no desenho, inclusive a base real de
   // um pilar em GLB arqueado. Consultas puras sem esse cache usam o mesmo plano numérico.
-  const parte = fonte?.parteDoCaminho
+  const parte: import('./terreno').SuperficieDeCaminho | null | undefined = fonte?.parteDoCaminho
     ? fonte.parteDoCaminho(id, chave)
     : estruturaDoCaminho(
         caminho,
@@ -186,6 +190,20 @@ function superficieDoCaminho(
   )
     throw new CenarioInvalido(['A superfície do caminho tem uma transformação inválida'])
   return parte
+}
+
+function perfilVertical(
+  superficie: import('./terreno').SuperficieDeCaminho,
+  ponto: { x: number; z: number },
+) {
+  const perfil = superficie.perfilVertical!(ponto.x, ponto.z)
+  if (
+    !Number.isFinite(perfil.inferior) ||
+    !Number.isFinite(perfil.superior) ||
+    perfil.superior <= perfil.inferior + 1e-8
+  )
+    throw new CenarioInvalido(['A superfície do pilar não oferece um perfil vertical válido'])
+  return perfil
 }
 
 /** Reflexão é a própria inversa. O contato permanece no espaço original do GLB. */
@@ -211,15 +229,22 @@ export function apoioNaSuperficie(
   parte?: string,
 ): InstanciaDeCenario['apoio'] {
   if (doc.caminhos?.some((c) => c.id === id)) {
+    if (parte?.startsWith('pilar/') && !fonte?.parteDoCaminho)
+      throw new CenarioInvalido(['Carregue as tampas reais do pilar antes de criar o contato'])
     const superficie = superficieDoCaminho(doc, id, parte, fonte),
       q = { ...ponto }
     if (superficie.noTerreno) q.y -= alturaDoChao(doc.base, q.x, q.z, fonte)
+    const contato = destransformarPonto(q, superficie.transformacao)
+    if (superficie.perfilVertical) {
+      const { inferior, superior } = perfilVertical(superficie, q)
+      contato.y = (q.y - inferior) / (superior - inferior) - 0.5
+    }
     return {
       tipo: 'objeto',
       objeto: id,
       deslocamento: 0,
       parte,
-      contato: destransformarPonto(q, superficie.transformacao),
+      contato,
     }
   }
   if (parte) throw new CenarioInvalido(['Parte de caminho aplicada a outro tipo de objeto'])

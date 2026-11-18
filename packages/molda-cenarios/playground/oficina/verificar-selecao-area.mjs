@@ -2,8 +2,11 @@ import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { esperarConsulta } from './esperar-consulta.mjs'
 
 const saida = resolve(process.argv[2] ?? 'output/cenarios-reforma/lote3-selecao-area')
+const ambiente = process.env.CENARIOS_QA_AMBIENTE === '1'
+const raiz = resolve(import.meta.dirname, '../../../..')
 mkdirSync(saida, { recursive: true })
 const navegador = await chromium.launch({ channel: 'chrome', headless: true })
 const resultados = []
@@ -29,48 +32,102 @@ try {
       if (m.type() === 'error') erros.push(m.text())
     })
     await p.goto(`http://127.0.0.1:4541/?vazio=1&tema=${tema}`)
+    await p.waitForLoadState('networkidle')
     await p.waitForFunction(() => window.__cenarios)
-    const id = await p.evaluate(async () => {
-      const host = window.__cenarios.host,
-        mundo = await host.criarMundo('conta', 'Seleção por área')
-      const c = await host.criarCenario(mundo.id, 'Retângulo e laço')
-      const documento = (await host.abrirCenario(c.id)).documento
-      documento.formas = [
-        { id: 'f', nome: 'Caixa', tipo: 'caixa', largura: 1.2, altura: 1.2, comprimento: 1.2 },
-      ]
-      documento.camadas = [
-        { id: 'fechada', nome: 'Trancados', bloqueado: true, oculto: false },
-        { id: 'oculta', nome: 'Ocultos', bloqueado: false, oculto: true },
-      ]
-      documento.instancias = [
-        ['A', -4, 0, null],
-        ['B', 4, 0, null],
-        ['C', 0, 4, 'oculta'],
-        ['D', 0, -4, 'fechada'],
-      ].map(([id, x, z, camada]) => ({
-        id,
-        nome: id,
-        modelo: 'f',
-        camada,
-        grupo: null,
-        bloqueado: false,
-        oculto: false,
-        colisao: 'caixa',
-        apoio: { tipo: 'absoluto' },
-        transformacao: {
-          posicao: { x, y: 0, z },
-          rotacao: { x: 0, y: 0, z: 0 },
-          escala: { x: 1, y: 1, z: 1 },
-        },
-      }))
-      await host.editarCenario(
-        c.id,
-        0,
-        [{ tipo: 'cenario.restaurar', documento }],
-        crypto.randomUUID(),
-      )
-      return c.id
-    })
+    const id = await p.evaluate(
+      async ({ ambiente, coreUrl }) => {
+        const host = window.__cenarios.host,
+          mundo = await host.criarMundo('conta', 'Seleção por área')
+        const c = await host.criarCenario(mundo.id, 'Retângulo e laço')
+        const documento = (await host.abrirCenario(c.id)).documento
+        documento.formas = [
+          { id: 'f', nome: 'Caixa', tipo: 'caixa', largura: 1.2, altura: 1.2, comprimento: 1.2 },
+        ]
+        documento.camadas = [
+          { id: 'fechada', nome: 'Trancados', bloqueado: true, oculto: false },
+          { id: 'oculta', nome: 'Ocultos', bloqueado: false, oculto: true },
+        ]
+        documento.instancias = [
+          ['A', -4, 0, null],
+          ['B', 4, 0, null],
+          ['C', 0, 4, 'oculta'],
+          ['D', 0, -4, 'fechada'],
+        ].map(([id, x, z, camada]) => ({
+          id,
+          nome: id,
+          modelo: 'f',
+          camada,
+          grupo: null,
+          bloqueado: false,
+          oculto: false,
+          colisao: 'caixa',
+          apoio: { tipo: 'absoluto' },
+          transformacao: {
+            posicao: { x, y: 0, z },
+            rotacao: { x: 0, y: 0, z: 0 },
+            escala: { x: 1, y: 1, z: 1 },
+          },
+        }))
+        if (ambiente) {
+          const core = await import(coreUrl)
+          documento.caminhos = [
+            core.CaminhoSchema.parse({
+              id: 'Via',
+              nome: 'Via',
+              tipo: 'trilha',
+              grupo: null,
+              oculto: false,
+              bloqueado: false,
+              acabamento: null,
+              largura: 1,
+              pontos: [
+                { x: -5, z: 2 },
+                { x: -3, z: 2 },
+              ],
+            }),
+          ]
+          documento.aguas = [
+            core.AguaSchema.parse({
+              id: 'Lago',
+              nome: 'Lago',
+              tipo: 'lago',
+              grupo: null,
+              oculto: false,
+              bloqueado: false,
+              modelo: null,
+              centro: { x: 4, z: 2 },
+              giro: 0,
+              escala: 1,
+              nivel: 0.2,
+              profundidade: 1,
+              contorno: [
+                { x: -1, z: -1 },
+                { x: 1, z: -1 },
+                { x: 1, z: 1 },
+                { x: -1, z: 1 },
+              ],
+              recorte: [
+                { x: -1, z: -1 },
+                { x: 1, z: -1 },
+                { x: 1, z: 1 },
+                { x: -1, z: 1 },
+              ],
+            }),
+          ]
+        }
+        await host.editarCenario(
+          c.id,
+          0,
+          [{ tipo: 'cenario.restaurar', documento }],
+          crypto.randomUUID(),
+        )
+        return c.id
+      },
+      {
+        ambiente,
+        coreUrl: `/@fs/${resolve(raiz, 'packages/molda-cenarios-core/src/v2/index.ts').replaceAll('\\', '/')}`,
+      },
+    )
     const ler = () => p.evaluate(async (id) => window.__cenarios.host.abrirCenario(id), id)
     const espaco = p.getByRole('combobox', { name: 'De quem são', exact: true })
     await espaco.selectOption('equipe')
@@ -88,11 +145,14 @@ try {
     const conferir = async (esperados) => {
       await p.getByRole('button', { name: 'Objetos e camadas', exact: true }).click()
       const ids = []
-      for (const id of ['A', 'B', 'C', 'D']) {
+      for (const id of ['A', 'B', 'C', 'D', ...(ambiente ? ['Via', 'Lago'] : [])]) {
         const linha = p.getByRole('button', { name: `Escolher objeto ${id}`, exact: true })
         if ((await linha.getAttribute('aria-pressed')) === 'true') ids.push(id)
       }
-      assert.deepEqual(ids, esperados)
+      const todos = [...esperados]
+      if (ambiente && esperados.includes('A')) todos.push('Via')
+      if (ambiente && esperados.includes('B')) todos.push('Lago')
+      assert.deepEqual(ids, todos)
       await fecharPainel()
       assert.equal((await ler()).revisao, original.revisao)
       assert.deepEqual((await ler()).documento, original.documento)
@@ -217,6 +277,38 @@ try {
     )
     await conferir(['A', 'B'])
     await p.screenshot({ path: resolve(saida, `selecao-${tema}-${largura}.png`) })
+    if (ambiente) {
+      await p.keyboard.press('Control+d')
+      await esperarConsulta(
+        p,
+        async (id) =>
+          (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 2,
+        id,
+      )
+      await p.getByText('Guardado', { exact: true }).waitFor()
+      const duplicado = await ler()
+      assert.equal(duplicado.documento.instancias.length, 6)
+      assert.equal(duplicado.documento.aguas.length, 2)
+      await p.keyboard.press('Delete')
+      await esperarConsulta(
+        p,
+        async (id) =>
+          (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 1,
+        id,
+      )
+      await p.getByText('Guardado', { exact: true }).waitFor()
+      const removido = await ler()
+      assert.equal(removido.documento.instancias.length, 4)
+      assert.equal(removido.documento.aguas.length, 1)
+      await p.keyboard.press('Control+z')
+      await esperarConsulta(
+        p,
+        async (id) =>
+          (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 2,
+        id,
+      )
+      await p.getByText('Guardado', { exact: true }).waitFor()
+    }
     assert.deepEqual(erros, [])
     resultados.push({
       tema,
@@ -230,6 +322,8 @@ try {
       semRevisaoAutoral: true,
       toqueEmulado: largura === 390,
       cancelamentoPorSegundoToque: largura === 390,
+      caminhosEAgua: ambiente,
+      duplicarApagarDesfazerEscolhaMista: ambiente,
       erros,
     })
     await contexto.close()

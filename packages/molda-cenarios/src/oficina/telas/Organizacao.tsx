@@ -60,7 +60,7 @@ export function Organizacao({
       { tipo: 'elementos.organizar', ids: raizesDaSelecao(documento, ids), destino: { grupo } },
     ])
   const escolher = (id: string, somar: boolean) => {
-    const descendentes = indice.descendentes(id),
+    const descendentes = indice.descendentesSelecionaveis(id),
       conjunto = new Set(selecao)
     if (!somar && !somarSelecao) {
       selecionar(descendentes, id)

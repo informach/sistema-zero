@@ -384,5 +384,18 @@ export function pilarEntreSuperficies(
       .filter((f) => dentro(centro, f.planos))
       .map((f) => f.a * centro.x + f.b * centro.z + f.c)
   if (!alturasCentrais.length) throw Error('A tampa do pilar está sem referência central')
-  return { atributos, contato: tampa.contato, alturaNoCentro: Math.min(...alturasCentrais) }
+  return {
+    atributos,
+    contato: tampa.contato,
+    alturaNoCentro: Math.min(...alturasCentrais),
+    /** Mesmas faces da tampa, inclusive os fechamentos entre tábuas. */
+    alturaSuperiorEm(ponto: PontoNoChao) {
+      let altura = Infinity
+      for (const f of capFaces)
+        if (dentro(ponto, f.planos)) altura = Math.min(altura, f.a * ponto.x + f.b * ponto.z + f.c)
+      if (!Number.isFinite(altura))
+        throw new PilarSemSuperficie('O contato está fora da tampa do pilar')
+      return altura
+    },
+  }
 }

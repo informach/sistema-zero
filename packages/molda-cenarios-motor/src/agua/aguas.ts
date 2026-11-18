@@ -238,6 +238,10 @@ export class AguasDoPalco {
   consultasDoTeste(): ReadonlyMap<string, ConsultaDeAgua> {
     return new Map([...this.entradas].map(([id, e]) => [id, e.consulta]))
   }
+  limitesDo(id: string, destino: Box3): Box3 {
+    const entrada = this.entradas.get(id)
+    return entrada ? destino.copy(entrada.caixa) : destino.makeEmpty()
+  }
   pontoSobRaio(raio: Raycaster) {
     this.grupo.updateWorldMatrix(true, true)
     let resultado: { id: string; ponto: Vector3; distancia: number } | null = null
