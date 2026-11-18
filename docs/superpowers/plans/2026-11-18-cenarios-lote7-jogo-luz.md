@@ -75,4 +75,4 @@
 
 ## Estado atual
 
-**Lote 7 aberto, somente 7.1 em execução.** Lotes 0–6 fechados localmente. Nenhuma entrega do lote 7 será considerada concluída apenas pelo contrato de dados. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 aberto, somente 7.1 em execução.** Contratos, consultas e fragmento puro implementados e verificados no primeiro [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-contratos-consultas.md); revisão de vínculos/limites e conclusão de 7.1 ainda pendentes. Lotes 0–6 fechados localmente. Nenhuma entrega do lote 7 será considerada concluída apenas pelo contrato de dados. Não há autorização nova de produção ou abertura a membros.

@@ -21,6 +21,7 @@ import {
   type TransformacaoSchema,
 } from './entidades-schema'
 import { FormaDeCenarioSchema } from './formas'
+import { IluminacaoSchema } from './iluminacao'
 import { BaseDeTerrenoSchema } from './terreno'
 
 export * from './entidades-schema'
@@ -59,7 +60,7 @@ export const BaseSchema = z.discriminatedUnion('tipo', [
     .strict(),
 ])
 
-export const IluminacaoSchema = z.object({ hora: z.number().finite().min(0).max(24) }).strict()
+export { IluminacaoSchema } from './iluminacao'
 
 export const DocumentoDeCenarioSchema = z
   .object({

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, VetorSchema } from '../documento'
+import { ConfiguracaoDeMarcadorSchema } from './marcadores-schema'
 import { AparenciaDaAguaSchema, EncaixeDoModeloDeAguaSchema } from './parametros-de-agua'
 import {
   ChaveDeParteDeCaminhoSchema,
@@ -377,5 +378,6 @@ export const MarcadorSchema = entidade
     /** Verdadeiro: a altura acompanha o chão; `posicao.y` passa a ser o deslocamento. */
     noChao: z.boolean(),
     objeto: id.nullable(),
+    configuracao: ConfiguracaoDeMarcadorSchema.optional(),
   })
   .strict()

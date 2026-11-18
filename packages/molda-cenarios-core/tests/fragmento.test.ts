@@ -208,7 +208,7 @@ test('colagem grande é uma única intenção, com orçamento e inversão atômi
   expect(() => aplicar(destino, [{ ...c, ponto: { x: Number.NaN, y: 0, z: 0 } }])).toThrow()
 })
 
-test('fragmentos recusam vínculos externos, ciclo e pasta que mistura elementos ainda fora do recorte', () => {
+test('fragmentos recusam vínculos externos e ciclos, conservando marcadores de pastas mistas', () => {
   const doc = cena(),
     f = capturar(doc)
   const invalido = structuredClone(f)
@@ -230,7 +230,7 @@ test('fragmentos recusam vínculos externos, ciclo e pasta que mistura elementos
       objeto: null,
     },
   ]
-  expect(() => capturar(doc)).toThrow('ainda não podem')
+  expect(capturar(doc).marcadores).toEqual(doc.marcadores)
   expect(
     () =>
       aplicar(criarDocumentoVazio('d', 'D'), [

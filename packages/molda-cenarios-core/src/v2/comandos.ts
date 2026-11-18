@@ -356,6 +356,7 @@ export function executarLote(
       case 'textura.remover':
         existente(d.texturas ?? [], c.id)
         if (
+          (d.iluminacao.ceu?.tipo === 'panorama' && d.iluminacao.ceu.textura === c.id) ||
           d.instancias.some((o) => o.aparencia?.textura?.id === c.id) ||
           d.caminhos.some((caminho) => caminho.aparencia?.textura?.id === c.id) ||
           (d.base.tipo === 'terreno' &&
