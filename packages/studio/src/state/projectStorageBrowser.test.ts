@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join, resolve, sep } from 'node:path'
@@ -67,6 +67,9 @@ test('actual pagehide: large pending CAS + latest draft survive reload; two tabs
       Bun.readableStreamToText(child.stdout),
       Bun.readableStreamToText(child.stderr),
     ])
+    await mkdir('.cache/mission', { recursive: true })
+    const mode = process.env.STUDIO_STORAGE_EXIT_FAULT === 'abort' ? 'aborted' : 'normal'
+    await writeFile(`.cache/mission/storage-driver-${browser}-${mode}.txt`, `${output}\n${error}`)
     if (code !== 0) throw new Error(`${output}\n${error}`)
     for (const name of browser === 'all' ? ['chromium', 'webkit'] : [browser])
       expect(output).toContain(`pass ${name}`)

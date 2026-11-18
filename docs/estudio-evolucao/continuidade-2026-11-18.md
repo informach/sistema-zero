@@ -210,3 +210,38 @@ bunx tsc --noEmit
 
 O workflow executa o caso normal Linux antes da suíte e o caso de aborto em
 ambos os SOs, conserva evidências separadas e não reduz a suíte isolada completa.
+
+
+## Integração remota e qualificação subsequente
+
+Origin/staging avançou até bfb24122c (45 commits); foi integrado na branch da
+missão pelo merge c8a3bc9f2, sem conflitos. Não houve merge na staging local ou
+remota, deploy ou edição autoral das frentes Pinta/Molda. O relatório de
+integração delimita os contratos revisados, sem alegar revisão dos 538 arquivos.
+O fingerprint canônico do runtime foi regenerado e --check passou; requer nova
+imagem no GitHub. Os quatro E2Es de cenas desktop/toque, 23 testes map-2d,
+10 contratos Pinta e o módulo real Pygame-ce 2.5.7 passaram localmente.
+
+A revisão 9875bcabe conserva erro de acesso negado ao localStorage, para não
+confundir cópia inacessível com ausente e abrir uma revisão velha sem aviso.
+
+O run 44397955661 aprovou contratos Linux completos e typecheck, runtime
+hospedado, auditoria e Firefox/WebKit. Windows contracts falhou no encerramento
+nativo do helper WebKit, após confirmar todas as revisões. A causa foi reproduzida
+localmente e o helper agora é explicitamente possuído/terminado pela API pública
+do Playwright; não aumentamos o prazo nem reduzimos as asserções. Consultar
+`docs/qa/2026-11-18-studio-webkit-test-process.md`. A aprovação Linux desse SHA
+não qualifica automaticamente o merge ou a revisão de acesso negado.
+
+Retomar pelos jobs do SHA mais recente na PR273 e preservar o bloqueio global.
+R1, R2, R4, R5 e etapas profissionais abertas não desaparecem com esses resultados.
+
+
+Qualificação local final após corrigir a ordem de terminação do helper:
+376 testes de estado/persistência, zero falhas, 2075 asserções, 35,35 s;
+typecheck após integração aprovado. Três repetições normais e três com aborto
+passaram (144 recargas, 12 conflitos entre abas, seis diálogos de quota).
+O primeiro arranjo de teardown ainda falhou, e foi substituído: não fechar o
+último contexto WebKit Windows antes de terminar sua árvore pelo BrowserServer.
+Esse processo pertence exclusivamente ao laboratório. O relatório preserva
+as tentativas reprovadas e não afirma correção do WebKit nativo.

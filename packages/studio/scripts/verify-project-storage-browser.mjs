@@ -17,7 +17,27 @@ for (const [name, engine] of [
   ['webkit', webkit],
 ]) {
   if (selected !== 'all' && selected !== name) continue
-  const browser = await engine.launch({ headless: true })
+  const started = performance.now()
+  const phase = (label) =>
+    process.stdout.write(
+      `${JSON.stringify({ engine: name, phase: label, elapsedMs: Math.round(performance.now() - started) })}\n`,
+    )
+  phase('launching')
+  // Windows WebKit can finish all assertions and close its contexts, then hang
+  // in native graceful shutdown. Own the disposable test process explicitly.
+  // Termination happens only after the recovery assertions; it is not a claim
+  // that a learner's browser exits gracefully or that pending writes persisted.
+  const ownedServer =
+    process.platform === 'win32' && name === 'webkit'
+      ? await engine.launchServer({ headless: true, host: '127.0.0.1' })
+      : null
+  const browser = ownedServer
+    ? await engine.connect(ownedServer.wsEndpoint()).catch(async (error) => {
+        await ownedServer.kill()
+        throw error
+      })
+    : await engine.launch({ headless: true })
+  phase('launched')
   const lifecycleSamples = []
   try {
     const context = await browser.newContext()
@@ -61,6 +81,7 @@ for (const [name, engine] of [
         `exit-${round}`,
         JSON.stringify({ engine: name, round, ...observed }),
       )
+      phase(`reload-${round}-verified`)
     }
     const first = await context.newPage(),
       second = await context.newPage()
@@ -78,6 +99,7 @@ for (const [name, engine] of [
       (await second.evaluate(() => window.storageHarness.read())).text.content,
       'first-wins',
     )
+    phase('two-tabs-verified')
     // Chromium exposes the native beforeunload dialog in headless automation.
     // Exercise a real trusted click: synthetic evaluation alone has no sticky activation.
     if (name === 'chromium') {
@@ -104,12 +126,30 @@ for (const [name, engine] of [
       assert.equal(retained.text.content, 'keep this unsaved revision')
       assert.equal(retained.dirty, true)
       assert.equal(typeof retained.error, 'string')
+      phase('quota-dialog-verified')
     }
-    process.stdout.write(`closing context ${name}\n`)
-    await context.close()
+    if (ownedServer) {
+      // Keep its final context alive until process-tree termination. Closing the
+      // last Windows WebKit context can exit the parent first, leaving its network
+      // process alive with inherited pipes; a subsequent root-PID kill cannot own
+      // that orphan. All persistence assertions have already completed above.
+      phase('context-owned-by-test-process')
+    } else {
+      process.stdout.write(`closing context ${name}\n`)
+      await context.close()
+      phase('context-closed')
+    }
   } finally {
     process.stdout.write(`closing browser ${name}\n`)
-    await browser.close()
+    if (ownedServer) {
+      await ownedServer.kill()
+      const ownedProcess = ownedServer.process()
+      assert.ok(ownedProcess.exitCode !== null || ownedProcess.signalCode !== null)
+      phase('owned-test-process-terminated')
+    } else {
+      await browser.close()
+      phase('browser-closed')
+    }
   }
   process.stdout.write(
     `pass ${name}: 12 immediate reloads + two independent tabs; browser closed\n`,

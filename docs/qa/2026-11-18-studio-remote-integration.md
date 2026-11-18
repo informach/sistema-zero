@@ -21,7 +21,7 @@ Isso não significa revisão completa dos 538 arquivos de outras frentes.
 
 - Adaptador map-2d: 23 testes, 6248 asserções, zero falhas.
 - Contratos Pinta no core: 10 testes, 147 asserções, zero falhas.
-- Playwright pinta-scenes: quatro fluxos, desktop/toque, todos aprovados em 21,6 s.
+- Playwright pinta-scenes: quatro fluxos, desktop/toque emulado, todos aprovados em 21,6 s.
   Exercitam importar/editar/desfazer/refazer/reabrir, renderização Phaser,
   deslocamento, colisões e portas. Não são prova de streaming de mundos grandes.
 - Pygame-ce real 2.5.7, SDL 2.32.10, Python 3.13.17, ambiente virtual isolado:
