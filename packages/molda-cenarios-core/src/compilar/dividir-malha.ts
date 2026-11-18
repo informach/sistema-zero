@@ -9,6 +9,7 @@ const MAX_BYTES_DA_FONTE = LIMITES_DA_EXPORTACAO.malha.bytesDaFonte,
 export interface MalhaParaExportacao {
   atributos: Record<string, { itemSize: number; valores: Float32Array<ArrayBuffer> }>
   indices: Uint16Array<ArrayBuffer>
+  regiao?: number
 }
 
 /** Atributos numéricos já decodificados; o adaptador resolve normalização e pose antes daqui.
@@ -17,6 +18,8 @@ export function dividirMalhaParaExportacao(
   malha: MalhaParaRecorte,
   limite: number = MAX_VERTICES_POR_MALHA,
   orcamentoBytes: number = MAX_BYTES_DA_FONTE,
+  /** Triângulos consecutivos da mesma região compartilham partes; não há reordenação implícita. */
+  regioes?: ArrayLike<number>,
 ): MalhaParaExportacao[] {
   if (!Number.isInteger(limite) || limite < 3 || limite > MAX_VERTICES_POR_MALHA)
     throw Error('O limite da malha precisa ficar entre 3 e 65.000 vértices.')
@@ -55,6 +58,13 @@ export function dividirMalhaParaExportacao(
   )
     throw Error('A fonte da malha é grande demais para o orçamento de exportação.')
   const validada = conferirMalhaParaRecorte(malha)
+  if (regioes) {
+    if (regioes.length !== totalIndices / 3)
+      throw Error('As regiões precisam corresponder aos triângulos da malha.')
+    for (let i = 0; i < regioes.length; i++)
+      if (!Number.isSafeInteger(regioes[i]) || regioes[i]! < 0 || regioes[i]! > 0xffffffff)
+        throw Error('Um identificador de região da malha é inválido.')
+  }
   for (const nome of nomes) {
     const a = malha.atributos[nome]!
     for (let i = 0; i < a.valores.length; i++)
@@ -66,7 +76,8 @@ export function dividirMalhaParaExportacao(
   const componentes = nomes.reduce((s, nome) => s + malha.atributos[nome]!.itemSize, 0)
   let originais: number[] = [],
     indices: number[] = [],
-    bytesGerados = 0
+    bytesGerados = 0,
+    regiao = regioes?.[0]
   const terminar = () => {
     if (!indices.length) return
     if (partes.length >= LIMITES_DA_EXPORTACAO.malha.partes)
@@ -84,12 +95,20 @@ export function dividirMalhaParaExportacao(
         return [nome, { itemSize: a.itemSize, valores }]
       }),
     )
-    partes.push({ atributos, indices: Uint16Array.from(indices) })
+    partes.push({
+      atributos,
+      indices: Uint16Array.from(indices),
+      ...(regiao !== undefined ? { regiao } : {}),
+    })
     mapa.clear()
     originais = []
     indices = []
   }
   for (let i = 0; i < totalIndices; i += 3) {
+    if (regioes && regioes[i / 3] !== regiao) {
+      terminar()
+      regiao = regioes[i / 3]
+    }
     const triangulo = [0, 1, 2].map((c) => (validada.indices ? validada.indices[i + c]! : i + c)),
       novos = new Set(triangulo.filter((v) => !mapa.has(v))).size
     if (mapa.size + novos > limite || indices.length + 3 > MAX_INDICES_POR_MALHA) terminar()

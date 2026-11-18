@@ -1,9 +1,30 @@
 import { expect, test } from 'bun:test'
 import { lerCenaCompilada } from '../src/compilar/schema'
-import { RotaCompiladaSchema } from '../src/compilar/schema-metadados'
+import { RotaCompiladaSchema, TerrenoCompiladoSchema } from '../src/compilar/schema-metadados'
+import { AguaSchema } from '../src/v2'
 
 const matriz = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 const volume = { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }
+
+test('terreno compilado conserva limites e domínio da autoria', () => {
+  const t = {
+    origem: { x: 0, z: 0 },
+    passo: 1,
+    colunas: 64,
+    linhas: 64,
+    min: -1,
+    max: 1,
+    fundo: 0,
+    cobertura: 'grade',
+    pecas: [],
+    recortes: [],
+    alturas: 'terreno/alturas.bin',
+    pngAlturas: 'terreno/alturas.png',
+  }
+  expect(TerrenoCompiladoSchema.safeParse(t).success).toBe(true)
+  for (const patch of [{ fundo: 2 }, { origem: { x: 100001, z: 0 } }, { colunas: 4096, passo: 32 }])
+    expect(TerrenoCompiladoSchema.safeParse({ ...t, ...patch }).success).toBe(false)
+})
 function cena() {
   return {
     formato: 'molda-cena-compilada',
@@ -39,6 +60,32 @@ function cena() {
   }
 }
 
+test('restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes', () => {
+  const d = cena()
+  expect(() =>
+    lerCenaCompilada({ ...d, nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })) }),
+  ).toThrow(/efeito de água/)
+  const agua = {
+    ...d,
+    entidades: d.entidades.map((e) => ({ ...e, tipo: 'agua' })),
+    arquivos: d.arquivos.map((a) => ({ ...a, papel: 'agua' })),
+    nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })),
+    aguas: [
+      AguaSchema.parse({
+        id: 'casa',
+        nome: 'Mar',
+        grupo: null,
+        oculto: false,
+        bloqueado: false,
+        tipo: 'mar',
+        nivel: 0,
+      }),
+    ],
+  }
+  expect(lerCenaCompilada(agua).nos[0]!.efeito).toBe('agua')
+  expect(() => lerCenaCompilada({ ...agua, aguas: [] })).toThrow(/efeito de água/)
+})
+
 test('leitor portátil conserva revisão, matrizes e propriedades sem interpretar código', () => {
   const d = cena(),
     antes = JSON.stringify(d),
@@ -47,6 +94,22 @@ test('leitor portátil conserva revisão, matrizes e propriedades sem interpreta
   expect(r.nos[0]!.matriz).toEqual(matriz)
   expect(r.entidades[0]!.propriedades).toEqual({ uso: 'oficina' })
   expect(JSON.stringify(d)).toBe(antes)
+})
+
+test('entidades conservam âncoras e organização, mas ocultas não criam desenho ou colisão', () => {
+  const d = cena(),
+    comAncora = {
+      ...d,
+      entidades: d.entidades.map((e) => ({ ...e, matriz: [...matriz], volume })),
+    },
+    r = lerCenaCompilada(comAncora)
+  expect(r.entidades[0]!.matriz).toEqual(matriz)
+  const oculta = {
+    ...comAncora,
+    entidades: comAncora.entidades.map((e) => ({ ...e, oculto: true })),
+  }
+  expect(() => lerCenaCompilada(oculta)).toThrow(/oculta|oculto/)
+  expect(lerCenaCompilada({ ...oculta, nos: [] }).entidades[0]!.oculto).toBe(true)
 })
 
 test('referência ausente ou arquivo/entidade repetidos não geram uma cena parcialmente válida', () => {

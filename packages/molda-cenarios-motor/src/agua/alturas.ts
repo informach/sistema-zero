@@ -1,7 +1,8 @@
-import type {
-  BaseDeTerreno,
-  CampoDeAlturas,
-  RegiaoDoCampo,
+import {
+  type BaseDeTerreno,
+  type CampoDeAlturas,
+  interpolarAlturasDaCelula,
+  type RegiaoDoCampo,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { DataTexture, FloatType, NearestFilter, RGBAFormat, Vector2 } from 'three'
 
@@ -91,16 +92,17 @@ uniform sampler2D mcnPecasDoFundo;
 ${this.paginas.map((_, i) => `uniform sampler2D mcnAlturas${i}; uniform vec2 mcnDimAlturas${i};`).join('\n')}
 float mcnAlturaDaAmostra(uvec2 p) {
   uint indice = p.y * (uint(mcnGradeDoFundo.x) + 1u) + p.x;
-  float pixel = float(indice / 4u);
+  uint pixel = indice / 4u;
   uint canal = indice % 4u;
   vec4 valores = vec4(0.0);
   ${this.paginas
     .map((p, i) => {
       const inicio = p.inicio / 4,
         pixels = p.largura * p.altura
-      return `${i ? 'else ' : ''}if (pixel < ${inicio + pixels}.0) {
-      float local = pixel - ${inicio}.0;
-      valores = texture2D(mcnAlturas${i}, (vec2(mod(local, mcnDimAlturas${i}.x), floor(local / mcnDimAlturas${i}.x)) + .5) / mcnDimAlturas${i});
+      return `${i ? 'else ' : ''}if (pixel < ${inicio + pixels}u) {
+      uint local = pixel - ${inicio}u;
+      uint largura = uint(mcnDimAlturas${i}.x);
+      valores = texelFetch(mcnAlturas${i}, ivec2(int(local % largura), int(local / largura)), 0);
     }`
     })
     .join('\n')}
@@ -185,6 +187,37 @@ float mcnAlturaDoFundo(vec2 mundo) {
         }
       }
     if (mudou || this.pecas.version === 0) this.pecas.needsUpdate = true
+  }
+
+  /** Mesmos Float32 e cobertura enviados ao shader; usado pelo acabamento portátil. */
+  alturaEm(x: number, z: number) {
+    if (this.descartado) throw Error('O mapa de profundidade da água já foi descartado.')
+    const b = this.base,
+      gx = (x - b.origem.x) / b.passo,
+      gz = (z - b.origem.z) / b.passo
+    if (!Number.isFinite(gx) || !Number.isFinite(gz))
+      throw Error('O ponto do fundo da água é inválido.')
+    if (gx < 0 || gz < 0 || gx > b.colunas || gz > b.linhas) return b.fundo
+    const coluna = Math.min(b.colunas / 64 - 1, Math.floor(gx / 64)),
+      linha = Math.min(b.linhas / 64 - 1, Math.floor(gz / 64))
+    if (this.dadosDasPecas[(linha * (b.colunas / 64) + coluna) * 4]! < 128) return b.fundo
+    const ix = Math.min(b.colunas - 1, Math.floor(gx)),
+      iz = Math.min(b.linhas - 1, Math.floor(gz)),
+      largura = b.colunas + 1,
+      i = iz * largura + ix,
+      ler = (indice: number) => {
+        const p = this.paginas.find((p) => indice >= p.inicio && indice < p.inicio + p.quantidade)
+        if (!p) throw Error('Falta uma página do fundo da água.')
+        return p.dados[indice - p.inicio]!
+      }
+    return interpolarAlturasDaCelula(
+      ler(i),
+      ler(i + 1),
+      ler(i + largura),
+      ler(i + largura + 1),
+      gx - ix,
+      gz - iz,
+    )
   }
 
   descartar() {

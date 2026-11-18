@@ -2,6 +2,11 @@ import { type AparenciaDaAgua, AparenciaDaAguaSchema } from '@sistemazero/molda-
 import { Color, DoubleSide, MeshStandardMaterial } from 'three'
 import type { AlturasDaAgua } from './alturas'
 
+const suave = (t: number) => {
+  const u = Math.max(0, Math.min(1, t))
+  return u * u * (3 - 2 * u)
+}
+
 export interface ContextoDoMaterialDeAgua {
   fundo: AlturasDaAgua | null
   plano?: number
@@ -14,6 +19,13 @@ export interface ContextoDoMaterialDeAgua {
 
 /** Material pronto e iluminado: ondas na normal, profundidade e espuma, sem alterar o nado. */
 export class MaterialDaAgua {
+  /** Albedo linear/alpha no instante zero, antes da iluminação. Não altera o nado. */
+  readonly amostrarEstatico: (
+    ponto: { x: number; y: number; z: number },
+    uvY: number,
+    profundidadeDoModelo: number | undefined,
+    saida: Float64Array,
+  ) => void
   readonly material = new MeshStandardMaterial({
     transparent: true,
     depthWrite: false,
@@ -39,6 +51,41 @@ export class MaterialDaAgua {
   ) {
     this.aparencia = AparenciaDaAguaSchema.parse(aparencia ?? {})
     const a = this.aparencia
+    const rasa = new Color(a.corRasa),
+      profunda = new Color(a.corProfunda),
+      espuma = new Color(a.espuma.cor)
+    this.amostrarEstatico = (p, uvY, porVertice, saida) => {
+      if (this.descartado) throw Error('O material da água já foi descartado.')
+      if (saida.length < 4 || ![p.x, p.y, p.z, uvY].every(Number.isFinite))
+        throw Error('A amostra estática da água é inválida.')
+      if (!fundo && plano === undefined && profundidadePorVertice && !Number.isFinite(porVertice))
+        throw Error('Falta a profundidade da superfície de água do modelo.')
+      const h = fundo
+          ? Math.max(0, p.y - fundo.alturaEm(p.x, p.z))
+          : plano !== undefined
+            ? Math.max(0, p.y - plano)
+            : profundidadePorVertice
+              ? Math.max(0, porVertice!)
+              : profundidade,
+        mistura = 1 - Math.exp(-h / a.profundidadeDeCor),
+        forcaEspuma =
+          a.espuma.largura > 0 ? (1 - suave(h / a.espuma.largura)) * a.espuma.intensidade : 0,
+        fios = movimento === 'queda' ? 0.94 + 0.06 * Math.sin(uvY * largura * 7) : 1
+      if (!Number.isFinite(h) || h < 0)
+        throw Error('A profundidade da amostra estática é inválida.')
+      for (let c = 0; c < 3; c++) {
+        const chave = c === 0 ? 'r' : c === 1 ? 'g' : 'b',
+          cor = rasa[chave] + (profunda[chave] - rasa[chave]) * mistura
+        saida[c] = (cor + (espuma[chave] - cor) * forcaEspuma) * fios
+      }
+      saida[3] =
+        h <= 0.001
+          ? 0
+          : this.material.opacity *
+            (a.opacidadeRasa + (a.opacidadeProfunda - a.opacidadeRasa) * mistura) *
+            suave(h / 0.04) *
+            fios
+    }
     this.animado =
       (a.ondas.altura > 0 && (a.ondas.velocidade > 0 || correnteza > 0)) || movimento === 'queda'
     const cabecalho = `
@@ -58,9 +105,9 @@ ${fundo?.glsl ?? ''}
         mcnEscalaDeCor: { value: a.profundidadeDeCor },
         mcnOpacidadeRasa: { value: a.opacidadeRasa },
         mcnOpacidadeProfunda: { value: a.opacidadeProfunda },
-        mcnAguaRasa: { value: new Color(a.corRasa) },
-        mcnAguaProfunda: { value: new Color(a.corProfunda) },
-        mcnCorEspuma: { value: new Color(a.espuma.cor) },
+        mcnAguaRasa: { value: rasa },
+        mcnAguaProfunda: { value: profunda },
+        mcnCorEspuma: { value: espuma },
         mcnLarguraEspuma: { value: a.espuma.largura },
         mcnForcaEspuma: { value: a.espuma.intensidade },
         mcnAlturaOnda: { value: a.ondas.altura },
@@ -106,7 +153,7 @@ normal = normalize(normal + (viewMatrix * vec4(mcnOndas * mcnAlturaOnda * 2.0, 0
       )
     }
     this.material.customProgramCacheKey = () =>
-      `mcn-agua-v1-${fundo?.paginas.map((p) => `${p.inicio}:${p.largura}:${p.altura}`).join('/') ?? 'sem-mapa'}-${plano !== undefined ? 'plano' : 'sem-plano'}-${profundidadePorVertice ? 'modelo' : 'sem-modelo'}-${movimento}`
+      `mcn-agua-v2-${fundo?.paginas.map((p) => `${p.inicio}:${p.largura}:${p.altura}`).join('/') ?? 'sem-mapa'}-${plano !== undefined ? 'plano' : 'sem-plano'}-${profundidadePorVertice ? 'modelo' : 'sem-modelo'}-${movimento}`
   }
   atualizar(segundos: number, movimentoReduzido: boolean) {
     if (!this.descartado && Number.isFinite(segundos))

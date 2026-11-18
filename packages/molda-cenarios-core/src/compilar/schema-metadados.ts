@@ -2,8 +2,13 @@ import { z } from 'zod'
 import { VistaDeCameraSchema } from '../v2/camera'
 import { IdentificadorDeCenarioSchema, PropriedadesSchema } from '../v2/entidades-schema'
 import { ConfiguracaoDeMarcadorSchema } from '../v2/marcadores-schema'
-import { poligonoSimples } from '../validacao'
-import { CaminhoCompiladoSchema, PontoCompiladoSchema } from './schema-arquivos'
+import { BaseDeTerrenoSchema } from '../v2/terreno'
+import {
+  CaminhoCompiladoSchema,
+  MatrizCompiladaSchema,
+  PontoCompiladoSchema,
+  VolumeCompiladoSchema,
+} from './schema-arquivos'
 
 export const EntidadeCompiladaSchema = z
   .object({
@@ -12,8 +17,13 @@ export const EntidadeCompiladaSchema = z
     tipo: z.enum(['objeto', 'grupo', 'montagem', 'agua', 'caminho', 'marcador']),
     grupo: IdentificadorDeCenarioSchema.nullable(),
     propriedades: PropriedadesSchema.optional(),
+    /** Âncora preservada mesmo quando a representação estática é agrupada no destino. */
+    matriz: MatrizCompiladaSchema.optional(),
+    volume: VolumeCompiladoSchema.optional(),
+    oculto: z.boolean().default(false),
   })
   .strict()
+export type EntidadeCompilada = z.infer<typeof EntidadeCompiladaSchema>
 export const RotaCompiladaSchema = z
   .object({
     pontos: z.array(PontoCompiladoSchema).min(2).max(16_384),
@@ -97,6 +107,7 @@ export const MarcadorCompiladoSchema = z
         message: 'A posição ou o campo de visão da câmera compilada é inconsistente.',
       })
   })
+export type MarcadorCompilado = z.infer<typeof MarcadorCompiladoSchema>
 const ponto2 = z
   .object({ x: z.number().finite().min(-1e9).max(1e9), z: z.number().finite().min(-1e9).max(1e9) })
   .strict()
@@ -124,12 +135,22 @@ export const TerrenoCompiladoSchema = z
   })
   .strict()
   .superRefine((t, ctx) => {
-    if (t.min >= t.max)
-      ctx.addIssue({
-        code: 'custom',
-        message: 'O terreno compilado tem intervalo de alturas inválido.',
-      })
-    if (t.recortes.some((p) => !poligonoSimples(p)))
-      ctx.addIssue({ code: 'custom', message: 'Um recorte do terreno compilado é inválido.' })
+    // Os mesmos limites/domínio da autoria, sem uma segunda definição de terreno.
+    const base = BaseDeTerrenoSchema.safeParse({
+      tipo: 'terreno',
+      origem: t.origem,
+      passo: t.passo,
+      colunas: t.colunas,
+      linhas: t.linhas,
+      min: t.min,
+      max: t.max,
+      fundo: t.fundo,
+      ...(t.cobertura === 'grade' ? { cobertura: 'grade' } : {}),
+      pecas: t.pecas.map((p) => ({ ...p, digest: '0'.repeat(64) })),
+      recortes: t.recortes,
+    })
+    if (!base.success)
+      for (const i of base.error.issues)
+        ctx.addIssue({ code: 'custom', message: i.message, path: i.path })
   })
 export type TerrenoCompilado = z.infer<typeof TerrenoCompiladoSchema>

@@ -75,7 +75,8 @@ export const CenaCompiladaSchema = z
       licencas = new Map(d.licencas.map((l) => [l.id, l])),
       texturas = new Map(d.texturas.map((t) => [t.id, t])),
       modelosFonte = new Set(d.fontes.modelos.map((m) => m.id)),
-      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id))
+      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id)),
+      aguasPresentes = new Set(d.aguas.map((a) => a.id))
     unicos(
       d.arquivos.map((a) => a.caminho.toLowerCase()),
       'arquivos',
@@ -128,7 +129,19 @@ export const CenaCompiladaSchema = z
     let malhas = 0
     for (const n of d.nos) {
       conferirEntidade(n.entidade)
+      if (n.entidade !== null && entidades.get(n.entidade)?.oculto)
+        falhar('Uma entidade oculta não pode produzir um nó visual no pacote.')
       const a = arquivos.get(n.arquivo)
+      if (
+        n.efeito === 'agua' &&
+        (n.entidade === null ||
+          entidades.get(n.entidade)?.tipo !== 'agua' ||
+          !aguasPresentes.has(n.entidade) ||
+          a?.papel !== 'agua')
+      )
+        falhar(
+          'O efeito de água precisa da entidade, parâmetros e arquivo de água correspondentes.',
+        )
       if (a?.mime !== 'model/gltf-binary' || a.papel === 'colisao')
         falhar(`O arquivo visual “${n.arquivo}” está ausente ou é incompatível.`)
       malhas += a?.malhas ?? 0
@@ -136,6 +149,8 @@ export const CenaCompiladaSchema = z
     if (malhas > 32768) falhar('A cena compilada tem malhas demais para ser carregada.')
     for (const c of d.colisoes) {
       conferirEntidade(c.entidade)
+      if (c.entidade !== null && entidades.get(c.entidade)?.oculto)
+        falhar('Uma entidade oculta não pode produzir colisão no pacote.')
       const a = arquivos.get(c.arquivo)
       if (a?.mime !== 'model/gltf-binary' || a.papel !== 'colisao')
         falhar(`O arquivo de colisão “${c.arquivo}” está ausente ou é incompatível.`)
@@ -162,6 +177,7 @@ export const CenaCompiladaSchema = z
     for (const m of d.marcadores) {
       if (entidades.get(m.id)?.tipo !== 'marcador')
         falhar('Um marcador não possui a entidade correspondente.')
+      if (entidades.get(m.id)?.oculto) falhar('Um marcador oculto não pode ser ativado no pacote.')
       conferirEntidade(m.objeto)
       if (
         m.objeto !== null &&
@@ -181,6 +197,8 @@ export const CenaCompiladaSchema = z
     for (const a of d.aguas) {
       if (entidades.get(a.id)?.tipo !== 'agua')
         falhar('Uma água não possui a entidade correspondente.')
+      if (a.oculto || entidades.get(a.id)?.oculto)
+        falhar('Uma água oculta não pode ser ativada no pacote.')
       if ((a.tipo === 'lago' || a.tipo === 'represa') && a.modelo) conferirModelo(a.modelo)
       pontos +=
         a.tipo === 'lago' || a.tipo === 'represa'
@@ -192,6 +210,8 @@ export const CenaCompiladaSchema = z
     for (const c of d.caminhos) {
       if (entidades.get(c.id)?.tipo !== 'caminho')
         falhar('Um caminho não possui a entidade correspondente.')
+      if (c.oculto || entidades.get(c.id)?.oculto)
+        falhar('Um caminho oculto não pode ser ativado no pacote.')
       if (c.acabamento) conferirModelo(c.acabamento)
       if (c.aparencia?.textura) conferirTexturaDeOrigem(c.aparencia.textura.id)
       pontos += c.pontos.length

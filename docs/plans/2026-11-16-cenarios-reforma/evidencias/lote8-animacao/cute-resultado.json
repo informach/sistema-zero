@@ -1,0 +1,84 @@
+{
+  "ref": {
+    "caminho": "modelos/cute-ensaio.glb",
+    "digest": "29f228b5228dca33a5cb000bfcff8b94eccfad7b5aea6970021f8cfadc36f758",
+    "bytes": 1551652,
+    "mime": "model/gltf-binary",
+    "papel": "modelo",
+    "malhas": 6,
+    "triangulos": 5810,
+    "verticesMaximos": 1706
+  },
+  "alturaOriginal": 1.1700404965322315,
+  "alturaCompilada": 1.1700404965322315,
+  "pecasOriginais": 6,
+  "pecasCompiladas": 6,
+  "clipes": [
+    "parado_relaxado",
+    "andar_frente",
+    "correr_frente",
+    "pulo_no_ar"
+  ],
+  "quadros": [
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 0.5375000238418579,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 1.0750000476837158,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "parado_relaxado",
+      "tempo": 2.1500000953674316,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.10000000149011612,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.20000000298023224,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "andar_frente",
+      "tempo": 0.4000000059604645,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.07916666567325592,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.15833333134651184,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "correr_frente",
+      "tempo": 0.3166666626930237,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.15833333134651184,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.3166666626930237,
+      "erroMaximoMetros": 0
+    },
+    {
+      "clipe": "pulo_no_ar",
+      "tempo": 0.6333333253860474,
+      "erroMaximoMetros": 0
+    }
+  ]
+}

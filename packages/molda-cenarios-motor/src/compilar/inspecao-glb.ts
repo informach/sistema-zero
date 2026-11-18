@@ -1,4 +1,8 @@
-import { inspectReferenceRaster, readGltfDocument } from '@sistemazero/molda/gltf'
+import {
+  inspectReferenceRaster,
+  normalizeGlbImagePadding,
+  readGltfDocument,
+} from '@sistemazero/molda/gltf'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import { conferirGlb, conferirImagemDeCenario } from '@sistemazero/molda-cenarios-core/v2'
 
@@ -24,9 +28,16 @@ const EXTENSOES_MATERIAIS = [
  * O teto de leitura compartilhado é 32 MiB por arquivo; o pacote pode conter várias partes. */
 export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: boolean } = {}) {
   conferirGlb(bytes)
-  const leitura = readGltfDocument(bytes, [], 'modelo.glb', {
-    acceptedRequiredExtensions: EXTENSOES_MATERIAIS,
-  })
+  // Entradas de outros exportadores podem descrever o padding junto da imagem.
+  // A conferência usa uma cópia canônica, mantendo bytes/digest originais na autoria.
+  const leitura = readGltfDocument(
+    opcoes.fonte ? normalizeGlbImagePadding(bytes) : bytes,
+    [],
+    'modelo.glb',
+    {
+      acceptedRequiredExtensions: EXTENSOES_MATERIAIS,
+    },
+  )
   if (leitura.status !== 'ready') throw Error('O GLB precisa ser autocontido.')
   const d = leitura.document
   for (const e of d.extensions.unhandled)
@@ -64,6 +75,14 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
     let partes = 0,
       tris = 0
     for (const p of m.primitives) {
+      if (
+        p.targets.some((t) =>
+          [...t.keys()].some((canal) => !['POSITION', 'NORMAL'].includes(canal)),
+        )
+      )
+        throw Error(
+          'Um canal de morph não pode ser preservado pelo leitor/exportador glTF instalado.',
+        )
       if (p.topology.kind !== 'triangles') throw Error('A compilação exige malhas de triângulos.')
       const indice = p.attributes.get('POSITION')
       if (indice === undefined) throw Error('Uma malha não possui posições.')

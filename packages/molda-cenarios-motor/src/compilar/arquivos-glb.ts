@@ -32,6 +32,14 @@ export async function gravarGlbCompilado(
     const g = m.geometry,
       posicao = g.getAttribute('position'),
       quantidade = g.index?.count ?? posicao?.count ?? 0
+    if (
+      Object.entries(g.morphAttributes).some(
+        ([nome, canais]) => canais?.length && !['position', 'normal'].includes(nome),
+      )
+    )
+      throw Error(
+        'O exportador glTF instalado preserva morphs de posição e normal; outro canal não pode ser omitido silenciosamente.',
+      )
     if (!posicao || posicao.count > 65_000 || quantidade > 390_000)
       throw Error('A geometria precisa ser dividida antes de gravar o GLB compilado.')
     if (

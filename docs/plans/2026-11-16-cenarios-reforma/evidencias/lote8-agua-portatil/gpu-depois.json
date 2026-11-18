@@ -1,0 +1,57 @@
+{
+  "casos": [
+    {
+      "colunas": 64,
+      "maxTextura": 128,
+      "linha": 32,
+      "paginas": [
+        {
+          "inicio": 0,
+          "largura": 33,
+          "altura": 33
+        }
+      ],
+      "amostras": 65,
+      "divergencias": []
+    },
+    {
+      "colunas": 128,
+      "maxTextura": 128,
+      "linha": 32,
+      "paginas": [
+        {
+          "inicio": 0,
+          "largura": 46,
+          "altura": 46
+        }
+      ],
+      "amostras": 129,
+      "divergencias": []
+    },
+    {
+      "colunas": 128,
+      "maxTextura": 32,
+      "linha": 64,
+      "paginas": [
+        {
+          "inicio": 0,
+          "largura": 32,
+          "altura": 32
+        },
+        {
+          "inicio": 4096,
+          "largura": 32,
+          "altura": 32
+        },
+        {
+          "inicio": 8192,
+          "largura": 7,
+          "altura": 7
+        }
+      ],
+      "amostras": 129,
+      "divergencias": []
+    }
+  ],
+  "erros": []
+}

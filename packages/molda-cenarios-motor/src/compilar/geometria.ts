@@ -6,13 +6,8 @@ import { BufferAttribute, BufferGeometry, type Matrix4 } from 'three'
 import { lerParteEstatica } from '../curvas/parte-estatica'
 import type { ParteDoModelo } from '../modelos'
 
-/** Materialização numérica estática. O dono de atores/skins deve seguir o caminho animável. */
-export function dividirParteEstatica(
-  parte: Pick<ParteDoModelo, 'geometria' | 'matriz'>,
-  mundo: Matrix4,
-  orcamentoBytes: number = LIMITES_DA_EXPORTACAO.malha.bytesDaSaida,
-): BufferGeometry[] {
-  const original = parte.geometria
+/** Preflight compartilhado antes de copiar fontes estáticas. */
+export function conferirGeometriaEstatica(original: BufferGeometry) {
   if (
     Object.values(original.morphAttributes).some((a) => a?.length) ||
     original.hasAttribute('skinIndex') ||
@@ -28,6 +23,15 @@ export function dividirParteEstatica(
     atributos.length > LIMITES_DA_EXPORTACAO.malha.atributos
   )
     throw Error('A geometria excede o orçamento de leitura da compilação.')
+}
+
+/** Materialização numérica estática. Atores/skins seguem o caminho animável. */
+export function dividirParteEstatica(
+  parte: Pick<ParteDoModelo, 'geometria' | 'matriz'>,
+  mundo: Matrix4,
+  orcamentoBytes: number = LIMITES_DA_EXPORTACAO.malha.bytesDaSaida,
+): BufferGeometry[] {
+  conferirGeometriaEstatica(parte.geometria)
   const leitura = lerParteEstatica(parte, mundo),
     saida: BufferGeometry[] = []
   try {

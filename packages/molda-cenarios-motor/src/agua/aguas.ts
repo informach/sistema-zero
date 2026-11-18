@@ -18,6 +18,7 @@ import {
   Vector3,
 } from 'three'
 import type { ModeloCarregado } from '../modelos'
+import type { SuperficieDoObjeto } from '../superficies'
 import type { TerrenoDoPalco } from '../Terreno'
 import type { FonteDeColisao } from '../teste/colisoes'
 import { MundoDoTeste } from '../teste/colisoes'
@@ -28,6 +29,11 @@ import { MaterialDaAgua } from './material'
 export interface EstadoDasAguas {
   carregando: number
   falhas: { id: string; nome: string; mensagem: string }[]
+}
+export interface ParteVisualDaAgua extends SuperficieDoObjeto {
+  lamina: boolean
+  solida: boolean
+  acabamento?: MaterialDaAgua
 }
 const METADADOS = new Set([
   'id',
@@ -237,6 +243,29 @@ export class AguasDoPalco {
   }
   consultasDoTeste(): ReadonlyMap<string, ConsultaDeAgua> {
     return new Map([...this.entradas].map(([id, e]) => [id, e.consulta]))
+  }
+  /** Leitura das mesmas peças, com papéis explícitos; dono/colisões continuam nesta classe. */
+  superficies(): ParteVisualDaAgua[] {
+    this.grupo.updateWorldMatrix(true, true)
+    const partes: ParteVisualDaAgua[] = []
+    for (const [id, e] of this.entradas) {
+      const solidos = new Set(e.solidos)
+      e.raiz.traverse((n) => {
+        const m = n as Mesh
+        if (!m.isMesh) return
+        const lamina = m.material === e.material.material
+        partes.push({
+          id,
+          geometria: m.geometry,
+          matriz: m.matrixWorld,
+          material: m.material,
+          lamina,
+          solida: solidos.has(m),
+          ...(lamina ? { acabamento: e.material } : {}),
+        })
+      })
+    }
+    return partes
   }
   limitesDo(id: string, destino: Box3): Box3 {
     const entrada = this.entradas.get(id)

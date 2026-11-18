@@ -123,6 +123,8 @@ export const NoCompiladoSchema = z
     arquivo: CaminhoCompiladoSchema,
     matriz: MatrizCompiladaSchema,
     volume: VolumeCompiladoSchema,
+    /** O runtime pode restaurar o material dinâmico pelos parâmetros da entidade. */
+    efeito: z.literal('agua').optional(),
   })
   .strict()
 export const ColisaoCompiladaSchema = z
