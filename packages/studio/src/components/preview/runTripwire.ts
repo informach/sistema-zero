@@ -6,8 +6,9 @@
  * vez: o projeto fica impossível de abrir. A marca quebra esse laço.
  *
  * - Ao começar a rodar um jogo, a marca do projeto é gravada.
- * - Ela sai quando o jogo dá sinal de vida (`HEARTBEATS_TO_TRUST` batimentos), quando para, ou
- *   quando o editor fecha direito. Numa aba congelada nada disso roda, e a marca fica.
+ * - Ela sai quando o jogo para ou o editor fecha direito. Sinais de vida não a removem:
+ *   um programa pode travar depois de vários segundos saudáveis. Numa aba congelada o
+ *   encerramento não roda, e a marca fica.
  * - Ao abrir um projeto com a marca, a prévia NÃO roda sozinha: espera o Rodar.
  *
  * Mora no `localStorage` (síncrono: tem de estar gravada ANTES de o jogo começar) e por perfil
@@ -15,9 +16,6 @@
  * marca e tudo segue como antes.
  */
 const PREFIX = 'sz:run-tripwire:'
-
-/** Batimentos (um por segundo) depois dos quais o jogo da vez é considerado vivo. */
-export const HEARTBEATS_TO_TRUST = 3
 
 export function armRunTripwire(projectId: string): void {
   try {
@@ -35,7 +33,7 @@ export function disarmRunTripwire(projectId: string): void {
   }
 }
 
-/** A última execução deste projeto começou e nunca deu sinal de vida nem parou. */
+/** A última execução deste projeto não terminou de maneira controlada. */
 export function wasRunInterrupted(projectId: string): boolean {
   try {
     return window.localStorage.getItem(PREFIX + projectId) !== null

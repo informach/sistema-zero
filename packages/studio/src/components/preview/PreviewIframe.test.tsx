@@ -106,7 +106,7 @@ describe('PreviewIframe', () => {
 
   // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
   // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
-  it('a marca de execução: posta ao rodar, tirada com sinal de vida; com ela, não roda sozinha', async () => {
+  it('a marca de execução permanece após sinais de vida e só sai ao parar ou sair corretamente', async () => {
     const project = createPreviewProject()
     const chave = `sz:run-tripwire:${project.id}`
     window.localStorage.removeItem(chave)
@@ -133,10 +133,13 @@ describe('PreviewIframe', () => {
     batimento()
     expect(window.localStorage.getItem(chave)).not.toBeNull()
     batimento()
-    expect(window.localStorage.getItem(chave)).toBeNull()
+    expect(window.localStorage.getItem(chave)).not.toBeNull()
+    // Um jogo pode travar depois de já ter enviado batimentos. Encerrar corretamente,
+    // não um batimento anterior, é o que permite a próxima abertura automática.
 
     // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
     montada.unmount()
+    expect(window.localStorage.getItem(chave)).toBeNull()
     window.localStorage.setItem(chave, String(Date.now()))
     useUIStore.setState({ previewRunning: true })
     render(<PreviewIframe />)

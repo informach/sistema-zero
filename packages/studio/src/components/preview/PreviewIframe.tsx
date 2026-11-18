@@ -55,12 +55,7 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
-import {
-  armRunTripwire,
-  disarmRunTripwire,
-  HEARTBEATS_TO_TRUST,
-  wasRunInterrupted,
-} from './runTripwire'
+import { armRunTripwire, disarmRunTripwire, wasRunInterrupted } from './runTripwire'
 import {
   projectUsesKeyboardControls,
   useTouchInput,
@@ -812,16 +807,14 @@ export function PreviewIframe(): JSX.Element {
     setPreviewStalled(false)
   }, [doc])
 
-  // A marca de execução (ver `runTripwire.ts`): posta quando um jogo começa a rodar, tirada
-  // quando ele dá sinal de vida, quando para e quando o editor fecha direito.
-  const tripwireRef = useRef<{ projectId: string; heartbeats: number } | null>(null)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho (cada documento novo recomeça a contagem)
+  // Sinal de vida anterior não prova que o jogo vai continuar respondendo. A marca só sai
+  // quando a execução termina de maneira controlada ou a página viva encerra.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho de uma nova execução
   useEffect(() => {
     // Só o jogo RODANDO põe a marca. Parado (inclusive na abertura), nada mexe nela: é a marca
     // deixada por uma aba que congelou que a abertura seguinte precisa encontrar.
     if (!projectId || !docIsLive) return
     armRunTripwire(projectId)
-    tripwireRef.current = { projectId, heartbeats: 0 }
     // Recarregar ou sair com a página VIVA também tira a marca (a desmontagem do React não roda
     // nessa hora). Numa aba congelada este aviso nunca chega a rodar, e a marca fica.
     const leaving = () => disarmRunTripwire(projectId)
@@ -829,7 +822,6 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       window.removeEventListener('pagehide', leaving)
       disarmRunTripwire(projectId)
-      tripwireRef.current = null
     }
   }, [doc, docIsLive, projectId])
 
@@ -914,9 +906,6 @@ export function PreviewIframe(): JSX.Element {
       if (ev.data.kind === 'heartbeat') {
         lastHeartbeatRef.current = Date.now()
         setPreviewStalled((stalled) => (stalled ? false : stalled))
-        const tripwire = tripwireRef.current
-        if (tripwire && ++tripwire.heartbeats === HEARTBEATS_TO_TRUST)
-          disarmRunTripwire(tripwire.projectId)
         return
       }
       pushLog(ev.data)

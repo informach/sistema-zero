@@ -8,7 +8,8 @@ import { expect, type Page, test } from '@playwright/test'
  * rodar. Não se exige que o programa hostil "funcione".
  *
  * Só Chromium por enquanto: a medição de `scripts/measure-preview-isolation.mjs` mostrou que ali
- * o iframe `srcdoc` com sandbox já roda em outro processo. Firefox e WebKit não foram medidos.
+ * o iframe `srcdoc` com sandbox mantém o editor responsivo ali. Firefox/WebKit foram medidos
+ * no experimento mínimo e ainda apresentam limitações; esta suíte não os homologa.
  */
 
 async function createProject(page: Page): Promise<void> {
@@ -122,10 +123,9 @@ test.describe('programas hostis na prévia', () => {
     await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
     const id = decodeURIComponent(new URL(page.url()).pathname.replace('/editor/', ''))
     const chave = `sz:run-tripwire:${id}`
-    // Jogo vivo: a marca sai sozinha depois de alguns batimentos.
-    await expect
-      .poll(() => page.evaluate((k) => window.localStorage.getItem(k), chave), { timeout: 10_000 })
-      .toBeNull()
+    // Mesmo depois dos primeiros batimentos, um travamento tardio precisa deixar a marca.
+    await page.waitForTimeout(3500)
+    expect(await page.evaluate((k) => window.localStorage.getItem(k), chave)).not.toBeNull()
 
     // Recarregar com a página viva não deixa marca: a prévia roda sozinha, como sempre.
     await page.reload()
