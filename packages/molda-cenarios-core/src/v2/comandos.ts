@@ -348,6 +348,8 @@ export function executarLote(
       case 'textura.definir':
         for (const o of d.instancias)
           if (o.aparencia?.textura?.id === c.textura.id) exigeLivre(travas, o)
+        for (const caminho of d.caminhos)
+          if (caminho.aparencia?.textura?.id === c.textura.id) exigeLivre(travas, caminho)
         d.texturas ??= []
         definir(d.texturas, c.textura)
         break
@@ -355,6 +357,7 @@ export function executarLote(
         existente(d.texturas ?? [], c.id)
         if (
           d.instancias.some((o) => o.aparencia?.textura?.id === c.id) ||
+          d.caminhos.some((caminho) => caminho.aparencia?.textura?.id === c.id) ||
           (d.base.tipo === 'terreno' &&
             d.base.solo?.camadas.some((camada) => camada.textura?.id === c.id))
         )

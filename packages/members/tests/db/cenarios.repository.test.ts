@@ -14,6 +14,7 @@ import {
   AguaSchema,
   apoioNaAgua,
   type BaseDeTerreno,
+  CaminhoSchema,
   type ComandoDeCenario,
   capturarFragmento,
   conteudoDoCenarioDeConjunto,
@@ -2777,6 +2778,71 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     })
     expect(desfeito.documento.aguas).toEqual([])
     expect(desfeito.documento.instancias).toEqual([])
+    const refeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
+  })
+
+  test('seis variantes de caminho conservam parâmetros e material no JSONB e histórico', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      montar = () =>
+        new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set<string>() })
+    const s = montar(),
+      [espaco] = await s.espacos(ator),
+      mundo = await s.criarMundo(ator, espaco!.id, 'Caminhos'),
+      c = await s.criarCenario(ator, mundo.id, 'Circulação')
+    const comum = {
+      nome: 'Caminho',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      acabamento: null,
+      largura: 2.5,
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 10, z: 0 },
+      ],
+    }
+    const caminhos = [
+      { ...comum, id: 'trilha', tipo: 'trilha', suave: true, aparencia: { cor: '#b89163' } },
+      { ...comum, id: 'praca', tipo: 'praca', pontos: [...comum.pontos, { x: 5, z: 5 }] },
+      {
+        ...comum,
+        id: 'estrada',
+        tipo: 'estrada',
+        molde: { borda: 1, suavizacao: 8, deslocamento: -0.2 },
+      },
+      { ...comum, id: 'cerca', tipo: 'cerca', altura: 1.2, comprimentoDoModulo: 2 },
+      { ...comum, id: 'muro', tipo: 'muro', altura: 2.4, comprimentoDoModulo: 3 },
+      {
+        ...comum,
+        id: 'ponte',
+        tipo: 'ponte',
+        cotas: { de: 3, ate: 4 },
+        pilares: { espacamento: 4, largura: 0.4 },
+      },
+    ].map((caminho) => CaminhoSchema.parse(caminho))
+    const lote = {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: caminhos.map((caminho) => ({ tipo: 'caminho.definir' as const, caminho })),
+    }
+    await s.editarCenario(ator, c.id, lote)
+    await montar().editarCenario(ator, c.id, lote)
+    const salvo = await montar().abrirCenario(ator, c.id)
+    expect(salvo.revisao).toBe(1)
+    expect(salvo.documento.caminhos).toEqual(caminhos)
+    expect((await repo.lotesEntre(c.id, 0, 1))[0]!.comandos).toEqual(lote.comandos)
+    expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.caminhos).toEqual([])
     const refeito = await montar().moverHistorico(ator, c.id, {
       revisaoEsperada: 2,
       acao: 'refazer',

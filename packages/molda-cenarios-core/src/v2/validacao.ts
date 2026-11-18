@@ -131,6 +131,8 @@ export function validarDocumento(
   }
 
   for (const c of d.caminhos) {
+    if (c.aparencia?.textura && !texturas.has(c.aparencia.textura.id))
+      erros.push(`Textura fora da tabela do cenário: ${c.id}`)
     if (c.acabamento && !modelos.has(c.acabamento))
       erros.push(`Acabamento fora da tabela do cenário: ${c.id}`)
     if (c.tipo === 'praca' && !poligonoSimples(c.pontos))

@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, VetorSchema } from '../documento'
 import { AparenciaDaAguaSchema, EncaixeDoModeloDeAguaSchema } from './parametros-de-agua'
+import {
+  EncaixeDeModeloDeCaminhoSchema,
+  MoldeDeEstradaSchema,
+  PilaresDePonteSchema,
+} from './parametros-de-caminho'
 
 /** Esquemas elementares compartilhados por documentos e conteúdos de conjuntos. Sem IO ou referência ao documento v2. */
 export const LIMITES_CENARIO_V2 = {
@@ -136,15 +141,88 @@ export const InstanciaSchema = entidade
 
 export const GrupoSchema = entidade.strict()
 
-export const CaminhoSchema = entidade
-  .extend({
-    pontos: z.array(PontoSchema).min(2).max(LIMITES_CENARIO_V2.pontos),
-    /** Chave da tabela `modelos`, ou nulo para o acabamento padrão. */
-    acabamento: id.nullable(),
-    largura: z.number().finite().min(0.3).max(30),
-    tipo: z.enum(['trilha', 'praca']),
+const camposDeCaminho = {
+  pontos: z.array(PontoSchema).min(2).max(LIMITES_CENARIO_V2.pontos),
+  /** Chave da tabela `modelos`, ou nulo para o acabamento padrão. */
+  acabamento: id.nullable(),
+  largura: z.number().finite().min(0.05).max(100),
+  suave: z.boolean().optional(),
+  fechada: z.boolean().optional(),
+  aparencia: InstanciaSchema.shape.aparencia,
+  encaixeModelo: EncaixeDeModeloDeCaminhoSchema.optional(),
+  colisao: z.enum(['nenhuma', 'malha']).optional(),
+}
+export const CaminhoSchema = z
+  .discriminatedUnion('tipo', [
+    entidade.extend({ ...camposDeCaminho, tipo: z.literal('trilha') }).strict(),
+    entidade
+      .extend({
+        ...camposDeCaminho,
+        tipo: z.literal('praca'),
+        pontos: z.array(PontoSchema).min(3).max(LIMITES_CENARIO_V2.pontos),
+        fechada: z.literal(true).optional(),
+      })
+      .strict(),
+    entidade
+      .extend({
+        ...camposDeCaminho,
+        tipo: z.literal('estrada'),
+        molde: MoldeDeEstradaSchema.optional(),
+      })
+      .strict(),
+    entidade
+      .extend({
+        ...camposDeCaminho,
+        tipo: z.literal('cerca'),
+        altura: z.number().finite().min(0.05).max(100).default(1.2),
+        comprimentoDoModulo: z.number().finite().min(0.05).max(200).default(2),
+      })
+      .strict(),
+    entidade
+      .extend({
+        ...camposDeCaminho,
+        tipo: z.literal('muro'),
+        altura: z.number().finite().min(0.05).max(100).default(2),
+        comprimentoDoModulo: z.number().finite().min(0.05).max(200).default(2),
+      })
+      .strict(),
+    entidade
+      .extend({
+        ...camposDeCaminho,
+        tipo: z.literal('ponte'),
+        pontos: z.array(PontoSchema).length(2),
+        suave: z.literal(false).optional(),
+        fechada: z.literal(false).optional(),
+        cotas: z.object({ de: numero, ate: numero }).strict().optional(),
+        espessura: z.number().finite().min(0.05).max(5).default(0.2),
+        guardas: z.boolean().default(true),
+        alturaDaGuarda: z.number().finite().min(0.1).max(5).default(0.7),
+        pilares: PilaresDePonteSchema.optional(),
+      })
+      .strict()
+      .superRefine((v, ctx) => {
+        if (v.acabamento && v.encaixeModelo?.pisoLocal === undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['encaixeModelo'],
+            message: 'Meça o piso local nas cabeceiras antes de encaixar a ponte de catálogo.',
+          })
+      }),
+  ])
+  .superRefine((v, ctx) => {
+    if (v.encaixeModelo && !v.acabamento)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['encaixeModelo'],
+        message: 'Escolha o modelo antes de definir seu encaixe de caminho.',
+      })
+    if (v.fechada && v.pontos.length < 3)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pontos'],
+        message: 'O caminho fechado precisa de três pontos diferentes.',
+      })
   })
-  .strict()
 
 const poligono = z.array(PontoSchema).min(3).max(LIMITES_CENARIO_V2.pontos)
 const agua = entidade.extend({
