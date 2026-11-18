@@ -70,14 +70,14 @@
 
 ## 5.5 — Fechamento exclusivo do lote
 
-- [ ] Estender o fragmento/área de transferência existente às águas, com referências, apoios, deslocamento e histórico. Não criar outro clipboard; a extensão de caminhos/marcadores segue nos lotes 6/7.
+- [x] Estender o fragmento/área de transferência existente às águas, com referências, apoios, deslocamento e histórico. Não criar outro clipboard; a extensão de caminhos/marcadores segue nos lotes 6/7.
 
-- [ ] Conferir cada requisito da aba Água na especificação; corrigir lacunas próprias antes de expandir para caminhos.
-- [ ] Rodar núcleo, motor, oficina/hosts, serviço/HTTP/BFF/Postgres pertinentes, tipagem e build. Verificar contratos de terreno, conjuntos, fila, histórico, cota e referências após a integração.
-- [ ] Browser: preencher baixada, preservar ilha seca, impedir vazamento silencioso, mudar nível, criar rio/represa/cachoeira, cancelar, salvar/reabrir/undo/redo, falha de rede, dia/noite, seleção e toque.
-- [ ] Testar caminhada e nado com o mesmo avatar/cápsula, inclusive margem rasa, correnteza, ponte e lago real da Faísca. Não aceitar piso invisível na água ou perda de colisão nas margens.
-- [ ] Registrar capturas/vídeos, compilação do material e contagens de renderer após ciclos. Distinguir prova local/emulação de aparelhos físicos e aceite artístico.
-- [ ] Revisar, documentar, commitar e enviar à staging. Somente então iniciar lote 6. Full review, implantação e validação remota continuam no encerramento global.
+- [x] Conferir cada requisito da aba Água na especificação; corrigir lacunas próprias antes de expandir para caminhos.
+- [x] Rodar núcleo, motor, oficina/hosts, serviço/HTTP/BFF/Postgres pertinentes, tipagem e build. Verificar contratos de terreno, conjuntos, fila, histórico, cota e referências após a integração.
+- [x] Browser: preencher baixada, preservar ilha seca, impedir vazamento silencioso, mudar nível, criar rio/represa/cachoeira, cancelar, salvar/reabrir/undo/redo, falha de rede, dia/noite, seleção e toque.
+- [x] Testar caminhada e nado com o mesmo avatar/cápsula, inclusive margem rasa, correnteza, ponte e lago real da Faísca. Não aceitar piso invisível na água ou perda de colisão nas margens.
+- [x] Registrar capturas/vídeos, compilação do material e contagens de renderer após ciclos. Distinguir prova local/emulação de aparelhos físicos e aceite artístico.
+- [x] Revisar, documentar, commitar e enviar à staging. Somente então iniciar lote 6. Full review, implantação e validação remota continuam no encerramento global.
 
 ## Registro de execução — 18/11
 
@@ -96,3 +96,5 @@ Worker de água integrado em recorte próprio, com transferência de cópias, t�
 Captura, projeção de prévia e helper de aplicação integrados ao palco/fila, com testes de imutabilidade, cancelamento, mudança de cabeça, seleção, no-op e histórico. Chrome conferiu restauração real do relevo e bloqueio de Testar/retratos. Detalhes no mesmo checkpoint. **5.3 segue aberto até conectar o fluxo aos controles e avisos da aba Água**; não iniciar lote 6.
 
 **Continuação: 5.3 e 5.4 implementados, testados e revisados localmente.** [Interface, correção de cache, testes e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-interface.md). O lote 5 permanece aberto em **5.5**, agora fechando a extensão transversal de água à mesma área de transferência, antes de concluir a revisão do lote. Lotes 6–10 não iniciados. Sem validação remota antecipada.
+
+**Fechamento local do lote 5:** [revisão completa](../../plans/2026-11-16-cenarios-reforma/revisao-lote5-agua.md). Transferência de água integrada e conferida com apoios, recursos, deslocamento, corte, duplicação e histórico, inclusive JSONB/replay no Postgres real. Todos os itens abaixo da implementação têm prova local, sem aprovação artística ou homologação de hardware. Preservar código/relatório/evidências na staging; então seguir exclusivamente ao lote 6. Tarefa global, CI/implantação e validação remota continuam abertos.

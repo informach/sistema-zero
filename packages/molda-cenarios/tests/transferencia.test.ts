@@ -1,5 +1,15 @@
 import { expect, test } from 'bun:test'
-import { capturarFragmento, criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  apoioNaAgua,
+  capturarFragmento,
+  criarDocumentoVazio,
+  prepararOperacaoDeAgua,
+  transformacaoResolvida,
+} from '@sistemazero/molda-cenarios-core/v2'
+import {
+  alvosDaTransferencia,
+  comandosParaRecortarEscolha,
+} from '../src/oficina/area-de-transferencia'
 import { criarControlador } from '../src/oficina/controlador'
 import { criarHostHttp } from '../src/oficina/host-http'
 import { criarHostEmMemoria } from '../src/oficina/host-memoria'
@@ -26,6 +36,40 @@ function origem() {
   ]
   return d
 }
+
+test('recortar água mantém o objeto apoiado fora da escolha; undo restaura água e vínculo', async () => {
+  const host = criarHostEmMemoria(),
+    mundo = await host.criarMundo('conta', 'Mundo'),
+    cenario = await host.criarCenario(mundo.id, 'Água'),
+    doc = { ...origem(), id: cenario.id }
+  doc.aguas = [
+    prepararOperacaoDeAgua({ id: 'mar', nome: 'Mar' }, { tipo: 'mar', nivel: 1 }, null).agua,
+  ]
+  const objeto = doc.instancias[0]!
+  objeto.transformacao.posicao.y = 1.5
+  objeto.apoio = apoioNaAgua(doc, 'mar', objeto.transformacao)
+  await host.editarCenario(
+    cenario.id,
+    0,
+    [{ tipo: 'cenario.restaurar', documento: doc }],
+    'fixture',
+  )
+  const ctl = criarControlador(host, await host.abrirCenario(cenario.id))
+  ctl.selecionar([], 'mar')
+  const alvos = alvosDaTransferencia(ctl.getState()),
+    f = capturarFragmento(doc, alvos, 'conta'),
+    pose = transformacaoResolvida(doc, objeto)
+  expect(alvos).toEqual(['mar'])
+  expect(ctl.executar(comandosParaRecortarEscolha(doc, f, alvos))).toBe(true)
+  await ctl.terminar()
+  const removido = (await host.abrirCenario(cenario.id)).documento
+  expect(removido.aguas).toEqual([])
+  expect(transformacaoResolvida(removido, removido.instancias[0]!)).toEqual(pose)
+  expect(removido.instancias[0]!.apoio.tipo).toBe('absoluto')
+  const reaberto = criarControlador(host, await host.abrirCenario(cenario.id))
+  await reaberto.desfazer()
+  expect(reaberto.getState().documento).toEqual(doc)
+})
 
 test('fila de autoria grava colagem em um passo e conserva undo/redo após reabrir', async () => {
   const host = criarHostEmMemoria({ equipe: true }),

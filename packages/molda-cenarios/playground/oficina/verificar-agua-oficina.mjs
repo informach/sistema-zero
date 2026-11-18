@@ -339,6 +339,71 @@ try {
       await p.getByRole('button', { name: 'Ver tudo', exact: true }).click()
       await p.getByRole('button', { name: 'De cima', exact: true }).click()
       await p.screenshot({ path: resolve(saida, 'lago-ilha-preenchido.png') })
+      await painel.getByRole('button', { name: 'Lago', exact: true }).click()
+      await painel.getByRole('button', { name: 'Copiar água guardada', exact: true }).click()
+      await p.getByText(/Escolha copiada|Escolha guardada na ferramenta/).waitFor()
+      await painel.getByRole('button', { name: 'Cancelar edição da água', exact: true }).click()
+      const destinoId = await p.evaluate(async (id) => {
+        const h = window.__cenarios.host,
+          origem = await h.abrirCenario(id)
+        return (await h.criarCenario(origem.resumo.mundoId, 'Destino da água')).id
+      }, baciaId)
+      await p.getByRole('button', { name: 'Voltar ao mundo', exact: true }).click()
+      await p.getByRole('button', { name: 'Abrir Destino da água', exact: true }).click()
+      const transferencia = async (nome) => {
+        await p.getByRole('button', { name: 'Copiar e colar', exact: true }).click()
+        await p.getByRole('dialog').getByRole('button', { name: nome, exact: true }).click()
+        await salvo()
+      }
+      await transferencia('Colar escolha')
+      await p
+        .getByText('Escolha colada. Desfazer remove toda a colagem em um passo.', { exact: true })
+        .waitFor()
+      const lerDestino = () =>
+        p.evaluate(
+          async (id) => (await window.__cenarios.host.abrirCenario(id)).documento,
+          destinoId,
+        )
+      const copiado = await lerDestino()
+      assert.equal(copiado.aguas.length, 1)
+      assert.equal(copiado.base.tipo, 'plano', 'clipboard não copia o campo de relevo')
+      assert.notEqual(copiado.aguas[0].id, nivelNovo.aguas[0].id)
+      assert.deepEqual(copiado.aguas[0].contorno, nivelNovo.aguas[0].contorno)
+      assert.deepEqual(
+        await p.evaluate(
+          async (id) => (await window.__cenarios.host.abrirCenario(id)).documento,
+          baciaId,
+        ),
+        nivelNovo,
+      )
+      await p.getByRole('button', { name: 'Desfazer', exact: true }).click()
+      await salvo()
+      assert.equal((await lerDestino()).aguas.length, 0)
+      await p.getByRole('button', { name: 'Refazer', exact: true }).click()
+      await salvo()
+      assert.deepEqual(await lerDestino(), copiado)
+      await p.getByRole('button', { name: 'Água', exact: true }).click()
+      await painel.getByRole('button', { name: 'Lago', exact: true }).click()
+      await painel.getByRole('button', { name: 'Cancelar edição da água', exact: true }).click()
+      await p.locator('canvas.mcn-palco-tela').focus()
+      await p.keyboard.press('Control+d')
+      await salvo()
+      assert.equal(
+        (await lerDestino()).aguas.length,
+        2,
+        'duplicação rápida inclui a água selecionada',
+      )
+      await p.getByRole('button', { name: 'Desfazer', exact: true }).click()
+      await salvo()
+      assert.deepEqual(await lerDestino(), copiado)
+      await painel.getByRole('button', { name: 'Lago', exact: true }).click()
+      await painel.getByRole('button', { name: 'Cancelar edição da água', exact: true }).click()
+      await transferencia('Recortar escolha')
+      assert.equal((await lerDestino()).aguas.length, 0)
+      await p.getByRole('button', { name: 'Desfazer', exact: true }).click()
+      await salvo()
+      assert.deepEqual(await lerDestino(), copiado)
+      await p.getByRole('button', { name: 'Água', exact: true }).click()
     }
     if (largura === 390) {
       await iniciar('Encher de água')
@@ -379,6 +444,7 @@ try {
             cancelarVazamento: true,
             falhaRetomada: true,
             reabertura: true,
+            transferenciaDeAgua: true,
           }
         : {}),
       erros,

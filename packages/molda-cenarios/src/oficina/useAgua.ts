@@ -265,6 +265,7 @@ export function useAgua({
     ocupado: aberto || preparando || aplicando,
     erro,
     mensagem,
+    informarErro: setErro,
     confirmouVazamento,
     setConfirmouVazamento,
     iniciar,

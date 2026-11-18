@@ -1,5 +1,7 @@
 import {
+  type ComandoDeCenario,
   capturarFragmento,
+  type DocumentoDeCenario,
   type FragmentoDeCenario,
   idsDoFragmento,
   indiceDaOrganizacao,
@@ -8,6 +10,7 @@ import {
 import type { Palco } from '@sistemazero/molda-cenarios-motor'
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { conferirMedidasDoDocumento, novoIdAleatorio } from './acoes'
+import { comandosParaRemoverAgua } from './agua-remocao'
 import type { ControladorDaOficina } from './controlador'
 import type { CenariosHost } from './portas'
 
@@ -23,7 +26,25 @@ export function alvosDaTransferencia(
 ): readonly string[] {
   return estado.alvoDaArvore && estado.documento.grupos.some((g) => g.id === estado.alvoDaArvore)
     ? [estado.alvoDaArvore]
-    : estado.selecao
+    : !estado.selecao.length &&
+        estado.alvoDaArvore &&
+        estado.documento.aguas.some((a) => a.id === estado.alvoDaArvore)
+      ? [estado.alvoDaArvore]
+      : estado.selecao
+}
+
+/** O recorte libera apoios externos conservando a pose, antes de remover a escolha. */
+export function comandosParaRecortarEscolha(
+  doc: DocumentoDeCenario,
+  fragmento: FragmentoDeCenario,
+  alvos: readonly string[],
+): ComandoDeCenario[] {
+  return [
+    ...(fragmento.aguas ?? []).flatMap((a) =>
+      comandosParaRemoverAgua(doc, a.id).filter((c) => c.tipo !== 'agua.remover'),
+    ),
+    { tipo: 'elementos.remover', ids: [...alvos] },
+  ]
 }
 
 function editando(alvo: EventTarget | null) {
@@ -86,9 +107,13 @@ export function useAreaDeTransferencia({
         texto = JSON.stringify(fragmento)
       if (
         recortar &&
-        !controlador.executar([
-          { tipo: 'elementos.remover', ids: [...alvosDaTransferencia(controlador.getState())] },
-        ])
+        !controlador.executar(
+          comandosParaRecortarEscolha(
+            controlador.getState().documento,
+            fragmento,
+            alvosDaTransferencia(controlador.getState()),
+          ),
+        )
       )
         throw new Error(controlador.getState().recusa ?? 'Não consegui recortar esta escolha')
       buffers.set(host, { texto, sistema: false })
@@ -111,7 +136,8 @@ export function useAreaDeTransferencia({
         throw new Error(controlador.getState().recusa ?? 'Não consegui colar esta escolha')
       controlador.selecionar(
         [...ids.instancias.values()],
-        ids.raizes.length === 1 && [...ids.grupos.values()].includes(ids.raizes[0]!)
+        ids.raizes.length === 1 &&
+          [...ids.grupos.values(), ...ids.aguas.values()].includes(ids.raizes[0]!)
           ? ids.raizes[0]!
           : undefined,
       )

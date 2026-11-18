@@ -26,12 +26,14 @@ export function Agua({
   indisponivel,
   executar,
   aoCapturar,
+  aoCopiar,
 }: {
   agua: ReturnType<typeof useAgua>
   documento: DocumentoDeCenario
   indisponivel: boolean
   executar(comandos: ComandoDeCenario[]): boolean
   aoCapturar(): void
+  aoCopiar(): void
 }) {
   const f = t.formulario,
     existente = t.agua,
@@ -321,6 +323,22 @@ export function Agua({
                 {t.aplicando ? 'Guardando…' : 'Guardar água'}
               </button>
             </section>
+          ) : null}
+          {existente ? (
+            <button
+              type="button"
+              className="sz-tool-btn"
+              disabled={t.preparando || t.aplicando}
+              onClick={aoCopiar}
+            >
+              Copiar água guardada
+            </button>
+          ) : null}
+          {existente ? (
+            <p className="text-sm text-mld-muted">
+              A cópia conserva a água e seus parâmetros. O relevo não é copiado; confira o nível e o
+              leito no destino.
+            </p>
           ) : null}
           <button type="button" className="sz-tool-btn" disabled={t.aplicando} onClick={t.cancelar}>
             Cancelar edição da água

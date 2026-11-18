@@ -2785,6 +2785,103 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect(refeito.documento).toEqual(salvo.documento)
   })
 
+  test('fragmento com água e apoio conserva JSONB, replay idempotente e undo/redo após reabrir', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      montar = () =>
+        new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set<string>() })
+    const s = montar(),
+      [espaco] = await s.espacos(ator),
+      mundo = await s.criarMundo(ator, espaco!.id, 'Água copiada'),
+      c = await s.criarCenario(ator, mundo.id, 'Destino')
+    const origem = criarDocumentoVazio('origem', 'Origem'),
+      comum = { grupo: null, oculto: false, bloqueado: false },
+      contorno = [
+        { x: -8, z: -8 },
+        { x: 8, z: -8 },
+        { x: 8, z: 8 },
+        { x: -8, z: 8 },
+      ]
+    origem.grupos = [{ ...comum, id: 'g', nome: 'Lago e barco' }]
+    origem.aguas = [
+      AguaSchema.parse({
+        ...comum,
+        id: 'lago',
+        nome: 'Lago',
+        grupo: 'g',
+        tipo: 'lago',
+        modelo: null,
+        centro: { x: 0, z: 0 },
+        nivel: 3,
+        profundidade: 2,
+        giro: 0.4,
+        escala: 2,
+        contorno,
+        recorte: contorno,
+        nado: false,
+        aparencia: { corRasa: '#abcdef' },
+      }),
+    ]
+    origem.formas = [
+      { id: 'f', nome: 'Barco', tipo: 'caixa', largura: 2, altura: 1, comprimento: 4 },
+    ]
+    const t = {
+      posicao: { x: 3, y: 3.2, z: 3 },
+      rotacao: { x: 0.1, y: 0.2, z: 0.3 },
+      escala: { x: 2, y: 3, z: 1 },
+    }
+    origem.instancias = [
+      {
+        ...comum,
+        id: 'barco',
+        nome: 'Barco',
+        grupo: 'g',
+        modelo: 'f',
+        colisao: 'caixa',
+        transformacao: t,
+        apoio: apoioNaAgua(origem, 'lago', t),
+      },
+    ]
+    const fragmento = capturarFragmento(origem, ['g'], espaco!.id),
+      lote = {
+        revisaoEsperada: 0,
+        operacaoId: randomUUID(),
+        comandos: [
+          {
+            tipo: 'fragmento.colar' as const,
+            fragmento,
+            prefixo: 'p',
+            ponto: { x: fragmento.ancora.x + 20, y: fragmento.ancora.y + 2, z: fragmento.ancora.z },
+          },
+        ],
+      }
+    await s.editarCenario(ator, c.id, lote)
+    await montar().editarCenario(ator, c.id, lote)
+    const salvo = await montar().abrirCenario(ator, c.id)
+    expect(salvo.revisao).toBe(1)
+    expect(salvo.documento.aguas[0]).toMatchObject({
+      id: 'p/agua/0',
+      nivel: 5,
+      nado: false,
+      aparencia: { corRasa: '#abcdef' },
+    })
+    expect(salvo.documento.instancias[0]!.apoio).toMatchObject({ tipo: 'agua', agua: 'p/agua/0' })
+    expect((await repo.lotesEntre(c.id, 0, 1))[0]!.comandos).toEqual(lote.comandos)
+    expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.aguas).toEqual([])
+    expect(desfeito.documento.instancias).toEqual([])
+    const refeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
+  })
+
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {
     const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false }
     const montarServico = () =>

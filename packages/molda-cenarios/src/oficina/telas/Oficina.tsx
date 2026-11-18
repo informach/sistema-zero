@@ -81,6 +81,7 @@ import {
   novoIdAleatorio,
 } from '../acoes'
 import { NOMES_AGUA } from '../agua-formulario'
+import { comandosParaRemoverAgua } from '../agua-remocao'
 import { useAreaDeTransferencia } from '../area-de-transferencia'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
@@ -631,7 +632,11 @@ function OficinaAberta({
   const duplicarPasta = transferencia.duplicar
   const copiar = useCallback(() => {
     const atual = controlador.getState()
-    if (atual.alvoDaArvore && atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore)) {
+    if (
+      atual.alvoDaArvore &&
+      (atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore) ||
+        atual.documento.aguas.some((a) => a.id === atual.alvoDaArvore))
+    ) {
       duplicarPasta()
       return
     }
@@ -737,6 +742,18 @@ function OficinaAberta({
   const apagar = useCallback(() => {
     const atual = controlador.getState()
     const alvo = atual.alvoDaArvore
+    if (alvo && !atual.selecao.length && atual.documento.aguas.some((a) => a.id === alvo)) {
+      try {
+        controlador.executar(comandosParaRemoverAgua(atual.documento, alvo))
+      } catch (e) {
+        setAba('agua')
+        setPainelAberto(true)
+        aguaAtual.current.informarErro(
+          e instanceof Error ? e.message : 'Não consegui remover esta água.',
+        )
+      }
+      return
+    }
     const pasta = alvo && atual.documento.grupos.some((g) => g.id === alvo)
     const comandos = comandosParaApagar(
       atual.documento,
@@ -1604,6 +1621,7 @@ function OficinaAberta({
             ) : aba === 'agua' && modoPainel !== 'organizacao' ? (
               <Agua
                 agua={agua}
+                aoCopiar={() => void transferencia.copiar()}
                 documento={documento}
                 indisponivel={!relevoPronto || estado.ocupado || estado.salvamento !== 'guardado'}
                 executar={executar}

@@ -14,6 +14,7 @@
     "cancelarVazamento": true,
     "falhaRetomada": true,
     "reabertura": true,
+    "transferenciaDeAgua": true,
     "erros": []
   },
   {
