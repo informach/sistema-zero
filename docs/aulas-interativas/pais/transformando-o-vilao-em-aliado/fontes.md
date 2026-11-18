@@ -165,5 +165,5 @@ A fala afirma, como no encontro, que existem inúmeros estudos sobre programaç�
 
 ## Pendências
 
-- Apostila: `caderno-conteudo.json` e `apostila.pdf` ainda são da versão de 17/11. Reescrever depois da aprovação dos roteiros.
+- Apostila refeita em 18/11/2026 a partir dos roteiros. A frase da Isabela aparece sem o nome dela, e a apostila não revela o presente.
 - Gravação e edição dos 23 clipes; importação no Admin e publicação.

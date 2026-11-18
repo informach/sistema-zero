@@ -2,48 +2,53 @@
   {
     "id": "abertura",
     "kicker": "Apostila de consulta",
-    "title": "A tela como espaço de criação",
-    "subtitle": "As ideias e os exemplos das seis aulas, para consultar quando quiser.",
+    "title": "Transformando o vilão em aliado",
+    "subtitle": "As ideias e os exemplos das sete aulas, para consultar quando quiser.",
     "items": [
       {
         "kind": "map",
         "title": "O caminho do minicurso",
         "cards": [
           {
-            "title": "Aula 1. A tela pode ter outros usos",
-            "text": "Usos da tela e espaço para a criação. Página {{pagina:a1}}.",
+            "title": "Aula 1. O vilão que não dá para tirar",
+            "text": "A pergunta que muda tudo. Página {{pagina:a1}}.",
             "pageId": "a1"
           },
           {
-            "title": "Aula 2. O que uma criança exercita quando cria",
-            "text": "Habilidades, autoria e repertório. Páginas {{pagina:a2}} e {{pagina:a2-autoria}}.",
+            "title": "Aula 2. Assistir, jogar ou criar",
+            "text": "Os três usos, a função executiva e a proposta. Páginas {{pagina:a2}} a {{pagina:a2-criar}}.",
             "pageId": "a2"
           },
           {
-            "title": "Aula 3. Como criar jogos coloca isso em prática",
-            "text": "O ciclo e a demonstração do jardim. Páginas {{pagina:a3}} e {{pagina:a3-regra}}.",
+            "title": "Aula 3. De onde veio essa ideia e por onde começar",
+            "text": "A nossa história e as portas de entrada. Páginas {{pagina:a3}} e {{pagina:a3-portas}}.",
             "pageId": "a3"
           },
           {
-            "title": "Aula 4. Interesse, dificuldade e apoio para continuar",
-            "text": "Envolvimento e ajuda ajustada. Páginas {{pagina:a4}} e {{pagina:a4-apoio}}.",
+            "title": "Aula 4. Programar não é um bicho de sete cabeças",
+            "text": "Regras do dia a dia e o passo a passo. Páginas {{pagina:a4}} e {{pagina:a4-passo}}.",
             "pageId": "a4"
           },
           {
-            "title": "Aula 5. O que essa experiência pode levar para a vida",
-            "text": "Aprendizagem e conversa. Páginas {{pagina:a5}} e {{pagina:a5-conversa}}.",
+            "title": "Aula 5. Será que meu filho consegue?",
+            "text": "Foco, dificuldade, escola e futuro. Páginas {{pagina:a5}} e {{pagina:a5-escola}}.",
             "pageId": "a5"
           },
           {
-            "title": "Aula 6. Uma oportunidade para experimentar com seu filho",
-            "text": "Acompanhamento e presente. Páginas {{pagina:a6}} e {{pagina:a6-passo}}.",
+            "title": "Aula 6. Como nasce um jogo",
+            "text": "O ciclo, uma regra e a conversa em casa. Páginas {{pagina:a6}} a {{pagina:a6-conversa}}.",
             "pageId": "a6"
+          },
+          {
+            "title": "Aula 7. Um presente para vocês experimentarem",
+            "text": "O ambiente onde a criança cria. Página {{pagina:a7}}.",
+            "pageId": "a7"
           }
         ]
       },
       {
         "kind": "note",
-        "text": "O minicurso é uma conversa explicativa para pais e responsáveis. A experiência prática é o presente do Cadê Todo Mundo, depois do curso. Esta apostila é opcional e não precisa ser preenchida."
+        "text": "Esta apostila acompanha os vídeos e é opcional. Não há nada para preencher: use para relembrar uma ideia ou um exemplo quando precisar."
       }
     ],
     "theme": "azul"
@@ -51,415 +56,608 @@
   {
     "id": "a1",
     "kicker": "Aula 1",
-    "title": "A tela pode ter outros usos",
-    "subtitle": "O que a criança vive durante o uso faz diferença.",
+    "title": "O vilão que não dá para tirar",
+    "subtitle": "As crianças já nasceram no mundo digital. A questão é o que fazer com isso.",
     "items": [
       {
         "kind": "box",
-        "title": "A pergunta que orienta o olhar",
-        "text": "O que o meu filho está vivendo enquanto usa essa tela?",
+        "title": "A grande pergunta",
+        "text": "Não é mais \"como eu tiro a tela da vida do meu filho?\", e sim \"o que eu posso oferecer dentro dessa tela para desenvolver o meu filho?\".",
         "tone": "amarelo",
         "icon": "mensagem"
       },
       {
-        "kind": "pairs",
-        "pairs": [
-          [
-            "Assistir",
-            "Receber uma história ou uma explicação. Pode divertir, ensinar e despertar curiosidade."
-          ],
-          [
-            "Jogar",
-            "Participar de regras e desafios já construídos. As escolhas e as estratégias variam conforme o jogo."
-          ],
-          [
-            "Criar",
-            "Participar da construção: imaginar, decidir como algo vai funcionar, experimentar e modificar."
-          ]
-        ]
+        "kind": "compare",
+        "left": {
+          "title": "A tela que só entretém",
+          "text": "Tudo chega pronto.\nA criança fica no automático.\nBriga na hora de desligar.\nCada vez menos paciência para tentar de novo."
+        },
+        "right": {
+          "title": "A tela que faz pensar",
+          "text": "Raciocínio lógico.\nResolução de problemas.\nFoco e planejamento.\nAprender a lidar com o erro."
+        }
       },
       {
         "kind": "box",
-        "title": "Uma possibilidade dentro da rotina",
-        "text": "A criação pode ocupar uma parte do tempo de tela que a família já reservou. As outras experiências do dia e os limites continuam importantes. O lazer também tem valor.",
+        "title": "O mesmo tempo, outro uso",
+        "text": "Não é colocar mais tempo de tela. Se o seu filho usa meia hora por dia, a ideia é tornar essa meia hora produtiva: que ele construa algo, aumente o repertório e aprenda a lidar com a frustração.",
         "tone": "verde",
-        "icon": "pessoa"
+        "icon": "repetir"
       },
       {
         "kind": "note",
-        "text": "Assistir, jogar e criar podem se combinar. Uma explicação pode ser ponto de partida para experimentar e fazer uma mudança que a criança compreende."
+        "text": "Para guardar: o que você mais deseja para o futuro do seu filho? O curso volta a essa reflexão na Aula 5 e na Aula 7."
       }
     ],
     "theme": "azul"
   },
   {
     "id": "a2",
-    "kicker": "Aula 2 · Habilidades em ação",
-    "title": "O caminho até a ideia funcionar",
-    "subtitle": "A fazenda de Lego ajuda a tornar as habilidades concretas.",
+    "kicker": "Aula 2 · Os três usos",
+    "title": "Assistir, jogar ou criar",
+    "subtitle": "A tecnologia é uma ferramenta. O resultado depende do uso.",
     "items": [
+      {
+        "kind": "box",
+        "title": "Como o fogo",
+        "text": "O fogo aquece e prepara a comida para toda a família. Também queima, e pode destruir uma floresta inteira. Com as telas é igual: precisamos aprender a usar a ferramenta a nosso favor.",
+        "tone": "amarelo",
+        "icon": "brilho"
+      },
       {
         "kind": "pairs",
         "pairs": [
           [
-            "Planejamento",
-            "Decidir o que construir e por onde começar. Separar peças para a casa sem usar todas as que seriam necessárias para a cerca."
+            "Assistir",
+            "A criança recebe cem por cento do conteúdo pronto. É o uso que menos desenvolve."
           ],
           [
-            "Memória de trabalho",
-            "Manter o objetivo e as informações em uso: onde ficará a porta, por que aquelas peças foram separadas e o que ainda falta."
+            "Jogar",
+            "Depende do jogo. Vários ajudam a desenvolver algumas coisas, mas as regras já vêm decididas."
           ],
           [
-            "Controle do impulso",
-            "Ter apoio para parar e observar, em vez de responder imediatamente à dificuldade."
-          ],
-          [
-            "Regulação emocional",
-            "Reconhecer a frustração e encontrar uma condição melhor para continuar, inclusive com pausa e ajuda."
-          ],
-          [
-            "Flexibilidade",
-            "Rever o formato do telhado quando não existe a peça imaginada. Experimentar outra solução."
+            "Criar",
+            "A criança inventa as regras, monta tudo, erra e ajusta. É onde está a maior diferença."
           ]
         ]
       },
       {
         "kind": "note",
-        "text": "O resultado pronto é uma parte da experiência. As decisões e as tentativas durante a construção oferecem oportunidades de praticar habilidades cognitivas para a vida."
+        "text": "Criar jogos não é o fim, é o meio: o caminho para treinar habilidades cognitivas que valem para a vida."
       }
     ],
     "theme": "roxo"
   },
   {
-    "id": "a2-autoria",
-    "kicker": "Aula 2 · Autoria e repertório",
-    "title": "Participar das escolhas",
-    "subtitle": "Começar com orientação pode abrir espaço para compreender e decidir.",
+    "id": "a2-funcoes",
+    "kicker": "Aula 2 · O conceito",
+    "title": "Função executiva",
+    "subtitle": "O conjunto de habilidades que usamos para dar conta de uma tarefa do começo ao fim.",
     "items": [
       {
-        "kind": "box",
-        "title": "Aprender com um exemplo",
-        "text": "Um manual pode ajudar a conhecer as peças e uma sequência. Compreender o que foi feito permite experimentar uma modificação: mudar a porta, aumentar a casa ou testar outra base.",
-        "tone": "azul",
-        "icon": "livro"
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Memória de trabalho",
+            "Guardar informações para usar em outro momento e adaptar ao contexto."
+          ],
+          [
+            "Planejamento e organização",
+            "Decidir o que fazer, em que ordem, e manter tudo arrumado até o final."
+          ],
+          [
+            "Controle inibitório",
+            "Conseguir segurar o impulso."
+          ],
+          [
+            "Controle emocional",
+            "Lidar com o que se sente quando algo não sai como o esperado."
+          ],
+          [
+            "Flexibilidade cognitiva",
+            "Mudar a estratégia quando o plano não funciona."
+          ]
+        ]
+      },
+      {
+        "kind": "compare",
+        "left": {
+          "title": "Lego com manual",
+          "text": "Olhar aqui e executar ali.\nAtenção e memória de curto prazo.\nMontou o foguete, acabou."
+        },
+        "right": {
+          "title": "Lego sem manual",
+          "text": "\"O que você fez na fazenda? Vamos criar.\"\nAs peças não encaixam, a casa não sai igual.\nÉ preciso adaptar: flexibilidade cognitiva."
+        }
+      },
+      {
+        "kind": "note",
+        "text": "Jogar alcança uma parte pequena das funções executivas. Criar a própria regra, o próprio cenário e o próprio jogo trabalha todas elas de forma mais profunda. Criar um jogo é o Lego sem manual."
+      }
+    ],
+    "theme": "roxo"
+  },
+  {
+    "id": "a2-criar",
+    "kicker": "Aula 2 · A proposta",
+    "title": "Criar em vez de só consumir",
+    "subtitle": "Colocar os filhos para criarem jogos, e não apenas assistirem ou jogarem.",
+    "items": [
+      {
+        "kind": "compare",
+        "left": {
+          "title": "Jogar um jogo pronto",
+          "text": "Já está tudo decidido.\nA criança segue o roteiro de quem criou.\nCom tutorial, memoriza e copia."
+        },
+        "right": {
+          "title": "Criar o próprio jogo",
+          "text": "Ela inventa as regras.\nPensa em hipóteses, planeja, tem foco.\nErra, e quer fazer dar certo porque o jogo é dela."
+        }
       },
       {
         "kind": "box",
-        "title": "Uma intenção dá sentido à tentativa",
-        "text": "A criança quer que os animais fiquem dentro da cerca. Se ela cai, existe um motivo para observar, pedir ajuda e tentar outra base.",
+        "title": "O interesse a favor",
+        "text": "Quando a atividade parte do interesse da criança ou do adolescente, do tema e do personagem dele, ele adere muito mais. E, aderindo, fica aberto e aprende mais. Vale até os 17 anos.",
         "tone": "amarelo",
         "icon": "brilho"
       },
       {
         "kind": "box",
-        "title": "Repertório é ter possibilidades",
-        "text": "Conhecer diferentes maneiras de resolver uma dificuldade permite comparar, adaptar ou buscar uma ajuda mais específica. Não é preciso acertar sozinha desde o início.",
+        "title": "E a briga na hora de desligar?",
+        "text": "Uma criação tem início, meio e fim, como uma história. A criança chega a um final, sente orgulho do que construiu e sai saciada.",
+        "tone": "azul",
+        "icon": "certo"
+      },
+      {
+        "kind": "box",
+        "title": "Mais tempo de tela?",
+        "text": "O que os pais contam é uma substituição, e não um aumento: o mesmo tempo que a criança já usava, só que de forma produtiva e criativa.",
         "tone": "verde",
         "icon": "repetir"
       },
       {
-        "kind": "note",
-        "text": "Autoria é participar e compreender escolhas. Não exige inventar tudo do zero nem aprender sem apoio."
+        "kind": "quote",
+        "text": "Parece que eu tenho tipo um superpoder.",
+        "author": "Uma das crianças, sobre criar o próprio jogo"
       }
     ],
     "theme": "roxo"
   },
   {
     "id": "a3",
-    "kicker": "Aula 3 · Uma possibilidade concreta",
-    "title": "Como uma ideia vira um jogo",
-    "subtitle": "Organizar uma intenção em regras que podem ser testadas.",
+    "kicker": "Aula 3 · A nossa história",
+    "title": "De onde veio essa ideia",
+    "subtitle": "Uma mãe e um pai da área de tecnologia, e um filho que não largava a tela.",
     "items": [
       {
-        "kind": "cycle",
-        "steps": [
-          ["Imaginar", "Personagens, mundo e objetivo."],
-          ["Planejar", "Como as partes vão se relacionar."],
-          ["Criar", "Expressar as regras, por exemplo em blocos."],
-          ["Testar", "Conferir o que realmente acontece."],
-          ["Melhorar", "Ajustar o que ainda não corresponde à ideia."],
-          ["Compartilhar", "Permitir que outra pessoa conheça e experimente."]
-        ]
+        "kind": "box",
+        "title": "Dentro de casa",
+        "text": "O André sempre gostou muito de jogar. A tela era, muitas vezes, a forma de ele se regular e ficar calmo, e tirá-la era motivo de briga. A ideia foi unir as duas coisas: o gosto dele pelas telas e a nossa experiência com tecnologia, para ele deixar de ser só consumidor e passar a criar.",
+        "tone": "azul",
+        "icon": "pessoa"
+      },
+      {
+        "kind": "quote",
+        "text": "Eu já jogava um monte. Agora eu faço os meus jogos, e esse foi o primeiro.",
+        "author": "André"
       },
       {
         "kind": "box",
-        "title": "O ciclo pode se repetir",
-        "text": "Um teste pode mostrar que é preciso rever o plano. A experiência de outra pessoa pode revelar algo que quem criou ainda não tinha percebido.",
-        "tone": "azul",
-        "icon": "repetir"
-      },
-      {
-        "kind": "rule",
-        "title": "Uma relação conhecida, expressa como regra",
-        "when": "o personagem tocar na porta",
-        "if": "estiver com a chave",
-        "then": "ele pode entrar"
+        "title": "Até onde isso pode levar",
+        "text": "Tempos depois, o André ensinou alunos de uma faculdade a criar jogos, numa turma de TI. O mesmo menino que tinha tantas dificuldades.",
+        "tone": "amarelo",
+        "icon": "medalha"
       },
       {
         "kind": "note",
-        "text": "A demonstração do curso é para acompanhar. A construção do primeiro jogo fica no presente, com suas próprias explicações."
+        "text": "O que os pais costumam perceber depois que os filhos começam a criar: autonomia crescendo, mais criatividade e mais organização nas tarefas do dia a dia."
       }
     ],
     "theme": "verde"
   },
   {
-    "id": "a3-regra",
-    "kicker": "Aula 3 · A demonstração",
-    "title": "Uma regra e o que ela produz",
-    "subtitle": "O jardim está preparado. A participação está em construir e testar a resposta.",
+    "id": "a3-portas",
+    "kicker": "Aula 3 · Por onde começar",
+    "title": "Você reconhece o seu filho aqui?",
+    "subtitle": "Cada jeito de ser pode ser uma porta de entrada para a criação.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
-            "Ainda sem regra",
-            "Clicar no esconderijo não muda o jardim. O desenho está pronto, mas falta programar a resposta."
+            "Ele sabe tudo sobre um assunto",
+            "Dinossauros, espaço: o tema favorito pode virar o tema do jogo."
           ],
           [
-            "Regra de visibilidade",
-            "O esconderijo fica invisível e o animal aparece. O placar continua em zero: essa regra ainda não conta."
+            "Ele precisa saber o que vai acontecer",
+            "Na programação, a mesma regra dá sempre o mesmo resultado. É previsível."
           ],
           [
-            "Regra com contagem",
-            "O mesmo evento também soma um em achados. Ao testar desde o início, o placar vai para um e depois para dois."
+            "Ele se frustra quando perde",
+            "Motivado por criar, ele fica mais disposto a errar e a tentar de novo."
+          ],
+          [
+            "Ele gosta de organizar tudo em sequência",
+            "A sequência é a base de todo jogo e de todo programa."
+          ],
+          [
+            "Ele não larga a tela",
+            "O tempo é o mesmo. O papel da tela é que muda."
+          ],
+          [
+            "Ele mostra mais do que fala",
+            "No jogo, ele coloca as ideias e o que sente de forma concreta."
           ]
         ]
       },
       {
-        "kind": "drawing",
-        "name": "cade-regra",
-        "title": "A regra mostrada na demonstração"
+        "kind": "steps",
+        "title": "Para entrar no mundo dele, pergunte sobre o jogo",
+        "steps": [
+          "Como você fez isso?",
+          "O que foi mais difícil?",
+          "O que o seu personagem fez para consertar?"
+        ]
       },
       {
         "kind": "note",
-        "text": "Manter o objetivo em mente, separar as partes, formular uma hipótese e conferir o resultado: o raciocínio acontece durante a criação. Esta figura é uma referência do exemplo, não uma montagem exigida no minicurso."
+        "text": "Quando o adulto entra no mundo da criança, ela abre portas para vir para o dele. A estratégia que serviu no jogo pode servir em outras situações."
       }
     ],
     "theme": "verde"
   },
   {
     "id": "a4",
-    "kicker": "Aula 4 · Interesse",
-    "title": "Um motivo para querer tentar",
-    "subtitle": "O interesse pode aproximar a criança de uma questão que ela queira resolver.",
+    "kicker": "Aula 4 · Sem medo",
+    "title": "Programar não é um bicho de sete cabeças",
+    "subtitle": "A tela preta cheia de código ficou no passado. Hoje a criança arrasta blocos coloridos.",
     "items": [
       {
-        "kind": "box",
-        "title": "O tema e a intenção",
-        "text": "O gosto por trens pode virar a vontade de fazer um trem chegar à estação. Um obstáculo cria uma questão concreta: como organizar o caminho?",
-        "tone": "amarelo",
-        "icon": "brilho"
+        "kind": "rule",
+        "title": "Uma rotina de casa",
+        "when": "o despertador tocar",
+        "if": "for dia de escola",
+        "then": "trocar de roupa, tomar café e escovar os dentes"
       },
       {
-        "kind": "pairs",
-        "pairs": [
-          ["Desenho", "Uma personagem pode ser a porta de entrada para a criação."],
-          [
-            "História",
-            "Querer contar o que acontece com alguém pode motivar a organização de uma sequência."
-          ],
-          [
-            "Curiosidade por jogos",
-            "Entender como uma regra foi construída pode levar a querer experimentar uma ideia própria."
-          ]
-        ]
+        "kind": "rule",
+        "title": "A mesma lógica, no jogo",
+        "when": "o personagem tocar na porta",
+        "if": "ele estiver com a chave",
+        "then": "ele pode entrar"
       },
       {
         "kind": "box",
-        "title": "Uma conquista com significado",
-        "text": "Ver uma parte funcionar pode alimentar a vontade de continuar. O próximo desafio cresce a partir do que a criança compreendeu.",
-        "tone": "verde",
+        "title": "O que isso treina: sequenciação",
+        "text": "Planejar e seguir os passos numa ordem. Só entro no banheiro se abrir a porta. Só tomo banho se tirar a roupa antes. Só me visto depois de me enxugar.",
+        "tone": "azul",
         "icon": "pegadas"
       },
       {
         "kind": "note",
-        "text": "Interesse não garante foco em qualquer tarefa. Uma explicação pouco clara, um desafio grande ou cansaço podem exigir ajuste e apoio."
+        "text": "Muita criança diz \"eu fiz isso porque o personagem fez\". O que o personagem resolve no jogo vira repertório para resolver problemas no dia a dia."
       }
     ],
     "theme": "ambar"
   },
   {
-    "id": "a4-apoio",
-    "kicker": "Aula 4 · Apoio",
-    "title": "A ajuda acompanha a necessidade",
-    "subtitle": "As formas de apoio podem mudar de uma parte para outra.",
+    "id": "a4-passo",
+    "kicker": "Aula 4 · A definição",
+    "title": "Um passo a passo para chegar a um objetivo",
+    "subtitle": "Programar é dizer ao programa o que fazer, um passo de cada vez.",
     "items": [
       {
-        "kind": "pairs",
-        "pairs": [
-          [
-            "Demonstrar",
-            "Mostrar uma ação para a criança conhecer uma possibilidade que ainda não está clara."
-          ],
-          ["Fazer junto", "Dividir uma parte e oferecer espaço para ela participar e compreender."],
-          [
-            "Dar tempo para tentar",
-            "Esperar quando ela já tem recursos para investigar, mantendo a ajuda disponível."
-          ],
-          [
-            "Voltar a apoiar",
-            "Mostrar de novo, oferecer uma pista, diminuir o desafio ou fazer uma pausa quando necessário."
-          ]
+        "kind": "grid"
+      },
+      {
+        "kind": "steps",
+        "title": "Levar a bolinha até a estrela",
+        "steps": [
+          "Observar: para onde a bolinha foi a cada instrução?",
+          "Mudar a instrução, se ela bateu num obstáculo.",
+          "Testar de novo."
         ]
       },
       {
         "kind": "box",
-        "title": "No exemplo do placar",
-        "text": "Se a criança ainda não sabe onde aparece a contagem, pode precisar que alguém mostre e ajude a comparar antes e depois. Se já sabe, talvez precise de tempo para investigar a regra.",
+        "title": "O que esse vai e volta treina",
+        "text": "Perceber o todo e, ao mesmo tempo, o ponto importante. É o que a criança faz ao entrar na sala de aula: olha o ambiente inteiro para achar o caminho e, na carteira, foca no caderno. E treina mudar a rota quando algo dá errado.",
         "tone": "azul",
-        "icon": "ajuda"
+        "icon": "olho"
       },
       {
-        "kind": "note",
-        "text": "Não é uma sequência obrigatória nem um prazo de adaptação. O objetivo é permitir que a criança compreenda e participe, com o apoio necessário."
+        "kind": "quote",
+        "text": "O horrível tornou legal.",
+        "author": "Um menino, depois de insistir numa atividade que parecia difícil"
       }
     ],
     "theme": "ambar"
   },
   {
     "id": "a5",
-    "kicker": "Aula 5 · Aprendizagem",
-    "title": "Quando o conhecimento ganha função",
-    "subtitle": "Os exemplos ajudam a construir relações com outras situações.",
+    "kicker": "Aula 5 · As dúvidas",
+    "title": "Será que meu filho consegue?",
+    "subtitle": "As duas perguntas que os pais mais fazem.",
     "items": [
+      {
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Será que ele vai ter foco?",
+            "Foco na tela ele já tem. A criação usa o interesse dele a nosso favor: já que vai focar, que foque aprendendo."
+          ],
+          [
+            "Será que não vai ser difícil?",
+            "Toda atividade nova tem uma resistência no início, e ela passa rápido. O incentivo dos pais ajuda a quebrar essa barreira."
+          ]
+        ]
+      },
+      {
+        "kind": "steps",
+        "title": "O apoio diminui aos poucos",
+        "steps": [
+          "No começo, fazer por ele, para ele ver que é legal.",
+          "Depois, fazer junto.",
+          "Até ele dizer: \"Não fala, deixa eu pensar.\""
+        ]
+      },
+      {
+        "kind": "quote",
+        "text": "Quando eu consegui, eu fiquei feliz.",
+        "author": "Uma menina, dez minutos depois de achar que estava difícil"
+      },
+      {
+        "kind": "note",
+        "text": "Quanto mais estratégias a criança conhece, mais hipóteses ela tem para testar. É assim que se forma o repertório que um adulto usa para resolver problemas."
+      }
+    ],
+    "theme": "vermelho"
+  },
+  {
+    "id": "a5-escola",
+    "kicker": "Aula 5 · Escola e futuro",
+    "title": "Quando aprender faz sentido",
+    "subtitle": "Com um objetivo do interesse da criança, o conteúdo da escola ganha função.",
+    "items": [
+      {
+        "kind": "compare",
+        "left": {
+          "title": "A conta solta",
+          "text": "2 + 5 = ?\nFazer muitas contas para decorar."
+        },
+        "right": {
+          "title": "A conta com função",
+          "text": "Estou na casinha 2.\nQuantos passos faltam para o personagem chegar à estrela?"
+        }
+      },
       {
         "kind": "pairs",
         "pairs": [
           [
             "Matemática",
-            "Da casa 2 à casa 7, o personagem precisa de cinco passos. A conta resolve uma necessidade da ideia."
+            "Contar, somar, medir distâncias e pontos."
           ],
           [
-            "Escrita",
-            "Um diálogo precisa orientar quem vai jogar. Escolher as palavras e revisar ganha uma função concreta."
+            "Português",
+            "Escrever diálogos e criar escolhas."
           ],
           [
-            "Uma história",
-            "Imaginar uma situação, escolher personagens e ordenar acontecimentos. Planejar um jogo com uma história e escrever uma narrativa têm essas necessidades em comum."
+            "Ciências",
+            "Movimento e gravidade."
           ],
           [
-            "Revisão",
-            "Comparar o que se queria comunicar com o resultado e perceber o que precisa mudar."
+            "Artes",
+            "Criar personagens, cenários e o próprio mundo."
+          ],
+          [
+            "Planejamento",
+            "Organizar o começo, o desafio e o final, com coerência."
           ]
         ]
       },
       {
         "kind": "box",
-        "title": "Compreender a resposta",
-        "text": "Uma explicação, tutorial ou resposta de inteligência artificial pode ajudar. Explicar, testar e adaptar permite perceber se aquela resposta foi compreendida e se serve para o problema.",
+        "title": "Que ele seja feliz",
+        "text": "A felicidade que desejamos para os filhos passa pela autonomia. E a vida adulta pede memória de trabalho, controle emocional, controle inibitório e capacidade de lidar com a frustração e com as tarefas chatas. São habilidades que eles podem treinar desde agora.",
         "tone": "amarelo",
-        "icon": "livro"
-      },
-      {
-        "kind": "note",
-        "text": "Se foi preciso organizar uma coisa de cada vez num jogo confuso, o adulto pode lembrar essa estratégia ao conversar sobre um texto confuso: o que contar e em que ordem? A estratégia precisa ser adaptada ao novo contexto. Essa relação não aparece automaticamente."
+        "icon": "medalha"
       }
     ],
-    "theme": "roxo"
-  },
-  {
-    "id": "a5-conversa",
-    "kicker": "Aula 5 · Convivência",
-    "title": "Um assunto para compartilhar",
-    "subtitle": "A criação pode ajudar a tornar uma ideia visível para outra pessoa.",
-    "items": [
-      {
-        "kind": "box",
-        "title": "Uma abertura concreta",
-        "text": "Me mostra o que você criou?<br/>O que você tentou?<br/>O que precisou mudar?",
-        "tone": "amarelo",
-        "icon": "mensagem"
-      },
-      {
-        "kind": "box",
-        "title": "Participação em duas direções",
-        "text": "A criança mostra e explica. O adulto escuta, pergunta e também compartilha. Há espaço para contar, ouvir uma pergunta, responder e ampliar o assunto.",
-        "tone": "azul",
-        "icon": "pessoa"
-      },
-      {
-        "kind": "box",
-        "title": "Um ponto de contato",
-        "text": "Depois de ouvir como um problema do jogo foi resolvido, o adulto pode contar que também precisou mudar um plano no próprio dia. A semelhança permite conversar sobre estratégias.",
-        "tone": "verde",
-        "icon": "repetir"
-      },
-      {
-        "kind": "note",
-        "text": "A expressão pode acontecer por fala, gesto, desenho ou pela própria criação. O interesse não precisa ser eliminado para ampliar a conversa. A convivência e os apoios necessários fazem parte dessa experiência."
-      }
-    ],
-    "theme": "roxo"
+    "theme": "vermelho"
   },
   {
     "id": "a6",
-    "kicker": "Aula 6 · Acompanhamento",
-    "title": "A criança cria, a família acompanha",
-    "subtitle": "O responsável pode participar sem precisar saber programar.",
+    "kicker": "Aula 6 · O ciclo",
+    "title": "Como nasce um jogo",
+    "subtitle": "Seis passos, do pensamento solto ao jogo que os outros jogam.",
+    "items": [
+      {
+        "kind": "cycle",
+        "steps": [
+          [
+            "Imaginar",
+            "Personagens, mundo e objetivo do jogo."
+          ],
+          [
+            "Planejar",
+            "Organizar as ideias com começo, meio e fim."
+          ],
+          [
+            "Programar",
+            "Montar as regras com blocos coloridos."
+          ],
+          [
+            "Testar",
+            "Ver se funcionou."
+          ],
+          [
+            "Melhorar",
+            "Ajustar o que ficou para mais ou para menos."
+          ],
+          [
+            "Compartilhar",
+            "Mostrar aos outros o que criou."
+          ]
+        ]
+      },
+      {
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Na redação",
+            "Imaginar a situação, planejar personagens e contexto, escrever com início, meio e fim."
+          ],
+          [
+            "No trabalho",
+            "Montar um plano, testar, enxugar e adaptar a cada pessoa."
+          ],
+          [
+            "Entre as crianças",
+            "Quem vê o jogo do outro quer fazer algo a mais ou diferente: amplia o repertório."
+          ]
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Pensar, e não receber tudo pronto",
+        "text": "Quem responde tudo com uma ferramenta de inteligência artificial, sem conhecimento nem crítica, não sabe avaliar se a resposta é verdadeira. As crianças precisam ser colocadas para pensar.",
+        "tone": "amarelo",
+        "icon": "info"
+      }
+    ],
+    "theme": "azul"
+  },
+  {
+    "id": "a6-regra",
+    "kicker": "Aula 6 · A demonstração",
+    "title": "Uma regra de cada vez",
+    "subtitle": "Nada vem pronto: cada comportamento do jogo é uma regra que a criança pensou.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
-            "Conhecer o caminho",
-            "Interessam a ideia, as tentativas e as descobertas, além do resultado pronto. Uma primeira criação pode ser pequena e significativa."
+            "Sem regra",
+            "Clicar no esconderijo não faz nada."
           ],
           [
-            "Conta do responsável",
-            "O adulto cria a conta e o perfil da criança e acompanha pela Área dos pais."
+            "Com a primeira regra",
+            "Ao clicar, o esconderijo some e mostra quem estava atrás. O contador continua parado."
           ],
           [
-            "Acesso e participação",
-            "O responsável autoriza o aparelho e conhece as escolhas de acompanhamento e compartilhamento no ambiente."
+            "Com a segunda regra",
+            "Ao clicar, o esconderijo some e o contador soma um."
+          ]
+        ]
+      },
+      {
+        "kind": "drawing",
+        "name": "cade-regra",
+        "title": "As duas regras, em blocos"
+      },
+      {
+        "kind": "box",
+        "title": "Fui eu que causei isso",
+        "text": "Ao decidir o que acontece quando clica, a criança aprende causa e consequência: a consequência só existiu por causa da ação dela. Vale para a vida. Quanto mais estudo, mais nota. Quanto mais treino, melhor eu fico.",
+        "tone": "verde",
+        "icon": "certo"
+      }
+    ],
+    "theme": "azul"
+  },
+  {
+    "id": "a6-conversa",
+    "kicker": "Aula 6 · Em família",
+    "title": "O assunto que abre a conversa",
+    "subtitle": "O jogo vira um assunto em comum entre pais e filhos.",
+    "items": [
+      {
+        "kind": "box",
+        "title": "Na mesa de casa",
+        "text": "Chegar em casa e perguntar o que ele fez, o que aprendeu, em que você pode ajudar. Para uma criança que fala pouco, é um assunto sobre o qual ela consegue e quer conversar.",
+        "tone": "amarelo",
+        "icon": "mensagem"
+      },
+      {
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Troca de turno",
+            "Ora ele fala do jogo, ora escuta o que o outro tem para contar."
           ],
           [
-            "Apoio conforme a necessidade",
-            "Menores de 9 anos fazem com um adulto do lado. Para os demais, a presença é ajustada ao apoio necessário."
+            "Leitura de ambiente",
+            "Perceber, pelos sinais do outro, se ele ainda está interessado e a hora de parar."
+          ],
+          [
+            "De hiperfoco a ponto de interesse",
+            "Com o tempo, o jogo deixa de ser o único assunto e a criança participa bem de outras conversas."
           ]
         ]
       },
       {
         "kind": "note",
-        "text": "O projeto pode ocupar uma parte do tempo de tela já reservado. A criação continua dentro dos limites e da rotina da família."
+        "text": "Na nossa casa, o assunto dos jogos foi o pontapé inicial. Hoje conversamos com o André sobre qualquer assunto."
       }
     ],
-    "theme": "ambar"
+    "theme": "azul"
   },
   {
-    "id": "a6-passo",
-    "kicker": "Aula 6 · O presente",
-    "title": "Uma oportunidade para experimentar",
-    "subtitle": "Depois de compreender a possibilidade, a família pode conhecê-la na prática.",
+    "id": "a7",
+    "kicker": "Aula 7 · O ambiente",
+    "title": "Um lugar seguro para criar",
+    "subtitle": "O responsável tem o controle do que a criança faz na plataforma.",
     "items": [
       {
-        "kind": "box",
-        "title": "Cadê Todo Mundo",
-        "text": "Um primeiro projeto de esconde-esconde num jardim, com explicações e ferramentas na própria aula.<br/><b>Sete dias de acesso, gratuito e sem cartão.</b>",
-        "tone": "verde",
-        "icon": "presente"
+        "kind": "pairs",
+        "pairs": [
+          [
+            "A sua conta",
+            "Você cria a conta de responsável e, dentro dela, o perfil do seu filho."
+          ],
+          [
+            "Perfil privado",
+            "O perfil da criança é privado por padrão. Só fica visível dentro da plataforma, e só se você autorizar."
+          ],
+          [
+            "Áudio",
+            "A criança só envia mensagem de voz à equipe se você autorizar."
+          ],
+          [
+            "Aparelho e tempo",
+            "Você escolhe o aparelho e por quanto tempo o acesso vale. Pode cancelar quando quiser."
+          ]
+        ]
       },
       {
-        "kind": "box",
-        "title": "Para quem",
-        "text": "Crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, com um adulto do lado. Para os demais, apoio conforme a necessidade.",
-        "tone": "azul",
-        "icon": "pessoa"
-      },
-      {
-        "kind": "box",
-        "title": "O acesso ao presente",
-        "text": "O responsável faz o cadastro e depois cria o perfil do filho no ambiente. O link também está na última aula.<br/><a href=\"https://sistemazero.com.br/bolsa/vilao-em-aliado-cade\"><b>Abrir o presente: Cadê Todo Mundo</b></a><br/>sistemazero.com.br/bolsa/vilao-em-aliado-cade",
-        "tone": "amarelo",
-        "icon": "livro"
+        "kind": "pairs",
+        "pairs": [
+          [
+            "Pensa",
+            "Planejar o jogo e organizar as ideias."
+          ],
+          [
+            "Pinta",
+            "Desenhar as artes e levar para o jogo."
+          ],
+          [
+            "Molda",
+            "Fazer personagens e objetos em 3D."
+          ],
+          [
+            "Estúdio de Criação",
+            "Montar o jogo com blocos."
+          ]
+        ]
       },
       {
         "kind": "note",
-        "text": "Depois de assistir às partes, use <b>Baixar meu certificado</b> na última aula para registrar a conclusão. O presente está disponível independentemente dessa emissão. A apostila é consulta opcional; resgatar o presente não é condição para concluir."
+        "text": "Na área dos pais há um canal de atendimento para dúvidas, sugestões e pedidos de novos temas de jogo."
       },
       {
         "kind": "delivery",
-        "title": "A possibilidade que fica",
-        "text": "A tela também pode ser um espaço onde a criança imagina, decide, testa e descobre possibilidades de criar."
+        "title": "O seu presente",
+        "text": "Ele está na última aula do curso, logo abaixo do vídeo. Assista até o final para abrir."
       }
     ],
     "theme": "ambar"
@@ -492,7 +690,7 @@
       },
       {
         "kind": "note",
-        "text": "Esses trabalhos não avaliam este minicurso ou o Sistema Zero. Não estabelecem resultados específicos para crianças autistas nem garantem notas ou efeitos clínicos. O curso apresenta possibilidades e oportunidades de prática."
+        "text": "Existem inúmeros estudos sobre programação, criação de jogos e desenvolvimento de habilidades. Estes são três pontos de partida para quem quiser pesquisar. Não são estudos sobre este curso ou sobre a plataforma."
       }
     ],
     "theme": "azul"
