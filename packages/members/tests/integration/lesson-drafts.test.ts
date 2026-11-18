@@ -167,6 +167,57 @@ function setup(
 }
 
 describe('o rascunho da fase guardado na conta', () => {
+  test('rascunho Pinta capacidade 4 recusa gravador 3 antes e depois do commit', async () => {
+    const ctx = setup()
+    ctx.courses.blocks = ctx.courses.blocks.map((block) =>
+      block.id === ctx.projeto
+        ? {
+            ...block,
+            kind: 'pinta' as const,
+            content: {
+              kind: 'pinta' as const,
+              initialAsset: {
+                id: 'mapa',
+                kind: 'tilemap',
+                name: 'mapa',
+                createdAt: 1,
+                updatedAt: 1,
+                schema: 5,
+                tilesetId: 'pecas',
+                cols: 1,
+                rows: 1,
+                layers: [{ id: 'chao', name: 'Chão', visible: true, cells: [-1], offsetX: 0.25 }],
+              },
+            },
+          }
+        : block,
+    )
+    const path = `/creations/lesson-pinta/${ctx.projeto}`
+    const body = {
+      name: 'mapa',
+      kind: 'tilemap',
+      bytes: 100,
+      itemUpdatedAt: '2026-10-10T12:00:00Z',
+      baseRevision: 0,
+    }
+    const response = await ctx.request(`${path}/upload`, 'POST', { ...body, formatVersion: 4 })
+    expect(response.status).toBe(200)
+    const { revision } = (await response.json()) as { revision: number }
+    for (const confirmed of [false, true]) {
+      if (confirmed)
+        expect((await ctx.request(`${path}/commit`, 'POST', { revision })).status).toBe(200)
+      const refused = await ctx.request(`${path}/upload`, 'POST', {
+        ...body,
+        formatVersion: 3,
+        baseRevision: confirmed ? revision : 0,
+      })
+      expect(refused.status).toBe(409)
+      expect(await refused.json()).toMatchObject({
+        error: { code: 'CREATION_CLIENT_OUTDATED' },
+        details: { requiredVersion: 4 },
+      })
+    }
+  })
   test('id de bloco inválido é 400 sem consultar o repositório', async () => {
     const ctx = setup()
     ctx.courses.findBlockLessonId = async () => {

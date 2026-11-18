@@ -201,11 +201,9 @@ async function capture(drawingId: string, namespace: string, signal?: AbortSigna
   signal?.throwIfAborted()
   if (!captured.ok)
     throw new Error(
-      captured.reason === 'source-changed'
-        ? 'O desenho mudou durante o preparo. Tente novamente.'
-        : captured.reason === 'needs-tileset'
-          ? 'O conjunto de peças deste mapa não está disponível.'
-          : 'Este desenho não está mais na galeria.',
+      captured.reason === 'needs-tileset'
+        ? 'O conjunto de peças deste mapa não está disponível.'
+        : 'Este desenho não está mais na galeria.',
     )
   return captured
 }

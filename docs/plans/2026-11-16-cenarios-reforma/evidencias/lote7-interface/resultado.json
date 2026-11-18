@@ -1,0 +1,16 @@
+{
+  "marcadores": 11,
+  "propriedades": true,
+  "cancelar": true,
+  "panorama": true,
+  "importacaoDeImagem": true,
+  "seletorMoldaComAdaptadorControlado": true,
+  "nevoa": true,
+  "umaRevisaoPorGuarda": true,
+  "undoRedo": true,
+  "testarCentro": true,
+  "clipboard": true,
+  "colocacaoPeloPalco": true,
+  "reabrirComHistorico": true,
+  "erros": []
+}

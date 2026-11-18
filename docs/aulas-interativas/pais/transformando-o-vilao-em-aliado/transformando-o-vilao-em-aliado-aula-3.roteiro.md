@@ -1,93 +1,85 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-3
 
-A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. As imagens e os depoimentos entram em edição nos trechos indicados; o responsável assiste à demonstração, sem precisar executá-la. Identificar todo depoimento por nome e vínculo. Os cortes são opcionais e o roteiro precisa funcionar sem eles.
+A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. Os depoimentos são cortes já existentes e entram em edição no ponto indicado; a Helena não grava o texto deles.
 
-## Parte 1. Uma ideia pode virar um jogo
+## Parte 1. De onde veio tudo isso
 
-**Clipe:** `video-a3-rotina`
+**Clipe:** `video-a3-historia`
 
-**Na tela:** No "Criar um jogo reúne várias dessas ações", apresentar um jogo e sua regra [na edição: jardim do Cadê Todo Mundo e blocos]. No "Existe um ciclo nesse trabalho", mostrar as seis ações [na edição: imaginar, planejar, criar, testar, melhorar e compartilhar]. No "Na próxima parte", mostrar o jardim que será usado na demonstração [na edição: projeto preparado].
-
-**Depoimento opcional (não gravar):** Um corte curto de Rafael sobre criar o próprio jogo ou de Fernando explicando sua regra pode entrar depois de "Quem cria precisa transformar essas intenções em regras." Escolher um deles, com nome e vínculo, sem interromper a demonstração seguinte.
+**Na tela:** No "Eu sou da área de tecnologia", mostrar a apresentadora [na edição: câmera; se houver, foto da família]. No "Eu já jogava um monte", mostrar a frase do André [na edição: Eu já jogava um monte. Agora eu faço os meus jogos, e esse foi o primeiro. André]. No "ele deu uma palestra numa faculdade", ilustrar o momento [na edição: foto do André na faculdade, se houver].
 
 **Fala da Helena:**
 
 ```text
-Criar um jogo reúne várias dessas ações numa experiência que pode ter muito significado para a criança. Ela imagina uma situação e precisa pensar no que o jogador vai fazer, quais regras vão existir e como conferir se funcionaram.
+Agora eu quero te contar de onde veio isso tudo.
 
-O jogo pode começar com um jardim e animais escondidos. O objetivo é encontrar os animais. Mas o que acontece quando o jogador toca num esconderijo? Como ele sabe quantos já encontrou? Quem cria precisa transformar essas intenções em regras.
+Eu sou da área de tecnologia, junto com o meu marido, o Júlio, que também é da área. E a gente tem dois filhos autistas, que fazem terapia já há alguns anos.
 
-Para começar, não é preciso escrever linhas de código. É possível montar regras com blocos visuais. Eles ajudam a expressar um pensamento: quando acontecer isto, faça aquilo.
+O meu filho mais velho, o André, sempre gostou muito de jogar. Ele ficava muito tempo nas telas. Muitas vezes eu queria tirar as telas, mas muitas vezes essa era a forma que eu tinha para ele se regular, para ele ficar calmo. E era difícil tirar a tela na hora que eu queria, do jeito que eu queria. Tinha muita briga.
 
-Essa lógica também é conhecida fora do computador. Antes de sair, eu preciso pegar o que vou levar. Se a porta estiver trancada, preciso da chave. Eu organizo ações e considero condições para chegar a um resultado. No jogo, vou expressar essas relações de um jeito que o computador consiga executar.
+Foi aí que a gente teve a ideia de unir as duas coisas: o gosto dele por estar nas telas e a nossa experiência na área de tecnologia. A gente criou esse projeto para ensinar crianças e adolescentes a criar e a mudar de papel, a sair de simples consumidor de tela e de tecnologia.
 
-Por exemplo: quando o personagem tocar na porta, se estiver com a chave, ele pode entrar. Uma intenção virou uma regra com uma condição. Na demonstração, vamos começar com uma regra ainda mais simples: tocar num esconderijo para revelar o que está atrás.
+E muita coisa mudou. Para os meus filhos, fez muita diferença em vários pontos. Eles se desenvolveram bastante, e na escola a gente viu muita diferença. É algo real, que ajuda mesmo. As habilidades cognitivas melhoram demais. Foi algo que eu vi dentro da minha casa, e aí eu quis estender para outras famílias também. É por isso que eu estou com esse projeto.
 
-Existe um ciclo nesse trabalho. Imaginar o que quero fazer. Planejar como as partes se relacionam. Criar as regras. Testar o que acontece. Melhorar o que ainda não corresponde à ideia. E compartilhar, para outra pessoa conhecer e experimentar.
+O André tem uma frase muito interessante: "Eu já jogava um monte. Agora eu faço os meus jogos, e esse foi o primeiro." É aquilo que a gente falou no início. Ele já usava um monte, e era prejudicial. Então, já que eu não mudo esse monte, ou até reduzo, mas não consigo tirar, vamos fazer um uso funcional.
 
-Essas etapas se misturam e podem se repetir. Um teste pode mostrar que preciso rever o plano. A pessoa que joga pode descobrir uma dificuldade que eu ainda não tinha percebido.
+E, abrindo um parêntese: no início deste semestre, ele deu uma palestra numa faculdade, ensinando os alunos a criar jogos. Ele falou para a turma de TI, e foi muito bacana. Foi um orgulho enorme ver o meu filho, que tinha tantas dificuldades um tempo atrás, ali, palestrando na faculdade.
 
-Na próxima parte, você vai acompanhar uma demonstração pequena. Eu vou mostrar uma regra sendo construída e o que muda quando a gente testa. Não é preciso abrir a ferramenta ou fazer junto. O objetivo é enxergar o raciocínio de quem está criando. Clique em Próxima parte.
+Olha o alcance que essa forma de lidar com o nosso grande vilão, as telas, pode ter. Ela pode levar a criança mais longe. Pode fazer com que ela realmente produza algo que seja mais saudável. Clique em Próxima parte.
 ```
 
-## Parte 2. Uma regra, um teste e um resultado
+## Parte 2. Você reconhece o seu filho aqui?
 
-**Clipe:** `video-a3-caminho`
+**Clipe:** `video-a3-reconhece`
 
-**Na tela:** No "Aqui já temos um jardim", mostrar o projeto preparado [na edição: jardim com animais, esconderijos e Achados em zero]. No "Eu clico neste esconderijo", clicar uma vez no esconderijo ainda sem regra [na edição: clique sem efeito]. No "Eu acrescento uma regra", mostrar o evento e a ação de visibilidade [na edição: Quando clicar/tocar num sprite do grupo esconderijos chamá-lo de escolhido; Deixar o sprite escolhido com 0 % de visibilidade]. No "Agora eu testo", clicar e mostrar o animal [na edição: esconderijo invisível, Achados ainda em zero]. No "Eu acrescento a ação de somar um", mostrar a nova ação no mesmo evento [na edição: Somar 1 em variável achados]. No "Recomeço o jogo para testar", reiniciar e clicar uma vez em cada esconderijo [na edição: achados em zero, depois um e dois, sem repetir clique no mesmo esconderijo]. No "Eu decidi o que queria que acontecesse", manter o resultado à vista [na edição: regra e jogo lado a lado].
-
-**Preparação da captura (não gravar):** Usar uma versão reduzida do jardim do Cadê Todo Mundo, com dois animais sob dois esconderijos separados. Ao iniciar, criar os sprites, deixar os esconderijos à frente, inserir somente os esconderijos no grupo esconderijos, iniciar a variável achados em zero e manter o placar ligado a essa variável durante a execução. Essas partes já vêm preparadas e não são alteradas durante a explicação. Registrar três estados do mesmo projeto: sem evento de clique; evento que torna o escolhido invisível; mesmo evento com a soma de um em achados. Parar e executar novamente a cada mudança, restaurando esconderijos e contagem. Na versão final, tocar uma vez em cada esconderijo, com o jogo em execução, para obter zero, um e dois. Não apresentar como montagem integral nem pedir que o responsável siga paletas. A captura é manual e recebe a fala em edição.
-
-**Conferência antes da gravação (não gravar):** Aguardar o primeiro desenho do jardim antes de clicar; testar os três estados e conferir que o placar exibe a variável atual. Sem regra, o clique não faz nada; com visibilidade, revela sem contar; com a soma, revela e conta. Conferir também que tocar no lugar de um esconderijo já invisível não aumenta a contagem. No runtime atual, um sprite com visibilidade zero não recebe esse clique. Os rótulos foram conferidos nas definições reais: sz_g2d_on_group_click em blockCatalogText.ts, sz_g2d_set_opacity em blockCatalogFundamentals.ts e sz_js_var_increment em blockly/blocks/js.ts, no pacote studio. A apostila usa esses mesmos tipos e cores.
+**Na tela:** No "Ele sabe tudo sobre um assunto", mostrar a lista e destacar o primeiro item [na edição: seis situações, uma por vez: sabe tudo sobre um assunto; precisa saber o que vai acontecer; se frustra quando perde; gosta de organizar tudo em sequência; não larga a tela; mostra mais do que fala]. No "Ele precisa saber sempre o que vai acontecer", destacar o segundo item. No "Ele se frustra quando perde", destacar o terceiro. No "Ele gosta de organizar tudo em sequência", destacar o quarto. No "Ele não larga a tela", destacar o quinto. No "Ele mostra mais do que fala", destacar o sexto.
 
 **Fala da Helena:**
 
 ```text
-Aqui já temos um jardim, dois animais escondidos e um placar. Vou começar com uma ideia bem pequena: quando eu tocar no esconderijo, quero descobrir o animal que está atrás.
+Agora eu quero que você pense se reconhece o seu filho em alguma destas situações.
 
-Eu clico neste esconderijo. Nada aconteceu. O desenho já está aqui, mas ainda falta uma regra para responder ao clique.
+"Ele sabe tudo sobre um assunto." Tem criança para quem tudo é dinossauro, ou tudo é o espaço. Tem um tema específico de que ela gosta muito. Isso pode ser uma oportunidade: pode virar o tema de um jogo. Aí o interesse surge naturalmente, porque ela já gosta muito daquele tema, e eu consigo criar um jogo sobre qualquer assunto que eu quiser. É uma porta de entrada.
 
-O que eu preciso dizer ao jogo? Primeiro, reconhecer que alguém tocou num esconderijo. Depois, fazer aquele esconderijo ficar invisível. Assim, o animal que já está atrás vai aparecer.
+"Ele precisa saber sempre o que vai acontecer." Para criar um jogo, a gente tem que programar. E não é um bicho de sete cabeças, como muita gente pensa; a próxima aula é inteira sobre isso. Mas, na programação, uma regra dá sempre o mesmo resultado. É previsível, é bem específico: se eu colocar isso, sempre vai dar aquilo. Então essa previsibilidade sempre vai existir.
 
-Eu acrescento uma regra: quando clicar num esconderijo, deixar esse esconderijo com zero por cento de visibilidade.
+"Ele se frustra quando perde." A gente já falou sobre a motivação. Quando ele está motivado por criar, ele fica mais disposto a errar. O próprio jogo vai motivar o seu filho a querer encontrar o resultado, e ele vai conseguir desenvolver mais essa questão do erro.
 
-Agora eu testo. O esconderijo sumiu e o animal apareceu. O jogo respondeu à regra que eu construí.
+"Ele gosta de organizar tudo em sequência." A sequência é a base de todo jogo, de todo programa. A criança que é assim também vai se dar bem.
 
-Só que repare no placar. Continua em zero. Eu encontrei um animal, mas o jogo não está contando. Por quê? Porque a regra que eu fiz só manda esconder. Ela ainda não manda contar.
+"Ele não larga a tela." Esse é o caso da maioria. E é aquilo que a gente estava falando: o tempo de tela vai ser o mesmo. A função que a gente dá para essa tela, o papel dela, é que vai ser diferente.
 
-Então preciso relacionar a intenção com o que já foi construído. Quero que, ao encontrar um animal, o placar aumente um. A mudança vai entrar dentro desse mesmo acontecimento, junto da ação de esconder.
-
-Eu acrescento a ação de somar um na variável que guarda os achados.
-
-Recomeço o jogo para testar desde o início. O placar está em zero. Clico num esconderijo: o animal aparece e o placar vai para um. Clico no outro: aparece o outro animal e o placar vai para dois.
-
-Eu decidi o que queria que acontecesse, organizei uma regra, observei o resultado e acrescentei o que faltava. O placar não contar não queria dizer que eu era incapaz. Mostrava uma parte da ideia que ainda não estava expressa no programa.
-
-Quem apenas olhar o jogo pronto vai ver um esconde-esconde. Quem participa da criação precisa pensar nessas relações para fazer o esconde-esconde funcionar. Clique em Próxima parte.
+"Ele mostra mais do que fala." Tem criança que é mais caladinha, que não fala tanto. Eu conheço um menino autista que tem muita dificuldade para falar. Custou para ele conseguir gravar um vídeo contando a experiência dele. E o que ele disse foi que a melhor coisa é que ele teve uma forma de se expressar. Por meio do jogo, a criança consegue se expressar. Não necessariamente com palavras, mas ela consegue colocar ali as ideias, o pensamento e o que está sentindo, de forma concreta. Mais adiante no curso você vai ouvir isso dele mesmo. Clique em Próxima parte.
 ```
 
-## Parte 3. O que a demonstração permite perceber
+## Parte 3. Entrar no mundo dele
 
-**Clipe:** `video-a3-erro`
+**Clipe:** `video-a3-mundo`
 
-**Na tela:** No "Na demonstração", mostrar os três estados [na edição: clique sem efeito, esconderijo que some, placar que conta]. No "Existe também uma relação entre decisão e consequência", destacar a regra e o efeito correspondente [na edição: ação programada e resultado]. No "É isso que torna a criação", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "você chega do trabalho", mostrar a apresentadora [na edição: câmera]. No "quando eu entro no mundo dessa criança, ela abre portas para vir para o meu", destacar a frase [na edição: frase em destaque]. No "a autonomia crescendo", listar o que os pais percebem [na edição: autonomia, criatividade, organização nas tarefas do dia a dia].
+
+**Depoimento (inserir na edição, não gravar):** Corte da criança que quis saber como são feitos os jogos de que gosta, o mesmo exibido no encontro de 13/11. Inserir depois de "partiu exatamente do interesse dele." Identificar nome. Transcrição do corte: "O que eu mais gostei de aprender foi como é que foram feitos os jogos que eu jogo, como Roblox, Fortnite, God of War. É uma nova área que você vai explorando, e também é o jeito de não só jogar, mas aprender mais coisas sobre computador e tecnologia hoje em dia."
+
+**Depoimento (inserir na edição, não gravar):** Corte dos pais sobre o que perceberam depois que os filhos começaram a criar, o mesmo exibido no encontro de 13/11. Inserir depois de "os filhos começaram a criar." Identificar nome e vínculo. Transcrição do corte: "O Jeffrey é autista. Isso conflitava muito em mim, no meu coração, a questão de achar que ele poderia não conseguir. Mas, graças a Deus, ele está superando a expectativa. Sempre levou a sério os trabalhos e está desempenhando bem. Ele começou a ter a regra dele de todo dia ir lá olhar, ver o que tem mais. É responsável com as coisas dele." "Trouxe para o Rafa uma questão de se pensar, de se organizar, tanto na lógica quanto na matemática." "Eu tenho visto que o Bernardo está aprendendo muito mais como esses jogos que ele tanto consome são criados. Isso aumenta a área deles de percepção, de criatividade, de autonomia." "Ele é mais independente, porque meu tempo é bem apertado. No início eu acompanhei mais, agora eu acompanho menos. Ele faz com total independência no momento."
 
 **Fala da Helena:**
 
 ```text
-Na demonstração, o resultado apareceu aos poucos. Para chegar nele, foi preciso manter uma intenção em mente, organizar ações e comparar o que eu queria com o que realmente aconteceu.
+E, quando a criança se expressa pelo jogo, abre-se uma oportunidade enorme para a gente. Imagina que o menino está lá, construindo o joguinho, e você chega do trabalho. É claro que ele vai querer te mostrar. Primeiro, porque é jogo. Segundo, porque é tela.
 
-Quando o esconderijo sumiu, mas o placar não contou, eu precisei separar as duas coisas. Uma parte funcionou. A outra ainda precisava ser construída. Esse olhar evita tratar toda dificuldade como se tudo tivesse dado errado.
+Por meio disso, eu estou dentro do interesse dele e vou puxar assunto. Ele vai conseguir trazer um pensamento mais organizado, vai verbalizar, vai se esforçar para se fazer entender. Eu vou conseguir ter uma relação de proximidade maior, porque estou falando sobre o jogo dele. E daí eu consigo estender para as outras atividades do dia a dia.
 
-Eu também precisei formular uma hipótese: se a contagem deve acontecer no clique, a instrução de contar precisa estar ligada a esse acontecimento. Depois do ajuste, testei para conferir. A resposta apareceu no próprio resultado.
+Porque quando eu entro no mundo dessa criança, ela abre portas para vir para o meu. Quando eu falo de jogo, quando eu peço para ele me explicar como fez, como construiu, o que foi mais difícil, eu posso começar a falar de mim. "Olha, lá no meu trabalho também deu errado. Aí eu pensei: como foi que o seu personagem fez? O que você fez para poder consertar?" "Ah, eu fiz assim." "Nossa, ótima ideia! Eu posso aplicar isso lá também."
 
-Existe também uma relação entre decisão e consequência. A criança percebe que uma escolha dela muda o que acontece no jogo. Ela participa como alguém que pode agir, observar o efeito e fazer outra escolha.
+Olha só: eu estou trabalhando com ele a ampliação de repertório e de estratégias para solucionar problemas em outros contextos. Estou ampliando ainda mais as funções executivas. Lá na frente eu te conto como essa conversa mudou a nossa casa.
 
-É claro que nem tudo na vida responde como um programa. Mas essa experiência permite conversar sobre um ponto concreto: o que eu fiz, o que aconteceu e o que posso tentar de outro jeito?
+E falando no interesse da criança, eu quero te mostrar um menino que gostava muito de jogar. A criação dele partiu exatamente do interesse dele.
 
-Observe também que o jardim já estava preparado. Começar com apoio e com algumas partes prontas não retira a participação da criança. Pode permitir que ela se concentre numa decisão de cada vez, compreenda aquela relação e depois consiga fazer algo mais complexo.
+Ele usou esse interesse para descobrir como foram feitos os jogos de que ele tanto gosta.
 
-O que queremos preservar é esse espaço para pensar. Uma explicação pode ajudar a conhecer um caminho. A criança pode acompanhar, testar e depois fazer uma mudança que entende. Se apenas repetir gestos sem compreender o resultado, a oportunidade fica menor.
+Agora escuta o que alguns pais começaram a perceber depois que os filhos começaram a criar.
 
-É isso que torna a criação de jogos uma possibilidade interessante para praticar habilidades cognitivas para a vida. O jogo dá uma situação concreta para planejar, escolher, investigar e ajustar. Cada criança vai precisar de desafios e apoios que façam sentido para ela. Na próxima aula, vamos conversar sobre esse começo. Clique em Concluir aula para continuar.
+Olha o que os pais percebem: a autonomia crescendo, a criatividade, a organização nas tarefas do dia a dia. São várias coisas que os pais vão percebendo que realmente estão mudando na vida dos filhos.
+
+Talvez você esteja pensando: "Tá, mas para criar um jogo tem que programar. Isso não é difícil demais?" É o que a gente vai ver na próxima aula. Clique em Concluir aula para continuar.
 ```

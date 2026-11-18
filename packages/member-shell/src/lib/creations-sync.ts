@@ -359,6 +359,8 @@ export interface ReconcileOptions<T extends LocalCreation, P> {
    * (marca = `updatedAt` do disco). Mudou → pulado (`skipped`), sem cópia, marca parada.
    */
   localUpdatedAt?: (itemId: string) => Promise<number | null | undefined>
+  /** Adapter with native revisions can detect edits even when wall clocks are equal. */
+  hasLocalChanges?: (item: T, syncedAt: number | undefined) => boolean | undefined
   /** Ordem das descidas (ex.: peças antes dos mapas que apontam para elas). */
   order?: (a: CloudCreationSummary, b: CloudCreationSummary) => number
   /** Descidas em paralelo (default 3). */
@@ -473,7 +475,9 @@ export async function reconcileCreations<T extends LocalCreation, P>(
       }
       const current = localById.get(remote.itemId)
       const lastSynced = current ? options.marks.get(current.id) : undefined
-      const localChanged = current !== undefined && current.updatedAt !== lastSynced
+      const localChanged =
+        current !== undefined &&
+        (options.hasLocalChanges?.(current, lastSynced) ?? current.updatedAt !== lastSynced)
       if (current && localChanged) stagedCopy = await options.keepLocalCopy(current)
       if (current && options.isBusy?.(remote.itemId)) {
         rollbackAttempted = true
@@ -530,12 +534,14 @@ export async function reconcileCreations<T extends LocalCreation, P>(
       report.uploaded += 1
       continue
     }
-    if (item.updatedAt === remote.itemUpdatedAt) {
+    const lastSynced = options.marks.get(item.id)
+    const revisionChanged = options.hasLocalChanges?.(item, lastSynced)
+    const localChanged =
+      revisionChanged ?? (lastSynced === undefined || item.updatedAt !== lastSynced)
+    if (item.updatedAt === remote.itemUpdatedAt && revisionChanged !== true) {
       options.marks.set(item.id, item.updatedAt, remote.revision)
       continue
     }
-    const lastSynced = options.marks.get(item.id)
-    const localChanged = lastSynced === undefined || item.updatedAt !== lastSynced
     const remoteChanged = lastSynced === undefined || remote.itemUpdatedAt !== lastSynced
     if (localChanged && !remoteChanged) {
       options.push(item)
@@ -549,9 +555,11 @@ export async function reconcileCreations<T extends LocalCreation, P>(
   for (const remote of aliveCloud) {
     const local = localById.get(remote.itemId)
     if (local) {
-      if (remote.itemUpdatedAt === local.updatedAt) continue
       const lastSynced = options.marks.get(local.id)
-      const localChanged = lastSynced === undefined || local.updatedAt !== lastSynced
+      const revisionChanged = options.hasLocalChanges?.(local, lastSynced)
+      const localChanged =
+        revisionChanged ?? (lastSynced === undefined || local.updatedAt !== lastSynced)
+      if (remote.itemUpdatedAt === local.updatedAt && revisionChanged !== true) continue
       const remoteChanged = lastSynced === undefined || remote.itemUpdatedAt !== lastSynced
       if (!remoteChanged) continue
       if (options.isBusy?.(remote.itemId)) {

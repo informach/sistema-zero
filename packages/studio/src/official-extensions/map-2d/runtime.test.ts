@@ -1,4 +1,6 @@
 import { expect, it } from 'bun:test'
+import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
+import { sceneSolidAt } from '@sistemazero/core/studio/pinta-scene-runtime'
 import type { ExtensionBootstrapContext } from '#extensions'
 import { gameTwoDRuntime } from '../game-2d/runtime'
 import { gameKitRuntime } from '../game-2d-advanced/runtime'
@@ -125,6 +127,122 @@ function tocador(
   return { api, grades, colisoes: () => colisoes }
 }
 
+it('a collision set scaled 2 by 2 fills every covered root cell', () => {
+  const sample = PintaSceneSchema.parse({
+    ...scene,
+    cols: 8,
+    rows: 8,
+    sets: [
+      {
+        id: 'set',
+        cols: 1,
+        rows: 1,
+        layers: [
+          { id: 'tile', name: 'Tile', visible: true, kind: 'tiles', tilesetId: 'ts', cells: [0] },
+        ],
+      },
+    ],
+    layers: [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Objects',
+        visible: true,
+        objects: [
+          {
+            id: 'copy',
+            name: 'Copy',
+            type: '',
+            shape: 'set',
+            setId: 'set',
+            x: 16,
+            y: 16,
+            width: 32,
+            height: 32,
+            properties: {},
+          },
+        ],
+      },
+    ],
+  })
+  const { api, grades } = tocador(null, null, { meta: () => ({ scene: sample }) })
+  api.createMapScene('map', 'asset')
+  expect(grades[0]?.flat().filter((cell) => cell === 0)).toHaveLength(4)
+})
+
+it('set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds', () => {
+  for (const rotation of [0, 90, 180, 270])
+    for (const width of [32, 64, 96])
+      for (const height of [32, 64])
+        for (const flipX of [false, true])
+          for (const flipY of [false, true]) {
+            const sample = PintaSceneSchema.parse({
+              ...scene,
+              cols: 8,
+              rows: 8,
+              tilesets: [{ ...scene.tilesets[0], count: 2, platform: [1] }],
+              sets: [
+                {
+                  id: 'set',
+                  cols: 2,
+                  rows: 2,
+                  layers: [
+                    {
+                      id: 'tile',
+                      name: 'Tile',
+                      visible: true,
+                      kind: 'tiles',
+                      tilesetId: 'ts',
+                      cells: [0, 1, -1, 0],
+                    },
+                  ],
+                },
+              ],
+              layers: [
+                {
+                  id: 'ground',
+                  name: 'Ground',
+                  visible: true,
+                  kind: 'tiles',
+                  tilesetId: 'ts',
+                  cells: Array(64).fill(1),
+                },
+                {
+                  id: 'objects',
+                  kind: 'objects',
+                  name: 'Objects',
+                  visible: true,
+                  objects: [
+                    {
+                      id: 'copy',
+                      name: 'Copy',
+                      type: '',
+                      shape: 'set',
+                      setId: 'set',
+                      x: 64,
+                      y: 64,
+                      width,
+                      height,
+                      rotation,
+                      ...(flipX ? { flipX } : {}),
+                      ...(flipY ? { flipY } : {}),
+                      properties: {},
+                    },
+                  ],
+                },
+              ],
+            })
+            const { api, grades } = tocador(null, null, { meta: () => ({ scene: sample }) })
+            api.createMapScene('map', 'asset')
+            for (let r = 0; r < sample.rows; r++)
+              for (let c = 0; c < sample.cols; c++)
+                expect(
+                  grades[0]![r]![c],
+                  JSON.stringify({ rotation, width, height, flipX, flipY, c, r }),
+                ).toBe(sceneSolidAt(sample, (c + 0.5) * 16, (r + 0.5) * 16) ? 0 : 1)
+          }
+})
+
 it('monta a grade de colisão, os objetos e os eventos sem perder dados', () => {
   const ctx = contextoDeMentira()
   const { api, grades, colisoes } = tocador(ctx, { complete: true, naturalWidth: 16 })
@@ -180,6 +298,29 @@ it('confere as áreas a cada quadro do host, sem depender do desenho, e para no 
   ;(api as unknown as { reset: () => void }).reset()
   quadro()
   expect(fila).toHaveLength(0)
+})
+
+it('caminhos e pontos usam seu contorno, inclusive após rotação', () => {
+  const { api } = tocador(null, null)
+  const path = {
+    id: 'trilha',
+    shape: 'polyline',
+    x: 10,
+    y: 20,
+    width: 20,
+    height: 20,
+    rotation: 90,
+    properties: {},
+    points: [
+      { x: 0, y: 0 },
+      { x: 20, y: 20 },
+    ],
+  }
+  expect(api.mapInArea({ x: 0, y: 30, w: 0, h: 0 }, path)).toBe(true)
+  expect(api.mapInArea({ x: -8, y: 22, w: 0, h: 0 }, path)).toBe(false)
+  const point = { ...path, shape: 'point', rotation: 0, width: 0, height: 0 }
+  expect(api.mapInArea({ x: 10.5, y: 20, w: 0, h: 0 }, point)).toBe(true)
+  expect(api.mapInArea({ x: 12, y: 20, w: 0, h: 0 }, point)).toBe(false)
 })
 
 it.skipIf(!nativo)('compõe camadas, espelho e opacidade nos pixels', () => {

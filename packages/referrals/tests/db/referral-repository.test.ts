@@ -517,6 +517,38 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect(historical?.muralVisitorPolicy).toBeNull()
   })
 
+  test('vaga do presente (0011): curso para pais convive com o presente do mesmo e-mail', async () => {
+    const { code } = await seedCode()
+    const base = {
+      codeId: code.id,
+      email: 'paula@example.com',
+      audience: 'kids' as const,
+      name: 'Paula',
+      phone: null,
+    }
+    const slot = 'parents:transformando-o-vilao-em-aliado'
+    const curso = await repo.insertRedemption({ ...base, giftSlot: slot })
+    const presente = await repo.insertRedemption(base)
+    expect([curso.created, presente.created]).toEqual([true, true])
+    expect(curso.redemption.giftSlot).toBe(slot)
+    expect(presente.redemption.giftSlot).toBe('main')
+    // Repetir cada um devolve a própria linha, sem criar outra.
+    expect((await repo.insertRedemption({ ...base, giftSlot: slot })).redemption.id).toBe(
+      curso.redemption.id,
+    )
+    expect((await repo.insertRedemption(base)).created).toBe(false)
+    // Sem vaga, a busca é a do presente do público; com vaga, a do curso.
+    expect((await repo.findRedemptionByEmail(base.email, 'kids'))?.id).toBe(presente.redemption.id)
+    expect((await repo.findRedemptionByEmail(base.email, 'kids', slot))?.id).toBe(
+      curso.redemption.id,
+    )
+    expect((await repo.listRedemptionsByEmail(base.email, 'kids')).map((r) => r.id)).toEqual([
+      curso.redemption.id,
+      presente.redemption.id,
+    ])
+    expect(await repo.listRedemptionsByEmail(base.email, 'adult')).toEqual([])
+  })
+
   test('resgate por oferta grava a oferta, os dias e a política offer (0010)', async () => {
     const { code } = await seedCode()
     const { redemption } = await repo.insertRedemption({

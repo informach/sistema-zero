@@ -160,6 +160,12 @@ export function GalleryScreen(): JSX.Element {
   const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
   const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
+  const recoveryNotice = usePintaGallery((state) => state.recoveryNotice)
+  useEffect(() => {
+    if (!recoveryNotice) return
+    showToast(recoveryNotice)
+    gallery.getState().acknowledgeRecovery()
+  }, [gallery, recoveryNotice, showToast])
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)

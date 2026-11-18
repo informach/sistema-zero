@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { esperarConsulta } from './esperar-consulta.mjs'
 
 const raiz = resolve(import.meta.dirname, '../../../..')
 const modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/').replace(/^\//, '')}`
@@ -84,7 +85,8 @@ try {
   await p.getByRole('heading', { name: 'Cópias dos moldes', exact: true }).waitFor()
   await p.getByRole('button', { name: 'Pôr Casa do Molda no cenário', exact: true }).click()
   async function esperarObjetos(n) {
-    await p.waitForFunction(
+    await esperarConsulta(
+      p,
       async (n) => {
         const h = window.__cenarios.host
         const [m] = await h.listarMundos('conta')

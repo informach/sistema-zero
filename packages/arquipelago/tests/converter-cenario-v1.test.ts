@@ -35,7 +35,12 @@ test('conversão conserva autoria, assentamento visível, recortes e relevo real
   expect(resultado.origem.carimbos).toBe(1)
   expect(resultado.erroMaximoDeQuantizacao).toBeLessThan(0.001)
   expect(resultado.documento.instancias.length).toBe(original.instancias.length)
-  expect(resultado.documento.caminhos).toEqual(original.caminhos)
+  expect(resultado.documento.caminhos).toEqual(
+    original.caminhos.map((c) => ({
+      ...c,
+      encaixeModelo: { eixo: 'x', baseLocal: 0, centroTransversalLocal: 0 },
+    })),
+  )
   expect(resultado.documento.aguas).toEqual(
     original.aguas.map((a) => ({
       ...a,

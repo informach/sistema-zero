@@ -1,9 +1,31 @@
 # Pinta: cenários 2D
 
+## Revisão integral de 18/11/2026
+
+[PR draft 274](https://github.com/informach/sistema-zero/pull/274): revisão e correções,
+sem merge/deploy, incluindo a correção transacional da recuperação offline.
+
+A missão completa **ainda não está concluída**. A revisão do código local e remoto, suas
+correções e a matriz dos 33 critérios estão em [cobertura](revisao-2026-11-18/cobertura.md).
+O [relatório de QA](revisao-2026-11-18/qa.md) distingue testes locais, navegador, motores
+externos e o que permanece sem comprovação. As seções seguintes registram a execução anterior;
+concluir seus 14 incrementos não equivale a cumprir toda a missão.
+As [pendências na ordem das etapas](revisao-2026-11-18/pendencias.md) orientam a continuação.
+
+**Recuperação offline implementada:** a [issue 026](../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
+agora conserva o documento confirmado e recupera a edição da aba antiga como cópia,
+com autoridade, revisão, espelho e lápide transacionais. Veja as
+[provas, custos e limites](revisao-2026-11-18/qa/autoridade-local-026.md).
+Isso remove esse bloqueio específico; a missão integral e o rollout continuam parciais.
+
+A proteção atual usa nuvem **4**, documentos ricos **4** e documentos com deslocamentos
+fracionários **5**. Camadas sem recursos ricos continuam em **3** e os legados conservam sua
+representação. A versão 5 impede que o leitor completo intermediário 4 arredonde as frações.
+
 Registro vivo da evolução do editor de mapas do Pinta para um editor de cenários 2D: diagnóstico,
 arquitetura, plano por incrementos e o estado de cada um. Atualizado a cada incremento fechado.
 
-## Estado em 17/11/2026
+## Incrementos da entrega iniciada em 17/11/2026
 
 A continuação implementa os incrementos 4b a 14 sobre os incrementos 1 a 4a já presentes
 na `staging` remota. A ordem de execução segue a tabela do plano. A identidade visual usa os
@@ -11,11 +33,14 @@ mesmos tokens, tipografia, botões, painéis e barras do Pinta.
 Entrega isolada na branch `pinta-cenarios-finalizar`; a proteção completa declara versão de
 nuvem 3 para também barrar o cliente intermediário que declarava 2.
 
+A tabela conserva a sequência original, com as correções de contrato atuais indicadas.
+Ela não substitui a matriz da missão nem representa um snapshot do código de 17/11.
+
 | # | Entrega | Implementação |
 |---|---|---|
 | 1–2 | Trava de leitura e declaração por tipo | Já incorporadas à base remota; testes de frota mista preservados |
 | 3 | Células e histórico por buffers únicos | Preservado e integrado aos novos caminhos |
-| 4 | Documento v3 completo | Camadas, objetos tipados, metadados de peças e conjuntos |
+| 4 | Documento versionado | Camadas usam schema 3; recursos ricos 4; offsets fracionários exigem 5 |
 | 5 | Contrato e conversor de cena | PintaScene validado e dependências resolvidas |
 | 6 | Área visível e cache | Canvas recortado, blocos 32 × 32 e cache LRU |
 | 7 | Separar editor | Controlador de seleção e módulos/painéis extraídos |
@@ -27,11 +52,13 @@ nuvem 3 para também barrar o cliente intermediário que declarava 2.
 | 13 | Destinos externos | Tiled JSON/TMX/TSX, Phaser offline, Pygame portátil e Godot nativo |
 | 14 | Referência e documentação | Vila e Floresta, exemplos dos dois motores, guias e evidências |
 
-A validação local, os ensaios em navegador e os limites de comprovação são registrados em
-[homologação](homologacao.md), revista em 18/11/2026: os destinos externos (linha 13) não foram
-abertos no Tiled nem no Godot, e os ensaios em navegador (linha 14) são capturas feitas à mão. Não há merge ou deploy nesta entrega. Aparelhos físicos e
-staging real precisam de ensaio no ambiente correspondente; não são apresentados como testes
-realizados. Mapas infinitos/isométricos/hexagonais estão fora do escopo declarado do plano.
+A validação anterior está registrada em [homologação](homologacao.md): naquele momento não
+havia ensaio no Tiled/Godot e as capturas do navegador eram manuais. A revisão atual acrescenta
+Tiled real, Godot headless, Pygame/PyDew e testes interativos de produção no navegador, descritos
+no [QA atual](revisao-2026-11-18/qa/verification.md). Não há merge ou deploy nesta revisão.
+Aparelhos físicos e staging real ainda precisam de ensaio no ambiente correspondente.
+Mapas infinitos/isométricos/hexagonais foram excluídos do plano anterior, mas
+continuam **pendentes na missão integral**, conforme R29/R30 da revisão atual.
 
 ## Correções de 18/11/2026
 
@@ -73,9 +100,10 @@ para o Phaser, para o teste com personagem e para o jogo no Studio; uma execuç�
 | O teste de arquitetura das células só via `cells[` | Vê também `.cells.forEach` e afins, e as máscaras fora de `tiles/cell.ts` |
 
 Limites conhecidos: o leitor de PEÇAS de `bf6e895f` e todo o código da `main` não conferem o
-carimbo do registro; para eles só a trava da nuvem e a checagem de formato perdido protegem. Sem
-`localStorage`, essa checagem não acontece. A régua dos tetos da aula vale no envio do desenho pela
-criança (testado no Members), mas não na autoria do bloco pelo Admin; e o transporte do rascunho
+carimbo do registro; para eles só a trava da nuvem e a checagem de formato perdido protegem.
+Sem armazenamento persistente, a memória de formato protege a sessão atual, mas não sobrevive
+ao reinício do navegador. A revisão integral passou a aplicar a régua dos tetos da aula tanto
+na autoria do Admin quanto no envio da criança; o transporte do rascunho
 de aula não repassa a versão da nuvem (vale a recusa pelo carimbo do documento).
 
 ### Editor de mapas

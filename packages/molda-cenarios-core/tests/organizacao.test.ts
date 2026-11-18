@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import type { ComandoDeCenario } from '../src/v2'
 import {
   agruparElementos,
+  CaminhoSchema,
   criarDocumentoVazio,
   executarLote,
   inverterLote,
@@ -35,6 +36,30 @@ function cena() {
 }
 const aplicar = (d: ReturnType<typeof cena>, comandos: ComandoDeCenario[]) =>
   executarLote({ documento: d, revisao: 0 }, { revisaoEsperada: 0, comandos }).documento
+
+test('escolha de uma pasta inclui caminhos sem promovê-los a objetos transformáveis', () => {
+  const d = cena()
+  d.caminhos = [
+    CaminhoSchema.parse({
+      id: 'via',
+      nome: 'Entrada',
+      tipo: 'trilha',
+      grupo: 'sub',
+      oculto: false,
+      bloqueado: false,
+      acabamento: null,
+      largura: 2,
+      pontos: [
+        { x: 0, z: 0 },
+        { x: 4, z: 0 },
+      ],
+    }),
+  ]
+  const indice = indiceDaOrganizacao(d)
+  expect(indice.descendentes('g')).toEqual(['a'])
+  expect(indice.descendentesSelecionaveis('g')).toEqual(['a', 'via'])
+  expect(indice.descendentesSelecionaveis('via')).toEqual(['via'])
+})
 
 test('referências de modelos em caminhos e lagos também respeitam cadeados próprios e herdados e o undo', () => {
   const d = comCamada()

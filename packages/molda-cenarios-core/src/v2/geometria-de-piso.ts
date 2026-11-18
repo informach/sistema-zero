@@ -18,17 +18,8 @@ export interface PisoDoCaminho {
 const falhar = (mensagem: string): never => {
   throw new CenarioInvalido([mensagem])
 }
-/**
- * Piso nativo conformado aos triângulos reais da grade, sem folga artificial no eixo Y.
- * O material deve usar polygonOffset como uma superfície de acabamento do mesmo chão.
- * Cercas, muros e pontes usam sua geometria estrutural, nunca este decal como piso suspenso.
- */
-export function geometriaDoPiso(
-  caminho: CaminhoDeCenario,
-  base: BaseDeCenario,
-  estado: EstadoDoTerreno | null,
-  limites: { visitas?: number; vertices?: number } = {},
-): PisoDoCaminho {
+/** Planta comum para piso, encontros e conformação; nenhuma altura foi aplicada. */
+export function malhaPlanaDoCaminho(caminho: CaminhoDeCenario) {
   if (!['trilha', 'praca', 'estrada'].includes(caminho.tipo))
     return falhar('Este caminho precisa de geometria estrutural.')
   const origem = { ...caminho.pontos[0]!, y: 0 },
@@ -53,6 +44,35 @@ export function geometriaDoPiso(
     indices = faixa.indices
     for (let i = 0; i < uvs.length; i++) uvs[i] = uvs[i]! * caminho.largura
   }
+  const original: MalhaParaRecorte = {
+    atributos: { position: { valores: posicoes, itemSize: 3 }, uv: { valores: uvs, itemSize: 2 } },
+    indices,
+  }
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i]! * 3,
+      b = indices[i + 1]! * 3,
+      c = indices[i + 2]! * 3,
+      normalY =
+        (posicoes[b + 2]! - posicoes[a + 2]!) * (posicoes[c]! - posicoes[a]!) -
+        (posicoes[b]! - posicoes[a]!) * (posicoes[c + 2]! - posicoes[a + 2]!)
+    if (normalY < -1e-10)
+      falhar('Esta curva dobra o piso sobre si mesmo. Abra a curva ou reduza a largura.')
+  }
+  return { origem, malha: original }
+}
+
+/**
+ * Piso nativo conformado aos triângulos reais da grade, sem folga artificial no eixo Y.
+ * O material deve usar polygonOffset como uma superfície de acabamento do mesmo chão.
+ * Cercas, muros e pontes usam sua geometria estrutural, nunca este decal como piso suspenso.
+ */
+export function geometriaDoPiso(
+  caminho: CaminhoDeCenario,
+  base: BaseDeCenario,
+  estado: EstadoDoTerreno | null,
+  limites: { visitas?: number; vertices?: number } = {},
+): PisoDoCaminho {
+  const { origem, malha: original } = malhaPlanaDoCaminho(caminho)
   const saidaP: number[] = [],
     saidaUv: number[] = []
   const anexar = (dados: ReturnType<typeof recortarMalhaNoChao>) => {
@@ -78,20 +98,6 @@ export function geometriaDoPiso(
         saidaUv.push(uv[k]!, uv[k + 1]!)
       }
     }
-  }
-  const original: MalhaParaRecorte = {
-    atributos: { position: { valores: posicoes, itemSize: 3 }, uv: { valores: uvs, itemSize: 2 } },
-    indices,
-  }
-  for (let i = 0; i < indices.length; i += 3) {
-    const a = indices[i]! * 3,
-      b = indices[i + 1]! * 3,
-      c = indices[i + 2]! * 3,
-      normalY =
-        (posicoes[b + 2]! - posicoes[a + 2]!) * (posicoes[c]! - posicoes[a]!) -
-        (posicoes[b]! - posicoes[a]!) * (posicoes[c + 2]! - posicoes[a + 2]!)
-    if (normalY < -1e-10)
-      falhar('Esta curva dobra o piso sobre si mesmo. Abra a curva ou reduza a largura.')
   }
   anexar(recortarMalhaNoChao(original, base, estado, origem, limites))
   return { origem, posicoes: Float32Array.from(saidaP), uvs: Float32Array.from(saidaUv) }

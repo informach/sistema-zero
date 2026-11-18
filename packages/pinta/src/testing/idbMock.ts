@@ -9,6 +9,19 @@ import { mock } from 'bun:test'
 type KV = Map<IDBValidKey, unknown>
 
 const dbs = new Map<string, KV>()
+const transactions = new WeakMap<KV, Promise<unknown>>()
+function serialized<T>(kv: KV, task: () => Promise<T>): Promise<T> {
+  const before = transactions.get(kv) ?? Promise.resolve()
+  const next = before.then(task, task)
+  transactions.set(
+    kv,
+    next.then(
+      () => undefined,
+      () => undefined,
+    ),
+  )
+  return next
+}
 
 // Gancho de teste: um guard chamado ANTES de cada `set`; se lançar, o write
 // falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
@@ -21,7 +34,17 @@ export function setIdbReadGuard(guard: typeof readGuard): void {
 }
 
 /** Contadores de chamadas (medições de desempenho: "quantas leituras completas por autosave?"). */
-const stats = { get: 0, getMany: 0, getManyKeys: 0, set: 0, setMany: 0, keys: 0, del: 0 }
+const stats = {
+  get: 0,
+  getMany: 0,
+  getManyKeys: 0,
+  set: 0,
+  setMany: 0,
+  keys: 0,
+  del: 0,
+  atomic: 0,
+  atomicKeys: 0,
+}
 
 /** Fotografia dos contadores (zerados por `clearIdbMock`/`resetIdbMockStats`). */
 export function idbMockStats(): Readonly<typeof stats> {
@@ -91,6 +114,49 @@ mock.module('idb-keyval', () => ({
   ) => {
     const kv = resolveKV(store)
     kv.set(key, updater(kv.get(key)))
+  },
+}))
+
+// The IndexedDB IO boundary only. Domain resolution, revisions and recovery run unchanged.
+// Commit is all-or-nothing, including a failing put after the first queued put.
+mock.module('../state/assetAuthorityDb', () => ({
+  withAssetTransaction: async <T>(
+    store: { name?: string },
+    plan: (records: Map<string, unknown>) => T,
+    select?: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
+  ): Promise<T> => {
+    const kv = resolveKV(store)
+    return serialized(kv, async () => {
+      stats.atomic++
+      const records = new Map<string, unknown>()
+      const source = structuredClone(kv)
+      const visited = new Set<string>()
+      while (true) {
+        const keys =
+          select?.(records) ??
+          [...source.keys()].filter(
+            (key): key is string =>
+              typeof key === 'string' &&
+              (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')),
+          )
+        const pending = keys.filter((key) => !visited.has(key))
+        if (!pending.length) break
+        for (const key of pending) {
+          visited.add(key)
+          records.set(key, structuredClone(source.get(key)))
+          stats.atomicKeys++
+          await readGuard?.(key, store.name ?? '')
+        }
+      }
+      const before = new Map(records)
+      const result = plan(records)
+      for (const [key, value] of records)
+        if (value !== before.get(key)) await writeGuard?.(key, value)
+      for (const key of before.keys()) if (!records.has(key)) kv.delete(key)
+      for (const [key, value] of records)
+        if (value !== before.get(key)) kv.set(key, structuredClone(value))
+      return result
+    })
   },
 }))
 

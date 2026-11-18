@@ -20,6 +20,7 @@ import {
   tilemapNeedsV2,
   tilemapNeedsV3,
   tilemapNeedsV4,
+  tilemapNeedsV5,
   tilesetNeedsV4,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -40,11 +41,14 @@ const SCENE_VERSION = 3
  * o recado de versão.
  */
 const COMPLETE_SCENE_VERSION = 4
+/** O leitor completo de 4 arredondava offsets; o envelope 5 recusa o arquivo inteiro nele. */
+const PRECISE_SCENE_VERSION = 5
 const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   BASE_VERSION,
   OBJECTS_VERSION,
   SCENE_VERSION,
   COMPLETE_SCENE_VERSION,
+  PRECISE_SCENE_VERSION,
 ])
 const UTF8 = new TextEncoder()
 
@@ -371,12 +375,20 @@ export function assetNeedsV4(asset: PintaAsset): boolean {
   )
 }
 
+/** Frações em qualquer camada do mapa ou da definição reutilizável precisam do envelope 5. */
+export function assetNeedsV5(asset: PintaAsset): boolean {
+  return asset.kind === 'tilemap'
+    ? tilemapNeedsV5(asset)
+    : asset.kind === 'map-set' && tilemapNeedsV5(asset.map)
+}
+
 /**
  * A versão do envelope: a MENOR que descreve tudo o que está no arquivo. Um arquivo sem nada
  * novo continua saindo na versão 1, que todo Pinta lê; um Pinta que não conhece a versão recusa
  * o arquivo inteiro com recado, em vez de importar os mapas cortados.
  */
 export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (assets.some(assetNeedsV5)) return PRECISE_SCENE_VERSION
   if (assets.some(assetNeedsV4)) return COMPLETE_SCENE_VERSION
   if (assets.some(assetNeedsV3)) return SCENE_VERSION
   return assets.some(assetNeedsV2) ? OBJECTS_VERSION : BASE_VERSION

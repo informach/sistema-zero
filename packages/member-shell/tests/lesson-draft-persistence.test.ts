@@ -26,6 +26,28 @@ import {
 } from '../src/lib/lesson-draft-cloud'
 import { StudioLessonSeedCompatibilityError } from '../src/lib/studio-lesson-seed'
 
+test('rascunho Pinta com frações usa documento 5 e capacidade de nuvem 4', async () => {
+  const asset = createAsset({
+    kind: 'tilemap',
+    name: 'fracao',
+    tilesetId: 'pecas',
+    cols: 2,
+    rows: 2,
+  })
+  if (asset.kind !== 'tilemap') throw new Error('Mapa esperado')
+  asset.layers[0]!.offsetX = 0.25
+  const store = {
+    listAllAssets: async () => [asset],
+    loadAssetById: async () => asset,
+    deleteAsset: async () => {},
+    persistAsset: async () => {},
+    persistAssets: async () => {},
+  }
+  const result = await pintaDraftProducer({ store })()
+  expect(result.formatVersion).toBe(4)
+  expect(result.document).toMatchObject({ schema: 5, layers: [{ offsetX: 0.25 }] })
+})
+
 test.each([
   'missing',
   'read-error',

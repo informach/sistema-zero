@@ -2,53 +2,89 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-4",
-  "title": "Interesse, dificuldade e apoio para continuar",
+  "title": "Programar não é um bicho de sete cabeças",
   "blocks": [
     {
-      "key": "video-a4-interesse",
-      "plannedVideo": "Título: Um motivo para querer tentar\n\nRelacionar interesse, autoria e envolvimento sem tratar foco como garantia. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a4-blocos",
+      "plannedVideo": "Título: Programar não é um bicho de sete cabeças\n\nDesmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a4-escola",
-      "plannedVideo": "Título: O apoio acompanha a necessidade\n\nExplicar demonstração, realização conjunta e tentativa com apoio disponível, sem prescrever uma sequência fixa. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a4-passo",
+      "plannedVideo": "Título: Um passo a passo para chegar a um objetivo\n\nDefinir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a4-olhar",
+      "plannedVideo": "Título: O que esse vai e volta treina\n\nRelacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a4",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nA criança pode começar com uma demonstração, fazer junto e ganhar espaço para tentar. O apoio é ajustado pela necessidade, sem prazo para a dificuldade passar."
+        "markdown": "## Para consultar\n\nProgramar é passar um passo a passo para alcançar um objetivo. Observar o que aconteceu, mudar a instrução e testar de novo treina flexibilidade e lidar com o erro."
       }
     }
   ],
   "sections": [
     {
-      "key": "interesse",
-      "title": "Um motivo para querer tentar",
-      "objective": "Relacionar interesse, autoria e envolvimento sem tratar foco como garantia.",
+      "key": "blocos",
+      "title": "Programar não é um bicho de sete cabeças",
+      "objective": "Desmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-interesse"],
+      "blockKeys": [
+        "video-a4-blocos"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a4-interesse"]
+        "blockIds": [
+          "video-a4-blocos"
+        ]
       }
     },
     {
-      "key": "escola",
-      "title": "O apoio acompanha a necessidade",
-      "objective": "Explicar demonstração, realização conjunta e tentativa com apoio disponível, sem prescrever uma sequência fixa.",
+      "key": "passo",
+      "title": "Um passo a passo para chegar a um objetivo",
+      "objective": "Definir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-escola", "resumo-a4"],
+      "blockKeys": [
+        "video-a4-passo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a4-escola"]
+        "blockIds": [
+          "video-a4-passo"
+        ]
+      }
+    },
+    {
+      "key": "olhar",
+      "title": "O que esse vai e volta treina",
+      "objective": "Relacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a4-olhar",
+        "resumo-a4"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a4-olhar"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["para-casa-a4", "quiz-a4"]
+  "retireBlockKeys": [
+    "video-a4-interesse",
+    "video-a4-escola",
+    "para-casa-a4",
+    "quiz-a4"
+  ]
 }

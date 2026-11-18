@@ -1,7 +1,39 @@
 import { expect, test } from 'bun:test'
-import { BoxGeometry, Matrix4, PlaneGeometry, Vector3 } from 'three'
+import { Box3, BoxGeometry, Matrix4, PlaneGeometry, Vector3 } from 'three'
 import { TerrenoDoPalco } from '../src/Terreno'
 import { MundoDoTeste } from '../src/teste/colisoes'
+
+test('consulta regional de triângulos respeita drawRange, transformação e orçamento sem alterar a fonte', () => {
+  const g = new BoxGeometry(2, 2, 2),
+    antes = [...g.index!.array]
+  g.setDrawRange(6, 6)
+  const mundo = new MundoDoTeste([
+      { geometria: g, matriz: new Matrix4().makeScale(-2, 1, 3).setPosition(5, 3, 2) },
+    ]),
+    caixa = new Box3(new Vector3(2, 1, -2), new Vector3(8, 5, 6))
+  try {
+    const r = mundo.triangulosNaCaixa(caixa)
+    expect(r.length).toBe(18)
+    for (let i = 0; i < r.length; i += 3) {
+      expect(r[i]!).toBeGreaterThanOrEqual(3)
+      expect(r[i]!).toBeLessThanOrEqual(7)
+      expect(r[i + 1]!).toBeGreaterThanOrEqual(2)
+      expect(r[i + 1]!).toBeLessThanOrEqual(4)
+      expect(r[i + 2]!).toBeGreaterThanOrEqual(-1)
+      expect(r[i + 2]!).toBeLessThanOrEqual(5)
+    }
+    expect(mundo.triangulosNaCaixa(caixa.clone().translate(new Vector3(100, 0, 0))).length).toBe(0)
+    expect(() => mundo.triangulosNaCaixa(caixa, 1)).toThrow('triângulos demais')
+    expect(() => mundo.triangulosNaCaixa(caixa, Infinity)).toThrow('orçamento')
+    expect([...g.index!.array]).toEqual(antes)
+    expect(g.drawRange).toEqual({ start: 6, count: 6 })
+    expect(mundo.arvores).toBe(1)
+  } finally {
+    mundo.descartar()
+    g.dispose()
+  }
+  expect(() => mundo.triangulosNaCaixa(caixa)).toThrow('encerrada')
+})
 
 test('cápsula encontra piso real e parede fina sem modificar o índice da malha', () => {
   const piso = new PlaneGeometry(20, 20),

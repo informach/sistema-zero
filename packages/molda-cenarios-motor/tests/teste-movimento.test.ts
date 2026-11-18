@@ -28,6 +28,25 @@ function executar(m: MovimentoDoTeste, entrada: typeof andar, segundos: number) 
   for (let i = 0; i < Math.round(segundos * 120); i++) m.avancar(1 / 120, entrada)
 }
 
+test('lajes baixas separadas por juntas não prendem a cápsula entre duas bordas', () => {
+  const chao = piso(),
+    lajes = Array.from({ length: 12 }, (_, i) => ({
+      geometria: new BoxGeometry(0.5, 0.05, 2),
+      matriz: new Matrix4().makeTranslation(0.4 + i * 0.6, 0.025, 0),
+    })),
+    mundo = new MundoDoTeste([chao, ...lajes]),
+    m = new MovimentoDoTeste(mundo, new Vector3(0, 0.001, 0), 1.17)
+  try {
+    executar(m, andar, 4)
+    expect(m.posicao.x).toBeGreaterThan(5)
+    expect(m.noChao).toBe(true)
+  } finally {
+    mundo.descartar()
+    chao.geometria.dispose()
+    for (const p of lajes) p.geometria.dispose()
+  }
+})
+
 test('correnteza move só quem nada, permite controle contrário e respeita a parede física', () => {
   const fundo = {
       geometria: new PlaneGeometry(40, 40),
@@ -96,7 +115,7 @@ test('gravidade, parede fina, pulo e tempo suspenso não atravessam o cenário',
   parede.geometria.dispose()
 })
 test('degrau baixo é transposto, degrau alto bloqueia e queda não ganha piso invisível', () => {
-  for (const altura of [0.15, 0.6]) {
+  for (const altura of [0.03, 0.05, 0.15, 0.6]) {
     const chao = piso(),
       degrau = {
         geometria: new BoxGeometry(3, altura, 4),
@@ -106,7 +125,7 @@ test('degrau baixo é transposto, degrau alto bloqueia e queda não ganha piso i
       m = new MovimentoDoTeste(mundo, new Vector3(0, 0.001, 0), 1.16)
     executar(m, parado, 0.2)
     executar(m, andar, 2)
-    if (altura === 0.15) {
+    if (altura <= 0.15) {
       expect(m.posicao.x).toBeGreaterThan(1.5)
       expect(m.posicao.y).toBeCloseTo(altura, 2)
     } else expect(m.posicao.x).toBeLessThan(1)

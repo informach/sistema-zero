@@ -1,0 +1,23 @@
+{
+  "tool": "Tiled 1.12.2 Windows",
+  "operation": "--export-map json mapa.tmx mapa.json",
+  "normalization": "LF e remoção de espaços no fim da linha; JSON semanticamente idêntico",
+  "files": [
+    {
+      "file": "mapa-0.json",
+      "rawBytes": 71627,
+      "rawSha256": "31b54520852dda4b27416c2f4d72e033cf475369741f8425106959b5e0af4f04",
+      "normalizedBytes": 70432,
+      "normalizedSha256": "19fb45cbe619e171e374d8ff582ada82ed1553f1adc9444494e31b352bdf328d",
+      "jsonDeepEqual": true
+    },
+    {
+      "file": "mapa-1.json",
+      "rawBytes": 3252,
+      "rawSha256": "c1b9c27f2ac0ddebbb0070093521bbaae4e913b45bdf9971caedf5c2154aabc0",
+      "normalizedBytes": 3134,
+      "normalizedSha256": "8f172d5ab3241aa1a287fe5ee92c7ca76913c509b703b529b3e556e5ea109d0f",
+      "jsonDeepEqual": true
+    }
+  ]
+}

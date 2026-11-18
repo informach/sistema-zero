@@ -1,9 +1,10 @@
 import {
   conferirMalhaParaRecorte,
   type MalhaParaRecorte,
-  type PlanoDeRecorte,
+  planosDoPoligonoConvexo as planosDoPoligono,
   recortarAtributos,
 } from '../geometria'
+import { pontoNoPoligono } from '../poligonos'
 import { CenarioInvalido } from '../validacao'
 import { type PontoNoChao, triangularPoligono } from './curvas'
 import type { BaseDeCenario } from './documento'
@@ -24,23 +25,6 @@ const limiteDeTrabalho = () =>
   )
 const inicioDaFaixa = (min: number, max: number) =>
   Math.floor(min) - (Math.abs(max - min) < 1e-9 && Math.abs(min - Math.round(min)) < 1e-9 ? 1 : 0)
-function planosDoPoligono(p: readonly PontoNoChao[]): PlanoDeRecorte[] {
-  const origem = p[0]!
-  let area = 0
-  for (let i = 0; i < p.length; i++) {
-    const a = p[i]!,
-      b = p[(i + 1) % p.length]!
-    area += (a.x - origem.x) * (b.z - origem.z) - (b.x - origem.x) * (a.z - origem.z)
-  }
-  const sentido = area > 0 ? 1 : -1
-  return p.map((a, i) => {
-    const b = p[(i + 1) % p.length]!,
-      x = sentido * (b.z - a.z),
-      z = -sentido * (b.x - a.x)
-    return { x, z, limite: x * a.x + z * a.z }
-  })
-}
-
 /**
  * Recorte comum de pisos e modelos sobre o solo. Conserva altura local e todos os atributos;
  * quem chama aplica a altura do campo depois. Divide pela mesma diagonal da física e elimina
@@ -52,6 +36,8 @@ export function recortarMalhaNoChao(
   estado: EstadoDoTerreno | null,
   origem: PontoNoChao,
   limites: LimitesDoRecorteDeChao = {},
+  /** Precedência de acabamentos; não modifica os buracos nem a física do terreno. */
+  excluir: readonly (readonly PontoNoChao[])[] = [],
 ): ReturnType<typeof recortarAtributos> {
   if (base.tipo === 'perfil') return falhar('Converta o perfil em terreno antes de compor o piso.')
   if (
@@ -85,9 +71,58 @@ export function recortarMalhaNoChao(
     vistos = new Set<string>()
   let ultimoTriangulo = -1,
     trabalho = 0
-  const dominio = dominioDoChao(base),
-    custoDoDominio =
-      base.tipo === 'terreno' ? (base.recortes ?? []).reduce((s, r) => s + r.length, 0) : 0
+  // Recortes distantes não participam desta malha. Filtrar antes da triangulação e da
+  // classificação de faces verticais evita cobrar o lago inteiro por cada laje da vila.
+  const caixa = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity }
+  for (let j = 0; j < indices.length; j++) {
+    const i = indices[j]!
+    const x = posicoes[i * 3]! + origem.x,
+      z = posicoes[i * 3 + 2]! + origem.z
+    caixa.x0 = Math.min(caixa.x0, x)
+    caixa.x1 = Math.max(caixa.x1, x)
+    caixa.z0 = Math.min(caixa.z0, z)
+    caixa.z1 = Math.max(caixa.z1, z)
+  }
+  if (
+    excluir.length > 20_000 ||
+    excluir.reduce((s, r) => s + r.length, 0) > 200_000 ||
+    excluir.some(
+      (r) =>
+        r.length < 3 ||
+        r.length > 4096 ||
+        r.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.z)),
+    )
+  )
+    falhar('Os encontros do caminho têm recortes demais ou um contorno inválido.')
+  const recortesPerto = [
+      ...(base.tipo === 'terreno' ? (base.recortes ?? []) : []),
+      ...excluir,
+    ].filter((r) => {
+      let x0 = Infinity,
+        x1 = -Infinity,
+        z0 = Infinity,
+        z1 = -Infinity
+      for (const p of r) {
+        x0 = Math.min(x0, p.x)
+        x1 = Math.max(x1, p.x)
+        z0 = Math.min(z0, p.z)
+        z1 = Math.max(z1, p.z)
+      }
+      return (
+        x0 <= caixa.x1 + 1e-6 &&
+        x1 >= caixa.x0 - 1e-6 &&
+        z0 <= caixa.z1 + 1e-6 &&
+        z1 >= caixa.z0 - 1e-6
+      )
+    }),
+    dominioBase = dominioDoChao(
+      base.tipo === 'terreno' ? { ...base, recortes: recortesPerto.map((r) => [...r]) } : base,
+    ),
+    dominio =
+      base.tipo === 'plano'
+        ? (p: PontoNoChao) => dominioBase(p) && !recortesPerto.some((r) => pontoNoPoligono(p, r))
+        : dominioBase,
+    custoDoDominio = recortesPerto.reduce((s, r) => s + r.length, 0)
   const anexar = (
     dados: ReturnType<typeof recortarAtributos>,
     sinal = 0,
@@ -138,34 +173,39 @@ export function recortarMalhaNoChao(
       }
     }
   }
+  const locais = (p: PontoNoChao) => ({ x: p.x - origem.x, z: p.z - origem.z }),
+    furos = recortesPerto
+      .flatMap((anel) => {
+        const pontos = anel.map(locais),
+          ids = triangularPoligono(pontos),
+          triangulos: PontoNoChao[][] = []
+        for (let i = 0; i < ids.length; i += 3)
+          triangulos.push([pontos[ids[i]!]!, pontos[ids[i + 1]!]!, pontos[ids[i + 2]!]!])
+        return triangulos
+      })
+      .map((pontos) => ({
+        pontos,
+        x0: Math.min(...pontos.map((p) => p.x)),
+        x1: Math.max(...pontos.map((p) => p.x)),
+        z0: Math.min(...pontos.map((p) => p.z)),
+        z1: Math.max(...pontos.map((p) => p.z)),
+      }))
   if (base.tipo === 'plano') {
+    if ((indices.length / 3) * (4 + furos.length) > maxVisitas) limiteDeTrabalho()
     anexar(
-      recortarAtributos(malha, [
-        { x: 1, z: 0, limite: base.largura / 2 - origem.x },
-        { x: -1, z: 0, limite: base.largura / 2 + origem.x },
-        { x: 0, z: 1, limite: base.comprimento / 2 - origem.z },
-        { x: 0, z: -1, limite: base.comprimento / 2 + origem.z },
-      ]),
+      recortarAtributos(
+        malha,
+        [
+          { x: 1, z: 0, limite: base.largura / 2 - origem.x },
+          { x: -1, z: 0, limite: base.largura / 2 + origem.x },
+          { x: 0, z: 1, limite: base.comprimento / 2 - origem.z },
+          { x: 0, z: -1, limite: base.comprimento / 2 + origem.z },
+        ],
+        furos.map((f) => f.pontos),
+      ),
     )
   } else {
-    const locais = (p: PontoNoChao) => ({ x: p.x - origem.x, z: p.z - origem.z }),
-      furos = (base.recortes ?? [])
-        .flatMap((anel) => {
-          const pontos = anel.map(locais),
-            ids = triangularPoligono(pontos),
-            triangulos: PontoNoChao[][] = []
-          for (let i = 0; i < ids.length; i += 3)
-            triangulos.push([pontos[ids[i]!]!, pontos[ids[i + 1]!]!, pontos[ids[i + 2]!]!])
-          return triangulos
-        })
-        .map((pontos) => ({
-          pontos,
-          x0: Math.min(...pontos.map((p) => p.x)),
-          x1: Math.max(...pontos.map((p) => p.x)),
-          z0: Math.min(...pontos.map((p) => p.z)),
-          z1: Math.max(...pontos.map((p) => p.z)),
-        })),
-      pecas = new Set(base.pecas.map((p) => `${p.coluna}:${p.linha}`)),
+    const pecas = new Set(base.pecas.map((p) => `${p.coluna}:${p.linha}`)),
       ox = base.origem.x - origem.x,
       oz = base.origem.z - origem.z,
       faixas: { i: number; x0: number; x1: number; z: number }[] = []

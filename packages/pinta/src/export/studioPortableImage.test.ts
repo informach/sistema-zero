@@ -99,7 +99,14 @@ describe('one captured drawing produces canonical personal bytes and a selected 
     expect(result.image.derivation.output.width).toBe(16)
     expect(await pixel(result.image.dataUrl)).toEqual([0, 0, 255, 255])
     expect('sprite' in result.image).toBe(false)
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 0, set: 0, setMany: 0 })
+    expect(idbMockStats()).toMatchObject({
+      atomic: 1,
+      atomicKeys: 2,
+      get: 0,
+      getMany: 0,
+      set: 0,
+      setMany: 0,
+    })
     const canonical = await exportAssetForStudio(source.id, { namespace: 'a' })
     expect(canonical).toEqual({ ok: true, asset: result.asset })
   })
@@ -116,6 +123,7 @@ describe('one captured drawing produces canonical personal bytes and a selected 
     const source = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 1 })
     tileLayerAt(source).cells.fill(0)
     seed(source, tileset)
+    const initialTileset = structuredClone(tileset)
     setIdbReadGuard(() => {
       tileset.tiles[0]!.data.fill(2)
       seed(source, tileset)
@@ -129,15 +137,22 @@ describe('one captured drawing produces canonical personal bytes and a selected 
     }
     const result = await exportImageAndSourceForStudio(recipe, limits, { namespace: 'a' })
     if (!result.ok) throw new Error(`composition failed: ${result.reason}`)
-    const capturedTileset = sanitizePintaAsset(tileset)
+    const capturedTileset = sanitizePintaAsset(initialTileset)
     if (!capturedTileset) throw new Error('tileset fixture must be readable')
     expect(result.image.derivation.provenance.dependencies).toEqual([
       { drawingId: tileset.id, sha256: await sha256Hex(assetToJson(capturedTileset)) },
     ])
-    expect(await pixel(result.asset.dataUrl)).toEqual([0, 0, 255, 255])
-    expect(await pixel(result.asset.tilemap!.tileset.dataUrl)).toEqual([0, 0, 255, 255])
-    expect(await pixel(result.image.dataUrl)).toEqual([0, 0, 255, 255])
-    expect(idbMockStats()).toMatchObject({ get: 1, getMany: 1, getManyKeys: 2, set: 0, setMany: 0 })
+    expect(await pixel(result.asset.dataUrl)).toEqual([255, 0, 0, 255])
+    expect(await pixel(result.asset.tilemap!.tileset.dataUrl)).toEqual([255, 0, 0, 255])
+    expect(await pixel(result.image.dataUrl)).toEqual([255, 0, 0, 255])
+    expect(idbMockStats()).toMatchObject({
+      atomic: 1,
+      atomicKeys: 4,
+      get: 0,
+      getMany: 0,
+      set: 0,
+      setMany: 0,
+    })
   })
 
   test('cancelled raster cannot return a canonical/derived pair for the host to save', async () => {

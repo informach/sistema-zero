@@ -23,6 +23,27 @@ export function createMapSet(
   name: string,
 ): MapSetAsset {
   const now = Date.now()
+  // Não há meia célula no documento nativo: recusar antes de cortar uma peça em silêncio.
+  if (
+    map.layers.some((layer) => {
+      if (!isTileLayer(layer)) return false
+      const e = effectiveLayer(map, layer)
+      if (Number.isInteger(e.offsetX / tileSize) && Number.isInteger(e.offsetY / tileSize))
+        return false
+      return layer.cells.some((cell, index) => {
+        if (cell < 0) return false
+        const x = (index % map.cols) * tileSize + e.offsetX,
+          y = Math.floor(index / map.cols) * tileSize + e.offsetY
+        return (
+          x < (rect.col + rect.cols) * tileSize &&
+          x + tileSize > rect.col * tileSize &&
+          y < (rect.row + rect.rows) * tileSize &&
+          y + tileSize > rect.row * tileSize
+        )
+      })
+    })
+  )
+    throw new Error(COPY.scene.setCropAlignment)
   if (
     map.layers.some((l) => {
       const e = effectiveLayer(map, l)
@@ -77,14 +98,25 @@ export function createMapSet(
     }
     if (isTileLayer(layer)) {
       const cells = new Int16Array(rect.cols * rect.rows).fill(-1)
+      const e = effectiveLayer(map, layer)
       for (let r = 0; r < rect.rows; r++)
         for (let c = 0; c < rect.cols; c++) {
-          const x = c + rect.col,
-            y = r + rect.row
+          const x = c + rect.col - e.offsetX / tileSize,
+            y = r + rect.row - e.offsetY / tileSize
           if (x >= 0 && y >= 0 && x < map.cols && y < map.rows)
             cells[r * rect.cols + c] = layer.cells[y * map.cols + x] ?? -1
         }
-      return { ...base, cells } as TilemapLayer
+      // As células recortadas já estão no espaço visual; neutraliza só o offset desta folha,
+      // conservando a árvore e as posições das camadas de objetos do mesmo grupo.
+      const { offsetX: _x, offsetY: _y, ...rest } = base
+      const offsetX = (layer.offsetX ?? 0) - e.offsetX,
+        offsetY = (layer.offsetY ?? 0) - e.offsetY
+      return {
+        ...rest,
+        cells,
+        ...(offsetX !== 0 ? { offsetX } : {}),
+        ...(offsetY !== 0 ? { offsetY } : {}),
+      } as TilemapLayer
     }
     if (isObjectLayer(layer)) {
       const included = layer.objects.filter((o) => objectCopies.has(o.id)),

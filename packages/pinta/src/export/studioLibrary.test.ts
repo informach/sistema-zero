@@ -285,7 +285,7 @@ describe('exportAssetForStudio', () => {
       if (databases.length === 1) setPintaStorageNamespace('profile-b')
     })
     await exportAssetForStudio(map.id)
-    expect(databases).toEqual(['sistema-zero-pinta-profile-a', 'sistema-zero-pinta-profile-a'])
+    expect(databases).toEqual(Array<string>(4).fill('sistema-zero-pinta-profile-a'))
   })
 
   it('uses an explicit namespace for listing/export without changing the active profile', async () => {
@@ -322,7 +322,7 @@ describe('exportAssetForStudio', () => {
     controller.abort()
     release.resolve()
     expect(await pending).toBeInstanceOf(DOMException)
-    expect(reads).toEqual([`pinta:asset:${map.id}`])
+    expect(reads).toEqual([`pinta:asset:${map.id}`, `pinta:local:document:${map.id}`])
   })
 
   it('desenho apagado → not-found', async () => {
@@ -373,6 +373,8 @@ describe('exportLoadedAssetForStudio', () => {
       setMany: 0,
       keys: 0,
       del: 0,
+      atomic: 0,
+      atomicKeys: 0,
     })
   })
 

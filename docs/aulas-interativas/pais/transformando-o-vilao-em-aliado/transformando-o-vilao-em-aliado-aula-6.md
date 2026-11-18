@@ -1,14 +1,16 @@
-# Aula 6. Uma oportunidade para experimentar com seu filho
+# Aula 6. Como nasce um jogo
 
-**Objetivo:** Reunir o sentido do minicurso, explicar como a família pode acompanhar e apresentar o presente como a experiência prática posterior.
+**Objetivo:** Conhecer o ciclo de criação, acompanhar uma regra sendo construída e ver como o jogo abre a conversa em família.
 
-**Ideia central:** A família compreende a possibilidade no minicurso e pode conhecê-la na prática com o presente, sem teste ou tarefa como condição.
+**Ideia central:** Imaginar, planejar, programar, testar, melhorar e compartilhar. Cada regra criada ensina causa e consequência.
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. A criança cria, a família acompanha | Explicar expectativas, participação do responsável e acesso ao ambiente sem transformar a apresentação em um tour. |
-| 2. O presente para conhecer essa possibilidade | Apresentar o Cadê Todo Mundo como experiência prática posterior, com acesso direto e sem avaliação. |
+| 1. O ciclo de criação de um jogo | Apresentar o ciclo de criação e a relação dele com a redação, o trabalho e o pensar por conta própria. |
+| 2. Uma regra de cada vez | Demonstrar, em captura de tela, a criação de duas regras de um esconde-esconde. |
+| 3. Fui eu que causei isso | Explicar a causa e consequência: a criança percebe que é agente do que acontece. |
+| 4. O assunto que abre a conversa | Mostrar como o jogo vira assunto em casa e ponto de partida para outras conversas. |
 
-**Formato:** vídeos explicativos, exemplos e resumo de consulta opcional. O responsável acompanha sem precisar responder, executar na ferramenta ou conversar com o filho para continuar. A prática é o presente, depois do minicurso.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso. A última parte conserva a emissão do certificado como registro de conclusão, conforme o contrato da plataforma; isso não condiciona o acesso ao presente. A apostila e o resgate do presente não são critérios de conclusão.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

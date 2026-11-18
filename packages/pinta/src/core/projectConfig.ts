@@ -96,8 +96,11 @@ export const PINTA_MAP_SCHEMA = 3
  */
 export const PINTA_SCENE_SCHEMA = 4
 
+/** Offsets fracionários: o leitor completo de schema 4 arredondava esses valores. */
+export const PINTA_PRECISE_SCHEMA = 5
+
 /** O maior carimbo que este código sabe ler. */
-export const PINTA_MAX_SCHEMA = PINTA_SCENE_SCHEMA
+export const PINTA_MAX_SCHEMA = PINTA_PRECISE_SCHEMA
 
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)

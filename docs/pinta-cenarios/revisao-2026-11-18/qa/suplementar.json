@@ -1,0 +1,42 @@
+{
+  "sourceCommit": "b19b4149d8456b19f1e6b60dc8b118ec20e9d899",
+  "generated": "2026-11-18T11:27:07.748Z",
+  "logs": {
+    "changedLint": {
+      "exit": 0,
+      "log": ".tmp/pinta-review-changed-lint-final.log",
+      "sha256": "1ad26f9ca9a1747260286930af3c533702c27fe0e9d9ace0a22ba03f4a2f3bc2",
+      "summary": "Checked 72 files in 286ms. No fixes applied."
+    },
+    "baselineLint": {
+      "exit": 1,
+      "log": ".tmp/pinta-review-integrated-baseline-lint.log",
+      "sha256": "3c2a5b465f7344873c4c2efb72a07ae3a040695100ba2a96c31ad63dbd4650d2",
+      "summary": "    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"<chave>\");\n}, \"<chave>\");\nstdin ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  × The contents aren't fixed. Use the `--write` flag to fix them."
+    },
+    "localOnly026": {
+      "exit": 0,
+      "log": ".tmp/pinta-review-local-only-026.log",
+      "sha256": "1393e105a43fc564db55a94821973c4c0d44bd22f422c69e80493bd8851d94b0",
+      "summary": ".tmp\\pinta-local-only-026-5mUYlY\\local-only-026.test.ts:\n(pass) issue026: RAM4 antiga substitui o documento5 local sem recuperação\n{\"baseline\":\"567b93f95\",\"oldReaderMax\":4,\"promoted\":{\"schema\":5,\"offsetX\":2.5},\"oldColdReadOf5\":null,\"oldDelayedWriteSucceeded\":true,\"reopened\":{\"schema\":4,\"name\":\"edicao-aba-antiga\",\"offsetX\":null},\"physicalKeys\":[\"pinta:asset:same-authorial-map\"],\"hasSchema5Checkpoint\":false,\"cloudImported\":false}\n\n 1 pass\n 0 fail\n 12 expect() calls\nRan 1 test across 1 file. [82.00ms]"
+    },
+    "runtimeDependencySetup": {
+      "exit": 0,
+      "log": ".tmp/pinta-review-runtime-install.log",
+      "sha256": "c09555dd2340370b506e0ea1549afc42a336d585bc50ae0384d65a9a1b21c026",
+      "summary": "added 37 packages in 7s"
+    }
+  },
+  "docLinks": {
+    "files": 44,
+    "links": "verificados",
+    "rows": 33,
+    "states": {
+      "Implementado": 19,
+      "Parcial": 13,
+      "Pendente": 1
+    },
+    "errors": []
+  },
+  "localOnly026ConfirmsUnfixedDataLoss": true
+}

@@ -1,0 +1,19 @@
+{
+  "baseline": "567b93f95",
+  "oldReaderMax": 4,
+  "promoted": { "schema": 5, "offsetX": 2.5 },
+  "oldColdReadOf5": null,
+  "oldDelayedWriteSucceeded": true,
+  "reopened": { "schema": 5, "name": "rico-promovido", "offsetX": 2.5 },
+  "physicalKeys": [
+    "pinta:asset:same-authorial-map",
+    "pinta:local:document:same-authorial-map",
+    "pinta:local:document:544f90be-f0b2-4382-8bc1-c33c0f925b3a",
+    "pinta:asset:544f90be-f0b2-4382-8bc1-c33c0f925b3a"
+  ],
+  "hasSchema5Checkpoint": true,
+  "recovered": [
+    { "id": "544f90be-f0b2-4382-8bc1-c33c0f925b3a", "name": "edicao-aba-antiga-copia", "schema": 4 }
+  ],
+  "cloudImported": false
+}

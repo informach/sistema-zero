@@ -138,6 +138,17 @@ test('caminho escolhido pela árvore usa o clipboard, recorte e undo existentes 
   ]
   await host.editarCenario(c.id, 0, [{ tipo: 'cenario.restaurar', documento: doc }], 'fixture')
   const ctl = criarControlador(host, await host.abrirCenario(c.id))
+  ctl.selecionar(['a', 'trilha', 'ausente'])
+  expect(ctl.getState().selecao).toEqual(['a', 'trilha'])
+  ctl.executar([{ tipo: 'cenario.renomear', nome: 'Escolha mista' }])
+  await ctl.terminar()
+  expect(ctl.getState().selecao).toEqual(['a', 'trilha'])
+  await ctl.desfazer()
+  expect(ctl.getState().selecao).toEqual(['a', 'trilha'])
+  ctl.tocar('trilha', true)
+  expect(ctl.getState().selecao).toEqual(['a'])
+  ctl.tocar('trilha', true)
+  expect(alvosDaTransferencia(ctl.getState())).toEqual(['a', 'trilha'])
   ctl.selecionar([], 'trilha')
   const alvos = alvosDaTransferencia(ctl.getState()),
     f = capturarFragmento(doc, alvos, 'conta')

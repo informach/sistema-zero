@@ -3,7 +3,6 @@ import type { ExtensionBootstrapContext } from '#extensions'
 import { buildProjectRunContextRuntime } from '#extensions'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { MAP_TWO_D_API_KEYS } from './contract'
-import { mapTwoDSource } from './runtime'
 
 /**
  * O cenário do Pinta entra só no jogo que usa um bloco de cenário, na convenção do Kit
@@ -20,13 +19,16 @@ export const mapTwoDUsed = (code: string): boolean => codeUsesPintaScenePlayer(c
 export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): string =>
   !context || mapTwoDUsed(context.code) ? '' : MAP_TWO_D_WITHOUT_SCENE_VARIANT
 /**
- * Tetos ABSOLUTOS do motor com cenário, em caracteres. Medido em 18/11/2026: 431.468 no Jogo 2D
- * e 419.766 no Avançado (o cenário soma cerca de 11 mil a cada motor).
- * A folga é de cerca de 1,5%: o bastante para um ajuste pequeno, pouco demais para outro
+ * Tetos ABSOLUTOS do motor com cenário, em caracteres. Revisão de 18/11/2026: 433.815 no Jogo 2D
+ * e 422.113 no Avançado (o cenário soma cerca de 13,4 mil a cada motor).
+ * A folga é menor que 1%: o bastante para um ajuste pequeno, pouco demais para outro
  * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos de sempre
  * (422.500 no Jogo 2D e 415.000 no Avançado).
  */
 export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 437_900, gk: 426_000 } as const
+// 18/11, revisão afim e colisão: 13.381 caracteres sobre o legado, incluindo geometria
+// canônica gerada. A carga é lazy; os tetos absolutos e do bundle inicial não sobem.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 14_000
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `
@@ -44,11 +46,11 @@ function host(target: 'g2d' | 'gk'): string {
   _registerRuntimeDomain('map-2d',{${basic ? 'reset' : 'resetProject'}:_map2d.reset});
   `
 }
-export function withMapTwoD(source: string, target: 'g2d' | 'gk'): string {
+function withMapTwoD(source: string, target: 'g2d' | 'gk', fragment: string): string {
   if (!source.includes('// MAP_2D_RUNTIME_SLOT') || !source.includes('// MAP_2D_API_SLOT'))
     throw new Error('O motor não declarou os pontos de composição do mapa 2D.')
   return source
-    .replace('// MAP_2D_RUNTIME_SLOT', mapTwoDSource + host(target))
+    .replace('// MAP_2D_RUNTIME_SLOT', fragment + host(target))
     .replace(
       '// MAP_2D_API_SLOT',
       MAP_TWO_D_API_KEYS.map((key) => `${key}:_map2d.${key},`).join('\n'),
@@ -59,6 +61,8 @@ export async function mapTwoDBootstrap(
   context?: ExtensionBootstrapContext,
 ): Promise<string> {
   const enabled = mapTwoDBootstrapVariant(context) === ''
+  // A cena e sua geometria só entram no chunk que o jogo realmente usa.
+  const fragment = enabled ? (await import('./runtime')).mapTwoDSource : ''
   if (target === 'g2d') {
     const runtime = await import('../game-2d/runtime')
     if (!enabled) return runtime.gameTwoDRuntime
@@ -66,7 +70,7 @@ export async function mapTwoDBootstrap(
     return (
       prefix +
       compactOfficialRuntimeSource(
-        withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), target),
+        withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), target, fragment),
         { trimIndent: true },
       )
     )
@@ -75,7 +79,7 @@ export async function mapTwoDBootstrap(
   return enabled
     ? buildProjectRunContextRuntime() +
         '\n' +
-        compactOfficialRuntimeSource(withMapTwoD(runtime.gameKitRuntimeSource, target), {
+        compactOfficialRuntimeSource(withMapTwoD(runtime.gameKitRuntimeSource, target, fragment), {
           trimIndent: true,
         })
     : runtime.gameKitRuntime

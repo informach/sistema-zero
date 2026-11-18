@@ -41,6 +41,10 @@ describe('isRateLimitedGetPath', () => {
     expect(isRateLimitedGetPath('/bolsa')).toBe(true)
     expect(isRateLimitedGetPath('/embaixador')).toBe(true)
     expect(isRateLimitedGetPath('/bolsao-de-ofertas')).toBe(false)
+    // A página do curso para pais lê a campanha no gateway a cada visita.
+    expect(isRateLimitedGetPath('/kids/vilao-em-aliado')).toBe(true)
+    expect(isRateLimitedGetPath('/kids/vilao-em-aliado/')).toBe(true)
+    expect(isRateLimitedGetPath('/kids/vilao-em-aliado-2')).toBe(false)
   })
 
   test('nao limita paginas publicas que nao escrevem nem chamam gateway', () => {

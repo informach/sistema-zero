@@ -65,6 +65,18 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-aborted.txt
+      - name: Verify integrated Pinta scene and native Python contracts
+        if: runner.os == 'Linux'
+        working-directory: packages/studio
+        run: |
+          set -o pipefail
+          bun scripts/gen-pinta-scene-python.ts --check
+          bun ../core/scripts/gen-pinta-scene-transform.ts --check
+          python --version
+          python -m venv .cache/pinta-python
+          .cache/pinta-python/bin/python -m pip install --only-binary=:all: --disable-pip-version-check pygame-ce==2.5.7
+          .cache/pinta-python/bin/python -I scripts/python/test-pinta-module.py 2>&1 | tee .cache/mission/pinta-python.txt
+          .cache/pinta-python/bin/python -I scripts/python/test-pinta-module.py --sem-pygame
       - name: Complete isolated Studio suite
         working-directory: packages/studio
         run: |
@@ -145,6 +157,10 @@ jobs:
         if: matrix.project == 'chromium'
         working-directory: packages/studio
         run: node -e "const p=require('playwright-core').chromium.executablePath();require('node:fs').appendFileSync(process.env.GITHUB_ENV,'PW_CHROMIUM='+p+'\nSZ_CHECK_CHROMIUM='+p+'\n')"
+      - name: Integrated Pinta and Phaser scenes on desktop and touch
+        if: matrix.id == 'linux-chromium-1'
+        working-directory: packages/studio
+        run: bun run test:e2e:pinta-scenes
       - name: Browser verification
         working-directory: packages/studio
         env:
@@ -167,6 +183,7 @@ jobs:
             packages/studio/.cache/mission
             packages/studio/.cache/playwright-results
             packages/studio/.cache/protected-lessons
+            packages/studio/.cache/pinta-scenes-results
             .audits/studio-pro-evolution/browser-current.json
           retention-days: 14
 

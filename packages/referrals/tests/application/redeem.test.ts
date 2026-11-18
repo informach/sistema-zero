@@ -229,6 +229,42 @@ describe('RedeemScholarshipService', () => {
     )
   })
 
+  test('curso para pais não ocupa a vaga do presente: o mesmo e-mail resgata os dois', async () => {
+    const padrao = gateway.availabilityResult
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['parents:cade-todo-mundo'])
+    // O mesmo curso para pais de novo: já resgatado.
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+
+    // O presente da criança, com o mesmo e-mail, entra na vaga do público.
+    gateway.availabilityResult = padrao
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['parents:cade-todo-mundo', 'main'])
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(2)
+
+    // Catálogo fora: o presente do público concluído continua reconhecido, sem resgate novo.
+    catalog.fail = true
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(2)
+  })
+
+  test('presente da criança primeiro, curso para pais depois, com o mesmo e-mail', async () => {
+    expect((await service.execute(input)).kind).toBe('completed')
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['main', 'parents:cade-todo-mundo'])
+    // O convite do embaixador olha só a vaga do presente do público.
+    expect((await repo.findRedemptionByEmail('paula@example.com', 'kids'))?.giftSlot).toBe('main')
+  })
+
   test('resgate ANTIGO (trial) em andamento segue o caminho antigo: curso + Mural', async () => {
     const redemption = await seedLegacyTrial()
     expect(await service.execute(input)).toMatchObject({ kind: 'completed', muralAccess: 'trial' })

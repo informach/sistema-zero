@@ -28,6 +28,16 @@ test('nunca se declara uma versão que este código não lê', () => {
   expect(PINTA_MAP_WRITE_FORMAT_VERSION).toBeGreaterThanOrEqual(1)
 })
 
+test('a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3', () => {
+  expect(PINTA_MAX_READ_FORMAT_VERSION).toBe(4)
+  for (const kind of ['tilemap', 'map-set', 'tileset', 'vector-tileset']) {
+    expect(pintaWriteFormatVersion(kind)).toBe(4)
+    expect(3 >= pintaWriteFormatVersion(kind)).toBe(false)
+  }
+  expect(pintaCanReadFormatVersion(4)).toBe(true)
+  expect(pintaCanReadFormatVersion(5)).toBe(false)
+})
+
 test('o gravador completo supera o cliente intermediário que só entende camadas', () => {
   const intermediateMaxRead = 2,
     intermediateWrite = 2
@@ -54,6 +64,6 @@ test('os números de hoje estão travados: mudar é seguir o procedimento do pin
   expect({
     leitura: PINTA_MAX_READ_FORMAT_VERSION as number,
     escrita: PINTA_MAP_WRITE_FORMAT_VERSION as number,
-  }).toEqual({ leitura: 3, escrita: 3 })
+  }).toEqual({ leitura: 4, escrita: 4 })
   expect(pintaCanReadFormatVersion(PINTA_MAP_WRITE_FORMAT_VERSION)).toBe(true)
 })

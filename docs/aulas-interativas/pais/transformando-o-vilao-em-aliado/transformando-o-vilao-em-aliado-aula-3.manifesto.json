@@ -2,71 +2,90 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-3",
-  "title": "Como criar jogos coloca isso em prática",
+  "title": "De onde veio essa ideia e por onde começar",
   "blocks": [
     {
-      "key": "video-a3-rotina",
-      "plannedVideo": "Título: Uma ideia pode virar um jogo\n\nApresentar a criação de jogos, o ciclo de trabalho e a programação com blocos. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a3-historia",
+      "plannedVideo": "Título: De onde veio tudo isso\n\nContar a história da família, do André que jogava muito ao André que ensina a criar jogos. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a3-caminho",
-      "plannedVideo": "Título: Uma regra, um teste e um resultado\n\nMostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a3-reconhece",
+      "plannedVideo": "Título: Você reconhece o seu filho aqui?\n\nReconhecer o filho em seis situações e ver como cada uma se liga à criação. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a3-erro",
-      "plannedVideo": "Título: O que a demonstração permite perceber\n\nRelacionar ações observadas às habilidades, à agência e à investigação de problemas. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 3. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a3-mundo",
+      "plannedVideo": "Título: Entrar no mundo dele\n\nMostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a3",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nImaginar, planejar, criar, testar, melhorar e compartilhar. A demonstração mostra a participação de quem cria; o responsável apenas acompanha."
+        "markdown": "## Para consultar\n\nUm tema favorito, a necessidade de previsibilidade, a frustração ao perder, o gosto por sequência, o apego à tela ou o jeito mais calado: cada um pode ser uma porta de entrada para criar."
       }
     }
   ],
   "sections": [
     {
-      "key": "rotina",
-      "title": "Uma ideia pode virar um jogo",
-      "objective": "Apresentar a criação de jogos, o ciclo de trabalho e a programação com blocos.",
+      "key": "historia",
+      "title": "De onde veio tudo isso",
+      "objective": "Contar a história da família, do André que jogava muito ao André que ensina a criar jogos.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-rotina"],
+      "blockKeys": [
+        "video-a3-historia"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a3-rotina"]
+        "blockIds": [
+          "video-a3-historia"
+        ]
       }
     },
     {
-      "key": "caminho",
-      "title": "Uma regra, um teste e um resultado",
-      "objective": "Mostrar a regra do esconderijo e do placar em três estados, sem pedir execução ao responsável.",
+      "key": "reconhece",
+      "title": "Você reconhece o seu filho aqui?",
+      "objective": "Reconhecer o filho em seis situações e ver como cada uma se liga à criação.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-caminho"],
+      "blockKeys": [
+        "video-a3-reconhece"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a3-caminho"]
+        "blockIds": [
+          "video-a3-reconhece"
+        ]
       }
     },
     {
-      "key": "erro",
-      "title": "O que a demonstração permite perceber",
-      "objective": "Relacionar ações observadas às habilidades, à agência e à investigação de problemas.",
+      "key": "mundo",
+      "title": "Entrar no mundo dele",
+      "objective": "Mostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-erro", "resumo-a3"],
+      "blockKeys": [
+        "video-a3-mundo",
+        "resumo-a3"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a3-erro"]
+        "blockIds": [
+          "video-a3-mundo"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["para-casa-a3", "quiz-a3"]
+  "retireBlockKeys": [
+    "video-a3-rotina",
+    "video-a3-caminho",
+    "video-a3-erro",
+    "para-casa-a3",
+    "quiz-a3"
+  ]
 }

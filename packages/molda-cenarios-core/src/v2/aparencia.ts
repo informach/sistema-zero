@@ -8,6 +8,23 @@ import {
   TexturaDoCenarioSchema,
 } from './documento'
 
+/** Alias de catálogo sem redefinir uma textura que outra peça já utiliza. */
+export function referenciarTextura(
+  doc: DocumentoDeCenario,
+  entrada: TexturaDoCenario,
+): { id: string; comandos: ComandoDeCenario[] } {
+  const ref = TexturaDoCenarioSchema.parse(entrada),
+    existente = doc.texturas?.find(
+      (t) =>
+        t.digest === ref.digest && t.biblioteca === ref.biblioteca && t.textura === ref.textura,
+    )
+  if (existente) return { id: existente.id, comandos: [] }
+  const usados = new Set(doc.texturas?.map((t) => t.id) ?? [])
+  let id = ref.id
+  for (let n = 0; usados.has(id); n++) id = `${ref.id.slice(0, 165)}/${ref.digest}/${n}`
+  return { id, comandos: [{ tipo: 'textura.definir', textura: { ...ref, id } }] }
+}
+
 /** Uma escolha de acabamento, compartilhada pela interface e pelos clientes de comandos. */
 export function aplicarTexturaAosObjetos(
   doc: DocumentoDeCenario,
@@ -22,18 +39,9 @@ export function aplicarTexturaAosObjetos(
   let id: string | null = null
   const comandos: ComandoDeCenario[] = []
   if (entrada) {
-    const ref = TexturaDoCenarioSchema.parse(entrada)
-    const igual = doc.texturas?.find(
-      (t) =>
-        t.digest === ref.digest && t.biblioteca === ref.biblioteca && t.textura === ref.textura,
-    )
-    if (igual) id = igual.id
-    else {
-      const usados = new Set(doc.texturas?.map((t) => t.id) ?? [])
-      id = ref.id
-      for (let n = 0; usados.has(id); n++) id = `${ref.id.slice(0, 165)}/${ref.digest}/${n}`
-      comandos.push({ tipo: 'textura.definir', textura: { ...ref, id } })
-    }
+    const referencia = referenciarTextura(doc, entrada)
+    id = referencia.id
+    comandos.push(...referencia.comandos)
   }
   const antigas = new Set<string>()
   for (const o of objetos) {
@@ -50,6 +58,9 @@ export function aplicarTexturaAosObjetos(
       .filter((o) => !escolhidos.has(o.id))
       .flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
   )
+  if (doc.iluminacao.ceu?.tipo === 'panorama') aindaUsadas.add(doc.iluminacao.ceu.textura)
+  for (const caminho of doc.caminhos)
+    if (caminho.aparencia?.textura) aindaUsadas.add(caminho.aparencia.textura.id)
   if (doc.base.tipo === 'terreno')
     for (const camada of doc.base.solo?.camadas ?? [])
       if (camada.textura) aindaUsadas.add(camada.textura.id)

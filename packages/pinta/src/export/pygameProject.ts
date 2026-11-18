@@ -17,6 +17,43 @@ import math
 from pathlib import Path
 import pygame
 
+def transformar_objeto_conjunto(parent, child, largura, altura, ids):
+    """A mesma base afim de transformSceneSetObject; a geometria não usa flips da arte."""
+    sx, sy = parent['width'] / largura, parent['height'] / altura
+    a, b = math.radians(parent.get('rotation', 0)), math.radians(child.get('rotation', 0))
+    mx, my = -sx if parent.get('flipX') else sx, -sy if parent.get('flipY') else sy
+    def vector(x, y):
+        return (x * mx * math.cos(a) - y * my * math.sin(a), x * mx * math.sin(a) + y * my * math.cos(a))
+    u, v = vector(math.cos(b), math.sin(b)), vector(-math.sin(b), math.cos(b))
+    ux, vy = math.hypot(*u), math.hypot(*v)
+    reflected = u[0] * v[1] - u[1] * v[0] < 0
+    p, origin = vector(child['x'], child['y']), vector(-largura if parent.get('flipX') else 0, -altura if parent.get('flipY') else 0)
+    result = dict(child, id=parent['id'] + '/' + child['id'] if child['id'] in ids else child['id'],
+                  x=parent['x'] + p[0] + origin[0] + (v[0] * child['height'] if reflected else 0),
+                  y=parent['y'] + p[1] + origin[1] + (v[1] * child['height'] if reflected else 0),
+                  width=child['width'] * ux, height=child['height'] * vy,
+                  rotation=math.degrees(math.atan2(u[1], u[0])), flipX=bool(child.get('flipX')), flipY=bool(child.get('flipY')) != reflected)
+    result['properties'] = {key: dict(value, value=parent['id'] + '/' + str(value['value'])) if isinstance(value, dict) and value.get('type') == 'object' and str(value['value']) in ids else value for key, value in child.get('properties', {}).items()}
+    if 'points' in child:
+        result['points'] = [{'x': point['x'] * ux, 'y': (child['height'] - point['y'] if reflected else point['y']) * vy} for point in child['points']]
+    if abs(u[0] * v[0] + u[1] * v[1]) <= 1e-8 * ux * vy:
+        return result
+    def world(x, y):
+        return (parent['x'] + p[0] + origin[0] + u[0] * x + v[0] * y, parent['y'] + p[1] + origin[1] + u[1] * x + v[1] * y)
+    if child.get('shape') == 'ellipse':
+        bx, by, cx, cy = u[0] * child['width'] / 2, u[1] * child['width'] / 2, v[0] * child['height'] / 2, v[1] * child['height'] / 2
+        xx, yy, xy = bx * bx + cx * cx, by * by + cy * cy, bx * by + cx * cy
+        delta = math.hypot(xx - yy, 2 * xy)
+        rx, ry = math.sqrt(max(0, (xx + yy + delta) / 2)), math.sqrt(max(0, (xx + yy - delta) / 2))
+        theta, center = math.atan2(2 * xy, xx - yy) / 2, world(child['width'] / 2, child['height'] / 2)
+        result.update(x=center[0] - rx * math.cos(theta) + ry * math.sin(theta), y=center[1] - rx * math.sin(theta) - ry * math.cos(theta), width=rx * 2, height=ry * 2, rotation=math.degrees(theta), flipX=False, flipY=False)
+    else:
+        at = world(0, 0)
+        points = child.get('points', [{'x': 0, 'y': 0}, {'x': child['width'], 'y': 0}, {'x': child['width'], 'y': child['height']}, {'x': 0, 'y': child['height']}])
+        result.update(x=at[0], y=at[1], rotation=0, shape=child.get('shape') if child.get('shape') in ('polyline', 'point') else 'polygon',
+                      points=[{'x': u[0] * point['x'] + v[0] * point['y'], 'y': u[1] * point['x'] + v[1] * point['y']} for point in points], flipX=bool(child.get('flipX')), flipY=bool(child.get('flipY')))
+    return result
+
 class Mundo:
     def __init__(self, raiz, nome):
         self.raiz = Path(raiz)
@@ -29,6 +66,7 @@ class Mundo:
         self.tamanho = self.dados['tileSize']
         self.objetos = []
         self.solidos, self.plataformas = [], []
+        self.solidos_transformados = []
         for camada in self.dados['layers']:
             e = self.efetiva(self.dados['layers'], camada)
             if not e['visible']:
@@ -47,6 +85,7 @@ class Mundo:
                     self.solidos.append(rect)
                 elif tile in ts['platform']:
                     self.plataformas.append(rect)
+        self._solidos_planos = list(self.solidos)
         for instancia in list(self.objetos):
             conjunto = next((s for s in self.dados.get('sets', []) if s['id'] == instancia.get('setId')), None)
             if not conjunto:
@@ -64,8 +103,8 @@ class Mundo:
                     continue
                 if camada['kind'] == 'objects':
                     for objeto in camada['objects']:
-                        x, y = ponto(objeto['x'] + e['x'], objeto['y'] + e['y'])
-                        self.objetos.append(dict(objeto, id=instancia['id'] + '/' + objeto['id'], x=x, y=y, width=objeto['width'] * instancia['width'] / (conjunto['cols'] * self.tamanho), height=objeto['height'] * instancia['height'] / (conjunto['rows'] * self.tamanho), rotation=instancia.get('rotation', 0) + objeto.get('rotation', 0)))
+                        ids = [o['id'] for l in conjunto['layers'] for o in l.get('objects', [])]
+                        self.objetos.append(transformar_objeto_conjunto(instancia, dict(objeto, x=objeto['x'] + e['x'], y=objeto['y'] + e['y']), conjunto['cols'] * self.tamanho, conjunto['rows'] * self.tamanho, ids))
                 elif camada['kind'] == 'tiles':
                     ts = next(t for t in self.dados['tilesets'] if t['id'] == camada['tilesetId'])
                     for i, celula in enumerate(camada['cells']):
@@ -76,10 +115,12 @@ class Mundo:
                             continue
                         x = i % conjunto['cols'] * self.tamanho + e['x']
                         y = i // conjunto['cols'] * self.tamanho + e['y']
-                        corners = [ponto(x + dx, y + dy) for dx, dy in [(0, 0), (self.tamanho, 0), (0, self.tamanho), (self.tamanho, self.tamanho)]]
+                        corners = [ponto(x + dx, y + dy) for dx, dy in [(0, 0), (self.tamanho, 0), (self.tamanho, self.tamanho), (0, self.tamanho)]]
                         xs, ys = [p[0] for p in corners], [p[1] for p in corners]
                         rect = pygame.FRect(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
                         (self.solidos if camada.get('collision') or tile in ts['solid'] else self.plataformas).append(rect)
+                        if camada.get('collision') or tile in ts['solid']:
+                            self.solidos_transformados.append(corners)
         inicio = next((o for o in self.objetos if o.get('role') == 'start'), {'x': self.tamanho / 2, 'y': self.tamanho / 2})
         self.jogador = pygame.FRect(inicio['x'], inicio['y'], self.tamanho * 0.65, self.tamanho * 0.65)
 
@@ -189,10 +230,6 @@ class Mundo:
     @staticmethod
     def contem(objeto, x, y):
         p = pygame.Vector2(x - objeto['x'], y - objeto['y']).rotate(-objeto.get('rotation', 0))
-        if objeto.get('flipX'):
-            p.x = objeto['width'] - p.x
-        if objeto.get('flipY'):
-            p.y = objeto['height'] - p.y
         if objeto.get('shape') == 'ellipse':
             return ((p.x - objeto['width'] / 2) / max(.001, objeto['width'] / 2)) ** 2 + ((p.y - objeto['height'] / 2) / max(.001, objeto['height'] / 2)) ** 2 <= 1
         points = objeto.get('points', [])
@@ -210,7 +247,7 @@ class Mundo:
             for eixo, delta in [('x', dx / passos), ('y', dy / passos)]:
                 antes = self.jogador.copy()
                 setattr(self.jogador, eixo, getattr(self.jogador, eixo) + delta)
-                if any(self.jogador.colliderect(r) for r in self.solidos):
+                if self.bloqueado(self.jogador):
                     self.jogador = antes
         self.jogador.clamp_ip(pygame.FRect(0, 0, self.dados['cols'] * self.tamanho, self.dados['rows'] * self.tamanho))
         for porta in self.objetos:
@@ -220,6 +257,22 @@ class Mundo:
                 if destino in self.mapas:
                     self.carregar(destino)
                     break
+
+    def bloqueado(self, rect):
+        if any(rect.colliderect(other) for other in self._solidos_planos):
+            return True
+        # Separating axes of the player rectangle and the actual transformed tile.
+        # A rotated tile's bounding Rect is kept in solidos for the legacy API only.
+        box = [rect.topleft, rect.topright, rect.bottomright, rect.bottomleft]
+        for polygon in self.solidos_transformados:
+            axes = [(1, 0), (0, 1)] + [(b[1] - a[1], a[0] - b[0]) for a, b in zip(polygon, polygon[1:] + polygon[:1])]
+            def separated(axis):
+                first = [x * axis[0] + y * axis[1] for x, y in box]
+                second = [x * axis[0] + y * axis[1] for x, y in polygon]
+                return max(first) <= min(second) or max(second) <= min(first)
+            if not any(separated(axis) for axis in axes):
+                return True
+        return False
 `
 export const pygameMain = `import argparse
 import json

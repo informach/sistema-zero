@@ -1,0 +1,124 @@
+import {
+  inspectReferenceRaster,
+  normalizeGlbImagePadding,
+  readGltfDocument,
+} from '@sistemazero/molda/gltf'
+import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
+import { conferirGlb, conferirImagemDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+
+// Apenas extensões materiais que o GLTFLoader instalado decodifica. Não aceitamos
+// extensões que introduzam buffers, topologia comprimida ou instâncias adicionais.
+const EXTENSOES_MATERIAIS = [
+  'EXT_texture_webp',
+  'KHR_texture_transform',
+  'KHR_materials_unlit',
+  'KHR_materials_clearcoat',
+  'KHR_materials_ior',
+  'KHR_materials_transmission',
+  'KHR_materials_specular',
+  'KHR_materials_sheen',
+  'KHR_materials_volume',
+  'KHR_materials_iridescence',
+  'KHR_materials_anisotropy',
+  'KHR_materials_dispersion',
+  'KHR_materials_emissive_strength',
+] as const
+
+/** Confere bytes reais com os leitores limitados do Molda antes de chamar o GLTFLoader.
+ * O teto de leitura compartilhado é 32 MiB por arquivo; o pacote pode conter várias partes. */
+export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: boolean } = {}) {
+  conferirGlb(bytes)
+  // Entradas de outros exportadores podem descrever o padding junto da imagem.
+  // A conferência usa uma cópia canônica, mantendo bytes/digest originais na autoria.
+  const leitura = readGltfDocument(
+    opcoes.fonte ? normalizeGlbImagePadding(bytes) : bytes,
+    [],
+    'modelo.glb',
+    {
+      acceptedRequiredExtensions: EXTENSOES_MATERIAIS,
+    },
+  )
+  if (leitura.status !== 'ready') throw Error('O GLB precisa ser autocontido.')
+  const d = leitura.document
+  for (const e of d.extensions.unhandled)
+    if (!(EXTENSOES_MATERIAIS as readonly string[]).includes(e))
+      throw Error(`A extensão “${e}” não pode entrar no pacote compilado sem um adaptador.`)
+  const profundidades = new Uint16Array(d.graph.nodes.length)
+  for (const indice of d.graph.order) {
+    const pai = d.graph.nodes[indice]!.parent
+    const profundidade = pai === null ? 1 : profundidades[pai]! + 1
+    if (profundidade > 128) throw Error('A hierarquia do GLB é profunda demais para o carregador.')
+    profundidades[indice] = profundidade
+  }
+  let bytesDePixels = 0
+  for (const imagem of d.resources.images) {
+    const tipo = imagem.mimeType ?? imagem.uriMimeType
+    const medidas =
+      tipo === 'image/webp'
+        ? conferirImagemDeCenario(imagem.bytes, 'image/webp')
+        : (() => {
+            const r = inspectReferenceRaster(imagem.bytes)
+            if (tipo !== null && tipo !== r.mime)
+              throw Error('O MIME da imagem do GLB é incompatível.')
+            return { largura: r.width, altura: r.height }
+          })()
+    bytesDePixels += medidas.largura * medidas.altura * 4
+    if (bytesDePixels > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+      throw Error('As imagens do GLB excedem o orçamento de memória da compilação.')
+  }
+  let malhas = 0,
+    triangulos = 0,
+    verticesMaximos = 0,
+    bytesNumericos = 0
+  for (const a of d.accessors) bytesNumericos += a.values.byteLength
+  const estatisticas = d.meshes.map((m) => {
+    let partes = 0,
+      tris = 0
+    for (const p of m.primitives) {
+      if (p.topology.kind !== 'triangles') throw Error('A compilação exige malhas de triângulos.')
+      const indice = p.attributes.get('POSITION')
+      if (indice === undefined) throw Error('Uma malha não possui posições.')
+      const vertices = d.accessors[indice]!.count
+      verticesMaximos = Math.max(verticesMaximos, vertices)
+      if (!opcoes.fonte && vertices > LIMITES_DA_EXPORTACAO.malha.verticesPorParte)
+        throw Error(
+          'Uma parte compilada excede 65.000 vértices; divida a geometria antes de exportar.',
+        )
+      if (!opcoes.fonte && p.topology.indices.length > LIMITES_DA_EXPORTACAO.malha.indicesPorParte)
+        throw Error('Uma parte compilada excede o orçamento de índices.')
+      partes++
+      tris += p.topology.indices.length / 3
+      bytesNumericos += p.topology.indices.byteLength
+    }
+    return { partes, tris }
+  })
+  if (bytesNumericos > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+    throw Error('Os dados numéricos do GLB excedem o orçamento de memória.')
+  const raizes = d.graph.scenes.length
+    ? d.graph.scenes[d.graph.defaultScene ?? 0]!.roots
+    : d.graph.roots
+  const selecionados = [...raizes]
+  for (let cursor = 0; cursor < selecionados.length; cursor++) {
+    const no = d.graph.nodes[selecionados[cursor]!]!
+    selecionados.push(...no.children)
+    if (no.mesh !== null) {
+      const e = estatisticas[no.mesh]!
+      malhas += e.partes
+      triangulos += e.tris
+    }
+    if (malhas > LIMITES_DA_EXPORTACAO.malha.partes || triangulos > 16_000_000)
+      throw Error('As instâncias do GLB excedem o orçamento de malhas ou triângulos.')
+  }
+  if (!malhas) throw Error('O GLB não possui malhas na cena selecionada.')
+  return {
+    malhas,
+    triangulos,
+    verticesMaximos,
+    bytesNumericos,
+    bytesDePixels,
+    animavel:
+      d.animations.length > 0 ||
+      d.skins.length > 0 ||
+      d.meshes.some((m) => m.primitives.some((p) => p.targets.length > 0)),
+  }
+}

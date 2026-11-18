@@ -15,6 +15,8 @@ export interface SuperficieDoObjeto {
   id: string
   /** Identidade da peça desenhada; o id público pode ser a raiz de uma montagem. */
   chave?: string
+  /** Parte estrutural estável, compartilhada com os apoios do documento. */
+  parte?: string
   pendente?: boolean
   relativa?: Matrix4
   geometria: BufferGeometry
@@ -108,10 +110,10 @@ export class SuperficiesDosObjetos {
     ignorados: ReadonlySet<string> = new Set(),
     somenteTopo = true,
     incluirPendentes = false,
-  ): { id: string; ponto: Vector3; distancia: number } | null {
+  ): { id: string; ponto: Vector3; distancia: number; parte?: string } | null {
     const sonda = this.sonda
     if (!sonda) return null
-    let resposta: { id: string; ponto: Vector3; distancia: number } | null = null
+    let resposta: { id: string; ponto: Vector3; distancia: number; parte?: string } | null = null
     for (const i of this.indice.consultar(raio.ray)) {
       const entrada = this.entradas[i]!
       if (ignorados.has(entrada.id) || (entrada.pendente && !incluirPendentes)) continue
@@ -127,7 +129,12 @@ export class SuperficiesDosObjetos {
             this.normal.copy(hit.face.normal).applyNormalMatrix(this.matrizNormal).y < 0.1)
         )
           continue
-        resposta = { id: entrada.id, ponto: hit.point.clone(), distancia: hit.distance }
+        resposta = {
+          id: entrada.id,
+          ponto: hit.point.clone(),
+          distancia: hit.distance,
+          ...(entrada.parte ? { parte: entrada.parte } : {}),
+        }
       }
     }
     return resposta

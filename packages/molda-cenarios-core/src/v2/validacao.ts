@@ -12,6 +12,7 @@ import {
 import { TransformacaoSchema } from './entidades-schema'
 import { parteEstruturalExiste } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
+import { planoDeAmostragemDaRota } from './marcadores'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
 import { errosDaTopologiaDoCaminho } from './topologia-de-caminho'
 
@@ -25,6 +26,14 @@ export function validarDocumento(
   valor: unknown,
   opcoes: OpcoesDeValidacao = {},
 ): DocumentoDeCenario {
+  return validarDocumentoInterno(valor, opcoes)
+}
+
+function validarDocumentoInterno(
+  valor: unknown,
+  opcoes: OpcoesDeValidacao,
+  associacoesDaRaiz?: ReadonlySet<string>,
+): DocumentoDeCenario {
   const r = DocumentoDeCenarioSchema.safeParse(valor)
   if (!r.success)
     throw new CenarioInvalido(r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`))
@@ -37,6 +46,9 @@ export function validarDocumento(
     aguas = new Set(d.aguas.map((a) => a.id)),
     caminhos = new Map(d.caminhos.map((c) => [c.id, c])),
     modelos = new Set<string>()
+  // A expansão física de conjuntos não cria nem apaga as identidades autorais
+  // às quais os metadados do jogo estão associados. Esse contexto é só interno.
+  const associaveis = associacoesDaRaiz ?? new Set([...objetos.keys(), ...montagens])
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO_V2.bytes)
     erros.push('Documento excede o orçamento de bytes')
 
@@ -52,6 +64,8 @@ export function validarDocumento(
     texturas.add(t.id)
     if (opcoes.texturaExiste && !opcoes.texturaExiste(t)) erros.push(`Textura ausente: ${t.id}`)
   }
+  if (d.iluminacao.ceu?.tipo === 'panorama' && !texturas.has(d.iluminacao.ceu.textura))
+    erros.push('Textura do panorama fora da tabela do cenário')
   if (d.base.tipo === 'terreno')
     for (const camada of d.base.solo?.camadas ?? [])
       if (camada.textura && !texturas.has(camada.textura.id))
@@ -169,7 +183,29 @@ export function validarDocumento(
   if (d.aguas.filter((a) => a.tipo === 'mar').length > 1) erros.push('Só cabe um mar por cenário')
 
   for (const m of d.marcadores)
-    if (m.objeto && !objetos.has(m.objeto)) erros.push(`Objeto do marcador ausente: ${m.id}`)
+    if (m.objeto && !associaveis.has(m.objeto)) erros.push(`Objeto do marcador ausente: ${m.id}`)
+  if (
+    d.marcadores.filter((m) => m.configuracao?.tipo === 'inicio' && m.configuracao.principal)
+      .length > 1
+  )
+    erros.push('Só pode existir um ponto de início principal.')
+  const luzes = d.marcadores.flatMap((m) =>
+    m.configuracao?.tipo === 'luz' ? [m.configuracao.luz] : [],
+  )
+  if (luzes.length > 32) erros.push('O cenário admite até 32 luzes locais.')
+  if (luzes.filter((l) => l.sombra).length > 4)
+    erros.push('O cenário admite até 4 luzes com sombra.')
+  let amostrasDeRotas = 0
+  for (const m of d.marcadores)
+    if (m.configuracao?.tipo === 'rota') {
+      try {
+        amostrasDeRotas += planoDeAmostragemDaRota(m.configuracao).quantidade
+      } catch (e) {
+        if (!(e instanceof CenarioInvalido)) throw e
+        erros.push(...e.problemas.map((p) => `${p} (${m.id})`))
+      }
+    }
+  if (amostrasDeRotas > 262_144) erros.push('O cenário excede o orçamento de amostragem das rotas.')
 
   if (d.base.tipo === 'perfil') {
     const carimbos = new Set<string>()
@@ -191,7 +227,7 @@ export function validarDocumento(
         if (opcoes.texturaExiste && !opcoes.texturaExiste(t))
           throw new CenarioInvalido([`Textura ausente no conjunto: ${t.id}`])
     }
-    validarDocumento(resolverConjuntos(d).documento, opcoes)
+    validarDocumentoInterno(resolverConjuntos(d).documento, opcoes, associaveis)
   }
   return d
 }

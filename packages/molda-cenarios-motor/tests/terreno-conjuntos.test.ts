@@ -3,6 +3,7 @@ import {
   type BaseDeTerreno,
   capturarConteudoDeConjunto,
   criarDocumentoVazio,
+  prepararOperacaoDeCaminho,
   resolverConjuntos,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Group, Matrix4 } from 'three'
@@ -13,7 +14,10 @@ import { matrizDoObjeto } from '../src/matematica'
 import { prepararPreviaDosApoios } from '../src/previa-dos-apoios'
 import { TerrenoDoPalco } from '../src/Terreno'
 
-test('a alça da raiz e sua pilha usam o terreno novo, e a prévia de mover não é presa pela altura anterior', () => {
+test.each([
+  'escultura',
+  'estrada',
+])('a alça da raiz e sua pilha usam o terreno novo de %s, sem prender a prévia à altura anterior', (tipo) => {
   const origem = criarDocumentoVazio('fonte', 'Jardim')
   origem.formas = [{ id: 'f', nome: 'Bloco', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 }]
   origem.instancias = [
@@ -81,7 +85,29 @@ test('a alça da raiz e sua pilha usam o terreno novo, e a prévia de mover não
     terreno = new TerrenoDoPalco(base, new Map())
   const estado = structuredClone(terreno.estado)
   estado.campo.alturas.fill(4)
-  terreno.prever(estado, { alturas: { x0: 0, z0: 0, x1: 64, z1: 64 } })
+  const estrada =
+    tipo === 'estrada'
+      ? prepararOperacaoDeCaminho(
+          {
+            id: 'via',
+            nome: 'Entrada do jardim',
+            tipo: 'estrada',
+            grupo: null,
+            oculto: false,
+            bloqueado: false,
+            acabamento: null,
+            largura: 3,
+            pontos: [
+              { x: -8, z: 0 },
+              { x: 8, z: 0 },
+            ],
+            molde: { deslocamento: -1.5, borda: 2, suavizacao: 4 },
+          },
+          estado,
+        )
+      : null
+  if (estrada) d.caminhos = [estrada.caminho]
+  terreno.prever(estrada?.terreno ?? estado, { alturas: { x0: 0, z0: 0, x1: 64, z1: 64 } })
   const projecao = resolverConjuntos(d, terreno.altura),
     visual = projecao.documento,
     modelo = criarModeloDaForma(visual.formas![0]!),
@@ -100,7 +126,7 @@ test('a alça da raiz e sua pilha usam o terreno novo, e a prévia de mover não
     )
     const alvos = criarAlvosDeEdicao(d, locais, projecao.origens, terreno.altura),
       raiz = alvos.get('raiz')!
-    expect(raiz.matriz.elements[13]).toBe(5)
+    expect(raiz.matriz.elements[13]).toBe(tipo === 'estrada' ? 3.5 : 5)
     const filho = locais.get('em-cima')!,
       alturaInicial = filho.matriz.elements[13]!
     const atualizar = prepararPreviaDosApoios(d, locais, ['raiz'], terreno.altura)
@@ -108,7 +134,8 @@ test('a alça da raiz e sua pilha usam o terreno novo, e a prévia de mover não
     raiz.atualizar()
     atualizar(new Map([['raiz', raiz.matriz]]))
     expect(filho.matriz.elements[13]! - alturaInicial).toBe(3)
-    expect(d).toEqual(antes)
+    expect(d).toEqual(estrada ? { ...antes, caminhos: [estrada.caminho] } : antes)
+    expect(estado.campo.alturas.every((h) => h === 4)).toBe(true)
   } finally {
     lote.descartar()
     modelo.descartar()

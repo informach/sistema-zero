@@ -19,6 +19,9 @@
  * ⚠️ Nada aqui pode importar de `components/`, `lesson/` ou `state/` — há um teste que percorre o
  * grafo e reprova se React entrar. Ver `assets/purity.test.ts`.
  */
+
+export { inheritPintaLocalOrigin, pintaLocalRevisionOf } from '../core/localAssetOrigin'
+export { PintaLocalConflictError, PintaLocalStorageError } from '../core/localStorageErrors'
 export {
   createAsset,
   createLessonAsset,
@@ -46,8 +49,10 @@ export {
   PINTA_ASSET_KINDS,
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   type PintaAsset,
   type PintaAssetKind,
+  pintaAssetSchema,
   sanitizePintaAsset,
   type TileAnimationFrame,
   type TilemapAsset,

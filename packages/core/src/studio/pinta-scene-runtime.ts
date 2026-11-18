@@ -1,4 +1,6 @@
 import type { PintaScene, PintaSceneLayer, PintaSceneObject } from './pinta-scene'
+
+export { sceneObjectTransformSource } from './pinta-scene-transform.generated'
 export function sceneLayerState(
   layers: PintaSceneLayer[],
   layer: PintaSceneLayer,
@@ -32,6 +34,117 @@ export function sceneLayerState(
   }
   return result
 }
+/** Expands one child in a set. Geometry never uses the child's internal art flips.
+ * A reflected basis becomes a proper rotation plus an origin shift and an art flip.
+ * This derived view may use polygon points for an affine footprint. The authored
+ * object is untouched. Keep this function self-contained: players embed its source.
+ */
+export function transformSceneSetObject(
+  parent: PintaSceneObject,
+  child: PintaSceneObject,
+  setWidth: number,
+  setHeight: number,
+  localIds: readonly string[],
+): PintaSceneObject {
+  const sx = parent.width / setWidth,
+    sy = parent.height / setHeight
+  const a = ((parent.rotation ?? 0) * Math.PI) / 180,
+    b = ((child.rotation ?? 0) * Math.PI) / 180,
+    mx = parent.flipX ? -sx : sx,
+    my = parent.flipY ? -sy : sy
+  const vector = (x: number, y: number) => ({
+    x: x * mx * Math.cos(a) - y * my * Math.sin(a),
+    y: x * mx * Math.sin(a) + y * my * Math.cos(a),
+  })
+  const u = vector(Math.cos(b), Math.sin(b)),
+    v = vector(-Math.sin(b), Math.cos(b)),
+    ux = Math.hypot(u.x, u.y),
+    vy = Math.hypot(v.x, v.y)
+  const shear = Math.abs(u.x * v.x + u.y * v.y) > 1e-8 * ux * vy
+  const reflected = u.x * v.y - u.y * v.x < 0,
+    p = vector(child.x, child.y),
+    origin = vector(parent.flipX ? -setWidth : 0, parent.flipY ? -setHeight : 0)
+  const result: PintaSceneObject = {
+    ...child,
+    id: localIds.includes(child.id) ? [parent.id, child.id].join('/') : child.id,
+    x: parent.x + p.x + origin.x + (reflected ? v.x * child.height : 0),
+    y: parent.y + p.y + origin.y + (reflected ? v.y * child.height : 0),
+    width: child.width * ux,
+    height: child.height * vy,
+    rotation: (Math.atan2(u.y, u.x) * 180) / Math.PI,
+    flipX: child.flipX,
+    flipY: !!child.flipY !== reflected ? true : undefined,
+    ...(child.points
+      ? {
+          points: child.points.map((p) => ({
+            x: p.x * ux,
+            y: (reflected ? child.height - p.y : p.y) * vy,
+          })),
+        }
+      : {}),
+    properties: Object.fromEntries(
+      Object.entries(child.properties).map(([key, value]) => [
+        key,
+        typeof value === 'object' && value.type === 'object'
+          ? {
+              ...value,
+              value: localIds.includes(String(value.value))
+                ? [parent.id, value.value].join('/')
+                : value.value,
+            }
+          : value,
+      ]),
+    ),
+  }
+  if (!shear) return result
+  const world = (x: number, y: number) => ({
+    x: parent.x + p.x + origin.x + u.x * x + v.x * y,
+    y: parent.y + p.y + origin.y + u.y * x + v.y * y,
+  })
+  if (child.shape === 'ellipse') {
+    const bx = (u.x * child.width) / 2,
+      by = (u.y * child.width) / 2,
+      cx = (v.x * child.height) / 2,
+      cy = (v.y * child.height) / 2,
+      xx = bx * bx + cx * cx,
+      yy = by * by + cy * cy,
+      xy = bx * by + cx * cy,
+      delta = Math.hypot(xx - yy, 2 * xy),
+      rx = Math.sqrt(Math.max(0, (xx + yy + delta) / 2)),
+      ry = Math.sqrt(Math.max(0, (xx + yy - delta) / 2)),
+      theta = Math.atan2(2 * xy, xx - yy) / 2,
+      center = world(child.width / 2, child.height / 2)
+    return {
+      ...result,
+      x: center.x - rx * Math.cos(theta) + ry * Math.sin(theta),
+      y: center.y - rx * Math.sin(theta) - ry * Math.cos(theta),
+      width: rx * 2,
+      height: ry * 2,
+      rotation: (theta * 180) / Math.PI,
+      flipX: undefined,
+      flipY: undefined,
+    }
+  }
+  const at = world(0, 0),
+    points = (
+      child.points ?? [
+        { x: 0, y: 0 },
+        { x: child.width, y: 0 },
+        { x: child.width, y: child.height },
+        { x: 0, y: child.height },
+      ]
+    ).map((p) => ({ x: u.x * p.x + v.x * p.y, y: u.y * p.x + v.y * p.y }))
+  return {
+    ...result,
+    x: at.x,
+    y: at.y,
+    rotation: 0,
+    points,
+    shape: child.shape === 'polyline' || child.shape === 'point' ? child.shape : 'polygon',
+    flipX: child.flipX,
+    flipY: child.flipY,
+  }
+}
 export function sceneObjects(scene: PintaScene): PintaSceneObject[] {
   const direct = scene.layers.flatMap((l) => {
     if (l.kind !== 'objects') return []
@@ -41,9 +154,6 @@ export function sceneObjects(scene: PintaScene): PintaSceneObject[] {
   return direct.flatMap((o) => {
     const set = scene.sets?.find((s) => s.id === o.setId)
     if (!set) return [o]
-    const sx = o.width / (set.cols * scene.tileSize),
-      sy = o.height / (set.rows * scene.tileSize),
-      a = ((o.rotation ?? 0) * Math.PI) / 180
     const nested = sceneObjects({
       ...scene,
       cols: set.cols,
@@ -51,33 +161,12 @@ export function sceneObjects(scene: PintaScene): PintaSceneObject[] {
       layers: set.layers,
       sets: [],
     })
-    const ids = new Map(nested.map((n) => [n.id, `${o.id}/${n.id}`]))
+    const ids = set.layers.flatMap((l) => (l.kind === 'objects' ? l.objects.map((o) => o.id) : []))
     return [
       o,
-      ...nested.map((n) => {
-        const x = (o.flipX ? set.cols * scene.tileSize - n.x : n.x) * sx,
-          y = (o.flipY ? set.rows * scene.tileSize - n.y : n.y) * sy
-        return {
-          ...n,
-          id: ids.get(n.id)!,
-          x: o.x + x * Math.cos(a) - y * Math.sin(a),
-          y: o.y + x * Math.sin(a) + y * Math.cos(a),
-          width: n.width * sx,
-          height: n.height * sy,
-          rotation:
-            (o.rotation ?? 0) + (!!o.flipX !== !!o.flipY ? -(n.rotation ?? 0) : (n.rotation ?? 0)),
-          flipX: !!n.flipX !== !!o.flipX ? (true as const) : undefined,
-          flipY: !!n.flipY !== !!o.flipY ? (true as const) : undefined,
-          properties: Object.fromEntries(
-            Object.entries(n.properties).map(([k, v]) => [
-              k,
-              typeof v === 'object' && v.type === 'object'
-                ? { ...v, value: ids.get(String(v.value)) ?? v.value }
-                : v,
-            ]),
-          ),
-        }
-      }),
+      ...nested.map((n) =>
+        transformSceneSetObject(o, n, set.cols * scene.tileSize, set.rows * scene.tileSize, ids),
+      ),
     ]
   })
 }

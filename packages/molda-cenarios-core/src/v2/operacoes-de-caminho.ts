@@ -6,11 +6,17 @@ import {
   unirRegioes,
 } from './campo-de-alturas'
 import { areaDoPoligono, moldarTerrenoPelaCurva, perfilDaPonte, reamostrarCurva } from './curvas'
-import type { CaminhoDeCenario } from './documento'
+import type {
+  CaminhoDeCenario,
+  DocumentoDeCenario,
+  ModeloDoCenario,
+  TexturaDoCenario,
+} from './documento'
 import { clonarEstadoDoTerreno, type EstadoDoTerreno } from './edicao-de-terreno'
 import { CaminhoSchema } from './entidades-schema'
 import type { RegioesDeTerreno } from './ferramentas-de-terreno'
 import { curvaDoCaminho } from './topologia-de-caminho'
+import { validarDocumento } from './validacao'
 
 export interface ResumoDoCaminho {
   comprimento: number
@@ -21,10 +27,29 @@ export interface ResumoDoCaminho {
 }
 export interface OperacaoDeCaminhoPreparada {
   caminho: CaminhoDeCenario
+  /** Referências da biblioteca escolhidas na prévia, ainda sem alterar a autoria. */
+  modelos?: readonly ModeloDoCenario[]
+  texturas?: readonly TexturaDoCenario[]
   /** Só a estrada molda uma cópia do campo. As outras variantes não alteram o relevo. */
   terreno?: EstadoDoTerreno
   regioes: RegioesDeTerreno
   resumo: ResumoDoCaminho
+}
+
+/** Mesma projeção para prévia e gravação; IDs já usados não podem ser sobrescritos. */
+export function documentoDaOperacaoDeCaminho(
+  doc: DocumentoDeCenario,
+  op: OperacaoDeCaminhoPreparada,
+) {
+  const existe = doc.caminhos.some((c) => c.id === op.caminho.id)
+  return validarDocumento({
+    ...doc,
+    modelos: [...doc.modelos, ...(op.modelos ?? [])],
+    ...(op.texturas?.length ? { texturas: [...(doc.texturas ?? []), ...op.texturas] } : {}),
+    caminhos: existe
+      ? doc.caminhos.map((c) => (c.id === op.caminho.id ? op.caminho : c))
+      : [...doc.caminhos, op.caminho],
+  })
 }
 const falhar = (mensagem: string): never => {
   throw new CenarioInvalido([mensagem])
@@ -34,6 +59,8 @@ const falhar = (mensagem: string): never => {
 export function prepararOperacaoDeCaminho(
   entrada: unknown,
   estado: EstadoDoTerreno | null,
+  /** Editar acabamento não deve repetir o corte da estrada sobre o campo já moldado. */
+  opcoes: { moldarTerreno?: boolean } = {},
 ): OperacaoDeCaminhoPreparada {
   const caminho = CaminhoSchema.parse(entrada),
     curva = curvaDoCaminho(caminho)
@@ -63,7 +90,8 @@ export function prepararOperacaoDeCaminho(
         'O terreno atravessa o tabuleiro. Revise as cabeceiras ou o relevo antes de testar.',
       )
   }
-  if (caminho.tipo !== 'estrada') return { caminho, regioes: {}, resumo }
+  if (caminho.tipo !== 'estrada' || opcoes.moldarTerreno === false)
+    return { caminho, regioes: {}, resumo }
   if (!estado) return falhar('Crie e carregue o terreno antes de moldar uma estrada.')
   const campo = estado.campo
   for (const p of curva.pontos)

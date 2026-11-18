@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { esperarConsulta } from './esperar-consulta.mjs'
 
 const saida = resolve(import.meta.dirname, '../../../../output/cenarios-reforma/lote5-oficina')
 const raiz = resolve(import.meta.dirname, '../../../..')
@@ -136,7 +137,8 @@ try {
         .getByRole('dialog')
         .getByRole('button', { name: 'Confirmar modelo', exact: true })
         .click()
-      await p.waitForFunction(
+      await esperarConsulta(
+        p,
         async (id) =>
           (await window.__cenarios.host.abrirCenario(id)).documento.base.tipo === 'terreno',
         id,

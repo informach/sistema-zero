@@ -29,7 +29,7 @@ export class SessaoDoTeste {
     this.movimento = new MovimentoDoTeste(mundo, inicio, personagem.altura, agua)
     this.movimento.definirModo(config.modo)
     camera.getWorldDirection(this.direcao)
-    this.yaw = Math.atan2(-this.direcao.x, -this.direcao.z)
+    this.yaw = config.giroInicial ?? Math.atan2(-this.direcao.x, -this.direcao.z)
     personagem.grupo.position.copy(this.movimento.posicao)
     personagem.grupo.rotation.y = this.yaw + Math.PI
     personagem.atualizar(0, 0, this.movimento.noChao, false)

@@ -67,12 +67,19 @@ export class IndiceDeCaixas {
     return this.nos.length ? destino.copy(this.nos[0]!.caixa) : destino.makeEmpty()
   }
 
-  consultar(raio: Ray): number[] {
+  consultar(raio: Ray, margem = 0): number[] {
+    if (!Number.isFinite(margem) || margem < 0 || margem > 100_000)
+      throw new RangeError('Margem inválida para consultar volumes')
     const pilha = this.nos.length ? [0] : [],
-      resposta: number[] = []
+      resposta: number[] = [],
+      caixa = new Box3()
     while (pilha.length) {
       const no = this.nos[pilha.pop()!]!
-      if (no.caixa.isEmpty() || !raio.intersectsBox(no.caixa)) continue
+      if (
+        no.caixa.isEmpty() ||
+        !raio.intersectsBox(margem ? caixa.copy(no.caixa).expandByScalar(margem) : no.caixa)
+      )
+        continue
       if (no.item !== -1) resposta.push(no.item)
       else pilha.push(no.direita, no.esquerda)
     }

@@ -1,0 +1,16 @@
+# Lote 8.2 — Pintura portátil e recursos da execução
+
+18/11/2026 · `staging` após `37cf1eada` · **8.2 e lote 8 continuam abertos.** Este recorte prepara a pintura e o carregamento do compilador; não entrega ainda o pacote completo ou a interface de exportação.
+
+`rasterizarSoloCompilado` assa a mistura do `MaterialDoSolo` sobre os triângulos reais, com pesos interpolados, cores em luz linear, imagens amostradas com filtragem bilinear e repetição em metros nas coordenadas globais. Conserva a orientação das imagens, inclusive em coordenadas negativas. Não reduz a composição a uma cor média. Retorna pixels e UVs novos, sem alterar a geometria ou os pesos autorais. Funciona sem renderer ou DOM; recebe pixels decodificados pelo pipeline existente. Limita dimensões, memória e trabalho de rasterização, e dilata o exterior das faces para evitar halos de filtragem nos recortes. Partes grandes devem ser separadas em setores antes dessa etapa.
+
+`carregarRecursosDaCompilacao` usa portas de leitura por referência da revisão, com conferência de hash/formato e cache local por conteúdo. Seleciona modelos, formas e texturas realmente usados com a preparação do núcleo, carrega recursos de terreno pela via existente e reutiliza o gerador de formas. Aplica limites de leitura/memória antes dos decoders, preserva os bytes/documento recebidos, informa progresso e recusa cancelamento/falha sem devolver resultado parcial. Cópias e texturas carregadas pertencem à execução e são descartadas uma vez. Não consulta URLs fornecidas pelo documento. A autorização da revisão no servidor continua prevista em 8.3; essas portas não substituem essa autorização.
+
+## Verificação e revisão
+
+- **171 testes / 4.051 verificações** na suíte completa do motor, sem falhas. Tipagem e Biome passaram nos arquivos alterados.
+- Sete testes novos cobrem pesos/regiões sem cor média, luz linear, repetição/origem negativa, textura ausente, pesos inválidos, resolução/cancelamento, leitura por referência, cache por hash, integridade, falha sem pacote parcial, licença restrita antes de ler modelos, descarte idempotente e formas sem IO.
+- Ensaio Chrome headless local: material original e pintura compilada foram desenhados pela mesma câmera. A segunda imagem veio de um GLB gerado e reaberto. Houve preservação de padrão, orientação, repetição e transição entre camadas: diferença média **0,2712**, máxima **3**, por canal de 0 a 255, no interior comparável da imagem. A rasterização de 128 × 128 pixels levou cerca de **18,9 ms nesse ensaio**, sem extrapolação para uma ilha inteira ou aparelho físico.
+- As duas capturas foram também inspecionadas visualmente. [Original](evidencias/lote8-pintura/solo-editor.png), [compilado](evidencias/lote8-pintura/solo-compilado.png), [medição](evidencias/lote8-pintura/resultado.json). São padrões próprios de teste; não representam a composição artística final da Faísca.
+
+**Próxima tarefa ainda em 8.2:** montar objetos e atores preservando deformações/animações, integrar os acabamentos portáteis às superfícies e fechar o pacote completo, seguido de comparação e ciclos de recursos. Nenhuma fase posterior foi iniciada. Exportadores finais, Estúdio/Raylib, publicação/perfil, lotes 9–10, composição final, full review e implantação/validação de staging continuam pendentes.

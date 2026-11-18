@@ -141,7 +141,10 @@ function props(v: unknown, where: string, warnings: string[]): RecordValue {
       // O Tiled grava #AARRGGBB; o Pinta guarda #RRGGBBAA.
       out[name] = {
         type: 'color',
-        value: value.length === 9 ? `#${value.slice(3)}${value.slice(1, 3)}` : value,
+        value:
+          value.length === 9
+            ? `#${value.slice(3)}${value.slice(1, 3).toLowerCase() === 'ff' ? '' : value.slice(1, 3)}`
+            : value,
       }
     } else if (type === 'object') out[name] = { type: 'object', value: String(raw ?? '') }
     else if (type === 'file') out[name] = { type: 'asset', value: String(raw ?? '') }
@@ -558,7 +561,17 @@ export async function importTiledScene(
       label = string(l.name, 'Camada'),
       where = `a camada ${label}`,
       p = props(l.properties, where, warnings)
-    if (p['pinta:expanded'] === true) return
+    if (p['pinta:expanded'] === true) {
+      // Expanded children are not authored layers, but other containers can refer
+      // to their numeric Tiled IDs. Keep the reverse identity before skipping them.
+      for (const raw of array(l.objects)) {
+        const object = rec(raw),
+          metadata = json(props(object.properties, where, warnings)['pinta:object'])
+        if (metadata && typeof metadata === 'object' && !Array.isArray(metadata))
+          numericObjects.set(String(object.id), string(rec(metadata).id, `object-${object.id}`))
+      }
+      return
+    }
     if (p['pinta:wrapper'] === true) {
       for (const child of array(l.layers)) convert(child, parentId, depth)
       return
@@ -765,16 +778,24 @@ export async function importTiledScene(
     warnings.push(`A camada ${label} (${string(l.type)}) não foi convertida.`)
   }
   for (const l of array(map.layers)) convert(l, undefined, 0)
-  for (const l of layers)
-    for (const o of array(l.objects) as RecordValue[])
-      for (const [key, value] of Object.entries(rec(o.properties))) {
-        const typed = value && typeof value === 'object' ? (value as RecordValue) : null
-        if (typed?.type === 'object')
-          rec(o.properties)[key] = {
-            ...typed,
-            value: numericObjects.get(String(typed.value)) ?? typed.value,
-          }
-      }
+  const remapReferences = (properties: unknown) => {
+    if (!properties || typeof properties !== 'object') return
+    for (const [key, value] of Object.entries(rec(properties))) {
+      const typed = value && typeof value === 'object' ? (value as RecordValue) : null
+      if (typed?.type === 'object')
+        rec(properties)[key] = {
+          ...typed,
+          value: numericObjects.get(String(typed.value)) ?? typed.value,
+        }
+    }
+  }
+  for (const l of layers) {
+    remapReferences(l.properties)
+    for (const o of array(l.objects) as RecordValue[]) remapReferences(o.properties)
+  }
+  for (const ts of tilesets)
+    if (ts.tileProperties)
+      for (const properties of Object.values(rec(ts.tileProperties))) remapReferences(properties)
   const p = props(map.properties, 'o mapa', warnings),
     sets = json(p['pinta:sets'])
   const lost = Object.keys(p).filter((key) => !key.startsWith('pinta:'))

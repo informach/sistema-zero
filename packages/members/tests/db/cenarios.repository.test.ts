@@ -23,6 +23,8 @@ import {
   criarDocumentoVazio,
   type DefinicaoDeConjunto,
   executarLote,
+  IluminacaoSchema,
+  MarcadorSchema,
 } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
@@ -2823,7 +2825,7 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
         id: 'ponte',
         tipo: 'ponte',
         cotas: { de: 3, ate: 4 },
-        pilares: { espacamento: 4, largura: 0.4 },
+        pilares: { espacamento: 4, largura: 0.4, afastamentoLateral: 0.6 },
       },
     ].map((caminho) => CaminhoSchema.parse(caminho))
     const lote = {
@@ -3046,6 +3048,139 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       operacaoId: randomUUID(),
     })
     expect(refeito.documento).toEqual(salvo.documento)
+  })
+
+  test('metadados de jogo e ambiente conservam tipos, JSONB e histórico sem aba de editor', async () => {
+    const ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      montar = () => new CenariosService(repo, () => AGORA, { modo: 'equipe', lista: new Set() }),
+      s = montar(),
+      [espaco] = await s.espacos(ator),
+      mundo = await s.criarMundo(ator, espaco!.id, 'Jogo'),
+      c = await s.criarCenario(ator, mundo.id, 'Metadados')
+    const configuracoes = [
+        { tipo: 'inicio', principal: true },
+        { tipo: 'zona', forma: { tipo: 'esfera', raio: 3.5 } },
+        {
+          tipo: 'rota',
+          pontos: [
+            { x: 0, y: 0, z: 0 },
+            { x: 5, y: 1, z: 3 },
+          ],
+          fechada: false,
+          seguirTerreno: false,
+        },
+        { tipo: 'camera', alvo: { x: 0, y: 0, z: -5 }, campoDeVisao: 48 },
+        {
+          tipo: 'luz',
+          luz: {
+            tipo: 'foco',
+            cor: '#ffeebb',
+            intensidade: 40,
+            alcance: 12,
+            decaimento: 2,
+            sombra: true,
+            alvo: { x: 0, y: -1, z: -2 },
+            angulo: 35,
+            penumbra: 0.3,
+          },
+        },
+      ],
+      marcadores = configuracoes.map((configuracao, i) =>
+        MarcadorSchema.parse({
+          id: `m${i}`,
+          nome: `Marco ${i}`,
+          grupo: null,
+          bloqueado: false,
+          oculto: false,
+          posicao: { x: 2, y: 3, z: 4 },
+          giro: 0.4,
+          noChao: false,
+          objeto: i === 1 ? 'objeto-jogo' : null,
+          propriedades: { texto: 'Oficina', numero: 1.25, sim: true },
+          configuracao,
+        }),
+      ),
+      iluminacao = IluminacaoSchema.parse({
+        hora: 18.5,
+        ceu: { tipo: 'cor', cor: '#bcd9ee' },
+        nevoa: { tipo: 'linear', cor: '#c3ddeb', perto: 20, longe: 250 },
+        sol: { direcao: { x: 1, y: 2, z: 1 }, cor: '#ffdfba', intensidade: 2, sombra: true },
+      }),
+      lote = {
+        revisaoEsperada: 0,
+        operacaoId: randomUUID(),
+        comandos: [
+          {
+            tipo: 'forma.definir' as const,
+            forma: {
+              id: 'forma-jogo',
+              nome: 'Bloco',
+              tipo: 'caixa' as const,
+              largura: 1,
+              altura: 1,
+              comprimento: 1,
+            },
+          },
+          {
+            tipo: 'instancia.criar' as const,
+            instancia: {
+              id: 'objeto-jogo',
+              nome: 'Oficina',
+              modelo: 'forma-jogo',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              colisao: 'caixa' as const,
+              apoio: { tipo: 'absoluto' as const },
+              transformacao: {
+                posicao: { x: 0, y: 0, z: 0 },
+                rotacao: { x: 0, y: 0, z: 0 },
+                escala: { x: 1, y: 1, z: 1 },
+              },
+            },
+          },
+          ...marcadores.map((marcador) => ({ tipo: 'marcador.definir' as const, marcador })),
+          { tipo: 'iluminacao.definir' as const, iluminacao },
+        ],
+      }
+    await s.editarCenario(ator, c.id, lote)
+    await montar().editarCenario(ator, c.id, lote)
+    const salvo = await montar().abrirCenario(ator, c.id)
+    expect(salvo.revisao).toBe(1)
+    expect(salvo.documento.marcadores).toEqual(marcadores)
+    expect(salvo.documento.iluminacao).toEqual(iluminacao)
+    expect(await montar().documentoNaRevisao(ator, c.id, 1)).toEqual(salvo.documento)
+    const desfeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 1,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(desfeito.documento.marcadores).toEqual([])
+    expect(desfeito.documento.iluminacao).toEqual({ hora: 12 })
+    const refeito = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 2,
+      acao: 'refazer',
+      operacaoId: randomUUID(),
+    })
+    expect(refeito.documento).toEqual(salvo.documento)
+    await montar().editarCenario(ator, c.id, {
+      revisaoEsperada: 3,
+      operacaoId: randomUUID(),
+      comandos: [
+        { tipo: 'marcadores.desassociar', objetos: ['objeto-jogo'] },
+        { tipo: 'instancia.remover', id: 'objeto-jogo' },
+      ],
+    })
+    const semObjeto = await montar().abrirCenario(ator, c.id)
+    expect(semObjeto.documento.instancias).toEqual([])
+    expect(semObjeto.documento.marcadores[1]!.objeto).toBeNull()
+    expect(semObjeto.documento.marcadores[1]!.propriedades).toEqual(marcadores[1]!.propriedades)
+    const restaurado = await montar().moverHistorico(ator, c.id, {
+      revisaoEsperada: 4,
+      acao: 'desfazer',
+      operacaoId: randomUUID(),
+    })
+    expect(restaurado.documento).toEqual(salvo.documento)
   })
 
   test('fotografias esparsas e lotes reconstroem qualquer revisão; undo permanece após reabrir o serviço', async () => {

@@ -18,18 +18,18 @@
  * A maior versão que este código sabe LER. Itens acima disso ficam intocados na nuvem: a galeria
  * não baixa, não copia e não sobe por cima, e pede para atualizar a página.
  */
-export const PINTA_MAX_READ_FORMAT_VERSION = 3
+export const PINTA_MAX_READ_FORMAT_VERSION = 4
 
 /**
  * A versão que mapas, conjuntos de peças e conjuntos DECLARAM ao subir.
  *
- * ⚠️ O ESTADO DE VERDADE (18/11/2026), sem enfeite:
+ * Histórico da entrega anterior (formato de nuvem 3, 18/11/2026):
  *
  * A regra do projeto é "a escrita fica um passo atrás da leitura": primeiro se publica um código
  * que LÊ a versão N, e só num deploy seguinte um código que GRAVA N. Assim, se o segundo deploy
  * for desfeito, o código que volta ainda lê tudo o que foi gravado.
  *
- * Esta entrega NÃO cumpre a regra: leitura 3 e escrita 3 saem no MESMO deploy. Foi escolhido de
+ * A entrega anterior NÃO cumpriu a regra: leitura 3 e escrita 3 saíram no MESMO deploy. Foi escolhido de
  * propósito, e os números não devem ser "consertados" sem ler o resto:
  *
  * - Produção (`main`) não tem trava nenhuma: não manda `formatVersion` e não confere a versão ao
@@ -67,8 +67,20 @@ export const PINTA_MAX_READ_FORMAT_VERSION = 3
  *
  * O teste ao lado trava "leitura >= escrita" e os dois números de hoje, para que uma mudança
  * aqui seja sempre uma decisão e nunca um acidente.
+ *
+ * Esta revisão declara nuvem 4 para proteger documentos nativos/envelopes 5 (offsets fracionários).
+ * O baseline completo lia e declarava nuvem 3, aceitava schema 4 e arredondava esses offsets sem
+ * perder o carimbo. A memória 4→4 não percebia o corte. Com nuvem 4 ele não baixa nem sobrescreve
+ * o item, inclusive durante uma reserva pendente: o backend recusa sua declaração 3.
+ *
+ * Nuvem 4 e documento 5 são eixos diferentes. Documentos ricos com coordenadas inteiras continuam
+ * schema/envelope 4 e mapas só com camadas continuam 3. A declaração à nuvem continua por TIPO,
+ * pois apagar a última fração não pode rebaixar um item já protegido na conta.
+ * A publicação deve seguir o procedimento leitor antes do gravador acima; este código não faz
+ * deploy. Um rollback para um cliente de nuvem 3 conserva os itens 4 na conta, mas o cliente antigo
+ * fica bloqueado até ser atualizado. Nunca rebaixe os números para permitir que ele grave.
  */
-export const PINTA_MAP_WRITE_FORMAT_VERSION = 3
+export const PINTA_MAP_WRITE_FORMAT_VERSION = 4
 
 /** Tipos de desenho cujo formato evolui com o editor de cenários. */
 const VERSIONED_KINDS: ReadonlySet<string> = new Set([

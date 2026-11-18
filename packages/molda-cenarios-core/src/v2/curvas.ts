@@ -247,7 +247,7 @@ export interface MalhaNoChao {
 }
 
 /** Normal lateral (à esquerda do avanço) em cada ponto, com a esquina repartida entre os trechos. */
-function laterais(c: Polilinha): { x: number; z: number }[] {
+export function lateraisDaCurva(c: Polilinha): { x: number; z: number }[] {
   const n = c.pontos.length
   return c.pontos.map((p, i) => {
     const anterior = c.fechada || i > 0 ? c.pontos[(i - 1 + n) % n]! : null,
@@ -307,7 +307,7 @@ export function faixaDaCurva(
     colunas = divisoes + 1,
     linhas = c.fechada ? n + 1 : n
   if (linhas * colunas > 1_000_000) invalidar('A faixa da curva tem vértices demais')
-  const normais = laterais(c),
+  const normais = lateraisDaCurva(c),
     posicoes = new Float32Array(linhas * colunas * 3),
     uvs = new Float32Array(linhas * colunas * 2),
     indices = new Uint32Array((linhas - 1) * divisoes * 6)

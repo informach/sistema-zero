@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { createTilemapAsset, type TilemapAsset, type TileTerrain } from '../core/project'
 import { tileLayerAt } from '../testing/fixtures'
-import { cellTile } from './cell'
+import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellTile, makeCell } from './cell'
 import { updateMapLayer } from './layerTree'
 import { paintTerrain, terrainRegion } from './terrain'
 import { setCell } from './tilemapOps'
@@ -117,4 +117,60 @@ describe('terrainRegion', () => {
     expect(terrainRegion(m, tileLayerAt(m).id, { col: -1, row: 0 })).toEqual([])
     expect(terrainRegion(m, 'nada', { col: 0, row: 0 })).toEqual([])
   })
+})
+
+describe('regressões da revisão de terrenos', () => {
+  for (const [flags, visual] of [
+    [0, 1],
+    [CELL_FLIP_H, 1],
+    [CELL_FLIP_V, 4],
+    [CELL_FLIP_H | CELL_FLIP_V, 4],
+    [CELL_FLIP_D, 8],
+    [CELL_FLIP_D | CELL_FLIP_H, 2],
+    [CELL_FLIP_D | CELL_FLIP_V, 8],
+    [CELL_FLIP_D | CELL_FLIP_H | CELL_FLIP_V, 2],
+  ])
+    it(`bordas também seguem os oito espelhos e giros: ${flags}`, () => {
+      const m = createTilemapAsset({ name: 'flags', tilesetId: 'ts', cols: 3, rows: 1 })
+      const layer = tileLayerAt(m),
+        t = terreno('edge')
+      layer.cells = Int16Array.of(makeCell(1, flags), -1, -1)
+      const result = paintTerrain(m, layer.id, t, 1, [{ col: 1, row: 0 }])
+      expect(result.unmatched).toBe(0)
+      // Encaixe que já estava certo conserva a peça e seus flags, sem sortear outra variação.
+      expect(tileLayerAt(result.map).cells[0]).toBe(visual === 2 ? makeCell(1, flags) : visual! | 2)
+    })
+  it('balde no vazio não atravessa árvores ou casas alheias ao terreno', () => {
+    const m = createTilemapAsset({ name: 'canto', tilesetId: 'ts', cols: 3, rows: 1 })
+    const layer = tileLayerAt(m),
+      t = terreno('corner')
+    layer.cells = Int16Array.of(16, -1, 17)
+    const region = terrainRegion(m, layer.id, { col: 1, row: 0 }, t)
+    expect(region).toEqual([{ col: 1, row: 0 }])
+    const result = paintTerrain(m, layer.id, t, 1, region)
+    expect([...tileLayerAt(result.map).cells]).toEqual([16, 15, 17])
+    expect(terrainRegion(m, layer.id, { col: 0, row: 0 }, t)).toEqual([{ col: 0, row: 0 }])
+  })
+  for (const [flags, visual] of [
+    [0, 1],
+    [CELL_FLIP_H, 8],
+    [CELL_FLIP_V, 2],
+    [CELL_FLIP_H | CELL_FLIP_V, 4],
+    [CELL_FLIP_D, 4],
+    [CELL_FLIP_D | CELL_FLIP_H, 2],
+    [CELL_FLIP_D | CELL_FLIP_V, 8],
+    [CELL_FLIP_D | CELL_FLIP_H | CELL_FLIP_V, 1],
+  ])
+    it(`vizinhos e balde respeitam os encaixes visuais com flags ${flags}`, () => {
+      const m = createTilemapAsset({ name: 'flags', tilesetId: 'ts', cols: 3, rows: 1 })
+      const layer = tileLayerAt(m),
+        t = terreno('corner')
+      layer.cells = Int16Array.of(makeCell(1, flags), -1, -1)
+      const result = paintTerrain(m, layer.id, t, 1, [{ col: 1, row: 0 }])
+      expect(result.unmatched).toBe(0)
+      // A nova casa acrescenta os dois cantos direitos, preservando qualquer canto à esquerda.
+      expect(cellTile(tileLayerAt(result.map).cells[0]!)).toBe(visual! | 3)
+      layer.cells = Int16Array.of(makeCell(1, flags), visual!, -1)
+      expect(terrainRegion(m, layer.id, { col: 0, row: 0 }, t)).toHaveLength(2)
+    })
 })

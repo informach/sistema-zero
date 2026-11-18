@@ -1,68 +1,92 @@
 # Transformando o vilão em aliado
 
-Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. A revisão de 17/11/2026 implementa a proposta aprovada: uma conversa explicativa que pode ser acompanhada em uma sentada. São seis aulas; a duração resulta da explicação e da edição, sem meta fixa de minutos.
+Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **Cursos para pais** na área dos pais do Kids. Refação de 18/11/2026: o curso passa a ser o conteúdo integral do encontro de 13/11/2026, na voz da Helena, organizado em sete aulas na mesma ordem em que foi apresentado.
 
-**O propósito:** ajudar a família a compreender que a tela pode ser usada para criar e colocar habilidades cognitivas para a vida em prática. A criação de jogos é apresentada depois da explicação das habilidades, como uma possibilidade concreta. O Cadê Todo Mundo por sete dias é a experiência prática, depois do minicurso.
+**Regra desta versão:** tudo o que foi dito no encontro está no curso, com os mesmos exemplos, argumentos e jeito de explicar. Saíram apenas as repetições, as perguntas a quem assistia ao vivo, a logística do encontro e a segunda oferta. A ordem foi corrigida onde o encontro se adiantou ou deixou uma promessa sem fechar; as correções estão listadas em Fontes. As explicações da psicóloga que participou do encontro viraram fala da Helena; os casos de consultório são contados como relatos da psicóloga que acompanha o André, sem nome. O detalhamento está em [Fontes](fontes.md).
 
-O responsável assiste a explicações, exemplos e uma demonstração. Não há tarefa semanal, quiz, exercício para entregar nem dependência de participação do filho para continuar. A apostila é consulta opcional. As partes são concluídas pelos vídeos; na última, a emissão do certificado registra a conclusão conforme o contrato da plataforma. O presente está disponível independentemente dessa emissão.
+**Convite único:** o Cadê Todo Mundo por sete dias, na Aula 7. Nenhuma outra aula oferece nada, e nenhum outro projeto, cupom ou plano é oferecido.
 
 | Material | Arquivo |
 | --- | --- |
 | Título, descrições e organização | [Módulos](modulos.md) |
-| Fontes, argumentos recuperados e produção | [Fontes](fontes.md) |
+| Fonte, regra de adaptação e matriz de cobertura | [Fontes](fontes.md) |
 | Consulta opcional | [Apostila](apostila.pdf) |
-| Ajustes e conferências desta revisão | [Revisão final](revisao-final-2026-11-17.md) |
 
 | Aula | Conteúdo | Roteiro | Importação no Admin |
 | --- | --- | --- | --- |
-| 1. A tela pode ter outros usos | [Conteúdo](transformando-o-vilao-em-aliado-aula-1.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-1.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-1.manifesto.json) |
-| 2. O que uma criança exercita quando cria | [Conteúdo](transformando-o-vilao-em-aliado-aula-2.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-2.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-2.manifesto.json) |
-| 3. Como criar jogos coloca isso em prática | [Conteúdo](transformando-o-vilao-em-aliado-aula-3.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-3.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-3.manifesto.json) |
-| 4. Interesse, dificuldade e apoio para continuar | [Conteúdo](transformando-o-vilao-em-aliado-aula-4.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-4.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-4.manifesto.json) |
-| 5. O que essa experiência pode levar para a vida | [Conteúdo](transformando-o-vilao-em-aliado-aula-5.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-5.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-5.manifesto.json) |
-| 6. Uma oportunidade para experimentar com seu filho | [Conteúdo](transformando-o-vilao-em-aliado-aula-6.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-6.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-6.manifesto.json) |
+| 1. O vilão que não dá para tirar | [Conteúdo](transformando-o-vilao-em-aliado-aula-1.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-1.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-1.manifesto.json) |
+| 2. Assistir, jogar ou criar | [Conteúdo](transformando-o-vilao-em-aliado-aula-2.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-2.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-2.manifesto.json) |
+| 3. De onde veio essa ideia e por onde começar | [Conteúdo](transformando-o-vilao-em-aliado-aula-3.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-3.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-3.manifesto.json) |
+| 4. Programar não é um bicho de sete cabeças | [Conteúdo](transformando-o-vilao-em-aliado-aula-4.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-4.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-4.manifesto.json) |
+| 5. Será que meu filho consegue? | [Conteúdo](transformando-o-vilao-em-aliado-aula-5.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-5.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-5.manifesto.json) |
+| 6. Como nasce um jogo | [Conteúdo](transformando-o-vilao-em-aliado-aula-6.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-6.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-6.manifesto.json) |
+| 7. Um presente para vocês experimentarem | [Conteúdo](transformando-o-vilao-em-aliado-aula-7.md) | [Fala e produção](transformando-o-vilao-em-aliado-aula-7.roteiro.md) | [Manifesto](transformando-o-vilao-em-aliado-aula-7.manifesto.json) |
 
 ## Gravação e edição
 
-- São **13 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs nem intervenções de personagens.
-- O **Na tela** de cada parte cita trechos da fala atual e indica as imagens a inserir. A captura da demonstração é manual e tem preparação descrita na Aula 3. O responsável acompanha o vídeo; não recebe uma montagem para executar.
-- Os depoimentos são opcionais e curtos. Escolher um relato que sustente o argumento da parte, em vez de reunir vários relatos equivalentes. O roteiro funciona sem os cortes. Identificar nome e vínculo, distinguindo Débora, mãe do Bernardo, da filha da Helena.
-- A autorização da Isabela para uma apresentação não deve ser tomada como autorização para o curso. Até confirmar, não inserir imagem ou depoimento dela.
-- Há seis aulas, mas os 13 identificadores de clipe foram preservados. Alguns nomes técnicos antigos já não descrevem o assunto novo: usar os títulos abaixo e gravar novamente o conteúdo antes de vincular mídia.
+- São **23 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs.
+- O **Na tela** de cada parte cita trechos da fala e indica as imagens a inserir, que correspondem aos slides usados no encontro.
+- Os **depoimentos são fixos**: os mesmos cortes exibidos no encontro entram no ponto marcado em cada roteiro, com a Helena apresentando e comentando. A transcrição de cada corte está no roteiro para localizar o arquivo. Identificar nome e vínculo de quem fala, distinguindo Débora, mãe do Bernardo, da filha da Helena.
+- **Isabela:** a história e o corte estão na Aula 5. A autorização dada pela família foi para a apresentação; confirmar a autorização de nome e imagem para o curso antes de publicar.
+- **Demonstração (Aula 6, Parte 2):** clipe só de captura de tela, com a fala por cima; captura manual do Estúdio em três estados, com a preparação descrita no roteiro.
 
-| Aula | Chave preservada | Título da parte nesta revisão |
+| Aula | Chave do clipe | Título da parte |
 | --- | --- | --- |
-| 1 | `video-a1-pergunta` | O que acontece dentro da tela |
-| 1 | `video-a1-tres-usos` | Assistir, jogar e criar |
-| 2 | `video-a2-por-dentro` | Da ideia ao que precisa ser feito |
-| 2 | `video-a2-autoria` | Ter uma intenção e participar das escolhas |
-| 3 | `video-a3-rotina` | Uma ideia pode virar um jogo |
-| 3 | `video-a3-caminho` | Uma regra, um teste e um resultado |
-| 3 | `video-a3-erro` | O que a demonstração permite perceber |
-| 4 | `video-a4-interesse` | Um motivo para querer tentar |
-| 4 | `video-a4-escola` | O apoio acompanha a necessidade |
-| 5 | `video-a5-foco` | Quando um conhecimento ganha uma função |
-| 5 | `video-a5-suporte` | Criar também pode abrir uma conversa |
-| 6 | `video-a6-conversa` | A criança cria, a família acompanha |
-| 6 | `video-a6-primeiro-passo` | O presente para conhecer essa possibilidade |
+| 1 | `video-a1-abertura` | O maior vilão dos pais |
+| 1 | `video-a1-pergunta` | A pergunta que muda tudo |
+| 2 | `video-a2-tres-usos` | Assistir, jogar ou criar |
+| 2 | `video-a2-funcoes` | Função executiva e o exemplo do Lego |
+| 2 | `video-a2-criar` | Criar em vez de só consumir |
+| 2 | `video-a2-tempo` | Mais tempo de tela? |
+| 3 | `video-a3-historia` | De onde veio tudo isso |
+| 3 | `video-a3-reconhece` | Você reconhece o seu filho aqui? |
+| 3 | `video-a3-mundo` | Entrar no mundo dele |
+| 4 | `video-a4-blocos` | Programar não é um bicho de sete cabeças |
+| 4 | `video-a4-passo` | Um passo a passo para chegar a um objetivo |
+| 4 | `video-a4-olhar` | O que esse vai e volta treina |
+| 5 | `video-a5-foco` | "Será que ele vai ter foco?" |
+| 5 | `video-a5-dificil` | "Será que não vai ser difícil?" |
+| 5 | `video-a5-escola` | Também ajuda na escola |
+| 5 | `video-a5-feliz` | O que a gente mais deseja: que eles sejam felizes |
+| 6 | `video-a6-ciclo` | O ciclo de criação de um jogo |
+| 6 | `video-a6-demonstracao` | Uma regra de cada vez |
+| 6 | `video-a6-causa` | Fui eu que causei isso |
+| 6 | `video-a6-familia` | O assunto que abre a conversa |
+| 7 | `video-a7-plataforma` | Você no controle |
+| 7 | `video-a7-ferramentas` | O que tem lá dentro |
+| 7 | `video-a7-presente` | O presente: sete dias de Cadê Todo Mundo |
+
+As chaves de clipe mudaram em relação à versão de 17/11, porque as partes são outras. Nenhum vídeo havia sido gravado ou vinculado. Os manifestos listam as chaves antigas em `retireBlockKeys`.
 
 ## Publicação
 
-1. No Admin, usar audiência Kids e **Para quem: Pais**, fora da Jornada, no formato gravado. Slug do curso e slugs das seis aulas foram mantidos.
-2. Atualizar títulos e descrições conforme [Módulos](modulos.md) e importar os seis manifestos. Conferir a substituição da estrutura anterior: não podem restar partes de quiz ou tarefas antigas. As seções removidas tinham chaves `confira-a1`, `confira-a2`, `caminho-resposta`, `confira-a4`, `confira-a5` e `confira-a6`.
-3. Os vídeos estão como `plannedVideo`. Vincular as novas gravações, sem reutilizar uma gravação anterior só porque a chave é a mesma.
-4. Anexar a apostila revisada ao bloco `apostila` da Aula 1, com prévia em livro.
-5. Na Aula 6, o bloco `presente` mantém o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. Conferir no ambiente de destino a campanha `vilao-em-aliado-cade`, a oferta `cade-todo-mundo-7-dias` e as condições reais do resgate. O presente não depende de certificado.
-6. O bloco `certificado` foi conservado como registro de conclusão da última parte, conforme a regra da plataforma. A família não precisa baixar materiais, fazer uma criação ou resgatar o presente para concluir. O resgate é independente do certificado.
+1. No Admin, usar audiência Kids e **Para quem: Pais**, fora da Jornada, no formato gravado. O slug do curso foi mantido. Criar a sétima aula com o slug `transformando-o-vilao-em-aliado-aula-7`.
+2. Atualizar títulos e descrições conforme [Módulos](modulos.md) e importar os sete manifestos.
+3. Os vídeos estão como `plannedVideo`. Vincular as gravações novas.
+4. O bloco `apostila` continua na Aula 1.
+5. Na Aula 7, o bloco `presente` mantém o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. Conferir no ambiente de destino a campanha `vilao-em-aliado-cade`, a oferta `cade-todo-mundo-7-dias` e as condições que a fala afirma: gratuito, sem cartão, sete dias a partir do cadastro, um perfil de criança.
+6. O bloco `certificado` passou para a Aula 7 e registra a conclusão. O presente não depende do certificado.
+
+## Página de divulgação
+
+A porta de entrada do curso é a página pública `/kids/vilao-em-aliado`, no funil
+(`packages/funnel`, ver o `CLAUDE.md` de lá). O responsável conhece o curso e se cadastra de graça;
+o presente da Aula 7 continua em segredo na página. Para ela abrir o cadastro, é preciso, no Admin:
+
+1. Publicar o curso com o slug `transformando-o-vilao-em-aliado`.
+2. Criar no catálogo a oferta sem prazo do curso.
+3. Criar a campanha de presente Kids com o código `vilao-em-aliado`, ligada a essa oferta, com
+   data final distante. Enquanto a campanha não existir, a página mostra "As inscrições abrem em
+   breve".
+4. Preencher o endereço da página no campo de página de vendas do curso.
+
+O mesmo e-mail que se cadastra no curso consegue resgatar o presente da Aula 7: o curso para pais
+não ocupa a vaga do presente Kids no serviço de presentes.
 
 ## Estado desta entrega
 
-Fonte editorial, manifestos e apostila revistos localmente. Os 13 vídeos ainda precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores; esta revisão dos arquivos não comprova essas etapas.
+Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
 
-A capa da apostila preserva a arte existente, com 1.300 px de largura, e a composição compartilhada dos materiais do Sistema Zero. Fontes Baloo 2 e Nunito, cards com ícones, cores dos blocos do Estúdio e rodapés seguem a receita visual. O cabeçalho simples é a variação prevista para o curso de pais.
+**Tema visual (18/11/2026):** a ilustração da capa (a menina com o tablet e a sombra que aponta para os blocos e o jogo) define as cores do curso: roxo, lilás, rosa e amarelo, com o painel azul-marinho. A arte fica em `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-transformando-o-vilao-em-aliado.jpg`, recortada da capa enviada pela dona (1049 px de largura; se houver o original maior, basta trocar o arquivo e gerar de novo).
 
-## Conferência da revisão de 17/11/2026
-
-Seis manifestos conferidos com o schema e os critérios reais de publicação do core; 13 chaves de vídeo preservadas; 11 blocos antigos de tarefa/quiz retirados. Roteiros: seis aulas, 13 clipes e zero erros. Testes de linguagem da apostila aprovados. PDF com 14 páginas, layout verificado e todas as páginas inspecionadas visualmente. Não há campos para preencher ou tarefas semanais. O presente é independente da emissão do certificado.
-
-A revisão final também alinhou as cores do índice às páginas, acrescentou links clicáveis ao presente e às referências, refinou a relação com a escrita e detalhou a preparação da demonstração. A suíte completa da documentação passou com 724 testes e zero falhas. O [registro da revisão](revisao-final-2026-11-17.md) distingue essas verificações das etapas de produção e publicação ainda pendentes.
+**Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 17 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).

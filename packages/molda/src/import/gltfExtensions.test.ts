@@ -40,6 +40,18 @@ test('extension declarations stay explicit, unique, owned and consistent before 
   }
 })
 
+test('a runtime may acknowledge required support without changing the native importer default', () => {
+  const json = {
+    extensionsUsed: ['KHR_texture_transform'],
+    extensionsRequired: ['KHR_texture_transform'],
+  }
+  expect(() => readGltfExtensions(json)).toThrow(GltfInputError)
+  expect(readGltfExtensions(json, ['KHR_texture_transform']).unhandled).toEqual([
+    'KHR_texture_transform',
+  ])
+  expect(() => readGltfExtensions(json, ['EXT_texture_webp'])).toThrow(GltfInputError)
+})
+
 test('only schema extension points are inventoried; extras and payload contents remain inert', () => {
   const entry = {
     extensions: { VENDOR_feature: { extras: { extensions: { ignore_me: 1 } } } },

@@ -38,6 +38,12 @@ export function entidadesDoCenario(doc: DocumentoDeCenario): EntidadeOrganizavel
   ]
 }
 
+/** Escolher um elemento não implica poder transformar sua geometria com o gizmo de objetos. */
+export function entidadesSelecionaveis(doc: DocumentoDeCenario): EntidadeOrganizavel[] {
+  const grupos = new Set(doc.grupos.map((g) => g.id))
+  return entidadesDoCenario(doc).filter((e) => !grupos.has(e.id))
+}
+
 /** Um índice por documento. Não depende da ordem da lista, da câmera nem de um host. */
 export function indiceDaOrganizacao(doc: DocumentoDeCenario) {
   const entidades = new Map(entidadesDoCenario(doc).map((e) => [e.id, e])),
@@ -76,6 +82,20 @@ export function indiceDaOrganizacao(doc: DocumentoDeCenario) {
     filhos.set(e.grupo, lista)
   }
   const objetos = new Set(entidadesTransformaveis(doc).map((o) => o.id))
+  const selecionaveis = new Set(entidadesSelecionaveis(doc).map((o) => o.id))
+  const descendentes = (id: string, aceitar: ReadonlySet<string>) => {
+    const resultado: string[] = [],
+      fila = [id],
+      vistos = new Set<string>()
+    for (let i = 0; i < fila.length; i++) {
+      const atual = fila[i]!
+      if (vistos.has(atual)) continue
+      vistos.add(atual)
+      if (aceitar.has(atual)) resultado.push(atual)
+      if (grupos.has(atual)) for (const e of filhos.get(atual) ?? []) fila.push(e.id)
+    }
+    return resultado
+  }
   return {
     entidades,
     grupos,
@@ -83,17 +103,10 @@ export function indiceDaOrganizacao(doc: DocumentoDeCenario) {
     flags,
     filhos,
     descendentes(id: string): string[] {
-      const resultado: string[] = [],
-        fila = [id],
-        vistos = new Set<string>()
-      for (let i = 0; i < fila.length; i++) {
-        const atual = fila[i]!
-        if (vistos.has(atual)) continue
-        vistos.add(atual)
-        if (objetos.has(atual)) resultado.push(atual)
-        if (grupos.has(atual)) for (const e of filhos.get(atual) ?? []) fila.push(e.id)
-      }
-      return resultado
+      return descendentes(id, objetos)
+    },
+    descendentesSelecionaveis(id: string): string[] {
+      return descendentes(id, selecionaveis)
     },
   }
 }

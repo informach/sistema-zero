@@ -6,7 +6,12 @@ import { assetBundleToJson } from './assetJson'
 import { dataUrlToBlob } from './png'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 import { exportPintaScene } from './scene'
-import { tiledMap, tiledMapXml, tiledTilesetXml } from './tiled/export'
+import {
+  TiledSceneCompatibilityError,
+  tiledMap,
+  tiledMapXml,
+  tiledTilesetXml,
+} from './tiled/export'
 export type ScenePackageTarget = 'tiled' | 'phaser' | 'pygame' | 'godot'
 export async function buildScenePackage(
   root: TilemapAsset,
@@ -36,7 +41,8 @@ export async function buildScenePackage(
   }
   if (maps.size > 16) throw new Error('Este pacote tem mais de 16 mapas ligados por portas.')
   const scenes: Record<string, PintaScene> = {},
-    native = new Map<string, PintaAsset>()
+    native = new Map<string, PintaAsset>(),
+    tiledWarnings: string[] = []
   let start = '',
     tiledStart = '',
     index = 0
@@ -47,11 +53,22 @@ export async function buildScenePackage(
       start = map.name
       tiledStart = `${folder}/mapa.json`
     }
-    const tiled = tiledMap(scene)
-    files[`${folder}/mapa.json`] = JSON.stringify(tiled, null, 2)
-    files[`${folder}/mapa.tmx`] = tiledMapXml(tiled, true)
-    for (const [i, ts] of (tiled.tilesets as Record<string, unknown>[]).entries())
-      files[`${folder}/tiles-${i}.tsx`] = tiledTilesetXml(ts)
+    try {
+      const tiled = tiledMap(scene)
+      files[`${folder}/mapa.json`] = JSON.stringify(tiled, null, 2)
+      files[`${folder}/mapa.tmx`] = tiledMapXml(tiled, true)
+      for (const [i, ts] of (tiled.tilesets as Record<string, unknown>[]).entries())
+        files[`${folder}/tiles-${i}.tsx`] = tiledTilesetXml(ts)
+    } catch (error) {
+      if (
+        !(error instanceof TiledSceneCompatibilityError) ||
+        (target !== 'pygame' && target !== 'godot')
+      )
+        throw error
+      tiledWarnings.push(
+        `Mapa ${map.name}: ${error.message}\nNão foram criados ${folder}/mapa.json, mapa.tmx nem as folhas tiles-N.tsx. O mapa completo continua em maps.json e desenhos.pinta.json para o destino ${target}.`,
+      )
+    }
     for (const [i, ts] of scene.tilesets.entries()) {
       const path = `${folder}/images/tiles-${i}.png`,
         blob = dataUrlToBlob(ts.image)
@@ -81,10 +98,18 @@ export async function buildScenePackage(
     `Destino: ${target}`,
     '',
     'O arquivo desenhos.pinta.json conserva os desenhos editáveis.',
-    'Os mapas Tiled ficam em mapas/mapa-N/mapa.json e mapa.tmx; as folhas externas estão em tiles-N.tsx.',
+    'Os mapas compatíveis com Tiled ficam em mapas/mapa-N/mapa.json e mapa.tmx; as folhas externas estão em tiles-N.tsx.',
     'As propriedades, papéis, conjuntos e dados de camada também estão em maps.json.',
     '',
   ]
+  if (tiledWarnings.length) {
+    files['COMPATIBILIDADE-TILED.txt'] =
+      `Suplementos Tiled não criados\n\n${tiledWarnings.join('\n\n')}\n`
+    readme.push(
+      'Leia COMPATIBILIDADE-TILED.txt: alguns mapas deste projeto não têm suplemento Tiled; os dados do destino escolhido foram conservados.',
+      '',
+    )
+  }
   if (target === 'phaser') {
     const [{ phaserSource, phaserLicense }, { phaserPlayer }] = await Promise.all([
       import('./phaser/phaser.generated'),
@@ -116,7 +141,7 @@ export async function buildScenePackage(
     files['main.tscn'] = g.godotScene
     files['pinta.gd'] = g.godotScript
     readme.push(
-      'Abra project.godot no Godot 4.3 ou mais novo e execute a cena.',
+      'Abra project.godot no Godot 4.7.2 (versão homologada) e execute a cena.',
       'O projeto cria TileMapLayer, TileSetAtlasSource, objetos e jogador a partir de maps.json.',
     )
   }

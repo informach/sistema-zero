@@ -2,53 +2,111 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-2",
-  "title": "O que uma criança exercita quando cria",
+  "title": "Assistir, jogar ou criar",
   "blocks": [
     {
-      "key": "video-a2-por-dentro",
-      "plannedVideo": "Título: Da ideia ao que precisa ser feito\n\nExplicar planejamento, memória de trabalho, controle do impulso, regulação emocional e flexibilidade em uma situação. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 1. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a2-tres-usos",
+      "plannedVideo": "Título: Assistir, jogar ou criar\n\nComparar a tecnologia ao fogo e apresentar os três usos da tela: assistir, jogar e criar. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a2-autoria",
-      "plannedVideo": "Título: Ter uma intenção e participar das escolhas\n\nExplicar autoria e repertório, reconhecendo o valor de aprender com orientação. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 2. Revisão de 17/11/2026: gravar o conteúdo novo; a chave técnica foi preservada."
+      "key": "video-a2-funcoes",
+      "plannedVideo": "Título: Função executiva e o exemplo do Lego\n\nExplicar a função executiva e a diferença entre o Lego com manual e o Lego sem manual. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a2-criar",
+      "plannedVideo": "Título: Criar em vez de só consumir\n\nApresentar a proposta de criar em vez de só consumir, usando o interesse da criança a favor. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a2-tempo",
+      "plannedVideo": "Título: Mais tempo de tela?\n\nResponder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição. Fala completa em transformando-o-vilao-em-aliado-aula-2.roteiro.md, Parte 4. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "resumo-a2",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\nO valor da criação está nas decisões e nas tentativas que ela pede. Orientação e exemplos podem ajudar a criança a compreender e construir com participação própria."
+        "markdown": "## Para consultar\n\nAssistir, jogar e criar desenvolvem em níveis diferentes. Ao criar, a criança inventa as regras, lida com o erro e quer fazer dar certo porque o jogo é dela."
       }
     }
   ],
   "sections": [
     {
-      "key": "por-dentro",
-      "title": "Da ideia ao que precisa ser feito",
-      "objective": "Explicar planejamento, memória de trabalho, controle do impulso, regulação emocional e flexibilidade em uma situação.",
+      "key": "tres-usos",
+      "title": "Assistir, jogar ou criar",
+      "objective": "Comparar a tecnologia ao fogo e apresentar os três usos da tela: assistir, jogar e criar.",
       "intent": "explanation",
-      "blockKeys": ["video-a2-por-dentro"],
+      "blockKeys": [
+        "video-a2-tres-usos"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-por-dentro"]
+        "blockIds": [
+          "video-a2-tres-usos"
+        ]
       }
     },
     {
-      "key": "autoria",
-      "title": "Ter uma intenção e participar das escolhas",
-      "objective": "Explicar autoria e repertório, reconhecendo o valor de aprender com orientação.",
+      "key": "funcoes",
+      "title": "Função executiva e o exemplo do Lego",
+      "objective": "Explicar a função executiva e a diferença entre o Lego com manual e o Lego sem manual.",
       "intent": "explanation",
-      "blockKeys": ["video-a2-autoria", "resumo-a2"],
+      "blockKeys": [
+        "video-a2-funcoes"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-autoria"]
+        "blockIds": [
+          "video-a2-funcoes"
+        ]
+      }
+    },
+    {
+      "key": "criar",
+      "title": "Criar em vez de só consumir",
+      "objective": "Apresentar a proposta de criar em vez de só consumir, usando o interesse da criança a favor.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a2-criar"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a2-criar"
+        ]
+      }
+    },
+    {
+      "key": "tempo",
+      "title": "Mais tempo de tela?",
+      "objective": "Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição.",
+      "intent": "explanation",
+      "blockKeys": [
+        "video-a2-tempo",
+        "resumo-a2"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "video-a2-tempo"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["para-casa-a2", "quiz-a2"]
+  "retireBlockKeys": [
+    "video-a2-por-dentro",
+    "video-a2-autoria",
+    "para-casa-a2",
+    "quiz-a2"
+  ]
 }

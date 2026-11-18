@@ -5,10 +5,22 @@ com folhas embutidas ou externas (TSX e JSON). A galeria recebe os arquivos do m
 dependências, ou um ZIP, em **Trazer mapa**. A escolha do mapa e o relatório de conversão
 aparecem antes de fechar.
 
-O programa Tiled não foi executado nesta entrega (não realizado). A compatibilidade abaixo é a
-do nosso leitor e do nosso gravador, conferida pelos testes de `packages/pinta/src/export/tiled/`.
+Na revisão atual, o **Tiled 1.12.2** abriu e reexportou o TMX da Vila pela linha de comando.
+As comparações e os limites dessa prova constam no [QA](revisao-2026-11-18/qa.md).
+A compatibilidade abaixo também é conferida pelos testes de `packages/pinta/src/export/tiled/`.
 Os arquivos em `__fixtures__/tiled-real/` foram escritos à mão seguindo o formato do Tiled 1.10;
 não saíram do programa.
+
+Referências de objeto usam IDs numéricos externos em objetos, camadas e metadados de peças;
+a importação as religa aos IDs nativos. Referências locais em conjuntos recebem o namespace
+da instância; referências externas são preservadas. Coordenadas negativas de objetos são
+recusadas explicitamente: o documento atual do Pinta não as representa sem perda.
+
+Uma imagem girada dentro de conjunto com escala não uniforme pode exigir cisalhamento.
+O exportador Tiled recusa essa imagem; polígonos compatíveis usam seus pontos exatos.
+Pygame e Godot conservam a transformação e omitem só o suplemento Tiled incompatível,
+incluindo `COMPATIBILIDADE-TILED.txt`. Phaser/Tiled exigem a conversão Tiled integral e
+recusam esse caso. Isso não é suporte universal a todo arquivo do Tiled.
 
 ## O que é convertido
 
@@ -79,6 +91,12 @@ Propriedades `pinta:*` conservam identificações, papéis, frente, colisão e c
 de ida e volta comparam a cena inteira (`toEqual`) em JSON, TMX com folha externa e TMX com
 folha embutida, nas quatro codificações de camada. Os caminhos de imagem são resolvidos em
 relação à folha externa.
+
+Na revisão de 18/11, Tiled 1.12.2 reexportou os dois TMX da Vila/Cabana para JSON; a
+comparação integral da cena resultou em zero diferenças e zero avisos. Um ensaio adicional
+JSON → TMX → JSON conservou `locked: true`. As cores ARGB do Tiled são convertidas para
+RGB quando opacas, e RGBA quando possuem alfa diferente de FF; essa normalização evita
+uma diferença puramente representacional na ida e volta. Ver [provas atuais](revisao-2026-11-18/qa/verification.md).
 
 O [registro de homologação](homologacao.md) diz o que tem teste automático e o que não foi
 realizado.

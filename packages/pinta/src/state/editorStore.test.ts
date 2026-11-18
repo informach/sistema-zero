@@ -259,6 +259,56 @@ describe('editorStore — autosave debounced + flush', () => {
   })
 })
 
+describe('recuperação de uma gravação já confirmada como cópia', () => {
+  it('adota a cópia, cancela histórico/gestos antigos e continua salvando no ID novo', async () => {
+    const asset = makeAsset(),
+      copy = { ...edited(asset), id: 'copy', name: 'ceu-copia' }
+    const committed: string[] = []
+    const store = createEditorStore({
+      asset,
+      persist: async (snapshot) => {
+        committed.push(snapshot.id)
+        if (snapshot.id === asset.id) throw new Error('confirmou cópia')
+      },
+      recoverPersisted: () => ({ asset: copy, linked: [] }),
+    })
+    store.getState().commit(edited(asset))
+    expect(await store.getState().flush()).toEqual({ ok: true })
+    expect(store.getState().asset).toBe(copy)
+    expect(store.getState().canUndo).toBe(false)
+    store.getState().replace(edited(asset))
+    store.getState().commitGesture(asset)
+    store.getState().undo()
+    expect(store.getState().asset.id).toBe(copy.id)
+    store.getState().commit(edited(copy))
+    expect(await store.getState().flush()).toEqual({ ok: true })
+    expect(committed).toEqual([asset.id, copy.id])
+  })
+
+  it('edição feita enquanto o save estava em voo permanece suja para retry', async () => {
+    const gate = Promise.withResolvers<void>(),
+      asset = makeAsset()
+    const store = createEditorStore({
+      asset,
+      persist: async () => {
+        await gate.promise
+        throw new Error('confirmou snapshot anterior como cópia')
+      },
+      recoverPersisted: () => ({ asset: { ...asset, id: 'copy' }, linked: [] }),
+    })
+    store.getState().commit(edited(asset))
+    const flush = store.getState().flush()
+    const latest = edited(edited(asset))
+    store.getState().commit(latest)
+    gate.resolve()
+    expect((await flush).ok).toBe(false)
+    expect(store.getState().asset).toMatchObject({ ...latest, updatedAt: expect.any(Number) })
+    expect(store.getState().dirty).toBe(true)
+    expect(store.getState().saveState).toBe('error')
+    await waitForAutosave()
+  })
+})
+
 describe('assetBytes', () => {
   it('mede os bitmaps dominantes', () => {
     const asset = makeAsset()

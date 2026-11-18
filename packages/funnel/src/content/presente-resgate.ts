@@ -392,7 +392,7 @@ export function resgateCopy(
     jaResgatado: {
       ...copy.jaResgatado,
       texto:
-        'Cada e-mail resgata um presente Kids. Entre com esse e-mail e veja os seus cursos na área dos pais.',
+        'Este e-mail já recebeu este curso. Entre com ele e abra o curso em Cursos para pais, na área dos pais.',
     },
   }
 }

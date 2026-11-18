@@ -1,0 +1,86 @@
+{
+  "estado": {
+    "carregando": 0,
+    "falhas": []
+  },
+  "selecionado": "m0",
+  "ciclos": [
+    {
+      "geometries": 2,
+      "textures": 0,
+      "desenhos": 2,
+      "linhas": 228
+    },
+    {
+      "geometries": 2,
+      "textures": 0,
+      "desenhos": 2,
+      "linhas": 228
+    },
+    {
+      "geometries": 2,
+      "textures": 0,
+      "desenhos": 2,
+      "linhas": 228
+    }
+  ],
+  "semMutacao": true,
+  "ocultou": 0,
+  "ciclosColisoes": [
+    {
+      "estado": {
+        "fontes": 1,
+        "triangulos": 2,
+        "erro": null
+      },
+      "ativo": {
+        "geometries": 3,
+        "textures": 0,
+        "desenhos": 2,
+        "linhas": 6
+      },
+      "limpo": {
+        "geometries": 2,
+        "textures": 0,
+        "linhas": 0
+      }
+    },
+    {
+      "estado": {
+        "fontes": 1,
+        "triangulos": 2,
+        "erro": null
+      },
+      "ativo": {
+        "geometries": 3,
+        "textures": 0,
+        "desenhos": 2,
+        "linhas": 6
+      },
+      "limpo": {
+        "geometries": 2,
+        "textures": 0,
+        "linhas": 0
+      }
+    },
+    {
+      "estado": {
+        "fontes": 1,
+        "triangulos": 2,
+        "erro": null
+      },
+      "ativo": {
+        "geometries": 3,
+        "textures": 0,
+        "desenhos": 2,
+        "linhas": 6
+      },
+      "limpo": {
+        "geometries": 2,
+        "textures": 0,
+        "linhas": 0
+      }
+    }
+  ],
+  "erros": []
+}

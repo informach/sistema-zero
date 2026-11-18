@@ -15,6 +15,15 @@ export function analyticsPage(path: string): PageContext | null {
       funnel: null,
       publicText: true,
     }
+  // Página avulsa do minicurso gratuito para pais (18/11/2026): fora dos funis, sem checkout.
+  if (normalized === '/kids/vilao-em-aliado')
+    return {
+      id: 'kids/vilao-em-aliado',
+      path: normalized,
+      kind: 'curso-pais',
+      funnel: null,
+      publicText: true,
+    }
   const [, audience, product, step, ...variant] = normalized.split('/')
   const f = getFunnel(audience, product)
   if (

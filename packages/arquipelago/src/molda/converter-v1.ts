@@ -22,6 +22,7 @@ import {
 } from '../sistemas/geografia-do-arquipelago'
 import { LAGO_DE_CATALOGO } from '../sistemas/refino-da-faisca'
 import { encaixeDaAguaImportada } from './encaixes-de-agua'
+import { encaixeDoCaminhoImportado } from './encaixes-de-caminho'
 import { assentarInstancias, estadoHerdado } from './importacao-v1/apoio'
 import { alturaComRelevo, criarTerrenoDeCenario, paraMundo } from './importacao-v1/terreno'
 
@@ -41,6 +42,11 @@ export async function converterFaiscaV1(
   for (const o of origem.instancias)
     if (!catalogo.has(o.modelo)) throw new Error(`Falta no catálogo o modelo ${o.modelo}`)
   const documento = migrarDaV1(origem, resolver)
+  documento.caminhos = documento.caminhos.map((c) => {
+    const modelo = documento.modelos.find((m) => m.id === c.acabamento),
+      encaixe = modelo && encaixeDoCaminhoImportado(modelo)
+    return encaixe ? { ...c, encaixeModelo: encaixe } : c
+  })
   documento.aguas = documento.aguas.map((a) => {
     if (a.tipo !== 'lago' || !a.modelo) return a
     const modelo = documento.modelos.find((m) => m.id === a.modelo),

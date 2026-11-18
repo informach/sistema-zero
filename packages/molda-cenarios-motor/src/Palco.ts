@@ -14,27 +14,28 @@ import {
   dominioDoChao,
   type EncaixeDeComposicao,
   EncaixeDeComposicaoSchema,
+  type FonteDeAlturas,
   type InstanciaDeCenario,
   indiceDaOrganizacao,
+  inicioDoCenario,
   lerRecursoDeTerreno,
   MAX_BYTES_RECURSO_TERRENO,
   MAX_RECURSOS_TERRENO,
   type ModeloDoCenario,
+  marcadorRedimensionavel,
   type OperacaoDeAguaPreparada,
+  type OperacaoDeCaminhoPreparada,
   type RecursoDeTerreno,
   referenciasDoTerreno,
   resolverConjuntos,
+  type VistaDeCamera,
+  VistaDeCameraSchema,
   volumeDaForma,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
-  BackSide,
   Box3,
   BufferGeometry,
-  Color,
-  DirectionalLight,
-  Fog,
   Group,
-  HemisphereLight,
   LineBasicMaterial,
   LineSegments,
   Matrix4,
@@ -48,9 +49,7 @@ import {
   Quaternion,
   Raycaster,
   Scene,
-  ShaderMaterial,
   Sphere,
-  SphereGeometry,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -58,24 +57,32 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { AguasDoPalco, type EstadoDasAguas } from './agua/aguas'
-import { EdicaoDaAgua } from './agua/edicao'
-import { PontosDaAgua } from './agua/pontos'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
+import { AmbienteDoPalco, type EstadoDoAmbiente } from './ambiente/ambiente'
+import { CaminhosDoPalco, type EstadoDosCaminhos } from './curvas/caminhos'
+import { type CapturaDeCaminho, EdicaoDePontos } from './curvas/edicao-de-pontos'
 import { EspalhamentoDoPalco } from './Espalhamento'
+import {
+  type ComandoDePreviaDoAmbiente,
+  type DonoDaPreviaDoAmbiente,
+  EdicaoComTerreno,
+} from './edicao-com-terreno'
 import { EsculturaDoPalco } from './escultura'
 import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
+import { ColisoesVisiveis } from './jogo/colisoes-visiveis'
+import { MarcadoresDoPalco } from './jogo/marcadores'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
 import {
   encaixar,
   fatorUniforme,
   idsEscondidos,
-  luzDaHora,
   matrizDoObjeto,
   transformacaoDaMatriz,
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
+import { PontosDeAutoria } from './pontos-de-autoria'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
 import { carregarPecasDeTerreno } from './recursos-terreno'
@@ -92,6 +99,7 @@ import type { ComandoDoTeste, ConfiguracaoDoTeste, EntradaDoTeste } from './test
 import { type EstadoDasTexturas, lerTextura, TexturasDoPalco } from './texturas'
 import type {
   ConfiguracaoDoEspalhamento,
+  DonoDosPontos,
   Encaixe,
   Ferramenta,
   ModoDeSelecao,
@@ -124,23 +132,6 @@ interface Gesto {
   atualizarSuperficies(): void
 }
 
-const CEU_VERTICE = /* glsl */ `
-varying vec3 vDirecao;
-void main() {
-  vDirecao = normalize(position);
-  vec4 p = modelViewMatrix * vec4(position, 1.0);
-  gl_Position = projectionMatrix * p;
-}`
-const CEU_FRAGMENTO = /* glsl */ `
-uniform vec3 uCeu;
-uniform vec3 uHorizonte;
-varying vec3 vDirecao;
-void main() {
-  float t = pow(clamp(vDirecao.y * 1.6, 0.0, 1.0), 0.55);
-  gl_FragColor = vec4(mix(uHorizonte, uCeu, t), 1.0);
-  #include <colorspace_fragment>
-}`
-
 class PalcoThree implements Palco {
   volumeDoModelo(id: string) {
     const forma = this.visual?.formas?.find((f) => f.id === id)
@@ -168,25 +159,30 @@ class PalcoThree implements Palco {
     new BufferGeometry(),
     new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.24, depthWrite: false }),
   )
-  private readonly ceu: Mesh<SphereGeometry, ShaderMaterial>
-  private readonly luzDoCeu = new HemisphereLight(0xffffff, 0x8a9a7a, 2)
-  private readonly sol = new DirectionalLight(0xffffff, 1.7)
-  private readonly nevoa = new Fog(0xdff1fb, 200, 1800)
-  private nevoaDaBase = { perto: 200, longe: 1800 }
+  private readonly ambiente: AmbienteDoPalco
+  private estadoDoAmbiente: EstadoDoAmbiente | null = null
   private readonly limitesDaCena = new Box3()
   private readonly focoDoTeste = new Vector3()
   private readonly limitesDoChao = new Box3()
+  private readonly limitesDasGuias = new Box3()
+  private readonly marcadores = new MarcadoresDoPalco()
+  private guiasDoJogo = false
+  private aspectoDasGuias = 0
   private readonly contornos: Contornos
   private readonly fantasma = criarPartesDoFantasma()
   private readonly loteFantasma: LoteDoModelo
   private readonly raio = new Raycaster()
   private readonly ndc = new Vector2()
   private readonly planoDoChao = new Plane(new Vector3(0, 1, 0), 0)
+  private readonly planoDosControles = new Plane(new Vector3(0, 1, 0), 0)
 
   private documento: DocumentoDeCenario | null = null
   private visual: DocumentoDeCenario | null = null
   private origens: ReadonlyMap<string, string> = new Map()
   private alvos = new Map<string, AlvoDeEdicao>()
+  private ponteiroDaAlca: number | null = null
+  private readonly colisoesVisiveis = new ColisoesVisiveis()
+  private mostrarColisoes = false
   private temChao: (p: { x: number; z: number }) => boolean = () => false
   private pendente: DocumentoDeCenario | null = null
   private readonly modelos = new Map<string, EstadoDoModelo>()
@@ -219,17 +215,26 @@ class PalcoThree implements Palco {
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
   private readonly aguas: AguasDoPalco
-  private readonly pontosDaAgua = new PontosDaAgua()
-  private readonly edicaoDaAgua = new EdicaoDaAgua({
+  private readonly caminhos = new CaminhosDoPalco()
+  private estadoDosCaminhos: EstadoDosCaminhos = { carregando: 0, falhas: [], avisos: [] }
+  private readonly alturaDoPlano: FonteDeAlturas = () => 0
+  private readonly pontosDaAgua = new PontosDeAutoria()
+  private readonly pontosDoCaminho: EdicaoDePontos
+  private donoDosPontos: DonoDosPontos | null = null
+  private readonly edicaoDoAmbiente = new EdicaoComTerreno({
     prever: (operacao) => {
       if (!this.terreno || !operacao.terreno)
-        throw Error('Aguarde o relevo antes de prever a água.')
+        throw Error('Aguarde o relevo antes de prever a mudança.')
       this.terreno.prever(operacao.terreno, operacao.regioes)
       this.aguas.atualizarTerreno(operacao.regioes)
+      this.marcadores.atualizarTerreno(operacao.regioes)
+      this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(operacao.regioes))
     },
     restaurar: () => {
       this.terreno?.cancelarPrevia()
       this.aguas.atualizarTerreno()
+      this.marcadores.atualizarTerreno()
+      this.caminhos.atualizarTerreno()
     },
   })
   private estadoDasAguas: EstadoDasAguas = { carregando: 0, falhas: [] }
@@ -248,6 +253,8 @@ class PalcoThree implements Palco {
     fov: number
     grade: boolean
     fundo: boolean
+    guias: boolean
+    colisoes: boolean
   } | null = null
   private cargaDoTerreno: AbortController | null = null
   private enquadramentoPendente: { ids?: readonly string[] } | null = null
@@ -288,42 +295,19 @@ class PalcoThree implements Palco {
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = PCFShadowMap
     this.aguas = new AguasDoPalco(this.renderer.capabilities.maxTextureSize)
-    this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo)
+    this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo, this.caminhos.grupo)
+    this.marcadores.grupo.visible = false
+    this.cena.add(this.marcadores.grupo)
+    this.colisoesVisiveis.grupo.visible = false
+    this.cena.add(this.colisoesVisiveis.grupo)
 
     this.camera.position.set(16, 13, 20)
-    this.cena.fog = opcoes.fotografia ? null : this.nevoa
-
-    this.ceu = new Mesh(
-      new SphereGeometry(1, 32, 16),
-      new ShaderMaterial({
-        vertexShader: CEU_VERTICE,
-        fragmentShader: CEU_FRAGMENTO,
-        uniforms: { uCeu: { value: new Color() }, uHorizonte: { value: new Color() } },
-        side: BackSide,
-        depthWrite: false,
-        depthTest: false,
-        fog: false,
-      }),
+    this.ambiente = new AmbienteDoPalco(
+      this.cena,
+      opcoes.fotografia,
+      this.renderer.capabilities.maxTextureSize,
     )
-    this.ceu.scale.setScalar(3000)
-    this.ceu.renderOrder = -1000
-    this.ceu.frustumCulled = false
-    this.ceu.visible = !opcoes.fotografia
-    this.cena.add(this.ceu)
-
-    this.sol.castShadow = true
-    this.sol.shadow.mapSize.set(2048, 2048)
-    this.sol.shadow.bias = -0.0004
-    this.sol.shadow.normalBias = 0.05
-    this.cena.add(
-      this.luzDoCeu,
-      this.sol,
-      this.sol.target,
-      this.chao,
-      this.objetos,
-      this.pivo,
-      this.grade,
-    )
+    this.cena.add(this.chao, this.objetos, this.pivo, this.grade)
 
     this.loteFantasma = new LoteDoModelo(this.objetos, this.fantasma.partes)
     this.contornos = new Contornos(this.cena, COR_DA_SELECAO)
@@ -360,6 +344,22 @@ class PalcoThree implements Palco {
           centro: local.caixa.getCenter(new Vector3()).applyMatrix4(local.matriz),
           bloqueado: this.trancados.has(id),
         }))
+        for (const e of [
+          ...(this.documento?.caminhos ?? []),
+          ...(this.documento?.aguas ?? []),
+          ...(this.documento?.marcadores ?? []),
+        ]) {
+          if (this.alvos.has(e.id)) continue
+          const caixa = this.caminhos.limitesDo(e.id, new Box3())
+          if (caixa.isEmpty()) this.aguas.limitesDo(e.id, caixa)
+          if (caixa.isEmpty()) this.marcadores.limitesDo(e.id, caixa)
+          if (!caixa.isEmpty())
+            candidatos.push({
+              id: e.id,
+              centro: caixa.getCenter(new Vector3()),
+              bloqueado: this.trancados.has(e.id),
+            })
+        }
         this.opcoes.aoSelecionarArea?.(escolherNaArea(candidatos, this.camera, regiao), somar)
       },
       (ativo) => {
@@ -420,6 +420,8 @@ class PalcoThree implements Palco {
       aoEstado: (estado) => this.opcoes.aoPreverTerreno?.(estado),
       aoAtualizar: (regioes) => {
         this.aguas.atualizarTerreno(regioes)
+        this.marcadores.atualizarTerreno(regioes)
+        this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(regioes))
         if (!this.destruido) this.reconstruir()
       },
       aplicar: (gesto) => {
@@ -429,11 +431,37 @@ class PalcoThree implements Palco {
     })
     this.cena.add(this.escultura.grupo)
 
+    this.pontosDoCaminho = new EdicaoDePontos(canvas, {
+      documento: () => this.documento,
+      camera: this.camera,
+      ponto: (x, y, altura) => this.pontoParaControles(x, y, altura),
+      altura: (x, z) =>
+        this.documento ? alturaDoChao(this.documento.base, x, z, this.fonteDeAlturas()) : NaN,
+      aoGesto: (ativo) => {
+        this.toque = null
+        this.orbita.enabled = !ativo
+        this.informarGesto('pontos', ativo)
+      },
+      aoEditar: (gesto) =>
+        this.opcoes.aoEditarPontosDeCaminho?.(gesto, this.donoDosPontos ?? 'caminhos'),
+      aoCancelar: () => {
+        const dono = this.donoDosPontos ?? 'caminhos'
+        this.definirCapturaDeCaminho(null, dono)
+        this.opcoes.aoCancelarPontosDeCaminho?.(dono)
+      },
+      aoErro: (mensagem) =>
+        this.opcoes.aoErroDePontosDeCaminho?.(mensagem, this.donoDosPontos ?? 'caminhos'),
+      pedirQuadro: this.pedirQuadro,
+    })
+    this.cena.add(this.pontosDoCaminho.grupo)
+
     canvas.addEventListener('pointerdown', this.aoApertar)
+    canvas.addEventListener('pointerdown', this.protegerGestoDaAlca, true)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
+    canvas.ownerDocument.defaultView?.addEventListener('keydown', this.cancelarAlcaPelaTecla, true)
+    canvas.ownerDocument.defaultView?.addEventListener('blur', this.aoCancelar)
 
-    this.aplicarLuz(12)
     this.laco = new DemandRenderLoop(canvas, this.renderer, this.camera, this.quadro)
   }
 
@@ -442,8 +470,10 @@ class PalcoThree implements Palco {
   definirDocumento(documento: DocumentoDeCenario): void {
     if (this.destruido) return
     if (this.documento !== documento) {
-      this.edicaoDaAgua.finalizar(true)
+      this.edicaoDoAmbiente.finalizar(true)
       this.pontosDaAgua.definir(null)
+      this.pontosDoCaminho.contextoAlterado()
+      this.donoDosPontos = null
     }
     if (this.documento !== documento) this.escultura.contextoAlterado()
     if (this.documento !== documento && (this.teste || this.preparandoTeste)) this.encerrarTeste()
@@ -453,13 +483,12 @@ class PalcoThree implements Palco {
       return
     }
     this.documento = documento
-    const projecao = resolverConjuntos(this.edicaoDaAgua.projetar(documento))
+    const projecao = resolverConjuntos(this.edicaoDoAmbiente.projetar(documento))
     this.visual = projecao.documento
     this.origens = projecao.origens
     this.temChao = dominioDoChao(documento.base)
     this.espalhamento.contextoAlterado()
     this.aplicarChao(documento)
-    this.aplicarLuz(documento.iluminacao.hora)
     this.pedirModelos(this.visual)
     this.pedirTexturas(this.visual)
     // definir publica o estado sincronicamente e reconstrói uma única vez pelo callback.
@@ -469,6 +498,57 @@ class PalcoThree implements Palco {
   definirSelecao(ids: readonly string[]): void {
     this.selecao = [...ids]
     this.atualizarSelecao()
+  }
+  definirGuiasDoJogo(visiveis: boolean): void {
+    if (this.teste || this.preparandoTeste) throw Error('Saia do teste antes de alterar as guias.')
+    if (visiveis && this.opcoes.fotografia)
+      throw Error('Retratos de composição não contêm guias de edição.')
+    this.guiasDoJogo = visiveis
+    this.reconstruir()
+    this.atualizarSelecao()
+    this.pedirQuadro()
+  }
+
+  definirColisoesVisiveis(visiveis: boolean): void {
+    if (this.destruido || this.teste || this.preparandoTeste || this.gesto)
+      throw Error('Termine o gesto e saia do Testar antes de inspecionar colisões.')
+    if (visiveis && this.opcoes.fotografia)
+      throw Error('Retratos de composição não contêm a inspeção de colisões.')
+    this.mostrarColisoes = visiveis
+    this.atualizarColisoesVisiveis()
+    this.pedirQuadro()
+  }
+
+  capturarCamera(): VistaDeCamera {
+    if (this.destruido || this.teste || this.preparandoTeste)
+      throw Error('Use a câmera de edição fora do Testar.')
+    return VistaDeCameraSchema.parse({
+      posicao: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+      alvo: { x: this.orbita.target.x, y: this.orbita.target.y, z: this.orbita.target.z },
+      campoDeVisao: this.camera.fov,
+    })
+  }
+
+  restaurarCamera(vista: VistaDeCamera): void {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gestosAtivos.size ||
+      this.pontosDoCaminho.habilitada ||
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada
+    )
+      throw Error('Termine o gesto e saia do Testar antes de restaurar a câmera.')
+    const v = VistaDeCameraSchema.parse(vista)
+    this.camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+    this.orbita.target.set(v.alvo.x, v.alvo.y, v.alvo.z)
+    this.camera.fov = v.campoDeVisao
+    this.camera.updateProjectionMatrix()
+    this.camera.lookAt(this.orbita.target)
+    this.orbita.update()
+    this.atualizarRecorte()
+    this.pedirQuadro()
   }
 
   recarregarTexturas(): void {
@@ -489,7 +569,10 @@ class PalcoThree implements Palco {
   }
 
   definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void {
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de abrir o pincel.')
     if (configuracao) this.definirCapturaDeAgua(null)
+    if (configuracao) this.definirCapturaDeCaminho(null, this.donoDosPontos ?? 'caminhos')
     if (configuracao) this.escultura?.definir(null)
     if (!this.espalhamento.definir(configuracao)) return
     if (configuracao) {
@@ -543,6 +626,7 @@ class PalcoThree implements Palco {
     if (doc.base.tipo === 'terreno')
       for (const camada of doc.base.solo?.camadas ?? [])
         if (camada.textura) usadas.add(camada.textura.id)
+    if (doc.iluminacao.ceu?.tipo === 'panorama') usadas.add(doc.iluminacao.ceu.textura)
     const previas = new Set(
       this.espalhamento.prototipos.flatMap((o) =>
         o.aparencia?.textura ? [o.aparencia.textura.id] : [],
@@ -604,7 +688,7 @@ class PalcoThree implements Palco {
         x: superficie.ponto.x,
         y: superficie.ponto.y,
         z: superficie.ponto.z,
-        apoio: this.apoiarNaSuperficie(superficie.id, superficie.ponto),
+        apoio: this.apoiarNaSuperficie(superficie.id, superficie.ponto, superficie.parte),
       }
     }
     if (!ponto) return null
@@ -627,16 +711,38 @@ class PalcoThree implements Palco {
     }
   }
 
+  private pontoParaControles(x: number, y: number, altura?: number): Ponto3 | null {
+    if (altura == null) return this.pontoNoChao(x, y)
+    if (!this.documento || (this.documento.base.tipo === 'terreno' && !this.terreno)) return null
+    this.mirar(x, y)
+    this.planoDosControles.constant = -altura
+    const p = this.raio.ray.intersectPlane(this.planoDosControles, new Vector3())
+    return p
+      ? {
+          x: encaixar(p.x, this.encaixe.grade, this.encaixe.origem.x),
+          y: altura,
+          z: encaixar(p.z, this.encaixe.grade, this.encaixe.origem.z),
+        }
+      : null
+  }
+
   fonteDeAlturas() {
-    return this.terreno?.altura
+    const fonte =
+      this.terreno?.altura ??
+      (this.documento?.base.tipo === 'plano' ? this.alturaDoPlano : undefined)
+    if (fonte) fonte.parteDoCaminho = (id, chave) => this.caminhos.parte(id, chave)
+    return fonte
   }
   estadoDoTerreno() {
     return this.terreno ? clonarEstadoDoTerreno(this.terreno.estado) : null
   }
 
   definirEscultura(configuracao: ConfiguracaoDaEscultura | null) {
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de esculpir.')
     if (configuracao) {
       this.definirCapturaDeAgua(null)
+      this.definirCapturaDeCaminho(null, this.donoDosPontos ?? 'caminhos')
       this.espalhamento.definir(null)
       this.modoDeSelecao = 'ponto'
       this.area.setTool('point')
@@ -646,9 +752,13 @@ class PalcoThree implements Palco {
   }
   definirCapturaDeAgua(pontos: readonly Ponto3[] | null) {
     if (this.destruido) return
+    if (pontos && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de editar a água.')
     if (pontos && (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada))
       throw Error('Termine o gesto antes de escolher os pontos da água.')
     if (pontos) {
+      this.pontosDoCaminho.definir(null)
+      this.donoDosPontos = null
       this.espalhamento.definir(null)
       this.escultura.definir(null)
       this.modoDeSelecao = 'ponto'
@@ -659,23 +769,107 @@ class PalcoThree implements Palco {
     this.atualizarAlca()
     this.pedirQuadro()
   }
+  definirCapturaDeCaminho(configuracao: CapturaDeCaminho | null, dono: DonoDosPontos = 'caminhos') {
+    if (this.destruido) return
+    if (configuracao && this.edicaoDoAmbiente.tipo === 'ambiente')
+      throw Error('Conclua ou cancele a prévia antes de editar pontos.')
+    if (this.donoDosPontos && this.donoDosPontos !== dono) {
+      if (!configuracao) return
+      throw Error('Termine a edição de pontos atual antes de abrir outra ferramenta.')
+    }
+    if (
+      configuracao &&
+      (this.teste || this.preparandoTeste || this.gesto || this.escultura.ocupada)
+    )
+      throw Error('Termine o gesto antes de editar os pontos do caminho.')
+    if (configuracao) {
+      this.pontosDaAgua.definir(null)
+      this.espalhamento.definir(null)
+      this.escultura.definir(null)
+      this.modoDeSelecao = 'ponto'
+      this.area.setTool('point')
+    }
+    this.toque = null
+    this.pontosDoCaminho.definir(configuracao)
+    this.donoDosPontos = configuracao ? dono : null
+    this.atualizarAlca()
+    this.pedirQuadro()
+  }
+  preverAmbiente(
+    origem: DocumentoDeCenario,
+    comandos: readonly ComandoDePreviaDoAmbiente[],
+    dono: DonoDaPreviaDoAmbiente = 'luz',
+  ) {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gestosAtivos.size ||
+      this.pontosDoCaminho.habilitada ||
+      this.pontosDaAgua.habilitada ||
+      this.escultura.habilitado ||
+      this.espalhamento.habilitado
+    )
+      throw Error('Termine a ferramenta atual e saia do Testar antes de prever o ambiente.')
+    this.edicaoDoAmbiente.preverComandos(origem, this.documento, comandos, dono)
+    this.pedirTexturas(this.edicaoDoAmbiente.projetar(origem))
+    this.reconstruir()
+  }
+  finalizarPreviaDeAmbiente(cancelar = true, dono: DonoDaPreviaDoAmbiente = 'luz') {
+    if (this.destruido || this.edicaoDoAmbiente.tipo !== 'ambiente') return
+    if (this.edicaoDoAmbiente.dono !== dono) return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'ambiente', dono)
+    if (cancelar) {
+      if (this.documento) this.pedirTexturas(this.documento)
+      this.reconstruir()
+    } else this.atualizarAlca()
+  }
   preverAgua(origem: DocumentoDeCenario, operacao: OperacaoDeAguaPreparada) {
     if (
       this.destruido ||
       this.teste ||
       this.preparandoTeste ||
       this.gesto ||
-      this.escultura.ocupada
+      this.escultura.ocupada ||
+      this.pontosDoCaminho.ocupada
     )
       throw Error('Termine o gesto antes de prever a água.')
-    this.edicaoDaAgua.prever(origem, this.documento, operacao)
+    this.edicaoDoAmbiente.prever(origem, this.documento, operacao)
     this.reconstruir()
   }
   finalizarPreviaDeAgua(cancelar = true) {
     if (this.destruido) return
-    if (!this.edicaoDaAgua.ativa) return
-    this.edicaoDaAgua.finalizar(cancelar)
+    if (this.edicaoDoAmbiente.tipo !== 'agua') return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'agua')
     if (cancelar) {
+      this.reconstruir()
+    }
+    this.atualizarAlca()
+  }
+  preverCaminho(origem: DocumentoDeCenario, operacao: OperacaoDeCaminhoPreparada) {
+    if (
+      this.destruido ||
+      this.teste ||
+      this.preparandoTeste ||
+      this.gesto ||
+      this.escultura.ocupada ||
+      this.pontosDoCaminho.ocupada
+    )
+      throw Error('Termine o gesto antes de prever o caminho.')
+    this.edicaoDoAmbiente.prever(origem, this.documento, operacao)
+    const visual = this.edicaoDoAmbiente.projetar(origem)
+    this.pedirModelos(visual)
+    this.pedirTexturas(visual)
+    this.reconstruir()
+  }
+  finalizarPreviaDeCaminho(cancelar = true) {
+    if (this.destruido || this.edicaoDoAmbiente.tipo !== 'caminho') return
+    this.edicaoDoAmbiente.finalizar(cancelar, 'caminho')
+    if (cancelar) {
+      if (this.documento) {
+        this.pedirModelos(this.documento)
+        this.pedirTexturas(this.documento)
+      }
       this.reconstruir()
     }
     this.atualizarAlca()
@@ -751,8 +945,9 @@ class PalcoThree implements Palco {
       this.gesto ||
       this.gestosAtivos.size ||
       this.escultura.ocupada ||
-      this.edicaoDaAgua.ativa ||
-      this.pontosDaAgua.habilitada
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada ||
+      this.pontosDoCaminho.habilitada
     )
       throw new Error('Termine o gesto antes de testar')
     this.encerrarTeste()
@@ -772,6 +967,11 @@ class PalcoThree implements Palco {
           this.estadoDasAguas.falhas[0]?.mensagem ??
             'Espere a água e suas margens terminarem de carregar.',
         )
+      if (this.estadoDosCaminhos.carregando || this.estadoDosCaminhos.falhas.length)
+        throw new Error(
+          this.estadoDosCaminhos.falhas[0]?.mensagem ??
+            'Espere os caminhos terminarem de carregar.',
+        )
       controle.signal.throwIfAborted()
       if (config.modelo) {
         const bytes = await conferirConteudoDoModelo(
@@ -783,18 +983,7 @@ class PalcoThree implements Palco {
         controle.signal.throwIfAborted()
       }
       personagem = new PersonagemDoTeste(modelo, config)
-      const chao = this.terreno?.fontesDoTeste() ?? []
-      chao.push(...this.aguas.fontesDoTeste())
-      if (this.planoFisico) {
-        this.planoFisico.updateWorldMatrix(true, false)
-        chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
-      }
-      const pacote = prepararColisoesDoTeste(
-        this.visual!,
-        this.superficies.fontesDoTeste(),
-        this.locais,
-        chao,
-      )
+      const pacote = this.prepararColisoes()
       try {
         mundo = new MundoDoTeste(pacote.fontes)
       } finally {
@@ -807,12 +996,25 @@ class PalcoThree implements Palco {
         )
       )
         throw new Error('O ponto inicial do teste é inválido')
-      const foco = config.inicio
-          ? new Vector3(config.inicio.x, config.inicio.y, config.inicio.z)
+      if (
+        config.giroInicial != null &&
+        (!Number.isFinite(config.giroInicial) || Math.abs(config.giroInicial) > 100_000)
+      )
+        throw Error('O giro inicial do teste é inválido.')
+      const marco =
+        !config.inicio && config.marcadorDeInicio !== null
+          ? inicioDoCenario(this.documento, this.fonteDeAlturas(), config.marcadorDeInicio)
+          : null
+      if (!config.inicio && config.marcadorDeInicio && !marco)
+        throw Error('Escolha um ponto de início visível do cenário.')
+      const pontoInicial = config.inicio ?? marco?.posicao,
+        configuracao = { ...config, giroInicial: config.giroInicial ?? marco?.giro },
+        foco = pontoInicial
+          ? new Vector3(pontoInicial.x, pontoInicial.y, pontoInicial.z)
           : this.orbita.target.clone(),
         inicio = foco.clone()
       this.superficies.limites(this.limitesDaCena)
-      const topo = config.inicio
+      const topo = pontoInicial
         ? foco.y + personagem.altura
         : Math.max(
             foco.y,
@@ -836,12 +1038,16 @@ class PalcoThree implements Palco {
         fov: this.camera.fov,
         grade: this.grade.visible,
         fundo: this.fundoDecorativo?.visible ?? false,
+        guias: this.marcadores.grupo.visible,
+        colisoes: this.colisoesVisiveis.grupo.visible,
       }
       this.orbita.enabled = false
       this.area.setTool('point')
       this.definirEspalhamento(null)
       this.definirEscultura(null)
       this.grade.visible = false
+      this.marcadores.grupo.visible = false
+      this.colisoesVisiveis.grupo.visible = false
       if (this.fundoDecorativo) this.fundoDecorativo.visible = false
       this.contornos.definirVisivel(false)
       const escondidosDoTeste = idsEscondidos(this.visual!)
@@ -852,7 +1058,7 @@ class PalcoThree implements Palco {
         mundo,
         personagem,
         inicio,
-        config,
+        configuracao,
         (estado) => this.opcoes.aoTeste?.(estado),
         this.pedirQuadro,
         new AguasDoTeste(
@@ -904,6 +1110,8 @@ class PalcoThree implements Palco {
       this.camera.fov = vista.fov
       this.camera.updateProjectionMatrix()
       this.grade.visible = vista.grade
+      this.marcadores.grupo.visible = vista.guias
+      this.colisoesVisiveis.grupo.visible = vista.colisoes
       if (this.fundoDecorativo) this.fundoDecorativo.visible = vista.fundo
       this.contornos.definirVisivel(true)
       this.area.setTool(
@@ -920,14 +1128,20 @@ class PalcoThree implements Palco {
     this.atualizarAlca()
   }
 
-  private apoiarNaSuperficie(id: string, ponto: Vector3) {
+  private apoiarNaSuperficie(id: string, ponto: Vector3, parte?: string) {
     const doc = this.documento!
     // Medidas legadas são lidas do GLB para a consulta. O host confirma e grava essas mesmas
     // medidas no lote de colocação/gesto, junto do novo apoio, sem alterar o documento aqui.
     const modelos = doc.modelos.map((m) =>
       m.volume ? m : { ...m, volume: this.volumeDoModelo(m.id) ?? undefined },
     )
-    return apoioNaSuperficie({ ...doc, modelos }, id, ponto, this.fonteDeAlturas())
+    if (!parte && doc.caminhos.some((c) => c.id === id))
+      return {
+        tipo: 'terreno' as const,
+        deslocamento: ponto.y - alturaDoChao(doc.base, ponto.x, ponto.z, this.fonteDeAlturas()),
+        inclinar: false,
+      }
+    return apoioNaSuperficie({ ...doc, modelos }, id, ponto, this.fonteDeAlturas(), parte)
   }
 
   enquadrar(ids?: readonly string[]): void {
@@ -937,11 +1151,23 @@ class PalcoThree implements Palco {
       return
     }
     const caixa = new Box3()
-    const escolhidos = ids?.length ? ids : [...this.alvos.keys()]
+    const escolhidos = ids?.length
+      ? ids
+      : [
+          ...this.alvos.keys(),
+          ...(this.documento?.caminhos.map((c) => c.id) ?? []),
+          ...(this.guiasDoJogo ? (this.documento?.marcadores.map((m) => m.id) ?? []) : []),
+        ]
     const cantos = new Box3()
     for (const id of escolhidos) {
       const local = this.alvos.get(id)
-      if (!local) continue
+      if (!local) {
+        this.caminhos.limitesDo(id, cantos)
+        if (cantos.isEmpty()) this.aguas.limitesDo(id, cantos)
+        if (cantos.isEmpty()) this.marcadores.limitesDo(id, cantos)
+        caixa.union(cantos)
+        continue
+      }
       caixa.union(cantos.copy(local.caixa).applyMatrix4(local.matriz))
     }
     const esfera = new Sphere()
@@ -967,6 +1193,10 @@ class PalcoThree implements Palco {
       sinal?.throwIfAborted()
       if (this.destruido) throw new Error('O palco foi encerrado')
       const estados = [...this.modelos.values()]
+      const falhaDeCaminho = this.estadoDosCaminhos.falhas[0]
+      if (falhaDeCaminho) throw new Error(`${falhaDeCaminho.nome}: ${falhaDeCaminho.mensagem}`)
+      const falhaDoAmbiente = this.estadoDoAmbiente?.falhas[0]
+      if (falhaDoAmbiente) throw Error(falhaDoAmbiente)
       if (
         estados.some((e) => e.estado === 'falhou') ||
         this.estadoDasTexturas.falhas.length ||
@@ -976,6 +1206,7 @@ class PalcoThree implements Palco {
       if (
         !estados.some((e) => e.estado === 'carregando') &&
         !this.estadoDasTexturas.carregando &&
+        !this.estadoDoAmbiente?.carregando &&
         (this.documento?.base.tipo !== 'terreno' || this.terreno)
       )
         return
@@ -987,19 +1218,26 @@ class PalcoThree implements Palco {
 
   capturar(largura = 640): Promise<Blob | null> {
     if (this.destruido) return Promise.resolve(null)
-    if (this.edicaoDaAgua.ativa || this.pontosDaAgua.habilitada)
-      return Promise.reject(Error('Conclua ou cancele a edição da água antes de criar retratos.'))
+    if (
+      this.edicaoDoAmbiente.ativa ||
+      this.pontosDaAgua.habilitada ||
+      this.pontosDoCaminho.habilitada
+    )
+      return Promise.reject(Error('Conclua ou cancele a edição antes de criar retratos.'))
     const alcaVisivel = this.ajudanteDaAlca.visible
     const previaVisivel = this.espalhamento.grupo.visible
     const cursorDoTerreno = this.escultura.grupo.visible
+    const guiasVisiveis = this.marcadores.grupo.visible
+    const colisoesVisiveis = this.colisoesVisiveis.grupo.visible
+    this.marcadores.grupo.visible = false
+    this.colisoesVisiveis.grupo.visible = false
     this.escultura.grupo.visible = false
     this.espalhamento.grupo.visible = false
     this.ajudanteDaAlca.visible = false
     this.contornos.definirVisivel(false)
     try {
       this.atualizarRecorte()
-      this.posicionarSol()
-      this.ceu.position.copy(this.camera.position)
+      this.posicionarAmbiente()
       this.renderer.render(this.cena, this.camera)
       const origem = this.renderer.domElement
       const escala = Math.min(1, largura / Math.max(1, origem.width))
@@ -1012,6 +1250,8 @@ class PalcoThree implements Palco {
       this.ajudanteDaAlca.visible = alcaVisivel
       this.espalhamento.grupo.visible = previaVisivel
       this.escultura.grupo.visible = cursorDoTerreno
+      this.marcadores.grupo.visible = guiasVisiveis
+      this.colisoesVisiveis.grupo.visible = colisoesVisiveis
       this.contornos.definirVisivel(true)
       this.pedirQuadro()
     }
@@ -1024,11 +1264,24 @@ class PalcoThree implements Palco {
     this.laco.dispose()
     this.espalhamento.descartar()
     this.escultura.descartar()
+    this.pontosDoCaminho.descartar()
+    this.edicaoDoAmbiente.finalizar(false)
     this.pontosDaAgua.descartar()
     this.aguas.descartar()
+    this.caminhos.descartar()
+    this.marcadores.descartar()
+    this.colisoesVisiveis.descartar()
+    this.ambiente.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
+    this.canvas.removeEventListener('pointerdown', this.protegerGestoDaAlca, true)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
+    this.canvas.ownerDocument.defaultView?.removeEventListener(
+      'keydown',
+      this.cancelarAlcaPelaTecla,
+      true,
+    )
+    this.canvas.ownerDocument.defaultView?.removeEventListener('blur', this.aoCancelar)
     this.area.dispose()
     this.alca.detach()
     this.alca.dispose()
@@ -1057,9 +1310,6 @@ class PalcoThree implements Palco {
     this.pendente = null
     this.texturas.descartar()
     this.limparChao()
-    this.ceu.geometry.dispose()
-    this.ceu.material.dispose()
-    this.sol.shadow.dispose()
     this.renderer.dispose()
     if (this.opcoes.fotografia) this.renderer.forceContextLoss()
   }
@@ -1074,6 +1324,14 @@ class PalcoThree implements Palco {
   private readonly quadro = (): boolean => {
     this.atualizarRecorte()
     const mexeu = this.teste ? this.teste.quadro() : this.orbita.update()
+    if (
+      this.guiasDoJogo &&
+      !this.teste &&
+      !this.preparandoTeste &&
+      !this.gesto &&
+      this.camera.aspect !== this.aspectoDasGuias
+    )
+      this.reconstruir()
     this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
     this.escultura.quadro()
@@ -1083,8 +1341,7 @@ class PalcoThree implements Palco {
       performance.now() / 1000,
       Boolean(this.opcoes.movimentoReduzido),
     )
-    this.ceu.position.copy(this.camera.position)
-    this.posicionarSol()
+    this.posicionarAmbiente()
     this.renderer.render(this.cena, this.camera)
     this.medir()
     return mexeu || aguaAnimada
@@ -1093,6 +1350,7 @@ class PalcoThree implements Palco {
   private atualizarRecorte(): void {
     if (!this.documento) return
     this.superficies.limites(this.limitesDaCena)
+    this.limitesDaCena.union(this.marcadores.limites(this.limitesDasGuias))
     if (!this.opcoes.fotografia)
       this.limitesDaCena.union(limitesDaBase(this.documento.base, this.limitesDoChao))
     const r = recorteDaCamera(
@@ -1110,8 +1368,7 @@ class PalcoThree implements Palco {
       this.camera.far = r.longe
       this.camera.updateProjectionMatrix()
     }
-    this.nevoa.near = Math.max(this.nevoaDaBase.perto, r.nevoaInicio)
-    this.nevoa.far = Math.max(this.nevoaDaBase.longe, r.nevoaFim, this.nevoa.near + 1)
+    this.ambiente.atualizarNevoa(r.nevoaInicio, r.nevoaFim)
   }
 
   private medir() {
@@ -1133,35 +1390,9 @@ class PalcoThree implements Palco {
     })
   }
 
-  private posicionarSol() {
+  private posicionarAmbiente() {
     const alvo = this.teste ? this.teste.foco(this.focoDoTeste) : this.orbita.target
-    const alcance = Math.min(260, Math.max(24, this.camera.position.distanceTo(alvo) * 1.4))
-    const camera = this.sol.shadow.camera
-    if (Math.abs(camera.right - alcance) > alcance * 0.08) {
-      camera.left = -alcance
-      camera.right = alcance
-      camera.top = alcance
-      camera.bottom = -alcance
-      camera.near = 1
-      camera.far = 900
-      camera.updateProjectionMatrix()
-    }
-    this.sol.target.position.copy(alvo)
-    this.sol.position.copy(alvo).addScaledVector(this.direcaoDoSol, 400)
-  }
-
-  private readonly direcaoDoSol = new Vector3(0.4, 0.8, 0.4)
-
-  private aplicarLuz(hora: number) {
-    const luz = luzDaHora(hora)
-    this.direcaoDoSol.set(luz.sol.x, luz.sol.y, luz.sol.z)
-    this.sol.color.setHex(luz.corDoSol)
-    this.sol.intensity = luz.forcaDoSol
-    this.luzDoCeu.intensity = luz.forcaDoCeu
-    this.luzDoCeu.color.setHex(0xffffff)
-    this.ceu.material.uniforms.uCeu!.value.setHex(luz.corDoCeu)
-    this.ceu.material.uniforms.uHorizonte!.value.setHex(luz.corDoHorizonte)
-    this.nevoa.color.setHex(luz.corDoHorizonte)
+    this.ambiente.quadro(this.camera, alvo)
   }
 
   // ---- chão ---------------------------------------------------------------
@@ -1177,6 +1408,7 @@ class PalcoThree implements Palco {
 
   private limparChao() {
     this.aguas.limpar()
+    this.caminhos.limpar()
     this.planoFisico = null
     this.fundoDecorativo = null
     this.cargaDoTerreno?.abort()
@@ -1230,9 +1462,10 @@ class PalcoThree implements Palco {
           this.opcoes.aoTerreno?.({ estado: 'erro', chave, erro: e })
           this.pedirQuadro()
         })
-      this.nevoa.near = Math.max(120, meio.x * 1.8, meio.z * 1.8)
-      this.nevoa.far = Math.max(900, meio.x * 8, meio.z * 8)
-      this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
+      this.ambiente.definirNevoaDaBase(
+        Math.max(120, meio.x * 1.8, meio.z * 1.8),
+        Math.max(900, meio.x * 8, meio.z * 8),
+      )
       return
     }
     this.opcoes.aoTerreno?.({ estado: 'pronto', chave })
@@ -1265,9 +1498,7 @@ class PalcoThree implements Palco {
 
     this.chao.add(fora, lote)
     const alcance = Math.max(largura, comprimento)
-    this.nevoa.near = Math.max(120, alcance * 0.9)
-    this.nevoa.far = Math.max(900, alcance * 4)
-    this.nevoaDaBase = { perto: this.nevoa.near, longe: this.nevoa.far }
+    this.ambiente.definirNevoaDaBase(Math.max(120, alcance * 0.9), Math.max(900, alcance * 4))
   }
 
   // ---- modelos e objetos --------------------------------------------------
@@ -1312,6 +1543,7 @@ class PalcoThree implements Palco {
       if (vivos.has(digest)) continue
       if (estado.estado === 'pronto') {
         this.aguas.esquecerModelo(estado.modelo)
+        this.caminhos.esquecerModelo(estado.modelo)
         estado.representacoes.descartar()
         estado.modelo.descartar()
       }
@@ -1369,12 +1601,85 @@ class PalcoThree implements Palco {
     return matriz
   }
 
+  private atualizarGuias() {
+    if (this.destruido || this.teste || this.preparandoTeste) return
+    this.aspectoDasGuias = this.camera.aspect
+    const doc = this.documento ? this.edicaoDoAmbiente.projetar(this.documento) : null
+    if (!doc || !this.guiasDoJogo || this.opcoes.fotografia) {
+      this.marcadores.grupo.visible = false
+      this.marcadores.limpar()
+      this.opcoes.aoMarcadores?.({ carregando: 0, falhas: [] })
+      return
+    }
+    this.marcadores.grupo.visible = true
+    const estado = this.marcadores.definir(doc, this.fonteDeAlturas(), this.camera.aspect)
+    this.opcoes.aoMarcadores?.(estado)
+  }
+
+  private prepararColisoes() {
+    const chao = this.terreno?.fontesDoTeste() ?? []
+    chao.push(...this.aguas.fontesDoTeste(), ...this.caminhos.fontesDoTeste())
+    if (this.planoFisico) {
+      this.planoFisico.updateWorldMatrix(true, false)
+      chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
+    }
+    return prepararColisoesDoTeste(
+      this.visual!,
+      this.superficies.fontesDoTeste(),
+      this.locais,
+      chao,
+    )
+  }
+
+  private atualizarColisoesVisiveis() {
+    if (this.teste || this.preparandoTeste) return
+    const visivel =
+      this.mostrarColisoes &&
+      !this.opcoes.fotografia &&
+      Boolean(this.visual) &&
+      (this.visual!.base.tipo !== 'terreno' || Boolean(this.terreno))
+    this.colisoesVisiveis.grupo.visible = visivel
+    if (!visivel) {
+      this.colisoesVisiveis.limpar()
+      this.opcoes.aoColisoesVisiveis?.({ fontes: 0, triangulos: 0, erro: null })
+      return
+    }
+    const pacote = this.prepararColisoes()
+    try {
+      const estado = this.colisoesVisiveis.definir(pacote.fontes)
+      this.opcoes.aoColisoesVisiveis?.(estado)
+    } finally {
+      pacote.descartar()
+    }
+  }
+
   private reconstruir() {
+    this.atualizarGuias()
     if (this.documento) {
-      const projecao = resolverConjuntos(
-        this.edicaoDaAgua.projetar(this.documento),
-        this.fonteDeAlturas(),
+      const autoral = this.edicaoDoAmbiente.projetar(this.documento),
+        organizacao = indiceDaOrganizacao(autoral),
+        texturas = new Map(autoral.texturas?.map((t) => [t.id, t]))
+      const ambiente = this.ambiente.definir(autoral, this.fonteDeAlturas(), (ref) => ({
+        textura: this.texturas.obter(ref.digest)?.textura,
+        erro: this.estadoDasTexturas.falhas.find((f) => f.digest === ref.digest)?.mensagem,
+      }))
+      this.estadoDoAmbiente = ambiente
+      this.opcoes.aoAmbiente?.(ambiente)
+      this.estadoDosCaminhos = this.caminhos.definir(
+        autoral,
+        this.terreno,
+        (id) => {
+          const e = this.estadoDoModelo(id, autoral)
+          return e?.estado === 'pronto' ? e.modelo : null
+        },
+        (id) => {
+          const ref = texturas.get(id)
+          return ref ? (this.texturas.obter(ref.digest)?.textura ?? null) : null
+        },
+        idsEscondidos(autoral, organizacao),
       )
+      this.opcoes.aoCaminhos?.(this.estadoDosCaminhos)
+      const projecao = resolverConjuntos(autoral, this.fonteDeAlturas())
       this.visual = projecao.documento
       this.origens = projecao.origens
     }
@@ -1382,6 +1687,7 @@ class PalcoThree implements Palco {
     const doc = this.visual
     if (!doc) return
     if (doc.base.tipo === 'terreno' && !this.terreno) {
+      this.atualizarColisoesVisiveis()
       this.opcoes.aoTexturas?.(this.estadoDasTexturas)
       this.locais.clear()
       this.alvos.clear()
@@ -1490,14 +1796,16 @@ class PalcoThree implements Palco {
         })
       }
     }
-    this.superficies.definir(superficies)
+    this.superficies.definir([...superficies, ...this.caminhos.superficies()])
     this.alvos = criarAlvosDeEdicao(
       this.documento!,
       this.locais,
       this.origens,
       this.fonteDeAlturas(),
     )
+    for (const [id, alvo] of this.marcadores.alvos()) this.alvos.set(id, alvo)
     this.falhaDeAcabamento = falhasDeAcabamento.length > 0
+    this.atualizarColisoesVisiveis()
     this.opcoes.aoTexturas?.({
       ...this.estadoDasTexturas,
       falhas: [...this.estadoDasTexturas.falhas, ...falhasDeAcabamento],
@@ -1510,6 +1818,16 @@ class PalcoThree implements Palco {
   // ---- seleção e alça -----------------------------------------------------
 
   private movidos(): string[] {
+    // Uma escolha mista nunca move silenciosamente só seus objetos.
+    if (this.selecao.some((id) => !this.alvos.has(id))) return []
+    if (
+      this.ferramenta === 'tamanho' &&
+      this.selecao.some((id) => {
+        const m = this.marcadores.marcador(id)
+        return m && !marcadorRedimensionavel(m)
+      })
+    )
+      return []
     return this.selecao.filter((id) => this.alvos.has(id) && !this.trancados.has(id))
   }
 
@@ -1523,7 +1841,13 @@ class PalcoThree implements Palco {
     let n = 0
     for (const id of this.selecao) {
       const local = this.alvos.get(id)
-      if (!local) continue
+      if (!local) {
+        const caixa = this.caminhos.limitesDo(id, new Box3())
+        if (caixa.isEmpty()) this.aguas.limitesDo(id, caixa)
+        if (caixa.isEmpty()) this.marcadores.limitesDo(id, caixa)
+        if (!caixa.isEmpty() && ++n <= 400) this.contornos.por(new Matrix4(), caixa)
+        continue
+      }
       if (++n > 400) break
       this.contornos.por(local.matriz, local.caixa)
     }
@@ -1538,8 +1862,9 @@ class PalcoThree implements Palco {
       !this.preparandoTeste &&
       !this.espalhamento?.habilitado &&
       !this.escultura?.habilitado &&
-      !this.edicaoDaAgua.ativa &&
+      !this.edicaoDoAmbiente.ativa &&
       !this.pontosDaAgua.habilitada &&
+      !this.pontosDoCaminho?.habilitada &&
       this.modoDeSelecao === 'ponto' &&
       this.ferramenta !== 'selecionar' &&
       this.ferramenta !== 'espalhar' &&
@@ -1556,6 +1881,11 @@ class PalcoThree implements Palco {
     this.alca.setMode(
       this.ferramenta === 'mover' ? 'translate' : this.ferramenta === 'girar' ? 'rotate' : 'scale',
     )
+    const giroVertical =
+      this.ferramenta === 'girar' && movidos.some((id) => this.marcadores.marcador(id))
+    this.alca.showX = !giroVertical
+    this.alca.showY = true
+    this.alca.showZ = !giroVertical
     // O tamanho segue os eixos do próprio objeto; mover e girar seguem os do mundo.
     this.alca.setSpace(this.ferramenta === 'tamanho' ? 'local' : 'world')
     if (this.alca.object !== this.pivo) this.alca.attach(this.pivo)
@@ -1617,6 +1947,7 @@ class PalcoThree implements Palco {
     }
     const gesto = this.gesto
     this.gesto = null
+    this.ponteiroDaAlca = null
     this.informarGesto('alca', false)
     // Uma cabeça nova invalida o gesto iniciado na anterior, como no pincel de objetos.
     if (gesto && !gesto.cancelado && (!this.pendente || this.pendente === gesto.documento)) {
@@ -1668,7 +1999,26 @@ class PalcoThree implements Palco {
       const local = this.alvos.get(id)
       if (!local) continue
       local.matriz.multiplyMatrices(this.delta, antes)
-      if (this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
+      const marcador = this.marcadores.marcador(id)
+      if (marcador) {
+        // O apoio do marcador é sua raiz, não a base de uma caixa de seleção.
+        // Mover X/Z conserva a distância ao relevo; Y edita essa distância.
+        const eixo = this.alca.axis ?? ''
+        if (
+          marcador.noChao &&
+          (this.ferramenta !== 'mover' || !eixo.includes('Y')) &&
+          this.documento
+        )
+          local.matriz.elements[13] =
+            marcador.posicao.y +
+            alturaDoChao(
+              this.documento.base,
+              local.matriz.elements[12]!,
+              local.matriz.elements[14]!,
+              this.fonteDeAlturas(),
+            )
+      }
+      if (!marcador && this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
         const caixa = local.caixa.clone().applyMatrix4(local.matriz)
         const p = new Vector3().setFromMatrixPosition(local.matriz)
         const raio = new Raycaster(new Vector3(p.x, caixa.max.y + 0.01, p.z), new Vector3(0, -1, 0))
@@ -1679,7 +2029,7 @@ class PalcoThree implements Palco {
         gesto.apoios.set(
           id,
           usarObjeto
-            ? this.apoiarNaSuperficie(acerto.id, acerto.ponto)
+            ? this.apoiarNaSuperficie(acerto.id, acerto.ponto, acerto.parte)
             : { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
         )
       }
@@ -1687,6 +2037,11 @@ class PalcoThree implements Palco {
     }
     gesto.atualizarApoios()
     gesto.atualizarSuperficies()
+    if (
+      this.mostrarColisoes &&
+      [...gesto.inicio.keys()].some((id) => !this.marcadores.marcador(id))
+    )
+      this.atualizarColisoesVisiveis()
     this.desenharContornos()
   }
 
@@ -1705,6 +2060,7 @@ class PalcoThree implements Palco {
     if (this.teste || this.preparandoTeste) return
     if (this.espalhamento.habilitado || this.escultura.habilitado) return
     if (evento.button !== 0 || this.modoDeSelecao !== 'ponto') return
+    if (this.gesto) this.ponteiroDaAlca ??= evento.pointerId
     if (this.pontosDaAgua.habilitada && this.toque) {
       this.toque = null
       return
@@ -1722,6 +2078,21 @@ class PalcoThree implements Palco {
     }
   }
 
+  private readonly protegerGestoDaAlca = (e: PointerEvent): void => {
+    if (this.gesto && this.ponteiroDaAlca !== null && this.ponteiroDaAlca !== e.pointerId) {
+      this.aoCancelar()
+      e.stopImmediatePropagation()
+    }
+  }
+
+  private readonly cancelarAlcaPelaTecla = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && this.gesto) {
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      this.aoCancelar()
+    }
+  }
+
   private readonly aoSoltar = (evento: PointerEvent): void => {
     const toque = this.toque
     this.toque = null
@@ -1729,24 +2100,44 @@ class PalcoThree implements Palco {
     if (Math.hypot(evento.clientX - toque.x, evento.clientY - toque.y) > TOQUE_MAXIMO_PX) return
     // Soltar em cima de uma alça é o fim de um gesto, não uma escolha.
     if (this.gesto || this.alca.dragging || this.alca.axis) return
-    if (this.edicaoDaAgua.ativa) return
+    if (this.pontosDoCaminho.clicar(evento.clientX, evento.clientY)) return
+    if (this.edicaoDoAmbiente.ativa) return
     if (this.pontosDaAgua.habilitada) {
       const ponto = this.pontoNoChao(evento.clientX, evento.clientY)
       if (ponto) this.opcoes.aoCapturarPontoDaAgua?.(ponto)
       return
     }
     this.mirar(evento.clientX, evento.clientY)
+    const marcador = this.marcadores.escolher(
+      this.raio,
+      this.camera,
+      this.canvas.getBoundingClientRect().height,
+    )
+    if (marcador) {
+      const somar = evento.shiftKey || evento.ctrlKey || evento.metaKey
+      if (somar || !this.opcoes.aoSelecionarMarcador) this.opcoes.aoSelecionar?.(marcador.id, somar)
+      else this.opcoes.aoSelecionarMarcador(marcador.id)
+      return
+    }
     const objeto = this.superficies.escolher(this.raio)
     const agua = this.aguas.pontoSobRaio(this.raio)
+    const somar = evento.shiftKey || evento.ctrlKey || evento.metaKey
     if (agua && (!objeto || agua.distancia < objeto.distancia) && this.opcoes.aoSelecionarAgua) {
-      this.opcoes.aoSelecionarAgua(agua.id)
+      if (somar) this.opcoes.aoSelecionar?.(agua.id, true)
+      else this.opcoes.aoSelecionarAgua(agua.id)
       return
     }
     const id = objeto?.id
-    this.opcoes.aoSelecionar?.(
-      id ? (this.origens.get(id) ?? id) : null,
-      evento.shiftKey || evento.ctrlKey || evento.metaKey,
-    )
+    if (
+      id &&
+      this.documento?.caminhos.some((c) => c.id === id) &&
+      this.opcoes.aoSelecionarCaminho
+    ) {
+      if (somar) this.opcoes.aoSelecionar?.(id, true)
+      else this.opcoes.aoSelecionarCaminho(id)
+      return
+    }
+    this.opcoes.aoSelecionar?.(id ? (this.origens.get(id) ?? id) : null, somar)
   }
 }
 

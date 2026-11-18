@@ -4,11 +4,11 @@ Cursos feitos para os responsáveis, na área dos pais do Kids (**Cursos para pa
 
 | Curso | Aulas | Materiais e roteiros | Apostila |
 | --- | --- | --- | --- |
-| Transformando o vilão em aliado | 6 | [Abrir](transformando-o-vilao-em-aliado/README.md) | [PDF](transformando-o-vilao-em-aliado/apostila.pdf) |
+| Transformando o vilão em aliado | 7 | [Abrir](transformando-o-vilao-em-aliado/README.md) | [PDF](transformando-o-vilao-em-aliado/apostila.pdf) |
 
 Diferenças em relação aos cursos das crianças:
 
 - **Quem grava:** a própria Helena, sem ElevenLabs. O roteiro traz **Fala da Helena** em vez de **Fala para ElevenLabs**, e não há `.elevenlabs.txt`. O `validar-roteiros.py` confere os dois formatos.
 - **Texto na página:** curso para pais pode usar texto (`rich_text`), porque o público é adulto.
 - **Material:** a apostila do curso segue a [Receita do Passo a passo do projeto](../../aulas-interativas-tecnico/recursos/caderno-visual/README.md), com o nome "Apostila do curso".
-- **Transformando o vilão em aliado, revisão de 17/11/2026:** minicurso de conscientização, sem tarefas ou quizzes. O responsável acompanha explicações e uma demonstração; a experiência prática é o presente, depois do minicurso. Sem meta fixa de duração. O presente é independente da emissão do certificado.
+- **Transformando o vilão em aliado, refação de 18/11/2026:** o conteúdo integral do encontro de 13/11/2026 na voz da Helena, em sete aulas, sem tarefas ou quizzes. Os depoimentos exibidos no encontro entram fixos na edição. Convite único, na última aula: o Cadê Todo Mundo por sete dias. O presente é independente da emissão do certificado.
