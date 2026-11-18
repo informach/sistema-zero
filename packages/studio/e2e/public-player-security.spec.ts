@@ -18,10 +18,11 @@ async function mountPlayerDocument(page: Page, html: string): Promise<void> {
 
 test('player público estrito bloqueia GET passivo; perfil criativo é opt-in real', async ({
   page,
+  context,
 }) => {
   const project = createEmptyProject('security-profile', 'Segurança')
   let requests = 0
-  await page.route('https://evil.test/**', async (route) => {
+  await context.route('https://evil.test/**', async (route) => {
     requests++
     await route.fulfill({
       status: 200,
@@ -34,11 +35,14 @@ test('player público estrito bloqueia GET passivo; perfil criativo é opt-in re
   project.files['index.html'] = '<img alt="" src="https://evil.test/strict">'
   const strict = await renderProjectToPreviewDocAsync(project, { securityProfile: 'strict' })
   await mountPlayerDocument(page, strict)
-  await page.waitForTimeout(400)
+  const image = page.getByTestId('public-player').contentFrame().locator('img')
+  await expect(image).toHaveJSProperty('complete', true)
+  await expect(image).toHaveJSProperty('naturalWidth', 0)
   expect(requests).toBe(0)
 
   project.files['index.html'] = '<img alt="" src="https://evil.test/creative">'
   const creative = await renderProjectToPreviewDocAsync(project, { securityProfile: 'creative' })
   await mountPlayerDocument(page, creative)
   await expect.poll(() => requests).toBe(1)
+  await expect(image).toHaveJSProperty('naturalWidth', 1)
 })
