@@ -1,0 +1,9 @@
+{
+  "terreno": true,
+  "png16": true,
+  "workers": [
+    "/assets/terreno.worker-m7SMy_jq.js",
+    "/assets/terreno.worker-m7SMy_jq.js"
+  ],
+  "erros": []
+}

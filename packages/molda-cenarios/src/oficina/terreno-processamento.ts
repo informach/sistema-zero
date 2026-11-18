@@ -59,11 +59,16 @@ export async function processarTerreno({
     return { tipo: 'edicao', edicao: prepararDimensoes(base, estado, a.forma) }
   return { tipo: 'edicao', edicao: prepararPinturaAutomatica(base, estado, a.regras) }
 }
-export const buffersDoEstado = (estado: EstadoDoTerreno | null): ArrayBuffer[] =>
-  estado
-    ? ([
-        estado.campo.alturas.buffer,
-        estado.pintura.pesos.buffer,
-        estado.buracos.celulas.buffer,
-      ] as ArrayBuffer[])
-    : []
+export const buffersDoEstado = (estado: EstadoDoTerreno | null): ArrayBuffer[] => {
+  if (!estado) return []
+  const buffers = [
+    estado.campo.alturas.buffer,
+    estado.pintura.pesos.buffer,
+    estado.buracos.celulas.buffer,
+  ].map((buffer) => {
+    if (!(buffer instanceof ArrayBuffer))
+      throw new Error('Use uma cópia independente do terreno antes de iniciar o preparo.')
+    return buffer
+  })
+  return [...new Set(buffers)]
+}
