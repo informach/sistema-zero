@@ -16,6 +16,7 @@
     "check": "biome check ."
   },
   "dependencies": {
+    "@sistemazero/core": "workspace:*",
     "zod": "4.3.6"
   },
   "devDependencies": {

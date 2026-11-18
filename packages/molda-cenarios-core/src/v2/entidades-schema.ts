@@ -32,7 +32,7 @@ export const TransformacaoSchema = z
   .strict()
 
 /** Como os objetos do Tiled: pares simples que cada jogo lê do seu jeito. */
-export const PropriedadesSchema = z
+const propriedades = z
   .record(
     z
       .string()
@@ -44,6 +44,17 @@ export const PropriedadesSchema = z
   .refine((p) => Object.keys(p).length <= LIMITES_CENARIO_V2.propriedades, {
     message: `No máximo ${LIMITES_CENARIO_V2.propriedades} propriedades`,
   })
+
+export const PropriedadesSchema = z.preprocess((entrada, ctx) => {
+  // Zod ignora esta chave no record; recusar antes impede perda silenciosa do valor.
+  if (entrada && typeof entrada === 'object' && Object.hasOwn(entrada, '__proto__'))
+    ctx.addIssue({
+      code: 'custom',
+      path: ['__proto__'],
+      message: 'Esse nome de propriedade é reservado. Escolha outro.',
+    })
+  return entrada
+}, propriedades)
 
 const entidade = z.object({
   id,

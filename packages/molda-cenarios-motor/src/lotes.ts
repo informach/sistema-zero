@@ -43,6 +43,11 @@ export class LoteDoModelo {
     private readonly partes: readonly ParteDoModelo[],
   ) {}
 
+  /** Leitura para materialização/exportação; geometria e material continuam no seu dono. */
+  fontes(): readonly ParteDoModelo[] {
+    return this.partes
+  }
+
   preencher(itens: readonly ItemDoLote[]): void {
     if (itens.length > this.capacidade) this.alocar(itens.length)
     this.ids = itens.map((i) => i.id)

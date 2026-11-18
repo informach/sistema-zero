@@ -46,3 +46,19 @@ para separar custo de recuperação de encerramento do navegador na próxima CI.
 Os três ensaios locais de repetição e a CI devem ser revistos antes do aceite.
 
 A missão global e a homologação de hardware continuam abertas.
+
+
+## Snapshot remoto adicional 200fd35c7
+
+Durante a qualificação, staging publicou um novo contrato de objetos estáticos
+e metadados do Molda Cenários. O snapshot 200fd35c7 também foi integrado sem
+conflitos na worktree isolada. Não contém alterações nos fontes do Estúdio ou
+no core/studio. O lockfile mudou apenas para declarar a dependência workspace
+entre Molda Cenários Core e core; bun install --frozen-lockfile passou.
+
+Passaram 12 testes do contrato/fonte/propriedades (49 asserções), seis testes
+de metadados/objeto estático (34 asserções) e o typecheck do Estúdio após esse
+snapshot. Esses testes foram incluídos no CI da missão. Não são evidência de
+que o Estúdio já executa o novo pacote compilado em um jogo real: a etapa 8 e
+sua homologação integrada continuam abertas. Nenhum formato foi modificado
+unilateralmente por esta sessão.

@@ -13,12 +13,11 @@ import {
   type BoxGeometry,
   BufferAttribute,
   BufferGeometry,
-  Euler,
   type Material,
   Matrix4,
-  Quaternion,
   Vector3,
 } from 'three'
+import { matrizDaTransformacao } from '../matematica'
 import type { ModeloCarregado, ParteDoModelo } from '../modelos'
 import type { TerrenoDoPalco } from '../Terreno'
 import { MundoDoTeste } from '../teste/colisoes'
@@ -33,11 +32,7 @@ export interface PartePreparadaDeCaminho {
   conformada?: ParteConformada
 }
 export function matrizDaEstrutura(t: Transformacao) {
-  return new Matrix4().compose(
-    new Vector3(t.posicao.x, t.posicao.y, t.posicao.z),
-    new Quaternion().setFromEuler(new Euler(t.rotacao.x, t.rotacao.y, t.rotacao.z, 'XYZ')),
-    new Vector3(t.escala.x, t.escala.y, t.escala.z),
-  )
+  return matrizDaTransformacao(t, new Matrix4())
 }
 
 /** Estruturas usam as mesmas medidas e partes estáveis dos apoios do documento. */

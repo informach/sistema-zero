@@ -23,8 +23,12 @@ export function matrizDoObjeto(
   saida: Matrix4,
   fonte?: FonteDeAlturas,
 ): Matrix4 {
-  const t = transformacaoResolvida(doc, o, fonte),
-    p = t.posicao,
+  return matrizDaTransformacao(transformacaoResolvida(doc, o, fonte), saida)
+}
+
+/** A mesma composição TRS para objetos, montagens, marcadores e estruturas. */
+export function matrizDaTransformacao(t: Transformacao, saida: Matrix4): Matrix4 {
+  const p = t.posicao,
     r = t.rotacao,
     s = t.escala
   posicao.set(p.x, p.y, p.z)

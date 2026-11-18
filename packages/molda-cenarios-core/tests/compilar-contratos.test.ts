@@ -49,6 +49,22 @@ test('leitor portátil conserva revisão, matrizes e propriedades sem interpreta
   expect(JSON.stringify(d)).toBe(antes)
 })
 
+test('entidades conservam âncoras e organização, mas ocultas não criam desenho ou colisão', () => {
+  const d = cena(),
+    comAncora = {
+      ...d,
+      entidades: d.entidades.map((e) => ({ ...e, matriz: [...matriz], volume })),
+    },
+    r = lerCenaCompilada(comAncora)
+  expect(r.entidades[0]!.matriz).toEqual(matriz)
+  const oculta = {
+    ...comAncora,
+    entidades: comAncora.entidades.map((e) => ({ ...e, oculto: true })),
+  }
+  expect(() => lerCenaCompilada(oculta)).toThrow(/oculta|oculto/)
+  expect(lerCenaCompilada({ ...oculta, nos: [] }).entidades[0]!.oculto).toBe(true)
+})
+
 test('referência ausente ou arquivo/entidade repetidos não geram uma cena parcialmente válida', () => {
   const ausente = cena()
   ausente.nos[0]!.arquivo = 'modelos/falta.glb'

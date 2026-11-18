@@ -942,6 +942,7 @@
       "name": "@sistemazero/molda-cenarios-core",
       "version": "0.1.0",
       "dependencies": {
+        "@sistemazero/core": "workspace:*",
         "zod": "4.3.6",
       },
       "devDependencies": {
