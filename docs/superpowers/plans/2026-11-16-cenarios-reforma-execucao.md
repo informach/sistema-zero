@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–7 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md) e [fechamento de Jogo, luz e céu](../../plans/2026-11-16-cenarios-reforma/revisao-lote7-jogo-luz.md). Lote 8 ativo exclusivamente em 8.1: [plano](2026-11-18-cenarios-lote8-exportacao.md) e [garantias iniciais](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-limites.md). Contrato/preparação e todos os exportadores continuam pendentes. Lotes 8–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
+**Estado atual, 18/11:** lotes 0–7 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md) e [fechamento de Jogo, luz e céu](../../plans/2026-11-16-cenarios-reforma/revisao-lote7-jogo-luz.md). Lote 8 ativo: 8.1 fechado, próximo recorte exclusivo 8.2 — materialização pelo motor. [Plano](2026-11-18-cenarios-lote8-exportacao.md) e [contrato/preparação/inventário](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-contrato.md), suíte do núcleo com 336 testes aprovados. Todos os exportadores continuam pendentes. Lotes 8–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.
