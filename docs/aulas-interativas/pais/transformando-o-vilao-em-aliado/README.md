@@ -71,4 +71,6 @@ As chaves de clipe mudaram em relação à versão de 17/11, porque as partes s�
 
 Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
 
+**Tema visual (18/11/2026):** a ilustração da capa (a menina com o tablet e a sombra que aponta para os blocos e o jogo) define as cores do curso: roxo, lilás, rosa e amarelo, com o painel azul-marinho. A arte fica em `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-transformando-o-vilao-em-aliado.jpg`, recortada da capa enviada pela dona (1049 px de largura; se houver o original maior, basta trocar o arquivo e gerar de novo).
+
 **Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 17 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).

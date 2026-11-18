@@ -130,9 +130,9 @@ function grade(): string {
       const x = (coluna - 1) * casa
       const y = (linha - 1) * casa
       const escuro = escuros.has(`${linha}-${coluna}`)
-      celulas += `<rect x="${x + 1.5}" y="${y + 1.5}" width="${casa - 3}" height="${casa - 3}" rx="5" fill="${escuro ? '#2b3550' : '#ffffff'}" stroke="#c8d2e6"/>`
+      celulas += `<rect x="${x + 1.5}" y="${y + 1.5}" width="${casa - 3}" height="${casa - 3}" rx="5" fill="${escuro ? '#3a1547' : '#ffffff'}" stroke="#dccbe3"/>`
     }
-  const bolinha = `<circle cx="${casa / 2}" cy="${3 * casa + casa / 2}" r="10" fill="#2f6fe0"/>`
+  const bolinha = `<circle cx="${casa / 2}" cy="${3 * casa + casa / 2}" r="10" fill="#eb57b4"/>`
   const cx = 3 * casa + casa / 2
   const cy = casa / 2
   const pontas = Array.from({ length: 10 }, (_, i) => {
@@ -243,12 +243,23 @@ const cover = capaHtml({
   tema: 'capa--vilao',
   selo: material,
 })
-// Cores do curso, puxadas da arte da capa: azul-marinho, azul e amarelo.
+// Tema visual do curso (18/11/2026), puxado da ilustração da capa: roxo da sombra, lilás do chão,
+// rosa e amarelo dos blocos e o azul-marinho do painel. Os temas por aula variam dentro dessa paleta.
 const cursoCss = `
-body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8; --destaque-claro: #e6ecfb; --caminho: #2f4fb8;
+body { --fundo: #fcf9f4; --tinta: #3a1547; --texto: #4a4252; --destaque: #60226c; --destaque-claro: #f2e5f6; --caminho: #60226c;
   --numero-raio: 9px; --numero-fundo: var(--destaque-claro); --numero-cor: var(--destaque);
-  --entrega-fundo: #13204a; --entrega-borda: #13204a; --entrega-texto: #e6ebf8; --entrega-rotulo: #13204a; --entrega-rotulo-fundo: #ffc02e; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #ffc02e; }
-.capa--vilao { --capa-painel: #111a33; --capa-amarelo: #ffc02e; --capa-frase: #cfd8f5; --selo-fundo: #2f4fb8; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 560px; }
+  --entrega-fundo: #3a1547; --entrega-borda: #3a1547; --entrega-texto: #f4e9f7; --entrega-rotulo: #3a1547; --entrega-rotulo-fundo: #fdac03; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #fdac03; }
+.tema-azul { --destaque: #60226c; --destaque-claro: #f2e5f6; }
+.tema-roxo { --destaque: #b02a7c; --destaque-claro: #fde7f2; }
+.tema-verde { --destaque: #7a45a0; --destaque-claro: #efe4f7; }
+.tema-ambar { --destaque: #a36a00; --destaque-claro: #fdf0d2; }
+.tema-vermelho { --destaque: #0b4fc4; --destaque-claro: #e4edfd; }
+.capa--vilao { --capa-painel: #0f1b36; --capa-amarelo: #ffc400; --capa-frase: #cfd8f5; --selo-fundo: #2f4fb8; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 560px; }
+/* A ilustração é larga (1049 × 711): ocupa a faixa de cima inteira, sem corte lateral, e o painel
+   começa logo abaixo, com borda reta, como na capa aprovada pela dona. */
+.capa--vilao .capa-arte { height: 538px; }
+.capa--vilao .capa-painel { top: 532px; }
+.capa--vilao .capa-painel::before { display: none; }
 .capa--vilao .capa-titulo span { font-size: 84px; }
 .capa--vilao .capa-titulo em { font-size: 68px; }
 .abertura { margin-bottom: 4mm; }
@@ -260,11 +271,11 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .mapa-card h3 { font-size: 12.6pt; margin-bottom: .6mm; }
 .mapa-card p { font-size: 10pt; font-weight: 700; line-height: 1.4; color: #4a5250; }
 .mapa-numero { flex: none; width: 9mm; height: 9mm; display: grid; place-items: center; background: #fff; border-radius: 9px; font-family: 'Baloo 2', Arial, sans-serif; font-weight: 800; font-size: 12pt; }
-.mapa-card--azul { background: #e8f2fb; border-color: #c8dcf0; color: #0b5394; }
+.mapa-card--azul { background: #f2e5f6; border-color: #dcc3e4; color: #60226c; }
 .mapa-card--ambar { background: #fff4dc; border-color: #f0d9a2; color: #a36a00; }
-.mapa-card--roxo { background: #f0eafd; border-color: #d8ccf6; color: #6a3cc4; }
-.mapa-card--verde { background: #e3f3ea; border-color: #bfe0cd; color: #087a54; }
-.mapa-card--vermelho { background: #fde9e9; border-color: #f4c8c8; color: #c22a2a; }
+.mapa-card--roxo { background: #fde7f2; border-color: #f4c3dc; color: #b02a7c; }
+.mapa-card--verde { background: #efe4f7; border-color: #d6c2e6; color: #7a45a0; }
+.mapa-card--vermelho { background: #e4edfd; border-color: #c3d4f6; color: #0b4fc4; }
 .comparar { display: grid; grid-template-columns: 1fr 8mm 1fr; align-items: stretch; gap: 2mm; }
 .comparar-lado { border-radius: 14px; padding: 3.6mm 4.6mm; border: 1px solid #dfe6ee; background: #fff; }
 .comparar-lado h3 { font-size: 12.6pt; margin-bottom: 1.4mm; }
@@ -276,6 +287,7 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .comparar-icone { width: 7mm; height: 7mm; transform: rotate(-90deg); }
 .citacao { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1mm 4mm; background: #fff; border: 1px solid #dfe6ee; border-left: 5px solid #ffc02e; border-radius: 0 14px 14px 0; padding: 4mm 5mm; }
 .citacao-icone { width: 6mm; height: 6mm; color: #b07d00; grid-row: span 2; }
+.citacao { border-left-color: #fdac03; }
 .citacao blockquote { margin: 0; font-family: 'Baloo 2', Arial, sans-serif; font-size: 14pt; font-weight: 700; line-height: 1.3; color: var(--tinta); }
 .citacao figcaption { font-size: 10pt; font-weight: 800; color: #8a94a6; }
 .pares { display: flex; flex-direction: column; gap: 1.6mm; }
