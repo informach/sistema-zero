@@ -6,12 +6,12 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 
 **Clipe:** `video-a1-abertura`
 
-**Na tela:** No "eu vou te entregar um presente", sinalizar o presente [na edição: ícone de presente e o texto: no final, 7 dias gratuitos para o seu filho]. No "meu nome é Helena", mostrar a apresentadora e sua identificação [na edição: Helena, da área de tecnologia]. No "o que a gente mais deseja para os nossos filhos", mostrar a reflexão [na edição: pergunta em destaque]. No "A gente vive num mundo de telas", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "eu preparei um presente", sinalizar o presente sem revelar o que é [na edição: caixa de presente fechada e o texto: um presente espera por você no final]. No "meu nome é Helena", mostrar a apresentadora e sua identificação [na edição: Helena, da área de tecnologia]. No "o que a gente mais deseja para os nossos filhos", mostrar a reflexão [na edição: pergunta em destaque]. No "A gente vive num mundo de telas", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
 ```text
-Oi! A gente está aqui para falar sobre como transformar o maior vilão dos pais, que são as telas, no nosso maior aliado para ajudar no desenvolvimento dos nossos filhos. E eu já quero avisar: no final do curso, eu vou te entregar um presente para o seu filho viver na prática, em casa, tudo o que a gente vai conversar aqui. São sete dias de acesso gratuito, sem precisar de cartão, a uma experiência que normalmente é paga e que não está disponível de graça em nenhum outro lugar. Mas ele só faz sentido depois que você entender o porquê de cada coisa. Então fica comigo até o final.
+Oi! A gente está aqui para falar sobre como transformar o maior vilão dos pais, que são as telas, no nosso maior aliado para ajudar no desenvolvimento dos nossos filhos. E eu já quero avisar: eu preparei um presente para você e para o seu filho, e ele está guardado lá no final do curso. Eu não vou contar agora o que é, para não estragar a surpresa. Só te adianto uma coisa: não é um material para ler, nem mais um vídeo para assistir. É algo para o seu filho viver, em casa. E você não vai encontrar em nenhum outro lugar. Quanto mais você entender do que a gente vai conversar aqui, mais sentido esse presente vai fazer. Então fica comigo até o final.
 
 Para quem não me conhece, meu nome é Helena. Eu sou da área de tecnologia e sou mãe, e mais adiante eu te conto como esse assunto entrou na minha casa. A nossa conversa aqui vai unir a tecnologia com o desenvolvimento das nossas crianças e dos nossos adolescentes.
 
@@ -34,7 +34,7 @@ O que a gente mais vê são crianças com o celular na mão. Então, em vez de f
 
 **Clipe:** `video-a1-pergunta`
 
-**Na tela:** No "tirar a tela, ninguém vai conseguir", mostrar a apresentadora [na edição: câmera]. No "o que eu posso oferecer dentro dessa tela para desenvolver o meu filho", mostrar a pergunta [na edição: pergunta em destaque]. No "a tela pode só entreter", comparar os dois usos [na edição: tela que só entretém e tela que faz pensar, lado a lado]. No "O caminho é este", mostrar o mapa do curso [na edição: os três usos da tela; de onde veio a ideia; como funciona na prática; as dúvidas dos pais; o presente]. No "Que tela é essa, que faz pensar?", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "tirar a tela, ninguém vai conseguir", mostrar a apresentadora [na edição: câmera]. No "o que eu posso oferecer dentro dessa tela para desenvolver o meu filho", mostrar a pergunta [na edição: pergunta em destaque]. No "a tela pode só entreter", comparar os dois usos [na edição: tela que só entretém e tela que faz pensar, lado a lado]. No "O caminho é este", mostrar o mapa do curso [na edição: os três usos da tela; de onde veio a ideia; como funciona na prática; as dúvidas dos pais; o presente, com a caixa ainda fechada]. No "Que tela é essa, que faz pensar?", voltar para a apresentadora [na edição: câmera].
 
 **Fala da Helena:**
 
@@ -53,6 +53,6 @@ Em contrapartida, existe a tela que faz pensar. E quando eu uso a tela para pens
 
 Que tela é essa, que faz pensar? E o que o seu filho pode fazer nela? É isso que a gente vai ver daqui para a frente.
 
-O caminho é este. Primeiro, os três jeitos de usar a tela, e qual deles mais desenvolve. Depois, de onde veio essa ideia, dentro da minha casa, e por onde o seu filho pode começar. Aí eu te mostro como isso funciona na prática, e que não é difícil. A gente conversa sobre as dúvidas que os pais mais têm. E, no final, o presente: sete dias para vocês experimentarem em casa. Clique em Concluir aula para continuar.
+O caminho é este. Primeiro, os três jeitos de usar a tela, e qual deles mais desenvolve. Depois, de onde veio essa ideia, dentro da minha casa, e por onde o seu filho pode começar. Aí eu te mostro como isso funciona na prática, e que não é difícil. A gente conversa sobre as dúvidas que os pais mais têm. E, no final, você abre o presente. Clique em Concluir aula para continuar.
 ```
 

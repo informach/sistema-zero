@@ -123,7 +123,7 @@ Frases que não estavam no encontro e foram escritas para o formato de curso. N�
 - "Criar um jogo é o Lego sem manual", ligando o exemplo do Lego à proposta (Aula 2).
 - Níveis de suporte dirigidos ao responsável ("você fez pelo seu filho; daqui a pouco faz junto"), em vez da primeira pessoa da terapeuta (Aula 5, Parte 2).
 - Apresentação da Helena como mãe já na abertura, anunciando a história da Aula 3.
-- Gancho do presente na abertura da Aula 1, dizendo o que ele é em termos concretos (sete dias, gratuito, sem cartão, experiência normalmente paga) sem ainda falar em jogo.
+- Gancho do presente na abertura da Aula 1: gera curiosidade sem revelar o que é (decisão da dona, 18/11/2026). O presente só é revelado na Aula 7; nenhuma aula anterior, imagem de edição ou resumo deve adiantar o que ele é.
 - Segurança da plataforma dita em segunda pessoa ("você autoriza"), em vez de "o responsável" e "o pai" (Aula 7, Parte 1).
 - Parágrafo que fecha a reflexão sobre o futuro dos filhos (Aula 7, Parte 3).
 
