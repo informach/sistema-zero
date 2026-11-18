@@ -43,8 +43,9 @@ estivesse homologada. Dependências externas devem ser discriminadas.
 - [x] Aprovar 49 objetivos de estrutura e 17 de execução pelo executor real do servidor.
 - [ ] Completar A4 na página real de homologação: verificar, enviar e concluir.
 - [ ] Inventariar capacidades reais dos dez runtimes, executores, IDE e armazenamento.
-- [ ] Medir baseline local: blocos 80/500/2.000/5.000/10.000, Pro modular, runtimes,
-  abertura fria/quente, linguagem, jogo, Zappy, memória e descarte.
+- [ ] Medir baseline local. Feito em Linux (18/11/2026, `linha-de-base-linux.md`): blocos
+  70/2.000/5.000/10.000 no navegador e o projeto de laboratório do Pro. Faltam Pro modular,
+  runtimes, abertura fria/quente, linguagem, jogo, Zappy, memória e descarte.
 - [ ] Fixar fixtures, metas p50/p95/máximo e condições: digitação 50 ms, painéis
   150 ms, primeira resposta da busca 200 ms; FPS apenas por fixture/hardware.
 
