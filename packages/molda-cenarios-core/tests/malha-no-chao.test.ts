@@ -62,6 +62,33 @@ test('contornos distantes não consomem o orçamento de recorte de uma pequena p
   expect(area3d(r.position!.valores)).toBeCloseTo(Math.SQRT2 * 2, 6)
 })
 
+test('encontros recortam só o acabamento, preservando a base, UVs e faces de margem', () => {
+  const excluir = [
+      [
+        { x: 0, z: 0 },
+        { x: 2, z: 0 },
+        { x: 2, z: 1 },
+        { x: 0, z: 1 },
+      ],
+    ],
+    m = parede(false),
+    antes = structuredClone(base)
+  // Parede X=1, Z=0..2: encontro retira apenas a metade Z<1.
+  for (const b of [base, { tipo: 'plano' as const, largura: 64, comprimento: 64 }]) {
+    const r = recortarMalhaNoChao(
+      m,
+      b,
+      b.tipo === 'terreno' ? abrirEdicaoDeTerreno(b, new Map()) : null,
+      { x: 0, z: 0 },
+      {},
+      excluir,
+    )
+    expect(area3d(r.position!.valores)).toBeCloseTo(2, 6)
+    expect(r.uv!.valores.length / 2).toBe(r.position!.valores.length / 3)
+  }
+  expect(base).toEqual(antes)
+})
+
 test('recorte comum conserva parede vertical sobre a diagonal sem duplicar faces das duas células', () => {
   const m = parede(),
     antes = structuredClone(m),

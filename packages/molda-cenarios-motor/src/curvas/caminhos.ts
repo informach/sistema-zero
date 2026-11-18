@@ -1,8 +1,10 @@
 import {
   type CaminhoDeCenario,
   type DocumentoDeCenario,
-  geometriaDoPiso,
+  malhaPlanaDoCaminho,
   type PecaEstruturalDoCaminho,
+  type PontoNoChao,
+  prepararEncontrosDosCaminhos,
   type RegioesDeTerreno,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -51,6 +53,8 @@ export class CaminhosDoPalco {
   private readonly entradas = new Map<string, Entrada>()
   private terreno: TerrenoDoPalco | null = null
   private readonly cubo = new BoxGeometry(1, 1, 1)
+  private chaveDosEncontros = ''
+  private encontros = prepararEncontrosDosCaminhos([])
   private descartado = false
 
   definir(
@@ -68,13 +72,25 @@ export class CaminhosDoPalco {
     }
     const caminhos = documento.caminhos,
       vivos = new Set(caminhos.map((c) => c.id))
+    const chaveDosEncontros = JSON.stringify(
+      caminhos
+        .filter((c) => !escondidos.has(c.id) && ['trilha', 'estrada', 'praca'].includes(c.tipo))
+        .map((c) => [c.id, c.tipo, c.pontos, c.largura, c.suave, c.fechada]),
+    )
+    if (this.chaveDosEncontros !== chaveDosEncontros) {
+      this.encontros = prepararEncontrosDosCaminhos(caminhos, escondidos)
+      this.chaveDosEncontros = chaveDosEncontros
+    }
     for (const id of this.entradas.keys()) if (!vivos.has(id)) this.remover(id)
     for (const [ordem, c] of caminhos.entries()) {
-      const carregado = c.acabamento ? modelo(c.acabamento) : null,
+      const recortes = this.encontros.exclusoes.get(c.id) ?? [],
+        carregado = c.acabamento ? modelo(c.acabamento) : null,
         imagem = c.aparencia?.textura ? textura(c.aparencia.textura.id) : null,
         chave = JSON.stringify([
           Object.fromEntries(Object.entries(c).filter(([k]) => !METADADOS.has(k))),
           documento.base.tipo === 'plano' ? documento.base : null,
+          recortes,
+          this.encontros.falhas.get(c.id),
         ]),
         anterior = this.entradas.get(c.id)
       if (
@@ -91,13 +107,15 @@ export class CaminhosDoPalco {
       }
       this.remover(c.id)
       try {
+        const falhaDoEncontro = this.encontros.falhas.get(c.id)
+        if (falhaDoEncontro) throw Error(falhaDoEncontro)
         if (documento.base.tipo === 'perfil')
           throw Error('Converta o relevo antes de montar caminhos.')
         if ((c.acabamento && !carregado) || (c.aparencia?.textura && !imagem)) {
           estado.carregando++
           continue
         }
-        const entrada = this.criar(c, documento, carregado, imagem, ordem)
+        const entrada = this.criar(c, documento, carregado, imagem, ordem, recortes)
         entrada.chave = chave
         entrada.raiz.visible = !escondidos.has(c.id)
         this.entradas.set(c.id, entrada)
@@ -120,6 +138,7 @@ export class CaminhosDoPalco {
     modelo: ModeloCarregado | null,
     textura: Texture | null,
     ordem: number,
+    excluir: readonly (readonly PontoNoChao[])[],
   ): Entrada {
     const estrutural = c.tipo === 'ponte' || c.tipo === 'cerca' || c.tipo === 'muro'
     const raiz = new Group(),
@@ -144,7 +163,7 @@ export class CaminhosDoPalco {
         for (const [id, parte] of estrutura.referencias) partes.set(id, parte)
         pecas = estrutura.partes
       } else if (modelo) {
-        const piso = montarPisoDeModelo(c, modelo, doc.base, this.terreno?.estado ?? null)
+        const piso = montarPisoDeModelo(c, modelo, doc.base, this.terreno?.estado ?? null, excluir)
         conformadas.push(...piso.partes)
         pecas = piso.partes.map((p) => ({
           ...p,
@@ -152,13 +171,17 @@ export class CaminhosDoPalco {
           matriz: new Matrix4().makeTranslation(piso.origem.x, 0, piso.origem.z),
         }))
       } else {
-        const piso = geometriaDoPiso(c, doc.base, this.terreno?.estado ?? null),
+        const piso = malhaPlanaDoCaminho(c),
           g = new BufferGeometry()
-            .setAttribute('position', new BufferAttribute(piso.posicoes, 3))
-            .setAttribute('uv', new BufferAttribute(piso.uvs, 2))
-        // O adaptador compartilha atualização regional de altura e picking com pisos GLB.
-        // As alturas de geometriaDoPiso já são absolutas; a entrada para conformação é plana.
-        for (let i = 0; i < piso.posicoes.length; i += 3) piso.posicoes[i + 1] = 0
+            .setAttribute(
+              'position',
+              new BufferAttribute(Float32Array.from(piso.malha.atributos.position!.valores), 3),
+            )
+            .setAttribute(
+              'uv',
+              new BufferAttribute(Float32Array.from(piso.malha.atributos.uv!.valores), 2),
+            )
+            .setIndex(new BufferAttribute(Uint32Array.from(piso.malha.indices!), 1))
         const origem = piso.origem
         try {
           const parte = conformarParteAoChao(
@@ -167,6 +190,7 @@ export class CaminhosDoPalco {
             doc.base,
             this.terreno?.estado ?? null,
             origem,
+            excluir,
           )
           pecas = [
             {

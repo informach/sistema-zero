@@ -76,6 +76,71 @@ test('agrupamento rígido conserva drawRange de cada material e os buffers compa
   }
 })
 
+test('encontro praça e trilha retira a superfície duplicada e reassenta ao ocultar ou mover a praça', () => {
+  for (const catalogo of [false, true]) {
+    const d = criarDocumentoVazio('d', 'Encontro'),
+      c = new CaminhosDoPalco(),
+      q = new SuperficiesDosObjetos(),
+      geometria = new BoxGeometry(4, 0.2, 2).translate(0, 0.1, 0),
+      material = new MeshStandardMaterial()
+    geometria.computeBoundingBox()
+    const m = {
+        partes: [{ geometria, material, matriz: new Matrix4() }],
+        caixa: geometria.boundingBox!.clone(),
+        triangulos: 12,
+        raiz: new Group(),
+        descartar() {},
+      },
+      modelo = catalogo ? { acabamento: 'm', encaixeModelo: { eixo: 'x' } } : {},
+      t = CaminhoSchema.parse({ ...comum, ...modelo, id: 'trilha', tipo: 'trilha' }),
+      p = CaminhoSchema.parse({
+        ...comum,
+        ...modelo,
+        id: 'praca',
+        tipo: 'praca',
+        pontos: [
+          { x: -2, z: -2 },
+          { x: 2, z: -2 },
+          { x: 2, z: 2 },
+          { x: -2, z: 2 },
+        ],
+      })
+    d.caminhos = [t, p]
+    const area = () =>
+      c.superficies().reduce((s, f) => {
+        const a = f.geometria.getAttribute('position')
+        for (let i = 0; i < a.count; i += 3) {
+          const ny =
+            (a.getZ(i + 1) - a.getZ(i)) * (a.getX(i + 2) - a.getX(i)) -
+            (a.getX(i + 1) - a.getX(i)) * (a.getZ(i + 2) - a.getZ(i))
+          if (ny > 1e-8) s += ny / 2
+        }
+        return s
+      }, 0)
+    try {
+      expect(c.definir(d, null, () => m, semModelo, new Set()).falhas).toEqual([])
+      expect(area()).toBeCloseTo(40, 4)
+      q.definir(c.superficies().filter((s) => s.id === 'trilha'))
+      expect(q.escolher(new Raycaster(new Vector3(0, 5, 0), new Vector3(0, -1, 0)))).toBeNull()
+      c.definir(d, null, () => m, semModelo, new Set(['praca']))
+      expect(area()).toBeCloseTo(32, 4)
+      c.definir(
+        { ...d, caminhos: [t, { ...p, pontos: p.pontos.map((p) => ({ x: p.x, z: p.z + 10 })) }] },
+        null,
+        () => m,
+        semModelo,
+        new Set(),
+      )
+      expect(area()).toBeCloseTo(48, 4)
+    } finally {
+      q.descartar()
+      c.descartar()
+      geometria.dispose()
+      material.dispose()
+    }
+  }
+})
+
 test('pisos no palco são selecionáveis, mantêm cache e não duplicam física do terreno', () => {
   const d = criarDocumentoVazio('d', 'Cenário'),
     c = new CaminhosDoPalco(),

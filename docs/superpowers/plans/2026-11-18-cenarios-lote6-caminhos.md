@@ -38,7 +38,7 @@
 
 **Files:** motor `src/curvas/*`, `Palco.ts`, seleção e fontes do Testar; testes de geometria/picking/colisão e helpers browser.
 
-- [ ] Desenhar trilha e praça com encaixe correto no terreno e acabamento/texture do catálogo quando escolhido. Conferir bordas/juntas, água adjacente e ausência de superfícies duplicadas.
+- [x] Desenhar trilha e praça com encaixe correto no terreno e acabamento/texture do catálogo quando escolhido. Conferir bordas/juntas, água adjacente e ausência de superfícies duplicadas.
 - [ ] Integrar a estrada ao campo modificado e às regiões; atualizar objetos/conjuntos apoiados no terreno sem perder o gesto ou publicar campos intermediários.
 - [ ] Cercas/muros com módulos medidos, eixo explícito, juntas e apoios em desnível. Instanciar/compartilhar recursos; colisão conforme a geometria visível.
 - [ ] Ponte nativa de referência e acabamento de catálogo com encaixe explícito nas cabeceiras; tabuleiro transitável, vão livre e pilares coerentes. Não criar piso invisível sobre a água.
@@ -79,6 +79,8 @@
 **6.1 concluído no núcleo; próximo recorte exclusivo: 6.2, desenho, modelos e física. O lote 6 continua aberto.** Não há aba Caminhos nova entregue nem aceite artístico. As notas abaixo registram a sequência dos recortes anteriores; lotes 7–10 não iniciados.
 
 **Atualização de 6.2:** [integração ao Palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-palco.md) conecta as seis variantes ao desenho, seleção, apoios e física, com agrupamento, materiais e descarte. O ensaio local gerou capturas dia/noite e três ciclos estáveis. A prova da Faísca revelou custo de recortes distantes e bloqueio entre lajes; causas identificadas e corrigidas. **6.2 continua aberto**, principalmente para encontros sem sobreposição e pilares em modelos arqueados; não avançar a outro lote nem declarar acabamento aprovado.
+
+**Encontros de pisos conferidos:** [recorte e evidências antes/depois](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-encontros.md). Praça e trilhas deixam de compartilhar duas camadas de GLB. Ocultar/mover restaura trechos, terreno permanece intacto e a física usa a malha recortada. Núcleo 266, motor 116, oficina 96 testes; tipagem, build e workers aprovados. Percurso completo da Faísca repetido até o Farol com o avatar nativo, sem erros. **Continuar somente em 6.2**, com pontes de catálogo e apoios arqueados; 6.3–6.5 e lotes seguintes permanecem pendentes.
 
 Primeiro recorte: [auditoria do núcleo de curvas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-auditoria.md), com reprodução/correção de valores infinitos, perda de precisão da área e alturas inválidas. Suíte do núcleo 206/8.490, motor 98/2.800 e oficina 92/595, sem falhas. **6.1 continua aberto:** contratos e geometria das seis variantes ainda pendem.
 

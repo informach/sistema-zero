@@ -3,6 +3,7 @@ import {
   type BaseDeCenario,
   type CampoDeAlturas,
   type EstadoDoTerreno,
+  type PontoNoChao,
   type RegiaoDoCampo,
   recortarMalhaNoChao,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -39,13 +40,14 @@ export function conformarParteAoChao(
   base: BaseDeCenario,
   estado: EstadoDoTerreno | null,
   origem: { x: number; z: number },
+  excluir: readonly (readonly PontoNoChao[])[] = [],
 ): ParteConformada {
   const matriz = new Matrix4().makeTranslation(-origem.x, 0, -origem.z).multiply(mundo),
     fonte = lerParteEstatica(parte, matriz),
     geometria = new BufferGeometry()
   let descartada = false
   try {
-    const recorte = recortarMalhaNoChao(fonte.malha, base, estado, origem)
+    const recorte = recortarMalhaNoChao(fonte.malha, base, estado, origem, {}, excluir)
     for (const [nome, a] of Object.entries(recorte))
       geometria.setAttribute(nome, new BufferAttribute(a.valores, a.itemSize))
     if (!geometria.hasAttribute('normal')) geometria.computeVertexNormals()

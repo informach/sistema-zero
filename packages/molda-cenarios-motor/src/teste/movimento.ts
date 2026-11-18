@@ -232,7 +232,12 @@ export class MovimentoDoTeste {
         this.altura,
         this.raio,
       )
-      if (baixo.normais.some((n) => n.y >= LIMITE_DA_INCLINACAO)) {
+      // Ajustar para baixo não pode desfazer o avanço nem empurrar o personagem de
+      // lado numa junta. Nesse caso ele continua a queda e resolve o contato real.
+      if (
+        baixo.normais.some((n) => n.y >= LIMITE_DA_INCLINACAO) &&
+        Math.hypot(baixo.posicao.x - this.posicao.x, baixo.posicao.z - this.posicao.z) < 1e-4
+      ) {
         this.posicao.copy(baixo.posicao)
         this.noChao = true
         resultado = baixo

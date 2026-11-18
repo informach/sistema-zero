@@ -4,6 +4,7 @@ import {
   type CaminhoDeCenario,
   type EstadoDoTerreno,
   medidasDaPecaDeCaminho,
+  type PontoNoChao,
   pontoNoPoligono,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { BufferAttribute, BufferGeometry, Matrix4, ShapeUtils, Vector2 } from 'three'
@@ -40,6 +41,7 @@ export function montarPisoDeModelo(
   modelo: ModeloCarregado,
   base: BaseDeCenario,
   estado: EstadoDoTerreno | null,
+  excluir: readonly (readonly PontoNoChao[])[] = [],
 ) {
   if (!['trilha', 'estrada', 'praca'].includes(caminho.tipo))
     throw Error('Este acabamento de piso requer trilha, estrada ou praça.')
@@ -187,6 +189,7 @@ export function montarPisoDeModelo(
             base,
             estado,
             perfil.origem,
+            excluir,
           )
           resultados.push({ ...r, material: parte.material })
           verticesConformados += r.geometria.getAttribute('position').count
