@@ -1,4 +1,5 @@
-import { StrictMode, useEffect, useRef, useState } from 'react'
+import type { StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
+import { StrictMode, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   StudioProjectPlayer,
@@ -7,9 +8,13 @@ import {
 import { createGameStorageSession } from '../../../src/state/gameStorage'
 
 function Fixture() {
-  const [props, setProps] = useState<StudioProjectPlayerProps | null>(null)
+  const [props, setProps] = useState<
+    (StudioProjectPlayerProps & { builtArtifact?: StudioProArtifact }) | null
+  >(null)
   const [status, setStatus] = useState('loading')
   const frame = useRef<HTMLIFrameElement>(null)
+  const artifact = props?.builtArtifact
+  const build = useMemo(() => (artifact ? async () => artifact : undefined), [artifact])
   useEffect(() => {
     const abort = new AbortController()
     void fetch('/fixture-publication', { signal: abort.signal })
@@ -60,6 +65,7 @@ function Fixture() {
         {props && (
           <StudioProjectPlayer
             {...props}
+            proBuild={build}
             ref={frame}
             onReady={() => setStatus('ready')}
             onError={() => setStatus('error')}

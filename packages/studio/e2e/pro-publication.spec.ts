@@ -33,6 +33,54 @@ test.beforeAll(async () => {
   if (!address || typeof address === 'string') throw new Error('Fixture server unavailable')
   origin = `http://127.0.0.1:${address.port}`
 })
+
+test('host-built Pro artifact receives real keyboard and audio controls through the public frame ref', async ({
+  page,
+}) => {
+  await page.route('**/fixture-publication', (route) => route.fulfill({ json: null }))
+  const compiled = await createTestProArtifact(
+    page,
+    {
+      'index.html':
+        '<body><output id="key"></output><output id="audio"></output><script type="module" src="/src/main.ts"></script>',
+      'src/main.ts': `document.querySelector('#key')!.textContent = 'ready';
+window.addEventListener('keydown', event => { document.querySelector('#key')!.textContent = event.code });
+window.addEventListener('studio:host-audio', event => { document.querySelector('#audio')!.textContent = String((event as CustomEvent).detail.muted) });`,
+    },
+    'canvas-survival',
+    { bridge: true, mount: false, parentUrl: origin },
+  )
+  try {
+    await page.unroute('**/fixture-publication')
+    await page.route('**/fixture-publication', (route) =>
+      route.fulfill({
+        json: {
+          project: { id: 'host-built', name: 'Host controls', kind: 'pro' },
+          builtArtifact: compiled.artifact,
+        },
+      }),
+    )
+    await page.reload()
+    const game = page.frameLocator('iframe')
+    await expect(game.locator('#key')).toHaveText('ready')
+    await expect(page.getByLabel('Player status')).toHaveText('ready')
+    const start = page.getByRole('button', { name: 'Começar pelo player' })
+    await start.scrollIntoViewIfNeeded()
+    await expect(start).toBeInViewport()
+    await start.click()
+    await expect(game.locator('#key')).toHaveText('Enter')
+    await page.getByRole('button', { name: 'Silenciar pelo player' }).click()
+    await expect(game.locator('#audio')).toHaveText('true')
+    await page.getByRole('button', { name: 'Restaurar som pelo player' }).click()
+    await expect(game.locator('#audio')).toHaveText('false')
+    await expect(page.locator('iframe')).toHaveAttribute(
+      'sandbox',
+      'allow-scripts allow-pointer-lock',
+    )
+  } finally {
+    await compiled.dispose()
+  }
+})
 test.afterAll(async () => {
   if (server)
     await new Promise<void>((done, reject) =>

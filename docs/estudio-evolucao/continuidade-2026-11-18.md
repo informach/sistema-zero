@@ -83,3 +83,11 @@ Os novos relatórios em `docs/qa/2026-11-18-studio-*` registram comandos, result
 e limitações. Não contabilizar execução interrompida, job disparado ou artefato de
 medição com saída zero como aceite global. Depois, continuar R1/R2 e etapas 3–10
 na ordem do plano, mantendo a homologação pedagógica bloqueante.
+
+Lote adicional: corrigida a referência pública/onReady do ramo Pro compilado pelo
+host e a recompilação causada apenas por novo callback `onError`. Testes reproduziram
+ambas as causas antes da correção; quatro casos unitários e dois de navegador
+passaram. Relatório: `docs/qa/2026-11-18-studio-host-built-controls.md`.
+O job `contracts (ubuntu-24.04)` do run `44289781987` concluiu com sucesso, incluindo
+suíte isolada completa e typecheck, mas corresponde a `1d486e19b`; não estender essa
+aprovação aos commits posteriores. Confirmar o próximo SHA na fila do workflow.

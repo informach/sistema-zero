@@ -65,10 +65,12 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       return (
         <Suspense fallback={fallback}>
           <BuiltProPlayer
+            ref={ref}
             project={props.project}
             title={props.title}
             build={props.proBuild}
             onError={props.onError}
+            onReady={props.onReady}
           />
         </Suspense>
       )
