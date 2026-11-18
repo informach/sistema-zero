@@ -39,6 +39,12 @@ jobs:
           bun test docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.test.ts
           cd packages/core
           bun test ./src/studio/pinta-image.test.ts ./src/studio/pinta-limits.test.ts ./src/studio/pinta-source-ref.test.ts
+      - if: runner.os == 'Linux'
+        name: Prepare signed Ubuntu sources for the browser storage test
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - name: Install browser required by the real IndexedDB lifecycle test
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
       - name: Complete isolated Studio suite
         working-directory: packages/studio
         run: |
