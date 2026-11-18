@@ -1,0 +1,23 @@
+{
+  "confirmsUnfixedDataLoss": true,
+  "result": {
+    "baseline": "567b93f95",
+    "oldReaderMax": 4,
+    "promoted": {
+      "schema": 5,
+      "offsetX": 2.5
+    },
+    "oldColdReadOf5": null,
+    "oldDelayedWriteSucceeded": true,
+    "reopened": {
+      "schema": 4,
+      "name": "edicao-aba-antiga",
+      "offsetX": null
+    },
+    "physicalKeys": [
+      "pinta:asset:same-authorial-map"
+    ],
+    "hasSchema5Checkpoint": false,
+    "cloudImported": false
+  }
+}

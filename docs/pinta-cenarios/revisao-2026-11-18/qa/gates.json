@@ -1,0 +1,916 @@
+{
+  "base": "42b395d932b4deea1a06086a4799a6196d5145b0",
+  "branch": "pinta-full-review-20261118",
+  "generated": "2026-11-18T11:23:03.664Z",
+  "gates": [
+    {
+      "step": "core-lint",
+      "package": "core",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T10:23:42.5851538Z",
+      "exit": 0,
+      "seconds": 1.5,
+      "log": ".tmp/integrado-core-lint.log",
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "ea642615912ee567aef9234368063de81fc3f0a1455de003a4a50fc4bba264ed",
+      "summary": "     2  2 │   import { JOURNEY_LEVEL_SLUGS } from '../src/journey/catalog'\n     3    │ - import·{·type·KidsJourneyView·}·from·'../src/journey/kids-policy'\n        3 │ + import·type·{·KidsJourneyView·}·from·'../src/journey/kids-policy'\n     4  4 │   import { projectKidsJourney } from '../src/journey/kids-projection'\n     5  5 │   import { kidsCreativeToolAvailability } from '../src/journey/kids-tools'\n  \n\nChecked 502 files in 1236ms. No fixes applied.\nFound 1 warning."
+    },
+    {
+      "step": "core-types",
+      "package": "core",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T10:23:44.1307469Z",
+      "exit": 0,
+      "seconds": 14.02,
+      "log": ".tmp/integrado-core-types.log",
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "$ tsc --noEmit"
+    },
+    {
+      "step": "core-tests",
+      "package": "core",
+      "args": [
+        "test"
+      ],
+      "started": "2026-11-18T10:23:58.1666386Z",
+      "exit": 0,
+      "seconds": 15.14,
+      "log": ".tmp/integrado-core-tests.log",
+      "command": [
+        "bun",
+        "test"
+      ],
+      "logSha256": "ef39f8c90a0f4e2b4bcfe9c2eed37c400b65a7cefbb8ccfd83b9861522f59370",
+      "tests": {
+        "pass": 3096,
+        "fail": 0,
+        "skip": 0
+      },
+      "summary": "(pass) os textos faláveis de uma cena > cena sem palpite nem pergunta fala só a instrução\n(pass) os textos faláveis de uma cena > resolve a fala efetiva de cada trecho sem mudar o texto que a criança vê\n(pass) a leitura tolerante e o dicionário > descarta o dicionário inválido e PRESERVA a cena\n(pass) a leitura tolerante e o dicionário > o dicionário legal atravessa intacto\n\n 3096 pass\n 0 fail\n 158994 expect() calls\nRan 3096 tests across 187 files. [15.06s]"
+    },
+    {
+      "step": "scene-transform-source",
+      "package": "core",
+      "args": [
+        "run",
+        "check:pinta-scene-transform"
+      ],
+      "started": "2026-11-18T10:24:13.3147154Z",
+      "exit": 0,
+      "seconds": 0.13,
+      "log": ".tmp/integrado-scene-transform-source.log",
+      "command": [
+        "bun",
+        "run",
+        "check:pinta-scene-transform"
+      ],
+      "logSha256": "c29e47368dd0700807d73f5a72a0d6dfaa850989a7ac3d2d17fb6ee5e95f7c93",
+      "summary": "$ bun scripts/gen-pinta-scene-transform.ts --check"
+    },
+    {
+      "step": "pinta-lint",
+      "package": "pinta",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T11:05:29.9800099Z",
+      "exit": 0,
+      "seconds": 1.51,
+      "log": ".tmp/pos025-pinta-lint.log",
+      "earlierAttempts": [
+        {
+          "step": "pinta-lint",
+          "package": "pinta",
+          "args": [
+            "run",
+            "check"
+          ],
+          "started": "2026-11-18T10:24:13.4536737Z",
+          "exit": 0,
+          "seconds": 1.67,
+          "log": ".tmp/integrado-pinta-lint.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "a60d15cc63c0d8aca3b8a8659af79a34f78fa9039faa7753cd135fb3e9b28c11",
+      "summary": "    529 529 │       const criado = salvos[0]\n    530     │ - ····if·(!criado·||·criado.kind·!==·'pixel-background')·throw·new·Error('cenário·esperado')\n        530 │ + ····if·(criado?.kind·!==·'pixel-background')·throw·new·Error('cenário·esperado')\n    531 531 │       expect(criado.layers.map((l) => l.name)).toEqual(['Molde', 'Pintura'])\n    532 532 │       expect(criado.cels[0]?.width).toBe(12)\n  \n\nChecked 484 files in 1249ms. No fixes applied.\nFound 5 warnings."
+    },
+    {
+      "step": "pinta-types",
+      "package": "pinta",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T11:05:31.5001976Z",
+      "exit": 0,
+      "seconds": 10.57,
+      "log": ".tmp/pos025-pinta-types.log",
+      "earlierAttempts": [
+        {
+          "step": "pinta-types",
+          "package": "pinta",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "started": "2026-11-18T10:24:15.1298935Z",
+          "exit": 0,
+          "seconds": 12.63,
+          "log": ".tmp/integrado-pinta-types.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "$ tsc --noEmit"
+    },
+    {
+      "step": "pinta-tests",
+      "package": "pinta",
+      "args": [
+        "test",
+        "src"
+      ],
+      "started": "2026-11-18T11:05:42.0751152Z",
+      "exit": 0,
+      "seconds": 154.54,
+      "log": ".tmp/pos025-pinta-tests.log",
+      "earlierAttempts": [
+        {
+          "step": "pinta-tests",
+          "package": "pinta",
+          "args": [
+            "test",
+            "src"
+          ],
+          "started": "2026-11-18T10:24:27.7625358Z",
+          "exit": 0,
+          "seconds": 165.69,
+          "log": ".tmp/integrado-pinta-tests.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "test",
+        "src"
+      ],
+      "logSha256": "fc6053756dc9dd6917112127dfa0891d3c6860a1a4cdca819139fa26d20e74a6",
+      "tests": {
+        "pass": 2024,
+        "fail": 0,
+        "skip": 0
+      },
+      "summary": "(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > lado livre escala só o eixo dele; com Shift o mesmo fator vai para os dois\n(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > seleção degenerada num ponto devolve 1 nos dois modos\n(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > alça de canto numa linha horizontal (dy = 0): livre deixa o eixo morto em 1, Shift projeta em X\n(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > projeção negativa sai crua; quem clampa é o scaleShape (nunca vira do avesso)\n\n 2024 pass\n 0 fail\n 22962 expect() calls\nRan 2024 tests across 167 files. [154.41s]"
+    },
+    {
+      "step": "pinta-script-tests",
+      "package": "pinta",
+      "args": [
+        "run",
+        "test:scripts"
+      ],
+      "started": "2026-11-18T10:27:13.4587301Z",
+      "exit": 0,
+      "seconds": 33.07,
+      "log": ".tmp/integrado-pinta-script-tests.log",
+      "command": [
+        "bun",
+        "run",
+        "test:scripts"
+      ],
+      "logSha256": "9f35ae05c2c8801737f5556200cb57d854751362c04dea93627123e79159f32d",
+      "tests": {
+        "pass": 27,
+        "fail": 0,
+        "skip": 0
+      },
+      "summary": "(pass) the gallery PNG encoder > alpha 0 with any RGB is the one transparent colour\n(pass) the gallery PNG encoder > a pixel-art image scaled ×2 decodes exactly (the Up filter path)\n(pass) the gallery PNG encoder > the Pinta data block goes right after IHDR, before PLTE\n(pass) the gallery PNG encoder > the same image always gives the same bytes\n\n 27 pass\n 0 fail\n 1279 expect() calls\nRan 27 tests across 3 files. [32.96s]"
+    },
+    {
+      "step": "pinta-homologacao",
+      "package": "pinta",
+      "args": [
+        "run",
+        "check:homologacao",
+        "--exigir-pygame",
+        "--exigir-godot"
+      ],
+      "started": "2026-11-18T10:27:46.5346775Z",
+      "exit": 0,
+      "seconds": 5.61,
+      "log": ".tmp/integrado-pinta-homologacao.log",
+      "command": [
+        "bun",
+        "run",
+        "check:homologacao",
+        "--exigir-pygame",
+        "--exigir-godot"
+      ],
+      "logSha256": "dde4fc44fbc537569a8a72e0332f2ec4ea08f0a95c6a1ba73edeba9abcebdea3",
+      "summary": "Pinta: cabana / 2 camadas\nPinta: vila-e-floresta / 18 camadas\nGodot QA: máscara do chão=1; física=true\nGodot QA: sólidos=[17, 18, 20, 21]; contém18=true; polígonos=1; célula=(2, 2); máscara personagem=1\nGodot QA: posição contra parede=(74.79642, 68.0)\nPinta: cabana / 2 camadas\nPinta: vila-e-floresta / 18 camadas\nGodot QA: 18 camadas, objetos, IDs únicos, referências, origem afim, animação, movimento, colisão e portas; falhas=false\nnão realizado  Tiled (programa) e navegador: este script não os executa"
+    },
+    {
+      "step": "pinta-gallery",
+      "package": "pinta",
+      "args": [
+        "run",
+        "check:pygame-gallery"
+      ],
+      "started": "2026-11-18T10:27:52.1452143Z",
+      "exit": 0,
+      "seconds": 14.55,
+      "log": ".tmp/integrado-pinta-gallery.log",
+      "command": [
+        "bun",
+        "run",
+        "check:pygame-gallery"
+      ],
+      "logSha256": "2207036b296b02fbeff931044f0e03210503a600dbedb810a2d79167bb237975",
+      "summary": "$ bun scripts/pygame-gallery/generate.ts --check\nmonster-battle: 20 desenhos, 21 documentos do Pinta\npirate-maker: 17 desenhos, 17 documentos do Pinta\nplatformer: 10 desenhos, 10 documentos do Pinta\npydew-valley: 12 desenhos, 16 documentos do Pinta\npython-monsters: 66 desenhos, 70 documentos do Pinta\nspace-shooter: 5 desenhos, 5 documentos do Pinta\nsuper-pirate-world: 37 desenhos, 43 documentos do Pinta\nvampire-survivor: 11 desenhos, 11 documentos do Pinta"
+    },
+    {
+      "step": "pinta-phaser",
+      "package": "pinta",
+      "args": [
+        "run",
+        "check:phaser"
+      ],
+      "started": "2026-11-18T10:28:06.7008545Z",
+      "exit": 0,
+      "seconds": 0.12,
+      "log": ".tmp/integrado-pinta-phaser.log",
+      "command": [
+        "bun",
+        "run",
+        "check:phaser"
+      ],
+      "logSha256": "4bde90cb13e819ff52f631afda33e41e0b81a7b1cb20a0634dcaf23cf1baee78",
+      "summary": "$ bun scripts/generate-phaser.ts --check\nPhaser 3.90.0: hash e licença conferem."
+    },
+    {
+      "step": "studio-lint",
+      "package": "studio",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T10:28:06.8284923Z",
+      "exit": 1,
+      "seconds": 6.47,
+      "log": ".tmp/integrado-studio-lint.log",
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "1d0495bc4eb77d3c9514756de74b2489a1724ef00155031b7a487745c743d84b",
+      "summary": "Checked 2897 files in 6s. No fixes applied.\nFound 13 errors.\nFound 19 warnings.\ncheck ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  × Some errors were emitted while running checks.\n  \n\nerror: script \"check\" exited with code 1"
+    },
+    {
+      "step": "studio-types",
+      "package": "studio",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T10:28:13.3016312Z",
+      "exit": 0,
+      "seconds": 173.32,
+      "log": ".tmp/integrado-studio-types.log",
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9",
+      "summary": "$ NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit"
+    },
+    {
+      "step": "studio-tests",
+      "package": "studio",
+      "args": [
+        "run",
+        "test"
+      ],
+      "started": "2026-11-18T10:56:13.8073215Z",
+      "exit": 0,
+      "seconds": 556.12,
+      "log": ".tmp/pos025-studio-tests.log",
+      "earlierAttempts": [
+        {
+          "step": "studio-tests",
+          "package": "studio",
+          "args": [
+            "run",
+            "test"
+          ],
+          "started": "2026-11-18T10:31:06.6267550Z",
+          "exit": 1,
+          "seconds": 534.9,
+          "log": ".tmp/integrado-studio-tests.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "test"
+      ],
+      "logSha256": "faeee625c52fdac959859da44e9e83318db983efd532d0f4a11efe25a50e738c",
+      "tests": {
+        "pass": 11415,
+        "fail": 0,
+        "skip": 4
+      },
+      "summary": "src\\ui-internal\\Modal.sheet.test.tsx:\n(pass) Modal: folha no celular do Pro > com folha, a janela sobe de baixo e ignora a largura de janela de quem chama [16.00ms]\n(pass) Modal: folha no celular do Pro > sem o provider, a janela de sempre (centralizada, com a largura pedida)\n(pass) Modal: folha no celular do Pro > Esc e o toque fora fecham a folha como fechavam a janela\n\n 8 pass\n 0 fail\n 22 expect() calls\nRan 8 tests across 3 files. [587.00ms]"
+    },
+    {
+      "step": "studio-python-runtime",
+      "package": "studio",
+      "args": [
+        "scripts/gen-pinta-scene-python.ts",
+        "--check"
+      ],
+      "started": "2026-11-18T10:40:01.5359337Z",
+      "exit": 0,
+      "seconds": 0.08,
+      "log": ".tmp/integrado-studio-python-runtime.log",
+      "command": [
+        "bun",
+        "scripts/gen-pinta-scene-python.ts",
+        "--check"
+      ],
+      "logSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55",
+      "summary": "pinta.py: o trecho da cena confere com o pacote portátil do Pinta."
+    },
+    {
+      "step": "studio-python-sources",
+      "package": "studio",
+      "args": [
+        "run",
+        "check:python-text-sources"
+      ],
+      "started": "2026-11-18T10:40:01.6197463Z",
+      "exit": 0,
+      "seconds": 7.66,
+      "log": ".tmp/integrado-studio-python-sources.log",
+      "command": [
+        "bun",
+        "run",
+        "check:python-text-sources"
+      ],
+      "logSha256": "557efcbb0d8af66b31fbd495945b4781f2bf18e3f32724e142a524974632bda6",
+      "summary": "Conferido src/examples/python/lifeVisual.sources.generated.ts (5 arquivos).\nConferido src/examples/python/lifeVisual.audio.generated.ts (4 arquivos).\nConferido src/examples/python/starryVisual.sources.generated.ts (5 arquivos).\nConferido src/examples/python/starryVisual.audio.generated.ts (4 arquivos).\nConferido src/examples/python/fortuneVisual.sources.generated.ts (5 arquivos).\nConferido src/examples/python/fortuneVisual.audio.generated.ts (3 arquivos).\nConferido src/examples/python/turtleBetVisual.sources.generated.ts (5 arquivos).\nConferido src/examples/python/turtleBetVisual.audio.generated.ts (3 arquivos).\nConferido src/examples/python/visualReferenceGames.loaders.generated.ts (20 arquivos)."
+    },
+    {
+      "step": "shell-lint",
+      "package": "member-shell",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T11:08:33.8439975Z",
+      "exit": 0,
+      "seconds": 2.31,
+      "log": ".tmp/pos025-shell-lint.log",
+      "earlierAttempts": [
+        {
+          "step": "shell-lint",
+          "package": "member-shell",
+          "args": [
+            "run",
+            "check"
+          ],
+          "started": "2026-11-18T10:40:09.2880145Z",
+          "exit": 0,
+          "seconds": 2.77,
+          "log": ".tmp/integrado-shell-lint.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "d3f663f209cef7c73deb8134286637708695bed6397676b6b22ecd3f3ea46b63",
+      "summary": "  \n  i React relies on hook dependencies to determine when to re-compute Effects.\n    Specifying more dependencies than required can lead to unnecessary re-rendering\n    and degraded performance.\n  \n  i Unsafe fix: Remove the extra dependencies from the list.\n  \n    296 │ ··},·[tentativa])\n        │       ---------"
+    },
+    {
+      "step": "shell-types",
+      "package": "member-shell",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T11:08:36.1574478Z",
+      "exit": 0,
+      "seconds": 16.16,
+      "log": ".tmp/pos025-shell-types.log",
+      "earlierAttempts": [
+        {
+          "step": "shell-types",
+          "package": "member-shell",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "started": "2026-11-18T10:40:12.0613187Z",
+          "exit": 0,
+          "seconds": 193.79,
+          "log": ".tmp/integrado-shell-types.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "$ tsc --noEmit"
+    },
+    {
+      "step": "shell-tests",
+      "package": "member-shell",
+      "args": [
+        "test"
+      ],
+      "started": "2026-11-18T11:08:52.3261417Z",
+      "exit": 0,
+      "seconds": 85.62,
+      "log": ".tmp/pos025-shell-tests.log",
+      "earlierAttempts": [
+        {
+          "step": "shell-tests",
+          "package": "member-shell",
+          "args": [
+            "test"
+          ],
+          "started": "2026-11-18T10:43:25.8621844Z",
+          "exit": 0,
+          "seconds": 91.26,
+          "log": ".tmp/integrado-shell-tests.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "test"
+      ],
+      "logSha256": "4093660fbe317c17cb42f31b5a9601ea8e8252e279e5ccdaf29342b17455768f",
+      "tests": {
+        "pass": 2479,
+        "fail": 0,
+        "skip": 0
+      },
+      "summary": "(pass) zappy-search (busca léxica do tutor) > sinônimos infantis casam o vocabulário dos rótulos\n(pass) zappy-search (busca léxica do tutor) > prefixo exige 4+ chars — \"ele\" nunca casa \"elemento\"\n(pass) zappy-search (busca léxica do tutor) > \"como faço ele pular?\" põe o bloco de pulo no prompt (sem sz_html_image no topo) [31.00ms]\n(pass) zappy-search (busca léxica do tutor) > projeto maduro (60 tipos) não expulsa o bloco novo que responde a dúvida [31.00ms]\n\n 2479 pass\n 0 fail\n 16790 expect() calls\nRan 2479 tests across 284 files. [85.48s]"
+    },
+    {
+      "step": "kids-lint",
+      "package": "community-kids",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T11:13:48.2110480Z",
+      "exit": 0,
+      "seconds": 1.56,
+      "log": ".tmp/fechamento-kids-lint.log",
+      "earlierAttempts": [
+        {
+          "step": "kids-lint",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "check"
+          ],
+          "started": "2026-11-18T10:44:57.1297737Z",
+          "exit": 0,
+          "seconds": 1.64,
+          "log": ".tmp/integrado-kids-lint.log"
+        },
+        {
+          "step": "kids-lint",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "check"
+          ],
+          "started": "2026-11-18T11:10:17.9494777Z",
+          "exit": 0,
+          "seconds": 1.67,
+          "log": ".tmp/pos025-kids-lint.log",
+          "earlierAttempts": [
+            {
+              "step": "kids-lint",
+              "package": "community-kids",
+              "args": [
+                "run",
+                "check"
+              ],
+              "started": "2026-11-18T10:44:57.1297737Z",
+              "exit": 0,
+              "seconds": 1.64,
+              "log": ".tmp/integrado-kids-lint.log"
+            }
+          ]
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "27939c3f5517b01e57258edb9d7db81e2378c38fb78a01e2cb7ed6c4a17707af",
+      "summary": "  \n      1   1 │   import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'\n      2     │ - import·{·readFileSync·}·from·'node:fs'\n      3   2 │   import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'\n      4   3 │   import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'\n  \n\nChecked 898 files in 1374ms. No fixes applied.\nFound 2 warnings."
+    },
+    {
+      "step": "kids-types",
+      "package": "community-kids",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T11:13:49.7991708Z",
+      "exit": 0,
+      "seconds": 11.96,
+      "log": ".tmp/fechamento-kids-types.log",
+      "earlierAttempts": [
+        {
+          "step": "kids-types",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "started": "2026-11-18T10:44:58.7792992Z",
+          "exit": 2,
+          "seconds": 170.88,
+          "log": ".tmp/integrado-kids-types.log"
+        },
+        {
+          "step": "kids-types",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "started": "2026-11-18T11:10:19.6217719Z",
+          "exit": 2,
+          "seconds": 17.32,
+          "log": ".tmp/pos025-kids-types.log",
+          "earlierAttempts": [
+            {
+              "step": "kids-types",
+              "package": "community-kids",
+              "args": [
+                "run",
+                "typecheck"
+              ],
+              "started": "2026-11-18T10:44:58.7792992Z",
+              "exit": 2,
+              "seconds": 170.88,
+              "log": ".tmp/integrado-kids-types.log"
+            }
+          ]
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "$ tsc --noEmit"
+    },
+    {
+      "step": "kids-tests",
+      "package": "community-kids",
+      "args": [
+        "run",
+        "test"
+      ],
+      "started": "2026-11-18T11:14:01.7729360Z",
+      "exit": 0,
+      "seconds": 159.48,
+      "log": ".tmp/fechamento-kids-tests.log",
+      "earlierAttempts": [
+        {
+          "step": "kids-tests",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "test"
+          ],
+          "started": "2026-11-18T10:47:49.6701974Z",
+          "exit": 0,
+          "seconds": 154.26,
+          "log": ".tmp/integrado-kids-tests.log"
+        },
+        {
+          "step": "kids-tests",
+          "package": "community-kids",
+          "args": [
+            "run",
+            "test"
+          ],
+          "started": "2026-11-18T11:10:36.9477416Z",
+          "exit": 0,
+          "seconds": 153.02,
+          "log": ".tmp/pos025-kids-tests.log",
+          "earlierAttempts": [
+            {
+              "step": "kids-tests",
+              "package": "community-kids",
+              "args": [
+                "run",
+                "test"
+              ],
+              "started": "2026-11-18T10:47:49.6701974Z",
+              "exit": 0,
+              "seconds": 154.26,
+              "log": ".tmp/integrado-kids-tests.log"
+            }
+          ]
+        }
+      ],
+      "command": [
+        "bun",
+        "run",
+        "test"
+      ],
+      "logSha256": "21b36dfd63753f63c4e26ab441dcb8b17b2e5d9461292c14b9317fb74212af04",
+      "tests": {
+        "pass": 1698,
+        "fail": 0,
+        "skip": 0
+      },
+      "summary": "(pass) o balão de fala rege a boca do mascote > ⭐ \"Parar\" no meio apaga na hora [62.00ms]\n(pass) o balão de fala rege a boca do mascote > ⭐ a narração escolhida na autoria também rege a boca e para ao terminar [47.00ms]\n(pass) o balão de fala rege a boca do mascote > ⚠️ sem dicionário: não há botão, e o mascote não é regido\n(pass) a instrução da cena rege a boca pelo renderInstruction > ⭐⭐ o \"Ouvir\" da instrução acende o mascote do balão [188.00ms]\n\n 1698 pass\n 0 fail\n 9592 expect() calls\nRan 1698 tests across 211 files. [159.31s]"
+    },
+    {
+      "step": "members-lint",
+      "package": "members",
+      "args": [
+        "run",
+        "check"
+      ],
+      "started": "2026-11-18T10:50:23.9349002Z",
+      "exit": 0,
+      "seconds": 2.02,
+      "log": ".tmp/integrado-members-lint.log",
+      "command": [
+        "bun",
+        "run",
+        "check"
+      ],
+      "logSha256": "8f9f5157e3178b022a207937f8e4abcd04ac01817c4f6fe4c201f8a291b4960b",
+      "summary": "    24    │ - ····value.version·!==·1·||\n       23 │ + ····value?.version·!==·1·||\n    25 24 │       !uuid.test(value.userId ?? '') ||\n    26 25 │       !uuid.test(value.childId ?? '') ||\n  \n\nChecked 922 files in 1779ms. No fixes applied.\nFound 4 warnings.\nFound 5 infos."
+    },
+    {
+      "step": "members-types",
+      "package": "members",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-18T10:50:25.9606739Z",
+      "exit": 0,
+      "seconds": 140.97,
+      "log": ".tmp/integrado-members-types.log",
+      "command": [
+        "bun",
+        "run",
+        "typecheck"
+      ],
+      "logSha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "$ tsc --noEmit"
+    },
+    {
+      "step": "members-tests",
+      "package": "members",
+      "args": [
+        "test"
+      ],
+      "started": "2026-11-18T10:52:46.9357748Z",
+      "exit": 0,
+      "seconds": 68.85,
+      "log": ".tmp/integrado-members-tests.log",
+      "command": [
+        "bun",
+        "test"
+      ],
+      "logSha256": "6d19196315724a4f5258785949b9508519dc13c162c26b9c9fcb0f65345dc714",
+      "tests": {
+        "pass": 2305,
+        "fail": 0,
+        "skip": 686
+      },
+      "summary": "(skip) Zappy programming language in the real repository and migrations > (unnamed)\n(skip) Python builder lost acknowledgements settle in real SQL without deleting accepted previews\n(skip) Linux backup synchronizes entries, verifies exact bytes and never overwrites prior evidence\n\n 2305 pass\n 686 skip\n 0 fail\n 17340 expect() calls\nRan 2991 tests across 359 files. [68.72s]"
+    },
+    {
+      "step": "studio-python-api",
+      "package": "studio",
+      "args": [
+        "-I",
+        "-B",
+        "scripts/python/test-pinta-module.py"
+      ],
+      "started": "2026-11-18T10:53:55.7932285Z",
+      "exit": 0,
+      "seconds": 0.49,
+      "log": ".tmp/integrado-studio-python-api.log",
+      "command": [
+        "python",
+        "-I",
+        "-B",
+        "scripts/python/test-pinta-module.py"
+      ],
+      "logSha256": "146bcc0856657da9182b543ff6bcb1c23ae30306f0f9d942822ee176fbcbf62f",
+      "summary": "pygame-ce 2.5.8 (SDL 2.32.10, Python 3.13.17)\npinta module ok"
+    },
+    {
+      "step": "studio-python-pure",
+      "package": "studio",
+      "args": [
+        "-I",
+        "-B",
+        "scripts/python/test-pinta-module.py",
+        "--sem-pygame"
+      ],
+      "started": "2026-11-18T10:53:56.2879259Z",
+      "exit": 0,
+      "seconds": 0.1,
+      "log": ".tmp/integrado-studio-python-pure.log",
+      "command": [
+        "python",
+        "-I",
+        "-B",
+        "scripts/python/test-pinta-module.py",
+        "--sem-pygame"
+      ],
+      "logSha256": "92e2a6f625112cc07653fca3c482ebdd0ba6961ae25139173f3e67970b74f9bd",
+      "summary": "pinta (sem pygame): 46 confer�ncias de l�gica pura passaram."
+    },
+    {
+      "step": "pydew-native",
+      "package": "pinta",
+      "args": [
+        "-I",
+        "-B",
+        "scripts/homologacao/test-pydew-pinta.py",
+        "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-review-pydew-integrado.png"
+      ],
+      "started": "2026-11-18T10:53:56.3957132Z",
+      "exit": 0,
+      "seconds": 0.69,
+      "log": ".tmp/integrado-pydew-native.log",
+      "command": [
+        "python",
+        "-I",
+        "-B",
+        "scripts/homologacao/test-pydew-pinta.py",
+        "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-review-pydew-integrado.png"
+      ],
+      "logSha256": "405543ddb2db7eed1604bfffde3a0d04b7ffc20194530805aa4a4488d1c26e1c",
+      "summary": "{\"game\": \"PyDew Valley\", \"frames\": 60, \"layers\": 16, \"solids\": 349, \"colors\": 55, \"pygame\": \"2.5.8\", \"screenshot\": \"C:\\\\Users\\\\tocha\\\\projects\\\\sistema-zero-pinta-cenarios\\\\.tmp\\\\pinta-review-pydew-integrado.png\"}"
+    },
+    {
+      "step": "tiled-real-roundtrip",
+      "package": "pinta",
+      "args": [
+        "scripts/homologacao/verify-tiled.ts",
+        "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-review-packages/tiled"
+      ],
+      "started": "2026-11-18T10:53:57.0932504Z",
+      "exit": 0,
+      "seconds": 0.57,
+      "log": ".tmp/integrado-tiled-real-roundtrip.log",
+      "command": [
+        "bun",
+        "scripts/homologacao/verify-tiled.ts",
+        "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-review-packages/tiled"
+      ],
+      "logSha256": "01d9c1f00cf90859d339fa41e6e8195ea95ff2f2a2e31aae406c5972c09053a4",
+      "summary": "Tiled: JSON e TMX de todos os mapas do pacote voltam iguais pelo importador."
+    },
+    {
+      "step": "pinta-scenes-browser",
+      "package": "studio",
+      "args": [
+        "run",
+        "test:e2e:pinta-scenes"
+      ],
+      "started": "2026-11-18T10:53:57.6697197Z",
+      "exit": 0,
+      "seconds": 26.56,
+      "log": ".tmp/integrado-pinta-scenes-browser.log",
+      "command": [
+        "bun",
+        "run",
+        "test:e2e:pinta-scenes"
+      ],
+      "logSha256": "43489f278dfefe888766324c0e4ff1b8e6f31987de13cdd21789641796c318e4",
+      "summary": "(node:23344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:23344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  ✓  3 [touch] › e2e\\phaser-scenes.flow.ts:18:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (3.7s)\n\n  ✓  4 [touch] › e2e\\pinta-scenes.flow.ts:40:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (4.3s)\n\n  4 passed (25.9s)"
+    },
+    {
+      "step": "studio-vila-browser",
+      "package": "studio",
+      "args": [
+        "x",
+        "playwright",
+        "test",
+        "e2e/examples-gallery.spec.ts",
+        "e2e/blockly-media.spec.ts",
+        "--project",
+        "chromium",
+        "--grep",
+        "game-2d.*A Vila e a Floresta|Blockly media"
+      ],
+      "started": "2026-11-18T10:54:24.2325329Z",
+      "exit": 0,
+      "seconds": 31.82,
+      "log": ".tmp/integrado-studio-vila-browser.log",
+      "command": [
+        "bun",
+        "x",
+        "playwright",
+        "test",
+        "e2e/examples-gallery.spec.ts",
+        "e2e/blockly-media.spec.ts",
+        "--project",
+        "chromium",
+        "--grep",
+        "game-2d.*A Vila e a Floresta|Blockly media"
+      ],
+      "logSha256": "fdfd7ebd003082869815714aec9794315d72c2e4fa8c06b84d8b93a8d25ea956",
+      "summary": "\n(node:28176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:28176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  ✓  1 [chromium] › e2e\\examples-gallery.spec.ts:419:5 › KitGallery — os 185 cartões no Chromium › game-2d:A Vila e a Floresta: cria, mostra primeiro frame e aceita controles (4.1s)\n  ✓  2 [chromium] › e2e\\examples-gallery.spec.ts:419:5 › KitGallery — os 185 cartões no Chromium › game-2d-advanced:A Vila e a Floresta (Avançado): cria, mostra primeiro frame e aceita controles (3.9s)\n\n  2 passed (30.9s)"
+    },
+    {
+      "step": "blockly-media-browser",
+      "package": "studio",
+      "args": [
+        "x",
+        "playwright",
+        "test",
+        "e2e/blockly-media.spec.ts",
+        "--project",
+        "chromium"
+      ],
+      "started": "2026-11-18T11:16:41.2610349Z",
+      "exit": 0,
+      "seconds": 17.3,
+      "log": ".tmp/fechamento-blockly-media-browser.log",
+      "earlierAttempts": [
+        {
+          "step": "blockly-media-browser",
+          "package": "studio",
+          "args": [
+            "x",
+            "playwright",
+            "test",
+            "e2e/blockly-media.spec.ts",
+            "--project",
+            "chromium"
+          ],
+          "started": "2026-11-18T11:08:16.6169463Z",
+          "exit": 1,
+          "seconds": 17.21,
+          "log": ".tmp/pos025-blockly-media-browser.log"
+        }
+      ],
+      "command": [
+        "bun",
+        "x",
+        "playwright",
+        "test",
+        "e2e/blockly-media.spec.ts",
+        "--project",
+        "chromium"
+      ],
+      "logSha256": "b2dbe1a5e4f6eb6cd673e3a97d48e0836571888a2f100abc46b500fd0128bbca",
+      "summary": "Running 1 test using 1 worker\n\n(node:41032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:41032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  ✓  1 [chromium] › e2e\\blockly-media.spec.ts:5:1 › zoom and trash use the pinned Blockly image from the host, without the demo CDN (1.7s)\n\n  1 passed (16.7s)"
+    }
+  ],
+  "sourceCommit": "b19b4149d8456b19f1e6b60dc8b118ec20e9d899"
+}
