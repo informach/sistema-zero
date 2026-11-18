@@ -1,5 +1,6 @@
 import type * as Blockly from 'blockly/core'
 import type { ProjectAreaKind } from '../core/behaviorAreas'
+import { isWorkspaceLoading } from './loadFence'
 import { PROJECT_AREA_BY_FRAME } from './projectAreas'
 
 function areaKind(type: string): ProjectAreaKind | undefined {
@@ -44,11 +45,11 @@ export function attachProjectAreaGuard(workspace: Blockly.Workspace): () => void
   let queued = false
   let active = true
   const listener = () => {
-    if (enforcing || queued) return
+    if (enforcing || queued || isWorkspaceLoading(workspace)) return
     queued = true
     queueMicrotask(() => {
       queued = false
-      if (!active || enforcing) return
+      if (!active || enforcing || isWorkspaceLoading(workspace)) return
       enforcing = true
       try {
         // Espera o lote atual terminar: durante `serialization.blocks.append`,

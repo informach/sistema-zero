@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { isWorkspaceLoading } from '../../blockly/loadFence'
 import type { EditorHistoryAdapter } from '../../state/editorHistory'
 
 /**
@@ -38,7 +39,8 @@ export function createBlocklyHistory(
   const run = (redo: boolean) => {
     // As mesmas condições do atalho do Blockly: nada durante um arrasto nem num workspace só
     // de leitura, e os menus e dropdowns abertos fecham antes.
-    if (workspace.isReadOnly() || Blockly.Gesture.inProgress()) return
+    if (workspace.isReadOnly() || isWorkspaceLoading(workspace) || Blockly.Gesture.inProgress())
+      return
     workspace.hideChaff()
     workspace.undo(redo)
     check()
@@ -47,8 +49,8 @@ export function createBlocklyHistory(
   return {
     undo: () => run(false),
     redo: () => run(true),
-    canUndo: () => workspace.getUndoStack().length > 0,
-    canRedo: () => workspace.getRedoStack().length > 0,
+    canUndo: () => !isWorkspaceLoading(workspace) && workspace.getUndoStack().length > 0,
+    canRedo: () => !isWorkspaceLoading(workspace) && workspace.getRedoStack().length > 0,
     subscribe(listener) {
       listeners.add(listener)
       return () => {

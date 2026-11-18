@@ -608,4 +608,6 @@ export const ptBR: Record<string, string> = {
   'share.publish': 'Publicar',
   'share.retry': 'Tentar de novo',
   'share.close': 'Fechar',
+  'blocks.loadFailed': 'Não foi possível abrir os blocos. O projeto foi preservado.',
+  'blocks.loadRetry': 'Tentar abrir os blocos de novo',
 }

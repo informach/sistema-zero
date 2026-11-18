@@ -42,8 +42,18 @@ import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
+import {
+  isIncrementalWorkspaceState,
+  loadWorkspaceIncrementally,
+  serializedWorkspaceBlockCount,
+} from '../../blockly/incrementalWorkspaceLoad'
+import {
+  beginWorkspaceLoad,
+  endWorkspaceLoad,
+  isScopedWorkspaceLoading,
+} from '../../blockly/loadFence'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
-import { createOffscreenBodies } from '../../blockly/offscreenBodies'
+import { createOffscreenBodies, OFFSCREEN_BODIES_MIN_BLOCKS } from '../../blockly/offscreenBodies'
 import {
   revealBlockInWorkspace,
   runtimeErrorBlockId,
@@ -369,6 +379,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // pintam ANTES do trabalho pesado, então o aluno vê "carregando" em vez de uma
   // tela congelada.
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(false)
+  const [workspaceLoadError, setWorkspaceLoadError] = useState(false)
+  const [workspaceLoadAttempt, setWorkspaceLoadAttempt] = useState(0)
+  const workspaceLoadFailedRef = useRef(false)
 
   const blocklyRef = useRef<HTMLDivElement>(null)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
@@ -724,7 +737,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     let refreshQueued = false
     const refresh = () => {
       refreshQueued = false
-      if (disposed) return
+      if (disposed || isScopedWorkspaceLoading(workspace)) return
       // O retorno (ids das pilhas SOLTAS) era descartado. Publicá-lo é o que
       // permite ao Zappy dizer "essa parte está salva mas nunca roda" em vez de
       // tratar rascunho morto como se fosse código ativo.
@@ -736,7 +749,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       queueMicrotask(refresh)
     }
     const listener = (event: Blockly.Events.Abstract) => {
-      if (isProgramStructureChange(event as Blockly.Events.BlockMove)) scheduleRefresh()
+      if (isScopedWorkspaceLoading(workspace)) return
+      if (
+        event.type === Blockly.Events.FINISHED_LOADING ||
+        isProgramStructureChange(event as Blockly.Events.BlockMove)
+      )
+        scheduleRefresh()
     }
     refresh()
     workspace.addChangeListener(listener)
@@ -756,7 +774,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   useEffect(() => {
     if (!workspace) return
     const listener = (event: Blockly.Events.Abstract) => {
+      if (workspaceLoadFailedRef.current) return
       if (event.type === Blockly.Events.FINISHED_LOADING) {
+        if (isScopedWorkspaceLoading(workspace)) return
         isApplyingStateRef.current = false
         // Se havia posições a preservar (recarregamento durante edição), as
         // pilhas voltam para onde o aluno as deixou. Carregar um blocksState
@@ -1075,6 +1095,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   useEffect(() => {
     if (!workspace) return
     if (!blocksState) {
+      workspaceLoadFailedRef.current = false
+      setWorkspaceLoadError(false)
       isApplyingStateRef.current = true
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
@@ -1095,6 +1117,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const serialized = JSON.stringify(stateToLoad)
     if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)
+    setWorkspaceLoadError(false)
 
     // Adia o `workspaces.load` (render síncrono de TODOS os blocos) um frame,
     // para o overlay de "carregando" pintar primeiro e a aba não congelar antes
@@ -1110,28 +1133,55 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // mas não carrega"). Mantendo tudo no rAF, um rAF cancelado é um no-op total e a
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
+    const controller = new AbortController()
+    let failedFence = false
     const handle = requestAnimationFrame(() => {
+      void applyState(workspace)
+    })
+    async function applyState(targetWorkspace: Blockly.WorkspaceSvg) {
       if (cancelled) return
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
-      preservedPositionsRef.current = captureStackPositions(workspace)
+      preservedPositionsRef.current = isApplyingStateRef.current
+        ? null
+        : captureStackPositions(targetWorkspace)
       isApplyingStateRef.current = true
-      lastAppliedBlocksStateRef.current = serialized
+      workspaceLoadFailedRef.current = false
+      lastAppliedBlocksStateRef.current = ''
+      if (regenerationTimerRef.current) clearTimeout(regenerationTimerRef.current)
+      regenerationTimerRef.current = null
+      pendingRegenerationWorkspaceRef.current = null
+      forgetBlocklyHistory(targetWorkspace)
       try {
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
-        withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
-        )
+        if (
+          isIncrementalWorkspaceState(stateToLoad) &&
+          serializedWorkspaceBlockCount(stateToLoad, OFFSCREEN_BODIES_MIN_BLOCKS) >=
+            OFFSCREEN_BODIES_MIN_BLOCKS
+        ) {
+          await loadWorkspaceIncrementally(stateToLoad, targetWorkspace, {
+            signal: controller.signal,
+          })
+          if (cancelled) return
+        } else {
+          withWorkspaceLoad(() =>
+            Blockly.serialization.workspaces.load(
+              stateToLoad as Record<string, unknown>,
+              targetWorkspace,
+            ),
+          )
+        }
+        lastAppliedBlocksStateRef.current = serialized
         // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
         // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
-        forgetBlocklyHistory(workspace)
-        scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
+        forgetBlocklyHistory(targetWorkspace)
+        scheduleBlocklyResize(targetWorkspace as Blockly.WorkspaceSvg)
         // D8: na PRIMEIRA carga deste editor, os blocos começam no alto (depois do resize).
-        if (!initialViewDoneRef.current && workspace.getTopBlocks(false).length > 0) {
+        if (!initialViewDoneRef.current && targetWorkspace.getTopBlocks(false).length > 0) {
           initialViewDoneRef.current = true
-          const svgWorkspace = workspace as Blockly.WorkspaceSvg
+          const svgWorkspace = targetWorkspace as Blockly.WorkspaceSvg
           requestAnimationFrame(() => showBlocksFromTop(svgWorkspace))
         }
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o
@@ -1139,6 +1189,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // evento não dispare): também ressincroniza para que o dedup do listener
         // continue confiável e nenhuma normalização regenere/sobrescreva o código.
         queueMicrotask(() => {
+          if (cancelled || workspaceLoadFailedRef.current) return
           if (!isApplyingStateRef.current) return
           // Fallback caso FINISHED_LOADING não dispare: restaura posições aqui.
           const preserved = preservedPositionsRef.current
@@ -1146,41 +1197,48 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           if (preserved && preserved.size > 0) {
             Blockly.Events.disable()
             try {
-              restoreStackPositions(workspace, preserved)
+              restoreStackPositions(targetWorkspace, preserved)
             } finally {
               Blockly.Events.enable()
             }
           }
           lastAppliedBlocksStateRef.current = JSON.stringify(
-            markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
+            markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace)),
           )
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo
           // Ponte garante que o IR no store contenha os ids do construtor,
           // métodos e declarações CSS — sem isso o sourcemap ficaria incompleto
           // até a primeira edição.
-          regenerateFromBlocks(workspace, { force: true })
+          regenerateFromBlocks(targetWorkspace, { force: true })
           isApplyingStateRef.current = false
           // Fallback sem FINISHED_LOADING: mesmo repaint robusto do caminho
           // principal (resize + re-render + recentro-se-invisível) + agenda o
           // re-render pós-tamanho.
-          schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg)
+          schedulePostLoadRepaint(targetWorkspace as Blockly.WorkspaceSvg)
           needsPostLoadRenderRef.current = true
         })
       } catch (e) {
-        isApplyingStateRef.current = false
+        if (cancelled) return
+        workspaceLoadFailedRef.current = true
+        beginWorkspaceLoad(targetWorkspace)
+        failedFence = true
+        forgetBlocklyHistory(targetWorkspace)
+        setWorkspaceLoadError(true)
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
-        setIsLoadingWorkspace(false)
+        if (!cancelled) setIsLoadingWorkspace(false)
       }
-    })
+    }
     return () => {
       cancelled = true
+      controller.abort()
+      if (failedFence) endWorkspaceLoad(workspace)
       cancelAnimationFrame(handle)
       // rAF cancelado antes de rodar: solta o spinner (o `finally` dentro do rAF
       // nunca correrá). Sem isto o overlay "carregando" ficava preso.
       setIsLoadingWorkspace(false)
     }
-  }, [workspace, blocksState, projectMode, regenerateFromBlocks])
+  }, [workspace, blocksState, projectMode, regenerateFromBlocks, workspaceLoadAttempt])
 
   useEffect(() => {
     const container = blocklyRef.current
@@ -1325,16 +1383,37 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
 
   return (
     <div className={['relative h-full w-full', className].filter(Boolean).join(' ')}>
-      <div ref={blocklyRef} className="h-full w-full" />
+      <div
+        ref={blocklyRef}
+        className={
+          isLoadingWorkspace || workspaceLoadError ? 'invisible h-full w-full' : 'h-full w-full'
+        }
+        inert={isLoadingWorkspace || isHydrationPending || workspaceLoadError}
+      />
       {(isLoadingWorkspace || isHydrationPending) && (
         <div
           aria-busy="true"
           className={[
-            isHydrationPending ? 'pointer-events-auto' : 'pointer-events-none',
+            'pointer-events-auto',
             'absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60',
           ].join(' ')}
         >
           <Spinner />
+        </div>
+      )}
+      {workspaceLoadError && (
+        <div
+          role="alert"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-sz-bg/90 p-4 text-center text-sm text-sz-fg"
+        >
+          <p>{t('blocks.loadFailed')}</p>
+          <button
+            type="button"
+            className="rounded-xl border border-sz-border bg-sz-panel px-4 py-2"
+            onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)}
+          >
+            {t('blocks.loadRetry')}
+          </button>
         </div>
       )}
       {pasteNotice && (

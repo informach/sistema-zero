@@ -43,6 +43,9 @@ async function abrir(page: Page, escala: number): Promise<void> {
     await page.waitForTimeout(400)
   }
   await page.waitForTimeout(1500)
+  // Incremental loading can finish creating SVG nodes before reconnecting them.
+  // A stable DOM count alone no longer means the editable workspace is ready.
+  await expect(page.locator('[data-aula-bloco] [inert]')).toHaveCount(0)
 }
 
 test('no tamanho das aulas nenhum bloco sai da página', async ({ page }) => {

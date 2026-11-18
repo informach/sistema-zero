@@ -68,6 +68,9 @@ for (const tamanho of TAMANHOS) {
       antes = desenhados
       await page.waitForTimeout(250)
     }
+    // Node creation may settle before incremental reconnection has finished.
+    // Opening means editable, not merely a stable number of partial SVG nodes.
+    await expect(page.locator('[data-aula-bloco] [inert]')).toHaveCount(0)
     const abrirMs = Date.now() - inicio
     await page.waitForTimeout(1500)
 

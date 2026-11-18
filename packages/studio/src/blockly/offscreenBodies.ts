@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { isWorkspaceLoading } from './loadFence'
 
 /**
  * Montagem sob demanda no Clássico JavaScript (etapa 2 da evolução do Estúdio, 18/11/2026).
@@ -144,7 +145,7 @@ export function createOffscreenBodies(
 
   function syncPass(): void {
     scheduled = false
-    if (disposed) return
+    if (disposed || isWorkspaceLoading(workspace)) return
     // Corpos de blocos que já não existem (apagados, canvas recarregado) saem da conta.
     for (const [id, item] of detached) {
       const block = workspace.getBlockById(id) as Blockly.BlockSvg | null
@@ -191,6 +192,7 @@ export function createOffscreenBodies(
   }
 
   const listener = (event: Blockly.Events.Abstract) => {
+    if (isWorkspaceLoading(workspace)) return
     // Uma mudança de verdade dentro de um corpo fora da página (desfazer, a Ponte): ele volta
     // antes de qualquer outra coisa, para o Blockly redesenhar com o desenho no lugar.
     const blockId = (event as { blockId?: string }).blockId

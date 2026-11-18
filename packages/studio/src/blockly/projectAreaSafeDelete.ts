@@ -24,7 +24,7 @@ export function registerProjectAreaSafeDeleteExtension(): void {
         // aparecia como uma pilha órfã ao lado do estado carregado ("duplicou
         // todos os blocos" ao recarregar a Ponte — bug 25/07). O resgate de
         // rascunho é só para a EXCLUSÃO real da moldura pela criança.
-        if (isWorkspaceLoading()) {
+        if (isWorkspaceLoading(this.workspace)) {
           disposeArea(healStack, animate)
           return
         }

@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core'
-import { isWorkspaceLoading } from '../loadFence'
+import { isScopedWorkspaceLoading, isWorkspaceLoading } from '../loadFence'
 import {
   type BlockScanner,
   classOfInstance,
@@ -253,7 +253,11 @@ const ARGS_MUTATOR_MIXIN = {
     // varrer o workspace — O(N·M) só para abrir o projeto. A assinatura é
     // resolvida UMA vez no `FINISHED_LOADING` final, então ignoramos os eventos
     // intermediários da carga (mas NUNCA o `FINISHED_LOADING`).
-    if (isWorkspaceLoading() && event != null && event.type !== Blockly.Events.FINISHED_LOADING) {
+    if (
+      isWorkspaceLoading(workspace) &&
+      event != null &&
+      (isScopedWorkspaceLoading(workspace) || event.type !== Blockly.Events.FINISHED_LOADING)
+    ) {
       return
     }
     if (

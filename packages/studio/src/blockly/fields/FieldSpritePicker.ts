@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { ProjectAsset } from '#core'
+import { isWorkspaceLoading } from '../loadFence'
 
 /**
  * Campo Blockly de SPRITE: mostra o NOME do sprite (string) e, ao clicar, abre um
@@ -260,6 +261,7 @@ export function refreshSpriteThumbs(ws: Blockly.Workspace): void {
  */
 export function attachSpriteThumbWatcher(ws: Blockly.WorkspaceSvg): () => void {
   const listener = (e: Blockly.Events.Abstract) => {
+    if (isWorkspaceLoading(ws)) return
     const raw = e as unknown as { type: string } & Record<string, unknown>
     if (!isSpriteDeclEvent(raw, (id) => ws.getBlockById(id)?.type)) return
     refreshSpriteThumbs(ws)

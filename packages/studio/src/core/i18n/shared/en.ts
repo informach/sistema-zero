@@ -557,4 +557,6 @@ export const en: Record<string, string> = {
   'share.publish': 'Publish',
   'share.retry': 'Try again',
   'share.close': 'Close',
+  'blocks.loadFailed': 'The blocks could not be opened. Your project has been preserved.',
+  'blocks.loadRetry': 'Try opening the blocks again',
 }

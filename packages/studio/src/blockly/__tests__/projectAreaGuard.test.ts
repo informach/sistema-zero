@@ -2,11 +2,43 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { normalizeLegacyBlocksStateToFrames } from '../../project-migrations/legacyFrames'
+import { beginWorkspaceLoad, endWorkspaceLoad } from '../loadFence'
 import { attachProjectAreaGuard, enforceUniqueProjectAreas } from '../projectAreaGuard'
 import { ensureBlocklyInitialized } from '../setup'
 
 describe('unicidade das Áreas do projeto', () => {
   beforeAll(() => ensureBlocklyInitialized())
+
+  it('não reorganiza um workspace parcialmente carregado entre tarefas', async () => {
+    const workspace = new Blockly.Workspace()
+    const detach = attachProjectAreaGuard(workspace)
+    beginWorkspaceLoad(workspace)
+    try {
+      workspace.newBlock('sz_frame_start')
+      const duplicate = workspace.newBlock('sz_frame_start')
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(workspace.getBlocksByType('sz_frame_start', false)).toHaveLength(2)
+      const child = workspace.newBlock('sz_js_console_log_text')
+      const connection = duplicate.getInput('CHILDREN')?.connection
+      if (!connection || !child.previousConnection) throw new Error('Missing fixture connection')
+      connection.connect(child.previousConnection)
+      endWorkspaceLoad(workspace)
+      const finished = new Promise<void>((resolve) => {
+        workspace.addChangeListener((event) => {
+          if (event.type === Blockly.Events.FINISHED_LOADING) resolve()
+        })
+      })
+      Blockly.Events.fire(new Blockly.Events.FinishedLoading(workspace))
+      await finished
+      expect(workspace.getBlocksByType('sz_frame_start', false)).toHaveLength(1)
+      expect(workspace.getBlockById(child.id)).toBe(child)
+      expect(child.getParent()).toBeNull()
+    } finally {
+      endWorkspaceLoad(workspace)
+      detach()
+      workspace.dispose()
+    }
+  })
 
   it('remove a segunda área e preserva seu conteúdo como rascunho', () => {
     const workspace = new Blockly.Workspace()

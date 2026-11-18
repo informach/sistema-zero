@@ -22,7 +22,7 @@ import { markLifecycleBlocksState } from '../src/blockly/blocksStateVersion'
 import { buildIRFromWorkspace } from '../src/blockly/buildIR'
 import { applySemanticDiagnostics } from '../src/blockly/semanticDiagnostics'
 import { ensureBlocklyInitialized } from '../src/blockly/setup'
-import { generateProjectFilesWithMap } from '../src/generators/project'
+import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '../src/generators/project'
 import { gameTwoDBlocks } from '../src/official-extensions/game-2d/blocks'
 
 const FAROL = resolve(
@@ -65,7 +65,7 @@ function comIdsNovos(bloco: Bloco): Bloco {
 }
 
 /** O estado do Farol com os eventos de "Quando acontecer" repetidos até passar de `alvo` blocos. */
-function estadoCom(alvo: number): { blocks: { blocks: Bloco[] } } {
+function estadoCom(alvo: number, splitAreas = false): { blocks: { blocks: Bloco[] } } {
   const projeto = JSON.parse(readFileSync(FAROL, 'utf8')) as {
     blocksState: { blocks: { blocks: Bloco[] } }
   }
@@ -83,6 +83,26 @@ function estadoCom(alvo: number): { blocks: { blocks: Bloco[] } } {
     fim = copia
     while (fim.next) fim = fim.next.block
   }
+  if (splitAreas) {
+    // Keep this integrity fixture in separate editable stacks. The long-chain workload must
+    // measure browser structured-clone depth rather than conflate it with size.
+    let event = primeiro
+    let count = 0
+    while (event.next) {
+      count++
+      if (count === 24) {
+        const remaining = event.next.block
+        delete event.next
+        // Extra editable stacks are drafts, not duplicate lifecycle containers.
+        // A project has one canonical container per taught lifecycle area.
+        remaining.x = estado.blocks.blocks.length * 700
+        remaining.y = 0
+        estado.blocks.blocks.push(remaining)
+        event = remaining
+        count = 0
+      } else event = event.next.block
+    }
+  }
   return estado
 }
 
@@ -95,6 +115,38 @@ const ms = (valor: number) => Math.round(valor * 100) / 100
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ensureBlocklyInitialized()
 registerExtensionBlocks(gameTwoDBlocks)
+
+// The browser's stress flows import the same valid editable project that this
+// profiler measures. Generate its canonical files before importing, not on reload.
+if (process.argv.includes('--project')) {
+  const { prepareProjectForHost } = await import('../src/state/projectValidation')
+  if (!process.env.SZ_PROFILE_BLOCKS) throw new Error('--project requires SZ_PROFILE_BLOCKS')
+  const project = await prepareProjectForHost(JSON.parse(readFileSync(FAROL, 'utf8')))
+  if (!project) throw new Error('Invalid stress project source')
+  const workspace = new Blockly.Workspace()
+  try {
+    Blockly.serialization.workspaces.load(estadoCom(ALVOS[0] ?? 0, true), workspace)
+    const ir = buildIRFromWorkspace(workspace)
+    const name = `Clássico em escala ${workspace.getAllBlocks(false).length}`
+    const { files } = generateProjectFilesWithMap({
+      ir,
+      projectName: name,
+      jsHeader: GENERATED_JS_HEADER,
+    })
+    console.log(
+      JSON.stringify({
+        ...project,
+        name,
+        ir,
+        files,
+        blocksState: markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
+      }),
+    )
+  } finally {
+    workspace.dispose()
+  }
+  process.exit(0)
+}
 
 const linhas = []
 const amostras = []

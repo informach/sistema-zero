@@ -12,23 +12,31 @@
  * que uma carga está em voo e os `onchange` caros ignoram os eventos
  * intermediários, deixando passar só o `FINISHED_LOADING`.
  *
- * Contador (não booleano) para tolerar reentrância/instâncias múltiplas. As
- * cargas são SÍNCRONAS (o `load()`/`clear()` roda até o fim sem await), então
- * não há intercalação entre instâncias na thread única — o begin/end sempre
- * envolve exatamente a carga correspondente.
+ * The legacy counter covers synchronous operations. Incremental loads use the
+ * workspace-keyed fence, so yielding never blocks another editor instance.
  */
 let loadDepth = 0
+const workspaceLoads = new WeakMap<object, number>()
 
-export function beginWorkspaceLoad(): void {
-  loadDepth += 1
+export function beginWorkspaceLoad(workspace?: object): void {
+  if (workspace) workspaceLoads.set(workspace, (workspaceLoads.get(workspace) ?? 0) + 1)
+  else loadDepth += 1
 }
 
-export function endWorkspaceLoad(): void {
-  loadDepth = Math.max(0, loadDepth - 1)
+export function endWorkspaceLoad(workspace?: object): void {
+  if (workspace) {
+    const remaining = (workspaceLoads.get(workspace) ?? 0) - 1
+    if (remaining > 0) workspaceLoads.set(workspace, remaining)
+    else workspaceLoads.delete(workspace)
+  } else loadDepth = Math.max(0, loadDepth - 1)
 }
 
-export function isWorkspaceLoading(): boolean {
-  return loadDepth > 0
+export function isWorkspaceLoading(workspace?: object): boolean {
+  return loadDepth > 0 || Boolean(workspace && workspaceLoads.has(workspace))
+}
+
+export function isScopedWorkspaceLoading(workspace: object): boolean {
+  return workspaceLoads.has(workspace)
 }
 
 /** Executa `fn` com a cerca de carga ativa, garantindo o `end` mesmo se lançar. */

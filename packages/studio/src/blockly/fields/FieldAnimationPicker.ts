@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { ProjectAsset, ProjectSpriteAnim } from '#core'
+import { isWorkspaceLoading } from '../loadFence'
 
 /**
  * Campo Blockly de ANIMAÇÃO do bloco "Animar sprite": mostra o NOME da animação e,
@@ -240,6 +241,7 @@ function jsonHasAnimRelatedType(json: unknown): boolean {
  */
 export function attachAnimationNameWatcher(ws: Blockly.WorkspaceSvg): () => void {
   const listener = (e: Blockly.Events.Abstract) => {
+    if (isWorkspaceLoading(ws)) return
     const raw = e as unknown as { type: string } & Record<string, unknown>
     if (!isAnimNameEvent(raw, ws)) return
     refreshAnimationNames(ws)
