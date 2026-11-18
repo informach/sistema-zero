@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-pintura'),
+  saida = resolve(raiz, 'output/cenarios-reforma/lote8-solo-acabamento'),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true }),
@@ -18,7 +18,8 @@ try {
     async (urls) => {
       const T = await import(urls.three),
         { MaterialDoSolo } = await import(urls.material),
-        { rasterizarSoloCompilado } = await import(urls.pintura),
+        { prepararSoloCompilado } = await import(urls.solo),
+        { pixelsDaTexturaCompilada } = await import(urls.imagens),
         { ArquivosDaCompilacao } = await import(urls.arquivos),
         { gravarGlbCompilado } = await import(urls.glb),
         { lerGlb } = await import(urls.modelos),
@@ -90,37 +91,22 @@ try {
         gl.readPixels(0, 0, 160, 160, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
         return { pixels, png: renderer.domElement.toDataURL('image/png').split(',')[1] }
       }
-      const antes = capturar(),
-        fontes = new Map([
-          [
-            'padrao',
-            {
-              largura: 2,
-              altura: 2,
-              pixels: ctx.getImageData(0, 0, 2, 2).data,
-              flipY: imagem.flipY,
-            },
-          ],
-        ]),
-        inicio = performance.now(),
-        pintura = rasterizarSoloCompilado(g, original.matrixWorld, camadas, fontes, {
-          pixelsPorMetro: 64,
-        }),
-        tempoMs = performance.now() - inicio,
-        derivada = g.clone(),
-        mapa = new T.DataTexture(pintura.pixels, pintura.largura, pintura.altura, T.RGBAFormat)
-      mapa.colorSpace = T.SRGBColorSpace
-      mapa.needsUpdate = true
-      mapa.minFilter = mapa.magFilter = T.LinearFilter
-      mapa.generateMipmaps = false
-      derivada.setAttribute('uv', new T.BufferAttribute(pintura.uvs, 2))
-      derivada.deleteAttribute('mcnPesosA')
-      derivada.deleteAttribute('mcnPesosB')
-      const acabamento = new T.MeshStandardMaterial({ map: mapa, roughness: 1, metalness: 0 }),
-        assada = new T.Mesh(derivada, acabamento)
-      assada.position.copy(original.position)
       const sinal = new AbortController().signal,
-        arquivos = new ArquivosDaCompilacao(sinal)
+        antes = capturar(),
+        fontes = new Map([['padrao', pixelsDaTexturaCompilada(imagem, sinal)]]),
+        inicio = performance.now(),
+        preparada = await prepararSoloCompilado(
+          { geometria: g, matriz: original.matrixWorld, material: material.material },
+          camadas,
+          fontes,
+          sinal,
+          64,
+        ),
+        tempoMs = performance.now() - inicio,
+        pintura = preparada.pintura,
+        assada = new T.Mesh(preparada.geometria, preparada.material)
+      assada.position.copy(original.position)
+      const arquivos = new ArquivosDaCompilacao(sinal)
       let carregado
       try {
         const ref = await gravarGlbCompilado(
@@ -156,23 +142,23 @@ try {
           erroMaximo: maximo,
           antes: antes.png,
           depois: depois.png,
+          png: btoa(String.fromCharCode(...pintura.png)),
         }
       } finally {
         carregado?.descartar()
         arquivos.descartar()
         renderer.dispose()
         g.dispose()
-        derivada.dispose()
+        preparada.descartar()
         material.descartar()
-        acabamento.dispose()
         imagem.dispose()
-        mapa.dispose()
       }
     },
     {
       three: modulo('node_modules/three/build/three.module.js'),
       material: modulo('packages/molda-cenarios-motor/src/material-solo.ts'),
-      pintura: modulo('packages/molda-cenarios-motor/src/compilar/pintura.ts'),
+      solo: modulo('packages/molda-cenarios-motor/src/compilar/solo.ts'),
+      imagens: modulo('packages/molda-cenarios-motor/src/compilar/imagens.ts'),
       arquivos: modulo('packages/molda-cenarios-motor/src/compilar/arquivos.ts'),
       glb: modulo('packages/molda-cenarios-motor/src/compilar/arquivos-glb.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),
@@ -180,8 +166,10 @@ try {
   )
   writeFileSync(resolve(saida, 'solo-editor.png'), Buffer.from(resultado.antes, 'base64'))
   writeFileSync(resolve(saida, 'solo-compilado.png'), Buffer.from(resultado.depois, 'base64'))
+  writeFileSync(resolve(saida, 'pintura.png'), Buffer.from(resultado.png, 'base64'))
   delete resultado.antes
   delete resultado.depois
+  delete resultado.png
   writeFileSync(resolve(saida, 'resultado.json'), JSON.stringify(resultado, null, 2))
   console.log(JSON.stringify(resultado, null, 2))
   assert.deepEqual(erros, [])

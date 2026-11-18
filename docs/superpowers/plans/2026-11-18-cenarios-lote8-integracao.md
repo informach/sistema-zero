@@ -44,3 +44,5 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 - Só fechar 8.2 depois da integração e dessas provas; seguir então para 8.3. O subpath público `motor/compilar` ainda não existe porque o compilador completo não está entregue. Não antecipar lotes 9–10 ou implantação.
 
 **Conferência já implementada e testada em recorte:** [conteúdo/alturas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-conteudo-alturas.md). A montagem final ainda precisa chamar essa conferência; não tratar a existência do leitor como entrega do pacote completo.
+
+**Superfícies de solo já conferidas em recorte:** [setores, pintura portátil e encontros](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-solo-caminhos.md). Partição do piso/detalhes e solução portátil dos decals foram comparadas com o palco e o GLB reaberto; água e montagem continuam pendentes.
