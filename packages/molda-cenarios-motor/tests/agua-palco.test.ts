@@ -52,6 +52,14 @@ test('água nativa não adiciona piso; configuração estável conserva recursos
     )
     expect(a.grupo.children[0]!.children[0]).toBe(malha)
     expect(a.fontesDoTeste()).toEqual([])
+    expect(
+      a.superficies().map((s) => ({
+        id: s.id,
+        lamina: s.lamina,
+        solida: s.solida,
+        materialPortatil: Boolean(s.acabamento),
+      })),
+    ).toEqual([{ id: 'a', lamina: true, solida: false, materialPortatil: true }])
     const raio = new Raycaster(new Vector3(0, 10, 0), new Vector3(0, -1, 0))
     expect(a.pontoSobRaio(raio)?.id).toBe('a')
     expect(a.pontoSobRaio(raio)?.ponto.y).toBe(1)

@@ -46,3 +46,5 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 **Conferência já implementada e testada em recorte:** [conteúdo/alturas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-conteudo-alturas.md). A montagem final ainda precisa chamar essa conferência; não tratar a existência do leitor como entrega do pacote completo.
 
 **Superfícies de solo já conferidas em recorte:** [setores, pintura portátil e encontros](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-solo-caminhos.md). Partição do piso/detalhes e solução portátil dos decals foram comparadas com o palco e o GLB reaberto; água e montagem continuam pendentes.
+
+**Água em recorte:** [acabamento e leitura exata na GPU](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-agua-portatil.md). A comparação encontrou/corrigiu um erro de endereçamento do shader existente. Gradiente, alpha e espuma estáticos passaram no GLB reaberto; oceano, restauração dos efeitos e integração final continuam pendentes.

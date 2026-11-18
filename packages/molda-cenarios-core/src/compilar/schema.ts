@@ -75,7 +75,8 @@ export const CenaCompiladaSchema = z
       licencas = new Map(d.licencas.map((l) => [l.id, l])),
       texturas = new Map(d.texturas.map((t) => [t.id, t])),
       modelosFonte = new Set(d.fontes.modelos.map((m) => m.id)),
-      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id))
+      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id)),
+      aguasPresentes = new Set(d.aguas.map((a) => a.id))
     unicos(
       d.arquivos.map((a) => a.caminho.toLowerCase()),
       'arquivos',
@@ -131,6 +132,16 @@ export const CenaCompiladaSchema = z
       if (n.entidade !== null && entidades.get(n.entidade)?.oculto)
         falhar('Uma entidade oculta não pode produzir um nó visual no pacote.')
       const a = arquivos.get(n.arquivo)
+      if (
+        n.efeito === 'agua' &&
+        (n.entidade === null ||
+          entidades.get(n.entidade)?.tipo !== 'agua' ||
+          !aguasPresentes.has(n.entidade) ||
+          a?.papel !== 'agua')
+      )
+        falhar(
+          'O efeito de água precisa da entidade, parâmetros e arquivo de água correspondentes.',
+        )
       if (a?.mime !== 'model/gltf-binary' || a.papel === 'colisao')
         falhar(`O arquivo visual “${n.arquivo}” está ausente ou é incompatível.`)
       malhas += a?.malhas ?? 0

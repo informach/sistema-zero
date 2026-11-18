@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { lerCenaCompilada } from '../src/compilar/schema'
 import { RotaCompiladaSchema, TerrenoCompiladoSchema } from '../src/compilar/schema-metadados'
+import { AguaSchema } from '../src/v2'
 
 const matriz = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 const volume = { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }
@@ -58,6 +59,32 @@ function cena() {
     ambiente: { hora: 12 },
   }
 }
+
+test('restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes', () => {
+  const d = cena()
+  expect(() =>
+    lerCenaCompilada({ ...d, nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })) }),
+  ).toThrow(/efeito de água/)
+  const agua = {
+    ...d,
+    entidades: d.entidades.map((e) => ({ ...e, tipo: 'agua' })),
+    arquivos: d.arquivos.map((a) => ({ ...a, papel: 'agua' })),
+    nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })),
+    aguas: [
+      AguaSchema.parse({
+        id: 'casa',
+        nome: 'Mar',
+        grupo: null,
+        oculto: false,
+        bloqueado: false,
+        tipo: 'mar',
+        nivel: 0,
+      }),
+    ],
+  }
+  expect(lerCenaCompilada(agua).nos[0]!.efeito).toBe('agua')
+  expect(() => lerCenaCompilada({ ...agua, aguas: [] })).toThrow(/efeito de água/)
+})
 
 test('leitor portátil conserva revisão, matrizes e propriedades sem interpretar código', () => {
   const d = cena(),

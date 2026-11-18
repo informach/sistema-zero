@@ -1,3 +1,4 @@
+import { interpolarAlturasDaCelula } from './interpolacao-de-alturas'
 import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
@@ -199,7 +200,7 @@ export function alturaDoCampo(
     b = campo.alturas[i + 1]!,
     c = campo.alturas[i + largura]!,
     d = campo.alturas[i + largura + 1]!
-  return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v)
+  return interpolarAlturasDaCelula(a, b, c, d, u, v)
 }
 
 /** Declive numa amostra, em metros de subida por metro andado (1 = 45°). */
