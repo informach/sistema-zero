@@ -37,6 +37,52 @@ const mapOf = (assets: BackupAsset[]) => {
   return map
 }
 
+test('autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir', async ({
+  page,
+  isMobile,
+}, testInfo) => {
+  const envelope: { assets: BackupAsset[] } = JSON.parse(await readFile(fixture, 'utf8'))
+  const seed = mapOf(envelope.assets)
+  seed.layers = seed.layers.filter((layer) => layer.name === 'Chão')
+  expect(seed.layers).toHaveLength(1)
+  await page.goto(`/?namespace=autoria-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles({
+      name: 'inicio.pinta.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(envelope)),
+    })
+  const open = page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true })
+  await open.click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  for (let count = 2; count <= 32; count++) {
+    await page.getByRole('button', { name: 'Nova camada', exact: true }).click()
+    await expect(page.getByRole('button', { name: `Camada ${count}`, exact: true })).toBeVisible()
+  }
+  expect(mapOf(await backup(page)).layers).toHaveLength(32)
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect(mapOf(await backup(page)).layers).toHaveLength(31)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  await page.getByRole('button', { name: 'Nova camada', exact: true }).click()
+  await expect(
+    page.getByText('Este mapa já tem o máximo de camadas.', { exact: true }),
+  ).toBeVisible()
+  const before = mapOf(await backup(page))
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
+  await page.reload()
+  await open.click()
+  expect(mapOf(await backup(page)).layers).toEqual(before.layers)
+  await testInfo.attach('autoria-32-camadas', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+})
+
 test('Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real', async ({
   page,
   isMobile,
@@ -83,6 +129,7 @@ test('Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real', 
   expect(after.schema).toBe(5)
   expect(after.layers.find((l) => l.name === 'Sombras')?.offsetX).toBe(2.5)
   await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
   await page.reload()
   await open.click()
   expect(mapOf(await backup(page, 5)).layers).toEqual(after.layers)

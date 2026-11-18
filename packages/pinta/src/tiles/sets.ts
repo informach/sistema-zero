@@ -6,6 +6,7 @@ import {
   isTileLayer,
   type MapSetAsset,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   PINTA_SCENE_SCHEMA,
   type TilemapAsset,
   type TilemapLayer,
@@ -227,6 +228,13 @@ export function detachMapSet(
     instance.height !== set.map.rows * tileSize ||
     map.layers.length + set.map.layers.filter((l) => l.kind !== 'group').length >
       PINTA_LIMITS.maxTilemapLayers
+  )
+    return map
+  if (
+    map.cols *
+      map.rows *
+      (map.layers.filter(isTileLayer).length + set.map.layers.filter(isTileLayer).length) >
+    PINTA_MAP_FORMAT_LIMITS.maxCells
   )
     return map
   const turns = ((((instance.rotation ?? 0) / 90) % 4) + 4) % 4,

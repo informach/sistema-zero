@@ -43,17 +43,24 @@ mapa em memória sem mexer no carimbo, então só o sanitizador não bastava: o 
 disco sem carimbo e outra aba com código antigo o abria e cortava. Quem cria desenho em código
 não precisa escrever `schema`; se escrever errado, a gravação corrige.
 
-**Tetos em dois níveis.**
-- `PINTA_LIMITS` é o que o editor deixa CRIAR: 128 × 128 células, 8 camadas, 64 peças. Voltou ao
-  valor de antes; só sobe depois de medir o autosave no aparelho.
+**Tetos da autoria, do formato e da aula (medidos em 18/11/2026).**
+- `PINTA_LIMITS` permite CRIAR 256 × 256 células, 32 camadas e 256 peças. O total permanece
+  em 2.097.152 células (4 MiB de índices). A expansão foi medida com gravação e reabertura
+  reais, cache limitado e CPU 4× mais lenta; ver `docs/pinta-cenarios/missao-completa-2026-11-18/`.
 - `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita ao ser LIDO: 256 × 256, 32 camadas, 256
   peças, 2.097.152 células. Importação, sanitizador e modelos passam por aqui.
 - Mapa grande importado abre e pode ser pintado. Crescer, criar camada, criar peça e soltar
   conjunto além do teto de criação devolvem o MESMO desenho (a tela mostra o recado de limite).
 - `PINTA_LIMITS.maxObjectCoord` fica no valor do formato (256 × 48) de propósito: puxar objeto de
   mapa grande para dentro do teto de criação seria corte.
-- O bloco de aula tem os mesmos tetos de criação em `PINTA_LESSON_MAP_LIMITS`
-  (`members/src/domain/course/lesson-block.ts`), travados por teste de conformidade.
+- A entrega HTTP da aula mantém 128 × 128, 8 camadas e 64 peças em `PINTA_LESSON_MAP_LIMITS`.
+  O editor da aula recusa a operação inteira antes do histórico/autosave e avisa pela Toast
+  existente. Os valores do editor e de `members/src/domain/course/lesson-block.ts` são
+  travados por teste de conformidade, independentemente da galeria pessoal.
+- `TileChunkCache` empresta o canvas só até a próxima consulta. O render o desenha imediatamente;
+  o próximo bloco pode reciclar esse canvas. O cache não amplia o teto para caber a tela inteira
+  e o unmount o libera. O caso de um orçamento menor que um bloco usa um único canvas de
+  trabalho: teto RGBA = max(orçamento, bytes de um bloco). Na configuração padrão são 32 MiB.
 
 **Conjuntos (`tiles/sets.ts`).** `createMapSet` e `detachMapSet` não escrevem chave no valor
 padrão (opacidade 1, deslocamento 0, sem giro, sem espelho). `detachMapSet` recusa, sem mudar

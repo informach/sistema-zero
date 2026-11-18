@@ -137,7 +137,7 @@ describe('TileChunkCache', () => {
     cache.beginFrame()
     const a = cache.get(m, layer, ts, sheet, 0, 0)
     cache.beginFrame()
-    const b = cache.get(m, layer, ts, sheet, 1, 0)
+    cache.get(m, layer, ts, sheet, 1, 0)
     cache.beginFrame()
     // Usar o primeiro de novo faz o segundo virar o mais antigo.
     expect(cache.get(m, layer, ts, sheet, 0, 0)).toBe(a)
@@ -147,32 +147,62 @@ describe('TileChunkCache', () => {
     expect(cache.usedBytes).toBe(2 * MB)
     cache.beginFrame()
     expect(cache.get(m, layer, ts, sheet, 0, 0)).toBe(a)
-    expect(cache.get(m, layer, ts, sheet, 1, 0)).not.toBe(b)
+    expect(cache.rebuilds).toBe(3)
+    cache.get(m, layer, ts, sheet, 1, 0)
+    expect(cache.rebuilds).toBe(4)
   })
-  it('uma pintura nunca joga fora os próprios blocos, mesmo acima do teto', () => {
-    // Teto de 2 blocos e uma tela com 4 camadas × 12 blocos: a segunda pintura não refaz nada.
-    const cache = new TileChunkCache(2 * MB, novoCanvas),
+  it('uma tela maior que o cache respeita o teto e recicla os canvases', () => {
+    let allocations = 0
+    const cache = new TileChunkCache(2 * MB, () => {
+        allocations += 1
+        return novoCanvas()
+      }),
       ts = pecas(),
       sheet = folha()
+    sheet.getContext('2d')!.fillStyle = 'red'
+    sheet.getContext('2d')!.fillRect(0, 0, 16, 16)
     let m = mapaGrande(128, 96)
     for (let i = 0; i < 3; i++) m = addLayer(m, `c${i}`)
     for (const layer of m.layers)
       for (let r = 0; r < 96; r += 32)
         for (let c = 0; c < 128; c += 32) m = setCell(m, layer.id, c, r, 0)
     const tilesets = new Map([['ts', ts]]),
-      ctx = createCanvas(8, 8).getContext('2d') as unknown as CanvasRenderingContext2D
+      ctx = createCanvas(128, 96).getContext('2d') as unknown as CanvasRenderingContext2D
     const view = { x: 0, y: 0, width: 128 * 16, height: 96 * 16 }
-    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, view)
+    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, view, 1 / 16)
     expect(cache.rebuilds).toBe(48)
-    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, view)
-    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, view)
-    expect(cache.rebuilds).toBe(48)
-    // Uma tela menor volta ao teto normal: os blocos que sobram vão saindo.
-    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, { x: 0, y: 0, width: 16, height: 16 })
-    cache.beginFrame()
-    const far = setCell(m, m.layers[0]!.id, 127, 95, 1)
-    cache.get(far, tileLayerAt(far), ts, sheet, 3, 2)
+    expect(cache.workingSetBytes).toBe(48 * MB)
     expect(cache.usedBytes).toBeLessThanOrEqual(2 * MB)
+    for (let r = 0; r < 96; r += 32)
+      for (let c = 0; c < 128; c += 32)
+        expect(Array.from(ctx.getImageData(c, r, 1, 1).data)).toEqual([255, 0, 0, 255])
+    paintTilemapLayers(ctx, m, tilesets, () => sheet, cache, view, 1 / 16)
+    expect(cache.usedBytes).toBeLessThanOrEqual(2 * MB)
+    expect(allocations).toBe(2)
+    cache.clear()
+    expect(cache.usedBytes).toBe(0)
+    expect(cache.size).toBe(0)
+  })
+  it('um bloco maior que o teto usa um único canvas de trabalho e clear o libera', () => {
+    let allocations = 0
+    const cache = new TileChunkCache(1, () => {
+      allocations++
+      return novoCanvas()
+    })
+    const ts = pecas(),
+      sheet = folha()
+    let map = mapaGrande()
+    map = setCell(map, tileLayerAt(map).id, 0, 0, 0)
+    map = setCell(map, tileLayerAt(map).id, 32, 0, 0)
+    const borrowed = cache.get(map, tileLayerAt(map), ts, sheet, 0, 0)
+    expect(cache.get(map, tileLayerAt(map), ts, sheet, 1, 0)).toBe(borrowed)
+    expect(allocations).toBe(1)
+    expect(cache.size).toBe(0)
+    expect(cache.usedBytes).toBe(MB)
+    cache.clear()
+    expect(borrowed?.width).toBe(1)
+    expect(borrowed?.height).toBe(1)
+    expect(cache.usedBytes).toBe(0)
   })
   it('camadas vazias não custam nada na pintura', () => {
     const cache = new TileChunkCache(32 * MB, novoCanvas),

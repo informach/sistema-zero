@@ -181,6 +181,8 @@ export function createEditorStore(options: {
   autosaveDelayMs?: number
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
+  /** Orçamento do host (ex.: entrega de aula). Recusa antes do histórico e do autosave. */
+  acceptEdit?: (asset: PintaAsset) => boolean
   /** A persistência confirmou a edição num fork; adota esse documento, sem alterar o original. */
   recoverPersisted?: (
     error: unknown,
@@ -281,6 +283,9 @@ export function createEditorStore(options: {
       // A controller from a gesture that began before conflict recovery may still finish.
       // It must never put the old document back into the adopted copy or its history.
       if (next.id !== current.id) return
+      const acceptEdit = options.acceptEdit
+      if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
+        return
       const previousLinked = linked
         ? mergeLinkedAssets(currentLinked, linked.before)
         : currentLinked

@@ -155,7 +155,7 @@ describe('metadados das peças acompanham a peça', () => {
   it('no teto de criação de peças, inserir e duplicar devolvem o MESMO desenho', () => {
     let cheio: TilesetAsset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     for (let i = 0; i < PINTA_LIMITS.maxTiles + 5; i += 1) cheio = addTile(cheio, 0)
-    expect(cheio.tiles).toHaveLength(64)
+    expect(cheio.tiles).toHaveLength(PINTA_LIMITS.maxTiles)
     expect(addTile(cheio, 0)).toBe(cheio)
     expect(duplicateTile(cheio, 0)).toBe(cheio)
   })

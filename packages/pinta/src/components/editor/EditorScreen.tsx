@@ -22,6 +22,7 @@ import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { fitZoomFor } from '../../core/guidedCanvas'
+import { withinLessonMapLimits } from '../../core/lessonLimits'
 import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
@@ -737,7 +738,7 @@ export function EditorScreen({
   /** Abre com o zoom em que o desenho cabe inteiro (a tela com molde do host). */
   fit?: boolean
 }): JSX.Element | null {
-  const { adapter, gallery, persistence, closeEditor, onEditorReady } = usePintaApp()
+  const { adapter, gallery, persistence, closeEditor, onEditorReady, lesson } = usePintaApp()
   const { showToast } = useToast()
   const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
     const asset = gallery.getState().assets.find((a) => a.id === assetId)
@@ -745,6 +746,15 @@ export function EditorScreen({
     return {
       editor: createEditorStore({
         asset,
+        ...(lesson
+          ? {
+              acceptEdit: (next: PintaAsset) => {
+                if (withinLessonMapLimits(next)) return true
+                showToast(COPY.editor.lessonMapLimit)
+                return false
+              },
+            }
+          : {}),
         // O armazenamento vem do contexto, e não do módulo: o `persistAssets` solto vai direto
         // ao IndexedDB do perfil e furaria o armazenamento injetado pelo host.
         persist: (saved, linked) => persistence.persistAssets([saved, ...linked]),

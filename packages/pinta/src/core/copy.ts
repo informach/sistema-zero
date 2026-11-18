@@ -489,6 +489,8 @@ export const COPY = {
     saved: 'Salvo',
     saving: 'Salvando…',
     saveError: 'Não consegui salvar',
+    lessonMapLimit:
+      'Este desenho chegou ao limite da aula. Você pode criar um cenário maior na sua galeria.',
     taskLinkError: 'Não consegui vincular o desenho à tarefa. Confira a internet e tente de novo.',
     taskStudioProgressError:
       'O desenho chegou ao Estúdio, mas não consegui atualizar a tarefa. Confira a internet e tente usar no Estúdio de novo.',

@@ -100,6 +100,7 @@ export function useTilemapController(model: ReadyMapModel) {
   const viewportRef = useRef({ x: 0, y: 0, width: 0, height: 0 })
   const animationTimeRef = useRef(0)
   const chunkCache = useMemo(() => new TileChunkCache(), [])
+  useEffect(() => () => chunkCache.clear(), [chunkCache])
   const sheets = useMapSheets(mapTilesets, showToast)
   // Snapshot no início do arrasto (um desfazer por gesto) e o ponteiro dono dele.
   const gestureRef = useRef<TileGesture | null>(null)

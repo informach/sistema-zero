@@ -6,7 +6,11 @@
  * de compilação — dá bloco recusado na autoria, ou pior, bloco aceito sem tipo legível.
  */
 import { describe, expect, it } from 'bun:test'
-import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '@sistemazero/pinta/assets'
+import {
+  PINTA_LESSON_MAP_LIMITS as EDITOR_LESSON_LIMITS,
+  PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+} from '@sistemazero/pinta/assets'
 import {
   isCompletionGatingBlock,
   LESSON_BLOCK_KINDS,
@@ -120,13 +124,12 @@ describe('tetos de mapa do desenho de aula (os de criação, não os de leitura)
     })
   })
 
-  it('🚨 batem com o que o editor do Pinta deixa CRIAR e ficam abaixo do que o documento LÊ', () => {
-    expect({ ...PINTA_LESSON_MAP_LIMITS }).toEqual({
-      maxCols: PINTA_LIMITS.maxTilemapCols,
-      maxRows: PINTA_LIMITS.maxTilemapRows,
-      maxLayers: PINTA_LIMITS.maxTilemapLayers,
-      maxTiles: PINTA_LIMITS.maxTiles,
-    })
+  it('🚨 o orçamento HTTP do curso permanece menor que a autoria pessoal e a leitura', () => {
+    expect({ ...PINTA_LESSON_MAP_LIMITS }).toEqual({ ...EDITOR_LESSON_LIMITS })
+    expect(PINTA_LESSON_MAP_LIMITS.maxCols).toBeLessThan(PINTA_LIMITS.maxTilemapCols)
+    expect(PINTA_LESSON_MAP_LIMITS.maxRows).toBeLessThan(PINTA_LIMITS.maxTilemapRows)
+    expect(PINTA_LESSON_MAP_LIMITS.maxLayers).toBeLessThan(PINTA_LIMITS.maxTilemapLayers)
+    expect(PINTA_LESSON_MAP_LIMITS.maxTiles).toBeLessThan(PINTA_LIMITS.maxTiles)
     expect(PINTA_MAP_FORMAT_LIMITS.maxCols).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxCols)
     expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxLayers)
     expect(PINTA_MAP_FORMAT_LIMITS.maxTiles).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxTiles)

@@ -340,9 +340,8 @@ export const MAX_PINTA_ASSET_CHARS = 1_800_000
 
 /**
  * Tetos de MAPA e de CONJUNTO DE PEÇAS do desenho de aula (autoria e entrega): 128 × 128 células,
- * 8 camadas, 64 peças. São os tetos de CRIAÇÃO do editor (`PINTA_LIMITS` em `@sistemazero/pinta`,
- * travados por teste de conformidade), não os de LEITURA do documento, que são maiores (256 × 256,
- * 32 camadas, 256 peças) para a galeria conseguir abrir mapas importados.
+ * 8 camadas, 64 peças. São os tetos da ENTREGA HTTP do curso, independentes da autoria pessoal
+ * do Pinta (256 × 256, 32 camadas, 256 peças). A galeria pessoal continua lendo o formato completo.
  *
  * O bloco de aula fica com os tetos antigos de propósito: o `MAX_PINTA_ASSET_CHARS` acima foi
  * medido com um mapa de 128 × 128, e a entrega vira material do jogo do curso, que foi desenhado

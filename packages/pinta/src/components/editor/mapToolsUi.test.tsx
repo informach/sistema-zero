@@ -17,6 +17,7 @@ import {
   createTilesetAsset,
   isObjectLayer,
   isTileLayer,
+  PINTA_LIMITS,
   type TilemapAsset,
 } from '../../core/project'
 import { clearIdbMock } from '../../testing/idbMock'
@@ -224,14 +225,16 @@ describe('camadas do mapa', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Descer camada/ }))
     await espera()
     expect(desfazer().disabled).toBe(true)
-    // Enche o mapa de camadas até o teto (8) e pede mais um grupo.
-    for (let i = 0; i < 7; i++)
+    // Enche o mapa até o orçamento da autoria e pede mais um grupo.
+    for (let i = 1; i < PINTA_LIMITS.maxTilemapLayers; i++)
       fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addGroup }))
-    await noDisco(async () => expect((await mapaDoDisco()).layers).toHaveLength(8))
+    await noDisco(async () =>
+      expect((await mapaDoDisco()).layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers),
+    )
     fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addGroup }))
     await espera()
-    // Sete desfazer voltam ao começo: o oitavo pedido não deixou passo nenhum.
-    for (let i = 0; i < 7; i++) fireEvent.click(desfazer())
+    // Cada criação deixou um passo; o pedido recusado não deixou nenhum.
+    for (let i = 1; i < PINTA_LIMITS.maxTilemapLayers; i++) fireEvent.click(desfazer())
     await waitFor(() => expect(desfazer().disabled).toBe(true))
   })
   it('camada trancada: marcar colisão avisa e não muda nada', async () => {

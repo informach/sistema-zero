@@ -44,6 +44,7 @@
     "playwright.config.ts",
     "playwright.pinta.config.ts",
     "playwright.pinta-authority.config.ts",
+    "playwright.pinta-budget.config.ts",
     "playwright.pro-full.config.ts",
     "playwright.python-games.config.ts",
     "playwright.python-runtime.config.ts",

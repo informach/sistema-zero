@@ -92,19 +92,20 @@ describe('mapa antigo', () => {
     expect(lido && tilemapNeedsV3(lido)).toBe(false)
   })
 
-  it('o editor cria até o teto antigo; o formato lê mais do que o editor cria', () => {
+  it('a autoria alcança o orçamento de leitura sem ampliar o teto total de células', () => {
     const criar: { camadas: number; colunas: number; linhas: number; pecas: number } = {
       camadas: PINTA_LIMITS.maxTilemapLayers,
       colunas: PINTA_LIMITS.maxTilemapCols,
       linhas: PINTA_LIMITS.maxTilemapRows,
       pecas: PINTA_LIMITS.maxTiles,
     }
-    expect(criar).toEqual({ camadas: 8, colunas: 128, linhas: 128, pecas: 64 })
-    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(criar.camadas)
-    expect(PINTA_MAP_FORMAT_LIMITS.maxCols).toBeGreaterThan(criar.colunas)
-    expect(PINTA_MAP_FORMAT_LIMITS.maxRows).toBeGreaterThan(criar.linhas)
-    expect(PINTA_MAP_FORMAT_LIMITS.maxTiles).toBeGreaterThan(criar.pecas)
-    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(128)
+    expect(criar).toEqual({ camadas: 32, colunas: 256, linhas: 256, pecas: 256 })
+    expect(criar.camadas).toBe(PINTA_MAP_FORMAT_LIMITS.maxLayers)
+    expect(criar.colunas).toBe(PINTA_MAP_FORMAT_LIMITS.maxCols)
+    expect(criar.linhas).toBe(PINTA_MAP_FORMAT_LIMITS.maxRows)
+    expect(criar.pecas).toBe(PINTA_MAP_FORMAT_LIMITS.maxTiles)
+    expect(criar.camadas * criar.colunas * criar.linhas).toBe(PINTA_MAP_FORMAT_LIMITS.maxCells)
+    expect(createTilemapAsset({ name: 'x', tilesetId: 't', cols: 999, rows: 999 }).cols).toBe(256)
   })
 })
 

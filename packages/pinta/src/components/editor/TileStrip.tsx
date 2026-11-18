@@ -211,7 +211,8 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     } else {
       editor.getState().commit(next)
     }
-    if (selectIndex !== undefined) session.getState().selectFrame(selectIndex)
+    if (editor.getState().asset !== current && selectIndex !== undefined)
+      session.getState().selectFrame(selectIndex)
   }
 
   return (
