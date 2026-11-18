@@ -1,6 +1,6 @@
 ---
 provider: manual
-pr:
+pr: https://github.com/informach/sistema-zero/pull/274
 round: 1
 created_at: 2026-11-18T07:58:37.799413+00:00
 ---

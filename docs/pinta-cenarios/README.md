@@ -2,6 +2,9 @@
 
 ## Revisão integral de 18/11/2026
 
+[PR draft 274](https://github.com/informach/sistema-zero/pull/274): revisão e correções,
+sem merge/deploy e com bloqueio offline aberto.
+
 A missão completa **ainda não está concluída**. A revisão do código local e remoto, suas
 correções e a matriz dos 33 critérios estão em [cobertura](revisao-2026-11-18/cobertura.md).
 O [relatório de QA](revisao-2026-11-18/qa.md) distingue testes locais, navegador, motores

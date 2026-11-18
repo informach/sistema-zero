@@ -3,6 +3,8 @@
 **Estado: revisão verificada, missão parcial e release bloqueado pela issue 026.**
 O bloco de perda local foi reproduzido e permanece aberto; testes aprovados não o resolvem.
 
+Entrega para revisão: [PR draft 274](https://github.com/informach/sistema-zero/pull/274).
+
 Base inicial: `origin/staging` em `567b93f95`; segundo fetch integrado sem conflitos até
 `42b395d93`, branch isolada `pinta-full-review-20261118`. Os gates finais foram reiniciados
 na árvore integrada; a execução anterior interrompida não é apresentada como suíte completa.
