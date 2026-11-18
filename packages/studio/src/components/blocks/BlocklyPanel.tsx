@@ -43,6 +43,7 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
+import { createOffscreenBodies } from '../../blockly/offscreenBodies'
 import {
   revealBlockInWorkspace,
   runtimeErrorBlockId,
@@ -1194,6 +1195,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
+    // Projeto muito grande: o corpo dos blocos longe da vista sai da página (`offscreenBodies.ts`).
+    const offscreenBodies = createOffscreenBodies(injected)
     // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
@@ -1291,6 +1294,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
       onWorkspaceReadyRef.current?.(null)
+      offscreenBodies.dispose()
       injected.dispose()
       appliedToolboxRef.current = null
     }

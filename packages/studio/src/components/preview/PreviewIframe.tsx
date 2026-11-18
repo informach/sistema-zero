@@ -163,6 +163,36 @@ export function PreviewIframe(): JSX.Element {
   // PARAR e ao Rodar de novo com a prévia sem responder, e só aí: no caminho normal o iframe é
   // o mesmo de sempre (remontá-lo a cada edição deixava a prévia em branco de vez em quando).
   const [frameGeneration, setFrameGeneration] = useState(0)
+  // Intervalo SEM iframe na troca de um jogo preso (18/11/2026). No Chromium completo os iframes
+  // com sandbox da mesma página dividem UM processo: o iframe novo, criado no mesmo instante em que
+  // o antigo sai, cai no processo ainda ocupado e só anda quando o travamento acaba (visto no
+  // Windows, Chromium 148: o conserto não rodava em 15 s). Sem nenhum iframe por um instante, o
+  // processo fica sem página e o navegador o descarta; o próximo iframe nasce num processo novo.
+  // O tempo que o navegador leva para descartar não é documentado: cada tentativa espera mais.
+  const [frameAbsent, setFrameAbsent] = useState(false)
+  const frameGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const frameGapStepRef = useRef(0)
+  const swapFrame = useCallback((stuck: boolean) => {
+    if (!stuck) {
+      setFrameGeneration((n) => n + 1)
+      return
+    }
+    const step = Math.min(frameGapStepRef.current, FRAME_GAPS_MS.length - 1)
+    frameGapStepRef.current += 1
+    setFrameAbsent(true)
+    if (frameGapTimerRef.current) clearTimeout(frameGapTimerRef.current)
+    frameGapTimerRef.current = setTimeout(() => {
+      frameGapTimerRef.current = null
+      setFrameGeneration((n) => n + 1)
+      setFrameAbsent(false)
+    }, FRAME_GAPS_MS[step])
+  }, [])
+  useEffect(
+    () => () => {
+      if (frameGapTimerRef.current) clearTimeout(frameGapTimerRef.current)
+    },
+    [],
+  )
   const wasRunningRef = useRef(false)
   // Incrementado quando o preview precisa executar/reexecutar o documento atual
   // mesmo que o HTML/CSS/JS gerado seja idêntico.
@@ -297,7 +327,7 @@ export function PreviewIframe(): JSX.Element {
 
   const rerenderPreview = () => {
     // Rodar de novo com o jogo preso: sem iframe novo, o documento novo esperaria o travamento.
-    if (previewIsUnresponsive()) setFrameGeneration((n) => n + 1)
+    if (previewIsUnresponsive()) swapFrame(true)
     setRenderNonce((n) => n + 1)
   }
 
@@ -733,22 +763,36 @@ export function PreviewIframe(): JSX.Element {
   // `SWAP_STUCK_AFTER_MS`. É o jogo anterior preso segurando o processo (por exemplo: a criança
   // conserta o código logo depois de rodar o que trava). Um iframe novo carrega na hora. Uma vez
   // por documento: num aparelho lento, um jogo grande que só demora a carregar não entra em laço.
-  const swapRescuedDocRef = useRef<string | null>(null)
+  // Até `FRAME_GAPS_MS.length` tentativas por documento, cada uma com um intervalo sem iframe maior.
+  const swapRescueRef = useRef<{ doc: string; count: number } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `frameGeneration` e `frameAbsent` são gatilhos (iframe novo que também não entra pede outra tentativa)
   useEffect(() => {
-    if (isolatedUrl || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
-    if (swapRescuedDocRef.current === effectiveDoc) return
+    if (isolatedUrl || frameAbsent || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
+    const rescued = swapRescueRef.current?.doc === effectiveDoc ? swapRescueRef.current.count : 0
+    if (rescued >= FRAME_GAPS_MS.length) return
     const timer = setTimeout(() => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
-      swapRescuedDocRef.current = effectiveDoc
-      setFrameGeneration((n) => n + 1)
+      swapRescueRef.current = { doc: effectiveDoc, count: rescued + 1 }
+      swapFrame(true)
     }, SWAP_STUCK_AFTER_MS)
     return () => clearTimeout(timer)
-  }, [effectiveDoc, loadedSrcDoc, isolatedUrl])
+  }, [effectiveDoc, loadedSrcDoc, isolatedUrl, frameGeneration, frameAbsent, swapFrame])
 
   // PARAR troca o iframe por um novo (ver `frameGeneration`): é o que tira da frente um jogo
   // preso, por qualquer caminho que o Parar tenha vindo (a barra, o cartão de travado, o host).
+  // ⚠️ Este efeito precisa ficar ANTES do que zera o relógio dos batimentos (logo abaixo): é o
+  // relógio do jogo que acabou de parar que diz se ele estava preso.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: só a virada de `previewRunning` dispara; o resto é lido na hora
   useEffect(() => {
-    if (wasRunningRef.current && !previewRunning) setFrameGeneration((n) => n + 1)
+    if (wasRunningRef.current && !previewRunning) {
+      const visible = typeof document === 'undefined' || document.visibilityState === 'visible'
+      const stuck =
+        visible &&
+        loadedSrcDoc !== null &&
+        loadedSrcDoc !== PAUSED_PREVIEW_DOC &&
+        (previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS)
+      swapFrame(stuck)
+    }
     wasRunningRef.current = previewRunning
   }, [previewRunning])
 
@@ -999,37 +1043,42 @@ export function PreviewIframe(): JSX.Element {
 
   return (
     <div className="relative flex h-full flex-col bg-sz-bg">
-      <iframe
-        key={frameGeneration}
-        ref={iframeRef}
-        title="Pré-visualização"
-        src={isolatedUrl ?? undefined}
-        srcDoc={isolatedUrl ? undefined : effectiveDoc}
-        onLoad={() => {
-          setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
-          lastHeartbeatRef.current = Date.now()
-          setPreviewStalled(false)
-          iframeRef.current?.contentWindow?.postMessage(
-            { type: 'sz:audio', muted: execution.muted },
-            '*',
-          )
-          // Foca o jogo após um Play/Atualizar explícito, para que as setas do
-          // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
-          // após ação explícita (a flag não é setada em reload por edição).
-          if (focusOnLoadRef.current) {
-            focusOnLoadRef.current = false
-            iframeRef.current?.focus()
-          }
-        }}
-        // `allow-pointer-lock` permite que a câmera FPS capture o mouse após um clique.
-        // Mantemos o iframe sem `allow-same-origin` para preservar o isolamento do preview.
-        sandbox="allow-scripts allow-modals allow-pointer-lock"
-        // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
-        // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
-        // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
-        allow="fullscreen"
-        className="h-full w-full flex-1 bg-white"
-      />
+      {frameAbsent ? (
+        <div className="h-full w-full flex-1 bg-white" data-sz-preview-gap="" />
+      ) : (
+        <iframe
+          key={frameGeneration}
+          ref={iframeRef}
+          title="Pré-visualização"
+          src={isolatedUrl ?? undefined}
+          srcDoc={isolatedUrl ? undefined : effectiveDoc}
+          onLoad={() => {
+            setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
+            frameGapStepRef.current = 0
+            lastHeartbeatRef.current = Date.now()
+            setPreviewStalled(false)
+            iframeRef.current?.contentWindow?.postMessage(
+              { type: 'sz:audio', muted: execution.muted },
+              '*',
+            )
+            // Foca o jogo após um Play/Atualizar explícito, para que as setas do
+            // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
+            // após ação explícita (a flag não é setada em reload por edição).
+            if (focusOnLoadRef.current) {
+              focusOnLoadRef.current = false
+              iframeRef.current?.focus()
+            }
+          }}
+          // `allow-pointer-lock` permite que a câmera FPS capture o mouse após um clique.
+          // Mantemos o iframe sem `allow-same-origin` para preservar o isolamento do preview.
+          sandbox="allow-scripts allow-modals allow-pointer-lock"
+          // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
+          // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
+          // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
+          allow="fullscreen"
+          className="h-full w-full flex-1 bg-white"
+        />
+      )}
       {doc !== PAUSED_PREVIEW_DOC && requiresRemoteDocument && !isolatedUrl && (
         <p role="status" className="absolute inset-x-0 bottom-0 bg-sz-panel p-3 text-sm text-sz-fg">
           {!originAdapter
@@ -1166,6 +1215,8 @@ const STORAGE_FLUSH_MS = 500
 const UNRESPONSIVE_AFTER_MS = 2500
 /** Um documento novo que não carregou neste tempo está esperando um jogo preso. */
 const SWAP_STUCK_AFTER_MS = 3000
+/** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */
+const FRAME_GAPS_MS = [200, 1200, 3500] as const
 
 // Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
 // generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.

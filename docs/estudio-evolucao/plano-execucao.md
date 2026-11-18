@@ -169,3 +169,24 @@ Vídeos e aparelhos físicos não foram acessados nesta sessão. Os PDFs estão 
 em `evidencias/pdf-inventario.json`, com o alcance real da inspeção. Ausência de acesso
 nunca deve virar marcação de teste aprovado. A matriz estática não substitui navegador,
 e navegador emulado não substitui dispositivo físico de 8 GB ou GPU integrada.
+
+## Critérios de conclusão por etapa
+
+Acrescentado em 18/11/2026 (a lista de tarefas acima não dizia quando uma etapa termina).
+Uma etapa só passa a "concluída" com TODOS os critérios dela atendidos e com a evidência
+versionada. Vale para todas: as cinco aulas protegidas passam (399 gestos, 66 objetivos, projetos
+finais iguais), a matriz de compatibilidade não é regravada e nenhum teto de payload sobe.
+
+| Etapa | Está concluída quando |
+|---|---|
+| 0. Linha de base | Verificar, Enviar e Concluir conferidos numa aula de cada curso na página real de homologação. Tabela de capacidades dos dez runtimes com a fonte de cada linha. Linha de base medida e versionada para 80, 500, 2 mil, 5 mil e 10 mil blocos, para um projeto Pro modular e para um jogo de cada motor (abrir, editar, rodar, memória depois de 10 ciclos de Rodar e Parar). Metas p50 e p95 escritas com a máquina e a fixture de cada número. |
+| 1. Isolamento | Os cinco programas hostis passam no Chromium, no Firefox e no WebKit, em Linux e em Windows: o editor responde em menos de 500 ms, o Parar para em menos de 5 s e o conserto roda em menos de 15 s. Nenhum Rodar perde edição: recarregar logo depois de rodar traz o último código. Troca de perfil com gravação em voo conferida no app. B2 e B4 com decisão registrada (feito, ou não feito com a medição que justifica). |
+| 2. Clássico em escala | Com 5 mil blocos: abrir em menos de 8 s, mover uma área sem tarefa de mais de 500 ms, editar um campo sem tarefa de mais de 200 ms. Com 10 mil: abre, edita e gera o mesmo código do caminho sem montagem sob demanda. Mostrar o bloco, desfazer e refazer funcionam em bloco que estava fora da página. Abaixo do limiar nada muda (as aulas não entram no caminho novo). |
+| 3. Pro em escala | Projeto modular de 60 arquivos: digitar com p95 abaixo de 50 ms, abrir painel abaixo de 150 ms, primeira resposta da busca abaixo de 200 ms, medidos e versionados. Nenhum resultado de análise de versão antiga aparece. A fila de arquivos passa os testes de ordem, conflito e troca de projeto. A escolha de execução (leve, completa, hospedada) é pela capacidade real e está documentada. |
+| 4. Motores e streaming | Fixture 2D extensa e fixture 3D genérica com quadro medido antes e depois. Cada gargalo corrigido tem o perfil que o apontou. Regiões carregam, ativam e descartam sem crescer a memória em 10 ciclos. Os jogos dos cursos rodam iguais. |
+| 5. Depuração | Matriz por executor publicada, e a interface só mostra o que o executor tem. Onde há suporte: pausar, continuar, passo, ver valores e pilha, com arquivo, linha e bloco. Encerrar no meio de uma pausa não deixa o executor preso. |
+| 6. Profiling | Coleta desligada por padrão, com o custo dela medido (menos de 5% do quadro). Cada número marcado como medido, estimado ou indisponível. Painel na identidade atual. |
+| 7. Testes do aluno | O aluno escreve, roda e vê o resultado de um teste no Clássico e no Pro, com tempo e memória limitados e sem escrita escondida no projeto. Casos de chave, porta, vida, placar e fim de jogo, mais falha de compilação e de tempo. |
+| 8. Pinta e Molda | Adaptadores do lado do Estúdio com fixtures dos contratos entregues. Importar, rodar e exportar um cenário 2D e um 3D reais. Propriedade desconhecida é preservada. Nenhuma cena estruturada vira imagem achatada. |
+| 9. Persistência | Queda simulada em cada borda de escrita não perde nem duplica projeto. Duas abas e dois perfis não se sobrescrevem. Cliente antigo lendo projeto novo não destrói dados. Clássico para Pro guarda a cópia original. |
+| 10. Fluxo profissional e homologação | Exportação reproduzível conferida fora do Estúdio. Cenários A a H da missão homologados com registro do que foi local, emulado ou não verificado. Manuais do Clássico e do Pro escritos. PR sem merge nem deploy. |
