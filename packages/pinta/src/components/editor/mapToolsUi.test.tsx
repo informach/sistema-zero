@@ -375,7 +375,7 @@ describe('objetos do mapa', () => {
       level: 'advanced',
       prepare: comObjetos,
       extra: async (seed) => {
-        await seed.getState().create({ kind: 'pixel-sprite', name: 'heroi', sizeKey: '16' })
+        await seed.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
       },
     })
     await ativarObjetos()
@@ -654,8 +654,10 @@ describe('testar com personagem', () => {
   it('abre com o boneco do Pinta, os personagens da galeria e as duas vistas', async () => {
     await abrirMapa({
       extra: async (seed) => {
-        await seed.getState().create({ kind: 'pixel-sprite', name: 'heroi', sizeKey: '16' })
-        await seed.getState().create({ kind: 'pixel-background', name: 'ceu', sizeKey: '160x120' })
+        await seed.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
+        await seed
+          .getState()
+          .create({ kind: 'pixel-background', name: 'ceu', width: 160, height: 120 })
       },
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.testarComPersonagem }))
