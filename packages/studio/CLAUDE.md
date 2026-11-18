@@ -9,10 +9,12 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
 - **Rodar/Parar na barra**: `PreviewIframe` e `PythonEditorPreview` publicam fase + ações no
   `proRun` (sem barra própria); `ProRunControls` no meio da Topbar (fora do celular). O olhinho
   virou "Mostrar o jogo" no ⋯. `ClassicStage` (`components/preview/`) é o palco: título
-  Jogo/Página/Programa, pílula, **Atualizar** (nome acessível "Atualizar o preview" — âncora das
-  aulas gravadas, não renomear), Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
+  Jogo/Página/Programa, pílula, Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
   parou". `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
-- **Âncoras das aulas gravadas** (robô `palco-gravacao`): "Atualizar o preview", selo "Salvo"
+- **Âncoras das aulas gravadas** (robô `palco-gravacao`): o Rodar da barra
+  (`[data-live-target="studio-run"]`, que se chama "Rodar" ou "Rodar de novo" conforme a fase; o
+  antigo "Atualizar o preview" do palco não existe mais desde o redesenho, conferido em 17/11/2026),
+  selo "Salvo"
   (único; a frase da nuvem do host vai na dica, e a nuvem só aparece com aviso/erro), rótulos do
   Compartilhar, `iframe[title="Pré-visualização"]`, "Organizar blocos", o TEXTO dos rótulos das
   categorias (ícones vêm por classe/`::before`, nunca no texto), `.blocklyTrash`, um

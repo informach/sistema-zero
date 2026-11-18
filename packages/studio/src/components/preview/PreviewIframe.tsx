@@ -54,6 +54,12 @@ import {
   shouldPausePreviewRender,
 } from './previewBudget'
 import {
+  armRunTripwire,
+  disarmRunTripwire,
+  HEARTBEATS_TO_TRUST,
+  wasRunInterrupted,
+} from './runTripwire'
+import {
   projectUsesKeyboardControls,
   useTouchInput,
   VirtualGamepad,
@@ -119,6 +125,14 @@ export function PreviewIframe(): JSX.Element {
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
   const lastHeartbeatRef = useRef(0)
   const [previewStalled, setPreviewStalled] = useState(false)
+  // A "geração" do iframe (a `key` dele). Um jogo preso num cálculo sem fim segura o processo
+  // da prévia, e trocar o `srcDoc` do MESMO iframe só vale quando o cálculo termina (medido:
+  // 19 s para um travamento de 20 s). Um iframe NOVO no lugar roda na hora (20 ms), porque o
+  // navegador descarta o processo preso junto com o iframe antigo. Por isso a geração sobe ao
+  // PARAR e ao Rodar de novo com a prévia sem responder, e só aí: no caminho normal o iframe é
+  // o mesmo de sempre (remontá-lo a cada edição deixava a prévia em branco de vez em quando).
+  const [frameGeneration, setFrameGeneration] = useState(0)
+  const wasRunningRef = useRef(false)
   // Incrementado quando o preview precisa executar/reexecutar o documento atual
   // mesmo que o HTML/CSS/JS gerado seja idêntico.
   const [renderNonce, setRenderNonce] = useState(0)
@@ -234,11 +248,25 @@ export function PreviewIframe(): JSX.Element {
     }
   }, [projectId])
 
+  /**
+   * O jogo da vez parou de dar sinal de vida: o aviso de travado já apareceu, ou os batimentos
+   * (um por segundo) faltam há mais de `UNRESPONSIVE_AFTER_MS`. Com a aba escondida o navegador
+   * segura os batimentos, e a falta deles não quer dizer nada.
+   */
+  const previewIsUnresponsive = () => {
+    if (!previewRunning || loadedSrcDoc === null || loadedSrcDoc === PAUSED_PREVIEW_DOC)
+      return false
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return false
+    return previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS
+  }
+
   const markCurrentProjectStarted = () => {
     if (projectId) autoStartedProjectId.current = projectId
   }
 
   const rerenderPreview = () => {
+    // Rodar de novo com o jogo preso: sem iframe novo, o documento novo esperaria o travamento.
+    if (previewIsUnresponsive()) setFrameGeneration((n) => n + 1)
     setRenderNonce((n) => n + 1)
   }
 
@@ -454,6 +482,13 @@ export function PreviewIframe(): JSX.Element {
     if (autoStartedProjectId.current === projectId) return
     if (loadedSrcDoc !== PAUSED_PREVIEW_DOC) return
     autoStartedProjectId.current = projectId
+    // A última execução deste projeto nunca deu sinal de vida (a aba congelou ou caiu com o
+    // jogo rodando): desta vez a prévia espera o Rodar em vez de rodar sozinha.
+    if (wasRunInterrupted(projectId)) {
+      disarmRunTripwire(projectId)
+      setPreviewRunning(false)
+      return
+    }
     setRenderNonce((n) => n + 1)
   }, [
     projectId,
@@ -462,6 +497,7 @@ export function PreviewIframe(): JSX.Element {
     loadedSrcDoc,
     execution.autoRun,
     execution.editingAccess,
+    setPreviewRunning,
   ])
 
   useEffect(() => {
@@ -648,6 +684,29 @@ export function PreviewIframe(): JSX.Element {
 
   const docIsLive = doc !== PAUSED_PREVIEW_DOC
 
+  // Documento novo que não entra: o `srcDoc` mudou e o iframe não deu `load` dele em
+  // `SWAP_STUCK_AFTER_MS`. É o jogo anterior preso segurando o processo (por exemplo: a criança
+  // conserta o código logo depois de rodar o que trava). Um iframe novo carrega na hora. Uma vez
+  // por documento: num aparelho lento, um jogo grande que só demora a carregar não entra em laço.
+  const swapRescuedDocRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (isolatedUrl || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
+    if (swapRescuedDocRef.current === effectiveDoc) return
+    const timer = setTimeout(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
+      swapRescuedDocRef.current = effectiveDoc
+      setFrameGeneration((n) => n + 1)
+    }, SWAP_STUCK_AFTER_MS)
+    return () => clearTimeout(timer)
+  }, [effectiveDoc, loadedSrcDoc, isolatedUrl])
+
+  // PARAR troca o iframe por um novo (ver `frameGeneration`): é o que tira da frente um jogo
+  // preso, por qualquer caminho que o Parar tenha vindo (a barra, o cartão de travado, o host).
+  useEffect(() => {
+    if (wasRunningRef.current && !previewRunning) setFrameGeneration((n) => n + 1)
+    wasRunningRef.current = previewRunning
+  }, [previewRunning])
+
   // Reseta o relógio do heartbeat sempre que o documento muda (novo render):
   // dá ao iframe a janela completa antes de considerar travado. `doc` é o
   // GATILHO (não lido no corpo), por isso fica na lista de propósito.
@@ -657,9 +716,34 @@ export function PreviewIframe(): JSX.Element {
     setPreviewStalled(false)
   }, [doc])
 
+  // A marca de execução (ver `runTripwire.ts`): posta quando um jogo começa a rodar, tirada
+  // quando ele dá sinal de vida, quando para e quando o editor fecha direito.
+  const tripwireRef = useRef<{ projectId: string; heartbeats: number } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho (cada documento novo recomeça a contagem)
+  useEffect(() => {
+    // Só o jogo RODANDO põe a marca. Parado (inclusive na abertura), nada mexe nela: é a marca
+    // deixada por uma aba que congelou que a abertura seguinte precisa encontrar.
+    if (!projectId || !docIsLive) return
+    armRunTripwire(projectId)
+    tripwireRef.current = { projectId, heartbeats: 0 }
+    // Recarregar ou sair com a página VIVA também tira a marca (a desmontagem do React não roda
+    // nessa hora). Numa aba congelada este aviso nunca chega a rodar, e a marca fica.
+    const leaving = () => disarmRunTripwire(projectId)
+    window.addEventListener('pagehide', leaving)
+    return () => {
+      window.removeEventListener('pagehide', leaving)
+      disarmRunTripwire(projectId)
+      tripwireRef.current = null
+    }
+  }, [doc, docIsLive, projectId])
+
   // Loop do watchdog: marca travado se nenhum heartbeat chegar dentro do timeout.
   //
-  // ⚠️ LIMITAÇÃO CONHECIDA do sandbox de MESMA THREAD: o iframe srcdoc
+  // ⚠️ Medido em 17/11/2026 (`scripts/measure-preview-isolation.mjs`): no Chromium de mesa o
+  // iframe srcdoc com sandbox JÁ roda em outro processo, e o host não trava com ele. O texto
+  // abaixo segue valendo para os navegadores ainda não medidos (Firefox, Safari, Android), e o
+  // que o Parar faz com o jogo preso está em `frameGeneration`.
+  // LIMITAÇÃO CONHECIDA do sandbox de MESMA THREAD: o iframe srcdoc
   // null-origin compartilha a thread principal do host. O loopGuard (Camada A)
   // corta laços síncronos instrumentados, mas trabalho síncrono NÃO-laço — p.ex.
   // `Array.from({ length: 1e10 })`, um `JSON.parse` gigante, ReDoS ou recursão
@@ -734,6 +818,9 @@ export function PreviewIframe(): JSX.Element {
       if (ev.data.kind === 'heartbeat') {
         lastHeartbeatRef.current = Date.now()
         setPreviewStalled((stalled) => (stalled ? false : stalled))
+        const tripwire = tripwireRef.current
+        if (tripwire && ++tripwire.heartbeats === HEARTBEATS_TO_TRUST)
+          disarmRunTripwire(tripwire.projectId)
         return
       }
       pushLog(ev.data)
@@ -859,6 +946,7 @@ export function PreviewIframe(): JSX.Element {
   return (
     <div className="relative flex h-full flex-col bg-sz-bg">
       <iframe
+        key={frameGeneration}
         ref={iframeRef}
         title="Pré-visualização"
         src={isolatedUrl ?? undefined}
@@ -1019,6 +1107,11 @@ const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></htm
 
 // Intervalo do throttle de persistência do estado salvo (guardar/ler).
 const STORAGE_FLUSH_MS = 500
+
+/** Sem batimento (um por segundo) há mais que isto, o jogo da vez é tratado como preso. */
+const UNRESPONSIVE_AFTER_MS = 2500
+/** Um documento novo que não carregou neste tempo está esperando um jogo preso. */
+const SWAP_STUCK_AFTER_MS = 3000
 
 // Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
 // generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.

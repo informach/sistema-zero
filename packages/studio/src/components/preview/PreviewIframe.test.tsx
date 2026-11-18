@@ -72,6 +72,81 @@ describe('PreviewIframe', () => {
     })
   })
 
+  // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
+  // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
+  // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
+  it('Rodar de novo mantém o mesmo iframe; Parar põe um iframe novo no lugar', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const primeiro = screen.getByTitle('Pré-visualização')
+    fireEvent.load(primeiro)
+    const rodando = await waitFor(() => {
+      const doc = getPreviewSrcDoc()
+      expect(doc).toContain('Preview automático')
+      return doc
+    })
+    fireEvent.load(primeiro)
+
+    act(() => useProRun.getState().actions?.reload?.())
+    await waitFor(() => expect(getPreviewSrcDoc()).not.toBe(rodando))
+    expect(screen.getByTitle('Pré-visualização')).toBe(primeiro)
+
+    act(() => useProRun.getState().actions?.stop())
+    await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
+    const depoisDeParar = screen.getByTitle('Pré-visualização')
+    expect(depoisDeParar).not.toBe(primeiro)
+    expect(depoisDeParar.getAttribute('sandbox')).toBe(
+      'allow-scripts allow-modals allow-pointer-lock',
+    )
+  })
+
+  // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
+  // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
+  it('a marca de execução: posta ao rodar, tirada com sinal de vida; com ela, não roda sozinha', async () => {
+    const project = createPreviewProject()
+    const chave = `sz:run-tripwire:${project.id}`
+    window.localStorage.removeItem(chave)
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    const montada = render(<PreviewIframe />)
+    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(iframe)
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    expect(window.localStorage.getItem(chave)).not.toBeNull()
+
+    const contentWindow = iframe.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    const batimento = () =>
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source: contentWindow,
+            origin: 'null',
+            data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+          }),
+        )
+      })
+    batimento()
+    batimento()
+    expect(window.localStorage.getItem(chave)).not.toBeNull()
+    batimento()
+    expect(window.localStorage.getItem(chave)).toBeNull()
+
+    // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
+    montada.unmount()
+    window.localStorage.setItem(chave, String(Date.now()))
+    useUIStore.setState({ previewRunning: true })
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('idle'))
+    expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
+    expect(window.localStorage.getItem(chave)).toBeNull()
+
+    // ...a prévia espera o Rodar, e aí roda (com a marca posta de novo).
+    act(() => useProRun.getState().actions?.run())
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    expect(window.localStorage.getItem(chave)).not.toBeNull()
+  })
+
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     render(<PreviewIframe />)

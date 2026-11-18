@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import type { StudioFeatures } from './config'
+import { LESSON_DEFAULT_FEATURES } from './lessonFeatures'
 import { StudioCore } from './StudioCore'
 import type { StudioLessonProps } from './types'
 
@@ -19,13 +20,6 @@ export function StudioLesson({ features, ...rest }: StudioLessonProps): JSX.Elem
   // Defaults da aula: editor enxuto. `extensions` NÃO é forçado aqui (segue o
   // default do config = ligado, como na autoria); quem quer cortá-lo passa em
   // `features` (o aluno faz isso). O `features` do chamador sobrescreve.
-  const lessonFeatures: StudioFeatures = {
-    terminal: false,
-    ai: false,
-    professional: false,
-    export: false,
-    download: false,
-    ...features,
-  }
+  const lessonFeatures: StudioFeatures = { ...LESSON_DEFAULT_FEATURES, ...features }
   return <StudioCore {...rest} features={lessonFeatures} />
 }
