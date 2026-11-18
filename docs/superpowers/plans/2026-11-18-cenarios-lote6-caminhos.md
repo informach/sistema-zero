@@ -67,16 +67,16 @@
 
 ## 6.5 — Fechamento exclusivo do lote
 
-- [ ] Conferir os requisitos de Caminhos na especificação e issue 267: chegadas às entradas, margens, reassentamento de conjuntos e escala do avatar.
-- [ ] Núcleo, motor, oficina/hosts, Members/HTTP/BFF/Postgres pertinentes, tipagem e build aprovados. Extensão do clipboard, referências e cota preservadas.
-- [ ] Browser: seis ferramentas, criar/editar pontos, piso/curvas/juntas, estrada no relevo, ponte sobre água, camadas, cancelamento, falha/retomada e histórico após reabrir.
-- [ ] Percorrer com o avatar real, testar câmera, colisões, margem rasa/vão da ponte e controles de toque; sem flutuação, z-fighting ou piso invisível introduzido.
-- [ ] Capturas/vídeos comparáveis e orçamento do renderer após ciclos. Diferenciar emulação/aparelhos físicos e prova técnica/aceite artístico.
-- [ ] Revisar, documentar, commitar e enviar à staging. Somente depois iniciar lote 7. Full review, composição final, CI, implantação e validação remota no fechamento global.
+- [x] Conferir os requisitos de Caminhos na especificação e issue 267: chegadas às entradas, margens, reassentamento de conjuntos e escala do avatar.
+- [x] Núcleo, motor, oficina/hosts, Members/HTTP/BFF/Postgres pertinentes, tipagem e build aprovados. Extensão do clipboard, referências e cota preservadas.
+- [x] Browser: seis ferramentas, criar/editar pontos, piso/curvas/juntas, estrada no relevo, ponte sobre água, camadas, cancelamento, falha/retomada e histórico após reabrir.
+- [x] Percorrer com o avatar real, testar câmera, colisões, margem rasa/vão da ponte e controles de toque; sem flutuação, z-fighting ou piso invisível introduzido.
+- [x] Capturas/vídeos comparáveis e orçamento do renderer após ciclos. Diferenciar emulação/aparelhos físicos e prova técnica/aceite artístico.
+- [x] Revisar, documentar, commitar e enviar à staging. Somente depois iniciar lote 7. Full review, composição final, CI, implantação e validação remota no fechamento global.
 
 ## Estado atual
 
-**Lote 6 aberto. 6.1–6.4 implementados, testados e revisados localmente. Única frente ativa: 6.5 — revisão integral e fechamento do lote.** [Interface e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote6-interface.md). Pontos, coordenadas, biblioteca, autoria e quatro workers estão ligados à oficina e verificados. Lotes 7–10 não iniciados.
+**Lote 6 implementado, testado e revisado localmente.** [Revisão de fechamento e evidências](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md). Preservar o fechamento na staging e seguir exclusivamente ao lote 7. Lotes 8–10, composição final, full review, CI e implantação/validação remota permanecem pendentes.
 
 ### Registros anteriores
 

@@ -70,6 +70,9 @@ test('tampa segue as duas faces do arco no interior, não só os cantos do pilar
     medida = medir(r.atributos.position!.valores)
   expect(medida.volume).toBeCloseTo(2.75, 5)
   expect(medida.areaTopo).toBeCloseTo(1, 5)
+  for (const x of [-0.49, -0.1, 0, 0.2, 0.49])
+    expect(r.alturaSuperiorEm({ x, z: 0.1 })).toBeCloseTo(3 - Math.abs(x), 6)
+  expect(() => r.alturaSuperiorEm({ x: 0.6, z: 0 })).toThrow('fora da tampa')
   for (const t of medida.topos) {
     const x = (t[0]! + t[3]! + t[6]!) / 3,
       y = (t[1]! + t[4]! + t[7]!) / 3

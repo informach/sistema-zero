@@ -214,6 +214,9 @@ export function inverterLote(
   const texturasAntes = new Set(antes.texturas?.map((t) => t.id))
   // Soltar referências de solo antes de retirar texturas que só existiam na base nova.
   if (!igual(antes.base, depois.base)) comandos.push({ tipo: 'base.definir', base: antes.base })
+  // O panorama, assim como o solo, solta suas referências antes de apagar as imagens novas.
+  if (!igual(antes.iluminacao, depois.iluminacao))
+    comandos.push({ tipo: 'iluminacao.definir', iluminacao: antes.iluminacao })
   for (const t of depois.texturas ?? [])
     if (!texturasAntes.has(t.id)) comandos.push({ tipo: 'textura.remover', id: t.id })
 
@@ -233,8 +236,6 @@ export function inverterLote(
       comandos.push({ tipo: 'camada.definir', camada: c })
 
   // 9. O que é do cenário inteiro.
-  if (!igual(antes.iluminacao, depois.iluminacao))
-    comandos.push({ tipo: 'iluminacao.definir', iluminacao: antes.iluminacao })
   if (antes.nome !== depois.nome) comandos.push({ tipo: 'cenario.renomear', nome: antes.nome })
   const definicoesAntes = new Set(antes.definicoesConjuntos?.map((d) => d.id))
   for (const d of depois.definicoesConjuntos ?? [])

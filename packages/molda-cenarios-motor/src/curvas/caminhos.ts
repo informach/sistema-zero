@@ -2,10 +2,10 @@ import {
   type CaminhoDeCenario,
   type DocumentoDeCenario,
   malhaPlanaDoCaminho,
-  type PecaEstruturalDoCaminho,
   type PontoNoChao,
   prepararEncontrosDosCaminhos,
   type RegioesDeTerreno,
+  type SuperficieDeCaminho,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type Box3,
@@ -39,7 +39,7 @@ interface Entrada {
   superficies: SuperficieDoObjeto[]
   colisoes: FonteDeColisao[]
   conformadas: ParteConformada[]
-  partes: Map<string, PecaEstruturalDoCaminho>
+  partes: Map<string, SuperficieDeCaminho>
   estrutural: boolean
   avisos: string[]
   sincronizar(): void
@@ -151,7 +151,7 @@ export class CaminhosDoPalco {
       conformadas: ParteConformada[] = [],
       superficies: SuperficieDoObjeto[] = [],
       colisoes: FonteDeColisao[] = [],
-      partes = new Map<string, PecaEstruturalDoCaminho>(),
+      partes = new Map<string, SuperficieDeCaminho>(),
       avisos: string[] = [],
       limpezas: (() => void)[] = [],
       sincronizacoes: (() => void)[] = [],

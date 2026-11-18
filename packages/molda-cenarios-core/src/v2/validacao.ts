@@ -12,6 +12,7 @@ import {
 import { TransformacaoSchema } from './entidades-schema'
 import { parteEstruturalExiste } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
+import { planoDeAmostragemDaRota } from './marcadores'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
 import { errosDaTopologiaDoCaminho } from './topologia-de-caminho'
 
@@ -52,6 +53,8 @@ export function validarDocumento(
     texturas.add(t.id)
     if (opcoes.texturaExiste && !opcoes.texturaExiste(t)) erros.push(`Textura ausente: ${t.id}`)
   }
+  if (d.iluminacao.ceu?.tipo === 'panorama' && !texturas.has(d.iluminacao.ceu.textura))
+    erros.push('Textura do panorama fora da tabela do cenário')
   if (d.base.tipo === 'terreno')
     for (const camada of d.base.solo?.camadas ?? [])
       if (camada.textura && !texturas.has(camada.textura.id))
@@ -170,6 +173,28 @@ export function validarDocumento(
 
   for (const m of d.marcadores)
     if (m.objeto && !objetos.has(m.objeto)) erros.push(`Objeto do marcador ausente: ${m.id}`)
+  if (
+    d.marcadores.filter((m) => m.configuracao?.tipo === 'inicio' && m.configuracao.principal)
+      .length > 1
+  )
+    erros.push('Só pode existir um ponto de início principal.')
+  const luzes = d.marcadores.flatMap((m) =>
+    m.configuracao?.tipo === 'luz' ? [m.configuracao.luz] : [],
+  )
+  if (luzes.length > 32) erros.push('O cenário admite até 32 luzes locais.')
+  if (luzes.filter((l) => l.sombra).length > 4)
+    erros.push('O cenário admite até 4 luzes com sombra.')
+  let amostrasDeRotas = 0
+  for (const m of d.marcadores)
+    if (m.configuracao?.tipo === 'rota') {
+      try {
+        amostrasDeRotas += planoDeAmostragemDaRota(m.configuracao).quantidade
+      } catch (e) {
+        if (!(e instanceof CenarioInvalido)) throw e
+        erros.push(...e.problemas.map((p) => `${p} (${m.id})`))
+      }
+    }
+  if (amostrasDeRotas > 262_144) erros.push('O cenário excede o orçamento de amostragem das rotas.')
 
   if (d.base.tipo === 'perfil') {
     const carimbos = new Set<string>()

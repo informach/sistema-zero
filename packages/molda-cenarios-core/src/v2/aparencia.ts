@@ -58,6 +58,7 @@ export function aplicarTexturaAosObjetos(
       .filter((o) => !escolhidos.has(o.id))
       .flatMap((o) => (o.aparencia?.textura ? [o.aparencia.textura.id] : [])),
   )
+  if (doc.iluminacao.ceu?.tipo === 'panorama') aindaUsadas.add(doc.iluminacao.ceu.textura)
   for (const caminho of doc.caminhos)
     if (caminho.aparencia?.textura) aindaUsadas.add(caminho.aparencia.textura.id)
   if (doc.base.tipo === 'terreno')

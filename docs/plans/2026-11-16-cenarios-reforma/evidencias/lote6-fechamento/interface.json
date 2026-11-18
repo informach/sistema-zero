@@ -1,0 +1,212 @@
+{
+  "revisao": 10,
+  "caminhos": [
+    {
+      "id": "o-45586b3k5q3a",
+      "nome": "QA Trilha",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": -20,
+          "z": -15
+        },
+        {
+          "x": -10,
+          "z": -15
+        }
+      ],
+      "acabamento": "mod-0004",
+      "largura": 2.6,
+      "aparencia": {
+        "textura": {
+          "id": "tex-0005",
+          "repeticaoMetros": 2
+        }
+      },
+      "encaixeModelo": {
+        "eixo": "x",
+        "baseLocal": 0
+      },
+      "tipo": "trilha"
+    },
+    {
+      "id": "o-2g6q4o2x0j3g",
+      "nome": "QA Praça",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": -5,
+          "z": -15
+        },
+        {
+          "x": 5,
+          "z": -15
+        },
+        {
+          "x": 0,
+          "z": -5
+        }
+      ],
+      "acabamento": null,
+      "largura": 2.6,
+      "fechada": true,
+      "tipo": "praca"
+    },
+    {
+      "id": "o-562h55146n1l",
+      "nome": "QA Estrada",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": -20,
+          "z": 10
+        },
+        {
+          "x": -10,
+          "z": 10
+        }
+      ],
+      "acabamento": null,
+      "largura": 2.6,
+      "tipo": "estrada",
+      "molde": {
+        "borda": 1.3,
+        "deslocamento": -0.2,
+        "suavizacao": 4
+      }
+    },
+    {
+      "id": "o-1t5n6l131n2z",
+      "nome": "QA Cerca",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": 10,
+          "z": -15
+        },
+        {
+          "x": 20,
+          "z": -15
+        }
+      ],
+      "acabamento": null,
+      "largura": 0.12,
+      "tipo": "cerca",
+      "altura": 1.2,
+      "comprimentoDoModulo": 2
+    },
+    {
+      "id": "o-5i4i405p4j52",
+      "nome": "QA Muro",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": 10,
+          "z": -5
+        },
+        {
+          "x": 20,
+          "z": -5
+        }
+      ],
+      "acabamento": null,
+      "largura": 0.3,
+      "tipo": "muro",
+      "altura": 2,
+      "comprimentoDoModulo": 2
+    },
+    {
+      "id": "o-2k2f4n3j4e1q",
+      "nome": "QA Ponte",
+      "grupo": null,
+      "bloqueado": false,
+      "oculto": false,
+      "pontos": [
+        {
+          "x": 10,
+          "z": 10
+        },
+        {
+          "x": 20,
+          "z": 10
+        }
+      ],
+      "acabamento": null,
+      "largura": 2.6,
+      "tipo": "ponte",
+      "cotas": {
+        "de": 2,
+        "ate": 2
+      },
+      "espessura": 0.2,
+      "guardas": true,
+      "alturaDaGuarda": 0.7,
+      "pilares": {
+        "espacamento": 6,
+        "largura": 0.25
+      }
+    }
+  ],
+  "modelos": [
+    {
+      "id": "mod-0004",
+      "biblioteca": "bib-0003",
+      "digest": "804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+      "nome": "Solo do Reino",
+      "modelo": "mod-0004",
+      "volume": {
+        "min": {
+          "x": -3.5,
+          "z": -1.2999999523162842,
+          "y": 0
+        },
+        "max": {
+          "x": 3.5,
+          "z": 1.2999999523162842,
+          "y": 0.15200001001358032
+        }
+      }
+    }
+  ],
+  "texturas": [
+    {
+      "id": "tex-0005",
+      "biblioteca": "bib-0003",
+      "digest": "f7a143dd4c5d3364478cf399b1b174e95a0e49e7f9cec7ef9c31f833b59055d8",
+      "nome": "Terra QA",
+      "textura": "tex-0005"
+    }
+  ],
+  "catalogoEmUmaRevisao": true,
+  "nenhumaInstanciaExtra": true,
+  "cancelamento": true,
+  "alcasPeloMouse": true,
+  "historico": true,
+  "copiarColarRemover": true,
+  "visibilidade": true,
+  "camada": true,
+  "reabertura": true,
+  "workers": [
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios-motor/src/importacao/converter.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module",
+    "http://127.0.0.1:4541/@fs/C:/Users/tocha/projects/sistema-zero/packages/molda-cenarios/src/oficina/caminho.worker.ts?worker_file&type=module"
+  ],
+  "erros": []
+}

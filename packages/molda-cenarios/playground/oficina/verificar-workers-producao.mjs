@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { esperarConsulta } from './esperar-consulta.mjs'
 
 const endereco = process.env.CENARIOS_QA_PREVIEW ?? 'http://127.0.0.1:4542',
   saida = resolve(import.meta.dirname, '../../../../output/cenarios-reforma/lote6-worker-producao')
@@ -83,7 +84,8 @@ try {
   await painel.getByRole('heading', { name: 'Prévia · ainda não guardada', exact: true }).waitFor()
   await painel.getByRole('button', { name: 'Guardar caminho', exact: true }).click()
   await painel.getByRole('heading', { name: /Caminhos do cenário/ }).waitFor()
-  await pagina.waitForFunction(
+  await esperarConsulta(
+    pagina,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 1,
     id,
   )

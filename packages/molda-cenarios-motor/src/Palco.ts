@@ -370,6 +370,16 @@ class PalcoThree implements Palco {
           centro: local.caixa.getCenter(new Vector3()).applyMatrix4(local.matriz),
           bloqueado: this.trancados.has(id),
         }))
+        for (const e of [...(this.documento?.caminhos ?? []), ...(this.documento?.aguas ?? [])]) {
+          const caixa = this.caminhos.limitesDo(e.id, new Box3())
+          if (caixa.isEmpty()) this.aguas.limitesDo(e.id, caixa)
+          if (!caixa.isEmpty())
+            candidatos.push({
+              id: e.id,
+              centro: caixa.getCenter(new Vector3()),
+              bloqueado: this.trancados.has(e.id),
+            })
+        }
         this.opcoes.aoSelecionarArea?.(escolherNaArea(candidatos, this.camera, regiao), somar)
       },
       (ativo) => {
@@ -1044,7 +1054,9 @@ class PalcoThree implements Palco {
     for (const id of escolhidos) {
       const local = this.alvos.get(id)
       if (!local) {
-        caixa.union(this.caminhos.limitesDo(id, cantos))
+        this.caminhos.limitesDo(id, cantos)
+        if (cantos.isEmpty()) this.aguas.limitesDo(id, cantos)
+        caixa.union(cantos)
         continue
       }
       caixa.union(cantos.copy(local.caixa).applyMatrix4(local.matriz))
@@ -1640,6 +1652,8 @@ class PalcoThree implements Palco {
   // ---- seleção e alça -----------------------------------------------------
 
   private movidos(): string[] {
+    // Uma escolha mista nunca move silenciosamente só seus objetos.
+    if (this.selecao.some((id) => !this.alvos.has(id))) return []
     return this.selecao.filter((id) => this.alvos.has(id) && !this.trancados.has(id))
   }
 
@@ -1655,6 +1669,7 @@ class PalcoThree implements Palco {
       const local = this.alvos.get(id)
       if (!local) {
         const caixa = this.caminhos.limitesDo(id, new Box3())
+        if (caixa.isEmpty()) this.aguas.limitesDo(id, caixa)
         if (!caixa.isEmpty() && ++n <= 400) this.contornos.por(new Matrix4(), caixa)
         continue
       }
@@ -1874,8 +1889,10 @@ class PalcoThree implements Palco {
     this.mirar(evento.clientX, evento.clientY)
     const objeto = this.superficies.escolher(this.raio)
     const agua = this.aguas.pontoSobRaio(this.raio)
+    const somar = evento.shiftKey || evento.ctrlKey || evento.metaKey
     if (agua && (!objeto || agua.distancia < objeto.distancia) && this.opcoes.aoSelecionarAgua) {
-      this.opcoes.aoSelecionarAgua(agua.id)
+      if (somar) this.opcoes.aoSelecionar?.(agua.id, true)
+      else this.opcoes.aoSelecionarAgua(agua.id)
       return
     }
     const id = objeto?.id
@@ -1884,13 +1901,11 @@ class PalcoThree implements Palco {
       this.documento?.caminhos.some((c) => c.id === id) &&
       this.opcoes.aoSelecionarCaminho
     ) {
-      this.opcoes.aoSelecionarCaminho(id)
+      if (somar) this.opcoes.aoSelecionar?.(id, true)
+      else this.opcoes.aoSelecionarCaminho(id)
       return
     }
-    this.opcoes.aoSelecionar?.(
-      id ? (this.origens.get(id) ?? id) : null,
-      evento.shiftKey || evento.ctrlKey || evento.metaKey,
-    )
+    this.opcoes.aoSelecionar?.(id ? (this.origens.get(id) ?? id) : null, somar)
   }
 }
 

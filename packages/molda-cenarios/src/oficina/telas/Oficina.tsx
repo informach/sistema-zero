@@ -1,7 +1,9 @@
 import {
   type ComandoDeCenario,
+  capturarFragmento,
   chaveDaBase,
   type EncaixeDeComposicao,
+  entidadesSelecionaveis,
   entidadesTransformaveis,
   type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -83,7 +85,11 @@ import {
 } from '../acoes'
 import { NOMES_AGUA } from '../agua-formulario'
 import { comandosParaRemoverAgua } from '../agua-remocao'
-import { useAreaDeTransferencia } from '../area-de-transferencia'
+import {
+  alvosDaTransferencia,
+  comandosParaRecortarEscolha,
+  useAreaDeTransferencia,
+} from '../area-de-transferencia'
 import { NOMES_CAMINHO } from '../caminho-formulario'
 import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
@@ -340,7 +346,13 @@ function OficinaAberta({
     palco,
     centro: centroParaColar,
   })
-  const { documento, selecao, ferramenta, encaixe } = estado
+  const { documento, selecao: escolha, ferramenta, encaixe } = estado
+  const transformaveis = useMemo(
+      () => new Set(entidadesTransformaveis(documento).map((o) => o.id)),
+      [documento],
+    ),
+    escolhaMista = escolha.some((id) => !transformaveis.has(id)),
+    selecao = useMemo(() => (escolhaMista ? [] : escolha), [escolha, escolhaMista])
   const conjuntos = useConjuntos({
     host,
     espaco: mundo.espacoId,
@@ -435,12 +447,16 @@ function OficinaAberta({
     editarCaminho = caminhos.editar
   const aoSelecionarCaminho = useCallback(
     (id: string) => {
+      if (controlador.getState().somarSelecao) {
+        controlador.tocar(id, true)
+        return
+      }
       setAba('caminhos')
       setModoPainel('escolha')
       setPainelAberto(true)
       editarCaminho(id)
     },
-    [editarCaminho],
+    [editarCaminho, controlador],
   )
   const aguaAtual = useRef(agua)
   aguaAtual.current = agua
@@ -448,12 +464,16 @@ function OficinaAberta({
   const editarAgua = agua.editar
   const aoSelecionarAgua = useCallback(
     (id: string) => {
+      if (controlador.getState().somarSelecao) {
+        controlador.tocar(id, true)
+        return
+      }
       setAba('agua')
       setModoPainel('escolha')
       setPainelAberto(true)
       editarAgua(id)
     },
-    [editarAgua],
+    [editarAgua, controlador],
   )
   const aoEsculpir = terreno.aoEsculpir,
     aoPreverTerreno = terreno.aoPrever
@@ -623,7 +643,7 @@ function OficinaAberta({
       ),
     [aba, relevoPronto, estado.ocupado, pincel.configuracao, emEnsaio],
   )
-  useEffect(() => palco.current?.definirSelecao(selecao), [selecao])
+  useEffect(() => palco.current?.definirSelecao(escolha), [escolha])
   useEffect(() => {
     palco.current?.definirFerramenta(
       aba === 'objetos' && !estado.ocupado ? ferramenta : 'selecionar',
@@ -674,7 +694,14 @@ function OficinaAberta({
   )
   const duplicarPasta = transferencia.duplicar
   const copiar = useCallback(() => {
-    const atual = controlador.getState()
+    const atual = controlador.getState(),
+      estruturais = new Set(
+        [...atual.documento.aguas, ...atual.documento.caminhos].map((e) => e.id),
+      )
+    if (atual.selecao.some((id) => estruturais.has(id))) {
+      duplicarPasta()
+      return
+    }
     if (
       atual.alvoDaArvore &&
       (atual.documento.grupos.some((g) => g.id === atual.alvoDaArvore) ||
@@ -799,8 +826,22 @@ function OficinaAberta({
     }
   }
   const apagar = useCallback(() => {
-    const atual = controlador.getState()
+    const atual = controlador.getState(),
+      estruturais = new Set(
+        [...atual.documento.aguas, ...atual.documento.caminhos].map((e) => e.id),
+      )
     const alvo = atual.alvoDaArvore
+    if (atual.selecao.some((id) => estruturais.has(id))) {
+      try {
+        const alvos = alvosDaTransferencia(atual),
+          fonte = palco.current?.fonteDeAlturas(),
+          fragmento = capturarFragmento(atual.documento, alvos, mundo.espacoId, fonte)
+        controlador.executar(comandosParaRecortarEscolha(atual.documento, fragmento, alvos, fonte))
+      } catch (e) {
+        setErroDoMolde(e instanceof Error ? e.message : 'Não consegui remover a escolha.')
+      }
+      return
+    }
     if (alvo && !atual.selecao.length && atual.documento.aguas.some((a) => a.id === alvo)) {
       try {
         controlador.executar(comandosParaRemoverAgua(atual.documento, alvo))
@@ -833,7 +874,7 @@ function OficinaAberta({
       pasta || !atual.selecao.length ? (alvo ? [alvo] : []) : atual.selecao,
     )
     if (comandos.length) controlador.executar(comandos)
-  }, [controlador])
+  }, [controlador, mundo.espacoId])
 
   // Atalhos do teclado, quando a pessoa não está escrevendo num campo.
   useEffect(() => {
@@ -869,7 +910,7 @@ function OficinaAberta({
         const doc = controlador.getState().documento,
           escondidos = idsEscondidos(doc)
         controlador.selecionar(
-          entidadesTransformaveis(doc)
+          entidadesSelecionaveis(doc)
             .filter((o) => !escondidos.has(o.id))
             .map((o) => o.id),
         )
@@ -956,7 +997,7 @@ function OficinaAberta({
     void escolherModelo(modelo, palco.current?.pontoNoChao(evento.clientX, evento.clientY) ?? null)
   }
 
-  const semEscolha = selecao.length === 0 && !estado.alvoDaArvore
+  const semEscolha = escolha.length === 0 && !estado.alvoDaArvore
   const semObjetosEscolhidos = selecao.length === 0
   const dica =
     aba !== 'objetos'
@@ -1264,7 +1305,9 @@ function OficinaAberta({
               className="sz-tool-icon-btn"
               aria-label="Guardar escolha como conjunto"
               title="Guardar escolha como conjunto"
-              disabled={semEscolha || estado.ocupado || !relevoPronto || conjuntos.ocupado}
+              disabled={
+                semEscolha || escolhaMista || estado.ocupado || !relevoPronto || conjuntos.ocupado
+              }
               onClick={conjuntos.abrir}
             >
               <Boxes aria-hidden="true" />
@@ -1607,11 +1650,11 @@ function OficinaAberta({
                 <button
                   type="button"
                   className="mcn-vista"
-                  onClick={() => palco.current?.enquadrar(selecao)}
-                  title={`${semObjetosEscolhidos ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha} (F)`}
+                  onClick={() => palco.current?.enquadrar(escolha)}
+                  title={`${!escolha.length ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha} (F)`}
                 >
                   <Maximize aria-hidden="true" className="size-4" />
-                  {semObjetosEscolhidos ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha}
+                  {!escolha.length ? COPY.oficina.enquadrar : COPY.oficina.enquadrarEscolha}
                 </button>
               </div>
               {medidas ? (
@@ -1757,7 +1800,7 @@ function OficinaAberta({
             ) : modoPainel === 'organizacao' ? (
               <Organizacao
                 documento={documento}
-                selecao={selecao}
+                selecao={escolha}
                 selecionar={controlador.selecionar}
                 executar={executar}
                 aoDetalhes={() => {
@@ -1789,7 +1832,12 @@ function OficinaAberta({
               />
             ) : (
               <>
-                {relevoPronto ? (
+                {escolhaMista ? (
+                  <p className="mcn-painel-corpo text-sm text-mld-muted">
+                    {escolha.length} elementos escolhidos. Você pode copiar, duplicar, apagar ou
+                    organizar a escolha. Edite os pontos de cada caminho na aba Caminhos.
+                  </p>
+                ) : relevoPronto ? (
                   <Painel
                     documento={documento}
                     selecao={selecao}

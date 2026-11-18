@@ -269,6 +269,71 @@ test('cerca e muro acompanham o terreno e agrupam módulos sem uma chamada por p
   }
 })
 
+test('contato fora do centro de um pilar acompanha suas tampas conformadas após editar a ponte', () => {
+  const d = criarDocumentoVazio('d', 'Contato conformado'),
+    c = new CaminhosDoPalco(),
+    q = new SuperficiesDosObjetos(),
+    g = new BoxGeometry(4, 0.4, 2, 8, 1, 1),
+    material = new MeshStandardMaterial(),
+    pos = g.getAttribute('position')
+  for (let i = 0; i < pos.count; i++) pos.setY(i, pos.getY(i) + 0.2 * pos.getX(i) ** 2)
+  g.computeBoundingBox()
+  g.computeVertexNormals()
+  const modelo = {
+      partes: [{ geometria: g, material, matriz: new Matrix4() }],
+      caixa: g.boundingBox!.clone(),
+      triangulos: g.index!.count / 3,
+      raiz: new Group(),
+      descartar() {},
+    },
+    ponte = CaminhoSchema.parse({
+      ...comum,
+      tipo: 'ponte',
+      acabamento: 'm',
+      encaixeModelo: { eixo: 'x', pisoLocal: -0.2 },
+      cotas: { de: 3, ate: 3 },
+      pilares: { espacamento: 5, largura: 0.4 },
+    }),
+    fonte: FonteDeAlturas = () => 0
+  fonte.parteDoCaminho = (id, chave) => c.parte(id, chave)
+  d.caminhos = [ponte]
+  d.modelos = [
+    {
+      id: 'm',
+      modelo: 'm',
+      biblioteca: 'b',
+      digest: 'a'.repeat(64),
+      volume: { min: { ...modelo.caixa.min }, max: { ...modelo.caixa.max } },
+    },
+  ]
+  const ler = () => {
+    q.definir(c.superficies().filter((s) => s.parte === 'pilar/0'))
+    return q.escolher(new Raycaster(new Vector3(-2.85, 20, -0.53), new Vector3(0, -1, 0)))!
+  }
+  try {
+    expect(c.definir(d, null, () => modelo, semModelo, new Set()).falhas).toEqual([])
+    const contato = ler()
+    expect(contato).not.toBeNull()
+    const objeto = {
+      apoio: apoioNaSuperficie(d, comum.id, contato.ponto, fonte, 'pilar/0'),
+      transformacao: {
+        posicao: { ...contato.ponto },
+        rotacao: { x: 0, y: 0, z: 0 },
+        escala: { x: 1, y: 1, z: 1 },
+      },
+    }
+    expect(posicaoNoMundo(d, objeto, fonte).y).toBeCloseTo(contato.ponto.y, 6)
+    d.caminhos = [CaminhoSchema.parse({ ...ponte, cotas: { de: 6, ate: 6 } })]
+    expect(c.definir(d, null, () => modelo, semModelo, new Set()).falhas).toEqual([])
+    expect(posicaoNoMundo(d, objeto, fonte).y).toBeCloseTo(ler().ponto.y, 5)
+  } finally {
+    q.descartar()
+    c.descartar()
+    g.dispose()
+    material.dispose()
+  }
+})
+
 test('altura atualiza o piso exibido e o picking, e buracos exigem reconstruir a topologia', () => {
   const d = criarDocumentoVazio('d', 'Trilha'),
     c = new CaminhosDoPalco(),

@@ -217,6 +217,9 @@ test('parte indisponível ou transformação inválida não inventa uma superfí
     o = d.instancias[0]!,
     ausente = Object.assign(() => 0, { parteDoCaminho: () => null })
   expect(() =>
+    apoioNaSuperficie(d, 'ponte', o.transformacao.posicao, undefined, 'pilar/0'),
+  ).toThrow('tampas reais')
+  expect(() =>
     apoioNaSuperficie(d, 'ponte', o.transformacao.posicao, ausente, 'tabuleiro/0'),
   ).toThrow('sem superfície')
   // Reentrada pode chegar antes do GLB: a pose guardada permanece enquanto o dono carrega.

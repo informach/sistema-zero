@@ -150,7 +150,12 @@ export function useAreaDeTransferencia({
       if (!controlador.executar([{ tipo: 'fragmento.colar', fragmento, prefixo, ponto }]))
         throw new Error(controlador.getState().recusa ?? 'Não consegui colar esta escolha')
       controlador.selecionar(
-        [...ids.instancias.values()],
+        [
+          ...ids.instancias.values(),
+          ...ids.montagens.values(),
+          ...ids.aguas.values(),
+          ...ids.caminhos.values(),
+        ],
         ids.raizes.length === 1 &&
           [...ids.grupos.values(), ...ids.aguas.values(), ...ids.caminhos.values()].includes(
             ids.raizes[0]!,

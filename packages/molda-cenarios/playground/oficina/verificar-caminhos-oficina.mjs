@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
+import { esperarConsulta } from './esperar-consulta.mjs'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`,
@@ -50,6 +51,10 @@ try {
               fundo: 0,
               pecas: [],
             },
+          },
+          {
+            tipo: 'camada.definir',
+            camada: { id: 'vias', nome: 'Circulação', oculto: false, bloqueado: false },
           },
         ],
         'caminhos-qa-base',
@@ -265,7 +270,8 @@ try {
     .first()
     .click()
   await p.getByText('Guardado', { exact: true }).waitFor()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 5,
     id,
   )
@@ -273,7 +279,8 @@ try {
     .getByRole('button', { name: /Refazer/ })
     .first()
     .click()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 6,
     id,
   )
@@ -314,7 +321,8 @@ try {
     .getByRole('button', { name: /Desfazer/ })
     .first()
     .click()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.modelos.length === 0,
     id,
   )
@@ -322,7 +330,8 @@ try {
     .getByRole('button', { name: /Refazer/ })
     .first()
     .click()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.modelos.length === 1,
     id,
   )
@@ -345,7 +354,8 @@ try {
   await p.getByText(/Escolha copiada|Escolha guardada na ferramenta/).waitFor()
   await p.getByRole('button', { name: 'Copiar e colar', exact: true }).click()
   await p.getByRole('button', { name: 'Colar escolha', exact: true }).click()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 7,
     id,
   )
@@ -354,7 +364,15 @@ try {
   const copia = colado.documento.caminhos.find(
     (c) => !acabamento.documento.caminhos.some((a) => a.id === c.id),
   )
-  assert.ok(copia)
+  assert.ok(
+    copia,
+    JSON.stringify({
+      antes: acabamento.documento.caminhos.map((c) => c.id),
+      depois: colado.documento.caminhos.map((c) => c.id),
+      revisaoAntes: acabamento.revisao,
+      revisaoDepois: colado.revisao,
+    }),
+  )
   assert.equal(
     copia.acabamento,
     acabamento.documento.caminhos.find((c) => c.nome === 'QA Trilha').acabamento,
@@ -366,11 +384,35 @@ try {
     .last()
     .click()
   await p.getByRole('dialog').getByRole('button', { name: 'Apagar', exact: true }).click()
-  await p.waitForFunction(
+  await esperarConsulta(
+    p,
     async (id) => (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.length === 6,
     id,
   )
   await p.getByText('Guardado', { exact: true }).waitFor()
+  await painel
+    .getByRole('combobox', { name: 'Camada de QA Trilha', exact: true })
+    .selectOption('vias')
+  await p.getByText('Guardado', { exact: true }).waitFor()
+  assert.equal(
+    await p.evaluate(
+      async (id) =>
+        (await window.__cenarios.host.abrirCenario(id)).documento.caminhos.find(
+          (c) => c.nome === 'QA Trilha',
+        ).camada,
+      id,
+    ),
+    'vias',
+  )
+  await p.getByRole('button', { name: 'Voltar ao mundo', exact: true }).click()
+  await p.getByRole('button', { name: 'Abrir Seis ferramentas', exact: true }).click()
+  await p.getByRole('button', { name: 'Caminhos', exact: true }).click()
+  const abrirReentrada = p.getByRole('button', { name: 'Abrir o painel', exact: true })
+  if (await abrirReentrada.count()) await abrirReentrada.click()
+  assert.equal(
+    await painel.getByRole('combobox', { name: 'Camada de QA Trilha', exact: true }).inputValue(),
+    'vias',
+  )
   assert.ok(workers.some((w) => w.includes('caminho.worker')))
   assert.deepEqual(erros, [])
   await contexto.close()
@@ -389,6 +431,8 @@ try {
         historico: true,
         copiarColarRemover: true,
         visibilidade: true,
+        camada: true,
+        reabertura: true,
         workers,
         erros,
       },

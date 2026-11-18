@@ -145,13 +145,16 @@ export type FonteDeAlturas = ((x: number, z: number) => number) & {
   /** Presença de superfície carregada, distinta da altura matemática sob buracos. */
   temChao?: (p: { x: number; z: number }) => boolean
   /** Consulta opcional à mesma parte estrutural usada pelo desenho e pelo picking. */
-  parteDoCaminho?: (
-    id: string,
-    parte: string,
-  ) => Pick<
+  parteDoCaminho?: (id: string, parte: string) => SuperficieDeCaminho | null
+}
+/** Consulta em memória; não integra o documento nem é serializada. */
+export interface SuperficieDeCaminho
+  extends Pick<
     import('./estrutura-de-caminho').PecaEstruturalDoCaminho,
     'transformacao' | 'noTerreno'
-  > | null
+  > {
+  /** Tampas realmente usadas para conformar o prisma, nas coordenadas do mundo. */
+  perfilVertical?: (x: number, z: number) => { inferior: number; superior: number }
 }
 export class TerrenoInvalido extends Error {}
 export class PecaDeTerrenoAusente extends TerrenoInvalido {}
