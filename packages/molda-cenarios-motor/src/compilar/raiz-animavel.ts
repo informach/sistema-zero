@@ -14,6 +14,19 @@ import {
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import { dividirGeometriaComDeformacoes } from './geometria-animavel'
 
+export function temAnimacaoOuDeformacao(raiz: Object3D, animacoes: readonly AnimationClip[] = []) {
+  let animavel = animacoes.length > 0
+  raiz.traverse((no) => {
+    const malha = no as Mesh
+    if (
+      (malha as SkinnedMesh).isSkinnedMesh ||
+      (malha.isMesh && Object.values(malha.geometry.morphAttributes).some((a) => a?.length))
+    )
+      animavel = true
+  })
+  return animavel
+}
+
 /** Mantém hierarquia, pele e clipes; as partes compartilham o esqueleto clonado.
  * A geometria de cada material é dividida sem transformar poses em vértices estáticos. */
 export function normalizarRaizAnimavel(
