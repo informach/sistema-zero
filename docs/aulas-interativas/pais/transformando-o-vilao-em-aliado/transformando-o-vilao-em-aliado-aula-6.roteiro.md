@@ -50,7 +50,7 @@ Na próxima parte, você vai ver esse pensar acontecendo, numa regra de jogo sen
 
 **Clipe:** `video-a6-demonstracao`
 
-**Na tela:** No "Isto aqui é a ferramenta", mostrar a captura do Estúdio com o jogo de esconde-esconde [na edição: captura de tela, estado 1]. No "não está acontecendo nada", clicar num esconderijo sem regra [na edição: captura, estado 1, clique sem efeito]. No "um bloquinho de quando clicar", montar a primeira regra [na edição: captura, bloco de clique e bloco de visibilidade em zero]. No "Ele desapareceu", clicar e revelar o animal [na edição: captura, estado 2]. No "o número não está contando", apontar o contador parado [na edição: destaque no contador]. No "um outro bloquinho, para somar um", completar a regra [na edição: captura, bloco de somar um em achados]. No "somou dois", mostrar o contador [na edição: captura, estado 3, contador em 2]. No "causa e consequência", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "Isto aqui é a ferramenta", mostrar a captura do Estúdio com o jogo de esconde-esconde [na edição: captura de tela, estado 1]. No "não está acontecendo nada", clicar num esconderijo sem regra [na edição: captura, estado 1, clique sem efeito]. No "um bloquinho de quando clicar", montar a primeira regra [na edição: captura, bloco de clique e bloco de visibilidade em zero]. No "Ele desapareceu", clicar e revelar o animal [na edição: captura, estado 2]. No "o número não está contando", apontar o contador parado [na edição: destaque no contador]. No "um outro bloquinho, para somar um", completar a regra [na edição: captura, bloco de somar um em achados]. No "somou dois", mostrar o contador [na edição: captura, estado 3, contador em 2].
 
 **Preparação da captura (não gravar):** Usar uma versão reduzida do jardim do Cadê Todo Mundo, com animais sob esconderijos separados (moitas) e um contador "achados" visível, iniciando em zero. Registrar três estados do mesmo projeto, parando e executando de novo a cada mudança: sem evento de clique (o clique não faz nada); evento de clique que deixa o esconderijo com visibilidade zero (revela, mas não conta); o mesmo evento com a soma de um em achados (revela e conta: um, depois dois). A captura é manual e recebe a fala em edição. Conferir antes de gravar que o contador exibe a variável atual e que clicar num esconderijo já invisível não soma.
 
@@ -75,9 +75,19 @@ Eu tenho uma contagem, e eu quero que, toda vez que eu clico, ela vá somando: u
 
 Agora, se eu clico na moita, ela desaparece e somou um. Clico na outra: desapareceu e somou dois.
 
-Olha, rapidamente, com um joguinho simples, o tanto de coisa que a gente consegue pensar, trabalhar e raciocinar de verdade. E não simplesmente entregar tudo pronto: "Toma o jogo pronto, joga aí." Não. Vamos pensar em como a gente constrói isso.
+Olha, rapidamente, com um joguinho simples, o tanto de coisa que a gente consegue pensar, trabalhar e raciocinar de verdade. E não simplesmente entregar tudo pronto: "Toma o jogo pronto, joga aí." Não. Vamos pensar em como a gente constrói isso. Clique em Próxima parte.
+```
 
-E o importante, trazendo para a nossa vida, é a causa e consequência. Pensa em como o autista lê isso tudo. A gente vive muito isso: é sempre culpa do outro, é sempre culpa do ambiente. "É o jogo que é chato." "Você que é boba." "É a chuva que veio fora de hora."
+## Parte 3. Fui eu que causei isso
+
+**Clipe:** `video-a6-causa`
+
+**Na tela:** No "causa e consequência", destacar o termo [na edição: causa e consequência]. No "Fui eu que decidi isso", destacar a frase [na edição: Fui eu que decidi. Fui eu que causei]. No "Quanto mais eu descubro, mais pontos eu tenho", mostrar as relações, uma por vez [na edição: quanto mais descubro, mais pontos; quanto mais estudo, mais nota; quanto mais treino, melhor eu fico].
+
+**Fala da Helena:**
+
+```text
+Você acabou de ver duas regras sendo construídas. E o mais importante ali, trazendo para a nossa vida, é a causa e consequência. Pensa em como o autista lê isso tudo. A gente vive muito isso: é sempre culpa do outro, é sempre culpa do ambiente. "É o jogo que é chato." "Você que é boba." "É a chuva que veio fora de hora."
 
 Eles precisam aprender que são agentes de algo, que eles causam algo no meio, que a partir de uma ação deles a consequência vem. Não é sempre a consequência vindo e eles reagindo. Não. A consequência só existiu porque foi você.
 
@@ -90,7 +100,7 @@ Se a gente pegar tudo isso e jogar na vida, a gente percebe o impacto, e como as
 Porque, se eu coloco que eu quero que conte ponto, o meu jogo toma um rumo. Se eu tiro ponto, eu estou traçando um outro caminho. Os dois podem ser bons? Podem. Mas o que eu quero neste momento? O que eu quero treinar? De que eu quero brincar? Tudo isso a gente consegue trazer para a nossa vida, no dia a dia. Clique em Próxima parte.
 ```
 
-## Parte 3. O assunto que abre a conversa
+## Parte 4. O assunto que abre a conversa
 
 **Clipe:** `video-a6-familia`
 
@@ -107,9 +117,7 @@ Quem vê o meu filho hoje não consegue imaginar que ele já foi assim. Um tempo
 
 E esse assunto pode virar uma conversa de família. Às vezes a gente não consegue alcançar o mundinho deles. O que atrai os filhos não é o que atrai a gente. O jeito de conversar deles não é o mesmo que o nosso. Mas com o jogo a gente consegue ter um assunto em comum, que realmente pode melhorar essa interação e essa conversa dentro da família. Escuta o que estes pais contam.
 
-Isso pode virar o assunto na mesa de casa. Para uma família que antes não conseguia interagir muito, é uma oportunidade de ter uma interação melhor dentro de casa.
-
-Porque, como você ouviu do menino que encontrou no jogo uma forma de se expressar: a criança se expressa, e tem um assunto sobre o qual ela consegue conversar, e a gente também. É uma grande oportunidade de interação dentro de casa.
+Isso pode virar o assunto na mesa de casa. Para uma família que antes não conseguia interagir muito, é uma grande oportunidade. Porque, como você ouviu do menino que encontrou no jogo uma forma de se expressar, a criança passa a ter um assunto sobre o qual ela consegue conversar. E a gente também.
 
 E essa interação vai muito além de ficar falando só sobre jogos. Eu vou te contar do André, pelo olhar da psicóloga que acompanha o meu filho.
 
@@ -125,7 +133,7 @@ E isso ajuda muito na interação social, principalmente com os pares. Quando os
 
 Hoje em dia, é muito difícil o André falar de jogo com ela. Ele fala sobre todos os assuntos. Jogo nem aparece. Porque ele descobriu o prazer e a oportunidade de conversar, de estar com o outro, de fazer coisas tão agradáveis quanto o jogo. Aquilo que era o hiperfoco, hoje ela entende como um ponto de interesse. E ele consegue participar, e participar bem, feliz, com prazer e com qualidade, de qualquer outro contexto.
 
-E é isso mesmo. Hoje a gente consegue conversar sobre qualquer assunto com ele. Mas o assunto dos jogos foi um pontapé inicial para ele começar a conseguir conversar mais, porque antes ele era mais inacessível. Foi por meio desse pontapé inicial que hoje a gente consegue conversar sobre qualquer assunto com ele. Foi muito importante.
+E é isso mesmo que eu vejo em casa. Antes ele era mais inacessível. O assunto dos jogos foi um pontapé inicial para ele começar a conversar mais. E foi por meio desse pontapé inicial que hoje a gente consegue conversar sobre qualquer assunto com ele. Foi muito importante.
 
 Na próxima aula, que é a última, chegou a hora do presente. Clique em Concluir aula para continuar.
 ```

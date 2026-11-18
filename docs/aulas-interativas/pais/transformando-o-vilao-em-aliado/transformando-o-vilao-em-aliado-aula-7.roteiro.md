@@ -2,11 +2,11 @@
 
 A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala abaixo é integral e pronta para teleprompter, sem tags de ElevenLabs. Esta é a única aula com convite: o presente do Cadê Todo Mundo por sete dias. Não mencionar outro projeto, cupom ou plano como oferta.
 
-## Parte 1. Onde o presente é entregue
+## Parte 1. Você no controle
 
 **Clipe:** `video-a7-plataforma`
 
-**Na tela:** No "Chegou a hora do presente", mostrar a apresentadora [na edição: câmera]. No "O responsável faz uma conta dele", mostrar a estrutura [na edição: conta do responsável e, dentro dela, o perfil do filho]. No "esse perfil não é público", destacar a privacidade [na edição: perfil privado por padrão; o responsável autoriza]. No "em qual aparelho a criança vai acessar", mostrar o controle de acesso [na edição: aparelho, validade e código de acesso]. No "todas estas ferramentas", mostrar as quatro ferramentas, uma por vez [na edição: Pensa, Pinta, Molda e Estúdio de Criação]. No "uma área de atendimento", voltar para a apresentadora [na edição: câmera].
+**Na tela:** No "Chegou a hora do presente", mostrar a apresentadora [na edição: câmera]. No "faz a sua conta", mostrar a estrutura [na edição: conta do responsável e, dentro dela, o perfil do filho]. No "esse perfil não é público", destacar a privacidade [na edição: perfil privado por padrão; o responsável autoriza]. No "em qual aparelho a criança vai acessar", mostrar o controle de acesso [na edição: aparelho, validade e código de acesso].
 
 **Fala da Helena:**
 
@@ -17,23 +17,31 @@ Só que, antes de entregar, eu quero te explicar um pouquinho como é o ambiente
 
 O presente é entregue dentro de uma plataforma. E eu preciso deixar claro que essa plataforma leva muito a sério as leis e a proteção das crianças e dos adolescentes. Tudo lá foi feito com muito cuidado e segurança.
 
-Funciona assim. O responsável faz uma conta dele, de responsável. Todo responsável tem uma conta. E, lá dentro, ele cria o perfil do filho, para o filho conseguir acessar.
+Funciona assim. Você, responsável, faz a sua conta. E, dentro dela, cria o perfil do seu filho, para ele conseguir acessar.
 
-Pela conta do responsável, ele tem todas as informações de tudo o que o filho está fazendo dentro da plataforma. E é ele que tem que autorizar tudo o que o filho for fazer que seja público.
+Pela sua conta, você tem todas as informações de tudo o que o seu filho está fazendo dentro da plataforma. E é você que autoriza tudo o que ele for fazer que seja público.
 
-Por exemplo: dentro da plataforma existe um perfil que mostra o nome da criança e as informações das criações que ela fez. Só que, por padrão, esse perfil não é público. É privado. E, mesmo quando é público, não é público para o mundo inteiro; é só para quem está dentro da plataforma. Ainda assim, o pai tem que autorizar, pelo acesso dele de responsável, para o perfil ficar público. Tudo ele tem que autorizar, porque a plataforma está toda dentro da lei de proteção das crianças.
+Por exemplo: existe um perfil que mostra o nome da criança e as criações que ela fez. Só que, por padrão, esse perfil não é público. É privado. E, mesmo quando é público, não é público para o mundo inteiro; é só para quem está dentro da plataforma. Ainda assim, ele só fica público se você autorizar.
 
-Outro exemplo. A criança pode pedir ajuda. Ela pode escrever uma mensagem ou gravar um áudio. Só que, gravando um áudio, vai a voz da criança pela internet. Por mais que seja só para a equipe, existe um compartilhamento da voz dela. Então o pai tem que autorizar, lá na área dele, para a criança conseguir falar com a voz dela.
+Outro exemplo. A criança pode pedir ajuda escrevendo uma mensagem ou gravando um áudio. Só que, no áudio, vai a voz da criança pela internet. Por mais que seja só para a nossa equipe, existe um compartilhamento da voz dela. Então isso também só funciona se você autorizar, na sua área.
 
-É tudo bem protegido e muito bem moderado, por segurança e para atender às normas. Os pais têm a conta deles, onde gerenciam os perfis das crianças, e a criança tem o perfil dela, onde ela cria.
+Você também determina em qual aparelho a criança vai acessar, qual computador ou tablet, e por quanto tempo aquele acesso vai valer. A plataforma gera um código, e a criança entra naquele aparelho pelo código. E, a qualquer momento, você pode invalidar aquele acesso, se for necessário.
 
-O responsável também determina, na área dele, em qual aparelho a criança vai acessar, qual computador ou tablet, e por quanto tempo aquele acesso vai valer. Aí é gerado um código, e a criança entra naquele dispositivo pelo código. E, a qualquer momento, o pai pode invalidar aquele acesso, se for necessário.
+É tudo bem protegido e moderado, dentro da lei de proteção das crianças e dos adolescentes, e organizado para que você tenha total controle sobre o que o seu filho está fazendo ali. Clique em Próxima parte.
+```
 
-É tudo muito bem estruturado e organizado para que o pai tenha total controle sobre o que a criança está fazendo ali.
+## Parte 2. O que tem lá dentro
 
-E é tudo dentro da mesma plataforma. Você não precisa acessar a atividade num lugar e abrir um outro programa para fazer outra coisa. É uma plataforma só, um acesso só, que já tem tudo de que você e a criança precisam para criar.
+**Clipe:** `video-a7-ferramentas`
 
-Na plataforma você vai ver que existem várias coisas, e o que está liberado depende do nível de acesso de cada criança, porque existem vários planos.
+**Na tela:** No "É uma plataforma só", mostrar a apresentadora [na edição: câmera]. No "todas estas ferramentas", mostrar as quatro ferramentas, uma por vez [na edição: Pensa, Pinta, Molda e Estúdio de Criação]. No "uma área de atendimento", voltar para a apresentadora [na edição: câmera].
+
+**Fala da Helena:**
+
+```text
+E, lá dentro, é tudo na mesma plataforma. Você não precisa acessar a atividade num lugar e abrir um outro programa para fazer outra coisa. É uma plataforma só, um acesso só, que já tem tudo de que você e a criança precisam para criar.
+
+Você vai ver que existem várias coisas ali, e o que está liberado depende do nível de acesso de cada criança, porque existem vários planos.
 
 Só para você ter uma ideia de como funciona lá dentro: existem os cursos, que ensinam o passo a passo, com alguns jogos já pensados antes. E os assinantes têm acesso a todas estas ferramentas, que servem para a criança criar o jogo que ela quiser, que ela imaginar, com o que aprendeu no curso.
 
@@ -46,7 +54,7 @@ Uma mãe me perguntou se havia alguma coisa de avião, porque na casa dela aviã
 Nós somos bem abertos a feedback. Na área dos pais existe uma área de atendimento para você falar diretamente com a gente. Você pode mandar por lá sugestões, feedbacks, alguma questão de que precise. A gente vai ouvir todos e, na medida do possível, tentar aplicar. Clique em Próxima parte.
 ```
 
-## Parte 2. O presente: sete dias de Cadê Todo Mundo
+## Parte 3. O presente: sete dias de Cadê Todo Mundo
 
 **Clipe:** `video-a7-presente`
 
@@ -55,13 +63,13 @@ Nós somos bem abertos a feedback. Na área dos pais existe uma área de atendim
 **Fala da Helena:**
 
 ```text
-Agora, sim, o presente.
+Agora, sim, o presente que eu te prometi lá na primeira aula.
 
 A gente tem um projeto chamado Cadê Todo Mundo, e é ele que eu vou te dar de presente. Normalmente ele só está disponível no plano pago. Não existe em nenhum outro lugar um acesso gratuito ao Cadê Todo Mundo. Este presente é para você, que acompanhou o curso até aqui.
 
 Você vai ter sete dias para experimentar a plataforma e esse novo jeito de usar as telas: para criar, e não só para consumir. Sete dias para o seu filho experimentar o primeiro jogo dele.
 
-O Cadê Todo Mundo é uma primeira experiência, simples, para ter um primeiro contato com a criação. É um jogo de esconde-esconde, com um tipo só de jogo. Com ele, você vai ter noção de como funciona: a criança vai conseguir construir algo e vai conseguir brincar com o que construiu.
+O Cadê Todo Mundo é uma primeira experiência, simples, para ter um primeiro contato com a criação. É um jogo de esconde-esconde, do mesmo tipo que você me viu montar na demonstração. Com ele, você vai ter noção de como funciona: a criança vai conseguir construir algo e vai conseguir brincar com o que construiu.
 
 Ele é totalmente gratuito. Não tem que preencher cartão, nem nada. E os sete dias contam a partir do seu cadastro.
 

@@ -6,8 +6,9 @@
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. Onde o presente é entregue | Explicar a segurança da plataforma, o controle do responsável e as ferramentas de criação. |
-| 2. O presente: sete dias de Cadê Todo Mundo | Entregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. |
+| 1. Você no controle | Explicar a segurança da plataforma e o controle que o responsável tem. |
+| 2. O que tem lá dentro | Mostrar o que existe na plataforma: cursos, ferramentas de criação e canal de atendimento. |
+| 3. O presente: sete dias de Cadê Todo Mundo | Entregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. |
 
 **Formato:** vídeos com a Helena. Único convite do curso: o presente do Cadê Todo Mundo por sete dias, pelo botão abaixo do vídeo. Sem quiz nem tarefa.
 

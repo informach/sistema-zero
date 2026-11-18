@@ -11,7 +11,7 @@ A Helena grava em câmera, em tom de conversa com pais e responsáveis. A fala a
 **Fala da Helena:**
 
 ```text
-Para criar um jogo, você tem que usar a programação. Só que, quando a gente fala em programação, muita gente pensa: "Ai, aquela tela preta, aqueles números, aquele trem difícil." Todo mundo já fica meio assustado.
+Ficou uma dúvida no ar: para criar um jogo, você tem que usar a programação. Só que, quando a gente fala em programação, muita gente pensa: "Ai, aquela tela preta, aqueles números, aquele trem difícil." Todo mundo já fica meio assustado.
 
 Mas não. Isso é coisa do passado. Hoje em dia a gente tem formas de programar muito mais simples e acessíveis para a criança. O pensamento computacional é o mesmo: o raciocínio, o passo a passo. Mas hoje a criança arrasta bloquinhos coloridos para conseguir programar e fazer o joguinho.
 
@@ -23,7 +23,7 @@ Olha só: "Quando o despertador tocar, se for dia de escola, então trocar de ro
 
 E no jogo, como eu aplico isso? "Quando o personagem tocar na porta, se ele estiver com a chave, então ele pode entrar."
 
-É o mesmo pensamento que a gente usa no dia a dia. É esse pensamento que a gente aplica no jogo. Dá para fazer a correlação, só que de uma forma muito mais divertida, muito mais criativa e mais eficiente para trabalhar com as crianças.
+O pensamento que a gente usa no dia a dia é o mesmo que a gente aplica no jogo. Dá para fazer a correlação, só que de uma forma muito mais divertida, muito mais criativa e mais eficiente para trabalhar com as crianças.
 
 E o que eu estou trabalhando aí? De novo, função executiva. Aqui a gente está na sequenciação. Eu tenho que me planejar e me organizar para seguir os passos numa determinada ordem e conseguir executar uma determinada tarefa.
 
@@ -55,7 +55,7 @@ Como eu programo essa bolinha para chegar lá? Eu vou para cima. Depois para cim
 
 É esse tipo de conceito que as crianças precisam ter para conseguir programar o jogo delas. Não é nada muito complexo, nada de outro mundo.
 
-E nesse processo todo eles vão praticar e aprender várias coisas. Nesse exemplo simples, a criança tem que observar: para cada passo que eu pedi para ela andar, para onde ela foi? O que aconteceu? Fui para o obstáculo ou fui para o lugar certo? "Ah, não. Eu dei essa instrução, mas na verdade ela foi para o obstáculo. Então eu preciso mudar a minha instrução para que ela vá pelo caminho certo." E aí eu tento de novo.
+E nesse processo todo eles vão praticar e aprender várias coisas. Nesse exemplo simples, a criança tem que observar: para cada passo que eu pedi para a bolinha andar, para onde ela foi? O que aconteceu? Foi para o obstáculo ou foi para o lugar certo? "Ah, não. Eu dei essa instrução, mas na verdade ela foi para o obstáculo. Então eu preciso mudar a minha instrução para que ela vá pelo caminho certo." E aí eu tento de novo.
 
 É mais ou menos esse o processo que a criança vai fazendo, até conseguir programar o objetivo dela no jogo. Clique em Próxima parte.
 ```
@@ -81,7 +81,7 @@ Então esse observar, mudar a instrução e testar de novo quer dizer flexibiliz
 
 Agora, se eu tenho um joguinho que é o meu personagem, que é o meu assunto de interesse, é muito mais fácil eu voltar e tentar repetir. Eu estou ali ajudando o meu personagem, estou construindo isso com ele. A gente consegue fazer com que essa criança tenha uma adesão muito maior à tarefa.
 
-E a gente vai bater muito nessa tecla: a tela é uma grande vilã que a gente não tem como combater. Então, já que botou a mão no celular, já que botou a mão no tablet, vamos tornar aquilo produtivo. Em vez de ficar só jogando e repetindo, vamos aprender, vamos elaborar, vamos criar, vamos treinar a frustração, vamos flexibilizar. Vamos entender que existem caminhos novos, jeitos novos, e que está tudo bem. Ou que eu queria de um jeito, mas não dá, e eu vou ter que fazer de outro jeito.
+E eu volto a bater nessa tecla: a tela é uma grande vilã que a gente não tem como combater. Então, já que botou a mão no celular, já que botou a mão no tablet, vamos tornar aquilo produtivo. Em vez de ficar só jogando e repetindo, vamos aprender, vamos elaborar, vamos criar, vamos treinar a frustração, vamos flexibilizar. Vamos entender que existem caminhos novos, jeitos novos, e que está tudo bem. Ou que eu queria de um jeito, mas não dá, e eu vou ter que fazer de outro jeito.
 
 A psicóloga que acompanha o André me contou uma história muito legal de um pacientezinho dela. Na hora em que ela pegou a atividade, ele falou: "Que horrível." Ela respondeu: "Ah, mas a gente está treinando. É horrível mesmo, vamos embora." E ele foi. Quando chegou ao final, ele disse: "A gente pode continuar? Porque foi muito legal." Ela falou: "Uai, não entendi." E ele: "Não, o horrível tornou legal."
 

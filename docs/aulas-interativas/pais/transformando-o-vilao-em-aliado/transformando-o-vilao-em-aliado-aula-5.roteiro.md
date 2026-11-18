@@ -45,15 +45,13 @@ Vai muito também do incentivo dos pais. "Vamos sentar aqui, todo mundo junto, p
 
 E é importante dizer: a Isabela não é uma menina muito das telas. Ela não tem muito esse contato com os jogos em si. E, em menos de dez minutos, ela conseguiu ter acesso a isso e aprender.
 
-A frase final dela é a que mais tem peso: "Quando eu consegui, eu fiquei feliz." É isso. Quando ela conseguiu, ela ficou muito feliz. Então ela vai querer continuar, vai querer criar outras coisas.
+A frase final dela é a que mais tem peso: "Quando eu consegui, eu fiquei feliz." É isso. Quando ela conseguiu, ela ficou muito feliz. Ela se sentiu orgulhosa de ter concluído. Por isso eu tenho certeza de que ela vai querer continuar, vai querer criar outros jogos. É esse orgulho que faz a criança seguir em frente.
 
 E a partir desse momento eu consigo ir aumentando um pouco o nível de dificuldade. Quer dizer, exigindo um pouco mais dessa criança em concentração, em interpretação, em elaboração de hipóteses. E ela vai dando conta de ampliar cada vez mais essas estratégias. A gente cai, de novo, nas habilidades que são importantes para a vida.
 
 Pensa num adulto. Eu tenho um problema. Como eu resolvo? Se eu souber só um caminho e esse caminho não servir naquele momento, acabou, eu não resolvo. A gente consegue muito mais porque já tem essa caixinha de repertório bem ampla. A maioria dos adultos tem.
 
-Ela se sentiu muito orgulhosa de ter concluído, e é por isso que eu tenho certeza de que ela vai querer criar mais jogos. É esse orgulho que faz a criança seguir em frente.
-
-Isso vai muito ao encontro do que na terapia se chama de níveis de suporte. E vale para você, em casa. Talvez no começo você pense: "Ah, mas eu fiz pelo meu filho." Fez mesmo, para ele ver que é legal. Daqui a pouco você faz junto com ele. Aí você está tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
+Esse caminho, de exigir um pouco mais a cada vez, vai muito ao encontro do que na terapia se chama de níveis de suporte. E vale para você, em casa. Talvez no começo você pense: "Ah, mas eu fiz pelo meu filho." Fez mesmo, para ele ver que é legal. Daqui a pouco você faz junto com ele. Aí você está tirando um pouquinho do suporte e aumentando um pouquinho a exigência. E daqui a pouco chega o momento mais bonitinho, que é quando eles falam: "Não fala, deixa eu pensar." Porque eles estão estimulados a tentar, a conseguir.
 
 E eles já têm ali um saquinho de ideias. É como se fala: com mais fichinhas, eu tenho mais respostas, eu tenho mais hipóteses. Então eu consigo testar mais, com a certeza de que, se eu errar, eu estou amparado. Até chegar à fase adulta, em que a gente já consegue elaborar melhor para lidar com os contextos da vida. Clique em Próxima parte.
 ```
@@ -73,19 +71,19 @@ A escola tende a explicar as coisas da matéria de uma forma muito abstrata para
 
 Um exemplo bem simples. Dois mais cinco. A escola ensina assim: dois mais cinco, dois mais quatro, cinco mais seis. Vai ensinando a fazer conta, vai decorando a tabuada, vai fazendo conta, muita conta, para ir decorando e conseguir resolver os problemas.
 
-Já na criação do jogo, você acaba aprendendo várias coisas da escola de forma natural, de uma forma que faz sentido para as crianças e os adolescentes. Olha o mesmo exemplo. Eu quero levar o meu personagem até a estrela. Eu estou na casinha dois. Quantos passos eu preciso avançar com ele até chegar à estrela?
+Já na criação do jogo, você acaba aprendendo várias coisas da escola de forma natural, de uma forma que faz sentido para as crianças e os adolescentes. Olha o mesmo exemplo. Eu quero levar o meu personagem até a estrela. Eu estou na casinha dois. Quantos passos eu preciso avançar com ele até chegar à estrela? É a mesma conta. Só que agora ela serve para alguma coisa.
 
 É um exemplo simples. Mas, quando eu dou uma função, um objetivo do interesse da criança para ela fazer aquela conta, o aprendizado vem de uma forma mais natural e melhor.
 
-E são vários aspectos da matemática que a criação ajuda. Não é só a matemática. Ajuda no português, porque trabalha muito o escrever diálogos e o criar escolhas. Nas ciências, tem muita questão de movimento e de gravidade. E a criança aprende de forma natural, sem parecer difícil.
+A criação ajuda em vários aspectos da matemática. E não é só na matemática. Ajuda no português, porque trabalha muito o escrever diálogos e o criar escolhas. Nas ciências, tem muita questão de movimento e de gravidade. E a criança aprende de forma natural, sem parecer difícil.
 
-Eu tenho uma amiga que é professora, doutora em matemática e física, e que dá muita aula particular. O filho dela também cria jogos. E ela me disse assim: "Nossa, se todos os meus alunos tivessem esse hábito de criar jogos desde o início, eu acho que eu estava sem aluno agora." Porque ela dá aula para quem fica de recuperação. Faz muita diferença aprender quando existe um sentido, algo que faz sentido para eles.
+Eu tenho uma amiga que é professora, doutora em matemática e física, e que dá muita aula particular. O filho dela também cria jogos. E ela me disse assim: "Nossa, se todos os meus alunos tivessem esse hábito de criar jogos desde o início, eu acho que eu estava sem aluno agora." Porque ela dá aula para quem fica de recuperação. Faz muita diferença aprender quando aquilo faz sentido para eles.
 
 Nas artes também. Na criação de jogos, você tem a possibilidade de criar personagens e cenários, de imaginar um personagem, imaginar um cenário e dar vida a isso. De criar o próprio mundo.
 
 E tem o planejamento: organizar o começo, o desafio e o final. Criar um jogo não é simplesmente fazer qualquer coisa. Você tem que planejar certinho como vai funcionar. Tem que ter coerência, tem que ter sentido, tem que ter um objetivo. Eu tenho que planejar toda a trajetória. Nesse processo, a criança trabalha muitas coisas para a vida, e para a escola também.
 
-E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia existem inúmeros estudos mostrando como a programação e a criação de jogos desenvolvem essas habilidades. Não é falar por falar. Está comprovado com inúmeras crianças e adolescentes. Já existem vários estudos sobre isso. Clique em Próxima parte.
+E um comentário, para quem tiver curiosidade de pesquisar depois: hoje em dia existem inúmeros estudos mostrando como a programação e a criação de jogos desenvolvem essas habilidades. Não é falar por falar. Está comprovado com inúmeras crianças e adolescentes. Clique em Próxima parte.
 ```
 
 ## Parte 4. O que a gente mais deseja: que eles sejam felizes

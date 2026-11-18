@@ -20,6 +20,6 @@
 - [Como nasce um jogo](transformando-o-vilao-em-aliado-aula-6.md)
 - [Um presente para vocês experimentarem](transformando-o-vilao-em-aliado-aula-7.md)
 
-**Formato:** sete aulas e 21 partes com vídeo. Depoimentos de famílias inseridos na edição. Sem quiz nem tarefas. Apostila opcional de consulta.
+**Formato:** sete aulas e 23 partes com vídeo. Depoimentos de famílias inseridos na edição. Sem quiz nem tarefas. Apostila opcional de consulta.
 
 **Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro. O presente é independente do certificado.
