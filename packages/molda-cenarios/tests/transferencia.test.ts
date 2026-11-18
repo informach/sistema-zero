@@ -71,6 +71,41 @@ test('recortar água mantém o objeto apoiado fora da escolha; undo restaura ág
   expect(reaberto.getState().documento).toEqual(doc)
 })
 
+test('recortar pasta grande com água não gasta comandos liberando objetos que também serão removidos', async () => {
+  const host = criarHostEmMemoria(),
+    mundo = await host.criarMundo('conta', 'Mundo'),
+    cenario = await host.criarCenario(mundo.id, 'Porto'),
+    doc = { ...origem(), id: cenario.id }
+  doc.grupos = [{ id: 'g', nome: 'Porto', grupo: null, bloqueado: false, oculto: false }]
+  doc.aguas = [
+    {
+      ...prepararOperacaoDeAgua({ id: 'mar', nome: 'Mar' }, { tipo: 'mar', nivel: 1 }, null).agua,
+      grupo: 'g',
+    },
+  ]
+  const original = doc.instancias[0]!
+  doc.instancias = Array.from({ length: 600 }, (_, i) => ({
+    ...structuredClone(original),
+    id: `o${i}`,
+    grupo: 'g',
+    apoio: apoioNaAgua(doc, 'mar', original.transformacao),
+  }))
+  await host.editarCenario(
+    cenario.id,
+    0,
+    [{ tipo: 'cenario.restaurar', documento: doc }],
+    'fixture',
+  )
+  const ctl = criarControlador(host, await host.abrirCenario(cenario.id)),
+    f = capturarFragmento(doc, ['g'], 'conta')
+  expect(ctl.executar(comandosParaRecortarEscolha(doc, f, ['g']))).toBe(true)
+  await ctl.terminar()
+  expect(ctl.getState().documento.instancias).toEqual([])
+  expect(ctl.getState().documento.aguas).toEqual([])
+  await ctl.desfazer()
+  expect(ctl.getState().documento).toEqual(doc)
+})
+
 test('fila de autoria grava colagem em um passo e conserva undo/redo após reabrir', async () => {
   const host = criarHostEmMemoria({ equipe: true }),
     mundo = await host.criarMundo('conta', 'Mundo'),

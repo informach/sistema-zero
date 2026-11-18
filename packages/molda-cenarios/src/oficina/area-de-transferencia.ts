@@ -39,9 +39,13 @@ export function comandosParaRecortarEscolha(
   fragmento: FragmentoDeCenario,
   alvos: readonly string[],
 ): ComandoDeCenario[] {
+  const removidos = new Set(fragmento.instancias.map((o) => o.id))
   return [
     ...(fragmento.aguas ?? []).flatMap((a) =>
-      comandosParaRemoverAgua(doc, a.id).filter((c) => c.tipo !== 'agua.remover'),
+      comandosParaRemoverAgua(doc, a.id).filter(
+        (c) =>
+          c.tipo !== 'agua.remover' && (c.tipo !== 'instancia.atualizar' || !removidos.has(c.id)),
+      ),
     ),
     { tipo: 'elementos.remover', ids: [...alvos] },
   ]
