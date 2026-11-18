@@ -1,3 +1,4 @@
+import { aneisSeCruzam, pontoNoPoligono } from '../poligonos'
 import { CenarioInvalido, poligonoSimples } from '../validacao'
 import { resolverConjuntos } from './conjuntos'
 import {
@@ -132,11 +133,36 @@ export function validarDocumento(
   }
 
   for (const a of d.aguas) {
-    if (a.tipo !== 'lago') continue
+    if (a.tipo !== 'lago' && a.tipo !== 'represa') continue
     if (!poligonoSimples(a.contorno) || !poligonoSimples(a.recorte))
       erros.push(`Contorno de água inválido: ${a.id}`)
     if (a.modelo && !modelos.has(a.modelo))
       erros.push(`Modelo de água fora da tabela do cenário: ${a.id}`)
+    const ilhas = a.ilhas ?? []
+    for (let i = 0; i < ilhas.length; i++) {
+      const ilha = ilhas[i]!
+      if (
+        !poligonoSimples(ilha) ||
+        !pontoNoPoligono(ilha[0]!, a.contorno) ||
+        aneisSeCruzam(ilha, a.contorno)
+      ) {
+        erros.push(`Ilha fora da margem ou inválida: ${a.id}`)
+        break
+      }
+      if (
+        ilhas
+          .slice(0, i)
+          .some(
+            (outra) =>
+              aneisSeCruzam(ilha, outra) ||
+              pontoNoPoligono(ilha[0]!, outra) ||
+              pontoNoPoligono(outra[0]!, ilha),
+          )
+      ) {
+        erros.push(`Ilhas de água sobrepostas: ${a.id}`)
+        break
+      }
+    }
   }
   if (d.aguas.filter((a) => a.tipo === 'mar').length > 1) erros.push('Só cabe um mar por cenário')
 

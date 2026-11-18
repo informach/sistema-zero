@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
+import { AguaSchema, criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
 import { Vector3 } from 'three'
 import { AguasDoTeste } from '../src/teste/agua'
 import { MundoDoTeste } from '../src/teste/colisoes'
@@ -56,4 +56,28 @@ test('água funda sustenta o nado sem virar piso nem entrar no medidor de caminh
   expect(m.posicao.x).toBeGreaterThan(2)
   expect(m.percurso.ler().caminhada).toBe(0)
   mundo.descartar()
+})
+
+test('rio supera o mar apenas na sua faixa, considera profundidade real e respeita a opção de nado', () => {
+  const e = { id: 'mar', nome: 'Mar', grupo: null, oculto: false, bloqueado: false },
+    mar = AguaSchema.parse({ ...e, tipo: 'mar', nivel: 0 }),
+    rio = AguaSchema.parse({
+      ...e,
+      id: 'rio',
+      tipo: 'rio',
+      pontos: [
+        { x: 0, y: 5, z: 0 },
+        { x: 10, y: 3, z: 0 },
+      ],
+      largura: 4,
+      profundidade: 2,
+      correnteza: 1.5,
+    })
+  const agua = new AguasDoTeste([mar, rio])
+  expect(agua.nivel(5, 0)).toEqual({ nivel: 4, profundidade: 2, correnteza: { x: 1.5, z: 0 } })
+  expect(agua.nivel(5, 3)?.nivel).toBe(0)
+  expect(new AguasDoTeste([mar, { ...rio, nado: false }]).nivel(5, 0)?.nivel).toBe(0)
+  expect(new AguasDoTeste([rio], () => 3.8).nivel(5, 0)?.profundidade).toBeCloseTo(0.2, 8)
+  expect(new AguasDoTeste([rio], () => 5).nivel(5, 0)).toBeNull()
+  expect(agua.nivel(NaN, 0)).toBeNull()
 })

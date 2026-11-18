@@ -98,7 +98,11 @@ export function inverterLote(
     return (
       Boolean(modelo && fontesAlteradas.has(modelo)) ||
       Boolean(
-        'aparencia' in o && o.aparencia?.textura && texturasAlteradas.has(o.aparencia.textura.id),
+        'aparencia' in o &&
+          o.aparencia &&
+          'textura' in o.aparencia &&
+          o.aparencia.textura &&
+          texturasAlteradas.has(o.aparencia.textura.id),
       )
     )
   }

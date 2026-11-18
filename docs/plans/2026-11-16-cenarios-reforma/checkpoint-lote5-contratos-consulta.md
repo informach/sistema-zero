@@ -1,0 +1,17 @@
+# Lote 5 — Checkpoint dos contratos e da consulta de água
+
+18/11/2026. Continuação de `34a58a602`. **Somente 5.1 em andamento; o lote 5 não está fechado.** Não há nova aba Água nem material animado entregue neste checkpoint.
+
+O documento conserva lago/mar anteriores e passa a representar rio, represa e cachoeira. Os parâmetros do material pronto incluem cores rasa/profunda, opacidades, profundidade de transição, ondas e espuma, com limites. Lagos/represas admitem ilhas e encaixe explícito do GLB por nível local e papéis de materiais; materiais de água e sólidos não podem se repetir. Nenhum shader ou URL arbitrária entra nesses dados.
+
+A validação confere perfil descendente e pontos distintos do rio, queda mínima da cachoeira, largura/profundidade/correnteza, crista da barragem, orçamento dos anéis, ilhas fora da margem ou sobrepostas, referências e mar único. Os comandos existentes guardam os dados e os desfazem integralmente. O teste do novo contrato foi executado antes da implementação e ficou vermelho.
+
+`prepararConsultaDaAgua` compila cobertura, nível e profundidade sem Three/React/IO. Lago/represa usam os mesmos contornos locais, giro, escala e ilhas; mar tem nível mundial; cachoeira não inventa um volume horizontal de nado. Quando há fonte de terreno, a profundidade é limitada pelo fundo matemático; o GLB de lago mantém sua profundidade declarada porque seu fundo pertence ao modelo, e não ao terreno recortado. Visibilidade e opção de nado são respeitadas pelo adaptador do teste.
+
+O rio fornece a faixa de triângulos para desenho e consulta. O primeiro teste encontrou diferença de 0,1667 m no nível do eixo em uma curva, causada pela triangulação de um único lance transversal. Uma linha central de vértices preserva o perfil longitudinal e compartilha as mesmas faces com a consulta. Os centroides de todas as faces do caso são reconhecidos; a correnteza segue nascente→foz. O movimento ainda não aplica essa correnteza: isso pertence à integração física 5.2.
+
+As funções de ponto/anel/segmento foram reunidas no núcleo e reaproveitadas pelo domínio de solo e validação, conservando suas convenções. O adaptador `AguasDoTeste` usa essa consulta e o índice de caixas existente. Não acrescenta malha ou piso.
+
+Verificações deste recorte: testes de contratos/consulta, suites completas núcleo/motor/oficina e tipagem núcleo/motor/oficina/Members/member-shell. Permanecem as provas de armazenamento pertinentes e de navegador na integração seguinte; não há aprovação de material, desempenho ou arte.
+
+Próximas tarefas ainda de 5.1: operações que convertem preenchimento/escavação em descritores e regiões do terreno, continuidade da auditoria do núcleo e vínculos dos objetos à água. A leitura de `chao.ts` identificou que o apoio de água existente ainda conserva apenas a posição gravada, sem resolver nível/transformação; tratar esse caso com teste e preservar escala por eixo antes de declarar a integração pronta. Depois seguem renderer/material, gestos/worker, interface e fechamento do lote, na ordem do [plano exclusivo](../../superpowers/plans/2026-11-18-cenarios-lote5-agua.md).

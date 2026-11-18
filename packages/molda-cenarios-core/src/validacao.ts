@@ -5,6 +5,7 @@ import {
   LIMITES_CENARIO,
   type Ponto,
 } from './documento'
+import { segmentosSeCruzam as cruza } from './poligonos'
 
 export class CenarioInvalido extends Error {
   constructor(public readonly problemas: readonly string[]) {
@@ -19,19 +20,6 @@ function area(p: readonly Ponto[]) {
       return s + a.x * b.z - b.x * a.z
     }, 0) / 2
   )
-}
-const cruz = (a: Ponto, b: Ponto, c: Ponto) => (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x)
-function cruza(a: Ponto, b: Ponto, c: Ponto, d: Ponto) {
-  const ab: [number, number] = [cruz(a, b, c), cruz(a, b, d)],
-    cd: [number, number] = [cruz(c, d, a), cruz(c, d, b)]
-  if (ab[0] * ab[1] < 0 && cd[0] * cd[1] < 0) return true
-  const sobre = (p: Ponto, q: Ponto, r: Ponto) =>
-    Math.abs(cruz(p, q, r)) < 1e-8 &&
-    r.x >= Math.min(p.x, q.x) &&
-    r.x <= Math.max(p.x, q.x) &&
-    r.z >= Math.min(p.z, q.z) &&
-    r.z <= Math.max(p.z, q.z)
-  return sobre(a, b, c) || sobre(a, b, d) || sobre(c, d, a) || sobre(c, d, b)
 }
 export function poligonoSimples(p: readonly Ponto[]): boolean {
   if (p.length < 3 || Math.abs(area(p)) < 1e-6) return false

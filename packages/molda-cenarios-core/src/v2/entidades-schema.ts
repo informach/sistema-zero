@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { LIMITES_CENARIO, PontoSchema, VetorSchema } from '../documento'
+import { AparenciaDaAguaSchema, EncaixeDoModeloDeAguaSchema } from './parametros-de-agua'
 
 /** Esquemas elementares compartilhados por documentos e conteúdos de conjuntos. Sem IO ou referência ao documento v2. */
 export const LIMITES_CENARIO_V2 = {
@@ -143,21 +144,123 @@ export const CaminhoSchema = entidade
   .strict()
 
 const poligono = z.array(PontoSchema).min(3).max(LIMITES_CENARIO_V2.pontos)
-export const AguaSchema = z.discriminatedUnion('tipo', [
-  entidade
-    .extend({
-      tipo: z.literal('lago'),
-      modelo: id.nullable(),
-      centro: PontoSchema,
-      giro: numero,
-      escala: fator,
-      nivel: numero,
-      profundidade: z.number().finite().positive().max(1000),
-      contorno: poligono,
-      recorte: poligono,
+const agua = entidade.extend({
+  aparencia: AparenciaDaAguaSchema.optional(),
+  nado: z.boolean().optional(),
+})
+const camposDeLago = {
+  modelo: id.nullable(),
+  centro: PontoSchema,
+  giro: numero,
+  escala: fator,
+  nivel: numero,
+  profundidade: z.number().finite().positive().max(1000),
+  contorno: poligono,
+  recorte: poligono,
+  ilhas: z.array(poligono).max(128).optional(),
+  origemPreenchimento: PontoSchema.optional(),
+  encaixeModelo: EncaixeDoModeloDeAguaSchema.optional(),
+}
+const verificarLago = (
+  v: {
+    modelo: string | null
+    encaixeModelo?: unknown
+    contorno: unknown[]
+    recorte: unknown[]
+    ilhas?: unknown[][]
+  },
+  ctx: z.RefinementCtx,
+) => {
+  if (v.encaixeModelo && !v.modelo)
+    ctx.addIssue({
+      code: 'custom',
+      path: ['encaixeModelo'],
+      message: 'Escolha o modelo antes de definir seu encaixe de água.',
     })
-    .strict(),
-  entidade.extend({ tipo: z.literal('mar'), nivel: numero }).strict(),
+  if (
+    v.contorno.length + v.recorte.length + (v.ilhas ?? []).reduce((n, p) => n + p.length, 0) >
+    16384
+  )
+    ctx.addIssue({
+      code: 'custom',
+      path: ['ilhas'],
+      message: 'Os anéis de água excedem 16.384 pontos.',
+    })
+}
+export const AguaSchema = z.discriminatedUnion('tipo', [
+  agua
+    .extend({ ...camposDeLago, tipo: z.literal('lago') })
+    .strict()
+    .superRefine(verificarLago),
+  agua.extend({ tipo: z.literal('mar'), nivel: numero }).strict(),
+  agua
+    .extend({
+      ...camposDeLago,
+      tipo: z.literal('represa'),
+      barragem: z
+        .object({
+          de: PontoSchema,
+          ate: PontoSchema,
+          crista: numero,
+          largura: z.number().finite().min(0.25).max(512),
+        })
+        .strict(),
+    })
+    .strict()
+    .superRefine((v, ctx) => {
+      verificarLago(v, ctx)
+      if (v.barragem.crista < v.nivel)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['barragem', 'crista'],
+          message: 'A crista da barragem precisa alcançar o nível da água.',
+        })
+      if (Math.hypot(v.barragem.ate.x - v.barragem.de.x, v.barragem.ate.z - v.barragem.de.z) < 0.25)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['barragem'],
+          message: 'A barragem precisa de duas pontas distintas.',
+        })
+    }),
+  agua
+    .extend({
+      tipo: z.literal('rio'),
+      pontos: z.array(VetorSchema).min(2).max(LIMITES_CENARIO_V2.pontos),
+      largura: z.number().finite().min(0.25).max(200),
+      profundidade: z.number().finite().min(0.05).max(200),
+      correnteza: z.number().finite().min(0).max(10),
+    })
+    .strict()
+    .superRefine((v, ctx) => {
+      for (let i = 1; i < v.pontos.length; i++) {
+        const a = v.pontos[i - 1]!,
+          b = v.pontos[i]!
+        if (b.y > a.y + 1e-6 || Math.hypot(b.x - a.x, b.z - a.z) < 1e-6)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['pontos', i],
+            message: 'O rio precisa avançar da nascente para a foz sem subir.',
+          })
+      }
+    }),
+  agua
+    .extend({
+      tipo: z.literal('cachoeira'),
+      topo: VetorSchema,
+      base: VetorSchema,
+      largura: z.number().finite().min(0.25).max(200),
+      giro: numero,
+      nado: z.literal(false).optional(),
+    })
+    .strict()
+    .superRefine((v, ctx) => {
+      if (v.topo.y - v.base.y < 0.05)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['base'],
+          message: 'A cachoeira precisa cair ao menos cinco centímetros.',
+        })
+    }),
 ])
 
 export const MarcadorSchema = entidade
