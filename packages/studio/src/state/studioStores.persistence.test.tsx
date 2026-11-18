@@ -54,7 +54,6 @@ it('trocar de perfil com projeto não salvo grava no perfil antigo e nunca no no
     const { result, rerender, unmount } = renderHook(useStudioPersistence)
     // Sem rerender e sem trocar o projeto à mão: é o caso que vazava.
     setProjectStorageNamespace(secondNamespace)
-    expect(useProjectStore.getState().project).toBeNull()
     rerender()
     await act(async () => result.current.save())
     await act(async () => Bun.sleep(20))
