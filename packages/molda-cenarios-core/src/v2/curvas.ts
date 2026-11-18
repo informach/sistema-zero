@@ -74,6 +74,11 @@ export function suavizarCurva(
   const ps = limpar(controle, fechada),
     n = ps.length
   if (n === 2) return medirCurva(ps, false)
+  let quantidade = fechada ? 0 : 1
+  for (let i = 0; i < (fechada ? n : n - 1); i++) {
+    quantidade += limitar(Math.ceil(distancia(ps[i]!, ps[(i + 1) % n]!) / passo), 1, 256)
+    if (quantidade > MAX_PONTOS) invalidar('A curva suave gera pontos demais')
+  }
   const pegar = (i: number): PontoNoChao => {
     if (fechada) return ps[((i % n) + n) % n]!
     if (i < 0) return { x: 2 * ps[0]!.x - ps[1]!.x, z: 2 * ps[0]!.z - ps[1]!.z }
@@ -144,7 +149,7 @@ export function pontoNaCurva(c: Polilinha, d: number): PontoDaCurva {
 
 /** Estações igualmente espaçadas, com o espaçamento ajustado para fechar exato no fim. */
 export function reamostrarCurva(c: Polilinha, passo: number): PontoDaCurva[] {
-  if (!(passo > 0)) invalidar('O passo da curva é inválido')
+  if (!(passo > 0) || !Number.isFinite(passo)) invalidar('O passo da curva é inválido')
   const n = Math.max(1, Math.round(c.comprimento / passo))
   if (n > 200_000) invalidar('A curva gera estações demais')
   const r: PontoDaCurva[] = []
@@ -174,7 +179,7 @@ export function distribuirNaCurva(
   opcoes: { espacamento: number; lateral?: number; ajustar?: boolean },
 ): PecaNaCurva[] {
   const { espacamento, lateral = 0, ajustar = true } = opcoes
-  if (!(espacamento >= 0.05) || !Number.isFinite(lateral))
+  if (!(espacamento >= 0.05) || !Number.isFinite(espacamento) || !Number.isFinite(lateral))
     invalidar('O espaçamento ao longo da curva é inválido')
   const n = ajustar
     ? Math.max(1, Math.round(c.comprimento / espacamento))
@@ -207,7 +212,8 @@ export interface ModuloNaCurva extends PecaNaCurva {
  * módulo vai de um apoio ao seguinte em linha reta e é devolvido pelo ponto do meio.
  */
 export function modulosNaCurva(c: Polilinha, comprimentoDoModulo: number): ModuloNaCurva[] {
-  if (!(comprimentoDoModulo >= 0.05)) invalidar('O comprimento do módulo é inválido')
+  if (!(comprimentoDoModulo >= 0.05) || !Number.isFinite(comprimentoDoModulo))
+    invalidar('O comprimento do módulo é inválido')
   const n = Math.max(c.fechada ? 3 : 1, Math.round(c.comprimento / comprimentoDoModulo))
   if (n > 20_000) invalidar('A curva gera peças demais')
   const apoios: PontoDaCurva[] = []
@@ -291,6 +297,7 @@ export function faixaDaCurva(
   if (
     !(largura > 0) ||
     largura > 512 ||
+    !Number.isFinite(elevacao) ||
     !Number.isInteger(divisoes) ||
     divisoes < 1 ||
     divisoes > 16
@@ -316,6 +323,12 @@ export function faixaDaCurva(
       posicoes[v * 3] = x
       posicoes[v * 3 + 1] = (alturaDoPonto ? alturaDoPonto(i % n) : alturaEm!(x, z)) + elevacao
       posicoes[v * 3 + 2] = z
+      if (
+        !Number.isFinite(posicoes[v * 3]) ||
+        !Number.isFinite(posicoes[v * 3 + 1]) ||
+        !Number.isFinite(posicoes[v * 3 + 2])
+      )
+        invalidar('A faixa da curva tem uma posição ou altura inválida')
       uvs[v * 2] = u
       uvs[v * 2 + 1] = c.distancias[i]! / largura
     }
@@ -335,11 +348,13 @@ export function faixaDaCurva(
 }
 
 const areaComSinal = (p: readonly PontoNoChao[]) => {
+  const origem = p[0]
+  if (!origem) return 0
   let s = 0
   for (let i = 0; i < p.length; i++) {
     const a = p[i]!,
       b = p[(i + 1) % p.length]!
-    s += a.x * b.z - b.x * a.z
+    s += (a.x - origem.x) * (b.z - origem.z) - (b.x - origem.x) * (a.z - origem.z)
   }
   return s / 2
 }
@@ -354,9 +369,12 @@ export const areaDoPoligono = (p: readonly PontoNoChao[]) => Math.abs(areaComSin
 export function triangularPoligono(pontos: readonly PontoNoChao[]): Uint32Array {
   const n = pontos.length
   if (n < 3 || n > 4096) invalidar('O polígono precisa ter de 3 a 4096 pontos')
+  if (pontos.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.z)))
+    invalidar('O polígono tem um ponto inválido')
   const area = areaComSinal(pontos),
     sentido = area > 0 ? 1 : -1
-  if (Math.abs(area) < 1e-9) invalidar('O polígono cruza a si mesmo ou tem área nula')
+  if (!Number.isFinite(area) || Math.abs(area) < 1e-9)
+    invalidar('O polígono cruza a si mesmo ou tem área nula')
   const vira = (a: PontoNoChao, b: PontoNoChao, c: PontoNoChao) =>
     sentido * ((b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x))
   const resta = Array.from({ length: n }, (_, i) => i),
@@ -604,7 +622,8 @@ export function perfilDaPonte(
   passo = 1,
 ): { comprimento: number; estacoes: EstacaoDaPonte[]; maiorVao: number; atravessa: boolean } {
   const comprimento = distancia(de, ate)
-  if (!(comprimento > 1e-6) || !(passo > 0)) invalidar('A ponte precisa de duas cabeceiras')
+  if (!(comprimento > 1e-6) || !(passo > 0) || !Number.isFinite(passo))
+    invalidar('A ponte precisa de duas cabeceiras e passo finito')
   const n = Math.max(1, Math.round(comprimento / passo))
   if (n > 100_000) invalidar('A ponte gera estações demais')
   const ya = de.y ?? alturaEm(de.x, de.z),
@@ -612,6 +631,8 @@ export function perfilDaPonte(
     estacoes: EstacaoDaPonte[] = []
   let maiorVao = 0,
     atravessa = false
+  if (!Number.isFinite(ya) || !Number.isFinite(yb))
+    invalidar('A altura da cabeceira da ponte é inválida')
   for (let i = 0; i <= n; i++) {
     const t = i / n,
       x = de.x + (ate.x - de.x) * t,
@@ -619,6 +640,8 @@ export function perfilDaPonte(
       y = ya + (yb - ya) * t,
       chao = alturaEm(x, z),
       vao = y - chao
+    if (!Number.isFinite(y) || !Number.isFinite(chao))
+      invalidar('A altura no perfil da ponte é inválida')
     if (vao > maiorVao) maiorVao = vao
     if (vao < -1e-6 && i > 0 && i < n) atravessa = true
     estacoes.push({ x, z, y, chao, vao, distancia: comprimento * t })
