@@ -4,10 +4,14 @@
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
-**Bloqueio local ainda aberto (issue 026):** uma aba que já tinha RAM4 pode executar seu
-gravador antigo e substituir a chave IndexedDB do documento5, mesmo recusando leitura fria5.
-Não há checkpoint autoritativo local. A proteção da conta não resolve isso sem nuvem; esta
-revisão não aprova release. Reprodutor e contrato necessário estão na rodada de review.
+**Autoridade local offline (issue 026):** `pinta:local:document:<id>` é o documento
+autoritativo; `pinta:asset:<id>` é espelho de compatibilidade. Revisão, espelho, cópias
+e lápide são transacionais no mesmo banco/store. A primeira leitura moderna protege o
+legado antes de entregar RAM. Divergência antiga vira cópia; origem de RAM acompanha a
+linhagem, nunca a última listagem. Falha/quota aborta tudo. Não comparar por maior schema
+ou horário, nem remover checkpoint para caber. Captura e exportação usam a mesma autoridade.
+Saves protegidos têm custo O(galeria); só sprites mantêm o inventário incremental.
+Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
 
 **Carimbo `schema` e envelope `.pinta.json` dependem do conteúdo.**
 - `PINTA_MAP_SCHEMA = 3`: o que é de CAMADAS (grupos, opacidade, deslocamento, trava, colisão,

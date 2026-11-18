@@ -12,8 +12,12 @@ também é escrito pelo cliente antigo: não autentica a gravação. Manter revi
 capacidade do assinante; uma marca nova compartilhada não pode retaggar RAM antiga.
 Recuperar o canônico e conservar a edição cortada em cópia. Ver issues 001/004/022/023/025 em
 `.compozy/tasks/pinta-full-review-20261118/reviews-001/` e os testes de nuvem do community-kids.
-Essas regras protegem o canônico na conta. A perda local independente de nuvem continua
-aberta na issue 026 do Pinta; não alegar recuperação offline apenas por usar este espelho.
+Essas regras protegem o canônico na conta. A issue 026 acrescenta autoridade transacional
+offline ao Pinta; o espelho de nuvem herda a origem do snapshot substituído, conserva
+`localRevision` nativa realmente sincronizada e enfileira cópias confirmadas em conflitos.
+Uma checagem posterior por horário não autentica RAM antiga. O hook `hasLocalChanges`
+é opcional no reconciliador compartilhado; consumidores legados conservam suas regras.
+Provas e custos: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
 
 ### Proteção de leitura existente desde 17/11/2026
 

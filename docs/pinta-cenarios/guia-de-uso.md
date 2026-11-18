@@ -53,3 +53,11 @@ ligações da biblioteca para atualizar os desenhos sem substituir a programaç�
 
 **Baixar** oferece backup nativo, PNG com dados do Pinta e projetos externos. Guarde o
 `.pinta.json` para conservar a edição completa. Veja o [guia de exportação](exportacao.md).
+
+Se outra janela salvar uma versão antiga, o Pinta conserva o cenário confirmado e guarda
+as mudanças atrasadas em um desenho com `-copia` no nome. Um aviso explica a recuperação.
+Se você estiver editando, poderá continuar na cópia; os dois desenhos ficam na galeria,
+mesmo sem conexão. Confira-os antes de remover uma cópia de que não precise mais.
+Quando faltar espaço e aparecer erro ao salvar, a gravação anterior continua protegida;
+libere espaço e tente novamente. Fechar a página antes da confirmação pode deixar mudanças
+ainda não salvas, como em qualquer autosave.

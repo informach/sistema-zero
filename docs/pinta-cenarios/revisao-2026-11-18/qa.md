@@ -11,3 +11,8 @@ da revisão são mantidos na [rodada de issues](../../../.compozy/tasks/pinta-fu
 
 Execuções locais e emuladas não equivalem a CI remoto, teste em aparelho físico ou
 homologação autenticada em staging. A revisão não faz merge nem implantação.
+
+A correção da [issue 026](../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
+tem [contrato, comandos e provas específicos](qa/autoridade-local-026.md), incluindo
+cinco casos de Chromium com IndexedDB real, código publicado antigo e escrita offline.
+As contagens e datas anteriores permanecem históricas; os gates da correção são adicionais.

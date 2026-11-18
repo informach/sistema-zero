@@ -1,25 +1,18 @@
 # Continuação da missão, na ordem original
 
-A entrega é um **PR draft de revisão**, com a issue 026 aberta e sem prontidão para release.
+A entrega é um **PR draft de revisão**, com a issue 026 resolvida e a missão ainda parcial.
 
 Esta lista complementa a [matriz R01–R33](cobertura.md). Não transforma um requisito
 parcial em concluído. A revisão corrigiu defeitos do fluxo existente; a missão integral
 ainda exige as entregas abaixo, com núcleo, interface, adaptadores e prova funcional juntos.
 
-1. **Etapa 0 — prioridade bloqueante, dados locais e frota:** resolver a
+1. **Etapa 0 — frota:** a
    [issue 026](../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
-   antes de liberar: a aba antiga com RAM4 sobrescreve o documento 5 confirmado no
-   IndexedDB e não existe recuperação local sem nuvem. Definir autoridade única do
-   documento nativo com revisão/proveniência e gravação atômica do estado protegido
-   e espelho; preservar a edição antiga como cópia recuperável. Cobrir quota/crash,
-   lista/captura/backup, dependências, tombstone/exclusão/ressurreição e capacidades
-   futuras, com migração reversível sem trocar irreversivelmente o banco. Não basta
-   instalar um guard no gravador novo ou confiar em BroadcastChannel. Implementar
-   e validar o fluxo completo, inclusive IndexedDB real; não acrescentar journal
-   às pressas. A proteção do canônico na conta das issues 023/025 é separada desse
-   bloqueio local-only. Depois, executar rollout de leitores antes de gravadores,
-   rollback controlado e conflitos/recuperação com clientes reais; manter a trava
-   na reserva/commit. O procedimento de frota está documentado, sem implantação.
+   recebeu autoridade, revisão/linhagem, espelho e lápide transacionais, cópias remapeadas
+   e proteção de quota/futuro. [Provas e custos](qa/autoridade-local-026.md) incluem código
+   publicado e IndexedDB real sem nuvem. Restam rollout de leitores antes de gravadores,
+   rollback controlado e conflitos/recuperação em dispositivos físicos e host autenticado;
+   manter a trava na reserva/commit. O procedimento está documentado, sem implantação.
 2. **Etapa 1 — núcleo:** ampliar a autoria além de oito camadas/128×128/64 peças somente
    com medição representativa. Completar referências a animações específicas e versões de
    recursos, sem confundir um tile animado com um sprite animado.

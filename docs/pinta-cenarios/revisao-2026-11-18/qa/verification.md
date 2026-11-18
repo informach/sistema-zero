@@ -1,7 +1,13 @@
 # Verificação do Pinta — revisão de 18/11/2026
 
-**Estado: revisão verificada, missão parcial e release bloqueado pela issue 026.**
-O bloco de perda local foi reproduzido e permanece aberto; testes aprovados não o resolvem.
+**Estado: issue 026 resolvida; missão e rollout continuam parciais.**
+A [verificação da recuperação offline](autoridade-local-026.md) acrescenta autoridade
+transacional, provas com código antigo real e IndexedDB do Chromium. Os gates anteriores
+abaixo conservam suas datas; o lote 026 registra suas próprias execuções e limites.
+
+O código `f0dfed557` passou em 2.076 testes do Pinta, 2.480 do member-shell e 1.698 do Kids,
+além de tipos nos quatro pacotes envolvidos, cinco casos novos de IndexedDB e quatro
+regressões Vila/Phaser. [Gates adicionais com hashes](autoridade-local-026/gates.json).
 
 Entrega para revisão: [PR draft 274](https://github.com/informach/sistema-zero/pull/274).
 
@@ -92,26 +98,26 @@ remoto já executou esta branch.
   ensaios em celulares/notebooks reais. A importação de uma fixture não substitui autoria
   ampliada, carregamento incremental ou benchmark de memória.
 
-### Bloqueio de segurança local independente
+### Recuperação local independente implementada
 
 A [issue 026](../../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
-reproduz perda **sem nuvem** com o gravador real anterior. Uma aba guarda RAM4; o código
-novo confirma documento5 com offset2,5; a aba antiga salva RAM4 na mesma chave; reabrir
-com o código novo devolve4, sem offset e sem checkpoint/cópia. A recusa da leitura fria5
-funciona, mas não impede uma gravação da RAM já aberta. O espelho de nuvem 025 protege o
-canônico na conta; não adiciona autoridade versionada ao IndexedDB independente.
+foi corrigida com autoridade versionada, origem de RAM, revisão, espelho, cópias e lápides
+transacionais. O gravador publicado ainda pode alterar sua chave antiga; o original
+confirmado permanece protegido e a edição atrasada é recuperada como cópia, sem nuvem.
 
 ```powershell
 bun docs/pinta-cenarios/revisao-2026-11-18/qa/repro-local-only-026.ts
-# 1 pass; 12 assertivas: o teste confirma a perda existente, não uma correção.
+# 1 pass; 13 assertivas: original5/offset2,5 e cópia4 conservados; sem nuvem.
 ```
 
-O [resultado](local-only-026.json) e o reprodutor preservam a distinção. A correção exige
-autoridade local, CAS/assinatura, checkpoint e espelho na mesma transação, cópia de conflito,
-quota, tombstone e capacidades futuras; os critérios completos estão na issue. Não foi
-introduzido um journal parcial para mascarar o problema. Este PR é draft e não aprova release.
+O [resultado histórico](local-only-026.json) conserva a prova original do defeito.
+O [reprodutor atual](repro-local-only-026.ts) exige preservação. O [QA específico](autoridade-local-026.md)
+acrescenta cinco casos de navegador, quotas simuladas, formatos futuros, perfis, lote e
+dois passes de sincronização. Documenta duplicação física e custo O(galeria), sem
+prometer quota física, perda de energia, frota ou desempenho em aparelhos físicos.
+Resolver esse bloqueio não conclui a missão integral nem executa merge/deploy.
 
-## Gates locais
+## Gates locais anteriores à correção 026
 
 Os [32 gates finais](gates.json) registram comando, pacote, horário UTC, saída, resumo e
 SHA-256 do log. Há 31 saídas zero; o lint global do Estúdio sai1. Cada linha usa a execução
@@ -143,7 +149,7 @@ chunks e importação dinâmica permanecem nos logs; não são alegados como sa�
 Os geradores TS/Python, galeria e hash/licença Phaser também passam. CI remoto não foi ensaiado.
 
 ```text
-VERIFICATION REPORT
+VERIFICATION REPORT — histórico anterior à correção 026
 -------------------
 Claim: aprovação integral da missão e prontidão para release
 Command: gates locais de gates.json + repro-local-only-026.ts + matriz R01–R33

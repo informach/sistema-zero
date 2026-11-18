@@ -1,0 +1,41 @@
+{
+  "sourceCommit": "f0dfed557a95ff8ebe2751a6c26673f5759d9e43",
+  "recordedAtUtc": "2026-11-18T19:09:09.2039243Z",
+  "artifacts": [
+    {
+      "file": "baseline-real.json",
+      "bytes": 644,
+      "sha256": "6cb3bb4a27db4086f2528c0f60243dc2c3d0d44140fd040c0ef927ed3e3fecd6"
+    },
+    {
+      "file": "editor-recovered.png",
+      "bytes": 52666,
+      "sha256": "16513a7bb683dc85219d3d03d6335345425c3850d692f4431090362abb22ca43"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 5900,
+      "sha256": "2535845ea0fc40f80e3fbeb0c45a6fde115012461fb308187e9f22e26e5e0600"
+    },
+    {
+      "file": "indexeddb-budget.json",
+      "bytes": 350,
+      "sha256": "c8960e89f3f2eddcffb9e3c7f00a6703ddfbd3f1ad554937e1a5b45fec2d13ea"
+    },
+    {
+      "file": "navegador.json",
+      "bytes": 1566,
+      "sha256": "6cb99d166c1df5aece7cbeacb3aec1727dade95ad5bf70c6d448f759769208c3"
+    },
+    {
+      "file": "offline-reopened.png",
+      "bytes": 63018,
+      "sha256": "5c5520789dabd54c979bbc10c36aeb1c41c49aabdcaea42d92b46d258fd891a1"
+    },
+    {
+      "file": "vila-regressao.json",
+      "bytes": 357,
+      "sha256": "d047f854bf7080d154170f40a2a08397d6aa65bd138a22314ac98e97ca0eca3d"
+    }
+  ]
+}

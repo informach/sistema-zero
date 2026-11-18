@@ -8,12 +8,13 @@ created_at: 2026-11-18T07:58:37.799413+00:00
 ## Summary
 
 - Total: 26
-- Resolved: 25
-- Unresolved: 1
+- Resolved: 26
+- Unresolved: 0
 
 As resoluções são locais nesta branch; a issue 018 foi corrigida no remoto integrado.
-A [issue 026](issue_026.md) permanece aberta, com perda local-only reproduzida.
-Este PR é draft de revisão, sem prontidão para release ou missão integral concluída.
+A [issue 026](issue_026.md) recebeu autoridade e recuperação offline transacionais,
+com baseline publicado real e IndexedDB do Chromium. Este PR permanece draft de revisão;
+resolver os achados não conclui a missão integral nem executa rollout/implantação.
 O [QA](../../../../docs/pinta-cenarios/revisao-2026-11-18/qa/verification.md) registra a falha
 preexistente de lint e distingue testes locais, navegador, motores e aparelhos físicos.
 
@@ -44,4 +45,4 @@ preexistente de lint e distingue testes locais, navegador, motores e aparelhos f
 | [Issue 023: Reinício após quota permite ao cliente novo subir o cache cortado como formato atual](issue_023.md) | high | resolved |
 | [Issue 024: Personagem do pacote Phaser anda, mas não aparece](issue_024.md) | high | resolved |
 | [Issue 025: Floor e assinatura sem vínculo causal permitem reenviar cache antigo](issue_025.md) | high | resolved |
-| [Issue 026: Aba antiga com RAM4 apaga documento5 do IndexedDB sem recuperação local](issue_026.md) | high | valid |
+| [Issue 026: Aba antiga com RAM4 apaga documento5 do IndexedDB sem recuperação local](issue_026.md) | high | resolved |

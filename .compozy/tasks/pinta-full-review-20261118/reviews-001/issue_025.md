@@ -29,7 +29,7 @@ provider_ref:
 ## Verification
 
 - Prova original em `.tmp/pinta-quota-stale-floor/probe.ts`: antes, upload 4 com CAS3 elegível; depois, `payload:null`, um download de A e recuperação do original com cópia. A prova usa duas memórias de formato armazenadas, quota simulada e marcas compartilhadas; não representa quota física de dispositivo.
-- Red/green adicional: retry de conflito 4↔4 emitia CAS2 novamente; agora emite CAS3 depois de conservar a cópia. Relógios iguais deixavam RAM4 no original contra remoto5; agora original5 e cópia4 são conservados.
+- Red/green adicional: retry de conflito 4↔4 emitia CAS2 novamente; agora emite CAS3 depois de conservar a cópia. Relógios iguais deixavam RAM4 no original contra remoto5; agora original 5 e cópia 4 são conservados.
 - `bun test tests/pinta-cloud-persistence.test.ts` em community-kids: **71 pass, 0 fail, 408 expect**, 2,01 s. Inclui memória privada stale e legado, gravador antigo por spread, persistência direta, RAM anterior à promoção, downgrade legítimo, capacidade insuficiente, avanço de revisão durante download, ACK alheio e reabertura de C.
 - `bun test tests/pinta-format-memory.test.ts` em member-shell: **6 pass, 0 fail, 13 expect**, 147 ms. Round-trip dos metadados e compatibilidade de entradas antigas, quota e propagação entre instâncias.
 - `bun test src/assets/purity.test.ts` em pinta: **3 pass, 0 fail, 74 expect**, 566 ms. Exportações públicas adicionais não introduzem React ou UI no grafo.
@@ -37,6 +37,6 @@ provider_ref:
 
 ## Fechamento da rodada
 
-Revisão causal, capacidade, autoria e relógios iguais verificados em 71 testes de nuvem e na suíte completa de community-kids (1.698 aprovados). Floor não é autenticação de RAM por timestamp. A segurança local independente continua aberta na issue 026.
+Revisão causal, capacidade, autoria e relógios iguais verificados em71 testes de nuvem e na suíte então completa de community-kids (1.698 aprovados). Floor não é autenticação de RAM por timestamp. A autoridade offline foi implementada posteriormente na issue 026, com evidências próprias.
 
 Resultados, datas e limites: [QA final](../../../../docs/pinta-cenarios/revisao-2026-11-18/qa/verification.md). O lint global do Estúdio conserva uma falha preexistente de fixtures; resolução deste achado não declara a missão inteira concluída.

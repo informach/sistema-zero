@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-11-18T19:07:05.5101031Z",
+  "sourceCommit": "f0dfed557a95ff8ebe2751a6c26673f5759d9e43",
+  "command": "bunx playwright test --config playwright.pinta-authority.config.ts",
+  "environment": "Windows; Playwright Chromium; Desktop Chrome emulated; production Vite UI; real IndexedDB; quota fault injected, physical exhaustion not tested",
+  "stats": {
+    "startTime": "2026-11-18T19:04:03.068Z",
+    "duration": 10331.031,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "026: RAM4 real, promoção5, páginas fechadas e recuperação offline na galeria",
+      "project": "desktop",
+      "status": "passed",
+      "durationMs": 1077,
+      "errors": 0
+    },
+    {
+      "title": "duas abas atuais conservam revisão concorrente; downgrade e lápide após reinício",
+      "project": "desktop",
+      "status": "passed",
+      "durationMs": 435,
+      "errors": 0
+    },
+    {
+      "title": "falha no segundo put aborta IndexedDB real e permite tentar novamente",
+      "project": "desktop",
+      "status": "passed",
+      "durationMs": 201,
+      "errors": 0
+    },
+    {
+      "title": "editor adota a cópia confirmada e permite continuar, voltar e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "durationMs": 2773,
+      "errors": 0
+    },
+    {
+      "title": "orçamento da transação com 500 sprites; captura e revisões preservadas",
+      "project": "desktop",
+      "status": "passed",
+      "durationMs": 473,
+      "errors": 0
+    }
+  ]
+}

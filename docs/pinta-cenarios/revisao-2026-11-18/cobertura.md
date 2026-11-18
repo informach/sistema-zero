@@ -6,15 +6,15 @@ transcrita em [R01–R33](../../../.compozy/tasks/pinta-full-review-20261118/_pr
 O [plano desta revisão](plano.md) inclui auditoria, correções e comprovação dos
 fluxos. A sequência antiga de 14 incrementos não substitui os requisitos da missão.
 A [issue 026](../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
-permanece aberta por perda local-only: esta entrega é um **PR draft de revisão**,
-sem prontidão para release.
+recebeu autoridade e recuperação offline transacionais. Esta entrega permanece um
+**PR draft de revisão**, com pendências da missão e de rollout registradas separadamente.
 As [pendências ordenadas](pendencias.md) preservam a sequência da missão para a continuação.
 
 Esta consolidação incorpora os ensaios funcionais atuais documentados em
 [verificação](qa/verification.md) e [resultado Playwright](qa/navegador.json).
-**Saldo: 19 implementados, 13 parciais e um pendente, em 33 requisitos.** Os gates
+**Saldo: 20 implementados, 12 parciais e um pendente, em 33 requisitos.** Os gates
 finais estão registrados no relatório de verificação, incluindo a falha de lint do baseline,
-sem atribuir a aprovação dos testes à segurança local ainda ausente. Correção local e ensaios de produção
+com a correção offline e suas provas específicas registradas separadamente. Correção local e ensaios de produção
 local não equivalem a implantação na plataforma, rollout de frota ou aprovação integral
 da missão.
 
@@ -48,8 +48,8 @@ isso cobre os dois fluxos especificados, não toda interação possível do edit
 
 | ID | Estado | Resultado existente e lacuna da missão | Código e testes rastreáveis | Evidência e limite de comprovação |
 |---|---|---|---|---|
-| R01 | Parcial | Versão de nuvem 4, trava de cliente antigo, conflitos e recuperação protegem o documento canônico na conta, incluindo proveniência causal das issues 023/025. Essa proteção requer o caminho de nuvem; não conserva por si só o autoral local quando RAM4 antiga sobrescreve o IndexedDB. A issue 026 confirma esse bloqueio local-only. Rollout/rollback da frota ainda não foi executado. | `C/creations/pinta-format.ts`, `M/lib/pinta-cloud-persistence.ts`; issues 001/004 e [quota/reinício 023](../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_023.md); migração `packages/members/src/infrastructure/persistence/drizzle/migrations/0075_creation-format-version.sql`. | Local: regressões de nuvem/causalidade nas issues 023/025; [issue 026](../../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md) comprova perda independente de nuvem com baseline real. Não houve ciclo autenticado entre dispositivos, quota física ou rollout. Gates finais em [verificação](qa/verification.md) não encerram o risco 026. |
-| R02 | Parcial | Documento nativo é a fonte autoral: rico inteiro 4, frações 5, camadas simples 3 e nuvem 4 independente. A trava de leitura recusa 5 no leitor real 4. Porém uma aba antiga já aberta mantém RAM4 e sobrescreve a chave local depois da gravação 5 confirmada. Não há checkpoint/revisão local recuperável; gravação segura local ainda não está atendida. Bloqueio aberto026. | `P/core/project.ts`, `P/core/projectConfig.ts`, `P/assets/wire.ts`, `P/export/assetJson.ts`, `P/state/persistence.ts`; `P/core/mapFormat3.test.ts`, `mapFormat4.test.ts`, `P/export/assetJson.test.ts`. | Local: [reprodutor independente 026](qa/repro-local-only-026.ts) extrai código real `567b93f95` por git show e prova schema 5/offset 2,5 substituído por RAM4, sem checkpoint após reabertura. Um teste/12 asserções passou confirmando a perda. Browser normal conserva 5 na reabertura sem concorrente; isso não cobre a aba antiga. Sem correção local implementada ou prontidão de release. |
+| R01 | Parcial | Nuvem 4, trava de cliente antigo e proveniência causal protegem a conta. A issue 026 acrescenta autoridade local, CAS por linhagem, cópias e lápides transacionais independentes da rede. Rollout/rollback da frota continua sem execução. | `C/creations/pinta-format.ts`, `M/lib/pinta-cloud-persistence.ts`, `M/lib/creations-sync.ts`, `P/state/localAssetAuthority.ts`; issues 001/004/023/025/026 e migração 0075. | [QA 026](qa/autoridade-local-026.md): baseline publicado e IndexedDB real; dois passes da conta preservam edição de mesmo horário. Sem ciclo autenticado em dois aparelhos, quota física ou rollout. |
+| R02 | Implementado | Documento nativo é a fonte autoral: rico inteiro 4, frações 5, camadas 3 e nuvem 4 independente. Envelope local 1 guarda documento, capacidade e revisão; o prefixo antigo é espelho. Migração por documento, recuperação, exclusão e gravação do lote são atômicas. Origem de RAM não é retagada por listagens; versões futuras permanecem intactas. | `P/core/project.ts`, `P/state/assetAuthorityDb.ts`, `localAssetAuthority.ts`, `persistence.ts`, `P/core/localAssetOrigin.ts`; [ADR 026](../../../.compozy/tasks/pinta-full-review-20261118/adrs/026-local-authority.md). | [Provas 026](qa/autoridade-local-026.md): código real 567b93f95, fechar páginas, gravação antiga offline, reabertura 5 e cópia 4, IndexedDB real, dois clientes atuais, lápide, quota simulada, orçamento, futuro, batch, captura e perfis. Sem prova de perda de energia ou quota física. Saves protegidos têm custo O(galeria), sem streaming. |
 | R03 | Implementado | Múltiplos tilesets, grupos hierárquicos, ordem, visibilidade, bloqueio, opacidade, offset, frente e parallax têm dados e controles. A criação ainda mantém os tetos antigos; isso limita a expansão profissional e é contado em R29. | `P/core/project.ts`, `P/tiles/layerTree.ts`, `P/components/editor/MapLayerPanel.tsx`, `P/components/editor/TilemapPanels.tsx`, `P/tiles/chunks.ts`; testes de camadas, cena e componentes. | Local: testes de modelo/render e offsets. Navegador atual: importação do documento de 18 camadas, edição, backup e reabertura em desktop/toque, incluindo offset fracionário 2,5. Externo: Godot headless confere 18 camadas e Tiled compara as cenas completas. Isso não comprova autoria livre de 16 camadas nem desempenho físico. |
 | R04 | Implementado | Objetos possuem IDs, nomes/tipos, geometria, transformação, propriedades tipadas e relações. Cópia/importação remapeiam referências em vez de reutilizar IDs autorais de outro documento. | `P/core/project.ts`, `P/tiles/mapObjects.ts`, `P/tiles/objectGeometry.ts`, `P/tiles/objectSelection.ts`, `P/state/importPlan.ts`; `P/tiles/mapObjects.test.ts`, `objectGeometry.test.ts`, `P/core/assetDependencies.test.ts`. | Local: operações, propriedades e remapeamento possuem regressões. Externo atual: Tiled, Pygame e Godot exercitam IDs/referências/geometria no recorte documentado em [verificação](qa/verification.md). Navegador atual não cobre todas as transformações/alças de objetos. Sem aparelho físico. |
 | R05 | Parcial | Referências a sprites estáticos, peças e conjuntos existem; propriedades `type:asset` entram no fechamento nativo e remapeamento. Falta referência autoral a uma animação específica e a uma versão de recurso. Objetos de arte usam quadro estático. O transporte de recursos usados apenas como propriedades lógicas pelo contrato `PintaScene` precisa ser completado/verificado separadamente. | `P/core/project.ts` (`TilemapObject.art` contém `assetId` e `tile`), `P/components/editor/MapObjectArtwork.tsx` (`animationId:null`, `frameIndex:0`), `P/export/scene.ts`, `C/studio/pinta-scene.ts`. | Local: fechamento nativo, captura, exclusão, remapeamento e cache têm testes; sprites animados e versões não têm fluxo correspondente a provar. Navegador/externo: não declarar animação de objeto com base em animação de tile. |
@@ -80,7 +80,7 @@ isso cobre os dois fluxos especificados, não toda interação possível do edit
 | R30 | Pendente | Automapping avançado de múltiplas camadas, projeção isométrica e hexagonal com documento/render/export não têm implementação funcional identificada. Regras Wang são parte de terrenos, não substituto de automapping. Importador recusa orientações não ortogonais; não há opção decorativa apresentada como suporte. | `P/tiles/terrain.ts`, `P/core/project.ts`, `P/export/tiled/import.ts` (orientação ortogonal e mapa finito); ausência de pipeline correspondente no documento/render/adaptadores. | Não há teste de capacidade inexistente. Esses itens pertencem à etapa 8 da missão completa e continuam pendentes, mesmo que tenham sido excluídos do plano anterior. |
 | R31 | Parcial | A Vila e a Floresta existe: 32×24, 18 camadas, duas folhas, vila/floresta/água, porta para Cabana, personagem, colisões, frente, animação de tile e conjunto vinculado. Foi importada/editada/jogada no navegador e executada nos destinos registrados. Continua parcial porque a interface não cria livremente 16 camadas com os tetos atuais e o ciclo autenticado com Estúdio não foi fechado. | `packages/pinta/scripts/homologacao/fixture.ts`, `generate.ts`, `studio-assets.ts`; `P/export/homologacao.test.ts`, exemplos `map-2d` nos dois motores. | Local: fixture/geração. Navegador atual: importar 18 camadas, editar/apagar, undo/redo, backup, offset 2,5/schema 5, fechar/reabrir e playtest em desktop/toque. Externos: Tiled/Phaser/Pygame e Godot headless conforme [verificação](qa/verification.md). Autoria ampliada, GPU Godot e dispositivos físicos não demonstrados. |
 | R32 | Parcial | As partes locais e os fluxos atuais de navegador/motores externos avançaram, mas os dez passos ainda não constituem um ciclo integral aprovado. Envio/atualização autenticados Pinta–Estúdio, preservação de programação pela interface e conflitos/rollback entre clientes reais continuam sem ensaio completo. | `P/export/homologacao.test.ts`, `P/state/persistence.test.ts`, `P/export/tiled/roundtrip.test.ts`, `S/projects/tilemapGame.test.ts`, `S/asset-library/pintaImageSync.test.ts`; scripts de homologação. | A tabela abaixo separa local, navegador e externo por passo. Há quatro casos Playwright atuais e ensaios nativos atuais; eles não substituem plataforma autenticada ou aparelhos físicos. Gates finais em [verificação](qa/verification.md). |
-| R33 | Implementado | Arquitetura, guias, compatibilidade, homologação, plano, matriz de estados e relatório por ambiente estão documentados; versões, tetos, cache e escopo foram reconciliados. [PR draft 274](https://github.com/informach/sistema-zero/pull/274) aberto para revisão, mantendo a issue 026 pendente. Isso entrega o relatório de lacunas, sem declarar a missão integral concluída. | `docs/pinta-cenarios/README.md`, `diagnostico-e-arquitetura.md`, `guia-de-uso.md`, `exportacao.md`, `compatibilidade-tiled.md`, `homologacao.md`, este diretório e a rodada de issues. | Documentos atuais vinculam [verificação](qa/verification.md), [resultado do navegador](qa/navegador.json) e artefatos; registros de 17/11 e execuções anteriores são históricos datados. Gates finais registrados; o lint global do Estúdio continua reprovado por fixtures de baseline. Preparação de PR draft não significa prontidão para release, merge ou deploy. |
+| R33 | Implementado | Arquitetura, guias, compatibilidade, homologação, plano, matriz de estados e relatório por ambiente estão documentados; versões, tetos, cache e escopo foram reconciliados. [PR draft 274](https://github.com/informach/sistema-zero/pull/274) aberto para revisão, incluindo a correção offline da issue 026. Isso entrega o relatório de lacunas, sem declarar a missão integral concluída. | `docs/pinta-cenarios/README.md`, `diagnostico-e-arquitetura.md`, `guia-de-uso.md`, `exportacao.md`, `compatibilidade-tiled.md`, `homologacao.md`, este diretório e a rodada de issues. | Documentos atuais vinculam [verificação](qa/verification.md), [resultado do navegador](qa/navegador.json) e artefatos; registros de 17/11 e execuções anteriores são históricos datados. Gates finais registrados; o lint global do Estúdio continua reprovado por fixtures de baseline. Preparação de PR draft não significa prontidão para release, merge ou deploy. |
 
 ## Situação dos dez passos de aceitação
 
@@ -92,7 +92,7 @@ Nenhum passo tem prova em aparelho físico nesta revisão.
 | Passo | Local | Navegador atual | Externo atual e limite restante |
 |---|---|---|---|
 | 1. Criar e editar no Pinta | Fixture e operações/componentes. | Importar documento de 18 camadas, editar/apagar em desktop/toque. | A autoria livre de 16+ camadas segue limitada a oito; importar fixture não a comprova. |
-| 2. Salvar, fechar e reabrir | Serialização, persistência, formatos e migração. | Backup baixado, offset 2,5 convertido para schema 5, fechar/reabrir com dados reais do playground. | Sem concorrência antiga o fluxo passa; a issue 026 comprova perda local com RAM4 tardia. Recuperação local segura, plataforma autenticada e falha física não estão atendidas integralmente. |
+| 2. Salvar, fechar e reabrir | Serialização, persistência, formatos e migração. | Backup baixado, offset 2,5 convertido para schema 5, fechar/reabrir com dados reais do playground. | A issue 026 agora comprova preservação do original e cópia sob escrita tardia do baseline real, sem nuvem e em IndexedDB real. Plataforma autenticada e falha física permanecem sem comprovação. |
 | 3. Enviar ao Estúdio | studioBridge, biblioteca e PintaScene têm testes. | Envio autenticado não ensaiado. | Recursos apenas lógicos e ciclo de importação/atualização do programa permanecem parciais. |
 | 4. Executar camadas, colisões e objetos | Testes de texto dos dois motores e do runtime. | Playtest do Pinta e Phaser: personagem, frente, água, colisões e portas. | Pygame real e Godot headless passam no cenário; não substituem execução autenticada dos dois motores do Estúdio. |
 | 5. Editar novamente no Pinta | Editor autoral e histórico. | A mesma fixture foi editada, descarregada e reaberta, inclusive offset fracionário. | Editar uma arte já vinculada a um programa autenticado do Estúdio não foi ensaiado. |
@@ -102,33 +102,31 @@ Nenhum passo tem prova em aparelho físico nesta revisão.
 | 9. Undo/redo, duplicação, migração e falhas | Testes de gestos, clipboard, carimbos, quota/reinício e persistência. | Apagar/undo/redo, backup e reabertura exercitados em desktop/toque. | Issue026 demonstra perda confirmada no IndexedDB com aba antiga; falta autoridade/revisão/recuperação local. Duplicação completa, falhas no host e rollback também não formam sequência integral ensaiada. |
 | 10. Dispositivos e formatos antigos | Leitor intermediário real recusa formato 5; testes de versões/quota/cópia de recuperação. | Não houve conflito entre dois clientes autenticados reais. | Dois aparelhos físicos, rollout e rollback não executados; storage simulado não é quota física. |
 
-## Bloqueio local-only 026 e caráter da entrega
+## Recuperação offline 026 e caráter da entrega
 
-O [reprodutor independente](qa/repro-local-only-026.ts) prepara seu próprio baseline
-por `git show` e grava somente em uma pasta nova de `.tmp`; não depende de artefatos
-anteriores. O comando abaixo executa apenas um teste com IndexedDB simulado:
+O [reprodutor independente](qa/repro-local-only-026.ts) extrai os 37 módulos reais do
+baseline 567b93f95. Agora exige schema 5/offset 2,5 e cópia 4 depois da escrita da RAM antiga:
 
 ```powershell
 bun docs/pinta-cenarios/revisao-2026-11-18/qa/repro-local-only-026.ts
-# 37 módulos reais do baseline 567b93f95; 1 pass; 0 fail; 12 expect; 84 ms de teste.
+# 1 pass; 0 fail; 13 asserções; sem nuvem, IO simulado.
 ```
 
-O resultado aprovado **confirma o defeito aberto**: gravação atual5/offset 2,5,
-leitor frio4 recusa 5, mas RAM4 aberta antes persiste no mesmo ID; reabertura atual
-retorna4/sem offset e o banco só contém a chave substituída. Não houve nuvem.
-A issue 026 especifica autoridade local, atomicidade, revisão/proveniência,
-preservação da edição antiga, quota, tombstone e migração reversível. Nenhum
-journal ou contrato novo foi implementado nesta entrega. A correção exige o
-fluxo completo de recuperação e prova de IndexedDB real.
+A prova complementar do Chromium usa IndexedDB real e UI de produção. Fecha as páginas,
+grava com a versão antiga offline e reabre ambos os desenhos com aviso de recuperação.
+Também cobre duas abas atuais, exclusão/escrita tardia, abort/retry, continuação do editor
+e 502 assets. As regressões incluem causalidade da conta no segundo passe com relógios iguais.
 
-Os ensaios funcionais aprovados e os gates gerais não tornam esse risco aceitável
-para release. A entrega permanece **PR draft de revisão com a issue 026 aberta**.
+[Contrato, comandos, custos e limites](qa/autoridade-local-026.md). Um checkpoint corrente
+por ID; cópias contam nos 32 MiB; lápides são compactas e não expiram automaticamente.
+Saves protegidos leem a galeria na transação; não há promessa de streaming ou desempenho
+em aparelho físico. A issue 026 foi resolvida; o PR permanece draft pela missão parcial.
 
 ## Evidências atuais e verificações locais anteriores
 
 A fonte dos resultados atuais é [verificação](qa/verification.md); a fonte dos
 quatro casos de produção local em Chromium é [navegador.json](qa/navegador.json).
-Os gates finais estão registrados no relatório: 31 de 32 comandos saem zero, com lint global do Estúdio reprovado; isso não fecha a issue 026.
+Os 32 gates anteriores permanecem datados no relatório (31 saídas zero e lint global do Estúdio reprovado). Os gates e ensaios da correção 026 são adicionais, sem reatribuir essas execuções.
 
 Os comandos abaixo registram verificações estreitas anteriores desta mesma revisão,
 depois das alterações daquele lote. Não são o último gate global nem o total do
@@ -164,7 +162,7 @@ são auxiliares locais e não substituem evidência versionada de navegador ou m
 
 | Ambiente | Registro atual | Limite comprovado |
 |---|---|---|
-| Núcleo/componentes/host/backend | Issues e [verificação](qa/verification.md); gates finais registrados. | Testes estreitos anteriores não são agregados como suíte integral aprovada. A suíte de nuvem contém 71 casos e a de memória contém seis. A reprodução offline 026 confirma perda, não correção. |
+| Núcleo/componentes/host/backend | Issues e [verificação](qa/verification.md); gates finais registrados. | Testes estreitos anteriores não são agregados como suíte integral aprovada. A suíte de nuvem contém 71 casos e a de memória contém seis. A correção 026 tem regressões e ensaios próprios, incluindo IndexedDB real; o resultado histórico da perda foi conservado. |
 | Navegador desktop | Playwright/Chromium 148.0.7778.96, 1280×720; [Pinta](qa/pinta-vila-desktop.png), [Phaser](qa/phaser-vila-desktop.png), [resultado](qa/navegador.json). | Dois fluxos funcionais de produção local; não execução autenticada da plataforma nem todos os controles do editor. |
 | Navegador toque emulado | Pixel 7, 412×839; [Pinta](qa/pinta-vila-touch.png), [Phaser](qa/phaser-vila-touch.png), [resultado](qa/navegador.json). | Dois fluxos aprovados com toque; não aparelho físico ou todo layout notebook. |
 | Tiled real | Tiled 1.12.2 Windows, dois mapas TMX→JSON com comparação integral, zero diferenças/avisos; [locked](qa/tiled-locked.json). | CLI/subconjunto documentado; alfa opaco normalizado. Fixture locked complementar conserva true no JSON→TMX→JSON; sem edição manual da interface. |
@@ -189,7 +187,7 @@ permanecem como histórico datado; afirmações antigas não substituem as prova
 | Aula | Autoria e envio usam os mesmos limites específicos de mapa, sem exclusão absoluta nem aceitação irrestrita. |
 | Composição | Espalhar atua em células; objetos com afastamento e biblioteca por arrasto/ghost continuam pendentes. Animações/versões de recursos seguem limitadas por R05. |
 | Godot e motores externos | Versão ensaiada Godot 4.7.2, headless/sem GPU; Tiled 1.12.2, Phaser 3.90.0 e pygame-ce 2.5.8 identificados, com alcance e limitações próprios. |
-| Homologação e PR | Relatórios atuais separados das capturas de17/11 e testes anteriores. PR draft de revisão com a issue 026 aberta; sem prontidão de release, merge, deploy ou missão integral concluída. |
+| Homologação e PR | Relatórios atuais separados das capturas de17/11 e testes anteriores. PR draft de revisão com a issue 026 resolvida; missão e rollout parciais, sem merge/deploy. |
 
 O saldo é uma evolução funcional substancial do editor e dos adaptadores, com
 defeitos de dados/edição identificados e corrigidos incrementalmente. A missão

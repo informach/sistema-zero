@@ -1,5 +1,5 @@
 ---
-status: valid
+status: resolved
 file: packages/pinta/src/state/persistence.ts
 line: 420
 severity: high
@@ -31,15 +31,55 @@ conta, corrigida nas issues 023/025, não resolve essa perda do documento local.
   nem conserva a versão anterior. Fechar a página nova elimina sua cópia em memória.
 - Impacto: perda silenciosa de dados que já tiveram gravação local confirmada,
   mesmo com versões recusadas corretamente pelo leitor frio e sem nenhuma chamada
-  de rede. O exemplo perde offset2,5; uma RAM anterior também pode eliminar outras
+  de rede. O exemplo perde offset 2,5; uma RAM anterior também pode eliminar outras
   edições feitas na versão mais recente.
-- Escopo desta entrega: auditoria, reprodução e documentação. Nenhum journal,
-  contrato de persistência, source ou migração foi implementado. Issue aberta;
-  PR **draft de revisão**, sem prontidão para release.
+- O diagnóstico acima descreve o defeito antes da correção. A implementação atual
+  acrescenta autoridade e recuperação transacionais; veja Fix e a verificação específica.
+  O PR continua draft porque a missão integral e o rollout têm pendências próprias.
 
-## Reproduction
+## Fix
 
-Reprodutor versionado e independente de `.tmp` preexistente:
+- Envelope local1/capacidade 5 em `pinta:local:document:<id>` é a autoridade; a chave
+  conhecida pelo cliente publicado é espelho. Migração por documento na primeira leitura,
+  sem troca de banco/store e sem rede no autosave.
+- Autoridade, revisão, espelho, recuperações e lápide são comparados e escritos em uma
+  transação IndexedDB. Retorno somente em `oncomplete`; falha/abort mantém o estado anterior.
+- A linhagem editada conserva sua origem em memória. Listagem, horários iguais e checagem
+  do host não promovem snapshots antigos. Batches usam CAS e remapeiam seus recursos juntos.
+- Espelho divergente vira cópia com IDs/referências novos; o original completo permanece.
+  Editor pode adotar a cópia confirmada e continuar; gestos antigos não restauram o ID anterior.
+- Exclusão deixa lápide compacta. RAM anterior à exclusão não é autenticada por uma leitura
+  de `null`; restauração deliberada de backup sem origem de edição usa a lápide observada.
+- Cópias contam no teto portátil32 MiB. Recusa não remove checkpoint; redução/exclusão é
+  orçada pelo resultado final. Um payload corrente por ID, sem journal ilimitado; versões
+  futuras/corrupção permanecem intactas. Quota física é independente do teto do backup.
+- Lista, backup, captura e exportação resolvem a mesma autoridade. Conta registra a revisão
+  nativa realmente sincronizada, evitando perda no segundo passe com relógios iguais.
+
+Decisão e custos: [ADR 026](../adrs/026-local-authority.md). Contrato, comandos, provas e
+limites: [QA específico](../../../../docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md).
+
+## Verificação da correção
+
+- Reprodutor com 37 módulos reais de `567b93f95`: **1 pass, 0 fail, 13 asserções**;
+  reabertura conserva schema 5/offset 2,5 e `edicao-aba-antiga-copia`4; sem nuvem.
+- Chromium/IndexedDB real e UI de produção: **5 casos aprovados**. Incluem páginas fechadas,
+  escrita offline antiga real, aviso, duas abas atuais, lápide/escrita tardia, abort no segundo
+  put/retry, continuação do editor e502 assets com dez saves/captura.
+- Regressões de domínio, migração, causalidade, batch, exclusão, orçamento, quota simulada,
+  capacidades futuras e isolamento; ponte valida dois passes de sincronização e reinício.
+- Revisão independente repetiu os dois vetores finais: **2 pass, 0 fail, 5 asserções**;
+  RAM pré-lápide não ressuscita o original e a edição de mesmo horário sobrevive ao segundo passe.
+
+Não houve teste de perda de energia, quota física esgotada ou dispositivos físicos.
+O custo O(galeria) dos saves protegidos e a duplicação física autoridade/espelho estão
+registrados, sem alegação de streaming ou ampliação de limites. Os gates e artefatos
+da correção complementam, sem reatribuir datas, os resultados anteriores da revisão.
+
+## Reprodução original, antes da correção
+
+Reprodutor versionado e independente de `.tmp` preexistente. Hoje exige preservação;
+os passos/resultado abaixo registram a prova vermelha original:
 
 `docs/pinta-cenarios/revisao-2026-11-18/qa/repro-local-only-026.ts`
 
@@ -61,7 +101,7 @@ funcional do IndexedDB. Não altera fontes, banco real, perfil real ou nuvem.
 6. Resultado: somente mapa4/edição antiga; offset ausente; uma chave física; nenhum
    documento5, checkpoint ou cópia de recuperação no banco simulado.
 
-## Verification
+## Verificação histórica do defeito
 
 Executado nesta revisão, depois de criar o reprodutor independente:
 

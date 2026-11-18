@@ -3,7 +3,7 @@
 ## Revisão integral de 18/11/2026
 
 [PR draft 274](https://github.com/informach/sistema-zero/pull/274): revisão e correções,
-sem merge/deploy e com bloqueio offline aberto.
+sem merge/deploy, incluindo a correção transacional da recuperação offline.
 
 A missão completa **ainda não está concluída**. A revisão do código local e remoto, suas
 correções e a matriz dos 33 critérios estão em [cobertura](revisao-2026-11-18/cobertura.md).
@@ -12,9 +12,11 @@ externos e o que permanece sem comprovação. As seções seguintes registram a 
 concluir seus 14 incrementos não equivale a cumprir toda a missão.
 As [pendências na ordem das etapas](revisao-2026-11-18/pendencias.md) orientam a continuação.
 
-**Bloqueio de release:** a [issue 026](../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
-confirma sobrescrita local-only por uma aba antiga com RAM já aberta. A proteção da conta
-foi corrigida; esse caso offline ainda exige autoridade local e recuperação transacionais.
+**Recuperação offline implementada:** a [issue 026](../../.compozy/tasks/pinta-full-review-20261118/reviews-001/issue_026.md)
+agora conserva o documento confirmado e recupera a edição da aba antiga como cópia,
+com autoridade, revisão, espelho e lápide transacionais. Veja as
+[provas, custos e limites](revisao-2026-11-18/qa/autoridade-local-026.md).
+Isso remove esse bloqueio específico; a missão integral e o rollout continuam parciais.
 
 A proteção atual usa nuvem **4**, documentos ricos **4** e documentos com deslocamentos
 fracionários **5**. Camadas sem recursos ricos continuam em **3** e os legados conservam sua
