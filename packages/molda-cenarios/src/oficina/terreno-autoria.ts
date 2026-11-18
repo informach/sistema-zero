@@ -26,7 +26,7 @@ export async function gravarEstadoDoTerreno({
   antes = [],
 }: {
   controlador: ControladorDaOficina
-  palco: Palco
+  palco: Pick<Palco, 'prepararRecursosDoTerreno' | 'finalizarEscultura'>
   documentoDeOrigem: DocumentoDeCenario
   base: BaseDeTerreno
   estado: EstadoDoTerreno
@@ -58,12 +58,15 @@ export async function gravarEstadoDoTerreno({
       referencias.push({ papel: peca.papel, coluna: peca.coluna, linha: peca.linha, digest })
     }
     const nova = baseComPecasEditadas(base, referencias)
-    if (igual(nova, documentoDeOrigem.base)) return { alterado: false, guardado: true }
+    const mudouBase = !igual(nova, documentoDeOrigem.base)
+    if (!mudouBase && !antes.length) return { alterado: false, guardado: true }
     conferirOrigem()
     const novos = [...arquivos.values()]
     await palco.prepararRecursosDoTerreno(novos, sinal)
     conferirOrigem()
-    enfileirado = controlador.executar([...antes, { tipo: 'base.definir', base: nova }], novos)
+    const comandos: ComandoDeCenario[] = [...antes]
+    if (mudouBase) comandos.push({ tipo: 'base.definir', base: nova })
+    enfileirado = controlador.executar(comandos, novos)
     if (!enfileirado)
       throw new Error(controlador.getState().recusa ?? 'Não consegui guardar esta mudança')
     await controlador.terminar()
