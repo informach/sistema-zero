@@ -1,0 +1,703 @@
+{
+  "estado": {
+    "carregando": 0,
+    "falhas": []
+  },
+  "solidos": 2,
+  "inicial": {
+    "geometries": 1,
+    "textures": 1
+  },
+  "cheio": {
+    "geometries": 7,
+    "textures": 5
+  },
+  "amostras": [
+    {
+      "profundidade": 0.10975540589381416,
+      "esperado": 0.10975540589381572
+    },
+    {
+      "profundidade": 0.7902859753438274,
+      "esperado": 0.7902859753438274
+    },
+    {
+      "profundidade": 1.0422178566135307,
+      "esperado": 1.0422178566135307
+    },
+    {
+      "profundidade": 1.2064397502287676,
+      "esperado": 1.206439750228769
+    },
+    {
+      "profundidade": 1.297067210887271,
+      "esperado": 1.29706721088727
+    },
+    {
+      "profundidade": 1.3171243927702516,
+      "esperado": 1.3171243927702512
+    },
+    {
+      "profundidade": 1.3087062860051426,
+      "esperado": 1.3087062860051417
+    },
+    {
+      "profundidade": 1.2800719227457367,
+      "esperado": 1.2800719227457367
+    },
+    {
+      "profundidade": 1.2604574031800064,
+      "esperado": 1.260457403180005
+    },
+    {
+      "profundidade": 1.2565342360071332,
+      "esperado": 1.2565342360071337
+    },
+    {
+      "profundidade": 1.197944521300943,
+      "esperado": 1.1979445213009448
+    },
+    {
+      "profundidade": 1.1083584852578254,
+      "esperado": 1.1083584852578254
+    },
+    {
+      "profundidade": 0.9584973222954263,
+      "esperado": 0.958497322295425
+    },
+    {
+      "profundidade": 0.7251872469035365,
+      "esperado": 0.7251872469035372
+    },
+    {
+      "profundidade": 0.10387166996982611,
+      "esperado": 0.10387166996982655
+    },
+    {
+      "profundidade": 0.4748728630966981,
+      "esperado": 0.4748728630966972
+    },
+    {
+      "profundidade": 0.9237832007239057,
+      "esperado": 0.9237832007239066
+    },
+    {
+      "profundidade": 1.2846716604934563,
+      "esperado": 1.2846716604934563
+    },
+    {
+      "profundidade": 1.3872862261321366,
+      "esperado": 1.387286226132138
+    },
+    {
+      "profundidade": 1.39305386966645,
+      "esperado": 1.3930538696664505
+    },
+    {
+      "profundidade": 1.3967594680023492,
+      "esperado": 1.3967594680023505
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.3878144024780283,
+      "esperado": 1.387814402478028
+    },
+    {
+      "profundidade": 1.379456406639675,
+      "esperado": 1.3794564066396755
+    },
+    {
+      "profundidade": 1.3774776443583443,
+      "esperado": 1.377477644358343
+    },
+    {
+      "profundidade": 1.3571910691748403,
+      "esperado": 1.35719106917484
+    },
+    {
+      "profundidade": 1.2699139124234118,
+      "esperado": 1.2699139124234118
+    },
+    {
+      "profundidade": 0.9401144944185527,
+      "esperado": 0.9401144944185549
+    },
+    {
+      "profundidade": 0.5091773726722286,
+      "esperado": 0.5091773726722297
+    },
+    {
+      "profundidade": 0.2427831691980531,
+      "esperado": 0.24278316919805354
+    },
+    {
+      "profundidade": 0.6061376908891316,
+      "esperado": 0.6061376908891307
+    },
+    {
+      "profundidade": 1.0219352726016218,
+      "esperado": 1.0219352726016218
+    },
+    {
+      "profundidade": 1.3405212531261919,
+      "esperado": 1.3405212531261923
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.3416864901598315,
+      "esperado": 1.3416864901598315
+    },
+    {
+      "profundidade": 1.0264368095180596,
+      "esperado": 1.0264368095180578
+    },
+    {
+      "profundidade": 0.6293637544162947,
+      "esperado": 0.629363754416294
+    },
+    {
+      "profundidade": 0.2877779402734737,
+      "esperado": 0.2877779402734748
+    },
+    {
+      "profundidade": 0.035022480483645424,
+      "esperado": 0.03502248048364498
+    },
+    {
+      "profundidade": 0.19516740408838396,
+      "esperado": 0.1951674040883833
+    },
+    {
+      "profundidade": 0.451100818150143,
+      "esperado": 0.451100818150143
+    },
+    {
+      "profundidade": 0.8193421093344404,
+      "esperado": 0.8193421093344422
+    },
+    {
+      "profundidade": 1.2470743293053612,
+      "esperado": 1.2470743293053608
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.2504152090353498,
+      "esperado": 1.2504152090353506
+    },
+    {
+      "profundidade": 0.8352856156782749,
+      "esperado": 0.8352856156782749
+    },
+    {
+      "profundidade": 0.47931803029662734,
+      "esperado": 0.47931803029662623
+    },
+    {
+      "profundidade": 0.22812078892884413,
+      "esperado": 0.2281207889288459
+    },
+    {
+      "profundidade": 0.06925013565114146,
+      "esperado": 0.06925013565113991
+    },
+    {
+      "profundidade": 0.0714217449717569,
+      "esperado": 0.0714217449717558
+    },
+    {
+      "profundidade": 0.19296721815385554,
+      "esperado": 0.19296721815385487
+    },
+    {
+      "profundidade": 0.3271229277198122,
+      "esperado": 0.3271229277198109
+    },
+    {
+      "profundidade": 0.47797973222927426,
+      "esperado": 0.4779797322292736
+    },
+    {
+      "profundidade": 0.6600918475129423,
+      "esperado": 0.6600918475129443
+    },
+    {
+      "profundidade": 1.0288507793441317,
+      "esperado": 1.0288507793441322
+    },
+    {
+      "profundidade": 1.3999999999999995,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.0452000513711441,
+      "esperado": 1.0452000513711446
+    },
+    {
+      "profundidade": 0.7014097259600869,
+      "esperado": 0.7014097259600862
+    },
+    {
+      "profundidade": 0.5266606184423721,
+      "esperado": 0.5266606184423721
+    },
+    {
+      "profundidade": 0.3786109697687856,
+      "esperado": 0.37861096976878583
+    },
+    {
+      "profundidade": 0.23724688317464993,
+      "esperado": 0.23724688317465015
+    },
+    {
+      "profundidade": 0.11141429627774602,
+      "esperado": 0.1114142962777449
+    },
+    {
+      "profundidade": 0.10412115893569363,
+      "esperado": 0.10412115893569363
+    },
+    {
+      "profundidade": 0.2364239912925057,
+      "esperado": 0.2364239912925057
+    },
+    {
+      "profundidade": 0.3900903166069021,
+      "esperado": 0.39009031660690274
+    },
+    {
+      "profundidade": 0.5581468033009342,
+      "esperado": 0.5581468033009336
+    },
+    {
+      "profundidade": 0.7254948963912395,
+      "esperado": 0.7254948963912411
+    },
+    {
+      "profundidade": 0.9405285519745412,
+      "esperado": 0.9405285519745408
+    },
+    {
+      "profundidade": 1.226398403289263,
+      "esperado": 1.2263984032892643
+    },
+    {
+      "profundidade": 1.3999999999999995,
+      "esperado": 1.3999999999999981
+    },
+    {
+      "profundidade": 1.3160336406743571,
+      "esperado": 1.3160336406743567
+    },
+    {
+      "profundidade": 1.0317721693032644,
+      "esperado": 1.0317721693032644
+    },
+    {
+      "profundidade": 0.7945768451689061,
+      "esperado": 0.7945768451689061
+    },
+    {
+      "profundidade": 0.6141049533627574,
+      "esperado": 0.6141049533627565
+    },
+    {
+      "profundidade": 0.4462733206153029,
+      "esperado": 0.44627332061530245
+    },
+    {
+      "profundidade": 0.2857453106817873,
+      "esperado": 0.285745310681786
+    },
+    {
+      "profundidade": 0.14587881565093985,
+      "esperado": 0.14587881565093985
+    },
+    {
+      "profundidade": 0.113150324969433,
+      "esperado": 0.11315032496943145
+    },
+    {
+      "profundidade": 0.2470204407899168,
+      "esperado": 0.24702044078991703
+    },
+    {
+      "profundidade": 0.40058969787628107,
+      "esperado": 0.40058969787628085
+    },
+    {
+      "profundidade": 0.5626840117073939,
+      "esperado": 0.5626840117073928
+    },
+    {
+      "profundidade": 0.7516378511940136,
+      "esperado": 0.7516378511940149
+    },
+    {
+      "profundidade": 1.0872282611531134,
+      "esperado": 1.0872282611531126
+    },
+    {
+      "profundidade": 1.3999999999999995,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.1102279196298155,
+      "esperado": 1.1102279196298155
+    },
+    {
+      "profundidade": 0.8017645776132465,
+      "esperado": 0.8017645776132478
+    },
+    {
+      "profundidade": 0.6122889889731897,
+      "esperado": 0.6122889889731904
+    },
+    {
+      "profundidade": 0.45261290075747485,
+      "esperado": 0.4526129007574755
+    },
+    {
+      "profundidade": 0.2943712155333389,
+      "esperado": 0.2943712155333382
+    },
+    {
+      "profundidade": 0.15330298863727188,
+      "esperado": 0.1533029886372712
+    },
+    {
+      "profundidade": 0.10112484612913075,
+      "esperado": 0.1011248461291312
+    },
+    {
+      "profundidade": 0.26801470535211713,
+      "esperado": 0.2680147053521167
+    },
+    {
+      "profundidade": 0.523889367632058,
+      "esperado": 0.5238893676320582
+    },
+    {
+      "profundidade": 0.8715404288520343,
+      "esperado": 0.8715404288520356
+    },
+    {
+      "profundidade": 1.2598573393695154,
+      "esperado": 1.2598573393695154
+    },
+    {
+      "profundidade": 1.3999999999999995,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 0.8858998311608044,
+      "esperado": 0.885899831160804
+    },
+    {
+      "profundidade": 0.5545373621527658,
+      "esperado": 0.5545373621527676
+    },
+    {
+      "profundidade": 0.30292653062603514,
+      "esperado": 0.3029265306260345
+    },
+    {
+      "profundidade": 0.13584890863724963,
+      "esperado": 0.13584890863724786
+    },
+    {
+      "profundidade": 0.34075068367496764,
+      "esperado": 0.34075068367496675
+    },
+    {
+      "profundidade": 0.673623623055184,
+      "esperado": 0.6736236230551849
+    },
+    {
+      "profundidade": 1.043118859243354,
+      "esperado": 1.0431188592433531
+    },
+    {
+      "profundidade": 1.3437328400451203,
+      "esperado": 1.3437328400451203
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.4,
+      "esperado": 1.4
+    },
+    {
+      "profundidade": 1.3435724515124425,
+      "esperado": 1.343572451512443
+    },
+    {
+      "profundidade": 1.0442136411068415,
+      "esperado": 1.0442136411068428
+    },
+    {
+      "profundidade": 0.6873332671618841,
+      "esperado": 0.6873332671618839
+    },
+    {
+      "profundidade": 0.36492541746977647,
+      "esperado": 0.3649254174697769
+    },
+    {
+      "profundidade": 0.6222182858444398,
+      "esperado": 0.6222182858444394
+    },
+    {
+      "profundidade": 1.0396599366512183,
+      "esperado": 1.0396599366512187
+    },
+    {
+      "profundidade": 1.3196305123491623,
+      "esperado": 1.3196305123491636
+    },
+    {
+      "profundidade": 1.3941626784545833,
+      "esperado": 1.3941626784545824
+    },
+    {
+      "profundidade": 1.3901881171014332,
+      "esperado": 1.3901881171014323
+    },
+    {
+      "profundidade": 1.390769445813424,
+      "esperado": 1.3907694458134254
+    },
+    {
+      "profundidade": 1.3970407280761794,
+      "esperado": 1.397040728076179
+    },
+    {
+      "profundidade": 1.3935244308523842,
+      "esperado": 1.3935244308523838
+    },
+    {
+      "profundidade": 1.3774551972256512,
+      "esperado": 1.3774551972256517
+    },
+    {
+      "profundidade": 1.3650433917829572,
+      "esperado": 1.3650433917829576
+    },
+    {
+      "profundidade": 1.3686701532818475,
+      "esperado": 1.3686701532818488
+    },
+    {
+      "profundidade": 1.3674529574074175,
+      "esperado": 1.367452957407417
+    },
+    {
+      "profundidade": 1.3091657798752734,
+      "esperado": 1.3091657798752734
+    },
+    {
+      "profundidade": 1.0395167270731154,
+      "esperado": 1.039516727073115
+    },
+    {
+      "profundidade": 0.6504773640373442,
+      "esperado": 0.6504773640373442
+    },
+    {
+      "profundidade": 0.45953389664094835,
+      "esperado": 0.4595338966409499
+    },
+    {
+      "profundidade": 0.8800814217130153,
+      "esperado": 0.8800814217130148
+    },
+    {
+      "profundidade": 1.0707232287282986,
+      "esperado": 1.070723228728299
+    },
+    {
+      "profundidade": 1.1840260096323338,
+      "esperado": 1.1840260096323347
+    },
+    {
+      "profundidade": 1.2672447017813706,
+      "esperado": 1.267244701781372
+    },
+    {
+      "profundidade": 1.2886395016119745,
+      "esperado": 1.2886395016119745
+    },
+    {
+      "profundidade": 1.2886903777745724,
+      "esperado": 1.2886903777745728
+    },
+    {
+      "profundidade": 1.2630359757954595,
+      "esperado": 1.2630359757954586
+    },
+    {
+      "profundidade": 1.2319521835733753,
+      "esperado": 1.2319521835733762
+    },
+    {
+      "profundidade": 1.1903051249996413,
+      "esperado": 1.1903051249996408
+    },
+    {
+      "profundidade": 1.1335592311734723,
+      "esperado": 1.1335592311734728
+    },
+    {
+      "profundidade": 1.0801103293965255,
+      "esperado": 1.080110329396525
+    },
+    {
+      "profundidade": 0.9870025242001779,
+      "esperado": 0.9870025242001783
+    },
+    {
+      "profundidade": 0.8415236722070141,
+      "esperado": 0.8415236722070136
+    },
+    {
+      "profundidade": 0.45275758900003615,
+      "esperado": 0.45275758900003593
+    }
+  ],
+  "nado": {
+    "nadando": true,
+    "noChao": false,
+    "y": 0.6459170499798087
+  },
+  "ciclos": [
+    {
+      "vazio": {
+        "geometries": 6,
+        "textures": 5
+      },
+      "cheio": {
+        "geometries": 7,
+        "textures": 5
+      }
+    },
+    {
+      "vazio": {
+        "geometries": 6,
+        "textures": 5
+      },
+      "cheio": {
+        "geometries": 7,
+        "textures": 5
+      }
+    },
+    {
+      "vazio": {
+        "geometries": 6,
+        "textures": 5
+      },
+      "cheio": {
+        "geometries": 7,
+        "textures": 5
+      }
+    }
+  ],
+  "erros": []
+}

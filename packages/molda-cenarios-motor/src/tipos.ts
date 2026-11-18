@@ -74,6 +74,7 @@ export interface Estatisticas {
 }
 
 export interface OpcoesDoPalco {
+  aoAguas?(estado: import('./agua/aguas').EstadoDasAguas): void
   aoPreverTerreno?(estado: import('./escultura-tipos').EstadoDaEscultura): void
   aoEsculpir?(gesto: import('./escultura-tipos').GestoDeTerreno): void
   aoTeste?(estado: import('./teste/tipos').EstadoDoTeste | null): void

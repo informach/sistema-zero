@@ -121,8 +121,22 @@ export class MovimentoDoTeste {
             ? 3.4
             : 1.5
     const aceleracao = (direcao.lengthSq() ? 10 : 16) * PASSO
-    this.velocidade.x = aproximar(this.velocidade.x, direcao.x * velocidade, aceleracao)
-    this.velocidade.z = aproximar(this.velocidade.z, direcao.z * velocidade, aceleracao)
+    const corrente = this.nadando ? agua?.correnteza : undefined,
+      moduloDaCorrente = corrente ? Math.hypot(corrente.x, corrente.z) : 0,
+      fatorDaCorrente =
+        Number.isFinite(moduloDaCorrente) && moduloDaCorrente > 0
+          ? Math.min(1, 10 / moduloDaCorrente)
+          : 0
+    this.velocidade.x = aproximar(
+      this.velocidade.x,
+      direcao.x * velocidade + (fatorDaCorrente ? corrente!.x * fatorDaCorrente : 0),
+      aceleracao,
+    )
+    this.velocidade.z = aproximar(
+      this.velocidade.z,
+      direcao.z * velocidade + (fatorDaCorrente ? corrente!.z * fatorDaCorrente : 0),
+      aceleracao,
+    )
     if (this.modo === 'voo') {
       this.velocidade.y = aproximar(
         this.velocidade.y,

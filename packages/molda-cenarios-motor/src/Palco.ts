@@ -56,6 +56,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import { AguasDoPalco, type EstadoDasAguas } from './agua/aguas'
 import { type AlvoDeEdicao, criarAlvosDeEdicao, type LocalDoObjeto } from './alvos-de-edicao'
 import { EspalhamentoDoPalco } from './Espalhamento'
 import { EsculturaDoPalco } from './escultura'
@@ -214,6 +215,8 @@ class PalcoThree implements Palco {
   private chaveDoChao = ''
   private chaveDaGrade = ''
   private terreno: TerrenoDoPalco | null = null
+  private readonly aguas: AguasDoPalco
+  private estadoDasAguas: EstadoDasAguas = { carregando: 0, falhas: [] }
   private readonly escultura: EsculturaDoPalco
   private gradeAntesDaEscultura: boolean | null = null
   private recursosDoTerreno: ReadonlyMap<string, RecursoDeTerreno> = new Map()
@@ -268,6 +271,8 @@ class PalcoThree implements Palco {
     }
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = PCFShadowMap
+    this.aguas = new AguasDoPalco(this.renderer.capabilities.maxTextureSize)
+    this.cena.add(this.aguas.grupo)
 
     this.camera.position.set(16, 13, 20)
     this.cena.fog = opcoes.fotografia ? null : this.nevoa
@@ -397,7 +402,8 @@ class PalcoThree implements Palco {
         this.informarGesto('escultura', ativo)
       },
       aoEstado: (estado) => this.opcoes.aoPreverTerreno?.(estado),
-      aoAtualizar: () => {
+      aoAtualizar: (regioes) => {
+        this.aguas.atualizarTerreno(regioes)
         if (!this.destruido) this.reconstruir()
       },
       aplicar: (gesto) => {
@@ -687,6 +693,11 @@ class PalcoThree implements Palco {
     try {
       sinal?.throwIfAborted()
       await this.aguardarRecursos(controle.signal)
+      if (this.estadoDasAguas.carregando || this.estadoDasAguas.falhas.length)
+        throw new Error(
+          this.estadoDasAguas.falhas[0]?.mensagem ??
+            'Espere a água e suas margens terminarem de carregar.',
+        )
       controle.signal.throwIfAborted()
       if (config.modelo) {
         const bytes = await conferirConteudoDoModelo(
@@ -699,6 +710,7 @@ class PalcoThree implements Palco {
       }
       personagem = new PersonagemDoTeste(modelo, config)
       const chao = this.terreno?.fontesDoTeste() ?? []
+      chao.push(...this.aguas.fontesDoTeste())
       if (this.planoFisico) {
         this.planoFisico.updateWorldMatrix(true, false)
         chao.push({ geometria: this.planoFisico.geometry, matriz: this.planoFisico.matrixWorld })
@@ -769,7 +781,11 @@ class PalcoThree implements Palco {
         config,
         (estado) => this.opcoes.aoTeste?.(estado),
         this.pedirQuadro,
-        new AguasDoTeste(this.visual!.aguas.filter((a) => !escondidosDoTeste.has(a.id))).nivel,
+        new AguasDoTeste(
+          this.visual!.aguas.filter((a) => !escondidosDoTeste.has(a.id)),
+          this.fonteDeAlturas() ?? (() => 0),
+          this.aguas.consultasDoTeste(),
+        ).nivel,
       )
       this.preparandoTeste = null
       this.atualizarAlca()
@@ -932,6 +948,7 @@ class PalcoThree implements Palco {
     this.laco.dispose()
     this.espalhamento.descartar()
     this.escultura.descartar()
+    this.aguas.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
@@ -983,11 +1000,17 @@ class PalcoThree implements Palco {
     this.atualizarRecorte()
     this.espalhamento.quadro(mexeu)
     this.escultura.quadro()
+    this.camera.updateMatrixWorld()
+    const aguaAnimada = this.aguas.quadro(
+      this.camera,
+      performance.now() / 1000,
+      Boolean(this.opcoes.movimentoReduzido),
+    )
     this.ceu.position.copy(this.camera.position)
     this.posicionarSol()
     this.renderer.render(this.cena, this.camera)
     this.medir()
-    return mexeu
+    return mexeu || aguaAnimada
   }
 
   private atualizarRecorte(): void {
@@ -1076,6 +1099,7 @@ class PalcoThree implements Palco {
   }
 
   private limparChao() {
+    this.aguas.limpar()
     this.planoFisico = null
     this.fundoDecorativo = null
     this.cargaDoTerreno?.abort()
@@ -1210,6 +1234,7 @@ class PalcoThree implements Palco {
     for (const [digest, estado] of this.modelos) {
       if (vivos.has(digest)) continue
       if (estado.estado === 'pronto') {
+        this.aguas.esquecerModelo(estado.modelo)
         estado.representacoes.descartar()
         estado.modelo.descartar()
       }
@@ -1293,6 +1318,16 @@ class PalcoThree implements Palco {
     }
     const organizacao = indiceDaOrganizacao(doc)
     const escondidos = idsEscondidos(doc, organizacao)
+    this.estadoDasAguas = this.aguas.definir(
+      doc,
+      this.terreno,
+      (id) => {
+        const estado = this.estadoDoModelo(id, doc)
+        return estado?.estado === 'pronto' ? estado.modelo : null
+      },
+      escondidos,
+    )
+    this.opcoes.aoAguas?.(this.estadoDasAguas)
     const tabela = new Map([
       ...doc.modelos.map((m) => [m.id, m.digest] as const),
       ...(doc.formas?.map((f) => [f.id, chaveDaForma(f)] as const) ?? []),
@@ -1392,6 +1427,7 @@ class PalcoThree implements Palco {
     })
 
     this.atualizarSelecao()
+    this.pedirQuadro()
   }
 
   // ---- seleção e alça -----------------------------------------------------

@@ -20,11 +20,12 @@ export class AguasDoTeste {
   constructor(
     aguas: readonly AguaDeCenario[],
     private readonly terreno?: FonteDeAlturas,
+    consultas?: ReadonlyMap<string, ConsultaDeAgua>,
   ) {
     const caixas: Box3[] = []
     for (const agua of aguas) {
       if (agua.oculto || agua.nado === false || agua.tipo === 'cachoeira') continue
-      const consulta = prepararConsultaDaAgua(agua)
+      const consulta = consultas?.get(agua.id) ?? prepararConsultaDaAgua(agua)
       if (agua.tipo === 'mar') {
         this.mares.push(consulta)
         continue

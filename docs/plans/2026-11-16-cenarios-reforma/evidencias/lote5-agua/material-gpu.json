@@ -1,0 +1,56 @@
+{
+  "inicial": {
+    "geometries": 2,
+    "textures": 3
+  },
+  "programas": 3,
+  "atual": {
+    "geometries": 2,
+    "textures": 3
+  },
+  "leituras": [
+    {
+      "x": 6,
+      "z": 0,
+      "valor": 115,
+      "esperado": 115
+    },
+    {
+      "x": 5.25,
+      "z": 0.25,
+      "valor": 96,
+      "esperado": 96
+    },
+    {
+      "x": 5.8,
+      "z": 0.8,
+      "valor": 94,
+      "esperado": 94
+    }
+  ],
+  "ultimas": [
+    {
+      "valor": 25,
+      "esperado": 26
+    },
+    {
+      "valor": 102,
+      "esperado": 102
+    },
+    {
+      "valor": 178,
+      "esperado": 179
+    },
+    {
+      "valor": 255,
+      "esperado": 255
+    }
+  ],
+  "variantes": [
+    "mar",
+    "rio",
+    "cachoeira"
+  ],
+  "maxTextura": 16384,
+  "erros": []
+}

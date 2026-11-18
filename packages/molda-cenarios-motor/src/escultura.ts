@@ -22,7 +22,7 @@ interface Fontes {
   pedirQuadro(): void
   aoGesto(ativo: boolean): void
   aoEstado(estado: EstadoDaEscultura): void
-  aoAtualizar(): void
+  aoAtualizar(regioes?: RegioesDeTerreno): void
   aplicar(gesto: GestoDeTerreno): void
 }
 type Amostra = PontoDaEscultura & { clientX: number; clientY: number }
@@ -236,8 +236,9 @@ export class EsculturaDoPalco {
     if (s && Object.values(s.sujas).some(Boolean)) {
       try {
         s.terreno.prever(s.estado, s.sujas)
+        const regioes = s.sujas
         s.sujas = {}
-        this.fontes.aoAtualizar()
+        this.fontes.aoAtualizar(regioes)
       } catch (e) {
         this.falhar(e)
         return

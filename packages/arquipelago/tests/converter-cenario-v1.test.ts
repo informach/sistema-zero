@@ -36,7 +36,17 @@ test('conversão conserva autoria, assentamento visível, recortes e relevo real
   expect(resultado.erroMaximoDeQuantizacao).toBeLessThan(0.001)
   expect(resultado.documento.instancias.length).toBe(original.instancias.length)
   expect(resultado.documento.caminhos).toEqual(original.caminhos)
-  expect(resultado.documento.aguas).toEqual(original.aguas.map((a) => ({ ...a, tipo: 'lago' })))
+  expect(resultado.documento.aguas).toEqual(
+    original.aguas.map((a) => ({
+      ...a,
+      tipo: 'lago',
+      encaixeModelo: {
+        nivelLocal: 1.4,
+        materiaisDaAgua: ['agua'],
+        materiaisSolidos: ['cor', 'cor_2'],
+      },
+    })),
+  )
   expect(resultado.documento.marcadores.length).toBe(original.marcos.length)
   expect(b.recortes?.length).toBe(2)
   const dados = new Map(resultado.recursos.map((r) => [r.digest, lerPecaDeAlturas(r.conteudo)]))

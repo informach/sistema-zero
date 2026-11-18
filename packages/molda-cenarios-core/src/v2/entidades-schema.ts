@@ -157,6 +157,8 @@ const camposDeLago = {
   giro: numero,
   escala: fator,
   nivel: numero,
+  /** Estimativa de preenchimento e referência quando não há fundo carregado. Com fundo real,
+   * a coluna de água acompanha o leito, inclusive depois de esculpir ou ampliar o modelo. */
   profundidade: z.number().finite().positive().max(1000),
   contorno: poligono,
   recorte: poligono,

@@ -38,12 +38,15 @@ function volume(
   z: number,
   terreno?: FonteDeAlturas,
 ): NivelDeAgua | null {
-  if (terreno) profundidade = Math.min(profundidade, Math.max(0, nivel - terreno(x, z)))
+  if (terreno) profundidade = Math.max(0, nivel - terreno(x, z))
   return Number.isFinite(profundidade) && profundidade > 0 ? { nivel, profundidade } : null
 }
 
 /** Compila a cobertura uma vez. O terreno pode mudar sem clonar ou deformar o dado autoral. */
-export function prepararConsultaDaAgua(entrada: AguaDeCenario): ConsultaDeAgua {
+export function prepararConsultaDaAgua(
+  entrada: AguaDeCenario,
+  fundoDoModelo?: FonteDeAlturas,
+): ConsultaDeAgua {
   const a = structuredClone(entrada)
   const valida = (x: number, z: number) => Number.isFinite(x) && Number.isFinite(z)
   if (a.tipo === 'mar')
@@ -71,7 +74,7 @@ export function prepararConsultaDaAgua(entrada: AguaDeCenario): ConsultaDeAgua {
         if (!pontoNoPoligono(p, a.contorno) || a.ilhas?.some((ilha) => pontoNoPoligono(p, ilha)))
           return null
         // O fundo do GLB é uma fonte física própria, não o terreno recortado debaixo dele.
-        return volume(a.nivel, a.profundidade, x, z, a.modelo ? undefined : t)
+        return volume(a.nivel, a.profundidade, x, z, a.modelo ? fundoDoModelo : t)
       },
     }
   }

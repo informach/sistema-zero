@@ -7,6 +7,17 @@ const raiz = resolve(import.meta.dirname, '../../../..'),
   fonte = resolve(raiz, 'output/cenarios-reforma/conversao-faisca/original'),
   saida = resolve(raiz, 'output/cenarios-reforma/lote3-testar-faisca')
 const documento = JSON.parse(readFileSync(resolve(fonte, 'documento.json'), 'utf8'))
+// A fotografia da conversão anterior permanece imutável. Este ensaio recebe os papéis
+// explícitos do adaptador por hash, como uma conversão nova; não grava na plataforma.
+for (const agua of documento.aguas) {
+  const modelo = documento.modelos.find((m) => m.id === agua.modelo)
+  if (modelo?.digest === '87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b')
+    agua.encaixeModelo = {
+      nivelLocal: 1.4,
+      materiaisDaAgua: ['agua'],
+      materiaisSolidos: ['cor', 'cor_2'],
+    }
+}
 const catalogo = JSON.parse(
   readFileSync(resolve(raiz, 'output/molda-cenarios/acervo/catalogo.json'), 'utf8'),
 ).modelos

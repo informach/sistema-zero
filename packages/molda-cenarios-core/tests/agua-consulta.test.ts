@@ -30,6 +30,30 @@ test('lago transformado exclui suas ilhas e limita a profundidade pelo relevo di
   expect(q.em(50, -12)).toBeNull()
   expect(q.em(46, -12, () => 6)).toBeNull()
 })
+
+test('o fundo físico do modelo define a coluna de água, independentemente do terreno recortado', () => {
+  const a = AguaSchema.parse({
+      ...e,
+      tipo: 'lago',
+      modelo: 'm',
+      centro: { x: 0, z: 0 },
+      giro: 0,
+      escala: 1,
+      nivel: 5,
+      profundidade: 3,
+      contorno: anel(4),
+      recorte: anel(4),
+    }),
+    q = prepararConsultaDaAgua(a, () => 4.75)
+  expect(q.em(0, 0, () => 100)?.profundidade).toBeCloseTo(0.25, 8)
+  expect(prepararConsultaDaAgua(a, () => 6).em(0, 0)).toBeNull()
+  expect(prepararConsultaDaAgua(a).em(0, 0, () => 100)?.profundidade).toBe(3)
+  // A estimativa guardada não deixa uma faixa sem nado se o leito for aprofundado ou
+  // o modelo for ampliado. Quando há fundo real, ele é a referência da coluna inteira.
+  expect(prepararConsultaDaAgua(a, () => -2).em(0, 0)?.profundidade).toBe(7)
+  if (a.tipo !== 'lago') throw new Error('Lago esperado')
+  expect(prepararConsultaDaAgua({ ...a, modelo: null }).em(0, 0, () => -4)?.profundidade).toBe(9)
+})
 test('rio usa as faces da mesma faixa que será desenhada e correnteza vai da nascente para a foz', () => {
   const a = AguaSchema.parse({
     ...e,

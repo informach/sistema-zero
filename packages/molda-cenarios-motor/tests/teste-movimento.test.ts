@@ -27,6 +27,49 @@ test('quadros lentos preservam o tempo ativo e a distância do passo fixo', () =
 function executar(m: MovimentoDoTeste, entrada: typeof andar, segundos: number) {
   for (let i = 0; i < Math.round(segundos * 120); i++) m.avancar(1 / 120, entrada)
 }
+
+test('correnteza move só quem nada, permite controle contrário e respeita a parede física', () => {
+  const fundo = {
+      geometria: new PlaneGeometry(40, 40),
+      matriz: new Matrix4()
+        .makeTranslation(0, -4, 0)
+        .multiply(new Matrix4().makeRotationX(-Math.PI / 2)),
+    },
+    mundo = new MundoDoTeste([fundo]),
+    fonte = () => ({ nivel: 0, profundidade: 4, correnteza: { x: 1, z: 0 } }),
+    m = new MovimentoDoTeste(mundo, new Vector3(0, -0.75, 0), 1.16, fonte)
+  executar(m, parado, 2)
+  expect(m.nadando).toBe(true)
+  expect(m.posicao.x).toBeGreaterThan(1.8)
+  const antes = m.posicao.x
+  executar(m, { ...parado, x: -1, correr: true }, 2)
+  expect(m.posicao.x).toBeLessThan(antes - 1)
+  mundo.descartar()
+  fundo.geometria.dispose()
+  const chao = piso(),
+    parede = {
+      geometria: new BoxGeometry(0.02, 6, 8),
+      matriz: new Matrix4().makeTranslation(2, -1, 0),
+    },
+    comParede = new MundoDoTeste([parede]),
+    n = new MovimentoDoTeste(comParede, new Vector3(0, -0.75, 0), 1.16, fonte),
+    raso = new MundoDoTeste([chao]),
+    r = new MovimentoDoTeste(raso, new Vector3(0, 0.001, 0), 1.16, () => ({
+      nivel: 0.2,
+      profundidade: 0.2,
+      correnteza: { x: 5, z: 0 },
+    }))
+  executar(n, parado, 4)
+  expect(n.posicao.x).toBeLessThan(1.81)
+  expect(n.posicao.x).toBeGreaterThan(1.7)
+  executar(r, parado, 2)
+  expect(r.nadando).toBe(false)
+  expect(r.posicao.x).toBe(0)
+  comParede.descartar()
+  raso.descartar()
+  parede.geometria.dispose()
+  chao.geometria.dispose()
+})
 test('gravidade, parede fina, pulo e tempo suspenso não atravessam o cenário', () => {
   const chao = piso(),
     parede = {

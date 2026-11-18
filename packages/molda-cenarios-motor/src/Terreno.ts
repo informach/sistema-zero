@@ -317,6 +317,10 @@ export class TerrenoDoPalco {
     return this.alturasAtivas.has(`${coluna}:${linha}`) ? alturaDoCampo(c, x, z) : this.base.fundo
   }
 
+  temAlturasNaPeca(coluna: number, linha: number) {
+    return this.alturasAtivas.has(`${coluna}:${linha}`)
+  }
+
   /** O campo recebido é uma cópia de trabalho; os recursos publicados permanecem imutáveis. */
   prever(estado: EstadoDoTerreno, regioes: RegioesDoTerreno) {
     if (this.descartado) return

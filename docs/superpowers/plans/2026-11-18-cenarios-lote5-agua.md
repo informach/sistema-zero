@@ -39,12 +39,12 @@
 
 **Interfaces:** `AguasDoPalco` recebe documento/fonte de terreno/modelos já carregados e fornece desenho, seleção e fontes sólidas apenas das margens/barragem. A física usa a consulta de cobertura do núcleo. Recursos têm dono e descarte explícitos; materiais/arquivos são compartilhados quando apropriado.
 
-- [ ] Construir superfície do mar, lago com ilhas, faixa do rio com cotas e queda vertical. Conferir winding, UV em metros, faces degeneradas e orçamento. Sem superfícies coplanares duplicadas.
-- [ ] Integrar o GLB do lago da Faísca com nível/pivô/escala medidos. Separar superfície de água de margens físicas com referências explícitas; aproveitar a cache e materiais originais sem mutar o arquivo.
-- [ ] Material pronto com cor rasa/profunda, transparência relacionada à profundidade, ondas e espuma de margem; iluminação diurna/noturna e correnteza no sentido correto. Ondulação visual limitada não cria piso nem muda silenciosamente o nível físico.
-- [ ] Ligar mar/lago/rio/represa à área de nado e correnteza limitada, conservando a cápsula e suas colisões. Desativar nado não remove visualmente a superfície nem cria colisor.
-- [ ] Atualizar em troca de documento/relevo e descartar em remoção/reentrada. Usar o laço de render existente; animação apenas quando necessária, respeitando movimento reduzido.
-- [ ] Conferir geometria real, seleção, nado/câmera e recursos após ciclos; tipagem e revisão do recorte.
+- [x] Construir superfície do mar, lago com ilhas, faixa do rio com cotas e queda vertical. Conferir winding, UV em metros, faces degeneradas e orçamento. Sem superfícies coplanares duplicadas.
+- [x] Integrar o GLB do lago da Faísca com nível/pivô/escala medidos. Separar superfície de água de margens físicas com referências explícitas; aproveitar a cache e materiais originais sem mutar o arquivo.
+- [x] Material pronto com cor rasa/profunda, transparência relacionada à profundidade, ondas e espuma de margem; iluminação diurna/noturna e correnteza no sentido correto. Ondulação visual limitada não cria piso nem muda silenciosamente o nível físico.
+- [x] Ligar mar/lago/rio/represa à área de nado e correnteza limitada, conservando a cápsula e suas colisões. Desativar nado não remove visualmente a superfície nem cria colisor.
+- [x] Atualizar em troca de documento/relevo e descartar em remoção/reentrada. Usar o laço de render existente; animação apenas quando necessária, respeitando movimento reduzido.
+- [x] Conferir geometria real, seleção, nado/câmera e recursos após ciclos; tipagem e revisão do recorte.
 
 ## 5.3 — Gestos, worker e transação autoral
 
@@ -84,3 +84,5 @@ Somente 5.1 em andamento. A primeira auditoria reproduziu perda de precisão no 
 Esquemas e consulta de cobertura integrados e revisados em recorte próprio: [checkpoint 5.1](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-contratos-consulta.md). O lote continua aberto; ainda faltam operações de preenchimento/escavação, vínculos à água, renderer, gestos e interface.
 
 **Estado atual:** 5.1 implementado, testado e revisado no escopo de contratos, hidrologia e cobertura. Operações preservadas em `245487fea`/`11e545a3f`; revisão dos vínculos, clique entre vértices, saída de transbordo e armazenamento descrita no mesmo checkpoint. Só o lote 5 segue ativo, agora em **5.2**. Não há nova interface ou material entregue por este fechamento de subetapa; transação de água com binários do terreno continua em 5.3. Lotes 6–10 não iniciados.
+
+**Continuação atual:** 5.2 implementado, testado e revisado no escopo de renderer e física. [Registro, capturas, vídeo e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote5-renderer-fisica.md). O lote 5 segue aberto, agora em **5.3 — gestos, worker e transação autoral**. Ainda não há aba Água completa nem aceite artístico.
