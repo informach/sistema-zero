@@ -38,6 +38,25 @@ O `styles.css` do studio NÃO traz `@import "tailwindcss"` nem `@custom-variant 
 
 Sem a folha as classes `sz-tool-*` não existem (a lista sai sem estilo). O EDITOR não depende dela: admin e community adulto não a importam, os tokens `--color-sz-*` caem nos fallbacks e nada muda lá.
 
+## 2a. Imagens e cursores do Blockly (obrigatório)
+
+O host serve `public/studio-blockly/` em `/studio-blockly/`, incluindo os arquivos
+originais do SDK e a licença. Os controles de zoom/lixeira e as imagens dos campos
+usam essa pasta, pela opção pública `media` do Blockly. Não dependem do servidor
+de demonstração externo. A aparência permanece a da versão instalada.
+
+Admin, Community, Community Kids e o playground já contêm as cópias. Na atualização
+do Blockly, sincronize e confira a partir de `packages/studio`:
+
+```powershell
+bun scripts/sync-blockly-media.ts
+bun scripts/sync-blockly-media.ts --check
+```
+
+O teste `src/blockly/media.test.ts` confere as quatro cópias contra o SDK instalado
+pelo lockfile. Outro host precisa servir a mesma pasta. A CSP admite as imagens
+pela própria origem; não liberar o domínio de demonstração para contornar o 404.
+
 ## 2b. Sons dos blocos (opcional, recomendado)
 
 O Blockly toca um somzinho ao ENCAIXAR/DESCONECTAR/DESCARTAR bloco. Por padrão ele os baixaria de um servidor demo externo (`blockly-demo.appspot.com`), que a CSP dos apps bloqueia (spam no console). Por isso o studio injeta com `sounds:false` e **recarrega os sons a partir do PRÓPRIO app** (mesma origem, passa na CSP `media-src 'self'`).
