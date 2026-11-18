@@ -1,5 +1,65 @@
 import type { UseStore } from 'idb-keyval'
 
+// idb-keyval calls even an already-open database through Promise.then. A dying
+// page may never enter that callback. Retain its existing connection/store name
+// so exit requests and commit are actually placed in the calling event turn.
+const openStores = new WeakMap<UseStore, { database: IDBDatabase; name: string }>()
+
+function rememberOpenStore(store: UseStore, objectStore: IDBObjectStore): void {
+  const database = objectStore.transaction.db
+  if (!database || typeof database.transaction !== 'function') return
+  const current = openStores.get(store)
+  if (current?.database === database && current.name === objectStore.name) return
+  const entry = { database, name: objectStore.name }
+  openStores.set(store, entry)
+  const forget = () => {
+    if (openStores.get(store) === entry) openStores.delete(store)
+  }
+  database.addEventListener('close', forget, { once: true })
+  database.addEventListener('versionchange', forget, { once: true })
+}
+
+function openTransaction<T>(
+  store: UseStore,
+  mode: IDBTransactionMode,
+  operation: (objectStore: IDBObjectStore) => T | Promise<T>,
+): Promise<T> {
+  const opened = openStores.get(store)
+  if (opened) {
+    let transaction: IDBTransaction
+    try {
+      transaction = opened.database.transaction(opened.name, mode)
+    } catch (error) {
+      // A closed connection has not issued any requests; let the owning store
+      // reopen it. Never retry an operation after its requests have been placed.
+      openStores.delete(store)
+      if (
+        !(
+          error &&
+          typeof error === 'object' &&
+          'name' in error &&
+          error.name === 'InvalidStateError'
+        )
+      )
+        return Promise.reject(error)
+      return store(mode, (objectStore) => {
+        rememberOpenStore(store, objectStore)
+        return operation(objectStore)
+      })
+    }
+    try {
+      return Promise.resolve(operation(transaction.objectStore(opened.name)))
+    } catch (error) {
+      abortQuietly(transaction)
+      return Promise.reject(error)
+    }
+  }
+  return store(mode, (objectStore) => {
+    rememberOpenStore(store, objectStore)
+    return operation(objectStore)
+  })
+}
+
 /**
  * O jeito de o Estúdio falar com o banco dos projetos: cada operação termina com
  * `commit()` EXPLÍCITO. Leituras e staging de saída fazem TODOS os pedidos de uma vez.
@@ -80,7 +140,7 @@ export function conditionalWrite<T>(
   keys: readonly IDBValidKey[],
   decide: (values: unknown[]) => { write: IdbWrite; result: T },
 ): Promise<T> {
-  return store('readwrite', (objectStore) => {
+  return openTransaction(store, 'readwrite', (objectStore) => {
     const transaction = objectStore.transaction
     if (conditionalGeneration(identity) !== generation) {
       abortQuietly(transaction)
@@ -198,7 +258,7 @@ function inOneTransaction<T>(
   mode: IDBTransactionMode,
   placeRequests: (objectStore: IDBObjectStore) => PlacedRequests<T>,
 ): Promise<T> {
-  return store(mode, (objectStore) => {
+  return openTransaction(store, mode, (objectStore) => {
     const transaction = objectStore.transaction
     let placed: PlacedRequests<T>
     try {
