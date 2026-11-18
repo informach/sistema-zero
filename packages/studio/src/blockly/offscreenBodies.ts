@@ -19,6 +19,10 @@ export const OFFSCREEN_BODIES_MIN_BLOCKS = 1500
 /** Quantas alturas de tela, acima e abaixo da vista, continuam montadas. */
 const MARGIN_IN_VIEWS = 1
 
+/** Classe do bloco de fora que está longe; a regra mora em `styles/studio.css`. */
+export const FAR_CLASS = 'sz-block-far'
+const NEXT_ATTRIBUTE = 'data-sz-block-next'
+
 interface Detached {
   svg: SVGGElement
 }
@@ -65,16 +69,45 @@ export function createOffscreenBodies(
 
   function restoreAll(): void {
     for (const id of [...detached.keys()]) attach(id)
+    for (const block of far.keys()) clearFar(block)
+    far.clear()
+  }
+
+  // O bloco de fora que está longe também deixa de ser pintado. O SVG do bloco seguinte mora
+  // DENTRO do dele, então não dá para tirar o bloco da página: uma classe esconde o desenho
+  // próprio (contorno, campos, valores encaixados) e poupa só o bloco seguinte, marcado.
+  const far = new Map<Blockly.BlockSvg, SVGElement | null>()
+  function clearFar(block: Blockly.BlockSvg): void {
+    const svg = block.getSvgRoot()
+    svg?.classList.remove(FAR_CLASS)
+    for (const child of svg?.children ?? []) child.removeAttribute(NEXT_ATTRIBUTE)
+  }
+  function setFar(block: Blockly.BlockSvg, isFar: boolean): void {
+    if (!isFar) {
+      if (far.delete(block)) clearFar(block)
+      return
+    }
+    const svg = block.getSvgRoot()
+    const next = (block.getNextBlock() as Blockly.BlockSvg | null)?.getSvgRoot() ?? null
+    // Já está longe e o seguinte é o mesmo: nada a fazer (é o caso de quase todos, a cada rolagem).
+    if (far.get(block) === next && far.has(block)) return
+    for (const child of svg.children) {
+      if (child === next) child.setAttribute(NEXT_ATTRIBUTE, '')
+      else child.removeAttribute(NEXT_ATTRIBUTE)
+    }
+    svg.classList.add(FAR_CLASS)
+    far.set(block, next)
   }
 
   function reveal(blockId: string): void {
-    if (detached.size === 0) return
+    if (detached.size === 0 && far.size === 0) return
     for (
       let block: Blockly.Block | null = workspace.getBlockById(blockId);
       block;
       block = block.getParent()
     ) {
       if (detached.has(block.id)) attach(block.id)
+      if (far.delete(block as Blockly.BlockSvg)) clearFar(block as Blockly.BlockSvg)
     }
   }
 
@@ -91,6 +124,7 @@ export function createOffscreenBodies(
         blockY += block.relativeCoords.y
       }
       const near = blockY + block.height >= top && blockY <= bottom
+      setFar(block, !near)
       for (const input of block.inputList) {
         if (!isStatementInput(input)) continue
         const body = input.connection?.targetBlock() as Blockly.BlockSvg | null | undefined
@@ -116,6 +150,7 @@ export function createOffscreenBodies(
       const block = workspace.getBlockById(id) as Blockly.BlockSvg | null
       if (!block || block.getSvgRoot() !== item.svg) detached.delete(id)
     }
+    for (const block of far.keys()) if (block.disposed) far.delete(block)
     if (workspace.isDragging() || workspace.getAllBlocks(false).length < minBlocks) {
       // Projeto que encolheu abaixo do limiar volta inteiro; no meio de um arrasto nada sai.
       if (!workspace.isDragging()) restoreAll()
@@ -140,7 +175,7 @@ export function createOffscreenBodies(
     }
   }
 
-  let published = -1
+  let published = 0
   function syncNow(): void {
     syncPass()
     if (disposed || detached.size === published) return

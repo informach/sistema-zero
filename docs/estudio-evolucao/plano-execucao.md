@@ -55,15 +55,19 @@ Arquivos: matriz em `docs/aulas-interativas-tecnico/qa/`, testes em
 
 ### 1. Isolamento e integridade antes de executar — em andamento
 
-- [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo; falha mantém
-  código e impede nova execução; Parar cancela a intenção sem cancelar a gravação.
+- [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo. Corrigido em
+  18/11/2026: sem mudança roda na hora e não grava; com mudança espera no máximo 1,5 s;
+  falha ou demora da gravação NÃO impede rodar (o erro fica no selo de salvar).
 - [x] Testar edição/troca de projeto/desmontagem enquanto salva, clique duplo,
   erro de cota, observador, geração de escritor e confirmação assíncrona do host.
 - [ ] Homologar troca real de perfil no app conectado durante um salvamento.
 - [x] Medir atraso/clique nos três engines de laboratório e discriminar o headless
   shell do Chromium completo; artefatos e ambiente versionados.
 - [ ] Completar medição de processo, tempo de Parar e salvamento em todos os engines
-  durante programa hostil; o reinício nativo ainda reprova no Chromium 148.
+  durante programa hostil. O reinício nativo reprovou no Chromium 148 do Windows; em
+  18/11/2026 a troca do jogo preso passou a deixar um intervalo sem iframe, com novas
+  tentativas. Os cinco casos passam no Chromium 148 e 153 em Linux. **Falta repetir no
+  Windows**: a falha de lá não foi reproduzida em Linux, então a correção não está provada.
 - [ ] B2: reutilizar `StudioPlayerOriginAdapter` e contratos do runtime quando a
   medição exigir outra origem; validar CSP, sandbox, remetente, expiração e release.
 - [ ] B4: estudar Worker/OffscreenCanvas no Jogo 2D, com matriz DOM/áudio/input;
@@ -78,12 +82,15 @@ Arquivos: `components/preview/PreviewIframe.tsx`, `runTripwire.ts`,
 
 - [x] Perfis C0/C1/C5 e redução de trabalho repetido já implementados no remoto.
 - [ ] Reproduzir números localmente; não comparar Windows com Linux histórico.
-- [ ] Adaptar montagem sob demanda do Python ao JS fora das aulas e acima de limiar
-  medido; manter modelo inteiro, ids, conexões, seleção e histórico.
-- [ ] Navegar/pesquisar/revelar blocos não montados; arrastar/desfazer/reabrir.
+- [x] Montagem sob demanda no JS acima de 1 500 blocos (`blockly/offscreenBodies.ts`,
+  18/11/2026); modelo inteiro, ids, conexões, seleção e histórico preservados.
+- [x] Revelar bloco não montado (Mostrar o bloco, cursor do código, Zappy), desfazer e
+  refazer; testado em `e2e/classic-offscreen.spec.ts`. Arrastar para dentro de um corpo
+  desmontado não acontece (só o que está longe da vista é desmontado).
 - [ ] Evitar análise semântica em movimentos visuais; medir tabela de símbolos em
   camadas e diagnósticos incrementais, sempre comparando com análise completa.
-- [ ] Estresse de 10.000 blocos e Pac-Man; round-trip blocos/IR/código/source maps.
+- [ ] Estresse de 10.000 blocos: medido (abre em 59 s, não atinge a meta). Abrir em pedaços
+  e Pac-Man seguem pendentes; ver `classico-em-escala.md`.
 
 ### 3. Pro em escala — pendente
 

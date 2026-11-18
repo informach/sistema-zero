@@ -109,3 +109,25 @@ Limites, ditos com clareza:
 - **B4 (Jogo 2D em Worker):** estudo, não feito.
 - **Outros navegadores:** rodar o script com `SZ_MEASURE_BROWSERS=chromium,firefox,webkit` numa
   máquina que os tenha, e num Android de verdade.
+
+## Troca do jogo preso: intervalo sem iframe (18/11/2026)
+
+A verificação no Windows (Chromium 148 completo) reprovou um caso: depois de 30 s de trabalho
+síncrono que não é laço, o conserto não rodava em 15 s, mesmo com o Parar respondendo. A hipótese
+de trabalho: no Chromium completo os iframes com sandbox da mesma página dividem um processo, e o
+iframe novo, criado no mesmo instante em que o antigo sai, cai no processo ainda ocupado.
+
+O que mudou em `PreviewIframe.tsx`: quando o jogo que sai estava sem responder, a página fica um
+instante **sem iframe nenhum** (200 ms) antes de montar o novo, para o navegador descartar o
+processo. Se o documento novo não carregar em 3 s, tenta de novo com intervalo maior (1,2 s e
+depois 3,5 s), até três vezes por documento. Jogo que responde (o caso das aulas) troca como
+antes, sem intervalo.
+
+O que está provado e o que não está:
+
+- Os cinco programas hostis passam no Chromium 153 e no Chromium 148 (o mesmo número de versão do
+  Windows, baixado para esta medição), os dois em Linux.
+- **A falha do Windows não foi reproduzida em Linux**, nem no editor nem numa página mínima (lá o
+  iframe novo roda em 30 a 50 ms mesmo sem intervalo). Portanto a correção segue a hipótese, mas
+  **não está provada no ambiente em que o defeito apareceu**. O portão fica aberto até alguém
+  rodar `e2e/preview-hostile-programs.spec.ts` no Windows.

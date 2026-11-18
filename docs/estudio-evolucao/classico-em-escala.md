@@ -157,4 +157,52 @@ na tela.
 | C3 diagnósticos por diferença, tabela de símbolos em camadas | pendente |
 | C4 memória por raiz na geração | saiu do plano |
 | C5 perfil no navegador | **feito** (sem placa de vídeo) |
-| Montagem sob demanda no JavaScript (fora das aulas) | pendente; é o próximo passo de escala |
+| Montagem sob demanda no JavaScript (fora das aulas) | **feita em 18/11/2026** (ver abaixo); abrir projeto enorme continua lento |
+
+## Montagem sob demanda (18/11/2026)
+
+`packages/studio/src/blockly/offscreenBodies.ts`. A partir de 1 500 blocos
+(`OFFSCREEN_BODIES_MIN_BLOCKS`), o corpo dos blocos que estão a mais de uma tela de distância da
+vista sai da página, e o contorno do bloco de fora deixa de ser pintado (classe `sz-block-far`).
+Volta quando a vista chega perto, antes de "Mostrar o bloco" rolar até ele, e antes de desfazer ou
+refazer mexer nele.
+
+- **O modelo não muda**: ids, conexões, seleção, histórico, estado gravado e código gerado são os
+  mesmos. Só o desenho sai do DOM, e o bloco de fora continua do mesmo tamanho, então nada pula.
+- **Nunca nas aulas**: os jogos dos cursos têm de 70 a 80 blocos. O teste
+  `e2e/classic-offscreen.spec.ts` confere que ali nenhum bloco sai da página, e que num projeto de
+  2 mil blocos rolar não muda o projeto, editar chega ao código e desfazer com o bloco longe
+  devolve o código de antes.
+- **Limite**: a unidade é o bloco filho direto de uma área (um evento, uma função) ou de uma
+  pilha solta. Uma pilha de milhares de comandos simples, sem corpo, só deixa de ser pintada; os
+  nós dela continuam na página.
+
+Mesma máquina e mesmo teste do C5 (Chromium 153 sem interface e sem placa de vídeo):
+
+| Blocos | Nós desenhados antes | depois | Abrir antes | depois | Mover uma área (maior tarefa) antes | depois |
+|---|---|---|---|---|---|---|
+| 70 (o curso) | 70 | 70 | 1,8 s | 1,8 s | nenhuma | nenhuma |
+| 2 002 | 2 002 | 422 | 6,1 s | 4,6 s | 790 ms | 245 ms |
+| 5 002 | 5 002 | 922 | 21,0 s | 14,7 s | 3 570 ms | 938 ms |
+| 10 000 | não medido | 1 755 | não medido | 58,7 s | não medido | 3 823 ms |
+
+O que os números dizem, sem enfeite:
+
+- **Mover** com 5 mil blocos ficou quase quatro vezes mais leve. No que sobra, o JavaScript são
+  137 ms; estilo e layout somam 16 ms. O resto é a pintura por software desta máquina e o próprio
+  controle do teste. A meta de 500 ms **não foi atingida aqui** e precisa ser medida num
+  computador com placa de vídeo.
+- **Abrir** melhorou pouco e **não atingiu a meta de 8 s** com 5 mil blocos; com 10 mil abre, mas
+  em quase um minuto. O perfil de CPU da abertura (5 mil blocos, 15 s ocupados) aponta o desenho
+  inicial do Blockly: 6,6 s em `render`, dos quais 2,3 s medindo texto (`getComputedStyle` por
+  campo) e 1,4 s em `getRelativeToSurfaceXY`, que sobe a pilha inteira a cada bloco (por isso
+  cresce mais rápido que o número de blocos). A carga desenha tudo e o conserto de depois da
+  carga (`schedulePostLoadRepaint`) desenha tudo de novo.
+- Tentado e desfeito: ligar a memória de larguras de texto do Blockly durante a carga. Ganhou 3%
+  e arriscava reaproveitar uma largura medida antes de a fonte chegar, que é justamente o defeito
+  que o segundo desenho conserta.
+
+Próximo passo para a abertura, não feito: carregar a pilha em pedaços, desmontando o que fica
+longe enquanto carrega (o DOM pequeno tira o custo que cresce), e desenhar de novo só o que está
+à vista. Mexe na carga de todo projeto, então precisa da prova de que o estado e o código saem
+iguais nos sete projetos dos cursos antes de entrar.

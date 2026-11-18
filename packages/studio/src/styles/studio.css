@@ -2519,3 +2519,9 @@
     min-height: 44px;
   }
 }
+
+/* Montagem sob demanda do Clássico (`blockly/offscreenBodies.ts`): o bloco de fora que está longe
+   da vista não é pintado. Só o bloco seguinte da pilha, que mora dentro do SVG dele, fica. */
+.blocklyBlockCanvas .sz-block-far > :not([data-sz-block-next]) {
+  display: none;
+}
