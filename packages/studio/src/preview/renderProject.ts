@@ -100,7 +100,10 @@ export async function renderProjectToPreviewDocAsync(
     resources,
     extraFiles,
     assets: assetManifest(assets),
-    assetsMeta: assetMetaManifest(assets),
+    assetsMeta: assetMetaManifest(
+      assets,
+      extensionBootstrapContext({ html: files['index.html'], js: files['script.js'], extraFiles }),
+    ),
     sounds: soundManifest(assets),
     models3d: asset3DManifest(assets),
     parentOrigin: opts.parentOrigin,

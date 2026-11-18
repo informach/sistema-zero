@@ -46,3 +46,14 @@ test('item sem versão conta como 1; acima do teto não é lido', () => {
   expect(pintaCanReadFormatVersion(PINTA_MAX_READ_FORMAT_VERSION)).toBe(true)
   expect(pintaCanReadFormatVersion(PINTA_MAX_READ_FORMAT_VERSION + 1)).toBe(false)
 })
+
+test('os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts', () => {
+  // Leitura e escrita iguais é o desvio conhecido desta entrega (ver o comentário do arquivo).
+  // A escrita nunca pode passar da leitura; a próxima subida é leitura primeiro, escrita depois.
+  expect(PINTA_MAX_READ_FORMAT_VERSION).toBeGreaterThanOrEqual(PINTA_MAP_WRITE_FORMAT_VERSION)
+  expect({
+    leitura: PINTA_MAX_READ_FORMAT_VERSION as number,
+    escrita: PINTA_MAP_WRITE_FORMAT_VERSION as number,
+  }).toEqual({ leitura: 3, escrita: 3 })
+  expect(pintaCanReadFormatVersion(PINTA_MAP_WRITE_FORMAT_VERSION)).toBe(true)
+})

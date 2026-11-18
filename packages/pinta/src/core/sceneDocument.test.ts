@@ -84,7 +84,8 @@ describe('documento de cenário completo', () => {
     if (!canonical) throw new Error('Mapa de referência inválido')
     expect(pintaAssetFromWire(JSON.parse(JSON.stringify(pintaAssetToWire(m))))).toEqual(canonical)
     expect(importPintaJson(galleryToPintaJson([m])).assets).toEqual([canonical])
-    expect(envelopeVersionFor([m])).toBe(3)
+    expect(envelopeVersionFor([m])).toBe(4)
+    expect(canonical.kind === 'tilemap' && canonical.schema).toBe(4)
     const clone = cloneWithNewIds(m, 'copia') as TilemapAsset
     expect(clone.layers[1]?.parentId).toBe(clone.layers[0]?.id)
     expect(isObjectLayer(clone.layers[2]!) && clone.layers[2].objects[0]?.rotation).toBe(45)
@@ -112,8 +113,9 @@ describe('documento de cenário completo', () => {
     const read = sanitizePintaAsset(ts)
     expect(read?.kind === 'tileset' && read.animations?.['0']).toEqual([{ tile: 0, duration: 120 }])
     expect(importPintaJson(galleryToPintaJson([read!])).assets).toEqual([read!])
-    expect(envelopeVersionFor([read!])).toBe(3)
-    expect(sanitizePintaAsset({ ...ts, schema: 4 })).toBeNull()
+    expect(envelopeVersionFor([read!])).toBe(4)
+    expect(read?.kind === 'tileset' && read.schema).toBe(4)
+    expect(sanitizePintaAsset({ ...ts, schema: 5 })).toBeNull()
   })
   it('conjuntos atravessam fronteiras e religam as peças na importação', () => {
     const set = createMapSet(map(), { col: 0, row: 0, cols: 2, rows: 2 }, 16, 'Casa')

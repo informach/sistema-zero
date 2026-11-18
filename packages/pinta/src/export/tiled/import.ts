@@ -4,57 +4,196 @@ import {
   type PintaSceneObject,
   PintaSceneSchema,
 } from '@sistemazero/core/studio/pinta-scene'
-import { gunzipSync, unzlibSync } from 'fflate'
+import { Gunzip, Unzlib } from 'fflate'
+import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, makeCell } from '../../tiles/cell'
+import { TiledImportError } from './errors'
+
+export { TiledImportError }
+
+const refuse = (message: string): never => {
+  throw new TiledImportError(message)
+}
+
+/** Limites de LEITURA do formato do mapa, conferidos antes de montar a cena. */
+const LIMITS = {
+  cols: PINTA_MAP_FORMAT_LIMITS.maxCols,
+  rows: PINTA_MAP_FORMAT_LIMITS.maxRows,
+  layers: PINTA_MAP_FORMAT_LIMITS.maxLayers,
+  tiles: PINTA_MAP_FORMAT_LIMITS.maxTiles,
+  cells: PINTA_MAP_FORMAT_LIMITS.maxCells,
+  groupDepth: PINTA_MAP_FORMAT_LIMITS.maxGroupDepth,
+  layerProperties: PINTA_MAP_FORMAT_LIMITS.maxLayerProperties,
+  layerOffset: PINTA_MAP_FORMAT_LIMITS.maxLayerOffset,
+  objectCoord: PINTA_MAP_FORMAT_LIMITS.maxObjectCoord,
+  objects: PINTA_LIMITS.maxTilemapObjects,
+  objectProperties: PINTA_LIMITS.maxObjectProperties,
+  propertyKey: PINTA_LIMITS.maxObjectPropertyKeyChars,
+  propertyText: PINTA_LIMITS.maxObjectPropertyStringChars,
+  name: PINTA_LIMITS.maxObjectNameChars,
+  /** Tetos da cena (`PintaSceneSchema`), repetidos aqui para a mensagem sair em português. */
+  tilesets: 32,
+  art: 128,
+  terrains: 16,
+  terrainColors: 15,
+  frames: 64,
+  minFrameMs: 16,
+  maxFrameMs: 60000,
+  points: 256,
+  parallax: 16,
+  /** Bytes de uma camada em base64, antes de descompactar. */
+  encodedLayer: 16 * 1024 * 1024,
+} as const
 
 type RecordValue = Record<string, unknown>
 const rec = (v: unknown): RecordValue => {
   if (!v || typeof v !== 'object' || Array.isArray(v))
-    throw new Error('Estrutura de mapa inválida.')
+    return refuse('O arquivo não tem o formato de um mapa do Tiled.')
   return v as RecordValue
 }
 const array = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
 const number = (v: unknown, fallback = 0): number =>
   typeof v === 'number' && Number.isFinite(v) ? v : fallback
 const string = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback)
+const GID_MASK = 0x0fffffff
 export function gidCell(gid: number, first: number): number {
-  return (gid & 0x0fffffff) === 0
+  return (gid & GID_MASK) === 0
     ? -1
     : makeCell(
-        (gid & 0x0fffffff) - first,
+        (gid & GID_MASK) - first,
         (gid & 0x80000000 ? CELL_FLIP_H : 0) |
           (gid & 0x40000000 ? CELL_FLIP_V : 0) |
           (gid & 0x20000000 ? CELL_FLIP_D : 0),
       )
 }
-function props(v: unknown): RecordValue {
-  return Object.fromEntries(
-    array(v)
-      .map(rec)
-      .map((p) => [
-        string(p.name),
-        p.type === 'bool'
-          ? p.value === true
-          : p.type === 'int' || p.type === 'float'
-            ? { type: p.type, value: number(p.value) }
-            : p.type === 'color'
-              ? {
-                  type: 'color',
-                  value:
-                    string(p.value).length === 9
-                      ? `#${string(p.value).slice(3)}${string(p.value).slice(1, 3)}`
-                      : string(p.value),
-                }
-              : p.type === 'object'
-                ? { type: 'object', value: String(p.value) }
-                : p.type === 'file'
-                  ? { type: 'asset', value: string(p.value) }
-                  : string(p.value),
-      ]),
-  )
+
+/**
+ * Um objeto de peça do Tiled (âncora embaixo à esquerda, bits de espelho no gid) como objeto do
+ * Pinta (canto de cima, giro em volta dele, espelhos dentro da caixa). O bit diagonal troca x
+ * por y antes dos espelhos, a mesma regra das células (`cellMatrix`): aqui ele vira um giro de
+ * 90° com a caixa deitada, e os espelhos mudam de eixo.
+ */
+export function tileObjectPlacement(o: {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+  gid: number
+}): {
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+  flipX: boolean
+  flipY: boolean
+} {
+  const h = !!(o.gid & 0x80000000),
+    v = !!(o.gid & 0x40000000),
+    d = !!(o.gid & 0x20000000),
+    angle = (o.rotation * Math.PI) / 180
+  if (!d)
+    return {
+      x: o.x + Math.sin(angle) * o.height,
+      y: o.y - Math.cos(angle) * o.height,
+      width: o.width,
+      height: o.height,
+      rotation: o.rotation,
+      flipX: h,
+      flipY: v,
+    }
+  const turn = (px: number, py: number, a: number) => ({
+    x: px * Math.cos(a) - py * Math.sin(a),
+    y: px * Math.sin(a) + py * Math.cos(a),
+  })
+  // O centro da caixa não muda; a caixa deitada (altura × largura) gira 90° em volta dele.
+  const centre = turn(o.width / 2, -o.height / 2, angle),
+    corner = turn(o.height / 2, o.width / 2, angle + Math.PI / 2),
+    rotation = o.rotation + 90
+  return {
+    x: o.x + centre.x - corner.x,
+    y: o.y + centre.y - corner.y,
+    width: o.height,
+    height: o.width,
+    rotation: rotation >= 360 ? rotation - 360 : rotation,
+    flipX: v,
+    flipY: !h,
+  }
 }
-function plainProperties(p: RecordValue): RecordValue {
-  return Object.fromEntries(Object.entries(p).filter(([k]) => !k.startsWith('pinta:')))
+
+/** As propriedades do Tiled, cada uma convertida pelo `type` dela (sem `type` é texto). */
+function props(v: unknown, where: string, warnings: string[]): RecordValue {
+  const out: RecordValue = {}
+  for (const p of array(v).map(rec)) {
+    const name = string(p.name),
+      type = string(p.type, 'string'),
+      raw = p.value
+    if (type === 'bool') out[name] = raw === true || raw === 'true'
+    else if (type === 'int' || type === 'float') {
+      const value = typeof raw === 'number' ? raw : Number(raw)
+      out[name] = {
+        type,
+        value: Number.isFinite(value) ? (type === 'int' ? Math.trunc(value) : value) : 0,
+      }
+    } else if (type === 'color') {
+      const value = String(raw ?? '')
+      // O Tiled grava #AARRGGBB; o Pinta guarda #RRGGBBAA.
+      out[name] = {
+        type: 'color',
+        value: value.length === 9 ? `#${value.slice(3)}${value.slice(1, 3)}` : value,
+      }
+    } else if (type === 'object') out[name] = { type: 'object', value: String(raw ?? '') }
+    else if (type === 'file') out[name] = { type: 'asset', value: String(raw ?? '') }
+    else if (type === 'string') out[name] = raw == null ? '' : String(raw)
+    else
+      warnings.push(
+        `A propriedade ${name} de ${where} é de um tipo próprio do Tiled (${type}) e não foi trazida.`,
+      )
+  }
+  return out
+}
+const PROPERTY_KEY = /^[A-Za-z][A-Za-z0-9_-]*$/
+/** Só as propriedades do usuário (sem `pinta:*`), dentro dos limites do documento. */
+function plain(p: RecordValue, where: string, warnings: string[], max: number): RecordValue {
+  const out: RecordValue = {}
+  let extra = 0
+  for (const [key, raw] of Object.entries(p)) {
+    if (key.startsWith('pinta:')) continue
+    if (!PROPERTY_KEY.test(key) || key.length > LIMITS.propertyKey) {
+      warnings.push(
+        `A propriedade ${key} de ${where} não foi trazida: o nome precisa começar com letra, ter só letras sem acento, números, - ou _ e até ${LIMITS.propertyKey} sinais.`,
+      )
+      continue
+    }
+    if (Object.keys(out).length >= max) {
+      extra++
+      continue
+    }
+    let value = raw
+    const typed = value && typeof value === 'object' ? (value as RecordValue) : null
+    if (typeof value === 'string' && value.length > LIMITS.propertyText) {
+      value = value.slice(0, LIMITS.propertyText)
+      warnings.push(
+        `O texto da propriedade ${key} de ${where} foi cortado em ${LIMITS.propertyText} sinais.`,
+      )
+    } else if (
+      typed &&
+      (typed.type === 'color'
+        ? !/^#[\da-f]{6}([\da-f]{2})?$/i.test(String(typed.value))
+        : typeof typed.value === 'string' &&
+          (typed.value.length < 1 || typed.value.length > LIMITS.propertyText))
+    ) {
+      warnings.push(`A propriedade ${key} de ${where} estava vazia ou inválida e não foi trazida.`)
+      continue
+    }
+    out[key] = value
+  }
+  if (extra)
+    warnings.push(
+      `${where} tinha mais de ${max} propriedades; as ${extra} últimas não foram trazidas.`,
+    )
+  return out
 }
 function json(value: unknown): unknown {
   try {
@@ -63,30 +202,97 @@ function json(value: unknown): unknown {
     return undefined
   }
 }
+/** Descompacta até `size` bytes. Um fluxo maior que isso é recusado, não cortado. */
+function inflate(raw: Uint8Array, compression: string, size: number): Uint8Array {
+  const out = new Uint8Array(size)
+  let at = 0
+  const stream = compression === 'zlib' ? new Unzlib() : new Gunzip()
+  stream.ondata = (chunk) => {
+    if (at + chunk.length > size) refuse('O tamanho da camada não corresponde ao mapa.')
+    out.set(chunk, at)
+    at += chunk.length
+  }
+  try {
+    stream.push(raw, true)
+  } catch (e) {
+    if (e instanceof TiledImportError) throw e
+    refuse('Uma camada compactada do mapa está corrompida.')
+  }
+  if (at !== size) refuse('O tamanho da camada não corresponde ao mapa.')
+  return out
+}
 function data(layer: RecordValue, count: number): number[] {
-  if (Array.isArray(layer.data)) return layer.data.map((n) => number(n))
-  if (typeof layer.data !== 'string') throw new Error('Camada sem dados de peças.')
-  if (layer.encoding === 'csv')
-    return layer.data
+  let values: number[]
+  if (Array.isArray(layer.data)) values = layer.data.map((n) => number(n, Number.NaN))
+  else if (typeof layer.data !== 'string') return refuse('Uma camada de peças veio sem dados.')
+  else if (layer.encoding === 'csv')
+    values = layer.data
       .trim()
       .split(/[\s,]+/)
       .map(Number)
-  if (layer.encoding !== 'base64') throw new Error('Codificação da camada não suportada.')
-  const raw = Uint8Array.from(atob(layer.data.replace(/\s/g, '')), (c) => c.charCodeAt(0))
-  if (raw.length > 16 * 1024 * 1024) throw new Error('Camada compactada grande demais.')
-  const buffer = new Uint8Array(count * 4)
-  let bytes = raw
-  if (layer.compression === 'zlib') bytes = unzlibSync(raw, { out: buffer })
-  else if (layer.compression === 'gzip') bytes = gunzipSync(raw, { out: buffer })
-  else if (layer.compression) throw new Error(`Compressão ${layer.compression} não suportada.`)
-  if (bytes.length !== count * 4) throw new Error('O tamanho da camada não corresponde ao mapa.')
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  return Array.from({ length: count }, (_, i) => view.getUint32(i * 4, true))
+  else if (layer.encoding !== 'base64')
+    return refuse('Uma camada usa uma codificação que o Pinta não lê. Use CSV ou base64.')
+  else {
+    const text = layer.data.replace(/\s/g, '')
+    if (text.length > (LIMITS.encodedLayer * 4) / 3 + 4)
+      return refuse('Uma camada compactada do mapa é grande demais.')
+    let bytes: Uint8Array
+    try {
+      bytes = Uint8Array.from(atob(text), (c) => c.charCodeAt(0))
+    } catch {
+      return refuse('Uma camada do mapa não está em base64 válido.')
+    }
+    const compression = string(layer.compression)
+    if (compression === 'zlib' || compression === 'gzip')
+      bytes = inflate(bytes, compression, count * 4)
+    else if (compression)
+      return refuse(
+        `O Pinta não lê camadas compactadas com ${compression}. No Tiled, escolha CSV, base64 sem compactar, zlib ou gzip nas propriedades do mapa.`,
+      )
+    if (bytes.length !== count * 4) return refuse('O tamanho da camada não corresponde ao mapa.')
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+    values = Array.from({ length: count }, (_, i) => view.getUint32(i * 4, true))
+  }
+  if (values.length !== count) return refuse('O tamanho da camada não corresponde ao mapa.')
+  if (values.some((n) => !Number.isInteger(n) || n < 0 || n > 0xffffffff))
+    return refuse('Uma camada do mapa tem um número de peça inválido.')
+  return values
 }
 export interface TiledResolver {
   text: (path: string) => Promise<string>
   image: (path: string) => Promise<string>
 }
+
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
+
+/** A frase da criança para um problema que o esquema da cena ainda encontrou. */
+function explain(scene: RecordValue, path: PropertyKey[], message: string): string {
+  const layers = array(scene.layers) as RecordValue[],
+    tilesets = array(scene.tilesets) as RecordValue[]
+  const layer = path[0] === 'layers' ? layers[Number(path[1])] : undefined,
+    tileset = path[0] === 'tilesets' ? tilesets[Number(path[1])] : undefined
+  if (layer && path[2] === 'objects') {
+    const o = (array(layer.objects) as RecordValue[])[Number(path[3])]
+    return `O objeto ${string(o?.name) || Number(path[3]) + 1} da camada ${string(layer.name)} tem um dado que o Pinta não consegue ler (${String(path[4] ?? 'objeto')}).`
+  }
+  if (layer)
+    return `A camada ${string(layer.name)} tem um dado que o Pinta não consegue ler (${String(path[2] ?? 'camada')}).`
+  if (tileset)
+    return `A folha de peças ${string(tileset.name)} tem um dado que o Pinta não consegue ler (${String(path[2] ?? 'folha')}).`
+  if (/peças ou cores inexistentes/.test(message))
+    return 'Uma animação, um terreno ou uma propriedade aponta para uma peça que não existe na folha.'
+  if (/Árvore de camadas/.test(message))
+    return 'Duas camadas do mapa ficaram com a mesma identificação. Renomeie no Tiled e tente de novo.'
+  if (/Objetos duplicados/.test(message))
+    return 'Dois objetos do mapa ficaram com a mesma identificação.'
+  if (/Desenho do objeto|Peça do objeto/.test(message))
+    return 'Um objeto usa um desenho ou uma peça que não veio no mapa.'
+  if (/duplicadas/.test(message)) return 'Duas folhas de peças do mapa têm a mesma identificação.'
+  if (/dimensões da camada/.test(message))
+    return 'Uma camada tem peças que não existem na folha dela.'
+  return 'O mapa tem um dado que o Pinta não consegue ler.'
+}
+
 export async function importTiledScene(
   input: unknown,
   resolver: TiledResolver,
@@ -94,8 +300,14 @@ export async function importTiledScene(
 ): Promise<{ scene: PintaScene; warnings: string[] }> {
   const map = rec(input),
     warnings: string[] = []
+  const cut = (text: string, what: string): string => {
+    if (text.length <= LIMITS.name) return text
+    const short = text.slice(0, LIMITS.name)
+    warnings.push(`O nome de ${what} foi encurtado para ${LIMITS.name} sinais: ${short}`)
+    return short
+  }
   if (map.orientation !== 'orthogonal' || map.infinite === true || map.infinite === 1)
-    throw new Error(
+    refuse(
       'Traga um mapa ortogonal de tamanho fixo. Mapas infinitos, isométricos e hexagonais ainda não entram no Pinta.',
     )
   const cols = number(map.width),
@@ -106,13 +318,24 @@ export async function importTiledScene(
     !Number.isInteger(rows) ||
     cols < 1 ||
     rows < 1 ||
-    cols > 256 ||
-    rows > 256 ||
+    cols > LIMITS.cols ||
+    rows > LIMITS.rows ||
+    !Number.isInteger(size) ||
+    size < 1 ||
     number(map.tileheight) !== size
   )
-    throw new Error('O mapa precisa de peças quadradas e de até 256 × 256 casas.')
+    refuse(`O mapa precisa de peças quadradas e de até ${LIMITS.cols} × ${LIMITS.rows} casas.`)
+  if (map.backgroundcolor)
+    warnings.push(
+      `A cor de fundo do mapa (${String(map.backgroundcolor)}) não foi trazida: o Pinta não guarda cor de fundo no mapa.`,
+    )
+  if (map.class) warnings.push(`A classe do mapa (${String(map.class)}) não foi trazida.`)
+  if (number(map.parallaxoriginx) || number(map.parallaxoriginy))
+    warnings.push('A origem do parallax do mapa não foi trazida.')
+  if (array(map.tilesets).length > LIMITS.tilesets + LIMITS.art)
+    refuse(`O mapa usa folhas de peças demais. O Pinta aceita até ${LIMITS.tilesets}.`)
   const art: NonNullable<PintaScene['art']> = [],
-    tilesets: PintaScene['tilesets'] = [],
+    tilesets: RecordValue[] = [],
     gids: { first: number; id: string; count: number; art?: string }[] = []
   for (const [i, raw] of array(map.tilesets).entries()) {
     let ts = rec(raw)
@@ -120,19 +343,29 @@ export async function importTiledScene(
     if (ts.source) {
       const path = string(ts.source),
         text = await resolver.text(path)
-      ts = {
-        ...((path.endsWith('.tsx') ? tiledXmlToJson(text) : rec(JSON.parse(text))) as RecordValue),
-        firstgid: first,
+      let external: unknown
+      try {
+        external = /\.(tsx|xml)$/i.test(path) ? tiledXmlToJson(text) : JSON.parse(text)
+      } catch (e) {
+        if (e instanceof TiledImportError) throw e
+        external = refuse(
+          `A folha de peças ${path} não é um arquivo do Tiled que o Pinta consiga ler.`,
+        )
       }
-      if (ts.image && path.includes('/'))
+      ts = { ...rec(external), firstgid: first }
+      // Endereço ou caminho absoluto fica como veio, para o leitor do pacote recusar pelo motivo certo.
+      if (ts.image && path.includes('/') && !/^[a-z][a-z0-9+.-]*:|^[/\\]/i.test(string(ts.image)))
         ts.image = path.slice(0, path.lastIndexOf('/') + 1) + string(ts.image)
     }
-    const properties = props(ts.properties),
+    const label = string(ts.name, `Peças ${i + 1}`),
+      properties = props(ts.properties, `a folha ${label}`, warnings),
       id = string(properties['pinta:id'], `tiles-${i}`),
       count = number(ts.tilecount),
       columns = number(ts.columns)
     if (properties['pinta:art']) {
       const artId = string(properties['pinta:art'])
+      if (art.length >= LIMITS.art)
+        refuse(`O mapa usa desenhos de objeto demais. O Pinta aceita até ${LIMITS.art}.`)
       art.push({
         id: artId,
         image: await resolver.image(string(ts.image)),
@@ -144,41 +377,111 @@ export async function importTiledScene(
     }
     if (
       !ts.image ||
-      !count ||
-      count > 256 ||
-      !columns ||
+      !Number.isInteger(count) ||
+      count < 1 ||
+      count > LIMITS.tiles ||
+      !Number.isInteger(columns) ||
+      columns < 1 ||
       number(ts.tilewidth) !== size ||
       number(ts.tileheight) !== size ||
       number(ts.margin) !== 0 ||
       number(ts.spacing) !== 0
     )
-      throw new Error(
-        'As peças precisam estar numa folha sem margem nem espaçamento, com o mesmo tamanho do mapa e até 256 peças.',
+      refuse(
+        `As peças de ${label} precisam estar numa folha só, sem margem nem espaçamento, com o mesmo tamanho das casas do mapa e até ${LIMITS.tiles} peças.`,
       )
+    if (tilesets.length >= LIMITS.tilesets)
+      refuse(`O mapa usa folhas de peças demais. O Pinta aceita até ${LIMITS.tilesets}.`)
+    const alignment = string(ts.objectalignment, 'unspecified')
+    if (alignment !== 'unspecified' && alignment !== 'bottomleft')
+      warnings.push(
+        `A folha ${label} alinha os objetos de outro jeito (${alignment}); os objetos de peça entraram com o canto de baixo à esquerda e podem ter saído do lugar.`,
+      )
+    const offset = ts.tileoffset ? rec(ts.tileoffset) : {}
+    if (number(offset.x) || number(offset.y))
+      warnings.push(`O deslocamento de desenho das peças de ${label} não foi trazido.`)
+    if (ts.transparentcolor || ts.trans)
+      warnings.push(`A cor transparente da folha ${label} não foi aplicada.`)
     const solid: number[] = [],
       platform: number[] = [],
-      animations: NonNullable<PintaScene['tilesets'][number]['animations']> = {},
+      animations: Record<string, { tile: number; duration: number }[]> = {},
       tileProperties: RecordValue = {}
+    let chance = false,
+      shapes = false,
+      kinds = false
     for (const rawTile of array(ts.tiles)) {
       const t = rec(rawTile),
-        tile = number(t.id),
-        p = props(t.properties)
+        tile = number(t.id, -1),
+        p = props(t.properties, `a peça ${tile} de ${label}`, warnings)
+      if (!Number.isInteger(tile) || tile < 0 || tile >= count)
+        refuse(`A folha ${label} descreve a peça ${tile}, que não existe nela.`)
+      if (t.probability !== undefined && number(t.probability, 1) !== 1) chance = true
+      if (t.objectgroup || array(t.layers).length) shapes = true
+      if (t.type || t.class) kinds = true
       if (p.solid === true) solid.push(tile)
       if (p.platform === true) platform.push(tile)
-      const entries = plainProperties(p)
-      delete entries.solid
-      delete entries.platform
+      const { solid: _solid, platform: _platform, ...rest } = p
+      const entries = plain(rest, `a peça ${tile} de ${label}`, warnings, LIMITS.objectProperties)
       if (Object.keys(entries).length) tileProperties[String(tile)] = entries
-      if (Array.isArray(t.animation))
-        animations[String(tile)] = t.animation
-          .map(rec)
-          .map((f) => ({ tile: number(f.tileid), duration: number(f.duration, 100) }))
+      if (Array.isArray(t.animation) && t.animation.length) {
+        let frames = t.animation.map(rec).map((f) => ({
+          tile: number(f.tileid, -1),
+          duration: Math.round(number(f.duration, 100)),
+        }))
+        if (frames.some((f) => !Number.isInteger(f.tile) || f.tile < 0 || f.tile >= count))
+          refuse(`A animação da peça ${tile} de ${label} usa uma peça que não existe na folha.`)
+        if (frames.length > LIMITS.frames) {
+          warnings.push(
+            `A animação da peça ${tile} de ${label} tinha ${frames.length} quadros; ficaram os ${LIMITS.frames} primeiros.`,
+          )
+          frames = frames.slice(0, LIMITS.frames)
+        }
+        if (frames.some((f) => f.duration < LIMITS.minFrameMs || f.duration > LIMITS.maxFrameMs)) {
+          warnings.push(
+            `A animação da peça ${tile} de ${label} tinha quadros rápidos ou lentos demais; cada quadro ficou entre ${LIMITS.minFrameMs} e ${LIMITS.maxFrameMs} milissegundos.`,
+          )
+          frames = frames.map((f) => ({
+            ...f,
+            duration: clamp(f.duration, LIMITS.minFrameMs, LIMITS.maxFrameMs),
+          }))
+        }
+        animations[String(tile)] = frames
+      }
     }
-    const terrains = array(ts.wangsets)
-      .map(rec)
-      .map((t, n) => ({
-        id: string(props(t.properties)['pinta:id'], `${id}-terrain-${n}`),
-        name: string(t.name),
+    if (chance) warnings.push(`A chance de sorteio das peças de ${label} não foi trazida.`)
+    if (shapes)
+      warnings.push(
+        `As formas de colisão desenhadas dentro das peças de ${label} não foram trazidas. Marque as peças como sólidas no Pinta.`,
+      )
+    if (kinds) warnings.push(`A classe das peças de ${label} não foi trazida.`)
+    let wang = array(ts.wangsets).map(rec)
+    if (wang.length > LIMITS.terrains) {
+      warnings.push(
+        `A folha ${label} tinha ${wang.length} terrenos; ficaram os ${LIMITS.terrains} primeiros.`,
+      )
+      wang = wang.slice(0, LIMITS.terrains)
+    }
+    if (
+      wang.some((t) =>
+        array(t.colors).some((c) => {
+          const called = string(rec(c).name)
+          return called !== '' && !/^Terreno \d+$/.test(called)
+        }),
+      )
+    )
+      warnings.push(`Os nomes das cores dos terrenos de ${label} não foram trazidos.`)
+    const terrains = wang.map((t, n) => {
+      const terrain = string(t.name, `Terreno ${n + 1}`)
+      if (array(t.colors).length > LIMITS.terrainColors)
+        refuse(
+          `O terreno ${terrain} de ${label} tem cores demais. O Pinta aceita até ${LIMITS.terrainColors}.`,
+        )
+      return {
+        id: string(
+          props(t.properties, `o terreno ${terrain}`, warnings)['pinta:id'],
+          `${id}-terrain-${n}`,
+        ),
+        name: cut(terrain, `um terreno de ${label}`),
         mode:
           t.type === 'edge'
             ? ('edge' as const)
@@ -189,17 +492,35 @@ export async function importTiledScene(
           .map(rec)
           .map((c) => {
             const color = string(c.color, '#808080')
-            return /^#[\da-f]{8}$/i.test(color) ? `#${color.slice(3)}` : color
+            return /^#[\da-f]{8}$/i.test(color)
+              ? `#${color.slice(3)}`
+              : /^#[\da-f]{6}$/i.test(color)
+                ? color
+                : '#808080'
           }),
         tiles: Object.fromEntries(
           array(t.wangtiles)
             .map(rec)
-            .map((w) => [String(w.tileid), array(w.wangid).map((n) => number(n))]),
+            .map((w) => {
+              const wangid = array(w.wangid).map((n) => number(n, -1))
+              if (
+                !Number.isInteger(number(w.tileid, -1)) ||
+                number(w.tileid, -1) < 0 ||
+                number(w.tileid, -1) >= count ||
+                wangid.length !== 8 ||
+                wangid.some((c) => !Number.isInteger(c) || c < 0 || c > array(t.colors).length)
+              )
+                refuse(
+                  `O terreno ${terrain} de ${label} aponta para peças ou cores que não existem.`,
+                )
+              return [String(w.tileid), wangid]
+            }),
         ),
-      }))
-    const parsed = PintaSceneSchema.shape.tilesets.element.parse({
+      }
+    })
+    tilesets.push({
       id,
-      name: string(ts.name, `Peças ${i + 1}`),
+      name: cut(label, 'uma folha de peças'),
       image: await resolver.image(string(ts.image)),
       columns,
       count,
@@ -209,151 +530,262 @@ export async function importTiledScene(
       ...(Object.keys(tileProperties).length ? { tileProperties } : {}),
       ...(terrains.length ? { terrains } : {}),
     })
-    tilesets.push(parsed)
     gids.push({ first, id, count })
   }
+  if (!tilesets.length)
+    refuse(
+      'O mapa precisa de pelo menos uma folha de peças. Inclua a folha (imagem) junto do mapa.',
+    )
   gids.sort((a, b) => a.first - b.first)
-  const layers: PintaSceneLayer[] = [],
+  const layers: RecordValue[] = [],
     numericObjects = new Map<string, string>()
-  const resolve = (gid: number) => gids.filter((g) => g.first <= (gid & 0x0fffffff)).at(-1)
-  const convert = (raw: unknown, parentId?: string): void => {
+  let cells = 0
+  /** A folha de um gid; um gid acima da última peça da folha não existe. */
+  const resolve = (gid: number) => {
+    const n = gid & GID_MASK,
+      g = gids.filter((g) => g.first <= n).at(-1)
+    return g && n < g.first + g.count ? g : undefined
+  }
+  const push = (layer: RecordValue): void => {
+    if (layers.length >= LIMITS.layers)
+      refuse(
+        `O mapa tem camadas demais. O Pinta aceita até ${LIMITS.layers}, contando grupos e as camadas que usam mais de uma folha.`,
+      )
+    layers.push(layer)
+  }
+  const convert = (raw: unknown, parentId: string | undefined, depth: number): void => {
     const l = rec(raw),
-      p = props(l.properties)
+      label = string(l.name, 'Camada'),
+      where = `a camada ${label}`,
+      p = props(l.properties, where, warnings)
     if (p['pinta:expanded'] === true) return
     if (p['pinta:wrapper'] === true) {
-      for (const child of array(l.layers)) convert(child, parentId)
+      for (const child of array(l.layers)) convert(child, parentId, depth)
       return
     }
     const id = string(p['pinta:id'], `layer-${l.id ?? layers.length}`)
+    const kind = string(l.class)
+    if (kind) {
+      if (p.class === undefined) {
+        p.class = kind
+        warnings.push(`A classe ${kind} de ${where} foi guardada como a propriedade class.`)
+      } else warnings.push(`A classe ${kind} de ${where} não foi trazida.`)
+    }
+    const userProperties = plain(p, where, warnings, LIMITS.layerProperties)
+    const limited = (value: unknown, min: number, max: number, what: string): number => {
+      const n = number(value, 1)
+      if (n >= min && n <= max) return n
+      warnings.push(`${what} de ${where} foi ajustado para caber entre ${min} e ${max}.`)
+      return clamp(n, min, max)
+    }
+    for (const key of ['offsetx', 'offsety'] as const)
+      if (Math.abs(number(l[key])) > LIMITS.layerOffset)
+        refuse(`O deslocamento de ${where} é grande demais para o Pinta.`)
     const common = {
       id,
-      name: string(l.name, 'Camada'),
+      name: cut(label, 'uma camada'),
       visible: l.visible !== false && l.visible !== 0,
       ...(parentId ? { parentId } : {}),
       ...(l.locked ? { locked: true as const } : {}),
-      ...(l.opacity !== undefined && l.opacity !== 1 ? { opacity: number(l.opacity, 1) } : {}),
-      ...(l.offsetx ? { offsetX: number(l.offsetx) } : {}),
-      ...(l.offsety ? { offsetY: number(l.offsety) } : {}),
+      ...(l.opacity !== undefined && l.opacity !== 1
+        ? { opacity: limited(l.opacity, 0, 1, 'A opacidade') }
+        : {}),
+      ...(number(l.offsetx) ? { offsetX: number(l.offsetx) } : {}),
+      ...(number(l.offsety) ? { offsetY: number(l.offsety) } : {}),
       ...(l.parallaxx !== undefined && l.parallaxx !== 1
-        ? { parallaxX: number(l.parallaxx, 1) }
+        ? { parallaxX: limited(l.parallaxx, 0, LIMITS.parallax, 'O parallax') }
         : {}),
       ...(l.parallaxy !== undefined && l.parallaxy !== 1
-        ? { parallaxY: number(l.parallaxy, 1) }
+        ? { parallaxY: limited(l.parallaxy, 0, LIMITS.parallax, 'O parallax') }
         : {}),
-      ...(Object.keys(plainProperties(p)).length ? { properties: plainProperties(p) } : {}),
+      ...(Object.keys(userProperties).length ? { properties: userProperties } : {}),
     }
     if ((l.mode && l.mode !== 'normal') || l.tintcolor)
-      warnings.push(`A camada ${common.name} usa mistura ou tonalidade que não foi convertida.`)
+      warnings.push(`A camada ${label} usa mistura ou tonalidade que não foi convertida.`)
     if (l.type === 'group') {
-      layers.push(PintaSceneSchema.shape.layers.element.parse({ ...common, kind: 'group' }))
-      for (const child of array(l.layers)) convert(child, id)
+      if (depth >= LIMITS.groupDepth)
+        refuse(
+          `O mapa tem grupos dentro de grupos demais. O Pinta aceita até ${LIMITS.groupDepth} níveis.`,
+        )
+      push({ ...common, kind: 'group' })
+      for (const child of array(l.layers)) convert(child, id, depth + 1)
       return
     }
     if (l.type === 'tilelayer') {
-      if (l.chunks) throw new Error('Camadas infinitas não são suportadas.')
+      if (l.chunks) refuse('Camadas infinitas não entram no Pinta.')
+      if (
+        (l.width !== undefined && number(l.width) !== cols) ||
+        (l.height !== undefined && number(l.height) !== rows)
+      )
+        refuse(`A camada ${label} tem um tamanho diferente do mapa.`)
       const values = data(l, cols * rows)
-      if (values.length !== cols * rows)
-        throw new Error('Dimensões de camada diferentes das do mapa não são suportadas.')
       const used = [...new Set(values.filter((v) => v > 0).map((v) => resolve(v)?.id))]
-      if (used.includes(undefined)) throw new Error('A camada aponta para peças inexistentes.')
-      const sources = used.length ? used : [tilesets[0]?.id]
+      if (used.includes(undefined))
+        refuse(`A camada ${label} aponta para peças que não existem nas folhas do mapa.`)
+      if (used.some((source) => gids.find((g) => g.id === source)?.art))
+        refuse(`A camada ${label} usa um desenho de objeto como peça.`)
+      const sources = used.length ? used : [string(tilesets[0]?.id)]
       for (const [n, source] of sources.entries()) {
         const g = gids.find((g) => g.id === source)
-        if (!g) throw new Error('O mapa precisa de pelo menos uma folha de peças.')
-        const cells = values.map((v) =>
-          v === 0 || resolve(v)?.id !== source ? -1 : gidCell(v, g.first),
-        )
-        layers.push(
-          PintaSceneSchema.shape.layers.element.parse({
-            ...common,
-            id: n ? `${id}-${n}` : id,
-            kind: 'tiles',
-            tilesetId: source,
-            cells,
-            ...(p['pinta:front'] === true ? { front: true } : {}),
-            ...(p['pinta:collision'] === true ? { collision: true } : {}),
-          }),
-        )
+        if (!g) throw new TiledImportError('O mapa precisa de pelo menos uma folha de peças.')
+        cells += values.length
+        if (cells > LIMITS.cells)
+          refuse(
+            `O mapa tem casas demais somando as camadas. O Pinta aceita até ${LIMITS.cells.toLocaleString('pt-BR')}.`,
+          )
+        push({
+          ...common,
+          id: n ? `${id}-${n}` : id,
+          kind: 'tiles',
+          tilesetId: source,
+          cells: values.map((v) =>
+            v === 0 || resolve(v)?.id !== source ? -1 : gidCell(v, g.first),
+          ),
+          ...(p['pinta:front'] === true ? { front: true } : {}),
+          ...(p['pinta:collision'] === true ? { collision: true } : {}),
+        })
       }
       if (sources.length > 1)
         warnings.push(
-          `A camada ${common.name} virou ${sources.length} camadas, uma para cada folha de peças.`,
+          `A camada ${label} virou ${sources.length} camadas, uma para cada folha de peças.`,
         )
       return
     }
     if (l.type === 'objectgroup') {
-      const objects: PintaSceneObject[] = array(l.objects)
+      if (array(l.objects).length > LIMITS.objects)
+        refuse(
+          `A camada ${label} tem objetos demais. O Pinta aceita até ${LIMITS.objects} por camada.`,
+        )
+      if (l.draworder !== 'index' && array(l.objects).some((o) => number(rec(o).gid)))
+        warnings.push(
+          `A camada ${label} desenhava os objetos de cima para baixo; no Pinta eles ficam na ordem da lista.`,
+        )
+      const objects: RecordValue[] = array(l.objects)
         .map(rec)
         .flatMap((o) => {
-          const p = props(o.properties),
+          const called = string(o.name) || `número ${String(o.id ?? '?')}`,
+            whereObject = `o objeto ${called} da camada ${label}`,
+            p = props(o.properties, whereObject, warnings),
             extra = json(p['pinta:object']),
-            e = extra && typeof extra === 'object' ? rec(extra) : {},
+            e = extra && typeof extra === 'object' && !Array.isArray(extra) ? rec(extra) : {},
             id = string(e.id, `object-${o.id}`)
           numericObjects.set(String(o.id), id)
           if (o.text) {
-            warnings.push(`O texto do objeto ${string(o.name)} não foi convertido.`)
+            warnings.push(`O texto do objeto ${called} não foi convertido.`)
             return []
           }
+          if (o.template)
+            warnings.push(
+              `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} usa um modelo do Tiled (${String(o.template)}), que o Pinta não lê. Ele entrou só com o lugar, o nome e as propriedades que estavam no mapa.`,
+            )
+          if ((o.visible === false || o.visible === 0) && !e.setId)
+            warnings.push(
+              `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} estava escondido no Tiled e entrou visível.`,
+            )
           const gid = number(o.gid),
             g = gid ? resolve(gid) : undefined
+          if (gid && !g)
+            refuse(
+              `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} usa uma peça que não existe nas folhas do mapa.`,
+            )
+          const box = {
+            x: number(o.x),
+            y: number(o.y),
+            width: Math.abs(number(o.width)),
+            height: Math.abs(number(o.height)),
+            rotation: number(o.rotation),
+          }
+          const placed = g ? tileObjectPlacement({ ...box, gid }) : null,
+            at = placed ?? box
+          if ([at.x, at.y, at.width, at.height].some((n) => Math.abs(n) > LIMITS.objectCoord))
+            refuse(
+              `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} está longe ou é grande demais para o Pinta.`,
+            )
+          const points = array(o.polygon ?? o.polyline)
+          if (points.length > LIMITS.points)
+            refuse(
+              `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} tem pontos demais. O Pinta aceita até ${LIMITS.points}.`,
+            )
+          const tile = g ? (gid & GID_MASK) - g.first : 0,
+            original = e.art && typeof e.art === 'object' ? rec(e.art) : null
+          const shape = o.ellipse
+            ? 'ellipse'
+            : o.polygon
+              ? 'polygon'
+              : o.polyline
+                ? 'polyline'
+                : g
+                  ? 'art'
+                  : o.point
+                    ? // Objeto do Pinta sem forma e sem tamanho sai como ponto e volta sem forma.
+                      e.id !== undefined && e.shape === undefined
+                      ? undefined
+                      : 'point'
+                    : typeof e.shape === 'string'
+                      ? e.shape
+                      : undefined
+          const flipX = placed ? placed.flipX : e.flipX === true,
+            flipY = placed ? placed.flipY : e.flipY === true
           return [
-            PintaSceneSchema.shape.layers.element.options[1].shape.objects.element.parse({
+            {
               id,
-              name: string(o.name),
-              type: string(o.type) || string(o.class),
-              x:
-                number(o.x) +
-                (gid ? Math.sin((number(o.rotation) * Math.PI) / 180) * number(o.height) : 0),
-              y:
-                number(o.y) -
-                (gid ? Math.cos((number(o.rotation) * Math.PI) / 180) * number(o.height) : 0),
-              width: number(o.width),
-              height: number(o.height),
-              properties: plainProperties(p),
-              ...e,
-              ...(number(o.rotation) ? { rotation: number(o.rotation) } : {}),
-              ...(o.ellipse
-                ? { shape: 'ellipse' }
-                : o.point
-                  ? { shape: 'point' }
-                  : o.polygon
-                    ? { shape: 'polygon', points: o.polygon }
-                    : o.polyline
-                      ? { shape: 'polyline', points: o.polyline }
-                      : gid && g
-                        ? {
-                            shape: 'art',
-                            art: { assetId: g.id, tile: (gid & 0x0fffffff) - g.first },
-                            ...(gid & 0x80000000 ? { flipX: true } : {}),
-                            ...(gid & 0x40000000 ? { flipY: true } : {}),
-                          }
-                        : {}),
-            }),
+              name: cut(string(o.name), 'um objeto'),
+              type: cut(string(o.type) || string(o.class), 'um tipo de objeto'),
+              x: at.x,
+              y: at.y,
+              width: at.width,
+              height: at.height,
+              properties: plain(p, whereObject, warnings, LIMITS.objectProperties),
+              ...(typeof e.role === 'string' ? { role: e.role } : {}),
+              ...(typeof e.setId === 'string' ? { setId: e.setId } : {}),
+              ...(at.rotation ? { rotation: at.rotation } : {}),
+              ...(shape ? { shape } : {}),
+              ...(shape === 'polygon' || shape === 'polyline'
+                ? { points: points.map(rec).map((q) => ({ x: number(q.x), y: number(q.y) })) }
+                : {}),
+              ...(g
+                ? {
+                    // O desenho original do Pinta volta igual quando ainda aponta para a mesma peça.
+                    art:
+                      original?.assetId === g.id && number(original.tile) === tile
+                        ? original
+                        : g.art
+                          ? { assetId: g.id }
+                          : { assetId: g.id, tile },
+                  }
+                : {}),
+              ...(flipX ? { flipX: true } : {}),
+              ...(flipY ? { flipY: true } : {}),
+            },
           ]
         })
-      layers.push(
-        PintaSceneSchema.shape.layers.element.parse({ ...common, kind: 'objects', objects }),
-      )
+      push({ ...common, kind: 'objects', objects })
       return
     }
-    warnings.push(`A camada ${common.name} (${string(l.type)}) não foi convertida.`)
+    warnings.push(`A camada ${label} (${string(l.type)}) não foi convertida.`)
   }
-  for (const l of array(map.layers)) convert(l)
+  for (const l of array(map.layers)) convert(l, undefined, 0)
   for (const l of layers)
-    if (l.kind === 'objects')
-      for (const o of l.objects)
-        for (const [key, value] of Object.entries(o.properties))
-          if (typeof value === 'object' && value.type === 'object')
-            o.properties[key] = {
-              ...value,
-              value: numericObjects.get(String(value.value)) ?? value.value,
-            }
-  const p = props(map.properties),
+    for (const o of array(l.objects) as RecordValue[])
+      for (const [key, value] of Object.entries(rec(o.properties))) {
+        const typed = value && typeof value === 'object' ? (value as RecordValue) : null
+        if (typed?.type === 'object')
+          rec(o.properties)[key] = {
+            ...typed,
+            value: numericObjects.get(String(typed.value)) ?? typed.value,
+          }
+      }
+  const p = props(map.properties, 'o mapa', warnings),
     sets = json(p['pinta:sets'])
-  const scene = PintaSceneSchema.parse({
+  const lost = Object.keys(p).filter((key) => !key.startsWith('pinta:'))
+  if (lost.length)
+    warnings.push(
+      `As propriedades do mapa (${lost.join(', ')}) não foram trazidas: o Pinta guarda propriedades nas camadas, nas peças e nos objetos.`,
+    )
+  const candidate = {
     version: 1,
     id: string(p['pinta:id'], 'tiled-map'),
-    name: string(p['pinta:name'], name),
+    name: cut(string(p['pinta:name'], name), 'o mapa'),
     cols,
     rows,
     tileSize: size,
@@ -361,49 +793,81 @@ export async function importTiledScene(
     layers,
     ...(art.length ? { art } : {}),
     ...(sets ? { sets } : {}),
-  })
-  return { scene, warnings }
+  }
+  const parsed = PintaSceneSchema.safeParse(candidate)
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0]
+    return refuse(explain(candidate, issue?.path ?? [], issue?.message ?? ''))
+  }
+  return { scene: parsed.data, warnings }
 }
+// Tipos usados só para conferir, em compilação, que o importador monta as formas da cena.
+export type _ImportedLayer = PintaSceneLayer
+export type _ImportedObject = PintaSceneObject
+
+/** Atributos que são texto mesmo quando parecem número (`name="1234"`, cor `000000`). */
+const TEXT_ATTRIBUTES = new Set([
+  'name',
+  'type',
+  'class',
+  'orientation',
+  'renderorder',
+  'version',
+  'tiledversion',
+  'source',
+  'template',
+  'color',
+  'tintcolor',
+  'backgroundcolor',
+  'trans',
+  'compression',
+  'encoding',
+  'wangid',
+  'points',
+  'draworder',
+  'mode',
+  'objectalignment',
+  'propertytype',
+])
 
 /** O DOMParser do navegador não busca entidades externas; DTDs são recusados explicitamente. */
 export function tiledXmlToJson(text: string): RecordValue {
   if (/<!DOCTYPE|<!ENTITY/i.test(text))
-    throw new Error('O mapa XML contém entidades não suportadas.')
+    refuse('O mapa XML contém entidades, que o Pinta recusa por segurança.')
   const doc = new DOMParser().parseFromString(text, 'application/xml')
-  if (doc.querySelector('parsererror')) throw new Error('O arquivo TMX/TSX não é um XML válido.')
+  if (doc.querySelector('parsererror')) refuse('O arquivo TMX/TSX não é um XML válido.')
+  /** Uma propriedade fica como texto cru; `props` converte pelo `type` (sem `type` é texto). */
+  const property = (element: Element): RecordValue => ({
+    name: element.getAttribute('name') ?? '',
+    ...(element.hasAttribute('type') ? { type: element.getAttribute('type') } : {}),
+    ...(element.hasAttribute('propertytype')
+      ? { propertytype: element.getAttribute('propertytype') }
+      : {}),
+    // O Tiled grava texto de várias linhas no corpo do elemento, não no atributo.
+    value: element.hasAttribute('value')
+      ? element.getAttribute('value')
+      : (element.textContent ?? ''),
+  })
   const read = (element: Element): RecordValue => {
     const result: RecordValue = {}
     for (const a of element.attributes)
-      result[a.name] = [
-        'name',
-        'type',
-        'class',
-        'orientation',
-        'renderorder',
-        'version',
-        'tiledversion',
-        'source',
-        'color',
-        'compression',
-        'encoding',
-        'wangid',
-        'points',
-      ].includes(a.name)
+      result[a.name] = TEXT_ATTRIBUTES.has(a.name)
         ? a.value
         : a.value === 'true'
           ? true
           : a.value === 'false'
             ? false
-            : Number.isFinite(Number(a.value))
+            : a.value.trim() !== '' && Number.isFinite(Number(a.value))
               ? Number(a.value)
               : a.value
     for (const child of element.children) {
       const name = child.tagName
       if (name === 'properties') {
-        result.properties = [...child.children].map((c) => {
-          const p = read(c)
-          return { ...p, value: p.value ?? c.textContent ?? '' }
-        })
+        result.properties = [...child.children].map(property)
+        continue
+      }
+      if (element.tagName === 'tile' && name === 'objectgroup') {
+        result.objectgroup = read(child)
         continue
       }
       if (['layer', 'objectgroup', 'group', 'imagelayer'].includes(name)) {
@@ -415,6 +879,7 @@ export function tiledXmlToJson(text: string): RecordValue {
         continue
       }
       if (name === 'data') {
+        if (child.querySelector('chunk')) result.chunks = true
         result.data =
           child.getAttribute('encoding') === 'csv'
             ? (child.textContent ?? '')
@@ -423,7 +888,7 @@ export function tiledXmlToJson(text: string): RecordValue {
                 .map(Number)
             : child.getAttribute('encoding') === 'base64'
               ? child.textContent
-              : [...child.children].map((c) => Number(c.getAttribute('gid')))
+              : [...child.children].map((c) => Number(c.getAttribute('gid') ?? 0))
         result.encoding = child.getAttribute('encoding') ?? 'csv'
         result.compression = child.getAttribute('compression') ?? ''
         continue
@@ -432,10 +897,19 @@ export function tiledXmlToJson(text: string): RecordValue {
         result.image = child.getAttribute('source')
         result.imagewidth = Number(child.getAttribute('width'))
         result.imageheight = Number(child.getAttribute('height'))
+        if (child.hasAttribute('trans')) result.transparentcolor = child.getAttribute('trans')
         continue
       }
       if (name === 'point' || name === 'ellipse') {
         result[name] = true
+        continue
+      }
+      if (name === 'text') {
+        result.text = { text: child.textContent ?? '' }
+        continue
+      }
+      if (name === 'tileoffset') {
+        result.tileoffset = read(child)
         continue
       }
       if (name === 'polygon' || name === 'polyline') {

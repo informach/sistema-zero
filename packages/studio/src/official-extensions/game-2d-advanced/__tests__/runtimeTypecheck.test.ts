@@ -53,7 +53,7 @@ interface Window {
   __SZGAME_SOUNDS?: Record<string, string>
   __SZGAME_ASSET_META?: Record<
     string,
-    { tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata; sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] } }
+    { scene?: object; hasScene?: true; tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata; sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] } }
   >
   __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown>
   webkitAudioContext?: typeof AudioContext

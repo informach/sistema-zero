@@ -1,3 +1,4 @@
+import { PINTA_SCENE_PLAYER_METHODS } from '@sistemazero/core/studio/pinta-limits'
 import type { PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
 export interface MapTwoDApi {
   createMapScene(name: string, image: string): void
@@ -18,17 +19,5 @@ export interface MapTwoDApi {
   mapSpawn(name: string, axis: 'x' | 'y'): number
   mapSize(name: string, axis: 'width' | 'height'): number
 }
-export const MAP_TWO_D_API_KEYS = [
-  'createMapScene',
-  'drawMapScene',
-  'collideMapScene',
-  'mapObjects',
-  'mapObjectNamed',
-  'mapObjectProperty',
-  'mapObjectField',
-  'mapInArea',
-  'mapArea',
-  'useMapDoor',
-  'mapSpawn',
-  'mapSize',
-] as const satisfies readonly (keyof MapTwoDApi)[]
+/** A lista mora no core, junto do detector que decide o motor e os metadados do documento. */
+export const MAP_TWO_D_API_KEYS = PINTA_SCENE_PLAYER_METHODS satisfies readonly (keyof MapTwoDApi)[]

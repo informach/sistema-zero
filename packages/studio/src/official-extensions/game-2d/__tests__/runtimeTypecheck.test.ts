@@ -30,6 +30,9 @@ const HOST_CONTRACT = `
 type GameTwoDRuntimeApi = import('./runtimeContract').GameTwoDRuntimeApi
 
 interface SZGameTileMapAssetMetadata {
+  /** Cenário do Pinta: a cena inteira, ou só o sinal quando o jogo não usa bloco de cenário. */
+  scene?: object
+  hasScene?: true
   sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] }
   tilemap?: {
     grid?: string

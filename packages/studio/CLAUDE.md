@@ -1,5 +1,41 @@
 # @sistemazero/studio
 
+## Cenários do Pinta nos jogos 2D: correções da revisão (18/11/2026)
+
+O fragmento `map-2d` (blocos "Criar cenário do meu desenho", "Desenhar cenário", "Colidir com
+cenário"...) serve ao Jogo 2D e ao Jogo 2D Avançado. O que vale desde esta data:
+
+- **Variante do motor**: `''` (sem contexto) é o motor COMPLETO, com cenário; o motor sem
+  cenário tem a chave `sem-cenario-pinta` (`map-2d/bootstrap.ts`), na convenção do
+  `game-3d/platformKitVariant.ts`. A chave reduzida nunca pode ser `''`: para `''` o host troca
+  o contexto por `undefined` (`extensions/runtime.ts`) e o completo volta. Era o defeito: todo
+  jogo 2D levava os ~11 mil caracteres do cenário. O teste que vale é o do caminho do host
+  (`map-2d/__tests__/hostVariant.test.ts`), não o do fragmento chamado na mão.
+- **Tetos**: motor sem cenário nos tetos de sempre (422.500 e 415.000); com cenário, teto
+  absoluto em `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` (medido 431.468 e 419.766).
+- **A pergunta "usa cenário?" é uma só** (`codeUsesPintaScenePlayer`, em
+  `@sistemazero/core/studio/pinta-limits`, sem dependências porque entra no pedaço inicial):
+  decide o motor E se a cena vai nos metadados do documento. `assetMetaManifest(assets,
+  contexto)` recebe o mesmo `extensionBootstrapContext` do motor; sem contexto a cena vai (lado
+  seguro). Jogo que não usa cenário leva só `hasScene: true`, e é por ele que o bloco antigo de
+  mapa diz "é um cenário. Use o bloco Criar cenário do meu desenho". `tilemapFront` não vai ao
+  documento: nenhum motor o lê.
+- **Colisão no Avançado**: o motor lê `m.solid[idx]`, então o host passa objeto de índices
+  (`{0:true}`), nunca `Set`. `map-2d/__tests__/engines.test.ts` executa o texto dos dois motores
+  e confere o personagem parando no chão. Sem `@napi-rs/canvas`, `map-2d/runtime.test.ts` pula
+  só os casos de pixel, com aviso no console.
+- **Áreas** ("Quando entrar em área"): conferidas a cada quadro pelo relógio do host
+  (`host.frame`), e também ao desenhar e ao colidir. Não dependem mais de desenhar a camada de
+  trás.
+- **Desenho com cena manda no mapa inteiro**: `tilemap`/`tilemapFront` que ele não traz SAEM
+  do material (store e `mergeDrawingIntoAsset`), sem herança por geometria. `drawingNeedsSync`
+  compara só bytes, cena e mapas; `tileset`/`sprite` são do Estúdio e não entram.
+- **Orçamento**: a cena conta no total do projeto na escrita e na leitura
+  (`projectAssetBudgetChars`). Na leitura, cena que não cabe sai sozinha, com aviso
+  (`options.warnings` + console); a imagem fica.
+- **"Jogar meu mapa"**: o início e o tamanho do mundo são blocos que leem a cena
+  (`mapSpawn`, `mapSize`); nenhum número do mapa fica no programa.
+
 ## O redesenho do Estúdio clássico (08/11/2026)
 
 Blocos e Ponte, JavaScript e Python, com as peças do Pro (proposta "Estúdio Clássico —

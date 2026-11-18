@@ -10,6 +10,7 @@ import {
   stampRegionAt,
 } from '../../../tiles/mapSelection'
 import type { TileStamp } from '../../../tiles/stamp'
+import { commitIfChanged } from './commitGuard'
 export type MapSelection =
   | { kind: 'marquee'; start: CellPos; rect: CellRect | null }
   | { kind: 'rect'; rect: CellRect }
@@ -26,6 +27,8 @@ interface Options {
   cellFromEvent: (e: PointerEvent<HTMLCanvasElement>) => CellPos
   clampCell: (p: CellPos) => CellPos
   renderSelection: () => void
+  /** Camada trancada: avisa e devolve `true` (o pedaço não é levantado). */
+  isLocked?: () => boolean
 }
 export function createMapSelectionController({
   tilemap,
@@ -39,6 +42,7 @@ export function createMapSelectionController({
   cellFromEvent,
   clampCell,
   renderSelection,
+  isLocked,
 }: Options) {
   /** Apaga o pedaço: levantado some, assentado limpa as células (Delete). */
   function deleteMapSelection(): void {
@@ -49,8 +53,13 @@ export function createMapSelectionController({
     movingRef.current = null
     setSelRect(null)
     selfCommitRef.current = true
-    if (sel.kind === 'floating') state.commit(sel.remaining)
-    else if (sel.kind === 'rect') state.commit(clearRegion(state.asset, layerId, sel.rect))
+    const next =
+      sel.kind === 'floating'
+        ? sel.remaining
+        : sel.kind === 'rect'
+          ? clearRegion(state.asset, layerId, sel.rect)
+          : state.asset
+    if (!commitIfChanged(state, next)) selfCommitRef.current = false
   }
 
   function stampPending(): void {
@@ -59,8 +68,11 @@ export function createMapSelectionController({
     movingRef.current = null
     setSelRect(null)
     if (sel?.kind === 'floating' && tilemap) {
-      selfCommitRef.current = true
-      editor.getState().commit(stampRegionAt(sel.remaining, layerId, sel.at, sel.stamp))
+      // Soltar no mesmo lugar (ou numa camada trancada) não muda nada: nada é gravado.
+      selfCommitRef.current = commitIfChanged(
+        editor.getState(),
+        stampRegionAt(sel.remaining, layerId, sel.at, sel.stamp),
+      )
     }
   }
 
@@ -86,6 +98,7 @@ export function createMapSelectionController({
       const within =
         p.col >= r.col && p.col < r.col + r.cols && p.row >= r.row && p.row < r.row + r.rows
       if (within) {
+        if (isLocked?.()) return
         const { remaining, floating } = extractRegion(tilemap, layerId, r)
         selRef.current = {
           kind: 'floating',

@@ -119,7 +119,14 @@ async function runCapture(
     // Sem o manifesto, um jogo com imagem cairia no placeholder fillRect e a capa
     // sairia sem os sprites — semeamos os assets também na captura.
     assets: assetManifest(project.assets),
-    assetsMeta: assetMetaManifest(project.assets),
+    assetsMeta: assetMetaManifest(
+      project.assets,
+      extensionBootstrapContext({
+        html: project.files['index.html'],
+        js: project.files['script.js'],
+        extraFiles: project.extraFiles,
+      }),
+    ),
     sounds: soundManifest(project.assets),
     models3d: asset3DManifest(project.assets),
     gameUiFont,

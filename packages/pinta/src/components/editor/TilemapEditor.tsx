@@ -80,6 +80,7 @@ import { MapObjectsOverlay } from './MapObjectsOverlay'
 import { MapPlaytestDialog } from './MapPlaytestDialog'
 import { MapStatusBar } from './MapStatusBar'
 import { DEFAULT_MAP_BRUSH, MapTerrainPanel } from './MapTerrainPanel'
+import { commitIfChanged } from './mapTools/commitGuard'
 import { createMapSelectionController, type MapSelection } from './mapTools/selectionController'
 import { stageCursor } from './stageCursor'
 import {
@@ -575,12 +576,17 @@ export function TilemapEditor({
   deleteObjectRef.current = () => {
     if (!activeObjectLayer || !selectedObjectId) return false
     const s = editor.getState()
-    if (s.asset.kind === 'tilemap')
-      s.commit(
-        selectedObjectIds.reduce((m, id) => removeMapObject(m, activeObjectLayer.id, id), s.asset),
-      )
+    if (s.asset.kind !== 'tilemap') return false
+    if (effectiveLayer(s.asset, activeObjectLayer).locked) {
+      showToast(COPY.layers.lockedWarning)
+      return true
+    }
+    const removed = commitIfChanged(
+      s,
+      selectedObjectIds.reduce((m, id) => removeMapObject(m, activeObjectLayer.id, id), s.asset),
+    )
     chooseObjects([])
-    return true
+    return removed
   }
 
   /** Célula do MAPA sob o ponteiro (pode ser -1..cols no anel de expansão). */
@@ -625,7 +631,7 @@ export function TilemapEditor({
     return cells
   }
 
-  function applyTiles(current: TilemapAsset, cells: CellPos[]): TilemapAsset {
+  function applyTiles(current: TilemapAsset, cells: CellPos[], warn = false): TilemapAsset {
     const g = gestureRef.current
     const terrain = tileset?.terrains?.find((t) => t.id === mapBrush.terrainId)
     if (terrain) {
@@ -637,7 +643,7 @@ export function TilemapEditor({
         cells,
         mapBrush.seed,
       )
-      if (result.unmatched && gestureRef.current)
+      if (result.unmatched && (warn || gestureRef.current))
         showToast(COPY.scene.faltamPecasDeBordaOuCantoNeste)
       return result.map
     }
@@ -759,10 +765,13 @@ export function TilemapEditor({
       state = editor.getState()
     if (state.asset.kind !== 'tilemap') return
     const terrain = tileset?.terrains?.find((t) => t.id === mapBrush.terrainId)
-    state.commit(
+    // O balde usa a casa do carimbo COM os bits de virar e girar (a peça virada pinta virada).
+    const fillCell = stamp ? (stamp.tiles[0] ?? -1) : selectedTile
+    commitIfChanged(
+      state,
       terrain || mapBrush.scatter
-        ? applyTiles(state.asset, terrainRegion(state.asset, layerId, c, terrain))
-        : floodFillCells(state.asset, layerId, c.col, c.row, selectedTile),
+        ? applyTiles(state.asset, terrainRegion(state.asset, layerId, c, terrain), true)
+        : floodFillCells(state.asset, layerId, c.col, c.row, fillCell),
     )
   }
 
@@ -913,13 +922,13 @@ export function TilemapEditor({
   function toggleMapLayerFront(id: string): void {
     const state = editor.getState()
     if (state.asset.kind !== 'tilemap') return
-    state.commit(toggleLayerFront(state.asset, id))
+    commitIfChanged(state, toggleLayerFront(state.asset, id))
   }
 
   function toggleMapLayerVisible(id: string): void {
     const state = editor.getState()
     if (state.asset.kind !== 'tilemap') return
-    state.commit(toggleLayerVisible(state.asset, id))
+    commitIfChanged(state, toggleLayerVisible(state.asset, id))
   }
 
   function removeMapLayer(id: string): void {

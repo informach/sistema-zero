@@ -8,7 +8,13 @@
 import { describe, expect, test } from 'bun:test'
 import { pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
-import { assetFromJson, assetToJson, createAsset, PINTA_LIMITS } from '@sistemazero/pinta/assets'
+import {
+  assetFromJson,
+  assetToJson,
+  createAsset,
+  PINTA_LIMITS,
+  sanitizePintaAsset,
+} from '@sistemazero/pinta/assets'
 import type {
   CloudCreationSummary,
   CreationsCloud,
@@ -20,6 +26,7 @@ import type {
 import { createMemorySyncedMarks } from '../src/lib/creations-sync'
 import {
   createCloudMirroredPintaPersistence,
+  createMemoryPintaFormatMemory,
   PALETTE_LIBRARY_ITEM_ID,
   PALETTE_LIBRARY_KIND,
   type PintaPersistenceLike,
@@ -1363,5 +1370,299 @@ describe('formato mais novo que este código: o desenho fica intocado na conta',
     const esperado = pintaWriteFormatVersion('tileset')
     expect(meta.formatVersion).toBe(esperado > 1 ? esperado : undefined)
     expect(pintaWriteFormatVersion('pixel-sprite')).toBe(1)
+  })
+})
+
+/**
+ * FROTA MISTA no mesmo aparelho (18/11/2026). Outra aba, ainda com o Pinta antigo carregado, abre
+ * um mapa completo do IndexedDB, reconstrói o registro sem o que não conhece e salva por cima com
+ * `updatedAt` novo. Nos testes isso é gravar direto em `local.rows`, por fora do embrulho: é o
+ * que distingue a gravação de outro código da gravação deste.
+ */
+describe('registro local cortado por código mais antigo não sobe por cima da conta', () => {
+  const ler = (cru: unknown): PintaAsset => {
+    const lido = sanitizePintaAsset(cru)
+    if (!lido) throw new Error('mapa de teste inválido')
+    return lido
+  }
+  /** Mapa com um objeto em forma de elipse: pede o carimbo 4. */
+  const mapaCompleto = (updatedAt: number): PintaAsset =>
+    ler({
+      id: 'mapa-vila',
+      kind: 'tilemap',
+      name: 'vila',
+      createdAt: 1,
+      updatedAt,
+      tilesetId: 'pecas',
+      cols: 2,
+      rows: 1,
+      layers: [
+        { id: 'chao', name: 'Chão', visible: true, cells: [0, -1] },
+        {
+          id: 'coisas',
+          kind: 'objects',
+          name: 'Coisas',
+          visible: true,
+          objects: [
+            {
+              id: 'lago',
+              name: 'lago',
+              type: '',
+              x: 0,
+              y: 0,
+              width: 16,
+              height: 16,
+              properties: {},
+              shape: 'ellipse',
+              role: 'danger',
+            },
+          ],
+        },
+      ],
+    })
+  /** O que o código antigo devolve ao ler o mapa: o objeto sem forma nem papel, sem carimbo. */
+  const cortado = (completo: PintaAsset, updatedAt: number, cells = [0, -1]): PintaAsset => {
+    if (completo.kind !== 'tilemap') throw new Error('esperava um mapa')
+    return ler({
+      ...completo,
+      schema: undefined,
+      updatedAt,
+      layers: completo.layers.map((layer) =>
+        layer.kind === 'objects'
+          ? {
+              ...layer,
+              objects: layer.objects.map(({ shape: _s, role: _r, ...objeto }) => objeto),
+            }
+          : { ...layer, cells },
+      ),
+    })
+  }
+  const carimbo = (asset: PintaAsset | undefined): number | undefined =>
+    (asset as { schema?: number } | undefined)?.schema
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+  /** Sincroniza o mapa completo por este código e devolve o cenário pronto para o corte. */
+  async function sincronizado(over: { isAssetOpen?: (id: string) => boolean } = {}) {
+    const completo = mapaCompleto(1000)
+    expect(carimbo(completo)).toBe(4)
+    const local = fakeLocal()
+    const remote = new Map<string, { summary: CloudCreationSummary; json: string }>()
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    const formatMemory = createMemoryPintaFormatMemory()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      formatMemory,
+      now: () => 9000,
+      ...over,
+    })
+    await mirrored.persistAssets([completo])
+    const primeiro = await uploads.get(completo.id)?.produce()
+    expect(primeiro?.meta?.updatedAt).toBe(1000)
+    uploads.get(completo.id)?.onUploaded?.({ itemId: completo.id, updatedAt: 1000, revision: 4 })
+    remote.set(completo.id, {
+      json: assetToJson(completo),
+      summary: summaryOf(completo, { revision: 4, formatVersion: 3 }),
+    })
+    expect(formatMemory.get(completo.id)?.schema).toBe(4)
+    return { completo, local, remote, cloud, uploads, marks, formatMemory, mirrored }
+  }
+
+  test('a outra aba cortou e salvou: nada sobe, a versão da conta volta no mesmo id e a daqui fica como `-copia`', async () => {
+    const { completo, local, uploads, marks, mirrored } = await sincronizado()
+    const corte = cortado(completo, 2000, [0, 0])
+    expect(carimbo(corte)).toBeUndefined()
+    local.rows.set(corte.id, corte)
+
+    // A reconciliação vê "local mudou" e enfileira a subida; o produtor é quem barra.
+    await loadSettled(mirrored, local)
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+
+    const voltou = local.rows.get(completo.id)
+    expect(voltou).toEqual(completo)
+    expect(carimbo(voltou)).toBe(4)
+    expect(marks.get(completo.id)).toBe(1000)
+    expect(marks.revision(completo.id)).toBe(4)
+    // O que a outra aba pintou não se perde: vira um desenho novo, que sobe como novo.
+    const copias = [...local.rows.values()].filter((a) => a.id !== completo.id)
+    expect(copias.map((a) => a.name)).toEqual(['vila-copia'])
+    const copia = copias[0]
+    expect(copia?.kind === 'tilemap' && Array.from(copia.layers[0]?.cells ?? [])).toEqual([0, 0])
+    expect((await uploads.get(copia?.id ?? '')?.produce())?.meta?.name).toBe('vila-copia')
+    // O original já está igual à conta: uma nova tentativa não sobe nada nem cria outra cópia.
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.size).toBe(2)
+  })
+
+  test('abrir o mapa cortado e editar por cima não esconde o corte: a edição vai para a cópia', async () => {
+    const { completo, local, uploads, mirrored } = await sincronizado()
+    local.rows.set(completo.id, cortado(completo, 2000))
+    // O editor carrega pelo embrulho (é aqui que o corte fica marcado) e salva uma edição.
+    const aberto = await mirrored.loadAssetById(completo.id)
+    expect(carimbo(aberto ?? undefined)).toBeUndefined()
+    await mirrored.persistAsset(cortado(completo, 3000, [0, 0]))
+
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.get(completo.id)).toEqual(completo)
+    const copia = [...local.rows.values()].find((a) => a.id !== completo.id)
+    expect(copia?.name).toBe('vila-copia')
+    expect(copia?.kind === 'tilemap' && Array.from(copia.layers[0]?.cells ?? [])).toEqual([0, 0])
+  })
+
+  test('este código baixar o carimbo (a criança apagou a forma) é edição de verdade e sobe', async () => {
+    const { completo, local, uploads, formatMemory, mirrored } = await sincronizado()
+    const semForma = cortado(completo, 2000)
+    await mirrored.persistAssets([semForma])
+    const snapshot = await uploads.get(completo.id)?.produce()
+    expect(snapshot?.meta?.updatedAt).toBe(2000)
+    expect(snapshot?.meta?.baseRevision).toBe(4)
+    uploads.get(completo.id)?.onUploaded?.({ itemId: completo.id, updatedAt: 2000, revision: 5 })
+    expect(formatMemory.get(completo.id)?.schema).toBe(0)
+    expect(local.rows.size).toBe(1)
+    // Daqui em diante o carimbo lembrado é o novo: nada fica marcado como corte.
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.get(completo.id)).toEqual(semForma)
+  })
+
+  test('salvar de novo com o envio em voo: a confirmação do envio antigo não apaga a assinatura da gravação nova', async () => {
+    const { completo, local, uploads, mirrored } = await sincronizado()
+    const comForma = { ...completo, updatedAt: 2000 } as PintaAsset
+    await mirrored.persistAssets([comForma])
+    const emVoo = uploads.get(completo.id)
+    expect((await emVoo?.produce())?.meta?.updatedAt).toBe(2000)
+    // Enquanto sobe, a criança apaga a forma (carimbo cai) e salva de novo por este código.
+    const semForma = cortado(completo, 3000)
+    await mirrored.persistAssets([semForma])
+    emVoo?.onUploaded?.({ itemId: completo.id, updatedAt: 2000, revision: 5 })
+    expect((await uploads.get(completo.id)?.produce())?.meta?.updatedAt).toBe(3000)
+    await tick()
+    expect(local.rows.size).toBe(1)
+    expect(local.rows.get(completo.id)).toEqual(semForma)
+  })
+
+  test('mapa cortado ABERTO no editor: nada sobe e nada é gravado por baixo; fechado, a conta volta', async () => {
+    let aberto = true
+    const { completo, local, uploads, mirrored } = await sincronizado({
+      isAssetOpen: () => aberto,
+    })
+    const corte = cortado(completo, 2000)
+    local.rows.set(completo.id, corte)
+    // O editor abre o mapa pelo embrulho (o corte fica marcado) e salva por cima.
+    await mirrored.loadAssetById(completo.id)
+    await mirrored.persistAsset(cortado(completo, 3000))
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.size).toBe(1)
+    expect(local.rows.get(completo.id)?.updatedAt).toBe(3000)
+
+    aberto = false
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.get(completo.id)).toEqual(completo)
+    expect(local.rows.size).toBe(2)
+  })
+
+  test('a conta guarda formato que este código não lê: nada sobe, nada desce, a galeria recebe o aviso', async () => {
+    const { completo, local, remote, uploads, mirrored } = await sincronizado()
+    const corte = cortado(completo, 2000)
+    local.rows.set(completo.id, corte)
+    remote.set(completo.id, {
+      json: assetToJson(completo),
+      summary: summaryOf(completo, { revision: 6, formatVersion: 99 }),
+    })
+    await mirrored.loadAssetById(completo.id)
+    await mirrored.persistAsset(cortado(completo, 3000))
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.size).toBe(1)
+    expect(local.rows.get(completo.id)?.updatedAt).toBe(3000)
+    expect(mirrored.getReadIssues?.().map((i) => i.id)).toEqual([completo.id])
+  })
+
+  test('a conta já não tem o item: não há versão inteira para proteger e o que há aqui sobe', async () => {
+    const { completo, local, remote, uploads, formatMemory, mirrored } = await sincronizado()
+    remote.delete(completo.id)
+    const corte = cortado(completo, 2000)
+    local.rows.set(completo.id, corte)
+    await mirrored.loadAssetById(completo.id)
+    await mirrored.persistAsset(corte)
+    // A primeira tentativa descobre que a conta não tem o item e reenfileira.
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(formatMemory.get(completo.id)).toBeUndefined()
+    expect((await uploads.get(completo.id)?.produce())?.meta?.updatedAt).toBe(2000)
+    expect(local.rows.size).toBe(1)
+  })
+
+  test('sem carimbo lembrado (o desenho nunca sincronizou por este código): nada é barrado', async () => {
+    const completo = mapaCompleto(1000)
+    const corte = cortado(completo, 2000)
+    const local = fakeLocal([corte])
+    const { cloud, uploads } = fakeCloud(new Map())
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+      formatMemory: createMemoryPintaFormatMemory(),
+    })
+    await loadSettled(mirrored, local)
+    expect((await uploads.get(corte.id)?.produce())?.meta?.updatedAt).toBe(2000)
+  })
+
+  test('descida grava o carimbo lembrado: o corte de um mapa que só DESCEU também é barrado', async () => {
+    const completo = mapaCompleto(1000)
+    const local = fakeLocal()
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        [
+          completo.id,
+          { json: assetToJson(completo), summary: summaryOf(completo, { revision: 2 }) },
+        ],
+      ]),
+    )
+    const formatMemory = createMemoryPintaFormatMemory()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+      formatMemory,
+      reconcileMinIntervalMs: 0,
+    })
+    await loadSettled(mirrored, local)
+    expect(local.rows.get(completo.id)).toEqual(completo)
+    expect(formatMemory.get(completo.id)).toEqual({ schema: 4, writtenAt: 1000 })
+
+    local.rows.set(completo.id, cortado(completo, 2000))
+    await loadSettled(mirrored, local)
+    expect(await uploads.get(completo.id)?.produce()).toBeNull()
+    await tick()
+    expect(local.rows.get(completo.id)).toEqual(completo)
+  })
+
+  test('desenho sem formato próprio (sprite) nem entra na memória de carimbos', async () => {
+    const local = fakeLocal()
+    const { cloud, uploads } = fakeCloud(new Map())
+    const formatMemory = createMemoryPintaFormatMemory()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks: createMemorySyncedMarks(),
+      formatMemory,
+    })
+    const nave = sprite('nave', 1000)
+    await mirrored.persistAssets([nave])
+    await uploads.get(nave.id)?.produce()
+    uploads.get(nave.id)?.onUploaded?.({ itemId: nave.id, updatedAt: 1000, revision: 1 })
+    expect(formatMemory.get(nave.id)).toBeUndefined()
   })
 })

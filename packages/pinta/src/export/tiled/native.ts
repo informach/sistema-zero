@@ -14,13 +14,14 @@ import { quantizeFrames } from '../../core/quantizeFrames'
 import { decodeImageFile } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
 import { dataUrlToBlob } from '../png'
+import { TiledImportError } from './import'
 
 const hex = (n: number) => n.toString(16).padStart(2, '0')
 async function pixels(url: string): Promise<RGBAImage> {
   const blob = dataUrlToBlob(url)
-  if (!blob) throw new Error('Imagem de peças inválida.')
+  if (!blob) throw new TiledImportError('Imagem de peças inválida.')
   const image = await decodeImageFile(new File([blob], 'imagem.png', { type: blob.type }))
-  if (!image) throw new Error('Não foi possível abrir a imagem das peças.')
+  if (!image) throw new TiledImportError('Não foi possível abrir a imagem das peças.')
   return image
 }
 export async function sceneToNative(
@@ -28,7 +29,7 @@ export async function sceneToNative(
   decode: (url: string) => Promise<RGBAImage> = pixels,
 ): Promise<{ assets: PintaAsset[]; warnings: string[] }> {
   if (!(TILE_SIZES as readonly number[]).includes(scene.tileSize))
-    throw new Error(
+    throw new TiledImportError(
       `O Pinta aceita peças de ${TILE_SIZES.join(', ')} pixels. O mapa usa ${scene.tileSize}.`,
     )
   const assets: PintaAsset[] = [],
@@ -36,7 +37,7 @@ export async function sceneToNative(
     now = Date.now()
   const quantize = (image: RGBAImage, name: string) => {
     if (image.width * image.height > 4_194_304)
-      throw new Error('Imagem acima do orçamento de importação.')
+      throw new TiledImportError('Imagem acima do orçamento de importação.')
     const data = Uint8ClampedArray.from(image.data),
       q = quantizeFrames([data], 64, { width: image.width, dither: false })
     const colors = q.palette.map(([r, g, b], i) => (i === 0 ? '' : `#${hex(r)}${hex(g)}${hex(b)}`))
@@ -65,7 +66,7 @@ export async function sceneToNative(
       q = quantize(image, ts.name),
       size = scene.tileSize
     if (image.width < ts.columns * size || image.height < Math.ceil(ts.count / ts.columns) * size)
-      throw new Error('A folha de peças é menor que os dados do mapa.')
+      throw new TiledImportError('A folha de peças é menor que os dados do mapa.')
     const tiles = Array.from({ length: ts.count }, (_, tile) => {
       const b = createBitmap(size, size),
         ox = (tile % ts.columns) * size,
@@ -89,20 +90,23 @@ export async function sceneToNative(
       terrains: ts.terrains,
       tileProperties: ts.tileProperties,
     })
-    if (!asset) throw new Error(`As peças ${ts.name} não puderam ser convertidas.`)
+    if (!asset) throw new TiledImportError(`As peças ${ts.name} não puderam ser convertidas.`)
     assets.push(asset)
   }
   for (const art of scene.art ?? []) {
     const image = await decode(art.image)
     if (image.width > 512 || image.height > 512)
-      throw new Error('Um desenho dos objetos ultrapassa 512 × 512 pixels.')
+      throw new TiledImportError('Um desenho dos objetos ultrapassa 512 × 512 pixels.')
     const { indices, ...palette } = quantize(image, 'objeto')
-    assets.push({
+    // Tudo o que vem de fora passa pelo mesmo portão do documento, como as folhas e o mapa.
+    const asset = sanitizePintaAsset({
       ...createPixelBackgroundAsset({ name: 'objeto', width: image.width, height: image.height }),
       ...palette,
       id: art.id,
       cels: [{ width: image.width, height: image.height, data: indices }],
     })
+    if (!asset) throw new TiledImportError('Um desenho dos objetos não pôde ser convertido.')
+    assets.push(asset)
   }
   const mapOf = (
     id: string,
@@ -123,8 +127,8 @@ export async function sceneToNative(
       l.kind === 'tiles' ? { ...l, cells: Int16Array.from(l.cells) } : { ...l },
     ) as TilemapLayer[],
   })
-  for (const set of scene.sets ?? [])
-    assets.push({
+  for (const set of scene.sets ?? []) {
+    const asset = sanitizePintaAsset({
       id: set.id,
       kind: 'map-set',
       schema: 3,
@@ -133,8 +137,13 @@ export async function sceneToNative(
       updatedAt: now,
       map: mapOf(set.id, 'conjunto', set.cols, set.rows, set.layers),
     })
+    if (!asset)
+      throw new TiledImportError('Um conjunto do mapa não cabe nos limites do documento do Pinta.')
+    assets.push(asset)
+  }
   const map = sanitizePintaAsset(mapOf(scene.id, scene.name, scene.cols, scene.rows, scene.layers))
-  if (!map) throw new Error('O mapa convertido não cabe nos limites do documento do Pinta.')
+  if (!map)
+    throw new TiledImportError('O mapa convertido não cabe nos limites do documento do Pinta.')
   assets.push(map)
   return { assets, warnings }
 }

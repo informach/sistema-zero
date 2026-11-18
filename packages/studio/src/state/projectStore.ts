@@ -25,6 +25,7 @@ import {
   type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
+  projectAssetBudgetChars,
   type StudioProBuildLimits,
   sanitizeProjectAssetLicense,
   sanitizeProjectAssets,
@@ -1344,11 +1345,6 @@ export function createProjectStore(
           return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos por projeto.`
         }
         if (assets.some((a) => a.name === name)) return `Já existe um asset com o nome "${name}".`
-        const totalChars =
-          assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
-        if (totalChars > dataLimits.maxAssetsTotalChars) {
-          return 'Os assets do projeto excedem o tamanho total permitido.'
-        }
         // Metadados do Pinta (e dimensões) só valem p/ IMAGEM; som e 3D nunca os têm.
         const sprite = isImage ? sanitizeSpriteMeta(input.sprite) : undefined
         const tileset = isImage ? sanitizeTilesetMeta(input.tileset) : undefined
@@ -1357,6 +1353,13 @@ export function createProjectStore(
           tilemapFront = isImage ? sanitizeTilemapMeta(input.tilemapFront) : undefined
         if (input.scene && !scene)
           return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
+        // A cena conta no total, igual ao load: o que entra aqui não some ao reabrir.
+        const totalChars =
+          assets.reduce((sum, a) => sum + projectAssetBudgetChars(a), 0) +
+          projectAssetBudgetChars({ dataUrl: input.dataUrl, scene })
+        if (totalChars > dataLimits.maxAssetsTotalChars) {
+          return 'Os assets do projeto excedem o tamanho total permitido.'
+        }
         let pintaImage: ProjectAsset['pintaImage']
         try {
           pintaImage = readPintaImageAssetMetadata({ ...input, kind })
@@ -1531,10 +1534,14 @@ export function createProjectStore(
             : undefined
         if (
           target.dataUrl === image.dataUrl &&
-          (image.scene === undefined ||
-            canonicalJson(target.scene ?? null) === canonicalJson(image.scene)) &&
-          (image.tilemapFront === undefined ||
-            canonicalJson(target.tilemapFront ?? null) === canonicalJson(image.tilemapFront)) &&
+          (image.scene === undefined
+            ? image.tilemapFront === undefined ||
+              canonicalJson(target.tilemapFront ?? null) === canonicalJson(image.tilemapFront)
+            : // Com cena, mapa antigo ausente é REMOÇÃO: sobra velha no jogo não é "nada a fazer".
+              canonicalJson(target.scene ?? null) === canonicalJson(image.scene) &&
+              canonicalJson(target.tilemap ?? null) === canonicalJson(image.tilemap ?? null) &&
+              canonicalJson(target.tilemapFront ?? null) ===
+                canonicalJson(image.tilemapFront ?? null)) &&
           (libRevision === undefined || target.libRevision === libRevision) &&
           (pintaImage === undefined ||
             canonicalJson(target.pintaImage ?? null) === canonicalJson(pintaImage))
@@ -1558,7 +1565,7 @@ export function createProjectStore(
         // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
         // ficado bem maior).
         const othersChars = p.assets.reduce(
-          (sum, a) => (a.id === id ? sum : sum + a.dataUrl.length),
+          (sum, a) => (a.id === id ? sum : sum + projectAssetBudgetChars(a)),
           0,
         )
         if (othersChars + image.dataUrl.length > dataLimits.maxAssetsTotalChars) {
@@ -1584,9 +1591,12 @@ export function createProjectStore(
         const tileset = pintaImage
           ? undefined
           : (sanitizeTilesetMeta(image.tileset) ?? (sameGeometry ? target.tileset : undefined))
+        // Desenho com cena manda no mapa inteiro: o mapa antigo que ele não traz SAI, sem
+        // herança por geometria (a miniatura de um mapa que cresceu pode ter a mesma medida).
+        const inheritMap = sameGeometry && image.scene === undefined
         const tilemap = pintaImage
           ? undefined
-          : (sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined))
+          : (sanitizeTilemapMeta(image.tilemap) ?? (inheritMap ? target.tilemap : undefined))
 
         const scene = pintaImage
           ? undefined
@@ -1594,9 +1604,15 @@ export function createProjectStore(
         const tilemapFront = pintaImage
           ? undefined
           : (sanitizeTilemapMeta(image.tilemapFront) ??
-            (sameGeometry ? target.tilemapFront : undefined))
+            (inheritMap ? target.tilemapFront : undefined))
         if (image.scene && !scene)
           return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
+        // A cena conta no total, igual ao load: aceitar aqui e perder ao reabrir seria pior.
+        if (
+          othersChars + projectAssetBudgetChars({ dataUrl: image.dataUrl, scene }) >
+          dataLimits.maxAssetsTotalChars
+        )
+          return `O cenário do desenho "${target.name}" não cabe neste jogo.`
         // ⚠️ `name`, `id`, `libId` e `source` ficam INTOCADOS: os blocos referenciam
         // o asset PELO NOME (FieldAssetPicker serializa a string), então renomear
         // aqui quebraria o jogo em silêncio — e o nome no projeto pode divergir do

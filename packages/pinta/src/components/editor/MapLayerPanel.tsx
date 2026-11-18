@@ -31,9 +31,11 @@ import {
   Trash2,
 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
+import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
 import { CommitInput } from './MapObjectPanel'
 import { MapProperties } from './MapProperties'
+import { commitIfChanged } from './mapTools/commitGuard'
 import type { TilemapSidebarProps } from './TilemapPanels'
 
 export function MapLayerPanel({
@@ -64,7 +66,7 @@ export function MapLayerPanel({
   const tileLayerCount = tilemap.layers.filter(isTileLayer).length
   const commit = (edit: (map: TilemapAsset) => TilemapAsset): void => {
     const state = editor.getState()
-    if (state.asset.kind === 'tilemap') state.commit(edit(state.asset))
+    if (state.asset.kind === 'tilemap') commitIfChanged(state, edit(state.asset))
   }
   return (
     <Panel title={COPY.tiles.layers}>
@@ -129,7 +131,7 @@ export function MapLayerPanel({
                   </IconButton>
                 )}
                 <IconButton
-                  aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${layer.name}`}
+                  aria-label={COPY.tiles.showOrHide(layer.name)}
                   aria-pressed={layer.visible}
                   title={layer.visible ? COPY.tiles.hide : COPY.tiles.show}
                   onClick={() => onToggleVisible(layer.id)}
@@ -207,6 +209,7 @@ function MapLayerDetails({
 }): JSX.Element {
   const fieldId = useId()
   const { editor } = useEditorStores()
+  const { showToast } = useToast()
   const opacityBase = useRef<TilemapAsset | null>(null)
   const beginOpacity = (): void => {
     const a = editor.getState().asset
@@ -218,12 +221,13 @@ function MapLayerDetails({
       opacityBase.current = null
     }
   }
-  const commit = (edit: (map: TilemapAsset) => TilemapAsset): void => {
+  const commit = (edit: (map: TilemapAsset) => TilemapAsset): boolean => {
     const state = editor.getState()
-    if (state.asset.kind === 'tilemap') state.commit(edit(state.asset))
+    return state.asset.kind === 'tilemap' && commitIfChanged(state, edit(state.asset))
   }
-  const update = (patch: Parameters<typeof updateMapLayer>[2]): void =>
+  const update = (patch: Parameters<typeof updateMapLayer>[2]): void => {
     commit((m) => updateMapLayer(m, layer.id, patch))
+  }
   return (
     <div className="flex flex-col gap-2 px-1 pb-2">
       <label htmlFor={`${fieldId}-name`} className="text-xs font-bold text-pin-muted">
@@ -260,6 +264,7 @@ function MapLayerDetails({
         {COPY.tiles.layerOpacity} ({Math.round((layer.opacity ?? 1) * 100)}%)
         <input
           type="range"
+          className="pin-range"
           min="0"
           max="100"
           value={(layer.opacity ?? 1) * 100}
@@ -275,6 +280,7 @@ function MapLayerDetails({
               const next = updateMapLayer(s.asset, layer.id, {
                 opacity: Number(e.target.value) / 100,
               })
+              if (next === s.asset) return
               if (opacityBase.current) s.replace(next)
               else s.commit(next)
             }
@@ -310,13 +316,16 @@ function MapLayerDetails({
           <input
             type="checkbox"
             checked={layer.collision === true}
-            onChange={() => commit((m) => toggleMapLayerCollision(m, layer.id))}
+            onChange={() => {
+              if (!commit((m) => toggleMapLayerCollision(m, layer.id)))
+                showToast(COPY.layers.lockedWarning)
+            }}
           />
           {COPY.tiles.layerCollision}
         </label>
       ) : null}
       <details>
-        <summary className="cursor-pointer text-xs font-bold text-pin-muted">
+        <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold text-pin-muted">
           {COPY.scene.deslocamentoEDistancia}
         </summary>
         <div className="grid grid-cols-2 gap-1">

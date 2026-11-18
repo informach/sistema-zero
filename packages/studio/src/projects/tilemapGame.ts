@@ -1,5 +1,4 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
-import { sceneSpawn } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
@@ -256,9 +255,16 @@ export function assembleTilemapGameProject(payload: TilemapGamePayload): Project
 }
 
 function buildSceneIR(image: string, scene: PintaScene): SZIR {
-  const spawn = sceneSpawn(scene),
-    str = (value: string) => ({ type: 'str' as const, value }),
-    variable = (name: string) => ({ type: 'var' as const, name })
+  const str = (value: string) => ({ type: 'str' as const, value }),
+    variable = (name: string) => ({ type: 'var' as const, name }),
+    // O ponto de início e o tamanho do mundo são LIDOS do cenário quando o jogo roda
+    // ("início do cenário", "tamanho do cenário"). Número fixo aqui congelaria o mapa de hoje
+    // no programa: a criança mudaria o início no Pinta e o jogo começaria no lugar antigo.
+    fromScene = (method: 'mapSpawn' | 'mapSize', axis: string) => ({
+      type: 'g2d:sceneValue' as const,
+      method,
+      args: [str('mapa'), str(axis)],
+    })
   const platformer = scene.layers.some(
     (l) =>
       l.kind === 'tiles' &&
@@ -286,8 +292,8 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
     {
       type: 'g2d:createWorld',
       varName: 'mundo',
-      width: scene.cols * scene.tileSize,
-      height: scene.rows * scene.tileSize,
+      width: fromScene('mapSize', 'width'),
+      height: fromScene('mapSize', 'height'),
     },
     {
       type: 'g2d:configureWorldCamera',
@@ -300,8 +306,8 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
     {
       type: 'g2d:createSprite',
       varName: 'jogador',
-      x: spawn.x,
-      y: spawn.y,
+      x: fromScene('mapSpawn', 'x'),
+      y: fromScene('mapSpawn', 'y'),
       w: Math.max(6, scene.tileSize - 4),
       h: Math.max(6, scene.tileSize - 4),
       color: '#4ade80',
@@ -321,13 +327,13 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
           type: 'memberSet',
           object: variable('mundo'),
           name: 'width',
-          value: { type: 'g2d:sceneValue', method: 'mapSize', args: [str('mapa'), str('width')] },
+          value: fromScene('mapSize', 'width'),
         },
         {
           type: 'memberSet',
           object: variable('mundo'),
           name: 'height',
-          value: { type: 'g2d:sceneValue', method: 'mapSize', args: [str('mapa'), str('height')] },
+          value: fromScene('mapSize', 'height'),
         },
       ],
     },

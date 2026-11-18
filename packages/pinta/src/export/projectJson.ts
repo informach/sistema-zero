@@ -19,6 +19,9 @@ import {
   sanitizePintaAsset,
   tilemapNeedsV2,
   tilemapNeedsV3,
+  tilemapNeedsV4,
+  tilesetNeedsV4,
+  withPintaSchemaStamp,
 } from '../core/project'
 
 const FORMAT = 'pinta-gallery'
@@ -28,15 +31,25 @@ const BASE_VERSION = 1
 const OBJECTS_VERSION = 2
 /** Mapas com grupos, camadas além de 8, peças viradas, mapas grandes (`tilemapNeedsV3`). */
 const SCENE_VERSION = 3
+/**
+ * A cena completa (`assetNeedsV4`): objetos com forma, giro, papel ou propriedade tipada, arte e
+ * instância de conjunto, animações, terrenos e propriedades de peça, e o desenho conjunto.
+ *
+ * É outro número porque já existe Pinta publicado que lê o envelope 3 conhecendo só as camadas:
+ * ele importaria o arquivo e descartaria o resto calado. Com 4 ele recusa o arquivo inteiro com
+ * o recado de versão.
+ */
+const COMPLETE_SCENE_VERSION = 4
 const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   BASE_VERSION,
   OBJECTS_VERSION,
   SCENE_VERSION,
+  COMPLETE_SCENE_VERSION,
 ])
 const UTF8 = new TextEncoder()
 
 /**
- * ⚠️ As duas versões têm UM dígito: o cabeçalho mede os mesmos bytes nas duas (o
+ * ⚠️ Todas as versões têm UM dígito: o cabeçalho mede os mesmos bytes nas duas (o
  * medidor incremental do backup conta com isso).
  */
 function jsonHeader(version: number): string {
@@ -65,7 +78,9 @@ interface EncodedAssetBase {
 /** Um asset com os bitmaps CODIFICADOS (estrutura espelha o modelo). */
 type EncodedAsset = EncodedAssetBase & Record<string, unknown>
 
-function encodeAsset(asset: PintaAsset): EncodedAsset {
+function encodeAsset(input: PintaAsset): EncodedAsset {
+  // O carimbo `schema` do arquivo acompanha o conteúdo, mesmo que a chave em memória esteja velha.
+  const asset = withPintaSchemaStamp(input)
   switch (asset.kind) {
     case 'map-set':
       return { ...asset, map: encodeAsset(asset.map) }
@@ -337,17 +352,22 @@ export function galleryToPintaJson(assets: PintaAsset[]): string {
   return `${prefix}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
 }
 
-/** O desenho usa algo que só o envelope v3 descreve? */
+/** O desenho usa algo que o envelope v2 não descreve (pede o v3 ou o v4)? */
 export function assetNeedsV3(asset: PintaAsset): boolean {
   return (
-    asset.kind === 'map-set' ||
+    assetNeedsV4(asset) ||
     (asset.kind === 'tilemap' && tilemapNeedsV3(asset)) ||
     ((asset.kind === 'tileset' || asset.kind === 'vector-tileset') &&
-      (asset.schema === 3 ||
-        asset.tiles.length > 64 ||
-        !!asset.animations ||
-        !!asset.terrains ||
-        !!asset.tileProperties))
+      (asset.schema !== undefined || asset.tiles.length > 64))
+  )
+}
+
+/** O desenho usa algo que só o envelope v4 (cena completa) descreve? Decide pelo conteúdo. */
+export function assetNeedsV4(asset: PintaAsset): boolean {
+  return (
+    asset.kind === 'map-set' ||
+    (asset.kind === 'tilemap' && tilemapNeedsV4(asset)) ||
+    ((asset.kind === 'tileset' || asset.kind === 'vector-tileset') && tilesetNeedsV4(asset))
   )
 }
 
@@ -357,6 +377,7 @@ export function assetNeedsV3(asset: PintaAsset): boolean {
  * o arquivo inteiro com recado, em vez de importar os mapas cortados.
  */
 export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (assets.some(assetNeedsV4)) return COMPLETE_SCENE_VERSION
   if (assets.some(assetNeedsV3)) return SCENE_VERSION
   return assets.some(assetNeedsV2) ? OBJECTS_VERSION : BASE_VERSION
 }

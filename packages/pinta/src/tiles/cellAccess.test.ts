@@ -1,8 +1,14 @@
 /**
- * Quem toca `cells[` precisa saber que a célula guarda a peça E os bits de espelho (`cell.ts`).
- * Esta lista é a dos arquivos já conferidos, com o que cada um faz com a célula. Um arquivo novo
- * que indexe células reprova aqui até alguém decidir: ele lê o índice da peça (então usa
- * `cellTile`) ou só move e compara células inteiras?
+ * Quem toca as células do mapa precisa saber que a célula guarda a peça E os bits de espelho
+ * (`cell.ts`). Esta lista é a dos arquivos já conferidos, com o que cada um faz com a célula. Um
+ * arquivo novo que leia células reprova aqui até alguém decidir: ele lê o índice da peça (então
+ * usa `cellTile`) ou só move e compara células inteiras?
+ *
+ * A varredura procura três jeitos de chegar na célula:
+ * - indexar: `cells[`;
+ * - percorrer sem colchete: `.cells.forEach(`, `.cells.map(`, `for (... of x.cells)` e parecidos;
+ * - decodificar na mão: a máscara `& 4095` ou o deslocamento `>> 12`, que só o `cell.ts` deveria
+ *   escrever (vale também para código de outra linguagem embutido em texto).
  */
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
@@ -31,6 +37,45 @@ const CONFERIDOS: Record<string, string> = {
   'core/project.ts':
     'valida cada célula por isValidCell + cellTile ao ler, e procura peça acima do teto antigo no valor cru (bits de giro também passam do teto, de propósito)',
   'tiles/cellCodec.ts': 'compacta corridas de células inteiras',
+  'export/tiled/export.ts':
+    'percorre células inteiras; o gid sai de cellTile e cellFlags (cellToGid) e o giro de cellMatrix',
+  'tiles/renderVectorTilemap.ts': 'percorre as células e lê o índice por cellTile',
+  'tiles/renderTilemap.ts':
+    'percorre células inteiras, só compara com vazio e entrega a célula ao desenho por blocos',
+  'templates/builders.ts':
+    'confere o valor cru de cada célula do modelo contra a quantidade de peças; modelo com peça virada reprova alto na montagem, não passa calado',
+  // Os três abaixo têm `cells` de FOLHA de sprites (retângulos da imagem), não células de mapa.
+  'export/png.ts': 'células da folha de sprites, não do mapa',
+  'export/vectorSheet.ts': 'células da folha vetorial, não do mapa',
+  'tiles/sheetCanvas.ts': 'células da folha de peças, não do mapa',
+}
+
+/**
+ * Arquivos que ainda decodificam a célula na mão. Entram na lista para o teste passar, mas cada
+ * um é uma pendência com dono: quando o arquivo for corrigido, o terceiro teste abaixo reprova e
+ * obriga a tirar a linha daqui.
+ */
+const PENDENTES: Record<string, string> = {
+  'export/sceneDrawing.ts':
+    'pendente: usar cellTile (hoje faz `value & 4095` dentro de `l.cells.forEach`)',
+  'export/pygameProject.ts':
+    'pendente: usar cellTile; o Python embutido escreve `& 4095` e `& 28672` na mão, sem vir das constantes de cell.ts',
+}
+
+const PERMITIDOS: Record<string, string> = { ...CONFERIDOS, ...PENDENTES }
+
+/** Cada jeito de chegar na célula. Um arquivo entra na varredura se casar com qualquer um. */
+const ACESSOS: Record<string, RegExp> = {
+  indexar: /\bcells2?\s*(\?\?[^)]*\))?\[/,
+  percorrer:
+    /\.cells2?\s*\??\.\s*(forEach|map|flatMap|reduce|some|every|filter|find|findIndex|entries|values|at|indexOf|includes)\b/,
+  'percorrer com for-of': /\bof\s+[\w.?!]+\.cells2?\b/,
+  'máscara da peça': /&\s*(4095|0x0?[fF]{3})\b/,
+  'deslocamento dos bits de giro': />>>?\s*12\b/,
+}
+
+function acessa(texto: string): boolean {
+  return Object.values(ACESSOS).some((padrao) => padrao.test(texto))
 }
 
 function arquivos(dir: string): string[] {
@@ -43,7 +88,7 @@ function arquivos(dir: string): string[] {
 
 describe('acesso cru às células do mapa', () => {
   const comAcesso = arquivos(SRC)
-    .filter((path) => /\bcells2?\s*(\?\?[^)]*\))?\[/.test(readFileSync(path, 'utf8')))
+    .filter((path) => acessa(readFileSync(path, 'utf8')))
     .map((path) => relative(SRC, path).replaceAll('\\', '/'))
     // O próprio `cell.ts` só cita o acesso no comentário que explica a regra.
     .filter((path) => path !== 'tiles/cell.ts')
@@ -54,12 +99,30 @@ describe('acesso cru às células do mapa', () => {
     expect(comAcesso).toContain('tiles/tilemapOps.ts')
   })
 
-  it('todo arquivo que indexa células está na lista dos conferidos', () => {
-    expect(comAcesso.filter((path) => !(path in CONFERIDOS))).toEqual([])
+  it('todo arquivo que lê células está na lista dos conferidos', () => {
+    expect(comAcesso.filter((path) => !(path in PERMITIDOS))).toEqual([])
   })
 
-  it('a lista não guarda arquivo que já não indexa células', () => {
-    expect(Object.keys(CONFERIDOS).filter((path) => !comAcesso.includes(path))).toEqual([])
+  it('a lista não guarda arquivo que já não lê células', () => {
+    expect(Object.keys(PERMITIDOS).filter((path) => !comAcesso.includes(path))).toEqual([])
+  })
+
+  it('a varredura pega o acesso sem colchete e a máscara escrita na mão', () => {
+    expect(acessa('l.cells.forEach((value) => usar(value))')).toBe(true)
+    expect(acessa('camada.cells.map((c) => c)')).toBe(true)
+    expect(acessa('for (const c of layer.cells) usar(c)')).toBe(true)
+    expect(acessa('const tile = value & 4095')).toBe(true)
+    expect(acessa('tile = celula & 0xfff')).toBe(true)
+    expect(acessa('const flags = value >> 12')).toBe(true)
+    expect(acessa('const total = layer.cells.length')).toBe(false)
+    expect(acessa('const copia = new Int16Array(layer.cells)')).toBe(false)
+  })
+
+  it('as pendências são só as duas conhecidas (corrigir o arquivo, não aumentar a lista)', () => {
+    expect(Object.keys(PENDENTES).sort()).toEqual([
+      'export/pygameProject.ts',
+      'export/sceneDrawing.ts',
+    ])
   })
 
   it('quem lê o índice da peça importa o cell.ts', () => {

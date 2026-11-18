@@ -1,0 +1,280 @@
+{
+ "compressionlevel": -1,
+ "height": 3,
+ "infinite": false,
+ "layers": [
+  {
+   "compression": "zlib",
+   "data": "eJxjZGBgYARiJijNCsTMUMwGFUPGAALcABs=",
+   "encoding": "base64",
+   "height": 3,
+   "id": 1,
+   "name": "Chão",
+   "opacity": 1,
+   "type": "tilelayer",
+   "visible": true,
+   "width": 4,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "id": 2,
+   "layers": [
+    {
+     "compression": "zlib",
+     "data": "eJxjYMAE7BDcAGU7wMQ5GBgWAAAQjAF+",
+     "encoding": "base64",
+     "height": 3,
+     "id": 3,
+     "name": "Flores",
+     "opacity": 1,
+     "parallaxx": 0.5,
+     "type": "tilelayer",
+     "visible": true,
+     "width": 4,
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "name": "Enfeites",
+   "offsetx": 4,
+   "offsety": -2,
+   "opacity": 0.5,
+   "type": "group",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 4,
+   "name": "Coisas",
+   "objects": [
+    {
+     "height": 16,
+     "id": 1,
+     "name": "porta",
+     "properties": [
+      {
+       "name": "aberta",
+       "type": "bool",
+       "value": false
+      },
+      {
+       "name": "chave",
+       "type": "int",
+       "value": 3
+      },
+      {
+       "name": "cor",
+       "type": "color",
+       "value": "#ff112233"
+      },
+      {
+       "name": "dono",
+       "type": "object",
+       "value": 2
+      },
+      {
+       "name": "peso",
+       "type": "float",
+       "value": 1.5
+      },
+      {
+       "name": "senha",
+       "type": "string",
+       "value": "1234"
+      }
+     ],
+     "rotation": 0,
+     "type": "passagem",
+     "visible": true,
+     "width": 16,
+     "x": 16,
+     "y": 0
+    },
+    {
+     "height": 0,
+     "id": 2,
+     "name": "início",
+     "point": true,
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 0,
+     "x": 8,
+     "y": 8
+    },
+    {
+     "ellipse": true,
+     "height": 10,
+     "id": 3,
+     "name": "lago",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 20,
+     "x": 30,
+     "y": 20
+    },
+    {
+     "height": 0,
+     "id": 4,
+     "name": "cerca",
+     "polygon": [
+      {
+       "x": 0,
+       "y": 0
+      },
+      {
+       "x": 16,
+       "y": 0
+      },
+      {
+       "x": 8,
+       "y": 12
+      }
+     ],
+     "rotation": 15,
+     "type": "",
+     "visible": true,
+     "width": 0,
+     "x": 40,
+     "y": 30
+    },
+    {
+     "gid": 2147483654,
+     "height": 16,
+     "id": 5,
+     "name": "placa",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 16,
+     "x": 48,
+     "y": 48
+    },
+    {
+     "height": 0,
+     "id": 6,
+     "name": "trilha",
+     "polyline": [
+      {
+       "x": 0,
+       "y": 0
+      },
+      {
+       "x": 10,
+       "y": 4
+      },
+      {
+       "x": 20,
+       "y": 0
+      }
+     ],
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 0,
+     "x": 4,
+     "y": 40
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "nextlayerid": 5,
+ "nextobjectid": 7,
+ "orientation": "orthogonal",
+ "renderorder": "right-down",
+ "tiledversion": "1.10.2",
+ "tileheight": 16,
+ "tilesets": [
+  {
+   "columns": 4,
+   "image": "terreno.png",
+   "imageheight": 32,
+   "imagewidth": 64,
+   "margin": 0,
+   "name": "terreno",
+   "spacing": 0,
+   "tilecount": 8,
+   "tileheight": 16,
+   "tiles": [
+    {
+     "id": 1,
+     "properties": [
+      {
+       "name": "solid",
+       "type": "bool",
+       "value": true
+      }
+     ]
+    },
+    {
+     "animation": [
+      {
+       "duration": 200,
+       "tileid": 2
+      },
+      {
+       "duration": 200,
+       "tileid": 3
+      }
+     ],
+     "id": 2
+    },
+    {
+     "id": 5,
+     "properties": [
+      {
+       "name": "nome",
+       "type": "string",
+       "value": "trigo"
+      }
+     ]
+    }
+   ],
+   "tilewidth": 16,
+   "wangsets": [
+    {
+     "colors": [
+      {
+       "color": "#ff0000",
+       "name": "Grama",
+       "probability": 1,
+       "tile": 0
+      }
+     ],
+     "name": "Terreno",
+     "tile": 0,
+     "type": "corner",
+     "wangtiles": [
+      {
+       "tileid": 0,
+       "wangid": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+       ]
+      }
+     ]
+    }
+   ],
+   "firstgid": 1
+  }
+ ],
+ "tilewidth": 16,
+ "type": "map",
+ "version": "1.10",
+ "width": 4
+}

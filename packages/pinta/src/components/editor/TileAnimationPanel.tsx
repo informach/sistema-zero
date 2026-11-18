@@ -5,7 +5,9 @@ import type { AnyTilesetAsset } from '../../core/project'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useEditorStores } from './editorContext'
+import { CommitInput } from './MapObjectPanel'
 import { MapProperties } from './MapProperties'
+import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 
 const frameIds = new WeakMap<object, string>()
 function frameKey(frame: object): string {
@@ -64,26 +66,26 @@ export function TileAnimationPanel({
                 </option>
               ))}
             </select>
-            <input
-              aria-label={COPY.scene.dynamicDuracaoDoQuadroEmMilissegundos(i + 1)}
-              type="number"
-              min="16"
-              max="60000"
-              className="min-h-11 w-20 rounded-xl border-2 border-pin-border bg-pin-surface px-2"
-              value={frame.duration}
-              onChange={(e) =>
-                save(
-                  frames.map((f, n) =>
-                    n === i
-                      ? {
-                          ...f,
-                          duration: Math.max(16, Math.min(60000, Number(e.target.value) || 100)),
-                        }
-                      : f,
-                  ),
-                )
-              }
-            />
+            {/* O número só vale ao sair do campo ou no Enter: digitar "500" grava 500, uma vez. */}
+            <div className="w-20 shrink-0">
+              <CommitInput
+                numeric
+                aria-label={COPY.scene.dynamicDuracaoDoQuadroEmMilissegundos(i + 1)}
+                value={String(frame.duration)}
+                onCommit={(text) => {
+                  const typed = Number(text.replace(',', '.'))
+                  if (!Number.isFinite(typed)) return
+                  const duration = Math.round(
+                    Math.max(
+                      MAP_EDITOR_LIMITS.minFrameDurationMs,
+                      Math.min(MAP_EDITOR_LIMITS.maxFrameDurationMs, typed),
+                    ),
+                  )
+                  if (duration !== frame.duration)
+                    save(frames.map((f, n) => (n === i ? { ...f, duration } : f)))
+                }}
+              />
+            </div>
             <Button
               variant="barOutline"
               aria-label={COPY.scene.removeFrame(i + 1)}
@@ -97,8 +99,10 @@ export function TileAnimationPanel({
       <Button
         variant="barOutline"
         className="mt-2 w-full"
-        disabled={frames.length >= 64}
-        onClick={() => save([...frames, { tile, duration: 150 }])}
+        disabled={frames.length >= MAP_EDITOR_LIMITS.maxTileAnimationFrames}
+        onClick={() =>
+          save([...frames, { tile, duration: MAP_EDITOR_LIMITS.defaultFrameDurationMs }])
+        }
       >
         {COPY.scene.maisUmQuadro}
       </Button>

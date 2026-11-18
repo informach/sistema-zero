@@ -28,6 +28,7 @@ import {
 import { Button, IconButton } from '../ui/Button'
 import { MapPin, Plus, Square, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
+import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 
 interface MapObjectPanelProps {
   layer: TilemapObjectLayer
@@ -238,7 +239,7 @@ function ObjectDetails({
                     })
                   if (
                     points.length >= 2 &&
-                    points.length <= 256 &&
+                    points.length <= MAP_EDITOR_LIMITS.maxObjectPoints &&
                     points.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
                   )
                     onUpdate({ points })
@@ -250,9 +251,10 @@ function ObjectDetails({
         {object.art || object.setId ? (
           <div className="flex gap-2">
             {(['flipX', 'flipY'] as const).map((key, i) => (
-              <label key={key} className="flex items-center gap-1 text-xs">
+              <label key={key} className="flex min-h-11 items-center gap-2 text-xs">
                 <input
                   type="checkbox"
+                  className="size-5"
                   checked={object[key] === true}
                   onChange={(e) => onUpdate({ [key]: e.target.checked ? true : undefined })}
                 />
@@ -441,6 +443,7 @@ export function CommitInput({
   numeric?: boolean
   id?: string
   maxLength?: number
+  placeholder?: string
   'aria-label'?: string
 }): JSX.Element {
   const [draft, setDraft] = useState(value)

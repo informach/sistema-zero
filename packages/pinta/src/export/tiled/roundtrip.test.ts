@@ -1,5 +1,7 @@
 import { expect, it } from 'bun:test'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { gzipSync, zlibSync } from 'fflate'
 import { vilaEFloresta } from '../../../scripts/homologacao/fixture'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
 import { createMapObject } from '../../tiles/mapObjects'
@@ -66,6 +68,8 @@ it('A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário', asyn
   const fromXml = await importTiledScene(tiledXmlToJson(tiledMapXml(json, true)), resolver)
   for (const result of [fromJson, fromXml]) {
     expect(result.warnings).toEqual([])
+    // A cena INTEIRA volta igual: geometria, opacidade, deslocamento, parallax, grupos e arte.
+    expect(result.scene).toEqual(scene)
     expect(result.scene.layers.length).toBe(scene.layers.length)
     expect(result.scene.layers.filter((l) => l.kind === 'tiles').map((l) => l.cells)).toEqual(
       scene.layers.filter((l) => l.kind === 'tiles').map((l) => l.cells),
@@ -106,4 +110,148 @@ it('A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário', asyn
     )
     expect(again.tilesets[1]?.animations).toEqual(scene.tilesets[1]?.animations)
   }
+})
+
+/** A cena de referência e um leitor de arquivos que devolve as folhas e imagens dela. */
+async function referencia() {
+  const { map, assets } = vilaEFloresta(),
+    scene = await exportPintaScene(
+      map,
+      (id) => assets.find((a) => a.id === id) ?? null,
+      nativeImageOf,
+    )
+  return { scene, resolver: resolverOf(scene) }
+}
+function resolverOf(scene: PintaScene) {
+  const sheets = tiledMap(scene).tilesets as Record<string, unknown>[]
+  return {
+    image: async (path: string) => {
+      const match = path.match(/(tiles|art)-(\d+)\.png$/)
+      if (!match) throw new Error(path)
+      return (
+        match[1] === 'tiles' ? scene.tilesets[Number(match[2])] : scene.art?.[Number(match[2])]
+      )!.image
+    },
+    text: async (path: string) => tiledTilesetXml(sheets[Number(path.match(/tiles-(\d+)/)?.[1])]!),
+  }
+}
+type Encoding = 'csv' | 'base64' | 'zlib' | 'gzip'
+function encoded(gids: number[], encoding: Encoding): string {
+  if (encoding === 'csv') return gids.join(',')
+  const bytes = new Uint8Array(gids.length * 4),
+    view = new DataView(bytes.buffer)
+  gids.forEach((gid, i) => {
+    view.setUint32(i * 4, gid, true)
+  })
+  const packed =
+    encoding === 'zlib' ? zlibSync(bytes) : encoding === 'gzip' ? gzipSync(bytes) : bytes
+  return Buffer.from(packed).toString('base64')
+}
+/** O mesmo mapa JSON com os dados das camadas na codificação pedida (como o Tiled grava). */
+function jsonWith(map: Record<string, unknown>, encoding: Encoding): Record<string, unknown> {
+  const layer = (l: Record<string, unknown>): Record<string, unknown> =>
+    Array.isArray(l.layers)
+      ? { ...l, layers: (l.layers as Record<string, unknown>[]).map(layer) }
+      : Array.isArray(l.data)
+        ? {
+            ...l,
+            data: encoded(l.data as number[], encoding),
+            encoding: encoding === 'csv' ? 'csv' : 'base64',
+            ...(encoding === 'zlib' || encoding === 'gzip' ? { compression: encoding } : {}),
+          }
+        : l
+  return { ...map, layers: (map.layers as Record<string, unknown>[]).map(layer) }
+}
+/** O mesmo TMX com `<data>` na codificação pedida. */
+function xmlWith(xml: string, encoding: Encoding): string {
+  return xml.replace(/<data encoding="csv">([^<]*)<\/data>/g, (_all, csv: string) => {
+    const gids = csv.split(',').map(Number)
+    return encoding === 'csv'
+      ? `<data encoding="csv">\n${csv}\n</data>`
+      : `<data encoding="base64"${encoding === 'base64' ? '' : ` compression="${encoding}"`}>\n  ${encoded(gids, encoding)}\n</data>`
+  })
+}
+
+for (const encoding of ['csv', 'base64', 'zlib', 'gzip'] as const)
+  it(`a cena inteira volta igual com as camadas em ${encoding}, em JSON e em TMX`, async () => {
+    const { scene, resolver } = await referencia(),
+      json = tiledMap(scene)
+    const fromJson = await importTiledScene(jsonWith(json, encoding), resolver)
+    expect(fromJson.warnings).toEqual([])
+    expect(fromJson.scene).toEqual(scene)
+    for (const external of [true, false]) {
+      const xml = xmlWith(tiledMapXml(json, external), encoding)
+      expect(xml).toContain(encoding === 'csv' ? 'encoding="csv"' : 'encoding="base64"')
+      const fromXml = await importTiledScene(tiledXmlToJson(xml), resolver)
+      expect(fromXml.warnings).toEqual([])
+      expect(fromXml.scene).toEqual(scene)
+    }
+  })
+
+it('grupos dentro de grupos voltam com pais, opacidade, deslocamento e parallax', async () => {
+  const { scene: base } = await referencia()
+  const [first, second, ...rest] = base.layers.filter((l) => !l.parentId && l.kind !== 'group')
+  if (!first || !second) throw new Error('A referência precisa de duas camadas soltas.')
+  const scene: PintaScene = {
+    ...base,
+    layers: [
+      { id: 'fora', kind: 'group', name: 'Fora', visible: true, opacity: 0.75, offsetX: 3 },
+      {
+        id: 'dentro',
+        kind: 'group',
+        name: 'Dentro',
+        visible: false,
+        parentId: 'fora',
+        offsetY: -5,
+        parallaxX: 0.5,
+        parallaxY: 2,
+        locked: true,
+        properties: { clima: 'chuva' },
+      },
+      { ...first, parentId: 'dentro', opacity: 0.25, offsetX: 1.5, parallaxY: 0.25 },
+      { ...second, parentId: 'fora' },
+      ...rest,
+      ...base.layers.filter((l) => l.parentId || l.kind === 'group'),
+    ],
+  }
+  const json = tiledMap(scene),
+    resolver = resolverOf(scene)
+  const tree = (
+    json.layers as { name: string; layers?: { name: string; layers?: unknown[] }[] }[]
+  )[0]
+  expect(tree?.name).toBe('Fora')
+  expect(tree?.layers?.map((l) => l.name)).toEqual(['Dentro', second.name])
+  expect(tree?.layers?.[0]?.layers?.length).toBe(1)
+  for (const result of [
+    await importTiledScene(JSON.parse(JSON.stringify(json)), resolver),
+    await importTiledScene(tiledXmlToJson(tiledMapXml(json, true)), resolver),
+    await importTiledScene(tiledXmlToJson(tiledMapXml(json, false)), resolver),
+  ]) {
+    expect(result.warnings).toEqual([])
+    expect(result.scene).toEqual(scene)
+  }
+})
+
+it('uma propriedade de várias linhas e com sinais do XML atravessa o TMX sem mudar', async () => {
+  const { scene: base } = await referencia()
+  const fala = 'Olá!\nSegunda linha\tcom tabulação\r\n"aspas" \'simples\' <b> & fim'
+  const scene: PintaScene = {
+    ...base,
+    layers: base.layers.map((l) =>
+      l.kind === 'objects'
+        ? {
+            ...l,
+            properties: { ...l.properties, recado: fala },
+            objects: l.objects.map((o, i) =>
+              i === 0 ? { ...o, name: 'a "b" <c>', properties: { ...o.properties, fala } } : o,
+            ),
+          }
+        : l,
+    ),
+  }
+  const xml = tiledMapXml(tiledMap(scene), true)
+  expect(xml).toContain('&#10;Segunda linha&#9;com tabulação&#13;&#10;&quot;aspas&quot;')
+  const result = await importTiledScene(tiledXmlToJson(xml), resolverOf(scene))
+  expect(result.warnings).toEqual([])
+  expect(result.scene).toEqual(scene)
 })

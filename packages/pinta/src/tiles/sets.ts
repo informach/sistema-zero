@@ -5,7 +5,8 @@ import {
   isObjectLayer,
   isTileLayer,
   type MapSetAsset,
-  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_LIMITS,
+  PINTA_SCENE_SCHEMA,
   type TilemapAsset,
   type TilemapLayer,
 } from '../core/project'
@@ -123,7 +124,7 @@ export function createMapSet(
   return {
     id: newId(),
     kind: 'map-set',
-    schema: 3,
+    schema: PINTA_SCENE_SCHEMA,
     name,
     createdAt: now,
     updatedAt: now,
@@ -161,7 +162,18 @@ export function placeMapSet(
   )
 }
 
-/** Soltar conserva a ordem das camadas e os dados; recusa antes de mudar se não couber. */
+/**
+ * Soltar troca a instância por cópias independentes das camadas do conjunto, na ordem delas.
+ *
+ * Recusa ANTES de mudar qualquer coisa (devolve o mesmo mapa) quando: a camada está trancada, a
+ * instância foi girada fora de 90 em 90 graus ou esticada, as camadas não cabem no teto de
+ * criação do editor, ou o conjunto (já girado) é maior que o mapa em colunas ou linhas. Nada é
+ * cortado calado.
+ *
+ * As camadas soltas só levam o que difere do padrão (opacidade 1, deslocamento 0, sem giro, sem
+ * espelho ficam de fora): chave no valor padrão faria o mapa pedir um formato mais novo sem
+ * precisar.
+ */
 export function detachMapSet(
   map: TilemapAsset,
   layerId: string,
@@ -177,11 +189,16 @@ export function detachMapSet(
     (instance.rotation ?? 0) % 90 !== 0 ||
     instance.width !== set.map.cols * tileSize ||
     instance.height !== set.map.rows * tileSize ||
-    map.layers.length + set.map.layers.length > PINTA_MAP_FORMAT_LIMITS.maxLayers
+    map.layers.length + set.map.layers.filter((l) => l.kind !== 'group').length >
+      PINTA_LIMITS.maxTilemapLayers
   )
     return map
   const turns = ((((instance.rotation ?? 0) / 90) % 4) + 4) % 4,
     angle = ((instance.rotation ?? 0) * Math.PI) / 180
+  // De lado (90 ou 270 graus) o conjunto troca colunas por linhas.
+  const placedCols = turns % 2 === 1 ? set.map.rows : set.map.cols,
+    placedRows = turns % 2 === 1 ? set.map.cols : set.map.rows
+  if (placedCols > map.cols || placedRows > map.rows) return map
   const transform = (x: number, y: number) => {
     const px = instance.flipX ? instance.width - x : x,
       py = instance.flipY ? instance.height - y : y
@@ -209,56 +226,70 @@ export function detachMapSet(
       const e = effectiveLayer(set.map, layer),
         off = transform(e.offsetX, e.offsetY),
         zero = transform(0, 0)
-      const { parentId: _parent, ...original } = layer
-      const common = {
+      const {
+        parentId: _parent,
+        opacity: _opacity,
+        offsetX: _offsetX,
+        offsetY: _offsetY,
+        ...original
+      } = layer
+      const opacity = e.opacity * (owner.opacity ?? 1)
+      const placed = (offsetX: number, offsetY: number) => ({
         ...original,
         id: newId(),
         visible: e.visible && owner.visible,
-        opacity: e.opacity * (owner.opacity ?? 1),
-        offsetX: owner.offsetX ?? 0,
-        offsetY: owner.offsetY ?? 0,
+        ...(opacity !== 1 ? { opacity } : {}),
+        ...(offsetX !== 0 ? { offsetX } : {}),
+        ...(offsetY !== 0 ? { offsetY } : {}),
         ...(owner.parentId ? { parentId: owner.parentId } : {}),
-      }
+      })
+      const common = placed(owner.offsetX ?? 0, owner.offsetY ?? 0)
       if (isObjectLayer(layer))
         return {
           ...common,
           kind: 'objects',
-          objects: layer.objects.map((o) => ({
-            ...o,
-            id: idMap.get(o.id)!,
-            x: transform(o.x + e.offsetX, o.y + e.offsetY).x + instance.x,
-            y: transform(o.x + e.offsetX, o.y + e.offsetY).y + instance.y,
-            rotation:
+          objects: layer.objects.map((o) => {
+            const { rotation: _rotation, flipX: _flipX, flipY: _flipY, ...rest } = o
+            const rotation =
               ((instance.rotation ?? 0) +
-                (instance.flipX !== instance.flipY ? -(o.rotation ?? 0) : (o.rotation ?? 0)) +
-                360) %
-              360,
-            flipX: !!o.flipX !== !!instance.flipX ? true : undefined,
-            flipY: !!o.flipY !== !!instance.flipY ? true : undefined,
-            properties: Object.fromEntries(
-              Object.entries(o.properties).map(([k, v]) => [
-                k,
-                typeof v === 'object' && v.type === 'object'
-                  ? { ...v, value: idMap.get(String(v.value)) ?? v.value }
-                  : v,
-              ]),
-            ),
-          })),
+                (!!instance.flipX !== !!instance.flipY ? -(o.rotation ?? 0) : (o.rotation ?? 0)) +
+                720) %
+              360
+            return {
+              ...rest,
+              id: idMap.get(o.id)!,
+              x: transform(o.x + e.offsetX, o.y + e.offsetY).x + instance.x,
+              y: transform(o.x + e.offsetX, o.y + e.offsetY).y + instance.y,
+              ...(rotation !== 0 ? { rotation } : {}),
+              ...(!!o.flipX !== !!instance.flipX ? { flipX: true as const } : {}),
+              ...(!!o.flipY !== !!instance.flipY ? { flipY: true as const } : {}),
+              properties: Object.fromEntries(
+                Object.entries(o.properties).map(([k, v]) => [
+                  k,
+                  typeof v === 'object' && v.type === 'object'
+                    ? { ...v, value: idMap.get(String(v.value)) ?? v.value }
+                    : v,
+                ]),
+              ),
+            }
+          }),
         } as TilemapLayer
-      if (!isTileLayer(layer)) return common
+      if (!isTileLayer(layer)) return common as TilemapLayer
       let stamp = { cols: set.map.cols, rows: set.map.rows, tiles: layer.cells }
       if (instance.flipX) stamp = transformStamp(stamp, 'horizontal')
       if (instance.flipY) stamp = transformStamp(stamp, 'vertical')
       for (let n = 0; n < turns; n++) stamp = transformStamp(stamp, 'rotate')
       const cells = new Int16Array(map.cols * map.rows).fill(-1)
-      for (let r = 0; r < Math.min(stamp.rows, map.rows); r++)
-        for (let c = 0; c < Math.min(stamp.cols, map.cols); c++) {
+      // Cabe inteiro: o tamanho já foi conferido antes de qualquer mudança.
+      for (let r = 0; r < stamp.rows; r++)
+        for (let c = 0; c < stamp.cols; c++) {
           cells[r * map.cols + c] = stamp.tiles[r * stamp.cols + c] ?? -1
         }
       return {
-        ...common,
-        offsetX: (owner.offsetX ?? 0) + instance.x + minX + off.x - zero.x,
-        offsetY: (owner.offsetY ?? 0) + instance.y + minY + off.y - zero.y,
+        ...placed(
+          (owner.offsetX ?? 0) + instance.x + minX + off.x - zero.x,
+          (owner.offsetY ?? 0) + instance.y + minY + off.y - zero.y,
+        ),
         cells,
         ...(layer.tilesetId || set.map.tilesetId !== map.tilesetId
           ? { tilesetId: layer.tilesetId ?? set.map.tilesetId }

@@ -5,6 +5,7 @@ import {
   sanitizePintaAsset,
   type TilemapAsset,
   type TilemapTileLayer,
+  withPintaSchemaStamp,
 } from '../core/project'
 import { packCells } from '../tiles/cellCodec'
 
@@ -15,7 +16,10 @@ import { packCells } from '../tiles/cellCodec'
  * sanitizador rejeita. Na representação de transporte eles viram arrays simples;
  * `pintaAssetFromWire` restaura e valida os tipos canônicos na outra ponta.
  */
-export function pintaAssetToWire(asset: PintaAsset): unknown {
+export function pintaAssetToWire(input: PintaAsset): unknown {
+  // O carimbo `schema` sai sempre certo para o conteúdo: é ele que faz um código mais antigo
+  // recusar o desenho em vez de cortar o que não conhece.
+  const asset = withPintaSchemaStamp(input)
   switch (asset.kind) {
     case 'map-set':
       return { ...asset, map: pintaAssetToWire(asset.map) }
