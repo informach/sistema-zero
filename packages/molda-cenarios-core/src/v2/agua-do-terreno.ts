@@ -413,6 +413,7 @@ export function cavarRio(
     deslocamento: -opcoes.profundidade,
     suavizacao: opcoes.suavizacao ?? opcoes.largura * 2,
     descer: true,
+    somenteAbaixar: true,
   })
   const eixo = estacoes.map((e) => ({
     x: e.x,
@@ -446,7 +447,7 @@ export function cavarRio(
       largura: opcoes.largura,
       alturaDoPonto: (i) => eixo[i]!.y,
       elevacao: 0,
-      divisoes: 1,
+      divisoes: 2,
     }),
     quedas,
   }

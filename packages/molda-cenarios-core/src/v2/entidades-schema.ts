@@ -47,6 +47,7 @@ const entidade = z.object({
   oculto: z.boolean(),
   propriedades: PropriedadesSchema.optional(),
 })
+export const EntidadeDeCenarioSchema = entidade
 
 const origemDeRecurso = { id, biblioteca: id, digest, nome: z.string().min(1).max(120).optional() }
 
@@ -158,6 +159,7 @@ const camposDeLago = {
   contorno: poligono,
   recorte: poligono,
   ilhas: z.array(poligono).max(128).optional(),
+  /** Ponto inicial no espaço local do contorno, antes do giro e da escala. */
   origemPreenchimento: PontoSchema.optional(),
   encaixeModelo: EncaixeDoModeloDeAguaSchema.optional(),
 }
@@ -226,8 +228,14 @@ export const AguaSchema = z.discriminatedUnion('tipo', [
     .extend({
       tipo: z.literal('rio'),
       pontos: z.array(VetorSchema).min(2).max(LIMITES_CENARIO_V2.pontos),
+      /** Controles autorais preservados ao amostrar o perfil de água. */
+      controle: z.array(PontoSchema).min(2).max(128).optional(),
+      suave: z.boolean().optional(),
       largura: z.number().finite().min(0.25).max(200),
-      profundidade: z.number().finite().min(0.05).max(200),
+      /** Coluna de água; não inclui a margem seca acima da lâmina. */
+      profundidade: z.number().finite().positive().max(200),
+      /** Profundidade pedida para escavar o leito, conservada para reeditar a intenção. */
+      profundidadeDoLeito: z.number().finite().min(0.05).max(200).optional(),
       correnteza: z.number().finite().min(0).max(10),
     })
     .strict()

@@ -473,6 +473,8 @@ export interface MoldeDaCurva {
   suavizacao?: number
   /** Verdadeiro: o eixo nunca sobe no sentido da curva. É o que faz a água do rio correr. */
   descer?: boolean
+  /** Escavação conserva depressões existentes; nunca aterra o eixo nem os taludes. */
+  somenteAbaixar?: boolean
 }
 
 /**
@@ -510,7 +512,8 @@ export function moldarTerrenoPelaCurva(
   const alturas = brutas.map((_, i) => {
     const a = Math.max(0, i - meiaJanela),
       b = Math.min(n - 1, i + meiaJanela)
-    return (acumulada[b + 1]! - acumulada[a]!) / (b - a + 1)
+    const media = (acumulada[b + 1]! - acumulada[a]!) / (b - a + 1)
+    return molde.somenteAbaixar ? Math.min(media, brutas[i]!) : media
   })
   if (molde.descer) for (let i = 1; i < n; i++) alturas[i] = Math.min(alturas[i]!, alturas[i - 1]!)
   const estacoes = pontos.map((p, i) => ({
@@ -532,7 +535,7 @@ export function moldarTerrenoPelaCurva(
   const lx = total.x1 - total.x0 + 1,
     lz = total.z1 - total.z0 + 1,
     largura = campo.colunas + 1,
-    antes = new Float32Array(lx * lz),
+    antes = new Float64Array(lx * lz),
     perto = new Float32Array(lx * lz).fill(Number.POSITIVE_INFINITY)
   for (let z = 0; z < lz; z++)
     antes.set(
@@ -571,11 +574,8 @@ export function moldarTerrenoPelaCurva(
         perto[k] = d
         const peso = d <= meia ? 1 : suave(1 - (d - meia) / borda),
           h = antes[k]!
-        campo.alturas[iz * largura + ix] = limitar(
-          h + (a.y + (b.y - a.y) * t - h) * peso,
-          campo.min,
-          campo.max,
-        )
+        const nova = limitar(h + (a.y + (b.y - a.y) * t - h) * peso, campo.min, campo.max)
+        campo.alturas[iz * largura + ix] = molde.somenteAbaixar ? Math.min(h, nova) : nova
       }
     }
   }
