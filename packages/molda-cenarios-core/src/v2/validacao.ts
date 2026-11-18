@@ -1,4 +1,4 @@
-import { CenarioInvalido, poligonoSimples } from '../validacao'
+import { CenarioInvalido } from '../validacao'
 import { transformacaoDoApoioNaAgua } from './apoio-na-agua'
 import { resolverConjuntos } from './conjuntos'
 import {
@@ -11,6 +11,7 @@ import {
 import { TransformacaoSchema } from './entidades-schema'
 import { volumeDaReferencia } from './fontes'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
+import { errosDaTopologiaDoCaminho } from './topologia-de-caminho'
 
 export interface OpcoesDeValidacao {
   /** Confere se o modelo fixado existe no acervo de quem valida (o servidor, em geral). */
@@ -135,14 +136,7 @@ export function validarDocumento(
       erros.push(`Textura fora da tabela do cenário: ${c.id}`)
     if (c.acabamento && !modelos.has(c.acabamento))
       erros.push(`Acabamento fora da tabela do cenário: ${c.id}`)
-    if (c.tipo === 'praca' && !poligonoSimples(c.pontos))
-      erros.push(`Contorno de praça inválido: ${c.id}`)
-    if (
-      c.pontos.some(
-        (p, i) => i > 0 && Math.hypot(p.x - c.pontos[i - 1]!.x, p.z - c.pontos[i - 1]!.z) < 1e-6,
-      )
-    )
-      erros.push(`Pontos repetidos: ${c.id}`)
+    erros.push(...errosDaTopologiaDoCaminho(c))
   }
 
   for (const a of d.aguas) {
