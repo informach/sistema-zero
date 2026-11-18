@@ -42,7 +42,36 @@ O novo teste de contrato falhou com 3.004.096 versus 8.454.144 bytes antes da mu
 Depois, contrato do gateway, isolamento da pilha e distribuição Python somaram
 14 testes aprovados (354 asserts). Na repetição, `/health` do gateway respondeu 200,
 as contas de QA foram criadas e os currículos mínimos foram publicados localmente.
-Os fluxos de host continuam sendo verificados; criar contas não homologa as aulas.
+O setup seguinte falhou quando o disco esgotou durante a escrita de sourcemaps do
+Next/Turbopack. A navegação não encontrou a aula, mas não é possível atribuir isso
+ao produto com o servidor nesse estado. Todos os serviços desta pilha foram
+encerrados pelo launcher, preservando o banco e as credenciais. A revisão automática
+recusou a remoção dos caches; a exclusão não foi tentada por outro meio. Os fluxos
+de host permanecem pendentes; criar contas não homologa as aulas.
 
 Os logs e credenciais gerados permanecem ignorados em `.cache/local-stack`; nenhuma
 credencial foi adicionada ao Git nem usada contra serviços hospedados.
+
+## Segunda rodada no GitHub
+
+Run `44284088297`, SHA `09057c335`: o job de isolamento completou a instalação e
+a medição. O resultado não significa isolamento universal: os dados precisam ser
+avaliados por navegador e perfil. Firefox e WebKit completaram seus casos de
+navegador; a suíte Chromium revelou falhas que continuam em investigação.
+
+O teste real de persistência passou suas 12 reaberturas e o conflito entre duas
+abas em Chromium no Linux. Depois falhou porque também executa WebKit, ausente
+na imagem. O job agora instala ambos, sem excluir qualquer cobertura.
+
+No Windows, `realpath` expande o nome curto `RUNNER~1` do diretório temporário.
+Comparar a grafia resolvida com a original confundia isso com um link. A validação
+passa a inspecionar explicitamente os ancestrais com `lstat`, além da raiz e de
+cada segmento do artefato. Junctions na raiz e em ancestrais continuam recusados.
+Teste local: 7 casos, 29 asserts. A confirmação no runner Windows continua pendente.
+
+A auditoria do executor encontrou `GHSA-fc5q-39xc-vjpf` em `picomatch` (ReDoS), sem
+versão corrigida segundo o [aviso oficial](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+consultado em 18/11/2026. Não se aplicou downgrade forçado de Vite nem exceção de
+auditoria. A auditoria é um job obrigatório independente: sua falha continua
+reprovando o workflow, enquanto os ensaios Docker podem produzir evidências
+separadas. Isso não fecha a revisão de segurança nem autoriza publicação.

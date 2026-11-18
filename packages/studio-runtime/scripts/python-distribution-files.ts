@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { lstat, readFile, realpath } from 'node:fs/promises'
-import { isAbsolute, relative, resolve, sep } from 'node:path'
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import {
@@ -22,7 +22,13 @@ export async function readPromotionFile(directory: string, path: string, maximum
   if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory())
     throw new Error('A distribuição não pode ser um link simbólico ou arquivo.')
   const realRoot = await realpath(root)
-  if (relative(root, realRoot) !== '') throw new Error('A distribuição contém um link simbólico.')
+  // Windows short (8.3) names resolve to their long spelling without being links.
+  // Inspect ancestors instead of treating every canonical spelling change as a link.
+  for (let ancestor = dirname(root); ; ancestor = dirname(ancestor)) {
+    if ((await lstat(ancestor)).isSymbolicLink())
+      throw new Error('A distribuição contém um link simbólico.')
+    if (dirname(ancestor) === ancestor) break
+  }
   let current = root
   const parts = path.split('/')
   for (const [index, part] of parts.entries()) {

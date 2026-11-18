@@ -46,7 +46,7 @@ jobs:
         run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
       - name: Install browser required by the real IndexedDB lifecycle test
         working-directory: packages/studio
-        run: bunx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium webkit
       - name: Complete isolated Studio suite
         working-directory: packages/studio
         run: |
@@ -178,6 +178,21 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  runtime-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Audit trusted runtime dependencies
+        working-directory: packages/studio-runtime
+        run: bun run audit:image
+
   hosted-runtime:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -190,9 +205,6 @@ jobs:
         with:
           node-version: '24'
       - run: bun install --frozen-lockfile
-      - name: Audit trusted runtime dependencies
-        working-directory: packages/studio-runtime
-        run: bun run audit:image
       - name: Build disposable execution image
         working-directory: packages/studio-runtime
         run: bun run build:image
