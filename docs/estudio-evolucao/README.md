@@ -1,7 +1,9 @@
 # Evolução do Estúdio (Clássico e Pro)
 
 Registro vivo da missão. Branch `estudio-evolucao`, criada da `staging` em `bf6e895f` (17/11/2026).
-Nada aqui foi mesclado na `staging` nem implantado.
+Os incrementos até `37f4d4e3a` foram integrados à `staging`. Isso não concluiu a missão.
+Esta frente não implantou em produção. A revisão e a continuação estão registradas em
+[`continuidade-2026-11-18.md`](continuidade-2026-11-18.md).
 
 Continuação em worktree isolada, a partir de `d9ebd3fef`:
 [`plano-execucao.md`](plano-execucao.md) cobre toda a missão fornecida pela dona,

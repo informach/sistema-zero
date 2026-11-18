@@ -10,13 +10,15 @@ Chrome Headless Shell 148.0.7778.96, tela de 1366 por 768.
 
 | Medida | p95 | Teto do teste |
 |---|---|---|
-| Abrir um arquivo (depois do primeiro) | 1 206 ms | 2 000 ms |
-| Quadro de digitação | 33 ms | 60 ms |
-| Ida e volta do layout (largo, tablet, celular) | 159 ms | 300 ms |
+| Abrir a página até o editor visível (depois da primeira abertura) | 1 206 ms | 2 000 ms |
+| Tecla até o segundo requestAnimationFrame (proxy de apresentação) | 33 ms | 60 ms |
+| Ida e volta dos modos Só o jogo / Lado a lado | 159 ms | 300 ms |
 
 O ZIP de fonte grande (81 arquivos, 200 mil bytes) usa um worker só e o descarta.
 
-A meta da etapa 3 para digitação (p95 abaixo de 50 ms) é atendida neste projeto de laboratório.
+O proxy de apresentação fica abaixo de 50 ms neste projeto de laboratório. Ele não mede a
+latência exata dos pixels ou INP e não certifica sozinho a meta de digitação da etapa 3.
+A abertura usa navegação da página, não troca de arquivo numa sessão já aberta.
 Falta medir no projeto modular de 60 arquivos com dependências, que ainda não existe como fixture,
 e falta medir busca, referências e renomear.
 
