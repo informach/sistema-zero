@@ -162,7 +162,9 @@ function snapshotBytes(snapshot: EditorSnapshot): number {
  * que o gesto tocou, então os passos do histórico dividem todas as outras: contar cada buffer uma
  * vez é o que a memória gasta de verdade.
  */
-function* snapshotShared(snapshot: EditorSnapshot): Iterable<SharedPart> {
+export function* snapshotShared(
+  snapshot: Pick<EditorSnapshot, 'asset' | 'linkedMaps'>,
+): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
   for (const asset of maps) {
     if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') continue

@@ -87,15 +87,53 @@ interface ChunkEntry {
   source: CanvasImageSource
   animation: string
   bytes: number
+  frame: number
 }
-/** LRU com orçamento em bytes: o histórico de mapas não segura cópias dos canvases. */
+/** Bytes de um bloco pintado (RGBA) para peças deste tamanho. */
+export function chunkBytes(tileSize: number): number {
+  const size = MAP_CHUNK_SIDE * tileSize
+  return size * size * 4
+}
+/**
+ * Guarda os blocos já pintados (o menos usado sai primeiro), com um teto em bytes: o histórico de
+ * mapas não segura cópias dos canvases.
+ *
+ * - Bloco VAZIO não gasta canvas nem conta no teto.
+ * - O bloco só é refeito quando uma casa dele muda, quando a folha das peças muda ou quando
+ *   uma peça animada QUE ESTÁ NELE troca de quadro.
+ * - `beginFrame` diz quantos bytes a tela de agora precisa: o teto cresce até lá, e um bloco
+ *   usado nesta pintura nunca é jogado fora por outro da mesma pintura (senão cada repintura
+ *   refaria tudo).
+ */
 export class TileChunkCache {
   private entries = new Map<string, ChunkEntry>()
   private bytes = 0
-  constructor(private budget = 32 * 1024 * 1024) {}
+  private frame = 0
+  private frameBudget = 0
+  /** Quantos blocos foram pintados de novo desde o começo (para medir e testar). */
+  rebuilds = 0
+  constructor(
+    private budget = 32 * 1024 * 1024,
+    private createCanvas: () => HTMLCanvasElement = () => document.createElement('canvas'),
+  ) {}
+  get size(): number {
+    return this.entries.size
+  }
+  get usedBytes(): number {
+    return this.bytes
+  }
   clear(): void {
     this.entries.clear()
     this.bytes = 0
+  }
+  /** Começa uma pintura da tela que vai precisar de `neededBytes` em blocos. */
+  beginFrame(neededBytes = 0): void {
+    this.frame += 1
+    this.frameBudget = neededBytes
+  }
+  private drop(key: string, entry: ChunkEntry): void {
+    this.entries.delete(key)
+    this.bytes -= entry.bytes
   }
   get(
     map: TilemapAsset,
@@ -108,17 +146,31 @@ export class TileChunkCache {
   ): HTMLCanvasElement | null {
     const key = `${layer.id}:${col}:${row}:${map.cols}:${map.rows}`
     const values = new Int16Array(MAP_CHUNK_SIDE * MAP_CHUNK_SIDE).fill(-1)
+    let filled = false
+    // Só as peças animadas que aparecem NESTE bloco entram na chave da animação.
+    const animated = new Map<number, number>()
     for (let r = 0; r < MAP_CHUNK_SIDE; r++)
       for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
         const x = col * MAP_CHUNK_SIDE + c,
           y = row * MAP_CHUNK_SIDE + r
-        if (x < map.cols && y < map.rows)
-          values[r * MAP_CHUNK_SIDE + c] = layer.cells[y * map.cols + x] ?? -1
+        if (x >= map.cols || y >= map.rows) continue
+        const cell = layer.cells[y * map.cols + x] ?? -1
+        values[r * MAP_CHUNK_SIDE + c] = cell
+        const tile = cellTile(cell)
+        if (tile < 0 || tile >= ts.tiles.length) continue
+        filled = true
+        if (ts.animations?.[String(tile)] && !animated.has(tile))
+          animated.set(tile, animatedTile(ts, tile, time))
       }
-    const animation = Object.keys(ts.animations ?? {})
-      .map((t) => `${t}:${animatedTile(ts, Number(t), time)}`)
-      .join(',')
     const hit = this.entries.get(key)
+    if (!filled) {
+      if (hit) this.drop(key, hit)
+      return null
+    }
+    const animation = [...animated]
+      .sort((a, b) => a[0] - b[0])
+      .map(([tile, frame]) => `${tile}:${frame}`)
+      .join(',')
     if (
       hit &&
       hit.source === sheet &&
@@ -126,19 +178,18 @@ export class TileChunkCache {
       hit.values.every((v, i) => v === values[i])
     ) {
       this.entries.delete(key)
+      hit.frame = this.frame
       this.entries.set(key, hit)
       return hit.canvas
     }
-    if (hit) {
-      this.entries.delete(key)
-      this.bytes -= hit.bytes
-    }
-    const canvas = document.createElement('canvas'),
+    if (hit) this.drop(key, hit)
+    const canvas = this.createCanvas(),
       size = MAP_CHUNK_SIDE * ts.tileSize
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
+    this.rebuilds += 1
     ctx.imageSmoothingEnabled = false
     for (let r = 0; r < MAP_CHUNK_SIDE; r++)
       for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
@@ -154,22 +205,68 @@ export class TileChunkCache {
           c * ts.tileSize,
           r * ts.tileSize,
           ts.tileSize,
-          animatedTile(ts, tile, time),
+          animated.get(tile) ?? tile,
         )
       }
-    const bytes = size * size * 4
-    while (this.bytes + bytes > this.budget && this.entries.size) {
+    const bytes = chunkBytes(ts.tileSize),
+      budget = Math.max(this.budget, this.frameBudget)
+    while (this.bytes + bytes > budget && this.entries.size) {
       const first = this.entries.entries().next().value
-      if (!first) break
-      this.entries.delete(first[0])
-      this.bytes -= first[1].bytes
+      // Os usados nesta pintura ficam no fim da fila: chegando neles, não há mais o que tirar.
+      if (!first || first[1].frame === this.frame) break
+      this.drop(first[0], first[1])
     }
-    if (bytes <= this.budget) {
-      this.entries.set(key, { canvas, source: sheet, values, animation, bytes })
+    if (this.bytes + bytes <= budget) {
+      this.entries.set(key, {
+        canvas,
+        source: sheet,
+        values,
+        animation,
+        bytes,
+        frame: this.frame,
+      })
       this.bytes += bytes
     }
     return canvas
   }
+}
+
+/** As camadas de peças que entram na pintura, com o recorte de blocos de cada uma. */
+export function visibleLayerChunks(
+  map: TilemapAsset,
+  tilesets: ReadonlyMap<string, AnyTilesetAsset>,
+  view: MapViewport,
+  includeCollision = false,
+): Array<{
+  layer: TilemapTileLayer
+  tileset: AnyTilesetAsset
+  opacity: number
+  offsetX: number
+  offsetY: number
+  chunks: Array<{ col: number; row: number }>
+}> {
+  const out: ReturnType<typeof visibleLayerChunks> = []
+  for (const layer of map.layers) {
+    if (!isTileLayer(layer) || (layer.collision && !includeCollision)) continue
+    const e = effectiveLayer(map, layer)
+    if (!e.visible || !e.opacity) continue
+    const tileset = tilesets.get(tileLayerTilesetId(map, layer))
+    if (!tileset) continue
+    out.push({
+      layer,
+      tileset,
+      opacity: e.opacity,
+      offsetX: e.offsetX,
+      offsetY: e.offsetY,
+      chunks: visibleChunks(
+        { ...view, x: view.x - e.offsetX, y: view.y - e.offsetY },
+        tileset.tileSize,
+        map.cols,
+        map.rows,
+      ),
+    })
+  }
+  return out
 }
 
 export function paintTilemapLayers(
@@ -183,24 +280,23 @@ export function paintTilemapLayers(
   time = 0,
   includeCollision = false,
 ): void {
-  for (const layer of map.layers) {
-    if (!isTileLayer(layer) || (layer.collision && !includeCollision)) continue
-    const e = effectiveLayer(map, layer)
-    if (!e.visible || !e.opacity) continue
-    const id = tileLayerTilesetId(map, layer),
-      ts = tilesets.get(id),
-      sheet = sheetOf(id)
-    if (!ts || !sheet) continue
-    const shifted = { ...view, x: view.x - e.offsetX, y: view.y - e.offsetY }
+  const layers = visibleLayerChunks(map, tilesets, view, includeCollision)
+  // O teto desta pintura: todos os blocos à vista, de todas as camadas, cabem juntos.
+  cache.beginFrame(
+    layers.reduce((sum, l) => sum + l.chunks.length * chunkBytes(l.tileset.tileSize), 0),
+  )
+  for (const { layer, tileset: ts, opacity, offsetX, offsetY, chunks } of layers) {
+    const sheet = sheetOf(tileLayerTilesetId(map, layer))
+    if (!sheet) continue
     ctx.save()
-    ctx.globalAlpha *= e.opacity
-    for (const { col, row } of visibleChunks(shifted, ts.tileSize, map.cols, map.rows)) {
+    ctx.globalAlpha *= opacity
+    for (const { col, row } of chunks) {
       const chunk = cache.get(map, layer, ts, sheet, col, row, time)
       if (chunk)
         ctx.drawImage(
           chunk,
-          (col * MAP_CHUNK_SIDE * ts.tileSize + e.offsetX) * scale,
-          (row * MAP_CHUNK_SIDE * ts.tileSize + e.offsetY) * scale,
+          (col * MAP_CHUNK_SIDE * ts.tileSize + offsetX) * scale,
+          (row * MAP_CHUNK_SIDE * ts.tileSize + offsetY) * scale,
           chunk.width * scale,
           chunk.height * scale,
         )

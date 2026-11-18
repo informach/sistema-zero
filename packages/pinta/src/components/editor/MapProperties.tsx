@@ -1,6 +1,10 @@
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
-import { sanitizeObjectProperties, type TilemapObjectPropertyValue } from '../../core/project'
+import {
+  PINTA_MAP_FORMAT_LIMITS,
+  sanitizeObjectProperties,
+  type TilemapObjectPropertyValue,
+} from '../../core/project'
 import { Button } from '../ui/Button'
 import { PropertyRow } from './MapObjectPanel'
 
@@ -13,7 +17,7 @@ export function MapProperties({
 }): JSX.Element {
   return (
     <details>
-      <summary className="cursor-pointer text-xs font-bold text-pin-muted">
+      <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold text-pin-muted">
         {COPY.scene.propriedades}
       </summary>
       <div className="mt-2 flex flex-col gap-1">
@@ -39,11 +43,11 @@ export function MapProperties({
         ))}
         <Button
           variant="barOutline"
-          disabled={Object.keys(value).length >= 16}
+          disabled={Object.keys(value).length >= PINTA_MAP_FORMAT_LIMITS.maxLayerProperties}
           onClick={() => {
             let n = 1
-            while (`propriedade${n}` in value) n++
-            onChange({ ...value, [`propriedade${n}`]: '' })
+            while (COPY.scene.nomeDaPropriedade(n) in value) n++
+            onChange({ ...value, [COPY.scene.nomeDaPropriedade(n)]: '' })
           }}
         >
           {COPY.scene.adicionarPropriedade}

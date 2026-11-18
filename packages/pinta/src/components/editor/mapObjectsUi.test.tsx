@@ -8,7 +8,7 @@
  * ⚠️ O "Salvo" não prova nada (o autosave é debounced): quem diz a verdade é o
  * disco, relido num `waitFor`.
  */
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { isObjectLayer, type TilemapAsset } from '../../core/project'
@@ -17,6 +17,12 @@ import { clearIdbMock } from '../../testing/idbMock'
 const { PintaApp } = await import('../PintaApp')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
+
+// Estes testes usam o editor de mapa INTEIRO: o nível "Avançado" é posto de propósito (perfil
+// novo abre em "Começar", com menos ferramentas e painéis) e tirado no fim.
+const { writeMapLevel } = await import('./mapTools/mapLevels')
+beforeEach(() => writeMapLevel('', 'advanced'))
+afterEach(() => localStorage.removeItem('pinta:map-level'))
 
 beforeEach(() => {
   clearIdbMock()

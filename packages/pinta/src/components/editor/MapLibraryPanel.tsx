@@ -16,14 +16,18 @@ import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
+import { commitIfChanged } from './mapTools/commitGuard'
 export function MapLibraryPanel({
   layerId,
   selectedId,
   allowSets = true,
+  position,
 }: {
   layerId: string
   selectedId: string | null
   allowSets?: boolean
+  /** Onde o ponteiro esteve por último no palco, em pixels do mapa (ou o meio do que se vê). */
+  position?: () => { x: number; y: number } | null
 }): JSX.Element {
   const assets = usePintaGallery((s) => s.assets),
     { editor } = useEditorStores()
@@ -45,8 +49,11 @@ export function MapLibraryPanel({
     if (m.kind !== 'tilemap') return
     const ts = find(m.tilesetId),
       tileSize = ts && isTilesetKind(ts) ? ts.tileSize : 16
-    const x = Math.floor(m.cols / 2) * tileSize,
-      y = Math.floor(m.rows / 2) * tileSize
+    const layer = m.layers.find((l) => l.id === layerId)
+    if (layer && effectiveLayer(m, layer).locked) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     const width =
       'frameWidth' in a
         ? a.frameWidth
@@ -63,7 +70,20 @@ export function MapLibraryPanel({
           : isTilesetKind(a)
             ? a.tileSize
             : tileSize
-    s.commit(
+    // O desenho nasce onde o ponteiro esteve por último (na casa da grade), dentro do mapa.
+    const target = position?.() ?? { x: (m.cols * tileSize) / 2, y: (m.rows * tileSize) / 2 }
+    const cell = (value: number, size: number, cells: number): number =>
+      Math.max(
+        0,
+        Math.min(
+          Math.max(0, cells * tileSize - size),
+          Math.floor((value - size / 2) / tileSize + 0.5) * tileSize,
+        ),
+      )
+    const x = cell(target.x, width, m.cols),
+      y = cell(target.y, height, m.rows)
+    commitIfChanged(
+      s,
       a.kind === 'map-set'
         ? placeMapSet(m, layerId, a, x, y, tileSize)
         : addMapObject(
@@ -113,7 +133,7 @@ export function MapLibraryPanel({
                 rows: Math.max(1, Math.ceil(selected.height / size)),
               },
               size,
-              `modelo-${selected.name || 'objeto'}`,
+              COPY.scene.nomeDoModelo(selected.name),
             )
             set.map.layers = [
               {
@@ -124,7 +144,14 @@ export function MapLibraryPanel({
               },
               ...set.map.layers.filter((l) => l.kind === 'group' || isObjectLayer(l)),
             ]
-            void gallery.getState().createPrepared(set)
+            void gallery
+              .getState()
+              .createPrepared(set)
+              .then((saved) =>
+                showToast(
+                  saved ? COPY.scene.conjuntoGuardado(saved.name) : COPY.scene.conjuntoNaoGuardado,
+                ),
+              )
           }}
         >
           {COPY.scene.guardarModeloDoObjeto}

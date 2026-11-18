@@ -15,6 +15,10 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test src",
+    "test:scripts": "bun test scripts",
+    "check:phaser": "bun scripts/generate-phaser.ts --check",
+    "check:pygame-gallery": "bun scripts/pygame-gallery/generate.ts --check",
+    "check:homologacao": "bun scripts/homologacao/check.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:vector-fonts": "bun run scripts/gen-vector-fonts.ts",

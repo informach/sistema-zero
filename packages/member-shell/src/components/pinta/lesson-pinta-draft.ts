@@ -5,9 +5,17 @@
  *
  * A "outra versão" mora num SEGUNDO banco do mesmo bloco (`aula-<bloco>-<perfil>-outra`).
  */
-import { pintaContentFingerprint, pintaWriteFormatVersion } from '@sistemazero/core/creations'
+import {
+  pintaCanReadFormatVersion,
+  pintaContentFingerprint,
+  pintaWriteFormatVersion,
+} from '@sistemazero/core/creations'
 import { type PintaAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
-import type { LessonDraftChannel, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
+import {
+  type LessonDraftChannel,
+  LessonDraftOutdatedError,
+  type LessonDraftRemote,
+} from '../../lib/lesson-draft-cloud'
 import { decideLessonDraftSeed } from '../../lib/lesson-draft-seed'
 
 type PintaPersistence = import('@sistemazero/pinta/lesson').PintaPersistence
@@ -33,10 +41,44 @@ async function substituir(store: PintaPersistence, asset: PintaAsset): Promise<v
     if (antigo.id !== asset.id) await store.deleteAsset(antigo.id)
 }
 
+/** O documento cru leva o carimbo `schema` (nele ou no mapa de dentro de um conjunto)? */
+function temCarimbo(raw: unknown): boolean {
+  if (!raw || typeof raw !== 'object') return false
+  const registro = raw as { schema?: unknown; map?: unknown }
+  return typeof registro.schema === 'number' || temCarimbo(registro.map)
+}
+
 function desenho(raw: unknown): PintaAsset {
   const asset = pintaAssetFromWire(raw)
-  if (!asset) throw new Error('O desenho guardado na conta é inválido')
-  return asset
+  if (asset) return asset
+  // O leitor recusa inteiro (nunca corta) um desenho com carimbo que ele não conhece. Um desenho
+  // carimbado que esta página recusa foi feito por um Pinta mais novo: só a página atualizada lê.
+  if (temCarimbo(raw)) throw new LessonDraftOutdatedError()
+  throw new Error('O desenho guardado na conta é inválido')
+}
+
+/**
+ * A versão de formato que a conta declara para o rascunho, quando o canal informa. O canal de
+ * hoje ainda não repassa o campo; sem ele a checagem fica com o carimbo do próprio documento
+ * (`desenho`).
+ */
+function versaoDaConta(remote: LessonDraftRemote): number | undefined {
+  const versao = (remote as { formatVersion?: unknown }).formatVersion
+  return typeof versao === 'number' ? versao : undefined
+}
+
+/** Esta página sabe ler a versão que a conta guarda? A mesma régua da galeria do Pinta. */
+export function canReadRemoteDrawing(remote: LessonDraftRemote): boolean {
+  return pintaCanReadFormatVersion(versaoDaConta(remote))
+}
+
+/**
+ * Baixa e lê o desenho da conta. Para ANTES de baixar quando a conta declara um formato mais novo
+ * que o desta página (como a galeria: o item fica intocado e a página pede atualização).
+ */
+async function baixarDesenho(remote: LessonDraftRemote): Promise<PintaAsset> {
+  if (!canReadRemoteDrawing(remote)) throw new LessonDraftOutdatedError()
+  return desenho(await remote.load())
 }
 
 /** Guarda a cópia da conta como a "outra versão" deste navegador. */
@@ -44,7 +86,7 @@ export async function keepRemoteDrawingAsOther(
   deps: PintaDraftDeps,
   remote: LessonDraftRemote,
 ): Promise<void> {
-  await substituir(deps.backup, desenho(await remote.load()))
+  await substituir(deps.backup, await baixarDesenho(remote))
 }
 
 /**
@@ -56,7 +98,13 @@ export async function preparePintaLessonDraft(
     submission: { at: number; fingerprint: string | null } | null
     readSubmission: () => Promise<unknown | null>
   },
-): Promise<{ seed: unknown | null; upload: boolean; other: boolean }> {
+): Promise<{
+  seed: unknown | null
+  upload: boolean
+  other: boolean
+  /** A conta guarda um formato mais novo que o desta página: nada foi lido nem vai subir. */
+  outdated?: true
+}> {
   const { channel, blockId, store, backup } = deps
   const local = await readLessonDrawing(store)
   const localWire = local ? pintaAssetToWire(local) : null
@@ -66,6 +114,12 @@ export async function preparePintaLessonDraft(
     remote = await channel.peek(blockId)
   } catch {
     conheceConta = false
+  }
+  // A conta guarda um formato que esta página não lê: não baixa, não guarda como "outra", não
+  // mexe na marca e não sobe por cima. Abre o que há neste navegador e avisa quem chamou.
+  if (remote && !canReadRemoteDrawing(remote)) {
+    const other = (await backup.listAllAssets().catch(() => [])).length > 0
+    return { seed: localWire, upload: false, other, outdated: true }
   }
   const decisao = decideLessonDraftSeed({
     local: local
@@ -97,7 +151,7 @@ export async function preparePintaLessonDraft(
     case 'cloud': {
       if (!remote) break
       if (decisao.backupLocal && local) await substituir(backup, local)
-      const aberto = desenho(await remote.load())
+      const aberto = await baixarDesenho(remote)
       await substituir(store, aberto)
       channel.setMark(blockId, { revision: remote.revision, updatedAt: aberto.updatedAt })
       seed = pintaAssetToWire(aberto)

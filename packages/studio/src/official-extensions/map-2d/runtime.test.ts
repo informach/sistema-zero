@@ -1,10 +1,10 @@
 import { expect, it } from 'bun:test'
-import { createCanvas } from '@napi-rs/canvas'
 import type { ExtensionBootstrapContext } from '#extensions'
 import { gameTwoDRuntime } from '../game-2d/runtime'
 import { gameKitRuntime } from '../game-2d-advanced/runtime'
 import {
-  MAP_TWO_D_BOOTSTRAP_EXTRA_CHARS,
+  MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS,
+  MAP_TWO_D_WITHOUT_SCENE_VARIANT,
   mapTwoDBootstrap,
   mapTwoDBootstrapVariant,
 } from './bootstrap'
@@ -65,45 +65,82 @@ const scene = {
     },
   ],
 }
-it('compõe camadas, espelho, opacidade, objetos e colisão sem perder dados', () => {
-  const canvas = createCanvas(32, 32),
-    sheet = createCanvas(16, 16),
-    s = sheet.getContext('2d')
-  s.fillStyle = 'red'
-  s.fillRect(0, 0, 8, 16)
-  s.fillStyle = 'green'
-  s.fillRect(8, 0, 8, 16)
-  Object.assign(sheet, { complete: true, naturalWidth: 16 })
-  let grid: number[][] = []
-  let collisions = 0
+/**
+ * O canvas nativo é opcional: sem `@napi-rs/canvas` instalado só os casos que LEEM PIXELS
+ * ficam de fora, com aviso à vista. A lógica (grade, colisão, objetos, eventos) roda sempre,
+ * com um contexto de mentira.
+ */
+type CanvasNativo = typeof import('@napi-rs/canvas')
+const nativo: CanvasNativo | null = await import('@napi-rs/canvas').catch(() => null)
+if (!nativo)
+  console.warn(
+    '[map-2d] @napi-rs/canvas não está instalado: os casos que leem pixels foram PULADOS. Os outros rodam com um contexto de mentira.',
+  )
+
+function contextoDeMentira() {
+  const desenhos: number[][] = []
+  return {
+    desenhos,
+    canvas: { width: 32, height: 32 },
+    globalAlpha: 1,
+    imageSmoothingEnabled: true,
+    save() {},
+    restore() {},
+    translate() {},
+    rotate() {},
+    scale() {},
+    transform() {},
+    setTransform() {},
+    drawImage(_img: unknown, ...a: number[]) {
+      desenhos.push(a)
+    },
+  }
+}
+
+function tocador(
+  ctx: unknown,
+  folha: unknown,
+  extras: Record<string, unknown> = {},
+): { api: MapTwoDApi; grades: number[][][]; colisoes: () => number } {
+  const grades: number[][][] = []
+  let colisoes = 0
   const api = new Function(`${mapTwoDSource};return createMap2D;`)()({
     meta: () => ({ scene }),
-    context: () => canvas.getContext('2d'),
+    context: () => ctx,
     width: () => 32,
     height: () => 32,
     camera: () => ({ x: 0, y: 0 }),
     screen: () => {},
-    image: () => sheet,
+    image: () => folha,
     warn: (message: string) => {
       throw new Error(message)
     },
     collision: (_name: string, _scene: unknown, rows: number[][]) => {
-      grid = rows
+      grades.push(rows)
       return rows
     },
-    collide: () => collisions++,
+    collide: () => colisoes++,
+    ...extras,
   }) as MapTwoDApi
+  return { api, grades, colisoes: () => colisoes }
+}
+
+it('monta a grade de colisão, os objetos e os eventos sem perder dados', () => {
+  const ctx = contextoDeMentira()
+  const { api, grades, colisoes } = tocador(ctx, { complete: true, naturalWidth: 16 })
   api.createMapScene('mapa', 'vila')
   api.drawMapScene('mapa', 'back')
-  expect(canvas.getContext('2d').getImageData(1, 1, 1, 1).data[1]).toBeGreaterThan(100)
-  expect(canvas.getContext('2d').getImageData(1, 1, 1, 1).data[3]).toBe(128)
-  expect(grid).toEqual([
-    [0, -1],
-    [-1, -1],
+  expect(ctx.desenhos).toHaveLength(1)
+  expect(grades).toEqual([
+    [
+      [0, -1],
+      [-1, -1],
+    ],
   ])
   api.collideMapScene({ x: 20, y: 20, w: 2, h: 2 }, 'mapa')
-  expect(collisions).toBe(1)
+  expect(colisoes()).toBe(1)
   expect(api.mapSpawn('mapa', 'x')).toBe(24)
+  expect(api.mapSize('mapa', 'height')).toBe(32)
   const area = api.mapObjectNamed('mapa', 'Área')
   expect(api.mapObjectProperty(area, 'vida')).toBe(3)
   expect(api.mapInArea({ x: 23, y: 23, w: 2, h: 2 }, area)).toBe(true)
@@ -113,19 +150,74 @@ it('compõe camadas, espelho, opacidade, objetos e colisão sem perder dados', (
   api.drawMapScene('mapa', 'back')
   expect(enters).toBe(1)
 })
-it('projetos sem os novos métodos recebem os mesmos bytes; a variante completa tem teto próprio', async () => {
+
+it('confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício', () => {
+  const fila: Array<() => void> = []
+  const { api } = tocador(null, null, { frame: (step: () => void) => fila.push(step) })
+  const quadro = () => {
+    for (const step of fila.splice(0)) step()
+  }
+  api.createMapScene('mapa', 'vila')
+  const corpo = { x: 0, y: 0, w: 2, h: 2 }
+  let enters = 0
+  api.mapArea('mapa', corpo, 'trigger', () => enters++)
+  // Um relógio só, por mais eventos que o jogo registre.
+  api.mapArea('mapa', corpo, 'start', () => {})
+  expect(fila).toHaveLength(1)
+  quadro()
+  expect(enters).toBe(0)
+  corpo.x = 23
+  corpo.y = 23
+  quadro()
+  quadro()
+  expect(enters).toBe(1)
+  // Só a frente desenhada, ou só a colisão: o evento chega do mesmo jeito.
+  corpo.x = 0
+  api.collideMapScene(corpo, 'mapa')
+  corpo.x = 23
+  api.collideMapScene(corpo, 'mapa')
+  expect(enters).toBe(2)
+  ;(api as unknown as { reset: () => void }).reset()
+  quadro()
+  expect(fila).toHaveLength(0)
+})
+
+it.skipIf(!nativo)('compõe camadas, espelho e opacidade nos pixels', () => {
+  if (!nativo) return
+  const canvas = nativo.createCanvas(32, 32),
+    sheet = nativo.createCanvas(16, 16),
+    s = sheet.getContext('2d')
+  s.fillStyle = 'red'
+  s.fillRect(0, 0, 8, 16)
+  s.fillStyle = 'green'
+  s.fillRect(8, 0, 8, 16)
+  Object.assign(sheet, { complete: true, naturalWidth: 16 })
+  const { api } = tocador(canvas.getContext('2d'), sheet)
+  api.createMapScene('mapa', 'vila')
+  api.drawMapScene('mapa', 'back')
+  expect(canvas.getContext('2d').getImageData(1, 1, 1, 1).data[1]).toBeGreaterThan(100)
+  expect(canvas.getContext('2d').getImageData(1, 1, 1, 1).data[3]).toBe(128)
+})
+
+it('sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto', async () => {
   const old = { code: 'SZGame2D.clear();' } as ExtensionBootstrapContext,
     newCode = {
       code: 'const g=SZGame2D;g["createMapScene"]("mapa","vila");',
     } as ExtensionBootstrapContext
-  expect(mapTwoDBootstrapVariant(old)).toBe('')
+  // A chave reduzida não é vazia: `''` é a variante padrão do host, que tira o contexto.
+  expect(mapTwoDBootstrapVariant(old)).toBe(MAP_TWO_D_WITHOUT_SCENE_VARIANT)
+  expect(MAP_TWO_D_WITHOUT_SCENE_VARIANT).not.toBe('')
+  expect(mapTwoDBootstrapVariant(newCode)).toBe('')
+  expect(mapTwoDBootstrapVariant()).toBe('')
   expect(await mapTwoDBootstrap('g2d', old)).toBe(gameTwoDRuntime)
   expect(await mapTwoDBootstrap('gk', old)).toBe(gameKitRuntime)
   for (const target of ['g2d', 'gk'] as const) {
-    const full = await mapTwoDBootstrap(target, newCode),
-      base = target === 'g2d' ? gameTwoDRuntime : gameKitRuntime
+    const full = await mapTwoDBootstrap(target, newCode)
+    expect(await mapTwoDBootstrap(target)).toBe(full)
     expect(() => new Function(full)).not.toThrow()
-    expect(full.length - base.length).toBeLessThanOrEqual(MAP_TWO_D_BOOTSTRAP_EXTRA_CHARS)
+    expect(full.length).toBeLessThanOrEqual(MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS[target])
+    // O teto não é folga solta: fica a menos de 3% do que o motor mede hoje.
+    expect(full.length).toBeGreaterThan(MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS[target] * 0.97)
     expect(full).toContain('createMapScene:_map2d.createMapScene')
   }
 })

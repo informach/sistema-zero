@@ -32,6 +32,8 @@ import {
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
+  PINTA_MAX_SCHEMA,
+  PINTA_SCENE_SCHEMA,
   TILE_SIZES,
   uniqueAnimationName,
   VECTOR_TILE_SIZES,
@@ -52,6 +54,8 @@ export {
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
+  PINTA_MAX_SCHEMA,
+  PINTA_SCENE_SCHEMA,
   SPRITE_FRAME_SIZES,
   TILE_SIZES,
   uniqueAnimationName,
@@ -371,8 +375,30 @@ export function sanitizeTilesetExtras(
     })
     if (terrains.length) out.terrains = ensureUniqueIds(terrains)
   }
-  if (count > LEGACY_MAP.tiles || Object.keys(out).length) out.schema = PINTA_MAP_SCHEMA
+  // O carimbo acompanha o conteúdo: 4 com animação, terreno ou propriedade de peça; 3 só por
+  // passar de 64 peças; ausente no conjunto que cabe no formato antigo.
+  const schema = tilesetSchemaFor({ tiles: { length: count }, ...out })
+  if (schema !== undefined) out.schema = schema
   return out
+}
+
+type TilesetSchemaInput = Pick<TilesetAsset, 'animations' | 'terrains' | 'tileProperties'> & {
+  tiles: { length: number }
+}
+
+/** O conjunto de peças guarda animação, terreno ou propriedade de peça (cena completa)? */
+export function tilesetNeedsV4(tileset: TilesetSchemaInput): boolean {
+  return (
+    (tileset.animations !== undefined && Object.keys(tileset.animations).length > 0) ||
+    (tileset.terrains !== undefined && tileset.terrains.length > 0) ||
+    (tileset.tileProperties !== undefined && Object.keys(tileset.tileProperties).length > 0)
+  )
+}
+
+/** O carimbo que este conjunto de peças precisa levar, ou `undefined` quando não precisa. */
+export function tilesetSchemaFor(tileset: TilesetSchemaInput): number | undefined {
+  if (tilesetNeedsV4(tileset)) return PINTA_SCENE_SCHEMA
+  return tileset.tiles.length > LEGACY_MAP.tiles ? PINTA_MAP_SCHEMA : undefined
 }
 
 /**
@@ -526,8 +552,9 @@ export interface TilemapAsset extends PintaAssetBase {
   /** Nasce com 1 camada ("Chão"); peças, objetos e grupos dividem o teto de camadas. */
   layers: TilemapLayer[]
   /**
-   * Carimbo do formato, gravado só quando o mapa usa algo que o formato anterior não descreve
-   * (`tilemapNeedsV3`). Um código que não conhece o número NÃO lê o mapa (devolve `null` sem
+   * Carimbo do formato, gravado só quando o mapa usa algo que o formato anterior não descreve:
+   * 3 para o que é de camadas (`tilemapNeedsV3`), 4 para o que é da cena completa
+   * (`tilemapNeedsV4`). Um código que não conhece o número NÃO lê o mapa (devolve `null` sem
    * regravar), em vez de cortar o que não entende.
    */
   schema?: number
@@ -536,7 +563,11 @@ export interface TilemapAsset extends PintaAssetBase {
 /** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
 export interface MapSetAsset extends PintaAssetBase {
   kind: 'map-set'
-  schema: 3
+  /**
+   * Sempre 4 quando sai do sanitizador ou da gravação (`withPintaSchemaStamp`). O tipo aceita
+   * número para ler o 3 que as primeiras versões gravaram.
+   */
+  schema: number
   map: TilemapAsset
 }
 
@@ -697,10 +728,64 @@ export function tilemapNeedsV2(tilemap: TilemapAsset): boolean {
 const LEGACY_MAP = { cols: 128, rows: 128, layers: 8, tiles: 64 } as const
 
 /**
- * O mapa usa algo que só o formato 3 descreve? Decide o carimbo `schema` e o envelope do
- * `.pinta.json`. Um mapa que cabe no formato anterior continua saindo exatamente como antes.
+ * O mapa usa algo que o formato de antes das camadas não descreve (formato 3 OU 4)? É a
+ * pergunta de quem decide entre o caminho antigo e o da cena (desenho, entrega ao Estúdio). Um
+ * mapa que cabe no formato anterior continua saindo exatamente como antes. Para saber QUAL
+ * carimbo o mapa leva, use `tilemapSchemaFor`.
  */
 export function tilemapNeedsV3(tilemap: TilemapAsset): boolean {
+  return tilemapNeedsLayersFormat(tilemap) || tilemapNeedsV4(tilemap)
+}
+
+/**
+ * O mapa usa algo que só a cena completa descreve (formato 4)? Hoje são os objetos: forma,
+ * giro, espelho, papel, arte, instância de conjunto e propriedade tipada.
+ */
+export function tilemapNeedsV4(tilemap: TilemapAsset): boolean {
+  return tilemap.layers.some((layer) => isObjectLayer(layer) && layer.objects.some(objectNeedsV4))
+}
+
+/** O carimbo que este mapa precisa levar, ou `undefined` quando cabe no formato antigo. */
+export function tilemapSchemaFor(tilemap: TilemapAsset): number | undefined {
+  if (tilemapNeedsV4(tilemap)) return PINTA_SCENE_SCHEMA
+  return tilemapNeedsLayersFormat(tilemap) ? PINTA_MAP_SCHEMA : undefined
+}
+
+/**
+ * O carimbo que o desenho PRECISA, calculado pelo conteúdo e não pela chave `schema` (que pode
+ * estar velha em memória). Zero = não precisa de carimbo. É o que a sincronia com a nuvem
+ * compara para perceber um registro que perdeu recursos.
+ */
+export function pintaAssetSchema(asset: PintaAsset): number {
+  if (asset.kind === 'map-set') return PINTA_SCENE_SCHEMA
+  if (asset.kind === 'tilemap') return tilemapSchemaFor(asset) ?? 0
+  if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')
+    return tilesetSchemaFor(asset) ?? 0
+  return 0
+}
+
+/**
+ * O desenho com o carimbo `schema` certo para o conteúdo: entra quando precisa, some quando deixa
+ * de precisar. Mesmo desenho (mesma referência) quando já está certo. Toda GRAVAÇÃO passa por
+ * aqui (`state/persistence`, `assets/wire`): o editor mexe no mapa em memória sem recalcular o
+ * carimbo, e é o carimbo no disco que faz um código mais antigo recusar o registro.
+ */
+export function withPintaSchemaStamp<T extends PintaAsset>(asset: T): T {
+  if (asset.kind === 'map-set') {
+    const map = withPintaSchemaStamp(asset.map)
+    if (map === asset.map && asset.schema === PINTA_SCENE_SCHEMA) return asset
+    return { ...asset, schema: PINTA_SCENE_SCHEMA, map }
+  }
+  if (asset.kind !== 'tilemap' && asset.kind !== 'tileset' && asset.kind !== 'vector-tileset')
+    return asset
+  const needed = pintaAssetSchema(asset)
+  if ((asset.schema ?? 0) === needed) return asset
+  const { schema: _stale, ...rest } = asset
+  return (needed ? { ...rest, schema: needed } : rest) as T
+}
+
+/** O mapa usa algo do formato de camadas (3)? Não olha os objetos: isso é do formato 4. */
+function tilemapNeedsLayersFormat(tilemap: TilemapAsset): boolean {
   if (tilemap.cols > LEGACY_MAP.cols || tilemap.rows > LEGACY_MAP.rows) return true
   if (tilemap.layers.length > LEGACY_MAP.layers) return true
   return tilemap.layers.some((layer) => {
@@ -716,7 +801,6 @@ export function tilemapNeedsV3(tilemap: TilemapAsset): boolean {
       layer.properties !== undefined
     )
       return true
-    if (isObjectLayer(layer)) return layer.objects.some(objectNeedsV3)
     if (!isTileLayer(layer)) return false
     if (layer.collision !== undefined) return true
     // Peça acima do teto antigo ou virada: o código antigo descartaria a camada inteira.
@@ -1303,8 +1387,11 @@ export function sanitizeObjectProperties(raw: unknown): Record<string, TilemapOb
   return Object.fromEntries(entries)
 }
 
-/** Os objetos de uma camada: objeto sem id ou com medida inválida é DESCARTADO. */
-export function objectNeedsV3(o: TilemapObject): boolean {
+/**
+ * O objeto usa algo além do ponto e do retângulo de sempre? Qualquer destas chaves pede o
+ * formato 4: o código que só conhece camadas reconstruiria o objeto sem elas.
+ */
+export function objectNeedsV4(o: TilemapObject): boolean {
   return (
     o.shape !== undefined ||
     o.rotation !== undefined ||
@@ -1362,6 +1449,7 @@ export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<Tilema
   return out
 }
 
+/** Os objetos de uma camada: objeto sem id ou com medida inválida é DESCARTADO. */
 export function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
   if (!Array.isArray(raw)) return []
   const objects: TilemapObject[] = []
@@ -1482,7 +1570,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     case 'tileset': {
       if (
         record.schema !== undefined &&
-        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAP_SCHEMA)
+        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAX_SCHEMA)
       )
         return null
       if (
@@ -1525,7 +1613,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       // Formato mais novo que este código: não lê. Ler seria reconstruir o mapa sem o que não
       // conhecemos; quem chama recebe `null` e o registro guardado fica como está.
       if (record.schema !== undefined) {
-        if (typeof record.schema !== 'number' || record.schema > PINTA_MAP_SCHEMA) return null
+        if (typeof record.schema !== 'number' || record.schema > PINTA_MAX_SCHEMA) return null
       }
       if (!isFinitePositiveInt(record.cols, PINTA_MAP_FORMAT_LIMITS.maxCols)) return null
       if (!isFinitePositiveInt(record.rows, PINTA_MAP_FORMAT_LIMITS.maxRows)) return null
@@ -1596,13 +1684,16 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         rows: record.rows,
         layers: sanitizeLayerTree(layers),
       }
-      // O carimbo acompanha o conteúdo: entra quando o mapa precisa do formato 3 e sai quando
-      // deixa de precisar (o mapa que cabe no formato antigo fica byte a byte como era).
-      return tilemapNeedsV3(tilemap) ? { ...tilemap, schema: PINTA_MAP_SCHEMA } : tilemap
+      // O carimbo acompanha o conteúdo: 3 quando o mapa só usa camadas, 4 quando usa a cena
+      // completa, e sai quando deixa de precisar (o mapa que cabe no formato antigo fica byte a
+      // byte como era).
+      const schema = tilemapSchemaFor(tilemap)
+      return schema === undefined ? tilemap : { ...tilemap, schema }
     }
     case 'map-set': {
+      // Lê o 3 das primeiras versões e o 4; devolve sempre 4.
       if (
-        record.schema !== 3 ||
+        (record.schema !== PINTA_MAP_SCHEMA && record.schema !== PINTA_SCENE_SCHEMA) ||
         !record.map ||
         typeof record.map !== 'object' ||
         (record.map as Record<string, unknown>).kind !== 'tilemap'
@@ -1616,7 +1707,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         )
       )
         return null
-      return { ...base, kind: 'map-set', schema: 3, map }
+      return { ...base, kind: 'map-set', schema: PINTA_SCENE_SCHEMA, map }
     }
     // `vector` é o kind ANTIGO (pré paridade vetorial): migra para
     // `vector-background` aqui, sem tocar nos dados.
@@ -1656,7 +1747,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     case 'vector-tileset': {
       if (
         record.schema !== undefined &&
-        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAP_SCHEMA)
+        (!Number.isInteger(record.schema) || Number(record.schema) > PINTA_MAX_SCHEMA)
       )
         return null
       if (

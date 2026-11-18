@@ -164,7 +164,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' ||
         typeof meta.grid !== 'string') {
       try {
-        console.warn('O desenho "' + name + '" nao veio com um mapa do Pinta. Envie o MAPA pelo foguete do Pinta (ou use "Criar mapa de tiles" para montar na mao).');
+        // Só a cena (mapa grande ou rico demais para este bloco): aponta o bloco novo.
+        if (entry && (entry.scene || entry.hasScene)) console.warn('O desenho "' + name + '" é um cenário. Use o bloco "Criar cenário do meu desenho".');
+        else console.warn('O desenho "' + name + '" nao veio com um mapa do Pinta. Envie o MAPA pelo foguete do Pinta (ou use "Criar mapa de tiles" para montar na mao).');
       } catch (e) {}
       return createTileMap({ image: '', tile: 32, solid: '', grid: '' });
     }

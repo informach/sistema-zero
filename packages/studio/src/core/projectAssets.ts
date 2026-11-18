@@ -1,5 +1,8 @@
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
-import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import {
+  codeUsesPintaScenePlayer,
+  PINTA_STUDIO_LEGACY_LIMITS,
+} from '@sistemazero/core/studio/pinta-limits'
 import {
   type PintaScene,
   readPintaScene,
@@ -566,6 +569,8 @@ export function sanitizeProjectAssets(
   options: {
     materialPath?: (path: unknown) => path is string
     dataLimits?: ProjectAssetDataLimits
+    /** Recebe os avisos do que foi deixado de fora sem derrubar o material (hoje, a cena). */
+    warnings?: string[]
   } = {},
 ): ProjectAsset[] {
   if (!Array.isArray(raw)) return []
@@ -633,16 +638,32 @@ export function sanitizeProjectAssets(
     if (front) asset.tilemapFront = front
     const scene = sanitizeSceneMeta(a.scene)
     if (scene) {
-      if (totalChars + a.dataUrl.length + JSON.stringify(scene).length > MAX_ASSETS_TOTAL_CHARS)
-        continue
-      asset.scene = scene
-      totalChars += JSON.stringify(scene).length
+      // A cena conta no orçamento, igual à escrita (`projectAssetBudgetChars`). Se ela não
+      // cabe, sai SÓ a cena: a imagem, que cabe, fica, e a criança é avisada.
+      const sceneChars = JSON.stringify(scene).length
+      if (totalChars + a.dataUrl.length + sceneChars > dataLimits.maxAssetsTotalChars) {
+        const warning = `O cenário do desenho "${name}" não coube neste projeto e ficou de fora. A imagem foi mantida.`
+        options.warnings?.push(warning)
+        console.warn(warning)
+      } else {
+        asset.scene = scene
+        totalChars += sceneChars
+      }
     }
     seenNames.add(name)
     totalChars += a.dataUrl.length
     out.push(asset)
   }
   return out
+}
+
+/**
+ * Quanto um material pesa no orçamento total do projeto: os bytes dele e a cena do Pinta,
+ * que pode passar de 2 milhões de caracteres. Fonte única para a escrita (store, varredura
+ * dos desenhos) e para a leitura: o que a escrita aceita, a leitura não descarta.
+ */
+export function projectAssetBudgetChars(asset: { dataUrl: string; scene?: unknown }): number {
+  return asset.dataUrl.length + (asset.scene ? JSON.stringify(asset.scene).length : 0)
 }
 
 /**
@@ -720,12 +741,23 @@ export function asset3DManifest(
  * o que o runtime precisa: mapa, caixa de colisão e animações nomeadas. Semeado em `window.__SZGAME_ASSET_META`
  * pelos mesmos call sites. Só entra asset com meta presente (objeto vazio = nada
  * a injetar; o assetsBridge emite saída byte-idêntica à de antes).
+ *
+ * A CENA do Pinta (até 2,1 milhões de caracteres) só viaja quando o código do jogo usa um
+ * bloco de cenário: é a mesma pergunta que escolhe o motor (`codeUsesPintaScenePlayer`), feita
+ * ao MESMO contexto (`extensionBootstrapContext`). Sem contexto (chamador antigo, teste) a
+ * cena vai: é o lado seguro. Quando ela fica de fora, vai só o sinal `hasScene`, para o
+ * bloco antigo de mapa dizer à criança que aquele desenho é um cenário.
+ *
+ * `tilemapFront` não viaja: nenhum motor o lê (a frente do cenário é lida da própria cena) e
+ * a folha repetida custava até 180 mil caracteres por documento.
  */
 export function assetMetaManifest(
   assets: readonly ProjectAsset[] | undefined | null,
+  context?: { code: string },
 ): Record<string, ProjectAssetPreviewMeta> {
   const out: Record<string, ProjectAssetPreviewMeta> = {}
   if (!assets) return out
+  const sendScene = !context || codeUsesPintaScenePlayer(context.code)
   for (const a of assets) {
     if (a?.kind !== 'image' || typeof a.name !== 'string') continue
     const hitbox = a.sprite?.hitbox
@@ -734,8 +766,7 @@ export function assetMetaManifest(
     if (!a.tilemap && !a.scene && !hitbox && !sprite) continue
     out[a.name] = {
       ...(a.tilemap ? { tilemap: a.tilemap } : {}),
-      ...(a.tilemapFront ? { tilemapFront: a.tilemapFront } : {}),
-      ...(a.scene ? { scene: a.scene } : {}),
+      ...(a.scene ? (sendScene ? { scene: a.scene } : { hasScene: true as const }) : {}),
       ...(hitbox ? { hitbox } : {}),
       ...(sprite ? { sprite } : {}),
     }
@@ -743,10 +774,11 @@ export function assetMetaManifest(
   return out
 }
 
-/** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa e/ou caixa). */
+/** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa, cena e/ou caixa). */
 export interface ProjectAssetPreviewMeta {
-  tilemapFront?: ProjectTilemapMeta
   scene?: PintaScene
+  /** O desenho tem cena, mas este jogo não usa bloco de cenário: a cena ficou de fora. */
+  hasScene?: true
   tilemap?: ProjectTilemapMeta
   hitbox?: ProjectSpriteHitbox
   sprite?: ProjectSpriteMeta

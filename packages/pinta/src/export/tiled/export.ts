@@ -347,6 +347,10 @@ const xml = (v: unknown): string =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&apos;')
+    // Num atributo, o leitor XML troca quebra de linha e tabulação cruas por espaço.
+    .replaceAll('\t', '&#9;')
+    .replaceAll('\n', '&#10;')
+    .replaceAll('\r', '&#13;')
 function attrs(obj: Record<string, unknown>, keys: string[]): string {
   return keys
     .filter((k) => obj[k] !== undefined)

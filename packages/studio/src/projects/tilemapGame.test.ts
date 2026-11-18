@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { behaviorStatements, type JSStatement, type SZIRInput, SZIRInputSchema } from '#ir'
+import { mapTwoDBootstrap } from '../official-extensions/map-2d/bootstrap'
 import { assembleTilemapGameProject, type TilemapGamePayload } from './tilemapGame'
 
 const DATA = 'data:image/png;base64,AAAA'
@@ -94,11 +95,105 @@ describe('assembleTilemapGameProject', () => {
     expect(project?.assets?.map((a) => a.libId)).toEqual(['personal:vila', 'personal:cabana'])
     expect(project?.assets?.map((a) => a.libRevision)).toEqual([7, 8])
     const nodes = project?.ir ? behaviorStatements(project.ir) : []
-    expect(nodes.find((s) => s.type === 'g2d:createSprite')).toMatchObject({ x: 48, y: 32 })
+    // O início e o tamanho são blocos que LEEM o cenário, nunca números do mapa de hoje.
+    const lido = (method: string, axis: string) => ({
+      type: 'g2d:sceneValue',
+      method,
+      args: [
+        { type: 'str', value: 'mapa' },
+        { type: 'str', value: axis },
+      ],
+    })
+    expect(nodes.find((s) => s.type === 'g2d:createSprite')).toMatchObject({
+      x: lido('mapSpawn', 'x'),
+      y: lido('mapSpawn', 'y'),
+    })
+    expect(nodes.find((s) => s.type === 'g2d:createWorld')).toMatchObject({
+      width: lido('mapSize', 'width'),
+      height: lido('mapSize', 'height'),
+    })
+    const script = project?.files['script.js'] ?? ''
+    expect(script).not.toMatch(/\b48\b/)
     expect(nodes.some((s) => s.type === 'g2d:sceneEvent' && s.method === 'mapArea')).toBe(true)
     expect(project?.blocksState).toBeTruthy()
     expect(SZIRInputSchema.safeParse(project?.ir).success).toBe(true)
     expect(project?.files['script.js']).toContain('drawMapScene')
+  })
+  it('mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo', async () => {
+    const cena = (x: number, y: number, cols: number) => ({
+      version: 1,
+      id: 'vila',
+      name: 'vila',
+      tileSize: 16,
+      cols,
+      rows: 4,
+      tilesets: [
+        { id: 'ts', name: 'ts', image: DATA, columns: 1, count: 1, solid: [], platform: [] },
+      ],
+      layers: [
+        {
+          id: 'o',
+          name: 'Objetos',
+          kind: 'objects',
+          visible: true,
+          objects: [
+            {
+              id: 's',
+              name: 'Início',
+              type: '',
+              shape: 'point',
+              role: 'start',
+              x,
+              y,
+              width: 0,
+              height: 0,
+              properties: {},
+            },
+          ],
+        },
+      ],
+    })
+    const project = assembleTilemapGameProject(payload({ id: 'vila', scene: cena(48, 32, 4) }))
+    const script = project?.files['script.js'] ?? ''
+    const nome = project?.assets?.[0]?.name ?? ''
+    // O MESMO texto de programa roda contra o motor de verdade, com o material de antes e o
+    // de depois de a criança mexer no mapa.
+    const motor = await mapTwoDBootstrap('g2d', { code: script })
+    const jogar = (scene: unknown) => {
+      const win = {
+        addEventListener() {},
+        performance: { now: () => 0 },
+        devicePixelRatio: 1,
+        __SZGAME_ASSET_META: { [nome]: { scene } },
+        __SZGAME_ASSETS: { [nome]: DATA },
+        __SZProjectLifecycle: { begin: () => ({}) },
+      } as Record<string, unknown>
+      new Function('window', 'requestAnimationFrame', motor)(win, () => 0)
+      const real = win.SZGame2D as Record<string, (...args: unknown[]) => unknown>
+      const nasceu: Array<{ x: number; y: number }> = []
+      const mundos: unknown[][] = []
+      const api = {
+        ...real,
+        onStart: (run: () => void) => run(),
+        gameLoop: () => {},
+        createSprite: (options: { x: number; y: number }) => {
+          nasceu.push({ x: options.x, y: options.y })
+          return real.createSprite?.(options)
+        },
+        createWorld: (...args: unknown[]) => {
+          mundos.push(args)
+          return real.createWorld?.(...args)
+        },
+      }
+      new Function('SZGame2D', 'window', 'ctx', script)(api, win, null)
+      return { nasceu, mundos }
+    }
+    const antes = jogar(cena(48, 32, 4))
+    expect(antes.nasceu).toEqual([{ x: 48, y: 32 }])
+    expect(antes.mundos).toEqual([[64, 64]])
+    const depois = jogar(cena(8, 56, 10))
+    expect(depois.nasceu).toEqual([{ x: 8, y: 56 }])
+    expect(depois.mundos).toEqual([[160, 64]])
   })
   it('monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos', () => {
     const project = assembleTilemapGameProject(payload())

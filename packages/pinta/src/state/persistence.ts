@@ -21,6 +21,7 @@ import {
   pintaAssetDependencyIds,
   sanitizePintaAsset,
   tilemapTilesetIds,
+  withPintaSchemaStamp,
 } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
@@ -365,7 +366,10 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   const backupSizeCache = backupSizeCacheFor(storeHandle)
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return
-    const unique = new Map(assets.map((asset) => [asset.id, asset]))
+    // O carimbo `schema` é recalculado a cada gravação. O editor muda o mapa em memória sem
+    // mexer nele, e é o carimbo NO DISCO que faz outra aba com código mais antigo recusar o
+    // registro em vez de abrir, cortar o que não conhece e salvar por cima.
+    const unique = new Map(assets.map((asset) => [asset.id, withPintaSchemaStamp(asset)]))
     const pairs = [...unique.values()].map(
       (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
     )

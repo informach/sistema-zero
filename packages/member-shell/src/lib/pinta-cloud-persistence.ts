@@ -35,6 +35,16 @@
  * subi-lo cortaria o desenho de verdade. São TRÊS os caminhos que baixam e leem (a reconciliação,
  * a base vencida na subida e o DELETE recusado) e os três param antes de ler. O item entra em
  * `getReadIssues` para a galeria pedir que a página seja atualizada.
+ *
+ * ⚠️⚠️ Registro local CORTADO por código mais antigo (18/11/2026, `PintaFormatMemory`): outra aba
+ * deste aparelho, ainda com o Pinta antigo carregado, pode abrir um mapa do IndexedDB, reconstruir
+ * o registro sem o que não conhece e salvar por cima com `updatedAt` novo. A subida DELA a nuvem
+ * recusa, mas este código veria "local mudou" e subiria o registro cortado declarando a versão
+ * atual. Por isso, ao lado da marca de sincronia, fica lembrado o carimbo `schema` que o desenho
+ * tinha na última sincronia e qual gravação saiu DESTE código. Carimbo menor que o lembrado numa
+ * gravação que não é nossa = corte: não sobe. A versão da nuvem volta no mesmo id e a daqui
+ * fica como `-copia` (`resolveLostFormat`). Baixar o carimbo por aqui (a criança apagou o último
+ * objeto com forma) é gravação nossa e sobe normalmente.
  */
 
 import {
@@ -77,6 +87,112 @@ export interface PintaCloudReadIssue {
   name: string
   status: 'unsupported'
   version: number
+}
+
+/**
+ * O que fica lembrado por desenho, ao lado da marca de sincronia, para perceber um registro local
+ * que perdeu recursos (ver o cabeçalho). Só existe para desenho que já sincronizou COM carimbo.
+ */
+export interface PintaFormatMemoryEntry {
+  /** O carimbo `schema` do desenho na última sincronia confirmada (subida ou descida). */
+  schema: number
+  /** O `updatedAt` da última gravação local feita POR ESTE código (a nossa assinatura). */
+  writtenAt?: number
+  /** Já foi visto cortado e ainda não foi resolvido: continua valendo mesmo se editarem por cima. */
+  cut?: true
+}
+
+export interface PintaFormatMemory {
+  get(id: string): PintaFormatMemoryEntry | undefined
+  set(id: string, entry: PintaFormatMemoryEntry): void
+  delete(id: string): void
+}
+
+/** Memória de formato só em memória (testes, storage indisponível). */
+export function createMemoryPintaFormatMemory(): PintaFormatMemory {
+  const entries = new Map<string, PintaFormatMemoryEntry>()
+  return {
+    get: (id) => entries.get(id),
+    set: (id, entry) => {
+      entries.set(id, entry)
+    },
+    delete: (id) => {
+      entries.delete(id)
+    },
+  }
+}
+
+function isFormatMemoryEntry(value: unknown): value is PintaFormatMemoryEntry {
+  if (!value || typeof value !== 'object') return false
+  const entry = value as Record<string, unknown>
+  return (
+    typeof entry.schema === 'number' &&
+    Number.isFinite(entry.schema) &&
+    (entry.writtenAt === undefined || typeof entry.writtenAt === 'number') &&
+    (entry.cut === undefined || entry.cut === true)
+  )
+}
+
+/**
+ * Memória de formato em `localStorage`, por perfil. Lê do storage a cada consulta (o registro é
+ * pequeno: só desenhos com carimbo) para enxergar o que outra aba gravou. Storage indisponível
+ * ou cheio = fica só em memória; sem memória a checagem simplesmente não acontece (nunca
+ * bloqueia uma subida por engano).
+ */
+export function createStoredPintaFormatMemory(storageKey: string): PintaFormatMemory {
+  let store: Storage | null = null
+  try {
+    store = typeof localStorage !== 'undefined' ? localStorage : null
+  } catch {
+    store = null
+  }
+  let fallback = new Map<string, PintaFormatMemoryEntry>()
+  const read = (): Map<string, PintaFormatMemoryEntry> => {
+    if (!store) return fallback
+    try {
+      const raw = store.getItem(storageKey)
+      const parsed: unknown = raw ? JSON.parse(raw) : {}
+      const next = new Map<string, PintaFormatMemoryEntry>()
+      if (parsed && typeof parsed === 'object')
+        for (const [id, value] of Object.entries(parsed as Record<string, unknown>))
+          if (isFormatMemoryEntry(value)) next.set(id, value)
+      fallback = next
+      return next
+    } catch {
+      return fallback
+    }
+  }
+  const write = (entries: Map<string, PintaFormatMemoryEntry>): void => {
+    fallback = entries
+    if (!store) return
+    try {
+      if (entries.size === 0) store.removeItem(storageKey)
+      else store.setItem(storageKey, JSON.stringify(Object.fromEntries(entries)))
+    } catch {
+      // Cota cheia ou storage bloqueado: segue só em memória.
+    }
+  }
+  return {
+    get: (id) => read().get(id),
+    set: (id, entry) => {
+      const entries = read()
+      entries.set(id, entry)
+      write(entries)
+    },
+    delete: (id) => {
+      const entries = read()
+      if (entries.delete(id)) write(entries)
+    },
+  }
+}
+
+/**
+ * O carimbo `schema` de um desenho LIDO do disco (o sanitizador do pacote o recalcula a cada
+ * leitura, e a gravação também). Zero = sem carimbo.
+ */
+function schemaStampOf(asset: PintaAsset): number {
+  const schema = (asset as { schema?: unknown }).schema
+  return typeof schema === 'number' && Number.isFinite(schema) ? schema : 0
 }
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
@@ -168,6 +284,8 @@ export function createCloudMirroredPintaPersistence(options: {
   viewerId: string
   localNamespace?: string
   marks?: SyncedMarks
+  /** O carimbo lembrado por desenho (ver `PintaFormatMemory`). Padrão: `localStorage` do perfil. */
+  formatMemory?: PintaFormatMemory
   now?: () => number
   /**
    * O desenho está ABERTO no editor agora? (`isPintaAssetOpen` do pacote.) A descida NÃO
@@ -202,6 +320,62 @@ export function createCloudMirroredPintaPersistence(options: {
     createStoredSyncedMarks(
       `sz:creations-synced:pinta:${options.localNamespace ?? options.viewerId}`,
     )
+  const formatMemory =
+    options.formatMemory ??
+    createStoredPintaFormatMemory(
+      `sz:creations-synced:pinta:${options.localNamespace ?? options.viewerId}:formato`,
+    )
+
+  /** Só mapas, peças e conjuntos levam carimbo; os outros tipos nem entram na memória. */
+  const hasFormat = (kind: string): boolean => pintaWriteFormatVersion(kind) > 1
+
+  /** Uma DESCIDA gravou o desenho: o local ficou igual à conta, com este carimbo. */
+  function rememberDownloaded(asset: PintaAsset): void {
+    const schema = schemaStampOf(asset)
+    if (schema > 0) formatMemory.set(asset.id, { schema, writtenAt: asset.updatedAt })
+    else formatMemory.delete(asset.id)
+  }
+
+  /**
+   * Uma SUBIDA foi confirmada com este carimbo. A assinatura da nossa última gravação fica como
+   * está: a criança pode ter salvo de novo enquanto o envio estava em voo.
+   */
+  function rememberUploaded(id: string, schema: number, updatedAt: number): void {
+    const entry = formatMemory.get(id)
+    if (entry) formatMemory.set(id, { schema, writtenAt: entry.writtenAt ?? updatedAt })
+    else if (schema > 0) formatMemory.set(id, { schema, writtenAt: updatedAt })
+  }
+
+  /**
+   * Este código vai gravar o desenho no aparelho: assina a gravação (o `updatedAt` dela). Feito
+   * ANTES de gravar, para nenhuma leitura ver o registro novo sem a assinatura; se a gravação
+   * falhar, a assinatura de um `updatedAt` que não está no disco não combina com nada.
+   */
+  function noteWrittenHere(asset: PintaAsset): void {
+    if (!hasFormat(asset.kind)) return
+    const entry = formatMemory.get(asset.id) ?? { schema: 0 }
+    if (entry.writtenAt !== asset.updatedAt)
+      formatMemory.set(asset.id, { ...entry, writtenAt: asset.updatedAt })
+  }
+
+  /**
+   * O registro local perdeu recursos por uma gravação que não saiu deste código? Carimbo menor
+   * que o da última sincronia E `updatedAt` que não é o da nossa última gravação. Uma vez visto,
+   * fica marcado (`cut`) até ser resolvido: editar por cima do registro cortado não o conserta.
+   */
+  function lostFormat(asset: PintaAsset): boolean {
+    if (!hasFormat(asset.kind)) return false
+    const entry = formatMemory.get(asset.id)
+    if (!entry) return false
+    if (entry.cut) return true
+    if (schemaStampOf(asset) >= entry.schema || entry.writtenAt === asset.updatedAt) return false
+    formatMemory.set(asset.id, { ...entry, cut: true })
+    return true
+  }
+
+  /** Carimbo do que cada envio em voo leu do disco, para lembrar na confirmação. */
+  const sendingSchema = new Map<string, number>()
+
   /**
    * Quando o envio de cada desenho COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
    * commit compara esse instante com o `at` da lápide: uma exclusão que nasceu DEPOIS de o envio
@@ -235,6 +409,14 @@ export function createCloudMirroredPintaPersistence(options: {
           sendingAt.delete(asset.id)
           return null
         }
+        // O registro perdeu recursos por uma gravação de código mais antigo (outra aba): não
+        // sobe. A versão da conta volta e a daqui fica como cópia.
+        if (lostFormat(current)) {
+          sendingAt.delete(asset.id)
+          void resolveLostFormat(asset.id).catch(() => undefined)
+          return null
+        }
+        sendingSchema.set(asset.id, schemaStampOf(current))
         return {
           json: assetToJson(current),
           meta: {
@@ -256,6 +438,9 @@ export function createCloudMirroredPintaPersistence(options: {
         const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
         sendingAt.delete(itemId)
         marks.set(itemId, updatedAt, revision)
+        const sentSchema = sendingSchema.get(itemId)
+        sendingSchema.delete(itemId)
+        if (sentSchema !== undefined) rememberUploaded(itemId, sentSchema, updatedAt)
         // A criança apagou o desenho com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
         // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
@@ -294,6 +479,13 @@ export function createCloudMirroredPintaPersistence(options: {
       // antes de as marcas se encontrarem): só avança a marca — cópia aqui seria uma duplicata.
       if (remote && mine && remote.updatedAt === mine.updatedAt) {
         marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+        rememberDownloaded(remote)
+        return
+      }
+      // O registro daqui foi cortado por código mais antigo: não é um conflito de duas edições
+      // boas. A versão da conta volta no mesmo id (a daqui fica como cópia) e nada sobe por cima.
+      if (remote && mine && lostFormat(mine)) {
+        await resolveLostFormat(id)
         return
       }
       if (remote) {
@@ -312,6 +504,65 @@ export function createCloudMirroredPintaPersistence(options: {
     }
     const current = await local.loadAssetById(id)
     if (current) enqueue(current)
+  }
+
+  /**
+   * O registro local perdeu recursos (`lostFormat`). Tratado como conflito em que a conta vence:
+   * a versão da nuvem volta NO MESMO id e o registro daqui fica como `-copia` (id novo, sobe como
+   * desenho novo), porque a outra aba pode ter pintado algo nele além de cortar. Nada sobe por
+   * cima do item original.
+   *
+   * Não resolve agora, e tenta de novo na próxima subida ou reconciliação, quando: o desenho
+   * está aberto no editor (não grava por baixo), a nuvem não respondeu com algo legível, ou a
+   * conta guarda um formato que este código não lê. Nuvem SEM o item: não há versão inteira para
+   * proteger; o que há aqui sobe.
+   */
+  async function resolveLostFormat(id: string): Promise<void> {
+    // Aberto no editor: nem baixa (cada autosave passaria por aqui). Fica para quando fechar.
+    if (options.isAssetOpen?.(id)) {
+      skippedOpen.add(id)
+      return
+    }
+    const downloaded = await cloud.download(id)
+    if (!downloaded || downloaded.summary.deletedAt) {
+      formatMemory.delete(id)
+      const current = await local.loadAssetById(id)
+      if (current) enqueue(current)
+      return
+    }
+    if (noteUnreadable(downloaded.summary)) return
+    const parsed = assetFromJson(downloaded.json)
+    const remote = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
+    if (!remote || remote.id !== id) return
+    // Abriu o editor enquanto a nuvem respondia: não grava por baixo.
+    if (options.isAssetOpen?.(id)) {
+      skippedOpen.add(id)
+      return
+    }
+    const mine = await local.loadAssetById(id)
+    const others = (await local.listAllAssets()).filter((asset) => asset.id !== id)
+    const taken = new Set(others.map((asset) => asset.name))
+    const restored = taken.has(remote.name)
+      ? { ...remote, name: uniqueAssetName(remote.name, taken) }
+      : remote
+    taken.add(restored.name)
+    const copy: PintaAsset | null =
+      mine && mine.updatedAt !== remote.updatedAt
+        ? { ...mine, id: crypto.randomUUID(), name: copyName(mine.name, taken), updatedAt: now() }
+        : null
+    // Uma gravação só: ou entram a versão da conta e a cópia, ou nada muda.
+    await local.persistAssets(copy ? [restored, copy] : [restored])
+    marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    rememberDownloaded(restored)
+    emitChangedSoon()
+    if (copy) enqueue(copy)
+    console.warn(
+      '[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou',
+      {
+        itemId: id,
+        copia: copy?.id ?? null,
+      },
+    )
   }
 
   /**
@@ -375,6 +626,7 @@ export function createCloudMirroredPintaPersistence(options: {
       : remote
     await local.persistAssets([restored])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    rememberDownloaded(restored)
     marks.clearTombstone(id)
     emitChangedSoon()
     console.warn('[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho', {
@@ -642,6 +894,8 @@ export function createCloudMirroredPintaPersistence(options: {
         nameOwner.set(named.name, named.id)
         // Grava DIRETO no local (id preservado), fora do embrulho: não é edição.
         await local.persistAssets([named])
+        // O local ficou igual à conta: é este o carimbo a comparar daqui em diante.
+        rememberDownloaded(named)
         emitChangedSoon()
         return true
       },
@@ -672,6 +926,7 @@ export function createCloudMirroredPintaPersistence(options: {
       deleteLocal: async (itemId) => {
         const item = localAssets.find((asset) => asset.id === itemId)
         await local.deleteAsset(itemId)
+        formatMemory.delete(itemId)
         if (item && nameOwner.get(item.name) === itemId) {
           nameOwner.delete(item.name)
           takenNames.delete(item.name)
@@ -722,10 +977,12 @@ export function createCloudMirroredPintaPersistence(options: {
 
   return {
     async persistAsset(asset) {
+      noteWrittenHere(asset)
       await local.persistAsset(asset)
       enqueue(asset)
     },
     async persistAssets(assets) {
+      for (const asset of assets) noteWrittenHere(asset)
       await local.persistAssets(assets)
       for (const asset of assets) enqueue(asset)
     },
@@ -734,10 +991,18 @@ export function createCloudMirroredPintaPersistence(options: {
       // A lápide (com a revisão conhecida) ANTES de apagar a marca.
       enqueueRemove(id)
       marks.delete(id)
+      formatMemory.delete(id)
     },
-    loadAssetById: (id) => local.loadAssetById(id),
+    async loadAssetById(id) {
+      const asset = await local.loadAssetById(id)
+      // Marca o corte ANTES de o editor abrir e salvar por cima (a assinatura da gravação dele
+      // esconderia o corte da subida).
+      if (asset) lostFormat(asset)
+      return asset
+    },
     async listAllAssets() {
       const localAssets = await local.listAllAssets()
+      for (const asset of localAssets) lostFormat(asset)
       // A galeria abre AGORA com o que há neste aparelho; a reconciliação com a nuvem corre
       // em segundo plano (single-flight) e avisa o pacote: `sync-start` → a galeria mostra
       // "buscando…", `changed` a cada lote que desce (a galeria relê), `sync-end` no fim.

@@ -265,8 +265,9 @@ class Pecas:
         celula = int(celula)
         indice, flags = celula & 4095, celula & 28672
         quadros = self.animacoes.get(str(indice), ())
-        if quadros:
-            total = sum(quadro['duration'] for quadro in quadros)
+        total = sum(quadro['duration'] for quadro in quadros)
+        # Animação sem duração (dados feitos à mão) fica parada na própria peça.
+        if quadros and total > 0:
             atual = (pygame.time.get_ticks() if tempo is None else tempo) % total
             for quadro in quadros:
                 atual -= quadro['duration']
@@ -404,6 +405,9 @@ class CamadaDePecas:
         self.parallax = (dados.get('parallaxX', 1), dados.get('parallaxY', 1))
         self.propriedades = dict(dados.get('properties', {}))
         self._opacas = {}
+        #: A versão dos dados do mapa. Na 1, ``desenhar`` chamado direto desenha também a camada
+        #: escondida, como sempre fez; quem pula a escondida é ``Mapa.desenhar``.
+        self._versao = getattr(mapa, 'versao', 1)
         self.pecas = pecas
         self.colunas = mapa.colunas
         self.linhas = mapa.linhas
@@ -442,7 +446,7 @@ class CamadaDePecas:
         Só as casas que aparecem na superfície são desenhadas.
         """
         tamanho = self.pecas.tamanho
-        if self.colisao or not self.visivel or self.opacidade <= 0:
+        if self._versao >= 2 and (self.colisao or not self.visivel or self.opacidade <= 0):
             return
         dx = int(deslocamento[0] * self.parallax[0] + self.deslocamento[0])
         dy = int(deslocamento[1] * self.parallax[1] + self.deslocamento[1])
@@ -488,6 +492,8 @@ class Mapa:
         dados = _dados(nome, 'map')
         atlas = _carregar(nome)
         self.nome = dados['name']
+        #: 1 para os mapas de antes; 2 para os que trazem grupos, opacidade, giros e a cena.
+        self.versao = int(dados.get('version', 1))
         self.tamanho_peca = int(dados['tileSize'])
         self.colunas = int(dados['cols'])
         self.linhas = int(dados['rows'])
@@ -708,8 +714,9 @@ class _CenaCompleta:
     def peca(self, ts, celula, tempo):
         tile, flags = celula & 4095, celula & 28672
         quadros = ts.get('animations', {}).get(str(tile), [])
-        if quadros:
-            atual = tempo % sum(q['duration'] for q in quadros)
+        total = sum(q['duration'] for q in quadros)
+        if quadros and total > 0:
+            atual = tempo % total
             for q in quadros:
                 atual -= q['duration']
                 if atual < 0:

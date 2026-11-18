@@ -9,7 +9,7 @@ import {
 import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
 
 const { createGalleryStore } = await import('./galleryStore')
-const { setPintaStorageNamespace, listAllAssets } = await import('./persistence')
+const { setPintaStorageNamespace, listAllAssets, persistAssets } = await import('./persistence')
 
 beforeEach(() => {
   clearIdbMock()
@@ -412,5 +412,91 @@ describe('setPintaStorageNamespace — isolamento por perfil', () => {
     }>
     expect(valuesA.map((asset) => asset.name).sort()).toEqual(['primeiro', 'segundo'])
     expect(idbMockDb('sistema-zero-pinta-perfil-b').size).toBe(0)
+  })
+})
+
+describe('galleryStore: apagar um desenho que outro ainda usa', () => {
+  async function galeria() {
+    const { createPixelSpriteAsset, isObjectLayer } = await import('../core/project')
+    const { createMapSet, placeMapSet } = await import('../tiles/sets')
+    const { addMapObject, createMapObject } = await import('../tiles/mapObjects')
+    const { addObjectLayer } = await import('../tiles/tilemapOps')
+    const pecas = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const outrasPecas = createTilesetAsset({ name: 'outras', tileSize: 16 })
+    const heroi = createPixelSpriteAsset({ name: 'heroi', frameSize: 16 })
+    const solto = createPixelSpriteAsset({ name: 'solto', frameSize: 16 })
+    const origem = createTilemapAsset({ name: 'origem', tilesetId: pecas.id, cols: 2, rows: 2 })
+    const conjunto = createMapSet(origem, { col: 0, row: 0, cols: 1, rows: 1 }, 16, 'casa')
+    let mapa = addObjectLayer(
+      createTilemapAsset({ name: 'fase', tilesetId: pecas.id, cols: 4, rows: 4 }),
+      'Coisas',
+    )
+    const layerId = mapa.layers.find(isObjectLayer)?.id ?? ''
+    mapa = addMapObject(
+      mapa,
+      layerId,
+      createMapObject({
+        name: 'jogador',
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        shape: 'art',
+        art: { assetId: heroi.id },
+      }),
+    )
+    mapa = addMapObject(
+      mapa,
+      layerId,
+      createMapObject({
+        name: 'enfeite',
+        x: 16,
+        y: 0,
+        width: 16,
+        height: 16,
+        shape: 'art',
+        art: { assetId: outrasPecas.id, tile: 0 },
+      }),
+    )
+    mapa = placeMapSet(mapa, layerId, conjunto, 32, 32, 16)
+    const store = createGalleryStore()
+    const todos = [pecas, outrasPecas, heroi, solto, origem, conjunto, mapa]
+    await persistAssets(todos)
+    store.getState().absorbMany(todos)
+    return { store, pecas, outrasPecas, heroi, solto, origem, conjunto, mapa }
+  }
+
+  it('🚨 peças, sprite usado como arte e conjunto com instância não saem enquanto são usados', async () => {
+    const { store, pecas, outrasPecas, heroi, conjunto } = await galeria()
+    const antes = store.getState().assets.length
+    for (const [asset, recado] of [
+      [pecas, COPY.gallery.tilesetInUse],
+      // Peças usadas só como ARTE de um objeto (nenhuma camada as usa) também seguram.
+      [outrasPecas, COPY.gallery.tilesetInUse],
+      [heroi, COPY.gallery.drawingInUse],
+      [conjunto, COPY.gallery.drawingInUse],
+    ] as const) {
+      expect(await store.getState().remove(asset.id), asset.name).toBe(false)
+      expect(store.getState().mutateError, asset.name).toBe(recado)
+    }
+    expect(store.getState().assets).toHaveLength(antes)
+    expect((await listAllAssets()).map((a) => a.id)).toContain(conjunto.id)
+  })
+
+  it('o que ninguém usa sai; depois de apagar quem usava, a dependência também sai', async () => {
+    const { store, solto, heroi, conjunto, mapa, origem, pecas, outrasPecas } = await galeria()
+    expect(await store.getState().remove(solto.id)).toBe(true)
+    expect(await store.getState().remove(mapa.id)).toBe(true)
+    // Sem o mapa, o sprite, o conjunto e as peças de enfeite ficam livres.
+    expect(await store.getState().remove(heroi.id)).toBe(true)
+    expect(await store.getState().remove(outrasPecas.id)).toBe(true)
+    // As peças padrão ainda seguram: o conjunto guarda um mapa que as usa, e o mapa de origem.
+    expect(await store.getState().remove(pecas.id)).toBe(false)
+    expect(await store.getState().remove(conjunto.id)).toBe(true)
+    expect(await store.getState().remove(pecas.id)).toBe(false)
+    expect(await store.getState().remove(origem.id)).toBe(true)
+    expect(await store.getState().remove(pecas.id)).toBe(true)
+    expect(store.getState().assets).toEqual([])
+    expect(await listAllAssets()).toEqual([])
   })
 })

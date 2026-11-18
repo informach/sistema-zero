@@ -521,3 +521,119 @@ test('estúdio: falha do disco ao guardar a outra versão continua sendo falha c
   expect(erro).not.toBeInstanceOf(LessonDraftOutdatedError)
   expect((erro as Error).message).toBe('disco cheio')
 })
+
+// A conta guarda o rascunho num formato mais novo que o desta página (18/11/2026): como na galeria
+// do Pinta, a página para ANTES de baixar. Nada é lido, nada vira "outra versão", nada sobe.
+test('pinta: rascunho da conta em formato mais novo não é baixado ao abrir; o local abre e nada sobe', async () => {
+  const daqui = createAsset({ kind: 'pixel-background', name: 'meu', width: 4, height: 4 })
+  const store = memoriaDoPinta([daqui])
+  const backup = memoriaDoPinta()
+  let baixou = false
+  let marcou = false
+  const remoto = {
+    ...remotoDe(pintaAssetToWire(daqui), `v1:${'c'.repeat(64)}`),
+    formatVersion: 99,
+    load: async () => {
+      baixou = true
+      return pintaAssetToWire(daqui)
+    },
+  }
+  const preparo = await preparePintaLessonDraft({
+    channel: {
+      ...canalParado,
+      peek: async () => remoto,
+      mark: () => null,
+      setMark: () => {
+        marcou = true
+      },
+    },
+    blockId: 'block',
+    store: store.store,
+    backup: backup.store,
+    submission: null,
+    readSubmission: async () => null,
+  })
+  expect(preparo).toEqual({
+    seed: pintaAssetToWire(daqui),
+    upload: false,
+    other: false,
+    outdated: true,
+  })
+  expect(baixou).toBe(false)
+  expect(marcou).toBe(false)
+  expect([...store.assets.values()]).toEqual([daqui])
+  expect(backup.assets.size).toBe(0)
+})
+
+test('pinta: conflito com a conta em formato mais novo para antes de baixar e pede a página nova', async () => {
+  const daqui = createAsset({ kind: 'pixel-background', name: 'meu', width: 4, height: 4 })
+  const store = memoriaDoPinta([daqui])
+  const backup = memoriaDoPinta()
+  let baixou = false
+  const resultado = resolvePintaConflict(
+    { channel: canalParado, blockId: 'block', store: store.store, backup: backup.store },
+    {
+      ...remotoDe(null, `v1:${'d'.repeat(64)}`),
+      formatVersion: 99,
+      load: async () => {
+        baixou = true
+        return null
+      },
+    } as LessonDraftRemote,
+    true,
+  )
+  await expect(resultado).rejects.toBeInstanceOf(LessonDraftOutdatedError)
+  expect(baixou).toBe(false)
+  expect([...store.assets.values()]).toEqual([daqui])
+  expect(backup.assets.size).toBe(0)
+})
+
+test('pinta: documento com carimbo que esta página não conhece é recusado inteiro, como página antiga', async () => {
+  const mapa = {
+    id: 'mapa',
+    kind: 'tilemap',
+    name: 'vila',
+    createdAt: 1,
+    updatedAt: 2,
+    tilesetId: 'pecas',
+    cols: 1,
+    rows: 1,
+    layers: [{ id: 'chao', name: 'Chão', visible: true, cells: [0] }],
+  }
+  const daqui = createAsset({ kind: 'pixel-background', name: 'meu', width: 4, height: 4 })
+  for (const documento of [
+    { ...mapa, schema: 99 },
+    {
+      id: 'conjunto',
+      kind: 'map-set',
+      name: 'casa',
+      createdAt: 1,
+      updatedAt: 2,
+      schema: 99,
+      map: mapa,
+    },
+  ]) {
+    const store = memoriaDoPinta([daqui])
+    const backup = memoriaDoPinta()
+    await expect(
+      resolvePintaConflict(
+        { channel: canalParado, blockId: 'block', store: store.store, backup: backup.store },
+        remotoDe(documento, `v1:${'e'.repeat(64)}`),
+        true,
+      ),
+    ).rejects.toBeInstanceOf(LessonDraftOutdatedError)
+    expect([...store.assets.values()]).toEqual([daqui])
+    expect(backup.assets.size).toBe(0)
+  }
+  // Sem carimbo, um documento quebrado continua sendo falha comum (a página nova não resolve).
+  const store = memoriaDoPinta([daqui])
+  const erro = await resolvePintaConflict(
+    { channel: canalParado, blockId: 'block', store: store.store, backup: memoriaDoPinta().store },
+    remotoDe({ ...mapa, cols: 0 }, `v1:${'f'.repeat(64)}`),
+    true,
+  ).then(
+    () => null,
+    (e) => e,
+  )
+  expect(erro instanceof Error && !(erro instanceof LessonDraftOutdatedError)).toBe(true)
+})

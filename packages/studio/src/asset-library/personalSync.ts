@@ -27,45 +27,45 @@
 
 import { canonicalJson } from '@sistemazero/core/creations'
 
-function sameDrawingContent(
-  a: {
-    dataUrl: string
-    scene?: unknown
-    tilemap?: unknown
-    tilemapFront?: unknown
-    tileset?: unknown
-    sprite?: unknown
-  },
-  b: {
-    dataUrl: string
-    scene?: unknown
-    tilemap?: unknown
-    tilemapFront?: unknown
-    tileset?: unknown
-    sprite?: unknown
-  },
-): boolean {
+type DrawingContent = {
+  dataUrl: string
+  scene?: unknown
+  tilemap?: unknown
+  tilemapFront?: unknown
+}
+
+/**
+ * O que a biblioteca MANDA no material do jogo: os bytes, e a cena e os mapas quando o
+ * desenho os define. `tileset` e `sprite` ficam de fora de propósito: a criança os configura
+ * no Estúdio (`updateAssetMeta`) e o desenho não os conhece; compará-los dava "precisa
+ * sincronizar" para sempre, com cada varredura regravando o jogo sem mudar nada.
+ *
+ * Desenho COM cena é a fonte inteira do mapa: `tilemap`/`tilemapFront` ausentes nele querem
+ * dizer "este mapa saiu do envelope antigo", e o material que ainda os guarda está velho.
+ * Desenho sem cena só compara o mapa que ele traz (o do jogo pode ter sido montado aqui).
+ */
+function sameDrawingContent(asset: DrawingContent, drawing: DrawingContent): boolean {
+  if (asset.dataUrl !== drawing.dataUrl) return false
+  const same = (a: unknown, b: unknown) => canonicalJson(a ?? null) === canonicalJson(b ?? null)
+  if (drawing.scene !== undefined)
+    return (
+      same(asset.scene, drawing.scene) &&
+      same(asset.tilemap, drawing.tilemap) &&
+      same(asset.tilemapFront, drawing.tilemapFront)
+    )
   return (
-    a.dataUrl === b.dataUrl &&
-    canonicalJson([
-      a.scene ?? null,
-      a.tilemap ?? null,
-      a.tilemapFront ?? null,
-      a.tileset ?? null,
-      a.sprite ?? null,
-    ]) ===
-      canonicalJson([
-        b.scene ?? null,
-        b.tilemap ?? null,
-        b.tilemapFront ?? null,
-        b.tileset ?? null,
-        b.sprite ?? null,
-      ])
+    (drawing.tilemap === undefined || same(asset.tilemap, drawing.tilemap)) &&
+    (drawing.tilemapFront === undefined || same(asset.tilemapFront, drawing.tilemapFront))
   )
 }
 
 import { ulid } from 'ulid'
-import { isValidAssetDataUrl, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
+import {
+  isValidAssetDataUrl,
+  PROJECT_ASSET_LIMITS,
+  type ProjectAsset,
+  projectAssetBudgetChars,
+} from '#core'
 import { perfSpanAsync } from '../core/perf'
 import {
   listProjectSummariesLight,
@@ -502,7 +502,8 @@ async function sweepUnmeasured(
       // podia empurrar o total acima do teto, e o `sanitizeProjectAssets` do
       // LOAD descarta o que passa — a criança abriria o jogo com imagens
       // faltando, sem nenhum aviso.
-      let total = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
+      // A cena do Pinta conta junto (`projectAssetBudgetChars`), igual ao load.
+      let total = assets.reduce((sum, a) => sum + projectAssetBudgetChars(a), 0)
       let changed = false
       const next = [...assets]
       for (let index = 0; index < next.length; index++) {
@@ -516,7 +517,7 @@ async function sweepUnmeasured(
             if (!context.python.current()) break
             if (replacement) {
               next[index] = replacement
-              total += replacement.dataUrl.length - asset.dataUrl.length
+              total += projectAssetBudgetChars(replacement) - projectAssetBudgetChars(asset)
               changed = true
             }
           } catch (error) {
@@ -550,7 +551,7 @@ async function sweepUnmeasured(
           )
           continue
         }
-        const projected = total - asset.dataUrl.length + drawing.dataUrl.length
+        const projected = total - projectAssetBudgetChars(asset) + projectAssetBudgetChars(merged)
         if (projected > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
           pushFailure(
             result,
@@ -750,9 +751,12 @@ export function mergeDrawingIntoAsset(
     (width ?? asset.width) === asset.width && (height ?? asset.height) === asset.height
   const sprite = drawing.sprite ?? (sameGeometry ? asset.sprite : undefined)
   const tileset = drawing.tileset ?? (sameGeometry ? asset.tileset : undefined)
-  const tilemap = drawing.tilemap ?? (sameGeometry ? asset.tilemap : undefined)
+  // Desenho com cena manda no mapa inteiro: o mapa antigo que ele não traz SAI (sem herança
+  // por geometria), senão o bloco antigo seguiria desenhando o mapa velho ao lado da cena nova.
+  const inherit = sameGeometry && drawing.scene === undefined
+  const tilemap = drawing.tilemap ?? (inherit ? asset.tilemap : undefined)
   const scene = drawing.scene ?? (sameGeometry ? asset.scene : undefined),
-    tilemapFront = drawing.tilemapFront ?? (sameGeometry ? asset.tilemapFront : undefined)
+    tilemapFront = drawing.tilemapFront ?? (inherit ? asset.tilemapFront : undefined)
   // Nome/id/libId/source intocados — os blocos referenciam o asset pelo NOME.
   const next: ProjectAsset = {
     ...asset,

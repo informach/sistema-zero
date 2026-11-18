@@ -1,5 +1,6 @@
 import type { PintaScene, PintaSceneLayer } from '@sistemazero/core/studio/pinta-scene'
 import { sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { cellTile } from '../tiles/cell'
 import { cellMatrix } from '../tiles/chunks'
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
@@ -41,7 +42,7 @@ export function drawScene(
         if (ts && image)
           l.cells.forEach((value, i) => {
             if (value < 0) return
-            let tile = value & 4095
+            let tile = cellTile(value)
             const frames = ts.animations?.[tile]
             if (frames?.length) {
               let at = time % frames.reduce((n, f) => n + f.duration, 0)

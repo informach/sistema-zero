@@ -1,5 +1,62 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Formato 4, tetos em dois níveis e carimbo na gravação (18/11/2026)
+
+Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
+
+**Carimbo `schema` e envelope `.pinta.json` têm dois números agora.**
+- `PINTA_MAP_SCHEMA = 3`: o que é de CAMADAS (grupos, opacidade, deslocamento, trava, colisão,
+  peça virada, mapa grande, conjunto de peças com mais de 64 peças).
+- `PINTA_SCENE_SCHEMA = 4`: a CENA COMPLETA. No mapa, qualquer objeto com forma, giro, espelho,
+  papel, arte, instância de conjunto ou propriedade tipada (`objectNeedsV4`). Nas peças, animação,
+  terreno ou propriedade de peça (`tilesetNeedsV4`). O desenho do tipo conjunto é sempre 4.
+- Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
+  completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
+  recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado
+  medido no cabeçalho de `core/mapFormat4.test.ts`.
+- Quem só usa camadas continua em 3; documento antigo continua sem carimbo e byte a byte igual
+  (conferido contra o código de bf6e895f). A leitura aceita 3 e 4, inclusive o mapa completo que
+  já foi gravado com 3: ele é lido inteiro e passa a 4.
+- `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou 4)?", que é a pergunta do
+  desenho e da entrega ao Estúdio. Para o número, use `tilemapSchemaFor`, `tilesetSchemaFor` ou
+  `pintaAssetSchema`. ⚠️ Não compare `asset.schema === 3`: use as funções.
+- ⚠️ O que o carimbo NÃO resolve: o leitor de PEÇAS de bf6e895f não confere `schema` (lê e descarta
+  as animações) e o código de produção de antes das camadas não confere `schema` em nada. Para
+  esses casos a proteção é a versão declarada à nuvem e a memória de carimbo da sincronia
+  (`PintaFormatMemory`, CLAUDE.md do member-shell).
+
+**O carimbo é recalculado em toda GRAVAÇÃO** (`withPintaSchemaStamp`): `state/persistence.ts`
+(IndexedDB), `assets/wire.ts` (nuvem e aula) e `export/projectJson.ts` (arquivo). O editor muda o
+mapa em memória sem mexer no carimbo, então só o sanitizador não bastava: o registro ia para o
+disco sem carimbo e outra aba com código antigo o abria e cortava. Quem cria desenho em código
+não precisa escrever `schema`; se escrever errado, a gravação corrige.
+
+**Tetos em dois níveis.**
+- `PINTA_LIMITS` é o que o editor deixa CRIAR: 128 × 128 células, 8 camadas, 64 peças. Voltou ao
+  valor de antes; só sobe depois de medir o autosave no aparelho.
+- `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita ao ser LIDO: 256 × 256, 32 camadas, 256
+  peças, 2.097.152 células. Importação, sanitizador e modelos passam por aqui.
+- Mapa grande importado abre e pode ser pintado. Crescer, criar camada, criar peça e soltar
+  conjunto além do teto de criação devolvem o MESMO desenho (a tela mostra o recado de limite).
+- `PINTA_LIMITS.maxObjectCoord` fica no valor do formato (256 × 48) de propósito: puxar objeto de
+  mapa grande para dentro do teto de criação seria corte.
+- O bloco de aula tem os mesmos tetos de criação em `PINTA_LESSON_MAP_LIMITS`
+  (`members/src/domain/course/lesson-block.ts`), travados por teste de conformidade.
+
+**Conjuntos (`tiles/sets.ts`).** `createMapSet` e `detachMapSet` não escrevem chave no valor
+padrão (opacidade 1, deslocamento 0, sem giro, sem espelho). `detachMapSet` recusa, sem mudar
+nada, o conjunto que (já girado) é maior que o mapa, e conta o teto de CRIAÇÃO de camadas.
+
+**Peças (`tiles/tilesetOps.ts`).** Ao remover peça, `animations` e `tileProperties` que ficam
+vazios somem do desenho (mapa vazio fazia o conjunto pedir formato novo sem usar nada).
+
+**Teste de arquitetura das células (`tiles/cellAccess.test.ts`).** Além de `cells[`, a varredura
+pega `.cells.forEach/map/some/...`, `for (... of x.cells)` e a máscara escrita na mão (`& 4095`,
+`>> 12`). Arquivo novo que leia células reprova até entrar na lista com o que faz.
+
+Testes: `core/mapFormat4.test.ts`, `tiles/sets.test.ts`, `tiles/tilesetMetadata.test.ts`, e os
+blocos novos em `state/{persistence,galleryStore,clipboardStore,editorStore}.test.ts`.
+
 ## Trava de formato na nuvem: o leitor (17/11/2026)
 
 Primeiro passo do conserto do risco M3 (cliente antigo regravando um mapa novo pela nuvem; ver a

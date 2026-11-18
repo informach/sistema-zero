@@ -6,13 +6,16 @@
  * de compilação — dá bloco recusado na autoria, ou pior, bloco aceito sem tipo legível.
  */
 import { describe, expect, it } from 'bun:test'
+import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '@sistemazero/pinta/assets'
 import {
   isCompletionGatingBlock,
   LESSON_BLOCK_KINDS,
   MAX_PINTA_ASSET_CHARS,
   PINTA_ASSET_KINDS,
+  PINTA_LESSON_MAP_LIMITS,
   type PintaBlock,
   pintaAssetKindOf,
+  pintaLessonLimitIssue,
 } from '../../src/domain/course/lesson-block'
 import { LessonBlockContentSchema } from '../../src/interfaces/http/dtos'
 
@@ -92,5 +95,70 @@ describe('🚨 a borda e o domínio conhecem os MESMOS tipos de desenho', () => 
 
   it('a leitura da borda é de verdade (anti-vácuo: achou os 8)', () => {
     expect(kindsAceitosNaBorda()).toHaveLength(8)
+  })
+})
+
+describe('tetos de mapa do desenho de aula (os de criação, não os de leitura)', () => {
+  const mapa = (over: Record<string, unknown> = {}) => ({
+    kind: 'tilemap',
+    cols: 128,
+    rows: 128,
+    layers: Array.from({ length: 8 }, (_, i) => ({ id: `c${i}` })),
+    ...over,
+  })
+  const pecas = (quantas: number, kind = 'tileset') => ({
+    kind,
+    tiles: Array.from({ length: quantas }, () => ({})),
+  })
+
+  it('são os tetos antigos: 128 × 128 células, 8 camadas, 64 peças', () => {
+    expect({ ...PINTA_LESSON_MAP_LIMITS }).toEqual({
+      maxCols: 128,
+      maxRows: 128,
+      maxLayers: 8,
+      maxTiles: 64,
+    })
+  })
+
+  it('🚨 batem com o que o editor do Pinta deixa CRIAR e ficam abaixo do que o documento LÊ', () => {
+    expect({ ...PINTA_LESSON_MAP_LIMITS }).toEqual({
+      maxCols: PINTA_LIMITS.maxTilemapCols,
+      maxRows: PINTA_LIMITS.maxTilemapRows,
+      maxLayers: PINTA_LIMITS.maxTilemapLayers,
+      maxTiles: PINTA_LIMITS.maxTiles,
+    })
+    expect(PINTA_MAP_FORMAT_LIMITS.maxCols).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxCols)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxLayers)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxTiles).toBeGreaterThan(PINTA_LESSON_MAP_LIMITS.maxTiles)
+  })
+
+  it('no teto exato cabe; um a mais diz qual medida passou', () => {
+    expect(pintaLessonLimitIssue(mapa())).toBeNull()
+    expect(pintaLessonLimitIssue(mapa({ cols: 129 }))).toBe('cols')
+    expect(pintaLessonLimitIssue(mapa({ rows: 129 }))).toBe('rows')
+    expect(pintaLessonLimitIssue(mapa({ layers: Array.from({ length: 9 }, () => ({})) }))).toBe(
+      'layers',
+    )
+    expect(pintaLessonLimitIssue(pecas(64))).toBeNull()
+    expect(pintaLessonLimitIssue(pecas(65))).toBe('tiles')
+    expect(pintaLessonLimitIssue(pecas(65, 'vector-tileset'))).toBe('tiles')
+  })
+
+  it('o conjunto é conferido pelo mapa que ele guarda', () => {
+    expect(pintaLessonLimitIssue({ kind: 'map-set', map: mapa() })).toBeNull()
+    expect(pintaLessonLimitIssue({ kind: 'map-set', map: mapa({ cols: 200 }) })).toBe('cols')
+  })
+
+  it('desenho que não é mapa nem peças, e JSON estranho, nunca têm problema de tamanho de mapa', () => {
+    for (const outro of [
+      { kind: 'pixel-sprite', cols: 999, tiles: Array.from({ length: 999 }) },
+      { kind: 'vector-background' },
+      null,
+      'texto',
+      [],
+      { kind: 'tilemap' },
+      { kind: 'tilemap', cols: 'muitas', layers: 'nenhuma' },
+    ])
+      expect(pintaLessonLimitIssue(outro), JSON.stringify(outro)).toBeNull()
   })
 })

@@ -375,6 +375,145 @@ describe('syncDrawingsIntoProjects', () => {
     expect(useProjectStore.getState().project?.assets?.[0]?.scene).toEqual(changed)
     expect(useProjectStore.getState().project?.ir).toEqual(program)
   })
+  /** Cena mínima válida; `vidas` muda sem mudar a imagem. */
+  const cenaDeTeste = (vidas: number) => ({
+    version: 1 as const,
+    id: 'vila',
+    name: 'vila',
+    tileSize: 16,
+    cols: 1,
+    rows: 1,
+    tilesets: [{ id: 'ts', name: 'ts', image: PNG, columns: 1, count: 1, solid: [], platform: [] }],
+    layers: [
+      {
+        id: 'o',
+        kind: 'objects' as const,
+        name: 'Objetos',
+        visible: true,
+        objects: [
+          {
+            id: 'p',
+            name: 'Porta',
+            type: '',
+            x: 0,
+            y: 0,
+            width: 16,
+            height: 16,
+            properties: { vidas: { type: 'int' as const, value: vidas } },
+          },
+        ],
+      },
+    ],
+  })
+  const MAPA_ANTIGO = {
+    tileSize: 16,
+    cols: 1,
+    rows: 1,
+    grid: '0',
+    solid: [0],
+    tileset: { dataUrl: PNG, width: 16, height: 16 },
+  }
+
+  it('desenho que saiu do envelope antigo tira o mapa velho do jogo aberto e a sincronia converge', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG, width: 16, height: 16 })
+    seedOpenProject([
+      drawingAsset({
+        width: 16,
+        height: 16,
+        scene: cenaDeTeste(1),
+        tilemap: MAPA_ANTIGO,
+        tilemapFront: MAPA_ANTIGO,
+        tileset: { tileSize: 16, solid: [0] },
+      }),
+    ])
+    // O mapa cresceu: agora só a cena viaja, com uma miniatura da MESMA medida.
+    await savePersonalAsset({
+      id: 'd1',
+      name: 'heroi',
+      dataUrl: PNG_NOVO,
+      width: 16,
+      height: 16,
+      scene: cenaDeTeste(2),
+    })
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOpenProject).toBe(1)
+    const asset = useProjectStore.getState().project?.assets?.[0]
+    expect(asset?.scene).toEqual(cenaDeTeste(2))
+    expect(asset?.tilemap).toBeUndefined()
+    expect(asset?.tilemapFront).toBeUndefined()
+    // O que a criança configurou no Estúdio e não é mapa continua.
+    expect(asset?.tileset).toEqual({ tileSize: 16, solid: [0] })
+    expect(drawingNeedsSync(asset as ProjectAsset, await getPersonalAsset('d1'))).toBe(false)
+    const segunda = await syncDrawingsIntoProjects(useProjectStore)
+    expect(segunda.updatedInOpenProject).toBe(0)
+    expect(segunda.failures).toEqual([])
+  })
+
+  it('mesmos bytes e mesma cena, mas mapa velho sobrando: a sobra sai (não é "nada a fazer")', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG, scene: cenaDeTeste(1) })
+    const sobra = drawingAsset({ scene: cenaDeTeste(1), tilemap: MAPA_ANTIGO })
+    const desenho = await getPersonalAsset('d1')
+    expect(drawingNeedsSync(sobra, desenho)).toBe(true)
+    seedOpenProject([sobra])
+    const error = useProjectStore.getState().updateAssetImage('asset-1', {
+      dataUrl: PNG,
+      scene: desenho?.scene,
+    })
+    expect(error).toBeNull()
+    const asset = useProjectStore.getState().project?.assets?.[0]
+    expect(asset?.tilemap).toBeUndefined()
+    expect(drawingNeedsSync(asset as ProjectAsset, desenho)).toBe(false)
+    // O mesmo no jogo FECHADO, que passa pelo `mergeDrawingIntoAsset`.
+    const merged = mergeDrawingIntoAsset(
+      drawingAsset({ scene: cenaDeTeste(1), tilemap: MAPA_ANTIGO, tilemapFront: MAPA_ANTIGO }),
+      desenho as NonNullable<typeof desenho>,
+    )
+    expect(merged?.tilemap).toBeUndefined()
+    expect(merged?.tilemapFront).toBeUndefined()
+    expect(drawingNeedsSync(merged as ProjectAsset, desenho)).toBe(false)
+  })
+
+  it('desenho SEM cena conserva o mapa montado no Estúdio (a herança por geometria continua)', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO, width: 16, height: 16 })
+    const desenho = await getPersonalAsset('d1')
+    const merged = mergeDrawingIntoAsset(
+      drawingAsset({ width: 16, height: 16, tilemap: MAPA_ANTIGO }),
+      desenho as NonNullable<typeof desenho>,
+    )
+    expect(merged?.tilemap).toEqual(MAPA_ANTIGO)
+    expect(drawingNeedsSync(merged as ProjectAsset, desenho)).toBe(false)
+  })
+
+  it('peças configuradas no Estúdio não fazem a varredura regravar o jogo para sempre', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const configurado = drawingAsset({
+      id: 'asset-2',
+      width: 32,
+      height: 32,
+      tileset: { tileSize: 16, solid: [1] },
+      sprite: { frameW: 16, frameH: 16, animations: [] },
+    })
+    expect(drawingNeedsSync(configurado, await getPersonalAsset('d1'))).toBe(false)
+    const fechado = createEmptyProject('fechado', 'Outro Jogo')
+    fechado.assets = [configurado]
+    await persistProject(fechado)
+    seedOpenProject([{ ...configurado, id: 'asset-1' }])
+    const antes = (await loadProjectMetaById('fechado'))?.updatedAt
+    const revisao = useProjectStore.getState().project?.updatedAt
+    // Um desenho QUALQUER mudou: a varredura roda de verdade, e não acha nada a fazer aqui.
+    await savePersonalAsset({ id: 'outro', name: 'outro', dataUrl: PNG_NOVO })
+    for (let rodada = 0; rodada < 2; rodada += 1) {
+      const result = await syncDrawingsIntoProjects(useProjectStore)
+      expect(result.updatedInOpenProject).toBe(0)
+      expect(result.updatedInOtherProjects).toBe(0)
+    }
+    expect((await loadProjectMetaById('fechado'))?.updatedAt).toBe(antes)
+    expect(useProjectStore.getState().project?.updatedAt).toBe(revisao)
+    expect((await loadProjectAssetsById('fechado'))[0]?.tileset).toEqual({
+      tileSize: 16,
+      solid: [1],
+    })
+  })
+
   it('atualiza o projeto ABERTO quando o desenho mudou no Pinta', async () => {
     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
     seedOpenProject([drawingAsset({})])

@@ -322,3 +322,36 @@ describe('assetBytes', () => {
     expect(comFigura - assetBytes(vazio)).toBeGreaterThanOrEqual(src.length * 2)
   })
 })
+
+describe('conjunto (map-set) no orçamento do desfazer', () => {
+  it('pesa o que o mapa de dentro pesa, e as células entram uma vez por buffer', async () => {
+    const { createTilemapAsset } = await import('../core/project')
+    const { createMapSet } = await import('../tiles/sets')
+    const { snapshotShared } = await import('./editorStore')
+    const mapa = createTilemapAsset({ name: 'vila', tilesetId: 'pecas', cols: 8, rows: 4 })
+    const conjunto = createMapSet(mapa, { col: 0, row: 0, cols: 4, rows: 2 }, 16, 'casa')
+
+    expect(assetBytes(conjunto)).toBe(assetBytes(conjunto.map))
+    expect(assetBytes(conjunto, false)).toBe(assetBytes(conjunto.map, false))
+    // 4 × 2 células de 2 bytes: é a diferença entre contar e não contar as células.
+    expect(assetBytes(conjunto) - assetBytes(conjunto, false)).toBe(4 * 2 * 2)
+
+    const partes = [...snapshotShared({ asset: conjunto, linkedMaps: null })]
+    expect(partes).toHaveLength(1)
+    const camada = conjunto.map.layers[0]
+    expect(partes[0]?.key).toBe((camada && 'cells' in camada ? camada.cells : null) as object)
+    expect(partes[0]?.bytes).toBe(16)
+    // Com um mapa ligado, cada buffer aparece com a própria identidade (o histórico soma uma vez).
+    const comLigado = [...snapshotShared({ asset: conjunto, linkedMaps: [mapa] })]
+    expect(comLigado.map((parte) => parte.bytes)).toEqual([16, 8 * 4 * 2])
+    expect(new Set(comLigado.map((parte) => parte.key)).size).toBe(2)
+    // Desenho sem células não divide nada.
+    const { createPixelSpriteAsset } = await import('../core/project')
+    expect([
+      ...snapshotShared({
+        asset: createPixelSpriteAsset({ name: 'a', frameSize: 8 }),
+        linkedMaps: null,
+      }),
+    ]).toEqual([])
+  })
+})
