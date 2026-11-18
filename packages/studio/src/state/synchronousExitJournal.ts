@@ -34,8 +34,14 @@ function keyFor(scope: string, identity: ExitJournalIdentity): string {
 export function captureExitJournalStorage(): Storage | undefined {
   try {
     return globalThis.localStorage
-  } catch {
-    return undefined
+  } catch (error) {
+    // Inaccessible storage is different from an environment without Web Storage.
+    // Otherwise a later session could silently open an old IndexedDB revision
+    // while its newer exit copy is present but forbidden by browser policy.
+    const fail = (): never => {
+      throw unavailable(error)
+    }
+    return new Proxy({} as Storage, { get: fail, ownKeys: fail })
   }
 }
 export function hasSynchronousExitJournal(storage: Storage | undefined, scope: string): boolean {

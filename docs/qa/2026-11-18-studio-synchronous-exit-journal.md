@@ -68,3 +68,22 @@ Faltam aprovação do caso Linux originalmente vermelho, suíte isolada completa
 e revisão dos resultados remotos. R3 continua aberto
 até essa qualificação. A missão global continua parcial; este relatório não
 fecha isolamento DOM, virtualização Blockly, depurador ou homologação física.
+
+
+## Revisão posterior: acesso negado pela política do navegador
+
+A captura agora distingue ausência de Web Storage de uma exceção ao acessar
+localStorage. Uma exceção mantém a falha disponível ao leitor; não converte
+cópias inacessíveis em lista vazia. O coordenador rejeita a abertura específica
+nessa condição, conserva a revisão confirmada e não reconhece nem apaga o journal.
+O erro explícito é preferível a editar silenciosamente uma revisão anterior.
+
+A alteração de produção passou em 375 testes locais de estado/persistência,
+2072 asserções, em 34,98 s, e typecheck. Um teste adicional do coordenador confirmou
+que o journal continua presente e as partições originais não mudam quando a leitura
+é negada; os nove testes desse arquivo passaram (37 asserções).
+
+No GitHub, o SHA 69901bd64 já passou pelo caso normal de WebKit Linux que falhava
+antes e pelo aborto nativo injetado. O run 44397955661 ainda estava executando a
+suíte completa no momento deste registro; não estender o resultado à revisão
+posterior de acesso negado nem ao aceite global.

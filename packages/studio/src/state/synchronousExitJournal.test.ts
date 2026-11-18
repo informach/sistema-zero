@@ -1,6 +1,8 @@
 import { expect, test } from 'bun:test'
 import {
   acknowledgeSynchronousExitJournal,
+  captureExitJournalStorage,
+  hasSynchronousExitJournal,
   readSynchronousExitJournal,
   stageSynchronousExitJournal,
 } from './synchronousExitJournal'
@@ -137,5 +139,36 @@ test('future, malformed and over-budget records remain untouched', () => {
     ).toHaveLength(1)
   } finally {
     fixture.dispose()
+  }
+})
+
+test('a browser policy denial is reported instead of treating inaccessible copies as absent', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  try {
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('Denied', 'SecurityError')
+      },
+    })
+    const denied = captureExitJournalStorage()
+    expect(denied).toBeDefined()
+    expect(hasSynchronousExitJournal(denied, 'profile')).toBe(true)
+    expect(() => readSynchronousExitJournal(denied, 'profile', 'project')).toThrow()
+    expect(() =>
+      stageSynchronousExitJournal(
+        denied,
+        'profile',
+        {
+          projectId: 'project',
+          writer: 'writer',
+          token: 'token',
+        },
+        { content: 'keep' },
+      ),
+    ).toThrow()
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous)
+    else Reflect.deleteProperty(globalThis, 'localStorage')
   }
 })

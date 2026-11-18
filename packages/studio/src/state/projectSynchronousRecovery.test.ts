@@ -283,3 +283,25 @@ test('a colliding application identity preserves the full inverse and unknown fi
     f.close()
   }
 })
+
+test('inaccessible exit copies block recovery without acknowledging or modifying the committed revision', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('newer inaccessible revision')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const denied = new Proxy(f.scope.exitJournalStorage!, {
+      ownKeys() {
+        throw new DOMException('Denied', 'SecurityError')
+      },
+    })
+    await expect(
+      recoverProjectWrites({ ...f.scope, exitJournalStorage: denied }, draft.id),
+    ).rejects.toThrow('guardar a cópia de recuperação')
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(1)
+  } finally {
+    f.close()
+  }
+})
