@@ -1,0 +1,44 @@
+{
+  "outputsZipSha256": "8e323f7c0b1b94a57ce576830c7a13df8379234895831531486fe77cce6d504d",
+  "corePinta": {
+    "passes": 10,
+    "exit": 0
+  },
+  "profile": {
+    "exit": 0,
+    "combinedExistingAndNewPasses": 3,
+    "newCases": 1
+  },
+  "typecheck": {
+    "finalIncrementalExit": 0,
+    "exit": 0
+  },
+  "courses": {
+    "staticPasses": 43,
+    "gestures": 399,
+    "executableObjectives": 17,
+    "parts": 13,
+    "objectives": 66
+  },
+  "reviewedHead": "37f4d4e3aa82244688438bbec04034fb9fbd6f63",
+  "recordedAt": "2026-11-18T06:43:23.7361352-03:00",
+  "isolation": {
+    "exit": 0,
+    "universalIsolationPassed": false,
+    "samples": 18
+  },
+  "unit": {
+    "exit": 0,
+    "files": 852,
+    "groups": 162,
+    "failures": 0,
+    "directPasses": 11412
+  },
+  "e2e": {
+    "total": 26,
+    "failures": 0,
+    "chromiumMain": 11,
+    "firefoxAndWebkit": 8,
+    "chromiumCoursesAndPro": 7
+  }
+}
