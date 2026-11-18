@@ -827,19 +827,35 @@ const GAME_TWO_D_DPR_SAMPLES = ['game-2d:Sala com paredes', 'game-2d:Equilibrist
 
 for (const dpr of [1, 2, 3]) {
   test.describe(`KitGallery — geometria lógica do Jogo 2D em DPR ${dpr}`, () => {
-    test.use({ deviceScaleFactor: dpr })
+    // Full Chromium places the opaque sandbox in another renderer. Context-only CDP
+    // emulation changes the parent's DPR but leaves that renderer at the native DPR.
+    // Set the browser's actual scale too, preserving full Chromium and every assertion.
 
     for (const key of GAME_TWO_D_DPR_SAMPLES) {
       const contract = EXAMPLE_QA_CONTRACTS.find((item) => item.key === key)
       if (!contract) throw new Error(`amostra DPR sem contrato: ${key}`)
 
       test(`${contract.key}: primeiro frame e controles preservam o tamanho lógico`, async ({
-        page,
+        playwright,
+        baseURL,
       }) => {
         // Mesmo harness, mesmo orçamento: soma ainda a checagem de DPR abaixo.
         test.setTimeout(exampleQaTestTimeoutMs(contract) + EXAMPLE_QA_TIMEOUTS.firstFrameMs)
-        await openAndExercise(page, contract)
-        await expectLogicalCanvasAtDpr(page, dpr)
+        const browser = await playwright.chromium.launch({
+          ...(process.env.PW_CHROMIUM
+            ? { executablePath: process.env.PW_CHROMIUM }
+            : { channel: 'chromium' }),
+          args: [`--force-device-scale-factor=${dpr}`],
+        })
+        try {
+          const context = await browser.newContext({ baseURL, deviceScaleFactor: dpr })
+          const page = await context.newPage()
+          expect(await page.evaluate(() => window.devicePixelRatio)).toBe(dpr)
+          await openAndExercise(page, contract)
+          await expectLogicalCanvasAtDpr(page, dpr)
+        } finally {
+          await browser.close()
+        }
       })
     }
   })

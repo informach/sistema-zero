@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { PREVIEW_CONSOLE_MESSAGE_BUDGET, PREVIEW_CONSOLE_WINDOW_MS } from '../preview/limits'
 import {
   type LogKind,
   PREVIEW_MAX_ERROR_CHARS,
@@ -12,8 +13,8 @@ import { StudioStoresContext } from './storesContext'
 
 export const MAX_LOG_TEXT_CHARS = 16_000
 export const MAX_LOG_ENTRIES = 500
-export const LOG_RATE_LIMIT_WINDOW_MS = 1_000
-export const LOG_RATE_LIMIT_MAX_MESSAGES = 180
+export const LOG_RATE_LIMIT_WINDOW_MS = PREVIEW_CONSOLE_WINDOW_MS
+export const LOG_RATE_LIMIT_MAX_MESSAGES = PREVIEW_CONSOLE_MESSAGE_BUDGET
 
 /**
  * O que conta como ERRO de verdade. Vive aqui (e não no Console) porque mais de

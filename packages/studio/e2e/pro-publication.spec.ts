@@ -133,8 +133,14 @@ window.szGameStorage!.get('score').then(value => { read.textContent = value ?? '
     await expect(page.locator('#editor-save')).toHaveText('editor')
     await game.getByRole('button', { name: 'Guardar progresso de teste' }).click()
     await expect(game.locator('#saved-proof')).toHaveText('published')
+    await expect(game.locator('#start')).toBeEnabled()
+    await page.getByRole('button', { name: 'Começar pelo player' }).scrollIntoViewIfNeeded()
+    await expect(page.getByRole('button', { name: 'Começar pelo player' })).toBeInViewport()
     await page.getByRole('button', { name: 'Começar pelo player' }).click()
-    await expect(game.locator('#status')).toContainText('andamento')
+    // The game replaces the generic start message with its live objective every frame.
+    // Verify the playing controls instead of racing that transient sentence.
+    await expect(game.locator('#pause')).toBeEnabled()
+    await expect(game.locator('#start')).toBeHidden()
     await page.getByRole('button', { name: 'Silenciar pelo player' }).click()
     await expect(game.locator('#sound')).toHaveText('Som: silenciado pelo player')
     await expect(game.locator('#sound')).toBeDisabled()

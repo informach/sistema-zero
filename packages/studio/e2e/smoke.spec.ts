@@ -374,6 +374,8 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(mission).toBeVisible()
     await sameEditors()
     await expect(codigo).toContainText(marker)
+    await page.getByRole('button', { name: 'Desfazer', exact: true }).scrollIntoViewIfNeeded()
+    await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeInViewport()
     await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
     await expect(codigo).not.toContainText(marker)
     await expect(codigo).toContainText('preservado')

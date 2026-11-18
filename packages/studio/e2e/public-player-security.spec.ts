@@ -4,9 +4,13 @@ import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
 
 async function mountPlayerDocument(page: Page, html: string): Promise<void> {
   await page.evaluate((srcdoc) => {
+    document.querySelectorAll('iframe[data-testid="public-player"]').forEach((old) => {
+      old.remove()
+    })
     const frame = document.createElement('iframe')
     frame.dataset.testid = 'public-player'
     frame.setAttribute('sandbox', 'allow-scripts')
+    frame.style.cssText = 'position:fixed;inset:0;width:640px;height:480px;z-index:1000'
     frame.srcdoc = srcdoc
     document.body.appendChild(frame)
   }, html)

@@ -46,3 +46,40 @@ os achados nunca tivessem existido.
 Cada item exige testes pertinentes, navegador para fluxo de usuário, descarte/segurança,
 evidência e commit. Serviços controlados não substituem serviços reais; runner hospedado
 não substitui aparelho físico de entrada. Ausência de acesso não equivale a aprovação.
+
+## Estado reproduzível após as primeiras rodadas GitHub
+
+PR draft: https://github.com/informach/sistema-zero/pull/273, base staging.
+Não houve merge ou deploy. O merge anterior de `origin/staging` foi feito somente
+na branch isolada. O trabalho das outras sessões na árvore original foi preservado.
+
+- R3: correção em `d22be2f75`; 24 testes de preparação/preview (96 asserts) e teste
+  real de Rodar/reload sem aguardar autosave. A proteção contra interrupção tardia
+  foi mantida em `3c6e02955`, com 53 testes (209 asserts) e seis casos de navegador.
+- R1: o marcador tardio e o limite de console na origem são proteções adicionais,
+  não fechamento do isolamento. Os dados Linux do run `44284088297` confirmam
+  bloqueio no WebKit e no srcdoc do Firefox. Consultar o relatório de ambientes.
+- R2, R4, R5: continuam abertos. Não substituir renderização incremental por ocultar
+  SVGs após montar tudo, nem apresentar pausas cooperativas como depurador completo.
+- R6: documentação atual corrigida, com métricas históricas conservadas e identificadas.
+- CI: `44280842226` e `44284088297` falharam; Firefox/WebKit selecionados e uma shard
+  Chromium passaram, mas isso não aprova as suítes completas. `44289781987` já confirmou
+  nova medição e os casos selecionados Firefox/WebKit. Seus demais jobs e a próxima
+  rodada precisam de revisão. A auditoria é um gate independente que continua falhando
+  por `GHSA-fc5q-39xc-vjpf`, sem patched version publicada; não a silenciar.
+- Docker: regenerado o fingerprint canônico em `57a7a6de9` depois de reproduzir a
+  recusa de perfil desatualizado. Confirmar build real/validação/Python no próximo run.
+- Windows: o preflight aceita grafia curta de diretórios, conservando a recusa de
+  links/junctions em raiz/ancestrais/artefatos; 7 testes, 29 asserts localmente.
+- Ambiente local completo: serviços e PG encerrados; dados/credenciais ignorados
+  preservados. Disco insuficiente interrompeu o setup Next e uma rodada com traces.
+  Remoção de caches recusada pela revisão automática; não tentar por outra via.
+
+Retomar com `git status`, consultar `gh run list --repo informach/sistema-zero
+--workflow studio-mission.yml --branch estudio-missao-completar-20261118` e revisar
+logs/artefatos do SHA mais recente. O workflow usa instalação congelada e Chromium
+completo; contratos incluem Chromium e WebKit para o teste real de IndexedDB.
+Os novos relatórios em `docs/qa/2026-11-18-studio-*` registram comandos, resultados
+e limitações. Não contabilizar execução interrompida, job disparado ou artefato de
+medição com saída zero como aceite global. Depois, continuar R1/R2 e etapas 3–10
+na ordem do plano, mantendo a homologação pedagógica bloqueante.
