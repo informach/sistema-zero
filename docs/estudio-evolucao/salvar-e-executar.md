@@ -8,15 +8,17 @@ Não substitui o manual completo nem declara as demais etapas concluídas.
 Os botões continuam nos mesmos lugares e com os mesmos nomes. Ao apertar:
 
 1. O Estúdio materializa a última edição que ainda está no buffer dos editores.
-2. O serviço de salvamento existente confirma a gravação. Enquanto espera, o
-   botão de Rodar fica indisponível e Parar continua disponível.
-3. A prévia passa a usar o código confirmado, sem esperar o atraso da atualização
-   automática. Se já havia um jogo, o documento anterior permanece durante a espera.
+2. **Sem mudança a gravar**, roda no mesmo instante do clique e não grava nada
+   (era assim antes desta entrega, e é o caso comum do "Rodar de novo").
+3. **Com mudança**, pede a gravação e espera a confirmação por no máximo 1,5 s
+   (`RUN_SAVE_WAIT_MS`). Nesse intervalo o Rodar fica indisponível, o Parar
+   continua disponível e o jogo anterior permanece na tela.
+4. A prévia usa o código atual, sem esperar o atraso da atualização automática.
 
-Se a gravação falhar, o Estúdio apresenta o problema e conserva a edição para
-uma nova tentativa. Não apresenta uma falha de armazenamento como erro do jogo.
-Se houver outra edição durante uma gravação lenta, pede um novo Rodar para usar
-a revisão atual; não afirma que essa revisão já foi salva.
+A gravação nunca impede rodar (correção de 18/11/2026). Se ela falhar ou passar
+do limite, o jogo roda assim mesmo: a falha aparece no selo de salvar, a edição
+fica guardada como não salva e a gravação automática tenta de novo. Uma edição
+feita durante a espera entra na execução.
 
 Parar durante a espera cancela a execução solicitada. A gravação continua: sua
 confirmação tardia não faz o jogo começar sozinho. Fechar o editor, mudar de

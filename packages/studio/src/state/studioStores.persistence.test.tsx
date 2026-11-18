@@ -42,3 +42,30 @@ it('standalone persistence follows the active profile lifetime without crossing 
     setProjectStorageNamespace(previousNamespace)
   }
 })
+
+it('trocar de perfil com projeto não salvo grava no perfil antigo e nunca no novo', async () => {
+  const previousNamespace = captureProjectStorageScope().namespace
+  const firstNamespace = `leak-first-${crypto.randomUUID()}`
+  const secondNamespace = `leak-second-${crypto.randomUUID()}`
+  const projectId = crypto.randomUUID()
+  try {
+    setProjectStorageNamespace(firstNamespace)
+    useProjectStore.setState({ project: createEmptyProject(projectId, 'Perfil A'), isDirty: true })
+    const { result, rerender, unmount } = renderHook(useStudioPersistence)
+    // Sem rerender e sem trocar o projeto à mão: é o caso que vazava.
+    setProjectStorageNamespace(secondNamespace)
+    rerender()
+    await act(async () => result.current.save())
+    await act(async () => Bun.sleep(20))
+    expect(
+      (await createLocalPersistenceAdapter({ namespace: firstNamespace }).load(projectId))?.name,
+    ).toBe('Perfil A')
+    expect(
+      await createLocalPersistenceAdapter({ namespace: secondNamespace }).load(projectId),
+    ).toBeNull()
+    unmount()
+  } finally {
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    setProjectStorageNamespace(previousNamespace)
+  }
+})

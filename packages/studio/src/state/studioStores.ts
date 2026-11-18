@@ -101,6 +101,8 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
 // Fallback fora de um <Studio> (lista de projetos/testes): serviço sobre a
 // store default + IndexedDB, espelhando o comportamento do app standalone.
 // Returning to the same namespace creates a new lifetime/signal, so the string alone is not a key.
+/** Id do projeto que ficou na store default depois de uma troca de perfil. */
+let carriedOverProjectId: string | null = null
 let defaultPersistence: { scope: ProjectStorageScope; service: PersistenceService } | null = null
 
 /** Serviço de persistência da instância atual (Salvar explícito, flush). */
@@ -109,10 +111,39 @@ export function useStudioPersistence(): PersistenceService {
   if (stores) return stores.persistence
   const scope = captureProjectStorageScope()
   if (defaultPersistence?.scope !== scope) {
-    defaultPersistence = {
-      scope,
-      service: createPersistenceService(useProjectStore, createLocalPersistenceAdapter()),
-    }
+    const local = createLocalPersistenceAdapter()
+    const service = createPersistenceService(useProjectStore, {
+      ...local,
+      // Projeto que veio do perfil anterior e continua na store default (ver abaixo): não é
+      // deste banco e não é gravado nele.
+      save: async (snapshot) => {
+        if (carriedOverProjectId === snapshot.id) return
+        await local.save(snapshot)
+      },
+    })
+    defaultPersistence = { scope, service }
+    // A troca de perfil aborta este sinal NA HORA, antes de qualquer rerender. É o único ponto em
+    // que o projeto ainda é com certeza do perfil antigo: o que falta gravar vai para o banco DELE.
+    // O projeto continua na store (a tela aberta ainda o mostra), marcado como "veio de outro
+    // perfil" até a store receber outro projeto; enquanto isso o serviço do perfil novo não o grava.
+    scope.signal?.addEventListener(
+      'abort',
+      () => {
+        const state = useProjectStore.getState()
+        if (!state.project) return
+        if (state.isDirty) void service.save().catch(() => {})
+        const carried = state.project
+        carriedOverProjectId = carried.id
+        // Vale enquanto a store guarda o MESMO objeto: qualquer troca (abrir, hidratar, editar)
+        // já é um ato feito no perfil novo.
+        const stop = useProjectStore.subscribe((next) => {
+          if (next.project === carried) return
+          if (carriedOverProjectId === carried.id) carriedOverProjectId = null
+          stop()
+        })
+      },
+      { once: true },
+    )
   }
   return defaultPersistence.service
 }

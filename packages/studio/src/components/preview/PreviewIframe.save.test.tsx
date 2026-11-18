@@ -62,7 +62,10 @@ it('Rodar waits for the host save and executes the latest buffered code without 
     unregister()
     f.stores.project.getState().setFile('script.js', code)
   })
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   await waitFor(() => expect(f.writes).toEqual([code]))
   expect(f.stores.proRun.getState().state?.phase).toBe('preparing')
   expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).not.toContain(btoa(code))
@@ -88,25 +91,50 @@ it('Parar while saving preserves the write and prevents a late start', async () 
   expect(f.stores.proRun.getState().state?.phase).toBe('idle')
 })
 
-it('save failure is an environment error, leaves the code dirty and does not run', async () => {
+it('falha de gravação não impede rodar: o jogo roda, o código fica e o selo guarda o erro', async () => {
   const f = fixture()
+  const code = 'window.DO_NOT_LOSE = true;'
   act(() => {
-    f.stores.project.getState().setFile('script.js', 'window.DO_NOT_LOSE = true;')
+    f.stores.project.getState().setFile('script.js', code)
     f.stores.proRun.getState().actions?.run()
   })
   await act(async () => f.fail(new Error('Cota excedida')))
-  await waitFor(() => expect(f.stores.proRun.getState().state?.error).toContain('Cota excedida'))
-  expect(f.stores.proRun.getState().state?.errorKind).toBeUndefined()
+  await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('running'))
+  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(code))
   expect(f.stores.project.getState().isDirty).toBe(true)
-  expect(f.stores.project.getState().project?.files?.['script.js']).toBe(
-    'window.DO_NOT_LOSE = true;',
-  )
-  expect(f.stores.ui.getState().previewRunning).toBe(false)
+  expect(f.stores.project.getState().saveError).toContain('Cota excedida')
+  expect(f.stores.project.getState().project?.files?.['script.js']).toBe(code)
+})
+
+it('gravação que nunca responde não prende o Rodar', async () => {
+  const f = fixture()
+  const code = 'window.SLOW_SAVE = true;'
+  act(() => {
+    f.stores.project.getState().setFile('script.js', code)
+    f.stores.proRun.getState().actions?.run()
+  })
+  expect(f.stores.proRun.getState().state?.phase).toBe('preparing')
+  await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('running'), {
+    timeout: 3000,
+  })
+  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(code))
+})
+
+it('Rodar sem mudança troca a prévia no mesmo instante e não grava de novo', async () => {
+  const f = fixture()
+  act(() => f.stores.proRun.getState().actions?.run())
+  expect(f.stores.ui.getState().previewRunning).toBe(true)
+  expect(f.stores.proRun.getState().state?.detail).toBeUndefined()
+  act(() => f.stores.proRun.getState().actions?.reload?.())
+  expect(f.writes).toEqual([])
 })
 
 it('closing the preview while saving cannot start a new game after acknowledgement', async () => {
   const f = fixture()
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   f.view.unmount()
   await act(async () => f.confirm())
   expect(f.writes).toHaveLength(1)
@@ -116,7 +144,10 @@ it('closing the preview while saving cannot start a new game after acknowledgeme
 
 it('switching projects while saving cannot start the replacement project', async () => {
   const f = fixture()
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   act(() =>
     f.stores.project
       .getState()
@@ -130,6 +161,7 @@ it('switching projects while saving cannot start the replacement project', async
 it('repeated Rodar while saving starts only one write', async () => {
   const f = fixture()
   act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
     f.stores.proRun.getState().actions?.run()
     f.stores.proRun.getState().actions?.run()
   })
@@ -140,7 +172,10 @@ it('repeated Rodar while saving starts only one write', async () => {
 
 it('a host rerender with unchanged execution authority does not cancel the run', async () => {
   const f = fixture()
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   f.rerender()
   await act(async () => f.confirm())
   await waitFor(() => expect(f.stores.proRun.getState().state?.phase).toBe('running'))
@@ -148,7 +183,10 @@ it('a host rerender with unchanged execution authority does not cancel the run',
 
 it('revoking write authority while saving prevents a late run', async () => {
   const f = fixture()
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   f.changeAuthority({ editingAccess: 'observer' })
   await act(async () => f.confirm())
   expect(f.writes).toHaveLength(1)
@@ -158,7 +196,10 @@ it('revoking write authority while saving prevents a late run', async () => {
 
 it('a new writer generation cannot inherit an old run request', async () => {
   const f = fixture()
-  act(() => f.stores.proRun.getState().actions?.run())
+  act(() => {
+    f.stores.project.getState().setFile('script.js', 'window.DIRTY = true;')
+    f.stores.proRun.getState().actions?.run()
+  })
   f.changeAuthority({ writerEpoch: 2 })
   await act(async () => f.confirm())
   expect(f.writes).toHaveLength(1)
