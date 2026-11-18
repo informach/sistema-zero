@@ -147,12 +147,20 @@ async function medir(browser, base, arranjo) {
 }
 
 const nomes = (process.env.SZ_MEASURE_BROWSERS ?? 'chromium').split(',').map((n) => n.trim())
+// Headless shell has different process isolation from the full Chromium browser. Measuring
+// it by accident can turn a browser capability result into a property of the test harness.
+const chromiumMode = process.env.SZ_CHECK_CHROMIUM
+  ? 'explicit-executable'
+  : process.env.SZ_MEASURE_HEADLESS_SHELL === '1'
+    ? 'headless-shell'
+    : 'chromium'
 const saida = []
 for (const nome of nomes) {
   let browser
   try {
     browser = await playwright[nome].launch({
       headless: true,
+      ...(nome === 'chromium' && chromiumMode === 'chromium' ? { channel: 'chromium' } : {}),
       ...(nome === 'chromium' && process.env.SZ_CHECK_CHROMIUM
         ? { executablePath: process.env.SZ_CHECK_CHROMIUM }
         : {}),
@@ -169,6 +177,7 @@ for (const nome of nomes) {
         try {
           saida.push({
             navegador: `${nome} ${browser.version()}`,
+            ...(nome === 'chromium' ? { chromiumMode } : {}),
             cabecalhosDoHost: comCabecalhos,
             ...(await medir(browser, base, arranjo)),
           })

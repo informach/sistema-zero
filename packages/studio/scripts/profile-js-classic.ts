@@ -33,7 +33,11 @@ const FAROL = resolve(
 const ALVOS = process.env.SZ_PROFILE_BLOCKS
   ? [Number(process.env.SZ_PROFILE_BLOCKS)]
   : [0, 500, 2000, 5000, 10000]
-const REPETICOES = 7
+const REPETICOES = Number(process.env.SZ_PROFILE_SAMPLES ?? 31)
+if (!Number.isSafeInteger(REPETICOES) || REPETICOES < 5 || REPETICOES > 1000)
+  throw new Error('SZ_PROFILE_SAMPLES deve ser um inteiro de 5 a 1000.')
+if (ALVOS.some((alvo) => !Number.isSafeInteger(alvo) || alvo < 0 || alvo > 10000))
+  throw new Error('SZ_PROFILE_BLOCKS deve ser um inteiro de 0 a 10000.')
 
 interface Bloco {
   type: string
@@ -83,6 +87,8 @@ function estadoCom(alvo: number): { blocks: { blocks: Bloco[] } } {
 }
 
 const mediana = (valores: number[]) => [...valores].sort((a, b) => a - b)[valores.length >> 1] ?? 0
+const percentil95 = (valores: number[]) =>
+  [...valores].sort((a, b) => a - b)[Math.ceil(valores.length * 0.95) - 1] ?? 0
 const ms = (valor: number) => Math.round(valor * 100) / 100
 
 // Alguns campos dos blocos criam elementos ao nascer: o mesmo DOM de mentira dos testes.
@@ -91,10 +97,14 @@ ensureBlocklyInitialized()
 registerExtensionBlocks(gameTwoDBlocks)
 
 const linhas = []
+const amostras = []
 for (const alvo of ALVOS) {
   const workspace = new Blockly.Workspace()
+  const fixtureStarted = performance.now()
+  const estadoInicial = estadoCom(alvo)
+  const fixtureMs = performance.now() - fixtureStarted
   const t0 = performance.now()
-  Blockly.serialization.workspaces.load(estadoCom(alvo), workspace)
+  Blockly.serialization.workspaces.load(estadoInicial, workspace)
   const carregar = performance.now() - t0
   const blocos = workspace.getAllBlocks(false).length
   const etapas: Record<string, number[]> = {
@@ -127,23 +137,26 @@ for (const alvo of ALVOS) {
   const medianas = Object.fromEntries(
     Object.entries(etapas).map(([nome, valores]) => [nome, ms(mediana(valores))]),
   )
-  const total = Object.values(medianas).reduce((soma, valor) => soma + valor, 0)
+  // The median of per-stage medians is not a percentile of end-to-end editing time.
+  // Keep every round together before computing its distribution.
+  const totais = Array.from({ length: REPETICOES }, (_, vez) =>
+    Object.values(etapas).reduce((soma, valores) => soma + (valores[vez] ?? 0), 0),
+  )
+  amostras.push({ blocos, etapasMs: etapas, edicoesMs: totais })
   linhas.push({
     blocos,
     estadoKB: Math.round(bytes / 1024),
     linhasDeCodigo,
+    fixtureMs: ms(fixtureMs),
     carregarMs: ms(carregar),
     ...medianas,
-    porEdicaoMs: ms(total),
-    piorMs: ms(
-      Math.max(
-        ...Array.from({ length: REPETICOES }, (_, vez) =>
-          Object.values(etapas).reduce((soma, valores) => soma + (valores[vez] ?? 0), 0),
-        ),
-      ),
-    ),
+    amostras: REPETICOES,
+    porEdicaoMs: ms(mediana(totais)),
+    p95Ms: ms(percentil95(totais)),
+    piorMs: ms(Math.max(...totais)),
   })
   workspace.dispose()
 }
-if (process.argv.includes('--json')) console.log(JSON.stringify(linhas, null, 1))
+if (process.argv.includes('--json'))
+  console.log(JSON.stringify({ version: 2, resultados: linhas, amostras }, null, 1))
 else console.table(linhas)
