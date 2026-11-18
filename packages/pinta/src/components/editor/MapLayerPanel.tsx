@@ -36,9 +36,11 @@ import { useEditorStores } from './editorContext'
 import { CommitInput } from './MapObjectPanel'
 import { MapProperties } from './MapProperties'
 import { commitIfChanged } from './mapTools/commitGuard'
+import { ALL_MAP_FEATURES, type MapFeatures } from './mapTools/mapLevels'
 import type { TilemapSidebarProps } from './TilemapPanels'
 
 export function MapLayerPanel({
+  features = ALL_MAP_FEATURES,
   tilemap,
   layerTilesetChoices,
   activeLayerId,
@@ -61,7 +63,7 @@ export function MapLayerPanel({
   | 'onAddLayer'
   | 'onAddObjectLayer'
   | 'onSetLayerTileset'
->): JSX.Element {
+> & { features?: MapFeatures }): JSX.Element {
   const { editor } = useEditorStores()
   const tileLayerCount = tilemap.layers.filter(isTileLayer).length
   const commit = (edit: (map: TilemapAsset) => TilemapAsset): void => {
@@ -81,6 +83,7 @@ export function MapLayerPanel({
             (!isTileLayer(layer) || tileLayerCount > 1)
           const layerTilesetId = isTileLayer(layer) ? tileLayerTilesetId(tilemap, layer) : null
           const showTilesetChoice =
+            features.layerOrder &&
             active &&
             layerTilesetId !== null &&
             (layerTilesetChoices.length > 1 ||
@@ -152,7 +155,9 @@ export function MapLayerPanel({
                   </IconButton>
                 ) : null}
               </div>
-              {active ? <MapLayerDetails tilemap={tilemap} layer={layer} /> : null}
+              {active ? (
+                <MapLayerDetails tilemap={tilemap} layer={layer} features={features} />
+              ) : null}
               {showTilesetChoice && layerTilesetId ? (
                 <label className="flex flex-col gap-1 px-1 text-xs font-bold text-pin-muted">
                   {COPY.tiles.layerTileset}
@@ -187,14 +192,16 @@ export function MapLayerPanel({
         <Shapes aria-hidden="true" />
         {COPY.tiles.addObjectLayer}
       </Button>
-      <Button
-        variant="barOutline"
-        className="mt-2 w-full"
-        onClick={() => commit((map) => addMapGroup(map, COPY.tiles.group))}
-      >
-        <Group aria-hidden="true" />
-        {COPY.tiles.addGroup}
-      </Button>
+      {features.layerAdvanced ? (
+        <Button
+          variant="barOutline"
+          className="mt-2 w-full"
+          onClick={() => commit((map) => addMapGroup(map, COPY.tiles.group))}
+        >
+          <Group aria-hidden="true" />
+          {COPY.tiles.addGroup}
+        </Button>
+      ) : null}
     </Panel>
   )
 }
@@ -203,9 +210,11 @@ const FIELD =
 function MapLayerDetails({
   tilemap,
   layer,
+  features,
 }: {
   tilemap: TilemapAsset
   layer: TilemapLayer
+  features: MapFeatures
 }): JSX.Element {
   const fieldId = useId()
   const { editor } = useEditorStores()
@@ -239,117 +248,126 @@ function MapLayerDetails({
           onCommit={(name) => update({ name })}
         />
       </label>
-      <div className="flex gap-1">
-        <IconButton
-          aria-label={`${layer.locked ? COPY.tiles.layerUnlock : COPY.tiles.layerLock}: ${layer.name}`}
-          aria-pressed={layer.locked === true}
-          onClick={() => update({ locked: layer.locked ? undefined : true })}
-        >
-          {layer.locked ? <Lock aria-hidden="true" /> : <LockOpen aria-hidden="true" />}
-        </IconButton>
-        <IconButton
-          aria-label={`${COPY.tiles.layerUp}: ${layer.name}`}
-          onClick={() => commit((m) => moveMapLayer(m, layer.id, -1))}
-        >
-          <ChevronUp aria-hidden="true" />
-        </IconButton>
-        <IconButton
-          aria-label={`${COPY.tiles.layerDown}: ${layer.name}`}
-          onClick={() => commit((m) => moveMapLayer(m, layer.id, 1))}
-        >
-          <ChevronDown aria-hidden="true" />
-        </IconButton>
-      </div>
-      <label className="flex flex-col text-xs font-bold text-pin-muted">
-        {COPY.tiles.layerOpacity} ({Math.round((layer.opacity ?? 1) * 100)}%)
-        <input
-          type="range"
-          className="pin-range"
-          min="0"
-          max="100"
-          value={(layer.opacity ?? 1) * 100}
-          onPointerDown={beginOpacity}
-          onPointerUp={endOpacity}
-          onPointerCancel={endOpacity}
-          onKeyDown={beginOpacity}
-          onKeyUp={endOpacity}
-          onBlur={endOpacity}
-          onChange={(e) => {
-            const s = editor.getState()
-            if (s.asset.kind === 'tilemap') {
-              const next = updateMapLayer(s.asset, layer.id, {
-                opacity: Number(e.target.value) / 100,
-              })
-              if (next === s.asset) return
-              if (opacityBase.current) s.replace(next)
-              else s.commit(next)
-            }
-          }}
-        />
-      </label>
-      <label className="text-xs font-bold text-pin-muted">
-        {COPY.tiles.layerParent}
-        <select
-          className={FIELD}
-          value={layer.parentId ?? ''}
-          onChange={(e) =>
-            commit((m) => setMapLayerParent(m, layer.id, e.target.value || undefined))
-          }
-        >
-          <option value="">{COPY.tiles.layerRoot}</option>
-          {tilemap.layers
-            .filter(
-              (l) =>
-                l.kind === 'group' &&
-                l.id !== layer.id &&
-                !layerAncestors(tilemap, l).some((g) => g.id === layer.id),
-            )
-            .map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-        </select>
-      </label>
-      {isTileLayer(layer) ? (
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={layer.collision === true}
-            onChange={() => {
-              if (!commit((m) => toggleMapLayerCollision(m, layer.id)))
-                showToast(COPY.layers.lockedWarning)
-            }}
-          />
-          {COPY.tiles.layerCollision}
-        </label>
-      ) : null}
-      <details>
-        <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold text-pin-muted">
-          {COPY.scene.deslocamentoEDistancia}
-        </summary>
-        <div className="grid grid-cols-2 gap-1">
-          {(['offsetX', 'offsetY', 'parallaxX', 'parallaxY'] as const).map((key, i) => (
-            <label key={key} htmlFor={`${fieldId}-${key}`} className="text-xs text-pin-muted">
-              {
-                [
-                  COPY.scene.deslocarX,
-                  COPY.scene.deslocarY,
-                  COPY.scene.distanciaX,
-                  COPY.scene.distanciaY,
-                ][i]
-              }
-              <CommitInput
-                id={`${fieldId}-${key}`}
-                numeric
-                value={String(layer[key] ?? (key.startsWith('parallax') ? 1 : 0))}
-                onCommit={(v) => update({ [key]: Number(v) })}
-              />
-            </label>
-          ))}
+      {features.layerOrder ? (
+        <div className="flex gap-1">
+          <IconButton
+            aria-label={`${layer.locked ? COPY.tiles.layerUnlock : COPY.tiles.layerLock}: ${layer.name}`}
+            aria-pressed={layer.locked === true}
+            onClick={() => update({ locked: layer.locked ? undefined : true })}
+          >
+            {layer.locked ? <Lock aria-hidden="true" /> : <LockOpen aria-hidden="true" />}
+          </IconButton>
+          <IconButton
+            aria-label={`${COPY.tiles.layerUp}: ${layer.name}`}
+            onClick={() => commit((m) => moveMapLayer(m, layer.id, -1))}
+          >
+            <ChevronUp aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            aria-label={`${COPY.tiles.layerDown}: ${layer.name}`}
+            onClick={() => commit((m) => moveMapLayer(m, layer.id, 1))}
+          >
+            <ChevronDown aria-hidden="true" />
+          </IconButton>
         </div>
-      </details>
-      <MapProperties value={layer.properties} onChange={(properties) => update({ properties })} />
+      ) : null}
+      {features.layerAdvanced ? (
+        <>
+          <label className="flex flex-col text-xs font-bold text-pin-muted">
+            {COPY.tiles.layerOpacity} ({Math.round((layer.opacity ?? 1) * 100)}%)
+            <input
+              type="range"
+              className="pin-range"
+              min="0"
+              max="100"
+              value={(layer.opacity ?? 1) * 100}
+              onPointerDown={beginOpacity}
+              onPointerUp={endOpacity}
+              onPointerCancel={endOpacity}
+              onKeyDown={beginOpacity}
+              onKeyUp={endOpacity}
+              onBlur={endOpacity}
+              onChange={(e) => {
+                const s = editor.getState()
+                if (s.asset.kind === 'tilemap') {
+                  const next = updateMapLayer(s.asset, layer.id, {
+                    opacity: Number(e.target.value) / 100,
+                  })
+                  if (next === s.asset) return
+                  if (opacityBase.current) s.replace(next)
+                  else s.commit(next)
+                }
+              }}
+            />
+          </label>
+          <label className="text-xs font-bold text-pin-muted">
+            {COPY.tiles.layerParent}
+            <select
+              className={FIELD}
+              value={layer.parentId ?? ''}
+              onChange={(e) =>
+                commit((m) => setMapLayerParent(m, layer.id, e.target.value || undefined))
+              }
+            >
+              <option value="">{COPY.tiles.layerRoot}</option>
+              {tilemap.layers
+                .filter(
+                  (l) =>
+                    l.kind === 'group' &&
+                    l.id !== layer.id &&
+                    !layerAncestors(tilemap, l).some((g) => g.id === layer.id),
+                )
+                .map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          {isTileLayer(layer) ? (
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={layer.collision === true}
+                onChange={() => {
+                  if (!commit((m) => toggleMapLayerCollision(m, layer.id)))
+                    showToast(COPY.layers.lockedWarning)
+                }}
+              />
+              {COPY.tiles.layerCollision}
+            </label>
+          ) : null}
+          <details>
+            <summary className="flex min-h-11 cursor-pointer items-center text-xs font-bold text-pin-muted">
+              {COPY.scene.deslocamentoEDistancia}
+            </summary>
+            <div className="grid grid-cols-2 gap-1">
+              {(['offsetX', 'offsetY', 'parallaxX', 'parallaxY'] as const).map((key, i) => (
+                <label key={key} htmlFor={`${fieldId}-${key}`} className="text-xs text-pin-muted">
+                  {
+                    [
+                      COPY.scene.deslocarX,
+                      COPY.scene.deslocarY,
+                      COPY.scene.distanciaX,
+                      COPY.scene.distanciaY,
+                    ][i]
+                  }
+                  <CommitInput
+                    id={`${fieldId}-${key}`}
+                    numeric
+                    value={String(layer[key] ?? (key.startsWith('parallax') ? 1 : 0))}
+                    onCommit={(v) => update({ [key]: Number(v) })}
+                  />
+                </label>
+              ))}
+            </div>
+          </details>
+          <MapProperties
+            value={layer.properties}
+            onChange={(properties) => update({ properties })}
+          />
+        </>
+      ) : null}
     </div>
   )
 }

@@ -139,3 +139,58 @@ describe('autosave com centenas de desenhos (medição)', () => {
     expect(idbMockStats().getManyKeys).toBe(1)
   })
 })
+
+describe('carimbo `schema` na gravação (o que faz outro código recusar em vez de cortar)', () => {
+  it('🚨 o registro NO DISCO leva o carimbo do conteúdo, mesmo que o desenho em memória não leve', async () => {
+    const { createTilemapAsset, createTilesetAsset, isObjectLayer } = await import(
+      '../core/project'
+    )
+    const { addMapObject, createMapObject } = await import('../tiles/mapObjects')
+    const { addObjectLayer, addLayer } = await import('../tiles/tilemapOps')
+    const { updateMapLayer } = await import('../tiles/layerTree')
+    const disco = () => idbMockDb('sistema-zero-pinta')
+    const noDisco = (id: string) => disco().get(`pinta:asset:${id}`) as { schema?: number }
+
+    // O editor acrescenta um objeto com forma: em memória o mapa continua sem carimbo.
+    let mapa = addObjectLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: 'pecas', cols: 2, rows: 2 }),
+      'Coisas',
+    )
+    const layerId = mapa.layers.find(isObjectLayer)?.id ?? ''
+    const semForma = mapa
+    mapa = addMapObject(
+      mapa,
+      layerId,
+      createMapObject({ name: 'lago', x: 0, y: 0, width: 16, height: 16, shape: 'ellipse' }),
+    )
+    expect(mapa.schema).toBeUndefined()
+    await persistAsset(mapa)
+    expect(noDisco(mapa.id).schema).toBe(4)
+
+    // Só recurso de camada: 3.
+    const soCamada = updateMapLayer(addLayer(semForma, 'Fundo'), semForma.layers[0]?.id ?? '', {
+      opacity: 0.5,
+    })
+    await persistAsset(soCamada)
+    expect(noDisco(mapa.id).schema).toBe(3)
+
+    // Voltou a caber no formato antigo: o carimbo SAI do disco, e o registro é o de sempre.
+    await persistAsset({ ...semForma, schema: 4 })
+    expect('schema' in noDisco(mapa.id)).toBe(false)
+
+    // Peças: carimbo velho de outro código (3 com animação) é corrigido para 4.
+    const pecas = {
+      ...createTilesetAsset({ name: 'pecas', tileSize: 16 }),
+      schema: 3,
+      animations: { '0': [{ tile: 0, duration: 100 }] },
+    }
+    await persistAsset(pecas)
+    expect(noDisco(pecas.id).schema).toBe(4)
+  })
+
+  it('desenho que já está certo é gravado como veio (a mesma referência, nenhuma cópia)', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'a', frameSize: 8 })
+    await persistAsset(sprite)
+    expect(idbMockDb('sistema-zero-pinta').get(`pinta:asset:${sprite.id}`)).toBe(sprite)
+  })
+})

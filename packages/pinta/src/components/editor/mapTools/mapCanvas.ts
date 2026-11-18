@@ -44,14 +44,8 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   if (!ctx) return null
   const fullWidth = (map.cols + 2 * pad) * cellPx,
     fullHeight = (map.rows + 2 * pad) * cellPx
-  const width = Math.min(
-    fullWidth,
-    Math.max(1, (stage?.clientWidth || 1024) - 2 * STAGE_PADDING),
-  )
-  const height = Math.min(
-    fullHeight,
-    Math.max(1, (stage?.clientHeight || 768) - 2 * STAGE_PADDING),
-  )
+  const width = Math.min(fullWidth, Math.max(1, (stage?.clientWidth || 1024) - 2 * STAGE_PADDING))
+  const height = Math.min(fullHeight, Math.max(1, (stage?.clientHeight || 768) - 2 * STAGE_PADDING))
   const x = Math.max(0, Math.min(fullWidth - width, (stage?.scrollLeft ?? 0) - STAGE_PADDING))
   const y = Math.max(0, Math.min(fullHeight - height, (stage?.scrollTop ?? 0) - STAGE_PADDING))
   canvas.width = width

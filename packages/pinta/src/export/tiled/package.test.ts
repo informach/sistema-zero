@@ -106,7 +106,7 @@ describe('ZIP', () => {
       ['../../../segredo.png', COPY.scene.pathOutsideMap],
       ['https://exemplo.com/chao.png', COPY.scene.localImagesOnly],
       ['/etc/passwd', COPY.scene.localImagesOnly],
-      ['nao-veio.png', COPY.scene.dynamicFaltaOArquivoIncluaAsImagens('folhas/nao-veio.png')],
+      ['nao-veio.png', COPY.scene.dynamicFaltaOArquivoIncluaAsImagens('../folhas/nao-veio.png')],
     ] as const) {
       const { entries, maps } = await readTiledPackage(
         [arquivo('mapas/fase.tmj', mapa), arquivo('folhas/chao.tsj', folha(imagem))].map((f) => ({

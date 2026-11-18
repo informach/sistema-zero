@@ -36,9 +36,15 @@ export async function nativeImageOf(asset: PintaAsset): Promise<string | null> {
   )
   return c.toDataURL('image/png')
 }
-if (import.meta.main) {
-  const output = resolve(import.meta.dirname, '../../../..', 'output/pinta-cenarios'),
-    { assets, map } = vilaEFloresta()
+/**
+ * Grava a referência "A Vila e a Floresta" em `output`: o backup, o PNG com dados versão 2 e os
+ * quatro pacotes (pasta e ZIP). Devolve os arquivos de cada pacote, como foram gravados.
+ */
+export async function generateHomologation(
+  output: string,
+  log: (line: string) => void = () => {},
+): Promise<Record<ScenePackageTarget, Record<string, Uint8Array | string>>> {
+  const { assets, map } = vilaEFloresta()
   await mkdir(output, { recursive: true })
   await writeFile(resolve(output, 'vila-e-floresta.pinta.json'), galleryToPintaJson(assets))
   const png = await deriveLoadedPintaImage(
@@ -77,6 +83,7 @@ if (import.meta.main) {
     resolve(output, 'vila-e-floresta.png'),
     Buffer.from(png.dataUrl.split(',')[1]!, 'base64'),
   )
+  const packages = {} as Record<ScenePackageTarget, Record<string, Uint8Array | string>>
   for (const target of [
     'tiled',
     'phaser',
@@ -95,6 +102,15 @@ if (import.meta.main) {
       resolve(output, `${target}.zip`),
       new Uint8Array(await (await scenePackageBlob(files)).arrayBuffer()),
     )
-    console.log(`${target}: ${Object.keys(files).length} arquivos em ${folder}`)
+    packages[target] = files
+    log(`${target}: ${Object.keys(files).length} arquivos em ${folder}`)
   }
+  return packages
 }
+if (import.meta.main)
+  await generateHomologation(
+    resolve(
+      process.argv[2] ?? resolve(import.meta.dirname, '../../../..', 'output/pinta-cenarios'),
+    ),
+    console.log,
+  )

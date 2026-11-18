@@ -107,7 +107,10 @@ export function tiledPackageSource(
   const decoder = new TextDecoder(),
     base = chosen.includes('/') ? chosen.slice(0, chosen.lastIndexOf('/') + 1) : ''
   const get = (path: string): Uint8Array => {
-    const entry = entries.get(tiledPackagePath(base + path)) ?? entries.get(tiledPackagePath(path))
+    // Vale o caminho a partir da pasta do mapa; o nome solto na raiz é só uma segunda chance.
+    let entry = entries.get(tiledPackagePath(base + path))
+    if (!entry && base && !path.replaceAll('\\', '/').split('/').includes('..'))
+      entry = entries.get(tiledPackagePath(path))
     if (!entry) throw new TiledImportError(COPY.scene.dynamicFaltaOArquivoIncluaAsImagens(path))
     return entry
   }

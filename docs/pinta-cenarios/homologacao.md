@@ -1,150 +1,146 @@
 # Homologação: A Vila e a Floresta
 
-Data: 17/11/2026. O cenário é gerado por `packages/pinta/scripts/homologacao/fixture.ts`:
-32 × 24 células, 18 camadas (16 de peças, um grupo e uma de objetos), duas folhas, terreno
-Wang, água animada, frente, opacidade, deslocamento, parallax, arte, propriedades tipadas,
-conjunto vinculado e portas entre Vila e Cabana. Datas e IDs são fixos.
+Revisado em 18/11/2026, depois da revisão da entrega de 17/11/2026. Este registro separa o que
+tem teste automático, o que é um script que se roda, o que é só uma captura de tela feita à mão
+e o que não foi realizado. Nada aqui vale como ensaio em produção, em aparelho físico ou nos
+programas de fora (Tiled e Godot).
 
-## Resultado das verificações
-
-| Pacote | Testes aprovados | Arquivos | Tipagem |
-|---|---:|---:|---|
-| Pinta | 1.728 | 149 | aprovada |
-| Studio | 11.335 | 840, em 160 processos isolados | aprovada |
-| Core | 3.092 | 186 | aprovada |
-| member-shell | 2.467 | 283 | aprovada |
-| community-kids | 1.667 | 211 | aprovada |
-| Members | 2.292 | 359 | aprovada |
-
-Total de 22.581 testes aprovados, nenhuma falha. O Members pulou 679 casos condicionais,
-conforme os requisitos de banco/plataforma das suítes; não são apresentados como executados.
-As verificações pesadas foram sequenciais. Os consumidores foram verificados no worktree
-isolado da entrega; a fonte do Studio foi conferida com a mesma implementação da entrega.
-
-O Biome dos 160 arquivos alterados verificáveis passou sem avisos. `bun run check` do Pinta
-também terminou com código 0: 445 arquivos e cinco avisos preexistentes em
-`python-monsters/terrain.ts` e `PintaApp.test.tsx`, fora das mudanças. O Phaser gerado tem
-verificação separada de hash e licença, em vez de formatação do código de terceiros.
+O cenário é gerado por `packages/pinta/scripts/homologacao/fixture.ts`: 32 × 24 casas, 18
+camadas (16 de peças, um grupo e uma de objetos), duas folhas, terreno Wang, água animada,
+frente, opacidade, deslocamento, parallax, arte, propriedades tipadas, conjunto vinculado e
+portas entre Vila e Cabana. Datas e identificações são fixas.
 
 ## O ciclo de dez passos
 
-| Passo | Comprovação |
+Cada passo tem uma comprovação principal, de um destes quatro tipos: teste automático, script,
+captura de tela feita à mão, ou não realizado. A última coluna diz o que essa comprovação NÃO cobre.
+
+| Passo | Comprovação | O que fica de fora |
+|---|---|---|
+| 1. Criar e abrir | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 1) | Criar pela tela da galeria: feito à mão, sem registro |
+| 2. Organizar camadas | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 2) | Arrastar, renomear e trancar pela tela: só a captura `evidencias/editor-camadas-desktop.png` (feita à mão em 17/11/2026) |
+| 3. Pintar e transformar | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 3) | Pintar com o ponteiro num canvas de navegador: feito à mão, sem registro |
+| 4. Terreno e detalhes | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 4) | O pincel de terreno e o espalhar na tela: feito à mão, sem registro |
+| 5. Objetos e conjuntos | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 5) | Seleção múltipla, copiar e alinhar na tela: feito à mão, sem registro |
+| 6. Salvar e restaurar | teste automático: `packages/pinta/src/export/homologacao.test.ts` (passo 6, o arquivo `.pinta.json`) | Recarregar a galeria no navegador: feito à mão, sem registro. A medição do IndexedDB está em `evidencias/indexeddb.json` (feita à mão em 17/11/2026) |
+| 7. Testar no Pinta | captura de tela: `evidencias/teste-personagem-desktop.png` (feita à mão em 17/11/2026) | Andar com as setas e atravessar a porta não têm teste de navegador. O que é automático (início livre, paredes, portas nos dois sentidos, nos dados) está em `homologacao.test.ts`, passo 7 |
+| 8. Programar no Studio | captura de tela: `evidencias/studio-cenario-desktop.png` (feita à mão em 17/11/2026) | Rodar o jogo no Studio não tem teste de navegador nesta homologação. O que é automático (a cena do envio passa no esquema, cabe no orçamento e é a do exemplo publicado) está em `homologacao.test.ts`, passo 8 |
+| 9. Atualizar o desenho | teste automático: `packages/studio/src/projects/tilemapGame.test.ts` | Atualizar pela biblioteca pessoal no navegador: feito à mão, sem registro |
+| 10. Levar para fora | script: `cd packages/pinta && bun run check:homologacao` | Abrir no Tiled, rodar no Godot e abrir o Phaser num navegador: não realizado (ver abaixo) |
+
+## O que roda sozinho
+
+Em `packages/pinta` (tudo isto também roda no CI, em `.github/workflows/ci.yml`):
+
+```powershell
+bun test src                    # inclui os testes de export e de homologação abaixo
+bun run test:scripts            # os testes de scripts/ (a galeria Pygame), que `bun test src` não alcança
+bun run check:pygame-gallery    # os PNG e os desenhos.pinta.json da galeria estão em dia
+bun run check:phaser            # o Phaser embutido tem o SHA-256 e a licença fixados
+bun run check:homologacao       # gera numa pasta temporária e confere; sai com erro se diferir
+```
+
+`check:homologacao` (`scripts/homologacao/check.ts`) gera os quatro pacotes numa pasta
+temporária, nunca em `output/`, e confere: o pacote Tiled gravado em disco (cada `mapa.json` e
+`mapa.tmx` volta pelo importador do Pinta e dá a mesma cena do `maps.json`), o hash do Phaser
+e o `py_compile` do projeto Pygame. Quando o pygame-ce está instalado ele também roda
+`packages/studio/scripts/python/test-pinta-scene-package.py`; sem ele, a linha sai escrita como
+"não realizado". No CI esse passo roda com `--exigir-pygame`, no job que instala o pygame-ce.
+
+Testes automáticos desta frente (todos dentro de `bun test src`):
+
+| Arquivo | O que confere |
 |---|---|
-| 1. Criar/abrir | Gerador nativo e importação real do backup na galeria |
-| 2. Organizar camadas | Árvore, grupos, pais, renomear, ordem, bloqueio, alpha; testes puros e edição no navegador |
-| 3. Pintar e transformar | Oito flags, carimbos, seleção, linha/retângulo/balde/borracha; testes de operação e canvas real |
-| 4. Terreno e detalhes | Wang com vizinhos e semente, espalhamento determinístico, prévia e recusa atômica |
-| 5. Objetos e conjuntos | Formas/rotação, seleção/copiar/alinhar, referências, biblioteca e conjuntos; wire/arquivo/cena de ida e volta |
-| 6. Salvar e restaurar | Persistência capturada em transação, fechamento de dependências, envelope v3; galeria recarregada em navegador |
-| 7. Testar no Pinta | Movimento real por setas, colisão, porta para Cabana e retorno à Vila |
-| 8. Programar no Studio | Exemplos dos dois motores, 12 blocos, objetos e propriedade `chave=1`; execução em iframe real |
-| 9. Atualizar desenho | Casos de biblioteca pessoal preservam `libId`, revisão, frente, cena e programação; inclui PNG igual com metadados alterados |
-| 10. Levar para fora | Tiled real, Phaser em Chromium, Python real e Godot headless; comandos abaixo |
+| `src/export/homologacao.test.ts` | os passos do ciclo que não precisam de navegador |
+| `src/export/scenePackage.test.ts` | o conteúdo de cada ZIP; Phaser sem endereço de internet, com o hash fixado e a licença; cenas no esquema; `py_compile` de todo `.py` do projeto Pygame; textos do projeto Godot e peças dentro do atlas |
+| `src/export/tiled/roundtrip.test.ts` | a cena INTEIRA igual na ida e volta, em JSON e TMX, com CSV, base64, zlib e gzip; grupos dentro de grupos; propriedade de várias linhas |
+| `src/export/tiled/realTiled.test.ts` | quatro mapas escritos à mão no formato do Tiled 1.10 viram exatamente a cena esperada |
+| `src/export/tiled/import.test.ts` | propriedades, relatório de perdas, recusas, limites e camadas compactadas |
+| `src/export/tiled/package.test.ts` | caminhos do ZIP, tetos de 32 MiB e 128 MiB |
 
-As linhas com testes de contrato não são apresentadas como ensaio humano em produção. A nuvem
-real/staging e aparelhos físicos não foram acessados. A implementação é local, sem deploy.
+Resultado em 18/11/2026, nesta máquina (Linux, bun 1.4.4, Python 3.13.18, sem pygame):
 
-## Navegador e visual
+| Comando | Resultado |
+|---|---|
+| `cd packages/pinta && bun test src/export scripts` | 340 testes passaram, nenhuma falha, em 30 arquivos |
+| `cd packages/pinta && bun run check:homologacao` | terminou sem erro; a linha do pygame de verdade saiu como "não realizado" |
+| `cd packages/studio && bun run check:pygame-games` | 9 jogos conferidos, sem diferença |
+| `cd packages/studio && bun test src/examples/python/pygameGames.test.ts src/examples/qaContracts.test.ts` | 217 testes passaram, nenhuma falha, em 2 arquivos |
+| `python3 -I packages/studio/scripts/python/test-pinta-module.py --sem-pygame` | 40 conferências de lógica pura passaram |
 
-Playground do Pinta em `127.0.0.1:5199`, Studio em `127.0.0.1:5173` e Phaser em
-`127.0.0.1:5299`. Namespaces de QA separados dos desenhos existentes.
+As suítes completas dos outros pacotes não foram rodadas nesta revisão. O registro anterior
+citava um total de 22.581 testes; esse número não tem comando nem saída guardados e foi retirado.
 
-- Desktop 1366 × 768 e notebook 1024 × 768, claro/escuro. Painéis e barra usam o estilo existente.
-- Celular 390 × 844: contexto Chromium com `isMobile`, `hasTouch`, `maxTouchPoints=1` e CPU
-  emulada em 4×. Canvas medido em 374 px; sem overflow horizontal da página. Botão de mover
-  levou o personagem de 32,32 para 37,32 por toque.
-- A porta foi atravessada pelos controles reais do teste do Pinta, com retorno.
-- No Studio básico, o evento do jogo em execução foi observado com seu personagem real:
-  entrada na porta levou a 128 px de largura (Cabana), retorno a 512 px (Vila). No avançado,
-  os mesmos métodos confirmaram a transição nos dois sentidos e os objetos/propriedades.
-- Phaser 3.90.0 carregou JSON do Tiled e duas imagens distintas da animação; portas em ambos
-  os sentidos. Nenhuma requisição a CDN é necessária no pacote exportado.
-- A importação do ZIP Tiled pela galeria trouxe cinco desenhos, sem avisos. A escolha é por
-  mapa; a restauração do `.pinta.json` do pacote traz todos os mapas juntos.
-- O motor básico emitiu um aviso de atraso de quadros durante as suítes pesadas na mesma
-  máquina. Isso não é uma medição de desempenho em hardware fraco.
+## O que NÃO foi realizado
 
-Evidências: [desktop claro](evidencias/editor-camadas-desktop.png),
-[desktop escuro](evidencias/editor-desktop-escuro.png),
-[notebook claro](evidencias/editor-notebook-claro.png),
-[notebook escuro](evidencias/editor-notebook-escuro.png),
-[celular claro](evidencias/editor-mobile-toque-claro.png),
-[celular escuro](evidencias/editor-mobile-toque-escuro.png),
-[teste por toque](evidencias/teste-mobile-toque.png),
-[teste no Pinta](evidencias/teste-personagem-desktop.png),
-[Studio básico](evidencias/studio-cenario-desktop.png),
-[Studio avançado](evidencias/studio-avancado-cenario.png),
-[Phaser](evidencias/phaser-pacote.png),
-[importação do ZIP Tiled](evidencias/importacao-tiled-zip.png).
+- **Tiled (o programa).** Não realizado. Não há executável do Tiled nem arquivo exportado por
+  ele no repositório. O registro anterior dizia que o Tiled 1.12.2 tinha aberto e exportado o
+  mapa; não existe artefato que comprove. O que existe: a ida e volta pelo importador do Pinta e
+  quatro mapas escritos à mão no formato do Tiled 1.10
+  (`packages/pinta/src/export/tiled/__fixtures__/tiled-real/`), que não saíram do programa.
+- **Godot.** Não realizado. O registro anterior citava importação e execução sem janela no
+  Godot 4.7.2; não há saída guardada. O que existe é uma conferência de texto escrita por nós
+  (`src/export/godot/textFormat.ts`): seções, recursos citados e declarados, arquivos `res://`
+  presentes e peças dentro do atlas. Ela não compila o GDScript nem abre a cena.
+- **Phaser num navegador.** Sem teste automático. Há uma captura, `evidencias/phaser-pacote.png`
+  (feita à mão em 17/11/2026). O teste automático confere o pacote, não a execução.
+- **pygame-ce de verdade.** Não realizado nesta máquina (sem pygame). Os testes
+  `test-pinta-module.py` e `test-pinta-scene-package.py` rodam no CI com pygame-ce 2.5.7; o
+  segundo entrou no CI nesta revisão e ainda não tem uma execução registrada. As execuções do
+  registro anterior (Python 3.13, pygame-ce 2.5.8) foram feitas à mão, sem registro.
+- **Aparelhos físicos, staging e produção.** Não realizado.
+- **Desempenho em máquina fraca.** Não realizado.
 
-A regressão de conjuntos compara pixels antes/depois de soltar nos quatro giros e quatro
-combinações de espelho (16 casos). Outra regressão prova que portas dentro de conjuntos
-incluem o mapa de destino no pacote. O envio ao Studio usa a mesma expansão de objetos.
+## Navegador e visual (feito à mão em 17/11/2026)
 
-Na frota mista, a cena completa declara versão de nuvem 3. O cliente intermediário da base
-declara/lê até 2; a trava o impede de baixar o item e a comparação de versão do Members
-impede reserva/remoção com declaração inferior. A verificação local usa o contrato do core
-e as rotas/serviço do Members; não é prova contra uma instalação em produção.
+As sessões abaixo foram feitas à mão, no playground do Pinta e no Studio locais. O que restou
+delas são as capturas de tela; os passos em si não têm registro e não se repetem sozinhos.
+
+- [desktop claro](evidencias/editor-camadas-desktop.png),
+  [desktop escuro](evidencias/editor-desktop-escuro.png),
+  [notebook claro](evidencias/editor-notebook-claro.png),
+  [notebook escuro](evidencias/editor-notebook-escuro.png)
+- [celular claro](evidencias/editor-mobile-claro.png),
+  [celular com toque, claro](evidencias/editor-mobile-toque-claro.png),
+  [celular com toque, escuro](evidencias/editor-mobile-toque-escuro.png),
+  [teste por toque](evidencias/teste-mobile-toque.png). É emulação de celular no Chromium,
+  não um aparelho.
+- [teste no Pinta](evidencias/teste-personagem-desktop.png)
+- [Studio básico](evidencias/studio-cenario-desktop.png),
+  [Studio avançado](evidencias/studio-avancado-cenario.png)
+- [Phaser](evidencias/phaser-pacote.png)
+- [importação do ZIP Tiled](evidencias/importacao-tiled-zip.png)
+
+Medidas e observações que o registro anterior citava dessas sessões (largura do canvas no
+celular, personagem andando de 32 para 37, larguras de 128 e 512 no Studio, duas imagens da
+animação no Phaser): feitas à mão, sem registro.
 
 ## Persistência e limites
 
-Antes de elevar os tetos, o IndexedDB guardou 256 × 256 × 32 = 2.097.152 células,
-4 MiB de buffers. Cinco gravações: 117,5 / 85,6 / 108,2 / 82,7 / 81,7 ms. Leitura:
-64,4 ms, com as 32 camadas intactas. O padrão de teste é repetido (0/-1); não equivale a
-PNG, exportação, cena JS com ruído ou aparelho lento. [Registro da medição](evidencias/indexeddb.json).
+A medição do IndexedDB (256 × 256 × 32 = 2.097.152 casas, cinco gravações e uma leitura) foi
+feita à mão em 17/11/2026; o registro é `evidencias/indexeddb.json`. O padrão de teste é
+repetido (0 e -1); não equivale a um mapa com ruído, a um PNG ou a um aparelho lento.
 
-O Studio aplica seu orçamento de caracteres separadamente. O editor não promete que o mapa
-máximo caiba no Studio ou numa imagem; a recusa do adaptador é explícita. O formato mantém
-o empacotamento de células acima de 128 × 128 e a codificação anterior para mapas menores.
+O Studio aplica o orçamento de caracteres dele separadamente. O editor não promete que o mapa
+máximo caiba no Studio ou numa imagem; a recusa do adaptador é explícita.
 
-## Execuções reproduzíveis
+## Para repetir os ensaios à mão
 
-```powershell
-# Executar separadamente, uma verificação pesada por vez.
-cd packages/pinta
-bun test src
-bun run typecheck
-bun run check
-cd ../studio
-bun run test
-bunx --no-install tsc --noEmit --pretty false
-```
-
-Os testes do Studio usam o isolamento definido em `scripts/test-isolated.mjs`; os testes
-Blockly não compartilham estado global entre arquivos sensíveis.
-
-Python 3.13.17, pygame-ce 2.5.8, SDL 2.32.10:
+Estes comandos existem, mas o resultado deles não é conferido por nenhum teste:
 
 ```powershell
+# Gera os pacotes em output/pinta-cenarios/ (ignorado pelo Git) para abrir nos programas.
+bun packages/pinta/scripts/homologacao/generate.ts
+# Com pygame-ce instalado:
 python -I packages/studio/scripts/python/test-pinta-module.py
 python -I packages/studio/scripts/python/test-pinta-scene-package.py
-```
-
-Ambos passaram. O segundo compara os pixels do PNG v2 com o pacote Pygame no mesmo instante
-de animação e verifica as portas nos dois sentidos. As 18 camadas, duas folhas, arte, conjunto
-e propriedades são conservados.
-
-Tiled 1.12.2, executável oficial extraído localmente:
-
-```powershell
-tiled.exe --export-map json output/pinta-cenarios/tiled/mapas/mapa-0/mapa.tmx output/pinta-cenarios/tiled/tiled-roundtrip.json
-```
-
-O resultado do Tiled voltou ao importador e à conversão nativa: 18 camadas, seis objetos,
-terreno `grama`, um conjunto e cinco desenhos, sem avisos. Repetir com
-`bun packages/pinta/scripts/homologacao/verify-tiled.ts`.
-
-Godot 4.7.2 oficial:
-
-```powershell
+# Com o Tiled instalado (não realizado nesta revisão):
+tiled --export-map json output/pinta-cenarios/tiled/mapas/mapa-0/mapa.tmx output/pinta-cenarios/tiled/tiled-roundtrip.json
+bun packages/pinta/scripts/homologacao/verify-tiled.ts output/pinta-cenarios/tiled/tiled-roundtrip.json
+# Com o Godot 4.3 ou mais novo instalado (não realizado nesta revisão):
 godot --headless --path output/pinta-cenarios/godot --editor --import
 godot --headless --path output/pinta-cenarios/godot --quit-after 10
 ```
 
-Importação e execução terminaram com código 0, sem erros de script/importação. O runtime
-informou `vila-e-floresta / 18 camadas`. O executável Pygame também completou dez quadros,
-além dos dois testes do módulo Python.
-
-A [matriz de compatibilidade](compatibilidade-tiled.md) enumera recusas
-de formatos externos. Não há mapa infinito, projeção isométrica/hexagonal ou conjuntos recursivos
-nesta entrega; são limites expressos do domínio, sem conversão silenciosa.
+A [matriz de compatibilidade](compatibilidade-tiled.md) enumera o que o importador converte,
+avisa e recusa.

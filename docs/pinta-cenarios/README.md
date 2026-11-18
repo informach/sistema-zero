@@ -28,9 +28,39 @@ nuvem 3 para também barrar o cliente intermediário que declarava 2.
 | 14 | Referência e documentação | Vila e Floresta, exemplos dos dois motores, guias e evidências |
 
 A validação local, os ensaios em navegador e os limites de comprovação são registrados em
-[homologação](homologacao.md). Não há merge ou deploy nesta entrega. Aparelhos físicos e
+[homologação](homologacao.md), revista em 18/11/2026: os destinos externos (linha 13) não foram
+abertos no Tiled nem no Godot, e os ensaios em navegador (linha 14) são capturas feitas à mão. Não há merge ou deploy nesta entrega. Aparelhos físicos e
 staging real precisam de ensaio no ambiente correspondente; não são apresentados como testes
 realizados. Mapas infinitos/isométricos/hexagonais estão fora do escopo declarado do plano.
+
+## Correções de 18/11/2026
+
+Uma revisão da entrega de 17/11/2026 encontrou defeitos e promessas sem comprovação. Esta
+seção lista, por frente, o que a revisão achou e o que foi corrigido.
+
+### Exportação, importação do Tiled e homologação
+
+| O que a revisão achou | O que foi feito |
+|---|---|
+| O TMX perdia propriedades de texto com valor numérico ou verdadeiro/falso (`senha="1234"` virava vazio) | A conversão passou a seguir o `type` da propriedade; sem `type` é texto |
+| Erros do esquema chegavam à criança como JSON em inglês | O importador confere os limites antes, com frases próprias; nome comprido é encurtado e quadro abaixo de 16 ms vira 16 ms, com aviso. Erro desconhecido vira um recado geral |
+| Perdas sem aviso: bit diagonal em objeto de peça, objeto com modelo, classe de camada, cor de fundo e outras | O bit diagonal é convertido; as demais entram no relatório. A lista completa está em [compatibilidade com Tiled](compatibilidade-tiled.md) |
+| O TMX exportado achatava quebras de linha em atributos | Gravadas como `&#10;`, `&#13;` e `&#9;` |
+| Camada compactada maior que o mapa entrava cortada | Descompactação com teto e recusa quando o tamanho não bate |
+| O teste de ida e volta comparava menos do que o documento dizia | Compara a cena inteira, em JSON e TMX, com CSV, base64, zlib e gzip, grupos aninhados e quatro mapas escritos à mão no formato do Tiled 1.10 |
+| Proteções sem teste (caminhos do ZIP, DTD, tetos de 32 e 128 MiB, mais de 256 peças, gid acima da folha) | Testadas. Arte e conjuntos importados passam pelo mesmo portão do documento que folhas e mapa |
+| `exportacao.md` citava `pinta.carregar(...)`, que não existe | Corrigido para `pinta.carregar_mapa` |
+| `pinta.py`: camada escondida deixou de desenhar quando chamada direto, também em dados versão 1; animação de duração zero dividia por zero | Dados versão 1 voltaram ao comportamento de antes; duração zero fica parada. As partes de lógica pura têm teste que roda sem pygame (`test-pinta-module.py --sem-pygame`) |
+| O PNG `fazenda.png` do PyDew Valley não era o que o Pinta deriva do documento (teste falhando) | O gerador da galeria passou a gravar a cena completa nos dados versão 2, como o Pinta faz; PNG e pacote do jogo regenerados. O jogo com esse PNG não foi rodado com pygame de verdade nesta revisão (não realizado) |
+| Os testes de `packages/pinta/scripts` não rodavam no `bun test src` | Script `test:scripts`, chamado no CI |
+| A homologação prometia Tiled real, Godot sem janela e 22.581 testes sem artefato | [Homologação](homologacao.md) reescrita: cada passo diz se é teste automático, script, captura feita à mão ou não realizado. Tiled e Godot: não realizado. O total de testes foi retirado |
+| Scripts de homologação eram manuais e gravavam em `output/` | `bun run check:homologacao` gera em pasta temporária, confere e sai com erro; está no CI. Há testes do conteúdo dos pacotes Phaser, Pygame e Godot |
+
+Pendências desta frente: abrir os pacotes no Tiled e no Godot de verdade; teste de navegador
+para o Phaser, para o teste com personagem e para o jogo no Studio; uma execução registrada de
+`test-pinta-scene-package.py` com pygame-ce.
+
+<!-- outras frentes: preenchido pelo coordenador -->
 
 - [Diagnóstico e arquitetura](diagnostico-e-arquitetura.md)
 - [Guia de uso](guia-de-uso.md)

@@ -463,9 +463,7 @@ export function useTilemapController(model: ReadyMapModel) {
         .createPrepared(
           createMapSet(tilemap, selRect, tileSize, COPY.scene.nomeDoConjunto(tilemap.name)),
         )
-      showToast(
-        saved ? COPY.scene.conjuntoGuardado(saved.name) : COPY.scene.conjuntoNaoGuardado,
-      )
+      showToast(saved ? COPY.scene.conjuntoGuardado(saved.name) : COPY.scene.conjuntoNaoGuardado)
     } catch (error) {
       showToast(error instanceof Error ? error.message : COPY.scene.conjuntoNaoGuardado)
     }

@@ -42,6 +42,9 @@ const CONFERIDOS: Record<string, string> = {
   'tiles/renderVectorTilemap.ts': 'percorre as células e lê o índice por cellTile',
   'tiles/renderTilemap.ts':
     'percorre células inteiras, só compara com vazio e entrega a célula ao desenho por blocos',
+  'export/sceneDrawing.ts': 'percorre as células da cena e lê o índice por cellTile',
+  'components/editor/mapTools/mapLevels.ts':
+    'só pergunta se alguma célula está virada, por cellFlags',
   'templates/builders.ts':
     'confere o valor cru de cada célula do modelo contra a quantidade de peças; modelo com peça virada reprova alto na montagem, não passa calado',
   // Os três abaixo têm `cells` de FOLHA de sprites (retângulos da imagem), não células de mapa.
@@ -53,14 +56,10 @@ const CONFERIDOS: Record<string, string> = {
 /**
  * Arquivos que ainda decodificam a célula na mão. Entram na lista para o teste passar, mas cada
  * um é uma pendência com dono: quando o arquivo for corrigido, o terceiro teste abaixo reprova e
- * obriga a tirar a linha daqui.
+ * obriga a tirar a linha daqui. Hoje está vazia: `export/sceneDrawing.ts` passou a ler por
+ * `cellTile` e o Python de `export/pygameProject.ts` recebe a máscara das constantes de `cell.ts`.
  */
-const PENDENTES: Record<string, string> = {
-  'export/sceneDrawing.ts':
-    'pendente: usar cellTile (hoje faz `value & 4095` dentro de `l.cells.forEach`)',
-  'export/pygameProject.ts':
-    'pendente: usar cellTile; o Python embutido escreve `& 4095` e `& 28672` na mão, sem vir das constantes de cell.ts',
-}
+const PENDENTES: Record<string, string> = {}
 
 const PERMITIDOS: Record<string, string> = { ...CONFERIDOS, ...PENDENTES }
 
@@ -118,11 +117,8 @@ describe('acesso cru às células do mapa', () => {
     expect(acessa('const copia = new Int16Array(layer.cells)')).toBe(false)
   })
 
-  it('as pendências são só as duas conhecidas (corrigir o arquivo, não aumentar a lista)', () => {
-    expect(Object.keys(PENDENTES).sort()).toEqual([
-      'export/pygameProject.ts',
-      'export/sceneDrawing.ts',
-    ])
+  it('não há pendência: quem decodifica a célula na mão é corrigido, não listado', () => {
+    expect(Object.keys(PENDENTES)).toEqual([])
   })
 
   it('quem lê o índice da peça importa o cell.ts', () => {
@@ -130,6 +126,9 @@ describe('acesso cru às células do mapa', () => {
       'tiles/tilemapOps.ts',
       'tiles/tilesetOps.ts',
       'export/portableImageRender.ts',
+      'export/sceneDrawing.ts',
+      'export/pygameProject.ts',
+      'components/editor/mapTools/mapLevels.ts',
     ])
       expect(readFileSync(join(SRC, path), 'utf8')).toContain("/cell'")
   })

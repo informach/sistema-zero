@@ -28,6 +28,12 @@ import {
 import { PanelLook } from '../ui/Panel'
 import { useToolCuration } from './editorContext'
 import { MapLayerPanel } from './MapLayerPanel'
+import {
+  ALL_MAP_FEATURES,
+  isToolInLevel,
+  type MapFeatures,
+  type MapLevel,
+} from './mapTools/mapLevels'
 import { TilePicker } from './TilePicker'
 import { TileTransformPanel } from './TileTransformPanel'
 
@@ -112,7 +118,8 @@ export function mapToolsFor(mode: MapToolMode): typeof MAP_TOOLS {
 
 interface TilemapToolbarProps {
   orientation?: 'horizontal' | 'vertical'
-  level?: 'start' | 'create' | 'advanced'
+  /** O nível das ferramentas (soma com a curadoria da aula, nunca a alarga). */
+  level?: MapLevel
   tool: MapTool
   mode: MapToolMode
   autoExpand: boolean
@@ -139,37 +146,7 @@ export function TilemapToolbar({
 }: TilemapToolbarProps): JSX.Element {
   const allowTools = useToolCuration()
   const modeTools = useMemo(
-    () =>
-      mapToolsFor(mode).filter(
-        (t) =>
-          level === 'advanced' ||
-          (level === 'start'
-            ? [
-                'pencil',
-                'eraser',
-                'fill',
-                'picker',
-                'pan',
-                'object-select',
-                'object-point',
-                'object-rect',
-              ]
-            : [
-                'pencil',
-                'eraser',
-                'fill',
-                'picker',
-                'pan',
-                'line',
-                'rect',
-                'select',
-                'object-select',
-                'object-point',
-                'object-rect',
-                'object-ellipse',
-              ]
-          ).includes(t.id),
-      ),
+    () => mapToolsFor(mode).filter((t) => isToolInLevel(level, t.id)),
     [mode, level],
   )
 
@@ -244,7 +221,7 @@ export function TilemapToolbar({
             },
           ]
         : []),
-    ],
+    ].filter((entry) => isToolInLevel(level, entry.id)),
     allowTools,
   ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
 
@@ -275,6 +252,8 @@ export function TilemapToolbar({
 
 export interface TilemapSidebarProps {
   compact?: boolean
+  /** O que o nível das ferramentas deixa aparecer (sem isto, tudo). */
+  features?: MapFeatures
   extras?: ReactNode
   tilemap: TilemapAsset
   /** As peças da camada de peças ATIVA (`null` com a camada de objetos ativa). */
@@ -299,6 +278,7 @@ export interface TilemapSidebarProps {
 
 export function TilemapSidebar({
   compact = false,
+  features = ALL_MAP_FEATURES,
   extras,
   tilemap,
   tileset,
@@ -333,11 +313,12 @@ export function TilemapSidebar({
           />
         ) : null}
         {objectPanel}
-        {tileset ? (
+        {tileset && features.transform ? (
           <TileTransformPanel stamp={stamp} tile={selectedTile} onChange={onSetStamp} />
         ) : null}
 
         <MapLayerPanel
+          features={features}
           tilemap={tilemap}
           layerTilesetChoices={layerTilesetChoices}
           activeLayerId={activeLayerId}

@@ -723,9 +723,13 @@ describe('conversão para os desenhos do Pinta', () => {
       height: 128,
       data: new Uint8ClampedArray(128 * 128 * 4).fill(255),
     }))
-    expect(converted.assets.map((a) => a.kind).sort()).toEqual(
-      ['map-set', 'pixel-background', 'tilemap', 'tileset', 'tileset'].sort(),
-    )
+    expect(converted.assets.map((a): string => a.kind).sort()).toEqual([
+      'map-set',
+      'pixel-background',
+      'tilemap',
+      'tileset',
+      'tileset',
+    ])
     // O que o portão devolve para cada desenho é o próprio desenho: nada entra sem passar por ele.
     for (const asset of converted.assets)
       expect(sanitizePintaAsset(structuredClone(asset))).toEqual(asset)

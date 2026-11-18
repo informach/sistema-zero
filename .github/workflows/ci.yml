@@ -269,7 +269,12 @@ jobs:
           bun run check:pgzero-games
           bun run check:raylib-games
           bun run check:pygame-games
-          (cd ../pinta && bun scripts/pygame-gallery/generate.ts --check && bun test scripts/pygame-gallery/drawing.test.ts scripts/pygame-gallery/png.test.ts scripts/pygame-gallery/derivation.test.ts)
+          (cd ../pinta && bun run check:pygame-gallery && bun run test:scripts)
+          # O trecho da cena no pinta.py é gerado do pacote portátil do Pinta.
+          bun scripts/gen-pinta-scene-python.ts --check
+          # Homologação dos cenários sem navegador: gera em pasta temporária e confere Tiled
+          # (ida e volta pelo importador), o hash do Phaser e o py_compile do projeto Pygame.
+          (cd ../pinta && bun run check:phaser && bun run check:homologacao)
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts ./scripts/python/pgzero-art-png.test.ts
           bun run test:canvas-survival
           bun run test:grid-games
@@ -554,6 +559,11 @@ jobs:
         run: |
           python -I -B packages/studio/scripts/python/test-pygame-bridge.py
           python -I -B packages/studio/scripts/python/test-pinta-module.py
+          python -I -B packages/studio/scripts/python/test-pinta-module.py --sem-pygame
+      - name: Conferir o PNG de cenário e o projeto Pygame portátil do Pinta com pygame-ce real
+        env:
+          PYTHON: python
+        run: bun packages/pinta/scripts/homologacao/check.ts --exigir-pygame
 
   studio-storage-macos:
     name: studio-storage-macos

@@ -37,14 +37,7 @@ export function applyMapBrush(
   const { layerId, erasing, brush, stamp, anchor, selectedTile } = context
   const terrain = brushTerrain(context)
   if (terrain) {
-    const result = paintTerrain(
-      map,
-      layerId,
-      terrain,
-      erasing ? 0 : brush.color,
-      cells,
-      brush.seed,
-    )
+    const result = paintTerrain(map, layerId, terrain, erasing ? 0 : brush.color, cells, brush.seed)
     return { map: result.map, unmatched: result.unmatched > 0 }
   }
   if (brush.scatter && !erasing)

@@ -201,3 +201,99 @@ describe('clipboardStore (área de transferência do app)', () => {
     expect(mirror.map.get(CLIPBOARD_STORAGE_KEY)).toBe('legado intacto')
   })
 })
+
+describe('clipboardStore com objetos do mapa (`kind: objects`)', () => {
+  const objeto = (extra: Record<string, unknown> = {}) => ({
+    id: newId(),
+    name: 'porta',
+    type: 'porta',
+    x: 16,
+    y: 32,
+    width: 16,
+    height: 16,
+    properties: {},
+    ...extra,
+  })
+
+  it('o que uma aba copia, outra cola: forma, giro, papel e propriedade tipada atravessam o espelho', () => {
+    const mirror = fakeMirror()
+    const a = createClipboardStore({ mirror })
+    const copiados = [
+      objeto({
+        shape: 'polygon',
+        points: [
+          { x: 0, y: 0 },
+          { x: 8, y: 8 },
+          { x: 0, y: 8 },
+        ],
+        rotation: 90,
+        flipX: true,
+        role: 'door',
+        properties: { vida: { type: 'int', value: 3 }, cor: { type: 'color', value: '#ff0000' } },
+      }),
+      objeto({ shape: 'art', art: { assetId: 'heroi', tile: 2 } }),
+    ]
+    a.getState().set({ kind: 'objects', objects: copiados as never })
+
+    const item = createClipboardStore({ mirror }).getState().get()
+    expect(item?.kind).toBe('objects')
+    if (item?.kind !== 'objects') throw new Error('esperava objetos')
+    expect(item.objects).toEqual(copiados as never)
+  })
+
+  it('o espelho é lido com o rigor do sanitizador: lixo cai, id repetido não passa', () => {
+    const texto = (objects: unknown) => JSON.stringify({ v: 1, at: 5, kind: 'objects', objects })
+    const bom = objeto()
+    const lido = parseClipboardMirror(
+      texto([
+        bom,
+        { ...objeto(), x: 'torto' },
+        { ...objeto(), id: '' },
+        objeto({ shape: 'inventada', role: 'rei', rotation: Number.NaN }),
+        null,
+      ]),
+    )
+    expect(lido?.item.kind).toBe('objects')
+    if (lido?.item.kind !== 'objects') throw new Error('esperava objetos')
+    // O bom e o de forma/papel inventados (que voltam como objeto simples); os tortos caem.
+    expect(lido.item.objects).toHaveLength(2)
+    expect(lido.item.objects[0]).toEqual(bom as never)
+    for (const chave of ['shape', 'role', 'rotation'])
+      expect(chave in (lido.item.objects[1] ?? {})).toBe(false)
+    expect(lido.at).toBe(5)
+    // Dois objetos com o mesmo id não entram no mesmo mapa com o mesmo id.
+    const repetidos = parseClipboardMirror(texto([bom, { ...bom }]))
+    if (repetidos?.item.kind !== 'objects') throw new Error('esperava objetos')
+    expect(new Set(repetidos.item.objects.map((o) => o.id)).size).toBe(
+      repetidos.item.objects.length,
+    )
+  })
+
+  it('lista vazia, ou que não é lista, conta como área de transferência vazia', () => {
+    for (const objects of [[], 'texto', null, [{ nada: true }]])
+      expect(
+        parseClipboardMirror(JSON.stringify({ v: 1, at: 1, kind: 'objects', objects })),
+      ).toBeNull()
+  })
+
+  it('entre a memória e o espelho vence o mais recente, também para objetos', () => {
+    const mirror = fakeMirror()
+    let agora = 100
+    const a = createClipboardStore({ mirror, now: () => agora })
+    const b = createClipboardStore({ mirror, now: () => agora })
+    a.getState().set({ kind: 'objects', objects: [objeto({ name: 'velho' })] as never })
+    agora = 200
+    b.getState().set({ kind: 'objects', objects: [objeto({ name: 'novo' })] as never })
+    const item = a.getState().get()
+    expect(item?.kind === 'objects' && item.objects[0]?.name).toBe('novo')
+  })
+
+  it('sem espelho (bloco de aula) os objetos ficam só na memória daquela instância', () => {
+    const a = createClipboardStore({ mirror: null })
+    a.getState().set({ kind: 'objects', objects: [objeto()] as never })
+    expect(a.getState().get()?.kind).toBe('objects')
+    expect(createClipboardStore({ mirror: null }).getState().get()).toBeNull()
+    a.getState().clear()
+    expect(a.getState().get()).toBeNull()
+  })
+})

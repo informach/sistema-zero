@@ -33,6 +33,8 @@ import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 interface MapObjectPanelProps {
   layer: TilemapObjectLayer
   selectedObjectId: string | null
+  /** Mostra tipo, forma, giro e propriedades (o nível "Começar" esconde; o que já existe fica). */
+  detailed?: boolean
   onSelectObject: (id: string | null, additive?: boolean) => void
   onUpdateObject: (id: string, patch: MapObjectPatch) => void
   onRemoveObject: (id: string) => void
@@ -53,6 +55,7 @@ const FIELD =
 export function MapObjectPanel({
   layer,
   selectedObjectId,
+  detailed = true,
   onSelectObject,
   onUpdateObject,
   onRemoveObject,
@@ -106,6 +109,7 @@ export function MapObjectPanel({
         <ObjectDetails
           key={selected.id}
           object={selected}
+          detailed={detailed}
           onUpdate={(patch) => onUpdateObject(selected.id, patch)}
           onRemove={() => onRemoveObject(selected.id)}
           onSetProperty={(key, value, previousKey) =>
@@ -121,6 +125,7 @@ export function MapObjectPanel({
 
 function ObjectDetails({
   object,
+  detailed,
   onUpdate,
   onRemove,
   onSetProperty,
@@ -128,6 +133,7 @@ function ObjectDetails({
   onAddProperty,
 }: {
   object: TilemapObject
+  detailed: boolean
   onUpdate: (patch: MapObjectPatch) => void
   onRemove: () => void
   onSetProperty: (key: string, value: TilemapObjectPropertyValue, previousKey?: string) => void
@@ -148,62 +154,67 @@ function ObjectDetails({
             />
           )}
         </LabeledField>
-        <LabeledField label={COPY.tiles.objectType}>
-          {(id) => (
-            <CommitInput
-              id={id}
-              value={object.type}
-              maxLength={PINTA_LIMITS.maxObjectNameChars}
-              onCommit={(type) => onUpdate({ type })}
-            />
-          )}
-        </LabeledField>
-        <div className="grid grid-cols-2 gap-2">
-          <LabeledField label={COPY.tiles.objectShape}>
-            {(id) => (
-              <select
-                id={id}
-                className={FIELD}
-                value={object.shape ?? (isPointObject(object) ? 'point' : 'rect')}
-                onChange={(event) => {
-                  const shape = MAP_OBJECT_SHAPES.find((s) => s === event.target.value)
-                  if (shape)
-                    onUpdate({
-                      shape,
-                      ...(shape === 'point'
-                        ? { width: 0, height: 0 }
-                        : { width: object.width || 16, height: object.height || 16 }),
-                      ...((shape === 'polygon' || shape === 'polyline') && !object.points?.length
-                        ? {
-                            points: [
-                              { x: 0, y: 0 },
-                              { x: object.width || 16, y: 0 },
-                              { x: object.width || 16, y: object.height || 16 },
-                            ],
-                          }
-                        : {}),
-                    })
-                }}
-              >
-                {MAP_OBJECT_SHAPES.map((shape) => (
-                  <option key={shape} value={shape}>
-                    {COPY.tiles.objectShapes[shape]}
-                  </option>
-                ))}
-              </select>
-            )}
-          </LabeledField>
-          <LabeledField label={COPY.tiles.objectRotation}>
-            {(id) => (
-              <CommitInput
-                id={id}
-                numeric
-                value={String(object.rotation ?? 0)}
-                onCommit={(text) => onUpdate({ rotation: Number(text) })}
-              />
-            )}
-          </LabeledField>
-        </div>
+        {detailed ? (
+          <>
+            <LabeledField label={COPY.tiles.objectType}>
+              {(id) => (
+                <CommitInput
+                  id={id}
+                  value={object.type}
+                  maxLength={PINTA_LIMITS.maxObjectNameChars}
+                  onCommit={(type) => onUpdate({ type })}
+                />
+              )}
+            </LabeledField>
+            <div className="grid grid-cols-2 gap-2">
+              <LabeledField label={COPY.tiles.objectShape}>
+                {(id) => (
+                  <select
+                    id={id}
+                    className={FIELD}
+                    value={object.shape ?? (isPointObject(object) ? 'point' : 'rect')}
+                    onChange={(event) => {
+                      const shape = MAP_OBJECT_SHAPES.find((s) => s === event.target.value)
+                      if (shape)
+                        onUpdate({
+                          shape,
+                          ...(shape === 'point'
+                            ? { width: 0, height: 0 }
+                            : { width: object.width || 16, height: object.height || 16 }),
+                          ...((shape === 'polygon' || shape === 'polyline') &&
+                          !object.points?.length
+                            ? {
+                                points: [
+                                  { x: 0, y: 0 },
+                                  { x: object.width || 16, y: 0 },
+                                  { x: object.width || 16, y: object.height || 16 },
+                                ],
+                              }
+                            : {}),
+                        })
+                    }}
+                  >
+                    {MAP_OBJECT_SHAPES.map((shape) => (
+                      <option key={shape} value={shape}>
+                        {COPY.tiles.objectShapes[shape]}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </LabeledField>
+              <LabeledField label={COPY.tiles.objectRotation}>
+                {(id) => (
+                  <CommitInput
+                    id={id}
+                    numeric
+                    value={String(object.rotation ?? 0)}
+                    onCommit={(text) => onUpdate({ rotation: Number(text) })}
+                  />
+                )}
+              </LabeledField>
+            </div>
+          </>
+        ) : null}
         <LabeledField label={COPY.tiles.objectRole}>
           {(id) => (
             <select
@@ -305,21 +316,25 @@ function ObjectDetails({
           <p className="text-xs text-pin-muted">{COPY.tiles.objectPointHint}</p>
         ) : null}
 
-        <p className="mt-1 text-sm font-bold text-pin-text">{COPY.tiles.objectProperties}</p>
-        {properties.map(([key, value]) => (
-          <PropertyRow
-            key={key}
-            propertyKey={key}
-            value={value}
-            onRename={(next) => onSetProperty(next, value, key)}
-            onChange={(next) => onSetProperty(key, next, key)}
-            onRemove={() => onRemoveProperty(key)}
-          />
-        ))}
-        <Button variant="barOutline" className="w-full" onClick={onAddProperty}>
-          <Plus aria-hidden="true" />
-          {COPY.tiles.addProperty}
-        </Button>
+        {detailed ? (
+          <>
+            <p className="mt-1 text-sm font-bold text-pin-text">{COPY.tiles.objectProperties}</p>
+            {properties.map(([key, value]) => (
+              <PropertyRow
+                key={key}
+                propertyKey={key}
+                value={value}
+                onRename={(next) => onSetProperty(next, value, key)}
+                onChange={(next) => onSetProperty(key, next, key)}
+                onRemove={() => onRemoveProperty(key)}
+              />
+            ))}
+            <Button variant="barOutline" className="w-full" onClick={onAddProperty}>
+              <Plus aria-hidden="true" />
+              {COPY.tiles.addProperty}
+            </Button>
+          </>
+        ) : null}
         <Button variant="barOutline" className="w-full" onClick={onRemove}>
           <Trash2 aria-hidden="true" />
           {COPY.tiles.removeObject}

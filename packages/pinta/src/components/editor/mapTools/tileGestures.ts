@@ -14,12 +14,7 @@ import type { AnyTilesetAsset, PintaAsset, TilemapAsset } from '../../../core/pr
 import type { PintaEditorStore } from '../../../state/editorStore'
 import type { PintaSessionStore } from '../../../state/sessionStore'
 import { cellTile } from '../../../tiles/cell'
-import {
-  type CellPos,
-  lineCells,
-  normalizeCellRect,
-  rectCells,
-} from '../../../tiles/cellGeometry'
+import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../../tiles/cellGeometry'
 import { blockCells, type TileStamp } from '../../../tiles/stamp'
 import { cellAt, growTilemap } from '../../../tiles/tilemapOps'
 import { isTileBlank } from '../../../tiles/tilesetOps'

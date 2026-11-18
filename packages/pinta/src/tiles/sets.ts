@@ -90,11 +90,15 @@ export function createMapSet(
       const included = layer.objects.filter((o) => objectCopies.has(o.id)),
         shiftX = Math.min(0, ...included.map((o) => o.x - rect.col * tileSize)),
         shiftY = Math.min(0, ...included.map((o) => o.y - rect.row * tileSize))
+      // O deslocamento só entra quando difere de zero (chave no padrão não é forma canônica).
+      const { offsetX: _offsetX, offsetY: _offsetY, ...semDeslocamento } = base
+      const offsetX = (layer.offsetX ?? 0) + shiftX,
+        offsetY = (layer.offsetY ?? 0) + shiftY
       return {
-        ...base,
+        ...semDeslocamento,
         kind: 'objects',
-        offsetX: (layer.offsetX ?? 0) + shiftX,
-        offsetY: (layer.offsetY ?? 0) + shiftY,
+        ...(offsetX !== 0 ? { offsetX } : {}),
+        ...(offsetY !== 0 ? { offsetY } : {}),
         objects: included.map((o) => ({
           ...objectCopies.get(o.id)!,
           x: o.x - rect.col * tileSize - shiftX,
