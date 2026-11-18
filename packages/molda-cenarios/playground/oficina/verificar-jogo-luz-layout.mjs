@@ -10,7 +10,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true }),
 try {
   for (const [largura, altura, tema] of [
     [1440, 900, 'light'],
-    [1366, 900, 'dark'],
+    [1366, 768, 'dark'],
     [1024, 768, 'light'],
     [390, 844, 'dark'],
   ]) {

@@ -71,12 +71,12 @@
 
 ## 7.5 — Fechamento exclusivo do lote
 
-- [ ] Comparar linha a linha com o plano/PDF e completar lacunas de todos os recursos deste lote.
-- [ ] Suítes de núcleo/motor/oficina, Members/BFF/gateway/JSONB pertinentes; tipagem e build. Sem regressão de objetos/terreno/água/caminhos.
-- [ ] Browser: mundo com início, zona, rota, câmera, luz, propriedades; Testar e retorno; edição em cena/coordenadas; clipboard misto e histórico após reabrir.
-- [ ] Alterar sol, céu e névoa; panorama real; erros/cancelamentos/descarte e recursos estáveis. Capturas/vídeos em movimento, medidas e limitações explícitas.
-- [ ] Revisar, documentar, commitar e enviar à staging. Somente então iniciar lote 8. Composição final, full review, CI, implantação e validação remota continuam no encerramento global.
+- [x] Comparar linha a linha com o plano/PDF e completar lacunas de todos os recursos deste lote.
+- [x] Suítes de núcleo/motor/oficina, Members/BFF/gateway/JSONB pertinentes; tipagem e build. Sem regressão de objetos/terreno/água/caminhos.
+- [x] Browser: mundo com início, zona, rota, câmera, luz, propriedades; Testar e retorno; edição em cena/coordenadas; clipboard misto e histórico após reabrir.
+- [x] Alterar sol, céu e névoa; panorama real; erros/cancelamentos/descarte e recursos estáveis. Capturas/vídeos em movimento, medidas e limitações explícitas.
+- [x] Revisar, documentar, commitar e enviar à staging. Somente então iniciar lote 8. Composição final, full review, CI, implantação e validação remota continuam no encerramento global. [Revisão](../../plans/2026-11-16-cenarios-reforma/revisao-lote7-jogo-luz.md).
 
 ## Estado atual
 
-**Lote 7 aberto; 7.1–7.4 implementados, testados e revisados localmente. Única frente ativa seguinte: 7.5 — fechamento integral do lote.** [Núcleo](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-nucleo-fechamento.md), [palco](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-palco.md), [iluminação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-iluminacao.md) e [interface](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote7-interface.md). Lotes 0–6 fechados localmente. Lotes 8–10 e encerramento global continuam pendentes. Não há autorização nova de produção ou abertura a membros.
+**Lote 7 implementado, testado e revisado localmente.** [Fechamento integral](../../plans/2026-11-16-cenarios-reforma/revisao-lote7-jogo-luz.md). Lotes 0–7 fechados localmente; próxima frente exclusiva: lote 8, exportação. Lotes 8–10 e encerramento global continuam pendentes. Não há autorização nova de produção ou abertura a membros.

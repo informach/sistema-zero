@@ -321,6 +321,16 @@ try {
     return posicao
   })
   assert.ok(Math.abs(direcaoInicial.z + 3) < 0.01)
+  const inicioNoCentro = await pagina.evaluate(async () => {
+    const { palco } = window.__gestos,
+      vista = palco.capturarCamera()
+    await palco.iniciarTeste({ modo: 'voo', marcadorDeInicio: null })
+    const posicao = palco.estadoDoTeste().posicao
+    palco.encerrarTeste()
+    return { esperado: vista.alvo, posicao }
+  })
+  assert.ok(Math.abs(inicioNoCentro.posicao.x - inicioNoCentro.esperado.x) < 1e-6)
+  assert.ok(Math.abs(inicioNoCentro.posicao.z - inicioNoCentro.esperado.z) < 1e-6)
   await pagina.evaluate(() => {
     const { palco } = window.__gestos
     palco.definirColisoesVisiveis(false)
@@ -444,6 +454,7 @@ try {
         colisao,
         teste,
         direcaoInicial,
+        inicioNoCentro,
         pontos,
         poligono,
         erros,
@@ -463,6 +474,7 @@ try {
       cancelamentoPorToque: true,
       colisoes: colisao.estado,
       inicioPrincipal: teste.estado.posicao,
+      inicioNoCentro,
       erros,
     }),
   )

@@ -1,0 +1,236 @@
+{
+  "previa": {
+    "autoral": true,
+    "revisao": 1,
+    "estado": {
+      "ceu": "cor",
+      "luzes": 2,
+      "sombrasLocais": 2,
+      "resolucaoDasSombrasLocais": 512,
+      "carregando": 0,
+      "falhas": []
+    }
+  },
+  "protecoes": {
+    "pontos": true,
+    "agua": true
+  },
+  "preparo": {
+    "ceu": "carregando",
+    "luzes": 2,
+    "sombrasLocais": 2,
+    "resolucaoDasSombrasLocais": 512,
+    "carregando": 1,
+    "falhas": []
+  },
+  "salvou": {
+    "semSalvar": true,
+    "revisoes": 1,
+    "reaberto": {
+      "tipo": "panorama",
+      "textura": "novo",
+      "giro": 0,
+      "intensidade": 1
+    },
+    "estado": {
+      "ceu": "panorama",
+      "luzes": 2,
+      "sombrasLocais": 2,
+      "resolucaoDasSombrasLocais": 512,
+      "carregando": 0,
+      "falhas": []
+    },
+    "leituras": 1
+  },
+  "respostaAntigaInofensiva": true,
+  "giro": true,
+  "ciclos": [
+    {
+      "limpo": {
+        "objetos": 3,
+        "triangulos": 1000,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 6
+      },
+      "ativo": {
+        "objetos": 3,
+        "triangulos": 52,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 8
+      }
+    },
+    {
+      "limpo": {
+        "objetos": 3,
+        "triangulos": 1000,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 6
+      },
+      "ativo": {
+        "objetos": 3,
+        "triangulos": 52,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 8
+      }
+    },
+    {
+      "limpo": {
+        "objetos": 3,
+        "triangulos": 1000,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 6
+      },
+      "ativo": {
+        "objetos": 3,
+        "triangulos": 52,
+        "desenhos": 4,
+        "carregando": 0,
+        "geometrias": 6,
+        "texturas": 8
+      }
+    }
+  ],
+  "ciclosLuzes": [
+    {
+      "ocultas": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 0,
+          "sombrasLocais": 0,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 5
+        }
+      },
+      "retorno": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 2,
+          "sombrasLocais": 2,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 8
+        }
+      }
+    },
+    {
+      "ocultas": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 0,
+          "sombrasLocais": 0,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 5
+        }
+      },
+      "retorno": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 2,
+          "sombrasLocais": 2,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 8
+        }
+      }
+    },
+    {
+      "ocultas": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 0,
+          "sombrasLocais": 0,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 5
+        }
+      },
+      "retorno": {
+        "estado": {
+          "ceu": "panorama",
+          "luzes": 2,
+          "sombrasLocais": 2,
+          "resolucaoDasSombrasLocais": 512,
+          "carregando": 0,
+          "falhas": []
+        },
+        "medida": {
+          "objetos": 3,
+          "triangulos": 52,
+          "desenhos": 4,
+          "carregando": 0,
+          "geometrias": 6,
+          "texturas": 8
+        }
+      }
+    }
+  ],
+  "invalido": {
+    "mensagem": "Escolha um panorama equiretangular com proporção 2:1.",
+    "autoriaPreservada": true,
+    "retorno": {
+      "ceu": "panorama",
+      "luzes": 2,
+      "sombrasLocais": 2,
+      "resolucaoDasSombrasLocais": 512,
+      "carregando": 0,
+      "falhas": []
+    }
+  },
+  "teste": {
+    "protegido": true,
+    "autoriaPreservada": true
+  },
+  "erros": []
+}
