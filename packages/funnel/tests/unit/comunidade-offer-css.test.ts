@@ -35,6 +35,8 @@ const novos = {
   // O presente (20/10/2026): o recebimento Kids veste a 9 a 17, o adulto o arcade, e o painel do
   // embaixador tem o seu namespace neutro.
   'presente-kids.css': '.c917',
+  // O minicurso para pais (18/11/2026) veste o layout do presente Kids.
+  'curso-pais.css': '.c917',
   'presente-adulto.css': '.cda',
   'embaixador.css': '.emb',
   // As páginas do Desafio vestem o layout da Comunidade do mesmo público.

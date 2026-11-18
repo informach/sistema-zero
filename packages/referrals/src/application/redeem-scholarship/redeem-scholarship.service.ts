@@ -42,6 +42,7 @@ import type {
   RedemptionRecord,
   ReferralRepository,
 } from '../../domain/ports/referral-repository.port'
+import { giftSlotOf, MAIN_GIFT_SLOT } from '../../domain/ports/referral-repository.port'
 
 export interface RedeemInput {
   code: string
@@ -297,7 +298,26 @@ export class RedeemScholarshipService {
     // Resgate novo só começa quando a oferta resolve e o curso está publicado. O 409 de um
     // resgate concluído continua reconhecível mesmo se o curso sair do catálogo depois.
     // "Já resgatado" é por público: o mesmo e-mail pode ter um presente Kids e um adulto.
-    const existing = await this.repo.findRedemptionByEmail(email, audience)
+    // E por VAGA (18/11/2026): curso para pais não ocupa a vaga do presente do público, então a
+    // oferta deste código é resolvida primeiro para saber em que vaga procurar o resgate.
+    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    const sameAudience = await this.repo.listRedemptionsByEmail(email, audience)
+    const slotOf = (r: { giftSlot?: string }) => r.giftSlot ?? MAIN_GIFT_SLOT
+    let giftSlot: string
+    let existing: (typeof sameAudience)[number] | null
+    if (fresh.kind === 'ok') {
+      giftSlot = giftSlotOf(fresh.value.course)
+      existing = sameAudience.find((r) => slotOf(r) === giftSlot) ?? null
+    } else {
+      // Oferta fora do ar ou indisponível: a vaga sai do que já foi gravado. O resgate deste
+      // mesmo presente (a oferta da campanha) continua reconhecível, como o 409 do concluído;
+      // sem oferta própria (código de pessoa ou campanha antiga) o presente é o do público.
+      const campaignOfferId = campaign?.giftOfferId ?? null
+      existing = campaignOfferId
+        ? (sameAudience.find((r) => r.giftOfferId === campaignOfferId) ?? null)
+        : (sameAudience.find((r) => slotOf(r) === MAIN_GIFT_SLOT) ?? null)
+      giftSlot = existing ? slotOf(existing) : MAIN_GIFT_SLOT
+    }
     let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
     if (!existing && codeRecord.ownerKind === 'campaign') {
       if (!campaign) return { kind: 'code_not_found' }
@@ -312,10 +332,10 @@ export class RedeemScholarshipService {
       if (!existing || existing.giftOfferId) {
         // Resgate novo (oferta da campanha ou a padrão do público) ou retomada de um resgate
         // por oferta (a oferta GRAVADA nele, mesmo que a campanha mude depois).
-        const result = await this.planGift(
-          audience,
-          existing?.giftOfferId ?? giftOfferRef(campaign, audience),
-        )
+        // Resgate novo: o plano resolvido acima. Retomada: a oferta gravada no resgate.
+        const result = existing?.giftOfferId
+          ? await this.planGift(audience, existing.giftOfferId)
+          : fresh
         if (result.kind === 'unavailable') return { kind: 'gift_unavailable' }
         if (result.kind === 'upstream_error') return { kind: 'upstream_error' }
         plan = result.value
@@ -350,6 +370,7 @@ export class RedeemScholarshipService {
         // Curso principal da oferta, para leitura e e-mail (quem concede é a oferta).
         courseSlug: plan?.offer.courseSlug ?? undefined,
         attribution: sanitizeGiftAttribution(input.attribution),
+        giftSlot,
         ...(plan
           ? {
               gift: {

@@ -44,6 +44,12 @@ describe('contrato de medição', () => {
       'kids/comunidade-dos-criadores',
     )
     expect(analyticsPage('/')).toMatchObject({ kind: 'bio', publicText: true })
+    expect(analyticsPage('/kids/vilao-em-aliado')).toMatchObject({
+      id: 'kids/vilao-em-aliado',
+      kind: 'curso-pais',
+      funnel: null,
+      publicText: true,
+    })
     // A Como funciona virou 301 (20/10/2026), mas o painel ainda abre os dados de antes.
     expect(analyticsPage('/como-funciona')).toMatchObject({
       id: 'como-funciona',

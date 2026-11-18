@@ -21,10 +21,27 @@ interface Props {
   secoes?: boolean
   /** A barra fixa do celular com o prazo da oferta do presente (padrão: a do Cadê). */
   barra?: { titulo: string; texto: string; cta: string }
+  /** Atalhos do topo (padrão: as seções da página do Cadê). */
+  links?: readonly { href: string; label: string }[]
+  /** Texto do botão do topo (padrão: o do presente). */
+  cta?: string
+  /** Página pública e indexável (padrão: fora dos buscadores, como todo link de presente). */
+  indexavel?: boolean
+  ogImage?: string
 }
-const { title, description, ready = false, secoes = true, barra = P.barra } = Astro.props
+const {
+  title,
+  description,
+  ready = false,
+  secoes = true,
+  barra = P.barra,
+  links = P.topo.links,
+  cta = P.topo.cta,
+  indexavel = false,
+  ogImage,
+} = Astro.props
 ---
-<BaseLayout title={title} description={description} noindex htmlClass="theme-kids">
+<BaseLayout title={title} description={description} noindex={!indexavel} ogImage={ogImage} htmlClass="theme-kids">
   <div class="c917 pk-corpo">
     <a class="c9-pular" href="#conteudo">{P.pular}</a>
     <header class="c9-topo">
@@ -34,8 +51,8 @@ const { title, description, ready = false, secoes = true, barra = P.barra } = As
         </a>
         {(secoes || ready) && (
           <nav class="c9-nav" aria-label={P.topo.navAria}>
-            {secoes && P.topo.links.map((link) => <a class="c9-nav__link" href={link.href}>{link.label}</a>)}
-            {ready && <a class="c9-btn c9-btn--topo pk-topo-cta" href="#resgatar">{P.topo.cta}</a>}
+            {secoes && links.map((link) => <a class="c9-nav__link" href={link.href}>{link.label}</a>)}
+            {ready && <a class="c9-btn c9-btn--topo pk-topo-cta" href="#resgatar">{cta}</a>}
           </nav>
         )}
       </div>

@@ -1,0 +1,21 @@
+---
+// Página pública do minicurso gratuito para pais "Transformando o vilão em aliado" (18/11/2026).
+// Avulsa, fora do registry (curso gratuito não tem oferta de checkout). O cadastro reaproveita o
+// fluxo do presente: lê a campanha fixa `CODIGO_DA_CAMPANHA` no referrals e, se ela entrega este
+// curso para pais e está aberta, mostra o formulário `BolsaResgate` na variante `pais`. Em
+// qualquer outro caso (campanha ainda não criada, fora do período, referrals fora do ar, oferta de
+// outro curso) a página continua no ar, com o estado no lugar do formulário: é indexável e não
+// pode responder 404 nem prometer um cadastro que não entrega.
+import CursoPaisOferta from '../../components/referrals/CursoPaisOferta.astro'
+import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
+import { cursoPaisVilaoView } from '../../server/curso-pais-vilao'
+import { getDeps } from '../../server/deps'
+export const prerender = false
+Astro.response.headers.set('cache-control', 'private, no-store')
+const { gateway, env } = getDeps()
+const view = await cursoPaisVilaoView(gateway, env.KIDS_COMMUNITY_URL)
+const P = view.copy
+---
+<PresenteLayout title={P.seoTitle} description={P.description} ready={view.ready} barra={P.barra} links={P.topo.links} cta={P.topo.cta} ogImage={P.ogImage} indexavel>
+  <CursoPaisOferta resgate={view.resgate} ready={view.ready} estado={view.estado} podeRetomar={view.podeRetomar} />
+</PresenteLayout>

@@ -67,8 +67,26 @@ As chaves de clipe mudaram em relação à versão de 17/11, porque as partes s�
 5. Na Aula 7, o bloco `presente` mantém o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. Conferir no ambiente de destino a campanha `vilao-em-aliado-cade`, a oferta `cade-todo-mundo-7-dias` e as condições que a fala afirma: gratuito, sem cartão, sete dias a partir do cadastro, um perfil de criança.
 6. O bloco `certificado` passou para a Aula 7 e registra a conclusão. O presente não depende do certificado.
 
+## Página de divulgação
+
+A porta de entrada do curso é a página pública `/kids/vilao-em-aliado`, no funil
+(`packages/funnel`, ver o `CLAUDE.md` de lá). O responsável conhece o curso e se cadastra de graça;
+o presente da Aula 7 continua em segredo na página. Para ela abrir o cadastro, é preciso, no Admin:
+
+1. Publicar o curso com o slug `transformando-o-vilao-em-aliado`.
+2. Criar no catálogo a oferta sem prazo do curso.
+3. Criar a campanha de presente Kids com o código `vilao-em-aliado`, ligada a essa oferta, com
+   data final distante. Enquanto a campanha não existir, a página mostra "As inscrições abrem em
+   breve".
+4. Preencher o endereço da página no campo de página de vendas do curso.
+
+O mesmo e-mail que se cadastra no curso consegue resgatar o presente da Aula 7: o curso para pais
+não ocupa a vaga do presente Kids no serviço de presentes.
+
 ## Estado desta entrega
 
 Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
+
+**Tema visual (18/11/2026):** a ilustração da capa (a menina com o tablet e a sombra que aponta para os blocos e o jogo) define as cores do curso: roxo, lilás, rosa e amarelo, com o painel azul-marinho. A arte fica em `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-transformando-o-vilao-em-aliado.jpg`, recortada da capa enviada pela dona (1049 px de largura; se houver o original maior, basta trocar o arquivo e gerar de novo).
 
 **Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 17 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).
