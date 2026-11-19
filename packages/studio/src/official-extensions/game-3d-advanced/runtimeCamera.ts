@@ -224,7 +224,16 @@ export const gameKit3DCameraRuntimeSource = `
     _ray.setFromCamera(_mouse, camera);
     var ro = _ray.ray && _ray.ray.origin;
     var rd = _ray.ray && _ray.ray.direction;
-    if (!ro || !rd || Math.abs(rd.y) < 0.000001) return 0;
+    if (!ro || !rd) return importedScene ? null : 0;
+    if (importedScene) {
+      if (!importedScene.fisica.active()) return null;
+      var end = importedRayEnd || (importedRayEnd = new THREE.Vector3());
+      var hit = importedScene.colisoes.rastrear(ro,end.copy(ro).addScaledVector(rd,camera.far));
+      if (!hit) return null;
+      var axisName = text(axis,'x');
+      return axisName === 'y' ? hit.ponto.y : axisName === 'z' ? hit.ponto.z : hit.ponto.x;
+    }
+    if (Math.abs(rd.y) < 0.000001) return 0;
     var t = -ro.y / rd.y;
     if (t < 0) return 0;
     var a = text(axis, 'x');

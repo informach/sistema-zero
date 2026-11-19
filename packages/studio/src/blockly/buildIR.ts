@@ -44,6 +44,7 @@ import {
   gameKit3DGameplayBlockToIR,
 } from '../official-extensions/game-3d-advanced/gameplayCodec'
 import { gameKit3DModelBlockToIR } from '../official-extensions/game-3d-advanced/modelCodec'
+import { sceneGameKit3DBlockToIR } from '../official-extensions/game-3d-advanced/sceneCodec'
 import {
   gameRulesBlockExpression,
   gameRulesBlockToIR,
@@ -7208,7 +7209,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         getStatementChildren(candidate, name, seen),
     }
     const model =
-      gameKit3DModelBlockToIR(block, codecTools) ?? gameKit3DGameplayBlockToIR(block, codecTools)
+      sceneGameKit3DBlockToIR(block, codecTools) ??
+      gameKit3DModelBlockToIR(block, codecTools) ??
+      gameKit3DGameplayBlockToIR(block, codecTools)
     if (model) {
       seen.add('game-3d-advanced')
       return { kind: 'js', value: model }

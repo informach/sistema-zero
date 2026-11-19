@@ -16,7 +16,8 @@ import {
   projectStateKey,
   projectThumbKey,
 } from './projectStorageKeys'
-import { type ExitJournalEntry, ExitJournalError } from './synchronousExitJournal'
+import type { ExitJournalEntry } from './synchronousExitJournal'
+import { ExitJournalError } from './synchronousExitJournalProbe'
 
 export function synchronousRecovery(
   entry: ExitJournalEntry,

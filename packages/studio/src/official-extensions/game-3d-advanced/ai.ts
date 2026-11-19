@@ -17,6 +17,8 @@ NUNCA gere start() no código do aluno.
 
 API global (cada método corresponde a exatamente 1 bloco):
 - Ciclo: setup({width, height, world, sky, ground}); worldSize();
+- Cenário do Molda: loadScene("id-estavel") em Ao iniciar, depois de setup; traz terreno, recortes, água e ambiente sem trocar o motor. sceneStart(objeto) usa o início salvo e espera o preparo; place posterior tem prioridade. Conservar moldes, pools, FSM, controles e câmera. Não criar chão plano substituto ou outro controlador.
+- Com cenário, groundPoint(axis) consulta a superfície real e retorna null quando o raio não encontra chão; não tratar esse caso como um acerto em y=0.
   scatterDecor(n); setEffects({shadows, bloom, strength, vignette}) — efeitos
   de cinema (pós-processamento), tudo ligado por padrão. A resolução preserva
   a proporção, mas o motor limita lado pela GPU e pixels totais a 1920*1080.

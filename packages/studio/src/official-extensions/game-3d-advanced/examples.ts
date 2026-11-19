@@ -1,6 +1,7 @@
 import type { ExtensionExample } from '#extensions'
 import { HEROI_DO_MOLDA_GLB } from '../game-3d/exampleAssets'
 import { CEU_ESTRELADO_HDR, MUSICA_DA_NOITE_WAV, SOM_DA_FOGUEIRA_WAV } from './exampleAssets'
+import { CAMPO_DO_HEROI_ASSETS } from './sceneExampleAssets'
 
 // Os campos `ir` deste arquivo são gerados por scripts/gen-game-3d-examples.ts.
 // Edite os fontes de referência e rode `bun run gen:game-3d-examples`.
@@ -22362,6 +22363,10 @@ export const heroiDoMoldaExample: ExtensionExample = {
           ground: '#4ade80',
         },
         {
+          type: 'g3k:loadScene',
+          asset: 'e487b2099a0ecef566ccef06126ddd2b8a6e29d4f5a8aebac1c122f2daef09ba',
+        },
+        {
           type: 'g3k:screenText',
           screen: 'inicio',
           title: 'Herói do Molda',
@@ -22422,6 +22427,10 @@ export const heroiDoMoldaExample: ExtensionExample = {
                 type: 'num',
                 value: 0,
               },
+            },
+            {
+              type: 'g3k:sceneStart',
+              charVar: 'heroi',
             },
             {
               type: 'g3k:cameraFollow',
@@ -22950,6 +22959,7 @@ export const heroiDoMoldaExample: ExtensionExample = {
       source: 'library',
       libId: 'example-heroi-do-molda',
     },
+    ...CAMPO_DO_HEROI_ASSETS,
   ],
 }
 

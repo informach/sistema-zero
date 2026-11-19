@@ -1,10 +1,9 @@
 import { expect, test } from 'bun:test'
 import {
   acknowledgeSynchronousExitJournal,
-  captureExitJournalStorage,
-  hasSynchronousExitJournal,
   stageSynchronousExitJournal,
 } from './synchronousExitJournal'
+import { captureExitJournalStorage, hasSynchronousExitJournal } from './synchronousExitJournalProbe'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 function localStorageFixture() {

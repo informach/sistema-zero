@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { CylinderGeometry, Matrix4, Object3D, Scene } from 'three'
+import { CylinderGeometry, Matrix4, Object3D, PlaneGeometry, Scene } from 'three'
 import { MundoDoTeste } from '../../../../molda-cenarios-motor/src/teste/colisoes'
 import { criarTransporteDeEnsaio } from '../../testing/scene3dTransportFixture'
 import { physicsLiteRuntimeSource } from '../physicsLiteRuntime'
@@ -266,6 +266,69 @@ test('os pés apoiam sobre toras arredondadas sem escorregar lateralmente nas ju
     expect(menor).toBeGreaterThan(0.65)
     expect(fisica.body('criador').z).toBeGreaterThan(2)
     expect(Math.abs(fisica.body('criador').x)).toBeLessThan(0.02)
+  } finally {
+    fisica.clear()
+    colisoes.descartar()
+    geometria.dispose()
+  }
+})
+
+test('o personagem conserva apoio em repouso no plano inclinado real e pode saltar dele', () => {
+  const geometria = new PlaneGeometry(40, 40).rotateX(-Math.PI / 2 + 0.15),
+    colisoes = new MundoDoTeste([{ geometria, matriz: new Matrix4() }]),
+    fisica = mundo()
+  try {
+    fisica.setScene(
+      'encosta',
+      criarFisicaDaCena3D({ colisoes }, () => true),
+    )
+    corpo(fisica, 0, 1, 0)
+    andarTempo(fisica, 60)
+    const antes = fisica.body('criador')
+    expect(antes.grounded).toBe(true)
+    andarTempo(fisica, 300)
+    const parado = fisica.body('criador')
+    expect(Math.hypot(parado.x - antes.x, parado.z - antes.z)).toBeLessThan(0.005)
+    expect(parado.grounded).toBe(true)
+    expect(fisica.jump('criador', 7)).toBe(true)
+    andarTempo(fisica, 15)
+    expect(fisica.body('criador').y).toBeGreaterThan(parado.y + 0.25)
+    andarTempo(fisica, 120)
+    expect(fisica.body('criador').grounded).toBe(true)
+  } finally {
+    fisica.clear()
+    colisoes.descartar()
+    geometria.dispose()
+  }
+})
+
+test('o apoio do personagem não retira o quique de um corpo dinâmico no cenário nativo', () => {
+  const geometria = new PlaneGeometry(20, 20).rotateX(-Math.PI / 2),
+    colisoes = new MundoDoTeste([{ geometria, matriz: new Matrix4() }]),
+    fisica = mundo(),
+    objeto = new Object3D()
+  try {
+    fisica.setScene(
+      'solo',
+      criarFisicaDaCena3D({ colisoes }, () => true),
+    )
+    objeto.position.set(0, 2, 0)
+    fisica.addBody('bola', objeto, {
+      kind: 'dynamic',
+      width: 0.5,
+      height: 0.5,
+      depth: 0.5,
+      bounce: 0.7,
+    })
+    let subiu = false,
+      aposImpacto = 0
+    for (let i = 0; i < 100; i++) {
+      fisica.step(1 / 60)
+      if (fisica.body('bola').vy > 1) subiu = true
+      if (subiu) aposImpacto = Math.max(aposImpacto, fisica.body('bola').y)
+    }
+    expect(subiu).toBe(true)
+    expect(aposImpacto).toBeGreaterThan(0.7)
   } finally {
     fisica.clear()
     colisoes.descartar()

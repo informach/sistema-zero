@@ -74,6 +74,11 @@ import {
   gameKit3DModelStatementSchemas,
 } from '../official-extensions/game-3d-advanced/modelIR'
 import {
+  G3K_SCENE_STATEMENT_TYPES,
+  type SceneGameKit3DStatement,
+  sceneGameKit3DStatementSchemas,
+} from '../official-extensions/game-3d-advanced/sceneIR'
+import {
   type GameRulesExpression,
   type GameRulesStatement,
   gameRulesExpressionSchemas,
@@ -3337,6 +3342,7 @@ export type JSStatement =
   | World3DNewStatement
   // ---- Jogo 3D Avançado, animação do modelo (lote 11): `game-3d-advanced/modelIR.ts` ----
   | GameKit3DModelStatement
+  | SceneGameKit3DStatement
   // ---- Jogo 3D Avançado, lote 12 (patrulha, mochila, progresso, fases): `gameplayIR.ts` ----
   | GameKit3DGameplayStatement
   // ---- Game 3D — câmera: olhar e FOV (o MODO mora em platformIR.ts) ----
@@ -7745,6 +7751,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     ...world3DNewStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...canvas3DSceneSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameKit3DModelStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...sceneGameKit3DStatementSchemas(irText, idField),
     ...gameKit3DGameplayStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g3d:cameraLookAt'),
@@ -12537,6 +12544,7 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:playTone',
   ...gameRulesStatementTypesFor('g3k'),
   ...G3K_MODEL_STATEMENT_TYPES,
+  ...G3K_SCENE_STATEMENT_TYPES,
   ...G3K_GAMEPLAY_STATEMENT_TYPES,
 ])
 

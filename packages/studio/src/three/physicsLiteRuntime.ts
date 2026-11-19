@@ -545,9 +545,9 @@ function createSZPhysicsLite(options) {
     }
     return true;
   }
-  function solveGround(body) {
+  function solveGround(body, feetSupported) {
     if (sceneGround) {
-      solveScene(body);
+      solveScene(body, feetSupported);
       return;
     }
     var ground = finite(groundHeight(body.x, body.z), 0);
@@ -561,7 +561,7 @@ function createSZPhysicsLite(options) {
     body.vx *= keep;
     body.vz *= keep;
   }
-  function solveScene(body) {
+  function solveScene(body, feetSupported) {
     var scene = activeScene();
     if (!scene) return;
     // Native surfaces use the canonical upright capsule. Authored simple
@@ -573,7 +573,7 @@ function createSZPhysicsLite(options) {
     body.x = contact.position.x;
     body.y = contact.position.y + body.hy;
     body.z = contact.position.z;
-    var supported = false;
+    var supported = false, descending = body.vy <= 0;
     for (var index = 0; index < contact.normals.length; index += 1) {
       var normal = contact.normals[index];
       var speed = body.vx * normal.x + body.vy * normal.y + body.vz * normal.z;
@@ -585,14 +585,41 @@ function createSZPhysicsLite(options) {
         body.vz -= response * normal.z;
       }
     }
-    if (supported) {
+    if (supported || feetSupported) {
       body.grounded = true;
+      if (body.kind === 'character' && descending && body.bounce === 0 && body.vy > 0) body.vy = 0;
       if (Math.abs(body.vy) < 0.1) body.vy = 0;
       var keep = Math.max(0, 1 - body.friction * fixedStep * 8);
       body.vx *= keep;
       body.vz *= keep;
     }
-    if (contact.normals.length) emitCollision(body.id, scene.id);
+    if (contact.normals.length || feetSupported) emitCollision(body.id, scene.id);
+  }
+  // Feet use real triangle rays before the capsule response: gravity must not
+  // turn a resting character into a ball rolling down the surface. Dynamic
+  // bodies and intentional upward motion keep the normal impulse response.
+  function supportSceneCharacter(body, previousFeet, stepUp) {
+    var scene = activeScene();
+    if (!scene || body.kind !== 'character' || body.bounce > 0 || body.vy > 0) return false;
+    var radius = Math.min(body.hx, body.hy, body.hz), feet = body.y-body.hy;
+    var top = Math.max(previousFeet,feet) + stepUp + 0.00001;
+    var bottom = feet-stepUp-0.00001, support = null;
+    for (var i = 0; i < 9; i++) {
+      var angle = (i-1)*Math.PI/4;
+      var x = body.x+(i ? Math.cos(angle)*radius*0.75 : 0);
+      var z = body.z+(i ? Math.sin(angle)*radius*0.75 : 0);
+      var hit = scene.provider.raycast({x:x,y:top,z:z},{x:x,y:bottom,z:z});
+      if (!hit || !hit.normal || hit.normal.y <= 0.5) continue;
+      var y = top-hit.distance;
+      if (support === null || y > support) support = y;
+    }
+    if (support !== null) {
+      body.y = support+body.hy;
+      body.vy = 0;
+      body.grounded = true;
+      return true;
+    }
+    return false;
   }
   function solveStatics(body) {
     var candidates = nearby(staticGrid, body);
@@ -631,6 +658,7 @@ function createSZPhysicsLite(options) {
     }
   }
   function integrate(body) {
+    var wasGrounded = body.grounded;
     body.grounded = false;
     if (body.kind === 'character') {
       var response = Math.min(1, fixedStep * 18);
@@ -651,10 +679,12 @@ function createSZPhysicsLite(options) {
     }
     var sliceStep = fixedStep / slices;
     for (var slice = 0; slice < slices; slice += 1) {
+      var previousFeet = body.y-body.hy;
       body.x += body.vx * sliceStep;
       body.y += body.vy * sliceStep;
       body.z += body.vz * sliceStep;
-      solveGround(body);
+      var feetSupported = supportSceneCharacter(body, previousFeet, wasGrounded ? Math.min(0.3,body.hy*0.5) : 0);
+      solveGround(body, feetSupported);
       solveStatics(body);
     }
   }

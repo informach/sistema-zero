@@ -56,4 +56,10 @@ Os bytes privados dos modelos/projetos/sites ficam em `output/`. [Capturas, víd
 
 ## Continuidade
 
+### Requalificação compartilhada durante o Avançado — 19/11
+
+A repetição revelou deriva em repouso sobre uma superfície inclinada: aproximadamente 69 cm em cinco segundos, reproduzida com geometria real. O controlador Physics Lite existente passou a apoiar a área dos pés nos triângulos consultados por raios com normais, mantendo a cápsula contra obstáculos e a resposta de corpos dinâmicos. Repouso, salto e quique possuem regressões próprias; os 24 testes de física/integração passaram.
+
+Os quatro casos de navegador foram repetidos com o SDK atualizado. Os três ciclos conservam a posição parada. A prova aproxima-se efetivamente da caixa sobre a ponte, verifica o bloqueio em z=8,75 e retorna pelo trecho livre para caminhar, correr, saltar, pousar e fazer curva. Recursos permanecem em 25/22 no cenário completo e 5/3 no recorte, terminando em 0/0. [Recibo atualizado](evidencias/lote8-studio-avancado/regressao-canvas.json) e [registro compartilhado](checkpoint-lote8-studio-avancado.md) preservam os limites da validação local.
+
 Canvas está fechado no escopo acima; registrar/enviar o commit antes de iniciar Jogo 3D. O lote 8.4 permanece aberto até Jogo 3D, Jogo 3D Avançado, Pro autoral e qualificação integrada. Depois vêm 8.5/8.6, lotes 9–10, composição final da Faísca pela ferramenta, full review, CI, implantação e validação real de staging no encerramento global.

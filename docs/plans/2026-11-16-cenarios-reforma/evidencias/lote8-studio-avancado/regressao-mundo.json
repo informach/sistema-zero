@@ -1,0 +1,1143 @@
+{
+  "recibos": [
+    {
+      "nome": "completo",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 96,
+          "tempo": 1.6172666666666673,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 105,
+          "tempo": 1.8005333333333342,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 114,
+          "tempo": 1.9839000000000007,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      ],
+      "inicio": {
+        "x": 8,
+        "y": 0.312320067453264,
+        "z": 5,
+        "quadros": 123,
+        "tempo": 2.1340000000000003,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "depois": {
+        "x": 8,
+        "y": 0.30770087356847514,
+        "z": 7.000849999999981,
+        "quadros": 285,
+        "tempo": 4.835000000000011,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "movimentos": {
+        "caminhada": {
+          "x": 8,
+          "y": 0.30770087356847514,
+          "z": 7.000849999999981,
+          "quadros": 285,
+          "tempo": 4.835000000000011,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "corrida": {
+          "x": 8,
+          "y": 0.3240331592527357,
+          "z": 7.850849999999982,
+          "quadros": 305,
+          "tempo": 5.1684000000000125,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "alto": {
+          "x": 8,
+          "y": 0.6379196792527325,
+          "z": 7.850849999999982,
+          "quadros": 309,
+          "tempo": 5.235200000000014,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "pouso": {
+          "x": 8,
+          "y": 0.34227405925273374,
+          "z": 7.850849999999982,
+          "quadros": 343,
+          "tempo": 5.802100000000019,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "curva": {
+          "x": 8.154088229012256,
+          "y": 0.30168917943939844,
+          "z": 8.272046120281598,
+          "quadros": 369,
+          "tempo": 6.235600000000023,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "erros": [],
+      "rede": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "buraco",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 10,
+          "y": 0.000010000000000010001,
+          "z": 0,
+          "quadros": 24,
+          "tempo": 0.4001333333333334,
+          "recursos": {
+            "geometries": 10,
+            "textures": 14
+          },
+          "cenas": [
+            {
+              "nos": 2,
+              "arvores": 2,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 10,
+          "y": 0.000010000000000010001,
+          "z": 0,
+          "quadros": 33,
+          "tempo": 0.5501333333333335,
+          "recursos": {
+            "geometries": 10,
+            "textures": 14
+          },
+          "cenas": [
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 2,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 10,
+          "y": 0.000010000000000010001,
+          "z": 0,
+          "quadros": 42,
+          "tempo": 0.7002333333333336,
+          "recursos": {
+            "geometries": 10,
+            "textures": 14
+          },
+          "cenas": [
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 2,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      ],
+      "inicio": {
+        "x": 10,
+        "y": 0.000010000000000010001,
+        "z": 0,
+        "quadros": 45,
+        "tempo": 0.7501333333333335,
+        "recursos": {
+          "geometries": 10,
+          "textures": 14
+        },
+        "cenas": [
+          {
+            "nos": 2,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 2,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 2,
+            "arvores": 2,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "depois": {
+        "x": 10,
+        "y": 0.000010000000000010001,
+        "z": 2.0008500000000016,
+        "quadros": 136,
+        "tempo": 2.2675333333333314,
+        "recursos": {
+          "geometries": 10,
+          "textures": 14
+        },
+        "cenas": [
+          {
+            "nos": 2,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 2,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 2,
+            "arvores": 2,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "movimentos": {
+        "caminhada": {
+          "x": 10,
+          "y": 0.000010000000000010001,
+          "z": 2.0008500000000016,
+          "quadros": 136,
+          "tempo": 2.2675333333333314,
+          "recursos": {
+            "geometries": 10,
+            "textures": 14
+          },
+          "cenas": [
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 2,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "queda": {
+          "x": 10,
+          "y": -0.2202202199999988,
+          "z": 4.501800026399835,
+          "quadros": 240,
+          "tempo": 4.001433333333328,
+          "recursos": {
+            "geometries": 10,
+            "textures": 14
+          },
+          "cenas": [
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 2,
+              "arvores": 2,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "erros": [],
+      "rede": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "completo",
+      "modo": "export",
+      "ciclos": [
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 17,
+          "tempo": 0.28343333333333337,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 26,
+          "tempo": 0.48349999999999993,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 35,
+          "tempo": 0.6668666666666669,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      ],
+      "inicio": {
+        "x": 8,
+        "y": 0.312320067453264,
+        "z": 5,
+        "quadros": 45,
+        "tempo": 0.8335666666666669,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "depois": {
+        "x": 8,
+        "y": 0.30773494973913773,
+        "z": 7.000699999999982,
+        "quadros": 127,
+        "tempo": 2.200766666666667,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "movimentos": {
+        "caminhada": {
+          "x": 8,
+          "y": 0.30773494973913773,
+          "z": 7.000699999999982,
+          "quadros": 127,
+          "tempo": 2.200766666666667,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "corrida": {
+          "x": 8,
+          "y": 0.32406727880029973,
+          "z": 7.85069999999998,
+          "quadros": 148,
+          "tempo": 2.550866666666667,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "alto": {
+          "x": 8,
+          "y": 0.6374003188002998,
+          "z": 7.85069999999998,
+          "quadros": 152,
+          "tempo": 2.617666666666667,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "pouso": {
+          "x": 8,
+          "y": 0.3430020988002954,
+          "z": 7.85069999999998,
+          "quadros": 186,
+          "tempo": 3.1845666666666674,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "curva": {
+          "x": 8.154026360773946,
+          "y": 0.30170049091630835,
+          "z": 8.272082816813935,
+          "quadros": 212,
+          "tempo": 3.6180666666666665,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "erros": [],
+      "rede": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "completo",
+      "modo": "jogar",
+      "ciclos": [
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 188,
+          "tempo": 3.151066666666667,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 197,
+          "tempo": 3.367666666666667,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        {
+          "x": 8,
+          "y": 0.312320067453264,
+          "z": 5,
+          "quadros": 206,
+          "tempo": 3.551133333333334,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      ],
+      "inicio": {
+        "x": 8,
+        "y": 0.312320067453264,
+        "z": 5,
+        "quadros": 214,
+        "tempo": 3.684533333333333,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "depois": {
+        "x": 8,
+        "y": 0.30773494973913845,
+        "z": 7.00069999999998,
+        "quadros": 381,
+        "tempo": 6.468933333333357,
+        "recursos": {
+          "geometries": 30,
+          "textures": 39
+        },
+        "cenas": [
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 0,
+            "filhos": 0,
+            "pai": false
+          },
+          {
+            "nos": 20,
+            "arvores": 6,
+            "filhos": 2,
+            "pai": true
+          }
+        ]
+      },
+      "movimentos": {
+        "caminhada": {
+          "x": 8,
+          "y": 0.30773494973913845,
+          "z": 7.00069999999998,
+          "quadros": 381,
+          "tempo": 6.468933333333357,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "corrida": {
+          "x": 8,
+          "y": 0.32398994115915514,
+          "z": 7.851039999999981,
+          "quadros": 400,
+          "tempo": 6.785733333333361,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "alto": {
+          "x": 8,
+          "y": 0.6373232011591552,
+          "z": 7.851039999999981,
+          "quadros": 404,
+          "tempo": 6.852433333333361,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "pouso": {
+          "x": 8,
+          "y": 0.34361912115914806,
+          "z": 7.851039999999981,
+          "quadros": 438,
+          "tempo": 7.419233333333368,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        },
+        "curva": {
+          "x": 8.15419431356725,
+          "y": 0.30172014766578015,
+          "z": 8.272204812997357,
+          "quadros": 464,
+          "tempo": 7.852833333333372,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 0,
+              "filhos": 0,
+              "pai": false
+            },
+            {
+              "nos": 20,
+              "arvores": 6,
+              "filhos": 2,
+              "pai": true
+            }
+          ]
+        }
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "erros": [],
+      "rede": [
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111112?reload=0",
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111112?reload=0"
+      ],
+      "consoleErros": []
+    }
+  ],
+  "nota": "Reabertura canônica, preview, export e PublicPlayer real na rota local /jogar. API de publicação controlada no ensaio, sem conta/gravação de publicação real; não substitui Next/gateway e staging no encerramento global. SDK/renderer WebGL reais, subclass só observa info.memory. CDN instalado servido nas URLs pinadas; service worker bloqueado. Não é teste de aparelho físico nem aceite artístico/IK."
+}

@@ -176,6 +176,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g3k:setBounce',
   'g3k:setFriction',
   'g3k:setSkyPhoto',
+  'g3k:loadScene',
   'g3k:screenText',
   'g3k:createScreen',
   'g3k:addButton',
