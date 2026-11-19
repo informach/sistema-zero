@@ -37,30 +37,12 @@ export async function pintaPhysicsProject(name: string) {
       raster: nativeImageRaster(),
     },
   )
-  const project = documentFixture('python', 'pro')
-  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
-  project.id = name
-  project.name = 'Contornos do cenário'
-  project.installedExtensions = [{ ...PYGAME_EXTENSION, installedAt: project.createdAt }]
-  project.python.entrypoint = 'main.py'
-  project.assets = [
-    {
-      id: 'physics',
-      name: 'physics',
-      kind: 'image',
-      source: 'library',
-      libOrigin: 'pinta',
-      libId: `personal:${map.id}`,
-      libRevision: 1,
-      proPath: 'assets/physics.png',
-      dataUrl: image.dataUrl,
-      width: image.derivation.output.width,
-      height: image.derivation.output.height,
-      pintaImage: image.derivation,
-    },
-  ]
-  project.tree = pythonFilesToTree({
-    'main.py': `import sys, json, pygame, pinta
+  return pintaPythonProbeProject(
+    name,
+    map.id,
+    image,
+    'Contornos do cenário',
+    `import sys, json, pygame, pinta
 assert sys.platform == 'emscripten'
 pygame.init()
 tela = pygame.display.set_mode((640, 480))
@@ -95,6 +77,39 @@ while True:
     pygame.display.flip()
     clock.tick(30)
 `,
-  })
+  )
+}
+
+/** Same real image binding for independent authoring fixtures; no synthetic runtime data. */
+export function pintaPythonProbeProject(
+  name: string,
+  drawingId: string,
+  image: Awaited<ReturnType<typeof deriveLoadedPintaImage>>,
+  title: string,
+  source: string,
+) {
+  const project = documentFixture('python', 'pro')
+  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
+  project.id = name
+  project.name = title
+  project.installedExtensions = [{ ...PYGAME_EXTENSION, installedAt: project.createdAt }]
+  project.python.entrypoint = 'main.py'
+  project.assets = [
+    {
+      id: 'physics',
+      name: 'physics',
+      kind: 'image',
+      source: 'library',
+      libOrigin: 'pinta',
+      libId: `personal:${drawingId}`,
+      libRevision: 1,
+      proPath: 'assets/physics.png',
+      dataUrl: image.dataUrl,
+      width: image.derivation.output.width,
+      height: image.derivation.output.height,
+      pintaImage: image.derivation,
+    },
+  ]
+  project.tree = pythonFilesToTree({ 'main.py': source })
   return project
 }

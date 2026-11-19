@@ -1,14 +1,15 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const port = Number(process.env.PINTA_E2E_PORT ?? 5294)
+const outputDirectory = process.env.PINTA_SCENES_OUTPUT_DIR ?? './.cache/pinta-scenes-results'
 export default defineConfig({
   testDir: './e2e',
   testMatch: '*-scenes.flow.ts',
-  outputDir: './.cache/pinta-scenes-results',
+  outputDir: outputDirectory,
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: [['list'], ['json', { outputFile: './.cache/pinta-scenes-results/report.json' }]],
+  reporter: [['list'], ['json', { outputFile: `${outputDirectory}/report.json` }]],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     trace: 'retain-on-failure',

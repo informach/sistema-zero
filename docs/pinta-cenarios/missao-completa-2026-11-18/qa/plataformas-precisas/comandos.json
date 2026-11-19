@@ -1,0 +1,160 @@
+[
+  {
+    "cwd": "packages/pinta",
+    "argv": [
+      "bun",
+      "test",
+      "src"
+    ],
+    "env": {
+      "PYTHON": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-python-257/Scripts/python.exe",
+      "PYTHONIOENCODING": "utf-8"
+    },
+    "exitCode": 0,
+    "log": "pinta-completo.log",
+    "completedAt": "2026-11-19T10:21:57.198Z",
+    "pass": 2108,
+    "fail": 0
+  },
+  {
+    "cwd": "packages/core",
+    "argv": [
+      "bun",
+      "test",
+      "src/creations/pinta-format.test.ts",
+      "src/studio/pinta-image.test.ts",
+      "src/studio/pinta-scene-geometry.test.ts",
+      "src/studio/pinta-scene-platform.test.ts",
+      "src/studio/python-runtime-features.test.ts"
+    ],
+    "exitCode": 0,
+    "log": "core.log",
+    "completedAt": "2026-11-19T10:31:58.967Z",
+    "pass": 55,
+    "fail": 0
+  },
+  {
+    "cwd": "packages/studio",
+    "argv": [
+      "bun",
+      "test",
+      "src/asset-library/personalSync.test.ts",
+      "src/asset-library/pintaImageSync.test.ts",
+      "src/projects/tilemapGame.test.ts",
+      "src/state/pintaImageStore.test.ts",
+      "src/components/assets/pintaImageImport.test.ts",
+      "src/core/__tests__/pintaImageAssets.test.ts",
+      "src/core/__tests__/pintaPngReaderContract.test.ts",
+      "src/core/__tests__/pythonAssets.test.ts",
+      "src/official-extensions/map-2d/runtime.test.ts",
+      "src/projects/__tests__/initialBundleBudget.test.ts",
+      "src/official-extensions/map-2d/__tests__/hostVariant.test.ts",
+      "src/python/extensions/pygame/catalog.test.ts"
+    ],
+    "exitCode": 0,
+    "log": "estudio.log",
+    "completedAt": "2026-11-19T10:32:24.419Z",
+    "pass": 94,
+    "fail": 0
+  },
+  {
+    "cwd": "packages/member-shell",
+    "argv": [
+      "bun",
+      "test",
+      "tests/studio-python-publish.test.ts"
+    ],
+    "exitCode": 0,
+    "log": "publicacao.log",
+    "completedAt": "2026-11-19T10:22:26.030Z",
+    "pass": 85,
+    "fail": 0
+  },
+  {
+    "cwd": "packages/studio",
+    "argv": [
+      "bunx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "playwright.pinta.config.ts",
+      "e2e/pinta-physics-scenes.flow.ts",
+      "e2e/phaser-scenes.flow.ts",
+      "--grep",
+      "plataforma precisa|contornos autorais|parede fina|peça fina"
+    ],
+    "env": {
+      "PINTA_E2E_PORT": "5312",
+      "PINTA_SCENES_OUTPUT_DIR": "./.cache/pinta-platform-scenes-final"
+    },
+    "exitCode": 0,
+    "log": "navegador.log"
+  },
+  {
+    "cwd": "packages/studio",
+    "argv": [
+      "bunx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "playwright.pinta-integration.config.ts"
+    ],
+    "exitCode": 0,
+    "log": "integracao.log"
+  },
+  {
+    "cwd": "packages/studio",
+    "argv": [
+      "bunx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "playwright.python-pygame.config.ts",
+      "--reporter=list,json"
+    ],
+    "env": {
+      "PYTHON_PROBE_PORT": "5299"
+    },
+    "exitCode": 0,
+    "log": "python-navegador.log"
+  },
+  {
+    "cwd": "packages/core",
+    "argv": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 8602
+  },
+  {
+    "cwd": "packages/pinta",
+    "argv": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 14990
+  },
+  {
+    "cwd": "packages/studio",
+    "argv": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 255858
+  }
+]

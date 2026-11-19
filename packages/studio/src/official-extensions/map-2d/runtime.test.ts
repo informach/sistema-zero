@@ -163,6 +163,121 @@ it('scene references resolve inside their map without changing legacy property v
 })
 
 for (const target of ['g2d', 'gk'] as const) {
+  it(`${target}: plataforma precisa conserva o piso pequeno, salto e apoio`, async () => {
+    const precise = PintaSceneSchema.parse({
+      ...scene,
+      version: 3,
+      cols: 16,
+      rows: 12,
+      tilesets: [{ ...scene.tilesets[0], solid: [], platform: [0] }],
+      layers: [
+        {
+          id: 'objects',
+          kind: 'objects',
+          name: 'Objetos',
+          visible: true,
+          offsetY: 0.25,
+          objects: [
+            {
+              id: 'floor',
+              name: 'Piso pequeno',
+              type: '',
+              shape: 'set',
+              setId: 'set',
+              x: 40,
+              y: 40,
+              width: 4,
+              height: 2,
+              properties: {},
+            },
+          ],
+        },
+      ],
+      sets: [
+        {
+          id: 'set',
+          cols: 1,
+          rows: 1,
+          layers: [
+            {
+              id: 'cells',
+              kind: 'tiles',
+              name: 'Piso',
+              visible: true,
+              tilesetId: 'ts',
+              cells: [0],
+            },
+          ],
+        },
+      ],
+    })
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: { precise: { scene: precise } },
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+    api.createMapScene('map', 'precise')
+    const falling = {
+      x: 40,
+      y: 100,
+      w: 4,
+      h: 4,
+      vx: 0,
+      vy: 90,
+      _prevX: 40,
+      _prevY: 10,
+      onGround: false,
+    }
+    api.collideMapScene(falling, 'map')
+    expect(falling.y).toBeCloseTo(36.25, 7)
+    expect(falling.vy).toBe(0)
+    expect(falling.onGround).toBe(true)
+    falling.onGround = false
+    api.collideMapScene(falling, 'map')
+    expect(falling.onGround).toBe(true)
+    const rising = { x: 40, y: 10, w: 4, h: 4, vx: 0, vy: -90, _prevX: 40, _prevY: 100 }
+    api.collideMapScene(rising, 'map')
+    expect(rising.y).toBe(10)
+    if (target === 'gk') {
+      const dropping = {
+        x: 40,
+        y: 100,
+        w: 4,
+        h: 4,
+        vx: 0,
+        vy: 90,
+        _prevX: 40,
+        _prevY: 10,
+        _dropT: 0.25,
+        onGround: false,
+      }
+      api.collideMapScene(dropping, 'map')
+      expect(dropping.y).toBe(100)
+      expect(dropping.onGround).toBe(false)
+    } else {
+      const setGravity = Reflect.get(api, 'setGravity')
+      expect(typeof setGravity).toBe('function')
+      setGravity(-0.6)
+      const inverted = {
+        x: 40,
+        y: 10,
+        w: 4,
+        h: 4,
+        vx: 0,
+        vy: -90,
+        _prevX: 40,
+        _prevY: 100,
+        onGround: false,
+      }
+      api.collideMapScene(inverted, 'map')
+      expect(inverted.y).toBeCloseTo(42.25, 7)
+      expect(inverted.onGround).toBe(true)
+    }
+  })
   it(`${target}: cena 3 não atravessa contornos finos e preserva a curva livre`, async () => {
     const precise = PintaSceneSchema.parse({
       ...scene,

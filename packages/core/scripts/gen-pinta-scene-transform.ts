@@ -2,6 +2,8 @@ import {
   sceneIntersectsBox,
   sceneMoveBox,
   sceneObjectIntersectsBox,
+  scenePlatformLanding,
+  sceneVisitColliders,
 } from '../src/studio/pinta-scene-geometry'
 import {
   sceneArtFrame,
@@ -24,7 +26,9 @@ const source = new Bun.Transpiler({
       sceneArtFrame,
       sceneLayerState,
       sceneObjectIntersectsBox,
+      sceneVisitColliders,
       sceneIntersectsBox,
+      scenePlatformLanding,
       sceneMoveBox,
     ]
       .map((fn) => `var ${fn.name}=(${fn.toString()});`)
@@ -32,6 +36,10 @@ const source = new Bun.Transpiler({
   )
   .trim()
 if (source.includes('`')) throw new Error('O compositor portátil exige fonte sem templates.')
+// Match the repository formatter at generation time. JSON escapes embedded double
+// quotes; the single-quoted TS literal only needs those escapes removed and its
+// own apostrophes escaped. The exported runtime string remains byte-identical.
+const literal = `'${JSON.stringify(source).slice(1, -1).replaceAll('\\"', '"').replaceAll("'", "\\'")}'`
 if (process.argv.includes('--check')) {
   const saved = await import(file.href)
   if (saved.sceneObjectTransformSource !== source) {
@@ -41,6 +49,6 @@ if (process.argv.includes('--check')) {
 } else {
   await Bun.write(
     file,
-    `// Gerado por scripts/gen-pinta-scene-transform.ts. Não editar.\nexport const sceneObjectTransformSource = ${JSON.stringify(source)}\n`,
+    `// Gerado por scripts/gen-pinta-scene-transform.ts. Não editar.\nexport const sceneObjectTransformSource =\n  ${literal}\n`,
   )
 }

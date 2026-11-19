@@ -1,0 +1,829 @@
+{
+  "version": 1,
+  "pyodideVersion": "314.0.7",
+  "pythonVersion": "3.14.2",
+  "providedModules": [
+    {
+      "descriptor": {
+        "descriptorVersion": 1,
+        "kind": "portable-audio",
+        "importName": "sz_audio",
+        "version": "1.0.0",
+        "provider": "sistema-zero",
+        "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+        "api": [
+          {
+            "name": "play",
+            "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+            "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+          },
+          {
+            "name": "stop",
+            "signature": "(handle: int | None = None) -> None",
+            "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+          }
+        ],
+        "browser": {
+          "installation": "runtime-bundled",
+          "paths": "captured-project-assets",
+          "requiresUserGesture": true,
+          "lifetime": "execution-session",
+          "notes": [
+            "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+            "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+            "Clique em Jogar ou Rodar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+            "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+            "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+          ]
+        },
+        "audio": {
+          "container": "RIFF/WAVE",
+          "encoding": "PCM16",
+          "channels": [
+            1,
+            2
+          ],
+          "assetsTotalBytes": 33554432,
+          "policy": {
+            "version": 1,
+            "requestBytes": 2048,
+            "voices": 16,
+            "commandsPerSecond": 64,
+            "wavChunks": 256,
+            "fileBytes": 33554432,
+            "durationSeconds": 600,
+            "minimumSampleRate": 8000,
+            "maximumSampleRate": 96000
+          }
+        },
+        "native": {
+          "distribution": "sistema-zero-audio",
+          "requiresPython": ">=3.14.2,<3.15",
+          "installation": "exported-package",
+          "lifetime": "process",
+          "dependencies": {
+            "setuptools": "84.2.0",
+            "miniaudio": "1.71",
+            "cffi": "2.1.1",
+            "pycparser": "3.11"
+          },
+          "notes": [
+            "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+            "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+            "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+            "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+            "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+          ]
+        }
+      },
+      "descriptorArtifact": {
+        "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+        "sha256": "6514027df4c485dddaf95187ce0ed579cc34a056517d9f801100885c31b9b43a"
+      },
+      "typingArtifact": {
+        "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+        "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+      },
+      "browserArtifacts": [
+        {
+          "path": "worker.mjs",
+          "sha256": "11990ece1d9bf2cfd941df57f6e5a44317ed6cbc94aab50a431c4bac389fee0b"
+        },
+        {
+          "path": "frame.mjs",
+          "sha256": "deb2ac3e94d137aa3e0b45fdd720f76d322fd02c566ab52d27d4e131625f1227"
+        },
+        {
+          "path": "standalone.mjs",
+          "sha256": "61002c74e73a8b17d00a8be3905fff3193ef3a2bc3de1665f9ca552029a3c366"
+        },
+        {
+          "path": "playtest.mjs",
+          "sha256": "ad4bf2357f37ee01ab6493d82731c53b0bb7a7b0447ffffc895d92fbf3afaa0f"
+        }
+      ]
+    }
+  ],
+  "features": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1"
+  ],
+  "previewHostAudioVersion": 1,
+  "files": [
+    {
+      "path": "LICENSE-font-bungee.txt",
+      "sha256": "ff43f39d2143afa2ef0a7009629d25f62de23f0614ecdaea6dd07f6c58c5d2b1",
+      "bytes": 4380
+    },
+    {
+      "path": "LICENSE-font-fredoka.txt",
+      "sha256": "5c9e7eee5c6b25f4b05b8d53b2e470ea4962f9ced742d044a98f7d95d1375bab",
+      "bytes": 4388
+    },
+    {
+      "path": "LICENSE-font-nunito.txt",
+      "sha256": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
+      "bytes": 4385
+    },
+    {
+      "path": "LICENSE-font-press-start-2p.txt",
+      "sha256": "705960c3281a5765ecc0b59bd4ed7ca59eed165748076bc2fc3e8fdbfeb944b0",
+      "bytes": 4413
+    },
+    {
+      "path": "LICENSE-freefont.txt",
+      "sha256": "c49cb04726fa5c4f0ecaa8bcb08649ddf527d951581fc45ddd4ce4a0909abf7c",
+      "bytes": 1130
+    },
+    {
+      "path": "LICENSE-pgzero.txt",
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "bytes": 7651
+    },
+    {
+      "path": "LICENSE-pygame-ce.txt",
+      "sha256": "a190dc9c8043755d90f8b0a75fa66b9e42d4af4c980bf5ddc633f0124db3cee7",
+      "bytes": 26430
+    },
+    {
+      "path": "LICENSE-pyodide.txt",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725
+    },
+    {
+      "path": "LICENSE-python.txt",
+      "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+      "bytes": 13804
+    },
+    {
+      "path": "LICENSE-raylib-python-cffi.txt",
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303",
+      "bytes": 14198
+    },
+    {
+      "path": "LICENSE-raylib.txt",
+      "sha256": "882a5a819cf562aa3583aae3af3f2211dda15c63de9fc8cc4b399a2f9e78d799",
+      "bytes": 877
+    },
+    {
+      "path": "LICENSE-tk.txt",
+      "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+      "bytes": 2267
+    },
+    {
+      "path": "SOURCES.txt",
+      "sha256": "04fe98fe255e15dd1619c1117f720c0f5a293587382111790373ba090fdba57f",
+      "bytes": 2999
+    },
+    {
+      "path": "_http/gzip/01fdf51f0c15ee77202f8f94769debddec9613bc2bf0103fec8f173aeea6c00d.gz",
+      "sha256": "01fdf51f0c15ee77202f8f94769debddec9613bc2bf0103fec8f173aeea6c00d",
+      "bytes": 5674
+    },
+    {
+      "path": "_http/gzip/717ac16fc889e517a9ecbd066e662f4e8abc7f6c9076590aff44f4632cde1353.gz",
+      "sha256": "717ac16fc889e517a9ecbd066e662f4e8abc7f6c9076590aff44f4632cde1353",
+      "bytes": 1552
+    },
+    {
+      "path": "_http/gzip/73b218df3427425c18f39c09de0e32d64e5f4c3277906c2d064d1a35e0a64cc6.gz",
+      "sha256": "73b218df3427425c18f39c09de0e32d64e5f4c3277906c2d064d1a35e0a64cc6",
+      "bytes": 74139
+    },
+    {
+      "path": "_http/gzip/77702d8773ae24226eaf0e3a523bd95c66d70a3fc5b2cac8eeb56524b61c9b88.gz",
+      "sha256": "77702d8773ae24226eaf0e3a523bd95c66d70a3fc5b2cac8eeb56524b61c9b88",
+      "bytes": 1667
+    },
+    {
+      "path": "_http/gzip/8852ab4dc0fb690ff0eaa79e4fc6fdade24c8e77c99379bd2a8ca25187fc3586.gz",
+      "sha256": "8852ab4dc0fb690ff0eaa79e4fc6fdade24c8e77c99379bd2a8ca25187fc3586",
+      "bytes": 2491
+    },
+    {
+      "path": "_http/gzip/8869b751803ebb3050730bd8bef811c62a7ae925c93c3a78cb4edf9496b735a0.gz",
+      "sha256": "8869b751803ebb3050730bd8bef811c62a7ae925c93c3a78cb4edf9496b735a0",
+      "bytes": 28653
+    },
+    {
+      "path": "_http/gzip/9428a45a09cd787f524c7ed3dc0ccdc9c70f61027264e9bb8060650f0717a3e7.gz",
+      "sha256": "9428a45a09cd787f524c7ed3dc0ccdc9c70f61027264e9bb8060650f0717a3e7",
+      "bytes": 55436
+    },
+    {
+      "path": "_http/gzip/9c8e9e1a178ef63df714462deab2a61cde66d5bbfb6a583182906dceea81d743.gz",
+      "sha256": "9c8e9e1a178ef63df714462deab2a61cde66d5bbfb6a583182906dceea81d743",
+      "bytes": 43270
+    },
+    {
+      "path": "_http/gzip/c15476eb0a769660a6e009b73d40a19163ced8886b2b8b382b430bf95a7f23d6.gz",
+      "sha256": "c15476eb0a769660a6e009b73d40a19163ced8886b2b8b382b430bf95a7f23d6",
+      "bytes": 2584
+    },
+    {
+      "path": "_http/gzip/ca888fe572cf36d60036b570e5a1065e69c021cdcb1539da10ab40051ebb7c24.gz",
+      "sha256": "ca888fe572cf36d60036b570e5a1065e69c021cdcb1539da10ab40051ebb7c24",
+      "bytes": 59220
+    },
+    {
+      "path": "_http/gzip/d023b856142885352f98312c68ff45af990653a7db98db93791b7cb1cc1328d6.gz",
+      "sha256": "d023b856142885352f98312c68ff45af990653a7db98db93791b7cb1cc1328d6",
+      "bytes": 14032
+    },
+    {
+      "path": "_http/gzip/d87dab7d65fb6c85f452093cc92a1948371ce6180b785835d55031a8b701f403.gz",
+      "sha256": "d87dab7d65fb6c85f452093cc92a1948371ce6180b785835d55031a8b701f403",
+      "bytes": 283826
+    },
+    {
+      "path": "_http/gzip/e6b4ecae5c02ff82f1f1e6f036fafd357ec2bfd9a28026c8afc1711946df88d0.gz",
+      "sha256": "e6b4ecae5c02ff82f1f1e6f036fafd357ec2bfd9a28026c8afc1711946df88d0",
+      "bytes": 73409
+    },
+    {
+      "path": "_http/gzip/e9496544537047863f61de9ae71716df4bbbfcc98ed0afbfe88f9e2de6caa00d.gz",
+      "sha256": "e9496544537047863f61de9ae71716df4bbbfcc98ed0afbfe88f9e2de6caa00d",
+      "bytes": 7902
+    },
+    {
+      "path": "_http/gzip/ee0750aa9b8dc894cdb8a6a59e05202e32916f13edf4cbfe5e3c361f64083d93.gz",
+      "sha256": "ee0750aa9b8dc894cdb8a6a59e05202e32916f13edf4cbfe5e3c361f64083d93",
+      "bytes": 7726
+    },
+    {
+      "path": "_http/gzip/f7aa668fe7ea7c9e7f6931c222bec9b1d76c8a21a36663de3166a5450a108e7b.gz",
+      "sha256": "f7aa668fe7ea7c9e7f6931c222bec9b1d76c8a21a36663de3166a5450a108e7b",
+      "bytes": 1961
+    },
+    {
+      "path": "analysis-frame.mjs",
+      "sha256": "2528cd28ca47e1224c156919850f29e03d017eeaeee2b2ec2afa71ef3fd94e57",
+      "bytes": 6252
+    },
+    {
+      "path": "analysis-worker.mjs",
+      "sha256": "7c8d9ba2d34f9388465a9695c4f5159efca094f56917299d3a402bc7ab935391",
+      "bytes": 19988
+    },
+    {
+      "path": "analysis.html",
+      "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+      "bytes": 151
+    },
+    {
+      "path": "boot-loader-derivation.json",
+      "sha256": "9a81fc2bc07d7787ced7d7f70276e36d8e7bca02f5adf01318b696d5d4385a2a",
+      "bytes": 986
+    },
+    {
+      "path": "boot-reader.mjs",
+      "sha256": "b163af2cfeb7f8a064f13dedc66765ca2730ae85276534682fdcb6f3f6b2733b",
+      "bytes": 3782
+    },
+    {
+      "path": "frame.html",
+      "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+      "bytes": 211
+    },
+    {
+      "path": "frame.mjs",
+      "sha256": "deb2ac3e94d137aa3e0b45fdd720f76d322fd02c566ab52d27d4e131625f1227",
+      "bytes": 148463
+    },
+    {
+      "path": "http-compression-recipe.json",
+      "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+      "bytes": 134
+    },
+    {
+      "path": "inspect.mjs",
+      "sha256": "c09d062cb92bfccc2b0fe0646c01fe0020ccbc6d293db0aee5e3d54106ef82b1",
+      "bytes": 213259
+    },
+    {
+      "path": "pgzero-protocol.mjs",
+      "sha256": "98c0135a41ce7810891fbd0b9839052fb4a7c548214e4b1b85b0f95437506657",
+      "bytes": 4683
+    },
+    {
+      "path": "pgzero-renderer.mjs",
+      "sha256": "f73934b63b05c201ace8a1e2d837fb1428fa37374f42431628d9e58d7fe1ce59",
+      "bytes": 34836
+    },
+    {
+      "path": "pgzero/freesansbold.ttf",
+      "sha256": "bf9251269f11e4b35582a99376096deee3d0c4973a459cbd97b0bebc01f440ad",
+      "bytes": 98600
+    },
+    {
+      "path": "pgzero/pgzero/__init__.py",
+      "sha256": "85716e05d47f16fc29ae31bbae344d8aee3513eda7dbdd445f9c3d7a45f119c0",
+      "bytes": 206
+    },
+    {
+      "path": "pgzero/pgzero/_colors.py",
+      "sha256": "7292619af066c9fbf52f8e13914a9c395001e3d0ed8c793f48f3718570ab631d",
+      "bytes": 24827
+    },
+    {
+      "path": "pgzero/pgzero/_pgrect.py",
+      "sha256": "3d7a9b21a02f6ffe99519a3bf047b0084ee30cf0881e2d9fe4374dd51e35b4db",
+      "bytes": 14680
+    },
+    {
+      "path": "pgzero/pgzero/_sz.py",
+      "sha256": "ba161cf79d2aef3f13c1c7a3f42a8af9e5fb72160e9b0d3da8920be16d46c31e",
+      "bytes": 36594
+    },
+    {
+      "path": "pgzero/pgzero/actor.py",
+      "sha256": "1ab685170aa93ce579f49b070a0b799fb141849e3eb06eeefbbdc8b23d5ead88",
+      "bytes": 7439
+    },
+    {
+      "path": "pgzero/pgzero/animation.py",
+      "sha256": "cfb3db0974000b7365871dc021cdf5eeccd23353acbce9f9950ebd029ab21d88",
+      "bytes": 5749
+    },
+    {
+      "path": "pgzero/pgzero/builtins.py",
+      "sha256": "20987f0431be3f512ffc21518281c1dbf4b1845dd1c2964137304462ceab88fe",
+      "bytes": 314
+    },
+    {
+      "path": "pgzero/pgzero/clock.py",
+      "sha256": "5177d7f3a0f698ee7f1769d21982af249dce3ea4e1bdacca4cdf96a34ce44ffe",
+      "bytes": 5190
+    },
+    {
+      "path": "pgzero/pgzero/constants.py",
+      "sha256": "c94fd85284480ac31688d679190a6c64195894e136eb390fbea67fe7bc00ae6f",
+      "bytes": 3143
+    },
+    {
+      "path": "pgzero/pgzero/game.py",
+      "sha256": "72ac22a907bbd611821b9ae596e721c307af2eb24b7f3f5e80837c67400e371b",
+      "bytes": 8099
+    },
+    {
+      "path": "pgzero/pgzero/keyboard.py",
+      "sha256": "0a2f699b0eeb7ea57d7cd23396b3c1e48d3396000cff3951d67e577348c5efd6",
+      "bytes": 1985
+    },
+    {
+      "path": "pgzero/pgzero/loaders.py",
+      "sha256": "21b7ad0d37ec7079fbbb5f3618210d95643ea09fbb7858a67e5c118f6c9909b0",
+      "bytes": 8042
+    },
+    {
+      "path": "pgzero/pgzero/music.py",
+      "sha256": "92adf9f7a5819f22c7e7a861b26ed64a64394b12307622519c07cad122e29e57",
+      "bytes": 3808
+    },
+    {
+      "path": "pgzero/pgzero/rect.py",
+      "sha256": "c78bea7749e41e6e57c7b15ce8f1db6e399e8c5fb84da126b893f51464dd9eda",
+      "bytes": 15292
+    },
+    {
+      "path": "pgzero/pgzero/runner.py",
+      "sha256": "b045730ff38e6549a6171069de790d9db6a137cc004251b9205f8459ad5825f0",
+      "bytes": 814
+    },
+    {
+      "path": "pgzero/pgzero/screen.py",
+      "sha256": "ab9ea6bed8bff8e9535bf3b4007c0b0dbe493b7b0905d5c2e02846a891a88138",
+      "bytes": 8388
+    },
+    {
+      "path": "pgzero/pgzero/spellcheck.py",
+      "sha256": "eee616bbe1486d67069ad2a2637de6785e0f2aac4a38f079eca689f89a4c4899",
+      "bytes": 4958
+    },
+    {
+      "path": "pgzero/pgzero/tone.py",
+      "sha256": "eed8c3f4dced9dd45a9676ffa653f67a3e0fa1add89d2b7b693e846fce549415",
+      "bytes": 3748
+    },
+    {
+      "path": "pgzero/pgzrun.py",
+      "sha256": "71a83e70889f67d2528d21129a6f1578e149f0a7216759e5a04c16d069189149",
+      "bytes": 827
+    },
+    {
+      "path": "pgzero/pygame/__init__.py",
+      "sha256": "069621f2052309b89df32e2b7226d01efd2adab13f3d56fe00aa65fab24a46c3",
+      "bytes": 1251
+    },
+    {
+      "path": "pgzero/pygame/draw.py",
+      "sha256": "be8b5506b111867cfe4fd677e7faecd5d022aa5492826a8e5143e9498262aba8",
+      "bytes": 4770
+    },
+    {
+      "path": "pgzero/pygame/image.py",
+      "sha256": "e796a96e56faf1914e363e37984659f5cbd08c47c9088095891b40042ecf9fef",
+      "bytes": 672
+    },
+    {
+      "path": "pgzero/pygame/math.py",
+      "sha256": "6174aba854745507179e6f7ebe2c35e21ee4ddad036a4739b90c6da6c2fbfce8",
+      "bytes": 4941
+    },
+    {
+      "path": "pgzero/pygame/mixer.py",
+      "sha256": "c7b7ee52eacbc0c62d4d831d215d31e2bb3a626735a2c6ce2c5163b7dfc0b4d1",
+      "bytes": 1258
+    },
+    {
+      "path": "playtest.mjs",
+      "sha256": "ad4bf2357f37ee01ab6493d82731c53b0bb7a7b0447ffffc895d92fbf3afaa0f",
+      "bytes": 258409
+    },
+    {
+      "path": "pygame/_szpygame/__init__.py",
+      "sha256": "95b28cd0dbfad6b38b469af5f84d2a416d8e3207c4dd101a3e4445f3c2c69a14",
+      "bytes": 22276
+    },
+    {
+      "path": "pygame/_szpygame/mixer.py",
+      "sha256": "09d166dc94c4d4288242f92b4ae0a26cd074ce8fb3cb6e978c4a5a376f9c9f85",
+      "bytes": 16665
+    },
+    {
+      "path": "pygame/fontes/bungee.ttf",
+      "sha256": "c4f5361ce120af3e6b9156d0bf379fa19cda2ea0cd18ac01fd99596c6bf66e3f",
+      "bytes": 118996
+    },
+    {
+      "path": "pygame/fontes/fredoka.ttf",
+      "sha256": "2ba02e68b152868aef9ba28e24b3648c7d457fe6f25c761f2c2c53fb61a73fc8",
+      "bytes": 159184
+    },
+    {
+      "path": "pygame/fontes/nunito.ttf",
+      "sha256": "bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207",
+      "bytes": 276932
+    },
+    {
+      "path": "pygame/fontes/press-start-2p.ttf",
+      "sha256": "034c77f1f05ec89421e4a63f0e3a4ca1ecf852cc6d2bf611f126f275728e017d",
+      "bytes": 118204
+    },
+    {
+      "path": "pygame/pinta.py",
+      "sha256": "76ab0c859b1226672428dd05335a45a9bc4b189d03223492a5672772c28f7c85",
+      "bytes": 75867
+    },
+    {
+      "path": "pygame_ce-2.5.7-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "4113d62cc8dfabb110b6cc0921167ae10ee0cd2c8c5778f9b3c467a92847af8f",
+      "bytes": 1528232
+    },
+    {
+      "path": "pyodide-lock.json",
+      "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+      "bytes": 119077
+    },
+    {
+      "path": "pyodide.asm.mjs",
+      "sha256": "8af9efb7d66e6e4337096d90c0446d845f5dd749c45c0d574059efa993b2f478",
+      "bytes": 1552701
+    },
+    {
+      "path": "pyodide.asm.wasm",
+      "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+      "bytes": 9598218
+    },
+    {
+      "path": "pyodide.mjs",
+      "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+      "bytes": 21884
+    },
+    {
+      "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+      "bytes": 469
+    },
+    {
+      "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+      "sha256": "6514027df4c485dddaf95187ce0ed579cc34a056517d9f801100885c31b9b43a",
+      "bytes": 2745
+    },
+    {
+      "path": "python_stdlib.zip",
+      "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+      "bytes": 7066273
+    },
+    {
+      "path": "raylib-protocol.mjs",
+      "sha256": "eb662ccb42a6d2ef2286bd5283d01caa7f5b58b492ff8d3ba08e429de76e5170",
+      "bytes": 5426
+    },
+    {
+      "path": "raylib-renderer.mjs",
+      "sha256": "05e25f19e1d9ad5f77941fbfb97e8814f2af01f7b305a4d7519dbe4439d77e71",
+      "bytes": 75019
+    },
+    {
+      "path": "raylib/_szraylib/__init__.py",
+      "sha256": "3f052e81d5cb7b221fc898b45765c6207f5a1ecdbee9e496eff918631af7bc5d",
+      "bytes": 137
+    },
+    {
+      "path": "raylib/_szraylib/_api.py",
+      "sha256": "2fc303d80e8a515613003368021eec9597f4faaa436e18201ede6469c37d2957",
+      "bytes": 8052
+    },
+    {
+      "path": "raylib/_szraylib/_args.py",
+      "sha256": "09b6a051f87c34628be13b7e5452f73774854b3d9844ff1b475678f75a28314e",
+      "bytes": 7570
+    },
+    {
+      "path": "raylib/_szraylib/_assets.py",
+      "sha256": "0a9a2ade7f32cf40fc030aeb32c3699d95a5216328498017cbea918ec6aa7eb2",
+      "bytes": 21904
+    },
+    {
+      "path": "raylib/_szraylib/_audio.py",
+      "sha256": "5fb3ffd383ef62231cc2aaf73f637bd37efd3e1be6f06b219c3ee053951f0243",
+      "bytes": 18973
+    },
+    {
+      "path": "raylib/_szraylib/_camera2d.py",
+      "sha256": "89c9103db0ec93cb316895bab3887395c121d382cbb1d727d08ba31a942cf194",
+      "bytes": 1726
+    },
+    {
+      "path": "raylib/_szraylib/_camera3d.py",
+      "sha256": "d17870c4f2e1cacab20aca98054d8850286c57798024e2dc2b578156cece4bc5",
+      "bytes": 11471
+    },
+    {
+      "path": "raylib/_szraylib/_collide2d.py",
+      "sha256": "5d52ad695ea94b0eff76b885f71f09fa36123a636c006a5a9244c7865e7fb4f2",
+      "bytes": 5570
+    },
+    {
+      "path": "raylib/_szraylib/_collide3d.py",
+      "sha256": "0d59397867b65205b201416c5d7d83e91909a0a9a7ac3020b89737e583cd8871",
+      "bytes": 6952
+    },
+    {
+      "path": "raylib/_szraylib/_colors.py",
+      "sha256": "70d6aa01327aadf49841b9bf8115df314b33e37b83e0064c8c75a5770d29a51f",
+      "bytes": 5532
+    },
+    {
+      "path": "raylib/_szraylib/_constants.py",
+      "sha256": "1a1a0e129d7eaed27f085590dd1efb872100025d71bd32038b7db4151ac69b8a",
+      "bytes": 32528
+    },
+    {
+      "path": "raylib/_szraylib/_core.py",
+      "sha256": "63bd9eff94e21c79f6ecfa94235fefb6d1864f984c987b0cd39b9dd7f3f6e66e",
+      "bytes": 12106
+    },
+    {
+      "path": "raylib/_szraylib/_default_font.py",
+      "sha256": "dd3a132c87bafe2b3340b253e8ddb1ef28f806f32a8c827437108ba593f4bbf6",
+      "bytes": 4670
+    },
+    {
+      "path": "raylib/_szraylib/_draw2d.py",
+      "sha256": "ab49db12d5b5fdff4bd4e597ae28bd73c5c44d7da3df9d28a27610d9df8780c8",
+      "bytes": 21826
+    },
+    {
+      "path": "raylib/_szraylib/_draw3d.py",
+      "sha256": "e8dc70f91df9a3ad104d30e8c34d38d8165f700878471178c2a614cb774cc78c",
+      "bytes": 12801
+    },
+    {
+      "path": "raylib/_szraylib/_ffi.py",
+      "sha256": "5995d0f32ef45bc2fde7771ecb1c3ea3a1fe63354dc20e4afa7ecbfdf713f68f",
+      "bytes": 5524
+    },
+    {
+      "path": "raylib/_szraylib/_float32.py",
+      "sha256": "e614eb5f1c2f4f379742e291be15767b2112bf003233883aa47aa290c04d1af7",
+      "bytes": 5635
+    },
+    {
+      "path": "raylib/_szraylib/_floatvec.py",
+      "sha256": "5de49be1d6d10d48a1a6f1d8818620b7d7e886cca9ed71b565efee50e583c973",
+      "bytes": 13898
+    },
+    {
+      "path": "raylib/_szraylib/_gltf.py",
+      "sha256": "a8e70b9e07fc86b86067033c63f08b8bcb936686d8da161f787dc5149f7079db",
+      "bytes": 29811
+    },
+    {
+      "path": "raylib/_szraylib/_models.py",
+      "sha256": "dc5b684a379ea775a4123302531b4bb7874bec422fa55dbacc1cb57302a74600",
+      "bytes": 31960
+    },
+    {
+      "path": "raylib/_szraylib/_names.py",
+      "sha256": "6df53490f011929bf64164edce86b06320474e6a096cf68c8b64a97f28b5fa1b",
+      "bytes": 146007
+    },
+    {
+      "path": "raylib/_szraylib/_random.py",
+      "sha256": "7c8ad79788810178accf7eee7e49128bcac76a7832f208d3bf77685eec25cf48",
+      "bytes": 1366
+    },
+    {
+      "path": "raylib/_szraylib/_raymath.py",
+      "sha256": "fd82f31021a74c4364fc3118eca48bbe6ddf66c2052b5fccc9c0d720f414f33d",
+      "bytes": 46767
+    },
+    {
+      "path": "raylib/_szraylib/_rt.py",
+      "sha256": "514eb0fd8ccf688080d2800e458df6ba9c00f0713589f3fd7cbd57fa14223488",
+      "bytes": 15704
+    },
+    {
+      "path": "raylib/_szraylib/_shaders.py",
+      "sha256": "a182f1ecd114741cd292fc23bd4f4c4ea8a47fc3b6ee696d9d1c65cd43e8f59b",
+      "bytes": 12254
+    },
+    {
+      "path": "raylib/_szraylib/_shapes.py",
+      "sha256": "6758d236f0c93f0222ef8938664f65f575babb5f6f8be52ee3d68ab2dacd0430",
+      "bytes": 17543
+    },
+    {
+      "path": "raylib/_szraylib/_structs.py",
+      "sha256": "cc44b65bacce8ad6d2aed8e59d54faf0917154e6074ee4c1fd2a0ace36b87d4c",
+      "bytes": 14582
+    },
+    {
+      "path": "raylib/_szraylib/_text.py",
+      "sha256": "b30d88cc1c3fd0e1068c3c1f74de2d441154fbb10fd6c6d10f960640209b33af",
+      "bytes": 11506
+    },
+    {
+      "path": "raylib/cenario.py",
+      "sha256": "391e1f4bfc8fa59fca247aa347d3f06eeb7d34c925abe8a4625c57701d27d978",
+      "bytes": 19387
+    },
+    {
+      "path": "raylib/pyray/__init__.py",
+      "sha256": "9b9d9ff3a77bb430335ba145a08761cd5dc171886fa88a93a114140f0a7bab81",
+      "bytes": 387
+    },
+    {
+      "path": "raylib/raylib/__init__.py",
+      "sha256": "ee099ae481c151d601e1deea115558eaed3de6086587a7a45f3df43e09c1e8a4",
+      "bytes": 302
+    },
+    {
+      "path": "raylib/raylib/colors.py",
+      "sha256": "ec9f0605581dcf05c8dcb54b9058093e2cf28880e8a3b654287f100007e62ed8",
+      "bytes": 167
+    },
+    {
+      "path": "raylib/raylib/defines.py",
+      "sha256": "e38e28ca10c726f66b0e4770285970413dbccb3dda19ba35cf63f6962ef12b50",
+      "bytes": 99
+    },
+    {
+      "path": "raylib/raylib/enums.py",
+      "sha256": "eb54b659e263ce40a3525e4aa70cdf9132e9abe76615b4ac316a7749a24ed09b",
+      "bytes": 156
+    },
+    {
+      "path": "standalone.mjs",
+      "sha256": "61002c74e73a8b17d00a8be3905fff3193ef3a2bc3de1665f9ca552029a3c366",
+      "bytes": 256027
+    },
+    {
+      "path": "turtle-protocol.mjs",
+      "sha256": "f007f4ce17f060251b75962f3d9b7d25647c539d415b50063399465a03fd8807",
+      "bytes": 3684
+    },
+    {
+      "path": "turtle-renderer.mjs",
+      "sha256": "a41580bb61edcbbf723c1324564431f11476b10bba2a2429af6967ce51636120",
+      "bytes": 19491
+    },
+    {
+      "path": "turtle/_sz_turtle_backend.py",
+      "sha256": "84adbe44cf124737767d63dafc41844947d6527f788780bf7885ea2fde013b1f",
+      "bytes": 25445
+    },
+    {
+      "path": "turtle/_sz_turtle_colors.py",
+      "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+      "bytes": 25484
+    },
+    {
+      "path": "turtle/_sz_turtle_limits.py",
+      "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+      "bytes": 435
+    },
+    {
+      "path": "turtle/formas_do_pinta.py",
+      "sha256": "d0801499dd0e9fd7167989c200bd1face67fa47ce5b5bc03ff08d9c9e1817768",
+      "bytes": 21005
+    },
+    {
+      "path": "turtle/turtle.py",
+      "sha256": "c766dd33e3c2a701c2daac45a8f6b3073f626763dcaaf6805ba08314dd39f0ce",
+      "bytes": 132337
+    },
+    {
+      "path": "worker.mjs",
+      "sha256": "11990ece1d9bf2cfd941df57f6e5a44317ed6cbc94aab50a431c4bac389fee0b",
+      "bytes": 191651
+    }
+  ],
+  "httpRepresentations": [
+    {
+      "path": "analysis-frame.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/c15476eb0a769660a6e009b73d40a19163ced8886b2b8b382b430bf95a7f23d6.gz"
+    },
+    {
+      "path": "analysis-worker.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/01fdf51f0c15ee77202f8f94769debddec9613bc2bf0103fec8f173aeea6c00d.gz"
+    },
+    {
+      "path": "boot-reader.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/77702d8773ae24226eaf0e3a523bd95c66d70a3fc5b2cac8eeb56524b61c9b88.gz"
+    },
+    {
+      "path": "frame.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/9c8e9e1a178ef63df714462deab2a61cde66d5bbfb6a583182906dceea81d743.gz"
+    },
+    {
+      "path": "inspect.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/ca888fe572cf36d60036b570e5a1065e69c021cdcb1539da10ab40051ebb7c24.gz"
+    },
+    {
+      "path": "pgzero-protocol.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/f7aa668fe7ea7c9e7f6931c222bec9b1d76c8a21a36663de3166a5450a108e7b.gz"
+    },
+    {
+      "path": "pgzero-renderer.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/d023b856142885352f98312c68ff45af990653a7db98db93791b7cb1cc1328d6.gz"
+    },
+    {
+      "path": "playtest.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/73b218df3427425c18f39c09de0e32d64e5f4c3277906c2d064d1a35e0a64cc6.gz"
+    },
+    {
+      "path": "pyodide.asm.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/d87dab7d65fb6c85f452093cc92a1948371ce6180b785835d55031a8b701f403.gz"
+    },
+    {
+      "path": "pyodide.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/ee0750aa9b8dc894cdb8a6a59e05202e32916f13edf4cbfe5e3c361f64083d93.gz"
+    },
+    {
+      "path": "raylib-protocol.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/8852ab4dc0fb690ff0eaa79e4fc6fdade24c8e77c99379bd2a8ca25187fc3586.gz"
+    },
+    {
+      "path": "raylib-renderer.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/8869b751803ebb3050730bd8bef811c62a7ae925c93c3a78cb4edf9496b735a0.gz"
+    },
+    {
+      "path": "standalone.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/e6b4ecae5c02ff82f1f1e6f036fafd357ec2bfd9a28026c8afc1711946df88d0.gz"
+    },
+    {
+      "path": "turtle-protocol.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/717ac16fc889e517a9ecbd066e662f4e8abc7f6c9076590aff44f4632cde1353.gz"
+    },
+    {
+      "path": "turtle-renderer.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/e9496544537047863f61de9ae71716df4bbbfcc98ed0afbfe88f9e2de6caa00d.gz"
+    },
+    {
+      "path": "worker.mjs",
+      "encoding": "gzip",
+      "artifactPath": "_http/gzip/9428a45a09cd787f524c7ed3dc0ccdc9c70f61027264e9bb8060650f0717a3e7.gz"
+    }
+  ]
+}

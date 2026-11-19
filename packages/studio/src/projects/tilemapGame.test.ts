@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { behaviorStatements, type JSStatement, type SZIRInput, SZIRInputSchema } from '#ir'
+import { platformPhysicsScenario } from '../../../pinta/scripts/homologacao/platforms'
+import { exportPintaScene } from '../../../pinta/src/export/scene'
 import { collectHTMLAccessibilityIssues } from '../html/accessibility'
 import { mapTwoDBootstrap } from '../official-extensions/map-2d/bootstrap'
 import { assembleTilemapGameProject, type TilemapGamePayload } from './tilemapGame'
@@ -41,6 +43,30 @@ function loopBody(ir: SZIRInput): JSStatement[] {
 }
 
 describe('assembleTilemapGameProject', () => {
+  it('cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade', async () => {
+    const fixture = platformPhysicsScenario()
+    const scene = await exportPintaScene(
+      fixture.map,
+      (id) => fixture.assets.find((asset) => asset.id === id) ?? null,
+      async () => DATA,
+    )
+    expect(scene.version).toBe(3)
+    expect(
+      loopBody(irOf({ scene })).some((node) => node.type === 'g2d:platformerWithTerrain'),
+    ).toBe(true)
+    expect(loopBody(irOf({ scene })).some((node) => node.type === 'g2d:applyGravity')).toBe(true)
+    const objects = scene.layers.find((layer) => layer.kind === 'objects')
+    if (!objects) throw Error('Falta a camada da plataforma')
+    objects.visible = false
+    expect(
+      loopBody(irOf({ scene })).some((node) => node.type === 'g2d:platformerWithTerrain'),
+    ).toBe(false)
+    objects.visible = true
+    scene.version = 2
+    expect(
+      loopBody(irOf({ scene })).some((node) => node.type === 'g2d:platformerWithTerrain'),
+    ).toBe(false)
+  })
   it('cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição', () => {
     const scene = {
       version: 1,
@@ -222,7 +248,7 @@ describe('assembleTilemapGameProject', () => {
   it('mapa SEM plataforma → mecânica TOP-DOWN', () => {
     const body = loopBody(irOf())
     expect(body.some((s) => s.type === 'g2d:topDown')).toBe(true)
-    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(false)
+    expect(body.some((s) => s.type === 'g2d:platformerWithTerrain')).toBe(false)
   })
 
   it('mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)', () => {
@@ -230,7 +256,8 @@ describe('assembleTilemapGameProject', () => {
     // plataforma sobrevive ao sanitize (sólido venceria) e vira jogo de pulo.
     const base = payload().tilemap as Record<string, unknown>
     const body = loopBody(irOf({ tilemap: { ...base, platform: [2] } }))
-    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(true)
+    expect(body.some((s) => s.type === 'g2d:platformerWithTerrain')).toBe(true)
+    expect(body.some((s) => s.type === 'g2d:applyGravity')).toBe(true)
     expect(body.some((s) => s.type === 'g2d:topDown')).toBe(false)
   })
 
@@ -239,7 +266,7 @@ describe('assembleTilemapGameProject', () => {
     const base = payload().tilemap as Record<string, unknown>
     const body = loopBody(irOf({ tilemap: { ...base, platform: [3] } }))
     expect(body.some((s) => s.type === 'g2d:topDown')).toBe(true)
-    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(false)
+    expect(body.some((s) => s.type === 'g2d:platformerWithTerrain')).toBe(false)
   })
 
   it('com camada da frente: 2º tilemap desenhado DEPOIS do jogador', () => {

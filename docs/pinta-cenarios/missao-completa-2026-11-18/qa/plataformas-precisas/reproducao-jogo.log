@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src\projects\tilemapGame.test.ts:
+45 | describe('assembleTilemapGameProject', () => {
+46 |   it('cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade', async () => {
+47 |     const fixture=platformPhysicsScenario()
+48 |     const scene=await exportPintaScene(fixture.map,id=>fixture.assets.find(asset=>asset.id===id)??null,async()=>DATA)
+49 |     expect(scene.version).toBe(3)
+50 |     expect(loopBody(irOf({scene})).some(node=>node.type==='g2d:platformer')).toBe(true)
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\projects\tilemapGame.test.ts:50:78)
+(fail) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [109.00ms]
+
+ 0 pass
+ 8 filtered out
+ 1 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [1.75s]

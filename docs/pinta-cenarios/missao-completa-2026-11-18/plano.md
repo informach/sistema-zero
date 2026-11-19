@@ -53,11 +53,13 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   teste com personagem do editor. Geometria analítica e consulta local sem grade
   achatada em `geometria-fisica.md`. O segundo lote acrescenta marca autoral, controles,
   documento 7/cena 3/PNG 4, varredura nos motores e adaptadores externos;
-  ver `colisoes-autorais.md`. Plataformas de mão única transformadas e o ciclo de
-  atualização/publicação autenticado ainda precisam do fechamento descrito ali.
+  ver `colisoes-autorais.md`. A continuação integra plataformas de mão única
+  transformadas, testa os consumidores reais e corrige o jogo criado pelo botão;
+  provas locais em `qa/plataformas-precisas/README.md`. O ciclo de atualização e
+  publicação autenticado ainda depende do rollout descrito na etapa 0b.
   O lote foi commitado em `db4ba7aa8` e integrado com staging em `04acef30b`;
   nova distribuição e regressões em `qa/colisoes-autorais-pos-merge/README.md`.
-  O próximo lote tem critérios e arquitetura em `plataformas-precisas.md`.
+  Critérios e arquitetura das plataformas em `plataformas-precisas.md`.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
 - [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.

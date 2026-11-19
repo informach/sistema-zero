@@ -1,0 +1,158 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\playwright.python-pygame.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e-runtime",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.cache/pinta-platform-python-edge/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome",
+        "name": "chrome",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e-runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "python-pygame.spec.ts",
+          "python-pygame-performance.spec.ts",
+          "python-pinta-world.spec.ts",
+          "python-pinta-physics.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "python-pinta-physics.spec.ts",
+      "file": "python-pinta-physics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Pinta platform 1x checks all outlines in real browser Python",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2403,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T10:04:09.978Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "platform-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\.cache\\pinta-platform-python-edge\\artifacts\\python-pinta-physics-Pinta-84ee8-ines-in-real-browser-Python-chrome\\attachments\\platform-runtime-proof-05c3c326e1aa73c2075ade01ff2112201096062c.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "394e9dcf30b82e9533ee-2e0ca204de4112fd46d1",
+          "file": "python-pinta-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        },
+        {
+          "title": "Pinta platform 2x checks all outlines in real browser Python",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2052,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T10:04:12.639Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "platform-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\.cache\\pinta-platform-python-edge\\artifacts\\python-pinta-physics-Pinta-0e4e3-ines-in-real-browser-Python-chrome\\attachments\\platform-runtime-proof-83eabd90bdca2eb2b515b2474aca484083505ee0.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "394e9dcf30b82e9533ee-77d5d5b1995c4531e15e",
+          "file": "python-pinta-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T10:04:09.287Z",
+    "duration": 5610.042,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -10,6 +10,11 @@ O lote de [contornos autorais](missao-completa-2026-11-18/colisoes-autorais.md) 
 documento/envelope 7, cena 3 e PNG 4 com leitor específico. O código lê nuvem 6 e ainda
 declara 4 durante o rollout do leitor. [Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).
 
+A continuação de [plataformas precisas](missao-completa-2026-11-18/plataformas-precisas.md)
+integra o teste lateral e os motores, com gravidade/pouso nos jogos novos criados
+pelo botão e atualização do mapa sem reconstruir a programação.
+[Provas locais](missao-completa-2026-11-18/qa/plataformas-precisas/README.md).
+
 ## Revisão integral de 18/11/2026
 
 [PR draft 274](https://github.com/informach/sistema-zero/pull/274): revisão e correções,

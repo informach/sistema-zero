@@ -125,28 +125,24 @@ export function sceneObjectIntersectsBox(object: PintaSceneObject, box: SceneBox
   return false
 }
 
-/**
- * Continuous solid-tile query, including the actual transformed tiles of sets.
- * Traverses only cells covered by the inverse-transformed body, not a flattened
- * world grid or the corners of the body. No retained collider copy of the document.
- * Existing scene 1/2 game players retain their previous collision interpretation.
+/** Shared broad phase for solids and one-way floors. The visitor receives the
+ * actual authored geometry, including affine sets and inherited layer offsets.
+ * Returning true stops the traversal. No collider copy of the map is retained.
  */
-export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
+export function sceneVisitColliders(
+  scene: PintaScene,
+  box: SceneBox,
+  kind: 'solid' | 'platform',
+  visit: (object: PintaSceneObject) => boolean,
+): boolean {
   if (
     ![box.x, box.y, box.width, box.height].every(Number.isFinite) ||
     box.width <= 0 ||
     box.height <= 0
   )
     return false
-  if (
-    box.x < 0 ||
-    box.y < 0 ||
-    box.x + box.width > scene.cols * scene.tileSize ||
-    box.y + box.height > scene.rows * scene.tileSize
-  )
-    return true
   const tileSize = scene.tileSize
-  const queryTiles = (
+  const queryLayers = (
     layers: PintaScene['layers'],
     cols: number,
     rows: number,
@@ -174,19 +170,42 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
     const top = Math.min(...corners.map((p) => p.y)),
       bottom = Math.max(...corners.map((p) => p.y))
     for (const layer of layers) {
-      if (layer.kind !== 'tiles') continue
       const state = sceneLayerState(layers, layer)
       if (!state.visible) continue
+      if (layer.kind === 'objects' && kind === 'solid') {
+        for (const object of layer.objects) {
+          if (!object.collision) continue
+          const placed = { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
+          if (
+            visit(
+              parent
+                ? transformSceneSetObject(parent, placed, cols * tileSize, rows * tileSize, [])
+                : placed,
+            )
+          )
+            return true
+        }
+      }
+      if (layer.kind !== 'tiles') continue
       const tileset = scene.tilesets.find((t) => t.id === layer.tilesetId)
-      if (!tileset || (!layer.collision && !tileset.solid.length)) continue
-      const x0 = Math.max(0, Math.floor((left - state.offsetX) / tileSize)),
-        x1 = Math.min(cols, Math.ceil((right - state.offsetX) / tileSize))
-      const y0 = Math.max(0, Math.floor((top - state.offsetY) / tileSize)),
-        y1 = Math.min(rows, Math.ceil((bottom - state.offsetY) / tileSize))
+      if (
+        !tileset ||
+        (kind === 'solid'
+          ? !layer.collision && !tileset.solid.length
+          : layer.collision || !tileset.platform.length)
+      )
+        continue
+      // Include touching cells; the narrow phase decides penetration versus support.
+      const x0 = Math.max(0, Math.floor((left - state.offsetX - 1e-7) / tileSize)),
+        x1 = Math.min(cols, Math.ceil((right - state.offsetX + 1e-7) / tileSize))
+      const y0 = Math.max(0, Math.floor((top - state.offsetY - 1e-7) / tileSize)),
+        y1 = Math.min(rows, Math.ceil((bottom - state.offsetY + 1e-7) / tileSize))
       for (let row = y0; row < y1; row++)
         for (let col = x0; col < x1; col++) {
           const cell = layer.cells[row * cols + col] ?? -1
-          if (cell < 0 || (!layer.collision && !tileset.solid.includes(cell & 4095))) continue
+          if (cell < 0) continue
+          const solid = !!layer.collision || tileset.solid.includes(cell & 4095)
+          if (kind === 'solid' ? !solid : solid || !tileset.platform.includes(cell & 4095)) continue
           const tile: PintaSceneObject = {
             id: '',
             name: '',
@@ -199,11 +218,10 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
             shape: 'rect',
           }
           if (
-            sceneObjectIntersectsBox(
+            visit(
               parent
                 ? transformSceneSetObject(parent, tile, cols * tileSize, rows * tileSize, [])
                 : tile,
-              box,
             )
           )
             return true
@@ -211,37 +229,7 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
     }
     return false
   }
-  const queryObjects = (
-    layers: PintaScene['layers'],
-    cols: number,
-    rows: number,
-    parent?: PintaSceneObject,
-  ): boolean => {
-    for (const layer of layers) {
-      if (layer.kind !== 'objects') continue
-      const state = sceneLayerState(layers, layer)
-      if (!state.visible) continue
-      for (const object of layer.objects) {
-        if (!object.collision) continue
-        const placed = { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
-        if (
-          sceneObjectIntersectsBox(
-            parent
-              ? transformSceneSetObject(parent, placed, cols * tileSize, rows * tileSize, [])
-              : placed,
-            box,
-          )
-        )
-          return true
-      }
-    }
-    return false
-  }
-  if (
-    queryTiles(scene.layers, scene.cols, scene.rows) ||
-    queryObjects(scene.layers, scene.cols, scene.rows)
-  )
-    return true
+  if (queryLayers(scene.layers, scene.cols, scene.rows)) return true
   for (const layer of scene.layers) {
     if (layer.kind !== 'objects') continue
     const state = sceneLayerState(scene.layers, layer)
@@ -259,11 +247,136 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
       }
       // Child layers may extend beyond the nominal set through offsets. The cell
       // ranges below supply the broad phase without clipping those authored tiles.
-      if (queryTiles(set.layers, set.cols, set.rows, parent)) return true
-      if (queryObjects(set.layers, set.cols, set.rows, parent)) return true
+      if (queryLayers(set.layers, set.cols, set.rows, parent)) return true
     }
   }
   return false
+}
+
+/** Continuous full-body solid query. Existing scene 1/2 game players retain their
+ * previous interpretation; the editor and scene 3 use this authored geometry. */
+export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
+  if (
+    ![box.x, box.y, box.width, box.height].every(Number.isFinite) ||
+    box.width <= 0 ||
+    box.height <= 0
+  )
+    return false
+  if (
+    box.x < 0 ||
+    box.y < 0 ||
+    box.x + box.width > scene.cols * scene.tileSize ||
+    box.y + box.height > scene.rows * scene.tileSize
+  )
+    return true
+  return sceneVisitColliders(scene, box, 'solid', (object) => sceneObjectIntersectsBox(object, box))
+}
+
+/** One-way support in the direction of the game's gravity. Returns a resolved
+ * body on contact, or null when passing through/free. The actual upper/lower
+ * envelope of the tile over the body's width is used, including rotated sets.
+ * Call after solid motion, and omit it while the game requests dropping through.
+ * Gravity zero is a top-down game, with no one-way support.
+ */
+export function scenePlatformLanding(
+  scene: PintaScene,
+  previous: SceneBox,
+  desired: SceneBox,
+  gravity = 1,
+): SceneBox | null {
+  if (
+    ![
+      previous.x,
+      previous.y,
+      previous.width,
+      previous.height,
+      desired.x,
+      desired.y,
+      desired.width,
+      desired.height,
+      gravity,
+    ].every(Number.isFinite) ||
+    previous.width <= 0 ||
+    previous.height <= 0 ||
+    desired.width <= 0 ||
+    desired.height <= 0 ||
+    !gravity
+  )
+    return null
+  const direction = Math.sign(gravity),
+    epsilon = 1e-6
+  if ((desired.y - previous.y) * direction < -epsilon) return null
+  const query = {
+    x: Math.min(previous.x, desired.x),
+    y: Math.min(previous.y, desired.y),
+    width:
+      Math.max(previous.x + previous.width, desired.x + desired.width) -
+      Math.min(previous.x, desired.x),
+    height:
+      Math.max(previous.y + previous.height, desired.y + desired.height) -
+      Math.min(previous.y, desired.y),
+  }
+  if (![query.x, query.y, query.width, query.height].every(Number.isFinite)) return null
+  query.x -= epsilon
+  query.y -= epsilon
+  query.width += epsilon * 2
+  query.height += epsilon * 2
+  const choice: { box: SceneBox | null; wasSupported: boolean } = { box: null, wasSupported: false }
+  sceneVisitColliders(scene, query, 'platform', (tile) => {
+    const angle = ((tile.rotation ?? 0) * Math.PI) / 180,
+      cosine = Math.cos(angle),
+      sine = Math.sin(angle)
+    const local =
+      tile.shape === 'polygon'
+        ? (tile.points ?? [])
+        : [
+            { x: 0, y: 0 },
+            { x: tile.width, y: 0 },
+            { x: tile.width, y: tile.height },
+            { x: 0, y: tile.height },
+          ]
+    const points = local.map((p) => ({
+      x: tile.x + p.x * cosine - p.y * sine,
+      y: tile.y + p.x * sine + p.y * cosine,
+    }))
+    if (points.length < 3) return false
+    const surface = (body: SceneBox): number | null => {
+      const left = Math.max(body.x, Math.min(...points.map((p) => p.x))),
+        right = Math.min(body.x + body.width, Math.max(...points.map((p) => p.x)))
+      if (right - left <= 1e-9) return null
+      const heights: number[] = []
+      for (let i = 0; i < points.length; i++) {
+        const a = points[i]!,
+          b = points[(i + 1) % points.length]!
+        if (a.x >= left && a.x <= right) heights.push(a.y)
+        if (a.x === b.x) continue
+        for (const x of [left, right])
+          if (x >= Math.min(a.x, b.x) && x <= Math.max(a.x, b.x))
+            heights.push(a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x))
+      }
+      return heights.length ? (direction > 0 ? Math.min(...heights) : Math.max(...heights)) : null
+    }
+    const floor = surface(desired)
+    if (floor === null) return false
+    const oldFloor = surface(previous) ?? floor
+    const oldFeet = previous.y + (direction > 0 ? previous.height : 0),
+      feet = desired.y + (direction > 0 ? desired.height : 0)
+    if ((oldFeet - oldFloor) * direction > epsilon || (feet - floor) * direction < -epsilon)
+      return false
+    const candidate = { ...desired, y: floor - (direction > 0 ? desired.height : 0) }
+    if (!choice.box || (candidate.y - choice.box.y) * direction < 0) {
+      choice.box = candidate
+      choice.wasSupported = Math.abs(oldFeet - oldFloor) <= epsilon
+    }
+    return false
+  })
+  if (choice.box && sceneIntersectsBox(scene, choice.box)) {
+    // Check solids once after selecting the first surface, not once per tile.
+    // An ascending slope under a low ceiling must not lift a supported body
+    // into the ceiling or let it fall through its current floor.
+    return choice.wasSupported && !sceneIntersectsBox(scene, previous) ? { ...previous } : null
+  }
+  return choice.box
 }
 
 /** Axis-separated continuous motion. The swept rectangle contains the entire
