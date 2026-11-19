@@ -36,6 +36,24 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     },
     { type: 'consoleLog', value: value('mapObjectField', [ref('portaDaCabana'), str('name')]) },
     { type: 'consoleLog', value: ref('chaves') },
+    {
+      type: 'var',
+      name: 'portaPorReferencia',
+      value: value('mapObjectById', [str('mapa'), str('door')]),
+    },
+    {
+      type: 'var',
+      name: 'imagemDoMorador',
+      value: value('mapResourceImage', [str('mapa'), str('morador')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapLayerProperty', [str('mapa'), str('layer-0'), str('descricao')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapTileProperty', [str('mapa'), str('vila-pecas'), num(0), str('atrito')]),
+    },
     { type: 'var', name: 'naPorta', value: { type: 'bool', value: false } },
   ]
   const events: JSStatement[] = [
@@ -137,6 +155,10 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
         ],
       },
     }
+  // Metadado pedagógico somente na cópia do exemplo, sem alterar a arte de origem.
+  const assets = structuredClone(VILA_SCENE_ASSETS)
+  const ground = assets[0]?.scene?.layers.find((layer) => layer.id === 'layer-0')
+  if (ground) ground.properties = { ...ground.properties, descricao: 'Chão da vila' }
   return {
     name: target === 'g2d' ? 'A Vila e a Floresta' : 'A Vila e a Floresta (Avançado)',
     experience: 'game',
@@ -146,6 +168,6 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',
     ir,
-    assets: structuredClone(VILA_SCENE_ASSETS),
+    assets,
   }
 }

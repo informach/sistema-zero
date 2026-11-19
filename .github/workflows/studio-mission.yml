@@ -245,6 +245,8 @@ jobs:
         run: bunx playwright install --with-deps chromium
       - name: Build and verify the immutable Python distribution
         run: bun packages/studio/scripts/build-python-runtime.ts
+      - name: Prepare the pinned external game corpus in ignored cache
+        run: bun experiments/studio-python-runtime/prepare-game-corpus.ts
       - name: Product Python supervisor, provider, host policy, Classic and games
         working-directory: packages/studio
         env:

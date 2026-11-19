@@ -266,3 +266,27 @@ independentemente: a suíte principal primeiro, Pinta depois mesmo em falha.
 
 R1/R2 e as etapas profissionais permanecem abertas. Continuar implementação,
 sem tratar o checkpoint ou a aprovação parcial da CI como conclusão da missão.
+
+## Retomada após integrar 2ab6ff9479
+
+O merge 4bf685ecc integrou as cenas versionadas e os contratos de recursos.
+O relatório `docs/qa/2026-11-18-studio-remote-integration.md` registra as
+verificações. A explicação anterior do teste Pinta foi refinada no relatório
+de reabertura: o teste recarregava antes da conclusão assíncrona de Voltar;
+o upstream passou a aguardar a galeria. Quatorze fluxos de cenas e dois fluxos
+reais Estúdio/Pinta passaram localmente. Interrupção durante salvar continua
+sendo um requisito distinto.
+
+O run 44435310978 encontrou oito blocos de consulta de mapas sem exemplos e
+corpus Python não preparado. Correções, evidências e limites em
+`docs/qa/2026-11-18-studio-ci-review-followup.md`. A investigação de um clique
+intermitente revelou também perda de foco do menu em scroll/resize, reproduzida
+em teste antes da correção. Não se alteraram identidade visual ou caminhos.
+
+O laboratório de persistência profunda está preservado no stash
+`studio-v4-transport-lab-preserved`, criado na branch
+`estudio-deep-storage-v4-20261118`, base 4bf685ecc. Inclui plano, codec de grafo
+e transporte experimental; ainda faltam migração completa e qualificação nativa
+com dez mil blocos. O produto permanece no namespace v3. Não integrar o
+laboratório antes dessas verificações. Continuar por ele e pelos gates novos,
+mantendo os critérios globais R1/R2/R4/R5 abertos.

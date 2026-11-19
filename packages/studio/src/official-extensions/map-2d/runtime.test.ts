@@ -12,6 +12,7 @@ import {
 } from './bootstrap'
 import type { MapTwoDApi } from './contract'
 import { mapTwoDSource } from './runtime'
+import { pintaSceneExample } from './examples'
 
 const scene = {
   version: 1,
@@ -126,6 +127,20 @@ function tocador(
   }) as MapTwoDApi
   return { api, grades, colisoes: () => colisoes }
 }
+
+it('os exemplos dos dois motores leem referências, imagem, camada e peça do cenário real', () => {
+  for (const target of ['g2d', 'gk'] as const) {
+    const example = pintaSceneExample(target)
+    const map = example.assets?.find((asset) => asset.id === 'vila-e-floresta')
+    expect(map?.scene).toBeDefined()
+    const { api } = tocador(null, null, { meta: () => ({ scene: map!.scene }) })
+    api.createMapScene('mapa', 'vila-e-floresta')
+    expect(api.mapObjectById('mapa', 'door')?.name).toBe('Porta da cabana')
+    expect(api.mapResourceImage('mapa', 'morador')?.startsWith('data:image/')).toBe(true)
+    expect(api.mapLayerProperty('mapa', 'layer-0', 'descricao')).toBe('Chão da vila')
+    expect(api.mapTileProperty('mapa', 'vila-pecas', 0, 'atrito')).toBe(0.8)
+  }
+})
 
 it('scene references resolve inside their map without changing legacy property values', () => {
   const first = PintaSceneSchema.parse(scene)
