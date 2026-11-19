@@ -230,7 +230,7 @@ export async function commitProjectRecovery(
 ): Promise<void> {
   const { projectId: id, head, write, applications } = incoming
   const recoveryKey = projectRecoveryKey(id, head.writer)
-  const sources = (incoming.replacesRecovery ?? []).filter(
+  const sources = (incoming.incompleteBlocks ? [] : (incoming.replacesRecovery ?? [])).filter(
     (source) =>
       source.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`) && source.key !== recoveryKey,
   )
@@ -408,13 +408,21 @@ export async function recoverIndexedProjectWrites(
   knownKeys?: readonly IDBValidKey[],
   synchronousTokens: ReadonlySet<string> = new Set(),
   mustCopy?: (recovery: RecoveryWrite) => boolean,
+  deferRecovery?: (recovery: RecoveryWrite) => boolean,
 ): Promise<{ recovered: string[]; consumed: Set<string> }> {
   const keys = knownKeys ?? (await readAllKeys(scope.store))
   const prefix = projectId ? `${PROJECT_RECOVERY_PREFIX}${projectId}:` : PROJECT_RECOVERY_PREFIX
   if (!keys.some((key) => typeof key === 'string' && key.startsWith(prefix)))
     return { recovered: [], consumed: new Set() }
   const recovery = await import('./projectIndexedRecovery')
-  return recovery.recoverIndexedProjectWrites(scope, projectId, keys, synchronousTokens, mustCopy)
+  return recovery.recoverIndexedProjectWrites(
+    scope,
+    projectId,
+    keys,
+    synchronousTokens,
+    mustCopy,
+    deferRecovery,
+  )
 }
 
 /** Keep uncommon synchronous-journal decoding out of the initial project list. */

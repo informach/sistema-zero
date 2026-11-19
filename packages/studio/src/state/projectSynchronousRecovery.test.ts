@@ -5,9 +5,11 @@ import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
 import {
   bindProjectToDurableHead,
   coordinatedProjectWrite,
+  loadRecoverableProjectDraft,
   projectExitRecoveryStatus,
   recoverProjectWrites,
   stageProjectExit,
+  type RecoveryWrite,
 } from './projectStorageCoordinator'
 import {
   PROJECT_META_KEY_PREFIX,
@@ -25,7 +27,8 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { readSynchronousExitJournal, stageSynchronousExitJournal } from './synchronousExitJournal'
+import { stageSynchronousExitJournal } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournal'
 
 async function fixture() {
   const identity = `sync-recovery-${crypto.randomUUID()}`
@@ -123,6 +126,119 @@ test('a reused token with different native and synchronous payloads preserves bo
     expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
       entry,
     ])
+  } finally {
+    f.close()
+  }
+})
+
+for (const mode of ['native', 'synchronous-only', 'confirmed-save'] as const)
+  test(`a confirmed descendant retires its exact synchronous ancestor: ${mode}`, async () => {
+    const f = await fixture()
+    try {
+      const parent = Object.assign(f.edit('pending parent'), {
+        futureMetadata: { retained: 'source revision', disabled: false },
+      })
+      await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.scope)
+      // The editor fallback is available when promotion was interrupted but its journal survived.
+      const recovered = await loadRecoverableProjectDraft(f.scope, parent.id)
+      if (!recovered) throw new Error('Missing preserved draft')
+      const child = advanceLocalRevision(recovered, { ...recovered, name: 'Latest descendant' })
+      await stageProjectExit(
+        child,
+        { puts: projectStorageEntries(child) },
+        mode === 'synchronous-only' ? f.failed : f.scope,
+      )
+      expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(
+        2,
+      )
+      if (mode === 'confirmed-save')
+        await coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope)
+      expect(await recoverProjectWrites(f.scope, child.id)).toEqual(
+        mode === 'confirmed-save' ? [] : [child.id],
+      )
+      expect(await readValue(f.scope.store, projectMetaKey(child.id))).toMatchObject({
+        name: 'Latest descendant',
+        futureMetadata: parent.futureMetadata,
+      })
+      const metas = (await readAllKeys(f.scope.store)).filter(
+        (key) => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
+      )
+      expect(metas).toEqual([projectMetaKey(child.id)])
+      expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+    } finally {
+      f.close()
+    }
+  })
+
+test('retiring an ancestor cannot acknowledge an unrelated writer that reused its token', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('pending parent')
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.scope)
+    const parentEntry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const recovered = await loadRecoverableProjectDraft(f.scope, parent.id)
+    if (!recovered) throw new Error('Missing preserved draft')
+    const child = advanceLocalRevision(recovered, { ...recovered, name: 'Latest descendant' })
+    await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
+    const unrelated = structuredClone(parentEntry.value) as RecoveryWrite
+    unrelated.head.writer = 'independent-writer'
+    unrelated.write = {
+      ...unrelated.write,
+      puts: unrelated.write.puts!.map(([key, value]) => [
+        key,
+        key === projectMetaKey(parent.id)
+          ? { ...(value as object), name: 'Independent actor' }
+          : value,
+      ]),
+    }
+    stageSynchronousExitJournal(
+      f.scope.exitJournalStorage,
+      f.scope.identity,
+      {
+        projectId: parent.id,
+        writer: unrelated.head.writer,
+        token: unrelated.head.token,
+      },
+      unrelated,
+    )
+    const ids = await recoverProjectWrites(f.scope, parent.id)
+    expect(ids).toHaveLength(2)
+    const copy = ids.find((id) => id !== parent.id)!
+    expect(await readValue(f.scope.store, projectMetaKey(copy))).toMatchObject({
+      name: 'Independent actor (edição recuperada)',
+    })
+    expect(await readValue(f.scope.store, projectMetaKey(parent.id))).toMatchObject({
+      name: 'Latest descendant',
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+  } finally {
+    f.close()
+  }
+})
+
+test('an incomplete descendant preserves the original ancestor journal and its exit mirror', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('pending parent')
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.scope)
+    const parentEntry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const recovered = await loadRecoverableProjectDraft(f.scope, parent.id)
+    if (!recovered) throw new Error('Missing preserved draft')
+    const child = advanceLocalRevision(recovered, { ...recovered, name: 'Incomplete descendant' })
+    const puts = projectStorageEntries(child).filter(
+      ([key]) => !String(key).includes('project-blocks:'),
+    )
+    await stageProjectExit(child, { puts }, f.scope, true)
+    await recoverProjectWrites(f.scope, child.id)
+    expect(
+      await readValue(f.scope.store, projectRecoveryKey(parent.id, parentEntry.writer)),
+    ).toEqual(parentEntry.value)
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toContainEqual(
+      parentEntry,
+    )
+    expect(await readValue(f.scope.store, projectMetaKey(parent.id))).toMatchObject({
+      name: 'Incomplete descendant',
+    })
   } finally {
     f.close()
   }

@@ -118,3 +118,8 @@ export function nativeRecovery(value: unknown, key: string): RecoveryWrite {
     token: record.head.token,
   })
 }
+
+/** Identity of the exact staged revision, including its writer and project. */
+export function recoverySourceIdentity(source: { key: string; token: string }): string {
+  return JSON.stringify([source.key, source.token])
+}

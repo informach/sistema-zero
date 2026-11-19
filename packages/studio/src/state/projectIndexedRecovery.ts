@@ -33,6 +33,7 @@ export async function recoverIndexedProjectWrites(
   knownKeys?: readonly IDBValidKey[],
   synchronousTokens: ReadonlySet<string> = new Set(),
   mustCopy?: (recovery: RecoveryWrite) => boolean,
+  deferRecovery?: (recovery: RecoveryWrite) => boolean,
 ): Promise<{ recovered: string[]; consumed: Set<string> }> {
   const keys = (knownKeys ?? (await readAllKeys(scope.store))).filter(
     (key): key is string =>
@@ -43,7 +44,7 @@ export async function recoverIndexedProjectWrites(
   )
   const values = await readValues(scope.store, keys)
   if (!keys.length) return { recovered: [], consumed: new Set() }
-  const { nativeRecovery } = await import('./projectRecoveryGuards')
+  const { nativeRecovery, recoverySourceIdentity } = await import('./projectRecoveryGuards')
   const { localSnapshotsEqual } = await import('../project-migrations/localTransaction')
   const { prepareEditableStudioProject } = await import('./editableProjectValidation')
   const valid: RecoveryWrite[] = []
@@ -59,18 +60,30 @@ export async function recoverIndexedProjectWrites(
   }
   const recovered: string[] = []
   const consumed = new Set<string>()
+  const sourceOf = (recovery: RecoveryWrite) =>
+    recoverySourceIdentity({
+      key: projectRecoveryKey(recovery.projectId, recovery.head.writer),
+      token: recovery.head.token,
+    })
+  const confirmed = (recovery: RecoveryWrite) => {
+    consumed.add(sourceOf(recovery))
+    if (!recovery.incompleteBlocks)
+      for (const source of recovery.replacesRecovery ?? [])
+        consumed.add(recoverySourceIdentity(source))
+  }
   for (const recovery of latestRecoveries(valid)) {
+    if (deferRecovery?.(recovery)) continue
     try {
       if (mustCopy?.(recovery)) throw new ProjectWriteConflict()
       await commitProjectRecovery(
         scope,
         recovery,
         conditionalGeneration(scope.identity),
-        synchronousTokens.has(recovery.head.token),
+        synchronousTokens.has(sourceOf(recovery)),
         (stored) => localSnapshotsEqual(stored, recovery),
       )
       recovered.push(recovery.projectId)
-      consumed.add(recovery.head.token)
+      confirmed(recovery)
     } catch (error) {
       // One failed recovery (quota, incompatible journal or corrupt draft) must not
       // prevent access to the committed document or the rest of the profile.
@@ -81,7 +94,8 @@ export async function recoverIndexedProjectWrites(
           const [remaining] = await readValues(scope.store, [
             projectRecoveryKey(recovery.projectId, recovery.head.writer),
           ])
-          if (copied || remaining === undefined) consumed.add(recovery.head.token)
+          if (copied) confirmed(recovery)
+          else if (remaining === undefined) consumed.add(sourceOf(recovery))
         } catch {
           /* The complete original draft stays in its recovery partition. */
         }

@@ -1,3 +1,4 @@
+import { projectMetadataSnapshot } from '../core/projectMetadata'
 import type { StudioProjectDocument } from '@sistemazero/core/studio/project-document'
 import type { Project } from '../core/project'
 import {
@@ -15,6 +16,7 @@ export type StoredProjectRecord = Record<string, unknown> & { id: string }
 
 export function projectToMetaRecord(project: StorableProjectDocument) {
   return {
+    ...projectMetadataSnapshot(project).metadata,
     id: project.id,
     name: project.name,
     createdAt: project.createdAt,
