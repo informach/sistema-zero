@@ -152,6 +152,9 @@ export const COPY = {
     terrenoInteligente: 'Terreno inteligente',
     terreno: 'Terreno',
     pintarPecaPorPeca: 'Pintar peça por peça',
+    choosePreparedTerrain: 'Escolha um terreno para pintar com as bordas prontas.',
+    paintTerrainColor: (name: string, index: number) => `Pintar ${name}, cor ${index}`,
+    terrainPaintColors: 'Cores do terreno',
     novoTerreno: 'Novo terreno',
     prepararAsPecasDoTerreno: 'Preparar as peças do terreno',
     nome: 'Nome',
@@ -499,6 +502,10 @@ export const COPY = {
       'fase-plataforma': {
         title: 'Fase de plataforma',
         description: 'Um mapa pronto para explorar (já vem com as peças).',
+      },
+      'bosque-terrenos': {
+        title: 'Bosque com terrenos',
+        description: 'Grama, terra, água, areia e pedra com bordas prontas.',
       },
       fantasminha: { title: 'Fantasminha', description: 'Um fantasma de formas que flutua.' },
       'ceu-com-sol': { title: 'Céu com sol', description: 'Um cenário de dia, feito de formas.' },

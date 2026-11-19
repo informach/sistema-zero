@@ -43,9 +43,17 @@ export function MapTerrainPanel({
   show?: { animation: boolean; terrain: boolean; scatter: boolean }
 }): JSX.Element {
   const fieldId = useId()
-  const { editor } = useEditorStores(),
+  const { editor, session } = useEditorStores(),
     terrain = tileset.terrains?.find((t) => t.id === settings.terrainId)
   const update = (patch: Partial<MapBrushSettings>): void => onChange({ ...settings, ...patch })
+  function resumePainting(): void {
+    const state = session.getState()
+    if (state.tool === 'eraser' || state.tool === 'picker') state.setTool('pencil')
+  }
+  function chooseColor(color: number): void {
+    update({ color })
+    resumePainting()
+  }
   function save(t: TileTerrain): void {
     const state = editor.getState()
     const next = setTilesetTerrain(tileset, t)
@@ -61,7 +69,10 @@ export function MapTerrainPanel({
             aria-label={COPY.scene.terreno}
             className={FIELD}
             value={settings.terrainId}
-            onChange={(e) => update({ terrainId: e.target.value, scatter: false })}
+            onChange={(e) => {
+              update({ terrainId: e.target.value, color: 1, scatter: false })
+              resumePainting()
+            }}
           >
             <option value="">{COPY.scene.pintarPecaPorPeca}</option>
             {tileset.terrains?.map((t) => (
@@ -70,6 +81,24 @@ export function MapTerrainPanel({
               </option>
             ))}
           </select>
+          {terrain ? (
+            <fieldset className="my-2 flex min-w-0 flex-wrap gap-1.5 border-0 p-0">
+              <legend className="sr-only">{COPY.scene.terrainPaintColors}</legend>
+              {Object.entries(terrain.colors).map(([colorId, color]) => (
+                <button
+                  key={`${terrain.id}:${colorId}`}
+                  type="button"
+                  className="pin-swatch"
+                  style={{ backgroundColor: color }}
+                  aria-pressed={settings.color === Number(colorId) + 1}
+                  aria-label={COPY.scene.paintTerrainColor(terrain.name, Number(colorId) + 1)}
+                  onClick={() => chooseColor(Number(colorId) + 1)}
+                />
+              ))}
+            </fieldset>
+          ) : tileset.terrains?.length ? (
+            <p className="mt-2 text-xs text-pin-muted">{COPY.scene.choosePreparedTerrain}</p>
+          ) : null}
           <Button
             variant="barOutline"
             className="mt-2 w-full"
@@ -82,7 +111,7 @@ export function MapTerrainPanel({
                 tiles: {},
               }
               save(t)
-              update({ terrainId: t.id, scatter: false })
+              update({ terrainId: t.id, color: 1, scatter: false })
             }}
           >
             {COPY.scene.novoTerreno}
@@ -178,7 +207,7 @@ export function MapTerrainPanel({
                 aria-label={COPY.scene.corParaPintarOTerreno}
                 className={FIELD}
                 value={settings.color}
-                onChange={(e) => update({ color: Number(e.target.value) })}
+                onChange={(e) => chooseColor(Number(e.target.value))}
               >
                 {Object.entries(terrain.colors).map(([index, c]) => (
                   <option key={index} value={Number(index) + 1}>

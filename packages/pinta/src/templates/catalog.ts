@@ -6,6 +6,7 @@
  * tudo é dado embutido (arte ASCII + shapes).
  */
 import type { PintaAsset, PintaAssetRole, PintaAssetStyle } from '../core/project'
+import { bosqueTerrenosTemplate } from './data/bosque-terrenos'
 import { ceuComSolTemplate } from './data/ceu-com-sol'
 import { chaoDeGramaTemplate } from './data/chao-de-grama'
 import { fantasminhaTemplate } from './data/fantasminha'
@@ -16,6 +17,7 @@ import { naveTemplate } from './data/nave'
 import { slimeTemplate } from './data/slime'
 
 export type PintaTemplateId =
+  | 'bosque-terrenos'
   | 'heroi'
   | 'slime'
   | 'moeda'
@@ -50,6 +52,7 @@ export const PINTA_TEMPLATES: readonly PintaTemplate[] = [
   naveTemplate,
   chaoDeGramaTemplate,
   fasePlataformaTemplate,
+  bosqueTerrenosTemplate,
   fantasminhaTemplate,
   ceuComSolTemplate,
 ]
