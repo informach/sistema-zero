@@ -36,7 +36,13 @@ for (const [name, engine] of [
         await ownedServer.kill()
         throw error
       })
-    : await engine.launch({ headless: true })
+    : await engine.launch({
+        headless: true,
+        // Opcional, como no resto da suíte: um Chromium de outra revisão que a do pacote.
+        ...(name === 'chromium' && process.env.PW_CHROMIUM
+          ? { executablePath: process.env.PW_CHROMIUM }
+          : {}),
+      })
   phase('launched')
   const lifecycleSamples = []
   try {
