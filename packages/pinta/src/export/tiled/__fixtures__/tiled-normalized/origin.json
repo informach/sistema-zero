@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-19T22:49:01.825Z",
+  "tiledVersion": "1.12.2",
+  "binarySha256": "f6da55b3f236b600a46f522eeffcac8281251c8eda21255e401d6b186461a97a",
+  "sourceContract": "pinta:atlas and pinta:emptyTiles were inserted into source.tmj before native conversion; production exporter not yet changed",
+  "commands": [
+    "tiled --export-map tmx source.tmj normalized.tmx",
+    "tiled --export-map json normalized.tmx normalized.tmj"
+  ],
+  "checksums": {
+    "source.tmj": "39dedeab9be86816fd3ad36da5310d79e6de5b2c4fe9ab57b96878f114b7f97d",
+    "normalized.tmx": "26785cdda7a1d36fd10b7a591be9927aba55c9e59c9788a970c6ce076de40563",
+    "normalized.tmj": "ecfe7ced5558259ac60aa4b5dcf624abfae02cb41e8dadf577ac35c21b595e0f",
+    "images/tiles-0.png": "8889066931675efe5ef9ec10a862b039277a842328e68b7681b9422dd9d2ace5",
+    "images/tiles-1.png": "b7331b4218b3656c3d092ecb2d0d2bb4acf33e21d95e5fa0d500aa9cf5d7ed22"
+  }
+}

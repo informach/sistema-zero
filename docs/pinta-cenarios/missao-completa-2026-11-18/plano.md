@@ -114,9 +114,16 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   e limites em `qa/pintura-por-teclado-2026-11-19/README.md` e guia em
   `pintura-por-teclado.md`. O ciclo autenticado permanece na etapa 0b;
   esses perfis não comprovam uso em aparelhos físicos adicionais ou com crianças.
-- [ ] 7a. Evoluir contratos externos e fixtures para dados novos: Tiled JSON/TMX/TSX reais,
+- [x] 7a. Evoluir contratos externos e fixtures para dados novos: Tiled JSON/TMX/TSX reais,
   pacotes Phaser/Pygame e Godot; preservar PNG/SVG/.pinta.json/ZIP e relatórios de conversão.
-- [ ] 7b. Executar ferramentas nativas e Godot com render visual; repetir round-trip e jogos.
+- [x] 7b. Executar ferramentas nativas e Godot com render visual; repetir round-trip e jogos.
+  Tiled 1.12.2 revelou normalização de atlas e regras Wang zero; corrigidos metadados
+  conservadores e GIDs, com fixture nativa e proteção das edições externas. Suíte Pinta
+  com 2.216 aprovados sem omissões; dez conversões nativas, dez ensaios Phaser,
+  Pygame real e quatro projetos Godot (dois com GPU) aprovados. Provas e limites em
+  `qa/motores-externos-2026-11-19/README.md`. O comando oficial agora pode exigir
+  os três programas instalados. Projeções e chunks expansíveis pertencem à etapa 8;
+  publicação e atualização autenticadas continuam nas etapas 0b/9.
 - [ ] 8a. Documento e persistência incremental por chunks, cache/culling estritamente orçados,
   navegação, mapas expansíveis e recuperação; medir heap, buffers e tempo, sem prometer hardware.
 - [ ] 8b. Automapping em várias camadas: regras autorais, prévia, determinismo e histórico.

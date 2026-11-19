@@ -24,7 +24,7 @@ it('Tiled usa objetos separados para imagem e contorno elíptico, sem perder a a
   if (layer?.kind !== 'objects') throw new Error('Objetos ausentes')
   const ellipse = layer.objects.find((o) => o.id === 'ellipse')!
   ellipse.art = { assetId: scene.tilesets[0]!.id, tile: 0 }
-  const exported = tiledMap(scene)
+  const exported = await tiledMap(scene)
   const all = (layers: Record<string, unknown>[]): Record<string, unknown>[] =>
     layers.flatMap((l) =>
       l.type === 'group'
@@ -57,7 +57,7 @@ it('cena 3 conserva contornos, conjuntos e opção física em JSON e TMX/TSX rea
     (id) => assets.find((a) => a.id === id) ?? null,
     nativeImageOf,
   )
-  const exported = tiledMap(scene),
+  const exported = await tiledMap(scene),
     resolver = resolverOf(scene)
   for (const document of [exported, tiledXmlToJson(tiledMapXml(exported, true))]) {
     const imported = await importTiledScene(document, resolver)
@@ -126,7 +126,7 @@ it('A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário', asyn
       (id) => assets.find((a) => a.id === id) ?? null,
       nativeImageOf,
     )
-  const json = tiledMap(scene),
+  const json = await tiledMap(scene),
     sheets = json.tilesets as Record<string, unknown>[]
   const image = async (path: string) => {
     const match = path.match(/(tiles|art)-(\d+)\.png$/)
@@ -137,7 +137,8 @@ it('A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário', asyn
   }
   const resolver = {
     image,
-    text: async (path: string) => tiledTilesetXml(sheets[Number(path.match(/tiles-(\d+)/)?.[1])]!),
+    text: async (path: string) =>
+      tiledTilesetXml((await sheets)[Number(path.match(/tiles-(\d+)/)?.[1])]!),
   }
   const fromJson = await importTiledScene(json, resolver)
   const fromXml = await importTiledScene(tiledXmlToJson(tiledMapXml(json, true)), resolver)
@@ -198,7 +199,7 @@ async function referencia() {
   return { scene, resolver: resolverOf(scene) }
 }
 function resolverOf(scene: PintaScene) {
-  const sheets = tiledMap(scene).tilesets as Record<string, unknown>[]
+  const sheets = tiledMap(scene).then((map) => map.tilesets as Record<string, unknown>[])
   return {
     image: async (path: string) => {
       const match = path.match(/(tiles|art)-(\d+)\.png$/)
@@ -207,7 +208,10 @@ function resolverOf(scene: PintaScene) {
         match[1] === 'tiles' ? scene.tilesets[Number(match[2])] : scene.art?.[Number(match[2])]
       )!.image
     },
-    text: async (path: string) => tiledTilesetXml(sheets[Number(path.match(/tiles-(\d+)/)?.[1])]!),
+    text: async (path: string) => {
+      const all = await sheets
+      return tiledTilesetXml(all[Number(path.match(/tiles-(\d+)/)?.[1])]!)
+    },
   }
 }
 type Encoding = 'csv' | 'base64' | 'zlib' | 'gzip'
@@ -250,7 +254,7 @@ function xmlWith(xml: string, encoding: Encoding): string {
 for (const encoding of ['csv', 'base64', 'zlib', 'gzip'] as const)
   it(`a cena inteira volta igual com as camadas em ${encoding}, em JSON e em TMX`, async () => {
     const { scene, resolver } = await referencia(),
-      json = tiledMap(scene)
+      json = await tiledMap(scene)
     const fromJson = await importTiledScene(jsonWith(json, encoding), resolver)
     expect(fromJson.warnings).toEqual([])
     expect(fromJson.scene).toEqual(scene)
@@ -289,7 +293,7 @@ it('grupos dentro de grupos voltam com pais, opacidade, deslocamento e parallax'
       ...base.layers.filter((l) => l.parentId || l.kind === 'group'),
     ],
   }
-  const json = tiledMap(scene),
+  const json = await tiledMap(scene),
     resolver = resolverOf(scene)
   const tree = (
     json.layers as { name: string; layers?: { name: string; layers?: unknown[] }[] }[]
@@ -324,7 +328,7 @@ it('uma propriedade de várias linhas e com sinais do XML atravessa o TMX sem mu
         : l,
     ),
   }
-  const xml = tiledMapXml(tiledMap(scene), true)
+  const xml = tiledMapXml(await tiledMap(scene), true)
   expect(xml).toContain('&#10;Segunda linha&#9;com tabulação&#13;&#10;&quot;aspas&quot;')
   const result = await importTiledScene(tiledXmlToJson(xml), resolverOf(scene))
   expect(result.warnings).toEqual([])

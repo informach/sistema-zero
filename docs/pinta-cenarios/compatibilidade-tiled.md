@@ -1,6 +1,6 @@
 # Compatibilidade com o Tiled
 
-Revisado em 18/11/2026. O importador aceita mapas ortogonais de tamanho fixo em JSON ou TMX,
+Revisado em 19/11/2026. O importador aceita mapas ortogonais de tamanho fixo em JSON ou TMX,
 com folhas embutidas ou externas (TSX e JSON). A galeria recebe os arquivos do mapa e as
 dependências, ou um ZIP, em **Trazer mapa**. A escolha do mapa e o relatório de conversão
 aparecem antes de fechar.
@@ -10,6 +10,11 @@ As comparações e os limites dessa prova constam no [QA](revisao-2026-11-18/qa.
 A compatibilidade abaixo também é conferida pelos testes de `packages/pinta/src/export/tiled/`.
 Os arquivos em `__fixtures__/tiled-real/` foram escritos à mão seguindo o formato do Tiled 1.10;
 não saíram do programa.
+
+A revisão de 19/11 exercitou os dois sentidos de conversão no Tiled 1.12.2:
+cinco mapas em quatro pacotes, dez conversões, cena inteira igual e nenhum aviso.
+A fixture `__fixtures__/tiled-normalized/` contém saídas do programa real e os
+hashes dos arquivos. [Reprodução e provas](missao-completa-2026-11-18/qa/motores-externos-2026-11-19/README.md).
 
 Referências de objeto usam IDs numéricos externos em objetos, camadas e metadados de peças;
 a importação as religa aos IDs nativos. Referências locais em conjuntos recebem o namespace
@@ -86,6 +91,14 @@ recusam esse caso. Isso não é suporte universal a todo arquivo do Tiled.
 Um erro que não esteja nesta lista aparece como um recado geral, nunca como texto técnico.
 
 ## Ida e volta
+
+O Tiled pode completar a última linha de um atlas e omitir regras Wang com
+oito valores zero. O Pinta reserva o espaço físico completo nos GIDs e grava
+`pinta:atlas` versão 1 e `pinta:emptyTiles`. A contagem autoral só é restaurada
+quando a imagem continua idêntica e nenhuma referência usa o preenchimento.
+Pintar a imagem, usar uma peça adicional ou editar uma regra no Tiled conserva
+a edição. Remover as propriedades `pinta:*` remove essa informação de origem.
+Metadados inválidos ou de versão desconhecida são recusados com mensagem.
 
 Propriedades `pinta:*` conservam identificações, papéis, frente, colisão e conjuntos. Os testes
 de ida e volta comparam a cena inteira (`toEqual`) em JSON, TMX com folha externa e TMX com

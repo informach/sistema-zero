@@ -7,10 +7,11 @@
  * Sai com erro em qualquer diferença. O ensaio com pygame de verdade só roda quando o pygame-ce
  * está instalado; sem ele a linha sai como "não realizado" (com `--exigir-pygame`, vira erro).
  * GODOT=<executável> também confere o projeto no motor real; --exigir-godot torna isso obrigatório.
- * Tiled (programa) e navegador NÃO são executados aqui.
+ * TILED=<executável> confere JSON e TMX no programa real; --exigir-tiled exige esse ensaio.
+ * O navegador NÃO é executado aqui.
  */
 import { spawnSync } from 'node:child_process'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
@@ -32,6 +33,44 @@ try {
   const tiled = await verifyTiledPackage(join(temp, 'tiled'))
   problems.push(...tiled)
   if (!tiled.length) done('Tiled: JSON e TMX de cada mapa voltam iguais pelo importador do Pinta')
+
+  if (process.env.TILED) {
+    const folder = join(temp, 'tiled')
+    const scenes = Object.keys(JSON.parse(await readFile(join(folder, 'maps.json'), 'utf8')))
+    for (const index of scenes.keys()) {
+      const map = join(folder, `mapas/mapa-${index}`)
+      for (const [format, input, output] of [
+        ['json', 'mapa.tmx', 'mapa-nativo.json'],
+        ['tmx', 'mapa.json', 'mapa-nativo.tmx'],
+      ] as const) {
+        const exported = spawnSync(
+          process.env.TILED,
+          ['--export-map', format, join(map, input), join(map, output)],
+          { encoding: 'utf8', timeout: 30_000, windowsHide: true },
+        )
+        if (exported.status !== 0)
+          throw new Error(`Tiled real: ${exported.error ?? exported.stderr ?? exported.status}`)
+        // O executável GUI do Windows pode devolver o controle antes de fechar o arquivo.
+        let ready = false
+        for (let attempt = 0; attempt < 100; attempt++) {
+          try {
+            ready = (await readFile(join(map, output))).length > 0
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+          }
+          if (ready) break
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        }
+        if (!ready) throw new Error(`Tiled real: não produziu ${output} no prazo.`)
+      }
+    }
+    const converted = await verifyTiledPackage(folder, ['mapa-nativo.json', 'mapa-nativo.tmx'])
+    problems.push(...converted)
+    if (!converted.length)
+      done(`Tiled real: ${scenes.length * 2} conversões, cena inteira igual e nenhum aviso`)
+  } else if (process.argv.includes('--exigir-tiled'))
+    problems.push('Tiled: configure TILED com o executável da versão-alvo.')
+  else console.log('não realizado  Tiled real: TILED não foi configurado')
 
   const phaser = await checkPhaser()
   problems.push(...phaser)
@@ -87,7 +126,7 @@ try {
   } else if (process.argv.includes('--exigir-godot'))
     problems.push('Godot: configure GODOT com o executável da versão-alvo.')
   else console.log('não realizado  Godot real: GODOT não foi configurado')
-  console.log('não realizado  Tiled (programa) e navegador: este script não os executa')
+  console.log('não realizado  navegador: este script não o executa')
 } finally {
   await rm(temp, { recursive: true, force: true })
 }

@@ -1,0 +1,123 @@
+bun test v1.3.11 (af24e281)
+
+src\export\homologacao.test.ts:
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 1, criar: a referência é a descrita e todo desenho passa no portão do documento [31.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 2, camadas: o grupo passa visibilidade, opacidade, deslocamento e parallax aos filhos
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 3, peças viradas: a cena guarda espelho e giro dentro da célula
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 4, terreno e animação: o terreno e a peça animada chegam inteiros à cena
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 5, objetos e conjunto: formas, papéis, propriedades tipadas e a instância do conjunto
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 6, guardar e restaurar em arquivo: o .pinta.json devolve os mesmos desenhos e a mesma cena [32.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 7, testar: o início é livre, existe parede, e as portas ligam a Vila e a Cabana nos dois sentidos
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 8, Estúdio: a cena do envio passa no esquema, cabe no orçamento e é a do exemplo publicado [31.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 10, levar para fora: Tiled em JSON e em TMX volta igual, e o pacote leva os dois mapas [94.00ms]
+
+src\export\sceneResources.test.ts:
+(pass) a cena guarda versões, recursos lógicos e todas as animações, sem promover cenas antigas
+(pass) o compositor desenha pixels de quadros diferentes e prende o último quando não repete [15.00ms]
+(pass) JSON e TMX Tiled conservam animações específicas e versões no round-trip editável
+(pass) Tiled não anima a cópia estática de um sprite usado também por uma instância animada [16.00ms]
+
+src\export\tiled\import.test.ts:
+(pass) propriedades > no TMX, texto que parece número ou verdadeiro/falso continua texto
+(pass) propriedades > no JSON, o tipo da propriedade decide a conversão
+(pass) propriedades > nome inválido, texto comprido, tipo próprio do Tiled e excesso entram no relatório
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > nome de camada com 60 letras é encurtado para 48 e avisado
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > quadro de animação com menos de 16 ms vira 16 ms, com aviso
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > mapa sem folha de peças
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > mais de 32 camadas [15.00ms]
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > mais de 512 objetos numa camada
+(pass) o que o esquema recusava em inglês agora vira frase ou ajuste com aviso > arquivo que não é um mapa
+(pass) limites de leitura do formato do mapa > colunas, linhas e peças fora do teto
+(pass) limites de leitura do formato do mapa > margem ou espaçamento na folha são recusados
+(pass) limites de leitura do formato do mapa > grupos além de quatro níveis
+(pass) limites de leitura do formato do mapa > deslocamento de camada e lugar de objeto longe demais
+(pass) limites de leitura do formato do mapa > opacidade e parallax fora da faixa são ajustados com aviso
+(pass) limites de leitura do formato do mapa > gid acima da última peça da folha, em camada e em objeto
+(pass) limites de leitura do formato do mapa > descrição de peça, animação e terreno que apontam para fora da folha
+(pass) recusas de formato > mapa infinito, isométrico, hexagonal e escalonado [16.00ms]
+(pass) recusas de formato > camada compactada com zstd
+(pass) recusas de formato > DTD e ENTITY no XML
+(pass) camada compactada > zlib: do tamanho certo entra; maior ou menor que o mapa é recusada [16.00ms]
+(pass) camada compactada > gzip: do tamanho certo entra; maior ou menor que o mapa é recusada
+(pass) camada compactada > bomba de descompactação é cortada no tamanho do mapa, sem inflar tudo [1390.00ms]
+(pass) camada compactada > dados corrompidos, base64 sem compactar de tamanho errado e CSV curto
+(pass) objeto de peça com espelhos e o bit diagonal > as oito combinações caem no mesmo lugar que o Tiled desenha, com giro e caixa não quadrada
+(pass) objeto de peça com espelhos e o bit diagonal > o importador grava giro, caixa e espelhos, sem aviso e sem perder a peça
+(pass) relatório do que não foi convertido > modelo, objeto escondido, texto, classe da camada e cor de fundo
+(pass) relatório do que não foi convertido > no TMX: modelo, texto, cor de fundo, classe e objeto escondido também avisam
+(pass) relatório do que não foi convertido > camada escondida continua escondida (não é perda)
+(pass) relatório do que não foi convertido > detalhes da folha: chance, formas de colisão, classe, alinhamento, deslocamento e cor transparente
+(pass) relatório do que não foi convertido > camada com duas folhas vira duas camadas, com aviso
+(pass) conversão para os desenhos do Pinta > folhas, arte, conjuntos e mapa saem todos pelo portão do documento [32.00ms]
+(pass) conversão para os desenhos do Pinta > tamanho de peça que o Pinta não edita e imagem menor que a folha são recusados com frase
+
+src\export\tiled\normalizedTiled.test.ts:
+(pass) conserva a cena inteira após a normalização real do Tiled em normalized.tmj
+(pass) conserva a cena inteira após a normalização real do Tiled em normalized.tmx [15.00ms]
+(pass) reserva o preenchimento físico do atlas no GID da próxima folha
+(pass) exporta o snapshot do atlas parcial e as regras de terreno que o Tiled omite
+(pass) o exportador usa a entrada que foi validada pela ferramenta nativa
+(pass) conserva uma peça adicional usada em célula pintada
+(pass) conserva uma peça adicional usada em arte de objeto
+(pass) conserva uma peça adicional usada em colisão
+(pass) conserva uma peça adicional usada em plataforma
+(pass) conserva uma peça adicional usada em propriedade de peça
+(pass) conserva uma peça adicional usada em quadro de animação
+(pass) conserva uma peça adicional usada em cabeçalho de animação
+(pass) conserva uma peça adicional usada em regra de terreno
+(pass) conserva uma peça adicional usada em conjunto ainda não posicionado
+(pass) não sobrescreve uma regra não nula criada no Tiled
+(pass) conserva novos pixels fora da contagem original também no documento nativo [16.00ms]
+(pass) aceita uma folha recortada sem reaplicar sua contagem antiga
+(pass) recusa versão desconhecida antes de aceitar a conversão
+(pass) recusa JSON incompleto antes de aceitar a conversão
+(pass) recusa origem acima do orçamento antes de aceitar a conversão
+(pass) recusa índices ou orçamento inválidos das regras de origem
+(pass) recusa índices ou orçamento inválidos das regras de origem
+(pass) recusa índices ou orçamento inválidos das regras de origem
+(pass) restaura o atlas dentro do orçamento completo de células e 32 camadas [765.00ms]
+
+src\export\tiled\package.test.ts:
+(pass) caminhos dentro do pacote > normaliza pastas e barras
+(pass) caminhos dentro do pacote > recusa sair da pasta, caminho absoluto e endereço de internet
+(pass) ZIP > lê o pacote, acha o mapa e resolve a folha e a imagem em relação a cada arquivo [16.00ms]
+(pass) ZIP > entrada do ZIP com ../, caminho absoluto ou endereço é recusada antes de abrir
+(pass) ZIP > o mapa que aponta para fora do pacote não lê nada de fora
+(pass) ZIP > ZIP quebrado e pacote sem mapa têm frase própria
+(pass) tetos de tamanho > os tetos são 32 MiB por arquivo e 128 MiB abertos
+(pass) tetos de tamanho > um arquivo acima de 32 MiB é recusado sem ser lido
+(pass) tetos de tamanho > um ZIP pequeno que abre em mais de 128 MiB é recusado [3000.00ms]
+(pass) tetos de tamanho > a soma de vários ZIP conta junto, e o teto vale pelo que saiu de verdade
+
+src\export\tiled\realTiled.test.ts:
+(pass) fazendinha.tmj vira exatamente a cena esperada [15.00ms]
+(pass) fazendinha-externo.tmj vira exatamente a cena esperada
+(pass) fazendinha.tmx vira exatamente a cena esperada
+(pass) fazendinha-externo.tmx vira exatamente a cena esperada
+
+src\export\tiled\review-regressions.test.ts:
+(pass) Tiled ARGB colors canonicalize opaque alpha and retain nonopaque RGBA through roundtrip [16.00ms]
+(pass) Tiled references in every property container use numeric IDs and import back to stable IDs
+(pass) native import refuses negative positions instead of moving objects without a report
+(pass) expanded sets preserve reflected rectangles, local references and external references
+(pass) references to hidden children still belong to their set instance
+(pass) expanded layer properties resolve locally and references to expanded children import with stable identity
+(pass) nonuniformly scaled rotated geometry uses an exact affine footprint; Tiled refuses sheared art
+
+src\export\tiled\roundtrip.test.ts:
+(pass) Tiled usa objetos separados para imagem e contorno elíptico, sem perder a arte ao voltar [16.00ms]
+(pass) cena 3 conserva contornos, conjuntos e opção física em JSON e TMX/TSX reais [15.00ms]
+(pass) o pacote inclui o destino de uma porta que pertence a um conjunto vinculado [32.00ms]
+(pass) os oito espelhos e giros sobrevivem aos gids sem perder a peça
+(pass) A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário [62.00ms]
+(pass) a cena inteira volta igual com as camadas em csv, em JSON e em TMX [47.00ms]
+(pass) a cena inteira volta igual com as camadas em base64, em JSON e em TMX [63.00ms]
+(pass) a cena inteira volta igual com as camadas em zlib, em JSON e em TMX [46.00ms]
+(pass) a cena inteira volta igual com as camadas em gzip, em JSON e em TMX [79.00ms]
+(pass) grupos dentro de grupos voltam com pais, opacidade, deslocamento e parallax [31.00ms]
+(pass) uma propriedade de várias linhas e com sinais do XML atravessa o TMX sem mudar [15.00ms]
+
+ 101 pass
+ 0 fail
+ 1016 expect() calls
+Ran 101 tests across 8 files. [6.97s]
