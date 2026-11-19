@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-19T20:18:20.020Z",
+  "planSha256": "cb95614580935dba1a11177421e8ea6b1105a0ccd1b98d4998bab517207fe729",
+  "distributionSha256": "132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e",
+  "releaseManifestSha256": "eec668d098be7605a1534983a588fb05e40da4ca218609c534911d1ad69b52ff",
+  "previousMembersPolicySha256": "022e5b54bce19be4a83b90fad0049b8d951e0d88d9e9cdb2eb6a896bf17544d8",
+  "preparedMembersPolicy": {
+    "sha256": "b67d2e697aa20774e092773d5632bc5278b57597c1c6778c0c73b0f0cb2f7164",
+    "bytes": 135208
+  },
+  "previousWorkerSelector": "f69814b9412125e9bb8f8f33aea2b682cf1e7dfdeb59f593c2067466ce140553",
+  "preparedWorkerSelector": "e67e817f6d24b074ad5cf2ddba0da99aef25da4574c1b54d6450f6ab3d57886b",
+  "activated": false,
+  "formattedBeforeHashing": true
+}

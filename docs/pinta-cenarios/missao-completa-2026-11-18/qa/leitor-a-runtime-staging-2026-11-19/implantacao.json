@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-19T19:53:20.729Z",
+  "exitCode": 0,
+  "sameBundle": true,
+  "stagingOnly": true,
+  "pythonSelectorChanged": false,
+  "containers": {
+    "ProBuildSandbox": "sistemazero-studio-runtime-staging-probuildsandbox-staging",
+    "ThreeDCheckSandbox": "sistemazero-studio-runtime-staging-threedchecksandbox-staging"
+  },
+  "configSha256": "dc3442260341c7c823ae4a9ce371c9f33802ef0d95bc2c193f385e79fa18c068"
+}

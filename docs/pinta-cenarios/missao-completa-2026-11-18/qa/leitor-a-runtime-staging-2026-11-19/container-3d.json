@@ -1,0 +1,18 @@
+{
+  "id": "a03599fe-80d3-4b3d-ba17-fdf5131aeb18",
+  "name": "sistemazero-studio-runtime-staging-threedchecksandbox-staging",
+  "version": 7,
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-cc1a416ae@sha256:1411706838fd121e2897ac12c30f9438fbb3d0e9d517539ff84ee60ce387cf0e",
+  "health": {
+    "errors": [],
+    "instances": {
+      "active": 0,
+      "assigned": 0,
+      "healthy": 5,
+      "stopped": 0,
+      "failed": 0,
+      "scheduling": 0,
+      "starting": 0
+    }
+  }
+}

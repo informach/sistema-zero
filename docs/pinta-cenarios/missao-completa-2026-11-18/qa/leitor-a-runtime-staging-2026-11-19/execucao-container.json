@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-19T20:10:09.548Z",
+  "executionId": "pinta-reader-a-1795118996390",
+  "status": 200,
+  "elapsedMs": 13159,
+  "body": {
+    "ok": true,
+    "results": [
+      {
+        "id": "dobro",
+        "passed": true
+      }
+    ]
+  }
+}
