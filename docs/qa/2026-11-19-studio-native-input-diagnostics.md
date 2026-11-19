@@ -32,11 +32,34 @@ os anexos registraram as dez transições nativas de tecla de cada caso
 (WASD e espaço), sem modificadores. A coleta e o helper de eventos Python
 passaram em checagem TypeScript focada; Biome dos arquivos passou.
 
-O workflow `studio-input-diagnostics.yml` executa os cinco casos
-suspeitos, três vezes, em Linux e Windows com Chromium completo. Mantém
+O primeiro recorte `44627962166` selecionou sete casos, três vezes:
+**21 aprovações no Linux e 21 no Windows**, sem retries. A execução
+completa seguinte, `44625198436`, teve onze jobs verdes e um vermelho:
+outro timeout de teclado, em **Patrulha Espacial**, no Chromium Linux 1.
+Logo, as 42 aprovações do recorte não resolvem a intermitência.
+
+O workflow foi ampliado para incluir Patrulha nas três famílias: dez casos,
+dez repetições, **cem casos por sistema**, conferidos com `--list`. Mantém
 os prazos, as teclas e os critérios originais, sem retries. Seu objetivo
 é obter reprodução e evidência antes de alterar o produto. Uma execução
 diagnóstica verde não apaga as falhas anteriores nem conclui a missão.
+
+Se a chamada nativa continuar pendente por cinco segundos, uma sondagem
+somente de leitura registra o estado dos documentos por sessões CDP.
+Não usa `Frame.evaluate` nessa sondagem: a instrumentação de snapshots
+desse método pode esperar por outro quadro bloqueado e confundir a
+observação. O deadline de dois segundos limita apenas a coleta; o prazo
+e o resultado da ação original não mudam. Não há pause/resume ou alteração
+de código do jogo.
+
+Um controle deliberado de oito segundos com casca em outro site validou
+a coleta sob trace completo: o documento principal respondeu, enquanto
+o quadro ocupado não respondeu. O teste confere esses dois resultados,
+além da conclusão do trabalho e da tecla nativa. É um controle de
+diagnóstico, não homologação de motor. Uma execução passou localmente;
+os smokes da galeria com observação ligada e desligada também passaram,
+e a checagem TypeScript focada dos três arquivos passou. O controle é
+executado separadamente no workflow ampliado.
 
 O disparo manual inicial retornou 404 porque o workflow novo não existe
 na branch padrão. Para não alterar a `main`, o recorte é disparado por

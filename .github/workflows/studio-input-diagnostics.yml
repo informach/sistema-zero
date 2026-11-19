@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/studio-input-diagnostics.yml'
       - 'packages/studio/e2e/helpers/previewInputDiagnostics.ts'
+      - 'packages/studio/e2e/preview-input-probe.*'
   workflow_dispatch:
 
 permissions:
@@ -44,11 +45,19 @@ jobs:
         working-directory: packages/studio
         env:
           STUDIO_INPUT_DIAGNOSTICS: '1'
-        run: bunx playwright test e2e/examples-gallery.spec.ts --project=chromium --grep 'Duelo de Heróis|Vale Ensolarado|layout estreito.*Desvie' --repeat-each=3 --retries=0 --trace=retain-on-failure
+        run: bunx playwright test e2e/examples-gallery.spec.ts --project=chromium --grep 'Duelo de Heróis|Vale Ensolarado|Patrulha Espacial|layout estreito.*Desvie' --repeat-each=10 --retries=0 --trace=retain-on-failure
+      - name: Qualify diagnostic capture with deliberately blocked child
+        if: ${{ !cancelled() }}
+        working-directory: packages/studio
+        env:
+          STUDIO_INPUT_DIAGNOSTICS: '1'
+        run: bunx playwright test --config e2e/preview-input-probe.config.ts --retries=0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: studio-input-${{ matrix.os }}
-          path: packages/studio/.cache/playwright-results
+          path: |
+            packages/studio/.cache/playwright-results
+            packages/studio/.cache/playwright-input-probe
           include-hidden-files: true
           retention-days: 7

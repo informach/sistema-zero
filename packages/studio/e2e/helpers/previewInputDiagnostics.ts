@@ -1,5 +1,87 @@
 import { writeFile } from 'node:fs/promises'
-import { type Page, test } from '@playwright/test'
+import { type CDPSession, type Page, test } from '@playwright/test'
+
+interface InputProbe {
+  key: string
+  started: number
+  observed: number
+  frames: Array<{ url: string; state?: unknown; error?: string; targetError?: string | null }>
+}
+const pendingInput = new WeakMap<Page, InputProbe[]>()
+export function pendingPreviewInputs(page: Page): readonly InputProbe[] {
+  return pendingInput.get(page) ?? []
+}
+interface InputTarget {
+  url: string
+  session: CDPSession | null
+  error: string | null
+}
+const targets = new WeakMap<Page, Promise<InputTarget[]>>()
+
+function inputTargets(page: Page): Promise<InputTarget[]> {
+  const current = targets.get(page)
+  if (current) return current
+  const prepared = Promise.all(
+    [page, ...page.frames().filter((frame) => frame.parentFrame())].map(async (target) => {
+      const url = target.url().slice(0, 160)
+      try {
+        const session = await page.context().newCDPSession(target)
+        return { url, session, error: null }
+      } catch (error) {
+        return { url, session: null, error: error instanceof Error ? error.message : String(error) }
+      }
+    }),
+  )
+  targets.set(page, prepared)
+  return prepared
+}
+
+/** The original native action; a slow-call probe only reads document state. */
+export async function pressObservedPreviewKey(page: Page, key: string): Promise<void> {
+  if (process.env.STUDIO_INPUT_DIAGNOSTICS !== '1') return page.keyboard.press(key)
+  const sessions = await inputTargets(page)
+  const started = Date.now()
+  let probe: Promise<void> | undefined
+  const timer = setTimeout(() => {
+    probe = Promise.all(
+      sessions.map(async ({ url, session, error }) => {
+        if (!session) return { url, targetError: error }
+        let deadline: ReturnType<typeof setTimeout> | undefined
+        try {
+          // Frame.evaluate participates in DOM snapshot instrumentation and can
+          // wait for a different, blocked frame. Read through the public CDP
+          // session instead; no pause/resume or execution-changing commands.
+          const response = await Promise.race([
+            session.send('Runtime.evaluate', {
+              expression: `({ready:document.readyState,active:document.activeElement?.tagName,
+                bodyChildren:document.body?.children.length,scripts:document.scripts.length,
+                isolated:globalThis.crossOriginIsolated,events:Reflect.get(window,'sz-e2e-preview-input')})`,
+              returnByValue: true,
+            }),
+            new Promise<never>((_, reject) => {
+              deadline = setTimeout(() => reject(new Error('Document did not answer')), 2000)
+            }),
+          ])
+          return response.exceptionDetails
+            ? { url, error: response.exceptionDetails.text }
+            : { url, state: response.result.value }
+        } catch (error) {
+          return { url, error: error instanceof Error ? error.message : String(error) }
+        } finally {
+          clearTimeout(deadline)
+        }
+      }),
+    ).then((frames) => {
+      pendingInput.get(page)?.push({ key, started, observed: Date.now(), frames })
+    })
+  }, 5000)
+  try {
+    await page.keyboard.press(key)
+  } finally {
+    clearTimeout(timer)
+    await probe
+  }
+}
 
 /** Opt-in observations only: never dispatches an input or changes game execution. */
 export function configurePreviewInputDiagnostics(): void {
@@ -8,6 +90,7 @@ export function configurePreviewInputDiagnostics(): void {
     if (process.env.STUDIO_INPUT_DIAGNOSTICS !== '1') return
     const frames: Array<{ time: number; url: string }> = []
     navigation.set(page, frames)
+    pendingInput.set(page, [])
     page.on('framenavigated', (frame) => {
       if (frames.length < 200) frames.push({ time: Date.now(), url: frame.url().slice(0, 160) })
     })
@@ -68,7 +151,7 @@ export function configurePreviewInputDiagnostics(): void {
         page.evaluate(() => Reflect.get(window, 'sz-e2e-preview-input')),
         new Promise<never>((_, reject) => {
           timer = setTimeout(
-            () => reject(new Error('Main page did not answer diagnostic capture')),
+            () => reject(new Error('Playwright diagnostic capture did not complete')),
             2000,
           )
         }),
@@ -85,6 +168,7 @@ export function configurePreviewInputDiagnostics(): void {
         {
           status: info.status,
           navigation: navigation.get(page),
+          pendingInput: pendingPreviewInputs(page),
           events,
         },
         null,
