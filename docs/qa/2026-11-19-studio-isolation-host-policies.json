@@ -1,0 +1,70 @@
+[
+ {
+  "navegador": "firefox 157.0",
+  "cabecalhosDoHost": false,
+  "perfilDoHost": "none",
+  "hostHeaders": {},
+  "frameHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin",
+   "Cross-Origin-Embedder-Policy": "credentialless",
+   "Cross-Origin-Resource-Policy": "cross-origin"
+  },
+  "arranjo": "outro-site",
+  "maiorAtrasoDoRelogioMs": 5001,
+  "cliqueAtendidoEmMs": 4530,
+  "isolado": false
+ },
+ {
+  "navegador": "firefox 157.0",
+  "cabecalhosDoHost": true,
+  "perfilDoHost": "coop",
+  "hostHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin"
+  },
+  "frameHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin",
+   "Cross-Origin-Embedder-Policy": "credentialless",
+   "Cross-Origin-Resource-Policy": "cross-origin"
+  },
+  "arranjo": "outro-site",
+  "maiorAtrasoDoRelogioMs": 5004,
+  "cliqueAtendidoEmMs": 4536,
+  "isolado": false
+ },
+ {
+  "navegador": "firefox 157.0",
+  "cabecalhosDoHost": true,
+  "perfilDoHost": "coep",
+  "hostHeaders": {
+   "Cross-Origin-Embedder-Policy": "credentialless"
+  },
+  "frameHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin",
+   "Cross-Origin-Embedder-Policy": "credentialless",
+   "Cross-Origin-Resource-Policy": "cross-origin"
+  },
+  "arranjo": "outro-site",
+  "maiorAtrasoDoRelogioMs": 5000,
+  "cliqueAtendidoEmMs": 4535,
+  "isolado": false
+ },
+ {
+  "navegador": "firefox 157.0",
+  "cabecalhosDoHost": true,
+  "perfilDoHost": "coop-coep",
+  "hostHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin",
+   "Cross-Origin-Embedder-Policy": "credentialless",
+   "Cross-Origin-Resource-Policy": "cross-origin"
+  },
+  "frameHeaders": {
+   "Cross-Origin-Opener-Policy": "same-origin",
+   "Cross-Origin-Embedder-Policy": "credentialless",
+   "Cross-Origin-Resource-Policy": "cross-origin"
+  },
+  "arranjo": "outro-site",
+  "maiorAtrasoDoRelogioMs": 51,
+  "cliqueAtendidoEmMs": 57,
+  "isolado": true
+ }
+]
