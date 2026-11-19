@@ -140,6 +140,28 @@ describe('PreviewIframe', () => {
 
   // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
   // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
+  it('a marca já existe quando o documento executável é observado no DOM', async () => {
+    const project = createPreviewProject()
+    const key = `sz:run-tripwire:${project.id}`
+    window.localStorage.removeItem(key)
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const frame = screen.getByTitle('Pré-visualização')
+    const observed: Array<string | null> = []
+    const observer = new MutationObserver(() => {
+      if (frame.getAttribute('srcdoc')?.includes('Preview automático'))
+        observed.push(window.localStorage.getItem(key))
+    })
+    observer.observe(frame, { attributes: true, attributeFilter: ['srcdoc'] })
+    try {
+      fireEvent.load(frame)
+      await waitFor(() => expect(observed.length).toBeGreaterThan(0))
+      expect(observed.every((mark) => mark !== null)).toBe(true)
+    } finally {
+      observer.disconnect()
+    }
+  })
+
   it('a marca de execução permanece após sinais de vida e só sai ao parar ou sair corretamente', async () =>
     traceTripwire(async () => {
       const project = createPreviewProject()
