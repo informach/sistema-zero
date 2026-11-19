@@ -1,422 +1,422 @@
 [
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": false,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5048,
-  "cliqueAtendidoEmMs": 4548,
-  "isolado": false
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": false,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 23,
-  "isolado": true
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": false,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 21,
-  "isolado": true
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-canvas",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 22,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5048,
+    "cliqueAtendidoEmMs": 4548,
+    "isolado": false
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 23,
+    "isolado": true
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 23,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 21,
+    "isolado": true
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-canvas",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 22,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": true,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5018,
-  "cliqueAtendidoEmMs": 4528,
-  "isolado": false
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": true,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 62,
-  "cliqueAtendidoEmMs": 30,
-  "isolado": true
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": true,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 21,
-  "isolado": true
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-canvas",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 62,
-  "cliqueAtendidoEmMs": 22,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": true,
-   "sharedArrayBufferAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 23,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": true,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5018,
+    "cliqueAtendidoEmMs": 4528,
+    "isolado": false
   },
-  "terminated": true,
-  "stopCallMs": 0.005000002682209015,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
- },
- {
-  "navegador": "chromium 148.0.7778.96",
-  "chromiumMode": "chromium",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 21,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": true,
-   "sharedArrayBufferAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 62,
+    "cliqueAtendidoEmMs": 30,
+    "isolado": true
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": true,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 21,
+    "isolado": true
   },
-  "terminated": true,
-  "stopCallMs": 0.004999998956918716,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": false,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5003,
-  "cliqueAtendidoEmMs": 4553,
-  "isolado": false
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": false,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 5006,
-  "cliqueAtendidoEmMs": 4554,
-  "isolado": false
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": false,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 5001,
-  "cliqueAtendidoEmMs": 4549,
-  "isolado": false
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-canvas",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 52,
-  "cliqueAtendidoEmMs": 65,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-canvas",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 62,
+    "cliqueAtendidoEmMs": 22,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": true,
+      "sharedArrayBufferAvailable": true
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": true,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0.005000002682209015,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 21,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": true,
+      "sharedArrayBufferAvailable": true
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": true,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0.004999998956918716,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 52,
-  "cliqueAtendidoEmMs": 61,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": false,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5003,
+    "cliqueAtendidoEmMs": 4553,
+    "isolado": false
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": false,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 5006,
+    "cliqueAtendidoEmMs": 4554,
+    "isolado": false
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": true,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5008,
-  "cliqueAtendidoEmMs": 4558,
-  "isolado": false
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": true,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 5008,
-  "cliqueAtendidoEmMs": 4558,
-  "isolado": false
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": true,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 69,
-  "cliqueAtendidoEmMs": 64,
-  "isolado": true
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-canvas",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 51,
-  "cliqueAtendidoEmMs": 69,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": true,
-   "sharedArrayBufferAvailable": true
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": false,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 5001,
+    "cliqueAtendidoEmMs": 4549,
+    "isolado": false
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": true,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-canvas",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 52,
+    "cliqueAtendidoEmMs": 65,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
- },
- {
-  "navegador": "firefox 150.0.2",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 51,
-  "cliqueAtendidoEmMs": 55,
-  "hostCapabilities": {
-   "canvasTransferAvailable": true,
-   "crossOriginIsolated": true,
-   "sharedArrayBufferAvailable": true
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 52,
+    "cliqueAtendidoEmMs": 61,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
   },
-  "workerCapabilities": {
-   "offscreen2D": true,
-   "sharedArrayBufferAvailable": true,
-   "rafFunctionAvailable": true
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": true,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5008,
+    "cliqueAtendidoEmMs": 4558,
+    "isolado": false
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": false,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5039,
-  "cliqueAtendidoEmMs": 4554,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": false,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 5036,
-  "cliqueAtendidoEmMs": 4547,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": false,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 5031,
-  "cliqueAtendidoEmMs": 4551,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-canvas",
-  "pronto": false,
-  "bloqueando": false,
-  "destravou": false,
-  "maior": 0,
-  "cliques": [],
-  "terminated": false,
-  "supported": false,
-  "hostCapabilities": {
-   "canvasTransferAvailable": false,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": true,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 5008,
+    "cliqueAtendidoEmMs": 4558,
+    "isolado": false
   },
-  "error": "transferControlToOffscreen indisponível"
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": false,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 68,
-  "cliqueAtendidoEmMs": 59,
-  "hostCapabilities": {
-   "canvasTransferAvailable": false,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": true,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 69,
+    "cliqueAtendidoEmMs": 64,
+    "isolado": true
   },
-  "workerCapabilities": {
-   "offscreen2D": false,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": false
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-canvas",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 51,
+    "cliqueAtendidoEmMs": 69,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": true,
+      "sharedArrayBufferAvailable": true
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": true,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "synthetic-native-sort-and-canvas; not-game-engine-qualification"
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": true,
-  "arranjo": "mesma-origem",
-  "maiorAtrasoDoRelogioMs": 5013,
-  "cliqueAtendidoEmMs": 4525,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": true,
-  "arranjo": "srcdoc",
-  "maiorAtrasoDoRelogioMs": 5035,
-  "cliqueAtendidoEmMs": 4557,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": true,
-  "arranjo": "outro-site",
-  "maiorAtrasoDoRelogioMs": 5052,
-  "cliqueAtendidoEmMs": 4568,
-  "isolado": false
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-canvas",
-  "pronto": false,
-  "bloqueando": false,
-  "destravou": false,
-  "maior": 0,
-  "cliques": [],
-  "terminated": false,
-  "supported": false,
-  "hostCapabilities": {
-   "canvasTransferAvailable": false,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "firefox 150.0.2",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 51,
+    "cliqueAtendidoEmMs": 55,
+    "hostCapabilities": {
+      "canvasTransferAvailable": true,
+      "crossOriginIsolated": true,
+      "sharedArrayBufferAvailable": true
+    },
+    "workerCapabilities": {
+      "offscreen2D": true,
+      "sharedArrayBufferAvailable": true,
+      "rafFunctionAvailable": true
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
   },
-  "error": "transferControlToOffscreen indisponível"
- },
- {
-  "navegador": "webkit 26.4",
-  "cabecalhosDoHost": true,
-  "arranjo": "worker-cpu",
-  "supported": true,
-  "maiorAtrasoDoRelogioMs": 63,
-  "cliqueAtendidoEmMs": 40,
-  "hostCapabilities": {
-   "canvasTransferAvailable": false,
-   "crossOriginIsolated": false,
-   "sharedArrayBufferAvailable": false
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": false,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5039,
+    "cliqueAtendidoEmMs": 4554,
+    "isolado": false
   },
-  "workerCapabilities": {
-   "offscreen2D": false,
-   "sharedArrayBufferAvailable": false,
-   "rafFunctionAvailable": false
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": false,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 5036,
+    "cliqueAtendidoEmMs": 4547,
+    "isolado": false
   },
-  "terminated": true,
-  "stopCallMs": 0,
-  "workerFinishedBeforeStop": false,
-  "isolado": true,
-  "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
- }
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": false,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 5031,
+    "cliqueAtendidoEmMs": 4551,
+    "isolado": false
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-canvas",
+    "pronto": false,
+    "bloqueando": false,
+    "destravou": false,
+    "maior": 0,
+    "cliques": [],
+    "terminated": false,
+    "supported": false,
+    "hostCapabilities": {
+      "canvasTransferAvailable": false,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "error": "transferControlToOffscreen indisponível"
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": false,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 68,
+    "cliqueAtendidoEmMs": 59,
+    "hostCapabilities": {
+      "canvasTransferAvailable": false,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": false,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": false
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": true,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5013,
+    "cliqueAtendidoEmMs": 4525,
+    "isolado": false
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": true,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 5035,
+    "cliqueAtendidoEmMs": 4557,
+    "isolado": false
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": true,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 5052,
+    "cliqueAtendidoEmMs": 4568,
+    "isolado": false
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-canvas",
+    "pronto": false,
+    "bloqueando": false,
+    "destravou": false,
+    "maior": 0,
+    "cliques": [],
+    "terminated": false,
+    "supported": false,
+    "hostCapabilities": {
+      "canvasTransferAvailable": false,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "error": "transferControlToOffscreen indisponível"
+  },
+  {
+    "navegador": "webkit 26.4",
+    "cabecalhosDoHost": true,
+    "arranjo": "worker-cpu",
+    "supported": true,
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 40,
+    "hostCapabilities": {
+      "canvasTransferAvailable": false,
+      "crossOriginIsolated": false,
+      "sharedArrayBufferAvailable": false
+    },
+    "workerCapabilities": {
+      "offscreen2D": false,
+      "sharedArrayBufferAvailable": false,
+      "rafFunctionAvailable": false
+    },
+    "terminated": true,
+    "stopCallMs": 0,
+    "workerFinishedBeforeStop": false,
+    "isolado": true,
+    "scope": "cpu-only-control; not-rendering-or-game-engine-qualification"
+  }
 ]

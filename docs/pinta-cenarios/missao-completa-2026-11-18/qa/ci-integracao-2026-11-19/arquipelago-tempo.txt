@@ -1,0 +1,2 @@
+$ node playground/verificar-tempo-browser.mjs
+PASS: resposta de tempo perdida pausa o jogo; diálogo acessível permite recuperação pelo teclado
