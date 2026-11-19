@@ -16,6 +16,9 @@ const cursos = readdirSync(PASTA_PAIS, { withFileTypes: true })
   .filter((entrada) => entrada.isDirectory())
   .map((entrada) => entrada.name)
 
+/** Cursos apresentados pela Vivianne Lima, psicóloga da Laopa. */
+const CURSOS_COM_A_VIVIANNE = new Set(['como-ajudar-seu-filho-autista-nas-frustracoes'])
+
 type Manifesto = {
   courseSlug: string
   lessonSlug: string
@@ -38,10 +41,14 @@ describe.each(cursos)('curso para pais %s', (curso) => {
   const arquivos = readdirSync(pasta)
   const manifestos = arquivos.filter((nome) => nome.endsWith('.manifesto.json')).sort()
 
-  test('tem aulas, módulos, fontes e a apostila', () => {
+  const conteudoDaApostila = resolve(import.meta.dir, `../recursos/${curso}/caderno-conteudo.json`)
+
+  // A apostila pode vir numa segunda etapa: ela é cobrada quando o conteúdo dela já existe.
+  test('tem aulas, módulos, fontes e, quando há conteúdo de apostila, o PDF', () => {
     expect(manifestos.length).toBeGreaterThan(0)
-    for (const nome of ['README.md', 'modulos.md', 'fontes.md', 'apostila.pdf'])
-      expect(existsSync(resolve(pasta, nome))).toBe(true)
+    const obrigatorios = ['README.md', 'modulos.md', 'fontes.md']
+    if (existsSync(conteudoDaApostila)) obrigatorios.push('apostila.pdf')
+    for (const nome of obrigatorios) expect(existsSync(resolve(pasta, nome))).toBe(true)
   })
 
   test.each(manifestos)('%s passa no validador do core', (nome) => {
@@ -67,34 +74,47 @@ describe.each(cursos)('curso para pais %s', (curso) => {
     expect(parentsLessonIssues(blocos)).toEqual([])
   })
 
-  test('sem travessão e com a fala da Helena (não ElevenLabs)', () => {
+  test('sem travessão e com a fala para o ElevenLabs de cada aula', () => {
     for (const nome of arquivos.filter((n) => /\.(md|json)$/.test(n))) {
       const texto = readFileSync(resolve(pasta, nome), 'utf8')
       expect({ nome, travessao: /[—–]/.test(texto) }).toEqual({ nome, travessao: false })
     }
     for (const nome of arquivos.filter((n) => n.endsWith('.roteiro.md'))) {
       const roteiro = readFileSync(resolve(pasta, nome), 'utf8')
-      expect(roteiro).toContain('**Fala da Helena:**')
-      expect(roteiro).not.toContain('**Fala para ElevenLabs:**')
+      // Desde 19/11/2026 a voz é gerada no ElevenLabs e quem apresenta é um avatar.
+      expect(roteiro).toContain('**Fala para ElevenLabs:**')
+      expect(roteiro).not.toContain('**Fala da Helena:**')
+      const copiavel = nome.replace('.roteiro.md', '.elevenlabs.txt')
+      expect({ copiavel, existe: arquivos.includes(copiavel) }).toEqual({ copiavel, existe: true })
+      const texto = readFileSync(resolve(pasta, copiavel), 'utf8')
+      // Só fala, tags e pausas: nada de título, rótulo ou nota de produção.
+      expect({ copiavel, producao: /^(#|\*\*|Na tela|Clipe|Depoimento)/m.test(texto) }).toEqual({
+        copiavel,
+        producao: false,
+      })
+      expect({ copiavel, travessao: /[—–]/.test(texto) }).toEqual({ copiavel, travessao: false })
     }
-    expect(arquivos.some((n) => n.endsWith('.elevenlabs.txt'))).toBe(false)
   })
 
-  // Decisão da dona (15/11/2026): o curso é da Helena. Ninguém mais é citado, e o curso não fala da
-  // aula aberta que serviu de fonte. O `fontes.md` é interno e registra de onde veio o conteúdo.
+  // Decisão da dona (15/11/2026): o curso da Helena não cita mais ninguém. Nos cursos em que a
+  // Vivianne é a apresentadora (19/11/2026), o nome dela aparece. Nenhum curso fala do evento que
+  // serviu de fonte. O `fontes.md` é interno e registra de onde veio o conteúdo.
   test('o que os pais leem não cita outra autora nem a palestra de origem', () => {
     const textoDoCurso = arquivos
       .filter((n) => /\.(roteiro\.md|manifesto\.json)$/.test(n) || /-aula-\d+\.md$/.test(n))
       .concat(['README.md', 'modulos.md'])
       .map((nome) => ({ nome, texto: readFileSync(resolve(pasta, nome), 'utf8') }))
-    const apostila = resolve(import.meta.dir, `../recursos/${curso}/caderno-conteudo.json`)
-    if (existsSync(apostila))
-      textoDoCurso.push({ nome: 'caderno-conteudo.json', texto: readFileSync(apostila, 'utf8') })
-    for (const { nome, texto } of textoDoCurso) {
-      expect({ nome, citaVivianne: /viviann?e/i.test(texto) }).toEqual({
-        nome,
-        citaVivianne: false,
+    if (existsSync(conteudoDaApostila))
+      textoDoCurso.push({
+        nome: 'caderno-conteudo.json',
+        texto: readFileSync(conteudoDaApostila, 'utf8'),
       })
+    for (const { nome, texto } of textoDoCurso) {
+      if (!CURSOS_COM_A_VIVIANNE.has(curso))
+        expect({ nome, citaVivianne: /viviann?e/i.test(texto) }).toEqual({
+          nome,
+          citaVivianne: false,
+        })
       expect({
         nome,
         citaPalestra: /palestra de|na palestra|aula aberta|a plateia/i.test(texto),

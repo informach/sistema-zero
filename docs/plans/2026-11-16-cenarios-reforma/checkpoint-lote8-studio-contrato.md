@@ -4,7 +4,7 @@
 
 ## Implementação
 
-O núcleo de cenários agora expõe `CenaParaStudioSchema`/`lerCenaParaStudio`: envelope JSON estrito, versão 1, MIME `application/vnd.sistemazero.cena3d+json`, limitado a 1 MiB UTF-8. Ele conserva a cena compilada e associa cada arquivo a um ID estável de asset. O inventário precisa estar completo, sem caminhos duplicados ou externos. IDs são opacos, sem normalização de nomes. Um ID compartilhado só pode representar conteúdo/tipo/dimensões compatíveis.
+O núcleo de cenários agora expõe `CenaParaStudioSchema`/`lerCenaParaStudio`, pela entrada restrita `@sistemazero/molda-cenarios-core/studio`: envelope JSON estrito, versão 1, MIME `application/vnd.sistemazero.cena3d+json`, limitado a 1 MiB UTF-8. Ele conserva a cena compilada e associa cada arquivo a um ID estável de asset. O inventário precisa estar completo, sem caminhos duplicados ou externos. IDs são opacos, sem normalização de nomes. Um ID compartilhado só pode representar conteúdo/tipo/dimensões compatíveis.
 
 O pipeline existente de assets aceita `scene3d` e `scene3d-data`. Modelos continuam `model3d`, imagens continuam imagens. Os dados internos têm somente os papéis `alturas` (Float32 little endian finito) e `buracos` (máscara 0/1), com teto de 5 MiB por campo. Não foi criado armazenamento paralelo nem upload genérico de binários. Os tetos de quantidade/caracteres do projeto foram mantidos.
 
@@ -27,6 +27,8 @@ A revisão identificou uma interação com a sincronização pessoal: uma arte c
 - Build real do playground pelo teste de orçamento: **um teste, zero falhas, 29 verificações**. Os limites existentes da lista inicial, rota do editor e modos foram mantidos; os catálogos pesados não passaram à carga inicial. Build em memória, sem implantação.
 
 Não houve ensaio visual de importação nem alteração do mundo. Estes testes não aprovam direção de arte, desempenho em dispositivos físicos ou execução dos quatro motores. A primeira tipagem integral atravessou uma atualização paralela da `staging` pelo trabalho do Pinta; a conferência final usa a árvore integrada, sem modificar seus contratos para ocultar divergências temporárias.
+
+Revisão posterior do preparo: o export pelo índice geral do compilador havia levado 1.117 caracteres de contrato exclusivo do Estúdio ao runtime Three independente. A entrada `/studio` elimina essa dependência de domínio. A conferência reproduzível voltou aos **1.106.050 caracteres, três dependências e SHA-256 `7d66f2567a028af248087cb96c3789f68cc2e10f86e76fbf291559dc498143a6`**, sem editar ou regenerar o artefato portátil.
 
 ## Revisão e próximo trabalho
 

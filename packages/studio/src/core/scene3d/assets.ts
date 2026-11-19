@@ -8,7 +8,7 @@ import {
   MIME_DA_CENA_PARA_STUDIO,
   type PapelDoDado3D,
   PapelDoDado3DSchema,
-} from '@sistemazero/molda-cenarios-core/compilar'
+} from '@sistemazero/molda-cenarios-core/studio'
 import { decodeProjectAsset } from '../assetBinary'
 
 export const MAX_BYTES_DO_DADO_3D = 5 * 1024 * 1024
@@ -34,6 +34,16 @@ export function readScene3DDataMetadata(value: unknown): { papel: PapelDoDado3D 
   if (Object.keys(record).length !== 1) return undefined
   const role = PapelDoDado3DSchema.safeParse(record.papel)
   return role.success ? { papel: role.data } : undefined
+}
+
+export function readScene3DPythonMetadata(value: unknown): { modulo: string } | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const record = value as Record<string, unknown>
+  if (Object.keys(record).length !== 1 || typeof record.modulo !== 'string') return undefined
+  return isStudioPortablePath(record.modulo) &&
+    /(?:^|\/)cenario_[a-z0-9_]+\.py$/.test(record.modulo)
+    ? { modulo: record.modulo }
+    : undefined
 }
 
 /** Closed encodings: these are compiler artifacts, never arbitrary executable attachments. */

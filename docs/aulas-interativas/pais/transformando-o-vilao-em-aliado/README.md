@@ -24,7 +24,8 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 
 ## Gravação e edição
 
-- São **23 clipes**, com fala integral para teleprompter. A Helena grava; este curso não usa ElevenLabs.
+- São **23 clipes**. Desde 19/11/2026 a voz é gerada no ElevenLabs e a apresentadora é o avatar da Helena (HeyGen), durante toda a aula. Cada roteiro traz a **Fala para ElevenLabs** com as tags de direção, e cada aula tem o seu `.elevenlabs.txt`: é abrir, selecionar tudo e colar. As partes vêm separadas por `[long pause]`.
+- O `.elevenlabs.txt` é derivado do roteiro. Mudou a fala? Mude no `.roteiro.md` e gere o `.txt` de novo (o `validar-roteiros.py` recusa o arquivo desatualizado).
 - O **Na tela** de cada parte cita trechos da fala e indica as imagens a inserir, que correspondem aos slides usados no encontro.
 - Os **depoimentos são fixos**: os mesmos cortes exibidos no encontro entram no ponto marcado em cada roteiro, com a Helena apresentando e comentando. A transcrição de cada corte está no roteiro para localizar o arquivo. Identificar nome e vínculo de quem fala, distinguindo Débora, mãe do Bernardo, da filha da Helena.
 - **Isabela:** a história e o corte estão na Aula 5. A autorização dada pela família foi para a apresentação; confirmar a autorização de nome e imagem para o curso antes de publicar.

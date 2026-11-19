@@ -8,12 +8,14 @@ import {
   studioPythonRuntimeRoute,
   verifyStudioPythonDeployment,
 } from '@sistemazero/core/studio/python-runtime-distribution'
+import { PYTHON_MOLDA_SCENE_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import type { StudioRuntimeEnvironment } from '../runtime/environment'
 import { PINTA_SCENE_RUNTIME_MESSAGE } from '../runtime/pintaImageCompatibility'
 import { preparePythonExecutionSnapshot } from '../runtime/python/snapshot'
 import { fetchPythonWebBytes, pythonWebBytesSha256 } from '../runtime/python/webFiles'
 import { PYTHON_WEB_METADATA_BYTES } from '../runtime/python/webPayload'
+import { MOLDA_SCENE_RUNTIME_MESSAGE } from '../runtime/scene3dCompatibility'
 import { refinePythonProjectDocument } from '../state/pythonProjectValidation'
 import { isStudioTutorSensitivePath, redactStudioTutorSecrets } from '../studio/tutorSafety'
 import type { ExportFileMap } from './fileMap'
@@ -83,6 +85,11 @@ export async function buildPythonWebFiles(
       'Esta versão do ambiente Python não oferece exportação web. Ela continua disponível para executar e baixar a fonte.',
     )
   for (const asset of project.assets ?? []) {
+    if (
+      asset.kind === 'scene3d' &&
+      !deployment.release.manifest.python?.features.includes(PYTHON_MOLDA_SCENE_FEATURE)
+    )
+      throw new Error(MOLDA_SCENE_RUNTIME_MESSAGE)
     if (!asset.pintaImage) continue
     const required = pintaImageRequiredRuntimeFeature(asset.pintaImage)
     if (required && !deployment.release.manifest.python?.features.includes(required))

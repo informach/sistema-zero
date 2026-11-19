@@ -67,7 +67,7 @@ def _volume(v):
 
 def _caminho(raiz, nome):
     if (not isinstance(nome, str) or len(nome) > 1024 or not nome
-            or '\\' in nome or ':' in nome or '%' in nome
+            or nome.startswith('/') or '\\' in nome or ':' in nome or '%' in nome
             or any(ord(c) < 32 for c in nome)
             or any(p in ('', '.', '..') for p in nome.split('/'))):
         raise ValueError('O cenário referencia um caminho não portátil.')
@@ -104,20 +104,29 @@ def _inspecionar_glb(p, tamanho):
         raise ValueError('O modelo precisa de um único esqueleto para o Raylib. Exporte o pacote pelo destino Raylib do Molda.')
     if set(d.get('extensionsRequired', [])) - {'KHR_mesh_quantization'}:
         raise ValueError('Um modelo exige uma extensão que este destino não suporta.')
-    return bool(d.get('skins'))
+    return bool(d.get('skins') or d.get('animations'))
 
 
-def _conferir(raiz, d):
+def _conferir(raiz, d, remapeamento=None):
     if (not isinstance(d, dict) or d.get('formato') != 'molda-cena-compilada'
             or d.get('versao') != 1 or d.get('unidade') != 'metro' or d.get('eixoVertical') != 'y'):
         raise ValueError('Este arquivo não é uma cena compilada do Molda compatível.')
-    arquivos, peles, total = {}, set(), 0
+    inventario = _lista(d, 'arquivos', 8192)
+    if remapeamento is not None:
+        if (not isinstance(remapeamento, dict) or len(remapeamento) != len(inventario)
+                or any(not isinstance(a, dict) or not isinstance(a.get('caminho'), str)
+                       for a in inventario)
+                or set(remapeamento) != {a['caminho'] for a in inventario}):
+            raise ValueError('O mapa de recursos precisa cobrir exatamente o inventário do cenário.')
+    arquivos, animaveis, total, conferidos = {}, set(), 0, {}
     vistos = set()
-    for a in _lista(d, 'arquivos', 8192):
+    for a in inventario:
         if not isinstance(a, dict):
             raise ValueError('O inventário do cenário está incompleto.')
         nome, n, digest = a.get('caminho'), a.get('bytes'), a.get('digest')
         p = _caminho(raiz, nome)
+        if remapeamento is not None:
+            p = _caminho(raiz, remapeamento[nome])
         if (nome.lower() in vistos or type(n) is not int or not 0 < n <= _MAX_PACOTE
                 or not isinstance(digest, str) or not re.fullmatch('[0-9a-f]{64}', digest)):
             raise ValueError('O inventário do cenário tem nome, tamanho ou digest inválido.')
@@ -125,19 +134,30 @@ def _conferir(raiz, d):
         total += n
         if total > _MAX_PACOTE:
             raise ValueError('O cenário ultrapassa o limite de 256 MiB.')
-        if p.stat().st_size != n:
-            raise ValueError(f'O tamanho de {nome} não corresponde ao cenário.')
-        sha = hashlib.sha256()
-        with p.open('rb') as f:
-            while bloco := f.read(1024 * 1024):
-                sha.update(bloco)
-        if sha.hexdigest() != digest:
-            raise ValueError(f'O conteúdo de {nome} não corresponde ao cenário.')
-        if a.get('mime') == 'model/gltf-binary':
-            if n > 32 * 1024 * 1024 or not nome.endswith('.glb'):
-                raise ValueError('Um modelo ultrapassa os limites do destino.')
-            if _inspecionar_glb(p, n):
-                peles.add(nome)
+        assinatura = (n, digest, a.get('mime'))
+        if (a.get('mime') == 'model/gltf-binary'
+                and (n > 32 * 1024 * 1024 or not nome.endswith('.glb') or p.suffix.lower() != '.glb')):
+            raise ValueError('Um modelo ultrapassa os limites ou não usa um arquivo GLB.')
+        anterior = conferidos.get(p)
+        if anterior is not None:
+            if assinatura != anterior[0]:
+                raise ValueError('O mesmo arquivo físico não pode representar recursos incompatíveis.')
+            animavel = anterior[1]
+        else:
+            if p.stat().st_size != n:
+                raise ValueError(f'O tamanho de {nome} não corresponde ao cenário.')
+            sha = hashlib.sha256()
+            with p.open('rb') as f:
+                while bloco := f.read(1024 * 1024):
+                    sha.update(bloco)
+            if sha.hexdigest() != digest:
+                raise ValueError(f'O conteúdo de {nome} não corresponde ao cenário.')
+            animavel = False
+            if a.get('mime') == 'model/gltf-binary':
+                animavel = _inspecionar_glb(p, n)
+            conferidos[p] = (assinatura, animavel)
+        if animavel:
+            animaveis.add(nome)
         arquivos[nome] = (p, a)
     ids = set()
     for no in _lista(d, 'nos', 32768):
@@ -155,7 +175,7 @@ def _conferir(raiz, d):
     for nome, limite in [('entidades', 32768), ('marcadores', 4096), ('aguas', 4096),
                          ('caminhos', 4096), ('licencas', 8192)]:
         _lista(d, nome, limite)
-    return arquivos, peles
+    return arquivos, animaveis
 
 
 def _dentro(x, z, contorno):
@@ -175,8 +195,12 @@ def _dentro(x, z, contorno):
 
 
 class Cenario:
-    """Cena carregada. ``dados`` conserva fonte, entidades, marcadores e licenças."""
-    def __init__(self, raiz, dados):
+    """Cena carregada. ``dados`` conserva fonte, entidades, marcadores e licenças.
+
+    ``arquivos`` pode resolver cada caminho lógico para um arquivo físico local,
+    sem reescrever o manifesto. Atores animados não compartilham poses mutáveis.
+    """
+    def __init__(self, raiz, dados, *, arquivos=None):
         self.dados = dados
         self._fechado = False
         self._modelos = {}
@@ -187,11 +211,11 @@ class Cenario:
         self._alturas = None
         self._buracos = None
         self._pecas = set()
-        self._arquivos, peles = _conferir(raiz, dados)
+        self._arquivos, animaveis = _conferir(Path(os.fspath(raiz)).resolve(), dados, arquivos)
         self._preparar_terreno()
         try:
             for no in dados['nos']:
-                chave = ('no', no['id']) if no['arquivo'] in peles else ('arquivo', no['arquivo'])
+                chave = ('no', no['id']) if no['arquivo'] in animaveis else ('arquivo', self._arquivos[no['arquivo']][0])
                 if chave not in self._modelos:
                     modelo = _p.load_model(str(self._arquivos[no['arquivo']][0]))
                     self._modelos[chave] = modelo
@@ -385,8 +409,8 @@ class Cenario:
             self._alturas = self._buracos = None
 
 
-def carregar(caminho='cenario.json'):
-    """Abre um manifesto local; seus recursos devem estar dentro da mesma pasta."""
+def carregar(caminho='cenario.json', *, arquivos=None):
+    """Abre manifesto local. O mapa opcional resolve os recursos dentro da mesma raiz."""
     p = Path(os.fspath(caminho)).resolve()
     if p.stat().st_size > _MAX_MANIFESTO:
         raise ValueError('O manifesto do cenário ultrapassa 16 MiB.')
@@ -394,4 +418,4 @@ def carregar(caminho='cenario.json'):
         b = f.read(_MAX_MANIFESTO + 1)
     if len(b) > _MAX_MANIFESTO:
         raise ValueError('O manifesto do cenário ultrapassa 16 MiB.')
-    return Cenario(p.parent, _json(b))
+    return Cenario(p.parent, _json(b), arquivos=arquivos)

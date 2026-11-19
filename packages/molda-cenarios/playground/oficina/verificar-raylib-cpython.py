@@ -1,6 +1,6 @@
 """Abre o ZIP real extraído no Raylib 6 nativo ou no módulo real do Estúdio.
 
-Uso: python -B verificar-raylib-cpython.py <pasta> <resultado.json> native|studio <py oficial>
+Uso: python -B verificar-raylib-cpython.py <pasta> <resultado.json> native|studio <py oficial> [assets]
 O modo nativo usa janela oculta; capturas são evidências, não aprovação artística.
 """
 import json
@@ -8,9 +8,28 @@ import math
 from pathlib import Path
 import struct
 import sys
+import tempfile
 import time
 
 pasta, saida, modo = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), sys.argv[3]
+temporario = tempfile.TemporaryDirectory(prefix='sz-cenario-mapa-') if sys.argv[5:] == ['assets'] else None
+raiz_assets = Path(temporario.name).resolve() if temporario else pasta
+dados = json.loads((pasta / 'cenario.json').read_text(encoding='utf-8'))
+mapa = None
+if temporario:
+    mapa = {}
+    (raiz_assets / 'assets').mkdir()
+    for arquivo in dados['arquivos']:
+        extensao = Path(arquivo['caminho']).suffix
+        caminho = f"assets/{arquivo['digest']}{extensao}"
+        destino = raiz_assets / caminho
+        b = (pasta / arquivo['caminho']).read_bytes()
+        if destino.exists():
+            assert destino.read_bytes() == b
+        else:
+            destino.write_bytes(b)
+        mapa[arquivo['caminho']] = caminho
+    assert all(not (raiz_assets / a['caminho']).exists() for a in dados['arquivos'])
 frames = []
 if modo == 'studio':
     sys.path.insert(0, str(Path(sys.argv[4]).resolve()))
@@ -19,13 +38,21 @@ if modo == 'studio':
     def transporte(header, payload):
         frames.append((json.loads(header), bytes(payload)))
         return json.dumps({'now': len(frames) * 1000 / 60, 'events': []}), None
-    _szraylib.configure(transporte, None, str(pasta), '3d')
+    _szraylib.configure(transporte, None, str(raiz_assets), '3d')
 elif modo != 'native':
     raise ValueError('Modo de ensaio desconhecido.')
 
 import pyray as p
-sys.path.insert(0, str(pasta))
+if modo == 'native':
+    sys.path.insert(0, str(Path(sys.argv[4]).resolve()))
 import cenario
+assert Path(cenario.__file__).resolve().parent == Path(sys.argv[4]).resolve()
+
+
+def carregar():
+    if mapa is not None:
+        return cenario.Cenario(raiz_assets, dados, arquivos=mapa)
+    return cenario.carregar(str(pasta / 'cenario.json'))
 
 if modo == 'native':
     p.set_config_flags(p.FLAG_WINDOW_HIDDEN)
@@ -34,7 +61,7 @@ p.init_window(960, 640, 'QA cenário Raylib')
 texturas_antes = _rt._texture_count if modo == 'studio' else None
 lugar = None
 try:
-    lugar = cenario.carregar(str(pasta / 'cenario.json'))
+    lugar = carregar()
     d = lugar.dados
     assert d['terreno'] and len(d['aguas']) == 2 and len(d['caminhos']) == 3
     alturas = []
@@ -76,6 +103,9 @@ try:
         'animacoes': animacoes, 'quadros': 3,
         'colisoesPorCaixa': len(d['colisoes']), 'aguaEstatica': True,
         'studioQuadrosTransportados': len(frames),
+        'mapaDeAssets': mapa is not None,
+        'arquivosFisicos': len(set(mapa.values())) if mapa else len(d['arquivos']),
+        'moduloOficial': str(Path(cenario.__file__).resolve()),
     }
     texturas = list(lugar._texturas)
     lugar.descartar()
@@ -86,7 +116,7 @@ try:
     if modo == 'studio':
         assert _rt._texture_count == texturas_antes
     for _ in range(2):
-        lugar = cenario.carregar(str(pasta / 'cenario.json'))
+        lugar = carregar()
         texturas = list(lugar._texturas)
         p.begin_drawing()
         p.begin_mode_3d(camera)
@@ -105,3 +135,5 @@ finally:
     if lugar is not None:
         lugar.descartar()
     p.close_window()
+    if temporario:
+        temporario.cleanup()

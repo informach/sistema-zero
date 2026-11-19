@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
+import type { ArquivoCompilado } from '@sistemazero/molda-cenarios-core/compilar'
 import {
-  type ArquivoCompilado,
   type CenaParaStudio,
   MIME_DA_CENA_PARA_STUDIO,
-} from '@sistemazero/molda-cenarios-core/compilar'
+} from '@sistemazero/molda-cenarios-core/studio'
 import { codificarPngDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import { RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { prepareEditableStudioProject } from '../../state/editableProjectValidation'
@@ -18,7 +18,12 @@ import { createEmptyProject } from '../project'
 import { isValidAssetDataUrl, type ProjectAsset, sanitizeProjectAssets } from '../projectAssets'
 import { buildPythonAssetBundle, sanitizePythonProjectAssets } from '../pythonAssets'
 import { isPythonMaterialPath } from '../scene3d/assets'
-import { cenasQueUsamAsset, lerAssetDeCena3D, pacoteDeCena3D } from '../scene3d/referencias'
+import {
+  cenasQueUsamAsset,
+  lerAssetDeCena3D,
+  pacoteDeCena3D,
+  scene3DResourceChangeIssue,
+} from '../scene3d/referencias'
 import { assertScene3DAssets } from '../scene3d/validacao'
 
 const dataUrl = (mime: string, bytes: Uint8Array) =>
@@ -134,6 +139,50 @@ test('scene3d e campos físicos sobrevivem ao mesmo saneador com IDs, nomes e by
   await assertScene3DAssets(renomeados)
   expect(cenasQueUsamAsset(renomeados, 'alturas')).toEqual(['novo-faisca'])
   expect(cenasQueUsamAsset(renomeados, 'cena-id')).toEqual([])
+})
+
+test('módulo Python da cena é metadado fechado e permanece no manifesto de assets', async () => {
+  const { assets, scene } = await exemplo()
+  scene.cena3dPython = { modulo: 'src/cenario_praca.py' }
+  expect(sanitizePythonProjectAssets(assets)).toEqual(assets)
+  const bundle = await buildPythonAssetBundle(assets)
+  expect(bundle.manifest.assets.find((a) => a.id === scene.id)?.cena3dPython).toEqual(
+    scene.cena3dPython,
+  )
+  for (const meta of [
+    { modulo: '../cenario_fora.py' },
+    { modulo: 'main.py' },
+    { modulo: '/cenario_fora.py' },
+    { modulo: 'cenario_praca.py', extra: 1 },
+  ])
+    expect(
+      sanitizePythonProjectAssets(
+        assets.map((a) => (a.id === scene.id ? { ...a, cena3dPython: meta } : a)),
+      ).some((a) => a.id === scene.id),
+    ).toBe(false)
+})
+
+test('cena com módulo Python fixa os caminhos físicos do manifesto e dos recursos enquanto existir', async () => {
+  const { assets, scene } = await exemplo()
+  scene.cena3dPython = { modulo: 'cenario_praca.py' }
+  for (const id of [scene.id, assets[0]!.id]) {
+    const alterados = assets.map((a) =>
+      a.id === id
+        ? { ...a, proPath: `outro/${a.kind === 'scene3d' ? 'praca.json' : 'alturas.bin'}` }
+        : a,
+    )
+    expect(scene3DResourceChangeIssue(assets, alterados)).toContain('caminho')
+  }
+  expect(
+    scene3DResourceChangeIssue(
+      assets,
+      assets.map((a) => ({ ...a, name: `novo-${a.name}` })),
+    ),
+  ).toBeNull()
+  const semCena = assets
+    .filter((a) => a.id !== scene.id)
+    .map((a) => ({ ...a, proPath: 'dados/novo.bin' }))
+  expect(scene3DResourceChangeIssue(assets, semCena)).toBeNull()
 })
 
 test('dependência ausente, tipo/MIME errado e IDs repetidos recusam o conjunto', async () => {

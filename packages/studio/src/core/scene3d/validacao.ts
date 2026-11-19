@@ -11,7 +11,7 @@ export async function assertScene3DAssets(
   // Capture exact bytes before the first await; later editor changes cannot alter this validation.
   const cenas = assets.filter((a) => a.kind === 'scene3d').map((a) => pacoteDeCena3D(a, assets))
   if (!cenas.length) return
-  const { conferirConteudoCompilado } = await import('@sistemazero/molda-cenarios-motor/compilar')
+  const { conferirConteudoCompilado } = await import('@sistemazero/molda-cenarios-motor/conteudo')
   for (const pacote of cenas) {
     signal?.throwIfAborted()
     await conferirConteudoCompilado(pacote.cena, pacote.arquivos, signal)

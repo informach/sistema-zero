@@ -5,11 +5,18 @@ import {
   studioPythonDeploymentRoute,
   studioPythonRuntimeRoute,
 } from '@sistemazero/core/studio/python-runtime-distribution'
-import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  type CenaParaStudio,
+  MIME_DA_CENA_PARA_STUDIO,
+} from '@sistemazero/molda-cenarios-core/studio'
 import { unzipSync } from 'fflate'
 import { pythonWebBytesSha256 } from '../../runtime/python/webFiles'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
@@ -28,6 +35,7 @@ async function fixture(
   kind: 'classic' | 'pro' = 'classic',
   launcher = true,
   completeReader = false,
+  sceneReader = false,
 ) {
   const { project, environment } = await pythonEnvironmentFixture(kind)
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
@@ -50,7 +58,10 @@ async function fixture(
     version: 1,
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
-    features: completeReader ? [PYTHON_PINTA_WORLD_FEATURE] : [],
+    features: [
+      ...(completeReader ? [PYTHON_PINTA_WORLD_FEATURE] : []),
+      ...(sceneReader ? [PYTHON_MOLDA_SCENE_FEATURE] : []),
+    ],
     providedModules: [],
     previewHostAudioVersion: 1,
     files: await Promise.all(
@@ -115,6 +126,63 @@ async function fixture(
     calls: () => authorizations,
   }
 }
+
+test('o pacote web de cenário exige a capacidade da distribuição exata; a fonte permanece disponível', async () => {
+  const envelope: CenaParaStudio = {
+    formato: 'studio-cena3d',
+    versao: 1,
+    recursos: [],
+    cena: {
+      formato: 'molda-cena-compilada',
+      versao: 1,
+      nome: 'Praça vazia',
+      unidade: 'metro',
+      eixoVertical: 'y',
+      fonte: { cenario: 'praca', revisao: 1, digest: 'a'.repeat(64) },
+      arquivos: [],
+      nos: [],
+      entidades: [],
+      colisoes: [],
+      aguas: [],
+      caminhos: [],
+      marcadores: [],
+      texturas: [],
+      fontes: { modelos: [], texturas: [], conjuntos: [] },
+      licencas: [],
+      ambiente: { hora: 12 },
+    },
+  }
+  for (const supported of [false, true]) {
+    const f = await fixture('classic', true, false, supported)
+    f.project.installedExtensions = [{ id: 'python-raylib-3d', version: '1.0.0', installedAt: 1 }]
+    f.project.assets = [
+      {
+        id: 'praca',
+        name: 'praca',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'praca.json',
+        proPath: 'cenarios/praca.json',
+        dataUrl: `data:${MIME_DA_CENA_PARA_STUDIO};base64,${Buffer.from(JSON.stringify(envelope)).toString('base64')}`,
+      },
+    ]
+    const before = JSON.stringify(f.project)
+    if (supported) {
+      const web = await buildPythonWebFiles(f.project, f.environment, new AbortController().signal)
+      expect(web.files['project/cenarios/praca.json']).toEqual(
+        new TextEncoder().encode(JSON.stringify(envelope)),
+      )
+    } else {
+      await expect(
+        buildPythonWebFiles(f.project, f.environment, new AbortController().signal),
+      ).rejects.toThrow('cenários do Molda')
+      expect(f.seen).toEqual([f.host.metadataURL])
+    }
+    const desktop = await buildPythonSourceFiles(f.project)
+    expect(desktop.files['cenarios/praca.json']).toBeDefined()
+    expect(JSON.stringify(f.project)).toBe(before)
+  }
+})
 
 test('o pacote web exige o leitor dos dados 2/3; a fonte desktop continua disponível', async () => {
   const { pngWithPintaData } = await import('../../../../pinta/src/export/pngText')

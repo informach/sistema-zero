@@ -1,4 +1,4 @@
-import { canonicalJson } from '@sistemazero/core/creations'
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
@@ -77,6 +77,7 @@ import {
   raylibRenamedAsset,
 } from '../core/raylibMediaPaths'
 import { isPythonMaterialPath, isScene3DAssetKind } from '../core/scene3d/assets'
+import type { PlanoDeImportacaoDeCena3D } from '../core/scene3d/importar'
 import { cenasQueUsamAsset, scene3DResourceChangeIssue } from '../core/scene3d/referencias'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
@@ -275,6 +276,10 @@ interface ProjectStore {
   /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
   addAsset: (input: NewAssetInput) => string | null
   importPintaMapBundle: (input: StudioPintaImportedAsset) => string | null
+  importScene3DBundle: (
+    plano: PlanoDeImportacaoDeCena3D,
+    sinal?: AbortSignal,
+  ) => Promise<string | null>
   removeAsset: (id: string) => string | null
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
@@ -1300,6 +1305,86 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+      },
+      importScene3DBundle: async (plano, sinal) => {
+        const project = get().project,
+          scope = captureProjectStorageScope()
+        if (!project || project.id !== plano.projetoId)
+          return 'O projeto aberto mudou. Traga o cenário novamente.'
+        if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+        const conferirSessao = () => {
+          sinal?.throwIfAborted()
+          if (scope !== captureProjectStorageScope() || scope.signal?.aborted)
+            throw new Error('O perfil mudou durante a importação. Traga o cenário novamente.')
+          if (get().project !== project)
+            throw new Error('O projeto mudou durante a importação. Suas edições foram preservadas.')
+          if (get().editingAccess !== 'author') throw new Error('Este projeto está em observação.')
+        }
+        try {
+          conferirSessao()
+          const capturado = copyStudioProjectJson(plano) as PlanoDeImportacaoDeCena3D,
+            conteudoBase = canonicalJson(copyStudioProjectJson(project)),
+            hash = await sha256Hex(conteudoBase)
+          conferirSessao()
+          if (capturado.baseHash !== hash)
+            return 'O projeto mudou depois do preparo. Traga o cenário novamente; suas edições foram preservadas.'
+          const [{ prepararImportacaoDeCena3D }, { pacoteDeCena3D }, fontesPython] =
+            await Promise.all([
+              import('../core/scene3d/importar'),
+              import('../core/scene3d/referencias'),
+              isPythonProject(project) ? import('../core/scene3d/python') : Promise.resolve(null),
+            ])
+          conferirSessao()
+          const asset = capturado.assets.find(
+            (a) => a.id === capturado.assetId && a.kind === 'scene3d',
+          )
+          if (!asset) return 'O cenário preparado está incompleto. Nenhum material foi adicionado.'
+          // Rebuild from verified bytes, never trust a serialized budget or a proposed asset replacement.
+          const verificado = await prepararImportacaoDeCena3D(
+            project,
+            pacoteDeCena3D(asset, capturado.assets),
+            { sinal },
+          )
+          conferirSessao()
+          if (canonicalJson(copyStudioProjectJson(project)) !== conteudoBase)
+            return 'O projeto mudou durante a importação. Suas edições foram preservadas.'
+          if (
+            verificado.baseHash !== capturado.baseHash ||
+            verificado.assetId !== capturado.assetId ||
+            canonicalJson(verificado.assets) !== canonicalJson(capturado.assets) ||
+            canonicalJson(verificado.fontesPython ?? []) !==
+              canonicalJson(capturado.fontesPython ?? [])
+          )
+            return 'O preparo do cenário mudou. Traga o cenário novamente; o projeto foi mantido.'
+          if (
+            canonicalJson(project.assets ?? []) === canonicalJson(verificado.assets) &&
+            !verificado.fontesPython?.length
+          )
+            return null
+          let proximo: Project = { ...project, assets: verificado.assets }
+          if (isPythonProject(project)) {
+            if (!fontesPython) throw Error('O preparo das fontes Python está indisponível.')
+            const python = fontesPython.aplicarFontesPythonDoCenario(
+              project,
+              verificado.assets,
+              verificado.fontesPython ?? [],
+            )
+            const erro = pythonProjectLayoutError(python, pythonEditLimits)
+            if (erro) return erro
+            proximo = python
+          }
+          conferirSessao()
+          set({
+            project: bump(proximo),
+            isDirty: true,
+            saveError: null,
+          })
+          return null
+        } catch (error) {
+          return error instanceof Error
+            ? error.message
+            : 'Não consegui trazer o cenário. O projeto foi mantido.'
+        }
       },
       importPintaMapBundle: (input) => {
         const project = get().project

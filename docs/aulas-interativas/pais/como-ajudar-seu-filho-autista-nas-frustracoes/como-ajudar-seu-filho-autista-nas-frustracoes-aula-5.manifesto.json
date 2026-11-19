@@ -1,0 +1,81 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+  "title": "Depois da crise: onde a magia acontece",
+  "blocks": [
+    {
+      "key": "video-a5-acolher",
+      "plannedVideo": "Título: Acolher e ensinar para a próxima vez\n\nEnsinar a validar o sentimento e a mostrar a resposta desejada quando a criança já se acalmou. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a5-analise",
+      "plannedVideo": "Título: O gatilho, a consequência e os ajustes\n\nEnsinar a observar o que veio antes e depois da crise e a ajustar a abordagem. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 2."
+    },
+    {
+      "key": "video-a5-fechamento",
+      "plannedVideo": "Título: Hoje eu escuto melhor\n\nReunir a ideia central do curso e encerrar com a mensagem final. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 3."
+    },
+    {
+      "key": "resumo-a5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\nDepois da crise: valide o sentimento e ensine a resposta desejada para a próxima vez; identifique o gatilho (o que veio antes) e a consequência (o que veio depois e manteve a crise); ajuste a sua abordagem; e trate cada crise como oportunidade de treino. A pergunta que fica é: o que o comportamento está tentando me mostrar?"
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises",
+        "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "acolher",
+      "title": "Acolher e ensinar para a próxima vez",
+      "objective": "Ensinar a validar o sentimento e a mostrar a resposta desejada quando a criança já se acalmou.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-acolher"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-acolher"]
+      }
+    },
+    {
+      "key": "analise",
+      "title": "O gatilho, a consequência e os ajustes",
+      "objective": "Ensinar a observar o que veio antes e depois da crise e a ajustar a abordagem.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-analise"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-analise"]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Hoje eu escuto melhor",
+      "objective": "Reunir a ideia central do curso e encerrar com a mensagem final.",
+      "intent": "delivery",
+      "blockKeys": ["video-a5-fechamento", "resumo-a5", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-fechamento", "certificado"]
+      }
+    }
+  ]
+}

@@ -22,7 +22,7 @@
 
 ## 1. Contrato, assets e preservação
 
-**Files:** `molda-cenarios-core/src/compilar/studio.ts`, export em `compilar/index.ts`; `studio/src/core/scene3d/{assets,validacao,referencias}.ts`; `projectAssets.ts`, `assetBinary.ts`, refinadores de projeto pertinentes, `proAssets.ts`, `pythonAssets.ts`; testes de contrato/asset/reabertura.
+**Files:** `molda-cenarios-core/src/compilar/studio.ts`, entrada pública restrita `/studio`; `studio/src/core/scene3d/{assets,validacao,referencias}.ts`; `projectAssets.ts`, `assetBinary.ts`, refinadores de projeto pertinentes, `proAssets.ts`, `pythonAssets.ts`; testes de contrato/asset/reabertura. A entrada foi isolada em 19/11 porque reexportar pelo índice do compilador levava a inicialização do schema do Estúdio ao runtime Three independente. O teste reproduzível voltou ao hash canônico sem regenerar o artefato ou elevar orçamento.
 
 **Contrato portátil:**
 
@@ -46,17 +46,29 @@ type PapelDoDado3D = 'alturas' | 'buracos'
 
 ## 2. Preparação e commit atômico de importação
 
-**Files:** `studio/src/core/scene3d/importar.ts`, `state/projectStore.ts` e ações de workspace pertinentes; `studio/molda-library.ts`, `components/assets/{addCreationToProject,MoldaImportDialog,AssetsPanel,ProAssetPaths}.tsx/ts`; `member-shell/src/components/creator/use-studio-creation-libraries.ts`; entrada pública restrita para cenários na oficina, sem ciclo de dependências.
+**Files:** `studio/src/core/scene3d/{importar,python}.ts`, `state/projectStore.ts` e ações de workspace pertinentes; `studio/src/studio/molda-library.ts`, `components/assets/{addCreationToProject,MoldaImportDialog,AssetsPanel,ProAssetPaths}.tsx/ts`; `member-shell/src/components/creator/use-studio-creation-libraries.ts`; entrada pública restrita para cenários na oficina, sem ciclo de dependências.
 
 `prepararImportacaoDeCena3D` recebe pacote compilado conferido, identificação da fonte e captura do projeto. Produz plano serializável com assets/referências e fontes Python opcionais. O commit revalida o projeto ativo e os recursos concorrentes, aplica uma única atualização do store e preserva fontes/IDs anteriores. Deduplicar por conteúdo, tipo e papel, não por nome. O namespace físico Python dos recursos é comum aos cenários, com nomes por digest, evitando multiplicar os mesmos arquivos em cada revisão.
+
+Decisões do preparo (19/11, após `33e90f06f`): capturar o projeto e os bytes antes dos awaits; calcular uma base por hash do conteúdo para o commit, além de capturar perfil/projeto/objeto ativo no chamador. ID de recurso deriva de tipo/MIME/hash e papel quando binário. ID da cena deriva do envelope final, permitindo revisão nova sem reescrever a anterior. Reimportação idêntica conserva os nomes personalizados. Contar as partes reais dos nós/GLBs, usando o inspetor já existente do motor (entrada pública restrita), e excluir a dupla contagem dos modelos que são dependências de cena; modelos comuns fora delas continuam contando. Inspecionar os bytes completos de modelos do curso para orçamento, conservando seus stubs e sem usá-los como substitutos de GLBs reais na cena. Nenhum novo parser GLB.
+
+Python: recursos novos em `cenarios/modelos`, `cenarios/imagens`, `cenarios/dados`, por hash; recursos existentes conservam seus caminhos. Os caminhos lógicos compilados do envelope permanecem intactos; o módulo chama `Cenario(raizDoProjeto, envelope.cena, arquivos=mapaFisico)` para reaproveitar um GLB já em `models/` sem duplicá-lo ou usar `..`. O módulo gerado fica ao lado do entrypoint, com nome livre/portátil; `main.py` e módulos autorais não são substituídos. A adaptação de skins para Raylib reaproveita a conversão já feita no exportador, por uma fronteira pública sem Studio→Oficina (que criaria ciclo). Conferir novamente o pacote transformado. Os tetos de caracteres/quantidade do store continuam independentes do orçamento de 24 MiB e podem recusar antes dele; não aumentá-los para fazer um ensaio caber.
+
+Refinamento Python após `38c33c519`: usar uma porta opcional de resolução física no próprio `Cenario`, equivalente ao mapa de arquivos que o runtime Three já recebe. O módulo gerado traduz caminho lógico do manifesto → caminho físico do asset por ID, capturado no preparo. Isso preserva os caminhos/papéis originais, inclusive quando GLB visual e de colisão compartilham bytes, sem duplicar aliases no filesystem ou reescrever a cena. O mapa deve cobrir exatamente o inventário e só permitir arquivos locais dentro da raiz; o cache estático usa o caminho físico, enquanto atores mantêm instâncias independentes por nó. Chamadas antigas sem mapa mantêm seu comportamento. Exigir provas CPython e browser do auxiliar canônico, regeneração das fontes e recurso de distribuição antes da oferta no produto.
+
+19/11: [preparo puro JavaScript testado e revisado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-preparo.md), dez casos reais; ação do store, caminhos/fontes Python, adapter e interface continuam pendentes. Os checks abaixo não fecham com o preparo sozinho. A divergência Canvas2D registrada pela sessão Pinta em `dd4f0959c` precisa ser conferida na qualificação integrada antes de fechar 8.4; tipagem integral local e redução DOM/Worker/Bun passaram, sem supressão.
+
+19/11: [ação atômica JavaScript implementada, testada e revisada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-commit.md), oito casos novos e regressão pertinente. O preparo usa a entrada CPU `/conteudo`; a opção de junção é executada na fonte Molda antes de entregar o pacote, evitando levar o compilador/GLTFExporter ao carregamento do modo Blocos. O teste de orçamento voltou a passar sem ampliar limites. A galeria/adapter ainda não chamam a ação; Python continua pendente, portanto os checks de produto abaixo permanecem abertos.
 
 - [ ] Testar primeiro 48/49 malhas reais, 5 MiB/modelo, 24 MiB/projeto existente, projeto alterado durante preparo, nomes colididos, repetição, dois cenários compartilhando recurso e falha/cancelamento: projeto original intacto.
 - [ ] Preparar referências/digests e a opção de junção compartilhada. Se o orçamento não couber, retornar excesso nominal e alternativa real; nunca omitir dependências ou mudar autoria.
 - [ ] Ampliar o adapter existente com cenas/revisões e resultado de bundle. O host usa CenariosHost/preparo autorizado e perfil capturado; não confiar em papel passado pelo cliente. Manter as criações antigas e sua origem.
-- [ ] Aplicar pelo store existente, com preservação de fontes Python e módulos autorais. Usar a fonte oficial `Cenario` para consumir a cena compilada; não criar outro runtime Python.
+- [x] Aplicar pelo store existente, com preservação de fontes Python e módulos autorais. Usar a fonte oficial `Cenario` para consumir a cena compilada; não criar outro runtime Python. [Recorte do preparo/store Python](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-python-importacao.md); adapter/interface continuam pendentes.
 - [ ] Ensaiar Trazer do Molda real, conta/ensaio autorizado, Classic/Pro e Python; reabrir/exportar offline e rever limites, cancelamento, recursos e UI nos temas/layouts existentes. Commit/checkpoint.
 
 ## 3. Carregador compartilhado e quatro motores
+
+19/11: [resolução física pelo auxiliar Python/Raylib testada e revisada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-raylib-assets.md). Mapa local completo sem reescrever o manifesto, compartilhamento estático e atores independentes; CPython nativo/Estúdio e Pyodide com os assets reais. A capacidade explícita da distribuição protege execução/export web de releases anteriores. Não houve ativação remota; módulos gerados, store Python, adapter/interface e os quatro motores continuam pendentes.
 
 **Files:** `studio/src/three/scene3d.ts` e bootstrap compartilhado; `preview/assetsBridge.ts`, `export/fileMap.ts`; contratos/blocos/codecs/IR de `official-extensions/world-3d`, `blockly/blocks/canvas3d.ts`, `official-extensions/game-3d`, `official-extensions/game-3d-advanced`.
 
