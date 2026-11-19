@@ -1,4 +1,4 @@
-import type { LiveOccurrence, LiveRoomView } from '@sistemazero/core/live'
+import type { LiveCatalogView, LiveOccurrence, LiveRoomView } from '@sistemazero/core/live'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { LiveMediaAuthorization } from './live.service'
 
@@ -44,6 +44,26 @@ export class PublicLiveIdentities {
         message.role === 'learner'
           ? { ...message, authorName: names.get(message.authorId ?? '') ?? 'Criador(a)' }
           : message,
+      ),
+    }
+  }
+
+  async catalog(view: LiveCatalogView): Promise<LiveCatalogView> {
+    const adultCohorts = new Set(
+      view.cohorts
+        .filter((cohort) => cohort.course?.audience === 'adult')
+        .map((cohort) => cohort.id),
+    )
+    const ids = view.enrollments.flatMap((enrollment) =>
+      enrollment.learnerId && !adultCohorts.has(enrollment.cohortId) ? [enrollment.learnerId] : [],
+    )
+    const names = await this.names(ids)
+    return {
+      ...view,
+      enrollments: view.enrollments.map((enrollment) =>
+        enrollment.learnerId && !adultCohorts.has(enrollment.cohortId)
+          ? { ...enrollment, learnerName: names.get(enrollment.learnerId) ?? 'Criador(a)' }
+          : enrollment,
       ),
     }
   }
