@@ -6,6 +6,9 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createProLanguageService } from '../src/monaco/pro/languageService'
 
+const fileCount = Number(process.env.STUDIO_PRO_LANGUAGE_FILES ?? 60)
+if (!Number.isSafeInteger(fileCount) || fileCount < 10 || fileCount > 5000)
+  throw new Error('STUDIO_PRO_LANGUAGE_FILES must be between 10 and 5000')
 const source: Record<string, string> = {
   'tsconfig.json': JSON.stringify({ compilerOptions: { strict: true }, include: ['src'] }),
   'src/state.ts':
@@ -14,7 +17,7 @@ const source: Record<string, string> = {
 }
 const imports = ['import { createState } from "./state";']
 const calls: string[] = []
-for (let index = 0; index < 57; index++) {
+for (let index = 0; index < fileCount - 3; index++) {
   source[`src/systems/system${index}.ts`] = [
     'import type { GameState } from "../state";',
     `export function tick${index}(delta: number, state: GameState): void {`,
@@ -37,7 +40,7 @@ const main = [
   '}',
 ].join('\n')
 source['src/main.ts'] = main
-if (Object.keys(source).length !== 60) throw new Error('The modular fixture must have 60 files')
+if (Object.keys(source).length !== fileCount) throw new Error('Invalid modular fixture file count')
 const fixtureHash = createHash('sha256').update(JSON.stringify(source)).digest('hex')
 const fixtureBytes = Object.values(source).reduce((sum, text) => sum + Buffer.byteLength(text), 0)
 const sampleCount = Number(process.env.STUDIO_PRO_LANGUAGE_SAMPLES ?? 30)
@@ -133,8 +136,7 @@ try {
       logicalCpus: cpus().length,
       memoryBytes: totalmem(),
     },
-    method:
-      'Synthetic 60-file language-service fixture in this process; function-body edits, 3 warmups per operation. No browser, worker transport, editor input, WebContainer, runtime or Zappy. No tracing, no forced GC. Process memory is not retained-memory or leak proof.',
+    method: `Synthetic ${fileCount}-file language-service fixture in this process; function-body edits, 3 warmups per operation. No browser, worker transport, editor input, WebContainer, runtime or Zappy. No tracing, no forced GC. Process memory is not retained-memory or leak proof.`,
     fixture: {
       files: Object.keys(source).length,
       sha256: fixtureHash,

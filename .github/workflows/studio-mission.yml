@@ -137,6 +137,11 @@ jobs:
       - name: Modular Pro language-service baseline
         working-directory: packages/studio
         run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language.json
+      - name: Thousand-file Pro language-service baseline
+        working-directory: packages/studio
+        env:
+          STUDIO_PRO_LANGUAGE_FILES: '1000'
+        run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language-1000.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -214,6 +219,10 @@ jobs:
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi
+      - name: Complete and incremental Pro file map on Windows
+        if: runner.os == 'Windows'
+        working-directory: packages/studio
+        run: bunx playwright test --config e2e/pro-workspace.config.ts --grep 'complete file map|symbols|continuous edits' --retries=0
       - name: Integrated Pinta and Phaser scenes on desktop and touch
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
@@ -255,6 +264,7 @@ jobs:
             packages/studio/.cache/mission
             packages/studio/.cache/playwright-results
             packages/studio/.cache/offscreen-lifecycle
+            packages/studio/.cache/pro-workspace-browser
             packages/studio/.cache/protected-lessons
             packages/studio/.cache/pinta-scenes-results
             packages/studio/.cache/pinta-integration-results

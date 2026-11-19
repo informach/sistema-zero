@@ -1,0 +1,72 @@
+{
+  "environment": {
+    "platform": "win32",
+    "bun": "1.3.11",
+    "typescript": "5.9.3",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832
+  },
+  "method": "Synthetic 1000-file language-service fixture in this process; function-body edits, 3 warmups per operation. No browser, worker transport, editor input, WebContainer, runtime or Zappy. No tracing, no forced GC. Process memory is not retained-memory or leak proof.",
+  "fixture": {
+    "files": 1000,
+    "sha256": "2b7ff318f443d56cc7ed00107309f1752d86bc9209e01a0de5be87da2d626e32",
+    "sourceBytes": 336617
+  },
+  "libraryLoadMs": 15.01260000000002,
+  "coldAnalysisMs": 1879.5287999999998,
+  "milliseconds": {
+    "editToDiagnosticsMs": {
+      "samples": 30,
+      "p50": 177.2882999999997,
+      "p95": 239.18700000000035,
+      "max": 245.35599999999977
+    },
+    "referencesMs": {
+      "samples": 30,
+      "p50": 7.805599999999686,
+      "p95": 10.823200000000725,
+      "max": 11.229200000001583
+    },
+    "renameMs": {
+      "samples": 30,
+      "p50": 8.230899999998655,
+      "p95": 12.798099999999977,
+      "max": 14.169400000000678
+    },
+    "symbolsMs": {
+      "samples": 30,
+      "p50": 3.198599999999715,
+      "p95": 5.463600000000952,
+      "max": 11.572200000000521
+    }
+  },
+  "checks": {
+    "dependencyErrorDetected": true,
+    "dependencyRepairObserved": true,
+    "allInitialFilesDiagnosed": true
+  },
+  "processMemoryBytes": {
+    "before": {
+      "rss": 236736512,
+      "heapTotal": 10329088,
+      "heapUsed": 1152789,
+      "external": 761097,
+      "arrayBuffers": 378564
+    },
+    "afterAnalysis": {
+      "rss": 706162688,
+      "heapTotal": 287819776,
+      "heapUsed": 146782406,
+      "external": 30042326,
+      "arrayBuffers": 0
+    },
+    "afterDispose": {
+      "rss": 706560000,
+      "heapTotal": 287820800,
+      "heapUsed": 146782406,
+      "external": 30042326,
+      "arrayBuffers": 0
+    }
+  }
+}

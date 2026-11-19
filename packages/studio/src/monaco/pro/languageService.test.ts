@@ -12,6 +12,24 @@ const libraries = Object.fromEntries(
 )
 
 describe('serviço TS isolado por projeto', () => {
+  it('preserva símbolos após os primeiros 300, com suas posições reais', () => {
+    const service = createProLanguageService(libraries)
+    const code = [
+      ...Array.from({ length: 350 }, (_, index) => `export const item${index} = ${index};`),
+      'export function zzUpdate() { return item349; }',
+    ].join('\n')
+    try {
+      service.update({ 'main.ts': code })
+      const symbols = service.symbols('main.ts')
+      expect(symbols.length).toBe(351)
+      const last = symbols.find((symbol) => symbol.name === 'zzUpdate')
+      expect(last).toBeDefined()
+      expect(code.slice(last?.start, (last?.start ?? 0) + (last?.length ?? 0))).toBe('zzUpdate')
+    } finally {
+      service.dispose()
+    }
+  })
+
   it('attributes compiler configuration errors to the actual jsconfig file', () => {
     const service = createProLanguageService(libraries)
     service.update({
