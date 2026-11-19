@@ -298,3 +298,21 @@ e recarrega ainda escondido para comprovar recuperação. Seis repetições Chro
 e os três fluxos WebKit passaram. O host E2E usa Node 24, após reproduzir o timeout
 de Bun no Windows; o prazo continua 120 s. Ver relatório
 `docs/qa/2026-11-18-studio-hidden-revision-and-test-host.md`.
+
+## Snapshot remoto 5da218d5c e revisão dos inventários
+
+O lote 0ac36108d corrigiu os inventários dos quatro blocos novos por motor e
+revisou o manual Avançado para 59.881 caracteres, dentro do teto original.
+Foram 461 testes aprovados antes do merge. O merge f0a357d8c incorporou o
+snapshot remoto 5da218d5c e foi verificado num worktree com dependências próprias:
+491 testes de contratos, matriz protegida (43), seis fluxos Pinta/Estúdio,
+typecheck, perfil de validação e bundle inicial (119.732 gzip) aprovados.
+Relatório: `docs/qa/2026-11-18-studio-linked-worlds-integration.md`.
+
+O laboratório de árvores profundas foi preservado em 8d92832b1, branch
+estudio-deep-storage-v4-20261118. Dez mil registros passaram no IndexedDB nativo
+de Chromium/WebKit, mantendo IDs/campos; o primeiro transporte reprovou o
+orçamento inicial e não entrou na PR. A branch de laboratório seguinte,
+estudio-deep-storage-boundary-20261118, separa decodificação rara de captura de
+saída; os resultados finais e a migração ainda precisam ser fechados. Nenhuma
+chave v4 foi ativada. O stash anterior continua preservado como histórico.
