@@ -3,6 +3,7 @@ import { resolveStudioProRemoteDependencies } from '@sistemazero/core/studio/pro
 import { STUDIO_THREE_VERSION } from '@sistemazero/core/studio/three-version'
 import { parseBuildRequest } from '../../../studio-runtime/src/contracts'
 import { prepareRuntimeDependencyLock } from '../../../studio-runtime/src/dependency-lock'
+import { javaScriptProject } from '../core/editableProject'
 import { createEmptyProject } from '../core/project'
 import { updateLegacyProToolchainManifest } from '../core/proToolchain'
 import { setProjectStorageNamespace } from './projectStorageRuntime'
@@ -41,7 +42,9 @@ function fixture() {
       'public/imagem.svg': { kind: 'file', content: '<svg xmlns="http://www.w3.org/2000/svg"/>' },
     },
   })
-  return { store, manifest, original: store.getState().project! }
+  const original = javaScriptProject(store.getState().project)
+  if (!original) throw new Error('A fixture deve ser um projeto JavaScript')
+  return { store, manifest, original }
 }
 const prepare = async ({ packageJson }: { packageJson: string }) =>
   prepareRuntimeDependencyLock(packageJson)
