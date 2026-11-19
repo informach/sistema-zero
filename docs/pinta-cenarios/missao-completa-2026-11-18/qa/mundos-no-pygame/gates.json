@@ -1,0 +1,98 @@
+{
+  "base": "d25ab39814682c0ecb9e712a916ed61406fe43f7",
+  "codeInputs": "codigo-verificado.json",
+  "typechecks": {
+    "pinta": {
+      "command": "bunx tsc --noEmit",
+      "exitCode": 0,
+      "outputBytes": 0
+    },
+    "studio": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0,
+      "outputBytes": 0
+    }
+  },
+  "pinta": {
+    "command": "PYTHON=<pygame-ce-2.5.7> bun test src",
+    "pass": 2090,
+    "fail": 0,
+    "skip": 0,
+    "assertions": 23376,
+    "files": 176
+  },
+  "studio": {
+    "pass": 45,
+    "fail": 0,
+    "files": 8,
+    "assertions": 331,
+    "isolatedImportDialogCases": 53
+  },
+  "core": {
+    "identityAndRecipe": {
+      "pass": 10,
+      "assertions": 118
+    },
+    "capabilities": {
+      "pass": 8,
+      "assertions": 55
+    }
+  },
+  "browser": {
+    "interface": 7,
+    "intermediateReader": 2,
+    "publishedReader": 2,
+    "fail": 0
+  },
+  "native": {
+    "python": "3.13.17",
+    "pygame": ["2.5.7", "2.5.8"],
+    "scales": [1, 2],
+    "rootLayers": 18,
+    "destinationLayers": 2,
+    "rootSolids": 57,
+    "rejectionAndBudgetChecks": 19,
+    "resolutionChecks": 4,
+    "exportedModuleExecuted": true,
+    "pydew": {
+      "frames": 60,
+      "layers": 16,
+      "solids": 349,
+      "colors": 55
+    }
+  },
+  "generators": {
+    "scenePython": 0,
+    "pythonTextSources": 0,
+    "validationProfile": 0
+  },
+  "lint": {
+    "changedFiles": 50,
+    "exitCode": 0,
+    "previousEvidenceFormatted": 18,
+    "previousEvidenceValuesPreserved": true
+  },
+  "cloud": {
+    "read": 5,
+    "write": 4,
+    "writerPromotionVerified": false
+  },
+  "runtime": {
+    "feature": "pinta-map-world-v1",
+    "validationFingerprint": "a1ba1495632786553704fd7ba2f1e5d5c9f542b2c866ba7f8d08256ef6f65d3e",
+    "qualifiedBrowserDistribution": false
+  },
+  "upstreamCI": {
+    "run": 44447868641,
+    "commit": "d25ab39814682c0ecb9e712a916ed61406fe43f7",
+    "conclusion": "failure",
+    "failedJobs": ["ci", "arquipelago", "studio-e2e-chromium-2"],
+    "bypassed": false
+  },
+  "devices": {
+    "physicalMachines": 1,
+    "additionalPhysicalDevices": false,
+    "authenticatedStagingCycle": false
+  },
+  "missionComplete": false
+}

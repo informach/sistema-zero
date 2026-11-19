@@ -1,0 +1,73 @@
+{
+  "erros": 0,
+  "avisos": 0,
+  "informacoes": 11,
+  "mensagens": [
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/4/primitives/0/attributes/TEXCOORD_1"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/6/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/7/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/8/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/9/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/14/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/15/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "UNUSED_OBJECT",
+      "message": "This object may be unused.",
+      "severity": 2,
+      "pointer": "/meshes/17/primitives/0/attributes/TEXCOORD_0"
+    },
+    {
+      "code": "NODE_EMPTY",
+      "message": "Empty node encountered.",
+      "severity": 2,
+      "pointer": "/nodes/139"
+    },
+    {
+      "code": "IMAGE_NPOT_DIMENSIONS",
+      "message": "Image has non-power-of-two dimensions: 68x58.",
+      "severity": 2,
+      "pointer": "/images/2"
+    }
+  ]
+}

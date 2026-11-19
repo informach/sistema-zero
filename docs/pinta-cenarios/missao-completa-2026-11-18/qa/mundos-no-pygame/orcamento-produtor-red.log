@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src\export\portableImageData.test.ts:
+171 |
+172 | test('o mundo recusa as superfícies temporárias de uma instância de conjunto ampliada', async () => {
+173 |   const { map, assets } = vilaEFloresta()
+174 |   const instance = map.layers.flatMap((layer) => layer.kind === 'objects' ? layer.objects : []).find((object) => object.setId)!
+175 |   instance.width = instance.height = 12_288
+176 |   await expect(deriveLoadedPintaImage(map, recipe(map, { kind: 'map-world' }, 1), limits, { assets, tilesets: assets.filter((a): a is AnyTilesetAsset => a.kind === 'tileset' || a.kind === 'vector-tileset'), raster: nativeRaster() })).rejects.toThrow('grande demais')
+                                                                                                                                                                                                                                                        ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\src\export\portableImageData.test.ts:176:243)
+(fail) o mundo recusa as superfícies temporárias de uma instância de conjunto ampliada [109.00ms]
+
+ 0 pass
+ 21 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [843.00ms]

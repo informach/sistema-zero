@@ -26,8 +26,14 @@ const EXTENSOES_MATERIAIS = [
 
 /** Confere bytes reais com os leitores limitados do Molda antes de chamar o GLTFLoader.
  * O teto de leitura compartilhado é 32 MiB por arquivo; o pacote pode conter várias partes. */
-export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: boolean } = {}) {
+export function inspecionarGlbDaCompilacao(
+  bytes: Uint8Array,
+  opcoes: { fonte?: boolean; luzes?: boolean } = {},
+) {
   conferirGlb(bytes)
+  const extensoes: readonly string[] = opcoes.luzes
+    ? [...EXTENSOES_MATERIAIS, 'KHR_lights_punctual']
+    : EXTENSOES_MATERIAIS
   // Entradas de outros exportadores podem descrever o padding junto da imagem.
   // A conferência usa uma cópia canônica, mantendo bytes/digest originais na autoria.
   const leitura = readGltfDocument(
@@ -35,13 +41,13 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
     [],
     'modelo.glb',
     {
-      acceptedRequiredExtensions: EXTENSOES_MATERIAIS,
+      acceptedRequiredExtensions: extensoes,
     },
   )
   if (leitura.status !== 'ready') throw Error('O GLB precisa ser autocontido.')
   const d = leitura.document
   for (const e of d.extensions.unhandled)
-    if (!(EXTENSOES_MATERIAIS as readonly string[]).includes(e))
+    if (!extensoes.includes(e))
       throw Error(`A extensão “${e}” não pode entrar no pacote compilado sem um adaptador.`)
   const profundidades = new Uint16Array(d.graph.nodes.length)
   for (const indice of d.graph.order) {

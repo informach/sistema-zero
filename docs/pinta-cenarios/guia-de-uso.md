@@ -54,6 +54,21 @@ ligações da biblioteca para atualizar os desenhos sem substituir a programaç�
 **Baixar** oferece backup nativo, PNG com dados do Pinta e projetos externos. Guarde o
 `.pinta.json` para conservar a edição completa. Veja o [guia de exportação](exportacao.md).
 
+No Estúdio com **Python/Pygame**, escolha **Cenário com outros lugares** ao trazer um mapa
+do Pinta. Essa opção leva também os destinos das portas e aparece quando o ambiente Python
+do projeto já tem o leitor atualizado. Ambientes anteriores conservam o mapa de um só lugar.
+Um editor sem execução conectada também pode preparar o mundo para exportação no computador.
+**Mapa com camadas e objetos**
+continua disponível para trazer apenas um lugar; a imagem simples continua como antes.
+Revisar um material existente conserva a opção escolhida anteriormente.
+
+O programa pode usar `mapa = pinta.carregar_mapa('vila')` e `mapa.ponto_inicial()`.
+Quando o jogador atravessar uma porta, o programa chama `outro = mapa.abrir_destino(porta)`;
+recebe um novo mapa e decide como posicionar o personagem. Uma porta sem destino retorna
+`None`. Um destino ausente gera um erro claro. O texto da porta não abre arquivos do computador.
+Editar apenas o mapa de chegada também atualiza o material vinculado, preservando seu nome
+e o programa. Para exportar esse jogo Python com o leitor e os mapas, use **Baixar fonte**.
+
 Se outra janela salvar uma versão antiga, o Pinta conserva o cenário confirmado e guarda
 as mudanças atrasadas em um desenho com `-copia` no nome. Um aviso explica a recuperação.
 Se você estiver editando, poderá continuar na cópia; os dois desenhos ficam na galeria,

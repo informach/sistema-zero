@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\registry.test.ts:
+(pass) lazy runtime routing > um mundo exige o leitor no runtime exato; projetos anteriores continuam executáveis [31.00ms]
+(pass) lazy runtime routing > JavaScript loads no Python module and concurrent requests share only the module
+(pass) lazy runtime routing > registration metadata is captured, so later mutation cannot reroute a project
+(pass) lazy runtime routing > missing provider, revoked release, absent grant and checking host never import a module
+(pass) lazy runtime routing > a runtime identity mismatch does not fall back to JavaScript
+(pass) lazy runtime routing > failed imports and wrong module identities are retryable, with a structured failure
+(pass) lazy runtime routing > aborting one editor cancels its wait while another editor receives the module
+(pass) lazy runtime routing > an already canceled request cannot start an import [16.00ms]
+(pass) lazy runtime routing > duplicate routes and IDs are rejected at host registration
+
+src\components\assets\pintaImageModes.test.ts:
+(pass) what a Python project brings from a Pinta drawing > pygame: the whole drawing with its data is the default, the single image an option
+(pass) what a Python project brings from a Pinta drawing > Turtle / Pygame Zero, or a host without sheet facts, keep exactly the single image
+(pass) what a Python project brings from a Pinta drawing > a reviewed material keeps its kind when still offered
+(pass) what a Python project brings from a Pinta drawing > pygame pixel art starts at scale 2 (draw at 32, play at 64); the rest at 1
+(pass) what a Python project brings from a Pinta drawing > size and selection follow the mode
+
+src\components\assets\PintaImportDialog.test.tsx:
+Isolated ./src/components/assets/__tests__/PintaImportDialog.cases.tsx: 53 pass, 0 fail, 344 expect() calls
+(pass) PintaImportDialog.test.tsx mock cases own an isolated module realm [6937.00ms]
+
+ 15 pass
+ 0 fail
+ 62 expect() calls
+Ran 15 tests across 3 files. [7.45s]

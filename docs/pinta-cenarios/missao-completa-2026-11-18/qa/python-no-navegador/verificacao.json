@@ -1,0 +1,62 @@
+{
+  "sourceBase": "19738117f598ad0bc5c20bd6e21f77e4a66e2d69",
+  "distributionSha256": "80825161b028772f53d1e132b25d8982028fd1b54fae02fe3492668f9a7ad999",
+  "chrome": "157.0.8103.79",
+  "bun": "1.4.3",
+  "features": ["turtle-compound-shapes", "project-missions-v1", "pinta-map-world-v1"],
+  "gates": {
+    "studioTypes": {
+      "exitCode": 0
+    },
+    "focusedTests": {
+      "exitCode": 0,
+      "tests": 10,
+      "assertions": 54
+    },
+    "browser": {
+      "exitCode": 0,
+      "tests": 13
+    },
+    "sceneCodegen": {
+      "exitCode": 0
+    },
+    "sourceCodegen": {
+      "exitCode": 0
+    },
+    "nativeVersions": ["2.5.7", "2.5.8"],
+    "biome": {
+      "exitCode": 0,
+      "files": 9
+    }
+  },
+  "files": [
+    {
+      "path": "experiments/studio-python-runtime/fixtures.ts",
+      "sha256": "4bfcf880dce092528645aa1a1c6c474b72de953c91ac1ff17e6bbd48c45b6b92"
+    },
+    {
+      "path": "experiments/studio-python-runtime/pintaWorldFixtures.ts",
+      "sha256": "28fb508137717e457b5bbcde288d2af31806fac97c938dcc9ba88c0ec1704519"
+    },
+    {
+      "path": "packages/studio/playwright.python-pygame.config.ts",
+      "sha256": "0b550a2cb6fcbbb11ebfeca075126ae41895436db6c6145d88f25ac316d9ec89"
+    },
+    {
+      "path": "packages/studio/e2e-runtime/python-pinta-world.spec.ts",
+      "sha256": "958c9c7ca121cf9a0425fbcdaae9584f147c0f7def9a7006f6d18fa39bb033b6"
+    },
+    {
+      "path": "packages/studio/scripts/python/test-pinta-world.py",
+      "sha256": "87f99161f3e172ed0ece300c8b54eb7d59893d1262b10c1b17c1630cd006361a"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "sha256": "364affec3e3c506b7039a95203120f7163cab892aec04dbee886579770749af4"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/desktopSources.generated.ts",
+      "sha256": "880673171059f6fb7acc4bde6b483111c697ff7fdf669eb93934ee446acaa975"
+    }
+  ]
+}

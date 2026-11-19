@@ -1,4 +1,4 @@
-import { normalizeGlbImagePadding } from '@sistemazero/molda/gltf'
+import { normalizeGlbImagePadding, stabilizeGeneratedGlbImages } from '@sistemazero/molda/gltf'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import type { AnimationClip, Mesh, Object3D } from 'three'
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
@@ -15,6 +15,7 @@ export async function gravarGlbCompilado(
   arquivos: ArquivosDaCompilacao,
   sinal: AbortSignal,
   animacoes: readonly AnimationClip[] = [],
+  opcoes: { luzes?: boolean; ordenarImagens?: boolean } = {},
 ) {
   sinal.throwIfAborted()
   let memoria = 0,
@@ -73,9 +74,10 @@ export async function gravarGlbCompilado(
   sinal.throwIfAborted()
   if (!(resultado instanceof ArrayBuffer)) throw Error('O exportador não produziu um arquivo GLB.')
   const bytes = normalizeGlbImagePadding(new Uint8Array(resultado)),
-    medidas = inspecionarGlbDaCompilacao(bytes)
+    medidas = inspecionarGlbDaCompilacao(bytes, opcoes)
+  const estavel = opcoes.ordenarImagens ? stabilizeGeneratedGlbImages(bytes) : bytes
   sinal.throwIfAborted()
-  return arquivos.adicionarDeduplicado(caminho, bytes, {
+  return arquivos.adicionarDeduplicado(caminho, estavel, {
     mime: 'model/gltf-binary',
     papel,
     malhas: medidas.malhas,

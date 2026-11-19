@@ -1,8 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createHash } from 'node:crypto'
 import type { PintaImageRecipe } from '@sistemazero/core/studio/pinta-image'
+import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  createStudioRuntimeCatalog,
+  createStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { StrictMode } from 'react'
+import { createStudioRuntimeRegistry } from '../../../runtime/registry'
+import { StudioRuntimeEnvironmentProvider } from '../../../studio/runtime-environment'
 import { fakeUseStore } from '../../../testing/fakeIdbStore'
 
 /**
@@ -77,7 +84,7 @@ function portableImage(recipe: PintaImageRecipe) {
       provenance: {
         sourceSha256: 'a'.repeat(64),
         dependencies:
-          recipe.selection.kind === 'tilemap'
+          recipe.selection.kind === 'tilemap' || recipe.selection.kind === 'map'
             ? [{ drawingId: 'tileset', sha256: 'c'.repeat(64) }]
             : [],
       },
@@ -1113,6 +1120,154 @@ describe('Python image selection through the real modal and project store', () =
       })
     })
   }
+
+  it('pygame oferece o mundo na mesma oficina, conserva mapa legado e usa versão própria na receita', async () => {
+    const raw = documentFixture('python', 'classic')
+    raw.assets = []
+    raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+    useProjectStore.setState({
+      project: await refinePythonProjectDocument(raw),
+      editingAccess: 'author',
+      isDirty: false,
+    })
+    const previews: PintaImageRecipe[] = []
+    render(
+      <StudioPintaLibraryProvider
+        value={pythonAdapter({
+          list: async () => [
+            {
+              ...DRAWINGS[0]!,
+              role: 'tilemap',
+              imageSelection: {
+                kind: 'tilemap',
+                width: 32,
+                height: 32,
+                sheet: { width: 16, height: 16 },
+              },
+            },
+          ],
+          previewImage: async (recipe) => {
+            previews.push(structuredClone(recipe))
+            return portableImage(recipe)
+          },
+        })}
+      >
+        <PintaImportDialog onClose={() => {}} />
+      </StudioPintaLibraryProvider>,
+    )
+    await choosePythonImage()
+    await waitFor(() => expect(previews.at(-1)?.selection.kind).toBe('map-world'))
+    expect(previews.at(-1)?.version).toBe(2)
+    expect(selectedValue('O que trazer')).toBe('map-world')
+    expect(screen.getByText(/abrir_destino/)).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('O que trazer'), { target: { value: 'map' } })
+    await waitFor(() => expect(previews.at(-1)?.selection.kind).toBe('map'))
+    expect(previews.at(-1)?.version).toBe(1)
+    fireEvent.change(screen.getByLabelText('O que trazer'), { target: { value: 'tilemap' } })
+    await waitFor(() => expect(previews.at(-1)?.selection.kind).toBe('tilemap'))
+    expect(previews.at(-1)?.version).toBe(1)
+  })
+
+  for (const supported of [false, true])
+    it(`o catálogo do host ${supported ? 'oferece' : 'retém'} o mundo conforme o leitor do runtime fixado`, async () => {
+      const release = await createStudioRuntimeRelease({
+        manifestVersion: 1,
+        profileId: 'python-test',
+        releaseId: 'test-1',
+        programmingLanguage: 'python',
+        kinds: ['classic'],
+        modes: ['blocks', 'bridge'],
+        capabilities: ['edit', 'execute', 'export-source'],
+        extensions: [{ id: 'python-pygame', versions: ['1.0.0'] }],
+        sourceTargets: ['browser', 'desktop'],
+        requiredBrowserFeatures: [],
+        artifacts: [{ path: 'test-runtime.txt', sha256: 'b'.repeat(64) }],
+        python: {
+          version: '3.14.2',
+          packages: [],
+          providedModules: [],
+          features: supported ? [PYTHON_PINTA_WORLD_FEATURE] : [],
+        },
+      })
+      const catalog = await createStudioRuntimeCatalog({
+        releases: [release],
+        profiles: [
+          {
+            id: release.profileId,
+            languages: ['python'],
+            kinds: ['classic'],
+            modes: ['blocks', 'bridge'],
+            levels: [],
+            releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
+          },
+        ],
+      })
+      const raw = documentFixture('python', 'classic')
+      if (raw.programmingLanguage !== 'python') throw new Error('fixture inválida')
+      raw.runtime = {
+        profileId: release.profileId,
+        releaseId: release.releaseId,
+        manifestSha256: release.manifestSha256,
+      }
+      raw.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+      raw.assets = []
+      raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+      useProjectStore.setState({
+        project: await refinePythonProjectDocument(raw),
+        editingAccess: 'author',
+        isDirty: false,
+      })
+      const previews: PintaImageRecipe[] = []
+      render(
+        <StudioRuntimeEnvironmentProvider
+          value={{
+            catalog,
+            registry: createStudioRuntimeRegistry([]),
+            access: () => ({
+              releaseStatus: 'active',
+              hostOperations: [],
+              grantedCapabilities: [],
+              grantedExtensionIds: [],
+              curation: null,
+            }),
+            resolvePythonAnalysis: async () => {
+              throw new Error('This authoring test has no execution runtime.')
+            },
+          }}
+        >
+          <StudioPintaLibraryProvider
+            value={pythonAdapter({
+              list: async () => [
+                {
+                  ...DRAWINGS[0]!,
+                  role: 'tilemap',
+                  imageSelection: {
+                    kind: 'tilemap',
+                    width: 32,
+                    height: 32,
+                    sheet: { width: 16, height: 16 },
+                  },
+                },
+              ],
+              previewImage: async (recipe) => {
+                previews.push(structuredClone(recipe))
+                return portableImage(recipe)
+              },
+            })}
+          >
+            <PintaImportDialog onClose={() => {}} />
+          </StudioPintaLibraryProvider>
+        </StudioRuntimeEnvironmentProvider>,
+      )
+      await choosePythonImage()
+      expect(selectedValue('O que trazer')).toBe(supported ? 'map-world' : 'map')
+      expect(previews.at(-1)?.version).toBe(supported ? 2 : 1)
+      expect(
+        within(screen.getByLabelText('O que trazer')).queryByRole('option', {
+          name: 'Cenário com outros lugares',
+        }) !== null,
+      ).toBe(supported)
+    })
 
   it('a changed frame revokes its pending preview; the late image never replaces the current choice', async () => {
     await seedPythonProject()

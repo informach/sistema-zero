@@ -1,1 +1,14 @@
-{"baseline":"567b93f95","baselineNativeMax":4,"forced4":{"schema":4,"x":17,"y":null},"protected":{"schema":5,"envelope":5,"oldNativeRejects":true,"oldFileRejects":true,"oldSetRejects":true},"byteCanonical":{"rich4":true,"layers3":true,"legacy1":true},"cloud":{"oldWrite":3,"oldRejectsNew":true,"newWrite":4,"newRead":4}}
+{
+  "baseline": "567b93f95",
+  "baselineNativeMax": 4,
+  "forced4": { "schema": 4, "x": 17, "y": null },
+  "protected": {
+    "schema": 5,
+    "envelope": 5,
+    "oldNativeRejects": true,
+    "oldFileRejects": true,
+    "oldSetRejects": true
+  },
+  "byteCanonical": { "rich4": true, "layers3": true, "legacy1": true },
+  "cloud": { "oldWrite": 3, "oldRejectsNew": true, "newWrite": 4, "newRead": 4 }
+}

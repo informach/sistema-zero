@@ -92,24 +92,36 @@ export function Dialogo({
   titulo,
   aoFechar,
   children,
+  className,
 }: {
   titulo: string
   aoFechar(): void
   children: ReactNode
+  className?: string
 }): JSX.Element {
   const ref = useRef<HTMLDialogElement>(null)
   const idDoTitulo = useId()
   useEffect(() => {
     const dialogo = ref.current
+    const focoAnterior =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
     if (dialogo && !dialogo.open) dialogo.showModal()
+    return () => {
+      if (dialogo?.open) dialogo.close()
+      if (focoAnterior?.isConnected) focoAnterior.focus({ preventScroll: true })
+    }
   }, [])
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: o toque no fundo é um atalho; pelo teclado, Esc fecha
     <dialog
       ref={ref}
-      className="mcn-dialogo"
+      className={`mcn-dialogo ${className ?? ''}`}
       aria-labelledby={idDoTitulo}
-      onClose={aoFechar}
+      onClose={() => {
+        // close é enfileirado: o diálogo pode ter reaberto antes do evento,
+        // inclusive quando StrictMode repete o ciclo de efeitos.
+        if (ref.current && !ref.current.open) aoFechar()
+      }}
       onCancel={(evento) => {
         evento.preventDefault()
         aoFechar()

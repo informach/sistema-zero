@@ -52,6 +52,40 @@ const prova = (indice: number) => ({
   tipoDoConteudo: arquivos[indice]!.tipo,
 })
 
+test('preparo de exportação repassa só a rota prevista, limita corpo e mantém prova de perfil/sessão', async () => {
+  const base = montar(),
+    caminho = `cenarios/${CENARIO}/exportacao`,
+    r = await base.pedir('POST', caminho, { revisaoEsperada: 2 }, { 'x-sz-viewer': PERFIL })
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(base.chamadas).toEqual([
+    {
+      via: 'jwt',
+      path: `/members/cenarios/${caminho}`,
+      method: 'POST',
+      body: { revisaoEsperada: 2 },
+    },
+  ])
+  expect(base.assinados).toEqual([])
+  expect(base.conferidos).toEqual([])
+  expect((await base.pedir('GET', caminho)).status).toBe(404)
+  const grande = montar()
+  expect((await grande.pedir('POST', caminho, { lixo: 'a'.repeat(1024) })).status).toBe(400)
+  expect(grande.chamadas).toEqual([])
+  // Repasses JWT recebem a recusa do gateway; não criam uma identidade por conta própria.
+  const semSessao = montar({
+    user: null,
+    responder: () => ({ status: 401, body: { error: { code: 'UNAUTHENTICATED' } } }),
+  })
+  expect((await semSessao.pedir('POST', caminho, { revisaoEsperada: 2 })).status).toBe(401)
+  expect(semSessao.chamadas[0]?.via).toBe('jwt')
+  const trocado = montar()
+  expect(
+    (await trocado.pedir('POST', caminho, { revisaoEsperada: 2 }, { 'x-sz-viewer': CONTA })).status,
+  ).toBe(409)
+  expect(trocado.chamadas).toEqual([])
+})
+
 test('catálogo de conjuntos repassa somente as rotas e consultas declaradas, com corpos limitados', async () => {
   const base = montar()
   const prefixo = `conjuntos/${BIBLIOTECA}`

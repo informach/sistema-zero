@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-project-capabilities.test.ts:
+(pass) shared capability resolution > Python core does not install Turtle; classic and Pro have distinct modes
+(pass) shared capability resolution > unknown environment values cannot silently become JavaScript or execute [16.00ms]
+(pass) shared capability resolution > curation that eliminates all valid modes is an authoring error
+(pass) shared capability resolution > extensions need both release compatibility and independent contextual grants
+(pass) shared capability resolution > missing host operations deny execution without preventing source export
+(pass) shared capability resolution > retirement preserves existing projects; revocation preserves editing and export only
+(pass) shared capability resolution > publish and assist need the release declaration, a contextual grant and a host
+(pass) shared capability resolution > conflicting host entries never choose the more permissive first match
+
+ 8 pass
+ 0 fail
+ 55 expect() calls
+Ran 8 tests across 1 file. [133.00ms]

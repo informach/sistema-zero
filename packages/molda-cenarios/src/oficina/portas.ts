@@ -316,6 +316,11 @@ export interface CenariosHost {
   listarCenarios(mundoId: string): Promise<ResumoDeCenario[]>
   criarCenario(mundoId: string, nome: string): Promise<ResumoDeCenario>
   abrirCenario(id: string): Promise<CenarioAberto>
+  prepararExportacao(
+    id: string,
+    revisaoEsperada: number,
+    sinal?: AbortSignal,
+  ): Promise<import('@sistemazero/molda-cenarios-core/compilar').PreparoDeExportacao>
   moverHistorico(
     id: string,
     revisaoEsperada: number,

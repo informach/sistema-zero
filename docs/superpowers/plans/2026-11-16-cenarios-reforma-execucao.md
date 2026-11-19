@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–7 implementados, testados e revisados localmente. Lote 8 ativo: 8.1 e 8.2 fechados; **8.3 em andamento**, com runtime e distribuição Three conferidos, sem fechar exportação/interface. [Plano](2026-11-18-cenarios-lote8-exportacao.md), [recorte ativo](2026-11-18-cenarios-lote8-runtime.md), [runtime/pacote](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-runtime-three.md) e [leitura ZIP corrigida](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-zip-faixas.md). Quatro casos/3 ciclos, física, identificação, quatro clipes e exploração sem sessão passaram. Gargalo de reabertura resolvido com CRC/limites/conteúdo preservados. **Próximo passo exclusivo: GLB único**, depois preparo autorizado e interface. Raylib/Estúdio e publicação permanecem em 8.4/8.5. Lotes 8–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
+**Estado atual, 19/11:** lotes 0–7 implementados, testados e revisados localmente. Lote 8 ativo: **8.1, 8.2 e 8.3 fechados localmente**. [Revisão da interface e dos downloads](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-interface-exportacao.md): 803 testes, quatro layouts em claro/escuro, GLB reaberto e ZIP explorado sem sessão, tipagem e build. **Próxima frente exclusiva: 8.4 — Python/Raylib e Estúdio nos quatro destinos.** Publicação/perfil em 8.5, fechamento de 8, lotes 9–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.

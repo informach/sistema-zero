@@ -20,6 +20,7 @@ type Facts = Exclude<PintaImageSelectionSummary, { kind: 'unavailable' }>
 export function pintaImageModesFor(
   facts: PintaImageSelectionSummary | undefined,
   pygame: boolean,
+  linkedWorld = false,
 ): PintaImageMode[] {
   if (!facts || facts.kind === 'unavailable') return []
   const sheet = pygame && sheetOf(facts) !== undefined
@@ -29,7 +30,11 @@ export function pintaImageModesFor(
     case 'tile':
       return sheet ? ['tileset', 'tile'] : ['tile']
     case 'tilemap':
-      return sheet ? ['map', 'tilemap'] : ['tilemap']
+      return sheet
+        ? linkedWorld
+          ? ['map-world', 'map', 'tilemap']
+          : ['map', 'tilemap']
+        : ['tilemap']
     case 'background':
       return ['background']
   }

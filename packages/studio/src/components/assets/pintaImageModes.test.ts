@@ -35,6 +35,13 @@ describe('what a Python project brings from a Pinta drawing', () => {
     expect(pintaImageModesFor(sprite, true)).toEqual(['spritesheet', 'frame'])
     expect(pintaImageModesFor(tiles, true)).toEqual(['tileset', 'tile'])
     expect(pintaImageModesFor(map, true)).toEqual(['map', 'tilemap'])
+    expect(pintaImageModesFor(map, true, true)).toEqual(['map-world', 'map', 'tilemap'])
+    expect(
+      initialPintaImageMode(pintaImageModesFor(map, true), { selection: { kind: 'map' } }),
+    ).toBe('map')
+    expect(
+      initialPintaImageMode(pintaImageModesFor(map, true), { selection: { kind: 'tilemap' } }),
+    ).toBe('tilemap')
     expect(pintaImageModesFor(background, true)).toEqual(['background'])
     expect(pintaImageModesFor({ kind: 'unavailable', reason: 'needs-tileset' }, true)).toEqual([])
   })
@@ -70,6 +77,7 @@ describe('what a Python project brings from a Pinta drawing', () => {
     expect(pintaImageModeSize(sprite, 'spritesheet')).toEqual({ width: 128, height: 32 })
     expect(pintaImageModeSize(sprite, 'frame')).toEqual({ width: 32, height: 32 })
     expect(pintaImageModeSize(map, 'map')).toEqual({ width: 128, height: 48 })
+    expect(pintaImageModeSize(map, 'map-world')).toEqual({ width: 128, height: 48 })
     expect(pintaImageModeSize(map, 'tilemap')).toEqual({ width: 720, height: 400 })
     expect(pintaImageModeSelection('frame', { animationId: 'a', index: 2 })).toEqual({
       kind: 'frame',

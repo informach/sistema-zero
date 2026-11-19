@@ -7,7 +7,11 @@ const outputDirectory =
   `../../.cache/studio-python-runtime/pygame/${new Date().toISOString().replaceAll(':', '-')}`
 export default defineConfig({
   testDir: './e2e-runtime',
-  testMatch: ['python-pygame.spec.ts', 'python-pygame-performance.spec.ts'],
+  testMatch: [
+    'python-pygame.spec.ts',
+    'python-pygame-performance.spec.ts',
+    'python-pinta-world.spec.ts',
+  ],
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
