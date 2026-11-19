@@ -202,14 +202,24 @@ export function createOffscreenBodies(
 
   // Rolar até um bloco (Mostrar o bloco, cursor do código, chip do Zappy) passa por aqui: o corpo
   // volta antes de o Blockly medir onde o bloco está.
-  const originalCenter = workspace.centerOnBlock.bind(workspace)
-  workspace.centerOnBlock = (id: string | null, animate?: boolean) => {
-    if (id) reveal(id)
-    originalCenter(id, animate)
+  const originalCenter = workspace.centerOnBlock
+  const centerOnBlock: typeof workspace.centerOnBlock = function (
+    this: Blockly.WorkspaceSvg,
+    id,
+    animate,
+  ) {
+    if (!disposed && id) reveal(id)
+    originalCenter.call(this, id, animate)
   }
+  workspace.centerOnBlock = centerOnBlock
   // Desfazer e refazer mexem em blocos que podem estar fora da página.
-  const originalUndo = workspace.undo.bind(workspace)
-  workspace.undo = (redo: boolean) => {
+  const originalUndo = workspace.undo
+  const undo: typeof workspace.undo = function (this: Blockly.WorkspaceSvg, redo) {
+    // Another integration may retain this method after our controller is disposed.
+    if (disposed) {
+      originalUndo.call(this, redo)
+      return
+    }
     const stack = redo ? workspace.getRedoStack() : workspace.getUndoStack()
     const last = stack[stack.length - 1] as { blockId?: string; group?: string } | undefined
     if (last) {
@@ -220,9 +230,10 @@ export function createOffscreenBodies(
         if (!last.group) break
       }
     }
-    originalUndo(redo)
+    originalUndo.call(this, redo)
     sync()
   }
+  workspace.undo = undo
 
   return {
     sync,
@@ -230,9 +241,13 @@ export function createOffscreenBodies(
     restoreAll,
     detachedCount: () => detached.size,
     dispose() {
+      if (disposed) return
       disposed = true
       workspace.removeChangeListener(listener)
       restoreAll()
+      // Only release methods still owned by this controller, preserving later integrations.
+      if (workspace.centerOnBlock === centerOnBlock) workspace.centerOnBlock = originalCenter
+      if (workspace.undo === undo) workspace.undo = originalUndo
     },
   }
 }
