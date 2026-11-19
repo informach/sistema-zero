@@ -94,6 +94,24 @@ export class DrizzlePublicacoesDeCenariosRepository implements CenariosPublicaco
       .from(cenarioPublicacaoArquivos)
       .where(eq(cenarioPublicacaoArquivos.publicacaoId, publicacaoId))
   }
+  async recurso(publicacaoId: string, digest: string) {
+    const [linha] = await this.db
+      .select({
+        digest: cenarioPublicacaoArquivos.digest,
+        bytes: cenarioPublicacaoArquivos.bytes,
+        mime: cenarioPublicacaoArquivos.mime,
+        papel: cenarioPublicacaoArquivos.papel,
+      })
+      .from(cenarioPublicacaoArquivos)
+      .where(
+        and(
+          eq(cenarioPublicacaoArquivos.publicacaoId, publicacaoId),
+          eq(cenarioPublicacaoArquivos.digest, digest),
+        ),
+      )
+      .limit(1)
+    return linha ?? null
+  }
 
   gravar(entrada: NovaPublicacaoDeCenario, data: Date): Promise<PublicacaoGravada> {
     const dados = structuredClone(entrada),

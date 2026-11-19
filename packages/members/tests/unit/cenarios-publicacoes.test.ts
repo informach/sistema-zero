@@ -285,3 +285,36 @@ test('não reserva arquivos se o perfil já mudou ou a origem é privada', async
   await expect(privada.servico.reservarManifesto(equipe, privada.pedido)).rejects.toThrow(/equipe/i)
   expect((await privada.repo.espaco(privada.espaco.id))!.usadoBytes).toBe(0)
 })
+
+test('leitura do jogo expõe apenas versão publicada e arquivo que pertence à versão', async () => {
+  const b = await montar()
+  expect(await b.servico.perfilDoJogo(b.pedido.perfil)).toBeNull()
+  const a = await b.servico.publicarConferido(equipe, b.pedido, b.bytes, b.conferidos)
+  const visivel = await b.servico.perfilDoJogo(b.pedido.perfil)
+  expect(visivel?.id).toBe(a.publicacao.id)
+  expect(visivel).not.toHaveProperty('espacoId')
+  expect(visivel).not.toHaveProperty('autorId')
+  const arquivo = await b.servico.arquivoDoJogo(a.publicacao.id, b.pedido.manifesto.digest)
+  expect(arquivo.chave).toBe(`cenarios/${b.espaco.id}/blobs/${b.pedido.manifesto.digest}`)
+  await expect(b.servico.arquivoDoJogo(a.publicacao.id, 'f'.repeat(64))).rejects.toThrow()
+  await expect(
+    b.servico.arquivoDoJogo(crypto.randomUUID(), b.pedido.manifesto.digest),
+  ).rejects.toThrow()
+  await expect(
+    b.servico.lerPerfilDaOficina({ ...equipe, suporte: true }, b.pedido.perfil),
+  ).rejects.toThrow()
+  expect(await b.servico.lerPerfilDaOficina(equipe, b.pedido.perfil)).toEqual(visivel)
+})
+
+test('preparo da publicação autoriza o espaço real sem reservar bytes nem aceitar versão vencida', async () => {
+  const b = await montar()
+  const preparo = await b.servico.preparar(equipe, b.pedido)
+  expect(preparo.espacoId).toBe(b.espaco.id)
+  expect((await b.repo.espaco(b.espaco.id))!.usadoBytes).toBe(0)
+  await b.servico.publicarConferido(equipe, b.pedido, b.bytes, b.conferidos)
+  const repetida = await b.servico.preparar(equipe, b.pedido)
+  expect(repetida.publicacao?.versao).toBe(1)
+  await expect(
+    b.servico.preparar(equipe, { ...b.pedido, operacaoId: crypto.randomUUID() }),
+  ).rejects.toThrow(/destino/i)
+})

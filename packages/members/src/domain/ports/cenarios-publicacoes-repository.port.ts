@@ -20,4 +20,5 @@ export interface CenariosPublicacoesRepository {
   atual(perfil: PerfilDePublicacao): Promise<PublicacaoDeCenario | null>
   porId(id: string): Promise<PublicacaoDeCenario | null>
   recursos(publicacaoId: string): Promise<readonly RecursoDaPublicacao[]>
+  recurso(publicacaoId: string, digest: string): Promise<RecursoDaPublicacao | null>
 }

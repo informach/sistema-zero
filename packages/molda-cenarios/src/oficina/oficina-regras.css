@@ -1277,6 +1277,32 @@
   .mcn-dialogo.mcn-dialogo-exportar {
     width: min(560px, calc(100vw - 32px));
   }
+  .mcn-publicar,
+  .mcn-publicar-resumo,
+  .mcn-publicar-recibo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mcn-publicar-modos,
+  .mcn-publicar-sequencia {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mcn-publicar-modos {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .mcn-publicar-resumo,
+  .mcn-publicar-recibo {
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--color-mld-surface);
+  }
   .mcn-exportar-opcoes {
     display: grid;
     gap: 12px;

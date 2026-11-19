@@ -222,6 +222,8 @@ export class CenarioDesatualizado extends Error {
 }
 
 export interface CenariosHost {
+  /** Publicação autorizada da equipe; o host de ensaio mantém estado separado. */
+  publicacoes?: import('./publicacoes').PublicacoesDeCenariosHost
   espacos(): Promise<Espaco[]>
 
   listarBibliotecas(espacoId: string): Promise<Biblioteca[]>

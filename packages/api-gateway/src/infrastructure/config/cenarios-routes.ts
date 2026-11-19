@@ -1,3 +1,4 @@
+import { MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
@@ -61,6 +62,9 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
   return [
     ler('acesso', '/acesso'),
     ler('espacos', '/espacos'),
+    ler('publicacao-perfil', '/publicacoes/perfis/:ilha'),
+    escrever('publicacao-preparar', 'POST', '/publicacoes/preparar'),
+    escrever('publicacao-manifesto-reservar', 'POST', '/publicacoes/manifesto/reservar'),
 
     ler('bibliotecas', '/espacos/:espacoId/bibliotecas'),
     escrever('biblioteca-criar', 'POST', '/espacos/:espacoId/bibliotecas'),
@@ -131,5 +135,9 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     interna('lotes', '/lotes', CENARIOS_LOTE_MAX_BYTES),
     interna('capa', '/capa', 16 * 1024),
     interna('conjunto-miniatura', '/conjuntos/miniatura', 16 * 1024),
+    interna('publicacao-recursos', '/publicacoes/recursos', MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO),
+    interna('publicacao-confirmar', '/publicacoes/confirmar', MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO),
+    interna('publicacao-jogo-perfil', '/publicacoes/jogo/perfil', 16 * 1024),
+    interna('publicacao-jogo-arquivo', '/publicacoes/jogo/arquivo', 16 * 1024),
   ]
 }

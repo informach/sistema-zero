@@ -5,17 +5,14 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import { Elysia, type TSchema, t } from 'elysia'
 import type { CenariosService } from '../../../application/cenarios/cenarios.service'
-import { type Ator, LICENCAS, LIMITES_DOS_CENARIOS } from '../../../domain/cenarios/cenarios'
-import {
-  assertInternalCaller,
-  assertMemberShellConsumer,
-  isPrivilegedActor,
-  resolveAccountId,
-  resolveUserId,
-} from '../auth'
+import type { PublicacoesDeCenariosService } from '../../../application/cenarios/publicacoes.service'
+import { LICENCAS, LIMITES_DOS_CENARIOS } from '../../../domain/cenarios/cenarios'
+import { assertInternalCaller, assertMemberShellConsumer } from '../auth'
+import { atorDosCenarios as atorDe } from './cenarios-ator'
 
 export interface CenariosRoutesDeps {
   cenarios: CenariosService
+  publicacoes: PublicacoesDeCenariosService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -102,15 +99,6 @@ const AtorBody = t.Object({
   equipe: t.Boolean(),
   suporte: t.Boolean(),
 })
-
-function atorDe(headers: Record<string, string | undefined>): Ator {
-  return {
-    usuarioId: resolveUserId(headers),
-    contaId: resolveAccountId(headers),
-    equipe: isPrivilegedActor(headers),
-    suporte: Boolean(headers['x-auth-impersonator-id']?.trim()),
-  }
-}
 
 /**
  * Molda Cenários. As rotas do aluno e da equipe ficam em `/members/cenarios` (o gateway

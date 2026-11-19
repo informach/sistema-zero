@@ -1,0 +1,36 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "tema": "light",
+    "medidas": {
+      "largura": 560,
+      "janela": 1440,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "versao": 3,
+    "cancelamento": true,
+    "repeticao": true,
+    "concorrencia": true,
+    "fonteAlterada": true,
+    "erros": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tema": "dark",
+    "medidas": {
+      "largura": 352,
+      "janela": 390,
+      "conteudo": 352,
+      "cliente": 352
+    },
+    "versao": 3,
+    "cancelamento": true,
+    "repeticao": true,
+    "concorrencia": true,
+    "fonteAlterada": true,
+    "erros": []
+  }
+]

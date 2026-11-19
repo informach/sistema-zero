@@ -15,6 +15,7 @@ import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from '../src/application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
 import { CenariosService } from '../src/application/cenarios/cenarios.service'
+import { PublicacoesDeCenariosService } from '../src/application/cenarios/publicacoes.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   CourseAdminService,
@@ -133,6 +134,7 @@ import { InMemoryAdultJourneyRepository } from './fakes/adult-journey-in-memory'
 import { InMemoryAdultProfileRepository } from './fakes/adult-profile-in-memory'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { CenariosEmMemoria } from './fakes/cenarios-in-memory'
+import { PublicacoesEmMemoria } from './fakes/cenarios-publicacoes-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
 import {
@@ -213,6 +215,10 @@ export function buildApp(
 
   const entitlements = new InMemoryEntitlementRepository()
   const cenariosRepo = new CenariosEmMemoria()
+  const cenariosService = new CenariosService(cenariosRepo, clock, {
+    modo: opts.cenariosModo ?? 'equipe',
+    lista: new Set(opts.cenariosLista ?? []),
+  })
   const courses = new InMemoryCourseRepository()
   // O fake de progresso enxerga as aulas p/ espelhar o join das contagens `*Published`.
   const progress = new InMemoryProgressRepository(courses)
@@ -814,10 +820,13 @@ export function buildApp(
       requireAdminEnabled: opts.requireAdmin ?? false,
     },
     cenarios: {
-      cenarios: new CenariosService(cenariosRepo, clock, {
-        modo: opts.cenariosModo ?? 'equipe',
-        lista: new Set(opts.cenariosLista ?? []),
-      }),
+      cenarios: cenariosService,
+      publicacoes: new PublicacoesDeCenariosService(
+        new PublicacoesEmMemoria(cenariosRepo),
+        cenariosRepo,
+        cenariosService,
+        clock,
+      ),
       internalToken: opts.internalToken,
     },
     creations: {

@@ -39,6 +39,9 @@ export class PublicacoesEmMemoria implements CenariosPublicacoesRepository {
   async recursos(id: string) {
     return structuredClone(this.arquivos.get(id) ?? [])
   }
+  async recurso(id: string, digest: string) {
+    return structuredClone(this.arquivos.get(id)?.find((r) => r.digest === digest) ?? null)
+  }
   gravar(dados: NovaPublicacaoDeCenario, agora: Date): Promise<PublicacaoGravada> {
     const executar = async (): Promise<PublicacaoGravada> => {
       await this.antesDeGravar?.()

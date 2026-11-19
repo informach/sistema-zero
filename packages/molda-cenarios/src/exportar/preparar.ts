@@ -2,11 +2,9 @@ import {
   avaliarOrcamentoDaCena,
   type PreparoDeExportacao,
 } from '@sistemazero/molda-cenarios-core/compilar'
-import {
-  compilarCenario,
-  type ProgressoDaCompilacao,
-} from '@sistemazero/molda-cenarios-motor/compilar'
+import type { ProgressoDaCompilacao } from '@sistemazero/molda-cenarios-motor/compilar'
 import type { CenariosHost } from '../oficina/portas'
+import { compilarRevisaoDaOficina } from './compilar-revisao'
 import { naFilaDeCompilacao } from './fila'
 import { nomeDoArquivoExportado } from './nomes'
 
@@ -43,28 +41,16 @@ async function gerarArquivo(
   progresso: (p: ProgressoDaCompilacao) => void,
 ): Promise<ArquivoDaExportacao> {
   sinal.throwIfAborted()
-  const pacote = await compilarCenario(
-    preparo.documento,
-    preparo.fonte,
-    preparo.contexto,
+  const pacote = await compilarRevisaoDaOficina(
+    host,
+    preparo,
     {
-      modelo: (ref, s) => host.conteudoDoModelo({ ...ref, espacoId: preparo.espacoId }, s),
-      textura: (ref, s) => host.conteudoDaTextura({ ...ref, espacoId: preparo.espacoId }, s),
-      terreno: (digest, s) => host.conteudoDoTerreno(preparo.fonte.cenario, digest, s),
+      juntar: opcoes.juntar && opcoes.destino !== 'raylib',
+      tamanhoDaRegiao: opcoes.tamanhoDaRegiao,
     },
     sinal,
-    {
-      progresso,
-      // Propriedades são opacas ao exportador genérico. Não presumir que uma
-      // peça anotada possa ser assada/juntada: o consumidor pode movimentá-la.
-      preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
-      ...(opcoes.juntar && opcoes.destino !== 'raylib'
-        ? { juncaoEstatica: { tamanhoDaRegiao: opcoes.tamanhoDaRegiao } }
-        : {}),
-    },
+    progresso,
   )
-  if (pacote.cena.fonte.digest !== preparo.digest)
-    throw Error('A compilação não corresponde ao cenário conferido pelo servidor.')
   const arquivos = new Map(pacote.cena.arquivos.map((a) => [a.caminho, a])),
     medidas = {
       malhas: pacote.cena.nos.reduce((s, n) => s + (arquivos.get(n.arquivo)!.malhas ?? 0), 0),

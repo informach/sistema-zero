@@ -16,6 +16,8 @@ import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import { r2DeleteObjectsUgc, r2GetObjectUgc, r2PresignGetUgc, r2PresignPutUgc } from '../server/r2'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
 import type { SessionModule } from '../server/session'
+import { criarPublicacoesDeCenariosBff } from './cenarios-publicacoes'
+import { criarLeituraDeCenariosDoJogo } from './cenarios-publicados-jogo'
 
 export type CenariosRoutes = ReturnType<typeof createCenariosRoutes>
 
@@ -48,6 +50,7 @@ const exato = (padrao: string) => new RegExp(`^${padrao}$`, 'i')
 const REPASSES: readonly Repasse[] = [
   { metodo: 'GET', caminho: exato('acesso') },
   { metodo: 'GET', caminho: exato('espacos') },
+  { metodo: 'POST', caminho: exato('publicacoes/preparar') },
   { metodo: 'GET', caminho: exato(`espacos/${U}/bibliotecas`) },
   { metodo: 'POST', caminho: exato(`espacos/${U}/bibliotecas`) },
   { metodo: 'POST', caminho: exato(`espacos/${U}/biblioteca-molda`), corpo: null },
@@ -153,7 +156,15 @@ const Reserva = z.object({
   enviar: z.array(
     z.object({
       digest: Digest,
-      tipo: z.enum(['modelo', 'miniatura', 'capa', 'textura', 'terreno']),
+      tipo: z.enum([
+        'modelo',
+        'miniatura',
+        'capa',
+        'textura',
+        'terreno',
+        'manifesto-compilado',
+        'recurso-compilado',
+      ]),
       bytes: z.number().int().min(1),
       chave: z.string(),
       tipoDoConteudo: z.string(),
@@ -445,6 +456,25 @@ export function createCenariosRoutes(deps: {
     return resposta
   }
 
+  const leituraDoJogo = criarLeituraDeCenariosDoJogo({
+    gateway,
+    assinar: armazenamento.presignGet,
+    agora,
+    ator: atorDe,
+    responder: repasse,
+    erro,
+  })
+  const publicacoes = criarPublicacoesDeCenariosBff({
+    gateway,
+    abrir: armazenamento.abrir,
+    chave: chaveDoArquivoDoCenario,
+    ator: atorDe,
+    lerCorpo: corpoJson,
+    assinar: comEnderecos,
+    responder: repasse,
+    erro,
+  })
+
   async function atender(
     metodo: Repasse['metodo'],
     req: Request,
@@ -459,6 +489,10 @@ export function createCenariosRoutes(deps: {
       if (recusa) return recusa
     }
     const semSessao = () => erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')
+    const jogo = await leituraDoJogo(metodo, caminho, req, user)
+    if (jogo) return jogo
+    const publicada = await publicacoes(metodo, caminho, req, user)
+    if (publicada) return publicada
 
     if (metodo === 'GET') {
       const arquivo = ARQUIVO.exec(caminho)

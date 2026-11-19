@@ -1,7 +1,9 @@
 import { expect, test } from 'bun:test'
 import type { CenaCompilada } from '../src/compilar/schema'
 import {
+  conferirPreparacaoDePublicacao,
   criarSnapshotDePublicacao,
+  lerResultadoDaPublicacao,
   PERFIS_DE_ILHA,
   type PedidoDePublicacao,
   PedidoDePublicacaoSchema,
@@ -15,7 +17,7 @@ async function preparo() {
     nome: 'Faísca',
     unidade: 'metro',
     eixoVertical: 'y',
-    fonte: { cenario: '00000000-0000-4000-8000-000000000001', revisao: 3, digest: 'a'.repeat(64) },
+    fonte: { cenario: 'cenario-ensaio-0001', revisao: 3, digest: 'a'.repeat(64) },
     arquivos: [],
     entidades: [],
     nos: [],
@@ -142,4 +144,33 @@ test('inventário deduplica conteúdo e recusa metadados incompatíveis para o m
   await expect(
     montar([arquivo, { ...arquivo, caminho: 'terreno/b.bin', bytes: 8 }]),
   ).rejects.toThrow(/incompatíveis/i)
+})
+
+test('resultado e repetição precisam corresponder à fonte, ao manifesto, à versão e à ilha pedida', async () => {
+  const { pedido } = await preparo()
+  const publicacao = {
+    id: '00000000-0000-4000-8000-000000000002',
+    perfil: pedido.perfil,
+    versao: 1,
+    fonte: pedido.fonte,
+    manifesto: pedido.manifesto,
+  }
+  expect(lerResultadoDaPublicacao(pedido, { publicacao, repetido: false }).publicacao).toEqual(
+    publicacao,
+  )
+  for (const patch of [
+    { versao: 2 },
+    { perfil: { tipo: 'arquipelago-v2', ilha: 'bosque' } },
+    { fonte: { ...pedido.fonte, revisao: 4 } },
+    { manifesto: { ...pedido.manifesto, digest: 'f'.repeat(64) } },
+    { autorId: 'privado' },
+  ])
+    expect(() =>
+      lerResultadoDaPublicacao(pedido, { publicacao: { ...publicacao, ...patch }, repetido: true }),
+    ).toThrow()
+  const base = { espacoId: '00000000-0000-4000-8000-000000000003', pedido, publicacao }
+  expect(conferirPreparacaoDePublicacao(pedido, base).publicacao).toEqual(publicacao)
+  expect(() =>
+    conferirPreparacaoDePublicacao(pedido, { ...base, pedido: { ...pedido, versaoEsperada: 2 } }),
+  ).toThrow()
 })

@@ -131,6 +131,15 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
     expect(await repo.atual(b.pedido.perfil)).toEqual(a.publicacao)
     expect((await autoria.blobsConfirmados(b.espaco.id, [b.pedido.manifesto.digest])).size).toBe(1)
     expect(await repo.recursos(a.publicacao.id)).toHaveLength(1)
+    expect(await repo.recurso(a.publicacao.id, b.pedido.manifesto.digest)).toMatchObject({
+      digest: b.pedido.manifesto.digest,
+      bytes: b.bytes.length,
+      papel: 'manifesto',
+    })
+    expect(await repo.recurso(a.publicacao.id, 'f'.repeat(64))).toBeNull()
+    expect(await servico.arquivoDoJogo(a.publicacao.id, b.pedido.manifesto.digest)).toMatchObject({
+      chave: `cenarios/${b.espaco.id}/blobs/${b.pedido.manifesto.digest}`,
+    })
   })
 
   test('concorrência troca apontador apenas uma vez; versão anterior continua consultável', async () => {

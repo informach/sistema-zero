@@ -1,11 +1,12 @@
 import { Button } from '@sistemazero/molda/ui'
 import { Download, Loader2 } from 'lucide-react'
-import { type JSX, useState } from 'react'
+import { type JSX, useEffect, useState } from 'react'
 import type { DestinoDeArquivo } from '../../exportar/preparar'
 import type { ControladorDaOficina } from '../controlador'
 import { Chegando, Dialogo } from '../pecas'
 import type { CenariosHost } from '../portas'
 import { useExportacao } from '../useExportacao'
+import Publicar from './Publicar'
 
 const bytes = (n: number) =>
   n < 1024 * 1024
@@ -48,6 +49,57 @@ export default function Exportar({
     divergente = e.tipo === 'erro' && e.revisaoAtual !== undefined,
     desabilitado = tarefa.pendente || e.tipo === 'carregando' || !preparo || divergente,
     restritas = preparo?.contexto.bibliotecas.filter((b) => b.licenca === 'restrita') ?? []
+  const [modo, setModo] = useState<'arquivo' | 'publicar'>('arquivo')
+  const [podePublicar, setPodePublicar] = useState(false)
+  const espacoDaFonte = preparo?.espacoId,
+    equipeDaFonte = preparo?.contexto.equipe
+  useEffect(() => {
+    if (!host.publicacoes || equipeDaFonte === false) {
+      setPodePublicar(false)
+      return
+    }
+    if (!espacoDaFonte || equipeDaFonte !== true) return
+    let vivo = true
+    void host.espacos().then(
+      (espacos) => {
+        if (vivo)
+          setPodePublicar(espacos.some((e) => e.tipo === 'equipe' && e.id === espacoDaFonte))
+      },
+      () => {
+        if (vivo) setPodePublicar(false)
+      },
+    )
+    return () => {
+      vivo = false
+    }
+  }, [host, espacoDaFonte, equipeDaFonte])
+  const mudarModo = (novo: 'arquivo' | 'publicar') => {
+    if (novo === modo) return
+    tarefa.cancelar()
+    setErroLocal(null)
+    setModo(novo)
+  }
+  const modos =
+    podePublicar || modo === 'publicar' ? (
+      <fieldset className="mcn-publicar-modos">
+        <legend className="sr-only">O que fazer com o cenário</legend>
+        <Button
+          variant={modo === 'arquivo' ? 'primary' : 'outline'}
+          aria-pressed={modo === 'arquivo'}
+          onClick={() => mudarModo('arquivo')}
+        >
+          Baixar arquivo
+        </Button>
+        <Button
+          variant={modo === 'publicar' ? 'primary' : 'outline'}
+          aria-pressed={modo === 'publicar'}
+          disabled={!podePublicar && modo !== 'publicar'}
+          onClick={() => mudarModo('publicar')}
+        >
+          Publicar no Arquipélago
+        </Button>
+      </fieldset>
+    ) : null
   const reabrir = async () => {
     setReabrindo(true)
     setErroLocal(null)
@@ -59,9 +111,35 @@ export default function Exportar({
       setReabrindo(false)
     }
   }
+  if (modo === 'publicar')
+    return (
+      <Dialogo
+        titulo="Publicar no Arquipélago"
+        aoFechar={aoFechar}
+        className="mcn-dialogo-exportar"
+      >
+        <div className="mcn-exportar">
+          {modos}
+          {erroLocal ? (
+            <p role="alert" className="font-semibold text-mld-danger text-sm">
+              {erroLocal}
+            </p>
+          ) : null}
+          <Publicar
+            host={host}
+            tarefa={tarefa}
+            autorizado={podePublicar}
+            aoFechar={aoFechar}
+            aoReabrir={() => void reabrir()}
+            reabrindo={reabrindo}
+          />
+        </div>
+      </Dialogo>
+    )
   return (
     <Dialogo titulo="Exportar cenário" aoFechar={aoFechar} className="mcn-dialogo-exportar">
       <div className="mcn-exportar">
+        {modos}
         <p className="text-mld-muted text-sm">
           <strong className="text-mld-text">{preparo?.documento.nome ?? nome}</strong>
           {' · '}Revisão {preparo?.fonte.revisao ?? revisao}
