@@ -117,6 +117,7 @@ export function buildApp(
         limits,
         clock,
         () => randomUUID(),
+        members,
       ),
       internalToken,
     },

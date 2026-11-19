@@ -321,6 +321,20 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { query: CourseListQuery },
       )
+      .get(
+        '/internal/commerce/access',
+        async ({ headers, query, set }) => {
+          if (!deps.internalToken || headers['x-consumer-id'] !== 'funnel') {
+            set.status = 403
+            return { error: { code: 'FORBIDDEN', message: 'Consumidor não permitido.' } }
+          }
+          return { items: await deps.accessCheck.commerceAccess(query.userId) }
+        },
+        { query: t.Object({ userId: t.String({ format: 'uuid' }) }) },
+      )
+      .get('/commerce/access', async ({ headers }) => ({
+        items: await deps.accessCheck.commerceAccess(resolveAccountId(headers)),
+      }))
       // "Esta CONTA tem acesso a estes produtos?" — gate de produtos que NÃO são
       // curso de trilha (ex.: o Estúdio Completo como produto vendável). Resolve pela
       // CONTA (responsável compra; em sessão de perfil o acesso é da conta) e reporta
@@ -1416,9 +1430,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/blocks/:blockId/certificate',
         async ({ headers, params }) => {
           const userId = resolveUserId(headers)
+          const accountId = resolveAccountId(headers)
           return deps.issueCertificate.execute({
             userId,
-            accountId: resolveAccountId(headers),
+            accountId,
+            profileSession:
+              headers['x-auth-kids-context'] === 'student' ||
+              headers['x-auth-profile-name'] !== undefined ||
+              userId !== accountId,
             lessonId: params.lessonId,
             blockId: params.blockId,
             studentName: resolveStudentName(headers),

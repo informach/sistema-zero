@@ -1,15 +1,16 @@
-# Aula 6. Da criação à conversa, e o primeiro passo
+# Aula 6. Como nasce um jogo
 
-**Objetivo de aprendizagem:** o responsável usa a criação do filho como porta de conversa em família, liga tudo o que viu ao que deseja para o filho e dá o primeiro passo prático com o presente.
+**Objetivo:** Conhecer o ciclo de criação, acompanhar uma regra sendo construída e ver como o jogo abre a conversa em família.
 
-**Crença que muda:** "não sei conversar sobre o mundo dele." Passa a ser: "eu não preciso saber programar; eu pergunto, olho e celebro."
+**Ideia central:** Imaginar, planejar, programar, testar, melhorar e compartilhar. Cada regra criada ensina causa e consequência.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| O jogo vira assunto na mesa de casa | Entrar no mundo da criança; depoimentos sobre conversa em família; as quatro perguntas; levar a estratégia do jogo para outra situação; a história do André. | Vídeo assistido; perguntas à vista. |
-| Confira o que ficou | Quiz de situação com uma pergunta. | Quiz respondido. |
-| A sua palavra e o primeiro passo | O ciclo de criação; o vídeo das crianças contando o que sentem ao criar; a palavra guardada na Aula 1; a ideia que fica; o presente do Cadê Todo Mundo por 7 dias; o certificado. | Vídeo assistido e certificado emitido. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. O ciclo de criação de um jogo | Apresentar o ciclo de criação e a relação dele com a redação, o trabalho e o pensar por conta própria. |
+| 2. Uma regra de cada vez | Demonstrar, em captura de tela, a criação de duas regras de um esconde-esconde. |
+| 3. Fui eu que causei isso | Explicar a causa e consequência: a criança percebe que é agente do que acontece. |
+| 4. O assunto que abre a conversa | Mostrar como o jogo vira assunto em casa e ponto de partida para outras conversas. |
 
-**Ferramenta:** as quatro perguntas para a mesa de casa.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**O presente:** o bloco de materiais `presente` traz o texto do presente e o link da campanha `vilao-em-aliado-cade` (`/bolsa/vilao-em-aliado-cade`), criada no Admin em Embaixadores.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

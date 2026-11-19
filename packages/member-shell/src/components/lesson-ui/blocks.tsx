@@ -40,6 +40,7 @@ import type {
   StudioBlock,
   VideoBlock,
 } from '../../lib/types'
+import { CommerceLessonBlock } from '../commerce/commerce-card'
 import { ZappyStill } from './mascot'
 import { ZappyAnimated } from './mascot-animated'
 import { MuralCelebration } from './mural-celebration'
@@ -111,6 +112,9 @@ function BlockRenderer({
   const { content } = parsed
 
   switch (content.kind) {
+    case 'gift':
+    case 'purchase':
+      return <CommerceLessonBlock blockId={block.id} content={content} />
     case 'rich_text':
       return <RichText content={content} />
     case 'dialogue':

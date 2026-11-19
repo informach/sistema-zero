@@ -1,5 +1,9 @@
 'use client'
-
+import {
+  CheckoutTermsSchema,
+  type MemberPromotion,
+  memberPromotionSchema,
+} from '@sistemazero/core/commerce'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -27,6 +31,7 @@ import { LoadError } from '@/components/admin/empty-state'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
+import { MemberPromotionFields } from '@/components/catalog/member-promotion-fields'
 import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
 import type { ApiError } from '@/lib/api'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
@@ -69,6 +74,9 @@ const ACCESS_DURATION_UNIT_LABELS: Record<AccessDurationUnit, string> = {
 }
 
 interface FormState {
+  memberPromotion?: MemberPromotion
+  checkoutTermsUrl: string
+  checkoutTermsVersion: string
   productId: string
   code: string
   slug: string
@@ -90,6 +98,8 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
+  checkoutTermsUrl: '',
+  checkoutTermsVersion: '',
   productId: '',
   code: '',
   slug: '',
@@ -352,6 +362,9 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
       maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
+      memberPromotion: o.content?.memberPromotion,
+      checkoutTermsUrl: o.content?.checkoutTerms?.url ?? '',
+      checkoutTermsVersion: o.content?.checkoutTerms?.version ?? '',
       status: o.status,
       items: [...o.items]
         .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -463,6 +476,13 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
     try {
       // PATCH substitui a coleção de itens — envia sempre o estado completo do editor.
       const items = form.items.map((it, i) => ({ productId: it.productId, sortOrder: i }))
+      const checkoutTerms =
+        form.checkoutTermsUrl || form.checkoutTermsVersion
+          ? CheckoutTermsSchema.parse({
+              url: form.checkoutTermsUrl,
+              version: form.checkoutTermsVersion,
+            })
+          : undefined
       if (editing) {
         await apiSend(`/api/catalog/offers/${editing.id}`, 'PATCH', {
           name: form.name,
@@ -474,13 +494,25 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
           // Assinatura recorrente não parcela (a Efí cobra 1x por ciclo).
           installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
-          content: mergeOfferContent(editing.content, maxProfiles, altOffer),
+          content: {
+            ...mergeOfferContent(editing.content, maxProfiles, altOffer),
+            checkoutTerms,
+            ...(form.memberPromotion
+              ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
+              : {}),
+          },
           status: form.status,
           items,
         })
         toast.success('Oferta atualizada.')
       } else {
-        const content = mergeOfferContent(null, maxProfiles, altOffer)
+        const content = {
+          ...mergeOfferContent(null, maxProfiles, altOffer),
+          ...(checkoutTerms ? { checkoutTerms } : {}),
+          ...(form.memberPromotion
+            ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
+            : {}),
+        }
         await apiSend('/api/catalog/offers', 'POST', {
           productId: form.productId,
           code: form.code,
@@ -968,6 +1000,31 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
                 placeholder="Ex.: 2 (vazio: sem limite de perfis)"
                 value={form.maxProfiles}
                 onChange={(e) => setForm((f) => ({ ...f, maxProfiles: e.target.value }))}
+              />
+            </Field>
+            <MemberPromotionFields
+              value={form.memberPromotion}
+              onChange={(memberPromotion) => setForm((f) => ({ ...f, memberPromotion }))}
+              offerName={form.name}
+            />
+            <Field
+              label="Termos desta oferta (URL opcional)"
+              hint="Para ofertas novas, informe a página dos termos. Ofertas já usadas no funil aproveitam os termos daquele checkout."
+            >
+              <Input
+                type="url"
+                value={form.checkoutTermsUrl}
+                onChange={(e) => setForm((f) => ({ ...f, checkoutTermsUrl: e.target.value }))}
+              />
+            </Field>
+            <Field
+              label="Versão dos termos"
+              hint="Preencha junto com a URL. A versão aceita fica registrada na compra."
+            >
+              <Input
+                value={form.checkoutTermsVersion}
+                onChange={(e) => setForm((f) => ({ ...f, checkoutTermsVersion: e.target.value }))}
+                maxLength={100}
               />
             </Field>
             <Field

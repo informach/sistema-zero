@@ -29,7 +29,10 @@ import type {
   RedemptionStatus,
   ReferralRepository,
 } from '../../../domain/ports/referral-repository.port'
-import { AMBASSADOR_VISIBLE_CONVERSION_STATUSES } from '../../../domain/ports/referral-repository.port'
+import {
+  AMBASSADOR_VISIBLE_CONVERSION_STATUSES,
+  MAIN_GIFT_SLOT,
+} from '../../../domain/ports/referral-repository.port'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation, uniqueConstraintName } from './pg-errors'
 import {
@@ -147,6 +150,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     muralVisitorPolicy: row.muralVisitorPolicy,
     muralVisitorGrantedAt: row.muralVisitorGrantedAt,
     giftOfferId: row.giftOfferId,
+    giftSlot: row.giftSlot,
     createdAt: row.createdAt,
   }
 }
@@ -652,11 +656,14 @@ export class DrizzleReferralRepository implements ReferralRepository {
     courseSlug?: string
     attribution?: GiftAttribution | null
     gift?: RedemptionGift
+    giftSlot?: string
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
+    const giftSlot = input.giftSlot ?? MAIN_GIFT_SLOT
     return this.db.transaction(async (tx) => {
       const sameGift = and(
         eq(scholarshipRedemptions.email, input.email),
         eq(scholarshipRedemptions.audience, input.audience),
+        eq(scholarshipRedemptions.giftSlot, giftSlot),
       )
       const [previous] = await tx.select().from(scholarshipRedemptions).where(sameGift)
       if (previous) return { created: false, redemption: toRedemption(previous) }
@@ -733,9 +740,14 @@ export class DrizzleReferralRepository implements ReferralRepository {
           accessDurationDays: input.gift?.accessDurationDays ?? null,
           muralVisitorPolicy: input.gift ? 'offer' : null,
           giftOfferId: input.gift?.offerId ?? null,
+          giftSlot,
         })
         .onConflictDoNothing({
-          target: [scholarshipRedemptions.email, scholarshipRedemptions.audience],
+          target: [
+            scholarshipRedemptions.email,
+            scholarshipRedemptions.audience,
+            scholarshipRedemptions.giftSlot,
+          ],
         })
         .returning()
       if (inserted) return { created: true, redemption: toRedemption(inserted) }
@@ -846,15 +858,47 @@ export class DrizzleReferralRepository implements ReferralRepository {
   async findRedemptionByEmail(
     email: string,
     audience: GiftAudience,
+    giftSlot: string = MAIN_GIFT_SLOT,
   ): Promise<RedemptionRecord | null> {
     const [row] = await this.db
       .select()
       .from(scholarshipRedemptions)
       .where(
-        and(eq(scholarshipRedemptions.email, email), eq(scholarshipRedemptions.audience, audience)),
+        and(
+          eq(scholarshipRedemptions.email, email),
+          eq(scholarshipRedemptions.audience, audience),
+          eq(scholarshipRedemptions.giftSlot, giftSlot),
+        ),
       )
       .limit(1)
     return row ? toRedemption(row) : null
+  }
+
+  async listRedemptionsByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(scholarshipRedemptions)
+      .where(
+        and(eq(scholarshipRedemptions.email, email), eq(scholarshipRedemptions.audience, audience)),
+      )
+      .orderBy(scholarshipRedemptions.createdAt)
+    return rows.map(toRedemption)
+  }
+  async listRedemptionsByAccount(
+    userId: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(scholarshipRedemptions)
+      .where(
+        and(
+          eq(scholarshipRedemptions.userId, userId),
+          eq(scholarshipRedemptions.audience, audience),
+        ),
+      )
+      .orderBy(scholarshipRedemptions.createdAt)
+    return rows.map(toRedemption)
   }
 
   async listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]> {
@@ -931,7 +975,8 @@ export class DrizzleReferralRepository implements ReferralRepository {
   async listRedemptionsWithCodeByEmail(
     email: string,
   ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]> {
-    // No máximo um por público (UNIQUE email+audience): o filtro barato do consumer.
+    // Poucos por e-mail (um presente por público, mais os cursos para pais), do mais antigo ao
+    // mais novo: o consumer fica com o primeiro do público, que mantém a atribuição original.
     const rows = await this.db
       .select({ redemption: scholarshipRedemptions, code: codes })
       .from(scholarshipRedemptions)

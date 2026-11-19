@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Apelido no Arquipélago (full review da Aula 7, 19/11/2026)
+
+`activeProfile.name` contém o apelido público completo, não o nome civil. A página do
+Arquipélago transmite esse valor inteiro em `perfil.primeiroNome` (nome histórico do contrato);
+não cortar no primeiro espaço. Nome completo privado é reservado ao responsável e certificado.
+
+
+
 ## Molda Cenários: a oficina de cenários 3D (16/11/2026)
 
 `/molda/cenarios` (`app/(app)/molda/cenarios/page.tsx`) monta o `CenariosClient` do member-shell:

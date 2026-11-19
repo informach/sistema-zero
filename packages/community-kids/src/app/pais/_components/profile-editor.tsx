@@ -92,6 +92,16 @@ export function ProfileEditor({
           )
             throw error
           const criado = await salvar({ ...values, voiceInputEnabled: false })
+          if (
+            criado.profile.publicNickname !== values.publicNickname ||
+            criado.profile.identityConfirmed !== true
+          ) {
+            toast.error(
+              'O cadastro foi salvo, mas não consegui confirmar o nome e o apelido. Confira os dados na aba Perfil antes de emitir certificados.',
+            )
+            setBusy(false)
+            return
+          }
           trackOnboardingEvent({ audience: 'parent', action: 'profile_created', step: 'profile' })
           window.location.assign(comAviso(childHref(criado.profile.id, 'aparelhos'), 'fala-entrar'))
           return
@@ -102,6 +112,16 @@ export function ProfileEditor({
         // Na criação o perfil JÁ existe, então segue para a página dela (salvar de novo aqui
         // criaria outro perfil) e o aviso vai junto pelo endereço (um toast antes de navegar
         // sumia com a página); na edição o formulário fica aberto para tentar de novo.
+        if (
+          result.profile.publicNickname !== values.publicNickname ||
+          result.profile.identityConfirmed !== true
+        ) {
+          toast.error(
+            'O cadastro foi salvo, mas não consegui confirmar o nome e o apelido. Confira os dados na aba Perfil antes de emitir certificados.',
+          )
+          setBusy(false)
+          return
+        }
         const falaNaoGravou =
           values.voiceInputEnabled !== undefined &&
           (result.profile.voiceInputEnabled === true) !== values.voiceInputEnabled

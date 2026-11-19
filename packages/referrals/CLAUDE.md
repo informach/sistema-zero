@@ -1,5 +1,29 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Vaga do presente: curso para pais não ocupa a do público (18/11/2026)
+
+O limite deixou de ser "um resgate por e-mail e público" e passou a ser por VAGA
+(`scholarship_redemptions.gift_slot`, migration `0011_gift-slot`, à mão e idempotente):
+
+- `main`: o presente do público (Cadê Todo Mundo e afins). Um por e-mail e público, como sempre.
+  Todos os resgates anteriores ficaram em `main`.
+- `parents:<slug do curso>`: curso para pais (`learner: 'parents'`). Um por curso. Não ocupa a vaga
+  `main`: quem pega o minicurso para pais pela página do funil ainda resgata o presente da
+  criança com o mesmo e-mail (e vice-versa), que é o caso da Aula 7 do curso
+  `transformando-o-vilao-em-aliado`.
+
+`giftSlotOf` (no port) é a fonte única. UNIQUE `scholarship_redemptions_email_audience_slot_uq
+(email, audience, gift_slot)` + CHECK do formato. No `RedeemScholarshipService`, a oferta do código
+é resolvida ANTES de procurar o resgate existente, porque a vaga sai do curso dela. Com o catálogo
+fora, a vaga sai do que está gravado: campanha com oferta → o resgate dessa mesma oferta; sem
+oferta própria (código de pessoa) → `main`. Assim o 409 do concluído continua valendo e nenhum
+resgate novo nasce sem a oferta resolver. Retomada segue usando a oferta gravada.
+
+`findRedemptionByEmail(email, audience)` sem vaga = `main` (o convite do embaixador só barra quem
+já tem o presente do público). `listRedemptionsByEmail` traz todas as vagas. Conversões: nada
+mudou, o consumer continua ficando com o resgate MAIS ANTIGO do público, que mantém a atribuição
+original.
+
 ## Presente por oferta do catálogo (15/11/2026)
 
 O presente deixou de ter curso e prazo fixos no código: é uma OFERTA do catálogo. A campanha

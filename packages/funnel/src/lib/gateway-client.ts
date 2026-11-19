@@ -273,6 +273,14 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         paymentTimeoutMs,
       )
     },
+    async getSubscription(id: string): Promise<GatewayResult> {
+      const path = `/subscriptions/${encodeURIComponent(id)}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
 
     /** GET /payments/:id (corpo vazio → assina "<ts>.GET.<path>."). */
     async getPayment(paymentId: string): Promise<GatewayResult> {
@@ -285,6 +293,14 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     },
 
     /** GET /catalog/offers/:slug (via gateway → catalog). Rota pública (leitura de marketing). */
+    async getCommerceAccess(userId: string): Promise<GatewayResult> {
+      const path = '/members/internal/commerce/access'
+      return requestJson(
+        `${opts.baseUrl}${path}?userId=${encodeURIComponent(userId)}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
     async getOffer(slug: string): Promise<GatewayResult> {
       const path = `/catalog/offers/${encodeURIComponent(slug)}`
       return requestJson(

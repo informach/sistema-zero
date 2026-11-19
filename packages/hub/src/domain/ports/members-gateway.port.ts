@@ -134,6 +134,9 @@ export interface MuralModerationMessageArgs {
 }
 
 export interface MembersGateway {
+  getPublicProfileIdentities?(
+    ids: string[],
+  ): Promise<Map<string, { publicNickname: string; publicProfileEnabled: boolean }>>
   getAdultCreatorState?(
     userId: string,
   ): Promise<{ capabilities: string[]; displayName: string; publicEnabled: boolean }>

@@ -20,6 +20,8 @@ const descriptions: Record<LessonBlockKind, string> = {
   certificate: 'Configurar o certificado de conclusão do curso.',
   coming_soon: 'Apresentar uma aula que ainda está em produção.',
   materials: 'Reunir arquivos, imagens, links e recados num bloco só.',
+  gift: 'Conceder uma oferta de presente para a conta logada, pela campanha escolhida.',
+  purchase: 'Comprar ou assinar uma oferta sem sair da plataforma.',
 }
 
 /**

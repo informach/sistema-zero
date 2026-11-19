@@ -2,94 +2,71 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-4",
-  "title": "O interesse do seu filho é a porta de entrada",
+  "title": "Programar não é um bicho de sete cabeças",
   "blocks": [
     {
-      "key": "video-a4-interesse",
-      "plannedVideo": "Título: O interesse como porta de entrada\n\nAs seis cenas que muitas famílias contam e o que o jogo oferece em cada uma, o interesse forte como aliado, nem toda criança é dos jogos, o vídeo do Bernardo e o exercício \"Meu filho ama\". Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1."
+      "key": "video-a4-blocos",
+      "plannedVideo": "Título: Programar não é um bicho de sete cabeças\n\nDesmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a4-escola",
-      "plannedVideo": "Título: Quando a matéria da escola ganha sentido\n\nA casa 2 e a estrela, a amiga professora de matemática e física, português, ciências, arte e planejamento, o vídeo de depoimentos do que os pais percebem e a pesquisa. Fala completa no roteiro, Parte 2."
+      "key": "video-a4-passo",
+      "plannedVideo": "Título: Um passo a passo para chegar a um objetivo\n\nDefinir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "para-casa-a4",
+      "key": "video-a4-olhar",
+      "plannedVideo": "Título: O que esse vai e volta treina\n\nRelacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo. Fala completa em transformando-o-vilao-em-aliado-aula-4.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "resumo-a4",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para fazer esta semana\n\nEscreva a frase do seu filho. Ela é o primeiro rascunho de um jogo dele.\n\n> Meu filho ama ______. Um jogo sobre isso poderia ter ______.\n\nAlguns exemplos para ajudar:\n\n- Ama trens: o trem precisa chegar na estação sem bater.\n- Ama bandeiras: o jogo mostra uma bandeira e ele escolhe o país.\n- Ama dinossauros: o dinossauro precisa fugir do vulcão.\n\nUse também a resposta que ele deu na Aula 2, sobre o jogo que inventaria.\n\n## Para consultar depois\n\n- Scherer, Siddiq e Sánchez Viveros (2019): uma análise de 105 estudos sobre aprender a programar, com ganhos em criatividade, pensamento matemático e raciocínio. [doi.org/10.1037/edu0000314](https://doi.org/10.1037/edu0000314)\n- Li e Oon (2024): pensamento computacional e aprendizagem em ciências e matemática. [doi.org/10.1186/s40594-024-00498-z](https://doi.org/10.1186/s40594-024-00498-z)\n\nOs estudos não são específicos sobre autismo, e programar não é fórmula mágica: é uma ponte a mais."
-      }
-    },
-    {
-      "key": "quiz-a4",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 50,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "A sua filha ama bandeiras e diz que matemática é chata. Qual caminho combina com o que você viu nesta aula?",
-            "choices": [
-              { "id": "a", "label": "Proibir as bandeiras até as notas melhorarem." },
-              {
-                "id": "b",
-                "label": "Propor um jogo de bandeiras em que ela precisa contar os pontos."
-              },
-              { "id": "c", "label": "Dar mais uma lista de exercícios de matemática." }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "O interesse é a porta de entrada. Quando a conta é parte da ideia dela, a matemática passa a ter sentido."
-          },
-          {
-            "id": "q2",
-            "prompt": "O que é correto dizer sobre as pesquisas com programação?",
-            "choices": [
-              { "id": "a", "label": "Garantem que as notas vão melhorar." },
-              {
-                "id": "b",
-                "label": "Mostram ganhos em criatividade, pensamento matemático e raciocínio, com variações entre os estudos."
-              },
-              { "id": "c", "label": "Foram feitas só com crianças autistas." }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "A pesquisa mostra ganhos, com variações, e não é específica sobre autismo. Programar é uma ponte a mais, não uma fórmula mágica."
-          }
-        ]
+        "markdown": "## Para consultar\n\nProgramar é passar um passo a passo para alcançar um objetivo. Observar o que aconteceu, mudar a instrução e testar de novo treina flexibilidade e lidar com o erro."
       }
     }
   ],
   "sections": [
     {
-      "key": "interesse",
-      "title": "O interesse como porta de entrada",
-      "objective": "Reconhecer no próprio filho pontos de partida para criar e ver o interesse forte como aliado, sem tratar as cenas como diagnóstico.",
+      "key": "blocos",
+      "title": "Programar não é um bicho de sete cabeças",
+      "objective": "Desmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-interesse"],
+      "blockKeys": ["video-a4-blocos"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a4-interesse"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a4-blocos"]
+      }
     },
     {
-      "key": "escola",
-      "title": "Quando a matéria da escola ganha sentido",
-      "objective": "Ver como a criação dá sentido a conteúdos da escola e o que a pesquisa mostra, com honestidade.",
+      "key": "passo",
+      "title": "Um passo a passo para chegar a um objetivo",
+      "objective": "Definir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo.",
       "intent": "explanation",
-      "blockKeys": ["video-a4-escola", "para-casa-a4"],
+      "blockKeys": ["video-a4-passo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a4-escola"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a4-passo"]
+      }
     },
     {
-      "key": "confira-a4",
-      "title": "Confira o que ficou",
-      "objective": "Aplicar a ideia da aula a duas situações.",
-      "intent": "application",
-      "blockKeys": ["quiz-a4"],
+      "key": "olhar",
+      "title": "O que esse vai e volta treina",
+      "objective": "Relacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo.",
+      "intent": "explanation",
+      "blockKeys": ["video-a4-olhar", "resumo-a4"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-a4"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a4-olhar"]
+      }
     }
-  ]
+  ],
+  "retireBlockKeys": ["video-a4-interesse", "video-a4-escola", "para-casa-a4", "quiz-a4"]
 }

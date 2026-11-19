@@ -14,6 +14,7 @@ import {
 } from '../../domain/hub-errors'
 import type { AttachmentRepository } from '../../domain/ports/attachment-repository.port'
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
+import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { ModerationRepository } from '../../domain/ports/moderation-repository.port'
 import type { ReactionRepository } from '../../domain/ports/reaction-repository.port'
 import type { ThreadRepository, ThreadSort } from '../../domain/ports/thread-repository.port'
@@ -31,6 +32,7 @@ import {
   toThreadPage,
   toThreadView,
 } from '../mappers/thread-views'
+import { PublicAuthorIdentities } from '../public-author-identities'
 import { threadSlug } from '../slug'
 
 const MAX_TITLE = 300
@@ -62,6 +64,7 @@ export interface CreateCommentCommand {
 }
 
 export class ThreadService {
+  private readonly identities: PublicAuthorIdentities
   constructor(
     private readonly read: CommunityReadRepository,
     private readonly access: AccessResolutionService,
@@ -72,7 +75,10 @@ export class ThreadService {
     private readonly attachmentLimits: AttachmentLimits,
     private readonly clock: () => Date,
     private readonly newId: () => string,
-  ) {}
+    members?: Pick<MembersGateway, 'getPublicProfileIdentities'>,
+  ) {
+    this.identities = new PublicAuthorIdentities(members)
+  }
 
   /**
    * Bloqueia escrita de quem está silenciado/banido NESTE canal (staff passa).
@@ -162,7 +168,11 @@ export class ThreadService {
       attachmentIds: owned.map((a) => a.id),
       now,
     })
-    return toThreadView(thread, [], owned.map(toAttachmentView))
+    return toThreadView(
+      await this.identities.one(thread, space.audience),
+      [],
+      owned.map(toAttachmentView),
+    )
   }
 
   async listThreads(
@@ -178,7 +188,7 @@ export class ThreadService {
     // Cursor de outra ordem pularia ou repetiria itens: a chave de posição dele não é
     // a desta listagem. Recusa em vez de devolver uma página errada em silêncio.
     if (cursor && (cursor.s ?? 'activity') !== sort) throw new CursorSortMismatchError()
-    await this.requireChannelAccess(actor, channelId)
+    const { space } = await this.requireChannelAccess(actor, channelId)
     const { items, hasMore } = await this.threads.listThreads(channelId, {
       viewerId: actor.userId,
       includeAllPending: actor.privileged,
@@ -192,7 +202,13 @@ export class ThreadService {
       this.reactions.summarize('thread', ids, actor.userId),
       this.attachments.listByThreadIds(ids),
     ])
-    return toThreadPage(items, hasMore, reactions, attachments, sort)
+    return toThreadPage(
+      await this.identities.project(items, space.audience),
+      hasMore,
+      reactions,
+      attachments,
+      sort,
+    )
   }
 
   /**
@@ -216,13 +232,13 @@ export class ThreadService {
   }
 
   async getThread(actor: Actor, threadId: string): Promise<ThreadView> {
-    const { thread } = await this.requireThreadView(actor, threadId)
+    const { thread, space } = await this.requireThreadView(actor, threadId)
     const [reactions, attachments] = await Promise.all([
       this.reactions.summarize('thread', [thread.id], actor.userId),
       this.attachments.listByThreadIds([thread.id]),
     ])
     return toThreadView(
-      thread,
+      await this.identities.one(thread, space.audience),
       reactions.get(thread.id) ?? [],
       (attachments.get(thread.id) ?? []).map(toAttachmentView),
     )
@@ -252,7 +268,11 @@ export class ThreadService {
     if (!(await this.threads.updateThread(updated))) throw new ConcurrencyConflictError()
     updated.version = expectedVersion + 1
     const attachments = await this.attachments.listByThreadIds([thread.id])
-    return toThreadView(updated, [], (attachments.get(thread.id) ?? []).map(toAttachmentView))
+    return toThreadView(
+      await this.identities.one(updated, space.audience),
+      [],
+      (attachments.get(thread.id) ?? []).map(toAttachmentView),
+    )
   }
 
   // ── Comentários ──────────────────────────────────────────────────────────
@@ -294,7 +314,11 @@ export class ThreadService {
       attachmentIds: owned.map((a) => a.id),
       now: this.clock(),
     })
-    return toCommentView(comment, [], owned.map(toAttachmentView))
+    return toCommentView(
+      await this.identities.one(comment, space.audience),
+      [],
+      owned.map(toAttachmentView),
+    )
   }
 
   async listComments(
@@ -303,7 +327,7 @@ export class ThreadService {
     after: CursorPos | null,
     limit: number,
   ): Promise<Page<CommentView>> {
-    await this.requireThreadView(actor, threadId)
+    const { space } = await this.requireThreadView(actor, threadId)
     const { items, hasMore } = await this.threads.listComments(threadId, {
       viewerId: actor.userId,
       includeAllPending: actor.privileged,
@@ -315,7 +339,12 @@ export class ThreadService {
       this.reactions.summarize('comment', ids, actor.userId),
       this.attachments.listByCommentIds(ids),
     ])
-    return toCommentPage(items, hasMore, reactions, attachments)
+    return toCommentPage(
+      await this.identities.project(items, space.audience),
+      hasMore,
+      reactions,
+      attachments,
+    )
   }
 
   async editComment(
@@ -345,7 +374,11 @@ export class ThreadService {
     if (!(await this.threads.updateComment(updated))) throw new ConcurrencyConflictError()
     updated.version = expectedVersion + 1
     const attachments = await this.attachments.listByCommentIds([commentId])
-    return toCommentView(updated, [], (attachments.get(commentId) ?? []).map(toAttachmentView))
+    return toCommentView(
+      await this.identities.one(updated, space.audience),
+      [],
+      (attachments.get(commentId) ?? []).map(toAttachmentView),
+    )
   }
 
   // ── Guards ──────────────────────────────────────────────────────────────────

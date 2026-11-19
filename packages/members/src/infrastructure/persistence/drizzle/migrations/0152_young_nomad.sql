@@ -1,0 +1,2 @@
+ALTER TABLE "members"."cenario_bibliotecas" ADD COLUMN "fonte" varchar(120);--> statement-breakpoint
+CREATE UNIQUE INDEX "cenario_bibliotecas_fonte_unica" ON "members"."cenario_bibliotecas" USING btree ("espaco_id","fonte");

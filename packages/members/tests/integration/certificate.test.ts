@@ -48,14 +48,24 @@ function seedCertificateLesson(
   return { lessonId, blockId }
 }
 
-const getState = (app: App, lessonId: string, blockId: string, headers = authHeaders) =>
+const getState = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
   app.handle(
     new Request(`http://localhost/members/lessons/${lessonId}/blocks/${blockId}/certificate`, {
       headers,
     }),
   )
 
-const issue = (app: App, lessonId: string, blockId: string, headers = authHeaders) =>
+const issue = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
   app.handle(
     new Request(`http://localhost/members/lessons/${lessonId}/blocks/${blockId}/certificate`, {
       method: 'POST',
@@ -88,6 +98,135 @@ const updateBlock = (app: App, lessonId: string, blockId: string, content: { kin
   publishBlock(app, lessonId, { content: { ...content } }, {}, blockId)
 
 describe('Certificado — elegibilidade, emissão idempotente e validação', () => {
+  test.each([
+    false,
+    true,
+  ])('legacy same-ID child requires confirmed identity (%s) and keeps certificate immutable', async (confirmed) => {
+    let offline = false
+    const ctx = buildApp({
+      authGateway: {
+        getAccountIdentities: async () => [],
+        getProfileNames: async () => new Map(),
+        getProfileIdentities: async () => new Map(),
+        getCertificateIdentity: async (accountId, profileId) => {
+          expect(accountId).toBe(USER)
+          expect(profileId).toBe(USER)
+          if (offline) throw new Error('offline')
+          return { fullName: 'Maria Silva Santos', confirmed }
+        },
+      },
+    })
+    const { courseId, moduleId, lessonIds, slug } = seedSampleCourse(
+      ctx.courses,
+      'legacy-child',
+      'published',
+      'kids',
+    )
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: slug })
+    for (const id of lessonIds) await ctx.progress.markComplete(USER, id, courseId, new Date())
+    const { lessonId, blockId } = seedCertificateLesson(ctx.courses, courseId, moduleId)
+    const headers = {
+      ...authHeaders,
+      'x-auth-account-id': USER,
+      'x-auth-kids-context': 'student',
+      'x-auth-profile-name': 'Fada Azul',
+    }
+    const response = await issue(ctx.app, lessonId, blockId, headers)
+    expect(response.status).toBe(confirmed ? 200 : 409)
+    if (!confirmed) {
+      expect(await response.json()).toMatchObject({ error: { code: 'PROFILE_IDENTITY_REQUIRED' } })
+      expect(await ctx.certificates.findByUserAndCourse(USER, courseId)).toBeNull()
+      return
+    }
+    const body = await response.json()
+    expect(body.certificate.studentName).toBe('Maria Silva Santos')
+    offline = true
+    const replay = await issue(ctx.app, lessonId, blockId, {
+      ...headers,
+      'x-auth-profile-name': 'Novo Apelido',
+    })
+    expect(replay.status).toBe(200)
+    expect(await replay.json()).toMatchObject({ certificate: body.certificate })
+  })
+  test('criança usa nome completo confirmado, ignora apelido da sessão e preserva replay sem Auth', async () => {
+    let unavailable = false
+    const parent = randomUUID()
+    const ctx = buildApp({
+      authGateway: {
+        getAccountIdentities: async () => [],
+        getProfileNames: async () => new Map(),
+        getProfileIdentities: async () => new Map(),
+        getCertificateIdentity: async (accountId, profileId) => {
+          expect(accountId).toBe(parent)
+          expect(profileId).toBe(USER)
+          if (unavailable) throw new Error('offline')
+          return { fullName: 'Maria Silva Santos', confirmed: true }
+        },
+      },
+    })
+    const { courseId, moduleId, lessonIds, slug } = seedSampleCourse(
+      ctx.courses,
+      'curso-crianca',
+      'published',
+      'kids',
+    )
+    grantLifetime(ctx.entitlements, { userId: parent, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(ctx.courses, courseId, moduleId)
+    for (const id of lessonIds) await ctx.progress.markComplete(USER, id, courseId, new Date())
+    const headers = {
+      ...authHeaders,
+      'x-auth-account-id': parent,
+      'x-auth-profile-name': 'Fada Azul',
+      'x-auth-user-name': 'Nome forjado',
+    }
+    const issued = await issue(ctx.app, lessonId, blockId, headers)
+    expect({ status: issued.status, body: await issued.clone().json() }).toMatchObject({
+      status: 200,
+    })
+    const result = (await issued.json()) as { certificate: { studentName: string; id: string } }
+    expect(result.certificate.studentName).toBe('Maria Silva Santos')
+    unavailable = true
+    const replay = await issue(ctx.app, lessonId, blockId, headers)
+    expect(replay.status).toBe(200)
+    expect(((await replay.json()) as typeof result).certificate).toEqual(result.certificate)
+  })
+  test.each([
+    false,
+    true,
+  ])('criança sem identidade confirmada ou Auth disponível não recebe certificado com apelido (%s)', async (offline) => {
+    const parent = randomUUID()
+    const ctx = buildApp({
+      authGateway: {
+        getAccountIdentities: async () => [],
+        getProfileNames: async () => new Map(),
+        getProfileIdentities: async () => new Map(),
+        getCertificateIdentity: async () => {
+          if (offline) throw new Error('offline')
+          return { fullName: 'Apelido antigo', confirmed: false }
+        },
+      },
+    })
+    const { courseId, moduleId, slug } = seedSampleCourse(
+      ctx.courses,
+      'curso-crianca',
+      'published',
+      'kids',
+    )
+    grantLifetime(ctx.entitlements, { userId: parent, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(ctx.courses, courseId, moduleId)
+    const response = await issue(ctx.app, lessonId, blockId, {
+      ...authHeaders,
+      'x-auth-account-id': parent,
+      'x-auth-profile-name': 'Fada Azul',
+    })
+    expect({ status: response.status, body: await response.clone().json() }).toMatchObject({
+      status: offline ? 503 : 409,
+    })
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+      offline ? 'PROFILE_IDENTITY_UNAVAILABLE' : 'PROFILE_IDENTITY_REQUIRED',
+    )
+    expect(await ctx.certificates.findByUserAndCourse(USER, courseId)).toBeNull()
+  })
   test.each([
     false,
     true,
@@ -617,7 +756,7 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     expect(body.certificate.studentName).toBe('André José')
   })
 
-  test('perfil kids: x-auth-profile-name vence o nome da conta', async () => {
+  test('perfil kids sem autoridade de identidade não emite usando apelido ou nome da conta', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses, 'curso-kids')
     grantLifetime(entitlements, { userId: USER, courseRef: slug })
@@ -626,8 +765,9 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     await complete(app, lessonIds[1])
 
     const headers = { ...authHeaders, 'x-auth-profile-name': 'Lulu' }
-    const body = await issue(app, lessonId, blockId, headers).then(readJson)
-    expect(body.certificate.studentName).toBe('Lulu')
+    const response = await issue(app, lessonId, blockId, headers)
+    expect(response.status).toBe(503)
+    expect(await response.json()).toMatchObject({ error: { code: 'PROFILE_IDENTITY_UNAVAILABLE' } })
   })
 
   test('autoria bloqueia mais de um bloco certificado por curso', async () => {

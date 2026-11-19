@@ -182,6 +182,7 @@ const ProfileBirthDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const CreateProfileBody = z.object({
   requestId: z.uuid(),
   name: ProfileName,
+  publicNickname: z.string().trim().min(2).max(40).optional(),
   whatsapp: ProfileWhatsapp,
   birthDate: ProfileBirthDate,
   // O pai decide o perfil público já na criação (tutorial de 1º acesso, 08/2026);
@@ -194,6 +195,7 @@ const CreateProfileBody = z.object({
 const UpdateProfileBody = z
   .object({
     name: ProfileName.optional(),
+    publicNickname: z.string().trim().min(2).max(40).optional(),
     whatsapp: ProfileWhatsapp,
     birthDate: ProfileBirthDate.optional(),
     publicProfileEnabled: z.boolean().optional(),
@@ -202,6 +204,7 @@ const UpdateProfileBody = z
   .refine(
     (b) =>
       b.name !== undefined ||
+      b.publicNickname !== undefined ||
       b.whatsapp !== undefined ||
       b.birthDate !== undefined ||
       b.publicProfileEnabled !== undefined ||

@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Periodicidade do mini checkout (full review da Aula 7, 19/11/2026)
+
+O catálogo permite intervalos positivos em meses além de 1 e 12. `PurchaseForm` apresenta
+`por mês`, `por ano` ou `a cada N meses` conforme o intervalo real; compra avulsa não ganha
+rótulo recorrente. Não mudar cobrança/valor para contornar o texto. Teste de renderização real:
+`tests/commerce-purchase-form.test.tsx` (1, 3, 6 e 12 meses, mais avulsa).
+
+
+
 ## Molda Cenários: o BFF da oficina de cenários 3D (16/11/2026)
 
 `routes/cenarios.ts` (`createCenariosRoutes({ gateway, session })`, espalhado no `createShell` como

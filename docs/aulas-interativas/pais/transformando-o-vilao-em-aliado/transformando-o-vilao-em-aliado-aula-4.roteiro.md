@@ -1,69 +1,93 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-4
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção, e a apresentadora é o avatar da Helena (HeyGen) durante toda a aula. A fala copiável da aula inteira está no arquivo `.elevenlabs.txt` ao lado. Os depoimentos são cortes já existentes e entram em edição no ponto indicado; o texto deles não vai para a voz.
 
-## Parte 1. O interesse como porta de entrada
+## Parte 1. Programar não é um bicho de sete cabeças
 
-**Clipe:** `video-a4-interesse`
+**Clipe:** `video-a4-blocos`
 
-**Na tela:** Helena na câmera. Uma tela com as seis cenas, cada uma acendendo quando ela lê, com o que o jogo oferece ao lado. Entra o vídeo do Bernardo logo depois de "Escute o Bernardo", com legenda de nome em todos os depoimentos. A frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___." fica na tela durante o exercício.
+**Na tela:** No "aquela tela preta", contrastar [na edição: tela preta cheia de código e, em seguida, blocos coloridos de arrastar]. No "Quando o despertador tocar", mostrar a regra da rotina [na edição: quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes]. No "Quando o personagem tocar na porta", mostrar a regra do jogo [na edição: quando o personagem tocar na porta, se ele estiver com a chave, então ele pode entrar]. No "a gente está falando de sequenciação", voltar para a apresentadora [na edição: avatar da Helena].
 
-**Fala da Helena:**
-
-```text
-Talvez você já tenha dito esta frase: o meu filho não presta atenção em nada, mas passa horas falando de dinossauro. Hoje eu quero te mostrar que esse interesse não é o problema. Ele é a porta de entrada.
-
-Veja se você reconhece o seu filho em alguma destas cenas.
-
-Ele sabe tudo sobre um assunto. Esse assunto pode virar o tema do jogo dele, e aí o interesse aparece sozinho, porque dá para criar um jogo sobre qualquer coisa.
-
-Ele precisa saber o que vai acontecer. Na programação, a mesma regra dá sempre o mesmo resultado. É previsível.
-
-Ele se frustra quando perde. No jogo que ele cria, o erro vira pista, e quem muda a regra é ele.
-
-Ele organiza tudo em sequência. Sequência é a base de todo jogo.
-
-Ele não larga a tela. O tempo pode ser o mesmo. O que muda é o papel dele.
-
-Ele mostra mais do que fala. Um jogo pronto vira um jeito de mostrar o que ele pensa, sem precisar de tantas palavras.
-
-Essas cenas não são diagnóstico e não descrevem toda criança. São coisas que muitas famílias contam. E um interesse forte, desses que parecem não ter fim, é fonte de prazer, de motivação e muitas vezes de calma. Não é algo para eliminar. Quando a gente usa o interesse da criança a favor, ensinar fica muito mais fácil, porque ela se envolve, se abre e aprende mais. E isso vale dos 5 aos 17 anos. Escute o Bernardo.
-
-Ele usou o que já gostava, os jogos que ele joga, para descobrir como eles são feitos.
-
-E nem toda criança é dos jogos, e tudo bem. O interesse pode ser desenhar, contar histórias, fazer vídeos. O jogo é só a ferramenta.
-
-Agora complete em voz alta, pensando no seu filho: meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Alguns exemplos para ajudar. Ama trens? O trem precisa chegar na estação sem bater. Ama bandeiras? O jogo mostra uma bandeira e ele escolhe o país. Ama dinossauros? O dinossauro precisa fugir do vulcão. Lembra da resposta do seu filho na Aula 2, sobre o jogo que ele inventaria? Ela pode ser o ponto de partida. Clique em Próxima parte.
-```
-
-**Recado na página (não gravar):** Meu filho ama ___. Um jogo sobre isso poderia ter ___.
-
-## Parte 2. Quando a matéria da escola ganha sentido
-
-**Clipe:** `video-a4-escola`
-
-**Na tela:** Helena na câmera. Uma tela com "2 + 5 = ?" de um lado e a trilha de casas de 1 a 7, com o personagem na casa 2 e a estrela na 7, do outro. Uma tela com português, ciências, arte e planejamento, cada um acendendo. Entra o vídeo de depoimentos do que os pais começam a perceber (Harle, Daniel, Débora e Flávia) logo depois de "Veja o que contam alguns pais". Câmera na parte da pesquisa.
-
-**Fala da Helena:**
+**Fala para ElevenLabs:**
 
 ```text
-O interesse também é uma ponte com a escola. Muitas vezes a escola apresenta a matéria de um jeito abstrato. A criança vê dois mais cinco no papel e pergunta: para que eu preciso disso?
+[upbeat, welcoming voice] Oi! Que bom que você voltou. [curious] A gente terminou a última aula com uma dúvida no ar, lembra? Para criar um jogo, tem que programar. [thoughtful] E, quando a gente fala em programação, muita gente já pensa: "Ai, aquela tela preta, aqueles números, aquele trem difícil." E já fica meio assustado.
 
-Agora imagine que o personagem dela está na casa 2 e ela quer levá-lo até a estrela, na casa 7. Quantos passos faltam? A conta virou a solução de que ela precisa para a ideia dela funcionar. Fazer a conta porque a própria ideia precisa dela muda tudo. Para muitas crianças, ver primeiro o concreto ajuda a chegar no abstrato.
+[reassuring, encouraging voice] Mas pode ficar tranquilo, que isso é coisa do passado. [engaging, energetic, conversational voice] Hoje a gente tem jeitos de programar muito mais simples, muito mais acessíveis para a criança. O pensamento por trás é o mesmo, o raciocínio, o passo a passo. [upbeat, encouraging voice] Só que hoje a criança arrasta bloquinhos coloridos para programar e fazer o joguinho dela.
 
-Uma amiga minha é professora, doutora em matemática e física, e dá aula particular para quem está de recuperação. O filho dela também cria jogos. Ela me disse: se todos os meus alunos tivessem esse hábito desde pequenos, eu estaria sem aluno.
+[engaging, energetic, conversational voice] E, para falar a verdade, a programação em si nunca foi tão difícil assim. Ela está no dia a dia de todo mundo. O jeito de escrever é que sempre foi complicado, e isso mudou.
 
-E não é só matemática. Em português, para a personagem pedir ajuda ao jogador, a criança escreve o diálogo e decide o que acontece em cada resposta. Em ciências, para o foguete subir e voltar, ela mexe em velocidade e gravidade e observa. Em arte, ela cria personagens, cores e o clima do cenário. E no planejamento, ela organiza o começo, o desafio e o final, porque o jogo precisa terminar.
+[curious] Quer ver como você mesmo já programou? [engaging, energetic, conversational voice] Todo mundo já programou, no sentido de usar esse pensamento no dia a dia. Muita gente já fez rotina visual para as crianças, não fez? Pois isso não deixa de ser uma programação. Tem uma lógica ali.
 
-Veja o que contam alguns pais sobre o que começaram a perceber.
+[confident, clear, unhurried voice] Olha um exemplo bem simples: "Quando o despertador tocar, se for dia de escola, então trocar de roupa, tomar café e escovar os dentes."
 
-Isso não é só uma impressão. Uma grande análise de mais de cem estudos mostrou que aprender a programar traz ganhos em criatividade, em pensamento matemático e em raciocínio, com variações de uma pesquisa para outra. Esses estudos não são específicos sobre autismo, e programar não é fórmula mágica. É uma ponte a mais. As referências estão na apostila.
+[curious] E no jogo, como é que fica? [confident, clear, unhurried voice] Fica assim: "Quando o personagem tocar na porta, se ele estiver com a chave, então ele pode entrar."
 
-Para esta semana: escreva a frase do seu filho. Meu filho ama tal coisa, e um jogo sobre isso poderia ter tal coisa. Ela vai ser o primeiro rascunho de um jogo dele. Depois responda as perguntas da próxima parte.
+[pleased, lively voice] Viu? O pensamento que a gente usa no dia a dia é o mesmo que a gente usa no jogo. [engaging, energetic, conversational voice] Dá para ligar uma coisa na outra, só que de um jeito muito mais divertido, mais criativo e mais eficiente para trabalhar com as crianças.
+
+[curious] E o que é que eu estou trabalhando aí? [confident, clear, unhurried voice] De novo, função executiva. Aqui, a gente está falando de sequenciação. [engaging, energetic, conversational voice] Eu tenho que me planejar e me organizar para seguir os passos numa certa ordem, até conseguir fazer a tarefa.
+
+[engaging, energetic, conversational voice] Volta naquele exemplo do jogo. A criança tem que entender que primeiro o personagem toca na porta, que ele só vai conseguir entrar se estiver com a chave, e que só depois de destravar é que ele entra na casa.
+
+[curious] Agora leva isso para o dia a dia. [engaging, energetic, conversational voice] A gente até pode tomar banho de roupa, mas não é o normal, né? [confident, clear, unhurried voice] Eu só consigo entrar no banheiro se eu abrir a porta. Eu só tomo banho se eu tirar a roupa antes. E, quando eu saio do chuveiro, eu só visto a roupa depois de me enxugar. [pleased, lively voice] Olha aí a função executiva sendo trabalhada.
+
+[engaging, energetic, conversational voice] E, com o personagem que eles vão criando no jogo, eles vão montando um repertório, uma memória de trabalho, que depois dá para usar no dia a dia. [warmly] Muita criança fala: "Eu fiz isso porque o personagem fez." Você já deve ter escutado isso em casa. [upbeat, encouraging voice] E a gente pode aproveitar isso para as habilidades do dia a dia.
+
+[curious] Por exemplo, a criança pensando assim: "Eu fui abrir a porta e ela estava trancada. Ah, é que eu esqueci a chave dentro da mochila." [pleased, lively voice] Olha o raciocínio! Olha ela criando uma estratégia para resolver um problema. [engaging, energetic, conversational voice] Ela pega o que o personagem fez lá no jogo e tenta adaptar para a situação que está vivendo agora. E assim eles vão ganhando essas habilidades também. [upbeat, encouraging voice] Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Fazer a conta porque a própria ideia precisa dela muda tudo.
+## Parte 2. Um passo a passo para chegar a um objetivo
 
-## Parte 3. Confira o que ficou (quiz, sem vídeo)
+**Clipe:** `video-a4-passo`
 
-O quiz `quiz-a4` fica numa parte própria, sem gravação.
+**Na tela:** No "um passo a passo para chegar a um objetivo", mostrar a definição [na edição: programar é passar um passo a passo para alcançar um objetivo]. No "eu tenho um caminho", mostrar o exemplo [na edição: tabuleiro com a bolinha, os obstáculos e a estrela]. No "eu vou para cima", animar o percurso [na edição: a bolinha sobe duas casas e anda três para a direita, até a estrela]. No "a criança tem que observar", mostrar o ciclo [na edição: observar, mudar a instrução, testar de novo].
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Então, essa tal de programação nada mais é do que aquilo que a gente já vive todo dia. [confident, clear, unhurried voice] Porque, se eu for definir, programar é simplesmente passar um passo a passo para chegar a um objetivo.
+
+[curious] Quer ver na prática? [interested, animated voice] Olha aqui: eu tenho um caminho, tenho alguns obstáculos, e tenho o alvo, que é a estrela. Eu sou a bolinha. [engaging, energetic, conversational voice] E eu preciso programar essa bolinha para ela chegar até a estrela. Então eu vou passar o passo a passo para ela. Isso é programar.
+
+[confident, clear, unhurried voice] Eu vou dizer o que ela tem que fazer: se é para subir, se é para descer, se é para ir para a direita, se é para ir para a esquerda. [engaging, energetic, conversational voice] O programa segue esse passo a passo e chega aonde eu quero. E, no caso do jogo, esse objetivo é cada funcionalidade, cada pedacinho do nosso jogo.
+
+[curious] E como é que eu faço essa bolinha chegar lá? [confident, clear, unhurried voice] Assim: eu vou para cima. [short pause] Para cima de novo. [short pause] Depois para a direita, para a direita de novo, e para a direita mais uma vez. [pleased, lively voice] Pronto, cheguei na estrela. Isso é programação.
+
+[reassuring, encouraging voice] E é só esse tipo de ideia que as crianças precisam ter para conseguir programar o jogo delas. Não é nada complicado, nada de outro mundo.
+
+[engaging, energetic, conversational voice] E, no meio desse processo, eles vão treinando e aprendendo várias coisas. Nesse exemplo simples, a criança tem que observar: para cada passo que eu pedi para a bolinha andar, para onde ela foi? O que aconteceu? Ela foi para o obstáculo ou foi para o lugar certo? [thoughtful] "Ah, não. Eu dei essa instrução, mas ela foi parar no obstáculo. [upbeat, encouraging voice] Então eu preciso mudar a minha instrução, para ela ir pelo caminho certo." E aí eu tento de novo.
+
+[engaging, energetic, conversational voice] É mais ou menos esse vai e volta que a criança vai fazendo, até conseguir programar o que ela quer no jogo. [upbeat, encouraging voice] Clique em Próxima parte.
+```
+
+## Parte 3. O que esse vai e volta treina
+
+**Clipe:** `video-a4-olhar`
+
+**Na tela:** No "percepção global do ambiente", destacar o termo [na edição: percepção global do ambiente]. No "pensa numa sala de aula", ilustrar [na edição: sala de aula vista de cima, com o caminho até a carteira]. No "o horrível tornou legal", destacar a frase [na edição: O horrível tornou legal]. No "tudo o que se desenvolve quando a criança cria", listar [na edição: raciocínio lógico, resolução de problemas, foco, planejamento, lidar com o erro].
+
+**Fala para ElevenLabs:**
+
+```text
+[curious] E sabe o que esse observar, ajustar e tentar de novo treina? [confident, clear, unhurried voice] Uma habilidade muito importante, que se chama percepção global do ambiente. [engaging, energetic, conversational voice] Eu tenho que perceber o todo, o cenário inteiro, para entender de onde eu estou saindo e qual é o caminho que eu devo seguir. E, ao mesmo tempo, eu tenho que perceber o ponto que importa dentro desse todo.
+
+[engaging, energetic, conversational voice] Leva isso para o dia a dia. A criança entra num lugar. [thoughtful] Ela não pode olhar só para o carrinho, porque senão ela esbarra em alguma coisa, derruba alguma coisa, deixa sem resposta alguém que deu oi. [confident, clear, unhurried voice] Ela precisa primeiro parar e olhar aquela sala toda.
+
+[curious] Para ficar mais fácil, pensa numa sala de aula. [engaging, energetic, conversational voice] Eu chego e tenho que olhar para tudo aquilo: onde estão as carteiras, onde está o colega, se a professora está falando, se eu posso entrar, se eu não posso, se eu tenho que esperar. Qual foi a pista que me deram, naquele cenário, para eu montar o meu caminho até a minha carteira?
+
+[confident, clear, unhurried voice] E aí, quando eu chego na minha carteira, o meu foco muda. Agora é um ponto só: pegar o caderno e colocar na mesa. Não é mais o cenário inteiro. [engaging, energetic, conversational voice] E, quando a aula começa, eu preciso equilibrar os dois.
+
+[thoughtful] Então esse observar, mudar a instrução e testar de novo quer dizer flexibilizar, mudar a rota. E isso é super difícil, principalmente para a maioria das crianças autistas. Elas se esforçam demais para fazer uma coisa. E, se a gente não trabalha com elas o passo a passo, essa elaboração, essa observação, essa interpretação, elas se esforçam, chega lá no final, dá errado, elas desanimam e não querem repetir.
+
+[upbeat, encouraging voice] Agora, se é um joguinho com o meu personagem, com o assunto que eu adoro, fica muito mais fácil eu voltar e tentar de novo. [engaging, energetic, conversational voice] Porque eu estou ali ajudando o meu personagem, estou construindo aquilo com ele. Aí a criança topa muito mais fazer a tarefa.
+
+[engaging, energetic, conversational voice] E eu volto a bater nessa tecla, porque ela é importante: a tela é uma grande vilã que a gente não tem como combater. [upbeat, encouraging voice] Então, já que botou a mão no celular, já que botou a mão no tablet, vamos fazer aquilo valer a pena. Em vez de ficar só jogando e repetindo, vamos aprender, vamos elaborar, vamos criar, vamos treinar a frustração, vamos flexibilizar. [reassuring, encouraging voice] Vamos entender que existem caminhos novos, jeitos novos, e que está tudo bem. Ou que eu queria de um jeito, não deu, e eu vou ter que fazer de outro.
+
+[warmly] E deixa eu te contar uma história que a psicóloga que acompanha o André me contou, de um pacientezinho dela. Na hora em que ela pegou a atividade, ele falou: [thoughtful] "Que horrível." [warmly] E ela respondeu: "Ah, mas a gente está treinando. É horrível mesmo, vamos embora." E ele foi. Quando chegou no final, ele disse: [pleased, lively voice] "A gente pode continuar? Porque foi muito legal." [curious] Ela falou: "Uai, não entendi." [pleased, lively voice] E ele: "Não, é que o horrível tornou legal."
+
+[warmly] Olha que bonito. Ele aprendeu ali que caminhos diferentes levam a lugares diferentes, e que esse lugar diferente pode ser encantador. [engaging, energetic, conversational voice] Ele não precisa ficar preso só naquele caminho de sempre. E o joguinho proporciona muito isso.
+
+[engaging, energetic, conversational voice] Então, só para a gente fechar, olha tudo o que se desenvolve quando a criança cria: [confident, clear, unhurried voice] o raciocínio lógico, a resolução de problemas, o foco, o planejamento, o lidar com o erro. [engaging, energetic, conversational voice] É tudo aquilo de que a gente vem falando. É treino mesmo, de habilidades cognitivas para a vida.
+
+[upbeat, encouraging voice] E na próxima aula eu respondo as duas dúvidas que eu mais escuto dos pais: [curious] "será que ele vai ter foco?" e "será que não vai ser difícil?". [upbeat, encouraging voice] Clique em Concluir aula para continuar.
+```

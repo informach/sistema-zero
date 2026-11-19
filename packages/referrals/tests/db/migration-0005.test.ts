@@ -152,7 +152,28 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
       await sql<{ indexname: string }[]>`
         select indexname from pg_indexes where schemaname = 'referrals'`
     ).map((r) => r.indexname)
-    expect(indexes).toContain('scholarship_redemptions_email_audience_uq')
+    // A 0011 troca o índice único: a vaga do presente entra na chave.
+    expect(indexes).toContain('scholarship_redemptions_email_audience_slot_uq')
+    expect(indexes).not.toContain('scholarship_redemptions_email_audience_uq')
+    expect([...(await sql`select gift_slot from referrals.scholarship_redemptions`)]).toEqual([
+      { gift_slot: 'main' },
+    ])
+    // Curso para pais com o mesmo e-mail e público entra; um segundo presente do público não.
+    await sql`insert into referrals.scholarship_redemptions (code_id, email, name, gift_slot)
+      values (${code!.id}, 'paula@example.com', 'Paula', 'parents:transformando-o-vilao-em-aliado')`
+    const recusado = async (slot: string) => {
+      try {
+        await sql`insert into referrals.scholarship_redemptions (code_id, email, name, gift_slot)
+          values (${code!.id}, 'paula@example.com', 'Paula', ${slot})`
+        return null
+      } catch (error) {
+        return (error as { code?: string }).code ?? 'erro'
+      }
+    }
+    expect(await recusado('main')).toBe('23505')
+    expect(await recusado('parents:transformando-o-vilao-em-aliado')).toBe('23505')
+    expect(await recusado('outra')).toBe('23514')
+    await sql`delete from referrals.scholarship_redemptions where gift_slot <> 'main'`
     expect(indexes).toContain('codes_ambassador_audience_uq')
     expect(indexes).not.toContain('scholarship_redemptions_email_uq')
     expect(indexes).not.toContain('codes_ambassador_uq')

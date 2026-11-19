@@ -6,6 +6,7 @@
   "private": true,
   "module": "src/index.ts",
   "exports": {
+    "./commerce": "./src/commerce/index.ts",
     "./identity": "./src/identity/index.ts",
     "./pensa": "./src/pensa/index.ts",
     "./live": "./src/live/index.ts",

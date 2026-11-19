@@ -60,6 +60,7 @@ export interface SubscriptionView {
  * consumerId/metadata/providerSubscriptionId (internos de operação).
  */
 export interface MySubscriptionView {
+  offerId: string | null
   id: string
   status: SubscriptionStatus
   intervalMonths: number
@@ -79,6 +80,8 @@ export interface MySubscriptionView {
 
 export function toMySubscriptionView(subscription: SubscriptionAggregate): MySubscriptionView {
   return {
+    offerId:
+      typeof subscription.metadata.offerId === 'string' ? subscription.metadata.offerId : null,
     id: subscription.id,
     status: subscription.status,
     intervalMonths: subscription.intervalMonths,

@@ -530,6 +530,15 @@ const config: GatewayConfigInput = {
       timeoutMs: 35_000,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    {
+      id: 'member-checkout-subscription-state',
+      methods: ['GET'],
+      pathPattern: '/subscriptions/:id',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['funnel'] },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
     // ── Admin de pagamentos (painel @sistemazero/admin) ──────────────────────
     // LEITURA + ações (estorno/cancelar) para o dono operar. JWT + RBAC no gateway
     // (admin/staff); o payments confere os X-Auth-* (requireAdmin, defesa em
@@ -805,6 +814,70 @@ const config: GatewayConfigInput = {
       ],
     },
 
+    {
+      id: 'member-gift',
+      methods: ['POST'],
+      pathPattern: '/referrals/internal/member-gifts',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'member-commerce',
+      methods: ['POST'],
+      pathPattern: '/funnel/internal/commerce/:action',
+      service: 'funnel',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: [
+        {
+          type: 'header-inject',
+          options: { headers: { 'x-internal-token': FUNNEL_INTERNAL_TOKEN } },
+        },
+        { type: 'path-rewrite', options: { stripPrefix: '/funnel', addPrefix: '/api' } },
+      ],
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 1200, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'member-promotions',
+      methods: ['GET'],
+      pathPattern: '/catalog/member-promotions',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'member-commerce-access',
+      methods: ['GET'],
+      pathPattern: '/members/commerce/access',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'member-commerce-internal-access',
+      methods: ['GET'],
+      pathPattern: '/members/internal/commerce/access',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['funnel'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Kids: conferência da sessão pelo BFF. ⚠️ Assinada por HMAC (consumer `member-shell`):
     // com principal autenticado ela sai do limite ANÔNIMO global por IP, que derrubava
     // escolas e CGNAT (centenas de crianças atrás do mesmo IP → 429 → 503 no Kids). O teto

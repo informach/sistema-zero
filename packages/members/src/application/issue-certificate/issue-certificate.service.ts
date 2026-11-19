@@ -13,8 +13,11 @@ import {
   CertificateRevokedError,
   LessonComingSoonError,
   LessonNotFoundError,
+  ProfileIdentityRequiredError,
+  ProfileIdentityUnavailableError,
 } from '../../domain/course/course.errors'
 import { type CertificateBlock, hasComingSoonBlock } from '../../domain/course/lesson-block'
+import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { LearningRepository } from '../../domain/ports/learning-repository.port'
@@ -30,6 +33,8 @@ export interface IssueCertificateInput {
   userId: string
   /** Conta do responsável (acesso). Default → userId no caller. */
   accountId: string
+  /** Trusted session classification; legacy profiles can share the account UUID. */
+  profileSession: boolean
   lessonId: string
   blockId: string
   /** Nome de EXIBIÇÃO do aluno — vem dos headers confiáveis do gateway (NÃO do corpo). */
@@ -72,6 +77,7 @@ export class IssueCertificateService {
     private readonly clock: () => Date,
     private readonly learning: LearningRepository,
     private readonly sections: SectionProgressionService,
+    private readonly identities?: Pick<AuthGateway, 'getCertificateIdentity'>,
   ) {}
 
   async execute(input: IssueCertificateInput): Promise<IssueCertificateResult> {
@@ -102,7 +108,19 @@ export class IssueCertificateService {
 
     if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
 
-    const studentName = input.studentName.trim()
+    let studentName = input.studentName.trim()
+    if (input.profileSession) {
+      if (!this.identities?.getCertificateIdentity) throw new ProfileIdentityUnavailableError()
+      let identity: { fullName: string; confirmed: boolean } | null
+      try {
+        identity = await this.identities.getCertificateIdentity(input.accountId, input.userId)
+      } catch {
+        throw new ProfileIdentityUnavailableError()
+      }
+      if (!identity?.confirmed || !identity.fullName.trim())
+        throw new ProfileIdentityRequiredError()
+      studentName = identity.fullName.trim()
+    }
     if (studentName.length === 0) {
       throw new ValidationError('Nome do aluno ausente para o certificado')
     }

@@ -9,6 +9,8 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
+import { ValidationError as ElysiaValidationError } from 'elysia'
+import { paymentWasNotCreated } from '../../application/payment-creation-outcome'
 import { EfiGatewayError } from '../../infrastructure/gateways/efi/efi.errors'
 import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 
@@ -42,7 +44,7 @@ export function buildErrorResponse(input: {
   code: string | number
   error: unknown
   logger: Logger
-}): { status: number; body: ErrorEnvelope } {
+}): { status: number; body: ErrorEnvelope & { paymentCreation?: 'not_started' } } {
   const { error, code } = input
 
   if (error instanceof UnauthorizedError)
@@ -57,7 +59,13 @@ export function buildErrorResponse(input: {
   }
 
   if (error instanceof DomainError) {
-    return { status: DOMAIN_STATUS[error.code] ?? 400, body: envelope(error.code, error.message) }
+    return {
+      status: DOMAIN_STATUS[error.code] ?? 400,
+      body: {
+        ...envelope(error.code, error.message),
+        ...(paymentWasNotCreated(error) ? { paymentCreation: 'not_started' as const } : {}),
+      },
+    }
   }
 
   if (error instanceof ConcurrencyConflictError)
@@ -90,14 +98,25 @@ export function buildErrorResponse(input: {
   if (code === 'VALIDATION') {
     return {
       status: 400,
-      body: envelope(
-        'VALIDATION_ERROR',
-        error instanceof Error ? error.message : 'Requisição inválida',
-      ),
+      body: {
+        ...envelope(
+          'VALIDATION_ERROR',
+          error instanceof Error ? error.message : 'Requisição inválida',
+        ),
+        ...(error instanceof ElysiaValidationError && error.type !== 'response'
+          ? { paymentCreation: 'not_started' as const }
+          : {}),
+      },
     }
   }
   if (code === 'PARSE')
-    return { status: 400, body: envelope('PARSE_ERROR', 'Corpo da requisição inválido') }
+    return {
+      status: 400,
+      body: {
+        ...envelope('PARSE_ERROR', 'Corpo da requisição inválido'),
+        paymentCreation: 'not_started',
+      },
+    }
   if (code === 'NOT_FOUND')
     return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 

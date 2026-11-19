@@ -140,6 +140,7 @@ export async function createApplication(env: Env): Promise<Application> {
     limits,
     () => new Date(),
     () => randomUUID(),
+    members,
   )
   const attachmentService = new AttachmentService(
     attachmentRepo,

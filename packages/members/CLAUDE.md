@@ -1,5 +1,21 @@
 # CLAUDE.md — @sistemazero/members
 
+## Identidade pública e certificado (full review da Aula 7, 19/11/2026)
+
+O emissor recebe `profileSession` obrigatório da fronteira autenticada: `kids-context=student`,
+claim de nome de perfil ou IDs distintos. Perfis legados podem ter UUID igual à conta.
+Primeira emissão infantil exige nome completo confirmado no Auth; replay mantém o certificado
+imutável e não depende de nova consulta de identidade.
+
+`PublicLiveIdentities` projeta os apelidos completos atuais de participantes, mensagens antigas e
+mídia Kids, sem usar nomes antigos das inscrições. As consultas em lote ao Auth ocorrem DEPOIS
+que a transação libera a conexão. A projeção redige UUIDs de colegas depois de resolver os nomes.
+Professoras e turmas adultas mantêm seus nomes. Falha/ausência de perfil usa `Criador(a)`.
+A composição real precisa passar `publicIdentities` ao `LiveService`.
+Regressões: `live-public-identities`, `live-contract-1410`, `certificate` e `public-author-identities`.
+
+
+
 ## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
 
 Os dados da oficina de cenários 3D (`@sistemazero/molda-cenarios`). Plano da reforma em

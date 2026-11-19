@@ -70,7 +70,8 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       // A identidade/role/status seguem do `user` (a CONTA) — o perfil só herda.
       if (opts?.profile) {
         const pfl: ProfileClaim = { accountId: opts.profile.accountId }
-        if (opts.profile.name) pfl.name = opts.profile.name
+        pfl.name = opts.profile.nickname?.trim() || 'Criador(a)'
+        if (opts.profile.nickname?.trim()) pfl.nickname = opts.profile.nickname.trim()
         // Sempre booleano numa sessão de perfil → o gateway injeta o header definido.
         pfl.pub = opts.profile.pub === true
         claims.pfl = pfl
@@ -178,5 +179,11 @@ function toProfileClaim(value: unknown): ProfileClaim | undefined {
   const candidate = value as Record<string, unknown>
   const accountId = asString(candidate.accountId)
   if (!accountId) return undefined
-  return { accountId, name: asString(candidate.name), pub: candidate.pub === true }
+  const nickname = asString(candidate.nickname)
+  return {
+    accountId,
+    name: nickname ?? 'Criador(a)',
+    ...(nickname ? { nickname } : {}),
+    pub: candidate.pub === true,
+  }
 }

@@ -1,5 +1,43 @@
 # CLAUDE.md — @sistemazero/hub
 
+## Identidade pública Kids (full review da Aula 7, 19/11/2026)
+
+Toda leitura Kids de autor consulta a identidade pública atual em lote, inclusive quando
+`authorId === authorAccountId` (perfil-padrão legado). UUID igual não identifica equipe.
+O Members resolve perfis primeiro e somente nomes de equipe ativa pelo diretório interno do
+Auth para os demais IDs. Sem identidade ou durante falha, mostrar `Criador(a)` e não ligar
+perfil público; nunca voltar ao nome privado do snapshot. Adultos seguem a projeção existente.
+Regressões: `tests/unit/public-author-identities.test.ts` e integração de showcase.
+
+
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod,
+> Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
+> use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
+
+Guia operacional para trabalhar neste package. Leia antes de editar.
+
+**Mural visitante (09/2026):** o entitlement `mural-dos-criadores-visitante` concede
+somente leitura do space `mural-dos-criadores` (canais, jogos, comentários e anexos
+visíveis). `AccessResolutionService` expõe `canInteract` no detalhe/listagem do
+space. Publicar, editar, comentar e reagir exigem a chave completa
+`mural-dos-criadores`; a checagem é feita nas rotas de escrita, não só na UI.
+As três rotas de publicação de vitrine (automática, kid-driven e Estúdio livre)
+também recusam a conta que tenha somente a chave visitante, mesmo que conclua um
+curso elegível ou possua o Estúdio separadamente.
+Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
+voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
+isso ampliaria a autorização de escrita por acidente.
+
+**Mural adulto visitante (20/10/2026, presente adulto):** mesma regra do Kids na Mostra
+`mural-dos-criadores-adulto` (space `adult`, `community_gated` com `adult-mural-dos-criadores`):
+`readConfig` acrescenta só na LEITURA a chave `adult-mural-dos-criadores-visitante`. A visita lê
+canais, jogos e comentários; publicar (o `canInteractChannel` do destino adulto), comentar e reagir
+usam o `accessConfig` persistido e exigem o pleno. Visita Kids não abre a Mostra adulta e
+vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois públicos). Teste:
+`tests/integration/adult-mural-visitor.test.ts`.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

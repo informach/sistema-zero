@@ -118,7 +118,12 @@ export class RefreshService {
         // Re-deriva a flag a cada rotação → o pai liga/desliga e a próxima carga reflete.
         profileSession = {
           profileId: profile.id,
-          claim: { accountId: user.id, name: profile.name, pub: profile.publicProfileEnabled },
+          claim: {
+            accountId: user.id,
+            name: profile.displayName,
+            nickname: profile.publicNickname ?? undefined,
+            pub: profile.publicProfileEnabled,
+          },
         }
       } else {
         await this.refreshTokens.revokeFamily(record.familyId)
