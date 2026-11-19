@@ -116,7 +116,7 @@
     "e2e:security": "playwright test e2e/preview-security.spec.ts e2e/preview-executes-user-code.spec.ts",
     "e2e:a11y": "playwright test e2e/accessibility.spec.ts --project=chromium",
     "e2e:flush": "playwright test e2e/reload-flush.spec.ts",
-    "serve:e2e": "bun scripts/serve-e2e.ts",
+    "serve:e2e": "node scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts"

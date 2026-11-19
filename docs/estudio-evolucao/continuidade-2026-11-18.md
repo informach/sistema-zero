@@ -290,3 +290,11 @@ e transporte experimental; ainda faltam migração completa e qualificação nat
 com dez mil blocos. O produto permanece no namespace v3. Não integrar o
 laboratório antes dessas verificações. Continuar por ele e pelos gates novos,
 mantendo os critérios globais R1/R2/R4/R5 abertos.
+
+A falha de observação do journal Windows foi reproduzida com diagnóstico:
+três falhas em seis repetições, todas com a edição já confirmada no documento.
+O teste agora exige uma revisão inédita, verifica sua ausência antes de esconder
+e recarrega ainda escondido para comprovar recuperação. Seis repetições Chromium
+e os três fluxos WebKit passaram. O host E2E usa Node 24, após reproduzir o timeout
+de Bun no Windows; o prazo continua 120 s. Ver relatório
+`docs/qa/2026-11-18-studio-hidden-revision-and-test-host.md`.

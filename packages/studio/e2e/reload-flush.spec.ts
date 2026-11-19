@@ -138,9 +138,9 @@ async function setVisibility(page: Page, state: 'hidden' | 'visible'): Promise<v
   }, state)
 }
 
-/** Confere o journal no disco antes de voltar à aba ou disparar pagehide. */
-async function hiddenDraftHasAdvanced3D(page: Page): Promise<boolean> {
-  return page.evaluate(async () => {
+/** A edição precisa estar no journal OU já promovida por uma gravação concorrente. */
+async function hiddenDraftHasAdvanced3D(page: Page, expectedName: string): Promise<boolean> {
+  return page.evaluate(async (name) => {
     const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
     const prefix = `sz:v3:project-recovery:${id}:`
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -152,20 +152,26 @@ async function hiddenDraftHasAdvanced3D(page: Page): Promise<boolean> {
       return await new Promise<boolean>((resolve, reject) => {
         const tx = db.transaction('kv', 'readonly')
         const request = tx.objectStore('kv').getAll(IDBKeyRange.bound(prefix, `${prefix}\uffff`))
+        const committed = tx.objectStore('kv').get(`sz:v3:project-meta:${id}`)
         tx.oncomplete = () => {
           const drafts = request.result as Array<{
-            write: { puts: Array<[string, { installedExtensions?: Array<{ id: string }> }]> }
+            write: {
+              puts: Array<[string, { name?: string; installedExtensions?: Array<{ id: string }> }]>
+            }
           }>
+          const matches = (
+            meta: { name?: string; installedExtensions?: Array<{ id: string }> } | undefined,
+          ) =>
+            meta?.name === name &&
+            meta.installedExtensions?.some((extension) => extension.id === 'game-3d-advanced') ===
+              true
           resolve(
-            drafts.some((draft) =>
-              draft.write.puts.some(
-                ([key, meta]) =>
-                  key === `sz:v3:project-meta:${id}` &&
-                  meta.installedExtensions?.some(
-                    (extension) => extension.id === 'game-3d-advanced',
-                  ),
+            matches(committed.result) ||
+              drafts.some((draft) =>
+                draft.write.puts.some(
+                  ([key, meta]) => key === `sz:v3:project-meta:${id}` && matches(meta),
+                ),
               ),
-            ),
           )
         }
         tx.onabort = () => reject(tx.error)
@@ -173,7 +179,7 @@ async function hiddenDraftHasAdvanced3D(page: Page): Promise<boolean> {
     } finally {
       db.close()
     }
-  })
+  }, expectedName)
 }
 
 function collectPageErrors(page: Page): string[] {
@@ -231,7 +237,7 @@ test('trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta
   expect(errors).toEqual([])
 })
 
-test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) => {
+test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }, testInfo) => {
   // No iPad o Safari pode descartar uma aba em segundo plano sem `pagehide`: o
   // `visibilitychange` para `hidden` é o último evento com que dá para contar.
   test.setTimeout(60_000)
@@ -239,17 +245,57 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) =>
 
   await createProject(page)
   await installAdvanced3D(page)
+  await saveNow(page)
+  // Uma edição de metadados não dispara Rodar. Assim uma prévia que confirma a
+  // instalação da extensão não pode satisfazer a verificação desta edição nova.
+  const name = `Rascunho escondido ${testInfo.repeatEachIndex}`
+  await page.getByRole('button', { name: 'Meu projeto', exact: true }).click()
+  const nameInput = page.getByRole('textbox', { name: 'Nome do projeto' })
+  await nameInput.fill(name)
+  await nameInput.press('Enter')
   await expect(saveStatus(page, 'Alterações não salvas')).toBeVisible()
 
-  expect(await hiddenDraftHasAdvanced3D(page)).toBe(false)
+  expect(await hiddenDraftHasAdvanced3D(page, name)).toBe(false)
   await setVisibility(page, 'hidden')
-  // A saída grava um journal recuperável sem confirmar o CAS como "Salvo".
-  // Com autosave segurado por 10 minutos, o journal prova a gravação ao esconder.
-  await expect.poll(() => hiddenDraftHasAdvanced3D(page), { timeout: 10_000 }).toBe(true)
-  await setVisibility(page, 'visible')
-  await expect(saveStatus(page, 'Salvo')).toBeVisible({ timeout: 10_000 })
-
+  // A saída guarda a edição, ainda que outra gravação já tenha promovido o
+  // journal. O nome novo impede uma confirmação antiga de satisfazer o teste.
+  try {
+    await expect.poll(() => hiddenDraftHasAdvanced3D(page, name), { timeout: 10_000 }).toBe(true)
+  } catch (error) {
+    const storage = await page.evaluate(async () => {
+      const local = Object.fromEntries(
+        Object.entries(localStorage).filter(([key]) => key.startsWith('sz:studio-exit:')),
+      )
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('sistema-zero-studio')
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      })
+      try {
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction('kv', 'readonly')
+          const keys = tx.objectStore('kv').getAllKeys()
+          const values = tx.objectStore('kv').getAll()
+          tx.oncomplete = () =>
+            resolve({
+              local,
+              records: keys.result.map((key, index) => [key, values.result[index]]),
+            })
+          tx.onabort = () => reject(tx.error)
+        })
+      } finally {
+        db.close()
+      }
+    })
+    await testInfo.attach('exit-storage-diagnostic', {
+      body: JSON.stringify(storage),
+      contentType: 'application/json',
+    })
+    throw error
+  }
+  // Reabrir sem voltar à aba nem pedir um save: a recuperação deve bastar.
   await page.reload()
+  await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
   await openMenuItem(page, 'Mais blocos')
   await expect(advanced3DKit(page).getByText('No meu jogo', { exact: true })).toBeVisible()
   expect(errors).toEqual([])
