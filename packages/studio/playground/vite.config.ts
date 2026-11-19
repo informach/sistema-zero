@@ -1,9 +1,15 @@
 import { realpathSync } from 'node:fs'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
+import {
+  buildClassicShellPage,
+  CLASSIC_SHELL_PATH,
+  classicShellHeaders,
+} from '../../core/src/studio/classic-shell'
 
 // Dev server LOCAL do package (não deployado). Adaptado do vite.config do repo
 // de origem (sistema-zero-studio/apps/studio): mantém plugins, optimizeDeps,
@@ -27,9 +33,28 @@ const isolationHeaders = {
   'Cross-Origin-Opener-Policy': 'same-origin',
 }
 
+/**
+ * A casca da prévia do Clássico (lote 3.2) servida pelo playground, para os testes de navegador.
+ * O editor abre em 127.0.0.1 e busca a casca em localhost (ou o contrário): outro site.
+ */
+function classicShellRoute(): Plugin {
+  const handle = (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!req.url?.startsWith(CLASSIC_SHELL_PATH)) return next()
+    const port = (req.headers.host ?? '').split(':')[1] ?? ''
+    const origins = [`http://127.0.0.1:${port}`, `http://localhost:${port}`]
+    res.writeHead(200, classicShellHeaders(origins))
+    res.end(buildClassicShellPage(origins))
+  }
+  return {
+    name: 'sz-classic-shell',
+    configureServer: (server) => void server.middlewares.use(handle),
+    configurePreviewServer: (server) => void server.middlewares.use(handle),
+  }
+}
+
 export default defineConfig({
   root: here,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), classicShellRoute()],
   resolve: {
     alias: {
       '@sistemazero/studio/styles.css': r('../src/styles/studio.css'),

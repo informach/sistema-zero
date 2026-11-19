@@ -8,6 +8,7 @@ import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
+import { StudioExecutionProvider } from '../../studio/observation'
 import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
@@ -108,6 +109,53 @@ describe('PreviewIframe', () => {
       expect(doc).not.toBe(PAUSED_PREVIEW_DOC)
       expect(getRenderNonce(doc)).toBeGreaterThan(refreshedNonce)
     })
+  })
+
+  // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
+  // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
+  // iframe que libera o processo travado.
+  it('em outra origem, o Parar reconhece o jogo preso e troca o iframe com o intervalo', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    // A validação compara com a origem do host; o happy-dom começa sem endereço ("null").
+    const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    happyDOM?.setURL('http://localhost:5173/estudio')
+    const adapter = {
+      createPreviewUrl: async () => 'https://previa.exemplo.test/jogo.html',
+      releasePreviewUrl: () => undefined,
+    }
+    render(
+      <StudioExecutionProvider
+        value={{
+          editingAccess: 'author',
+          autoRun: true,
+          requireIsolatedPreview: true,
+          muted: false,
+          originAdapter: adapter,
+        }}
+      >
+        <PreviewIframe />
+      </StudioExecutionProvider>,
+    )
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    const frame = await waitFor(
+      () => {
+        const iframe = screen.getByTitle('Pré-visualização')
+        expect(iframe.getAttribute('src')).toBe('https://previa.exemplo.test/jogo.html')
+        return iframe
+      },
+      { timeout: 3000 },
+    )
+    fireEvent.load(frame)
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
+    // Nenhum batimento desde o load, e o relógio passou do limite de silêncio.
+    const realNow = Date.now
+    Date.now = () => realNow() + 10_000
+    try {
+      act(() => useProRun.getState().actions?.stop())
+      expect(document.querySelector('[data-sz-preview-gap]')).not.toBeNull()
+    } finally {
+      Date.now = realNow
+    }
   })
 
   // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo

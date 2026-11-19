@@ -5,6 +5,8 @@ export interface StudioExecutionPolicy {
   editingAccess: 'author' | 'observer'
   autoRun: boolean
   originAdapter?: StudioPlayerOriginAdapter
+  /** Casca da prévia do Clássico em outro site; ver `StudioCommonProps.previewShellUrl`. */
+  shellUrl?: string
   requireIsolatedPreview: boolean
   muted: boolean
   /** Host-confirmed live-room writer generation. Never supplied by learner source. */

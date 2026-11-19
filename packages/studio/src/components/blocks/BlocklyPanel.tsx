@@ -44,6 +44,7 @@ import {
 } from '../../blockly/fields/FieldSpritePicker'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
 import { createOffscreenBodies } from '../../blockly/offscreenBodies'
+import { beginOpeningTextWidthCache, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
   revealBlockInWorkspace,
   runtimeErrorBlockId,
@@ -230,6 +231,15 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   }
 }
 
+/** Roda depois dos eventos que o Blockly já enfileirou (mesmo caminho do despacho dele). */
+function afterBlocklyEventDispatch(callback: () => void): void {
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => setTimeout(callback, 0))
+    return
+  }
+  setTimeout(callback, 0)
+}
+
 function scheduleBlocklyRerender(workspace: Blockly.WorkspaceSvg): void {
   const render = () => rerenderBlocklyWorkspace(workspace)
   if (typeof requestAnimationFrame === 'function') {
@@ -306,11 +316,18 @@ function scrollWorkspaceIntoViewIfHidden(workspace: Blockly.WorkspaceSvg): void 
  * Fazer o mesmo render imediatamente e de novo num double-rAF custava duas
  * travessias completas do SVG — dezenas de milhares de nós nos projetos grandes.
  */
-function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
+function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg, after?: () => void): void {
   const repaint = () => {
-    resizeBlocklyWorkspace(workspace)
-    rerenderBlocklyWorkspace(workspace)
-    scrollWorkspaceIntoViewIfHidden(workspace)
+    try {
+      resizeBlocklyWorkspace(workspace)
+      rerenderBlocklyWorkspace(workspace)
+      scrollWorkspaceIntoViewIfHidden(workspace)
+    } finally {
+      // `workspace.render()` só ENFILEIRA no Blockly 12: o desenho de verdade é o
+      // `doRenders` do quadro seguinte. Quem espera o fim (a memória de larguras da
+      // abertura) é avisado quando a fila esvazia, não quando foi pedida.
+      if (after) void Blockly.renderManagement.finishQueuedRenders().then(after, after)
+    }
   }
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(repaint)
@@ -381,6 +398,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const lastAppliedBlocksStateRef = useRef<string>('')
   const lastRegeneratedBlocksStateRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
+  // Desliga a memória de larguras de texto da abertura em curso (idempotente).
+  const openingCacheStopRef = useRef<(() => void) | null>(null)
+  const endOpeningCache = useCallback(() => {
+    openingCacheStopRef.current?.()
+    openingCacheStopRef.current = null
+  }, [])
   const isSelectingFromEditorRef = useRef(false)
   const initialViewDoneRef = useRef(false)
   const t = useT()
@@ -784,7 +807,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // Repaint robusto: resize + re-render (conserta filhos COLAPSADOS, o
         // mesmo que "Organizar blocos" faz) + recentro quando o arranjo salvo
         // ficou fora da viewport — agora e num double-rAF.
-        schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg)
+        schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg, endOpeningCache)
         // Se o painel ainda não tinha tamanho (inject antes do blocksState async),
         // repinta quando o ResizeObserver ver o 1º tamanho real.
         needsPostLoadRenderRef.current = true
@@ -1110,12 +1133,17 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // mas não carrega"). Mantendo tudo no rAF, um rAF cancelado é um no-op total e a
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
-    const handle = requestAnimationFrame(() => {
+    let loadStarted = false
+    const load = () => {
       if (cancelled) return
+      loadStarted = true
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
+      // A memória de larguras cobre a carga, o desenho do quadro seguinte e a repintura.
+      openingCacheStopRef.current?.()
+      openingCacheStopRef.current = beginOpeningTextWidthCache()
       try {
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
@@ -1138,7 +1166,13 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o
         // evento não dispare): também ressincroniza para que o dedup do listener
         // continue confiável e nenhuma normalização regenere/sobrescreva o código.
-        queueMicrotask(() => {
+        // ⚠️ O Blockly despacha eventos em `requestAnimationFrame → setTimeout(0)`
+        // (events/utils.ts `fireInternal`). Um microtask rodava SEMPRE antes do
+        // FINISHED_LOADING, e a abertura salvava, regenerava e repintava o projeto inteiro
+        // DUAS vezes (medido em 19/11/2026: duas repinturas completas por abertura). No mesmo
+        // caminho do despacho, este fallback entra na fila DEPOIS dele e só trabalha quando o
+        // evento de fato não veio.
+        afterBlocklyEventDispatch(() => {
           if (!isApplyingStateRef.current) return
           // Fallback caso FINISHED_LOADING não dispare: restaura posições aqui.
           const preserved = preservedPositionsRef.current
@@ -1163,24 +1197,35 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           // Fallback sem FINISHED_LOADING: mesmo repaint robusto do caminho
           // principal (resize + re-render + recentro-se-invisível) + agenda o
           // re-render pós-tamanho.
-          schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg)
+          schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg, endOpeningCache)
           needsPostLoadRenderRef.current = true
         })
       } catch (e) {
         isApplyingStateRef.current = false
+        endOpeningCache()
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
         setIsLoadingWorkspace(false)
       }
+    }
+    const handle = requestAnimationFrame(() => {
+      if (cancelled) return
+      // Fonte ainda chegando: espera um pouco (no máximo 1,5 s) para medir os textos uma vez só,
+      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes.
+      void waitForOpeningFonts().then(load)
     })
     return () => {
       cancelled = true
       cancelAnimationFrame(handle)
+      // Só a carga que nem começou solta a memória aqui. A que já carregou re-executa este
+      // efeito (o store recebe o projeto regenerado) ANTES do quadro do desenho; quem solta
+      // é a repintura pós-carga (ou a próxima carga, ou o prazo de segurança).
+      if (!loadStarted) endOpeningCache()
       // rAF cancelado antes de rodar: solta o spinner (o `finally` dentro do rAF
       // nunca correrá). Sem isto o overlay "carregando" ficava preso.
       setIsLoadingWorkspace(false)
     }
-  }, [workspace, blocksState, projectMode, regenerateFromBlocks])
+  }, [workspace, blocksState, projectMode, regenerateFromBlocks, endOpeningCache])
 
   useEffect(() => {
     const container = blocklyRef.current
@@ -1300,10 +1345,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       unregisterPasteTarget(injected)
       onWorkspaceReadyRef.current?.(null)
       offscreenBodies.dispose()
+      endOpeningCache()
       injected.dispose()
       appliedToolboxRef.current = null
     }
-  }, [projectStoreApi, notifyPaste])
+  }, [projectStoreApi, notifyPaste, endOpeningCache])
 
   // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
