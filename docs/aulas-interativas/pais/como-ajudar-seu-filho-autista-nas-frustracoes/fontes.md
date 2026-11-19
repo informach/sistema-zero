@@ -68,9 +68,9 @@ Os slides são tópicos. Para virar fala, cada tópico ganhou explicação e exe
 11. **Aula 5, Parte 2, a ligação entre consequência e pedido.** "Se a crise virou o jeito de conseguir alguma coisa, o ajuste é ensinar o pedido e passar a atender o pedido, e não a crise." Junta dois tópicos dos slides (comunicação alternativa e ajustes estratégicos), mas a formulação é minha. É o ponto que mais precisa do olhar dela.
 12. **Aula 5, Parte 3.** A frase "cada criança é única [...] a equipe que acompanha o seu filho pode te ajudar a adaptar cada estratégia". É um cuidado que acrescentei; se ela preferir outra formulação, é só trocar.
 
-### Uma pergunta para ela
+### Acrescentado por decisão da dona
 
-Os slides não falam de **segurança física durante a crise** (afastar objetos, proteger a criança e quem está perto quando há risco de se machucar). Não acrescentei por conta própria. Se ela quiser incluir, o lugar é a Aula 4, Parte 1, junto do controle do ambiente.
+**Segurança física durante a crise (Aula 4, Parte 1).** Não está nos slides nem no material de origem; a dona pediu para incluir em 19/11/2026. O trecho fica no básico: tirar de perto o que pode machucar (vidro, objetos pesados ou pontudos), pôr algo macio se a criança bate a cabeça, afastar os irmãos e quem estiver em volta, ficar perto com calma, sem segurar com força, usando o corpo só para proteger, e levar para a equipe que acompanha a criança quando o risco é frequente. Não ensina contenção. Precisa da conferência da Vivianne antes de a voz ser gerada.
 
 ## Revisão de 19/11/2026
 
