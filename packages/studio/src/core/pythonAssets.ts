@@ -93,7 +93,7 @@ export async function buildPythonAssetBundle(
     if (files.has(path)) throw new Error(`Dois materiais usam o caminho ${path}.`)
     const { dataUrl: _dataUrl, ...metadata } = asset
     const sha256 = await digestAssetBytes(bytes)
-    assertPintaImageAssetBytes(asset, bytes, sha256)
+    await assertPintaImageAssetBytes(asset, bytes, sha256)
     files.set(path, bytes)
     entries.push({
       id: asset.id,

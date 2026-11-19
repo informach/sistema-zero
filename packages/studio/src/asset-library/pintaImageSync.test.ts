@@ -109,27 +109,27 @@ describe('pygame data kinds: the PNG keeps the Pinta chunk', () => {
     expect(next?.pintaImage?.provenance.dependencies[0]?.sha256).toBe('d'.repeat(64))
     expect(next?.dataUrl).not.toBe(world.dataUrl)
   })
-  test('a sheet or map without its data chunk is refused; with it, accepted', () => {
+  test('a sheet or map without its data chunk is refused; with it, accepted', async () => {
     const withData = pngWithData(mapData)
     const ok = derived('map', withData, ['t1'])
-    expect(() =>
+    await expect(
       assertPintaImageAssetBytes(ok, withData, createHash('sha256').update(withData).digest('hex')),
-    ).not.toThrow()
+    ).resolves.toBeUndefined()
     for (const bytes of [
       plain,
       pngWithData(mapData, 'other'),
       pngWithData(mapData, 'pinta', [0, 0, 0, 0, 0]),
     ]) {
       const asset = derived('spritesheet', bytes)
-      expect(() =>
+      await expect(
         assertPintaImageAssetBytes(asset, bytes, createHash('sha256').update(bytes).digest('hex')),
-      ).toThrow('perdeu os dados')
+      ).rejects.toThrow('perdeu os dados')
     }
     // The single-image kinds stay plain PNGs.
     const frame = derived('frame', plain)
-    expect(() =>
+    await expect(
       assertPintaImageAssetBytes(frame, plain, createHash('sha256').update(plain).digest('hex')),
-    ).not.toThrow()
+    ).resolves.toBeUndefined()
   })
 })
 
@@ -237,7 +237,11 @@ describe('one shared tileset copy: painting a piece updates every use', () => {
       },
       previewImage: async (recipe, _limits, options) => {
         previews.push(structuredClone(recipe))
-        const bytes = pngWithData({ ...mapData, painted: true })
+        const bytes = pngWithData({
+          ...mapData,
+          kind: recipe.selection.kind === 'tileset' ? 'tileset' : 'map',
+          painted: true,
+        })
         const base = derived(recipe.selection.kind, bytes).pintaImage!
         return {
           dataUrl: `data:image/png;base64,${bytes.toString('base64')}`,

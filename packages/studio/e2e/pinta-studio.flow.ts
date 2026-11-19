@@ -10,7 +10,17 @@ const root = resolve(import.meta.dirname, '../../..')
 const fixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-e-floresta.pinta.json')
 const closedFixture = resolve(root, '.tmp/pinta-resources-e2e/resources-frozen.pinta.json')
 const worldFixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-porta-sem-destino.pinta.json')
+const physicsFixture = resolve(root, '.tmp/pinta-object-physics/contornos-do-cenario.pinta.json')
 test.beforeAll(() => {
+  execFileSync(
+    'bun',
+    [
+      resolve(root, 'packages/pinta/scripts/homologacao/physics.ts'),
+      resolve(physicsFixture, '..'),
+      '--objects',
+    ],
+    { cwd: root },
+  )
   execFileSync(
     'bun',
     [
@@ -38,6 +48,138 @@ const snapshot = async (page: Page): Promise<Project> =>
 
 test.beforeEach(async ({ context }) => {
   await context.route('**/api/**', (route) => route.abort('internetdisconnected'))
+})
+
+for (const language of ['javascript', 'python'] as const)
+  test(`${language}: contornos do Pinta atualizam no Estúdio sem apagar o programa e reabrem inteiros`, async ({
+    page,
+    context,
+  }, info) => {
+    test.setTimeout(120000)
+    const read = async (): Promise<Project | PythonClassicProjectDocument> =>
+      JSON.parse((await page.getByTestId('qa-project').textContent())!)
+    await page.goto('/pinta')
+    await page.locator('input[type=file]').first().setInputFiles(physicsFixture)
+    await expect(
+      page.getByRole('button', { name: 'Abrir contornos-do-cenario (Mapa)', exact: true }),
+    ).toBeVisible()
+    await page.goto(`/estudio?novo=1${language === 'python' ? '&python=1' : ''}`)
+    if (language === 'javascript') {
+      await page.getByRole('button', { name: 'Ponte', exact: true }).click()
+      await page.getByRole('button', { name: 'Programa · script.js', exact: true }).click()
+      await page.locator('.monaco-editor textarea.inputarea').first().focus()
+      await page.keyboard.press('ControlOrMeta+End')
+      await page.keyboard.insertText('\nconst programaDosContornos = 41;\n')
+      await expect
+        .poll(async () => JSON.stringify((await read()).files))
+        .toContain('programaDosContornos')
+      await expect
+        .poll(async () => {
+          const current = await read()
+          return 'bridgeCodeAhead' in current && current.bridgeCodeAhead === true
+        })
+        .toBe(false)
+    }
+    await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+    await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+    const card = dialog
+      .getByRole('listitem')
+      .filter({ has: page.getByText('contornos-do-cenario', { exact: true }) })
+    const before = await read()
+    if (language === 'python') {
+      await card.getByRole('button', { name: 'Escolher imagem', exact: true }).click()
+      await expect(dialog.getByLabel('O que trazer', { exact: true })).toHaveValue('map-world')
+      await dialog.getByLabel('O que trazer', { exact: true }).selectOption('map')
+      await dialog.getByRole('button', { name: 'Adicionar imagem', exact: true }).click()
+    } else await card.getByRole('button', { name: 'Adicionar ao projeto', exact: true }).click()
+    await expect.poll(async () => (await read()).assets?.length).toBe(1)
+    const first = await read(),
+      asset = first.assets![0]!
+    const authoredEllipse = asset.scene?.layers
+      .flatMap((l) => (l.kind === 'objects' ? l.objects : []))
+      .find((o) => o.name === 'Elipse')
+    if (language === 'python') expect(asset.pintaImage?.output.dataVersion).toBe(4)
+    else {
+      expect(asset.scene?.version).toBe(3)
+      expect(authoredEllipse?.collision).toBe(true)
+    }
+    expect(first.files).toEqual(before.files)
+    const edit = await context.newPage()
+    await edit.goto(`/pinta?desenho=${encodeURIComponent(asset.libId!.replace(/^personal:/, ''))}`)
+    await expect(edit.getByRole('button', { name: 'Objetos', exact: true })).toBeVisible()
+    const tip = edit.getByRole('button', { name: 'Entendi!', exact: true })
+    if (await tip.isVisible()) await tip.click()
+    await edit.getByRole('button', { name: 'Objetos', exact: true }).click()
+    await edit.getByRole('button', { name: 'Escolher o objeto Elipse', exact: true }).click()
+    await edit
+      .getByRole('checkbox', { name: 'Impede o personagem de passar', exact: true })
+      .uncheck()
+    await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
+      timeout: 15000,
+    })
+    await page.bringToFront()
+    await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
+    await expect
+      .poll(
+        async () => {
+          const next = (await read()).assets?.[0]
+          if (language === 'python')
+            return next?.pintaImage?.output.sha256 !== asset.pintaImage?.output.sha256
+          return next?.scene?.layers.some(
+            (l) =>
+              l.kind === 'objects' &&
+              l.objects.some((o) => o.id === authoredEllipse?.id && o.collision === undefined),
+          )
+        },
+        { timeout: 15000 },
+      )
+      .toBe(true)
+    const after = await read()
+    expect(after.assets![0]!.id).toBe(asset.id)
+    expect(after.files).toEqual(before.files)
+    expect(after.ir).toEqual(first.ir)
+    expect(after.blocksState).toEqual(first.blocksState)
+    await page.goto('/estudio')
+    await expect
+      .poll(
+        async () =>
+          JSON.parse((await page.getByTestId('qa-project').textContent()) ?? 'null')?.assets?.[0]
+            ?.id,
+      )
+      .toBe(asset.id)
+    expect((await read()).assets).toEqual(after.assets)
+    expect((await read()).files).toEqual(after.files)
+    await info.attach(`contornos-${language}`, {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    })
+  })
+
+test('o leitor de mundos anterior também recusa o PNG de contornos', async ({ page }) => {
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(physicsFixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir contornos-do-cenario (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1&python=1&leitor=mundo')
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  await dialog
+    .getByRole('listitem')
+    .filter({ has: page.getByText('contornos-do-cenario', { exact: true }) })
+    .getByRole('button', { name: 'Escolher imagem', exact: true })
+    .click()
+  await expect(
+    dialog.getByText(
+      'Atualize o ambiente deste projeto para receber este cenário. Você também pode escolher a imagem simples.',
+      { exact: true },
+    ),
+  ).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Adicionar imagem', exact: true })).toBeDisabled()
 })
 
 test('o catálogo com leitor anterior recusa os dados avançados e permite escolher a imagem simples', async ({

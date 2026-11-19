@@ -65,7 +65,8 @@ export interface PintaImageTilesetData extends DataHeader {
   platform: number[]
 }
 
-export interface PintaImageMapData extends DataHeader {
+export interface PintaImageMapData extends Omit<DataHeader, 'version'> {
+  version: 1 | 2 | 4
   scene?: import('@sistemazero/core/studio/pinta-scene').PintaScene
   kind: 'map'
   tileSize: number
@@ -129,7 +130,7 @@ export interface PintaImageMapData extends DataHeader {
 }
 
 export interface PintaImageMapWorldData extends Omit<PintaImageMapData, 'version'> {
-  version: 3
+  version: 3 | 4
   world: PintaImageWorld
 }
 

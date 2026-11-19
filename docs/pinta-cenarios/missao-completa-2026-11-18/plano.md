@@ -51,8 +51,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
   O primeiro lote corrige peças reduzidas que caíam entre as amostras do corpo no
   teste com personagem do editor. Geometria analítica e consulta local sem grade
-  achatada em `geometria-fisica.md`; marca autoral de colisão por objeto, contrato
-  novo e integração dos motores ainda precisam ser concluídos.
+  achatada em `geometria-fisica.md`. O segundo lote acrescenta marca autoral, controles,
+  documento 7/cena 3/PNG 4, varredura nos motores e adaptadores externos;
+  ver `colisoes-autorais.md`. Plataformas de mão única transformadas e o ciclo de
+  atualização/publicação autenticado ainda precisam do fechamento descrito ali.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
 - [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.

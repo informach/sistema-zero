@@ -41,7 +41,7 @@ def refusals(path):
         data = copy.deepcopy(original)
         change(data)
         failures.append(data)
-    invalid(lambda d: d.update(version=4))
+    invalid(lambda d: d.update(version=5))
     invalid(lambda d: d['world'].update(version=2))
     invalid(lambda d: d['world'].update(rootId='outro'))
     invalid(lambda d: d['world']['maps'].append(copy.deepcopy(d['world']['maps'][0])))

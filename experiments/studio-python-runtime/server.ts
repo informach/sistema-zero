@@ -431,6 +431,7 @@ const host = Bun.serve({
           profileId: release.profileId,
           releaseId: release.releaseId,
           manifestSha256: release.manifestSha256,
+          features: distribution.manifest.features,
         },
       })
     if (path === '/host.mjs')

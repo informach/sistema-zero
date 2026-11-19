@@ -86,8 +86,8 @@ def _ler_dados_png(bytes_, caminho, limite=MAXIMO_DE_DADOS, orcamento=None):
         _idioma, _, resto = resto.partition(b'\0')
         _traduzida, _, texto = resto.partition(b'\0')
         dados = _ler_json(texto, comprimido, caminho, limite, orcamento)
-        if (dados.get('format') != 'pinta' or dados.get('version') not in (1, 2, 3)
-                or (dados.get('version') == 3 and dados.get('kind') != 'map')):
+        if (dados.get('format') != 'pinta' or dados.get('version') not in (1, 2, 3, 4)
+                or (dados.get('version') in (3, 4) and dados.get('kind') != 'map')):
             raise ValueError(f'{caminho} foi feito por um Pinta mais novo.')
         return dados
     return None
@@ -367,6 +367,7 @@ class Objeto:
         self.giro = dados.get('rotation', 0)
         self.virar_x, self.virar_y = bool(dados.get('flipX')), bool(dados.get('flipY'))
         self.papel = dados.get('role', '')
+        self.colisao = dados.get('collision') is True
         self.arte = dados.get('art')
         self.conjunto = dados.get('setId')
         propriedades = dict(dados.get('properties', {}))
@@ -571,7 +572,8 @@ class _MundoPNG:
             except (ValueError, TypeError):
                 raise ValueError('A imagem de um dos lugares está estragada.') from None
             info = _ler_dados_png(bytes_, str(nome), orcamento[0], orcamento)
-            if (not info or info.get('version') != 2 or info.get('kind') != 'map'
+            if (not info or info.get('version') not in (2, 4) or info.get('kind') != 'map'
+                    or (info.get('version') == 4 and dados.get('version') != 4)
                     or 'world' in info or info.get('scale') != self.escala):
                 raise ValueError('Um dos lugares deste cenário está incompleto.')
             self._adicionar(identificador, nome, info, bytes_)
@@ -585,7 +587,8 @@ class _MundoPNG:
                 or identificador in self.entradas or not isinstance(nome, str) or not nome or len(nome) > 48):
             raise ValueError('Os nomes ou IDs dos lugares estão estragados.')
         cena = dados.get('scene')
-        if (not isinstance(cena, dict) or cena.get('version') not in (1, 2)
+        if (not isinstance(cena, dict) or cena.get('version') not in (1, 2, 3)
+                or (dados.get('version') != 4 and cena.get('version') == 3)
                 or cena.get('id') != identificador or dados.get('name') != nome):
             raise ValueError('Os dados não correspondem ao lugar deste cenário.')
         w, h = _dimensoes_png(png)
@@ -633,6 +636,10 @@ class _MundoPNG:
                         raise ValueError('Os objetos deste cenário estão estragados.')
                     objetos += len(items)
                     for objeto in items:
+                        if cena.get('version') == 3:
+                            self._conferir_objeto_fisico(objeto)
+                        elif 'collision' in objeto:
+                            raise ValueError('A colisão deste objeto precisa de um Pinta mais novo.')
                         self._superficies_temporarias(objeto, cena, conjuntos)
         if self.celulas > MUNDO_MAX_CELULAS or objetos > 512:
             raise ValueError('Este cenário tem peças ou objetos demais.')
@@ -655,6 +662,22 @@ class _MundoPNG:
                 if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
                     raise ValueError('Os desenhos deste cenário são grandes demais juntos.')
                 self.imagens[imagem] = bytes_
+
+    @staticmethod
+    def _conferir_objeto_fisico(objeto):
+        if not isinstance(objeto, dict) or ('collision' in objeto and objeto['collision'] is not True):
+            raise ValueError('A colisão de um objeto está estragada.')
+        for chave in ('x', 'y', 'width', 'height', 'rotation'):
+            value = objeto.get(chave, 0)
+            if (not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value)
+                    or (chave in ('width', 'height') and value < 0)):
+                raise ValueError('A geometria de um objeto está estragada.')
+        points = objeto.get('points', [])
+        if not isinstance(points, list) or len(points) > 256:
+            raise ValueError('O contorno de um objeto tem pontos demais.')
+        for point in points:
+            if not isinstance(point, dict) or any(not isinstance(point.get(k), (int, float)) or isinstance(point[k], bool) or not math.isfinite(point[k]) for k in ('x', 'y')):
+                raise ValueError('O contorno de um objeto está estragado.')
 
     def _superficies_temporarias(self, objeto, cena, conjuntos):
         if not objeto.get('setId') and not objeto.get('art'):
@@ -705,20 +728,35 @@ class Mapa:
     """Um mapa do Pinta: camadas de peças e de objetos, com as peças de cada camada."""
 
     def __init__(self, nome, *, _fonte=None, _mundo=None):
+        orcamento = [MUNDO_MAX_DADOS]
         if _fonte is None:
             with open(_caminho(nome), 'rb') as arquivo:
                 png = arquivo.read()
-            orcamento = [MUNDO_MAX_DADOS]
             dados = _ler_dados_png(png, _caminho(nome), orcamento=orcamento)
             if not dados or dados.get('kind') != 'map':
                 raise ValueError(f'{_caminho(nome)} não é um mapa trazido do Pinta como "Mapa com camadas e objetos".')
-            if dados.get('version') == 3:
+            if dados.get('version') == 3 or (dados.get('version') == 4 and 'world' in dados):
                 try:
                     _mundo = _MundoPNG(dados, png, orcamento)
                 except (AttributeError, TypeError, IndexError, KeyError, OverflowError) as error:
                     raise ValueError('Os dados dos lugares deste cenário estão estragados.') from error
         else:
             dados, png = _fonte
+        scene_header = dados.get('scene')
+        if scene_header is not None and (not isinstance(scene_header, dict) or scene_header.get('version') not in (1, 2, 3)
+                or (scene_header.get('version') == 3 and dados.get('version') != 4)):
+            raise ValueError('A versão dos contornos deste cenário não corresponde aos dados da imagem.')
+        if dados.get('version') == 4 and not isinstance(scene_header, dict):
+            raise ValueError('Faltam dados deste cenário. Traga o mapa de novo.')
+        verified_images = _mundo.imagens if _mundo else None
+        if not _mundo and isinstance(scene_header, dict):
+            # The same preflight also protects a single advanced map. Retain only
+            # encoded images, not a duplicate of the authored map, and no door registry.
+            source = dict(dados, world={'version': 1, 'rootId': scene_header.get('id'), 'maps': []})
+            try:
+                verified_images = _MundoPNG(source, png, orcamento).imagens
+            except (AttributeError, TypeError, IndexError, KeyError, OverflowError) as error:
+                raise ValueError('Os dados deste cenário estão estragados.') from error
         atlas = _imagem_em_memoria(png)
         self._mundo = _mundo
         self.nome = dados['name']
@@ -764,7 +802,7 @@ class Mapa:
             cena.imagens, cena.pecas = {}, {}
             def imagem(caminho):
                 if caminho not in cena.imagens:
-                    raw = (self._mundo.imagens[caminho] if self._mundo
+                    raw = (verified_images[caminho] if verified_images is not None
                            else base64.b64decode(caminho.split(',', 1)[1]))
                     source = _imagem_em_memoria(raw).convert_alpha()
                     cena.imagens[caminho] = pygame.transform.scale(source, (round(source.get_width() * escala), round(source.get_height() * escala)))
@@ -840,6 +878,15 @@ class Mapa:
             return [pygame.Rect(r) for r in self._cena.solidos]
         return [rect for camada in self.camadas_de_pecas for rect in camada.solidos()]
 
+    def bloqueado(self, corpo):
+        """O corpo toca uma parede real, incluindo os contornos autorais do cenário."""
+        rect = pygame.FRect(corpo)
+        if rect.left < 0 or rect.top < 0 or rect.right > self.colunas * self.tamanho_peca or rect.bottom > self.linhas * self.tamanho_peca:
+            return True
+        if self._cena:
+            return self._cena.bloqueado(rect)
+        return any(rect.colliderect(other) for other in self.solidos())
+
     def objeto_por_id(self, referencia):
         """O objeto de uma propriedade de referência, ou None se ele não existe."""
         return next((objeto for objeto in self.objetos() if objeto.id == referencia), None)
@@ -906,6 +953,59 @@ import json
 import math
 from pathlib import Path
 import pygame
+
+def objeto_intersecta_corpo(objeto, rect):
+    """Authored outline versus the body's interior; art flips do not change geometry."""
+    values = [rect.x, rect.y, rect.width, rect.height, objeto.get('x'), objeto.get('y'), objeto.get('width'), objeto.get('height'), objeto.get('rotation', 0)]
+    if any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) for v in values) or rect.width <= 0 or rect.height <= 0:
+        return False
+    angle = -math.radians(objeto.get('rotation', 0))
+    cosine, sine = math.cos(angle), math.sin(angle)
+    inset = min(rect.width, rect.height, 1) * 1e-9
+    def local(x, y):
+        dx, dy = x - objeto['x'], y - objeto['y']
+        return (dx * cosine - dy * sine, dx * sine + dy * cosine)
+    query = [local(rect.left + inset, rect.top + inset), local(rect.right - inset, rect.top + inset), local(rect.right - inset, rect.bottom - inset), local(rect.left + inset, rect.bottom - inset)]
+    def cross(a, b, p):
+        return (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+    def inside(p, points):
+        result = False
+        for a, b in zip(points, points[1:] + points[:1]):
+            if (a[1] > p[1]) != (b[1] > p[1]) and p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]:
+                result = not result
+        return result
+    def on(a, b, p):
+        return cross(a, b, p) == 0 and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]) and min(a[1], b[1]) <= p[1] <= max(a[1], b[1])
+    def segment_crosses(a, b, c, d):
+        x, y, u, v = cross(a, b, c), cross(a, b, d), cross(c, d, a), cross(c, d, b)
+        return (((x > 0 and y < 0) or (x < 0 and y > 0)) and ((u > 0 and v < 0) or (u < 0 and v > 0))) or on(a, b, c) or on(a, b, d) or on(c, d, a) or on(c, d, b)
+    width, height = objeto['width'], objeto['height']
+    shape = objeto.get('shape', 'point' if width == height == 0 else 'rect')
+    if shape == 'point':
+        return inside((0, 0), query)
+    if shape == 'ellipse':
+        if width <= 0 or height <= 0:
+            return False
+        circle = [((p[0] - width / 2) / (width / 2), (p[1] - height / 2) / (height / 2)) for p in query]
+        if inside((0, 0), circle):
+            return True
+        for a, b in zip(circle, circle[1:] + circle[:1]):
+            dx, dy = b[0] - a[0], b[1] - a[1]
+            t = max(0, min(1, -(a[0] * dx + a[1] * dy) / (dx * dx + dy * dy or 1)))
+            if (a[0] + t * dx) ** 2 + (a[1] + t * dy) ** 2 < 1:
+                return True
+        return False
+    points = [(p['x'], p['y']) for p in objeto.get('points', [])] if shape in ('polygon', 'polyline') else [(0, 0), (width, 0), (width, height), (0, height)]
+    if not points or any(not math.isfinite(x) or not math.isfinite(y) for x, y in points):
+        return False
+    opened = shape == 'polyline'
+    second = next((p for p in points if p != points[0]), None)
+    if not opened and (len(points) < 3 or second is None or not any(cross(points[0], second, p) != 0 for p in points)):
+        return False
+    if any(inside(p, query) for p in points) or (not opened and any(inside(p, points) for p in query)):
+        return True
+    segments = zip(points, points[1:] if opened else points[1:] + points[:1])
+    return any(segment_crosses(a, b, c, d) for a, b in segments for c, d in zip(query, query[1:] + query[:1]))
 
 def quadro_arte(arte, animation_id, tempo):
     sprite = arte.get('sprite')
@@ -1085,7 +1185,7 @@ class _CenaCompleta:
         cols = self.dados['cols'] if cols is None else cols
         if camera is None:
             camera = (max(0, self.jogador.centerx - tela.get_width() / 2), max(0, self.jogador.centery - tela.get_height() / 2)) if not profundidade else (0, 0)
-        tempo = pygame.time.get_ticks() - self.inicio_animacao if self.dados.get('version') == 2 else pygame.time.get_ticks()
+        tempo = pygame.time.get_ticks() - self.inicio_animacao if self.dados.get('version', 1) >= 2 else pygame.time.get_ticks()
         for camada in camadas:
             e = self.efetiva(camadas, camada)
             if not e['visible'] or not e['opacity']:
@@ -1168,13 +1268,44 @@ class _CenaCompleta:
         return pygame.FRect(0, 0, objeto['width'], objeto['height']).collidepoint(p)
 
     def mover(self, dx, dy):
-        passos = max(1, math.ceil(max(abs(dx), abs(dy)) / max(1, self.tamanho / 4)))
-        for _ in range(passos):
-            for eixo, delta in [('x', dx / passos), ('y', dy / passos)]:
+        if not all(math.isfinite(value) for value in (dx, dy)):
+            return
+        if self.dados.get('version', 1) >= 3:
+            for eixo, delta, limite, tamanho in [('x', dx, self.dados['cols'] * self.tamanho, 'width'), ('y', dy, self.dados['rows'] * self.tamanho, 'height')]:
+                delta = max(-limite, min(limite, delta))
+                if not delta:
+                    continue
                 antes = self.jogador.copy()
-                setattr(self.jogador, eixo, getattr(self.jogador, eixo) + delta)
-                if self.bloqueado(self.jogador):
-                    self.jogador = antes
+                def varrido(fracao):
+                    rect = antes.copy()
+                    setattr(rect, eixo, getattr(antes, eixo) + min(0, delta * fracao))
+                    setattr(rect, tamanho, getattr(antes, tamanho) + abs(delta * fracao))
+                    return rect
+                if self.bloqueado(antes):
+                    fim = antes.copy()
+                    setattr(fim, eixo, getattr(fim, eixo) + delta)
+                    if not self.bloqueado(fim):
+                        self.jogador = fim
+                    continue
+                livre, ocupado = 0.0, 1.0
+                if not self.bloqueado(varrido(1)):
+                    livre = 1.0
+                else:
+                    for _ in range(38):
+                        meio = (livre + ocupado) / 2
+                        if self.bloqueado(varrido(meio)):
+                            ocupado = meio
+                        else:
+                            livre = meio
+                setattr(self.jogador, eixo, getattr(antes, eixo) + delta * livre)
+        else:
+            passos = max(1, math.ceil(max(abs(dx), abs(dy)) / max(1, self.tamanho / 4)))
+            for _ in range(passos):
+                for eixo, delta in [('x', dx / passos), ('y', dy / passos)]:
+                    antes = self.jogador.copy()
+                    setattr(self.jogador, eixo, getattr(self.jogador, eixo) + delta)
+                    if self.bloqueado(self.jogador):
+                        self.jogador = antes
         self.jogador.clamp_ip(pygame.FRect(0, 0, self.dados['cols'] * self.tamanho, self.dados['rows'] * self.tamanho))
         for porta in self.objetos:
             if porta.get('role') == 'door' and self.contem(porta, *self.jogador.center):
@@ -1185,6 +1316,10 @@ class _CenaCompleta:
                     break
 
     def bloqueado(self, rect):
+        if self.dados.get('version', 1) >= 3 and (rect.left < 0 or rect.top < 0 or rect.right > self.dados['cols'] * self.tamanho or rect.bottom > self.dados['rows'] * self.tamanho):
+            return True
+        if self.dados.get('version', 1) >= 3 and any(o.get('collision') is True and objeto_intersecta_corpo(o, rect) for o in self.objetos):
+            return True
         if any(rect.colliderect(other) for other in self._solidos_planos):
             return True
         # Separating axes of the player rectangle and the actual transformed tile.

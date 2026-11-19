@@ -1,0 +1,32 @@
+[WebServer] (node:29284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 8 tests using 1 worker
+
+(node:38696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › e2e\phaser-scenes.flow.ts:19:1 › Phaser: cena 3 consulta os contornos e barra movimento através de parede fina (1.5s)
+
+  ✓  2 [desktop] › e2e\pinta-physics-scenes.flow.ts:17:1 › contornos autorais: editar colisão, desfazer, refazer e reabrir (1.4s)
+  ✓  3 [desktop] › e2e\pinta-physics-scenes.flow.ts:57:1 › o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato (2.1s)
+
+  ✓  4 [desktop] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.5s)
+(node:42532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [touch] › e2e\phaser-scenes.flow.ts:19:1 › Phaser: cena 3 consulta os contornos e barra movimento através de parede fina (1.5s)
+
+  ✓  6 [touch] › e2e\pinta-physics-scenes.flow.ts:17:1 › contornos autorais: editar colisão, desfazer, refazer e reabrir (1.7s)
+  ✓  7 [touch] › e2e\pinta-physics-scenes.flow.ts:57:1 › o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato (2.3s)
+
+  ✓  8 [touch] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.4s)
+
+  8 passed (26.0s)

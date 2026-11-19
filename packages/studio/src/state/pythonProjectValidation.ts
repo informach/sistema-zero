@@ -49,7 +49,16 @@ export async function refinePythonProjectDocument(
   const assets = sanitizePythonProjectAssets(document.assets)
   const project = copyLocalRevision(raw as { id: string }, { ...document, id, assets })
   assertProjectContentPreserved(document, project)
-  await assertPintaImageAssets(assets)
+  try {
+    await assertPintaImageAssets(assets)
+  } catch (error) {
+    throw new ProjectDocumentError(
+      'invalid-document',
+      error instanceof Error
+        ? error.message
+        : 'Os dados do desenho do Pinta estão inválidos. O original foi preservado.',
+    )
+  }
   await assertScene3DAssets(assets)
   const issue = pythonProjectLayoutIssue(project)
   if (issue?.code === 'too-large') throw new ProjectTooLargeError(issue.message)

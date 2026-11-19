@@ -78,6 +78,25 @@ function TilemapWorkspace({
           </option>
         ))}
       </select>
+      {c.level === 'advanced' || tilemap.physics === 'precise' || c.physicsRequiredByObjects ? (
+        <label
+          className="mt-2 flex min-h-11 items-center gap-2 text-sm text-pin-text"
+          title={
+            c.physicsRequiredByObjects
+              ? COPY.tiles.precisePhysicsRequired
+              : COPY.tiles.precisePhysicsHelp
+          }
+        >
+          <input
+            type="checkbox"
+            className="size-5 accent-pin-accent"
+            checked={tilemap.physics === 'precise' || c.physicsRequiredByObjects}
+            disabled={c.physicsRequiredByObjects}
+            onChange={(event) => c.setPrecisePhysics(event.target.checked)}
+          />
+          {COPY.tiles.precisePhysics}
+        </label>
+      ) : null}
       {features.playtest ? (
         <Button variant="barOutline" className="mt-2 w-full" onClick={() => c.setPlaytest(true)}>
           {COPY.scene.testarComPersonagem}
