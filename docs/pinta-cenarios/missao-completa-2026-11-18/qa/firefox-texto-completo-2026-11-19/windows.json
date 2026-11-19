@@ -1,0 +1,48 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T20:02:05.911Z",
+    "duration": 24719.832,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7305,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "trabalho síncrono longo do jogo não trava o editor",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 15953,
+          "retry": 0,
+          "latency": [
+            {
+              "browserName": "firefox",
+              "startMs": 3833,
+              "observationWallMs": 3003,
+              "latencyMs": 61,
+              "workMs": 30000,
+              "observationMs": 3000,
+              "limitMs": 500
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
