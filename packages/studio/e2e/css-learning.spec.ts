@@ -1,4 +1,14 @@
 import { expect, type Page, test } from '@playwright/test'
+import {
+  disposeNativeInputTrace,
+  startNativeInputTrace,
+  stopNativeInputTrace,
+} from './helpers/nativeInputTrace'
+
+test.beforeEach(async ({ page }) => startNativeInputTrace(page))
+test.afterEach(async ({ page }, info) => stopNativeInputTrace(page, info))
+test.afterAll(async ({ browser }, info) => disposeNativeInputTrace(browser, info))
+
 import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
 
 test.beforeEach(async ({ page }) => recordMenuInteractions(page))

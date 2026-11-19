@@ -8,6 +8,7 @@ declare global {
 
 /** Test-only evidence; no layout reads, focus changes, or per-event browser/Node RPC. */
 export async function recordMenuInteractions(page: Page): Promise<void> {
+  if (process.env.STUDIO_MENU_CAPTURE === '0') return
   await page.addInitScript(() => {
     const entries: unknown[] = []
     window.studioMenuInteractions = entries
