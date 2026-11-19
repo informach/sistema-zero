@@ -354,3 +354,41 @@ test('conflicting fields across source partitions are not silently resolved by s
   })
   expect(await readValue(scope.store, projectMetaKey(original.id, 4))).toBeUndefined()
 })
+
+
+test('a live legacy head without partitions cannot silently fall through to older formats', async () => {
+  const scope = database()
+  const id = 'missing-source-parts'
+  await writeInOneTransaction(scope.store, { puts: [[projectHeadKey(id, 3), head]] })
+  await expect(migrateLocalV3Project(id, scope)).rejects.toMatchObject({ code: 'migration-pending' })
+  expect(await readValue(scope.store, projectHeadKey(id, 3))).toEqual(head)
+  expect(await readValue(scope.store, projectMetaKey(id, 4))).toBeUndefined()
+  expect(await readValue(scope.store, projectHeadKey(id, 4))).toBeUndefined()
+})
+
+test('a previously promoted legacy head remains a harmless no-op after its partitions retire', async () => {
+  const scope = database()
+  const original = await seed(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const before = await readAllKeys(scope.store)
+  expect(await migrateLocalV3Project(original.id, scope)).toBeUndefined()
+  expect(await readAllKeys(scope.store)).toEqual(before)
+  expect(await readValue(scope.store, projectHeadKey(original.id, 4))).toEqual(head)
+})
+
+
+for (const partition of ['history', 'thumbnail', 'marker'] as const)
+  test(`orphaned legacy ${partition} is preserved instead of permitting an older fallback`, async () => {
+    const scope = database()
+    const id = 'legacy-orphan'
+    const key = partition === 'history'
+      ? projectApplicationsKey(id, 3)
+      : partition === 'marker'
+        ? projectMigrationKey(id, 3)
+        : `sz:v3:project-thumb:${id}`
+    const value = { id, evidence: 'preserve this source' }
+    await writeInOneTransaction(scope.store, { puts: [[key, value]] })
+    await expect(migrateLocalV3Project(id, scope)).rejects.toMatchObject({ code: 'migration-pending' })
+    expect(await readValue(scope.store, key)).toEqual(value)
+    expect((await readAllKeys(scope.store)).some((key) => String(key).startsWith('sz:v4:'))).toBe(false)
+  })

@@ -106,10 +106,25 @@ async function migrate(id: string, scope: ProjectStorageScope): Promise<string |
     if (currentMarker !== undefined && !isDocumentRecord(currentMarker))
       throw pending(id, 'A origem da migração precisa ser conferida.')
     const hasParts = [meta, files, state, blocks, assets].some((value) => value !== undefined)
-    if (!hasParts && sourceHead === undefined) return
+    if (!hasParts && sourceHead === undefined) {
+      // The profile-wide budget alone is not evidence of this project. Its own
+      // history, thumbnail or migration marker is, and must never be skipped.
+      if (thumb !== undefined || sourceApplications !== undefined || values[9] !== undefined)
+        throw pending(
+          id,
+          'Há registros da versão anterior sem documento ou revisão. A fonte foi preservada para recuperação.',
+        )
+      return
+    }
     if (!headIsSafe(sourceHead))
       throw pending(id, 'A cabeça da versão anterior está ausente ou incompatível.')
-    if (!hasParts && !sourceHead.deleted) return
+    if (!hasParts && !sourceHead.deleted) {
+      if (currentMeta !== undefined || currentHead !== undefined) return
+      throw pending(
+        id,
+        'A revisão da versão anterior não tem suas partições. O carregamento de cópias mais antigas foi bloqueado.',
+      )
+    }
     if (!hasParts && (currentMeta !== undefined || currentHead !== undefined)) return
     if (hasParts && sourceHead.deleted)
       throw pending(
