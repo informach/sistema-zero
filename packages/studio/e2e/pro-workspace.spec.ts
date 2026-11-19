@@ -106,6 +106,27 @@ test('keeps stage actions reachable at tablet width and after resizing the panel
   await expect(preview.locator('#session')).not.toHaveText(session!)
 })
 
+test('searches the complete file map without mounting every symbol at once', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?symbols=1`)
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
+  const map = page.getByRole('region', { name: 'Mapa do arquivo', exact: true })
+  await expect(map.locator('li')).toHaveCount(100)
+  await map.getByRole('button', { name: 'Mostrar mais símbolos' }).click()
+  await expect(map.locator('li')).toHaveCount(200)
+  await map.getByRole('searchbox', { name: 'Buscar no mapa do arquivo' }).fill('ZZUPDATE')
+  await expect(map.locator('li')).toHaveCount(1)
+  await map.getByRole('button', { name: /^zzUpdate\b/ }).click()
+  await expect(
+    page.locator('.monaco-editor .view-line').filter({ hasText: 'zzUpdate' }),
+  ).toBeVisible()
+  const screenshot = test.info().outputPath('mapa-completo.png')
+  await page.screenshot({ path: screenshot })
+  await test.info().attach('mapa-completo', { path: screenshot, contentType: 'image/png' })
+})
+
 test('loads symbols opened before the language module arrives', async ({ page }) => {
   const requested = Promise.withResolvers<void>()
   const resume = Promise.withResolvers<void>()

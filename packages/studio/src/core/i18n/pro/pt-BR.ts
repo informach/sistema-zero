@@ -180,6 +180,10 @@ export const ptBR: Record<string, string> = {
   'pro.palette.hint':
     'Exemplos são funções pequenas para conferir e conectar ao seu jogo. A paleta nativa do editor continua disponível pelo menu do código.',
   'pro.symbols.close': 'Fechar o mapa',
+  'pro.symbols.search': 'Buscar no mapa do arquivo',
+  'pro.symbols.count': '{shown} de {total}',
+  'pro.symbols.more': 'Mostrar mais símbolos',
+  'pro.symbols.noMatches': 'Nenhum símbolo corresponde à busca.',
   'pro.symbols.pending': 'Lendo o mapa…',
   'pro.symbols.empty': 'Este arquivo ainda não tem funções ou classes para mapear.',
   'pro.symbols.line': 'linha {line}',

@@ -18,6 +18,7 @@ import { useProCommands } from './useProCommands'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
+const SYMBOL_PAGE_SIZE = 100
 
 /** O que a faixa do editor pede daqui (as janelas moram aqui; a faixa só abre). */
 export interface ProEditorTools {
@@ -100,6 +101,19 @@ export function ProCodeTools({
       ? symbolResult
       : null
   const symbols = currentSymbols?.items ?? []
+  const [symbolQuery, setSymbolQuery] = useState('')
+  const [symbolWindow, setSymbolWindow] = useState<{
+    items: readonly ProSymbol[]
+    count: number
+  } | null>(null)
+  const filteredSymbols = useMemo(() => {
+    const query = symbolQuery.trim().toLocaleLowerCase()
+    return query
+      ? symbols.filter((symbol) => symbol.name.toLocaleLowerCase().includes(query))
+      : symbols
+  }, [symbols, symbolQuery])
+  const symbolCount = symbolWindow?.items === symbols ? symbolWindow.count : SYMBOL_PAGE_SIZE
+  const visibleSymbols = filteredSymbols.slice(0, symbolCount)
   const references =
     referenceResult?.tree === tree && referenceResult.session === language
       ? referenceResult.items
@@ -437,14 +451,37 @@ export function ProCodeTools({
                 <IconX />
               </button>
             </header>
+            <div className="border-b border-sz-border-soft px-3 py-2">
+              <input
+                type="search"
+                aria-label={t('pro.symbols.search')}
+                placeholder={t('pro.symbols.search')}
+                value={symbolQuery}
+                onChange={(event) => {
+                  setSymbolQuery(event.target.value)
+                  setSymbolWindow({ items: symbols, count: SYMBOL_PAGE_SIZE })
+                }}
+                className="block min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-sm"
+              />
+              {!symbolsPending && !visibleError && (
+                <p role="status" className="mb-0 mt-2 text-xs text-sz-fg-mute">
+                  {t('pro.symbols.count', {
+                    shown: visibleSymbols.length,
+                    total: filteredSymbols.length,
+                  })}
+                </p>
+              )}
+            </div>
             <div className="min-h-0 overflow-auto p-2">
               {symbolsPending && (
                 <p role="status" className="m-0 p-2 text-xs text-sz-fg-mute">
                   {t('pro.symbols.pending')}
                 </p>
               )}
-              {!symbolsPending && !symbols.length && !visibleError && (
-                <p className="m-0 p-2 text-sm text-sz-fg-soft">{t('pro.symbols.empty')}</p>
+              {!symbolsPending && !filteredSymbols.length && !visibleError && (
+                <p className="m-0 p-2 text-sm text-sz-fg-soft">
+                  {t(symbolQuery.trim() ? 'pro.symbols.noMatches' : 'pro.symbols.empty')}
+                </p>
               )}
               {visibleError && (
                 <p role="status" className="m-0 p-2 text-xs text-sz-error">
@@ -452,7 +489,7 @@ export function ProCodeTools({
                 </p>
               )}
               <ul className="m-0 list-none space-y-0.5 p-0">
-                {symbols.map((symbol) => {
+                {visibleSymbols.map((symbol) => {
                   const target = proSourcePosition(content, symbol.start)
                   return (
                     <li key={`${symbol.start}:${symbol.name}`}>
@@ -471,6 +508,17 @@ export function ProCodeTools({
                   )
                 })}
               </ul>
+              {visibleSymbols.length < filteredSymbols.length && (
+                <button
+                  type="button"
+                  className="sz-pro-btn sz-pro-btn--sm mt-2"
+                  onClick={() =>
+                    setSymbolWindow({ items: symbols, count: symbolCount + SYMBOL_PAGE_SIZE })
+                  }
+                >
+                  {t('pro.symbols.more')}
+                </button>
+              )}
             </div>
           </section>,
         )}

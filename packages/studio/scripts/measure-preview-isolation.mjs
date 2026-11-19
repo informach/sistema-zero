@@ -17,6 +17,8 @@
  *
  * Variáveis: `SZ_CHECK_CHROMIUM` (caminho do navegador), `SZ_MEASURE_BROWSERS` (lista separada por
  * vírgula entre chromium, firefox e webkit; padrão: chromium).
+ * `SZ_MEASURE_HOST_POLICY_SPLIT=1` separa COOP e COEP do host, mantendo na casca
+ * os cabeçalhos reais. Sem essa opção, os dois perfis históricos não mudam.
  */
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
@@ -160,7 +162,35 @@ window.travar = () => { medindo = true; ultimo = performance.now(); estado.inici
 </script>`
 }
 
-function servidor(comCabecalhos) {
+const isolationHeaders = {
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Embedder-Policy': 'credentialless',
+  'Cross-Origin-Resource-Policy': 'cross-origin',
+}
+// Optional causal experiment: the actual shell always sends its isolation
+// headers, while course pages cannot enable COEP without qualifying their videos.
+const splitHostPolicies = process.env.SZ_MEASURE_HOST_POLICY_SPLIT === '1'
+const headerProfiles = splitHostPolicies
+  ? [
+      { name: 'none', host: {}, frame: isolationHeaders },
+      {
+        name: 'coop',
+        host: { 'Cross-Origin-Opener-Policy': 'same-origin' },
+        frame: isolationHeaders,
+      },
+      {
+        name: 'coep',
+        host: { 'Cross-Origin-Embedder-Policy': 'credentialless' },
+        frame: isolationHeaders,
+      },
+      { name: 'coop-coep', host: isolationHeaders, frame: isolationHeaders },
+    ]
+  : [
+      { name: 'none', host: {}, frame: {} },
+      { name: 'coop-coep', host: isolationHeaders, frame: isolationHeaders },
+    ]
+
+function servidor(profile) {
   return new Promise((resolve) => {
     const server = createServer((req, res) => {
       const url = new URL(req.url, 'http://x')
@@ -170,11 +200,10 @@ function servidor(comCabecalhos) {
             ? 'text/javascript; charset=utf-8'
             : 'text/html; charset=utf-8',
       }
-      if (comCabecalhos) {
-        headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-        headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
-        headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
-      }
+      Object.assign(
+        headers,
+        ['/casca', '/filho'].includes(url.pathname) ? profile.frame : profile.host,
+      )
       res.writeHead(200, headers)
       if (url.pathname === '/canvas-worker.js') res.end(CANVAS_WORKER)
       else if (url.pathname === '/canvas-host') res.end(CANVAS_HOST)
@@ -296,15 +325,22 @@ for (const nome of nomes) {
     continue
   }
   try {
-    for (const comCabecalhos of [false, true]) {
-      const server = await servidor(comCabecalhos)
+    for (const profile of headerProfiles) {
+      const server = await servidor(profile)
       const base = `http://127.0.0.1:${server.address().port}`
       for (const arranjo of arrangements) {
         try {
           saida.push({
             navegador: `${nome} ${browser.version()}`,
             ...(nome === 'chromium' ? { chromiumMode } : {}),
-            cabecalhosDoHost: comCabecalhos,
+            cabecalhosDoHost: Object.keys(profile.host).length > 0,
+            ...(splitHostPolicies
+              ? {
+                  perfilDoHost: profile.name,
+                  hostHeaders: profile.host,
+                  frameHeaders: profile.frame,
+                }
+              : {}),
             ...(['worker-canvas', 'worker-cpu'].includes(arranjo)
               ? await medirWorker(browser, base, arranjo === 'worker-canvas')
               : await medir(browser, base, arranjo)),
@@ -312,7 +348,14 @@ for (const nome of nomes) {
         } catch (erro) {
           saida.push({
             navegador: nome,
-            cabecalhosDoHost: comCabecalhos,
+            cabecalhosDoHost: Object.keys(profile.host).length > 0,
+            ...(splitHostPolicies
+              ? {
+                  perfilDoHost: profile.name,
+                  hostHeaders: profile.host,
+                  frameHeaders: profile.frame,
+                }
+              : {}),
             arranjo,
             erro: String(erro.message).split('\n')[0],
           })

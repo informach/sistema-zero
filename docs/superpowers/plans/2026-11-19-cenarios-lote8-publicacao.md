@@ -14,6 +14,8 @@
 
 **Checkpoint de 19/11:** contrato, serviço, reserva/conferência e persistência estão implementados e testados localmente; ver [base da publicação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-publicacao-base.md). Ainda faltam rotas/hosts/interface, consumidor nativo e fechamento integrado. O 8.5 permanece aberto.
 
+**Continuação de 19/11:** rotas, hosts, confirmação na oficina e leitura autorizada do jogo implementados e verificados neste [checkpoint](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-publicacao-oficina.md). O consumidor nativo e as provas no `/macro` continuam pendentes; 8.5 não está fechado.
+
 - Preservar sete territórios, seis distritos/cabeceiras, avatar Cute nativo, controlador/Rapier/câmera/toque, velocidades, inventário, Morada, campanha e identidades Kids/adulta.
 - O posto libera a Missão do Núcleo; instalar o Núcleo reconstrói a ponte. Publicar cenário não concede progresso nem altera a ponte por posto.
 - Sem outra biblioteca, inventário ou serviço de autoria v1. Proteger arquivos referenciados por qualquer versão publicada, mesmo depois de editar/apagar a fonte.
@@ -47,6 +49,12 @@
 - [ ] Rodar tipagem/testes/review do repositório e documentação de implantação antes das rotas.
 
 ## 3. HTTP, BFF e confirmação na oficina
+
+### Intenção da interface
+
+A pessoa é da equipe e acaba de guardar uma composição. Precisa reconhecer exatamente qual revisão irá para qual ilha e qual versão será substituída. A linguagem continua sendo a oficina do Molda: cenário, revisão guardada, ilha, publicação, equipe e bibliotecas. A assinatura do fluxo é revisão → ilha → nova versão, também expressa na confirmação e no recibo.
+
+Preservar a paleta existente: fundo creme/claro `mld-bg`, superfície clara `mld-surface`, tinta escura `mld-text`, cinza de apoio `mld-muted`, azul de ação `mld-accent` e linha suave `mld-border`; no tema escuro, os mesmos tokens fornecem os valores navy existentes. Tipografia herdada, espaçamento na base de 4 px e separações por bordas suaves, sem novas sombras ou cores. Reutilizar os campos e botões da oficina. Não acrescentar um dashboard, outro menu global ou uma etapa de autorização de desenvolvimento. O aceite na tela é a confirmação de produto da versão concreta, já prevista no plano.
 
 **Files:** rotas focadas Members, composition root/error handler, allowlist gateway e testes; BFF/contratos de `CenariosHost`, host HTTP/memória e tela `oficina/telas/Exportar.tsx`; portas de leitura do Arquipélago/BFF nos dois apps.
 

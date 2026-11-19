@@ -44,6 +44,12 @@ if (new URLSearchParams(location.search).has('performance')) {
     })
   }
 }
+if (new URLSearchParams(location.search).has('symbols')) {
+  project.tree['src/main.ts'].content = [
+    ...Array.from({ length: 350 }, (_, index) => `export const item${index} = ${index};`),
+    'export function zzUpdate() { return item349; }',
+  ].join('\n')
+}
 const runtime = {
   async build() {
     return {

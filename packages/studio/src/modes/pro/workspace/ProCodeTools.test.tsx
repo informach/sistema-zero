@@ -42,6 +42,32 @@ function toolsFixture(language: ProLanguageSession | null) {
   }
 }
 
+it('renders the file map incrementally and searches symbols beyond the initial page', async () => {
+  const items = Array.from({ length: 500 }, (_, index) => ({
+    name: `item${index}`,
+    kind: 'const',
+    start: 6,
+    length: 5,
+    depth: 0,
+  }))
+  const props = toolsFixture({ request: async () => items } as unknown as ProLanguageSession)
+  const view = render(<ProCodeTools {...props} />)
+  await act(async () => tools?.openSymbols())
+  const panel = view.getByRole('region', { name: 'Mapa do arquivo' })
+  expect(panel.querySelectorAll('li').length).toBe(100)
+  fireEvent.click(view.getByRole('button', { name: 'Mostrar mais símbolos' }))
+  expect(panel.querySelectorAll('li').length).toBe(200)
+  fireEvent.change(view.getByRole('searchbox', { name: 'Buscar no mapa do arquivo' }), {
+    target: { value: 'item499' },
+  })
+  expect(panel.querySelectorAll('li').length).toBe(1)
+  expect(view.queryByRole('button', { name: /^item499\b/ })).not.toBeNull()
+  fireEvent.change(view.getByRole('searchbox', { name: 'Buscar no mapa do arquivo' }), {
+    target: { value: '' },
+  })
+  expect(panel.querySelectorAll('li').length).toBe(100)
+})
+
 it('maps a normalized Python editor cursor to the unchanged saved source for references and symbols', async () => {
   const source = '# a\r\n# b\nvalor = 1\nprint(valor)\n'
   const buffer = source.replace(/\r\n/g, '\n')

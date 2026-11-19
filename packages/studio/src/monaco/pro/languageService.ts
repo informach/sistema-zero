@@ -289,15 +289,23 @@ export function createProLanguageService(defaultLibraries: Record<string, string
       const full = absolute(`/project/${path}`)
       if (!service.getProgram()?.getSourceFile(full)) return []
       const result: ProSymbol[] = []
-      const visit = (items: ts.NavigationTree[], depth: number) => {
-        for (const item of items) {
-          const span = item.nameSpan ?? item.spans[0]
-          if (span && result.length < 300)
-            result.push({ name: item.text, kind: item.kind, ...span, depth })
-          if (result.length < 300) visit(item.childItems ?? [], depth + 1)
+      // Preserve the full index. The file-map UI bounds its rendered window;
+      // truncating here silently made later declarations impossible to find.
+      const pending = (service.getNavigationTree(full).childItems ?? [])
+        .map((item) => ({ item, depth: 0 }))
+        .reverse()
+      while (pending.length) {
+        const next = pending.pop()
+        if (!next) break
+        const { item, depth } = next
+        const span = item.nameSpan ?? item.spans[0]
+        if (span) result.push({ name: item.text, kind: item.kind, ...span, depth })
+        const children = item.childItems ?? []
+        for (let index = children.length - 1; index >= 0; index--) {
+          const child = children[index]
+          if (child) pending.push({ item: child, depth: depth + 1 })
         }
       }
-      visit(service.getNavigationTree(full).childItems ?? [], 0)
       return result
     },
     references(path: string, offset: number) {

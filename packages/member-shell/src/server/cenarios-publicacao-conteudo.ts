@@ -6,7 +6,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/publicacao'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import { conferirConteudoCompilado } from '@sistemazero/molda-cenarios-motor/conteudo'
-import type { ConteudoDoCenario } from './cenarios-conteudo'
+import { ConteudoDeCenarioInvalido, type ConteudoDoCenario } from './cenarios-conteudo'
 
 export type LerConteudoPublicado = (
   digest: string,
@@ -23,7 +23,7 @@ async function lerArquivo(
   const objeto = await ler(esperado.digest, sinal)
   if (!objeto) {
     sinal?.throwIfAborted()
-    throw Error('Um arquivo da publicação não está no armazenamento.')
+    throw new ConteudoDeCenarioInvalido('Um arquivo da publicação não está no armazenamento.')
   }
   const leitor = objeto.body.getReader()
   let completo = false
@@ -34,9 +34,13 @@ async function lerArquivo(
   try {
     sinal?.throwIfAborted()
     if (objeto.contentLength !== esperado.bytes)
-      throw Error('O tamanho do arquivo armazenado não corresponde à publicação.')
+      throw new ConteudoDeCenarioInvalido(
+        'O tamanho do arquivo armazenado não corresponde à publicação.',
+      )
     if (objeto.contentType !== esperado.mime)
-      throw Error('O tipo do arquivo armazenado não corresponde à publicação.')
+      throw new ConteudoDeCenarioInvalido(
+        'O tipo do arquivo armazenado não corresponde à publicação.',
+      )
     const bytes = new Uint8Array(esperado.bytes)
     let posicao = 0
     while (true) {
@@ -45,13 +49,16 @@ async function lerArquivo(
       sinal?.throwIfAborted()
       if (parte.done) break
       if (parte.value.length > bytes.length - posicao)
-        throw Error('O arquivo excede o tamanho declarado no manifesto.')
+        throw new ConteudoDeCenarioInvalido('O arquivo excede o tamanho declarado no manifesto.')
       bytes.set(parte.value, posicao)
       posicao += parte.value.length
     }
-    if (posicao !== bytes.length) throw Error('O arquivo da publicação foi truncado.')
+    if (posicao !== bytes.length)
+      throw new ConteudoDeCenarioInvalido('O arquivo da publicação foi truncado.')
     if ((await digestDosBytes(bytes)) !== esperado.digest)
-      throw Error('O hash do arquivo armazenado não corresponde à publicação.')
+      throw new ConteudoDeCenarioInvalido(
+        'O hash do arquivo armazenado não corresponde à publicação.',
+      )
     sinal?.throwIfAborted()
     completo = true
     return bytes
@@ -69,18 +76,21 @@ export async function conferirPacoteDaPublicacao(
   ler: LerConteudoPublicado,
   sinal?: AbortSignal,
 ) {
-  sinal?.throwIfAborted()
-  const pedido = PedidoDePublicacaoSchema.parse(entrada)
-  const manifesto = await lerArquivo({ ...pedido.manifesto, mime: MIME_DO_MANIFESTO }, ler, sinal)
-  const snapshot = await criarSnapshotDePublicacao(pedido, manifesto)
-  sinal?.throwIfAborted()
+  const { manifesto, snapshot } = await lerManifestoDaPublicacao(entrada, ler, sinal)
   const porDigest = new Map<string, Uint8Array>()
   for (const recurso of snapshot.recursos) {
     if (recurso.papel === 'manifesto') continue
     porDigest.set(recurso.digest, await lerArquivo(recurso, ler, sinal))
   }
   const arquivos = new Map(snapshot.cena.arquivos.map((a) => [a.caminho, porDigest.get(a.digest)!]))
-  await conferirConteudoCompilado(snapshot.cena, arquivos, sinal)
+  try {
+    await conferirConteudoCompilado(snapshot.cena, arquivos, sinal)
+  } catch (erro) {
+    sinal?.throwIfAborted()
+    throw new ConteudoDeCenarioInvalido(
+      erro instanceof Error ? erro.message : 'O pacote compilado é inválido',
+    )
+  }
   sinal?.throwIfAborted()
   return {
     manifesto,
@@ -89,5 +99,26 @@ export async function conferirPacoteDaPublicacao(
       bytes: r.bytes,
       tipoDoConteudo: r.mime,
     })),
+  }
+}
+
+/** Na reserva, os recursos ainda não foram enviados: confere somente o manifesto real. */
+export async function lerManifestoDaPublicacao(
+  entrada: unknown,
+  ler: LerConteudoPublicado,
+  sinal?: AbortSignal,
+) {
+  sinal?.throwIfAborted()
+  const pedido = PedidoDePublicacaoSchema.parse(entrada)
+  const manifesto = await lerArquivo({ ...pedido.manifesto, mime: MIME_DO_MANIFESTO }, ler, sinal)
+  try {
+    const snapshot = await criarSnapshotDePublicacao(pedido, manifesto)
+    sinal?.throwIfAborted()
+    return { manifesto, snapshot }
+  } catch (erro) {
+    sinal?.throwIfAborted()
+    throw new ConteudoDeCenarioInvalido(
+      erro instanceof Error ? erro.message : 'O manifesto é inválido',
+    )
   }
 }

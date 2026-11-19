@@ -2,19 +2,33 @@ import {
   conferirPreparoDeExportacao,
   type PreparoDeExportacao,
 } from '@sistemazero/molda-cenarios-core/compilar'
+import type { ResultadoDaPublicacao } from '@sistemazero/molda-cenarios-core/publicacao'
 import type { ProgressoDaCompilacao } from '@sistemazero/molda-cenarios-motor/compilar'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ArquivoDaExportacao, OpcoesDoArquivo } from '../exportar/preparar'
 import type { ControladorDaOficina } from './controlador'
 import { CenarioDesatualizado, type CenariosHost } from './portas'
+import {
+  type DestinoDaPublicacao,
+  type ProgressoDaPublicacao,
+  PublicacaoDesatualizada,
+} from './publicacoes'
 
 type Resultado = Omit<ArquivoDaExportacao, 'blob'> & { url: string; bytes: number }
 export type EstadoDaExportacao =
   | { tipo: 'carregando' }
-  | { tipo: 'erro'; mensagem: string; revisaoAtual?: number; preparo?: PreparoDeExportacao }
+  | {
+      tipo: 'erro'
+      mensagem: string
+      revisaoAtual?: number
+      preparo?: PreparoDeExportacao
+      destinoMudou?: boolean
+    }
   | { tipo: 'pronto'; preparo: PreparoDeExportacao }
   | { tipo: 'gerando'; preparo: PreparoDeExportacao; progresso: ProgressoDaCompilacao }
   | { tipo: 'feito'; preparo: PreparoDeExportacao; arquivo: Resultado }
+  | { tipo: 'publicando'; preparo: PreparoDeExportacao; progresso: ProgressoDaPublicacao }
+  | { tipo: 'publicado'; preparo: PreparoDeExportacao; resultado: ResultadoDaPublicacao }
 
 export function useExportacao(
   host: CenariosHost,
@@ -38,6 +52,7 @@ export function useExportacao(
   }, [])
   const conferirGuarda = useCallback(() => {
     const e = controlador?.getState()
+    if (e && e.revisao !== revisao) throw new CenarioDesatualizado(e.revisao)
     if (e && (e.salvamento !== 'guardado' || e.ocupado || e.revisao !== revisao))
       throw Error('Guarde as mudanças e abra a exportação da revisão atual.')
   }, [controlador, revisao])
@@ -61,6 +76,7 @@ export function useExportacao(
       mensagem: e instanceof Error ? e.message : 'Não consegui preparar o arquivo. Tente de novo.',
       ...(preparo.current ? { preparo: preparo.current } : {}),
       ...(e instanceof CenarioDesatualizado ? { revisaoAtual: e.revisaoAtual } : {}),
+      ...(e instanceof PublicacaoDesatualizada ? { destinoMudou: true } : {}),
     })
   }, [])
   // biome-ignore lint/correctness/useExhaustiveDependencies: volta repete uma leitura explicitamente solicitada
@@ -159,5 +175,62 @@ export function useExportacao(
     },
     [host, liberar, conferirGuarda, lerPreparo, falhar],
   )
-  return { estado, pendente, gerar, cancelar, repetir: () => setVolta((n) => n + 1) }
+  const publicar = useCallback(
+    async (destino: DestinoDaPublicacao) => {
+      if (executando.current || ativa.current) return
+      const alvo = structuredClone(destino)
+      liberar()
+      executando.current = true
+      setPendente(true)
+      const c = new AbortController()
+      ativa.current = c
+      try {
+        conferirGuarda()
+        if (!preparo.current) throw Error('Confira a revisão antes de publicar.')
+        setEstado({
+          tipo: 'gerando',
+          preparo: preparo.current,
+          progresso: {
+            etapa: 'modelos',
+            feitos: 0,
+            total: 1,
+            nome: 'Conferindo a revisão',
+          },
+        })
+        const p = await lerPreparo(c.signal)
+        if (ativa.current !== c) return
+        preparo.current = p
+        const { publicarRevisaoDaOficina } = await import('../exportar/publicar')
+        const resultado = await publicarRevisaoDaOficina(
+          host,
+          p,
+          alvo,
+          c.signal,
+          (progresso) => {
+            if (ativa.current === c && !c.signal.aborted)
+              setEstado({ tipo: 'gerando', preparo: p, progresso })
+          },
+          (progresso) => {
+            if (ativa.current === c && !c.signal.aborted)
+              setEstado({ tipo: 'publicando', preparo: p, progresso })
+          },
+        )
+        c.signal.throwIfAborted()
+        conferirGuarda()
+        if (ativa.current !== c) return
+        ativa.current = null
+        setEstado({ tipo: 'publicado', preparo: p, resultado })
+      } catch (erro) {
+        if (ativa.current === c && !c.signal.aborted) {
+          ativa.current = null
+          falhar(erro)
+        }
+      } finally {
+        executando.current = false
+        if (vivo.current) setPendente(false)
+      }
+    },
+    [host, liberar, conferirGuarda, lerPreparo, falhar],
+  )
+  return { estado, pendente, gerar, publicar, cancelar, repetir: () => setVolta((n) => n + 1) }
 }

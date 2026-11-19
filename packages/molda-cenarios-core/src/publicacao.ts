@@ -1,6 +1,8 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { z } from 'zod'
 import { FonteDaCompilacaoSchema } from './compilar/fonte'
+import type { PreparoDeExportacao } from './compilar/preparo-exportacao'
+import { referenciasDaCenaParaCompilacao } from './compilar/referencias'
 import { type CenaCompilada, lerCenaCompilada, MAX_BYTES_DO_MANIFESTO } from './compilar/schema'
 import { DigestCompiladoSchema } from './compilar/schema-arquivos'
 import { digestDosBytes } from './v2/glb'
@@ -29,7 +31,7 @@ export const PedidoDePublicacaoSchema = z
     operacaoId: z.uuid(),
     perfil: PerfilDePublicacaoSchema,
     versaoEsperada: z.number().int().min(0).max(2147483646),
-    fonte: FonteDaCompilacaoSchema.extend({ cenario: z.uuid(), digest: DigestCompiladoSchema }),
+    fonte: FonteDaCompilacaoSchema.extend({ digest: DigestCompiladoSchema }),
     manifesto: z
       .object({
         digest: DigestCompiladoSchema,
@@ -41,6 +43,59 @@ export const PedidoDePublicacaoSchema = z
 
 export type PerfilDePublicacao = z.infer<typeof PerfilDePublicacaoSchema>
 export type PedidoDePublicacao = z.infer<typeof PedidoDePublicacaoSchema>
+export const PublicacaoParaOJogoSchema = z
+  .object({
+    id: z.uuid(),
+    perfil: PerfilDePublicacaoSchema,
+    versao: z.number().int().positive().max(2147483647),
+    fonte: PedidoDePublicacaoSchema.shape.fonte,
+    manifesto: PedidoDePublicacaoSchema.shape.manifesto,
+  })
+  .strict()
+export type PublicacaoParaOJogo = z.infer<typeof PublicacaoParaOJogoSchema>
+export const ResultadoDaPublicacaoSchema = z
+  .object({ publicacao: PublicacaoParaOJogoSchema, repetido: z.boolean() })
+  .strict()
+export type ResultadoDaPublicacao = z.infer<typeof ResultadoDaPublicacaoSchema>
+export function lerResultadoDaPublicacao(
+  pedido: PedidoDePublicacao,
+  entrada: unknown,
+): ResultadoDaPublicacao {
+  const resultado = ResultadoDaPublicacaoSchema.parse(entrada),
+    p = resultado.publicacao
+  if (
+    p.versao !== pedido.versaoEsperada + 1 ||
+    canonicalJson(p.perfil) !== canonicalJson(pedido.perfil) ||
+    canonicalJson(p.fonte) !== canonicalJson(pedido.fonte) ||
+    canonicalJson(p.manifesto) !== canonicalJson(pedido.manifesto)
+  )
+    throw Error('A publicação respondeu com outra revisão, versão ou destino.')
+  return resultado
+}
+export const PreparacaoDePublicacaoSchema = z
+  .object({
+    espacoId: z.uuid(),
+    pedido: PedidoDePublicacaoSchema,
+    publicacao: PublicacaoParaOJogoSchema.nullable(),
+  })
+  .strict()
+export type PreparacaoDePublicacao = z.infer<typeof PreparacaoDePublicacaoSchema>
+export function conferirPreparacaoDePublicacao(
+  pedido: PedidoDePublicacao,
+  entrada: unknown,
+): PreparacaoDePublicacao {
+  const preparo = PreparacaoDePublicacaoSchema.parse(entrada)
+  if (canonicalJson(preparo.pedido) !== canonicalJson(pedido))
+    throw Error('O preparo da publicação pertence a outra revisão.')
+  if (preparo.publicacao)
+    lerResultadoDaPublicacao(pedido, { publicacao: preparo.publicacao, repetido: true })
+  return preparo
+}
+export const ReferenciaDeArquivoPublicadoSchema = z
+  .object({ publicacaoId: z.uuid(), digest: DigestCompiladoSchema })
+  .strict()
+/** JSON de um manifesto UTF-8 pode duplicar ao entrar como string em outro JSON, mais provas. */
+export const MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO = MAX_BYTES_DO_MANIFESTO * 2 + 2 * 1024 * 1024
 export type MimeDaPublicacao = typeof MIME_DO_MANIFESTO | CenaCompilada['arquivos'][number]['mime']
 export interface RecursoDaPublicacao {
   digest: string
@@ -53,6 +108,45 @@ export interface SnapshotDePublicacao {
   cena: CenaCompilada
   recursos: readonly RecursoDaPublicacao[]
   digestDaOperacao: string
+}
+
+export async function digestDoPedidoDePublicacao(entrada: unknown): Promise<string> {
+  const pedido = PedidoDePublicacaoSchema.parse(entrada)
+  return sha256Hex(canonicalJson(pedido))
+}
+
+/** Aliases podem mudar ao resolver conjuntos; a procedência e as licenças precisam permanecer. */
+export function conferirProcedenciaDaPublicacao(
+  cena: CenaCompilada,
+  preparo: PreparoDeExportacao,
+): void {
+  const refs = referenciasDaCenaParaCompilacao(preparo.documento)
+  const chaves = <T>(itens: readonly T[], chave: (item: T) => unknown) =>
+    [...new Set(itens.map((item) => canonicalJson(chave(item))))].sort()
+  const modelo = (m: { biblioteca: string; modelo: string; digest: string }) => [
+    m.biblioteca,
+    m.modelo,
+    m.digest,
+  ]
+  const textura = (t: { biblioteca: string; textura: string; digest: string }) => [
+    t.biblioteca,
+    t.textura,
+    t.digest,
+  ]
+  const conjunto = (c: { id: string; biblioteca: string; conjunto: string; revisao: number }) => [
+    c.id,
+    c.biblioteca,
+    c.conjunto,
+    c.revisao,
+  ]
+  const pares = [
+    [chaves(cena.fontes.modelos, modelo), chaves(refs.modelos, modelo)],
+    [chaves(cena.fontes.texturas, textura), chaves(refs.texturas, textura)],
+    [chaves(cena.fontes.conjuntos, conjunto), chaves(refs.conjuntos, conjunto)],
+    [chaves(cena.licencas, (c) => c), chaves(preparo.contexto.bibliotecas, (c) => c)],
+  ]
+  if (pares.some(([a, b]) => canonicalJson(a) !== canonicalJson(b)))
+    throw Error('A procedência e as licenças do pacote não correspondem à fonte autorizada')
 }
 
 /** Valida identidade/inventário. O conteúdo de cada recurso ainda exige o validador do motor. */
@@ -96,6 +190,6 @@ export async function criarSnapshotDePublicacao(
     pedido,
     cena,
     recursos: [...recursos.values()],
-    digestDaOperacao: await sha256Hex(canonicalJson(pedido)),
+    digestDaOperacao: await digestDoPedidoDePublicacao(pedido),
   }
 }

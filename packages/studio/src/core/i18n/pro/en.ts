@@ -177,6 +177,10 @@ export const en: Record<string, string> = {
   'pro.palette.hint':
     'Examples are small functions to check and connect to your game. The editor’s native palette is still available from the code menu.',
   'pro.symbols.close': 'Close the map',
+  'pro.symbols.search': 'Search the file map',
+  'pro.symbols.count': '{shown} of {total}',
+  'pro.symbols.more': 'Show more symbols',
+  'pro.symbols.noMatches': 'No symbols match your search.',
   'pro.symbols.pending': 'Reading the map…',
   'pro.symbols.empty': 'This file has no functions or classes to map yet.',
   'pro.symbols.line': 'line {line}',

@@ -1,19 +1,26 @@
 import { randomUUID } from 'node:crypto'
 import {
   criarSnapshotDePublicacao,
+  digestDoPedidoDePublicacao,
   MIME_DO_MANIFESTO,
   type PedidoDePublicacao,
   PedidoDePublicacaoSchema,
+  PerfilDePublicacaoSchema,
+  PublicacaoParaOJogoSchema,
   type RecursoDaPublicacao,
+  ReferenciaDeArquivoPublicadoSchema,
 } from '@sistemazero/molda-cenarios-core/publicacao'
+import { z } from 'zod'
 import { type Ator, chaveDoBlob, LIMITES_DOS_CENARIOS } from '../../domain/cenarios/cenarios'
 import {
   CenarioInvalidoError,
+  CenarioNaoEncontradoError,
   CenariosFechadosError,
   CenariosSemEspacoError,
 } from '../../domain/cenarios/cenarios.errors'
 import {
   type ArquivoPublicadoConferido,
+  type PublicacaoDeCenario,
   PublicacaoDeCenarioConflitanteError,
   type PublicacaoGravada,
 } from '../../domain/cenarios/publicacoes'
@@ -21,6 +28,33 @@ import type { CenariosPublicacoesRepository } from '../../domain/ports/cenarios-
 import type { CenariosRepository } from '../../domain/ports/cenarios-repository.port'
 import type { ArquivoAEnviar, CenariosService } from './cenarios.service'
 import { conferirProcedenciaPublicada } from './publicacoes-procedencia'
+
+const PedidoPersistidoSchema = PedidoDePublicacaoSchema.extend({
+  fonte: PedidoDePublicacaoSchema.shape.fonte.extend({ cenario: z.uuid() }),
+})
+function lerPedido(entrada: unknown) {
+  const r = PedidoPersistidoSchema.safeParse(entrada)
+  if (!r.success) throw new CenarioInvalidoError(['O pedido de publicação é inválido'])
+  return r.data
+}
+async function snapshotDe(entrada: unknown, manifesto: Uint8Array) {
+  try {
+    return await criarSnapshotDePublicacao(lerPedido(entrada), manifesto)
+  } catch (erro) {
+    throw new CenarioInvalidoError([
+      (erro instanceof Error ? erro.message : 'O pacote publicado é inválido').slice(0, 600),
+    ])
+  }
+}
+export function publicacaoParaOJogo(p: PublicacaoDeCenario) {
+  return PublicacaoParaOJogoSchema.parse({
+    id: p.id,
+    perfil: p.perfil,
+    versao: p.versao,
+    fonte: p.fonte,
+    manifesto: p.manifesto,
+  })
+}
 
 /** Publica somente conteúdo verificado pelo consumidor interno, nunca por uma afirmação do navegador. */
 export class PublicacoesDeCenariosService {
@@ -57,6 +91,54 @@ export class PublicacoesDeCenariosService {
     return { preparo, espaco }
   }
 
+  async preparar(identidade: Ator, entrada: unknown) {
+    const ator = this.exigirEquipe(identidade),
+      pedido = lerPedido(entrada)
+    const digest = await digestDoPedidoDePublicacao(pedido),
+      repetida = await this.repo.operacao(pedido.operacaoId)
+    if (repetida) {
+      if (repetida.digestDaOperacao !== digest || repetida.publicacao.autorId !== ator.usuarioId)
+        throw new PublicacaoDeCenarioConflitanteError('Esta operação já publicou outro conteúdo')
+      return {
+        espacoId: repetida.publicacao.espacoId,
+        pedido,
+        publicacao: publicacaoParaOJogo(repetida.publicacao),
+      }
+    }
+    const { espaco } = await this.autorizar(ator, pedido),
+      atual = await this.repo.atual(pedido.perfil)
+    if ((atual?.versao ?? 0) !== pedido.versaoEsperada)
+      throw new PublicacaoDeCenarioConflitanteError()
+    return { espacoId: espaco.id, pedido, publicacao: null }
+  }
+
+  async lerPerfilDaOficina(ator: Ator, entrada: unknown) {
+    this.exigirEquipe(ator)
+    return this.perfilDoJogo(entrada)
+  }
+
+  /** Somente pelas rotas HMAC de leitura: o BFF exige antes o acesso existente ao jogo. */
+  async perfilDoJogo(entrada: unknown) {
+    const perfil = PerfilDePublicacaoSchema.safeParse(entrada)
+    if (!perfil.success) throw new CenarioInvalidoError(['O destino da publicação é inválido'])
+    const atual = await this.repo.atual(perfil.data)
+    return atual ? publicacaoParaOJogo(atual) : null
+  }
+
+  async arquivoDoJogo(publicacaoId: string, digest: string) {
+    const referencia = ReferenciaDeArquivoPublicadoSchema.safeParse({ publicacaoId, digest })
+    if (!referencia.success) throw new CenarioNaoEncontradoError('O arquivo')
+    const versao = await this.repo.porId(publicacaoId)
+    const arquivo = versao && (await this.repo.recurso(publicacaoId, digest))
+    if (!versao || !arquivo) throw new CenarioNaoEncontradoError('O arquivo')
+    return {
+      digest: arquivo.digest,
+      chave: chaveDoBlob(versao.espacoId, arquivo.digest),
+      bytes: arquivo.bytes,
+      tipoDoConteudo: arquivo.mime,
+    }
+  }
+
   private async reservar(
     espacoId: string,
     recursos: readonly RecursoDaPublicacao[],
@@ -83,7 +165,7 @@ export class PublicacoesDeCenariosService {
 
   async reservarManifesto(identidade: Ator, entrada: unknown) {
     const ator = this.exigirEquipe(identidade),
-      pedido = PedidoDePublicacaoSchema.parse(entrada)
+      pedido = lerPedido(entrada)
     const { espaco } = await this.autorizar(ator, pedido)
     const atual = await this.repo.atual(pedido.perfil)
     if ((atual?.versao ?? 0) !== pedido.versaoEsperada)
@@ -111,7 +193,7 @@ export class PublicacoesDeCenariosService {
       throw new CenarioInvalidoError([
         'Escolha até 50 recursos diferentes do inventário por reserva',
       ])
-    const snapshot = await criarSnapshotDePublicacao(entrada, manifesto)
+    const snapshot = await snapshotDe(entrada, manifesto)
     const recursos = snapshot.recursos.filter(
       (r) => r.papel === 'recurso' && desejados.has(r.digest),
     )
@@ -133,7 +215,7 @@ export class PublicacoesDeCenariosService {
   ): Promise<PublicacaoGravada> {
     const ator = this.exigirEquipe(identidade)
     const conferidos = arquivos.map((a) => ({ ...a }))
-    const snapshot = await criarSnapshotDePublicacao(entrada, manifesto)
+    const snapshot = await snapshotDe(entrada, manifesto)
     const provas = new Map(conferidos.map((a) => [a.digest, a]))
     if (
       provas.size !== conferidos.length ||

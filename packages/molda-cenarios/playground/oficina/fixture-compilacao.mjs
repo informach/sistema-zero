@@ -3,6 +3,7 @@ export async function montarCenaDeCompilacaoDoEnsaio(u) {
   const C = await import(u.core),
     M = await import(u.motor),
     host = window.__cenarios.host,
+    espaco = u.espaco ?? 'conta',
     dados = structuredClone(u.autoria),
     recursos = u.recursos.map((r) => ({
       ...r,
@@ -19,7 +20,7 @@ export async function montarCenaDeCompilacaoDoEnsaio(u) {
       ['propria', 'Texturas próprias', 'propria'],
     ]
   for (const [id, nome, licenca] of origens)
-    bibliotecas.set(id, await host.criarBiblioteca('conta', { nome, licenca }))
+    bibliotecas.set(id, await host.criarBiblioteca(espaco, { nome, licenca }))
   try {
     for (const ref of dados.modelos) {
       const r = recursos.find((r) => r.tipo === 'modelo' && r.digest === ref.digest)
@@ -73,9 +74,9 @@ export async function montarCenaDeCompilacaoDoEnsaio(u) {
   }
   for (const d of dados.definicoesConjuntos ?? []) {
     d.biblioteca = bibliotecas.get(d.biblioteca).id
-    d.conteudo.origem.espaco = 'conta'
+    d.conteudo.origem.espaco = espaco
   }
-  const mundo = await host.criarMundo('conta', 'Mundo de exportação'),
+  const mundo = await host.criarMundo(espaco, 'Mundo de exportação'),
     cenario = await host.criarCenario(mundo.id, 'Praça, lago e caminhos')
   await host.editarMundo(mundo.id, {
     bibliotecas: [...bibliotecas.values()].map((b) => b.id),

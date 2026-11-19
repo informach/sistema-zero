@@ -14,12 +14,18 @@ import {
 import { MEU_HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d/__gen_primeirosJogos'
 import { HEROI_DO_MOLDA_GLB } from '../src/official-extensions/game-3d/exampleAssets'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
+import {
+  configurePreviewInputDiagnostics,
+  pressObservedPreviewKey,
+} from './helpers/previewInputDiagnostics'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
   demo: 'Demonstração',
   exploration: 'Exploração',
 } as const
+
+configurePreviewInputDiagnostics()
 
 function kitCard(page: Page, contract: ExampleQAContract) {
   return page
@@ -232,7 +238,7 @@ async function applyInteraction(
     'place-c': ['c'],
     'remove-x': ['x'],
   }
-  for (const key of keys[interaction]) await page.keyboard.press(key)
+  for (const key of keys[interaction]) await pressObservedPreviewKey(page, key)
 }
 
 async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<FrameLocator> {

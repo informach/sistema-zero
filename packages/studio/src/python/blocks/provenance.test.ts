@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import type { PythonNode, PythonValue } from '../language/types'
+import { deliveredBlocklyEvents } from './__tests__/events'
 import { pythonVisualToWorkspace, pythonWorkspaceToVisual } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import { expression, integer, isNode, moduleNode, node, pythonSemanticTree } from './nodes'
@@ -28,14 +29,14 @@ test('fresh parse origins survive value undo without restoring stale ranges from
   try {
     const first = identities(moduleNode([expression(integer('1'))]), 0)
     const roots = pythonVisualToWorkspace(pythonASTToVisual(first), workspace)
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     workspace.clearUndo()
     const number = workspace.getAllBlocks(false).find((block) => block.type === 'sz_py_integer')!
     number.setFieldValue('1000', 'NUMBER')
     const changed = pythonWorkspaceToVisual(workspace, roots)
     const fresh = identities(pythonVisualToAST(changed), 50)
     const origins = bindPythonVisualOrigins(changed, fresh)
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     workspace.undo(false)
     const undone = pythonVisualToAST(
       pythonWorkspaceToVisual(workspace, roots, [], undefined, origins),

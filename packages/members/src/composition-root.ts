@@ -23,6 +23,7 @@ import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { CenariosService } from './application/cenarios/cenarios.service'
+import { PublicacoesDeCenariosService } from './application/cenarios/publicacoes.service'
 import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
@@ -182,6 +183,7 @@ import { ArquipelagoCourseActivityRepository } from './infrastructure/persistenc
 import { ArquipelagoInventoryRepository } from './infrastructure/persistence/drizzle/arquipelago-inventory.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCenariosRepository } from './infrastructure/persistence/drizzle/cenarios.repository'
+import { DrizzlePublicacoesDeCenariosRepository } from './infrastructure/persistence/drizzle/cenarios-publicacoes.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
 import { DrizzleChallengeLifecycleRepository } from './infrastructure/persistence/drizzle/challenge-lifecycle.repository'
@@ -381,6 +383,22 @@ export async function createApplication(env: Env): Promise<Application> {
       )
     : undefined
   const clock = () => new Date()
+  const cenariosRepo = new DrizzleCenariosRepository(db)
+  const cenariosService = new CenariosService(cenariosRepo, clock, {
+    modo: env.CENARIOS_MODO,
+    lista: new Set(
+      (env.CENARIOS_LISTA ?? '')
+        .split(',')
+        .map((id) => id.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  })
+  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
+    new DrizzlePublicacoesDeCenariosRepository(db),
+    cenariosRepo,
+    cenariosService,
+    clock,
+  )
 
   // Adapters
   const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
@@ -1480,15 +1498,8 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     cenarios: {
-      cenarios: new CenariosService(new DrizzleCenariosRepository(db), clock, {
-        modo: env.CENARIOS_MODO,
-        lista: new Set(
-          (env.CENARIOS_LISTA ?? '')
-            .split(',')
-            .map((id) => id.trim().toLowerCase())
-            .filter(Boolean),
-        ),
-      }),
+      cenarios: cenariosService,
+      publicacoes: publicacoesDeCenarios,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {

@@ -1,0 +1,36 @@
+import type { PreparoDeExportacao } from '@sistemazero/molda-cenarios-core/compilar'
+import {
+  compilarCenario,
+  type ProgressoDaCompilacao,
+} from '@sistemazero/molda-cenarios-motor/compilar'
+import type { CenariosHost } from '../oficina/portas'
+
+/** Mesma compilação da revisão autorizada para arquivo e publicação; o chamador possui a fila. */
+export async function compilarRevisaoDaOficina(
+  host: CenariosHost,
+  preparo: PreparoDeExportacao,
+  opcoes: { juntar: boolean; tamanhoDaRegiao: number },
+  sinal: AbortSignal,
+  progresso: (p: ProgressoDaCompilacao) => void,
+) {
+  sinal.throwIfAborted()
+  const pacote = await compilarCenario(
+    preparo.documento,
+    preparo.fonte,
+    preparo.contexto,
+    {
+      modelo: (ref, s) => host.conteudoDoModelo({ ...ref, espacoId: preparo.espacoId }, s),
+      textura: (ref, s) => host.conteudoDaTextura({ ...ref, espacoId: preparo.espacoId }, s),
+      terreno: (digest, s) => host.conteudoDoTerreno(preparo.fonte.cenario, digest, s),
+    },
+    sinal,
+    {
+      progresso,
+      preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
+      ...(opcoes.juntar ? { juncaoEstatica: { tamanhoDaRegiao: opcoes.tamanhoDaRegiao } } : {}),
+    },
+  )
+  if (pacote.cena.fonte.digest !== preparo.digest)
+    throw Error('A compilação não corresponde ao cenário conferido pelo servidor.')
+  return pacote
+}

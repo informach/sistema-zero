@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { KidsSessionClaim } from '@sistemazero/core/security'
+import { MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import config from '../../gateway.config'
 import { kidsMayAccess } from '../../src/application/auth/kids-access-policy'
 import {
@@ -19,6 +20,9 @@ const resolver = (metodo: string, caminho: string) =>
 const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['GET', '/members/cenarios/acesso'],
   ['GET', '/members/cenarios/espacos'],
+  ['GET', '/members/cenarios/publicacoes/perfis/sua-ilha'],
+  ['POST', '/members/cenarios/publicacoes/preparar'],
+  ['POST', '/members/cenarios/publicacoes/manifesto/reservar'],
   ['GET', `/members/cenarios/espacos/${ID}/bibliotecas`],
   ['POST', `/members/cenarios/espacos/${ID}/bibliotecas`],
   ['POST', `/members/cenarios/espacos/${ID}/biblioteca-molda`],
@@ -125,6 +129,10 @@ describe('Molda Cenários na borda', () => {
       '/members/internal/cenarios/lotes',
       '/members/internal/cenarios/capa',
       '/members/internal/cenarios/conjuntos/miniatura',
+      '/members/internal/cenarios/publicacoes/recursos',
+      '/members/internal/cenarios/publicacoes/confirmar',
+      '/members/internal/cenarios/publicacoes/jogo/perfil',
+      '/members/internal/cenarios/publicacoes/jogo/arquivo',
     ]) {
       const rota = resolver('POST', caminho)
       expect(rota).toMatchObject({
@@ -154,5 +162,16 @@ describe('Molda Cenários na borda', () => {
       expect(kidsMayAccess(responsavel, caminho, metodo, ID)).toBe(false)
     }
     expect(kidsMayAccess(crianca, '/members/internal/cenarios/modelos', 'POST', ID)).toBe(false)
+  })
+
+  test('somente as provas internas de publicação recebem o envelope do manifesto compilado', () => {
+    for (const acao of ['recursos', 'confirmar'])
+      expect(resolver('POST', `/members/internal/cenarios/publicacoes/${acao}`)?.maxBodyBytes).toBe(
+        MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO,
+      )
+    expect(
+      resolver('POST', '/members/cenarios/publicacoes/preparar')?.maxBodyBytes,
+    ).toBeLessThanOrEqual(64 * 1024)
+    expect(resolver('POST', '/members/cenarios/publicacoes/confirmar')).toBeUndefined()
   })
 })

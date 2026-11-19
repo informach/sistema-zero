@@ -5,14 +5,22 @@ Worktree: `sistema-zero-estudio-evolucao`, branch `estudio-evolucao-conclusao`.
 Especificação: missão de 21 seções fornecida pelo usuário em 17/11/2026.
 Este documento acompanha trabalho em andamento; não é declaração de conclusão.
 
+**Retomada de 19/11/2026:** as referências e a worktree acima descrevem a
+origem histórica. Por orientação posterior do usuário, o trabalho atual
+ocorre na pasta principal em `staging`, com commit e push autorizados,
+sem criar novas worktrees. Alterações das outras frentes são preservadas.
+O usuário também dispensou compatibilidade com projetos 3D de produção:
+os exemplos devem acompanhar os contratos robustos dos motores.
+
 ## Contrato global
 
 Preservar a identidade visual e os componentes atuais, inclusive no Pro. A permissão
 da missão para redesenhar não revoga a restrição visual expressa anteriormente.
 Preservar integralmente Cadê e Farol: a matriz versionada não pode ser regravada
 para acomodar regressões. Não alterar Pinta, Molda ou Molda Cenários nesta frente.
-Não mesclar staging/main, implantar, usar produção ou publicar materiais de alunos.
-Commits por entrega verificada; preparar PR com status real e dependências externas.
+Integrar em staging conforme a autorização posterior; não mesclar main,
+implantar, usar produção ou publicar materiais de alunos. Commits por entrega
+verificada, com status real e dependências externas.
 
 ## Desenho técnico
 
@@ -48,6 +56,9 @@ estivesse homologada. Dependências externas devem ser discriminadas.
 - [ ] Medir baseline local. Feito em Linux (18/11/2026, `linha-de-base-linux.md`): blocos
   70/2.000/5.000/10.000 no navegador e o projeto de laboratório do Pro. Faltam Pro modular,
   runtimes, abertura fria/quente, linguagem, jogo, Zappy, memória e descarte.
+  A análise de linguagem de uma fixture sintética modular de 60 arquivos foi
+  medida em 19/11: `../qa/2026-11-19-studio-pro-language-baseline.md`.
+  Não comprova digitação, WebContainer, jogo ou uso simultâneo com Zappy.
 - [ ] Fixar fixtures, metas p50/p95/máximo e condições: digitação 50 ms, painéis
   150 ms, primeira resposta da busca 200 ms; FPS apenas por fixture/hardware.
 
@@ -57,6 +68,11 @@ Arquivos: matriz em `docs/aulas-interativas-tecnico/qa/`, testes em
 `measure-preview-isolation.mjs`, experimento `studio-pro-webcontainer-memory`.
 
 ### 1. Isolamento e integridade antes de executar — em andamento
+
+A [troca atômica de documentos completos](../qa/2026-11-19-studio-preview-resource-commit.md)
+corrige a página vazia introduzida pela preparação assíncrona de recursos.
+Há prova vermelha/verde no navegador e preservação de Parar durante a espera;
+a falha intermitente de entrada e a homologação integral continuam abertas.
 
 - [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo. Revisado em
   `d22be2f75`: sem mudança roda na hora e não grava; com mudança aguarda a revisão
@@ -96,7 +112,13 @@ Arquivos: `components/preview/PreviewIframe.tsx`, `runTripwire.ts`,
 - [ ] Estresse de 10.000 blocos: medido (abre em 59 s, não atinge a meta). Abrir em pedaços
   e Pac-Man seguem pendentes; ver `classico-em-escala.md`.
 
-### 3. Pro em escala — pendente
+### 3. Pro em escala — parcial
+
+- [x] Corrigir truncamento do mapa após 300 símbolos; preservar índice completo,
+  busca global no arquivo e montagem visual progressiva, com prova vermelha/verde.
+  Relatório: `../qa/2026-11-19-studio-pro-file-map.md`.
+- [x] Ampliar o ensaio de linguagem para mil arquivos, sem desativar diagnósticos.
+  Medição local do serviço: edição + diagnóstico p95 239 ms; não mede digitação.
 
 - [ ] Auditar Monaco e serviços por arquivo; medir digitação, referências, rename,
   busca, imports, mapa, formatação, diff e navegação de erros sem remover diagnósticos.

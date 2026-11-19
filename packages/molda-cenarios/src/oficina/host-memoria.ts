@@ -34,6 +34,7 @@ import {
   type ResumoDeCenario,
   type TexturaDeBiblioteca,
 } from './portas'
+import { criarPublicacoesEmMemoria } from './publicacoes-em-memoria'
 
 export interface CenarioGuardado {
   resumo: ResumoDeCenario
@@ -89,6 +90,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const espacoDasBibliotecas = new Map<string, string>()
   const conteudos = new Map<string, Uint8Array>()
   const papeisDoConteudo = new Map<string, 'modelo' | 'textura'>()
+  const referenciasPublicadas = new Set<string>()
   const recursosDeTerreno = new Map<string, Uint8Array>()
   const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
@@ -129,7 +131,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (mundos.get(c.resumo.mundoId)?.espacoId === espacoId)
         for (const d of arquivosFixados(c, 'textura')) usados.add(d)
     for (const d of candidatos)
-      if (!usados.has(d)) {
+      if (!usados.has(d) && !referenciasPublicadas.has(`${espacoId}:${d}`)) {
         const chave = `${espacoId}:${d}`,
           bytes = conteudos.get(chave)
         if (bytes) {
@@ -145,7 +147,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       if (mundos.get(c.resumo.mundoId)?.espacoId === espacoId)
         for (const d of pecasDoCenario(c)) usados.add(d)
     for (const d of candidatos) {
-      if (usados.has(d)) continue
+      if (usados.has(d) || referenciasPublicadas.has(`${espacoId}:${d}`)) continue
       const chave = `${espacoId}:${d}`,
         bytes = recursosDeTerreno.get(chave)
       if (bytes) {
@@ -438,6 +440,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
             papeisDoConteudo.set(chave, 'modelo')
             espaco.usadoBytes += m.conteudo.length
           }
+          if (!papeisDoConteudo.has(chave)) papeisDoConteudo.set(chave, 'modelo')
           const modelo: ModeloDeBiblioteca = {
             id: novoId('mod'),
             bibliotecaId,
@@ -539,6 +542,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
             papeisDoConteudo.set(chave, 'textura')
             espaco.usadoBytes += t.conteudo.size
           }
+          if (!papeisDoConteudo.has(chave)) papeisDoConteudo.set(chave, 'textura')
           const { conteudo, ...metadados } = t
           const criada = {
             ...metadados,
@@ -891,5 +895,19 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       return endereco
     },
   }
+  if (opcoes.equipe)
+    host.publicacoes = criarPublicacoesEmMemoria({
+      preparar: (id, revisao, sinal) => host.prepararExportacao(id, revisao, sinal),
+      guardar: (espacoId, arquivos) => {
+        const espaco = espacoDe(espacoId)
+        const novos = [...arquivos].filter(([digest]) => !conteudos.has(`${espacoId}:${digest}`))
+        const bytes = novos.reduce((s, [, b]) => s + b.length, 0)
+        if (espaco.usadoBytes + bytes > espaco.limiteBytes) throw Error('O espaço está cheio')
+        const preparados = novos.map(([digest, b]) => [`${espacoId}:${digest}`, b.slice()] as const)
+        for (const [chave, b] of preparados) conteudos.set(chave, b)
+        for (const digest of arquivos.keys()) referenciasPublicadas.add(`${espacoId}:${digest}`)
+        espaco.usadoBytes += bytes
+      },
+    })
   return host
 }

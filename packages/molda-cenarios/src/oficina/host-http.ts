@@ -22,6 +22,8 @@ import {
   type TexturaDeBiblioteca,
   type VersaoDeConjunto,
 } from './portas'
+import { PublicacaoDesatualizada } from './publicacoes'
+import { criarPublicacoesHttp } from './publicacoes-http'
 
 /**
  * A oficina falando com a plataforma: tudo passa por `/api/cenarios/*` do app (o BFF do
@@ -76,7 +78,7 @@ interface ArquivoAEnviar {
   url: string
   criarUmaVez?: boolean
 }
-interface Reserva {
+export interface Reserva {
   retrato?: string | null
   espacoId: string
   enviar: ArquivoAEnviar[]
@@ -154,6 +156,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     const detalhes = objeto(envelope?.details)
     if (codigo === 'CENARIO_DESATUALIZADO' && typeof detalhes?.revisaoAtual === 'number')
       throw new CenarioDesatualizado(detalhes.revisaoAtual)
+    if (codigo === 'PUBLICACAO_CENARIO_CONFLITANTE')
+      throw new PublicacaoDesatualizada(
+        typeof erro?.message === 'string' ? erro.message : undefined,
+      )
     throw new ErroDaOficina(
       typeof erro?.message === 'string' && erro.message
         ? erro.message
@@ -271,6 +277,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   }
 
   const host: CenariosHost = {
+    publicacoes: criarPublicacoesHttp({ pedir, subir }),
     async espacos() {
       const lista = await pedir<Array<Omit<Espaco, 'nome'>>>('GET', 'espacos')
       return lista.map((e) => ({ ...e, nome: NOMES_DOS_ESPACOS[e.tipo] }))

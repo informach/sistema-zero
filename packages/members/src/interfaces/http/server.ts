@@ -10,6 +10,7 @@ import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learni
 import type { Logger } from '@sistemazero/core/logging'
 import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
 import { safeEqual } from '@sistemazero/core/security'
+import { MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
 import type { LivePublicationService } from '../../application/live/live-publication.service'
@@ -32,6 +33,7 @@ import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
 import { type CenariosRoutesDeps, cenariosRoutes } from './routes/cenarios.routes'
+import { cenariosPublicacoesRoutes } from './routes/cenarios-publicacoes.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import {
   coursePromotionPeerRoutes,
@@ -138,6 +140,11 @@ const CENARIOS_DOCUMENTO_BODY_BYTES = 8 * 1024 * 1024 + 64 * 1024
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (
+    pathname === '/members/internal/cenarios/publicacoes/recursos' ||
+    pathname === '/members/internal/cenarios/publicacoes/confirmar'
+  )
+    return MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO
   if (pathname === '/members/house') return MORADA_LIMITS.bytes + 1024
   if (pathname === '/members/internal/course-promotions/preview') return 64_000_000
   if (pathname === '/members/admin/python-project-checks/test')
@@ -195,6 +202,7 @@ export function createServer(deps: HttpDeps) {
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     ARQUIPELAGO_OBJECTIVES_BODY_BYTES,
     CENARIOS_DOCUMENTO_BODY_BYTES,
+    MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
     1024 * 1024,
@@ -323,6 +331,7 @@ export function createServer(deps: HttpDeps) {
     )
     .use(creationsRoutes(deps.creations))
     .use(cenariosRoutes(deps.cenarios))
+    .use(cenariosPublicacoesRoutes(deps.cenarios))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
     .use(deps.masteries ? masteryRoutes(deps.masteries) : new Elysia())

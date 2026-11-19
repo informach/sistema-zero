@@ -1,0 +1,63 @@
+name: Studio native input diagnostics
+
+on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-input-diagnostics.yml'
+      - 'packages/studio/e2e/helpers/previewInputDiagnostics.ts'
+      - 'packages/studio/e2e/preview-input-probe.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  input:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - if: runner.os == 'Linux'
+        name: Prepare signed Ubuntu sources
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+      - name: Select full Chromium
+        working-directory: packages/studio
+        run: node -e "const p=require('playwright-core').chromium.executablePath();require('node:fs').appendFileSync(process.env.GITHUB_ENV,'PW_CHROMIUM='+p+'\n')"
+      - name: Observe native input without changing interactions
+        working-directory: packages/studio
+        env:
+          STUDIO_INPUT_DIAGNOSTICS: '1'
+        run: bunx playwright test e2e/examples-gallery.spec.ts --project=chromium --grep 'Duelo de Heróis|Vale Ensolarado|Patrulha Espacial|layout estreito.*Desvie' --repeat-each=10 --retries=0 --trace=retain-on-failure
+      - name: Qualify diagnostic capture with deliberately blocked child
+        if: ${{ !cancelled() }}
+        working-directory: packages/studio
+        env:
+          STUDIO_INPUT_DIAGNOSTICS: '1'
+        run: bunx playwright test --config e2e/preview-input-probe.config.ts --retries=0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-input-${{ matrix.os }}
+          path: |
+            packages/studio/.cache/playwright-results
+            packages/studio/.cache/playwright-input-probe
+          include-hidden-files: true
+          retention-days: 7
