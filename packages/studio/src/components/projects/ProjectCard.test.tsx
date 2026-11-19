@@ -183,3 +183,27 @@ describe('ProjectCard: data de atualização', () => {
     expect(open.className).toContain('focus-visible:ring-inset')
   })
 })
+
+describe('ProjectCard preservado (migração pendente)', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  it('o ⋯ continua aberto e oferece só restaurar e baixar, sem renomear nem apagar', () => {
+    render(
+      <ProjectCard
+        summary={{ ...SUMMARY, migrationPending: true, hasPreservedEdit: true }}
+        onChanged={() => undefined}
+        onOpen={() => undefined}
+      />,
+    )
+    const trigger = screen.getByLabelText('Mais ações') as HTMLButtonElement
+    expect(trigger.disabled).toBe(false)
+    openMenu()
+    expect(menuItems().map((item) => item.textContent)).toEqual([
+      'Restaurar uma cópia',
+      'Baixar o que foi preservado',
+    ])
+    expect(screen.getByText('Preservado — peça ajuda para abrir')).toBeTruthy()
+  })
+})

@@ -1,22 +1,26 @@
 import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { chromium, webkit } from '@playwright/test'
+import { chromium, firefox, webkit } from '@playwright/test'
 
 const url = process.argv[2]
 if (!url) throw new Error('Expected fixture URL')
 const selected = process.argv[3] ?? 'all'
-const fixtureURL = (project) => {
+const fixtureURL = (project, profile) => {
   const next = new URL(url)
   next.searchParams.set('project', project)
+  if (profile) next.searchParams.set('profile', profile)
   if (process.env.STUDIO_STORAGE_EXIT_FAULT === 'abort') next.searchParams.set('abort-exit', '1')
   return next.href
 }
-if (!['all', 'chromium', 'webkit'].includes(selected)) throw new Error('Unknown storage browser')
+if (!['all', 'chromium', 'webkit', 'firefox'].includes(selected))
+  throw new Error('Unknown storage browser')
 for (const [name, engine] of [
   ['chromium', chromium],
   ['webkit', webkit],
+  ['firefox', firefox],
 ]) {
-  if (selected !== 'all' && selected !== name) continue
+  // `all` é o par histórico (Chromium + WebKit); Firefox só quando pedido pelo nome.
+  if (selected === 'all' ? name === 'firefox' : selected !== name) continue
   const started = performance.now()
   const phase = (label) =>
     process.stdout.write(
@@ -36,7 +40,13 @@ for (const [name, engine] of [
         await ownedServer.kill()
         throw error
       })
-    : await engine.launch({ headless: true })
+    : await engine.launch({
+        headless: true,
+        // Opcional, como no resto da suíte: um Chromium de outra revisão que a do pacote.
+        ...(name === 'chromium' && process.env.PW_CHROMIUM
+          ? { executablePath: process.env.PW_CHROMIUM }
+          : {}),
+      })
   phase('launched')
   const lifecycleSamples = []
   try {
@@ -126,6 +136,33 @@ for (const [name, engine] of [
     assert.equal(archive.meta.name, 'Small descendant')
     assert.equal(archive.journalAbsent, true)
     phase('deep-ancestor-archive-verified')
+    // Troca de perfil com gravação em voo: cada perfil tem o próprio banco, mas o journal de
+    // saída do localStorage é um só. O mesmo id de projeto nos dois perfis não pode vazar.
+    const profiles = await context.newPage()
+    const sharedId = `profile-${name}`
+    const openProfile = async (profile) => {
+      await profiles.goto(fixtureURL(sharedId, profile), { waitUntil: 'commit' })
+      await profiles.waitForFunction(() => Boolean(window.storageHarness))
+      return profiles.evaluate(() => ({
+        text: window.storageHarness.read().text.content,
+        recovered: window.storageHarness.recoveredProjectIds,
+      }))
+    }
+    assert.equal((await openProfile('perfil-a')).text, 'initial')
+    await profiles.evaluate(() => {
+      window.storageHarness.edit('a-in-flight')
+      window.storageHarness.startSave()
+      window.storageHarness.edit('a-exit')
+    })
+    const enteredB = await openProfile('perfil-b')
+    assert.equal(enteredB.text, 'initial', JSON.stringify(enteredB))
+    await profiles.evaluate(() => window.storageHarness.edit('b-own'))
+    assert.equal(await profiles.evaluate(() => window.storageHarness.save()), 'saved')
+    const backToA = await openProfile('perfil-a')
+    assert.equal(backToA.text, 'a-exit', JSON.stringify(backToA))
+    assert.equal((await openProfile('perfil-b')).text, 'b-own')
+    await profiles.close()
+    phase('profile-switch-verified')
     // Chromium exposes the native beforeunload dialog in headless automation.
     // Exercise a real trusted click: synthetic evaluation alone has no sticky activation.
     if (name === 'chromium') {

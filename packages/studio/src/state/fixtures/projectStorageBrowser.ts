@@ -88,7 +88,10 @@ window.addEventListener('beforeunload', () => lifecycle('beforeunload'))
 window.addEventListener('pagehide', () => lifecycle('pagehide'))
 
 const id = new URLSearchParams(location.search).get('project') ?? 'reload'
-const nativeScope = createProjectStorageScope('storage-browser')
+// `profile` reproduz a troca de perfil: outro banco, o mesmo localStorage do journal de saída.
+const nativeScope = createProjectStorageScope(
+  new URLSearchParams(location.search).get('profile') ?? 'storage-browser',
+)
 // Fault injection belongs to this fixture, never to the production storage path.
 const deniedExit = new URLSearchParams(location.search).has('deny-exit')
 const scope =

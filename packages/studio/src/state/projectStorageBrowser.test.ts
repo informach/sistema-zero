@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url'
 
 test('actual pagehide: large pending CAS + latest draft survive reload; two tabs conflict', async () => {
   const browser = process.env.STUDIO_STORAGE_BROWSER ?? 'all'
-  if (!['all', 'chromium', 'webkit'].includes(browser)) throw new Error('Unknown storage browser')
+  // `all` continua Chromium + WebKit; Firefox é pedido à parte (a CI o instala só no job dele).
+  if (!['all', 'chromium', 'webkit', 'firefox'].includes(browser))
+    throw new Error('Unknown storage browser')
   let deepBlocks: string | undefined
   if (process.env.STUDIO_STORAGE_DEEP === '1') {
     const fixture = Bun.spawn(
