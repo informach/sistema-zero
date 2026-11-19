@@ -148,6 +148,27 @@
       "when": 1791042202958,
       "tag": "0020_analytics_review",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795095788157,
+      "tag": "0021_member_commerce",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795097275496,
+      "tag": "0022_member_checkout_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795106530521,
+      "tag": "0023_member_checkout_plans",
+      "breakpoints": true
     }
   ]
 }

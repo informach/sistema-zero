@@ -134,6 +134,9 @@ jobs:
         run: |
           bun scripts/reference-diagnostics-golden.ts > .cache/mission/reference-diagnostics.json
           bun scripts/profile-reference-scopes.ts > .cache/mission/reference-scopes.json
+      - name: Modular Pro language-service baseline
+        working-directory: packages/studio
+        run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -207,7 +210,7 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           if [ '${{ runner.os }}' = 'Windows' ]; then
-            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts e2e/preview-shell.spec.ts e2e/preview-shell-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts e2e/preview-resource-transition.spec.ts e2e/preview-shell.spec.ts e2e/preview-shell-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi

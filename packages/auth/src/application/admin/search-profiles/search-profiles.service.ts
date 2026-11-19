@@ -11,6 +11,7 @@ const MAX_LIMIT = 100
 export interface AdminProfileSearchView {
   id: string
   name: string
+  fullName: string
   avatarUrl: string | null
   birthDate: string | null
   accountUserId: string
@@ -41,7 +42,16 @@ export class SearchProfilesService {
       offset,
     })
 
-    return { items: items.map(toView), total }
+    const identities = new Map(
+      (await this.profiles.listByIds(items.map((row) => row.id))).map((profile) => [
+        profile.id,
+        profile.displayName,
+      ]),
+    )
+    return {
+      items: items.map((row) => ({ ...toView(row), name: identities.get(row.id) ?? 'Criador(a)' })),
+      total,
+    }
   }
 }
 
@@ -50,6 +60,7 @@ function toView(row: ProfileWithAccountRow): AdminProfileSearchView {
   return {
     id: row.id,
     name: row.name,
+    fullName: row.name,
     avatarUrl: row.avatarUrl,
     birthDate: row.birthDate,
     accountUserId: row.accountUserId,

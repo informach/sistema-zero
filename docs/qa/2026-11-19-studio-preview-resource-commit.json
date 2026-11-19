@@ -1,0 +1,113 @@
+{
+  "environment": "Windows; Playwright Chromium full executable; local synthetic gallery project; 390x844",
+  "scope": "Document navigation diagnostic, not FPS, UI latency or complete qualification",
+  "before": [
+    {
+      "type": "ancestor-added",
+      "time": 3962.1299999952316,
+      "title": "Pré-visualização",
+      "chars": 54,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 3984.2849999964237,
+      "title": "Pré-visualização",
+      "chars": 54,
+      "connected": true
+    },
+    {
+      "type": "added",
+      "time": 4259.399999991059,
+      "title": "Pré-visualização",
+      "chars": 319889,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 4748.369999989867,
+      "title": "Pré-visualização",
+      "chars": 319889,
+      "connected": true
+    },
+    {
+      "type": "srcdoc",
+      "time": 5014.364999994636,
+      "title": "Pré-visualização",
+      "chars": 54,
+      "connected": true
+    },
+    {
+      "type": "srcdoc",
+      "time": 5023.579999998212,
+      "title": "Pré-visualização",
+      "chars": 319937,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 5042.579999998212,
+      "title": "Pré-visualização",
+      "chars": 319937,
+      "connected": true
+    },
+    {
+      "actual": {
+        "ready": "complete",
+        "htmlBytes": 52,
+        "empty": true
+      }
+    }
+  ],
+  "after": [
+    {
+      "type": "ancestor-added",
+      "time": 2700.4899999946356,
+      "title": "Pré-visualização",
+      "chars": 54,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 2712.0999999940395,
+      "title": "Pré-visualização",
+      "chars": 54,
+      "connected": true
+    },
+    {
+      "type": "srcdoc",
+      "time": 2908.1799999922514,
+      "title": "Pré-visualização",
+      "chars": 319889,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 3171.1449999958277,
+      "title": "Pré-visualização",
+      "chars": 319889,
+      "connected": true
+    },
+    {
+      "type": "srcdoc",
+      "time": 3671.7999999970198,
+      "title": "Pré-visualização",
+      "chars": 319937,
+      "connected": true
+    },
+    {
+      "type": "load",
+      "time": 3804.810000002384,
+      "title": "Pré-visualização",
+      "chars": 319937,
+      "connected": true
+    },
+    {
+      "actual": {
+        "ready": "complete",
+        "htmlBytes": 322937,
+        "empty": false
+      }
+    }
+  ]
+}

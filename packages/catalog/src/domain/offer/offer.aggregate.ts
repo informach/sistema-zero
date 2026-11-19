@@ -23,6 +23,8 @@ export interface OfferItem {
 
 /** Núcleo comercial de apresentação que o funil renderiza (a copy longa fica no funil). */
 export interface OfferContent {
+  memberPromotion?: import('@sistemazero/core/commerce').MemberPromotion
+  checkoutTerms?: import('@sistemazero/core/commerce').CheckoutTerms
   badge?: string
   ctaLabel?: string
   highlight?: string

@@ -30,7 +30,11 @@ afterEach(() => {
 })
 // O menu lê os filhos em /api/profiles: aqui ele recebe uma lista vazia.
 globalThis.fetch = Object.assign(
-  mock(async () => Response.json({ profiles: [] })),
+  mock(async (input: RequestInfo | URL) =>
+    Response.json(
+      String(input).startsWith('/api/commerce/promotions') ? { items: [] } : { profiles: [] },
+    ),
+  ),
   { preconnect: originalFetch.preconnect },
 )
 
@@ -313,7 +317,11 @@ describe('o Início de quem comprou só um curso para pais', () => {
   beforeEach(() => {
     // O menu lê os filhos em /api/profiles: esta conta não tem nenhum.
     globalThis.fetch = Object.assign(
-      mock(async () => Response.json({ profiles: [] })),
+      mock(async (input: RequestInfo | URL) =>
+        Response.json(
+          String(input).startsWith('/api/commerce/promotions') ? { items: [] } : { profiles: [] },
+        ),
+      ),
       { preconnect: originalFetch.preconnect },
     )
   })

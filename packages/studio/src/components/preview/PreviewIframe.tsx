@@ -474,6 +474,8 @@ export function PreviewIframe(): JSX.Element {
 
   const extensionRuntimesReady =
     extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'ready'
+  const extensionRuntimeFailed =
+    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
   const extensionRuntimesLoading =
     extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'loading'
   const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
@@ -538,6 +540,9 @@ export function PreviewIframe(): JSX.Element {
   const courseModelError =
     courseModelState?.request === courseModelRequest ? courseModelState.error : null
   const models3dManifest = courseModelsReady ? courseModelState!.manifest! : undefined
+  // The document and toolbar share the same asynchronous preparation gate.
+  const documentResourcesReady =
+    extensionRuntimesReady && gameUiFontReady && courseModelsReady && (!projectId || storageReady)
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -642,11 +647,7 @@ export function PreviewIframe(): JSX.Element {
     if (!previewRunning) return PAUSED_PREVIEW_DOC
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
-    if (!extensionRuntimesReady) return PAUSED_PREVIEW_DOC
-    if (!gameUiFontReady) return PAUSED_PREVIEW_DOC
-    if (!courseModelsReady) return PAUSED_PREVIEW_DOC
-    // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
-    if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
+    if (!documentResourcesReady) return PAUSED_PREVIEW_DOC
     const base = buildJavaScriptClassicDocument({
       html: debouncedHtml,
       css: debouncedCss,
@@ -686,12 +687,9 @@ export function PreviewIframe(): JSX.Element {
     previewRunning,
     previewPaused,
     currentProjectHasRun,
-    extensionRuntimesReady,
-    gameUiFontReady,
-    courseModelsReady,
+    documentResourcesReady,
     gameUiFontState.bundle,
     projectId,
-    storageReady,
     debouncedHtml,
     debouncedCss,
     debouncedJs,
@@ -711,12 +709,22 @@ export function PreviewIframe(): JSX.Element {
     shell?.origin,
   ])
 
-  // An automatic source debounce must not bypass an explicit run awaiting a save.
-  // Retain the committed game during preparation; Stop still installs the blank doc.
+  // Keep the committed game while the next document's resources are loading.
+  // Navigating live → blank → live during an asynchronous runtime/font change
+  // can leave Chromium showing the intervening blank document. Only commit a
+  // complete replacement. Stop, project/access changes and budget pauses still
+  // install the blank document immediately.
   const committedDoc = useRef({ projectId, document: PAUSED_PREVIEW_DOC })
+  const waitingForDocumentResources =
+    !documentResourcesReady &&
+    currentProjectHasRun &&
+    !previewPaused &&
+    !extensionRuntimeFailed &&
+    !courseModelError &&
+    execution.editingAccess !== 'observer'
   const doc =
     previewRunning &&
-    (preparingRun || preparationError !== null) &&
+    (preparingRun || preparationError !== null || waitingForDocumentResources) &&
     committedDoc.current.projectId === projectId
       ? committedDoc.current.document
       : candidateDoc
@@ -1025,8 +1033,6 @@ export function PreviewIframe(): JSX.Element {
     }),
     [preparation],
   )
-  const extensionRuntimeFailed =
-    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
   const gameErrorHint = gameError ? (glossErrorMessage(gameError.text) ?? undefined) : undefined
   const runState = useMemo<ProRunState>(() => {
     if (preparingRun)
@@ -1038,7 +1044,8 @@ export function PreviewIframe(): JSX.Element {
       }
     if (preparationError)
       return { phase: 'error', canRun: !observer, canStop: !observer, error: preparationError }
-    if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
+    if (!previewRunning || !currentProjectHasRun)
+      return { phase: 'idle', canRun: !observer, canStop: false }
     if (extensionRuntimeFailed || courseModelError)
       return {
         phase: 'error',
@@ -1059,7 +1066,7 @@ export function PreviewIframe(): JSX.Element {
             ? { file: 'script.js', line: gameError.line, column: gameError.column }
             : undefined,
       }
-    if (extensionRuntimesLoading || !courseModelsReady)
+    if (!documentResourcesReady)
       return { phase: 'preparing', step: { index: 1, total: 1 }, canRun: false, canStop: !observer }
     return { phase: 'running', canRun: !observer, canStop: !observer }
   }, [
@@ -1069,8 +1076,8 @@ export function PreviewIframe(): JSX.Element {
     observer,
     extensionRuntimeFailed,
     courseModelError,
-    extensionRuntimesLoading,
-    courseModelsReady,
+    currentProjectHasRun,
+    documentResourcesReady,
     gameError,
     gameErrorHint,
   ])
@@ -1136,7 +1143,9 @@ export function PreviewIframe(): JSX.Element {
           title="Pré-visualização"
           src={shell ? shell.url : (isolatedUrl ?? undefined)}
           srcDoc={shell || isolatedUrl ? undefined : effectiveDoc}
-          onLoad={() => {
+          aria-busy={previewRunning && currentProjectHasRun && !documentResourcesReady}
+          onLoad={(event) => {
+            if (event.currentTarget !== iframeRef.current) return
             // Na casca, o `load` é o da página dela; o do jogo chega por `sz-shell:loaded`.
             if (!shell) frameLoadedRef.current()
           }}

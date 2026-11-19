@@ -1,0 +1,72 @@
+{
+  "environment": {
+    "platform": "win32",
+    "bun": "1.3.11",
+    "typescript": "5.9.3",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832
+  },
+  "method": "Synthetic 60-file language-service fixture in this process; function-body edits, 3 warmups per operation. No browser, worker transport, editor input, WebContainer, runtime or Zappy. No tracing, no forced GC. Process memory is not retained-memory or leak proof.",
+  "fixture": {
+    "files": 60,
+    "sha256": "0829e466cbc47add348a21bbfa9d702d804c9403ab85c8e1ee032e9e4870b4d7",
+    "sourceBytes": 19197
+  },
+  "libraryLoadMs": 12.816600000000022,
+  "coldAnalysisMs": 626.7983999999999,
+  "milliseconds": {
+    "editToDiagnosticsMs": {
+      "samples": 30,
+      "p50": 11.755400000000009,
+      "p95": 25.561699999999973,
+      "max": 45.29690000000005
+    },
+    "referencesMs": {
+      "samples": 30,
+      "p50": 0.6203000000000429,
+      "p95": 1.2808999999999742,
+      "max": 1.3044999999999618
+    },
+    "renameMs": {
+      "samples": 30,
+      "p50": 1.1709999999998217,
+      "p95": 6.403099999999995,
+      "max": 11.603799999999865
+    },
+    "symbolsMs": {
+      "samples": 30,
+      "p50": 0.29939999999987776,
+      "p95": 0.6342999999999392,
+      "max": 0.7593999999999141
+    }
+  },
+  "checks": {
+    "dependencyErrorDetected": true,
+    "dependencyRepairObserved": true,
+    "allInitialFilesDiagnosed": true
+  },
+  "processMemoryBytes": {
+    "before": {
+      "rss": 226439168,
+      "heapTotal": 9869312,
+      "heapUsed": 1151669,
+      "external": 404240,
+      "arrayBuffers": 21707
+    },
+    "afterAnalysis": {
+      "rss": 438136832,
+      "heapTotal": 109889536,
+      "heapUsed": 73256616,
+      "external": 21927704,
+      "arrayBuffers": 0
+    },
+    "afterDispose": {
+      "rss": 438267904,
+      "heapTotal": 109890560,
+      "heapUsed": 73256616,
+      "external": 21927704,
+      "arrayBuffers": 0
+    }
+  }
+}

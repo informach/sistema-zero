@@ -61,7 +61,7 @@ export type RedeemResult =
     }
   | { kind: 'processing' }
   | { kind: 'code_not_found' }
-  | { kind: 'already_redeemed' }
+  | { kind: 'already_redeemed'; expiresAt?: string | null }
   | { kind: 'gift_unavailable' }
   | { kind: 'campaign_unavailable'; state: string }
   | { kind: 'failed'; reason: string }
@@ -277,7 +277,91 @@ export class RedeemScholarshipService {
     }
   }
 
-  async execute(input: RedeemInput): Promise<RedeemResult> {
+  /** Consulta a mesma vaga da execução, sem claim, concessão ou envio de email. */
+  private async findExistingGift(
+    email: string,
+    audience: GiftAudience,
+    userId: string | undefined,
+    ownerKind: string,
+    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    fresh: Availability<GiftPlan>,
+  ) {
+    const fromEmail = await this.repo.listRedemptionsByEmail(email, audience)
+    const fromAccount = userId ? await this.repo.listRedemptionsByAccount(userId, audience) : []
+    const sameAudience = [...new Map([...fromEmail, ...fromAccount].map((r) => [r.id, r])).values()]
+    const slotOf = (r: { giftSlot?: string }) => r.giftSlot ?? MAIN_GIFT_SLOT
+    let giftSlot: string
+    let existing: (typeof sameAudience)[number] | null
+    if (fresh.kind === 'ok') {
+      giftSlot =
+        ownerKind !== 'campaign' && fresh.value.course?.learner !== 'parents'
+          ? MAIN_GIFT_SLOT
+          : giftSlotOf(fresh.value.course, fresh.value.offer.offerId)
+      existing = sameAudience.find((r) => slotOf(r) === giftSlot) ?? null
+      // Reconhece presentes antigos de outro curso gravados antes das vagas por curso.
+      if (!giftSlot.startsWith('parents:'))
+        existing ??=
+          sameAudience.find(
+            (r) =>
+              slotOf(r) === MAIN_GIFT_SLOT &&
+              (fresh.value.course
+                ? r.courseSlug === fresh.value.course.slug
+                : r.giftOfferId === fresh.value.offer.offerId),
+          ) ?? null
+      if (existing) giftSlot = slotOf(existing)
+    } else {
+      // Oferta fora do ar ou indisponível: a vaga sai do que já foi gravado. O resgate deste
+      // mesmo presente (a oferta da campanha) continua reconhecível, como o 409 do concluído;
+      // sem oferta própria (código de pessoa ou campanha antiga) o presente é o do público.
+      const campaignOfferId = campaign?.giftOfferId ?? null
+      existing = campaignOfferId
+        ? (sameAudience.find((r) => r.giftOfferId === campaignOfferId) ?? null)
+        : (sameAudience.find((r) => slotOf(r) === MAIN_GIFT_SLOT) ?? null)
+      giftSlot = existing ? slotOf(existing) : MAIN_GIFT_SLOT
+    }
+    return { giftSlot, existing }
+  }
+
+  async inspectAccountGift(
+    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    audience: GiftAudience,
+    ownerKind: string,
+    account: { userId: string; email: string },
+  ) {
+    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    const { existing } = await this.findExistingGift(
+      normalizeEmail(account.email),
+      audience,
+      account.userId,
+      ownerKind,
+      campaign,
+      fresh,
+    )
+    if (!existing || (existing.userId && existing.userId !== account.userId)) return null
+    const expiresAt = this.expiresAtOf(existing)
+    const context = await this.describeGift(existing)
+    return {
+      redemption: {
+        status: existing.status,
+        expiresAt: expiresAt?.toISOString() ?? null,
+        canResume: existing.status !== 'completed' && !this.windowElapsed(expiresAt),
+      },
+      gift: {
+        offerId: existing.giftOfferId ?? context.offer?.offerId ?? '',
+        offerTitle: context.offer?.name ?? context.course?.title ?? 'Seu presente',
+        courseSlug: existing.courseSlug ?? context.course?.slug ?? '',
+        courseTitle: context.course?.title ?? null,
+        learner: context.course?.learner ?? null,
+        accessDays: existing.accessDurationDays,
+        includesMural: context.offer?.includesMural ?? false,
+      } satisfies ReferralGiftOfferView,
+    }
+  }
+
+  async execute(
+    input: RedeemInput,
+    account?: { userId: string; audience: GiftAudience },
+  ): Promise<RedeemResult> {
     const code = normalizeCode(input.code)
     if (!isValidCode(code)) return { kind: 'code_not_found' }
     const codeRecord = await this.repo.findCodeByCode(code)
@@ -294,6 +378,7 @@ export class RedeemScholarshipService {
         ? ((await this.opts.campaigns?.findById(codeRecord.campaignId)) ?? null)
         : null
     const audience = campaign?.audience ?? codeRecord.audience
+    if (account && account.audience !== audience) return { kind: 'code_not_found' }
 
     // Resgate novo só começa quando a oferta resolve e o curso está publicado. O 409 de um
     // resgate concluído continua reconhecível mesmo se o curso sair do catálogo depois.
@@ -301,23 +386,14 @@ export class RedeemScholarshipService {
     // E por VAGA (18/11/2026): curso para pais não ocupa a vaga do presente do público, então a
     // oferta deste código é resolvida primeiro para saber em que vaga procurar o resgate.
     const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
-    const sameAudience = await this.repo.listRedemptionsByEmail(email, audience)
-    const slotOf = (r: { giftSlot?: string }) => r.giftSlot ?? MAIN_GIFT_SLOT
-    let giftSlot: string
-    let existing: (typeof sameAudience)[number] | null
-    if (fresh.kind === 'ok') {
-      giftSlot = giftSlotOf(fresh.value.course)
-      existing = sameAudience.find((r) => slotOf(r) === giftSlot) ?? null
-    } else {
-      // Oferta fora do ar ou indisponível: a vaga sai do que já foi gravado. O resgate deste
-      // mesmo presente (a oferta da campanha) continua reconhecível, como o 409 do concluído;
-      // sem oferta própria (código de pessoa ou campanha antiga) o presente é o do público.
-      const campaignOfferId = campaign?.giftOfferId ?? null
-      existing = campaignOfferId
-        ? (sameAudience.find((r) => r.giftOfferId === campaignOfferId) ?? null)
-        : (sameAudience.find((r) => slotOf(r) === MAIN_GIFT_SLOT) ?? null)
-      giftSlot = existing ? slotOf(existing) : MAIN_GIFT_SLOT
-    }
+    const { giftSlot, existing } = await this.findExistingGift(
+      email,
+      audience,
+      account?.userId,
+      codeRecord.ownerKind,
+      campaign,
+      fresh,
+    )
     let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
     if (!existing && codeRecord.ownerKind === 'campaign') {
       if (!campaign) return { kind: 'code_not_found' }
@@ -361,7 +437,7 @@ export class RedeemScholarshipService {
     try {
       claim = await this.repo.insertRedemption({
         codeId: codeRecord.id,
-        email,
+        email: existing?.email ?? email,
         audience,
         name,
         phone,
@@ -392,6 +468,8 @@ export class RedeemScholarshipService {
       throw error
     }
     const { created, redemption } = claim
+    if (account && redemption.userId && redemption.userId !== account.userId)
+      return { kind: 'failed', reason: 'account_mismatch' }
     // A retomada usa a origem original, inclusive nos resgates históricos.
     const originalCode = redemption.sourceSnapshot
       ? null
@@ -411,7 +489,10 @@ export class RedeemScholarshipService {
           await this.describeGift(redemption),
         )
       }
-      return { kind: 'already_redeemed' }
+      return {
+        kind: 'already_redeemed',
+        expiresAt: this.expiresAtOf(redemption)?.toISOString() ?? null,
+      }
     }
 
     const leaseUntil = new Date(this.now().getTime() + this.opts.leaseMs)
@@ -419,7 +500,7 @@ export class RedeemScholarshipService {
     if (!leased) return { kind: 'processing' }
 
     try {
-      return await this.runSteps(leased, originalSource, context)
+      return await this.runSteps(leased, originalSource, context, account)
     } catch (error) {
       this.logger.error('referrals.redeem_failed', {
         redemptionId: redemption.id,
@@ -493,11 +574,20 @@ export class RedeemScholarshipService {
     redemption: RedemptionRecord,
     source: GiftSource,
     context: GiftContext,
+    account?: { userId: string; audience: GiftAudience },
   ): Promise<RedeemResult> {
     let userId = redemption.userId
     let buyerCreated = redemption.buyerCreated
 
     // 1) Conta (idempotente por e-mail no auth; pulado na retomada).
+    if (account) {
+      if (userId && userId !== account.userId) return { kind: 'failed', reason: 'account_mismatch' }
+      if (!userId) {
+        userId = account.userId
+        buyerCreated = false
+        await this.repo.setRedemptionBuyer(redemption.id, userId, false)
+      }
+    }
     if (!userId) {
       const { firstName, lastName } = splitName(redemption.name)
       const res = await this.gateway.ensureBuyer({

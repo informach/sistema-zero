@@ -20,9 +20,10 @@ function setup() {
     { preconnect: originalFetch.preconnect },
   )
   const { container } = render(<ProfileEditor />)
-  fireEvent.change(screen.getByLabelText('Nome do perfil'), {
+  fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
     target: { value: 'Criança de teste' },
   })
+  fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Fada Azul' } })
   fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
     target: { value: '2018-05-10' },
   })
@@ -42,6 +43,8 @@ describe('criação preserva identidade após resultado inconclusivo', () => {
     )
     expect(calls).toHaveLength(1)
     expect(calls[0]?.body.birthDate).toBe('2018-05-10')
+    expect(calls[0]?.body.name).toBe('Criança de teste')
+    expect(calls[0]?.body.publicNickname).toBe('Fada Azul')
     expect(calls[0]?.body.requestId).toMatch(
       /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/,
     )

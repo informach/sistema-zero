@@ -17,6 +17,8 @@ const PREFIXES: Readonly<Record<string, string>> = {
   certificate: 'certificado',
   coming_soon: 'em-breve',
   materials: 'materiais',
+  gift: 'presente',
+  purchase: 'compra',
 }
 export const LEARNING_IMPORT_BODY_MAX_BYTES = 2 * 1024 * 1024
 /** Local file/formatting budget, separate from the immutable 2 MiB network body limit. */

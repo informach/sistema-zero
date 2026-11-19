@@ -53,11 +53,27 @@ describe('isReadonlyImpersonation', () => {
 
 describe('parseProfileClaim (claim pfl — sessão de perfil estilo Netflix)', () => {
   test('shape válido → ProfileClaim (name só quando presente)', () => {
-    expect(parseProfileClaim({ accountId: 'conta-1', name: 'Sofia' })).toEqual({
+    expect(
+      parseProfileClaim({
+        accountId: 'conta-1',
+        name: 'Sofia Silva Santos',
+        nickname: 'Fada Azul',
+      }),
+    ).toEqual({
       accountId: 'conta-1',
-      name: 'Sofia',
+      name: 'Fada Azul',
     })
-    expect(parseProfileClaim({ accountId: 'conta-1' })).toEqual({ accountId: 'conta-1' })
+    expect(parseProfileClaim({ accountId: 'conta-1' })).toEqual({
+      accountId: 'conta-1',
+      name: 'Criador(a)',
+    })
+  })
+
+  test('token antigo conserva a sessão sem publicar o nome privado', () => {
+    expect(parseProfileClaim({ accountId: 'conta-1', name: 'Sofia Silva Santos' })).toEqual({
+      accountId: 'conta-1',
+      name: 'Criador(a)',
+    })
   })
 
   test('shape inválido → undefined (sessão tratada como da conta)', () => {
@@ -67,6 +83,9 @@ describe('parseProfileClaim (claim pfl — sessão de perfil estilo Netflix)', (
   })
 
   test('name não-string é descartado sem derrubar a claim', () => {
-    expect(parseProfileClaim({ accountId: 'conta-1', name: 42 })).toEqual({ accountId: 'conta-1' })
+    expect(parseProfileClaim({ accountId: 'conta-1', name: 42 })).toEqual({
+      accountId: 'conta-1',
+      name: 'Criador(a)',
+    })
   })
 })

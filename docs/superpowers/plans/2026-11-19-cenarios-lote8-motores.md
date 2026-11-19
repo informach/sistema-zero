@@ -76,6 +76,8 @@
 
 ## 7. Fechamento
 
-- [ ] Projetos Pro autorais (além da conversão do clássico): oferecer consumo direto do cenário com os recursos materializados pelo coordenador existente, sem reescrever dependências autorais ou criar outro inventário. Qualificar fonte/export/execução antes de fechar 8.4.
-- [ ] Qualificação integrada dos quatro motores e Python pelo produto; conferência linha a linha de 8.4, tipagem, build/orçamento e full review do recorte.
-- [ ] Documentar resultado/limitações reais e enviar commits. Somente então iniciar 8.5; implantação e validação real de staging continuam no encerramento global, após todos os lotes.
+- [x] Projetos Pro autorais (além da conversão do clássico): oferecer consumo direto do cenário com os recursos materializados pelo coordenador existente, sem reescrever dependências autorais ou criar outro inventário. Qualificar fonte/export/execução antes de fechar 8.4.
+- [x] Qualificação integrada dos quatro motores e Python pelo produto; conferência linha a linha de 8.4, tipagem, build/orçamento e full review do recorte.
+- [x] Documentar resultado/limitações reais e enviar commits. Somente então iniciar 8.5; implantação e validação real de staging continuam no encerramento global, após todos os lotes.
+
+19/11: [Pro autoral e conferência integrada de 8.4](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-pro.md) qualificados localmente. Os três arquivos derivados passam pelo coordenador, revisão e export; o cenário completo executa no Vite/site construído. A cota remota original de 2 MB recusa corretamente o pacote grande e aceita o menor; não foi alegada compilação remota executada. Próximo recorte: 8.5, perfil/carregador do Arquipélago. O lote 8 permanece aberto até 8.6.

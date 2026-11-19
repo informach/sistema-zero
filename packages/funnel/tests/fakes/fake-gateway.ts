@@ -204,6 +204,9 @@ export function createFakeGateway(): FakeGatewayState {
   }
 
   const gateway: GatewayClient = {
+    async getSubscription() {
+      return { status: 200, body: { status: 'PENDING' } }
+    },
     async createPayment(input, idempotencyKey): Promise<GatewayResult> {
       calls.create.push({ input, idempotencyKey })
       if (createResult) return createResult
@@ -216,6 +219,9 @@ export function createFakeGateway(): FakeGatewayState {
         status: 200,
         body: { id: view.id, status: view.status, paidAt: view.paidAt, pix, boleto, card },
       }
+    },
+    async getCommerceAccess(): Promise<GatewayResult> {
+      return { status: 200, body: { items: [] } }
     },
     async getOffer(slug): Promise<GatewayResult> {
       const cfg = offerConfigs.get(slug)

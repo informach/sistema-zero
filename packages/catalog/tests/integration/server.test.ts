@@ -92,6 +92,85 @@ function req(
 const ADMIN = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
 
 describe('catalog HTTP', () => {
+  it('cards do Início respeitam público, disponibilidade, publicação e local configurado', async () => {
+    const { app, createProduct, createOffer } = build()
+    for (const audience of ['kids', 'adult'] as const) {
+      const product = await createProduct.execute({
+        audience,
+        sku: `card-${audience}`,
+        slug: `card-${audience}`,
+        name: 'Curso',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: `card-${audience}` },
+      })
+      for (const variant of ['active', 'draft', 'paused', 'manual', 'disabled', 'ended'] as const) {
+        await createOffer.execute({
+          productId: product.id,
+          code: `${audience}-${variant}`,
+          slug: `${audience}-${variant}`,
+          name: variant,
+          priceCents: 3700,
+          status: variant === 'draft' || variant === 'paused' ? variant : 'active',
+          ...(variant === 'ended' ? { availableUntil: new Date(Date.now() - 60_000) } : {}),
+          content: {
+            memberPromotion: {
+              enabled: variant !== 'disabled',
+              mode: 'purchase',
+              location: variant === 'manual' ? 'manual' : 'parent_home',
+              title: 'Curso',
+              description: '',
+            },
+          },
+        })
+      }
+    }
+    for (const audience of ['kids', 'adult']) {
+      const response = await app.handle(
+        req('GET', `/catalog/member-promotions?audience=${audience}`),
+      )
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as { items: { slug: string }[] }
+      expect(body.items.map((o) => o.slug)).toEqual([`${audience}-active`])
+    }
+    expect((await app.handle(req('GET', '/catalog/member-promotions?audience=other'))).status).toBe(
+      400,
+    )
+  })
+
+  it('autoria HTTP não aceita card de presente sem campanha', async () => {
+    const { app, createProduct } = build()
+    const product = await createProduct.execute({
+      audience: 'kids',
+      sku: 'gift-card',
+      slug: 'gift-card',
+      name: 'Curso',
+      kind: 'ebook',
+      status: 'active',
+      fulfillment: { accessType: 'course', courseRef: 'gift-card' },
+    })
+    const response = await app.handle(
+      req('POST', '/catalog/offers', {
+        headers: ADMIN,
+        body: {
+          productId: product.id,
+          code: 'gift-card',
+          slug: 'gift-card',
+          name: 'Curso',
+          priceCents: 3700,
+          content: {
+            memberPromotion: {
+              enabled: true,
+              mode: 'gift',
+              location: 'parent_home',
+              title: 'Presente',
+            },
+          },
+        },
+      }),
+    )
+    expect(response.status).toBe(400)
+  })
   it('termos do cupom vinculado exigem token interno e não admitem acesso com papel admin apenas', async () => {
     const tokenEnv = loadEnv({
       DATABASE_URL: 'postgres://localhost/test',

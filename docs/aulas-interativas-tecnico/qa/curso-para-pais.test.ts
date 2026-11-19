@@ -125,3 +125,40 @@ describe.each(cursos)('curso para pais %s', (curso) => {
     }
   })
 })
+
+describe('Aula 7: jornada autenticada e identidade infantil', () => {
+  const pasta = resolve(PASTA_PAIS, 'transformando-o-vilao-em-aliado')
+  const base = 'transformando-o-vilao-em-aliado-aula-7'
+  const manifesto = JSON.parse(
+    readFileSync(resolve(pasta, `${base}.manifesto.json`), 'utf8'),
+  ) as Manifesto
+  const fala = readFileSync(resolve(pasta, `${base}.elevenlabs.txt`), 'utf8')
+
+  test('presente nativo não é requisito para concluir a aula', () => {
+    const presente = manifesto.blocks.find((bloco) => bloco.key === 'presente')
+    expect(presente?.content?.kind).toBe('gift')
+    expect(presente?.content?.campaignCode).toBe('vilao-em-aliado-cade')
+    for (const secao of manifesto.sections) {
+      expect((secao.completion as { blockIds: string[] }).blockIds).not.toContain('presente')
+    }
+    expect(manifesto.blocks.filter((bloco) => bloco.plannedVideo)).toHaveLength(3)
+  })
+
+  test('fala orienta ativação na conta, identidade e aparelho sem novo cadastro do responsável', () => {
+    for (const trecho of [
+      'Ativar meu presente',
+      'conta com que você já está logado',
+      'Editar perfil',
+      'apelido público',
+      'nome completo',
+      'Autorizar aparelho',
+    ]) {
+      expect(fala).toContain(trecho)
+    }
+    expect(fala).not.toMatch(/outra aba|preencha.*e-mail|informe.*mesmo e-mail/i)
+    expect(fala).toContain('A gente não guarda a gravação na plataforma')
+    expect(fala).toContain('se você autorizar')
+    expect(fala).toContain('idade recomendada')
+    expect(fala).toMatch(/perfil (?:de |de uma |para uma )criança/)
+  })
+})

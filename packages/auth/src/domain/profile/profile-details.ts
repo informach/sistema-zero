@@ -3,6 +3,7 @@ import type { ProfileAggregate, ProfileSnapshot, VoiceInputActor } from './profi
 /** Only explicitly requested fields may be written. Lifecycle and admission are separate operations. */
 export interface ProfileDetailsChanges {
   name?: string
+  publicNickname?: string
   avatarUrl?: string | null
   whatsapp?: string | null
   birthDate?: string | null
@@ -40,7 +41,12 @@ export function applyProfileDetails(
 ): void {
   const { changes, now, voiceActor } = decision
   profile.updateDetails(
-    { name: changes.name, avatarUrl: changes.avatarUrl, whatsapp: changes.whatsapp },
+    {
+      name: changes.name,
+      publicNickname: changes.publicNickname,
+      avatarUrl: changes.avatarUrl,
+      whatsapp: changes.whatsapp,
+    },
     now,
   )
   if (changes.birthDate !== undefined) profile.setBirthDate(changes.birthDate, now)

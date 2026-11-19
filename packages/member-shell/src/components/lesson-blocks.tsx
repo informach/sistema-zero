@@ -1,5 +1,6 @@
 'use client'
 
+import { CommerceBlockSchema } from '@sistemazero/core/commerce'
 import { renderMarkdown } from '../lib/markdown'
 import type {
   AudioBlock,
@@ -21,6 +22,7 @@ import type {
   VideoBlock,
 } from '../lib/types'
 import { CertificateBlockView } from './certificate-block'
+import { CommerceLessonBlock } from './commerce/commerce-card'
 import { DialogueBlockView } from './dialogue-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { InteractiveLessonBlock } from './learning-activity'
@@ -76,6 +78,13 @@ function BlockRenderer({
   if (!content || typeof content !== 'object') return null
 
   switch (block.kind) {
+    case 'gift':
+    case 'purchase': {
+      const parsed = CommerceBlockSchema.safeParse(content)
+      return parsed.success ? (
+        <CommerceLessonBlock blockId={block.id} content={parsed.data} />
+      ) : null
+    }
     case 'interactive':
       return <InteractiveLessonBlock block={block} />
     case 'rich_text':

@@ -134,7 +134,10 @@ const goldenCatalogs = {
     // tela "fim" que serve aos dois jeitos de perder; Salto (nuvens 3 m acima do chão) e
     // Parkour (chão de lava) perdem ao pisar no chão lá embaixo; Noite e Tiro pausam na dica
     // (o Tiro ganha o "Prepare a mira!" que se fecha sozinho); Guardião sem "semente".
-    sha256: '2b3f2a8858b2511160af0e4e72aa6082ad36dee8002452941b2d51fb60c820f0',
+    // 19/11 (2932075e4): Herói do Molda recebe loadScene, sceneStart e os três
+    // materiais do cenário. Reverter somente essas adições reproduz o hash
+    // anterior 2b3f2a88…; os outros 19 exemplos e sua ordem permanecem idênticos.
+    sha256: 'bfde8f7f0597395776efc079cabb6b1fd8031434a3e3a84006096b0880e1e1a3',
   },
   'world-3d': {
     count: 14,

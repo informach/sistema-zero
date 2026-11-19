@@ -58,7 +58,35 @@ const ComponentSchema = t.Object({
   isPrimary: t.Optional(t.Boolean()),
 })
 
+const MemberPromotionFields = {
+  enabled: t.Boolean(),
+  location: t.Union([t.Literal('parent_home'), t.Literal('manual')]),
+  title: t.String({ minLength: 1, maxLength: 160 }),
+  description: t.String({ maxLength: 600 }),
+  buttonLabel: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+  imageUrl: t.Optional(t.String({ maxLength: 2000, pattern: '^https?://' })),
+}
 const OfferContentSchema = t.Object({
+  checkoutTerms: t.Optional(
+    t.Object({
+      url: t.String({ maxLength: 2000, pattern: '^https?://' }),
+      version: t.String({ minLength: 1, maxLength: 100 }),
+    }),
+  ),
+  memberPromotion: t.Optional(
+    t.Union([
+      t.Object({
+        ...MemberPromotionFields,
+        mode: t.Literal('gift'),
+        campaignCode: t.String({ pattern: '^[a-z0-9-]{4,32}$' }),
+      }),
+      t.Object({
+        ...MemberPromotionFields,
+        mode: t.Literal('purchase'),
+        campaignCode: t.Optional(t.String({ pattern: '^[a-z0-9-]{4,32}$' })),
+      }),
+    ]),
+  ),
   badge: t.Optional(t.String({ maxLength: 80 })),
   ctaLabel: t.Optional(t.String({ maxLength: 80 })),
   highlight: t.Optional(t.String({ maxLength: 200 })),

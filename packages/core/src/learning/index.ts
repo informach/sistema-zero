@@ -24,6 +24,7 @@ export * from './studio-project-example-change'
 export * from './studio-project-examples'
 export * from './video-watch'
 
+import { CommerceBlockSchema } from '../commerce'
 import { isStudioAuthoringProject } from '../studio/authoring-project'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
 import { StudioPythonLearningLevelSchema } from '../studio/python-learning'
@@ -982,6 +983,7 @@ export interface LearningManifest {
               /** A vaga de arte que este desenho preenche. */
               artSlot?: PintaArtSlot
             }
+          | import('../commerce').CommerceBlock
           | { kind: 'materials'; title?: string; items: unknown[]; bookPreview?: boolean }
           | {
               kind: 'certificate'
@@ -1015,6 +1017,8 @@ export const MATERIALS_TEXT_MAX_CHARS = 50_000
 
 function isManifestContent(content: unknown): boolean {
   if (!record(content)) return false
+  if (content.kind === 'gift' || content.kind === 'purchase')
+    return CommerceBlockSchema.safeParse(content).success
   if (Object.hasOwn(content, 'solutionProject')) return false
   if (Object.hasOwn(content, 'projectExamples') && content.kind !== 'studio') return false
   if (isInteractiveBlock(content) || isManifestQuiz(content)) return true

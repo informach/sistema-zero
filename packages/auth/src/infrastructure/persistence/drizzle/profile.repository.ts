@@ -50,6 +50,8 @@ function fromRow(row: Row): ProfileAggregate {
     id: row.id,
     accountUserId: row.accountUserId,
     name: row.name,
+    publicNickname: row.publicNickname,
+    identityConfirmedAt: row.identityConfirmedAt,
     avatarUrl: row.avatarUrl,
     whatsapp: row.whatsapp,
     birthDate: row.birthDate,
@@ -149,6 +151,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
         .select({
           id: profiles.id,
           name: profiles.name,
+          publicNickname: profiles.publicNickname,
           avatarUrl: profiles.avatarUrl,
           birthDate: profiles.birthDate,
           accountUserId: profiles.accountUserId,
@@ -173,6 +176,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
       items: rows.map((row) => ({
         id: row.id,
         name: row.name,
+        publicNickname: row.publicNickname,
         avatarUrl: row.avatarUrl,
         birthDate: row.birthDate,
         accountUserId: row.accountUserId,
@@ -246,6 +250,8 @@ export class DrizzleProfileRepository implements ProfileRepository {
           id: s.id,
           accountUserId: s.accountUserId,
           name: s.name,
+          publicNickname: s.publicNickname ?? null,
+          identityConfirmedAt: s.identityConfirmedAt ?? null,
           avatarUrl: s.avatarUrl,
           whatsapp: s.whatsapp,
           birthDate: s.birthDate,
@@ -307,6 +313,10 @@ export class DrizzleProfileRepository implements ProfileRepository {
       const changes = decision.changes
       const patch: Partial<typeof profiles.$inferInsert> = { updatedAt: state.updatedAt }
       if (changes.name !== undefined) patch.name = state.name
+      if (changes.name !== undefined || changes.publicNickname !== undefined) {
+        patch.publicNickname = state.publicNickname ?? null
+        patch.identityConfirmedAt = state.identityConfirmedAt ?? null
+      }
       if (changes.avatarUrl !== undefined) patch.avatarUrl = state.avatarUrl
       if (changes.whatsapp !== undefined) patch.whatsapp = state.whatsapp
       if (changes.birthDate !== undefined) patch.birthDate = state.birthDate
@@ -387,6 +397,7 @@ function buildSearchWhere(qRaw: string | undefined): SQL | undefined {
     const accountSearch = sql<string>`${users.firstName} || ' ' || ${users.lastName} || ' ' || ${users.email}`
     const match = or(
       ilike(profiles.name, like),
+      ilike(profiles.publicNickname, like),
       // Um único documento pesquisável cobre e-mail, partes isoladas E o nome
       // completo atravessando first_name e last_name. A expressão é idêntica à
       // do índice trigram declarado no schema.

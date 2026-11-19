@@ -159,7 +159,7 @@ export class StudyAccessService {
         const grant = here.find((g) => g.profileId === profile.id)
         return {
           id: profile.id,
-          name: profile.name,
+          name: profile.displayName,
           available: Boolean(grant && live(grant)),
           expiresAt: grant?.expiresAt.toISOString() ?? null,
           revoked: Boolean(grant?.revokedAt),
@@ -195,12 +195,17 @@ export class StudyAccessService {
       familyExpiresAt: grant.expiresAt,
       profile: {
         profileId: profile.id,
-        claim: { accountId: account.id, name: profile.name, pub: profile.publicProfileEnabled },
+        claim: {
+          accountId: account.id,
+          name: profile.displayName,
+          nickname: profile.publicNickname ?? undefined,
+          pub: profile.publicProfileEnabled,
+        },
       },
       userAgent: input.userAgent,
       ip: input.ip,
     })
-    return { tokens, profile: { id: profile.id, name: profile.name } }
+    return { tokens, profile: { id: profile.id, name: profile.displayName } }
   }
 
   async suspend(deviceToken: string) {

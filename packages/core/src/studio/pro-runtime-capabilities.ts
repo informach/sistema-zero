@@ -1,5 +1,6 @@
 import { STUDIO_PRO_BUILD_LIMITS } from './pro-build'
 import { STUDIO_PRO_REMOTE_PACKAGES } from './pro-dependencies'
+import { isStudioProScene3DFile } from './pro-scene3d'
 import { STUDIO_PRO_TEMPLATE_IDS } from './pro-templates'
 
 export const STUDIO_PRO_RUNTIME_PROTOCOL = 1 as const
@@ -55,6 +56,7 @@ export function normalizeStudioProBuildPath(input: string): string | null {
   return parts.join('/')
 }
 export function isStudioProBuildMaterialPath(path: string): boolean {
+  if (isStudioProScene3DFile(path)) return true
   return (
     path.toLowerCase() !== 'public/__studio-proof.png' &&
     path.startsWith('public/') &&

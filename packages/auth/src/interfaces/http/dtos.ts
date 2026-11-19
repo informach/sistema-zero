@@ -256,6 +256,7 @@ export const ProfileIdParams = t.Object({ id: t.String({ pattern: UUID_PATTERN }
 export const CreateProfileBody = t.Object({
   requestId: t.String({ pattern: UUID_PATTERN }),
   name: PROFILE_NAME,
+  publicNickname: t.Optional(t.String({ minLength: 2, maxLength: 40 })),
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
   // Obrigatória desde 23/10/2026 (decisão da dona): o perfil da criança nasce com a data.
@@ -272,6 +273,7 @@ export const CreateProfileBody = t.Object({
 /** Corpo de `PATCH /auth/profiles/:id` (edição parcial). */
 export const UpdateProfileBody = t.Object({
   name: t.Optional(PROFILE_NAME),
+  publicNickname: t.Optional(t.String({ minLength: 2, maxLength: 40 })),
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
   birthDate: t.Optional(PROFILE_BIRTH_DATE),

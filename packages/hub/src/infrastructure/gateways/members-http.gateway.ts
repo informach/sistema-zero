@@ -71,6 +71,33 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
+    async getPublicProfileIdentities(ids) {
+      if (!ids.length) return new Map()
+      const response = await doFetch(`${base}/members/internal/public-profile-identities`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ ids }),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (!response.ok) throw new Error('Identidades públicas indisponíveis')
+      const parsed = z
+        .object({
+          profiles: z.array(
+            z.object({
+              id: z.string(),
+              publicNickname: z.string(),
+              publicProfileEnabled: z.boolean(),
+            }),
+          ),
+        })
+        .parse(await response.json())
+      return new Map(
+        parsed.profiles.map((p) => [
+          p.id,
+          { publicNickname: p.publicNickname, publicProfileEnabled: p.publicProfileEnabled },
+        ]),
+      )
+    },
     async getAdultCreatorState(userId: string) {
       const response = await doFetch(
         `${base}/members/internal/adult-creator-state?${new URLSearchParams({ userId })}`,

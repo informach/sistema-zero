@@ -507,6 +507,12 @@ export class InMemoryReferralRepository implements ReferralRepository {
       .filter((r) => r.email === email && r.audience === audience)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
+  async listRedemptionsByAccount(
+    userId: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord[]> {
+    return this.redemptions.filter((r) => r.userId === userId && r.audience === audience)
+  }
 
   async listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]> {
     return this.redemptions

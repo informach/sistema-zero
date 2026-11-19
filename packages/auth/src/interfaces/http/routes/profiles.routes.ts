@@ -141,6 +141,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             // Equipe interna (superadmin/admin/staff) cria perfis ILIMITADOS p/ testar.
             privileged: isPrivilegedRole(actor.role),
             name: body.name,
+            publicNickname: body.publicNickname,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
             // Data de nascimento só entra na CRIAÇÃO pela conta (rota já é parent-only).
@@ -162,6 +163,13 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
         async ({ headers, params, body }) => {
           // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
           const accountUserId = ownProfileEditContext(headers, params.id)
+          if (
+            (body.name !== undefined || body.publicNickname !== undefined) &&
+            headers['x-auth-account-id']?.trim()
+          )
+            throw new ForbiddenError(
+              'O nome completo e o apelido público só podem ser alterados pelo responsável',
+            )
           // Data de nascimento é EDITÁVEL SÓ PELOS PAIS (sessão da conta). Numa sessão
           // de perfil (a criança) o gateway injeta `x-auth-account-id` → recusa a alteração.
           if (body.birthDate !== undefined && headers['x-auth-account-id']?.trim()) {
@@ -182,6 +190,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             accountUserId,
             profileId: params.id,
             name: body.name,
+            publicNickname: body.publicNickname,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
             birthDate: body.birthDate,

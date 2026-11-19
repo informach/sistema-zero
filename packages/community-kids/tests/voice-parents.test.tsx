@@ -17,11 +17,14 @@ function perfil(extra: Partial<ProfileView> = {}): ProfileView {
   return {
     id: '11111111-1111-4111-8111-111111111111',
     name: 'Sofia',
+    publicNickname: 'Sofia',
     avatarUrl: null,
     whatsapp: null,
     birthDate: null,
     publicProfileEnabled: false,
     sortOrder: 0,
+    fullName: 'Sofia',
+    identityConfirmed: true,
     ...extra,
   }
 }
@@ -59,7 +62,10 @@ describe('formulário do perfil: a fala da criança', () => {
     // O perfil público também diz onde aparece.
     expect(container.textContent).toContain('nunca na internet aberta')
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2016-05-10' },
     })
@@ -67,6 +73,7 @@ describe('formulário do perfil: a fala da criança', () => {
     expect(onSave).toHaveBeenLastCalledWith(
       {
         name: 'Sofia',
+        publicNickname: 'Sofia',
         birthDate: '2016-05-10',
         publicProfileEnabled: false,
         voiceInputEnabled: false,
@@ -79,6 +86,7 @@ describe('formulário do perfil: a fala da criança', () => {
     expect(onSave).toHaveBeenLastCalledWith(
       {
         name: 'Sofia',
+        publicNickname: 'Sofia',
         birthDate: '2016-05-10',
         publicProfileEnabled: false,
         voiceInputEnabled: true,
@@ -99,13 +107,21 @@ describe('formulário do perfil: a fala da criança', () => {
       />,
     )
     expect(screen.queryByRole('checkbox', { name: /Falar em vez de escrever/ })).toBeNull()
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2016-05-10' },
     })
     salvar(container)
     expect(onSave).toHaveBeenLastCalledWith(
-      { name: 'Sofia', birthDate: '2016-05-10', publicProfileEnabled: false },
+      {
+        name: 'Sofia',
+        publicNickname: 'Sofia',
+        birthDate: '2016-05-10',
+        publicProfileEnabled: false,
+      },
       undefined,
     )
   })
@@ -218,7 +234,10 @@ describe('criar a criança com a fala marcada e login antigo', () => {
     }) as typeof window.location.assign
 
     const { container } = render(<ProfileEditor voiceAvailable />)
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2016-05-10' },
     })

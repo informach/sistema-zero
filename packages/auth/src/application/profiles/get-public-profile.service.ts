@@ -17,6 +17,6 @@ export class GetPublicProfileService {
   async execute(profileId: string): Promise<PublicProfileIdentity> {
     const profile = await this.profiles.findById(profileId)
     if (!profile?.isSelectable || !profile.publicProfileEnabled) throw new ProfileNotFoundError()
-    return { name: profile.name, publicProfileEnabled: profile.publicProfileEnabled }
+    return { name: profile.displayName, publicProfileEnabled: profile.publicProfileEnabled }
   }
 }

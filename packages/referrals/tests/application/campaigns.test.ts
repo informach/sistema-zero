@@ -13,6 +13,7 @@ import {
   campaignState,
 } from '../../src/domain/campaign'
 import type { GrantManualOfferInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
+import { memberGiftRoutes } from '../../src/interfaces/http/member-gifts.routes'
 import { InMemoryCampaignRepository } from '../fakes/campaigns'
 import {
   ADULT_GIFT_OFFER,
@@ -80,6 +81,78 @@ async function setup() {
 const family = { code: input.code, email: 'responsavel@example.com', name: 'Responsável' }
 
 describe('campanhas institucionais', () => {
+  test('R05: inspeção autenticada recupera o resgate após encerramento sem novos efeitos', async () => {
+    const { redeem, admin, campaign, referrals, gateway } = await setup()
+    const account = {
+      userId: '00000000-0000-4000-8000-000000000123',
+      audience: 'kids' as const,
+      email: family.email,
+      name: family.name,
+    }
+    gateway.grantResult = { status: 502, body: {} }
+    expect((await redeem.execute(family, account)).kind).toBe('upstream_error')
+    const accepted = referrals.redemptions[0]!.createdAt.toISOString()
+    await admin.update(
+      campaign.id,
+      { ...input, status: 'ended', expectedUpdatedAt: campaign.updatedAt },
+      'Operador',
+    )
+    const app = memberGiftRoutes({
+      repo: referrals,
+      redeem,
+      campaigns: admin,
+      internalToken: 'secret',
+    })
+    const send = (action: 'inspect' | 'redeem', actor = account) =>
+      app.handle(
+        new Request('http://localhost/referrals/internal/member-gifts', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-internal-token': 'secret' },
+          body: JSON.stringify({
+            action,
+            code: input.code,
+            account: actor,
+            originKind: 'lesson',
+            originId: 'aula',
+          }),
+        }),
+      )
+    const before = gateway.calls.length
+    const inspected = await send('inspect', { ...account, email: 'email-alterado@example.com' })
+    expect(inspected.status).toBe(200)
+    expect(await inspected.json()).toMatchObject({
+      state: 'ended',
+      redemption: {
+        status: 'pending',
+        canResume: true,
+        expiresAt: new Date(new Date(accepted).getTime() + 7 * 86400000).toISOString(),
+      },
+    })
+    expect(gateway.calls.length).toBeGreaterThanOrEqual(before)
+    expect(gateway.calls.slice(before).every((call) => call.kind === 'getGiftAvailability')).toBe(
+      true,
+    )
+    expect(referrals.redemptions).toHaveLength(1)
+    const originalCreatedAt = referrals.redemptions[0]!.createdAt
+    referrals.redemptions[0]!.createdAt = new Date(Date.now() - 8 * 86400000)
+    expect(await (await send('inspect')).json()).toMatchObject({
+      redemption: { status: 'pending', canResume: false },
+    })
+    referrals.redemptions[0]!.createdAt = originalCreatedAt
+    gateway.grantResult = { status: 200, body: {} }
+    expect((await send('redeem')).status).toBe(200)
+    expect(referrals.redemptions[0]!.createdAt.toISOString()).toBe(accepted)
+    expect(await (await send('inspect')).json()).toMatchObject({
+      redemption: { status: 'completed', canResume: false },
+    })
+    const other = {
+      ...account,
+      userId: '00000000-0000-4000-8000-000000000456',
+      email: 'outra@example.com',
+    }
+    expect(await (await send('inspect', other)).json()).toMatchObject({ redemption: null })
+    expect((await send('redeem', other)).status).toBe(410)
+  })
   test('data de referência deriva os prazos e PATCH legado mantém calendário', async () => {
     const { admin, campaign } = await setup()
     const schedule = { eventDate: '2026-11-06', giftClaimDays: 3, couponClaimDays: 7 }
@@ -654,6 +727,42 @@ describe('campanhas institucionais', () => {
       mural: '',
       link: 'https://kids.sistemazero.com.br/pais/cursos/vilao-em-aliado',
     })
+  })
+
+  test('presentes de cursos diferentes convivem, e outra campanha do mesmo curso não renova o acesso', async () => {
+    const { admin, catalog, redeem, referrals, gateway } = await setup()
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Curso', learner: 'child' },
+    }
+    const first = {
+      ...KIDS_GIFT_OFFER,
+      offerId: '10000000-0000-4000-8000-000000000001',
+      courseSlug: 'curso-um',
+    }
+    const second = {
+      ...first,
+      offerId: '10000000-0000-4000-8000-000000000002',
+      courseSlug: 'curso-dois',
+    }
+    catalog.add(first)
+    catalog.add(second)
+    await admin.create({ ...input, code: 'curso-um-presente', giftOfferId: first.offerId }, 'Admin')
+    await admin.create(
+      { ...input, code: 'curso-dois-presente', giftOfferId: second.offerId },
+      'Admin',
+    )
+    await admin.create({ ...input, code: 'curso-um-repetido', giftOfferId: first.offerId }, 'Admin')
+    const account = { userId: '10000000-0000-4000-8000-000000000099', audience: 'kids' as const }
+    const original = await redeem.execute({ ...family, code: 'curso-um-presente' }, account)
+    expect(original.kind).toBe('completed')
+    expect((await redeem.execute({ ...family, code: 'curso-dois-presente' }, account)).kind).toBe(
+      'completed',
+    )
+    const repeat = await redeem.execute({ ...family, code: 'curso-um-repetido' }, account)
+    expect(repeat).toMatchObject({ kind: 'already_redeemed' })
+    expect(referrals.redemptions).toHaveLength(2)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(2)
   })
 
   test('atribuição descarta campos livres com dados pessoais', () => {

@@ -1,3 +1,9 @@
+import { executeCheckoutPlan } from './checkout-dispatch'
+import { runPostPayment } from './checkout-fulfillment'
+import type { CheckoutPlan } from './checkout-plan'
+
+export { runPostPayment } from './checkout-fulfillment'
+
 import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
 import { type FunnelOfferContract, getFunnelByKey } from '../funnels/registry'
 import {
@@ -39,6 +45,10 @@ export interface ResolvedOffer {
 }
 
 export interface CheckoutDeps {
+  /** Identificador resolvido por entrada S2S autenticada; ausente mantém o cookie do funil. */
+  leadId?: string
+  termsVersion?: string
+  expectedPriceCents?: number
   repo: FunnelRepo
   gateway: GatewayClient
   /**
@@ -129,10 +139,16 @@ function leadMetadata(
     email: lead.email,
     telefone: lead.telefone,
   }
+  if (lead.memberContext) {
+    meta.accountUserId = lead.memberContext.accountId
+    meta.billingAudience = lead.memberContext.audience
+    meta.billingAudienceSource = 'member-commerce-v1'
+    meta.commerceOrigin = lead.memberContext.origin
+  }
   // Authority is the registered server-side lead origin, never a browser field,
   // product label, SKU prefix or the current default funnel for legacy purchases.
   const funnel = getFunnelByKey(lead.funnel)
-  if (funnel) {
+  if (funnel && !lead.memberContext) {
     meta.billingAudience = funnel.audience === 'kids' ? 'kids' : 'adult'
     meta.billingAudienceSource = 'funnel-registry-v1'
     meta.billingFunnelKey = funnel.key
@@ -328,8 +344,11 @@ export async function pixContentFingerprint(input: {
  * viram o `customer` da cobrança (devedor da cob na Efí). O QR só é gerado por
  * clique explícito no checkout (nunca automático).
  */
-export async function startPix(request: Request, deps: CheckoutDeps): Promise<Response> {
-  const leadId = getLeadId(request)
+export async function preparePix(
+  request: Request,
+  deps: CheckoutDeps,
+): Promise<CheckoutPlan | Response> {
+  const leadId = deps.leadId ?? getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
@@ -358,6 +377,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
   const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (deps.expectedPriceCents !== undefined && charge.amountInCents !== deps.expectedPriceCents)
+    return jsonError('O preço mudou. Confira a oferta antes de confirmar.', 409, 'OFFER_CHANGED')
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
@@ -365,7 +386,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
   }
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
-    termsVersion: termsVersionForFunnel(lead.funnel),
+    termsVersion: deps.termsVersion ?? termsVersionForFunnel(lead.funnel),
     annualUpfront,
   })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
@@ -394,34 +415,30 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
     metadata: leadMetadata(lead, productSku, charge),
   }
 
-  const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
-  if (status !== 201 && status !== 202) {
-    return paymentCreateError(
-      deps,
-      {
-        event: 'checkout.pix.gateway_error',
-        leadId: lead.id,
-        waitMessage: 'Já estamos gerando seu Pix, aguarde alguns segundos.',
-        failMessage: 'Não foi possível criar o pagamento.',
-      },
-      status,
-      body,
-    )
-  }
-  const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id, charge.couponCode, {
+  return {
+    id: crypto.randomUUID(),
+    kind: 'pix',
+    leadId: lead.id,
     offerRef: offerSlug,
-    nome: lead.nome,
-    email: lead.email,
-    telefone: lead.telefone,
-    document: lead.document,
-    // Anual à vista: 12 meses de acesso (o grant concede com validade + carência).
-    ...(annualUpfront ? { accessPeriodMonths: 12 } : {}),
-    offerSnapshot,
-  })
-  await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout')
+    couponCode: charge.couponCode,
+    idempotencyKey,
+    bodyJson: JSON.stringify(input),
+    paymentContext: {
+      offerRef: offerSlug,
+      nome: lead.nome,
+      email: lead.email,
+      telefone: lead.telefone,
+      document: lead.document,
+      offerSnapshot,
+      ...(annualUpfront ? { accessPeriodMonths: 12 } : {}),
+    },
+    intervalMonths: null,
+  }
+}
 
-  return json({ paymentId: view.id, status: view.status, pix: view.pix ?? null })
+export async function startPix(request: Request, deps: CheckoutDeps): Promise<Response> {
+  const plan = await preparePix(request, deps)
+  return plan instanceof Response ? plan : (await executeCheckoutPlan(plan, deps)).response
 }
 
 /**
@@ -430,7 +447,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
  * webhook (o comprador deixa a página). Idempotência por lead+método.
  */
 export async function startBoleto(request: Request, deps: CheckoutDeps): Promise<Response> {
-  const leadId = getLeadId(request)
+  const leadId = deps.leadId ?? getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   const lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
@@ -462,6 +479,8 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
 
   const charge = await resolveCharge(deps.gateway, offerSlug, form.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (deps.expectedPriceCents !== undefined && charge.amountInCents !== deps.expectedPriceCents)
+    return jsonError('O preço mudou. Confira a oferta antes de confirmar.', 409, 'OFFER_CHANGED')
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
@@ -469,7 +488,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
   }
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
-    termsVersion: termsVersionForFunnel(lead.funnel),
+    termsVersion: deps.termsVersion ?? termsVersionForFunnel(lead.funnel),
     annualUpfront,
   })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
@@ -525,8 +544,11 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
  * SÍNCRONO (approved→PAID): se voltar PAID, marca pago e registra o comprador na
  * hora; o webhook continua sendo o backstop durável.
  */
-export async function startCard(request: Request, deps: CheckoutDeps): Promise<Response> {
-  const leadId = getLeadId(request)
+export async function prepareCard(
+  request: Request,
+  deps: CheckoutDeps,
+): Promise<CheckoutPlan | Response> {
+  const leadId = deps.leadId ?? getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
@@ -551,13 +573,15 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (deps.expectedPriceCents !== undefined && charge.amountInCents !== deps.expectedPriceCents)
+    return jsonError('O preço mudou. Confira a oferta antes de confirmar.', 409, 'OFFER_CHANGED')
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   if (charge.pricingMode === 'subscription') {
     return jsonError('Esta oferta é uma assinatura recorrente.', 409, 'USE_SUBSCRIPTION')
   }
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
-    termsVersion: termsVersionForFunnel(lead.funnel),
+    termsVersion: deps.termsVersion ?? termsVersionForFunnel(lead.funnel),
   })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
@@ -585,51 +609,32 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     metadata: leadMetadata(lead, productSku, charge),
   }
 
-  const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
-  if (status !== 201 && status !== 202) {
-    return paymentCreateError(
-      deps,
-      {
-        event: 'checkout.card.gateway_error',
-        leadId: lead.id,
-        waitMessage: 'Seu pagamento já está sendo processado, aguarde alguns segundos.',
-        failMessage: 'Não foi possível processar o cartão.',
-      },
-      status,
-      body,
-    )
-  }
-  const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id, charge.couponCode, {
+  return {
+    id: crypto.randomUUID(),
+    kind: 'card',
+    leadId: lead.id,
     offerRef: offerSlug,
-    nome: lead.nome,
-    email: lead.email,
-    telefone: lead.telefone,
-    document: lead.document,
-    offerSnapshot,
-  })
-  await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
-
-  if (view.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt), view.id)
-    if (newlyPaid) {
-      await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
-      // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
-      await redeemCouponBestEffort(deps.gateway, charge.couponCode, view.id, deps.log)
-    }
-    await runPostPayment(lead.id, deps)
+    couponCode: charge.couponCode,
+    idempotencyKey,
+    bodyJson: JSON.stringify(input),
+    paymentContext: {
+      offerRef: offerSlug,
+      nome: lead.nome,
+      email: lead.email,
+      telefone: lead.telefone,
+      document: lead.document,
+      offerSnapshot,
+    },
+    intervalMonths: null,
   }
+}
 
-  return json({ paymentId: view.id, status: view.status, card: view.card ?? null })
+export async function startCard(request: Request, deps: CheckoutDeps): Promise<Response> {
+  const plan = await prepareCard(request, deps)
+  return plan instanceof Response ? plan : (await executeCheckoutPlan(plan, deps)).response
 }
 
 /** Resposta de `POST /subscriptions` do payments (campos que o funil consome). */
-interface SubscriptionCreateView {
-  id: string
-  status: string
-  intervalMonths: number
-  firstPayment?: { id: string; status: string; paidAt?: string | null } | null
-}
 
 /**
  * POST /api/checkout/subscription — cria a ASSINATURA de cartão recorrente via
@@ -638,8 +643,11 @@ interface SubscriptionCreateView {
  * COMPLETO (contato + nascimento + endereço — a Efí valida). Sem parcelas, sem
  * cupom (regras da oferta de assinatura).
  */
-export async function startSubscription(request: Request, deps: CheckoutDeps): Promise<Response> {
-  const leadId = getLeadId(request)
+export async function prepareSubscription(
+  request: Request,
+  deps: CheckoutDeps,
+): Promise<CheckoutPlan | Response> {
+  const leadId = deps.leadId ?? getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
@@ -664,6 +672,8 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   // Quote authorizes the first charge. Recurrence always receives the undiscounted price.
   const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (deps.expectedPriceCents !== undefined && charge.amountInCents !== deps.expectedPriceCents)
+    return jsonError('O preço mudou. Confira a oferta antes de confirmar.', 409, 'OFFER_CHANGED')
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   if (charge.pricingMode !== 'subscription' || charge.billingIntervalMonths === null) {
@@ -671,7 +681,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   }
   const authoritativeInterval = charge.billingIntervalMonths
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
-    termsVersion: termsVersionForFunnel(lead.funnel),
+    termsVersion: deps.termsVersion ?? termsVersionForFunnel(lead.funnel),
   })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
@@ -694,87 +704,29 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
     metadata: leadMetadata(lead, productSku, charge),
   }
 
-  const { status, body } = await deps.gateway.createSubscription(input, idempotencyKey)
-  if (status !== 201) {
-    return paymentCreateError(
-      deps,
-      {
-        event: 'checkout.subscription.gateway_error',
-        leadId: lead.id,
-        waitMessage: 'Sua assinatura já está sendo processada, aguarde alguns segundos.',
-        failMessage: 'Não foi possível processar a assinatura.',
-      },
-      status,
-      body,
-    )
-  }
-  const view = body as SubscriptionCreateView
-  await deps.repo.setSubscription(lead.id, view.id, authoritativeInterval)
-  // 1ª cobrança exposta na criação → registra no histórico (o webhook `payment.paid`
-  // dela resolve o lead; o grant referencia a cobrança certa).
-  const firstPayment = view.firstPayment ?? null
-  if (firstPayment) {
-    await deps.repo.setPayment(lead.id, firstPayment.id, charge.couponCode, {
+  return {
+    id: crypto.randomUUID(),
+    kind: 'subscription',
+    leadId: lead.id,
+    offerRef: offerSlug,
+    couponCode: charge.couponCode,
+    idempotencyKey,
+    bodyJson: JSON.stringify(input),
+    paymentContext: {
       offerRef: offerSlug,
       nome: lead.nome,
       email: lead.email,
       telefone: lead.telefone,
       document: lead.document,
       offerSnapshot,
-    })
+    },
+    intervalMonths: authoritativeInterval,
   }
-  await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_subscription')
-
-  if (view.status === 'ACTIVE' && firstPayment?.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(
-      lead.id,
-      paymentApprovedAt(firstPayment.paidAt),
-      firstPayment.id,
-    )
-    if (newlyPaid) {
-      await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_subscription')
-    }
-    await runPostPayment(lead.id, deps)
-  }
-
-  return json({
-    subscriptionId: view.id,
-    status: view.status,
-    paymentId: firstPayment?.id ?? null,
-    paymentStatus: firstPayment?.status ?? null,
-  })
 }
 
-/**
- * Pós-pagamento (best-effort): registra o comprador e DEPOIS concede o acesso na
- * área de membros + boas-vindas. Erros engolidos de propósito — o webhook
- * `payment.paid` é o backstop durável das três etapas (registro idempotente por
- * e-mail; concessão e welcome com one-shot próprio: `members_granted_at` /
- * `welcome_sent_at`). Roda a cada poll com PAID, mas cada etapa se auto-gateia
- * pelos marcadores — poll repetido após tudo concluído custa só leituras locais,
- * ZERO S2S (antes, cada poll re-chamava grant + emitia token novo no auth, o que
- * MATAVA o link de senha já enviado — o auth consome tokens pendentes).
- */
-async function runPostPayment(leadId: string, deps: CheckoutDeps): Promise<void> {
-  if (!deps.fulfill && !deps.grantMembers && !deps.sendWelcome) return
-  try {
-    let lead = await deps.repo.getLead(leadId)
-    if (!lead) return
-    if (deps.fulfill && !lead.buyerRegisteredAt) {
-      await deps.fulfill(lead)
-      // Relê p/ o `buyer_user_id` que o fulfill acabou de gravar.
-      lead = (await deps.repo.getLead(leadId)) ?? lead
-    }
-    if (lead.buyerUserId) {
-      if (deps.grantMembers) await deps.grantMembers(lead)
-      // Boas-vindas também no caminho síncrono (simetria com o webhook): se a
-      // entrega do webhook falhar de vez, o comprador não fica sem o link de
-      // senha. One-shot atômico no handler (claim) — nunca emite token 2×.
-      if (deps.sendWelcome) await deps.sendWelcome(lead)
-    }
-  } catch {
-    /* o webhook é o backstop durável do registro, da concessão e das boas-vindas */
-  }
+export async function startSubscription(request: Request, deps: CheckoutDeps): Promise<Response> {
+  const plan = await prepareSubscription(request, deps)
+  return plan instanceof Response ? plan : (await executeCheckoutPlan(plan, deps)).response
 }
 
 /** GET /api/checkout/:paymentId — consulta status via gateway; marca pago no polling. */
@@ -783,7 +735,7 @@ export async function pixStatus(
   paymentId: string,
   deps: CheckoutDeps,
 ): Promise<Response> {
-  const leadId = getLeadId(request)
+  const leadId = deps.leadId ?? getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead || lead.paymentId !== paymentId) {

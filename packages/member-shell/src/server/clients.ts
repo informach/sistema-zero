@@ -184,6 +184,7 @@ export type ProfilesClient = ReturnType<typeof createProfilesClient>
 /** Corpo da criação/edição de perfil (espelha os DTOs do auth). */
 export interface ProfileWriteInput {
   name?: string
+  publicNickname?: string
   avatarUrl?: string | null
   whatsapp?: string | null
   /**

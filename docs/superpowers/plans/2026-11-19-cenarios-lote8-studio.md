@@ -91,10 +91,10 @@ Depois de `deb6a3e36`, a frente exclusiva é a integração visual desta tarefa.
 - [x] Canvas 3D: bloco/seletor e `sz_t3d_load_scene`; mesma cena/consulta e ciclo de recursos, sem um segundo carregador. [Qualificação e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-canvas.md), enviado em `c20dd5edc`.
 - [x] Jogo 3D: mesmo bloco e integração no motor existente, conservando avatar, câmera e controles. [Qualificação e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-jogo3d.md).
 - [x] Jogo 3D Avançado: mesmo bloco e integração no motor existente; preservar atores animáveis e física/colisões compatíveis. Ver [qualificação local](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-avancado.md); Pro autoral e fechamento integrado continuam pendentes.
-- [ ] Reabrir/executar os quatro projetos, inclusive publicação local do projeto Mundo 3D em /jogar no harness, exports, CSP e regressão de recursos/controles. Implementar/testar/revisar cada motor antes do seguinte.
+- [x] Reabrir/executar os quatro projetos, inclusive publicação local do projeto Mundo 3D em /jogar no harness, exports, CSP e regressão de recursos/controles. Implementar/testar/revisar cada motor antes do seguinte. Os quatro foram repetidos no corte Avançado, e o SDK clássico permanece idêntico após Pro autoral.
 
 ## 4. Fechamento de 8.4
 
-- [ ] Conferir linha a linha: contrato/dados/modelos, importação atômica e orçamentos, quatro motores, Python/Raylib pelo produto, módulos autorais, persistência/reabertura/exports.
-- [ ] Suítes/tipagem/build pertinentes, provas de navegador, capturas/vídeos e full review deste recorte. Registrar limitações reais sem afirmar desempenho físico ou aceite artístico. Commit/push.
+- [x] Conferir linha a linha: contrato/dados/modelos, importação atômica e orçamentos, quatro motores, Python/Raylib pelo produto, módulos autorais, persistência/reabertura/exports. [Conferência integrada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-pro.md).
+- [x] Suítes/tipagem/build pertinentes, provas de navegador, capturas/vídeos e full review deste recorte. Registrar limitações reais sem afirmar desempenho físico ou aceite artístico. Commit/push.
 - [ ] Só então iniciar 8.5. O lote 8 fecha após 8.5/8.6; 9–10, composição, full review global, CI e implantação/validação de staging continuam no final.

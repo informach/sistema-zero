@@ -36,7 +36,12 @@ export const AddressSchema = z.object({
   street: z.string().trim().min(1, 'Informe o endereço.').max(200, 'Endereço muito longo.'),
   number: z.string().trim().min(1, 'Informe o número.').max(20, 'Número inválido.'),
   neighborhood: z.string().trim().min(1, 'Informe o bairro.').max(120, 'Bairro muito longo.'),
-  zipcode: z.string().trim().min(1, 'Informe o CEP.').max(16, 'CEP inválido.'),
+  zipcode: z
+    .string()
+    .trim()
+    .min(1, 'Informe o CEP.')
+    .max(16, 'CEP inválido.')
+    .refine((v) => /^\d{8}$/.test(v.replace(/\D/g, '')), 'CEP inválido.'),
   city: z.string().trim().min(1, 'Informe a cidade.').max(120, 'Cidade muito longa.'),
   state: z.string().trim().length(2, 'UF deve ter 2 letras.'),
   complement: z.string().trim().max(120, 'Complemento muito longo.').optional(),
