@@ -181,6 +181,25 @@ jobs:
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
         run: bunx playwright test --config playwright.pinta-integration.config.ts
+      - name: Linked Pinta worlds preserve both frozen historical readers
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        run: |
+          set -o pipefail
+          for pinta_revision in 0218a11a330e8da93e70786afb3b0fe48370a562 f44648d9b2c63509f882ef8cb1ce8c66ee554c7d; do
+            pinta_baseline="$RUNNER_TEMP/pinta-reader-${pinta_revision:0:12}"
+            git fetch --no-tags --depth=1 origin "$pinta_revision"
+            git worktree add --detach "$pinta_baseline" "$pinta_revision"
+            (cd "$pinta_baseline" && bun install --frozen-lockfile)
+            mkdir -p "packages/studio/.cache/mission/pinta-world-$pinta_revision"
+            set +e
+            (cd packages/studio && PINTA_STUDIO_BASELINE="$pinta_baseline" PINTA_STUDIO_BASELINE_REVISION="$pinta_revision" bunx playwright test --config playwright.pinta-world.config.ts --global-timeout=180000) 2>&1 | tee "packages/studio/.cache/mission/pinta-world-$pinta_revision/browser.txt"
+            pinta_result=$?
+            set -e
+            if [ -d packages/studio/.cache/pinta-world-proof-results ]; then
+              cp -R packages/studio/.cache/pinta-world-proof-results/. "packages/studio/.cache/mission/pinta-world-$pinta_revision/"
+            fi
+            if [ "$pinta_result" -ne 0 ]; then exit "$pinta_result"; fi
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -193,6 +212,7 @@ jobs:
             packages/studio/.cache/protected-lessons
             packages/studio/.cache/pinta-scenes-results
             packages/studio/.cache/pinta-integration-results
+            packages/studio/.cache/pinta-world-proof-results
             .audits/studio-pro-evolution/browser-current.json
           retention-days: 14
 
@@ -247,7 +267,7 @@ jobs:
         run: bun packages/studio/scripts/build-python-runtime.ts
       - name: Prepare the pinned external game corpus in ignored cache
         run: bun experiments/studio-python-runtime/prepare-game-corpus.ts
-      - name: Product Python supervisor, provider, host policy, Classic and games
+      - name: Product Python supervisor, provider, host policy, Classic, games and linked worlds
         working-directory: packages/studio
         env:
           PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-python-runtime/mission-browser
