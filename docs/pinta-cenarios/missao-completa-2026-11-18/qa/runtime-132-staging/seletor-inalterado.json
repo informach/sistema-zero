@@ -1,0 +1,7 @@
+{
+  "version": "d1d4f234-08c5-4059-b45d-f4772126000b",
+  "bindings": {
+    "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "f69814b9412125e9bb8f8f33aea2b682cf1e7dfdeb59f593c2067466ce140553",
+    "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+  }
+}

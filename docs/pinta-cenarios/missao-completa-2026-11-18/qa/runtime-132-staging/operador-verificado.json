@@ -1,0 +1,25 @@
+{
+  "versionId": "15b8dca9-d603-48f7-a018-a90cf017759c",
+  "workerName": "sistemazero-python-promoter-staging-cb9561458093",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-cb9561458093.helena-bcc.workers.dev",
+  "bundleSha256": "a00a6f738b75c80e29209dc388048185ce3c116d9388bc940d7162c1a78fbe49",
+  "remoteBundleSha256": "a00a6f738b75c80e29209dc388048185ce3c116d9388bc940d7162c1a78fbe49",
+  "bindings": [
+    {
+      "name": "CF_VERSION_METADATA",
+      "type": "version_metadata"
+    },
+    {
+      "name": "OPERATOR_HMAC_KEY",
+      "type": "secret_text"
+    },
+    {
+      "bucket_name": "sistemazero-studio-artifacts-staging",
+      "name": "PYTHON_RUNTIME",
+      "type": "r2_bucket"
+    }
+  ],
+  "unauthorizedStatus": 401,
+  "expiresAt": 1795101980952,
+  "activationPerformed": false
+}

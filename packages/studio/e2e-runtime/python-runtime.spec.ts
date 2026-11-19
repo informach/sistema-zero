@@ -196,9 +196,23 @@ test('SystemExit zero completes without a program error', async ({ page }) => {
   const frame = await ready(page, 'exit')
   expect(await run(frame)).toMatchObject({ ok: true, text: '' })
 })
-test('SystemExit float zero retains CPython nonzero-exit semantics', async ({ page }) => {
+test('SystemExit float zero writes stderr and completes without an unhandled traceback', async ({
+  page,
+}) => {
   const frame = await ready(page, 'exitFloat')
-  expect(await run(frame)).toMatchObject({ ok: false, text: '0.0' })
+  // Since e0a038c5ba, result.ok describes completion, not a process exit status.
+  // Preserve that published contract while checking CPython's non-integer message.
+  const outcome = await run(frame)
+  expect(outcome).toMatchObject({ ok: true, text: '' })
+  expect(outcome.traceback).toBeUndefined()
+  const stderr = await frame.evaluate(() =>
+    globalThis.pythonProbe.events
+      .flatMap((event) => (event.type === 'console' ? event.batches : []))
+      .filter((batch) => batch.stream === 'stderr')
+      .map((batch) => batch.text)
+      .join(''),
+  )
+  expect(stderr).toBe('0.0\n')
 })
 test('concurrent execution is rejected while input is suspended', async ({ page }) => {
   const frame = await ready(page, 'waiting')

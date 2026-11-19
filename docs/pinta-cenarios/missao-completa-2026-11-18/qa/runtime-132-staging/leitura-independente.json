@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-19T15:10:21.257Z",
+  "scope": "independent remote R2 CLI readback",
+  "results": [
+    {
+      "name": "complete",
+      "key": "runtimes/eec668d098be7605a1534983a588fb05e40da4ca218609c534911d1ad69b52ff/complete.json",
+      "bytes": 192,
+      "sha256": "6811d85d2631a908c39f8a6a48ed27bac6b4892e227e743a12b854b03f7688d1"
+    },
+    {
+      "name": "catalog",
+      "key": "runtime-configs/e67e817f6d24b074ad5cf2ddba0da99aef25da4574c1b54d6450f6ab3d57886b.json",
+      "bytes": 169305,
+      "sha256": "e67e817f6d24b074ad5cf2ddba0da99aef25da4574c1b54d6450f6ab3d57886b"
+    }
+  ],
+  "activationPerformed": false
+}

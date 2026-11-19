@@ -26,6 +26,9 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   nenhuma ativação realizada. Provas e limites em `qa/runtime-c4-staging/README.md`.
   O CI remoto de `7347a7707` encontrou quatro bloqueios adicionais; diagnóstico,
   correções e limites da prova local em `qa/ci-remoto-2026-11-19/README.md`.
+  A recompilação `132db1b…` passou por 16 casos Pinta/Pygame e 83 casos do runtime,
+  com upload e leitura independente de 128 objetos em staging, sem ativação.
+  Provas em `qa/runtime-132-local/README.md` e `qa/runtime-132-staging/README.md`.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

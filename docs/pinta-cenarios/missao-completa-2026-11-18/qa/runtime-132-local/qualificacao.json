@@ -1,0 +1,578 @@
+{
+  "at": "2026-11-19T14:31:11.223Z",
+  "scope": "local-functional-runtime-qualification",
+  "sourceBase": "90d2ca825623ba7978e382468af7ba7f5fa08963",
+  "distributionSha256": "132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e",
+  "files": 126,
+  "bytes": 26006491,
+  "toolchain": {
+    "builderBun": "1.3.11",
+    "serverBun": "1.4.3",
+    "browser": "Chrome on this Windows machine"
+  },
+  "passed": {
+    "pintaPygame": 16,
+    "sharedRuntime": 83,
+    "sceneRuntimeApi": 1,
+    "sceneModuleContracts": 4
+  },
+  "sharedCases": [
+    {
+      "title": "Python audio without a user gesture reports the browser autoplay denial",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 1738
+    },
+    {
+      "title": "pro-Python plays overlapping audio without Turtle and stops individual voices",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 2199
+    },
+    {
+      "title": "pro-Stop revokes audio while Python waits for input",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 2019
+    },
+    {
+      "title": "pro-authored sz_audio module keeps Python import precedence",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 1470
+    },
+    {
+      "title": "classic-Python plays overlapping audio without Turtle and stops individual voices",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 1864
+    },
+    {
+      "title": "classic-Stop revokes audio while Python waits for input",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 1522
+    },
+    {
+      "title": "classic-authored sz_audio module keeps Python import precedence",
+      "file": "python-audio.spec.ts",
+      "status": "passed",
+      "duration": 1397
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: valid",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1422
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: structure",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1222
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: validbom",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1130
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: syntax",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1196
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: return",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1242
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: yield",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1338
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: ascii",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1532
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: unknown",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1486
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: bom",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1452
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: identifier",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 1405
+    },
+    {
+      "title": "isolated CPython inspects exact revision bytes: corrupt",
+      "file": "python-inspection.spec.ts",
+      "status": "passed",
+      "duration": 368
+    },
+    {
+      "title": "portable: prepares and executes under strict CSP without validation eval probes",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 1787
+    },
+    {
+      "title": "turtleDrawing: prepares and executes under strict CSP without validation eval probes",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 1790
+    },
+    {
+      "title": "turtleDrawing: captures presented pixels with the current revision and refuses capture after Stop",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 3800
+    },
+    {
+      "title": "classic-turtleDrawing: captures presented pixels with the current revision and refuses capture after Stop",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 3877
+    },
+    {
+      "title": "Stop cancels a capture while the browser is still encoding it",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 2639
+    },
+    {
+      "title": "the provider binds snapshots and runs independent sessions with separate REPL state",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 2549
+    },
+    {
+      "title": "stop revokes host events and restart creates a fresh generation",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 2349
+    },
+    {
+      "title": "abort during prepare never returns a usable session",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 515
+    },
+    {
+      "title": "provider rejects mismatched content before starting a frame",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 448
+    },
+    {
+      "title": "overlapping reuse of a frame is rejected without disturbing its owner",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 1414
+    },
+    {
+      "title": "abort while waiting for input revokes the session immediately",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 1367
+    },
+    {
+      "title": "provider delivers lines and EOF without evaluating input as code",
+      "file": "python-provider.spec.ts",
+      "status": "passed",
+      "duration": 1400
+    },
+    {
+      "title": "Raylib 2D: own loop, shapes, textures, text, camera, keyboard, mouse and sound",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 2814
+    },
+    {
+      "title": "Raylib: cena-gabarito models3d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 2383
+    },
+    {
+      "title": "Raylib: cena-gabarito rendertexture2d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 2367
+    },
+    {
+      "title": "Raylib: cena-gabarito shaders3d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 1858
+    },
+    {
+      "title": "Raylib: cena-gabarito shapes2d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 1890
+    },
+    {
+      "title": "Raylib: cena-gabarito shapes3d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 1926
+    },
+    {
+      "title": "Raylib: cena-gabarito text2d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 1836
+    },
+    {
+      "title": "Raylib: cena-gabarito textures2d",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 1902
+    },
+    {
+      "title": "Raylib: exemplo da galeria ola-raylib roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4408
+    },
+    {
+      "title": "Raylib: exemplo da galeria nave-que-desliza roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4372
+    },
+    {
+      "title": "Raylib: exemplo da galeria encostou roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4570
+    },
+    {
+      "title": "Raylib: exemplo da galeria camera-que-segue roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4554
+    },
+    {
+      "title": "Raylib: exemplo da galeria sprites-timer-animacao roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4385
+    },
+    {
+      "title": "Raylib: exemplo da galeria dino-corredor roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4392
+    },
+    {
+      "title": "Raylib: exemplo da galeria chuva-de-meteoros roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4391
+    },
+    {
+      "title": "Raylib: exemplo da galeria batalha-de-monstrinhos roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4377
+    },
+    {
+      "title": "Raylib: exemplo da galeria aventura-do-heroi roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4374
+    },
+    {
+      "title": "Raylib: exemplo da galeria primeira-cena-3d roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4371
+    },
+    {
+      "title": "Raylib: exemplo da galeria modelos-do-molda roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4517
+    },
+    {
+      "title": "Raylib: exemplo da galeria caixas-que-se-encostam roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 4760
+    },
+    {
+      "title": "Raylib: exemplo da galeria clarao-com-shader roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 5739
+    },
+    {
+      "title": "Raylib: exemplo da galeria corrida-infinita roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 6621
+    },
+    {
+      "title": "Raylib: exemplo da galeria patrulha-espacial roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 5835
+    },
+    {
+      "title": "Raylib: exemplo da galeria labirinto-dos-robos roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 6569
+    },
+    {
+      "title": "Raylib: exemplo da galeria mundo-de-blocos roda, desenha e recebe teclado e mouse",
+      "file": "python-raylib.spec.ts",
+      "status": "passed",
+      "duration": 6081
+    },
+    {
+      "title": "unchanged source, imports, binary files and REPL share the script namespace",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 2216
+    },
+    {
+      "title": "standard library source inspection, tracebacks, classes, exact fractions and seeded RNG remain available",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1860
+    },
+    {
+      "title": "input suspends, accepts an empty line, and EOF stays distinct",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1707
+    },
+    {
+      "title": "partial byte writes preserve text and stderr without inventing newlines",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1751
+    },
+    {
+      "title": "a two MiB line stays bounded before any timer can flush",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1728
+    },
+    {
+      "title": "flushes Python text streams before noNewline result",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1651
+    },
+    {
+      "title": "flushes Python text streams before noNewlineError result",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1395
+    },
+    {
+      "title": "flushes Python text streams before customStream result",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1434
+    },
+    {
+      "title": "a failure to flush is a structured program error",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1576
+    },
+    {
+      "title": "structured syntax with source traceback",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1450
+    },
+    {
+      "title": "structured error with source traceback",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1455
+    },
+    {
+      "title": "structured unicodeError with source traceback",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1707
+    },
+    {
+      "title": "SystemExit zero completes without a program error",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1602
+    },
+    {
+      "title": "SystemExit float zero writes stderr and completes without an unhandled traceback",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1460
+    },
+    {
+      "title": "concurrent execution is rejected while input is suspended",
+      "file": "python-runtime.spec.ts",
+      "status": "passed",
+      "duration": 1506
+    },
+    {
+      "title": "optional Turtle draws actual Python geometry and Tk colors in the protected frame",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2080
+    },
+    {
+      "title": "turtle.dot paints a filled disc, like Tk, although canvas prunes zero-length strokes",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1960
+    },
+    {
+      "title": "keyboard and turtle/screen clicks dispatch inside Python; Stop revokes the scene",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2505
+    },
+    {
+      "title": "GIF shape uses unchanged virtual asset and keeps official heading semantics",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1878
+    },
+    {
+      "title": "author turtle.py shadows the extension and private module names do not execute author code during prepare",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1839
+    },
+    {
+      "title": "plain Python never loads the optional Turtle renderer or module",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1550
+    },
+    {
+      "title": "Turtle hit testing respects occlusion and outline-only shapes",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2583
+    },
+    {
+      "title": "multiline Turtle text occupies two lines and preserves the right anchor for move",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2002
+    },
+    {
+      "title": "an idle mainloop requests no animation frames and wakes for input and timers",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2680
+    },
+    {
+      "title": "Screen can reopen after bye in the same Python execution",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1943
+    },
+    {
+      "title": "a corrupt image raises a catchable Python error and a later valid image still loads",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 1937
+    },
+    {
+      "title": "input queued during Python sleep survives a catchable image error",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 3018
+    },
+    {
+      "title": "a Pinta drawing becomes a turtle shape that turns with the turtle",
+      "file": "python-turtle.spec.ts",
+      "status": "passed",
+      "duration": 2696
+    }
+  ],
+  "performance": {
+    "samples": [47.9, 52, 54.8, 53.2, 54, 51.4, 52, 51.7],
+    "steadySamples": [53.2, 54, 51.4, 52, 51.7],
+    "meanFps": 52.46,
+    "minimumRequired": 45
+  },
+  "sceneApi": {
+    "runtime": {
+      "profileId": "python-probe",
+      "releaseId": "probe-1",
+      "manifestSha256": "5b4877775634a7c7b30c5a39fa0ba1e1f8fe58027b2820a45698f90533a3d708"
+    },
+    "distribution": "132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e",
+    "facts": {
+      "nodes": 4,
+      "ground": 0,
+      "hole": null,
+      "collisionRecords": 4
+    },
+    "pixels": {
+      "width": 480,
+      "height": 360,
+      "colors": 3
+    },
+    "status": "running",
+    "diagnostics": 0,
+    "source": "existing canonical authoring/compiler/importer",
+    "scope": "runtime scene API and actual rendering; not a complete Molda UI qualification"
+  },
+  "negatives": [
+    {
+      "run": "initial",
+      "passed": 82,
+      "failed": 1,
+      "reason": "SystemExit fixture expected the contract predating e0a038c5ba; only the test was corrected"
+    },
+    {
+      "run": "second",
+      "passed": 82,
+      "failed": 1,
+      "reason": "bootPreparation/channel failed once before execution; metadata network status -1",
+      "rootCauseEstablished": false,
+      "focusedRecheckPassed": true,
+      "traceOverwrittenByFocusedRun": true,
+      "originalTextLogPreserved": true
+    }
+  ],
+  "finalRun": {
+    "startTime": "2026-11-19T14:14:15.194Z",
+    "duration": 209552.383,
+    "expected": 83,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "complete": true
+  },
+  "hostedQualified": false,
+  "activationQualified": false,
+  "otherPhysicalDevicesQualified": false
+}
