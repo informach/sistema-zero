@@ -2,6 +2,7 @@ import { createEmptyProject } from '../../core/project'
 import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
 import { migrateLocalProject } from '../../project-migrations/localProjects'
 import { migrateLocalV3Project } from '../../project-migrations/localV3'
+import { migrateLocalV3Projects } from '../../project-migrations/localV3Projects'
 import {
   prepareLocalV3Recovery,
   stageLocalV3Recovery,
@@ -216,7 +217,8 @@ async function qualifyLegacyMigration(scope: ProjectStorageScope) {
   await writeInOneTransaction(scope.store, {
     puts: [...projectStorageEntries(original, 3), [projectHeadKey(original.id, 3), head]],
   })
-  if ((await migrateLocalV3Project(original.id, scope)) !== original.id)
+  const batch = await migrateLocalV3Projects(scope, undefined, original.id)
+  if (batch.pending.length || batch.changed.length !== 1 || batch.changed[0] !== original.id)
     throw new Error('Native migration did not preserve identity')
   const [metadata, legacyHead] = await readValues(scope.store, [
     projectMetaKey(original.id, 4),
